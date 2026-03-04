@@ -325,7 +325,8 @@ CREATE TABLE queue_artifacts (
     content_type text NOT NULL,
     details jsonb NOT NULL,
     present boolean NOT NULL,
-    expires timestamp with time zone NOT NULL
+    expires timestamp with time zone NOT NULL,
+    content_length bigint
 );
 ALTER TABLE queue_artifacts
     ADD CONSTRAINT queue_artifacts_pkey PRIMARY KEY (task_id, run_id, name);
@@ -533,8 +534,10 @@ ALTER TABLE tasks
 
 ```sql
 CREATE TABLE tcversion (
-    version integer
+    version integer NOT NULL
 );
+ALTER TABLE tcversion
+    ADD CONSTRAINT tcversion_pkey PRIMARY KEY (version);
 ```
 
 ## worker_pool_errors

@@ -15,17 +15,27 @@ spec:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-worker-manager-secret.yaml") . | sha256sum }}'
-      labels: *ref_0
+      labels:
+        app.kubernetes.io/name: taskcluster-worker-manager
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: taskcluster-worker-manager-workerscanner-azure
+        app.kubernetes.io/part-of: taskcluster
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9100'
     spec:
       serviceAccountName: taskcluster-worker-manager
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-worker-manager-workerscanner-azure
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - worker-manager/workerscanner-azure
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.worker_manager.procs.workerscanner_azure.cpu }}'
@@ -42,7 +52,10 @@ spec:
                 name: taskcluster-worker-manager
             - configMapRef:
                 name: taskcluster-worker-manager
-          ports: []
+          ports:
+            - name: prometheus
+              containerPort: 9100
+              protocol: TCP
           livenessProbe:
             exec:
               command:

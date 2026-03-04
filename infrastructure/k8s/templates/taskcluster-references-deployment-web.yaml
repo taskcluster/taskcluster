@@ -22,19 +22,23 @@ spec:
       serviceAccountName: taskcluster-references
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-references-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - references/web
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.references.procs.web.cpu }}'
               memory: '{{ .Values.references.procs.web.memory }}'
           env:
             - name: PORT
-              value: '80'
+              value: '8080'
             - name: TASKCLUSTER_ROOT_URL
               value: '{{ .Values.rootUrl }}'
             - name: USE_KUBERNETES_DNS_SERVICE_DISCOVERY
@@ -47,18 +51,18 @@ spec:
             - configMapRef:
                 name: taskcluster-references
           ports:
-            - containerPort: 80
+            - containerPort: 8080
           readinessProbe:
             httpGet:
               path: /references/
-              port: 80
+              port: 8080
             timeoutSeconds: 5
             periodSeconds: 10
             initialDelaySeconds: 6
           livenessProbe:
             httpGet:
               path: /references/
-              port: 80
+              port: 8080
             timeoutSeconds: 3
             initialDelaySeconds: 15
             periodSeconds: 30

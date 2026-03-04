@@ -23,6 +23,7 @@ defaults:
   monitoring:
     level: !env:optional LEVEL
     errorConfig: !env:json:secret:optional ERROR_CONFIG
+    prometheusConfig: !env:json:optional PROMETHEUS_CONFIG
   server:
     port:             !env:number PORT
     env:              !env NODE_ENV

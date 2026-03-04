@@ -196,7 +196,8 @@ helper.dbSuite(path.basename(__filename), function() {
       runOnlineBatches.resetHooks();
       db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
       await db._withClient('admin', async client => {
-        await client.query('create table tcversion as select 1 as version');
+        await client.query('create table tcversion (version int primary key)');
+        await client.query('insert into tcversion (version) values (1)');
         for (let v of [0, 1, 2, 3]) {
           for (let fn of [
             `online_migration_v${v}_batch`,

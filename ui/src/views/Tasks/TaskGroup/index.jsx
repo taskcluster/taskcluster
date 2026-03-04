@@ -670,6 +670,16 @@ export default class TaskGroup extends Component {
     this.setState({ snackbar: { message, variant, open } });
   };
 
+  handleOpenProfiler = () => {
+    const { taskGroupId } = this.props.match.params;
+    const profileUrl = `${window.env.TASKCLUSTER_ROOT_URL}/api/web-server/v1/task-group/${taskGroupId}/profile`;
+    const profilerUrl = `https://profiler.firefox.com/from-url/${encodeURIComponent(
+      profileUrl
+    )}`;
+
+    window.open(profilerUrl, '_blank');
+  };
+
   handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -1015,24 +1025,31 @@ export default class TaskGroup extends Component {
             showTimings={statsOpen}
           />
         )}
-        {!loading && groupActions && groupActions.length ? (
+        {!loading && (
           <SpeedDial>
-            {groupActions.map(action => (
-              <SpeedDialAction
-                requiresAuth
-                tooltipOpen
-                key={action.title}
-                FabProps={{
-                  disabled:
-                    actionLoading || this.groupActionDisabled(action.name),
-                }}
-                icon={<HammerIcon />}
-                tooltipTitle={action.title}
-                onClick={this.handleActionClick(action.name)}
-              />
-            ))}
+            <SpeedDialAction
+              tooltipOpen
+              icon={<ChartIcon />}
+              tooltipTitle="Open in Profiler"
+              onClick={this.handleOpenProfiler}
+            />
+            {groupActions &&
+              groupActions.map(action => (
+                <SpeedDialAction
+                  requiresAuth
+                  tooltipOpen
+                  key={action.title}
+                  FabProps={{
+                    disabled:
+                      actionLoading || this.groupActionDisabled(action.name),
+                  }}
+                  icon={<HammerIcon />}
+                  tooltipTitle={action.title}
+                  onClick={this.handleActionClick(action.name)}
+                />
+              ))}
           </SpeedDial>
-        ) : null}
+        )}
         {dialogOpen && (
           <DialogAction
             fullScreen={Boolean(selectedAction.schema)}

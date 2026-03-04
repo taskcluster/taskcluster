@@ -92,11 +92,11 @@ func Indent(text, indent string) string {
 		return text
 	}
 	if text[len(text)-1:] == "\n" {
-		result := ""
+		var result strings.Builder
 		for j := range strings.SplitSeq(text[:len(text)-1], "\n") {
-			result += indent + j + "\n"
+			result.WriteString(indent + j + "\n")
 		}
-		return result
+		return result.String()
 	}
 	result := ""
 	for j := range strings.SplitSeq(strings.TrimRight(text, "\n"), "\n") {
@@ -183,11 +183,11 @@ func GoIdentifierFrom(name string, exported bool, blacklist map[string]bool) (id
 			return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '_'
 		},
 	) {
-		caseAdaptedWord := ""
+		var caseAdaptedWord strings.Builder
 		for j, subWord := range camelcase.Split(word) {
-			caseAdaptedWord += fixCase(subWord, i == 0 && j == 0 && !exported)
+			caseAdaptedWord.WriteString(fixCase(subWord, i == 0 && j == 0 && !exported))
 		}
-		identifier += caseAdaptedWord
+		identifier += caseAdaptedWord.String()
 	}
 
 	if strings.IndexFunc(

@@ -16,6 +16,8 @@ export const AUDIT_ENTRY_TYPE = Object.freeze({
   },
 });
 
+const SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
+
 const builder = new APIBuilder({
   title: 'Hooks Service',
   description: [
@@ -479,6 +481,9 @@ builder.declare({
     'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
     'provided as the `payload` property of the JSON-e context used to render the',
     'task template.',
+    '',
+    'Optionally, a `taskId` can be provided in the payload which the hook task',
+    'will use. It must be unique and follow the slugid format.',
   ].join('\n'),
 }, async function(req, res) {
   const hookGroupId = req.params.hookGroupId;
@@ -592,6 +597,9 @@ builder.declare({
     'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
     'provided as the `payload` property of the JSON-e context used to render the',
     'task template.',
+    '',
+    'Optionally, a `taskId` can be provided in the payload which the hook task',
+    'will use. It must be unique and follow the slugid format.',
   ].join('\n'),
 }, async function(req, res) {
   const payload = req.body;
@@ -636,8 +644,18 @@ const triggerHookCommon = async function({ req, res, hook, payload, clientId, fi
     });
   }
 
+  const options = {};
+  if (payload.taskId) {
+    if (!SLUGID_PATTERN.test(payload.taskId)) {
+      return res.reportError('InputError', 'Invalid taskId format: {{taskId}}', {
+        taskId: payload.taskId,
+      });
+    }
+    options.taskId = payload.taskId;
+  }
+
   try {
-    resp = await this.taskcreator.fire(hook, context);
+    resp = await this.taskcreator.fire(hook, context, options);
     if (!resp) {
       // hook did not produce a response, so return an empty object
       return res.reply({});

@@ -45,6 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.db.fns.delete_worker_pool(workerPoolId);
 
     await provider.setup();
+    provider.scanPrepare();
   });
 
   const defaultLaunchConfig = {
@@ -497,6 +498,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         capacity: 1,
         expires: taskcluster.fromNow('2 weeks'),
         state: Worker.states.RUNNING,
+        launchConfigId: 'lc1',
         ...overrides,
         providerData: { project, zone: 'us-east1-a', ...(overrides.providerData || {}) },
       });

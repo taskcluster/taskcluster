@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
-	"github.com/taskcluster/taskcluster/v88/tools/workerproto"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/graceful"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/graceful"
 )
 
 var (
@@ -98,6 +98,7 @@ func startProtocol() {
 
 	WorkerRunnerProtocol.AddCapability("error-report")
 	WorkerRunnerProtocol.AddCapability("log")
+	WorkerRunnerProtocol.AddCapability("shutdown")
 
 	WorkerRunnerProtocol.Start(true)
 }

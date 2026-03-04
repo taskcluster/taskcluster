@@ -18,6 +18,7 @@ data:
   SCHEMAS_BUCKET: '{{ if typeIs "<nil>" .Values.auth.schemas_bucket }}{{ else }}{{ if typeIs "string" .Values.auth.schemas_bucket }}{{ .Values.auth.schemas_bucket }}{{ else }}{{ .Values.auth.schemas_bucket | toJson }}{{ end }}{{ end }}'
   REFS_BUCKET: '{{ if typeIs "<nil>" .Values.auth.refs_bucket }}{{ else }}{{ if typeIs "string" .Values.auth.refs_bucket }}{{ .Values.auth.refs_bucket }}{{ else }}{{ .Values.auth.refs_bucket | toJson }}{{ end }}{{ end }}'
   LEVEL: '{{ if typeIs "<nil>" .Values.auth.level }}{{ else }}{{ if typeIs "string" .Values.auth.level }}{{ .Values.auth.level }}{{ else }}{{ .Values.auth.level | toJson }}{{ end }}{{ end }}'
+  PROMETHEUS_CONFIG: '{{ if typeIs "<nil>" .Values.prometheus }}{{ else }}{{ if typeIs "string" .Values.prometheus }}{{ .Values.prometheus }}{{ else }}{{ .Values.prometheus | toJson }}{{ end }}{{ end }}'
   FORCE_SSL: '{{ if typeIs "<nil>" .Values.forceSSL }}{{ else }}{{ if typeIs "string" .Values.forceSSL }}{{ .Values.forceSSL }}{{ else }}{{ .Values.forceSSL | toJson }}{{ end }}{{ end }}'
   TRUST_PROXY: '{{ if typeIs "<nil>" .Values.trustProxy }}{{ else }}{{ if typeIs "string" .Values.trustProxy }}{{ .Values.trustProxy }}{{ else }}{{ .Values.trustProxy | toJson }}{{ end }}{{ end }}'
   KEEP_ALIVE_TIMEOUT_SECONDS: '{{ if typeIs "<nil>" .Values.auth.keep_alive_timeout_seconds }}{{ else }}{{ if typeIs "string" .Values.auth.keep_alive_timeout_seconds }}{{ .Values.auth.keep_alive_timeout_seconds }}{{ else }}{{ .Values.auth.keep_alive_timeout_seconds | toJson }}{{ end }}{{ end }}'

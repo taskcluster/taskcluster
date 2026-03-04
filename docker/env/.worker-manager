@@ -11,7 +11,7 @@ TASKCLUSTER_ACCESS_TOKEN=j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA
 READ_DB_URL=postgresql://postgres@postgres:5432/taskcluster
 WRITE_DB_URL=postgresql://postgres@postgres:5432/taskcluster
 DB_CRYPTO_KEYS=[{"id":"dev-init","algo":"aes-256","key":"AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4="}]
-PORT=80
+PORT=8080
 NODE_ENV=development
 FORCE_SSL=false
 TRUST_PROXY=true

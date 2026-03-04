@@ -135,4 +135,141 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       stoppingCapacity: 1,
     });
   });
+
+  test('WorkerPoolStats tracks capacity by workerGroup', async function () {
+    const wps = new WorkerPoolStats('wp/id', {});
+
+    // Add workers in us-west-2
+    wps.updateFromWorker(new Worker({
+      capacity: 2,
+      state: Worker.states.REQUESTED,
+      workerGroup: 'us-west-2',
+      launchConfigId: 'lc-1',
+    }));
+    wps.updateFromWorker(new Worker({
+      capacity: 3,
+      state: Worker.states.RUNNING,
+      workerGroup: 'us-west-2',
+      launchConfigId: 'lc-1',
+    }));
+
+    // Add workers in us-east-1
+    wps.updateFromWorker(new Worker({
+      capacity: 1,
+      state: Worker.states.RUNNING,
+      workerGroup: 'us-east-1',
+      launchConfigId: 'lc-2',
+    }));
+    wps.updateFromWorker(new Worker({
+      capacity: 4,
+      state: Worker.states.STOPPING,
+      workerGroup: 'us-east-1',
+      launchConfigId: 'lc-2',
+    }));
+
+    // Verify pool-level stats
+    assert.equal(wps.existingCapacity, 6);
+    assert.equal(wps.requestedCapacity, 2);
+    assert.equal(wps.stoppingCapacity, 4);
+
+    // Verify workerGroup stats
+    const byWorkerGroup = wps.forProvisionByWorkerGroup();
+    assert.equal(byWorkerGroup.size, 2);
+
+    const usWest2 = byWorkerGroup.get('us-west-2');
+    assert.deepEqual(usWest2, {
+      existingCapacity: 5,
+      requestedCapacity: 2,
+      stoppingCapacity: 0,
+    });
+
+    const usEast1 = byWorkerGroup.get('us-east-1');
+    assert.deepEqual(usEast1, {
+      existingCapacity: 1,
+      requestedCapacity: 0,
+      stoppingCapacity: 4,
+    });
+  });
+
+  test('WorkerPoolStats workerGroup with quarantined workers', async function () {
+    const wps = new WorkerPoolStats('wp/id', {});
+
+    // Add a quarantined worker
+    wps.updateFromWorker(new Worker({
+      capacity: 5,
+      state: Worker.states.RUNNING,
+      workerGroup: 'us-west-2',
+      quarantineUntil: new Date(Date.now() + 3600000), // 1 hour from now
+    }));
+
+    // Add a non-quarantined worker in same region
+    wps.updateFromWorker(new Worker({
+      capacity: 3,
+      state: Worker.states.RUNNING,
+      workerGroup: 'us-west-2',
+    }));
+
+    // Pool-level: quarantined workers don't count toward existing capacity
+    assert.equal(wps.existingCapacity, 3);
+    assert.equal(wps.quarantinedCapacity, 5);
+
+    // workerGroup-level: same behavior
+    const byWorkerGroup = wps.forProvisionByWorkerGroup();
+    const usWest2 = byWorkerGroup.get('us-west-2');
+    assert.deepEqual(usWest2, {
+      existingCapacity: 3,
+      requestedCapacity: 0,
+      stoppingCapacity: 0,
+    });
+  });
+
+  suite('Worker.updateInstanceFields', function() {
+    test('preserves queue fields when undefined', function() {
+      const worker = Worker.fromApi({
+        workerPoolId: 'test/pool',
+        workerGroup: 'test-group',
+        workerId: 'test-worker',
+      });
+
+      // Set queue fields (as loaded from scanner)
+      worker.firstClaim = new Date('2025-01-01');
+      worker.lastDateActive = new Date('2025-01-02');
+      worker.quarantineUntil = new Date('2025-01-03');
+      worker.recentTasks = [{ taskId: 'task1' }];
+
+      // Simulate update result (no queue fields)
+      const updatedWorker = {
+        workerPoolId: 'test/pool',
+        workerGroup: 'test-group',
+        workerId: 'test-worker',
+        providerData: { updated: true }, // Modified field
+        // firstClaim, lastDateActive, etc. are undefined
+      };
+
+      worker.updateInstanceFields(updatedWorker);
+
+      // Verify queue fields preserved
+      assert.deepEqual(worker.firstClaim, new Date('2025-01-01'));
+      assert.deepEqual(worker.lastDateActive, new Date('2025-01-02'));
+      assert.deepEqual(worker.quarantineUntil, new Date('2025-01-03'));
+      assert.deepEqual(worker.recentTasks, [{ taskId: 'task1' }]);
+
+      // Verify workers field updated
+      assert.deepEqual(worker.providerData, { updated: true });
+    });
+
+    test('allows explicit null for queue fields', function() {
+      const worker = Worker.fromApi({});
+      worker.firstClaim = new Date('2025-01-01');
+
+      const updatedWorker = {
+        firstClaim: null, // Explicitly set to null
+      };
+
+      worker.updateInstanceFields(updatedWorker);
+
+      // Null is preserved (not treated as undefined)
+      assert.strictEqual(worker.firstClaim, null);
+    });
+  });
 });

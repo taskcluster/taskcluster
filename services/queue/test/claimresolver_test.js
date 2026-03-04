@@ -41,6 +41,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     monitor = await helper.load('monitor');
   });
 
+  const checkMetricExists = async (metricName, labelName, labelValue) => {
+    const metrics = await monitor.manager._prometheus.metricsJson();
+    const metric = metrics.find(({ name }) => name === metricName);
+    assert(metric, `${metricName} metric should exist`);
+    const labelEntry = metric.values.find(v => v.labels[labelName] === labelValue);
+    assert(labelEntry, `${metricName} should have ${labelName}=${labelValue} label`);
+    assert(labelEntry.value >= 1, `${metricName} counter should be incremented for ${labelValue}`);
+  };
+
   test('createTask , claimWork, claim expires, retried', async () => {
     let taskId = slugid.v4();
     let task = makeTask(1);
@@ -111,6 +120,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         });
       },
       100, 250);
+
+    await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'claim-expired');
 
     await helper.stopPollingService();
   });

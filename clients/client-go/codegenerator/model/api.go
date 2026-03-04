@@ -9,7 +9,7 @@ import (
 
 	"slices"
 
-	"github.com/taskcluster/taskcluster/v88/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go/text"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -33,16 +33,17 @@ func (api *API) Name() string {
 }
 
 func (api *API) String() string {
-	result := fmt.Sprintf(
+	var result strings.Builder
+	fmt.Fprintf(&result,
 		"Schema      = '%v'\n"+
 			"Title       = '%v'\n"+
 			"Description = '%v'\n",
 		api.Schema, api.Title, api.Description,
 	)
 	for i, entry := range api.Entries {
-		result += fmt.Sprintf("Entry %-6v=\n%v", i, entry.String())
+		fmt.Fprintf(&result, "Entry %-6v=\n%v", i, entry.String())
 	}
-	return result
+	return result.String()
 }
 
 func (api *API) postPopulate(apiDef *APIDefinition) {
@@ -124,7 +125,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type ` + api.Name() + ` tcclient.Client
@@ -174,13 +175,15 @@ type ` + api.Name() + ` tcclient.Client
 			maxLength = len(j[0])
 		}
 	}
+	var loopContent strings.Builder
 	for _, j := range commentedSection {
 		if len(j[1]) > 0 {
-			content += j[0] + strings.Repeat(" ", maxLength-len(j[0])+3) + j[1] + "\n"
+			loopContent.WriteString(j[0] + strings.Repeat(" ", maxLength-len(j[0])+3) + j[1] + "\n")
 		} else {
-			content += j[0] + "\n"
+			loopContent.WriteString(j[0] + "\n")
 		}
 	}
+	content += loopContent.String()
 
 	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
@@ -223,9 +226,11 @@ func NewFromEnv() *` + api.Name() + ` {
 }
 
 `
+	var entriesContent strings.Builder
 	for _, entry := range api.Entries {
-		content += entry.generateAPICode(apiName)
+		entriesContent.WriteString(entry.generateAPICode(apiName))
 	}
+	content += entriesContent.String()
 	return content
 }
 
@@ -347,10 +352,10 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	content += queryCode
 	content += "\tcd := tcclient.Client(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	if entry.OutputURL != "" {
-		content += "\tresponseObject, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.QueryEscape("), ">", ") + \"") + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), " + queryExpr + ")\n"
+		content += "\tresponseObject, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.PathEscape("), ">", ") + \"") + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), " + queryExpr + ")\n"
 		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), err\n"
 	} else {
-		content += "\t_, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.QueryEscape("), ">", ") + \"") + "\", nil, " + queryExpr + ")\n"
+		content += "\t_, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.PathEscape("), ">", ") + \"") + "\", nil, " + queryExpr + ")\n"
 		content += "\treturn err\n"
 	}
 	content += "}\n"
@@ -385,7 +390,7 @@ func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.Name() + ") " + entry.MethodName + "_SignedURL(" + inputParams + ") (*url.URL, error) {\n"
 	content += queryCode
 	content += "\tcd := tcclient.Client(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
-	content += "\treturn (&cd).SignedURL(\"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.QueryEscape("), ">", ") + \"") + "\", " + queryExpr + ", duration)\n"
+	content += "\treturn (&cd).SignedURL(\"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.PathEscape("), ">", ") + \"") + "\", " + queryExpr + ", duration)\n"
 	content += "}\n"
 	content += "\n"
 	// can remove any code that added an empty string to another string
@@ -434,14 +439,14 @@ func (allOf *Conjunction) String() string {
 	case 1:
 		return allOf.AllOf[0].String()
 	}
-	var desc string
+	var desc strings.Builder
 	for _, exp := range allOf.AllOf {
 		x := text.Indent(exp.String(), "  ")
 		if len(x) >= 2 {
-			desc += "\n" + "* " + x[2:]
+			desc.WriteString("\n" + "* " + x[2:])
 		}
 	}
-	return "All of:" + desc
+	return "All of:" + desc.String()
 }
 
 func (anyOf *Disjunction) String() string {
@@ -451,14 +456,14 @@ func (anyOf *Disjunction) String() string {
 	if len(anyOf.AnyOf) == 1 {
 		return anyOf.AnyOf[0].String()
 	}
-	var desc string
+	var desc strings.Builder
 	for _, exp := range anyOf.AnyOf {
 		x := text.Indent(exp.String(), "  ")
 		if len(x) >= 2 {
-			desc += "\n" + "- " + x[2:]
+			desc.WriteString("\n" + "- " + x[2:])
 		}
 	}
-	return "Any of:" + desc
+	return "Any of:" + desc.String()
 }
 
 func (forEachIn *ForAll) String() string {

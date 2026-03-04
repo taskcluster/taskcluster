@@ -9,6 +9,21 @@ import { Worker, WorkerPoolError } from '../data.js';
 /** @typedef {import('../data.js').WorkerPool} WorkerPool */
 /** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
 
+/** @typedef {{
+*   monitor: object,
+*   notify: object,
+*   rootUrl: string,
+*   providerId: string,
+*   providerType: string,
+*   db: import('@taskcluster/lib-postgres').Database,
+*   estimator: import('../estimator.js').Estimator,
+*   Worker: import('../data.js').Worker,
+*   WorkerPoolError: import('../data.js').WorkerPoolError,
+*   validator: Function,
+*   publisher: import('@taskcluster/lib-pulse').PulsePublisher,
+*   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
+* }} ProviderConfigOptions */
+
 /**
  * The parent class for all providers.
  *
@@ -18,20 +33,7 @@ export class Provider {
   setupFailed = false;
 
   /**
-   * @param {{
-   *   monitor: object,
-   *   notify: object,
-   *   rootUrl: string,
-   *   providerId: string,
-   *   providerType: string,
-   *   db: import('@taskcluster/lib-postgres').Database,
-   *   estimator: import('../estimator.js').Estimator,
-   *   Worker: import('../data.js').Worker,
-   *   WorkerPoolError: import('../data.js').WorkerPoolError,
-   *   validator: Function,
-   *   publisher: import('@taskcluster/lib-pulse').PulsePublisher,
-   *   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
-   * }} opts
+   * @param {ProviderConfigOptions} opts
    */
   constructor({
     providerId,
@@ -190,10 +192,11 @@ export class Provider {
    * @param {import('../data.js').Worker} options.worker
    */
   async onWorkerRunning({ worker }) {
-    return this._onWorkerEvent({
-      worker,
-      event: 'workerRunning',
-    });
+    const created = worker.created?.getTime?.();
+    const extraLog = {
+      registrationDuration: Number.isFinite(created) ? (Date.now() - created) / 1000 : null,
+    };
+    return this._onWorkerEvent({ worker, event: 'workerRunning', extraLog });
   }
 
   /**
@@ -201,10 +204,15 @@ export class Provider {
    * @param {import('../data.js').Worker} options.worker
    */
   async onWorkerStopped({ worker }) {
-    return this._onWorkerEvent({
-      worker,
-      event: 'workerStopped',
-    });
+    const now = Date.now();
+    const created = worker.created?.getTime?.();
+    const lifecycle = Provider.getWorkerManagerData(worker);
+    const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    const extraLog = {
+      workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
+      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
+    };
+    return this._onWorkerEvent({ worker, event: 'workerStopped', extraLog });
   }
 
   /**
@@ -213,11 +221,17 @@ export class Provider {
    * @param {String} options.reason
    */
   async onWorkerRemoved({ worker, reason = 'unknown' }) {
+    const now = Date.now();
+    const created = worker.created?.getTime?.();
+    const lifecycle = Provider.getWorkerManagerData(worker);
+    const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    const extraLog = {
+      reason,
+      workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
+      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
+    };
     return this._onWorkerEvent({
-      worker,
-      event: 'workerRemoved',
-      extraLog: { reason },
-      extraPublish: { reason },
+      worker, event: 'workerRemoved', extraLog, extraPublish: { reason },
     });
   }
 
@@ -249,6 +263,96 @@ export class Provider {
       launchConfigId: worker.launchConfigId,
       ...extraPublish,
     });
+
+    await this._recordWorkerMetrics({ worker, event });
+  }
+
+  /**
+   * Tracking how many seconds it took for worker to become alive (register)
+   * and total duration of it running
+   *
+   * @param {Object} options
+   * @param {import('../data.js').Worker} options.worker
+   * @param {String} options.event
+   */
+  async _recordWorkerMetrics({ worker, event }) {
+    if (event === 'workerRunning') {
+      await this._recordWorkerRegistrationDuration(worker);
+    } else if (event === 'workerRemoved' || event === 'workerStopped') {
+      await this._recordWorkerStopped(worker);
+    }
+  }
+
+  /** @param {import('../data.js').Worker} worker */
+  async _recordWorkerRegistrationDuration(worker) {
+    const lifecycle = Provider.getWorkerManagerData(worker);
+    if (lifecycle?.registeredAt) {
+      return; // already recorded
+    }
+
+    const created = worker.created?.getTime?.();
+    if (!Number.isFinite(created)) {
+      return;
+    }
+
+    const now = Date.now();
+    const durationSeconds = (now - created) / 1000;
+    if (durationSeconds >= 0) {
+      this.monitor.metric.workerRegistrationDuration(durationSeconds, {
+        workerPoolId: worker.workerPoolId,
+        providerId: this.providerId,
+        workerGroup: worker.workerGroup,
+      });
+    }
+
+    await worker.update(this.db, worker => {
+      const lifecycleData = Provider.ensureWorkerManagerData(worker);
+      if (!lifecycleData.registeredAt) {
+        lifecycleData.registeredAt = new Date(now).toJSON();
+      }
+    });
+  }
+
+  /**
+   * Track worker lifetime
+   *
+   * @param {import('../data.js').Worker} worker
+   **/
+  async _recordWorkerStopped(worker) {
+    const lifecycle = Provider.getWorkerManagerData(worker);
+    if (lifecycle?.stoppedAt) {
+      return; // already recorded
+    }
+
+    const now = Date.now();
+    const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    const currentState = worker.state; // Capture state before it changes
+
+    await worker.update(this.db, worker => {
+      const lifecycleData = Provider.ensureWorkerManagerData(worker);
+      if (!lifecycleData.stoppedAt) {
+        lifecycleData.stoppedAt = new Date(now).toJSON();
+        lifecycleData.previousState = currentState;
+      }
+    });
+
+    if (Number.isFinite(registeredAt)) {
+      const durationSeconds = (now - registeredAt) / 1000;
+      if (durationSeconds >= 0) {
+        this.monitor.metric.workerLifetime(durationSeconds, {
+          workerPoolId: worker.workerPoolId,
+          providerId: this.providerId,
+          workerGroup: worker.workerGroup,
+        });
+      }
+    } else if (currentState === Worker.states.REQUESTED) {
+      // Worker never made it to RUNNING state = registration failure
+      this.monitor.metric.workerRegistrationFailure(1, {
+        workerPoolId: worker.workerPoolId,
+        providerId: this.providerId,
+        workerGroup: worker.workerGroup,
+      });
+    }
   }
 
   /**
@@ -276,25 +380,26 @@ export class Provider {
     const lastActiveAfter = Date.now() - queueInactivityTimeout;
     const isOlderThanTimeout = (date) => date?.getTime() < lastActiveAfter;
 
-    let reason = null;
-    let isZombie = false;
-
-    if (!worker.firstClaim && isOlderThanTimeout(worker.created)) {
-      isZombie = true;
-      reason = `worker never claimed work, created=${worker.created}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`;
+    // undefined means fields are missing (not fetched from db), null means legitimately empty
+    if (worker.firstClaim === undefined || worker.lastDateActive === undefined) {
+      return { reason: 'queue fields not fetched from database', isZombie: false };
     }
 
-    if (!worker.lastDateActive && isOlderThanTimeout(worker.firstClaim)) {
-      isZombie = true;
-      reason = `worker never reclaimed work, firstClaim=${worker.firstClaim}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`;
+    if (worker.firstClaim === null && isOlderThanTimeout(worker.created)) {
+      return {
+        isZombie: true,
+        reason: `worker never claimed work, created=${worker.created}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`,
+      };
     }
 
-    if (isOlderThanTimeout(worker.lastDateActive)) {
-      isZombie = true;
-      reason = `worker inactive, lastDateActive=${worker.lastDateActive}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`;
+    if (worker.lastDateActive !== null && isOlderThanTimeout(worker.lastDateActive)) {
+      return {
+        isZombie: true,
+        reason: `worker inactive, lastDateActive=${worker.lastDateActive}, queueInactivityTimeout=${queueInactivityTimeout / 1000}s`,
+      };
     }
 
-    return { reason, isZombie };
+    return { isZombie: false, reason: 'Not enough data' };
   }
 
   /**
@@ -335,7 +440,7 @@ export class Provider {
    * @param {String} options.kind
    * @param {String} options.title
    * @param {String} options.description
-   * @param {{ workerId?:string, workerGroup?:string } &object} options.extra - extra information about the error
+   * @param {{ workerId?:string, workerGroup?:string } & Record<string, any>} options.extra - extra info about the error
    * @param {String|null} options.launchConfigId
    * @returns {Promise<import('../data.js').WorkerPoolError>}
    */
@@ -441,6 +546,36 @@ export class Provider {
 
   static calcSeenTotal(seen = {}) {
     return Object.values(seen).reduce((sum, seen) => sum + seen, 0);
+  }
+
+  /** @param {import('../data.js').Worker} worker */
+  static ensureWorkerManagerData(worker) {
+    worker.providerData = worker.providerData || {};
+    worker.providerData.workerManager = worker.providerData.workerManager || {};
+    return worker.providerData.workerManager;
+  }
+
+  /** @param {import('../data.js').Worker} worker */
+  static getWorkerManagerData(worker) {
+    return worker.providerData?.workerManager;
+  }
+
+  /** @param {number|string|Date|null} value */
+  static timestampToMs(value) {
+    if (!value) {
+      return null;
+    }
+    if (value instanceof Date) {
+      return value.getTime();
+    }
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const parsed = Date.parse(value);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    return null;
   }
 }
 

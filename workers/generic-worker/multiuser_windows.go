@@ -14,12 +14,13 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/interactive"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v88/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/interactive"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
@@ -69,6 +70,7 @@ func (task *TaskRun) generateCommand(index int) error {
 	commandName := fmt.Sprintf("command_%06d", index)
 	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
+	task.pd.HideCmdWindow = task.Payload.Features.HideCmdWindow
 	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, task.pd)
 	if err != nil {
 		return err
@@ -528,9 +530,22 @@ func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err e
 }
 
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
+	// Wait for the User Profile Service to be running before any profile operations.
+	// On first boot after sysprep, ProfSvc may not be initialized yet.
+	// See: https://github.com/taskcluster/taskcluster/issues/8083
+	err := gwruntime.WaitForProfileService(5 * time.Minute)
+	if err != nil {
+		panic(err)
+	}
+
+	// Create user profile before loading it to prevent temporary profile creation
+	err = nextTaskUser.CreateUserProfile()
+	if err != nil {
+		panic(err)
+	}
+
 	// set APPDATA
 	var loginInfo *process.LoginInfo
-	var err error
 	loginInfo, err = process.NewLoginInfo(nextTaskUser.Name, nextTaskUser.Password)
 	if err != nil {
 		panic(err)

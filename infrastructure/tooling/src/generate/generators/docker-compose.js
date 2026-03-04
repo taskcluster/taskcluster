@@ -14,19 +14,19 @@ const ENV_FILE_PATH = './docker/env/';
 const ports = {
   taskcluster: ['80:80'],
 
-  auth: ['3011:80'],
-  github: ['3012:80'],
-  hooks: ['3013:80'],
-  index: ['3014:80'],
-  notify: ['3015:80'],
-  object: ['3016:80'],
-  'purge-cache': ['3017:80'],
-  queue: ['3018:80'],
-  secrets: ['3019:80'],
-  'worker-manager': ['3020:80'],
+  auth: ['3011:8080'],
+  github: ['3012:8080'],
+  hooks: ['3013:8080'],
+  index: ['3014:8080'],
+  notify: ['3015:8080'],
+  object: ['3016:8080'],
+  'purge-cache': ['3017:8080'],
+  queue: ['3018:8080'],
+  secrets: ['3019:8080'],
+  'worker-manager': ['3020:8080'],
   'web-server': ['3050:3050'],
-  ui: ['3022:80'],
-  references: ['3023:80'],
+  ui: ['3022:8080'],
+  references: ['3023:8080'],
 };
 
 const servicePorts = (service) => (ports[service] || []);
@@ -107,7 +107,7 @@ const defaultValues = {
   EMAIL_SOURCE_ADDRESS: 'root@local',
 
   // Object
-  BACKENDS: '{"everything":{"backendType":"aws","accessKeyId":"minioadmin","secretAccessKey":"miniopassword","bucket":"public-bucket","signGetUrls":"false","s3ForcePathStyle":true,"endpoint":"http://taskcluster/"}}',
+  BACKENDS: '{"everything":{"backendType":"aws","accessKeyId":"localstackadmin","secretAccessKey":"localstackpassword","bucket":"public-bucket","signGetUrls":"false","s3ForcePathStyle":true,"endpoint":"http://taskcluster/"}}',
   BACKEND_MAP: '[{"backendId":"everything","when":"all"}]',
 
   // Queue
@@ -115,8 +115,8 @@ const defaultValues = {
   PRIVATE_ARTIFACT_BUCKET: 'private-bucket',
   ARTIFACT_REGION: 'local',
 
-  AWS_ACCESS_KEY_ID: 'minioadmin',
-  AWS_SECRET_ACCESS_KEY: 'miniopassword',
+  AWS_ACCESS_KEY_ID: 'localstackadmin',
+  AWS_SECRET_ACCESS_KEY: 'localstackpassword',
   AWS_FORCE_PATH_STYLE: 'true',
   AWS_SKIP_CORS_CONFIGURATION: 'true',
   AWS_ENDPOINT: 'http://taskcluster/',
@@ -208,7 +208,7 @@ tasks.push({
 
         switch (cfg.var) {
           case 'PORT':
-            value = 80;
+            value = 8080;
             break;
 
           case 'TASKCLUSTER_CLIENT_ID':
@@ -277,7 +277,7 @@ tasks.push({
       },
       services: {
         rabbitmq: serviceDefinition('rabbitmq', {
-          image: 'rabbitmq:3.12.1-management',
+          image: 'rabbitmq:4.2.2-management',
           healthcheck: healthcheck('rabbitmq-diagnostics ping'),
           ports: [
             '5672:5672',
@@ -318,38 +318,38 @@ tasks.push({
           },
         }),
         s3: serviceDefinition('s3', {
-          image: 'minio/minio:RELEASE.2023-07-11T21-29-34Z',
-          command: 'server /data --console-address :9001',
-          ports: ['3090:9000', '3091:9001'],
+          image: 'localstack/localstack:4.12.0',
+          ports: ['3090:4566'],
           volumes: [
-            './docker/buckets:/data',
+            './docker/buckets:/var/lib/localstack',
           ],
           environment: {
-            MINIO_ROOT_USER: 'minioadmin',
-            MINIO_ROOT_PASSWORD: 'miniopassword',
+            SERVICES: 's3',
+            AWS_ACCESS_KEY_ID: 'localstackadmin',
+            AWS_SECRET_ACCESS_KEY: 'localstackpassword',
           },
-          healthcheck: healthcheck('curl -I http://localhost:9000/minio/health/cluster'),
+          healthcheck: healthcheck('curl -I http://localhost:4566/_localstack/health'),
         }),
         s3_init_buckets: serviceDefinition('s3_init_buckets', {
-          image: 'minio/mc:RELEASE.2023-07-11T23-30-44Z',
+          image: 'amazon/aws-cli:2.33.8',
           depends_on: {
             s3: {
               condition: 'service_healthy',
             },
           },
-          entrypoint: [
-            '/bin/sh -c "',
-            '/usr/bin/mc config host rm local;',
-            '/usr/bin/mc config host add --quiet --api s3v4 local http://s3:9000 minioadmin miniopassword;',
-            '(/usr/bin/mc ls local/public-bucket/ || /usr/bin/mc mb --quiet local/public-bucket/);',
-            '(/usr/bin/mc ls local/private-bucket/ || /usr/bin/mc mb --quiet local/private-bucket/);',
-            '/usr/bin/mc anonymous set public local/public-bucket;',
-            '"',
-          ].join('\n'),
+          entrypoint: '/bin/sh',
+          command: [
+            '-c',
+            [
+              'aws --endpoint-url=http://s3:4566 s3 mb s3://public-bucket || true',
+              'aws --endpoint-url=http://s3:4566 s3 mb s3://private-bucket || true',
+              'aws --endpoint-url=http://s3:4566 s3api put-bucket-acl --bucket public-bucket --acl public-read',
+            ].join('\n'),
+          ],
           environment: {
-            MINIO_ENDPOINT: 'http://s3:9000',
-            MINIO_ROOT_USER: 'minioadmin',
-            MINIO_ROOT_PASSWORD: 'miniopassword',
+            AWS_ACCESS_KEY_ID: 'localstackadmin',
+            AWS_SECRET_ACCESS_KEY: 'localstackpassword',
+            AWS_DEFAULT_REGION: 'us-east-1',
           },
         }),
         prometheus: serviceDefinition('prometheus', {
@@ -373,7 +373,7 @@ tasks.push({
           },
         }),
         taskcluster: serviceDefinition('taskcluster', {
-          image: 'nginx:1.21.6',
+          image: 'nginx:1.29.4',
           depends_on: ['ui', 'web-server-web'],
           volumes: [
             './docker/nginx.conf:/etc/nginx/nginx.conf',
@@ -381,7 +381,7 @@ tasks.push({
           healthcheck: healthcheck('curl -I http://localhost/'),
         }),
         tc_admin_init: serviceDefinition('tc_admin_init', {
-          image: 'taskcluster/tc-admin:5.0.4',
+          image: 'taskcluster/tc-admin:5.1.1',
           volumes: ['./docker/tc-admin:/app'],
           working_dir: '/app',
           'x-info': 'This script provisions taskcluster configuration. See docker/tc-admin for details',
@@ -612,17 +612,17 @@ http {
     server_name _;
 
     location / {
-      set $pass http://ui;
+      set $pass http://ui:${serviceHostPort('ui')};
       proxy_pass $pass;
       ${extraDirectives}
     }
     location /references {
-      set $pass http://references;
+      set $pass http://references:${serviceHostPort('references')};
       proxy_pass $pass;
       ${extraDirectives}
     }
     location /schemas {
-      set $pass http://references;
+      set $pass http://references:${serviceHostPort('references')};
       proxy_pass $pass;
       ${extraDirectives}
     }
@@ -654,12 +654,12 @@ http {
       proxy_set_header Connection "";
       chunked_transfer_encoding off;
 
-      set $pass http://s3:9000;
+      set $pass http://s3:4566;
       proxy_pass $pass;
     }
 ${SERVICES.filter(name => !!ports[name]).map(name => `
     location /api/${name} {
-      set $pass http://${name}-web;
+      set $pass http://${name}-web:${serviceHostPort(name)};
       proxy_pass $pass;
       ${extraDirectives}
     }`).join('\n')}

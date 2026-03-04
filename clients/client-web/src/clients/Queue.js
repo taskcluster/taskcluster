@@ -26,6 +26,8 @@ export default class Queue extends Client {
     this.scheduleTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"scheduleTask","output":true,"query":[],"route":"/task/<taskId>/schedule","scopes":{"AnyOf":["queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>","queue:schedule-task-in-project:<projectId>",{"AllOf":["queue:schedule-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.rerunTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"rerunTask","output":true,"query":[],"route":"/task/<taskId>/rerun","scopes":{"AnyOf":["queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>","queue:rerun-task-in-project:<projectId>",{"AllOf":["queue:rerun-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.cancelTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"cancelTask","output":true,"query":[],"route":"/task/<taskId>/cancel","scopes":{"AnyOf":["queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>","queue:cancel-task-in-project:<projectId>",{"AllOf":["queue:cancel-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
+    this.changeTaskPriority.entry = {"args":["taskId"],"category":"Tasks","input":true,"method":"post","name":"changeTaskPriority","output":true,"query":[],"route":"/task/<taskId>/priority","scopes":{"AnyOf":["queue:change-task-priority:<taskId>","queue:change-task-priority-in-queue:<taskQueueId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
+    this.changeTaskGroupPriority.entry = {"args":["taskGroupId"],"category":"Task-Groups","input":true,"method":"post","name":"changeTaskGroupPriority","output":true,"query":[],"route":"/task-group/<taskGroupId>/priority","scopes":"queue:change-task-group-priority:<schedulerId>/<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
     this.claimWork.entry = {"args":["taskQueueId"],"category":"Worker Interface","input":true,"method":"post","name":"claimWork","output":true,"query":[],"route":"/claim-work/<taskQueueId>","scopes":{"AllOf":["queue:claim-work:<taskQueueId>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
     this.claimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"claimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/claim","scopes":{"AllOf":["queue:claim-task:<provisionerId>/<workerType>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"deprecated","type":"function"}; // eslint-disable-line
     this.reclaimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reclaimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/reclaim","scopes":"queue:reclaim-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
@@ -287,6 +289,27 @@ export default class Queue extends Client {
     return this.request(this.cancelTask.entry, args);
   }
   /* eslint-disable max-len */
+  // This method updates the priority of a single unresolved task.
+  // * Claimed or running tasks keep their current run priority until they are retried.
+  // * Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.
+  /* eslint-enable max-len */
+  changeTaskPriority(...args) {
+    this.validate(this.changeTaskPriority.entry, args);
+
+    return this.request(this.changeTaskPriority.entry, args);
+  }
+  /* eslint-disable max-len */
+  // This method applies a new priority to unresolved tasks within a task group.
+  // * Updates run in bounded batches to avoid long locks.
+  // * Claimed or running tasks keep their current run priority until they are retried.
+  // * Emits `taskGroupPriorityChanged` summary event at the end.
+  /* eslint-enable max-len */
+  changeTaskGroupPriority(...args) {
+    this.validate(this.changeTaskGroupPriority.entry, args);
+
+    return this.request(this.changeTaskGroupPriority.entry, args);
+  }
+  /* eslint-disable max-len */
   // Claim pending task(s) for the given task queue.
   // If any work is available (even if fewer than the requested number of
   // tasks, this will return immediately. Otherwise, it will block for tens of
@@ -458,13 +481,44 @@ export default class Queue extends Client {
   // browser, without using Taskcluster credentials, include a scope in the
   // `anonymous` role.  The convention is to include
   // `queue:get-artifact:public/*`.
-  // **API Clients**, this method will redirect you to the artifact, if it is
-  // stored externally. Either way, the response may not be JSON. So API
-  // client users might want to generate a signed URL for this end-point and
-  // use that URL with a normal HTTP client.
+  // **Response**: the HTTP response to this method is a 303 redirect to the
+  // URL from which the artifact can be downloaded.  The body of that response
+  // contains the data described in the output schema, contianing the same URL.
+  // Callers are encouraged to use whichever method of gathering the URL is
+  // most convenient.  Standard HTTP clients will follow the redirect, while
+  // API client libraries will return the JSON body.
+  // In order to download an artifact the following must be done:
+  // 1. Obtain queue url.  Building a signed url with a taskcluster client is
+  // recommended
+  // 1. Make a GET request which does not follow redirects
+  // 1. In all cases, if specified, the
+  // x-taskcluster-location-{content,transfer}-{sha256,length} values must be
+  // validated to be equal to the Content-Length and Sha256 checksum of the
+  // final artifact downloaded. as well as any intermediate redirects
+  // 1. If this response is a 500-series error, retry using an exponential
+  // backoff.  No more than 5 retries should be attempted
+  // 1. If this response is a 400-series error, treat it appropriately for
+  // your context.  This might be an error in responding to this request or
+  // an Error storage type body.  This request should not be retried.
+  // 1. If this response is a 200-series response, the response body is the artifact.
+  // If the x-taskcluster-location-{content,transfer}-{sha256,length} and
+  // x-taskcluster-location-content-encoding are specified, they should match
+  // this response body
+  // 1. If the response type is a 300-series redirect, the artifact will be at the
+  // location specified by the `Location` header.  There are multiple artifact storage
+  // types which use a 300-series redirect.
+  // 1. For all redirects followed, the user must verify that the content-sha256, content-length,
+  // transfer-sha256, transfer-length and content-encoding match every further request.  The final
+  // artifact must also be validated against the values specified in the original queue response
+  // 1. Caching of requests with an x-taskcluster-artifact-storage-type value of `reference`
+  // must not occur
+  // **Headers**
+  // The following important headers are set on the response to this method:
+  // * location: the url of the artifact if a redirect is to be performed
+  // * x-taskcluster-artifact-storage-type: the storage type.  Example: s3
   // **Remark**, this end-point is slightly slower than
   // `queue.getArtifact`, so consider that if you already know the `runId` of
-  // the latest run. Otherwise, just us the most convenient API end-point.
+  // the latest run. Otherwise, just use the most convenient API end-point.
   /* eslint-enable max-len */
   getLatestArtifact(...args) {
     this.validate(this.getLatestArtifact.entry, args);

@@ -29,7 +29,7 @@ suiteSetup(async function() {
   load.inject('process', 'test');
 });
 
-testing.withMonitor(helper);
+testing.withMonitor(helper, { withPrometheus: true });
 
 // set up the testing secrets
 export const secrets = new testing.Secrets({
@@ -444,6 +444,7 @@ export const resetTables = (mock, skipping) => {
       'tasks',
       'task_groups',
       'task_dependencies',
+      'queue_pending_tasks',
       'queue_workers',
       'task_queues',
     ] });

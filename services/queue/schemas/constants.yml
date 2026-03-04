@@ -175,3 +175,14 @@ action-url-description: |
   | worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |
 
   _Note: The request needs to be signed with the user's Taskcluster credentials._
+
+
+task-priorities:
+  - highest
+  - very-high
+  - high
+  - medium
+  - low
+  - very-low
+  - lowest
+  - normal

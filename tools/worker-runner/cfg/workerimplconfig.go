@@ -42,7 +42,7 @@ func (pc *WorkerImplementationConfig) UnmarshalYAML(node *yaml.Node) error {
 // lowercased version of the field name.
 func (pc *WorkerImplementationConfig) Unpack(out any) error {
 	outval := reflect.ValueOf(out)
-	if outval.Kind() != reflect.Ptr || outval.IsNil() {
+	if outval.Kind() != reflect.Pointer || outval.IsNil() {
 		return fmt.Errorf("expected a pointer, got %s", outval.Kind())
 	}
 	destval := reflect.Indirect(outval)

@@ -6,16 +6,17 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
 )
 
 var (
@@ -40,12 +41,17 @@ func createDataArtifact(
 	contentType string,
 	contentEncoding string,
 ) artifacts.TaskArtifact {
+	var contentLength int64
+	if info, err := os.Stat(contentPath); err == nil {
+		contentLength = info.Size()
+	}
 	if config.CreateObjectArtifacts {
 		// note that contentEncoding is currently ignored for object artifacts
 		return &artifacts.ObjectArtifact{
-			BaseArtifact: base,
-			Path:         path,
-			ContentType:  contentType,
+			BaseArtifact:  base,
+			Path:          path,
+			ContentType:   contentType,
+			ContentLength: contentLength,
 		}
 	}
 
@@ -55,6 +61,7 @@ func createDataArtifact(
 		ContentPath:     contentPath,
 		ContentType:     contentType,
 		ContentEncoding: contentEncoding,
+		ContentLength:   contentLength,
 	}
 }
 
@@ -84,56 +91,16 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 	}
 	par := tcqueue.PostArtifactRequest(json.RawMessage(payload))
 	task.queueMux.RLock()
-	parsp, err := task.Queue.CreateArtifact(
+	queue := task.Queue
+	task.queueMux.RUnlock()
+	parsp, err := queue.CreateArtifact(
 		task.TaskID,
 		strconv.Itoa(int(task.RunID)),
 		artifact.Base().Name,
 		&par,
 	)
-	task.queueMux.RUnlock()
 	if err != nil {
-		switch t := err.(type) {
-		case *tcclient.APICallException:
-			switch rootCause := t.RootCause.(type) {
-			case httpbackoff.BadHttpResponseCode:
-				if rootCause.HttpResponseCode/100 == 5 {
-					return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
-				}
-				// was artifact already uploaded ( => malformed payload)?
-				if rootCause.HttpResponseCode == 409 {
-					fullError := fmt.Errorf(
-						"there was a conflict uploading artifact %v - this suggests artifact %v was already uploaded to this task with different content earlier on in this task.\n"+
-							"Check the artifacts section of the task payload at %v\n"+
-							"%v",
-						artifact.Base().Name,
-						artifact.Base().Name,
-						tcurls.API(config.RootURL, "queue", "v1", "task/"+task.TaskID),
-						rootCause,
-					)
-					return MalformedPayloadError(fullError)
-				}
-				// was task cancelled or deadline exceeded?
-				task.StatusManager.UpdateStatus()
-				status := task.StatusManager.LastKnownStatus()
-				if status == deadlineExceeded || status == cancelled {
-					return nil
-				}
-				// assume a problem with the request == worker bug
-				panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
-			case *url.Error:
-				switch subCause := rootCause.Err.(type) {
-				case *net.OpError:
-					log.Printf("Got *net.OpError - probably got no network at the moment: %#v", *subCause)
-					return nil
-				default:
-					panic(fmt.Errorf("WORKER EXCEPTION due to unexpected *url.Error when requesting url from queue to upload artifact to: %#v", subCause))
-				}
-			default:
-				panic(fmt.Errorf("WORKER EXCEPTION due to *tcclient.APICallException error when requesting url from queue to upload artifact to. Root cause: %#v", rootCause))
-			}
-		default:
-			panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when requesting url from queue to upload artifact to: %#v", t))
-		}
+		return task.classifyCreateArtifactError(artifact, payload, err)
 	}
 	// unmarshal response into object
 	resp := artifact.ResponseObject()
@@ -147,13 +114,58 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 		return ResourceUnavailable(e)
 	}
 
-	e = artifact.FinishArtifact(resp, task.Queue, task.TaskID, strconv.Itoa(int(task.RunID)), artifact.Base().Name)
+	e = artifact.FinishArtifact(resp, queue, task.TaskID, strconv.Itoa(int(task.RunID)), artifact.Base().Name)
 	if e != nil {
 		task.Errorf("Error finishing artifact: %v", e)
 		return ResourceUnavailable(e)
 	}
 
 	return nil
+}
+
+func (task *TaskRun) classifyCreateArtifactError(artifact artifacts.TaskArtifact, payload []byte, err error) *CommandExecutionError {
+	switch t := err.(type) {
+	case *tcclient.APICallException:
+		switch rootCause := t.RootCause.(type) {
+		case httpbackoff.BadHttpResponseCode:
+			if rootCause.HttpResponseCode/100 == 5 {
+				return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
+			}
+			// was artifact already uploaded ( => malformed payload)?
+			if rootCause.HttpResponseCode == 409 {
+				fullError := fmt.Errorf(
+					"there was a conflict uploading artifact %v - this suggests artifact %v was already uploaded to this task with different content earlier on in this task.\n"+
+						"Check the artifacts section of the task payload at %v\n"+
+						"%v",
+					artifact.Base().Name,
+					artifact.Base().Name,
+					tcurls.API(config.RootURL, "queue", "v1", "task/"+task.TaskID),
+					rootCause,
+				)
+				return MalformedPayloadError(fullError)
+			}
+			// was task cancelled or deadline exceeded?
+			task.StatusManager.UpdateStatus()
+			status := task.StatusManager.LastKnownStatus()
+			if status == deadlineExceeded || status == cancelled {
+				return nil
+			}
+			// assume a problem with the request == worker bug
+			panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
+		case *url.Error:
+			switch subCause := rootCause.Err.(type) {
+			case *net.OpError:
+				log.Printf("Got *net.OpError - probably got no network at the moment: %#v", *subCause)
+				return nil
+			default:
+				panic(fmt.Errorf("WORKER EXCEPTION due to unexpected *url.Error when requesting url from queue to upload artifact to: %#v", subCause))
+			}
+		default:
+			panic(fmt.Errorf("WORKER EXCEPTION due to *tcclient.APICallException error when requesting url from queue to upload artifact to. Root cause: %#v", rootCause))
+		}
+	default:
+		panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when requesting url from queue to upload artifact to: %#v", t))
+	}
 }
 
 func copyToTempFileAsTaskUser(filePath string, pd *process.PlatformData) (tempFilePath string, err error) {

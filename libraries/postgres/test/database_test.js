@@ -195,7 +195,11 @@ helper.dbSuite(path.basename(__filename), function() {
     test('currentVersion after set', async function() {
       await db._withClient(WRITE, async client => {
         await client.query('begin');
-        await client.query('create table if not exists tcversion as select 0 as version');
+        await client.query(`
+          create table if not exists tcversion (
+            version int primary key
+          )`);
+        await client.query('insert into tcversion (version) values (0) on conflict do nothing');
         await client.query('update tcversion set version = $1', [3]);
         await client.query('commit');
       });
@@ -219,7 +223,8 @@ helper.dbSuite(path.basename(__filename), function() {
       await createUsers(db);
       await db._withClient('admin', async client => {
         // create some tables for permissions
-        await client.query('create table tcversion (version int)');
+        await client.query('create table tcversion (version int primary key)');
+        await client.query('insert into tcversion (version) values (0) on conflict do nothing');
         await client.query('create table foo (fooId int)');
         await client.query('create table bar (barId int)');
       });

@@ -1,6 +1,7 @@
 web:
   type: web
   command: node services/github/src/main.js server
+  metrics: true
 worker:
   type: background
   command: node services/github/src/main.js worker

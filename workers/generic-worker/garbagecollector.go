@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
 )
 
 // A resource is something that can be deleted. Rating provides an indication
@@ -55,39 +55,57 @@ func runGarbageCollection(r Resources) error {
 		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
 	}
 	requiredFreeSpace := requiredSpaceBytes()
-	for currentFreeSpace < requiredFreeSpace {
-		// need to free up space
-		if r.Empty() {
-			break
-		}
-		err = r.EvictNext()
+
+	if currentFreeSpace < requiredFreeSpace && config.D2GEnabled() {
+		err := host.Run("docker", "volume", "prune", "--all", "--force")
 		if err != nil {
-			return err
+			return fmt.Errorf("could not run docker volume prune to garbage collect due to error %#v", err)
 		}
+
 		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
 		if err != nil {
 			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
 		}
 	}
-	if currentFreeSpace < requiredFreeSpace {
-		if config.D2GEnabled() {
-			err := host.Run("/usr/bin/env", "bash", "-c", "docker image prune --all --force")
-			if err != nil {
-				return fmt.Errorf("could not run docker image prune to garbage collect due to error %#v", err)
-			}
-			err = os.Remove("d2g-image-cache.json")
-			if err != nil {
-				return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
-			}
-			currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
-			if err != nil {
-				return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
-			}
+
+	if currentFreeSpace < requiredFreeSpace && config.D2GEnabled() {
+		err := host.Run("docker", "system", "prune", "--all", "--force")
+		if err != nil {
+			return fmt.Errorf("could not run docker system prune to garbage collect due to error %#v", err)
+		}
+
+		err = os.Remove("d2g-image-cache.json")
+		if err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
+		}
+
+		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		if err != nil {
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
 		}
 	}
+
+	for currentFreeSpace < requiredFreeSpace {
+		// need to free up space
+		if r.Empty() {
+			break
+		}
+
+		err = r.EvictNext()
+		if err != nil {
+			return err
+		}
+
+		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		if err != nil {
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+		}
+	}
+
 	if currentFreeSpace < requiredFreeSpace {
 		return fmt.Errorf("not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredFreeSpace, currentFreeSpace)
 	}
+
 	return nil
 }
 

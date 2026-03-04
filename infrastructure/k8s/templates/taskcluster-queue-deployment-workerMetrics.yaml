@@ -26,12 +26,16 @@ spec:
       serviceAccountName: taskcluster-queue
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-queue-workermetrics
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - queue/workerMetrics
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.queue.procs.workerMetrics.cpu }}'

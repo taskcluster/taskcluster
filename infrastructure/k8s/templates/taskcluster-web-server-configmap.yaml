@@ -11,6 +11,7 @@ metadata:
 data:
   PUBLIC_URL: '{{ if typeIs "<nil>" .Values.web_server.public_url }}{{ else }}{{ if typeIs "string" .Values.web_server.public_url }}{{ .Values.web_server.public_url }}{{ else }}{{ .Values.web_server.public_url | toJson }}{{ end }}{{ end }}'
   LEVEL: '{{ if typeIs "<nil>" .Values.web_server.level }}{{ else }}{{ if typeIs "string" .Values.web_server.level }}{{ .Values.web_server.level }}{{ else }}{{ .Values.web_server.level | toJson }}{{ end }}{{ end }}'
+  PROMETHEUS_CONFIG: '{{ if typeIs "<nil>" .Values.prometheus }}{{ else }}{{ if typeIs "string" .Values.prometheus }}{{ .Values.prometheus }}{{ else }}{{ .Values.prometheus | toJson }}{{ end }}{{ end }}'
   TRUST_PROXY: '{{ if typeIs "<nil>" .Values.trustProxy }}{{ else }}{{ if typeIs "string" .Values.trustProxy }}{{ .Values.trustProxy }}{{ else }}{{ .Values.trustProxy | toJson }}{{ end }}{{ end }}'
   KEEP_ALIVE_TIMEOUT_SECONDS: '{{ if typeIs "<nil>" .Values.web_server.keep_alive_timeout_seconds }}{{ else }}{{ if typeIs "string" .Values.web_server.keep_alive_timeout_seconds }}{{ .Values.web_server.keep_alive_timeout_seconds }}{{ else }}{{ .Values.web_server.keep_alive_timeout_seconds | toJson }}{{ end }}{{ end }}'
   TASKCLUSTER_ROOT_URL: '{{ if typeIs "<nil>" .Values.rootUrl }}{{ else }}{{ if typeIs "string" .Values.rootUrl }}{{ .Values.rootUrl }}{{ else }}{{ .Values.rootUrl | toJson }}{{ end }}{{ end }}'

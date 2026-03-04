@@ -17,10 +17,10 @@ import (
 	got "github.com/taskcluster/go-got"
 
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	"github.com/taskcluster/taskcluster/v88/clients/client-shell/apis/definitions"
-	"github.com/taskcluster/taskcluster/v88/clients/client-shell/client"
-	"github.com/taskcluster/taskcluster/v88/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v88/clients/client-shell/config"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/apis/definitions"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/client"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/config"
 )
 
 var (
@@ -62,13 +62,14 @@ func makeCmdFromDefinition(name string, service definitions.Service) *cobra.Comm
 
 	// one subcommand for every function of the service
 	for _, entry := range service.Entries {
-		usage := entry.Name
+		var usage strings.Builder
+		usage.WriteString(entry.Name)
 		for _, arg := range entry.Args {
-			usage += " <" + arg + ">"
+			usage.WriteString(" <" + arg + ">")
 		}
 
 		subCmd := &cobra.Command{
-			Use:   usage,
+			Use:   usage.String(),
 			Short: entry.Title,
 			Long:  buildHelp(&entry),
 			RunE:  buildExecutor(service, entry),
@@ -171,7 +172,7 @@ func execute(
 	// Parameterize the route
 	route := entry.Route
 	for k, v := range args {
-		val := strings.ReplaceAll(url.QueryEscape(v), "+", "%20")
+		val := url.PathEscape(v)
 		route = strings.Replace(route, "<"+k+">", val, 1)
 	}
 

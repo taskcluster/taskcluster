@@ -6,7 +6,7 @@ networks:
     driver: bridge
 services:
   rabbitmq:
-    image: rabbitmq:3.12.1-management
+    image: rabbitmq:4.2.2-management
     networks:
       - local
     healthcheck:
@@ -56,43 +56,41 @@ services:
       USERNAME_PREFIX: taskcluster
       ADMIN_DB_URL: postgresql://postgres@postgres:5432/taskcluster
   s3:
-    image: minio/minio:RELEASE.2023-07-11T21-29-34Z
+    image: localstack/localstack:4.12.0
     networks:
       - local
-    command: server /data --console-address :9001
     ports:
-      - '3090:9000'
-      - '3091:9001'
+      - '3090:4566'
     volumes:
-      - ./docker/buckets:/data
+      - ./docker/buckets:/var/lib/localstack
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: miniopassword
+      SERVICES: s3
+      AWS_ACCESS_KEY_ID: localstackadmin
+      AWS_SECRET_ACCESS_KEY: localstackpassword
     healthcheck:
-      test: curl -I http://localhost:9000/minio/health/cluster
+      test: curl -I http://localhost:4566/_localstack/health
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
   s3_init_buckets:
-    image: minio/mc:RELEASE.2023-07-11T23-30-44Z
+    image: amazon/aws-cli:2.33.8
     networks:
       - local
     depends_on:
       s3:
         condition: service_healthy
-    entrypoint: |-
-      /bin/sh -c "
-      /usr/bin/mc config host rm local;
-      /usr/bin/mc config host add --quiet --api s3v4 local http://s3:9000 minioadmin miniopassword;
-      (/usr/bin/mc ls local/public-bucket/ || /usr/bin/mc mb --quiet local/public-bucket/);
-      (/usr/bin/mc ls local/private-bucket/ || /usr/bin/mc mb --quiet local/private-bucket/);
-      /usr/bin/mc anonymous set public local/public-bucket;
-      "
+    entrypoint: /bin/sh
+    command:
+      - '-c'
+      - |-
+        aws --endpoint-url=http://s3:4566 s3 mb s3://public-bucket || true
+        aws --endpoint-url=http://s3:4566 s3 mb s3://private-bucket || true
+        aws --endpoint-url=http://s3:4566 s3api put-bucket-acl --bucket public-bucket --acl public-read
     environment:
-      MINIO_ENDPOINT: http://s3:9000
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: miniopassword
+      AWS_ACCESS_KEY_ID: localstackadmin
+      AWS_SECRET_ACCESS_KEY: localstackpassword
+      AWS_DEFAULT_REGION: us-east-1
   prometheus:
     image: prom/prometheus:latest
     networks:
@@ -110,7 +108,7 @@ services:
     volumes:
       - ./docker/nginx-ui-local-dev-only.conf:/app/ui/web-ui-nginx-site.conf
     ports:
-      - '3022:80'
+      - '3022:8080'
   references:
     image: ${IMAGE}
     networks:
@@ -119,9 +117,9 @@ services:
     environment:
       TASKCLUSTER_ROOT_URL: http://taskcluster
     ports:
-      - '3023:80'
+      - '3023:8080'
   taskcluster:
-    image: nginx:1.21.6
+    image: nginx:1.29.4
     networks:
       - local
     depends_on:
@@ -138,7 +136,7 @@ services:
     ports:
       - '80:80'
   tc_admin_init:
-    image: taskcluster/tc-admin:5.0.4
+    image: taskcluster/tc-admin:5.1.1
     networks:
       - local
     volumes:
@@ -233,13 +231,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/auth/v1/ping
+      test: wget -q --spider http://localhost:8080/api/auth/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3011:80'
+      - '3011:8080'
   auth-cron-purgeExpiredClients:
     image: ${IMAGE}
     networks:
@@ -299,13 +297,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/github/v1/ping
+      test: wget -q --spider http://localhost:8080/api/github/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3012:80'
+      - '3012:8080'
   github-background-worker:
     image: ${IMAGE}
     networks:
@@ -351,13 +349,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/hooks/v1/ping
+      test: wget -q --spider http://localhost:8080/api/hooks/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3013:80'
+      - '3013:8080'
   hooks-background-scheduler:
     image: ${IMAGE}
     networks:
@@ -419,13 +417,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/index/v1/ping
+      test: wget -q --spider http://localhost:8080/api/index/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3014:80'
+      - '3014:8080'
   index-background-handlers:
     image: ${IMAGE}
     networks:
@@ -471,13 +469,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/notify/v1/ping
+      test: wget -q --spider http://localhost:8080/api/notify/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3015:80'
+      - '3015:8080'
   notify-background-handler:
     image: ${IMAGE}
     networks:
@@ -509,13 +507,13 @@ services:
       s3_init_buckets:
         condition: service_completed_successfully
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/object/v1/ping
+      test: wget -q --spider http://localhost:8080/api/object/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3016:80'
+      - '3016:8080'
   object-cron-expire:
     image: ${IMAGE}
     networks:
@@ -547,13 +545,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/purge-cache/v1/ping
+      test: wget -q --spider http://localhost:8080/api/purge-cache/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3017:80'
+      - '3017:8080'
   purge-cache-cron-expireCachePurges:
     image: ${IMAGE}
     networks:
@@ -585,13 +583,13 @@ services:
       s3_init_buckets:
         condition: service_completed_successfully
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/queue/v1/ping
+      test: wget -q --spider http://localhost:8080/api/queue/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3018:80'
+      - '3018:8080'
   queue-background-claimResolver:
     image: ${IMAGE}
     networks:
@@ -599,6 +597,24 @@ services:
     env_file: ./docker/env/.queue
     command:
       - queue/claimResolver
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      s3_init_buckets:
+        condition: service_completed_successfully
+    profiles:
+      - background
+      - queue
+      - queue-background
+  queue-background-workerRemovedResolver:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.queue
+    command:
+      - queue/workerRemovedResolver
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -785,13 +801,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/secrets/v1/ping
+      test: wget -q --spider http://localhost:8080/api/secrets/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3019:80'
+      - '3019:8080'
   secrets-cron-expire:
     image: ${IMAGE}
     networks:
@@ -835,6 +851,22 @@ services:
     env_file: ./docker/env/.web-server
     command:
       - web-server/scanner
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
+  web-server-cron-cleanup-session-storage:
+    image: ${IMAGE}
+    networks:
+      - local
+    env_file: ./docker/env/.web-server
+    command:
+      - web-server/cleanup-session-storage
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -889,13 +921,13 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: wget -q --spider http://localhost:80/api/worker-manager/v1/ping
+      test: wget -q --spider http://localhost:8080/api/worker-manager/v1/ping
       interval: 3s
       timeout: 4s
       retries: 100
       start_period: 3s
     ports:
-      - '3020:80'
+      - '3020:8080'
   worker-manager-background-provisioner:
     image: ${IMAGE}
     networks:

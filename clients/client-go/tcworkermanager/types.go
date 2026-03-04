@@ -5,7 +5,7 @@ package tcworkermanager
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -133,6 +133,12 @@ type (
 		// Max length: 38
 		ProviderID string `json:"providerId"`
 
+		// The time that the worker's system booted.
+		// This is used to increase granularity of worker
+		// registration time metrics.
+		// See https://github.com/taskcluster/taskcluster/issues/8232.
+		SystemBootTime tcclient.Time `json:"systemBootTime,omitzero"`
+
 		// Worker group to which this worker belongs
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
@@ -250,6 +256,17 @@ type (
 		//
 		// Syntax:     ^[a-zA-Z0-9_-]{44}$
 		Secret string `json:"secret"`
+	}
+
+	// Decision returned to a worker asking whether to keep running or be terminated
+	ShouldWorkerTerminateResponse struct {
+
+		// Reason why worker should be terminated
+		//
+		// Min length: 1
+		Reason string `json:"reason"`
+
+		Terminate bool `json:"terminate"`
 	}
 
 	// Link to source of this task, should specify a file, revision and

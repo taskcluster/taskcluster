@@ -229,6 +229,7 @@
       "upload_id": "text"
     },
     "queue_artifacts": {
+      "content_length": "bigint",
       "content_type": "text not null",
       "details": "jsonb not null",
       "expires": "timestamp with time zone not null",
@@ -7795,6 +7796,139 @@
         }
       },
       "version": 116
+    },
+    {
+      "description": "Return unique tasks from get_claimed_tasks_by_task_queue_id",
+      "methods": {
+        "get_claimed_tasks_by_task_queue_id": {
+          "args": "task_queue_id_in text, page_size_in integer, after_claimed_in timestamptz, after_task_id_in text",
+          "body": "begin\n  return query\n  select\n    tasks.task_id,\n    tasks.task_queue_id,\n    tasks.scheduler_id,\n    coalesce(tasks.project_id, 'none') as project_id,\n    tasks.task_group_id,\n    tasks.dependencies,\n    tasks.requires,\n    tasks.routes,\n    tasks.priority,\n    tasks.retries,\n    tasks.retries_left,\n    tasks.created,\n    tasks.deadline,\n    tasks.expires,\n    tasks.scopes,\n    tasks.payload,\n    tasks.metadata,\n    tasks.tags,\n    tasks.extra,\n    tasks.runs,\n    tasks.taken_until,\n    -- for pagination and results\n    q.run_id,\n    q.worker_group,\n    q.worker_id,\n    q.claimed\n  from queue_claimed_tasks q\n  inner join tasks on tasks.task_id = q.task_id\n  where q.task_queue_id = task_queue_id_in\n    and (after_claimed_in is null or q.claimed > after_claimed_in)\n    and (after_task_id_in is null or q.task_id != after_task_id_in)\n    and not exists (\n      select 1\n      from queue_claimed_tasks q2\n      where q2.task_id = q.task_id\n        and q2.task_queue_id = q.task_queue_id\n        and q2.claimed > q.claimed\n    )\n  order by q.claimed asc\n  limit get_page_limit(page_size_in);\nend",
+          "deprecated": false,
+          "description": "Get all tasks that are currently claimed by workers in a given task queue.\nReturns only the latest claim for each unique task ID to avoid duplicates\nwhen tasks are being reclaimed.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  task_queue_id text,\n  scheduler_id text,\n  project_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left int,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz,\n  run_id integer,\n  worker_group text,\n  worker_id text,\n  claimed timestamptz\n)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 117
+    },
+    {
+      "description": "Add primary key to tcversion table",
+      "downgradeScript": "begin\n  alter table tcversion drop constraint if exists tcversion_pkey;\nend",
+      "methods": {
+      },
+      "migrationScript": "begin\n  if not exists (select 1 from tcversion) then\n    insert into tcversion (version) values (0);\n  end if;\n\n  if not exists (\n    select 1\n    from pg_constraint c\n    join pg_class t on t.oid = c.conrelid\n    join pg_namespace n on n.oid = t.relnamespace\n    where c.contype = 'p'\n      and t.relname = 'tcversion'\n      and n.nspname = current_schema()\n  ) then\n    alter table tcversion add primary key (version);\n  end if;\nend",
+      "version": 118
+    },
+    {
+      "description": "Changing tasks and task groups priority",
+      "methods": {
+        "queue_change_task_group_priority": {
+          "args": "task_group_id_in text, new_priority_in task_priority, batch_size_in integer",
+          "body": "declare\n  pending_priority integer;\n  _limit integer;\n  task_upd record;\n  _row tasks%ROWTYPE;\nbegin\n  pending_priority := case new_priority_in\n    when 'highest' then 7\n    when 'very-high' then 6\n    when 'high' then 5\n    when 'medium' then 4\n    when 'low' then 3\n    when 'very-low' then 2\n    when 'lowest' then 1\n  end;\n\n  _limit := coalesce(batch_size_in, 100);\n  if _limit < 1 then _limit := 100; end if;\n\n  FOR task_upd IN\n    select tasks.task_id, tasks.priority\n    from tasks\n    where tasks.task_group_id = task_group_id_in\n      and not tasks.ever_resolved\n      and tasks.deadline > now()\n      and tasks.priority <> new_priority_in\n    order by tasks.task_id\n    limit _limit\n    for update\n  LOOP\n\n    update tasks\n    set priority = new_priority_in\n    where tasks.task_id = task_upd.task_id\n    returning * into _row;\n\n    update queue_pending_tasks\n    set priority = pending_priority\n    where queue_pending_tasks.task_id = task_upd.task_id;\n\n    return query select\n      _row.task_id,\n      _row.task_queue_id,\n      _row.scheduler_id,\n      _row.project_id,\n      _row.task_group_id,\n      _row.dependencies,\n      _row.requires,\n      _row.routes,\n      _row.priority,\n      _row.retries,\n      _row.retries_left,\n      _row.created,\n      _row.deadline,\n      _row.expires,\n      _row.scopes,\n      _row.payload,\n      _row.metadata,\n      _row.tags,\n      _row.extra,\n      _row.runs,\n      _row.taken_until,\n      task_upd.priority;\n  END LOOP;\n\n  return;\nend",
+          "deprecated": false,
+          "description": "Update the priority of unresolved tasks within a task group.\nMatching pending queue entries are updated in tandem. Returns each updated\ntask row alongside its previous priority.",
+          "mode": "write",
+          "returns": "table (\n  task_id text,\n  task_queue_id text,\n  scheduler_id text,\n  project_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left integer,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz,\n  old_priority task_priority\n)",
+          "serviceName": "queue"
+        },
+        "queue_change_task_priority": {
+          "args": "task_id_in text, new_priority_in task_priority",
+          "body": "declare\n  pending_priority integer;\n  old_priority_val task_priority;\n  _row tasks%ROWTYPE;\nbegin\n  pending_priority := case new_priority_in\n    when 'highest' then 7\n    when 'very-high' then 6\n    when 'high' then 5\n    when 'medium' then 4\n    when 'low' then 3\n    when 'very-low' then 2\n    when 'lowest' then 1\n  end;\n\n  -- lock row and capture old priority\n  select tasks.priority into old_priority_val\n  from tasks\n  where tasks.task_id = task_id_in\n    and not tasks.ever_resolved\n    and tasks.deadline > now()\n    and tasks.priority <> new_priority_in\n  for update;\n\n  if not found then\n    return;\n  end if;\n\n  update tasks\n  set priority = new_priority_in\n  where tasks.task_id = task_id_in\n  returning * into _row;\n\n  update queue_pending_tasks\n  set priority = pending_priority\n  where queue_pending_tasks.task_id = task_id_in;\n\n  return query select\n      _row.task_id,\n      _row.task_queue_id,\n      _row.scheduler_id,\n      _row.project_id,\n      _row.task_group_id,\n      _row.dependencies,\n      _row.requires,\n      _row.routes,\n      _row.priority,\n      _row.retries,\n      _row.retries_left,\n      _row.created,\n      _row.deadline,\n      _row.expires,\n      _row.scopes,\n      _row.payload,\n      _row.metadata,\n      _row.tags,\n      _row.extra,\n      _row.runs,\n      _row.taken_until,\n      old_priority_val;\nend",
+          "deprecated": false,
+          "description": "Update the priority of a single unresolved task and keep matching pending queue\n  entries in sync. Returns the updated task row along with the previous priority.",
+          "mode": "write",
+          "returns": "table (\n  task_id text,\n  task_queue_id text,\n  scheduler_id text,\n  project_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left integer,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz,\n  old_priority task_priority\n)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 119
+    },
+    {
+      "description": "Get claimed tasks by worker identity",
+      "methods": {
+        "get_claimed_tasks_by_worker": {
+          "args": "task_queue_id_in text, worker_group_in text, worker_id_in text",
+          "body": "begin\n  return query\n  select\n    q.task_id,\n    q.run_id\n  from queue_claimed_tasks q\n  where q.task_queue_id = task_queue_id_in\n    and q.worker_group = worker_group_in\n    and q.worker_id = worker_id_in;\nend",
+          "deprecated": false,
+          "description": "Get all task_id and run_id pairs currently claimed by a specific worker,\nidentified by task_queue_id, worker_group, and worker_id.\nUses the existing queue_claimed_task_queue_idx index.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  run_id integer\n)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 120
+    },
+    {
+      "description": "Add content_length to queue artifacts",
+      "downgradeScript": "begin\n  alter table queue_artifacts drop column content_length;\nend",
+      "methods": {
+        "create_queue_artifact": {
+          "deprecated": true
+        },
+        "create_queue_artifact_2": {
+          "args": "task_id_in text, run_id_in integer, name_in text, storage_type_in text, content_type_in text, details_in jsonb, present_in boolean, expires_in timestamptz, content_length_in bigint",
+          "body": "begin\n  return query insert\n    into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires, content_length)\n    values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in, content_length_in)\n  returning\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires,\n    queue_artifacts.content_length;\nend",
+          "deprecated": false,
+          "description": "Create a new queue artifact. Raises UNIQUE_VIOLATION if the artifact already exists.\nIncludes content_length parameter for tracking artifact file size.",
+          "mode": "write",
+          "returns": "table (\n  task_id text,\n  run_id integer,\n  name text,\n  storage_type text,\n  content_type text,\n  details jsonb,\n  present boolean,\n  expires timestamptz,\n  content_length bigint\n)",
+          "serviceName": "queue"
+        },
+        "get_expired_artifacts_for_deletion": {
+          "deprecated": true
+        },
+        "get_expired_artifacts_for_deletion_2": {
+          "args": "expires_in timestamptz, page_size_in integer",
+          "body": "begin\n  return query\n  select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires,\n    queue_artifacts.content_length\n  from queue_artifacts\n  where\n    queue_artifacts.expires < expires_in\n  limit get_page_limit(page_size_in);\nend",
+          "deprecated": false,
+          "description": "Get expired artifacts for deletion, including content_length for logging deleted sizes.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  run_id integer,\n  name text,\n  storage_type text,\n  content_type text,\n  details jsonb,\n  present boolean,\n  expires timestamptz,\n  content_length bigint\n)",
+          "serviceName": "queue"
+        },
+        "get_queue_artifact": {
+          "deprecated": true
+        },
+        "get_queue_artifact_2": {
+          "args": "task_id_in text, run_id_in integer, name_in text",
+          "body": "begin\n  return query select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires,\n    queue_artifacts.content_length\n  from queue_artifacts\n  where\n    queue_artifacts.task_id = task_id_in and\n    queue_artifacts.run_id = run_id_in and\n    queue_artifacts.name = name_in;\nend",
+          "deprecated": false,
+          "description": "Get a single queue artifact by task_id, run_id, and name.\nReturns content_length in the result.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  run_id integer,\n  name text,\n  storage_type text,\n  content_type text,\n  details jsonb,\n  present boolean,\n  expires timestamptz,\n  content_length bigint\n)",
+          "serviceName": "queue"
+        },
+        "get_queue_artifacts_paginated": {
+          "deprecated": true
+        },
+        "get_queue_artifacts_paginated_2": {
+          "args": "task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, after_task_id_in text, after_run_id_in integer, after_name_in text",
+          "body": "begin\n  return query\n  select\n    queue_artifacts.task_id,\n    queue_artifacts.run_id,\n    queue_artifacts.name,\n    queue_artifacts.storage_type,\n    queue_artifacts.content_type,\n    queue_artifacts.details,\n    queue_artifacts.present,\n    queue_artifacts.expires,\n    queue_artifacts.content_length\n  from queue_artifacts\n  where\n    (queue_artifacts.task_id = task_id_in or task_id_in is null) and\n    (queue_artifacts.run_id = run_id_in or run_id_in is null) and\n    (queue_artifacts.expires < expires_in or expires_in is null) and\n    (after_task_id_in is null or\n      (queue_artifacts.task_id >= after_task_id_in and\n        (queue_artifacts.task_id > after_task_id_in or\n          (queue_artifacts.task_id = after_task_id_in and\n            (queue_artifacts.run_id > after_run_id_in or\n              (queue_artifacts.run_id = after_run_id_in and\n                queue_artifacts.name > after_name_in\n              )\n            )\n          )\n        )\n      )\n    )\n  order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name\n  limit get_page_limit(page_size_in);\nend",
+          "deprecated": false,
+          "description": "Get queue artifacts with cursor-based pagination.\nReturns content_length in the result.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  run_id integer,\n  name text,\n  storage_type text,\n  content_type text,\n  details jsonb,\n  present boolean,\n  expires timestamptz,\n  content_length bigint\n)",
+          "serviceName": "queue"
+        }
+      },
+      "migrationScript": "begin\n  alter table queue_artifacts add column content_length bigint;\nend",
+      "version": 121
+    },
+    {
+      "description": "Fix listTaskGroup pagination stability by adding ORDER BY task_id",
+      "methods": {
+        "get_tasks_by_task_group_projid": {
+          "args": "task_group_id_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    tasks.task_id,\n    tasks.task_queue_id,\n    tasks.scheduler_id,\n    -- treat null project_id as 'none'\n    coalesce(tasks.project_id, 'none') as project_id,\n    tasks.task_group_id,\n    tasks.dependencies,\n    tasks.requires,\n    tasks.routes,\n    tasks.priority,\n    tasks.retries,\n    tasks.retries_left,\n    tasks.created,\n    tasks.deadline,\n    tasks.expires,\n    tasks.scopes,\n    tasks.payload,\n    tasks.metadata,\n    tasks.tags,\n    tasks.extra,\n    tasks.runs,\n    tasks.taken_until\n  from tasks\n  where tasks.task_group_id = task_group_id_in\n  order by tasks.task_id  -- to avoid pagination overlaps\n  limit get_page_limit(page_size_in)\n  offset get_page_offset(page_offset_in);\nend",
+          "deprecated": false,
+          "description": "Get all properties of all tasks in the given task group.",
+          "mode": "read",
+          "returns": "table (\n  task_id text,\n  task_queue_id text,\n  scheduler_id text,\n  project_id text,\n  task_group_id text,\n  dependencies jsonb,\n  requires task_requires,\n  routes jsonb,\n  priority task_priority,\n  retries integer,\n  retries_left int,\n  created timestamptz,\n  deadline timestamptz,\n  expires timestamptz,\n  scopes jsonb,\n  payload jsonb,\n  metadata jsonb,\n  tags jsonb,\n  extra jsonb,\n  runs jsonb,\n  taken_until timestamptz\n)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 122
     }
   ]
 }

@@ -1,12 +1,14 @@
 """
 Utilities supporting the "reader" and "writer" definitions used in uploads and downloads.
 """
+
 import asyncio
 import io
 
 
 class BufferWriter:
     """A writer that writes to an in-memory buffer"""
+
     def __init__(self):
         self.buf = io.BytesIO()
 
@@ -20,6 +22,7 @@ class BufferWriter:
 
 class BufferReader:
     """A reader that reads from an in-memory buffer"""
+
     def __init__(self, data):
         self.buf = io.BytesIO(data)
 
@@ -30,6 +33,7 @@ class BufferReader:
 class FileWriter:
     """A writer that writes to a (sync) file.  The file should be opened in binary mode
     and empty."""
+
     def __init__(self, file):
         self.file = file
 
@@ -40,6 +44,7 @@ class FileWriter:
 class FileReader:
     """A reader that reads from a (sync) file.  The file should be opened in binary mode,
     and positioned at its beginning."""
+
     def __init__(self, file):
         self.file = file
 

@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v88/tools/d2g"
-	"github.com/taskcluster/taskcluster/v88/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
 )
 
 func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
@@ -63,5 +64,30 @@ func (task *TaskRun) convertDockerWorkerPayload() *CommandExecutionError {
 	task.Definition.Payload = json.RawMessage(d2gConvertedPayloadJSON)
 	task.D2GInfo = &conversionInfo
 
+	// Register a file mount handler for docker image artifacts so the
+	// mounts feature stores the cache info on D2GInfo instead of copying
+	// the image to the task directory. The d2g feature will pipe it to
+	// docker load via stdin.
+	if task.FileMountHandlers == nil {
+		task.FileMountHandlers = map[string]FileMountHandler{}
+	}
+	task.FileMountHandlers["dockerimage"] = func(cachedFile, sha256 string) error {
+		task.D2GInfo.ImageArtifactPath = cachedFile
+		task.D2GInfo.ImageArtifactSHA256 = sha256
+		return nil
+	}
+
 	return nil
+}
+
+// Get an environment variable from the first command that has it set.
+func (task *TaskRun) getVariable(variable string) (string, bool) {
+	for _, cmd := range task.Commands {
+		for _, envVar := range cmd.Env {
+			if value, found := strings.CutPrefix(envVar, variable+"="); found {
+				return value, true
+			}
+		}
+	}
+	return "", false
 }

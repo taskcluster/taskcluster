@@ -15,6 +15,7 @@ import createSignatureValidator from './signaturevalidator.js';
 import taskcluster, { fromNow } from '@taskcluster/client';
 import makeSentryManager from './sentrymanager.js';
 import * as libPulse from '@taskcluster/lib-pulse';
+import './monitor.js';
 import googleapis from '@googleapis/iamcredentials';
 import assert from 'assert';
 import { fileURLToPath } from 'url';
@@ -128,7 +129,7 @@ const load = Loader({
         monitor: monitor.childMonitor('signature-validator'),
       });
 
-      return builder.build({
+      const api = builder.build({
         rootUrl: cfg.taskcluster.rootUrl,
         context: {
           db,
@@ -145,6 +146,9 @@ const load = Loader({
         signatureValidator,
         monitor: monitor.childMonitor('api'),
       });
+
+      monitor.exposeMetrics('default');
+      return api;
     },
   },
 

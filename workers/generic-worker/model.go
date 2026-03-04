@@ -3,15 +3,16 @@ package main
 import (
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v88/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v88/tools/d2g"
-	"github.com/taskcluster/taskcluster/v88/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
 )
 
 type (
@@ -47,32 +48,45 @@ type (
 		// the feature name that caused the upload to be skipped, which may
 		// be useful for the user. Normally this map would get appended to by
 		// features when they are started.
-		featureArtifacts    map[string]string
+		featureArtifacts map[string]string
+		// FileMountHandlers allows features to intercept file mounts
+		// by filename. When a handler is registered for a filename,
+		// the mounts feature calls ensureCached and passes the cache
+		// path and SHA256 to the handler instead of copying the file
+		// to the task directory.
+		FileMountHandlers   map[string]FileMountHandler       `json:"-"`
 		D2GInfo             *d2g.ConversionInfo               `json:"-"`
 		DockerWorkerPayload *dockerworker.DockerWorkerPayload `json:"-"`
 	}
 
 	TaskStatus       string
 	TaskUpdateReason string
+
+	// FileMountHandler is called by the mounts feature instead of copying
+	// a file mount to the task directory. It receives the path to the
+	// cached file and its SHA256 hash.
+	FileMountHandler func(cachedFile, sha256 string) error
 )
 
 func (task *TaskRun) String() string {
 	response := fmt.Sprintf("Task Id:                 %v\n", task.TaskID)
 	response += fmt.Sprintf("Run Id:                  %v\n", task.RunID)
 	response += fmt.Sprintf("Run Id (Task Claim):     %v\n", task.TaskClaimResponse.RunID)
+	var loopResponse strings.Builder
 	for i, run := range task.TaskClaimResponse.Status.Runs {
-		response += fmt.Sprintf("Run %v:\n", i)
-		response += fmt.Sprintf("  Reason Created:        %v\n", string(run.ReasonCreated))
-		response += fmt.Sprintf("  Reason Resolved:       %v\n", string(run.ReasonResolved))
-		response += fmt.Sprintf("  Resolved:              %v\n", run.Resolved)
-		response += fmt.Sprintf("  Run Id:                %v\n", run.RunID)
-		response += fmt.Sprintf("  Scheduled:             %v\n", run.Scheduled)
-		response += fmt.Sprintf("  Started:               %v\n", run.Started)
-		response += fmt.Sprintf("  State:                 %v\n", string(run.State))
-		response += fmt.Sprintf("  Taken Until:           %v\n", run.TakenUntil)
-		response += fmt.Sprintf("  Worker Group:          %v\n", run.WorkerGroup)
-		response += fmt.Sprintf("  Worker Id:             %v\n", run.WorkerID)
+		fmt.Fprintf(&loopResponse, "Run %v:\n", i)
+		fmt.Fprintf(&loopResponse, "  Reason Created:        %v\n", string(run.ReasonCreated))
+		fmt.Fprintf(&loopResponse, "  Reason Resolved:       %v\n", string(run.ReasonResolved))
+		fmt.Fprintf(&loopResponse, "  Resolved:              %v\n", run.Resolved)
+		fmt.Fprintf(&loopResponse, "  Run Id:                %v\n", run.RunID)
+		fmt.Fprintf(&loopResponse, "  Scheduled:             %v\n", run.Scheduled)
+		fmt.Fprintf(&loopResponse, "  Started:               %v\n", run.Started)
+		fmt.Fprintf(&loopResponse, "  State:                 %v\n", string(run.State))
+		fmt.Fprintf(&loopResponse, "  Taken Until:           %v\n", run.TakenUntil)
+		fmt.Fprintf(&loopResponse, "  Worker Group:          %v\n", run.WorkerGroup)
+		fmt.Fprintf(&loopResponse, "  Worker Id:             %v\n", run.WorkerID)
 	}
+	response += loopResponse.String()
 	response += "==========================================\n"
 	response += fmt.Sprintf("Status Deadline:         %v\n", task.TaskClaimResponse.Status.Deadline)
 	response += fmt.Sprintf("Status Provisioner Id:   %v\n", task.TaskClaimResponse.Status.ProvisionerID)

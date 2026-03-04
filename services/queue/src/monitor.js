@@ -124,6 +124,26 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'taskResolvedByWorkerRemoved',
+  title: 'Task Resolved By Worker Removed',
+  type: 'task-resolved-by-worker-removed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task was resolved as exception/worker-shutdown because worker-manager
+    reported the worker was removed. This prevents the ~20 minute wait for
+    claim expiration.`,
+  fields: {
+    taskId: 'The task\'s taskId.',
+    runId: 'The runId that was resolved.',
+    workerPoolId: 'The worker pool the worker belonged to.',
+    workerGroup: 'The worker group.',
+    workerId: 'The worker id.',
+    reason: 'The reason the worker was removed.',
+  },
+});
+
+MonitorManager.register({
   name: 'taskClaimed',
   title: 'Task Claimed',
   type: 'task-claimed',
@@ -175,6 +195,37 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'taskPriorityChanged',
+  title: 'Task Priority Changed',
+  type: 'task-priority-changed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task priority value was updated via APIs.`,
+  fields: {
+    taskId: 'The task being reprioritized.',
+    oldPriority: 'Previous priority value.',
+    newPriority: 'New priority value.',
+  },
+});
+
+MonitorManager.register({
+  name: 'taskGroupPriorityChanged',
+  title: 'Task Group Priority Changed',
+  type: 'task-group-priority-changed',
+  version: 1,
+  level: 'notice',
+  description: `
+    A task group reprioritization completed.`,
+  fields: {
+    taskGroupId: 'Task group that was reprioritized.',
+    schedulerId: 'Scheduler of the task group.',
+    tasksAffected: 'Total number of tasks updated during the request.',
+    newPriority: 'Priority value applied to each task.',
+  },
+});
+
+MonitorManager.register({
   name: 'hintPoller',
   title: 'Hint Poller Report',
   type: 'hint-poller',
@@ -221,7 +272,10 @@ MonitorManager.registerMetric('failedTasks', {
   type: 'counter',
   title: 'Counter for failed tasks',
   description: 'Counter for failed tasks',
-  labels: commonLabels,
+  labels: {
+    ...commonLabels,
+    reasonResolved: 'Reason for task failure',
+  },
   registers: ['default'],
 });
 
@@ -230,8 +284,11 @@ MonitorManager.registerMetric('exceptionTasks', {
   type: 'counter',
   title: 'Counter for task exception',
   description: 'Counter for task exception',
-  labels: commonLabels,
-  registers: ['default'],
+  labels: {
+    ...commonLabels,
+    reasonResolved: 'Reason for task exception',
+  },
+  registers: ['default', 'resolvers'],
 });
 
 MonitorManager.registerMetric('pendingTasks', {

@@ -1600,13 +1600,35 @@
             },
             "name": "static-clients",
             "next": {
-              "path": "manual/deploying/workers",
-              "title": "Workers"
+              "path": "manual/deploying/worker-manager-config",
+              "title": "Worker Manager Configuration"
             },
             "path": "manual/deploying/static-clients",
             "prev": {
               "path": "manual/deploying",
               "title": "Deploying Taskcluster"
+            },
+            "up": {
+              "path": "manual/deploying",
+              "title": "Deploying Taskcluster"
+            }
+          },
+          {
+            "children": [
+            ],
+            "data": {
+              "order": 20,
+              "title": "Worker Manager Configuration"
+            },
+            "name": "worker-manager-config",
+            "next": {
+              "path": "manual/deploying/workers",
+              "title": "Workers"
+            },
+            "path": "manual/deploying/worker-manager-config",
+            "prev": {
+              "path": "manual/deploying/static-clients",
+              "title": "Static Clients"
             },
             "up": {
               "path": "manual/deploying",
@@ -1627,8 +1649,8 @@
             },
             "path": "manual/deploying/workers",
             "prev": {
-              "path": "manual/deploying/static-clients",
-              "title": "Static Clients"
+              "path": "manual/deploying/worker-manager-config",
+              "title": "Worker Manager Configuration"
             },
             "up": {
               "path": "manual/deploying",
@@ -2204,13 +2226,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/platform/auth/scopes",
-                  "title": "Scopes and Satisfaction"
+                  "path": "reference/platform/auth/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/platform/auth/logs",
                 "prev": {
                   "path": "reference/platform/auth/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/platform/auth/README",
+                  "title": "auth"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/platform/auth/scopes",
+                  "title": "Scopes and Satisfaction"
+                },
+                "path": "reference/platform/auth/metrics",
+                "prev": {
+                  "path": "reference/platform/auth/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -2231,8 +2276,8 @@
                 },
                 "path": "reference/platform/auth/scopes",
                 "prev": {
-                  "path": "reference/platform/auth/logs",
-                  "title": "logs"
+                  "path": "reference/platform/auth/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/platform/auth/README",
@@ -2381,13 +2426,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/platform/object/download-methods",
-                  "title": "Download Methods"
+                  "path": "reference/platform/object/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/platform/object/logs",
                 "prev": {
                   "path": "reference/platform/object/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/platform/object/README",
+                  "title": "object"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/platform/object/download-methods",
+                  "title": "Download Methods"
+                },
+                "path": "reference/platform/object/metrics",
+                "prev": {
+                  "path": "reference/platform/object/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/platform/object/README",
@@ -2408,8 +2476,8 @@
                 },
                 "path": "reference/platform/object/download-methods",
                 "prev": {
-                  "path": "reference/platform/object/logs",
-                  "title": "logs"
+                  "path": "reference/platform/object/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/platform/object/README",
@@ -2836,13 +2904,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/hooks/firing-hooks",
-                  "title": "Firing Hooks"
+                  "path": "reference/core/hooks/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/hooks/logs",
                 "prev": {
                   "path": "reference/core/hooks/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/core/hooks/README",
+                  "title": "hooks"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/hooks/firing-hooks",
+                  "title": "Firing Hooks"
+                },
+                "path": "reference/core/hooks/metrics",
+                "prev": {
+                  "path": "reference/core/hooks/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/hooks/README",
@@ -2863,8 +2954,8 @@
                 },
                 "path": "reference/core/hooks/firing-hooks",
                 "prev": {
-                  "path": "reference/core/hooks/logs",
-                  "title": "logs"
+                  "path": "reference/core/hooks/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/core/hooks/README",
@@ -2925,13 +3016,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/notify/README",
-                  "title": "notify"
+                  "path": "reference/core/index/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/index/logs",
                 "prev": {
                   "path": "reference/core/index/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/index/README",
+                  "title": "index"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                },
+                "path": "reference/core/index/metrics",
+                "prev": {
+                  "path": "reference/core/index/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/index/README",
@@ -3015,13 +3129,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/notify/usage",
-                  "title": "Enable Notifications"
+                  "path": "reference/core/notify/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/notify/logs",
                 "prev": {
                   "path": "reference/core/notify/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/core/notify/README",
+                  "title": "notify"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/notify/usage",
+                  "title": "Enable Notifications"
+                },
+                "path": "reference/core/notify/metrics",
+                "prev": {
+                  "path": "reference/core/notify/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/notify/README",
@@ -3042,8 +3179,8 @@
                 },
                 "path": "reference/core/notify/usage",
                 "prev": {
-                  "path": "reference/core/notify/logs",
-                  "title": "logs"
+                  "path": "reference/core/notify/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/core/notify/README",
@@ -3061,8 +3198,8 @@
             },
             "path": "reference/core/notify/README",
             "prev": {
-              "path": "reference/core/index/logs",
-              "title": "logs"
+              "path": "reference/core/index/metrics",
+              "title": "metrics"
             },
             "up": {
               "path": "reference/core/README",
@@ -3104,13 +3241,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/secrets/README",
-                  "title": "secrets"
+                  "path": "reference/core/purge-cache/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/purge-cache/logs",
                 "prev": {
                   "path": "reference/core/purge-cache/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/purge-cache/README",
+                  "title": "purge-cache"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
+                },
+                "path": "reference/core/purge-cache/metrics",
+                "prev": {
+                  "path": "reference/core/purge-cache/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/purge-cache/README",
@@ -3171,13 +3331,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/web-server/README",
-                  "title": "web-server"
+                  "path": "reference/core/secrets/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/secrets/logs",
                 "prev": {
                   "path": "reference/core/secrets/api",
                   "title": "api"
+                },
+                "up": {
+                  "path": "reference/core/secrets/README",
+                  "title": "secrets"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                },
+                "path": "reference/core/secrets/metrics",
+                "prev": {
+                  "path": "reference/core/secrets/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/secrets/README",
@@ -3195,8 +3378,8 @@
             },
             "path": "reference/core/secrets/README",
             "prev": {
-              "path": "reference/core/purge-cache/logs",
-              "title": "logs"
+              "path": "reference/core/purge-cache/metrics",
+              "title": "metrics"
             },
             "up": {
               "path": "reference/core/README",
@@ -3210,18 +3393,64 @@
                 ],
                 "data": {
                   "inline": true,
+                  "order": 1,
+                  "title": "api"
+                },
+                "name": "api",
+                "next": {
+                  "path": "reference/core/web-server/logs",
+                  "title": "logs"
+                },
+                "path": "reference/core/web-server/api",
+                "prev": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                },
+                "up": {
+                  "path": "reference/core/web-server/README",
+                  "title": "web-server"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
                   "order": 2,
                   "title": "logs"
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/core/web-server/github-login-strategy",
-                  "title": "GitHub Login Strategy"
+                  "path": "reference/core/web-server/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/core/web-server/logs",
                 "prev": {
+                  "path": "reference/core/web-server/api",
+                  "title": "api"
+                },
+                "up": {
                   "path": "reference/core/web-server/README",
                   "title": "web-server"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/core/web-server/github-login-strategy",
+                  "title": "GitHub Login Strategy"
+                },
+                "path": "reference/core/web-server/metrics",
+                "prev": {
+                  "path": "reference/core/web-server/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/core/web-server/README",
@@ -3242,8 +3471,8 @@
                 },
                 "path": "reference/core/web-server/github-login-strategy",
                 "prev": {
-                  "path": "reference/core/web-server/logs",
-                  "title": "logs"
+                  "path": "reference/core/web-server/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/core/web-server/README",
@@ -3278,13 +3507,13 @@
             },
             "name": "web-server",
             "next": {
-              "path": "reference/core/web-server/logs",
-              "title": "logs"
+              "path": "reference/core/web-server/api",
+              "title": "api"
             },
             "path": "reference/core/web-server/README",
             "prev": {
-              "path": "reference/core/secrets/logs",
-              "title": "logs"
+              "path": "reference/core/secrets/metrics",
+              "title": "metrics"
             },
             "up": {
               "path": "reference/core/README",
@@ -3616,13 +3845,36 @@
                 },
                 "name": "logs",
                 "next": {
-                  "path": "reference/integrations/github/intro",
-                  "title": "Using Taskcluster for Github Projects"
+                  "path": "reference/integrations/github/metrics",
+                  "title": "metrics"
                 },
                 "path": "reference/integrations/github/logs",
                 "prev": {
                   "path": "reference/integrations/github/exchanges",
                   "title": "exchanges"
+                },
+                "up": {
+                  "path": "reference/integrations/github/README",
+                  "title": "github"
+                }
+              },
+              {
+                "children": [
+                ],
+                "data": {
+                  "inline": true,
+                  "order": 3,
+                  "title": "metrics"
+                },
+                "name": "metrics",
+                "next": {
+                  "path": "reference/integrations/github/intro",
+                  "title": "Using Taskcluster for Github Projects"
+                },
+                "path": "reference/integrations/github/metrics",
+                "prev": {
+                  "path": "reference/integrations/github/logs",
+                  "title": "logs"
                 },
                 "up": {
                   "path": "reference/integrations/github/README",
@@ -3643,8 +3895,8 @@
                 },
                 "path": "reference/integrations/github/intro",
                 "prev": {
-                  "path": "reference/integrations/github/logs",
-                  "title": "logs"
+                  "path": "reference/integrations/github/metrics",
+                  "title": "metrics"
                 },
                 "up": {
                   "path": "reference/integrations/github/README",

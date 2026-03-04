@@ -15,7 +15,7 @@ build() {
 }
 
 echo "Building tc-proxy:"
-build windows 386
+build windows arm64
 build windows amd64
 build darwin amd64
 build darwin arm64

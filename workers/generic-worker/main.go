@@ -22,6 +22,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"slices"
@@ -29,24 +30,26 @@ import (
 	docopt "github.com/docopt/docopt-go"
 	sysinfo "github.com/elastic/go-sysinfo"
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v88/internal"
-	"github.com/taskcluster/taskcluster/v88/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v88/internal/scopes"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/errorreport"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v88/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/internal"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/internal/scopes"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/errorreport"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
 	"github.com/xeipuuv/gojsonschema"
 )
 
 var (
+	withWorkerRunner = false
 	// a horrible simple hack for testing reclaims
 	reclaimEvery5Seconds = false
 	// Current working directory of process
@@ -72,6 +75,7 @@ var (
 
 func initialiseFeatures() (err error) {
 	features = []Feature{
+		&AbortFeature{},
 		&BackingLogFeature{},
 		&PayloadValidatorFeature{},
 		&CommandGeneratorFeature{},
@@ -87,7 +91,6 @@ func initialiseFeatures() (err error) {
 	features = append(
 		features,
 		&MaxRunTimeFeature{},
-		&AbortFeature{},
 		&TaskTimerFeature{},
 		&CommandExecutorFeature{},
 	)
@@ -126,7 +129,7 @@ func main() {
 		fmt.Println(version)
 
 	case arguments["run"]:
-		withWorkerRunner := arguments["--with-worker-runner"].(bool)
+		withWorkerRunner = arguments["--with-worker-runner"].(bool)
 		if withWorkerRunner {
 			// redirect stdio to the protocol pipe, if given; eventually this will
 			// include worker-runner protocol traffic, but for the moment it simply
@@ -171,6 +174,18 @@ func main() {
 		//   the current user. In this case we won't change file permissions.
 		secure(configFile.Path)
 
+		shutdownWorker := func(reason string) {
+			// If running with worker-runner, send shutdown message so it can
+			// unregister the worker before shutting down. Otherwise, shut down directly.
+			if WorkerRunnerProtocol.Capable("shutdown") {
+				WorkerRunnerProtocol.Send(workerproto.Message{
+					Type: "shutdown",
+				})
+			} else {
+				host.ImmediateShutdown(reason)
+			}
+		}
+
 		exitCode := RunWorker()
 		log.Printf("Exiting worker with exit code %v", exitCode)
 		switch exitCode {
@@ -182,16 +197,16 @@ func main() {
 		case IDLE_TIMEOUT:
 			logEvent("instanceShutdown", nil, time.Now())
 			if config.ShutdownMachineOnIdle {
-				host.ImmediateShutdown("generic-worker idle timeout")
+				shutdownWorker("generic-worker idle timeout")
 			}
 		case INTERNAL_ERROR:
 			logEvent("instanceShutdown", nil, time.Now())
 			if config.ShutdownMachineOnInternalError {
-				host.ImmediateShutdown("generic-worker internal error")
+				shutdownWorker("generic-worker internal error")
 			}
-		case NONCURRENT_DEPLOYMENT_ID:
+		case WORKER_MANAGER_SHUTDOWN:
 			logEvent("instanceShutdown", nil, time.Now())
-			host.ImmediateShutdown("generic-worker deploymentId is not latest")
+			shutdownWorker("worker manager requested termination")
 		}
 		os.Exit(int(exitCode))
 	case arguments["install"]:
@@ -233,7 +248,6 @@ func loadConfig(configFile *gwconfig.File) error {
 			PublicPlatformConfig:           *gwconfig.DefaultPublicPlatformConfig(),
 			AllowedHighMemoryDurationSecs:  5,
 			CachesDir:                      "caches",
-			CheckForNewDeploymentEverySecs: 1800,
 			CleanUpTaskDirs:                true,
 			DisableOOMProtection:           false,
 			DisableReboots:                 false,
@@ -277,9 +291,6 @@ func loadConfig(configFile *gwconfig.File) error {
 	}
 
 	// Add useful worker config to worker metadata
-	config.WorkerTypeMetadata["config"] = map[string]any{
-		"deploymentId": config.DeploymentID,
-	}
 	gwMetadata := map[string]any{
 		"go-arch":    runtime.GOARCH,
 		"go-os":      runtime.GOOS,
@@ -297,7 +308,6 @@ func loadConfig(configFile *gwconfig.File) error {
 		"GOARCH":          runtime.GOARCH,
 		"GOOS":            runtime.GOOS,
 		"cleanUpTaskDirs": strconv.FormatBool(config.CleanUpTaskDirs),
-		"deploymentId":    config.DeploymentID,
 		"engine":          engine,
 		"gwRevision":      revision,
 		"gwVersion":       version,
@@ -432,23 +442,24 @@ func RunWorker() (exitCode ExitCode) {
 	// loop, claiming and running tasks!
 	lastActive := time.Now()
 	// use zero value, to be sure that a check is made before first task runs
-	lastCheckedDeploymentID := time.Time{}
 	lastReportedNoTasks := time.Now()
+
+	sigTerm := make(chan os.Signal, 1)
+	signal.Notify(sigTerm, syscall.SIGTERM)
+	go func() {
+		<-sigTerm
+		log.Println("Received SIGTERM, initiating graceful termination")
+		graceful.Terminate(false)
+	}()
+
 	sigInterrupt := make(chan os.Signal, 1)
 	signal.Notify(sigInterrupt, os.Interrupt)
 	if RotateTaskEnvironment() {
 		return REBOOT_REQUIRED
 	}
 	for {
-
-		// See https://bugzil.la/1298010 - routinely check if this worker type is
-		// outdated, and shut down if a new deployment is required.
-		// Round(0) forces wall time calculation instead of monotonic time in case machine slept etc
-		if time.Now().Round(0).Sub(lastCheckedDeploymentID) > time.Duration(config.CheckForNewDeploymentEverySecs)*time.Second {
-			lastCheckedDeploymentID = time.Now()
-			if deploymentIDUpdated() {
-				return NONCURRENT_DEPLOYMENT_ID
-			}
+		if checkWhetherToTerminate() {
+			return WORKER_MANAGER_SHUTDOWN
 		}
 
 		// Ensure there is enough disk space *before* claiming a task
@@ -506,8 +517,9 @@ func RunWorker() (exitCode ExitCode) {
 			log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
 			if remainingTasks == 0 {
 				log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-				if deploymentIDUpdated() {
-					return NONCURRENT_DEPLOYMENT_ID
+
+				if checkWhetherToTerminate() {
+					return WORKER_MANAGER_SHUTDOWN
 				}
 				return TASKS_COMPLETE
 			}
@@ -525,9 +537,14 @@ func RunWorker() (exitCode ExitCode) {
 			if config.IdleTimeoutSecs > 0 {
 				remainingIdleTimeText = fmt.Sprintf(" (will exit if no task claimed in %v)", time.Second*time.Duration(config.IdleTimeoutSecs)-idleTime)
 				if idleTime.Seconds() > float64(config.IdleTimeoutSecs) {
-					_ = purgeOldTasks()
-					log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
-					return IDLE_TIMEOUT
+					if !withWorkerRunner || checkWhetherToTerminate() {
+						_ = purgeOldTasks()
+						log.Printf("Worker idle for idleShutdownTimeoutSecs seconds (%v)", idleTime)
+						return IDLE_TIMEOUT
+					}
+					// Worker Manager says don't terminate - reset idle timer
+					log.Printf("Idle timeout reached but Worker Manager says not to terminate. Resetting idle timer.")
+					lastActive = time.Now()
 				}
 			}
 			// Let's not be over-verbose in logs - has cost implications,
@@ -557,17 +574,22 @@ func RunWorker() (exitCode ExitCode) {
 	}
 }
 
-func deploymentIDUpdated() bool {
-	latestDeploymentID, err := configFile.NewestDeploymentID()
-	switch {
-	case err != nil:
-		log.Printf("%v", err)
-	case latestDeploymentID == config.DeploymentID:
-		log.Printf("No change to deploymentId - %q == %q", config.DeploymentID, latestDeploymentID)
-	default:
-		log.Printf("New deploymentId found! %q => %q - therefore shutting down!", config.DeploymentID, latestDeploymentID)
-		return true
+func checkWhetherToTerminate() bool {
+	if withWorkerRunner {
+		workerManager := serviceFactory.WorkerManager(config.Credentials(), config.RootURL)
+		swtr, err := workerManager.ShouldWorkerTerminate(config.ProvisionerID+"/"+config.WorkerType, config.WorkerGroup, config.WorkerID)
+		if err != nil {
+			log.Printf("WARNING: could not determine whether I need to terminate: %v", err)
+		} else {
+			if swtr.Terminate {
+				log.Print("Terminating, since Worker Manager told me to")
+			} else {
+				log.Print("Not terminating, worker manager loves me")
+			}
+		}
+		return swtr.Terminate
 	}
+	log.Print("Not running with Worker Manager, not checking whether I need to terminate")
 	return false
 }
 

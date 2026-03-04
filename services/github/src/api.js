@@ -218,11 +218,13 @@ export default builder;
 builder.declare({
   method: 'post',
   route: '/github',
+  input: 'github-webhook-event.yml',
   name: 'githubWebHookConsumer',
   scopes: null,
   title: 'Consume GitHub WebHook',
   category: 'Github Service',
   stability: 'stable',
+  noPublish: true, // Webhook endpoint is server-side only, not called by clients
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
     'release, check run or pull request.',
@@ -376,7 +378,7 @@ builder.declare({
       case EVENT_TYPES.CHECK_RUN:
         // We only want to check if re-run was requested
         if (body.action !== CHECK_RUN_ACTIONS.REREQUESTED) {
-          return resolve(res, 400, 'Only rerequested for check runs is supported');
+          return resolve(res, 200, 'Only rerequested for check runs is supported');
         }
 
         if (body?.sender?.type?.toLowerCase() === 'bot') {
@@ -401,7 +403,7 @@ builder.declare({
         break;
 
       default:
-        return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
+        return resolve(res, 200, 'No publisher available for X-GitHub-Event: ' + eventType);
     }
   } catch (e) {
     e.webhookPayload = body;
@@ -413,11 +415,27 @@ builder.declare({
   const instGithub = await this.github.getInstallationGithub(installationId);
 
   // Not all webhook payloads include an e-mail for the user who triggered an event
-  let headUser = msg.details['event.head.user.login'].toString();
-  let userDetails = (await instGithub.users.getByUsername({ username: headUser })).data;
-  msg.details['event.head.user.email'] = this.ajv.validate({ type: 'string', format: 'email' }, userDetails.email)
-    ? userDetails.email
-    : msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
+  const headUser = msg.details['event.head.user.login'].toString();
+  const defaultEmail = msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
+  let resolvedEmail = defaultEmail;
+
+  try {
+    const { data: userDetails } = await instGithub.users.getByUsername({ username: headUser });
+    if (this.ajv.validate({ type: 'string', format: 'email' }, userDetails.email)) {
+      resolvedEmail = userDetails.email;
+    }
+  } catch (err) {
+    if (err.status !== 404 && err.code !== 404) {
+      throw err;
+    }
+    debugMonitor.debug({
+      message: `GitHub user ${headUser} not found when resolving email, falling back to noreply`,
+      status: err.status || err.code,
+      fallbackEmail: defaultEmail,
+    });
+  }
+
+  msg.details['event.head.user.email'] = resolvedEmail;
   msg.repository = sanitizeGitHubField(body.repository.name);
   msg.eventId = eventId;
 

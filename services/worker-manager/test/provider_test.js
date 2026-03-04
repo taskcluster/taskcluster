@@ -44,6 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const createProvider = async () =>
     new Provider({
+      providerId: 'testing1',
       notify: await helper.load('notify'),
       db: helper.db,
       monitor,
@@ -117,6 +118,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       Date.now = oldnow;
       const worker = Worker.fromApi({});
       worker.created = taskcluster.fromNow('-4 hours');
+      worker.firstClaim = null;
+      worker.lastDateActive = null;
       const res = Provider.isZombie({ worker });
       assert.equal(res.isZombie, true);
       assert.match(res.reason, /queueInactivityTimeout=7200s/);
@@ -125,18 +128,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       Date.now = oldnow;
       const worker = Worker.fromApi({});
       worker.created = taskcluster.fromNow('-4 hours');
+      worker.firstClaim = null;
+      worker.lastDateActive = null;
       const res = Provider.isZombie({ worker });
       assert.equal(res.isZombie, true);
       assert.match(res.reason, /worker never claimed work/);
-    });
-    test('no lastDateActive', function() {
-      Date.now = oldnow;
-      const worker = Worker.fromApi({});
-      worker.created = taskcluster.fromNow('-4 hours');
-      worker.firstClaim = taskcluster.fromNow('-4 hours');
-      const res = Provider.isZombie({ worker });
-      assert.equal(res.isZombie, true);
-      assert.match(res.reason, /worker never reclaimed work/);
     });
     test('not active within queueInactivityTimeout', function() {
       Date.now = oldnow;
@@ -161,9 +157,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       worker.created = taskcluster.fromNow('-5 minutes');
       worker.firstClaim = taskcluster.fromNow('-4 minutes');
-      worker.lastdDateActive = taskcluster.fromNow('-3 minutes');
+      worker.lastDateActive = taskcluster.fromNow('-3 minutes');
       const res = Provider.isZombie({ worker });
       assert.equal(res.isZombie, false);
+    });
+    test('fields not fetched from database (defensive check)', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({});
+      worker.created = taskcluster.fromNow('-4 hours');
+      // Intentionally leave firstClaim and lastDateActive as undefined
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, false);
+      assert.match(res.reason, /queue fields not fetched/);
     });
   });
 
@@ -317,6 +322,178 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(monitorErrors.length, 1);
       assert.equal(monitorErrors[0].Fields.message, `No launch configs found for worker pool ${workerPool.workerPoolId}`);
       monitor.manager.reset();
+    });
+  });
+
+  suite('worker metrics', function() {
+    let provider;
+
+    suiteSetup(async function() {
+      provider = await createProvider();
+    });
+
+    const createWorker = async (overrides = {}) => {
+      const worker = Worker.fromApi({
+        workerPoolId: 'ww/tt',
+        workerGroup: 'wg',
+        workerId: 'wi',
+        providerId: 'testing1',
+        created: new Date(Date.now() - 60000),
+        expires: taskcluster.fromNow('1 hour'),
+        state: Worker.states.REQUESTED,
+        capacity: 1,
+        launchConfigId: 'lc-1',
+        providerData: {},
+        ...overrides,
+      });
+      await worker.create(helper.db);
+      return worker;
+    };
+
+    test('records registration duration on workerRunning', async function() {
+      const worker = await createWorker();
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerRegistrationDuration;
+      monitor.metric.workerRegistrationDuration = () => { metricRecorded = true; };
+
+      monitor.manager.reset();
+      await provider.onWorkerRunning({ worker });
+      assert.equal(metricRecorded, true);
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-running');
+      assert.ok(msg, 'worker-running log event should be emitted');
+      assert.equal(msg.Fields.registrationDuration, 60);
+
+      monitor.metric.workerRegistrationDuration = originalMetric;
+    });
+
+    test('includes workerAge and runningDuration on workerStopped', async function() {
+      const worker = await createWorker({
+        workerId: 'wi-stopped',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 30000).toJSON(),
+          },
+        },
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerStopped({ worker });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.ok(msg, 'worker-stopped log event should be emitted');
+      assert.equal(msg.Fields.workerAge, 60);
+      assert.equal(msg.Fields.runningDuration, 30);
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('includes workerAge and runningDuration on workerRemoved', async function() {
+      const worker = await createWorker({
+        workerId: 'wi-removed',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 20000).toJSON(),
+          },
+        },
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerRemoved({ worker, reason: 'test-reason' });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-removed');
+      assert.ok(msg, 'worker-removed log event should be emitted');
+      assert.equal(msg.Fields.workerAge, 60);
+      assert.equal(msg.Fields.runningDuration, 20);
+      assert.equal(msg.Fields.reason, 'test-reason');
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('omits runningDuration when worker never registered', async function() {
+      const worker = await createWorker({
+        workerId: 'wi-never-reg',
+        state: Worker.states.REQUESTED,
+      });
+
+      const originalMetric = monitor.metric.workerRegistrationFailure;
+      monitor.metric.workerRegistrationFailure = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerStopped({ worker });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.ok(msg, 'worker-stopped log event should be emitted');
+      assert.equal(msg.Fields.workerAge, 60);
+      assert.equal(msg.Fields.runningDuration, null);
+
+      monitor.metric.workerRegistrationFailure = originalMetric;
+    });
+
+    test('records lifetime on workerStopped', async function() {
+      const worker = await createWorker({
+        workerId: 'wi2',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 60000).toJSON(),
+          },
+        },
+      });
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => { metricRecorded = true; };
+
+      await provider.onWorkerStopped({ worker });
+      assert.equal(metricRecorded, true);
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('records registration failure when worker never registered', async function() {
+      const worker = await createWorker({ workerId: 'wi3' });
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerRegistrationFailure;
+      monitor.metric.workerRegistrationFailure = () => { metricRecorded = true; };
+
+      await provider.onWorkerStopped({ worker });
+      assert.equal(metricRecorded, true);
+
+      monitor.metric.workerRegistrationFailure = originalMetric;
+    });
+
+    test('does not double-record lifetime', async function() {
+      const worker = await createWorker({
+        workerId: 'wi4',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 60000).toJSON(),
+            stoppedAt: new Date().toJSON(),
+            previousState: Worker.states.RUNNING,
+          },
+        },
+      });
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => { metricRecorded = true; };
+
+      await provider.onWorkerStopped({ worker });
+      assert.equal(metricRecorded, false);
+
+      monitor.metric.workerLifetime = originalMetric;
     });
   });
 });

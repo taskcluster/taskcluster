@@ -4,6 +4,22 @@ import forge from 'node-forge';
 import slugid from 'slugid';
 import generator from 'generate-password';
 
+// https://learn.microsoft.com/en-us/rest/api/resources/deployments/list-at-subscription-scope?view=rest-resources-2025-04-01#provisioningstate
+export const ArmDeploymentProvisioningState = {
+  NotSpecified: "NotSpecified",
+  Accepted: "Accepted",
+  Running: "Running",
+  Ready: "Ready",
+  Creating: "Creating",
+  Created: "Created",
+  Deleting: "Deleting",
+  Deleted: "Deleted",
+  Canceled: "Canceled",
+  Failed: "Failed",
+  Succeeded: "Succeeded",
+  Updating: "Updating",
+};
+
 // only use alphanumeric characters for convenience
 export function nicerId() {
   return (slugid.nice() + slugid.nice() + slugid.nice()).toLowerCase().replace(/[^A-Za-z0-9]/g, '');
@@ -28,15 +44,23 @@ export function generateAdminPassword() {
   });
 }
 
+export function generateAdmin() {
+  // Windows admin user name cannot be more than 20 characters long, be empty,
+  // end with a period(.), or contain the following characters: \\ / \" [ ] : | < > + = ; , ? * @.
+  // we have to set a password, but we never want it to be used, so we throw it away
+  // a legitimate user who needs access can reset the password
+  return {
+    adminUsername: nicerId().slice(0, 20),
+    adminPassword: generateAdminPassword(),
+  };
+}
+
 export function workerConfigWithSecrets(cfg) {
   assert(_.has(cfg, 'osProfile'));
   let newCfg = _.cloneDeep(cfg);
-  // Windows admin user name cannot be more than 20 characters long, be empty,
-  // end with a period(.), or contain the following characters: \\ / \" [ ] : | < > + = ; , ? * @.
-  newCfg.osProfile.adminUsername = nicerId().slice(0, 20);
-  // we have to set a password, but we never want it to be used, so we throw it away
-  // a legitimate user who needs access can reset the password
-  newCfg.osProfile.adminPassword = generateAdminPassword();
+  const { adminUsername, adminPassword } = generateAdmin();
+  newCfg.osProfile.adminUsername = adminUsername;
+  newCfg.osProfile.adminPassword = adminPassword;
   return newCfg;
 }
 

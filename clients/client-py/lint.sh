@@ -1,50 +1,12 @@
 #!/bin/bash
 set -e
-# Because some of the python we generate is just a little less than perfect,
-# and because it'd be too much work to write it out nicer, we'll just disable
-# some less important rules for the generated files
-# NOTE: Superduperslow!
+# Lint using ruff
+# Note: Generated files have special rules applied
 
-while [ $# -ne 0 ] ; do
-  case "$1" in
-    --flake8)
-      flake8=$2
-      shift 2;;
-    --python)
-      python=$2
-      shift 2 ;;
-    *)
-      echo "Unknown command argument" >&2
-      exit 1
-      ;;
-  esac
-done
+echo "Running ruff check..."
+uv run ruff check taskcluster test
 
-flake8=${flake8:-$FLAKE8}
-python=${python:-$PYTHON}
+echo "Running ruff format check..."
+uv run ruff format --check taskcluster test
 
-all_py=$(find taskcluster test -name "*.py")
-
-norm_to_lint=""
-gen_to_lint=""
-
-for file in $all_py ; do
-  if grep -q 'AUTOMATICALLY GENERATED' $file; then
-    gen_to_lint="$gen_to_lint $file"
-  else
-    norm_to_lint="$norm_to_lint $file"
-  fi
-done
-
-echo Python: $python
-echo Flake8: $flake8
-
-$python --version &> /dev/null
-$flake8 --version &> /dev/null
-
-echo Linting generated python files
-$flake8 --ignore=E201,E128 --max-line-length=100000 $ignore_async $gen_to_lint && true
-gen_result=${PIPESTATUS[0]}
-echo Linting non-generated files
-$flake8 --max-line-length=140 $ignore_async $norm_to_lint
-exit $(( $? + $gen_result))
+echo "Linting complete!"

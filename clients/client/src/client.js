@@ -678,6 +678,7 @@ export const clients = {
   Queue: createClient(apis.Queue.reference, "Queue"),
   QueueEvents: createClient(apis.QueueEvents.reference, "QueueEvents"),
   Secrets: createClient(apis.Secrets.reference, "Secrets"),
+  WebServer: createClient(apis.WebServer.reference, "WebServer"),
   WorkerManager: createClient(apis.WorkerManager.reference, "WorkerManager"),
   WorkerManagerEvents: createClient(apis.WorkerManagerEvents.reference, "WorkerManagerEvents"),
 };

@@ -204,6 +204,8 @@ queue:
       cpu: 10m
     claimResolver:
       cpu: 10m
+    workerRemovedResolver:
+      cpu: 10m
     deadlineResolver:
       cpu: 10m
     dependencyResolver:
@@ -252,6 +254,8 @@ web_server:
     web:
       cpu: 10m
     scanner:
+      cpu: 10m
+    cleanup_session_storage:
       cpu: 10m
     cleanup_expire_auth_codes:
       cpu: 10m

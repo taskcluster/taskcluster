@@ -12,7 +12,7 @@ const (
 	REBOOT_REQUIRED             ExitCode = 67
 	IDLE_TIMEOUT                ExitCode = 68
 	INTERNAL_ERROR              ExitCode = 69
-	NONCURRENT_DEPLOYMENT_ID    ExitCode = 70
+	WORKER_MANAGER_SHUTDOWN     ExitCode = 70
 	WORKER_STOPPED              ExitCode = 71
 	WORKER_SHUTDOWN             ExitCode = 72
 	INVALID_CONFIG              ExitCode = 73
@@ -148,11 +148,6 @@ and reports back results to the queue.
                                             [default: "caches"]
           certificate                       Taskcluster certificate, when using temporary
                                             credentials only.
-          checkForNewDeploymentEverySecs    The number of seconds between consecutive calls
-                                            to the provisioner, to check if there has been a
-                                            new deployment of the current worker type. If a
-                                            new deployment is discovered, worker will shut
-                                            down. See deploymentId property. [default: 1800]
           cleanUpTaskDirs                   Whether to delete the home directories of the task
                                             users after the task completes. Normally you would
                                             want to do this to avoid filling up disk space,
@@ -162,16 +157,7 @@ and reports back results to the queue.
           createObjectArtifacts             If true, use artifact type 'object' for artifacts
                                             containing data.  If false, use artifact type 's3'.
                                             The 'object' type will become the default when the
-                                            's3' type is deprecated.
-          deploymentId                      If running with --configure-for-aws, then between
-                                            tasks, at a chosen maximum frequency (see
-                                            checkForNewDeploymentEverySecs property), the
-                                            worker will query the provisioner to get the
-                                            updated worker type definition. If the deploymentId
-                                            in the config of the worker type definition is
-                                            different to the worker's current deploymentId, the
-                                            worker will shut itself down. See
-                                            https://bugzil.la/1298010` + disableNativePayloads() + `
+                                            's3' type is deprecated.` + disableNativePayloads() + `
           disableReboots                    If true, no system reboot will be initiated by
                                             generic-worker program, but it will still return
                                             with exit code 67 if the system needs rebooting.
@@ -213,7 +199,12 @@ and reports back results to the queue.
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach
                                             the idle state" - i.e. continue running
-                                            indefinitely. See also shutdownMachineOnIdle.
+                                            indefinitely. When running with worker-runner, the
+                                            worker checks with Worker Manager before shutting
+                                            down; if Worker Manager says the worker is still
+                                            needed (e.g. to satisfy minCapacity), the idle
+                                            timer resets instead of shutting down.
+                                            See also shutdownMachineOnIdle.
                                             [default: 0]
           instanceID                        The EC2 instance ID of the worker. Used by chain of trust.
           instanceType                      The EC2 instance Type of the worker. Used by chain of trust.
@@ -350,14 +341,14 @@ and reports back results to the queue.
            config setting disableReboots is set to true - in either code this exit code will
            be issued.
     68     The generic-worker hit its idle timeout limit (see config settings idleTimeoutSecs
-           and shutdownMachineOnIdle).
+           and shutdownMachineOnIdle). When running with worker-runner, this only occurs if
+           Worker Manager also confirms the worker should terminate.
     69     Worker panic - either a worker bug, or the environment is not suitable for running
            a task, e.g. a file cannot be written to the file system, or something else did
            not work that was required in order to execute a task. See config setting
            shutdownMachineOnInternalError.
-    70     A new deploymentId has been issued in the AWS worker type configuration, meaning
-           this worker environment is no longer up-to-date. Typcially workers should
-           terminate.
+    70     Worker Manager advised this worker that it is no longer needed and should be
+           terminated.
     71     The worker was terminated via an interrupt signal (e.g. Ctrl-C pressed).
     72     The worker is running on spot infrastructure and has been served a
            spot termination notice, and therefore has shut down.

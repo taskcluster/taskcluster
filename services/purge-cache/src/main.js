@@ -79,12 +79,17 @@ const load = loader({
 
   api: {
     requires: ['cfg', 'monitor', 'schemaset', 'cachePurgeCache', 'db'],
-    setup: ({ cfg, monitor, schemaset, cachePurgeCache, db }) => builder.build({
-      context: { cfg, cachePurgeCache, db },
-      rootUrl: cfg.taskcluster.rootUrl,
-      schemaset,
-      monitor: monitor.childMonitor('api'),
-    }),
+    setup: ({ cfg, monitor, schemaset, cachePurgeCache, db }) => {
+      const api = builder.build({
+        context: { cfg, cachePurgeCache, db },
+        rootUrl: cfg.taskcluster.rootUrl,
+        schemaset,
+        monitor: monitor.childMonitor('api'),
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {

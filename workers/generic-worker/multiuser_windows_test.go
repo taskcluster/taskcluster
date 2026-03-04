@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
 )
 
 // Test APPDATA / LOCALAPPDATA folder are not shared between tasks
@@ -88,6 +88,62 @@ func TestNoCreateFileMappingError(t *testing.T) {
 			`c:\cygwin\bin\bash.exe -c "echo hello"`,
 		},
 		MaxRunTime: 120,
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+// TestHideCmdWindowEnabled verifies that when hideCmdWindow feature is enabled,
+// the spawned process does not have a console window attached.
+// This uses the GetConsoleWindow() Win32 API which returns NULL when no console
+// is attached (i.e., when CREATE_NO_WINDOW flag is used).
+func TestHideCmdWindowEnabled(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    goRun("check-console-window.go", "true"),
+		MaxRunTime: 30,
+		Features: FeatureFlags{
+			HideCmdWindow: true,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+// TestHideCmdWindowDisabled verifies that when hideCmdWindow feature is disabled
+// (the default), the spawned process has a console window attached.
+// This uses the GetConsoleWindow() Win32 API which returns a non-NULL handle
+// when a console is attached (i.e., when CREATE_NEW_CONSOLE flag is used).
+func TestHideCmdWindowDisabled(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    goRun("check-console-window.go", "false"),
+		MaxRunTime: 30,
+		Features: FeatureFlags{
+			HideCmdWindow: false,
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+// TestHideCmdWindowDefault verifies that when hideCmdWindow feature is not
+// explicitly set, the default behavior is to have a console window attached.
+func TestHideCmdWindowDefault(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    goRun("check-console-window.go", "false"),
+		MaxRunTime: 30,
+		// Features.HideCmdWindow not set - should default to false
 	}
 	defaults.SetDefaults(&payload)
 	td := testTask(t)

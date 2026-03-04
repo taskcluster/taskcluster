@@ -21,7 +21,7 @@ services:
       - ./ui/docs:/app/ui/docs
       - ./CHANGELOG.md:/app/CHANGELOG.md
     ports:
-      - '3022:80'
+      - '3022:8080'
   generic-worker-standalone:
     image: ${IMAGE_GENERIC_WORKER}
     networks:
@@ -374,6 +374,23 @@ services:
       - queue-background
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js claim-resolver"
+  queue-background-workerRemovedResolver:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/queue:/app/services/queue
+    profiles:
+      - background
+      - queue
+      - queue-background
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/queue services/queue/src/main.js worker-removed-resolver"
   queue-background-deadlineResolver:
     image: ${IMAGE_DEV}
     environment:
@@ -587,6 +604,23 @@ services:
       - web-server-cron
     command: ''
     entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js scanner"
+  web-server-cron-cleanup-session-storage:
+    image: ${IMAGE_DEV}
+    environment:
+      NODE_ENV: development
+      DEBUG: '*'
+    volumes:
+      - ./db:/app/db
+      - ./generated:/app/generated
+      - ./clients:/app/clients
+      - ./libraries:/app/libraries
+      - ./services/web-server:/app/services/web-server
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
+    command: ''
+    entrypoint: /bin/sh -c "nodemon --delay 3 --watch services --watch libraries --watch services/web-server services/web-server/src/main.js cleanup-session-storage"
   web-server-cron-cleanup-expire-auth-codes:
     image: ${IMAGE_DEV}
     environment:

@@ -9,13 +9,14 @@ import (
 	"sync"
 	"time"
 
-	taskcluster "github.com/taskcluster/taskcluster/v88/clients/client-go"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v88/tools/worker-runner/util"
-	"github.com/taskcluster/taskcluster/v88/tools/workerproto"
+	"github.com/shirou/gopsutil/v4/host"
+	taskcluster "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/util"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 type RegistrationManager struct {
@@ -54,12 +55,21 @@ func (reg *RegistrationManager) RegisterWorker(workerIdentityProofMap map[string
 		return err
 	}
 
+	bootTime := taskcluster.Time{}
+	bootTimeUnix, err := host.BootTime()
+	if err != nil {
+		log.Printf("Error getting system boot time: %v", err)
+	} else {
+		bootTime = taskcluster.Time(time.Unix(int64(bootTimeUnix), 0))
+	}
+
 	res, err := wm.RegisterWorker(&tcworkermanager.RegisterWorkerRequest{
 		WorkerPoolID:        reg.state.WorkerPoolID,
 		ProviderID:          reg.state.ProviderID,
 		WorkerGroup:         reg.state.WorkerGroup,
 		WorkerID:            reg.state.WorkerID,
 		WorkerIdentityProof: json.RawMessage(workerIdentityProof),
+		SystemBootTime:      bootTime,
 	})
 	if err != nil {
 		return fmt.Errorf("could not register worker: %w", err)

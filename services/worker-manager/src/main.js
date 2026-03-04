@@ -150,19 +150,24 @@ let load = loader({
       providers,
       publisher,
       notify,
-    }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: {
-        cfg,
-        db,
-        monitor: monitor.childMonitor('api-context'),
-        providers,
-        publisher,
-        notify,
-      },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+    }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: {
+          cfg,
+          db,
+          monitor: monitor.childMonitor('api-context'),
+          providers,
+          publisher,
+          notify,
+        },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {
@@ -221,8 +226,8 @@ let load = loader({
   },
 
   workerScanner: {
-    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds'],
-    setup: async ({ cfg, monitor, providers, db, azureProviderIds }, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds', 'estimator'],
+    setup: async ({ cfg, monitor, providers, db, azureProviderIds, estimator }, ownName) => {
       const scanMonitor = monitor.childMonitor('worker-scanner');
       const workerScanner = new WorkerScanner({
         ownName,
@@ -234,6 +239,7 @@ let load = loader({
           value: azureProviderIds,
         },
         db,
+        estimator,
       });
       await workerScanner.initiate();
       scanMonitor.exposeMetrics('scan');
@@ -242,8 +248,8 @@ let load = loader({
   },
 
   workerScannerAzure: {
-    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds'],
-    setup: async ({ cfg, monitor, providers, db, azureProviderIds }, ownName) => {
+    requires: ['cfg', 'monitor', 'providers', 'db', 'azureProviderIds', 'estimator'],
+    setup: async ({ cfg, monitor, providers, db, azureProviderIds, estimator }, ownName) => {
       const scanMonitor = monitor.childMonitor('worker-scanner');
       const workerScanner = new WorkerScanner({
         ownName,
@@ -255,6 +261,7 @@ let load = loader({
           value: azureProviderIds,
         },
         db,
+        estimator,
       });
       await workerScanner.initiate();
       scanMonitor.exposeMetrics('scan');

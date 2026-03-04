@@ -12,6 +12,7 @@ export default (helper, options = {}) => {
       debug: true,
       verify: true,
       level: 'debug',
+      ...(options?.withPrometheus ? { prometheusConfig: {} } : {}),
     });
     helper.load.inject('monitor', monitor);
   }

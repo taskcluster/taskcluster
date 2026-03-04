@@ -379,6 +379,56 @@ func (binding TaskGroupSealed) NewPayloadObject() any {
 	return new(TaskGroupChangedMessage)
 }
 
+// A message published when task priority was updated via `changeTaskPriority` API call.
+//
+// See #taskPriorityChanged
+type TaskPriorityChanged struct {
+	RoutingKeyKind string `mwords:"*"`
+	TaskID         string `mwords:"*"`
+	RunID          string `mwords:"*"`
+	WorkerGroup    string `mwords:"*"`
+	WorkerID       string `mwords:"*"`
+	ProvisionerID  string `mwords:"*"`
+	WorkerType     string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding TaskPriorityChanged) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding TaskPriorityChanged) ExchangeName() string {
+	return "exchange/taskcluster-queue/v1/task-priority-changed"
+}
+
+func (binding TaskPriorityChanged) NewPayloadObject() any {
+	return new(TaskPriorityChangedMessage)
+}
+
+// A message published when task group priority was changed via `changeTaskGroupPriority` API call.
+//
+// See #taskGroupPriorityChanged
+type TaskGroupPriorityChanged struct {
+	RoutingKeyKind string `mwords:"*"`
+	TaskGroupID    string `mwords:"*"`
+	SchedulerID    string `mwords:"*"`
+	Reserved       string `mwords:"#"`
+}
+
+func (binding TaskGroupPriorityChanged) RoutingKey() string {
+	return generateRoutingKey(&binding)
+}
+
+func (binding TaskGroupPriorityChanged) ExchangeName() string {
+	return "exchange/taskcluster-queue/v1/task-group-priority-changed"
+}
+
+func (binding TaskGroupPriorityChanged) NewPayloadObject() any {
+	return new(TaskGroupPriorityChangedMessage)
+}
+
 func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())

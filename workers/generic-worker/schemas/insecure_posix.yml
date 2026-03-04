@@ -624,17 +624,6 @@ oneOf:
           title: Artifact uploads
           description: ""
           default: true
-        dind:
-          type: boolean
-          title: Docker in Docker
-          description: >-
-            Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.
-          default: false
-        dockerSave:
-          type: boolean
-          title: Docker save
-          description: Uploads docker images as artifacts
-          default: false
         interactive:
           type: boolean
           title: Docker Exec Interactive

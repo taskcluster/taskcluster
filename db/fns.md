@@ -83,7 +83,7 @@
    * [`cancel_task_group`](#cancel_task_group)
    * [`check_task_claim`](#check_task_claim)
    * [`claim_task`](#claim_task)
-   * [`create_queue_artifact`](#create_queue_artifact)
+   * [`create_queue_artifact_2`](#create_queue_artifact_2)
    * [`create_task_projid`](#create_task_projid)
    * [`delete_queue_artifact`](#delete_queue_artifact)
    * [`delete_queue_artifacts`](#delete_queue_artifacts)
@@ -96,12 +96,13 @@
    * [`expire_task_queues`](#expire_task_queues)
    * [`expire_tasks`](#expire_tasks)
    * [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
+   * [`get_claimed_tasks_by_worker`](#get_claimed_tasks_by_worker)
    * [`get_dependent_tasks`](#get_dependent_tasks)
-   * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
+   * [`get_expired_artifacts_for_deletion_2`](#get_expired_artifacts_for_deletion_2)
    * [`get_multiple_tasks`](#get_multiple_tasks)
    * [`get_pending_tasks_by_task_queue_id`](#get_pending_tasks_by_task_queue_id)
-   * [`get_queue_artifact`](#get_queue_artifact)
-   * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+   * [`get_queue_artifact_2`](#get_queue_artifact_2)
+   * [`get_queue_artifacts_paginated_2`](#get_queue_artifacts_paginated_2)
    * [`get_task_group_size`](#get_task_group_size)
    * [`get_task_group2`](#get_task_group2)
    * [`get_task_projid`](#get_task_projid)
@@ -114,6 +115,8 @@
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
+   * [`queue_change_task_group_priority`](#queue_change_task_group_priority)
+   * [`queue_change_task_priority`](#queue_change_task_priority)
    * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
    * [`queue_claimed_task_get`](#queue_claimed_task_get)
    * [`queue_claimed_task_put`](#queue_claimed_task_put)
@@ -703,10 +706,6 @@ end
 ```
 
 </details>
-
-### deprecated methods
-
-* `expire_clients()` (compatibility guaranteed until v89.0.0)
 
 ## github
 
@@ -2842,7 +2841,7 @@ end
 * [`cancel_task_group`](#cancel_task_group)
 * [`check_task_claim`](#check_task_claim)
 * [`claim_task`](#claim_task)
-* [`create_queue_artifact`](#create_queue_artifact)
+* [`create_queue_artifact_2`](#create_queue_artifact_2)
 * [`create_task_projid`](#create_task_projid)
 * [`delete_queue_artifact`](#delete_queue_artifact)
 * [`delete_queue_artifacts`](#delete_queue_artifacts)
@@ -2855,12 +2854,13 @@ end
 * [`expire_task_queues`](#expire_task_queues)
 * [`expire_tasks`](#expire_tasks)
 * [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
+* [`get_claimed_tasks_by_worker`](#get_claimed_tasks_by_worker)
 * [`get_dependent_tasks`](#get_dependent_tasks)
-* [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
+* [`get_expired_artifacts_for_deletion_2`](#get_expired_artifacts_for_deletion_2)
 * [`get_multiple_tasks`](#get_multiple_tasks)
 * [`get_pending_tasks_by_task_queue_id`](#get_pending_tasks_by_task_queue_id)
-* [`get_queue_artifact`](#get_queue_artifact)
-* [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+* [`get_queue_artifact_2`](#get_queue_artifact_2)
+* [`get_queue_artifacts_paginated_2`](#get_queue_artifacts_paginated_2)
 * [`get_task_group_size`](#get_task_group_size)
 * [`get_task_group2`](#get_task_group2)
 * [`get_task_projid`](#get_task_projid)
@@ -2873,6 +2873,8 @@ end
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
+* [`queue_change_task_group_priority`](#queue_change_task_group_priority)
+* [`queue_change_task_priority`](#queue_change_task_priority)
 * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
 * [`queue_claimed_task_get`](#queue_claimed_task_get)
 * [`queue_claimed_task_put`](#queue_claimed_task_put)
@@ -3291,7 +3293,7 @@ end
 
 </details>
 
-### create_queue_artifact
+### create_queue_artifact_2
 
 * *Mode*: write
 * *Arguments*:
@@ -3303,28 +3305,39 @@ end
   * `details_in jsonb`
   * `present_in boolean`
   * `expires_in timestamptz`
+  * `content_length_in bigint`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 24
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Create a new artifact. Raises UNIQUE_VIOLATION if the artifact already exists.
-Returns the newly created artifact.
+Create a new queue artifact. Raises UNIQUE_VIOLATION if the artifact already exists.
+Includes content_length parameter for tracking artifact file size.
 
 <details><summary>Function Body</summary>
 
 ```
 begin
   return query insert
-    into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires)
-    values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in)
-  returning queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name, queue_artifacts.storage_type, queue_artifacts.content_type, queue_artifacts.details, queue_artifacts.present, queue_artifacts.expires;
+    into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires, content_length)
+    values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in, content_length_in)
+  returning
+    queue_artifacts.task_id,
+    queue_artifacts.run_id,
+    queue_artifacts.name,
+    queue_artifacts.storage_type,
+    queue_artifacts.content_type,
+    queue_artifacts.details,
+    queue_artifacts.present,
+    queue_artifacts.expires,
+    queue_artifacts.content_length;
 end
 ```
 
@@ -3776,9 +3789,11 @@ end
   * `  worker_group text`
   * `  worker_id text`
   * `  claimed timestamptz `
-* *Last defined on version*: 94
+* *Last defined on version*: 117
 
 Get all tasks that are currently claimed by workers in a given task queue.
+Returns only the latest claim for each unique task ID to avoid duplicates
+when tasks are being reclaimed.
 
 <details><summary>Function Body</summary>
 
@@ -3813,13 +3828,52 @@ begin
     q.worker_id,
     q.claimed
   from queue_claimed_tasks q
-  left join tasks on tasks.task_id=q.task_id
+  inner join tasks on tasks.task_id = q.task_id
   where q.task_queue_id = task_queue_id_in
-    and tasks.task_id is not null
     and (after_claimed_in is null or q.claimed > after_claimed_in)
     and (after_task_id_in is null or q.task_id != after_task_id_in)
+    and not exists (
+      select 1
+      from queue_claimed_tasks q2
+      where q2.task_id = q.task_id
+        and q2.task_queue_id = q.task_queue_id
+        and q2.claimed > q.claimed
+    )
   order by q.claimed asc
   limit get_page_limit(page_size_in);
+end
+```
+
+</details>
+
+### get_claimed_tasks_by_worker
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  run_id integer `
+* *Last defined on version*: 120
+
+Get all task_id and run_id pairs currently claimed by a specific worker,
+identified by task_queue_id, worker_group, and worker_id.
+Uses the existing queue_claimed_task_queue_idx index.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    q.task_id,
+    q.run_id
+  from queue_claimed_tasks q
+  where q.task_queue_id = task_queue_id_in
+    and q.worker_group = worker_group_in
+    and q.worker_id = worker_id_in;
 end
 ```
 
@@ -3871,29 +3925,25 @@ end
 
 </details>
 
-### get_expired_artifacts_for_deletion
+### get_expired_artifacts_for_deletion_2
 
 * *Mode*: read
 * *Arguments*:
   * `expires_in timestamptz`
   * `page_size_in integer`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 84
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Get existing queue artifacts with expiration date below given.
-Note that this method doesn't use ordering to avoid using
-complex and expensive table scans.
-As table is very big doing a sequential scan without ordering is faster.
-Expired entities are expected to be deleted right after as this function
-doesn't support pagination with offsets.
+Get expired artifacts for deletion, including content_length for logging deleted sizes.
 
 <details><summary>Function Body</summary>
 
@@ -3908,7 +3958,8 @@ begin
     queue_artifacts.content_type,
     queue_artifacts.details,
     queue_artifacts.present,
-    queue_artifacts.expires
+    queue_artifacts.expires,
+    queue_artifacts.content_length
   from queue_artifacts
   where
     queue_artifacts.expires < expires_in
@@ -4078,7 +4129,7 @@ end
 
 </details>
 
-### get_queue_artifact
+### get_queue_artifact_2
 
 * *Mode*: read
 * *Arguments*:
@@ -4086,17 +4137,19 @@ end
   * `run_id_in integer`
   * `name_in text`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 24
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Get a queue artifact. The returned table will have one or zero row.
+Get a single queue artifact by task_id, run_id, and name.
+Returns content_length in the result.
 
 <details><summary>Function Body</summary>
 
@@ -4110,7 +4163,8 @@ begin
     queue_artifacts.content_type,
     queue_artifacts.details,
     queue_artifacts.present,
-    queue_artifacts.expires
+    queue_artifacts.expires,
+    queue_artifacts.content_length
   from queue_artifacts
   where
     queue_artifacts.task_id = task_id_in and
@@ -4121,7 +4175,7 @@ end
 
 </details>
 
-### get_queue_artifacts_paginated
+### get_queue_artifacts_paginated_2
 
 * *Mode*: read
 * *Arguments*:
@@ -4133,21 +4187,19 @@ end
   * `after_run_id_in integer`
   * `after_name_in text`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 69
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Get existing queue artifacts, filtered by the optional arguments, ordered
-by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
-where the page of results should begin, and must all be specified if any
-are specified.  Typically these values would be drawn from the last item
-in the previous page.
+Get queue artifacts with cursor-based pagination.
+Returns content_length in the result.
 
 <details><summary>Function Body</summary>
 
@@ -4162,14 +4214,14 @@ begin
     queue_artifacts.content_type,
     queue_artifacts.details,
     queue_artifacts.present,
-    queue_artifacts.expires
+    queue_artifacts.expires,
+    queue_artifacts.content_length
   from queue_artifacts
   where
     (queue_artifacts.task_id = task_id_in or task_id_in is null) and
     (queue_artifacts.run_id = run_id_in or run_id_in is null) and
     (queue_artifacts.expires < expires_in or expires_in is null) and
     (after_task_id_in is null or
-      -- must use AND on the top level to use multicolumn index
       (queue_artifacts.task_id >= after_task_id_in and
         (queue_artifacts.task_id > after_task_id_in or
           (queue_artifacts.task_id = after_task_id_in and
@@ -4422,7 +4474,7 @@ end
   * `  extra jsonb`
   * `  runs jsonb`
   * `  taken_until timestamptz `
-* *Last defined on version*: 63
+* *Last defined on version*: 122
 
 Get all properties of all tasks in the given task group.
 
@@ -4456,6 +4508,7 @@ begin
     tasks.taken_until
   from tasks
   where tasks.task_group_id = task_group_id_in
+  order by tasks.task_id  -- to avoid pagination overlaps
   limit get_page_limit(page_size_in)
   offset get_page_offset(page_offset_in);
 end
@@ -4672,6 +4725,218 @@ begin
     queue_artifacts.details,
     queue_artifacts.present,
     queue_artifacts.expires;
+end
+```
+
+</details>
+
+### queue_change_task_group_priority
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `new_priority_in task_priority`
+  * `batch_size_in integer`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left integer`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  old_priority task_priority `
+* *Last defined on version*: 119
+
+Update the priority of unresolved tasks within a task group.
+Matching pending queue entries are updated in tandem. Returns each updated
+task row alongside its previous priority.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  pending_priority integer;
+  _limit integer;
+  task_upd record;
+  _row tasks%ROWTYPE;
+begin
+  pending_priority := case new_priority_in
+    when 'highest' then 7
+    when 'very-high' then 6
+    when 'high' then 5
+    when 'medium' then 4
+    when 'low' then 3
+    when 'very-low' then 2
+    when 'lowest' then 1
+  end;
+
+  _limit := coalesce(batch_size_in, 100);
+  if _limit < 1 then _limit := 100; end if;
+
+  FOR task_upd IN
+    select tasks.task_id, tasks.priority
+    from tasks
+    where tasks.task_group_id = task_group_id_in
+      and not tasks.ever_resolved
+      and tasks.deadline > now()
+      and tasks.priority <> new_priority_in
+    order by tasks.task_id
+    limit _limit
+    for update
+  LOOP
+
+    update tasks
+    set priority = new_priority_in
+    where tasks.task_id = task_upd.task_id
+    returning * into _row;
+
+    update queue_pending_tasks
+    set priority = pending_priority
+    where queue_pending_tasks.task_id = task_upd.task_id;
+
+    return query select
+      _row.task_id,
+      _row.task_queue_id,
+      _row.scheduler_id,
+      _row.project_id,
+      _row.task_group_id,
+      _row.dependencies,
+      _row.requires,
+      _row.routes,
+      _row.priority,
+      _row.retries,
+      _row.retries_left,
+      _row.created,
+      _row.deadline,
+      _row.expires,
+      _row.scopes,
+      _row.payload,
+      _row.metadata,
+      _row.tags,
+      _row.extra,
+      _row.runs,
+      _row.taken_until,
+      task_upd.priority;
+  END LOOP;
+
+  return;
+end
+```
+
+</details>
+
+### queue_change_task_priority
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `new_priority_in task_priority`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left integer`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  old_priority task_priority `
+* *Last defined on version*: 119
+
+Update the priority of a single unresolved task and keep matching pending queue
+  entries in sync. Returns the updated task row along with the previous priority.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  pending_priority integer;
+  old_priority_val task_priority;
+  _row tasks%ROWTYPE;
+begin
+  pending_priority := case new_priority_in
+    when 'highest' then 7
+    when 'very-high' then 6
+    when 'high' then 5
+    when 'medium' then 4
+    when 'low' then 3
+    when 'very-low' then 2
+    when 'lowest' then 1
+  end;
+
+  -- lock row and capture old priority
+  select tasks.priority into old_priority_val
+  from tasks
+  where tasks.task_id = task_id_in
+    and not tasks.ever_resolved
+    and tasks.deadline > now()
+    and tasks.priority <> new_priority_in
+  for update;
+
+  if not found then
+    return;
+  end if;
+
+  update tasks
+  set priority = new_priority_in
+  where tasks.task_id = task_id_in
+  returning * into _row;
+
+  update queue_pending_tasks
+  set priority = pending_priority
+  where queue_pending_tasks.task_id = task_id_in;
+
+  return query select
+      _row.task_id,
+      _row.task_queue_id,
+      _row.scheduler_id,
+      _row.project_id,
+      _row.task_group_id,
+      _row.dependencies,
+      _row.requires,
+      _row.routes,
+      _row.priority,
+      _row.retries,
+      _row.retries_left,
+      _row.created,
+      _row.deadline,
+      _row.expires,
+      _row.scopes,
+      _row.payload,
+      _row.metadata,
+      _row.tags,
+      _row.extra,
+      _row.runs,
+      _row.taken_until,
+      old_priority_val;
 end
 ```
 
@@ -6085,6 +6350,13 @@ end
 
 </details>
 
+### deprecated methods
+
+* `create_queue_artifact(task_id_in text, run_id_in integer, name_in text, storage_type_in text, content_type_in text, details_in jsonb, present_in boolean, expires_in timestamptz)` (compatibility guaranteed until v98.0.0)
+* `get_expired_artifacts_for_deletion(expires_in timestamptz, page_size_in integer)` (compatibility guaranteed until v98.0.0)
+* `get_queue_artifact(task_id_in text, run_id_in integer, name_in text)` (compatibility guaranteed until v98.0.0)
+* `get_queue_artifacts_paginated(task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, after_task_id_in text, after_run_id_in integer, after_name_in text)` (compatibility guaranteed until v98.0.0)
+
 ## secrets
 
 * [`delete_secret`](#delete_secret)
@@ -6256,10 +6528,6 @@ end
 ```
 
 </details>
-
-### deprecated methods
-
-* `expire_secrets()` (compatibility guaranteed until v89.0.0)
 
 ## web_server
 

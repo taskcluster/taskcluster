@@ -12,8 +12,8 @@ import (
 
 	jwt "github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v88/tools/websocktunnel/util"
-	"github.com/taskcluster/taskcluster/v88/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/wsmux"
 
 	"maps"
 
@@ -224,7 +224,7 @@ func (p *proxy) register(w http.ResponseWriter, r *http.Request, id, tokenString
 
 	// generate config
 	conf := wsmux.Config{
-		StreamBufferSize: 4 * 1024,
+		StreamBufferSize: 4 * 1024 * 1024,
 		CloseCallback: func() {
 			p.removeTunnel(id)
 			if p.onSessionRemove != nil {

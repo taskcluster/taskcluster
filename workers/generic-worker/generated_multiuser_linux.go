@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -218,16 +218,6 @@ type (
 		// Default:    false
 		ChainOfTrust bool `json:"chainOfTrust" default:"false"`
 
-		// Runs docker-in-docker and binds `/var/run/docker.sock` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.
-		//
-		// Default:    false
-		Dind bool `json:"dind" default:"false"`
-
-		// Uploads docker images as artifacts
-		//
-		// Default:    false
-		DockerSave bool `json:"dockerSave" default:"false"`
-
 		// This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.
 		//
 		// Default:    false
@@ -382,7 +372,7 @@ type (
 		// as json to file chain-of-trust-additional-data.json in the task
 		// directory.
 		//
-		// Since: generic-worker v81.0.0
+		// Since: generic-worker 81.0.0
 		ChainOfTrust bool `json:"chainOfTrust,omitempty"`
 
 		// This allows you to interactively run commands from within the worker
@@ -1191,7 +1181,7 @@ func JSONSchema() string {
               "type": "boolean"
             },
             "chainOfTrust": {
-              "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0\n\nTasks may inject additional data into the certificate by writing them\nas json to file chain-of-trust-additional-data.json in the task\ndirectory.\n\nSince: generic-worker v81.0.0",
+              "description": "Artifacts named ` + "`" + `public/chain-of-trust.json` + "`" + ` and\n` + "`" + `public/chain-of-trust.json.sig` + "`" + ` should be generated which will\ninclude information for downstream tasks to build a level of trust\nfor the artifacts produced by the task and the environment it ran in.\n\nSince: generic-worker 5.3.0\n\nTasks may inject additional data into the certificate by writing them\nas json to file chain-of-trust-additional-data.json in the task\ndirectory.\n\nSince: generic-worker 81.0.0",
               "title": "Enable generation of signed Chain of Trust artifacts",
               "type": "boolean"
             },
@@ -1450,18 +1440,6 @@ func JSONSchema() string {
               "default": false,
               "description": "Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.",
               "title": "Enable generation of ed25519-signed Chain of Trust artifacts",
-              "type": "boolean"
-            },
-            "dind": {
-              "default": false,
-              "description": "Runs docker-in-docker and binds ` + "`" + `/var/run/docker.sock` + "`" + ` into the container. Doesn't allow privileged mode, capabilities or host volume mounts.",
-              "title": "Docker in Docker",
-              "type": "boolean"
-            },
-            "dockerSave": {
-              "default": false,
-              "description": "Uploads docker images as artifacts",
-              "title": "Docker save",
               "type": "boolean"
             },
             "interactive": {

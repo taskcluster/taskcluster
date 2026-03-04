@@ -23,7 +23,7 @@ export const cargoPublish = async ({ dir, token, push, logfile, utils }) => {
   // set up the cargo credentials
   if (token) {
     await mkdirp(path.join(homeDir, '.cargo'));
-    await fs.writeFileSync(path.join(homeDir, '.cargo', 'credentials'), `[registry]\ntoken = "${token}"\n`);
+    await fs.writeFileSync(path.join(homeDir, '.cargo', 'credentials.toml'), `[registry]\ntoken = "${token}"\n`);
   }
 
   try {

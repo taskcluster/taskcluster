@@ -13,7 +13,7 @@ builds:
       - freebsd_arm64
       - linux_amd64
       - linux_arm64
-      - windows_386
+      - windows_arm64
       - windows_amd64
 
 archives:

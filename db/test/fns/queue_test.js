@@ -304,6 +304,32 @@ suite(testing.suiteName(), function() {
       const res4 = await db.fns.get_claimed_tasks_by_task_queue_id('task/queue', 2, created, 'taskId0');
       assert.equal(res4.length, 2);
     });
+
+    helper.dbTest('listing claimed tasks by worker', async function (db) {
+      // empty result when no tasks claimed
+      const res = await db.fns.get_claimed_tasks_by_worker('task/queue', 'wg1', 'w1');
+      assert.deepEqual(res, []);
+
+      // add claims for worker w1
+      await db.fns.queue_claimed_task_put('task1', 0, fromNow('-20 seconds'), 'task/queue', 'wg1', 'w1');
+      await db.fns.queue_claimed_task_put('task2', 0, fromNow('-20 seconds'), 'task/queue', 'wg1', 'w1');
+      // add claim for different worker w2
+      await db.fns.queue_claimed_task_put('task3', 0, fromNow('-20 seconds'), 'task/queue', 'wg1', 'w2');
+
+      const res2 = await db.fns.get_claimed_tasks_by_worker('task/queue', 'wg1', 'w1');
+      assert.equal(res2.length, 2);
+      const taskIds = res2.map(r => r.task_id).sort();
+      assert.deepEqual(taskIds, ['task1', 'task2']);
+
+      // different worker should only see its own
+      const res3 = await db.fns.get_claimed_tasks_by_worker('task/queue', 'wg1', 'w2');
+      assert.equal(res3.length, 1);
+      assert.equal(res3[0].task_id, 'task3');
+
+      // different task_queue_id returns nothing
+      const res4 = await db.fns.get_claimed_tasks_by_worker('other/queue', 'wg1', 'w1');
+      assert.deepEqual(res4, []);
+    });
   });
 
   suite('tests for resolved tasks', function() {
@@ -2342,6 +2368,100 @@ suite(testing.suiteName(), function() {
         fromNow('1 hour'),
       );
       await expectStats({ worker_count: 2, quarantined_count: 1, pending_count: 1, claimed_count: 1 });
+    });
+  });
+
+  suite('priority change helpers', function() {
+    setup('reset tables', async function() {
+      await helper.withDbClient(async client => {
+        await client.query('truncate queue_pending_tasks');
+        await client.query('truncate tasks');
+        await client.query('truncate task_groups');
+        await client.query('truncate task_dependencies');
+      });
+    });
+
+    helper.dbTest('queue_change_task_priority updates pending rows', async function(db) {
+      const id = slugid.v4();
+      await create(db, { taskId: id });
+      await db.fns.queue_pending_tasks_add('prov/wt', 5, id, 0, 'hint-a', fromNow('10 minutes'));
+
+      const result = await db.fns.queue_change_task_priority(id, 'very-high');
+      assert.equal(result.length, 1);
+      assert.equal(result[0].priority, 'very-high');
+      assert.equal(result[0].old_priority, 'high');
+
+      await helper.withDbClient(async client => {
+        const { rows } = await client.query('select priority from queue_pending_tasks where task_id = $1', [id]);
+        assert.equal(rows.length, 1);
+        assert.equal(rows[0].priority, 6);
+      });
+    });
+
+    helper.dbTest('queue_change_task_priority skips resolved or expired tasks', async function(db) {
+      const id = slugid.v4();
+      await create(db, { taskId: id });
+      await db.fns.queue_pending_tasks_add('prov/wt', 5, id, 0, 'hint-b', fromNow('10 minutes'));
+
+      await helper.withDbClient(async client => {
+        await client.query('update tasks set ever_resolved = true where task_id = $1', [id]);
+      });
+
+      const resolvedAttempt = await db.fns.queue_change_task_priority(id, 'low');
+      assert.equal(resolvedAttempt.length, 0);
+
+      await helper.withDbClient(async client => {
+        await client.query('update tasks set ever_resolved = false, deadline = now() - interval \'5 minutes\' where task_id = $1', [id]);
+      });
+
+      const expiredAttempt = await db.fns.queue_change_task_priority(id, 'medium');
+      assert.equal(expiredAttempt.length, 0);
+
+      await helper.withDbClient(async client => {
+        const { rows } = await client.query('select priority from queue_pending_tasks where task_id = $1', [id]);
+        assert.equal(rows.length, 1);
+        assert.equal(rows[0].priority, 5);
+      });
+    });
+
+    helper.dbTest('queue_change_task_group_priority batches updates', async function(db) {
+      const groupId = slugid.v4();
+      const taskIds = [];
+      for (let i = 0; i < 150; i++) {
+        const id = slugid.v4();
+        taskIds.push(id);
+        await create(db, { taskId: id, taskGroupId: groupId });
+        await db.fns.queue_pending_tasks_add('prov/wt', 5, id, 0, `hint-${i}`, fromNow('30 minutes'));
+      }
+
+      const result = await db.fns.queue_change_task_group_priority(groupId, 'very-low', 150);
+      assert.equal(result.length, 150);
+      result.forEach(row => {
+        assert.equal(row.priority, 'very-low');
+        assert.equal(row.old_priority, 'high');
+      });
+
+      await helper.withDbClient(async client => {
+        const { rows } = await client.query(
+          'select task_id, priority from queue_pending_tasks where task_id = any($1::text[])',
+          [taskIds],
+        );
+        assert.equal(rows.length, 150);
+        rows.forEach(row => assert.equal(row.priority, 2));
+      });
+    });
+
+    helper.dbTest('queue_change_task_priority records previous value on subsequent updates', async function(db) {
+      const id = slugid.v4();
+      await create(db, { taskId: id });
+
+      const first = await db.fns.queue_change_task_priority(id, 'highest');
+      assert.equal(first.length, 1);
+      assert.equal(first[0].old_priority, 'high');
+
+      const second = await db.fns.queue_change_task_priority(id, 'medium');
+      assert.equal(second.length, 1);
+      assert.equal(second[0].old_priority, 'highest');
     });
   });
 });

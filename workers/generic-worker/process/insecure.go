@@ -7,8 +7,9 @@ import (
 	"os/exec"
 	"syscall"
 
-	gwruntime "github.com/taskcluster/taskcluster/v88/workers/generic-worker/runtime"
-	"golang.org/x/net/context"
+	"context"
+
+	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
 )
 
 type PlatformData struct {

@@ -164,6 +164,24 @@ export class LaunchConfigSelector {
           cfg.weight -= errorsCount / totalErrors;
         }
       }
+
+      // ensure single viable configs can spawn even with adjusted weight <= 0
+      // this prevents starvation for single-LC pools while preserving multi-LC balancing
+      const MIN_WEIGHT = 0.01;
+      for (const cfg of configsWithWeights) {
+        if (cfg.remainingCapacity > 0 && cfg.weight <= 0) {
+          const otherViableConfigs = configsWithWeights.filter(c =>
+            c !== cfg && c.remainingCapacity > 0 && c.weight > 0,
+          );
+
+          if (otherViableConfigs.length === 0) {
+            // this is the only config with remaining capacity
+            cfg.weight = MIN_WEIGHT;
+          } else {
+            cfg.weight = 0;
+          }
+        }
+      }
     }
 
     this.monitor.log.launchConfigSelectorsDebug({

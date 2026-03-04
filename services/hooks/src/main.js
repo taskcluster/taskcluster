@@ -100,19 +100,24 @@ const load = loader({
   },
 
   api: {
-    requires: ['cfg', 'db', 'schemaset', 'taskcreator', 'monitor', 'publisher', 'pulseClient'],
-    setup: ({ cfg, db, schemaset, taskcreator, monitor, publisher, pulseClient }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: {
-        db,
-        taskcreator,
-        publisher,
-        denylist: cfg.pulse.denylist,
-        monitor: monitor.childMonitor('api-context'),
-      },
-      schemaset,
-      monitor: monitor.childMonitor('api'),
-    }),
+    requires: ['cfg', 'db', 'schemaset', 'taskcreator', 'monitor', 'publisher'],
+    setup: ({ cfg, db, schemaset, taskcreator, monitor, publisher }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: {
+          db,
+          taskcreator,
+          publisher,
+          denylist: cfg.pulse.denylist,
+          monitor: monitor.childMonitor('api-context'),
+        },
+        schemaset,
+        monitor: monitor.childMonitor('api'),
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   listeners: {

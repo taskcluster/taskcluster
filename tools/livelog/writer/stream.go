@@ -1,10 +1,10 @@
 package writer
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -25,9 +25,10 @@ type Handles map[*StreamHandle]struct{}
 // emptyStruct cannot be declared as a constant, so var is next best option
 var emptyStruct = struct{}{}
 
-// by default, use the system temp dir; this is overridden in tests so they can
-// reliably clean up.
-var TempDir = ""
+// TempDir controls where livelog creates its temporary streaming files.
+// It defaults to the LIVELOG_TEMP_DIR environment variable if set, otherwise
+// the system temp dir. It is overridden in tests so they can reliably clean up.
+var TempDir = os.Getenv("LIVELOG_TEMP_DIR")
 
 type Stream struct {
 	Path   string
@@ -47,13 +48,14 @@ func NewStream(read io.Reader) (*Stream, error) {
 		return nil, err
 	}
 
-	path := fmt.Sprint(dir + "/stream")
+	path := filepath.Join(dir, "stream")
 	log.Printf("created at path %v", path)
 
 	file, openErr :=
 		os.OpenFile(path, os.O_APPEND|os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 
 	if openErr != nil {
+		os.RemoveAll(dir)
 		return nil, openErr
 	}
 

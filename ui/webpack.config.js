@@ -27,6 +27,9 @@ module.exports = (_, { mode }) => ({
   devtool: mode === "production" ? false : "cheap-module-eval-source-map",
   target: "web",
   context: __dirname,
+  watchOptions: {
+    ignored: (p) => !p.startsWith(__dirname),
+  },
   externals: { bindings: "bindings" },
   output: {
     path: `${__dirname}/build`,
@@ -89,6 +92,14 @@ module.exports = (_, { mode }) => ({
         ws: true,
         changeOrigin: true,
         target: proxyTarget.replace(/^http(s)?:/, "ws$1:"),
+        onError: function(err, req, res) {
+          console.warn("[WS Proxy Error]", err.code, err.message);
+        },
+        onProxyReqWs: function(proxyReq, req, socket) {
+          socket.on("error", function(err) {
+            console.warn("[WS Socket Error]", err.code, err.message);
+          });
+        },
       },
       "/api/web-server": {
         target: proxyTarget,

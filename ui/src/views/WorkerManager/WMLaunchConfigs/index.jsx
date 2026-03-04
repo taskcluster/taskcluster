@@ -201,11 +201,14 @@ export default class WMLaunchConfigs extends Component {
                   launchConfig.configuration?.region ??
                   launchConfig.configuration?.zone ??
                   launchConfig.configuration?.location ??
+                  launchConfig.configuration?.armDeployment?.parameters
+                    ?.location?.value ??
                   '',
                 initialWeight,
                 maxCapacity: launchConfig.configuration?.maxCapacity ?? -1,
                 currentCapacity: stats.currentCapacity || 0,
                 currentNonStoppedCapacity,
+
                 stats,
               },
             };

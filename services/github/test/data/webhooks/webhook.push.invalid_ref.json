@@ -1,0 +1,39 @@
+{
+  "headers": {
+    "X-GitHub-Event": "push",
+    "X-GitHub-Delivery": "test-invalid-ref",
+    "content-type": "application/json",
+    "X-Hub-Signature": "sha1=84fd8eb852da438affe1894f78e3e10b07969ea6"
+  },
+  "body": {
+    "ref": "invalid-ref-pattern",
+    "before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "after": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "repository": {
+      "full_name": "owner/test-repo",
+      "clone_url": "https://github.com/owner/test-repo.git",
+      "owner": {
+        "login": "owner"
+      }
+    },
+    "pusher": {
+      "name": "testuser"
+    },
+    "head_commit": {
+      "id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "message": "Test commit"
+    },
+    "commits": [
+      {
+        "id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "message": "Test commit"
+      }
+    ],
+    "installation": {
+      "id": 5808
+    },
+    "sender": {
+      "login": "testuser"
+    }
+  }
+}

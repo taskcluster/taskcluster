@@ -166,9 +166,9 @@ MonitorManager.registerMetric('httpRequestsTotal', {
   description: 'Total number of HTTP requests',
   labels: {
     method: 'HTTP method',
-    path: 'HTTP path',
+    name: 'API method name',
     status: 'Response status code',
-    service: 'Serice name',
+    service: 'Service name',
   },
 });
 
@@ -179,9 +179,9 @@ MonitorManager.registerMetric('httpRequestDurationSeconds', {
   description: 'HTTP request duration in seconds',
   labels: {
     method: 'HTTP method',
-    path: 'HTTP path',
+    name: 'API method name',
     status: 'Response status code',
-    service: 'Serice name',
+    service: 'Service name',
   },
   buckets: [0.01, 0.05, 0.1, 0.5, 1, 5, 10],
 });

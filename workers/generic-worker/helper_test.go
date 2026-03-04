@@ -24,13 +24,13 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v88/clients/client-go"
-	"github.com/taskcluster/taskcluster/v88/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v88/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v88/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v88/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
 )
 
 var (
@@ -291,8 +291,8 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 					}
 					defaults.SetDefaults(&payload)
 					td := testTask(t)
-					// Set 6 month expiry
-					td.Expires = tcclient.Time(time.Now().AddDate(0, 6, 0))
+					// Set 6 year expiry
+					td.Expires = tcclient.Time(time.Now().AddDate(6, 0, 0))
 					td.Metadata.Name = "Task dependency for generic-worker integration tests"
 					td.Metadata.Description = fmt.Sprintf("Single artifact %v from path %v with hash %v", name, path, hex.EncodeToString(sha256))
 					scheduleNamedTask(t, td, payload, taskID)
@@ -304,14 +304,21 @@ func CreateArtifactFromFile(t *testing.T, path string, name string) (taskID stri
 		t.Fatalf("%#v", err)
 	}
 
-	// If task expires in the next two minutes, just fail intentionally. It
-	// isn't worth trying to handle this situation, since the task only expires
-	// after 6 months, so the chance of hitting the two minute period before it
-	// expires is extremely small, and the error will explicitly report it
-	// anyway.
+	// If task already expired but not purged from database, or expires in the
+	// next two minutes, just fail intentionally. It isn't worth trying to
+	// handle this situation, since the task only expires after 6 years, so the
+	// chance of hitting is reasonably small, and the error will explicitly
+	// report it anyway.
 	remainingTime := time.Until(time.Time(tdr.Expires))
 	if remainingTime.Seconds() < 120 {
-		t.Fatalf("You've been extremely unlucky. This test depends on task %q that was created six months ago but is due to expire in less than two minutes (%v). Wait a few minutes and try again!", taskID, remainingTime)
+		message := "You've been extremely unlucky. This test depends on task " + taskID + " that was created six years ago"
+		if remainingTime.Seconds() > 0 {
+			message += fmt.Sprintf(" but is due to expire in less than two minutes (in %v).", remainingTime)
+		} else {
+			message += fmt.Sprintf(", has expired (%v ago), but has not yet been purged from database.", -remainingTime)
+		}
+		message += " Wait until task purged from database (at time of writing, purge task process runs once per day at ten past midnight (00:10) UCT; see https://github.com/taskcluster/taskcluster/blob/76217b7aae8ff6aab0c586875966e4b9dbf8573d/services/queue/procs.yml#L25-L29) and try again!"
+		t.Fatal(message)
 	}
 	t.Logf("Depend on task %q which expires in %v.", taskID, remainingTime)
 	return
@@ -329,6 +336,7 @@ type (
 		Extracts         []string
 		ContentType      string
 		ContentEncoding  string
+		ContentLength    int64
 		Expires          tcclient.Time
 		SkipContentCheck bool
 		StorageType      string
@@ -349,12 +357,10 @@ func GWTest(t *testing.T) *Test {
 			AvailabilityZone:              "outer-space",
 			// Need common caches directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
-			CachesDir:                      cachesDir,
-			CheckForNewDeploymentEverySecs: 0,
-			CleanUpTaskDirs:                false,
-			ClientID:                       os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			DeploymentID:                   "",
-			DisableReboots:                 true,
+			CachesDir:       cachesDir,
+			CleanUpTaskDirs: false,
+			ClientID:        os.Getenv("TASKCLUSTER_CLIENT_ID"),
+			DisableReboots:  true,
 			// Need common downloads directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
 			DownloadsDir:              filepath.Join(cwd, "downloads"),
@@ -554,6 +560,11 @@ func (expectedArtifacts ExpectedArtifacts) Validate(t *testing.T, taskID string,
 		if expected.StorageType != "" {
 			if actual.StorageType != expected.StorageType {
 				t.Errorf("Artifact %s should have storage type '%v' but has '%s'", artifactName, expected.StorageType, actual.StorageType)
+			}
+		}
+		if expected.ContentLength != 0 {
+			if actual.ContentLength != expected.ContentLength {
+				t.Errorf("Artifact %s should have contentLength %d but has %d", artifactName, expected.ContentLength, actual.ContentLength)
 			}
 		}
 		if !time.Time(expected.Expires).IsZero() {

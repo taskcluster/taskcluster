@@ -20,12 +20,16 @@ spec:
       serviceAccountName: taskcluster-github
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
       terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-github-worker
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - github/worker
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.github.procs.worker.cpu }}'

@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v88/internal/scopes"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v88/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v97/internal/scopes"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
 )
 
 type (
@@ -68,33 +69,46 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 
 	var isImageArtifact bool
 	var key string
-	imageArtifactPath := filepath.Join(taskContext.TaskDir, "dockerimage")
-	if _, err := os.Stat(imageArtifactPath); os.IsNotExist(err) {
-		// DockerImageName or NamedDockerImage, no image artifact
-		key = dtf.task.D2GInfo.Image.String(false)
-	} else {
-		// DockerImageArtifact or IndexedDockerImage
+	if dtf.task.D2GInfo.ImageArtifactSHA256 != "" {
+		// DockerImageArtifact or IndexedDockerImage — mounts feature
+		// has downloaded the image to the file cache
 		isImageArtifact = true
-		key, err = fileutil.CalculateSHA256(imageArtifactPath)
-		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not calculate SHA256 of docker image artifact: %v", err))
-		}
+		key = dtf.task.D2GInfo.ImageArtifactSHA256
+	} else {
+		// DockerImageName or NamedDockerImage — pull from registry
+		key = dtf.task.D2GInfo.Image.String()
 	}
 
 	image := dtf.imageCache[key]
 
-	if image == nil {
+	// Always want to re-pull the docker image
+	// if it's not an image artifact, as the
+	// tag could be outdated
+	// (see https://github.com/taskcluster/taskcluster/issues/8004)
+	if image == nil || !isImageArtifact {
 		dtf.task.Info("[d2g] Loading docker image")
 
 		var cmd *process.Command
 		var err error
 		if isImageArtifact {
+			// Open the cached image file as the worker user (which owns
+			// the cache directory). Pipe it to docker load via stdin so
+			// the task user process doesn't need file system access.
+			cachedImageFile, err := os.Open(dtf.task.D2GInfo.ImageArtifactPath)
+			if err != nil {
+				return executionError(internalError, errored, fmt.Errorf("[d2g] could not open cached docker image at %v: %v", dtf.task.D2GInfo.ImageArtifactPath, err))
+			}
+			defer cachedImageFile.Close()
+
 			cmd, err = process.NewCommandNoOutputStreams([]string{
 				"docker",
 				"load",
-				"--input",
-				"dockerimage",
+				"--quiet",
 			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+			if err != nil {
+				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
+			}
+			cmd.Stdin = cachedImageFile
 		} else {
 			cmd, err = process.NewCommandNoOutputStreams([]string{
 				"docker",
@@ -102,18 +116,35 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				"--quiet",
 				key,
 			}, taskContext.TaskDir, []string{}, dtf.task.pd)
-		}
-		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
+			if err != nil {
+				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to pull docker image: %v", err))
+			}
 		}
 		out, err := cmd.Output()
 		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not load docker image: %v\n%v", err, string(out)))
+			return executionError(internalError, errored, formatCommandError("[d2g] could not load docker image", err, out))
 		}
 
-		imageName := strings.TrimSpace(string(out))
+		// Default to use the first line of output for image
+		// name as docker load can output multiple tags for the
+		// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
+		lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+		imageName := lines[0]
 		if isImageArtifact {
-			imageName = strings.TrimPrefix(imageName, "Loaded image: ")
+			imageNameFound := false
+			// Find the first line with "Loaded image: " prefix
+			// (see https://github.com/taskcluster/taskcluster/issues/7969)
+			for _, line := range lines {
+				if name, found := strings.CutPrefix(line, "Loaded image: "); found {
+					imageName = name
+					imageNameFound = true
+					break
+				}
+			}
+
+			if !imageNameFound {
+				return executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
+			}
 		}
 		imageID := imageName
 
@@ -133,10 +164,14 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			}
 			out, err = cmd.Output()
 			if err != nil {
-				return executionError(internalError, errored, fmt.Errorf("[d2g] could not get sha256 of docker image: %v\n%v", err, string(out)))
+				return executionError(internalError, errored, formatCommandError("[d2g] could not get sha256 of docker image", err, out))
 			}
 
-			imageID = strings.Split(strings.TrimSpace(string(out)), ":")[1]
+			// Only use the first line of output for image ID
+			// as docker images can output multiple sha256's for the
+			// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
+			idLine := strings.Split(strings.TrimSpace(string(out)), "\n")[0]
+			imageID = strings.TrimPrefix(idLine, "sha256:")
 		}
 
 		image = &Image{
@@ -153,12 +188,6 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		dtf.task.Payload.Env = make(map[string]string)
 	}
 
-	dtf.task.Payload.Env["D2G_IMAGE_ID"] = image.ID
-	err := dtf.task.setVariable("D2G_IMAGE_ID", image.ID)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("[d2g] could not set D2G_IMAGE_ID environment variable: %v", err))
-	}
-
 	if dtf.task.DockerWorkerPayload.Features.ChainOfTrust {
 		cmd, err := process.NewCommandNoOutputStreams([]string{
 			"docker",
@@ -171,7 +200,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		}
 		out, err := cmd.Output()
 		if err != nil {
-			return executionError(internalError, errored, fmt.Errorf("[d2g] could not inspect docker image: %v\n%v", err, string(out)))
+			return executionError(internalError, errored, formatCommandError("[d2g] could not inspect docker image", err, out))
 		}
 		imageHash := strings.TrimSpace(string(out))
 
@@ -188,40 +217,24 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not write chain of trust additional data file: %v", err))
 		}
 	}
+
+	envFile, err := os.Create(filepath.Join(taskContext.TaskDir, "env.list"))
+	if err != nil {
+		return executionError(internalError, errored, fmt.Errorf("[d2g] could not create env.list file: %v", err))
+	}
+	defer envFile.Close()
+
+	_, err = envFile.WriteString(dtf.task.D2GInfo.EnvVars)
+	if err != nil {
+		return executionError(internalError, errored, fmt.Errorf("[d2g] could not write to env.list file: %v", err))
+	}
+
+	dtf.evaluateCommandPlaceholders(image.ID)
+
 	return nil
 }
 
 func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
-	if dtf.task.DockerWorkerPayload.Features.DockerSave {
-		cmd, e := process.NewCommandNoOutputStreams([]string{
-			"docker",
-			"commit",
-			dtf.task.D2GInfo.ContainerName,
-			dtf.task.D2GInfo.ContainerName,
-		}, taskContext.TaskDir, []string{}, dtf.task.pd)
-		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to commit docker container: %v", e)))
-		}
-		out, e := cmd.CombinedOutput()
-		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not commit docker container: %v\n%v", e, string(out))))
-		}
-
-		cmd, e = process.NewCommandNoOutputStreams([]string{
-			"/usr/bin/env",
-			"bash",
-			"-c",
-			fmt.Sprintf("docker save %s | gzip > image.tar.gz", dtf.task.D2GInfo.ContainerName),
-		}, taskContext.TaskDir, []string{}, dtf.task.pd)
-		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to save docker image: %v", e)))
-		}
-		out, e = cmd.CombinedOutput()
-		if e != nil {
-			err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not save docker image: %v\n%v", e, string(out))))
-		}
-	}
-
 	for _, artifact := range dtf.task.D2GInfo.CopyArtifacts {
 		cmd, e := process.NewCommandNoOutputStreams([]string{
 			"docker",
@@ -234,7 +247,7 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		}
 		out, e := cmd.CombinedOutput()
 		if e != nil {
-			dtf.task.Warnf("[d2g] Artifact %q not found at %q: %v\n%v", artifact.Name, artifact.SrcPath, e, string(out))
+			dtf.task.Warnf("%v", formatCommandError(fmt.Sprintf("[d2g] Artifact %q not found at %q", artifact.Name, artifact.SrcPath), e, out))
 		}
 	}
 
@@ -242,7 +255,6 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		"docker",
 		"rm",
 		"--force",
-		"--volumes",
 		dtf.task.D2GInfo.ContainerName,
 	}, taskContext.TaskDir, []string{}, dtf.task.pd)
 	if e != nil {
@@ -250,7 +262,7 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 	}
 	out, e := cmd.CombinedOutput()
 	if e != nil {
-		err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not remove docker container: %v\n%v", e, string(out))))
+		err.add(executionError(internalError, errored, formatCommandError("[d2g] could not remove docker container", e, out)))
 	}
 
 	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&dtf.imageCache, "d2g-image-cache.json")))
@@ -268,4 +280,42 @@ func (ic *ImageCache) loadFromFile(stateFile string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string) {
+	videoDevice, _ := dtf.task.getVariable("TASKCLUSTER_VIDEO_DEVICE")
+	placeholders := strings.NewReplacer(
+		"__D2G_IMAGE_ID__", imageID,
+		"__TASK_DIR__", taskContext.TaskDir,
+		"__TASKCLUSTER_VIDEO_DEVICE__", videoDevice,
+	)
+
+	// Update commands in the payload so that
+	// task.formatCommand() correctly logs out
+	// the commands with placeholders replaced
+	// before task execution
+	for _, command := range dtf.task.Payload.Command {
+		for i, arg := range command {
+			command[i] = placeholders.Replace(arg)
+		}
+	}
+
+	// Update commands that are actually executed
+	for _, command := range dtf.task.Commands {
+		for i, arg := range command.Args {
+			command.Args[i] = placeholders.Replace(arg)
+		}
+	}
+}
+
+// formatCommandError creates a detailed error message from command execution failure
+// For cmd.Output(), out contains stdout and stderr may be in ExitError
+// For cmd.CombinedOutput(), out contains both stdout and stderr combined
+func formatCommandError(prefix string, err error, out []byte) error {
+	errorMsg := fmt.Sprintf("%s: %v\n%v", prefix, err, string(out))
+	if exitErr, ok := err.(*exec.ExitError); ok && len(exitErr.Stderr) > 0 {
+		// This is from cmd.Output() where stderr is separate
+		errorMsg = fmt.Sprintf("%s: %v\nstdout: %v\nstderr: %v", prefix, err, string(out), string(exitErr.Stderr))
+	}
+	return fmt.Errorf("%s", errorMsg)
 }
