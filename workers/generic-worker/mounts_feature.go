@@ -82,6 +82,15 @@ func getCacheRWLock(cacheName string) *sync.RWMutex {
 	return rw
 }
 
+// deleteCacheRWLock removes the per-cache lock from the map. Must only be
+// called while holding the per-cache write lock, so no other goroutine can
+// be using or waiting on this lock.
+func deleteCacheRWLock(cacheName string) {
+	cacheRWMu.Lock()
+	defer cacheRWMu.Unlock()
+	delete(cacheRWLocks, cacheName)
+}
+
 type Cache struct {
 	Created time.Time `json:"created"`
 	// the full path to the cache on disk (could be file or directory)
@@ -477,9 +486,15 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 		if purgeCaches {
 			switch cache := mount.(type) {
 			case *WritableDirectoryCache:
+				// Acquire the per-cache write lock to ensure no concurrent
+				// task is reading from this cache directory during eviction.
+				cacheRWLock := getCacheRWLock(cache.CacheName)
+				cacheRWLock.Lock()
 				cacheMutex.Lock()
 				err.add(Failure(directoryCaches[cache.CacheName].Evict(taskMount)))
 				cacheMutex.Unlock()
+				deleteCacheRWLock(cache.CacheName)
+				cacheRWLock.Unlock()
 				continue
 			}
 		}
@@ -671,10 +686,7 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 	}
 
 	rw := getCacheRWLock(w.CacheName)
-	if !rw.TryLock() {
-		taskMount.Warnf("Cache %q busy; skipping promotion", w.CacheName)
-		return nil
-	}
+	rw.Lock()
 	defer rw.Unlock()
 
 	cacheMutex.RLock()
@@ -703,6 +715,7 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 		cacheMutex.Lock()
 		evictErr := cache.Evict(taskMount)
 		cacheMutex.Unlock()
+		deleteCacheRWLock(w.CacheName)
 		if evictErr != nil {
 			panic(evictErr)
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -129,11 +130,15 @@ func (tm *TaskManager) updateWorkerStatusLocked() {
 
 	if len(ids) == 0 {
 		// No tasks running, remove the status file
-		os.Remove(workerStatusPath)
+		if err := os.Remove(workerStatusPath); err != nil && !os.IsNotExist(err) {
+			log.Printf("WARNING: could not remove worker status file: %v", err)
+		}
 	} else {
 		status := &WorkerStatus{
 			CurrentTaskIDs: ids,
 		}
-		_ = fileutil.WriteToFileAsJSON(status, workerStatusPath)
+		if err := fileutil.WriteToFileAsJSON(status, workerStatusPath); err != nil {
+			log.Printf("WARNING: could not write worker status file: %v", err)
+		}
 	}
 }
