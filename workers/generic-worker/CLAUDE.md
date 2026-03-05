@@ -120,6 +120,56 @@ Features implement the `Feature` / `TaskFeature` interfaces:
 - `TaskFeature` is created per task via `NewTaskFeature(task *TaskRun)`
 - TaskFeature structs hold a `task *TaskRun` field for accessing per-task state
 
+### Multiuser engine constraints
+
+- The multiuser engine creates a restricted OS user per task. The task user can
+  only write within their task directory (granted via `chown` on posix, `icacls`
+  on Windows).
+- Mount paths (file/directory/cache) can be relative (resolved against the task
+  directory) or absolute. Absolute paths require the target to be writable by
+  the task user.
+- `CreateFileAsTaskUser` / `CreateDirAsTaskUser` run `generic-worker create-file`
+  / `create-dir` subcommands as the task user. These will fail if the target
+  location is not writable by the task user.
+- `os.Chmod(0777)` works on posix but NOT on Windows — Windows ACLs are separate
+  from POSIX permissions. On Windows, use `icacls <dir> /grant Everyone:(OI)(CI)F`
+  or the existing `makeFileOrDirReadWritableForUser` helper.
+
+### Mount system
+
+- `WritableDirectoryCache` has separate `CacheName` (for scopes) and `Directory`
+  (for mount path). Caches are moved to `config.CachesDir` during unmount and
+  moved back into place during mount.
+- Mount content is downloaded to the worker's `downloads/` dir, then copied to
+  the target path. On multiuser, file creation at the target is done as the task
+  user.
+- `check-shasums.sh` / `check-shasums.ps1` from the
+  [testrepo](https://github.com/taskcluster/testrepo/tree/master/generic-worker)
+  verify SHA256 of mounted files at runtime inside the task.
+- `checkSHA256(t, hex, path)` helper in `helper_test.go` verifies file integrity
+  from Go test code.
+
+### CI scopes and test caches
+
+- CI client `project/taskcluster/generic-worker/taskcluster-ci` has limited scopes.
+- Cache scopes are defined in the
+  [community-tc-config](https://github.com/taskcluster/community-tc-config) repo
+  at `config/projects/taskcluster.yml`.
+- Available test cache scopes: `apple-cache`, `banana-cache`, `devtools-app`,
+  `test-modifications`, `unknown-issuer-app-cache`.
+- Adding new cache names requires a PR to the community-tc-config repo.
+
+### Test helpers
+
+- `testdataDir` = `filepath.Join(cwd, "testdata")` — use instead of
+  `filepath.Join(cwd, "testdata", ...)`.
+- `makeDirWorldWritable(t, dir)` — makes a directory writable by any user
+  (posix: `chmod 0777`, Windows: `icacls ... /grant Everyone:(OI)(CI)F`).
+  Use when testing absolute paths outside the task directory.
+- `incrementCounterInCacheDir(dir)` — runs a task command that increments a
+  counter file inside the given cache directory. Used for testing cache
+  persistence across tasks.
+
 ## Complete Validation Checklist
 
 Before submitting a PR:
