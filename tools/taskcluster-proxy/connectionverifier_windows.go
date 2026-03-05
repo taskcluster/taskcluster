@@ -142,5 +142,8 @@ func getProcessUserSID(pid uint32) (*windows.SID, error) {
 		return nil, fmt.Errorf("GetTokenUser: %w", err)
 	}
 
-	return (*windows.SID)(unsafe.Pointer(tokenUser.User.Sid)), nil
+	// Copy the SID so the returned pointer doesn't alias the tokenUser
+	// buffer, which may be garbage-collected after this function returns.
+	sid := (*windows.SID)(unsafe.Pointer(tokenUser.User.Sid))
+	return sid.Copy()
 }

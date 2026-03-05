@@ -3,6 +3,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/taskcluster/taskcluster/v98/internal/scopes"
 )
 
@@ -22,6 +24,13 @@ func (feature *RunTaskAsCurrentUserFeature) IsEnabled() bool {
 	// per-task user isolation, giving the task full access to other tasks'
 	// directories, proxy ports, and credentials.
 	return config.EnableRunTaskAsCurrentUser && config.Capacity == 1
+}
+
+func (feature *RunTaskAsCurrentUserFeature) DisabledReason() string {
+	if config.Capacity > 1 {
+		return fmt.Sprintf("feature %q is not compatible with capacity > 1 (current capacity: %d) because it would bypass per-task user isolation", feature.Name(), config.Capacity)
+	}
+	return ""
 }
 
 func (feature *RunTaskAsCurrentUserFeature) IsRequested(task *TaskRun) bool {

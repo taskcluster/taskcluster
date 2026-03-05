@@ -25,6 +25,13 @@ func (feature *RunAsAdministratorFeature) IsEnabled() bool {
 	return config.EnableRunAsAdministrator && config.Capacity == 1
 }
 
+func (feature *RunAsAdministratorFeature) DisabledReason() string {
+	if config.Capacity > 1 {
+		return fmt.Sprintf("feature %q is not compatible with capacity > 1 (current capacity: %d) because it would bypass per-task user isolation", feature.Name(), config.Capacity)
+	}
+	return ""
+}
+
 func (feature *RunAsAdministratorFeature) IsRequested(task *TaskRun) bool {
 	return task.Payload.Features.RunAsAdministrator
 }

@@ -7,10 +7,11 @@ import (
 	"github.com/taskcluster/taskcluster/v98/workers/generic-worker/gwconfig"
 )
 
-// Port allocation indices within a task's port block
+// Port allocation indices within a task's port block.
+// LiveLog convention: base port = PUT, base+1 = GET.
 const (
-	PortIndexLiveLogGET       = 0
-	PortIndexLiveLogPUT       = 1
+	PortIndexLiveLogPUT       = 0
+	PortIndexLiveLogGET       = 1
 	PortIndexInteractive      = 2
 	PortIndexTaskclusterProxy = 3
 )
@@ -62,8 +63,8 @@ func (pm *PortManager) AllocatePorts(taskID string) ([]uint16, error) {
 	// Calculate ports for this slot
 	offset := uint16(slot) * uint16(gwconfig.PortsPerTask)
 	ports := []uint16{
-		pm.liveLogBase + offset,     // LiveLog GET
-		pm.liveLogBase + offset + 1, // LiveLog PUT
+		pm.liveLogBase + offset,     // LiveLog PUT (base port)
+		pm.liveLogBase + offset + 1, // LiveLog GET (base + 1)
 		pm.interactiveBase + offset, // Interactive
 		pm.proxyBase + offset,       // TaskclusterProxy
 	}
@@ -92,15 +93,15 @@ func (pm *PortManager) GetPorts(taskID string) []uint16 {
 	return pm.allocated[taskID]
 }
 
-// LiveLogPorts returns the LiveLog GET and PUT ports for a task.
-func (pm *PortManager) LiveLogPorts(taskID string) (getPort, putPort uint16, ok bool) {
+// LiveLogPorts returns the LiveLog PUT and GET ports for a task.
+func (pm *PortManager) LiveLogPorts(taskID string) (putPort, getPort uint16, ok bool) {
 	pm.Lock()
 	defer pm.Unlock()
 	ports, exists := pm.allocated[taskID]
 	if !exists || len(ports) < 2 {
 		return 0, 0, false
 	}
-	return ports[PortIndexLiveLogGET], ports[PortIndexLiveLogPUT], true
+	return ports[PortIndexLiveLogPUT], ports[PortIndexLiveLogGET], true
 }
 
 // InteractivePort returns the Interactive port for a task.

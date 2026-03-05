@@ -62,11 +62,11 @@ func (l *LiveLogTask) RequiredScopes() scopes.Required {
 
 func (l *LiveLogTask) Start() *CommandExecutionError {
 	// Get allocated ports for this task
-	getPort, putPort, ok := l.task.LiveLogPorts()
+	putPort, getPort, ok := l.task.LiveLogPorts()
 	if !ok {
 		// Fall back to config defaults if ports not allocated
-		getPort = config.LiveLogPortBase + 1
 		putPort = config.LiveLogPortBase
+		getPort = config.LiveLogPortBase + 1
 	}
 
 	liveLog, err := livelog.New(config.LiveLogExecutable, putPort, getPort)

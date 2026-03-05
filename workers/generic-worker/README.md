@@ -136,8 +136,9 @@ and reports back results to the queue.
                                             When greater than 1, the worker claims and executes
                                             multiple tasks in parallel, each in its own task
                                             directory with isolated ports for LiveLog,
-                                            Interactive, and TaskclusterProxy features. Requires
-                                            headlessTasks enabled. The runTaskAsCurrentUser and
+                                            Interactive, and TaskclusterProxy features. In
+                                            multiuser mode, requires headlessTasks enabled. The
+                                            runTaskAsCurrentUser and
                                             runAsAdministrator task features are automatically
                                             disabled when capacity > 1 to preserve task
                                             isolation. Maximum value is 255.
