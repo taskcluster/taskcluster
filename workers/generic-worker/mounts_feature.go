@@ -477,9 +477,14 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 		if purgeCaches {
 			switch cache := mount.(type) {
 			case *WritableDirectoryCache:
+				// Acquire the per-cache write lock to ensure no concurrent
+				// task is reading from this cache directory during eviction.
+				cacheRWLock := getCacheRWLock(cache.CacheName)
+				cacheRWLock.Lock()
 				cacheMutex.Lock()
 				err.add(Failure(directoryCaches[cache.CacheName].Evict(taskMount)))
 				cacheMutex.Unlock()
+				cacheRWLock.Unlock()
 				continue
 			}
 		}

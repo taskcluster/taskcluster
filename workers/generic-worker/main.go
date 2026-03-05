@@ -613,6 +613,7 @@ mainLoop:
 				if err != nil {
 					log.Printf("ERROR getting platform data for %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
+					taskManager.WaitForAll()
 					return INTERNAL_ERROR
 				}
 				task.pd = pd
@@ -621,6 +622,7 @@ mainLoop:
 				if err != nil {
 					log.Printf("Invalid generic-worker binary for task %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
+					taskManager.WaitForAll()
 					return INTERNAL_ERROR
 				}
 
@@ -629,12 +631,13 @@ mainLoop:
 				if err != nil {
 					log.Printf("ERROR allocating ports for task %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
+					taskManager.WaitForAll()
 					return INTERNAL_ERROR
 				}
 				task.AllocatedPorts = allocatedPorts
-				log.Printf("Task %s allocated ports: LiveLog=%d/%d, Interactive=%d, TaskclusterProxy=%d",
+				log.Printf("Task %s allocated ports: LiveLog(PUT/GET)=%d/%d, Interactive=%d, TaskclusterProxy=%d",
 					task.TaskID,
-					allocatedPorts[PortIndexLiveLogGET], allocatedPorts[PortIndexLiveLogPUT],
+					allocatedPorts[PortIndexLiveLogPUT], allocatedPorts[PortIndexLiveLogGET],
 					allocatedPorts[PortIndexInteractive], allocatedPorts[PortIndexTaskclusterProxy])
 
 				logEvent("taskQueued", task, time.Time(task.Definition.Created))
@@ -1094,6 +1097,14 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	for _, feature := range features {
 		if feature.IsRequested(task) {
 			if !feature.IsEnabled() {
+				// Check if the feature provides a specific reason for being disabled
+				// (e.g. incompatible with capacity > 1)
+				if drp, ok := feature.(DisabledReasonProvider); ok {
+					if reason := drp.DisabledReason(); reason != "" {
+						err.add(MalformedPayloadError(fmt.Errorf("%s", reason)))
+						return
+					}
+				}
 				workerPoolID := config.ProvisionerID + "/" + config.WorkerType
 				workerManagerURL := config.RootURL + "/worker-manager/" + url.PathEscape(workerPoolID)
 				err.add(MalformedPayloadError(fmt.Errorf(`this task is attempting to use feature %q, but it's not enabled on this worker pool (%s)

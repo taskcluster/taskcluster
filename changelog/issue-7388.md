@@ -20,7 +20,7 @@ Generic Worker now supports running multiple tasks concurrently via the new `cap
 - Each concurrent task receives its own task directory under `tasksDir`, its own set of dynamically allocated ports for LiveLog, Interactive, and TaskclusterProxy, and (in multiuser mode) its own OS user.
 - Caches and mounts are protected by per-cache read/write locks so that multiple tasks can read from the same cache concurrently while writes are serialized.
 - Docker image loading (D2G) uses file-level locking so parallel tasks sharing the same image coordinate without redundant loads.
-- TaskclusterProxy now verifies that incoming connections originate from the OS user running the task, preventing one task from accessing another task's credentials. This is implemented via `/proc/net/tcp` on Linux, `lsof` on macOS, and `GetExtendedTcpTable` on Windows.
+- In multiuser mode, TaskclusterProxy now verifies that incoming connections originate from the OS user running the task, preventing one task from accessing another task's credentials. This is implemented via `/proc/net/tcp` on Linux, `lsof` on macOS, and `GetExtendedTcpTable` on Windows. Note: in insecure mode, all tasks run as the same OS user, so UID-based connection verification is not possible; insecure mode with `capacity` > 1 does not provide credential isolation between concurrent tasks.
 
 **Constraints:**
 

@@ -44,10 +44,11 @@ func (r Resources) Swap(i, j int) {
 	r[i], r[j] = r[j], r[i]
 }
 
-// Note ideally this would run in an independent thread, but since we have one
-// job at a time, we can sequence it between task runs. Also it should be
-// independent of mounts feature, but let's go with it here as currently that
-// is the only feature that uses it.
+// Note this runs in the main loop goroutine between claim attempts. With
+// capacity > 1, other tasks may be running concurrently, but docker pruning
+// only removes unused resources so this is safe. It should be independent of
+// mounts feature, but let's go with it here as currently that is the only
+// feature that uses it.
 func runGarbageCollection(r Resources) error {
 	currentFreeSpace, err := freeDiskSpaceBytes(config.TasksDir)
 	if err != nil {

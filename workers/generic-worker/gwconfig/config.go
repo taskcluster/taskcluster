@@ -143,6 +143,10 @@ func (c *Config) Validate() error {
 		}
 	}
 
+	if c.Capacity == 0 {
+		return fmt.Errorf("capacity must be at least 1 (got 0)")
+	}
+
 	// Validate port configuration for concurrent task execution
 	if err := c.ValidatePortConfiguration(); err != nil {
 		return err
