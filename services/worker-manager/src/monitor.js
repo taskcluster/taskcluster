@@ -85,9 +85,9 @@ MonitorManager.register({
   name: 'simpleEstimate',
   title: 'Simple Estimate Provided',
   type: 'simple-estimate',
-  version: 4,
+  version: 5,
   level: 'any',
-  description: 'The simple estimator has decided that we need some number of instances.',
+  description: 'The simple estimator has decided that we need some number of instances. Note: stoppingCapacity field is deprecated and no longer used in calculations.',
   fields: {
     workerPoolId: 'The worker pool name',
     pendingTasks: 'The number of tasks the queue reports are pending for this worker pool',
@@ -97,7 +97,7 @@ MonitorManager.register({
     existingCapacity: 'Amount of currently requested and available capacity',
     desiredCapacity: 'Amount of capacity that this estimator thinks we should have',
     requestedCapacity: 'Amount of capacity that this estimator thinks we should add',
-    stoppingCapacity: 'Amount of capacity being stopped',
+    stoppingCapacity: 'Amount of capacity being stopped (deprecated, not used in calculations)',
   },
 });
 
