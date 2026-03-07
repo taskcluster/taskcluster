@@ -3,6 +3,7 @@ install-state.gz
 .eslintcache
 user-build-config.yml
 *.log
+.claude
 .idea
 .vscode
 user-config.*
