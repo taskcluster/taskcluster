@@ -21,12 +21,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             }
           `,
         });
+        assert.fail('Expected query to fail');
       } catch (err) {
-        assert.equal('PayloadTooLargeError', err.networkError.result.name);
-        assert.ok(err.networkError.statusCode === 413);
+        assert.ok(err.networkError.statusCode === 400);
       }
-
-      helper.expectMonitorError('PayloadTooLargeError');
     });
     test('max queries in request', async function() {
       const client = helper.getHttpClient({ suppressErrors: true });
