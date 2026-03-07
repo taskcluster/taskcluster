@@ -23,6 +23,7 @@ type Auth interface {
 
 type Index interface {
 	FindTask(indexPath string) (*tcindex.IndexedTaskResponse, error)
+	InsertTask(namespace string, payload *tcindex.InsertTaskRequest) (*tcindex.IndexedTaskResponse, error)
 }
 
 type WorkerManager interface {
