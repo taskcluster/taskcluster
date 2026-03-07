@@ -4,10 +4,39 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"testing"
 )
+
+// makeDirWorldWritable makes a directory writable by any user, so that
+// the multiuser engine task user can write to it. On posix this is a
+// simple chmod 0777.
+func makeDirWorldWritable(t *testing.T, dir string) {
+	t.Helper()
+	err := os.Chmod(dir, 0777)
+	if err != nil {
+		t.Fatalf("Failed to chmod %s: %v", dir, err)
+	}
+}
+
+// worldWritableTempDir creates a temporary directory that any user
+// can write to. On posix, /tmp is world-writable so os.MkdirTemp
+// works directly, and we chmod 0777 the result.
+func worldWritableTempDir(t *testing.T, pattern string) string {
+	t.Helper()
+	dir, err := os.MkdirTemp("", pattern)
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	t.Cleanup(func() {
+		os.RemoveAll(dir)
+	})
+	makeDirWorldWritable(t, dir)
+	return dir
+}
 
 func helloGoodbye() [][]string {
 	return [][]string{
@@ -83,18 +112,18 @@ func checkSHASums() [][]string {
 	}
 }
 
-func incrementCounterInCache() [][]string {
+func incrementCounterInCacheDir(dir string) [][]string {
 	return [][]string{
 		{
 			"/usr/bin/env",
 			"bash",
 			"-c",
-			`if [ ! -f "my-task-caches/test-modifications/counter" ]; then
-			  echo -n '1' > "my-task-caches/test-modifications/counter"
+			fmt.Sprintf(`if [ ! -f "%s/counter" ]; then
+			  echo -n '1' > "%s/counter"
 			else
-              let x=$(cat "my-task-caches/test-modifications/counter")+1
-			  echo -n "${x}" > "my-task-caches/test-modifications/counter"
-			fi`,
+              let x=$(cat "%s/counter")+1
+			  echo -n "${x}" > "%s/counter"
+			fi`, dir, dir, dir, dir),
 		},
 	}
 }

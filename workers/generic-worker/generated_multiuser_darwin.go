@@ -86,9 +86,9 @@ type (
 		// Default:    false
 		Optional bool `json:"optional" default:"false"`
 
-		// Relative path of the file/directory from the task directory. Note this is not an absolute
-		// path as is typically used in docker-worker, since the absolute task directory name is not
-		// known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
+		// Filesystem path of the file/directory relative to the
+		// task directory, or an absolute path.
+		// Example: `dist\regedit.exe`. It doesn't matter if
 		// forward slashes or backslashes are used.
 		//
 		// Since: generic-worker 1.0.0
@@ -482,7 +482,10 @@ type (
 		//   * Base64Content
 		Content json.RawMessage `json:"content"`
 
-		// The filesystem location to mount the file.
+		// The filesystem location to mount the file. This can be a
+		// path relative to the task directory, or an absolute path.
+		// The file will be created as the task user, so the target
+		// location must be writable by the task user.
 		//
 		// Since: generic-worker 5.4.0
 		File string `json:"file"`
@@ -703,6 +706,10 @@ type (
 		Content json.RawMessage `json:"content"`
 
 		// The filesystem location to mount the directory volume.
+		// This can be a path relative to the task directory, or an
+		// absolute path. The directory will be created as the task
+		// user, so the target location must be writable by the task
+		// user.
 		//
 		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
@@ -759,6 +766,10 @@ type (
 		Content json.RawMessage `json:"content,omitempty"`
 
 		// The filesystem location to mount the directory volume.
+		// This can be a path relative to the task directory, or an
+		// absolute path. The directory will be created as the task
+		// user, so the target location must be writable by the task
+		// user.
 		//
 		// Since: generic-worker 5.4.0
 		Directory string `json:"directory"`
@@ -957,7 +968,7 @@ func JSONSchema() string {
           "description": "Content of the file to be mounted.\n\nSince: generic-worker 5.4.0"
         },
         "file": {
-          "description": "The filesystem location to mount the file.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the file. This can be a\npath relative to the task directory, or an absolute path.\nThe file will be created as the task user, so the target\nlocation must be writable by the task user.\n\nSince: generic-worker 5.4.0",
           "title": "File",
           "type": "string"
         },
@@ -1004,7 +1015,7 @@ func JSONSchema() string {
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory will be created as the task\nuser, so the target location must be writable by the task\nuser.\n\nSince: generic-worker 5.4.0",
           "title": "Directory",
           "type": "string"
         },
@@ -1053,7 +1064,7 @@ func JSONSchema() string {
           "title": "Content"
         },
         "directory": {
-          "description": "The filesystem location to mount the directory volume.\n\nSince: generic-worker 5.4.0",
+          "description": "The filesystem location to mount the directory volume.\nThis can be a path relative to the task directory, or an\nabsolute path. The directory will be created as the task\nuser, so the target location must be writable by the task\nuser.\n\nSince: generic-worker 5.4.0",
           "title": "Directory Volume",
           "type": "string"
         },
@@ -1122,7 +1133,7 @@ func JSONSchema() string {
                 "type": "boolean"
               },
               "path": {
-                "description": "Relative path of the file/directory from the task directory. Note this is not an absolute\npath as is typically used in docker-worker, since the absolute task directory name is not\nknown when the task is submitted. Example: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
+                "description": "Filesystem path of the file/directory relative to the\ntask directory, or an absolute path.\nExample: ` + "`" + `dist\\regedit.exe` + "`" + `. It doesn't matter if\nforward slashes or backslashes are used.\n\nSince: generic-worker 1.0.0",
                 "title": "Artifact location",
                 "type": "string"
               },

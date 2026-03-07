@@ -111,9 +111,9 @@ oneOf:
             title: Artifact location
             type: string
             description: |-
-              Relative path of the file/directory from the task directory. Note this is not an absolute
-              path as is typically used in docker-worker, since the absolute task directory name is not
-              known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
+              Filesystem path of the file/directory relative to the
+              task directory, or an absolute path.
+              Example: `dist\regedit.exe`. It doesn't matter if
               forward slashes or backslashes are used.
 
               Since: generic-worker 1.0.0
@@ -706,7 +706,10 @@ definitions:
         title: File
         type: string
         description: |-
-          The filesystem location to mount the file.
+          The filesystem location to mount the file. This can be a
+          path relative to the task directory, or an absolute path.
+          The file will be created as the task user, so the target
+          location must be writable by the task user.
 
           Since: generic-worker 5.4.0
       content:
@@ -741,6 +744,10 @@ definitions:
         type: string
         description: |-
           The filesystem location to mount the directory volume.
+          This can be a path relative to the task directory, or an
+          absolute path. The directory will be created as the task
+          user, so the target location must be writable by the task
+          user.
 
           Since: generic-worker 5.4.0
       cacheName:
@@ -794,6 +801,10 @@ definitions:
         type: string
         description: |-
           The filesystem location to mount the directory volume.
+          This can be a path relative to the task directory, or an
+          absolute path. The directory will be created as the task
+          user, so the target location must be writable by the task
+          user.
 
           Since: generic-worker 5.4.0
       content:

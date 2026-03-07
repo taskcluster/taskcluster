@@ -12,6 +12,7 @@ import (
 
 	"github.com/taskcluster/taskcluster/v97/internal/scopes"
 	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
 	"golang.org/x/sync/errgroup"
 )
@@ -211,7 +212,7 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 				// cause the task to fail, and the cause to be preserved in the
 				// error artifact.
 				case incomingErr != nil:
-					fullPath := filepath.Join(taskContext.TaskDir, subPath)
+					fullPath := fileutil.AbsFrom(taskContext.TaskDir, subPath)
 					payloadArtifacts = append(
 						payloadArtifacts,
 						&artifacts.ErrorArtifact{
@@ -232,7 +233,7 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 			}
 			// Any error returned here should already have been handled by
 			// walkFn, so should be safe to ignore.
-			_ = filepath.WalkDir(filepath.Join(taskContext.TaskDir, basePath), walkFn)
+			_ = filepath.WalkDir(fileutil.AbsFrom(taskContext.TaskDir, basePath), walkFn)
 		}
 		artifactsChan <- payloadArtifacts
 	}
@@ -270,7 +271,7 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
 func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, contentEncoding string, pd *process.PlatformData) artifacts.TaskArtifact {
-	fullPath := filepath.Join(taskContext.TaskDir, path)
+	fullPath := fileutil.AbsFrom(taskContext.TaskDir, path)
 	fileReader, err := os.Open(fullPath)
 	if err != nil {
 		// cannot read file/dir, create an error artifact

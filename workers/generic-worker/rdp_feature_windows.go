@@ -83,7 +83,7 @@ func (l *RDPTask) createRDPArtifact() {
 		Username: taskContext.User.Name,
 		Password: taskContext.User.Password,
 	}
-	rdpInfoFile := filepath.Join(taskContext.TaskDir, rdpInfoPath)
+	rdpInfoFile := fileutil.AbsFrom(taskContext.TaskDir, rdpInfoPath)
 	err := fileutil.WriteToFileAsJSON(l.info, rdpInfoFile)
 	// if we can't write this, something seriously wrong, so cause worker to
 	// report an internal-error to sentry and crash!
@@ -93,7 +93,7 @@ func (l *RDPTask) createRDPArtifact() {
 }
 
 func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
-	rdpInfoFile := filepath.Join(taskContext.TaskDir, rdpInfoPath)
+	rdpInfoFile := fileutil.AbsFrom(taskContext.TaskDir, rdpInfoPath)
 	return l.task.uploadArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{

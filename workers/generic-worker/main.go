@@ -1038,7 +1038,7 @@ func PrepareTaskEnvironment() (reboot bool) {
 	if PlatformTaskEnvironmentSetup(taskDirName) {
 		return true
 	}
-	logDir := filepath.Join(taskContext.TaskDir, filepath.Dir(logPath))
+	logDir := fileutil.AbsFrom(taskContext.TaskDir, filepath.Dir(logPath))
 	err := os.MkdirAll(logDir, 0700)
 	if err != nil {
 		panic(err)
