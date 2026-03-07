@@ -67,11 +67,12 @@ func deleteDir(path string) error {
 }
 
 func (task *TaskRun) generateCommand(index int) error {
+	taskDir := task.TaskDir()
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
+	wrapper := filepath.Join(taskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
 	task.pd.HideCmdWindow = task.Payload.Features.HideCmdWindow
-	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, task.pd)
+	command, err := process.NewCommand([]string{wrapper}, taskDir, nil, task.pd)
 	if err != nil {
 		return err
 	}
@@ -85,11 +86,12 @@ func (task *TaskRun) generateCommand(index int) error {
 func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
-	env := filepath.Join(taskContext.TaskDir, "env.txt")
-	dir := filepath.Join(taskContext.TaskDir, "dir.txt")
+	taskDir := task.TaskDir()
+	env := filepath.Join(taskDir, "env.txt")
+	dir := filepath.Join(taskDir, "dir.txt")
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := filepath.Join(taskContext.TaskDir, commandName+"_wrapper.bat")
-	script := filepath.Join(taskContext.TaskDir, commandName+".bat")
+	wrapper := filepath.Join(taskDir, commandName+"_wrapper.bat")
+	script := filepath.Join(taskDir, commandName+".bat")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskID + "..." + "\r\n"
 	contents += "@echo off\r\n"
 
@@ -118,12 +120,11 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		}
 		contents += setEnvVarCommand("TASK_ID", task.TaskID)
 		contents += setEnvVarCommand("RUN_ID", strconv.Itoa(int(task.RunID)))
-		contents += setEnvVarCommand("TASK_WORKDIR", taskContext.TaskDir)
+		contents += setEnvVarCommand("TASK_WORKDIR", taskDir)
 		contents += setEnvVarCommand("TASK_GROUP_ID", task.TaskGroupID)
 		contents += setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL)
-		if task.Payload.Features.RunTaskAsCurrentUser {
-			contents += setEnvVarCommand("TASK_USER_CREDENTIALS", ctuPath)
-		}
+		// Note: TASK_USER_CREDENTIALS is set via platformSpecificActions() in
+		// RunTaskAsCurrentUserTask.Start() and comes through task.Payload.Env
 		if config.WorkerLocation != "" {
 			// Note, in contrast to other shells, the cmd shell set command
 			// expects literal bytes between the `=` character and the line
@@ -136,7 +137,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			// ending, i.e. no string escaping required!
 			contents += setEnvVarCommand("TASKCLUSTER_INSTANCE_TYPE", config.InstanceType)
 		}
-		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
+		contents += "cd \"" + taskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command
 	} else {
@@ -560,31 +561,6 @@ func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 	}
 }
 
-func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
-	if dir == "" || newOwnerUsername == "" || cache == nil {
-		return fmt.Errorf("directory path, new owner username, and cache must not be empty")
-	}
-
-	// Do nothing if the current owner is the same as the new owner
-	if cache.OwnerUsername == newOwnerUsername {
-		return nil
-	}
-
-	// Reset to inherited permissions only, recursively
-	out, err := host.Output("icacls", dir, "/reset", "/t", "/c", "/q")
-	if err != nil {
-		return fmt.Errorf("failed to reset permissions on dir %v: %v\n%v", dir, err, out)
-	}
-
-	// Grant full control to new owner, adding to inherited permissions
-	out, err = host.Output("icacls", dir, "/grant", newOwnerUsername+":(OI)(CI)F")
-	if err != nil {
-		return fmt.Errorf("failed to grant permissions to %v on dir %v: %v\n%v", newOwnerUsername, dir, err, out)
-	}
-
-	return nil
-}
-
 func convertNilToEmptyString(val any) string {
 	if val == nil {
 		return ""
@@ -597,7 +573,7 @@ func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo interface{}, c
 	for k, v := range task.Payload.Env {
 		envVars = append(envVars, k+"="+win32.CMDExeEscape(v))
 	}
-	return interactive.StartConPty([]string{"c:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"}, taskContext.TaskDir, envVars, windows.Token(task.pd.CommandAccessToken))
+	return interactive.StartConPty([]string{"c:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"}, task.TaskDir(), envVars, windows.Token(task.pd.CommandAccessToken))
 }
 
 func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo interface{}, ctx context.Context) (*exec.Cmd, error) {
