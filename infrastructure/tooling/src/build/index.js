@@ -123,7 +123,6 @@ class Build extends Base {
       'target-client-shell',
       'target-generic-worker',
       'target-generic-worker-image',
-      'target-worker-runner',
       'target-taskcluster-proxy',
       'target-websocktunnel',
     ];
