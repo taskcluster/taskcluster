@@ -7,5 +7,5 @@ GRAPHQL_SUBSCRIPTION_ENDPOINT=http://taskcluster/subscription
 GRAPHQL_ENDPOINT=http://taskcluster/graphql
 UI_LOGIN_STRATEGY_NAMES=local
 BANNER_MESSAGE=
-SITE_SPECIFIC={"tutorial_worker_pool_id":"docker-compose/generic-worker","tutorial_worker_schema":"generic-insecure-posix"}
+SITE_SPECIFIC={"tutorial_worker_pool_id":"docker-compose/generic-worker","tutorial_worker_schema":"generic-multiuser-posix"}
 DEBUG=

@@ -318,15 +318,6 @@ export const TASK_PAYLOAD_SCHEMAS = {
       maxRunTime: 60 + 30,
     },
   },
-  'generic-insecure-posix': {
-    label: 'Generic worker insecure posix',
-    type: 'generic-worker',
-    schema: 'insecure_posix.json',
-    samplePayload: {
-      command: [payloadCommand],
-      maxRunTime: 60 + 30,
-    },
-  },
   'generic-multi-win': {
     label: 'Generic worker multiuser windows',
     type: 'generic-worker',

@@ -1,4 +1,4 @@
-# Insecure generic worker
+# Generic worker
 
 FROM golang:1.26.0-alpine AS build
 
@@ -25,8 +25,7 @@ RUN go build -o /taskcluster
 
 WORKDIR /app/workers/generic-worker
 RUN ./build.sh && \
-  mv generic-worker-multiuser-* /generic-worker && \
-  mv generic-worker-insecure-* /generic-worker-insecure
+  mv generic-worker-* /generic-worker
 
 FROM ubuntu:jammy
 
@@ -36,7 +35,7 @@ RUN apt-get update && apt-get install -y \
   gzip \
   && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /livelog /taskcluster-proxy /start-worker /taskcluster /generic-worker* /usr/local/bin/
+COPY --from=build /livelog /taskcluster-proxy /start-worker /taskcluster /generic-worker /usr/local/bin/
 RUN ls -la /usr/local/bin
 
 RUN mkdir -p /etc/generic-worker

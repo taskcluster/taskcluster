@@ -3739,9 +3739,9 @@
   },
   {
     "element": "h2",
-    "id": "insecure-engine",
+    "id": "discontinued-insecure-engine",
     "path": "/reference/workers/generic-worker/engines",
-    "subtitle": "Insecure engine",
+    "subtitle": "Discontinued: Insecure engine",
     "title": "Engines"
   },
   {

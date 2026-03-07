@@ -1,4 +1,4 @@
-//go:build multiuser && (darwin || freebsd)
+//go:build darwin || freebsd
 
 package main
 
