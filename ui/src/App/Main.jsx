@@ -11,6 +11,7 @@ import { route } from '../utils/prop-types';
 import { withAuth } from '../utils/Auth';
 import isThirdPartyLogin from '../utils/isThirdPartyLogin';
 import isLoggedInQuery from './isLoggedIn.graphql';
+import { AUTH_STARTED } from '../utils/constants';
 
 @withApollo
 @withStyles(theme => ({
@@ -91,6 +92,7 @@ export default class Main extends Component {
       !sessionStorage.getItem(THIRD_PARTY_DID_AUTO_LOGIN_KEY)
     ) {
       sessionStorage.setItem(THIRD_PARTY_DID_AUTO_LOGIN_KEY, 'true');
+      localStorage.setItem(AUTH_STARTED, window.env.UI_LOGIN_STRATEGY_NAMES);
       window.open(`/login/${window.env.UI_LOGIN_STRATEGY_NAMES}`);
 
       return;
