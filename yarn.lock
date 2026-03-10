@@ -238,6 +238,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@as-integrations/express4@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "@as-integrations/express4@npm:1.1.2"
+  peerDependencies:
+    "@apollo/server": ^4.0.0 || ^5.0.0
+    express: ^4.0.0
+  checksum: 10c0/6934b4b878f71894f85dc0003eb404a4b701468693bf6cf686b4adf56709532f75f118b63abccc5daaf5ba3e961e541430664e21b9bfb84d7a28e6e248052e92
+  languageName: node
+  linkType: hard
+
 "@aws-crypto/crc32@npm:5.2.0":
   version: 5.2.0
   resolution: "@aws-crypto/crc32@npm:5.2.0"
@@ -14393,6 +14403,7 @@ __metadata:
   dependencies:
     "@apollo/client": "npm:^3.13.9"
     "@apollo/server": "npm:^5.4.0"
+    "@as-integrations/express4": "npm:^1.1.2"
     "@aws-sdk/client-ec2": "npm:^3.864.0"
     "@aws-sdk/client-iam": "npm:^3.864.0"
     "@aws-sdk/client-s3": "npm:3.645.0"
