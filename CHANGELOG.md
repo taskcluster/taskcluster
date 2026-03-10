@@ -3,6 +3,47 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v97.1.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.26.1 [SECURITY], Node.js v24.14.0, yarn v4.13.0, and golangci-lint v2.11.2.
+
+### USERS
+
+▶ [minor] [#8287](https://github.com/taskcluster/taskcluster/issues/8287)
+Add ability to provide `taskId` in the payload to `triggerHook` and `triggerHookWithToken`. The hook service will look for `taskId` in the payload and use it to set the task ID if provided.
+
+▶ [patch] [#8357](https://github.com/taskcluster/taskcluster/issues/8357)
+Fix third-party login flow with extra window not being closed.
+
+▶ [patch] [#8341](https://github.com/taskcluster/taskcluster/issues/8341)
+Fixes issues with local dev env where tc-admin image was built for single architecture. tc-admin:5.2.0 publishes multi-arch image
+
+▶ [patch] [#8300](https://github.com/taskcluster/taskcluster/issues/8300)
+Task log profiler returns empty profile when log doesn't have correct time markers instead of throwing an error.
+
+▶ [patch]
+The generic-worker now notifies task status listeners outside of the internal status lock, reducing the risk of lock contention or deadlock when listeners query task status during callbacks.
+
+Internal artifact upload error handling was also refactored into a dedicated classifier helper without changing runtime behavior.
+
+### Automated Package Updates
+
+<details>
+<summary>7 Dependabot updates</summary>
+
+* build(deps): bump immutable from 3.8.2 to 3.8.3 in /ui (7b2ca5623b)
+* build(deps): bump tar from 7.5.9 to 7.5.10 (ca47cdc963)
+* build(deps): bump github.com/docker/cli (7b6e455a31)
+* build(deps): bump immutable from 4.3.7 to 4.3.8 (5fd0c3a9c6)
+* build(deps): bump mailparser from 3.7.4 to 3.9.3 (8edf6abacc)
+* build(deps): bump underscore from 1.13.7 to 1.13.8 (0d4b58c9bd)
+* build(deps): bump underscore from 1.13.2 to 1.13.8 in /ui (b8713fdf66)
+
+</details>
+
 ## v97.0.1
 
 No changes
