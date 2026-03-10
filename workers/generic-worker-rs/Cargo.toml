@@ -1,0 +1,129 @@
+[package]
+name = "generic-worker"
+version = "0.1.0"
+edition = "2021"
+description = "Taskcluster Generic Worker - Cross-platform task execution engine"
+license = "MPL-2.0"
+
+[features]
+default = ["insecure"]
+insecure = []
+multiuser = []
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# HTTP client/server
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "blocking"], default-features = false }
+axum = { version = "0.7", features = ["ws"] }
+hyper = { version = "1", features = ["full"] }
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# WebSocket
+tokio-tungstenite = { version = "0.24", features = ["rustls-tls-webpki-roots"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+log = "0.4"
+
+# Hawk authentication
+hawk = "4"
+
+# Crypto
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+sha2 = "0.10"
+rand = "0.8"
+base64 = "0.22"
+
+# Archive handling
+tar = "0.4"
+zip = "2"
+flate2 = "1"
+bzip2 = "0.4"
+xz2 = "0.1"
+zstd = "0.13"
+lz4 = "1"
+
+# JSON Schema validation
+jsonschema = "0.26"
+
+# Regular expressions
+regex = "1"
+
+# System info
+sysinfo = "0.31"
+
+# Sentry crash reporting
+sentry = "0.34"
+
+# Error handling
+thiserror = "1"
+anyhow = "1"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# URL handling
+url = "2"
+
+# UUID / slug IDs
+uuid = { version = "1", features = ["v4"] }
+
+# Retry / backoff
+backoff = { version = "0.4", features = ["tokio"] }
+
+# Glob patterns
+glob = "0.3"
+
+# Temp files
+tempfile = "3"
+
+# Directory operations
+walkdir = "2"
+
+# Shell escaping
+shell-escape = "0.1"
+
+# Scope-based cleanup
+scopeguard = "1"
+
+# Async channels
+async-channel = "2"
+
+# Futures utilities (for WebSocket stream handling)
+futures-util = "0.3"
+
+# HTTP content type
+mime = "0.3"
+mime_guess = "2"
+
+[target.'cfg(unix)'.dependencies]
+nix = { version = "0.28", features = ["user", "signal", "process", "fs", "socket", "uio", "term"] }
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.52", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Security_Authorization",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Memory",
+    "Win32_System_Registry",
+    "Win32_System_Services",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+assert_matches = "1"
+wiremock = "0.6"
