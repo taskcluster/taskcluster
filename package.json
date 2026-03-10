@@ -140,7 +140,6 @@
     "@types/pg": "^8.15.5",
     "acorn-loose": "^8.5.0",
     "acorn-walk": "^8.3.4",
-    "apollo-link-ws": "^1.0.20",
     "app-root-dir": "^1.0.2",
     "assume": "^2.1.0",
     "aws-sdk-client-mock": "^4.1.0",

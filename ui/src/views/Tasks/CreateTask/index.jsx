@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
 import { parse, stringify } from 'qs';
-import { withApollo } from 'react-apollo';
+import { withApollo } from '@apollo/client/react/hoc';
 import storage from 'localforage';
 import merge from 'deepmerge';
 import { load, dump } from 'js-yaml';

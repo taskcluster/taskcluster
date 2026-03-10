@@ -9,6 +9,10 @@ module.exports = {
       "<rootDir>/__jest__/fileMock.js",
     "\\.(css|less|sass|scss)$": "<rootDir>/__jest__/styleMock.js",
     "^@taskcluster/ui$": "/home/eijemoz/code/taskcluster/ui/src",
+    "^@apollo/client/testing$": "<rootDir>/../node_modules/@apollo/client/testing/index.js",
+    "^react$": "<rootDir>/node_modules/react/index.js",
+    "^react-dom$": "<rootDir>/node_modules/react-dom/index.js",
+    "^react-dom/(.*)$": "<rootDir>/node_modules/react-dom/$1",
   },
   bail: true,
   collectCoverageFrom: ["src/**/*.{mjs,jsx,js}"],
@@ -26,6 +30,6 @@ module.exports = {
   ],
   setupFilesAfterEnv: ["./jest.setup.js"],
   transformIgnorePatterns: [
-    "node_modules/(?!is-absolute-url|@taskcluster/client-web)",
+    "node_modules/(?!is-absolute-url|@taskcluster/client-web|@apollo/client)",
   ],
 };

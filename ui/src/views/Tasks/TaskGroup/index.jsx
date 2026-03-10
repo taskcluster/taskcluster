@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import React, { Component } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import dotProp from 'dot-prop-immutable';
 import { sum, isEmpty } from 'ramda';
 import { paramCase } from 'param-case';

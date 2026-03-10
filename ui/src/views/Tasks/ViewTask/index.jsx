@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { withApollo, graphql } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import { omit, pathOr, mergeRight } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import { withStyles } from '@material-ui/core/styles';

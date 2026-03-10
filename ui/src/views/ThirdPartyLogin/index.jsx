@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql } from '@apollo/client/react/hoc';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
 import { parse } from 'qs';
 import Typography from '@material-ui/core/Typography';

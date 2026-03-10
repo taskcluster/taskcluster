@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { parse, stringify } from 'qs';

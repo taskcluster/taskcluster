@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
-import { graphql } from 'react-apollo';
+import { graphql } from '@apollo/client/react/hoc';
 import Spinner from '../../../../components/Spinner';
 import Dashboard from '../../../../components/Dashboard';
 import ErrorPanel from '../../../../components/ErrorPanel';

@@ -8,7 +8,7 @@ import libUrls from 'taskcluster-lib-urls';
 import request from 'superagent';
 import merge from 'deepmerge';
 import PulseEngine from '../src/PulseEngine/index.js';
-import { WebSocketLink } from 'apollo-link-ws';
+import { WebSocketLink } from '@apollo/client/link/ws/index.js';
 import WebSocket from 'ws';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core/index.js';

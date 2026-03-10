@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql } from '@apollo/client/react/hoc';
 import { parse, stringify } from 'qs';
 import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
