@@ -6,7 +6,6 @@ import TaskGroup from './index';
 import taskGroupQuery from './taskGroup.graphql';
 
 const taskGroupId = 'aI8bvUB2SDmpHVqTUOFCWw';
-
 const mocks = [
   {
     request: {

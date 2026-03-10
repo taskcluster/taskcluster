@@ -43,6 +43,7 @@ export default class App extends Component {
     possibleTypes: introspectionQueryResultData.__schema.types.reduce(
       (acc, supertype) => {
         acc[supertype.name] = supertype.possibleTypes.map(t => t.name);
+
         return acc;
       },
       {}

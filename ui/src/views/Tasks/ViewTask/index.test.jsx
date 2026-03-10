@@ -6,7 +6,6 @@ import ViewTask from './index';
 import taskQuery from './task.graphql';
 
 const taskId = 'taskId123456789';
-
 const mocks = [
   {
     request: {
@@ -123,10 +122,7 @@ describe('ViewTask page', () => {
       const { asFragment } = render(
         <MemoryRouter keyLength={0}>
           <MockedProvider mocks={mocks} addTypename={false}>
-            <ViewTask
-              match={{ params: { taskId } }}
-              task={{ taskId }}
-            />
+            <ViewTask match={{ params: { taskId } }} task={{ taskId }} />
           </MockedProvider>
         </MemoryRouter>
       );
