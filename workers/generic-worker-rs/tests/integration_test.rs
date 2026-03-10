@@ -414,7 +414,7 @@ async fn setup() -> TestEnv {
     std::fs::create_dir_all(&tasks_dir).unwrap();
 
     let config = serde_json::json!({
-        "rootUrl": root_url,
+        "rootURL": root_url,
         "clientId": "test-client-id",
         "accessToken": "test-access-token",
         "provisionerId": "test-provisioner",
@@ -506,7 +506,7 @@ async fn setup_with_overrides(overrides: serde_json::Value) -> TestEnv {
     std::fs::create_dir_all(&tasks_dir).unwrap();
 
     let mut config = serde_json::json!({
-        "rootUrl": root_url,
+        "rootURL": root_url,
         "clientId": "test-client-id",
         "accessToken": "test-access-token",
         "provisionerId": "test-provisioner",
@@ -787,7 +787,7 @@ async fn test_idle_without_crash() {
 
     // Override config with shutdownMachineOnIdle=true and short idle timeout
     let config = serde_json::json!({
-        "rootUrl": env.root_url,
+        "rootURL": env.root_url,
         "clientId": "test-client-id",
         "accessToken": "test-access-token",
         "provisionerId": "test-provisioner",
@@ -1094,7 +1094,7 @@ async fn test_missing_config_file() {
 async fn test_invalid_json_config() {
     // Create a temp file with invalid JSON.
     let tmp = tempfile::NamedTempFile::new().unwrap();
-    std::fs::write(tmp.path(), r#"{"rootUrl": "http://localhost" "missing": "comma"}"#).unwrap();
+    std::fs::write(tmp.path(), r#"{"rootURL": "http://localhost" "missing": "comma"}"#).unwrap();
 
     let binary = worker_binary();
     let result = tokio::time::timeout(
@@ -1818,7 +1818,7 @@ async fn test_remove_task_dirs() {
 
     // Create a config with cleanUpTaskDirs=true
     let config = serde_json::json!({
-        "rootUrl": env.root_url,
+        "rootURL": env.root_url,
         "clientId": "test-client-id",
         "accessToken": "test-access-token",
         "provisionerId": "test-provisioner",

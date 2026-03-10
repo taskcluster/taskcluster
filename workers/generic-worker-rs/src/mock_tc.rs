@@ -143,7 +143,7 @@ impl Queue for MockQueue {
     ) -> Result<ClaimWorkResponse> {
         let mut inner = self.inner.write().map_err(|e| anyhow::anyhow!("{e}"))?;
         let task_queue_id = format!("{provisioner_id}/{worker_type}");
-        let max_tasks = request.tasks_claimed as usize;
+        let max_tasks = request.tasks as usize;
         let mut tasks = Vec::new();
 
         // Iterate in FIFO order to find pending tasks matching the queue ID.
@@ -333,7 +333,7 @@ mod tests {
             .unwrap();
 
         let request = ClaimWorkRequest {
-            tasks_claimed: 1,
+            tasks: 1,
             worker_group: "test-group".to_string(),
             worker_id: "test-worker".to_string(),
         };
@@ -386,7 +386,7 @@ mod tests {
 
         // Claim first
         let request = ClaimWorkRequest {
-            tasks_claimed: 1,
+            tasks: 1,
             worker_group: "test-group".to_string(),
             worker_id: "test-worker".to_string(),
         };
@@ -442,7 +442,7 @@ mod tests {
             .unwrap();
 
         let request = ClaimWorkRequest {
-            tasks_claimed: 1,
+            tasks: 1,
             worker_group: "test-group".to_string(),
             worker_id: "test-worker".to_string(),
         };
@@ -497,7 +497,7 @@ mod tests {
             .unwrap();
 
         let request = ClaimWorkRequest {
-            tasks_claimed: 1,
+            tasks: 1,
             worker_group: "test-group".to_string(),
             worker_id: "test-worker".to_string(),
         };
@@ -520,7 +520,7 @@ mod tests {
     async fn test_no_work_available() {
         let queue = MockQueue::new();
         let request = ClaimWorkRequest {
-            tasks_claimed: 1,
+            tasks: 1,
             worker_group: "test-group".to_string(),
             worker_id: "test-worker".to_string(),
         };
@@ -568,7 +568,7 @@ mod tests {
             .unwrap();
 
         let request = ClaimWorkRequest {
-            tasks_claimed: 1,
+            tasks: 1,
             worker_group: "test-group".to_string(),
             worker_id: "test-worker".to_string(),
         };

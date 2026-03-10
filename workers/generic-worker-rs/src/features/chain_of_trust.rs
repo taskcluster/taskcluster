@@ -43,12 +43,25 @@ impl Feature for ChainOfTrustFeature {
             );
         }
 
-        let key_bytes = std::fs::read(key_path)
+        let key_content = std::fs::read(key_path)
             .map_err(|e| anyhow::anyhow!("failed to read ed25519 signing key at {}: {}", key_path, e))?;
 
-        // The key file should contain the 32-byte seed (or 64-byte keypair).
-        // Support both raw 32-byte seed and PEM-like formats where we take
-        // the last 32 bytes.
+        // The Go generic-worker stores ed25519 keys as base64-encoded seed.
+        // We support: base64-encoded text (Go format), raw 32-byte seed, or
+        // raw 64-byte keypair (first 32 bytes are the seed).
+        let key_bytes = {
+            use base64::Engine;
+            // Try base64 decode first (Go format: ~44 chars + optional newline)
+            let trimmed = String::from_utf8_lossy(&key_content);
+            let trimmed = trimmed.trim();
+            if let Ok(decoded) = base64::engine::general_purpose::STANDARD.decode(trimmed) {
+                decoded
+            } else {
+                // Fall back to raw bytes
+                key_content
+            }
+        };
+
         let signing_key = if key_bytes.len() == 32 {
             SigningKey::from_bytes(
                 key_bytes
@@ -57,14 +70,13 @@ impl Feature for ChainOfTrustFeature {
                     .map_err(|_| anyhow::anyhow!("invalid ed25519 key length"))?,
             )
         } else if key_bytes.len() == 64 {
-            // 64-byte expanded keypair: first 32 bytes are the seed
             let seed: [u8; 32] = key_bytes[..32]
                 .try_into()
                 .map_err(|_| anyhow::anyhow!("invalid ed25519 key length"))?;
             SigningKey::from_bytes(&seed)
         } else {
             anyhow::bail!(
-                "ed25519 signing key at {} has unexpected length {} (expected 32 or 64 bytes)",
+                "ed25519 signing key at {} has unexpected length {} (expected 32 or 64 raw bytes, or base64-encoded seed)",
                 key_path,
                 key_bytes.len()
             );

@@ -30,7 +30,7 @@ pub struct Config {
     pub client_id: String,
     #[serde(default)]
     pub create_object_artifacts: bool,
-    #[serde(default)]
+    #[serde(default, rename = "disableOOMProtection")]
     pub disable_oom_protection: bool,
     #[serde(default)]
     pub disable_reboots: bool,
@@ -48,7 +48,7 @@ pub struct Config {
     pub enable_metadata: bool,
     #[serde(default = "default_true")]
     pub enable_mounts: bool,
-    #[serde(default)]
+    #[serde(default, rename = "enableOSGroups")]
     pub enable_os_groups: bool,
     #[serde(default)]
     pub enable_resource_monitor: bool,
@@ -62,11 +62,11 @@ pub struct Config {
     pub instance_type: String,
     #[serde(default = "default_interactive_port")]
     pub interactive_port: u16,
-    #[serde(default = "default_live_log_executable")]
+    #[serde(default = "default_live_log_executable", rename = "livelogExecutable")]
     pub live_log_executable: String,
-    #[serde(default = "default_live_log_port_base")]
+    #[serde(default = "default_live_log_port_base", rename = "livelogPortBase")]
     pub live_log_port_base: u16,
-    #[serde(default = "default_live_log_expose_port")]
+    #[serde(default = "default_live_log_expose_port", rename = "livelogExposePort")]
     pub live_log_expose_port: u16,
     #[serde(default = "default_max_memory_usage_percent")]
     pub max_memory_usage_percent: u64,
@@ -76,16 +76,17 @@ pub struct Config {
     pub min_available_memory_bytes: u64,
     #[serde(default = "default_number_of_tasks")]
     pub number_of_tasks_to_run: u64,
-    #[serde(default)]
+    #[serde(default, rename = "privateIP")]
     pub private_ip: Option<IpAddr>,
     #[serde(default)]
     pub provisioner_id: String,
-    #[serde(default)]
+    #[serde(default, rename = "publicIP")]
     pub public_ip: Option<IpAddr>,
     #[serde(default)]
     pub region: String,
     #[serde(default = "default_required_disk_space_megabytes")]
     pub required_disk_space_megabytes: u64,
+    #[serde(rename = "rootURL")]
     pub root_url: String,
     #[serde(default)]
     pub run_after_user_creation: String,
@@ -113,7 +114,7 @@ pub struct Config {
     pub worker_type_metadata: HashMap<String, serde_json::Value>,
     #[serde(default)]
     pub wst_audience: String,
-    #[serde(default)]
+    #[serde(default, rename = "wstServerURL")]
     pub wst_server_url: String,
 
     // Platform-specific config (flattened)
@@ -121,7 +122,7 @@ pub struct Config {
     pub headless_tasks: bool,
 
     // D2G config
-    #[serde(default)]
+    #[serde(default, rename = "enableD2G")]
     pub enable_d2g: Option<bool>,
     #[serde(default)]
     pub disable_native_payloads: Option<bool>,
@@ -145,7 +146,7 @@ pub struct Config {
     pub enable_run_as_administrator: bool,
 
     // RDP feature config (Windows)
-    #[serde(default)]
+    #[serde(default, rename = "enableRDP")]
     pub enable_rdp: bool,
     #[serde(default)]
     pub rdp_info: String,
@@ -350,7 +351,7 @@ mod tests {
             root_url: "https://tc.example.com".to_string(),
             worker_id: "old-id".to_string(),
             ..serde_json::from_str(
-                r#"{"rootUrl": "https://tc.example.com", "workerId": "old-id", "provisionerId": "p", "workerType": "t", "workerGroup": "g"}"#,
+                r#"{"rootURL": "https://tc.example.com", "workerId": "old-id", "provisionerId": "p", "workerType": "t", "workerGroup": "g"}"#,
             )
             .unwrap()
         };
@@ -366,7 +367,7 @@ mod tests {
 
     #[test]
     fn test_validate_missing_root_url() {
-        let config: Config = serde_json::from_str(r#"{"rootUrl": ""}"#).unwrap();
+        let config: Config = serde_json::from_str(r#"{"rootURL": ""}"#).unwrap();
         assert!(config.validate().is_err());
     }
 }

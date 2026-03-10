@@ -401,7 +401,7 @@ async fn setup_with_overrides(overrides: Value) -> TestEnv {
     std::fs::create_dir_all(&tasks_dir).unwrap();
 
     let mut config = serde_json::json!({
-        "rootUrl": root_url,
+        "rootURL": root_url,
         "clientId": "test-client-id",
         "accessToken": "test-access-token",
         "provisionerId": "test-provisioner",
@@ -423,7 +423,7 @@ async fn setup_with_overrides(overrides: Value) -> TestEnv {
         "enableInteractive": false,
         "enableTaskclusterProxy": false,
         "enableResourceMonitor": false,
-        "enableOsGroups": false,
+        "enableOSGroups": false,
     });
 
     // Merge overrides into the base config.
@@ -598,7 +598,7 @@ async fn test_custom_log_paths() {
 
     let env = setup_with_overrides(serde_json::json!({
         "enableLiveLog": true,
-        "liveLogExecutable": livelog_path,
+        "livelogExecutable": livelog_path,
     }))
     .await;
 
@@ -740,7 +740,7 @@ async fn test_taskcluster_proxy_env_var() {
 #[tokio::test]
 async fn test_empty_os_groups() {
     let env = setup_with_overrides(serde_json::json!({
-        "enableOsGroups": true,
+        "enableOSGroups": true,
     }))
     .await;
 
@@ -761,7 +761,7 @@ async fn test_empty_os_groups() {
 #[tokio::test]
 async fn test_non_empty_os_groups_user_not_in() {
     let env = setup_with_overrides(serde_json::json!({
-        "enableOsGroups": true,
+        "enableOSGroups": true,
     }))
     .await;
 

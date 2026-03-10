@@ -307,15 +307,25 @@ pub fn generate_password() -> String {
     format!("{prefix}{suffix}")
 }
 
-/// Create an Ed25519 signing keypair and write it to a file.
+/// Create an Ed25519 signing keypair and write the private key to a file.
+/// The key is stored as base64-encoded seed (matching Go's format).
+/// The public key is printed to stdout.
 pub fn create_ed25519_keypair(path: &str) -> Result<()> {
+    use base64::Engine;
     use ed25519_dalek::SigningKey;
     use rand::rngs::OsRng;
 
     let signing_key = SigningKey::generate(&mut OsRng);
-    let key_bytes = signing_key.to_bytes();
+    let seed = signing_key.to_bytes();
+    let public_key = signing_key.verifying_key().to_bytes();
 
-    std::fs::write(path, key_bytes)?;
+    // Write base64-encoded seed to file (matching Go's format)
+    let encoded = base64::engine::general_purpose::STANDARD.encode(seed);
+    std::fs::write(path, &encoded)?;
+
+    // Print base64-encoded public key to stdout
+    let pub_encoded = base64::engine::general_purpose::STANDARD.encode(public_key);
+    println!("{}", pub_encoded);
 
     #[cfg(unix)]
     {

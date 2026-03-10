@@ -446,7 +446,7 @@ async fn setup() -> TestEnv {
     std::fs::create_dir_all(&downloads_dir).unwrap();
 
     let config = serde_json::json!({
-        "rootUrl": root_url,
+        "rootURL": root_url,
         "clientId": "test-client-id",
         "accessToken": "test-access-token",
         "provisionerId": "test-provisioner",
@@ -652,7 +652,7 @@ fn write_config(env: &TestEnv, config: &Value) -> String {
 async fn run_worker_multi_task(env: &TestEnv, num_tasks: u64) -> (String, String) {
     let _ = std::fs::write("tasks-resolved-count.txt", "0"); // reset per-test
     let config = serde_json::json!({
-        "rootUrl": env.root_url,
+        "rootURL": env.root_url,
         "clientId": "test-client-id",
         "accessToken": "test-access-token",
         "provisionerId": "test-provisioner",

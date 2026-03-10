@@ -80,6 +80,9 @@ uuid = { version = "1", features = ["v4"] }
 # Retry / backoff
 backoff = { version = "0.4", features = ["tokio"] }
 
+# URL encoding
+urlencoding = "2"
+
 # Glob patterns
 glob = "0.3"
 

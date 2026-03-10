@@ -211,9 +211,12 @@ impl Queue for HttpQueue {
         worker_type: &str,
         request: &ClaimWorkRequest,
     ) -> Result<ClaimWorkResponse> {
+        // The Queue API uses claim-work/{taskQueueId} where taskQueueId is
+        // "provisionerId/workerType" as a single URL-encoded path segment.
+        let task_queue_id = format!("{}/{}", provisioner_id, worker_type);
         let url = self.api_url(&format!(
-            "/claim-work/{}/{}",
-            provisioner_id, worker_type
+            "/claim-work/{}",
+            urlencoding::encode(&task_queue_id)
         ));
         let response = self
             .client
@@ -254,8 +257,8 @@ impl Queue for HttpQueue {
         let url = self.api_url(&format!("/task/{}/runs/{}/completed", task_id, run_id));
         let response = self
             .client
-            .put(&url)
-            .header("Authorization", self.hawk_header("PUT", &url)?)
+            .post(&url)
+            .header("Authorization", self.hawk_header("POST", &url)?)
             .send()
             .await?;
 
@@ -272,8 +275,8 @@ impl Queue for HttpQueue {
         let url = self.api_url(&format!("/task/{}/runs/{}/failed", task_id, run_id));
         let response = self
             .client
-            .put(&url)
-            .header("Authorization", self.hawk_header("PUT", &url)?)
+            .post(&url)
+            .header("Authorization", self.hawk_header("POST", &url)?)
             .send()
             .await?;
 
@@ -291,8 +294,8 @@ impl Queue for HttpQueue {
         let body = serde_json::json!({ "reason": reason });
         let response = self
             .client
-            .put(&url)
-            .header("Authorization", self.hawk_header("PUT", &url)?)
+            .post(&url)
+            .header("Authorization", self.hawk_header("POST", &url)?)
             .json(&body)
             .send()
             .await?;

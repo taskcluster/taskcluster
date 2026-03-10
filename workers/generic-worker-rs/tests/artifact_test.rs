@@ -411,7 +411,7 @@ async fn setup_with_options(enable_mounts: bool) -> TestEnv {
     std::fs::create_dir_all(&tasks_dir).unwrap();
 
     let config = serde_json::json!({
-        "rootUrl": root_url,
+        "rootURL": root_url,
         "clientId": "test-client-id",
         "accessToken": "test-access-token",
         "provisionerId": "test-provisioner",

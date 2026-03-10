@@ -404,7 +404,7 @@ async fn setup_with_overrides(overrides: Value) -> TestEnv {
     std::fs::create_dir_all(&tasks_dir).unwrap();
 
     let mut config = serde_json::json!({
-        "rootUrl": root_url,
+        "rootURL": root_url,
         "clientId": "test-client-id",
         "accessToken": "test-access-token",
         "provisionerId": "test-provisioner",
@@ -426,7 +426,7 @@ async fn setup_with_overrides(overrides: Value) -> TestEnv {
         "enableInteractive": false,
         "enableTaskclusterProxy": false,
         "enableResourceMonitor": false,
-        "enableOsGroups": false,
+        "enableOSGroups": false,
     });
 
     if let (Some(base), Some(over)) = (config.as_object_mut(), overrides.as_object()) {
@@ -654,7 +654,7 @@ async fn test_who_am_i_as_current_user() {
 #[ignore = "requires multiuser engine (task user creation)"]
 async fn test_missing_scopes_os_groups() {
     let env = setup_with_overrides(serde_json::json!({
-        "enableOsGroups": true,
+        "enableOSGroups": true,
     }))
     .await;
 
@@ -687,7 +687,7 @@ async fn test_missing_scopes_os_groups() {
 #[ignore = "requires multiuser engine (task user creation)"]
 async fn test_os_groups_respected() {
     let env = setup_with_overrides(serde_json::json!({
-        "enableOsGroups": true,
+        "enableOSGroups": true,
     }))
     .await;
 

@@ -243,7 +243,7 @@ fn test_missing_ip_config() {
     let config_path = tmp.path().join("noip.json");
 
     let config_json = serde_json::json!({
-        "rootUrl": "https://tc-tests.example.com",
+        "rootURL": "https://tc-tests.example.com",
         "clientId": "test-client",
         "accessToken": "V7w5mcc3Q3mQHp3ns0C7dA",
         "workerGroup": "abcde",
@@ -284,7 +284,7 @@ fn test_valid_config() {
     let config_path = tmp.path().join("valid.json");
 
     let config_json = serde_json::json!({
-        "rootUrl": "https://tc-tests.example.com",
+        "rootURL": "https://tc-tests.example.com",
         "clientId": "test-client",
         "accessToken": "V7w5mcc3Q3mQHp3ns0C7dA",
         "workerGroup": "abcde",
@@ -292,7 +292,7 @@ fn test_valid_config() {
         "workerId": "myworkerid",
         "provisionerId": "test-prov",
         "tasksDir": "/tmp/tasks",
-        "publicIp": "2.1.2.1",
+        "publicIP": "2.1.2.1",
         "ed25519SigningKeyLocation": "/some/place.ed25519.key"
     });
 
@@ -327,7 +327,7 @@ fn test_invalid_ip_config() {
     let config_path = tmp.path().join("invalid-ip.json");
 
     let config_json = serde_json::json!({
-        "rootUrl": "https://tc-tests.example.com",
+        "rootURL": "https://tc-tests.example.com",
         "clientId": "test-client",
         "accessToken": "V7w5mcc3Q3mQHp3ns0C7dA",
         "workerGroup": "abcde",
@@ -335,7 +335,7 @@ fn test_invalid_ip_config() {
         "workerId": "myworkerid",
         "provisionerId": "test-prov",
         "tasksDir": "/tmp/tasks",
-        "publicIp": "257.1.2.1"
+        "publicIP": "257.1.2.1"
     });
 
     std::fs::write(
@@ -368,7 +368,7 @@ fn test_bool_as_string() {
     let config_path = tmp.path().join("bool-as-string.json");
 
     let raw = r#"{
-        "rootUrl": "https://tc-tests.example.com",
+        "rootURL": "https://tc-tests.example.com",
         "clientId": "test-client",
         "accessToken": "V7w5mcc3Q3mQHp3ns0C7dA",
         "workerGroup": "abcde",
@@ -376,7 +376,7 @@ fn test_bool_as_string() {
         "workerId": "myworkerid",
         "provisionerId": "test-prov",
         "tasksDir": "/tmp/tasks",
-        "publicIp": "2.1.2.1",
+        "publicIP": "2.1.2.1",
         "shutdownMachineOnIdle": "true"
     }"#;
 
@@ -403,7 +403,7 @@ fn test_worker_type_metadata() {
     let config_path = tmp.path().join("config.json");
 
     let config = serde_json::json!({
-        "rootUrl": "https://tc.example.com",
+        "rootURL": "https://tc.example.com",
         "clientId": "test",
         "accessToken": "secret",
         "provisionerId": "test-prov",
@@ -458,7 +458,7 @@ fn test_valid_config_round_trip() {
     let config_path = tmp.path().join("config.json");
 
     let original = serde_json::json!({
-        "rootUrl": "https://tc.example.com",
+        "rootURL": "https://tc.example.com",
         "clientId": "test-client",
         "accessToken": "test-secret",
         "provisionerId": "prov-1",
@@ -476,7 +476,7 @@ fn test_valid_config_round_trip() {
         "enableLiveLog": true,
         "enableMetadata": true,
         "enableMounts": true,
-        "publicIp": "2.1.2.1"
+        "publicIP": "2.1.2.1"
     });
 
     let json_str = serde_json::to_string_pretty(&original).unwrap();
@@ -487,7 +487,7 @@ fn test_valid_config_round_trip() {
     let round_tripped: serde_json::Value = serde_json::from_str(&content).unwrap();
 
     assert_eq!(
-        round_tripped["rootUrl"].as_str().unwrap(),
+        round_tripped["rootURL"].as_str().unwrap(),
         "https://tc.example.com"
     );
     assert_eq!(
@@ -499,7 +499,7 @@ fn test_valid_config_round_trip() {
         "wt-1"
     );
     assert_eq!(
-        round_tripped["publicIp"].as_str().unwrap(),
+        round_tripped["publicIP"].as_str().unwrap(),
         "2.1.2.1"
     );
     assert_eq!(
@@ -529,7 +529,7 @@ fn test_taskcluster_instance_type() {
     let config_path = tmp.path().join("config.json");
 
     let config_json = serde_json::json!({
-        "rootUrl": "https://tc.example.com",
+        "rootURL": "https://tc.example.com",
         "clientId": "test-client",
         "accessToken": "test-secret",
         "provisionerId": "test-prov",
@@ -573,7 +573,7 @@ fn test_worker_location() {
     let config_path = tmp.path().join("config.json");
 
     let config_json = serde_json::json!({
-        "rootUrl": "https://tc.example.com",
+        "rootURL": "https://tc.example.com",
         "clientId": "test-client",
         "accessToken": "test-secret",
         "provisionerId": "test-prov",
@@ -618,7 +618,7 @@ fn test_new_credentials() {
 
     // Create a config with old credentials.
     let config: Config = serde_json::from_value(serde_json::json!({
-        "rootUrl": "https://tc.example.com",
+        "rootURL": "https://tc.example.com",
         "clientId": "old-client",
         "accessToken": "old-token",
         "provisionerId": "p",

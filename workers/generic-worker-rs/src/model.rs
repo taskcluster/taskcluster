@@ -265,7 +265,7 @@ pub struct TaskCredentials {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClaimWorkRequest {
-    pub tasks_claimed: u32,
+    pub tasks: u32,
     pub worker_group: String,
     pub worker_id: String,
 }
@@ -411,9 +411,20 @@ pub fn payload_schema_json() -> String {
                 "type": "array",
                 "items": { "type": "string" },
                 "description": "OS groups to add task user to"
+            },
+            "supersederUrl": {
+                "type": "string",
+                "description": "URL to check for superseding tasks"
+            },
+            "taskclusterProxyInterface": {
+                "type": "string",
+                "description": "Network interface for taskcluster-proxy"
+            },
+            "rdpInfo": {
+                "type": "string",
+                "description": "RDP info artifact name"
             }
         },
-        "additionalProperties": false,
         "required": ["command", "maxRunTime"]
     })
     .to_string()

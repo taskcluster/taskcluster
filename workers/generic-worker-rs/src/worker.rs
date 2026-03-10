@@ -317,7 +317,7 @@ pub async fn run_worker(config_path: &str, with_worker_runner: bool) -> Result<W
 /// Claim a task from the Queue.
 async fn claim_work(queue: &HttpQueue, config: &Config) -> Result<Option<TaskClaimResponse>> {
     let request = ClaimWorkRequest {
-        tasks_claimed: 1,
+        tasks: 1,
         worker_group: config.worker_group.clone(),
         worker_id: config.worker_id.clone(),
     };
