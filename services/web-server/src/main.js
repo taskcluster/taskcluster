@@ -3,7 +3,7 @@ import debugFactory from 'debug';
 const debug = debugFactory('app:main');
 import assert from 'assert';
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware } from '@as-integrations/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import depthLimit from './validation/guardedDepthLimit.js';
 import { NoFragmentCyclesRule } from 'graphql/validation/rules/NoFragmentCyclesRule.js';
@@ -170,7 +170,6 @@ const load = loader(
         const server = new ApolloServer({
           schema,
           formatError,
-          status400ForVariableCoercionErrors: true, //https://www.apollographql.com/docs/apollo-server/migration#appropriate-400-status-codes
           plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
           csrfPrevention: true,
           introspection: true,
