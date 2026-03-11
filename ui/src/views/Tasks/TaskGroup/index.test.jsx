@@ -4,6 +4,7 @@ import { MockedProvider } from '@apollo/client/testing';
 import { MemoryRouter } from 'react-router-dom';
 import TaskGroup from './index';
 import taskGroupQuery from './taskGroup.graphql';
+import taskGroupSubscription from './taskGroupSubscription.graphql';
 
 const taskGroupId = 'aI8bvUB2SDmpHVqTUOFCWw';
 const mocks = [
@@ -88,6 +89,25 @@ const mocks = [
           version: 1,
         },
       },
+    },
+  },
+  {
+    request: {
+      query: taskGroupSubscription,
+      variables: {
+        taskGroupId,
+        subscriptions: [
+          'tasksDefined',
+          'tasksPending',
+          'tasksRunning',
+          'tasksCompleted',
+          'tasksFailed',
+          'tasksException',
+        ],
+      },
+    },
+    result: {
+      data: null,
     },
   },
 ];

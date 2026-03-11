@@ -1,5 +1,5 @@
-import React, { Component, Fragment } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
+import React, { Fragment, useContext } from 'react';
+import { useQuery } from '@apollo/client';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -8,99 +8,91 @@ import { withStyles } from '@material-ui/core/styles';
 import Spinner from '../../components/Spinner';
 import Dashboard from '../../components/Dashboard';
 import DateDistance from '../../components/DateDistance';
-import { withAuth } from '../../utils/Auth';
+import { AuthContext } from '../../utils/Auth';
 import ErrorPanel from '../../components/ErrorPanel';
 import profileQuery from './profile.graphql';
 import username from '../../utils/username';
 
-@withAuth
-@graphql(profileQuery, {
-  skip: ({ user }) => !user,
-  options: () => ({
-    fetchPolicy: 'network-only',
-  }),
-})
-@withStyles({
+const styles = {
   certificate: {
     wordBreak: 'break-word',
   },
-})
-export default class Profile extends Component {
-  render() {
-    const {
-      user,
-      classes,
-      data: { currentScopes, loading, error } = {},
-    } = this.props;
+};
 
-    return (
-      <Dashboard title="Profile">
-        {!currentScopes && loading && <Spinner loading />}
-        <ErrorPanel fixed error={error} />
-        {!user && !loading && (
-          <Typography variant="subtitle1">
-            Sign in to view your profile
-          </Typography>
-        )}
-        {user && currentScopes && (
-          <Fragment>
-            <Typography variant="subtitle1">Credential Information</Typography>
-            <List>
-              <ListItem>
-                <ListItemText
-                  primary="Signed In As"
-                  secondary={username(user)}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Certificate"
-                  secondary={
-                    user.credentials.certificate ? (
-                      <code className={classes.certificate}>
-                        {user.credentials.certificate}
-                      </code>
-                    ) : (
-                      'n/a'
-                    )
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Client ID"
-                  secondary={<code>{user.credentials.clientId}</code>}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Expires"
-                  secondary={<DateDistance from={user.expires} />}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Scopes"
-                  secondaryTypographyProps={{ component: 'div' }}
-                  secondary={
-                    currentScopes.length ? (
-                      <List>
-                        {currentScopes.map(scope => (
-                          <ListItem key={scope}>
-                            <ListItemText secondary={<code>{scope}</code>} />
-                          </ListItem>
-                        ))}
-                      </List>
-                    ) : (
-                      'no scopes'
-                    )
-                  }
-                />
-              </ListItem>
-            </List>
-          </Fragment>
-        )}
-      </Dashboard>
-    );
-  }
+function Profile({ classes }) {
+  const { user } = useContext(AuthContext);
+  const { data, loading, error } = useQuery(profileQuery, {
+    skip: !user,
+    fetchPolicy: 'network-only',
+  });
+  const currentScopes = data?.currentScopes;
+
+  return (
+    <Dashboard title="Profile">
+      {!currentScopes && loading && <Spinner loading />}
+      <ErrorPanel fixed error={error} />
+      {!user && !loading && (
+        <Typography variant="subtitle1">
+          Sign in to view your profile
+        </Typography>
+      )}
+      {user && currentScopes && (
+        <Fragment>
+          <Typography variant="subtitle1">Credential Information</Typography>
+          <List>
+            <ListItem>
+              <ListItemText primary="Signed In As" secondary={username(user)} />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="Certificate"
+                secondary={
+                  user.credentials.certificate ? (
+                    <code className={classes.certificate}>
+                      {user.credentials.certificate}
+                    </code>
+                  ) : (
+                    'n/a'
+                  )
+                }
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="Client ID"
+                secondary={<code>{user.credentials.clientId}</code>}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="Expires"
+                secondary={<DateDistance from={user.expires} />}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="Scopes"
+                secondaryTypographyProps={{ component: 'div' }}
+                secondary={
+                  currentScopes.length ? (
+                    <List>
+                      {currentScopes.map(scope => (
+                        <ListItem key={scope}>
+                          <ListItemText secondary={<code>{scope}</code>} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    'no scopes'
+                  )
+                }
+              />
+            </ListItem>
+          </List>
+        </Fragment>
+      )}
+    </Dashboard>
+  );
 }
+
+export default withStyles(styles)(Profile);

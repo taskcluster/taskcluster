@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import React, { Component } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
+import { useQuery, useApolloClient } from '@apollo/client';
 import dotProp from 'dot-prop-immutable';
 import { sum, isEmpty } from 'ramda';
 import { paramCase } from 'param-case';
@@ -102,25 +102,6 @@ const updateTaskGroupIdHistory = id => {
   db.taskGroupIdsHistory.put({ taskGroupId: id });
 };
 
-@withApollo
-@graphql(taskGroupQuery, {
-  options: props => ({
-    fetchPolicy: 'network-only',
-    errorPolicy: 'all',
-    variables: {
-      taskGroupId: props.match.params.taskGroupId,
-      taskGroupConnection: {
-        limit: 20,
-      },
-      taskActionsFilter: {
-        kind: {
-          $in: ACTIONS_JSON_KNOWN_KINDS,
-        },
-        $or: [{ context: { $size: 0 } }, { context: { $size: 1 } }],
-      },
-    },
-  }),
-})
 @withStyles(theme => ({
   dashboard: {
     overflow: 'hidden',
@@ -161,7 +142,7 @@ const updateTaskGroupIdHistory = id => {
     marginRight: theme.spacing(1),
   },
 }))
-export default class TaskGroup extends Component {
+class TaskGroup extends Component {
   static calculateStatusCountStatic(taskGroup) {
     const statusCount = {
       completed: 0,
@@ -1109,3 +1090,28 @@ export default class TaskGroup extends Component {
     );
   }
 }
+
+function TaskGroupWrapper(props) {
+  const client = useApolloClient();
+  const queryResult = useQuery(taskGroupQuery, {
+    fetchPolicy: 'network-only',
+    errorPolicy: 'all',
+    variables: {
+      taskGroupId: props.match.params.taskGroupId,
+      taskGroupConnection: {
+        limit: 20,
+      },
+      taskActionsFilter: {
+        kind: {
+          $in: ACTIONS_JSON_KNOWN_KINDS,
+        },
+        $or: [{ context: { $size: 0 } }, { context: { $size: 1 } }],
+      },
+    },
+  });
+  const data = { ...queryResult, ...(queryResult.data || {}) };
+
+  return <TaskGroup {...props} client={client} data={data} />;
+}
+
+export default TaskGroupWrapper;

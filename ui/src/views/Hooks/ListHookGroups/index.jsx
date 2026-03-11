@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
+import React from 'react';
+import { useQuery } from '@apollo/client';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { parse, stringify } from 'qs';
@@ -13,13 +13,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import HookGroupsTable from '../../../components/HookGroupsTable';
 import hookGroupsQuery from './hookGroups.graphql';
 
-@withApollo
-@graphql(hookGroupsQuery, {
-  options: {
-    fetchPolicy: 'network-only',
-  },
-})
-@withStyles(theme => ({
+const styles = theme => ({
   actionButton: {
     ...theme.mixins.fab,
   },
@@ -37,16 +31,22 @@ import hookGroupsQuery from './hookGroups.graphql';
       color: theme.palette.warning.light,
     },
   },
-}))
-export default class ListHookGroups extends Component {
-  handleCreateHook = () => {
-    this.props.history.push('/hooks/create');
+});
+
+function ListHookGroups(props) {
+  const { classes, description, history } = props;
+  const { loading, error, data } = useQuery(hookGroupsQuery, {
+    fetchPolicy: 'network-only',
+  });
+  const hookGroups = data?.hookGroups;
+  const handleCreateHook = () => {
+    history.push('/hooks/create');
   };
 
-  handleHookSearchSubmit = hookSearch => {
+  const handleHookSearchSubmit = hookSearch => {
     const query = parse(window.location.search.slice(1));
 
-    this.props.history.push({
+    history.push({
       search: stringify({
         ...query,
         search: hookSearch,
@@ -54,49 +54,44 @@ export default class ListHookGroups extends Component {
     });
   };
 
-  render() {
-    const {
-      classes,
-      description,
-      data: { loading, error, hookGroups },
-    } = this.props;
-    const { search } = parse(window.location.search.slice(1));
-    const hookGroupIds = hookGroups?.map(group => group?.hookGroupId).flat();
+  const { search } = parse(window.location.search.slice(1));
+  const hookGroupIds = hookGroups?.map(group => group?.hookGroupId).flat();
 
-    return (
-      <Dashboard
-        title="Hooks Groups"
-        helpView={<HelpView description={description} />}
-        search={
-          <Search
-            placeholder="Hook group contains"
-            defaultValue={search}
-            onSubmit={this.handleHookSearchSubmit}
+  return (
+    <Dashboard
+      title="Hooks Groups"
+      helpView={<HelpView description={description} />}
+      search={
+        <Search
+          placeholder="Hook group contains"
+          defaultValue={search}
+          onSubmit={handleHookSearchSubmit}
+        />
+      }>
+      {!hookGroups && loading && <Spinner loading />}
+      <ErrorPanel fixed error={error} />
+      {!loading &&
+        (hookGroupIds?.length ? (
+          <HookGroupsTable
+            searchTerm={search}
+            hookGroups={hookGroupIds}
+            classes={classes}
           />
-        }>
-        {!hookGroups && loading && <Spinner loading />}
-        <ErrorPanel fixed error={error} />
-        {!loading &&
-          (hookGroupIds?.length ? (
-            <HookGroupsTable
-              searchTerm={search}
-              hookGroups={hookGroupIds}
-              classes={classes}
-            />
-          ) : (
-            <Typography variant="subtitle1">
-              No hook groups are defined
-            </Typography>
-          ))}
-        <Button
-          spanProps={{ className: classes.actionButton }}
-          tooltipProps={{ title: 'Create Hook' }}
-          color="secondary"
-          variant="round"
-          onClick={this.handleCreateHook}>
-          <PlusIcon />
-        </Button>
-      </Dashboard>
-    );
-  }
+        ) : (
+          <Typography variant="subtitle1">
+            No hook groups are defined
+          </Typography>
+        ))}
+      <Button
+        spanProps={{ className: classes.actionButton }}
+        tooltipProps={{ title: 'Create Hook' }}
+        color="secondary"
+        variant="round"
+        onClick={handleCreateHook}>
+        <PlusIcon />
+      </Button>
+    </Dashboard>
+  );
 }
+
+export default withStyles(styles)(ListHookGroups);

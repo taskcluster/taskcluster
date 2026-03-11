@@ -1,5 +1,5 @@
-import React, { Component, Fragment } from 'react';
-import { Query } from '@apollo/client/react/components';
+import React, { Fragment, useState } from 'react';
+import { useQuery } from '@apollo/client';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -17,7 +17,7 @@ import Link from '../../../utils/Link';
 import scopesetQuery from './scopeset.graphql';
 import scopeLink from '../../../utils/scopeLink';
 
-@withStyles(theme => ({
+const styles = theme => ({
   actionButton: {
     ...theme.mixins.fab,
   },
@@ -34,96 +34,80 @@ import scopeLink from '../../../utils/scopeLink';
     display: 'flex',
     justifyContent: 'space-between',
   },
-}))
-export default class ScopesetExpander extends Component {
-  constructor(props) {
-    super(props);
+});
 
-    const query = parse(this.props.location.search.slice(1));
-    const { scopes } = query;
-
-    if (scopes) {
-      this.state = {
-        scopeText: scopes.join('\n'),
-      };
-    } else {
-      this.state = {
-        scopeText: '',
-      };
-    }
-  }
-
-  handleExpandScopesClick = async () => {
-    const scopes = splitLines(this.state.scopeText);
-    const queryObj = { scopes };
+function ScopesetExpander({ classes, location, history }) {
+  const query = parse(location.search.slice(1));
+  const initialScopes = query.scopes;
+  const [scopeText, setScopeText] = useState(
+    initialScopes ? initialScopes.join('\n') : ''
+  );
+  const [scopes, setScopes] = useState(undefined);
+  const { loading, error, data } = useQuery(scopesetQuery, {
+    variables: { scopes },
+    skip: !scopes,
+  });
+  const handleExpandScopesClick = () => {
+    const newScopes = splitLines(scopeText);
+    const queryObj = { scopes: newScopes };
     const queryStr = stringify(queryObj);
 
-    this.props.history.push({
+    history.push({
       pathname: '/auth/scopes/expansions',
       search: queryStr,
     });
 
-    this.setState({ scopes });
+    setScopes(newScopes);
   };
 
-  handleScopesChange = scopeText => {
-    this.setState({ scopeText });
-  };
-
-  render() {
-    const { classes } = this.props;
-    const { scopes, scopeText } = this.state;
-    const description = `This tool allows you to find the expanded copy of a given scopeset, with
+  const description = `This tool allows you to find the expanded copy of a given scopeset, with
     scopes implied by any roles included.`;
 
-    return (
-      <Dashboard
-        title="Expand Scopes"
-        helpView={<HelpView description={description} />}>
-        <Fragment>
-          <CodeEditor
-            className={classes.editor}
-            onChange={this.handleScopesChange}
-            placeholder="new-scope:for-something:*"
-            mode="scopemode"
-            value={scopeText}
-          />
-          {scopes && (
-            <Query query={scopesetQuery} variables={{ scopes }}>
-              {({ loading, error, data }) => (
-                <Fragment>
-                  <ErrorPanel error={error} />
-                  <List dense>
-                    {loading && (
-                      <ListItem>
-                        <Spinner />
-                      </ListItem>
-                    )}
-                    {data &&
-                      data.expandScopes &&
-                      data.expandScopes.map(scope => (
-                        <Link key={scope} to={scopeLink(scope)}>
-                          <ListItem button className={classes.listItemButton}>
-                            <code>{scope}</code>
-                            <LinkIcon size={16} />
-                          </ListItem>
-                        </Link>
-                      ))}
-                  </List>
-                </Fragment>
+  return (
+    <Dashboard
+      title="Expand Scopes"
+      helpView={<HelpView description={description} />}>
+      <Fragment>
+        <CodeEditor
+          className={classes.editor}
+          onChange={setScopeText}
+          placeholder="new-scope:for-something:*"
+          mode="scopemode"
+          value={scopeText}
+        />
+        {scopes && (
+          <Fragment>
+            <ErrorPanel error={error} />
+            <List dense>
+              {loading && (
+                <ListItem>
+                  <Spinner />
+                </ListItem>
               )}
-            </Query>
-          )}
-          <Button
-            tooltipProps={{ title: 'Expand Scopes' }}
-            spanProps={{ className: classes.actionButton }}
-            color="secondary"
-            variant="round"
-            onClick={this.handleExpandScopesClick}>
-            <ArrowExpandVerticalIcon />
-          </Button>
-        </Fragment>
-      </Dashboard>
-    );
-  }
+              {data &&
+                data.expandScopes &&
+                data.expandScopes.map(scope => (
+                  <Link key={scope} to={scopeLink(scope)}>
+                    <ListItem button className={classes.listItemButton}>
+                      <code>{scope}</code>
+                      <LinkIcon size={16} />
+                    </ListItem>
+                  </Link>
+                ))}
+            </List>
+          </Fragment>
+        )}
+        <Button
+          tooltipProps={{ title: 'Expand Scopes' }}
+          spanProps={{ className: classes.actionButton }}
+          color="secondary"
+          variant="round"
+          onClick={handleExpandScopesClick}>
+          <ArrowExpandVerticalIcon />
+        </Button>
+      </Fragment>
+    </Dashboard>
+  );
 }
+
+export default withStyles(styles)(ScopesetExpander);
