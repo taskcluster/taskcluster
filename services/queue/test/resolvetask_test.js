@@ -1,19 +1,19 @@
-const _ = require('lodash');
-const debug = require('debug')('test:completed');
-const assert = require('assert');
-const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
-const assume = require('assume');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const { LEVELS } = require('taskcluster-lib-monitor');
+import _ from 'lodash';
+import debugFactory from 'debug';
+const debug = debugFactory('test:completed');
+import assert from 'assert';
+import slugid from 'slugid';
+import taskcluster from '@taskcluster/client';
+import assume from 'assume';
+import helper from './helper.js';
+import testing from '@taskcluster/lib-testing';
+import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);
-  helper.withQueueService(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
@@ -43,6 +43,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   suiteSetup(async function() {
     monitor = await helper.load('monitor');
   });
+
+  const checkMetricExists = async (metricName, labelName, labelValue) => {
+    const metrics = await monitor.manager._prometheus.metricsJson();
+    const metric = metrics.find(({ name }) => name === metricName);
+    assert(metric, `${metricName} metric should exist`);
+    const labelEntry = metric.values.find(v => v.labels[labelName] === labelValue);
+    assert(labelEntry, `${metricName} should have ${labelName}=${labelValue} label`);
+    assert(labelEntry.value >= 1, `${metricName} counter should be incremented for ${labelValue}`);
+  };
 
   test('reportCompleted is idempotent', async () => {
     const taskId = slugid.v4();
@@ -117,6 +126,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       Severity: LEVELS.notice,
     });
 
+    await checkMetricExists('queue_failed_tasks', 'reasonResolved', 'failed');
+
     debug('### Reporting task failed (again)');
     await helper.queue.reportFailed(taskId, 0);
     helper.assertPulseMessage('task-failed', m => (
@@ -164,6 +175,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       Fields: { taskId, runId: 0, v: 1 },
       Severity: LEVELS.notice,
     });
+
+    await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'malformed-payload');
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
@@ -216,6 +229,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       m.payload.status.runs[0].reasonResolved === 'resource-unavailable'));
     helper.clearPulseMessages();
 
+    await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'resource-unavailable');
+
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
@@ -266,6 +281,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       m.payload.status.runs[0].state === 'exception' &&
       m.payload.status.runs[0].reasonResolved === 'internal-error'));
     helper.clearPulseMessages();
+
+    await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'internal-error');
 
     debug('### Reporting task exception (again)');
     await helper.queue.reportException(taskId, 0, {
@@ -360,8 +377,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.status.runs[1].state).equals('pending');
     assume(r1.status.runs[1].reasonCreated).equals('retry');
 
-    // no exception message, just right back to pending
-    helper.assertNoPulseMessage('task-exception');
+    helper.assertPulseMessage('task-exception');
     helper.assertPulseMessage('task-pending', m => (
       _.isEqual(m.payload.status, r1.status) &&
       m.payload.runId === 1));
@@ -370,7 +386,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.reportException(taskId, 0, {
       reason: 'worker-shutdown',
     });
-    helper.assertNoPulseMessage('task-exception');
+    helper.assertPulseMessage('task-exception');
     helper.assertPulseMessage('task-pending');
     helper.clearPulseMessages();
 

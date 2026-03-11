@@ -21,9 +21,9 @@ class SharedFileLock {
 
   //acquires a lock, at >=1 locks it will flock the lockfile
   async acquire() {
-    if(this.count === 0 || !this.locked) {
+    if (this.count === 0 || !this.locked) {
       let err = await flock(this.lockFd, 'shnb');
-      if(err) {
+      if (err) {
         debug('[alert-operator] couldn\'t acquire lock, this is probably bad');
         debug(err);
       } else {
@@ -37,14 +37,14 @@ class SharedFileLock {
 
   //releases a lock after some delay, at 0 locks it will unlock the lockfile
   async release(delay = 0) {
-    if(delay > 0) {
+    if (delay > 0) {
       return setTimeout(() => {this.release();}, delay);
     }
     assert(this.count > 0, 'Has been released more times than acquired');
     this.count -= 1;
-    if(this.count === 0 && this.locked) {
+    if (this.count === 0 && this.locked) {
       let err = await fs.flock(this.lockFd, 'un');
-      if(err) {
+      if (err) {
         debug('[alert-operator] couldn\'t unlock, this is probably bad');
         debug(err);
       } else {

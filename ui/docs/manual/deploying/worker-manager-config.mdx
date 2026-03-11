@@ -1,0 +1,335 @@
+---
+title: Worker Manager Configuration
+order: 20
+---
+import Warning from '@taskcluster/ui/views/Documentation/components/Warning';
+
+# Worker Manager Configuration
+
+The worker-manager service uses "providers" to handle workers in various clouds (or, in no cloud at all).
+Each is identified by a `providerId`, referenced from the worker pool definitions defined in the Taskcluster API.
+
+## Cautions
+
+Be careful to never remove a provider which still has worker pools.
+Note that worker pools persist for some time after they are "deleted", until all workers are stopped and a periodic task finally reaps the worker pool.
+
+Be careful, too, not to change a provider configuration in such a way that the worker manager's internal state will be invalidated.
+For example, do not change the cloud account for a provider.
+Instead, create a new provider for the new account and migrate worker pools to that new provider.
+
+## Provider Configuration
+
+Providers are configured in the services `PROVIDERS` config, which is structured as a JSON object mapping `providerId` to the configuration for that provider.
+Each configuration object has at least a `providerType` property, defining the type of cloud in which workers should be provisioned.
+
+### Static
+
+A provider with `providerType = "static"` manages workers that are not dynamically created in response to demand.
+It is typically used for workers in datacenters, but can also be used for cloud instances that are created through some non-Taskcluster mechanism.
+
+A static provider is be configured in `providers` with the following structure.
+Since there is usually no reason to have multiple static providers, the provider is typically named "static".
+
+```json
+{
+  "static": {
+    "providerType": "static"
+  },
+  ...
+}
+```
+
+
+### Google
+
+A google-based provider is configured in `providers` with the following structure:
+
+```json
+{
+  "myProvider": {
+    "providerType": "google",
+    "project": "<gcp project identifier>",
+    "workerServiceAccountId": "<uniqueId of a service account in this project that workers will use>",
+    "apiRateLimits": {
+      "get": {"interval": 1000, "intervalCap": 20000},
+      "query": {"interval": 1000, "intervalCap": 40000},
+      "list": {"interval": 1000, "intervalCap": 20000},
+      "opRead": {"interval": 1000, "intervalCap": 20000}
+    },
+    "creds": "<google credentials>"
+  },
+  ...
+}
+```
+
+#### GCP Project
+
+The `project` configuration names the project in which instances will be created.
+It is the project *ID* and not the human-readable project name.
+
+The project will need the following APIs enabled:
+
+* Compute Engine API
+* Identity and Access Management (IAM) API
+
+#### API Rate Limit Overrides
+
+By default worker-manager will limit its interactions with a GCP project to the
+[documented api rate limits](https://cloud.google.com/compute/docs/api-rate-limits). You
+can optionally override this for the categories `get`, `query`, `list`, and `opRead` which
+cover the entirety of calls that worker-manager makes. This could be useful if you get
+your limits raised by google.
+
+#### Service Accounts
+
+The provider requires *two* service accounts in the designated project.
+
+The first, typically named `taskcluster-workers`, is the service account that worker-manager will assign to workers
+it starts. Give this service account whatever google permissions you wish your
+workers to have. This could be something like writing to stackdriver for example.
+You provide the numeric `uniqueId` of this service account in the `workerServiceAccountId` field.
+
+<Warning>
+It is important to know that tasks will also have access to this service-account if they try hard enough so make sure you keep that in mind while giving permissions to the `taskcluster-workers` service account.
+</Warning>
+
+<Warning>
+In its infinite wisdom, Google has made the `uniqueId` field of service accounts un-selectable in the UI, and thus impossible to copy.
+Rather than typing this number yourself, or firing up an OCR tool, right-click to "inspect" the element, remove the "disabled" property, and then copy from the element.
+</Warning>
+
+The second service account, typically named `taskcluster-worker-manager`, is for worker-manager itself and is used to create workers.
+It should have the following roles:
+
+* `roles/compute.admin` ("Compute Admin")
+* `roles/iam.serviceAccountUser` ("Service Account User")
+
+The GCP key for this service account must be provided in `creds`.
+This key is the large JSON object containing a service account's keys, and looks something like this:
+
+```json
+{
+  "type": "service_account",
+  "project_id": "my-project-id-1234",
+  "private_key_id": "abc123",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nabc123\n-----END PRIVATE KEY-----\n",
+  "client_email": "thisthing@something.iam.gserviceaccount.com",
+  "client_id": "1234",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/thisthing%40something.iam.gserviceaccount.com"
+}
+```
+This will need to be included either as a string, base64'd string, or just json/yaml in the `creds` property.
+
+### AWS
+
+An AWS-based provider is configured in `providers` with the following structure:
+
+```json
+{
+  "myProvider": {
+    "providerType": "aws",
+    "credentials": {
+      "accessKeyId": "...",
+      "secretAccessKey": "..."
+    }
+  },
+  ...
+}
+```
+
+The credentials must correspond to an IAM user with the following permissions:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "WorkerManager",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeInstances",
+                "ec2:TerminateInstances",
+                "ec2:CreateTags",
+                "ec2:RunInstances",
+                "ec2:DescribeInstanceStatus",
+                "ec2:DescribeRegions"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+The account should have its [AWSServiceRoleForEC2Spot service-linked role](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html#service-linked-roles-spot-instance-requests) set up.
+Follow the "To manually create.." process at that link.
+You can verify that this worked by creating a spot request manually in the console.
+If this service-linked role is not set up properly, worker creation will fail with the message "The provided credentials do not have permission to create the service-linked role for EC2 Spot Instances".
+
+We recommend a dedicated AWS account for workers, but understand that this is difficult to set up for small deployments.
+If the AWS account is shared with other uses, it is possible to make a more restrictive policy limiting, for example, the security groups or subnets in which the provider can create instances.
+
+### Azure
+
+An Azure-based provider is configured in `providers` with the following structure:
+
+```json
+{
+  "myProvider": {
+    "providerType": "azure",
+    "clientId": "your-azure-client-id",
+    "secret": "azure-secret",
+    "domain": "creds-domain",
+    "subscriptionId": "your-subscription-id",
+    "resourceGroupName": "azure-provider-resource-group",
+    "apiRateLimits": {
+      "get": {"interval": 1000, "intervalCap": 20000},
+      "query": {"interval": 1000, "intervalCap": 40000},
+      "list": {"interval": 1000, "intervalCap": 20000}
+    }
+  }
+}
+```
+
+Create a new resource group, in which all resources will be created (note that the location of the resource group is not related to the location of the workers).
+
+Create a new "App Registration" as well, but do not create secrets for it yet.
+It must first be granted appropriate permissions.
+See [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for information on creating Azure AD Applications, assigning roles, and getting credentials.
+
+Azure-based providers need permissions to manage virtual machines, network interfaces, disks, and public IP addresses.
+The following is an example custom Azure role definition that encompasses the scope of permissions an Azure-based provider needs.
+Add this under your subscription -> "IAM" -> "Create a Custom Role", and start from JSON using content like this:
+
+```json
+{
+  "Name": "Worker-Manager Azure Provider",
+  "IsCustom": true,
+  "Description": "Based on Virtual Machine Contributor + image access, delete access",
+  "Actions": [
+    "Microsoft.Authorization/*/read",
+    "Microsoft.Compute/availabilitySets/*",
+    "Microsoft.Compute/locations/*",
+    "Microsoft.Compute/virtualMachines/*",
+    "Microsoft.Compute/disks/*",
+    "Microsoft.Compute/virtualMachineScaleSets/*",
+    "Microsoft.Compute/images/read",
+    "Microsoft.Insights/alertRules/*",
+    "Microsoft.Network/locations/*",
+    "Microsoft.Network/networkInterfaces/*",
+    "Microsoft.Network/networkSecurityGroups/join/action",
+    "Microsoft.Network/networkSecurityGroups/read",
+    "Microsoft.Network/publicIPAddresses/join/action",
+    "Microsoft.Network/publicIPAddresses/read",
+    "Microsoft.Network/publicIPAddresses/delete",
+    "Microsoft.Network/publicIPAddresses/write",
+    "Microsoft.Network/virtualNetworks/read",
+    "Microsoft.Network/virtualNetworks/subnets/join/action",
+    "Microsoft.Resources/deployments/*",
+    "Microsoft.Resources/subscriptions/resourceGroups/read",
+    "Microsoft.Storage/storageAccounts/listKeys/action",
+    "Microsoft.Storage/storageAccounts/read",
+    "Microsoft.Support/*"
+  ],
+  "AssignableScopes": [
+    "/subscriptions/your-subscription-id"
+  ]
+}
+```
+
+Again under your subscription -> "IAM", choose "Add" -> "Add role assignment" and assign the new role to the Enterprise App created earlier.
+The app will be listed under "User, group, or service principal".
+
+Back in the App Registration, select "Certificates & Secrets" and create a new client secret.
+Note that the credentials cannot be configured to not expire.
+We recommend choosing the maximum expiration, and scheduling a reminder before that expiration date, as Azure will provide no notice of credential expiration.
+
+Note that the ID of the client secret is not used.
+
+Now set the following configuration:
+
+* `subscriptionId` - the Subscription containing this App Registration
+* `clientId` - the "Application (client) ID"
+* `domain` - the "Directory (tenant) ID"
+* `secret` the generated secret
+* `resourceGroupName` - the name of the resource group
+* `apiRateLimits` - optional limits on the rate at which worker-manager calls Azure APIs
+
+### Launch configurations
+
+Worker pools that target the Azure provider define one or more `launchConfigs`. Each launch configuration can use one of two provisioning strategies:
+
+- **Sequential resource provisioning**: omit `armDeployment` and supply VM-centric properties (`location`, `subnetId`, `storageProfile`, `networkProfile`, etc.). Worker-manager creates and tears down the VM, NIC, IP, and disks one at a time.
+- **ARM template provisioning**: include an `armDeployment` object (and optionally `armDeploymentResourceGroup`). Worker-manager submits the template to Azure Resource Manager, automatically supplying required parameters (`adminUsername`, `adminPassword`, `computerName`, `customData`, `vmName`, `tags`). When the deployment finishes, worker-manager records the resources it created and deletes the deployment so deprovisioning still works as expected.
+
+For troubleshooting you can set `workerManager.keepDeployment: true` on an ARM launch configuration. That prevents worker-manager from deleting the deployment record so you can inspect its parameters/outputs, but leave it enabled only temporarily—Azure limits history to 800 deployments per resource group.
+
+Example launch configuration that uses a template spec:
+
+```json
+"launchConfigs": [
+  {
+    "workerManager": {
+      "launchConfigId": "lc-arm-example",
+      "capacityPerInstance": 1
+    },
+    "workerConfig": {
+      "genericWorker": {
+        "config": {
+          "shutdownMachineOnIdle": true
+        }
+      }
+    },
+    "armDeployment": {
+      "mode": "Incremental",
+      "templateLink": {
+        "id": "/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Resources/templateSpecs/<spec>/versions/1.0.0"
+      },
+      "parameters": {
+        "location": { "value": "eastus" },
+        "vmSize": { "value": "Standard_D4s_v5" },
+        "subnetId": {
+          "value": "/subscriptions/<sub>/resourceGroups/<network-rg>/providers/Microsoft.Network/virtualNetworks/<vnet>/subnets/default"
+        }
+      }
+    }
+  }
+]
+```
+
+### Resource Groups
+
+Resources in Azure are created within the context of resource groups. The provider is configured with the `resourceGroupName` in which resources will be created.
+This allows for a convenient grouping of all provider-related resources. Unrelated resources can exist within the resource group, but this is not recommended.
+
+### Resource Dependencies
+
+Azure-based providers create and manage worker resources, but also expect resources to already exist within the subscription and resource group that the provider is configured for.
+
+#### Expected resources:
+
+- a Resource Group
+- one or more Virtual Networks
+- one or more Subnets within Virtual Networks
+- an Azure storage account (in which disks will be created)
+
+#### Recommended:
+
+- one or more Network Security Groups to associate with Virtual Machines
+
+### Rate Limiting / Retries
+
+The Azure SDK has built-in support for handling rate limiting for most client uses, so requests should be retried appropriately.
+The provider has its own retry functionality which can be configured as well.
+
+See [here](https://docs.microsoft.com/en-us/azure/virtual-machines/troubleshooting/troubleshooting-throttling-errors) for more information on Azure throttling.
+
+### Spot Instances
+
+Azure spot instances are configured using a combination of settings: `billingProfile` and `priority`.
+Spot instances should have `priority` set to `Spot`, and a `billingProfile` with a `maxPrice` value corresponding to an amount in dollars.
+
+See [here](https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#billingprofile) for more information on `billingProfile` and `maxPrice`.

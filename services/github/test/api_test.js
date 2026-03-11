@@ -1,8 +1,8 @@
-const helper = require('./helper');
-const assert = require('assert');
-const _ = require('lodash');
-const got = require('got');
-const testing = require('taskcluster-lib-testing');
+import helper from './helper.js';
+import assert from 'assert';
+import _ from 'lodash';
+import got from 'got';
+import testing from '@taskcluster/lib-testing';
 
 /**
  * Tests of endpoints in the api _other than_
@@ -12,6 +12,7 @@ const testing = require('taskcluster-lib-testing');
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withFakeGithub(mock, skipping);
+  helper.withFakeQueue(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
 
@@ -44,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       1,
       'push',
       '26370a80-ed65-11e6-8f4c-80082678482d',
-      null,
+      1,
     );
     await helper.db.fns.create_github_build_pr(
       'abc123',
@@ -70,7 +71,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       1,
       'push',
       'Unknown',
-      null,
+      2,
     );
 
     await helper.db.fns.upsert_github_integration(
@@ -313,6 +314,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(builds.builds[0].sha, 'y650871208002a13ba35cf232c0e30d2c3d64783');
   });
 
+  test('pull request builds', async function() {
+    let builds = await helper.apiClient.builds({
+      organization: 'abc123',
+      repository: 'xyz',
+      pullRequest: 2,
+    });
+
+    assert.equal(builds.builds.length, 1);
+    builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
+    assert.equal(builds.builds[0].organization, 'abc123');
+    assert.equal(builds.builds[0].repository, 'xyz');
+    assert.equal(builds.builds[0].pullRequestNumber, 2);
+  });
+
   test('builds invalid queries are rejected', async function() {
     await assert.rejects(async () => {
       await helper.apiClient.builds({
@@ -326,6 +341,73 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         sha: 'y650871208002a13ba35cf232c0e30d2c3d64783',
       });
     }, /Error: Must provide/);
+  });
+
+  suite('cancel builds', function() {
+    setup(async function() {
+      // reset build states
+      const builds = await helper.db.fns.get_github_builds_pr(null, null, null, null, null, null);
+      await Promise.all(builds.map(build => helper.db.fns.set_github_build_state(build.task_group_id, 'pending')));
+    });
+    test('nothing to cancel', async function () {
+      await assert.rejects(async () => {
+        await helper.apiClient.cancelBuilds('no-such-org', 'no-repo');
+      }, /Error: No cancellable builds found/);
+    });
+    test('cancel running builds for repo', async function() {
+      let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz');
+      assert.equal(builds.builds.length, 2);
+      builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
+      assert.equal(builds.builds[0].organization, 'abc123');
+      assert.equal(builds.builds[0].repository, 'xyz');
+      assert.equal(builds.builds[0].state, 'cancelled');
+    });
+    test('cancel running builds for PR', async function() {
+      let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz', { pullRequest: 2 });
+      assert.equal(builds.builds.length, 1);
+      builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
+      assert.equal(builds.builds[0].organization, 'abc123');
+      assert.equal(builds.builds[0].repository, 'xyz');
+      assert.equal(builds.builds[0].state, 'cancelled');
+    });
+    test('cannot cancel twice same builds', async function() {
+      let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz', { pullRequest: 2 });
+      assert.equal(builds.builds.length, 1);
+      await assert.rejects(async () => {
+        await helper.apiClient.cancelBuilds('no-such-org', 'no-repo');
+      }, /Error: No cancellable builds found/);
+    });
+    test('no scopes', async function() {
+      const noScopesClient = new helper.GithubClient({ rootUrl: helper.rootUrl });
+      await assert.rejects(async () => {
+        await noScopesClient.cancelBuilds('abc123', 'xyz');
+      }, err => err.code === 'InsufficientScopes');
+    });
+    test('scopes: wrong org and repo', async function () {
+      await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:wrong-org:wrong-repo'], async () => {
+        await assert.rejects(
+          () => got.post(helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz')),
+          err => err.response.statusCode === 403,
+        );
+      });
+    });
+    test('scopes: wrong repo', async function () {
+      await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:abc123:wrong-repo'], async () => {
+        await assert.rejects(
+          () => got.post(helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz', {})),
+          err => err.response.statusCode === 403,
+        );
+      });
+    });
+    test('scopes: expand scopes works', async function () {
+      await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:abc123:*'], async () => {
+        const builds = await got.post(
+          helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz'),
+          { responseType: 'json' },
+        );
+        assert.equal(builds.body.builds.length, 2);
+      });
+    });
   });
 
   test('integration installation', async function() {
@@ -604,5 +686,79 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return; // passed
     }
     throw new Error('endpoint should have failed');
+  });
+
+  suite('render taskcluster.yml', function() {
+    const tcYaml = `version: 1
+reporting: checks-v1
+policy:
+  pullRequests: public
+tasks:
+  $let:
+    head_rev:
+      $switch:
+        tasks_for == "github-pull-request": \${event.pull_request.head.sha}
+        tasks_for == "github-push": \${event.after}
+        $default: UNKNOWN
+    repository:
+      $if: tasks_for == "github-pull-request"
+      then: \${event.pull_request.head.repo.html_url}
+      else: \${event.repository.html_url}
+  in:
+    $match:
+      (tasks_for == "github-push") || (tasks_for == "github-pull-request" && event["action"] in ["opened", "synchronize"]):
+        taskId:
+          $eval: as_slugid("test")
+        deadline:
+          $fromNow: 1 day
+        taskQueueId: proj-misc/tutorial
+        metadata:
+          owner: \${event.sender.login}@users.noreply.github.com
+          source: \${event.repository.url}
+        payload:
+          maxRunTime: 3600
+`;
+    const eventTypes = [
+      { fakeEvent: { type: 'github-push' }, tasksCount: 1, scopesCount: 3, scope: 'branch:main' },
+      { fakeEvent: { type: 'github-push', overrides: { branch: 'stage' } }, tasksCount: 1, scopesCount: 3, scope: 'branch:stage' },
+      { fakeEvent: { type: 'github-push', overrides: { ref: "refs/tags/v1.0.2" } }, tasksCount: 1, scopesCount: 3, scope: 'tag:v1.0.2' },
+      { fakeEvent: { type: 'github-pull-request', action: 'opened' }, tasksCount: 1, scopesCount: 3, scope: 'pull-request' },
+      { fakeEvent: { type: 'github-pull-request', action: 'synchronize' }, tasksCount: 1, scopesCount: 3, scope: 'pull-request' },
+      { fakeEvent: { type: 'github-pull-request', action: 'assigned' }, tasksCount: 0, scopesCount: 3, scope: 'pull-request' },
+      { fakeEvent: { type: 'github-pull-request-untrusted', action: 'opened' }, tasksCount: 0, scopesCount: 3, scope: 'pull-request-untrusted' },
+      { fakeEvent: { type: 'github-release', action: 'published' }, tasksCount: 0, scopesCount: 3, scope: 'release:published' },
+      { fakeEvent: { type: 'github-release', action: 'released' }, tasksCount: 0, scopesCount: 3, scope: 'release:released' },
+    ];
+    eventTypes.map(({ fakeEvent, tasksCount, scopesCount, scope }) =>
+      test(`render .tc.yml for event ${fakeEvent.type} ${fakeEvent.action || ''} ${scope}`, async function() {
+        const { tasks, scopes } = await helper.apiClient.renderTaskclusterYml({
+          body: tcYaml,
+          fakeEvent,
+          repository: 'awesomeRepo',
+          organization: 'org',
+        });
+        assert.equal(tasks.length, tasksCount);
+        assert.deepEqual(tasks.map(t => t.task.taskQueueId), tasksCount > 0 ? ['proj-misc/tutorial'] : []);
+        assert.equal(scopes.length, scopesCount);
+        assert.deepEqual(scopes, [
+          `assume:repo:github.com/org/awesomeRepo:${scope}`,
+          'queue:route:checks',
+          'queue:scheduler-id:tc-gh-devel',
+        ]);
+      }),
+    );
+    test('invalid branch name is properly escaped', async function () {
+      const tcYaml = `version: 1
+reporting: checks-v1
+tasks: []
+`;
+      const { tasks } = await helper.apiClient.renderTaskclusterYml({
+        body: tcYaml,
+        fakeEvent: { type: 'github-push', overrides: { branch: 'lol", "this"' } },
+        repository: 'repo',
+        organization: 'org',
+      });
+      assert.deepEqual(tasks, []);
+    });
   });
 });

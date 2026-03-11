@@ -7,10 +7,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/worker/worker"
-	"github.com/taskcluster/taskcluster/v50/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 type genericworkerConfig struct {
@@ -52,6 +52,16 @@ func (d *genericworker) ConfigureRun(state *run.State) error {
 		} else {
 			log.Printf("provider metadata %s not available; not setting config %s", md, cfg)
 		}
+	}
+
+	workerLocationJson, err := json.Marshal(state.WorkerLocation)
+	if err != nil {
+		return fmt.Errorf("error encoding worker location: %v", err)
+	}
+
+	state.WorkerConfig, err = state.WorkerConfig.Set("workerLocation", string(workerLocationJson))
+	if err != nil {
+		return fmt.Errorf("could not set worker location in the worker config: %v", err)
 	}
 
 	set := func(key, value string) {
@@ -107,15 +117,15 @@ func (d *genericworker) StartWorker(state *run.State) (workerproto.Transport, er
 	// write out the config file
 	content, err := json.MarshalIndent(state.WorkerConfig, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("Error constructing worker config: %v", err)
+		return nil, fmt.Errorf("error constructing worker config: %v", err)
 	}
 	err = os.WriteFile(d.wicfg.ConfigPath, content, 0600)
 	if err != nil {
-		return nil, fmt.Errorf("Error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
+		return nil, fmt.Errorf("error writing worker config to %s: %v", d.wicfg.ConfigPath, err)
 	}
 
 	if (d.wicfg.Path != "" && d.wicfg.Service != "") || (d.wicfg.Path == "" && d.wicfg.Service == "") {
-		return nil, fmt.Errorf("Specify exactly one of worker.path and worker.windowsService")
+		return nil, fmt.Errorf("specify exactly one of worker.path and worker.windowsService")
 	}
 	if d.wicfg.Path != "" {
 		d.runMethod, err = newCmdRunMethod()

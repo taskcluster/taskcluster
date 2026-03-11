@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import workerPoolsQuery from './WMWorkerPools.graphql';
+import errorStatsQuery from './WMWorkerPoolsErrors.graphql';
 import ErrorPanel from '../../../components/ErrorPanel';
 import WorkerManagerWorkerPoolsTable from '../../../components/WMWorkerPoolsTable';
 import Search from '../../../components/Search';
@@ -38,6 +39,32 @@ import { VIEW_WORKER_POOLS_PAGE_SIZE } from '../../../utils/constants';
 export default class WorkerManagerWorkerPoolsView extends Component {
   state = {
     workerPoolSearch: '',
+    errorStatsLoading: false,
+    errorStats: null,
+  };
+
+  componentDidMount() {
+    this.loadErrorStats();
+  }
+
+  loadErrorStats = async () => {
+    if (this.state.errorStatsLoading) return;
+
+    this.setState({ errorStatsLoading: true });
+
+    try {
+      const { data } = await this.props.client.query({
+        query: errorStatsQuery,
+        fetchPolicy: 'network-only',
+      });
+
+      this.setState({
+        errorStats: data.WorkerManagerErrorsStats,
+        errorStatsLoading: false,
+      });
+    } catch (error) {
+      this.setState({ errorStatsLoading: false });
+    }
   };
 
   handleWorkerPoolSearchSubmit = async workerPoolSearch => {
@@ -122,12 +149,37 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     });
   };
 
+  getWorkerPoolSummaries() {
+    const {
+      data: { WorkerManagerWorkerPoolSummaries },
+    } = this.props;
+    const { errorStats } = this.state;
+
+    if (!WorkerManagerWorkerPoolSummaries) {
+      return null;
+    }
+
+    if (!errorStats) {
+      return WorkerManagerWorkerPoolSummaries;
+    }
+
+    const edges = WorkerManagerWorkerPoolSummaries.edges.map(({ node }) => ({
+      node: {
+        ...node,
+        errorsCount: errorStats?.totals?.workerPool?.[node.workerPoolId] || 0,
+      },
+    }));
+
+    return { ...WorkerManagerWorkerPoolSummaries, edges };
+  }
+
   render() {
     const {
-      data: { loading, error, WorkerManagerWorkerPoolSummaries },
+      data: { loading, error },
       classes,
     } = this.props;
     const { workerPoolSearch } = this.state;
+    const WorkerManagerWorkerPoolSummaries = this.getWorkerPoolSummaries();
 
     return (
       <Dashboard
@@ -149,6 +201,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
                 onPageChange={this.handlePageChange}
                 workerPoolsConnection={WorkerManagerWorkerPoolSummaries}
                 deleteRequest={this.deleteRequest}
+                errorStatsLoading={this.state.errorStatsLoading}
               />
             </Fragment>
           )}

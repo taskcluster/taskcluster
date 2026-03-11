@@ -8,30 +8,43 @@ metadata:
     app.kubernetes.io/component: taskcluster-github-web
     app.kubernetes.io/part-of: taskcluster
 spec:
+  {{- if not .Values.github.autoscaling.enabled }}
   replicas: {{ int (.Values.github.procs.web.replicas) }}
+  {{- end }}
   selector:
     matchLabels: *ref_0
   template:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-github-secret.yaml") . | sha256sum }}'
-      labels: *ref_0
+      labels:
+        app.kubernetes.io/name: taskcluster-github
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: taskcluster-github-web
+        app.kubernetes.io/part-of: taskcluster
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9100'
     spec:
       serviceAccountName: taskcluster-github
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+      terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-github-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - github/web
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.github.procs.web.cpu }}'
               memory: '{{ .Values.github.procs.web.memory }}'
           env:
             - name: PORT
-              value: '80'
+              value: '8080'
             - name: TASKCLUSTER_ROOT_URL
               value: '{{ .Values.rootUrl }}'
             - name: USE_KUBERNETES_DNS_SERVICE_DISCOVERY
@@ -41,21 +54,31 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-github
+            - configMapRef:
+                name: taskcluster-github
           ports:
-            - containerPort: 80
+            - containerPort: 8080
+            - name: prometheus
+              containerPort: 9100
+              protocol: TCP
           readinessProbe:
             httpGet:
               path: /api/github/v1/ping
-              port: 80
+              port: 8080
             timeoutSeconds: 5
             periodSeconds: 10
-            initialDelaySeconds: 3
+            initialDelaySeconds: 6
           livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - '-c'
-                - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
-            initialDelaySeconds: 86400
-            periodSeconds: 60
-            failureThreshold: 1
+            httpGet:
+              path: /api/github/v1/ping
+              port: 8080
+            timeoutSeconds: 3
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - '-c'
+                  - sleep 120

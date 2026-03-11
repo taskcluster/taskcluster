@@ -1,11 +1,12 @@
-const debug = require('debug')('test:taskGroup');
-const assert = require('assert');
-const slugid = require('slugid');
-const _ = require('lodash');
-const taskcluster = require('taskcluster-client');
-const assume = require('assume');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
+import debugFactory from 'debug';
+const debug = debugFactory('test:taskGroup');
+import assert from 'assert';
+import slugid from 'slugid';
+import _ from 'lodash';
+import taskcluster from '@taskcluster/client';
+import assume from 'assume';
+import helper from './helper.js';
+import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -13,7 +14,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withPollingServices(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);
-  helper.withQueueService(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 

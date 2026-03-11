@@ -2,6 +2,12 @@ type GitHubRepository {
   installed: Boolean!
 }
 
+type TaskclusterYamlRendered {
+  tasks: [JSON]!
+  scopes: [String]!
+}
+
 extend type Query {
   githubRepository(owner: String!, repo: String!): GitHubRepository
+  renderTaskclusterYml(payload: JSON!): TaskclusterYamlRendered
 }

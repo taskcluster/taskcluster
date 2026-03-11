@@ -16,8 +16,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
 )
 
 type Queue struct {
@@ -32,16 +32,17 @@ type Queue struct {
 	tasks map[string]*tcqueue.TaskDefinitionAndStatus
 
 	// artifacts["<taskId>:<runId>"]["<name>"]
-	artifacts map[string]map[string]interface{}
+	artifacts map[string]map[string]any
 
 	baseURL string
 }
 
 func NewQueue(t *testing.T, baseURL string) *Queue {
+	t.Helper()
 	return &Queue{
 		t:         t,
 		tasks:     map[string]*tcqueue.TaskDefinitionAndStatus{},
-		artifacts: map[string]map[string]interface{}{},
+		artifacts: map[string]map[string]any{},
 		baseURL:   baseURL,
 	}
 }
@@ -100,7 +101,7 @@ func (queue *Queue) ClaimWork(taskQueueId string, payload *tcqueue.ClaimWorkRequ
 
 func (queue *Queue) ensureArtifactMap(taskId, runId string) {
 	if _, mapAlreadyCreated := queue.artifacts[taskId+":"+runId]; !mapAlreadyCreated {
-		queue.artifacts[taskId+":"+runId] = map[string]interface{}{}
+		queue.artifacts[taskId+":"+runId] = map[string]any{}
 	}
 }
 
@@ -116,7 +117,7 @@ func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.
 		queue.t.Fatalf("Error unmarshalling from json: %v", err)
 	}
 
-	var req, resp interface{}
+	var req, resp any
 	switch request.StorageType {
 	case "s3":
 		var s3Request tcqueue.S3ArtifactRequest
@@ -184,7 +185,7 @@ func (queue *Queue) FinishArtifact(taskId, runId, name string, payload *tcqueue.
 	return nil
 }
 
-func (queue *Queue) ensureUnchangedIfAlreadyExists(taskId, runId, name string, request interface{}) error {
+func (queue *Queue) ensureUnchangedIfAlreadyExists(taskId, runId, name string, request any) error {
 	previousVersion, existed := queue.artifacts[taskId+":"+runId][name]
 	if !existed || reflect.DeepEqual(previousVersion, request) {
 		return nil
@@ -406,7 +407,7 @@ func (queue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration ti
 		return queue.GetLatestArtifact_SignedURL(taskId, a.Artifact, duration)
 	}
 	queue.t.Fatalf("Unknown artifact type %T", artifact)
-	return nil, fmt.Errorf("Unknown artifact type %T", artifact)
+	return nil, fmt.Errorf("unknown artifact type %T", artifact)
 }
 
 func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string) (*tcqueue.ListArtifactsResponse, error) {
@@ -439,10 +440,19 @@ func (queue *Queue) ListArtifacts(taskId, runId, continuationToken, limit string
 			}
 		case *tcqueue.S3ArtifactRequest:
 			a = tcqueue.Artifact{
-				ContentType: A.ContentType,
-				Expires:     A.Expires,
-				Name:        name,
-				StorageType: A.StorageType,
+				ContentLength: A.ContentLength,
+				ContentType:   A.ContentType,
+				Expires:       A.Expires,
+				Name:          name,
+				StorageType:   A.StorageType,
+			}
+		case *tcqueue.ObjectArtifactRequest:
+			a = tcqueue.Artifact{
+				ContentLength: A.ContentLength,
+				ContentType:   A.ContentType,
+				Expires:       A.Expires,
+				Name:          name,
+				StorageType:   A.StorageType,
 			}
 		default:
 			queue.t.Fatalf("Invalid artifact request type for artifact %#v for task %v runId %v", a, taskId, runId)
@@ -524,7 +534,7 @@ func (queue *Queue) Artifact(taskId, runId, name string) (*tcqueue.GetArtifactCo
 		return queue.Artifact(taskId, runId, a.Artifact)
 
 	default:
-		return nil, fmt.Errorf("Unsupported artifact storage type %T", artifact)
+		return nil, fmt.Errorf("unsupported artifact storage type %T", artifact)
 	}
 
 	// convert that encoded JSON into an object of the correct type
@@ -696,7 +706,7 @@ func (queue *Queue) DownloadArtifactToBuf(taskId string, runId int64, name strin
 		return queue.DownloadArtifactToBuf(taskId, runId, linkContent.Artifact)
 
 	default:
-		err = fmt.Errorf("Unsupported artifact storageType '%s'", artifact.StorageType)
+		err = fmt.Errorf("unsupported artifact storageType '%s'", artifact.StorageType)
 		return
 	}
 }

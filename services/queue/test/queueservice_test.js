@@ -1,10 +1,11 @@
-const slugid = require('slugid');
-const assert = require('assert');
-const crypto = require('crypto');
-const QueueService = require('../src/queueservice');
-const debug = require('debug')('test:queueservice');
-const testing = require('taskcluster-lib-testing');
-const helper = require('./helper');
+import slugid from 'slugid';
+import assert from 'assert';
+import crypto from 'crypto';
+import QueueService from '../src/queueservice.js';
+import debugFactory from 'debug';
+const debug = debugFactory('test:queueservice');
+import testing from '@taskcluster/lib-testing';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -88,7 +89,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const takenUntil = new Date(new Date().getTime() + 2 * 1000);
     debug('Putting message with taskId: %s', taskId);
     // Put message
-    await queueService.putClaimMessage(taskId, 0, takenUntil);
+    await queueService.putClaimMessage(taskId, 0, takenUntil, 'tq/id', 'wg', 'wi');
 
     // Poll for message
     return testing.poll(async () => {
@@ -114,8 +115,34 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
     debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
+
+    // when task is resolved, existing claim and pending message should be removed
+    const futureDate = new Date(new Date().getTime() + 24 * 60 * 1000);
+    await queueService.putClaimMessage(taskId, 0, futureDate, 'tq/id', 'wg', 'wi');
+    await queueService.putDeadlineMessage(taskId, taskGroupId, schedulerId, futureDate);
+    await queueService.putPendingMessage({ taskId, taskGroupId, deadline: futureDate, taskQueueId: 't/q' }, 0);
+
+    // messages are fetched directly because queueservice. pollXX() methods return by visibility
+    await helper.withDbClient(async client => {
+      const { rows: claimMessages } = await client.query('select * from queue_claimed_tasks');
+      const { rows: deadlineMessages } = await client.query('select * from queue_task_deadlines');
+      const { rows: pendingMessages } = await client.query('select * from queue_pending_tasks');
+      assert(deadlineMessages.length === 1, 'Expected one deadline message');
+      assert(claimMessages.length === 1, 'Expected one claim message');
+      assert(pendingMessages.length === 1, 'Expected one pending message');
+    });
+
     // Put message
     await queueService.putResolvedMessage(taskId, taskGroupId, schedulerId, 'completed');
+
+    await helper.withDbClient(async client => {
+      const { rows: claimMessages } = await client.query('select * from queue_claimed_tasks');
+      const { rows: deadlineMessages } = await client.query('select * from queue_task_deadlines');
+      const { rows: pendingMessages } = await client.query('select * from queue_pending_tasks');
+      assert(deadlineMessages.length === 1, 'Expected one deadline message');
+      assert(claimMessages.length === 0, 'Expected zero claim message');
+      assert(pendingMessages.length === 0, 'Expected zero pending message');
+    });
 
     // Poll for message
     return testing.poll(async () => {
@@ -152,15 +179,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await queueService.putPendingMessage(task, runId);
 
     // Get poll functions for queues
-    let poll = await queueService.pendingQueues(`${provisionerId}/${workerType}`);
+    let poll = await queueService.pollPendingQueue(`${provisionerId}/${workerType}`);
 
     // Poll for the message
     let message = await testing.poll(async () => {
-      for (let i = 0; i < poll.length; i++) {
-        let messages = await poll[i](1);
-        if (messages.length === 1) {
-          return messages[0];
-        }
+      let messages = await poll(1);
+      if (messages.length === 1) {
+        return messages[0];
       }
       throw new Error('Expected message');
     }, 100, 250);
@@ -174,11 +199,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // Poll message again
     message = await testing.poll(async () => {
-      for (let i = 0; i < poll.length; i++) {
-        let messages = await poll[i](1);
-        if (messages.length === 1) {
-          return messages[0];
-        }
+      let messages = await poll(1);
+      if (messages.length === 1) {
+        return messages[0];
       }
       throw new Error('Expected message to return');
     }, 100, 250);
@@ -192,8 +215,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await message.remove();
   });
 
-  test('countPendingMessages', async () => {
-    const count = await queueService.countPendingMessages(
+  test('countPendingTasks', async () => {
+    const count = await queueService.countPendingTasks(
       `${provisionerId}/${workerType}`,
     );
     debug('pending message count: %j', count);

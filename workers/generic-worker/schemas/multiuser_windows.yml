@@ -1,3 +1,4 @@
+---
 $schema: "/schemas/common/metaschema.json#"
 $id: "/schemas/generic-worker/multiuser_windows.json#"
 title: Generic worker payload
@@ -46,15 +47,18 @@ properties:
       commands:
         * `TASK_ID` - the task ID of the currently running task
         * `RUN_ID` - the run ID of the currently running task
+        * `TASK_WORKDIR` - the working directory of the currently running task
+        * `TASK_GROUP_ID` - the task group ID of the currently running task
         * `TASKCLUSTER_ROOT_URL` - the root URL of the taskcluster deployment
         * `TASKCLUSTER_PROXY_URL` (if taskcluster proxy feature enabled) - the
            taskcluster authentication proxy for making unauthenticated taskcluster
            API calls
-        * `TASK_USER_CREDENTIALS` (if config property `runTasksAsCurrentUser` set to
-          `true` in `generic-worker.config` file - the absolute file location of a
+        * `TASK_USER_CREDENTIALS` (if payload feature `runTaskAsCurrentUser` set to
+          `true` in the task definition - the absolute file location of a
           json file containing the current task OS user account name and password.
           This is only useful for the generic-worker multiuser CI tasks, where
-          `runTasksAsCurrentUser` is set to `true`.
+          `runTaskAsCurrentUser` is set to `true`.
+        * `TASKCLUSTER_INSTANCE_TYPE` - the cloud instance type of the worker (optional, not all workers run in a cloud)
         * `TASKCLUSTER_WORKER_LOCATION`. See
           [RFC #0148](https://github.com/taskcluster/taskcluster-rfcs/blob/master/rfcs/0148-taskcluster-worker-location.md)
           for details.
@@ -68,11 +72,11 @@ properties:
     title: Maximum run time in seconds
     description: |-
       Maximum time the task container can run in seconds.
+      The maximum value for `maxRunTime` is set by a `maxTaskRunTime` config property specific to each worker-pool.
 
       Since: generic-worker 0.0.1
     multipleOf: 1
     minimum: 1
-    maximum: 86400
   artifacts:
     type: array
     title: Artifacts to be published
@@ -101,9 +105,9 @@ properties:
           title: Artifact location
           type: string
           description: |-
-            Relative path of the file/directory from the task directory. Note this is not an absolute
-            path as is typically used in docker-worker, since the absolute task directory name is not
-            known when the task is submitted. Example: `dist\regedit.exe`. It doesn't matter if
+            Filesystem path of the file/directory relative to the
+            task directory, or an absolute path.
+            Example: `dist\regedit.exe`. It doesn't matter if
             forward slashes or backslashes are used.
 
             Since: generic-worker 1.0.0
@@ -145,8 +149,8 @@ properties:
           title: Content-Encoding header when serving artifact over HTTP.
           type: string
           enum:
-            - identity
-            - gzip
+          - identity
+          - gzip
           description: |-
             Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the
             following file extensions, where `identity` will be used, since they are already
@@ -161,6 +165,7 @@ properties:
             * gz
             * jpeg
             * jpg
+            * npz
             * png
             * swf
             * tbz
@@ -177,6 +182,15 @@ properties:
             encoding to all the files contained in the directory.
 
             Since: generic-worker 16.2.0
+        optional:
+          title: Optional artifact
+          type: boolean
+          default: false
+          description: |-
+            If `true`, the artifact is optional. If the file or directory
+            doesn't exist, the artifact won't be created.
+
+            Since: generic-worker 83.1.0
       required:
       - type
       - path
@@ -200,6 +214,12 @@ properties:
           for the artifacts produced by the task and the environment it ran in.
 
           Since: generic-worker 5.3.0
+
+          Tasks may inject additional data into the certificate by writing them
+          as json to file chain-of-trust-additional-data.json in the task
+          directory.
+
+          Since: generic-worker 81.0.0
       taskclusterProxy:
         type: boolean
         title: Run [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy) to allow tasks to dynamically proxy requests to taskcluster services
@@ -249,6 +269,71 @@ properties:
 
           Since: generic-worker 48.2.0
         default: true
+      runTaskAsCurrentUser:
+        type: boolean
+        title: Run task as current user
+        description: |-
+          If `true`, task commands will be executed as the
+          user currently running Generic Worker (typically
+          `root` or `LocalSystem`), rather than as the
+          dedicated task user created for the task. The task
+          user account will still be created, and is
+          available for the task to use.
+
+          Requires scope `generic-worker:run-task-as-current-user:<provisionerID>/<workerType>`.
+          Tasks submitted without this scope will be resolved
+          as `exception/malformed-payload`.
+
+          Since: generic-worker 81.0.0
+      resourceMonitor:
+        type: boolean
+        title: Resource monitor
+        description: |-
+          The resource monitor feature reports Peak System Memory Used,
+          Average System Memory Used, Average Available System Memory,
+          and Total System Memory in the task log for each task command
+          executed. It also will abort any task command if the used
+          system memory exceeds worker config maxMemoryUsagePercent
+          _AND_ available system memory drops below worker config
+          minAvailableMemoryBytes for longer than worker config
+          allowedHighMemoryDuration seconds. When this happens, the
+          task will be resolved as failed.
+
+          Since: generic-worker 83.4.0
+        default: true
+      interactive:
+        type: boolean
+        title: Interactive shell
+        description: |-
+          This allows you to interactively run commands from within the worker
+          as the task user. This may be useful for debugging purposes.
+          Can be used for SSH-like access to the running worker.
+          Note that this feature works differently from the `interactive` feature
+          in docker worker, which `docker exec`s into the running container.
+          Since tasks on generic worker are not guaranteed to be running in a
+          container, a powershell instance is started on the task user's account.
+          A user can then `docker exec` into the a running container, if there
+          is one.
+
+          Since: generic-worker 83.6.0
+      hideCmdWindow:
+        type: boolean
+        title: Hide cmd.exe window
+        description: |-
+          If `true`, the command window for each command will be hidden.
+          This is useful for tasks that run GUI applications to prevent
+          the command window from obscuring the application window.
+
+          The process creation flags used when this is set to `true`
+          are CREATE_NEW_PROCESS_GROUP|CREATE_NO_WINDOW. If this is
+          set to `false`, the flags used are CREATE_NEW_PROCESS_GROUP|CREATE_NEW_CONSOLE.
+          More info about these flags can be found [here](https://learn.microsoft.com/en-us/windows/win32/procthread/process-creation-flags).
+
+          If your task needs to allocate new consoles (with
+          AllocConsole(), for example) then you should not use this.
+
+          Since: generic-worker 96.1.0
+        default: false
   mounts:
     type: array
     description: |-
@@ -268,7 +353,7 @@ properties:
       group listed.
 
       Since: generic-worker 6.0.0
-    uniqueItems: false
+    uniqueItems: true
     items:
       type: string
   supersederUrl:
@@ -306,7 +391,7 @@ properties:
       purgeCaches:
         title: Purge caches exit status
         description: |-
-          If the task exists with a purge caches exit status, all caches
+          If the task exits with a purge caches exit status, all caches
           associated with the task will be purged.
 
           Since: generic-worker 49.0.0
@@ -315,7 +400,7 @@ properties:
         items:
           title: Exit statuses
           type: integer
-          minimum: 1
+          minimum: 0
   rdpInfo:
     type: string
     title: RDP Info
@@ -374,6 +459,19 @@ properties:
           Since: generic-worker 48.2.0
         type: string
         default: public/logs/live_backing.log
+  taskclusterProxyInterface:
+    title: Network Interface for Taskcluster Proxy to listen on
+    type: string
+    description: |-
+      Specifies whether taskcluster-proxy should listen on
+      localhost interface (default) or search for a docker bridge
+      interface (for tasks that wish to call the taskcluster
+      proxy from inside a docker container that does not share
+      the host network).
+    default: localhost
+    enum:
+    - localhost
+    - docker-bridge
 definitions:
   mount:
     title: Mount
@@ -389,7 +487,10 @@ definitions:
         title: File
         type: string
         description: |-
-          The filesystem location to mount the file.
+          The filesystem location to mount the file. This can be a
+          path relative to the task directory, or an absolute path.
+          The file will be created as the task user, so the target
+          location must be writable by the task user.
 
           Since: generic-worker 5.4.0
       content:
@@ -398,6 +499,19 @@ definitions:
 
           Since: generic-worker 5.4.0
         "$ref": "#/definitions/content"
+      format:
+        title: Format
+        type: string
+        description: |-
+          Compression format of the preloaded content.
+
+          Since: generic-worker 55.3.0
+        enum:
+        - bz2
+        - gz
+        - lz4
+        - xz
+        - zst
     additionalProperties: false
     required:
     - file
@@ -411,6 +525,10 @@ definitions:
         type: string
         description: |-
           The filesystem location to mount the directory volume.
+          This can be a path relative to the task directory, or an
+          absolute path. The directory will be created as the task
+          user, so the target location must be writable by the task
+          user.
 
           Since: generic-worker 5.4.0
       cacheName:
@@ -442,6 +560,7 @@ definitions:
         - rar
         - tar.bz2
         - tar.gz
+        - tar.lz4
         - tar.xz
         - tar.zst
         - zip
@@ -463,6 +582,10 @@ definitions:
         type: string
         description: |-
           The filesystem location to mount the directory volume.
+          This can be a path relative to the task directory, or an
+          absolute path. The directory will be created as the task
+          user, so the target location must be writable by the task
+          user.
 
           Since: generic-worker 5.4.0
       content:
@@ -483,6 +606,7 @@ definitions:
         - rar
         - tar.bz2
         - tar.gz
+        - tar.lz4
         - tar.xz
         - tar.zst
         - zip
@@ -510,13 +634,30 @@ definitions:
           type: string
           title: SHA 256
           description: |-
-            The required SHA 256 of the content body.
+            If provided, the required SHA256 of the content body.
 
             Since: generic-worker 10.8.0
-          pattern: '^[a-f0-9]{64}$'
+          pattern: "^[a-f0-9]{64}$"
       additionalProperties: false
       required:
       - taskId
+      - artifact
+    - title: Indexed Content
+      description: |-
+        Content originating from a task artifact that has been indexed by the Taskcluster Index Service.
+
+        Since: generic-worker 51.0.0
+      type: object
+      properties:
+        namespace:
+          type: string
+          maxLength: 255
+        artifact:
+          type: string
+          maxLength: 1024
+      additionalProperties: false
+      required:
+      - namespace
       - artifact
     - title: URL Content
       description: |-
@@ -537,10 +678,10 @@ definitions:
           type: string
           title: SHA 256
           description: |-
-            The required SHA 256 of the content body.
+            If provided, the required SHA256 of the content body.
 
             Since: generic-worker 10.8.0
-          pattern: '^[a-f0-9]{64}$'
+          pattern: "^[a-f0-9]{64}$"
       additionalProperties: false
       required:
       - url
@@ -577,7 +718,7 @@ definitions:
             Base64 encoded content of file/archive, up to 64KB (encoded) in size.
 
             Since: generic-worker 11.1.0
-          pattern: '^[A-Za-z0-9/+]+[=]{0,2}$'
+          pattern: "^[A-Za-z0-9/+]+[=]{0,2}$"
       additionalProperties: false
       required:
       - base64

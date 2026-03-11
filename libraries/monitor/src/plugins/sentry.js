@@ -1,4 +1,4 @@
-const Sentry = require('@sentry/node');
+import Sentry from '@sentry/node';
 
 const tcToSentryLevel = {
   emerg: 'fatal',
@@ -11,7 +11,7 @@ const tcToSentryLevel = {
   debug: 'debug',
 };
 
-class SentryReporter {
+export class SentryReporter {
   constructor({ dsn, taskclusterVersion, serviceName, processName }) {
     if (!dsn) {
       throw new Error('SentryReporter plugin must have a `dsn` set to work.');
@@ -50,4 +50,4 @@ class SentryReporter {
   }
 }
 
-module.exports = SentryReporter;
+export default SentryReporter;

@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/github/v1/api.json
+// This package was generated from the reference schema of
+// the Github service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/github/v1/api.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The github service is responsible for creating tasks in response
 // to GitHub events, and posting results to the GitHub UI.
 //
@@ -44,7 +48,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type Github tcclient.Client
@@ -127,16 +131,6 @@ func (github *Github) Version() error {
 	return err
 }
 
-// Capture a GitHub event and publish it via pulse, if it's a push,
-// release, check run or pull request.
-//
-// See #githubWebHookConsumer
-func (github *Github) GithubWebHookConsumer() error {
-	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(nil, "POST", "/github", nil, nil)
-	return err
-}
-
 // A paginated list of builds that have been run in
 // Taskcluster. Can be filtered on various git-specific
 // fields.
@@ -202,6 +196,26 @@ func (github *Github) Builds_SignedURL(continuationToken, limit, organization, p
 	return (&cd).SignedURL("/builds", v, duration)
 }
 
+// Cancel all running Task Groups associated with given repository and sha or pullRequest number
+//
+// Required scopes:
+//
+//	github:cancel-builds:<owner>:<repo>
+//
+// See #cancelBuilds
+func (github *Github) CancelBuilds(owner, repo, pullRequest, sha string) (*BuildsResponse, error) {
+	v := url.Values{}
+	if pullRequest != "" {
+		v.Add("pullRequest", pullRequest)
+	}
+	if sha != "" {
+		v.Add("sha", sha)
+	}
+	cd := tcclient.Client(*github)
+	responseObject, _, err := (&cd).APICall(nil, "POST", "/builds/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/cancel", new(BuildsResponse), v)
+	return responseObject.(*BuildsResponse), err
+}
+
 // Stability: *** EXPERIMENTAL ***
 //
 // Checks the status of the latest build of a given branch
@@ -214,7 +228,7 @@ func (github *Github) Builds_SignedURL(continuationToken, limit, organization, p
 // See #badge
 func (github *Github) Badge(owner, repo, branch string) error {
 	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/badge.svg", nil, nil)
+	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+url.PathEscape(branch)+"/badge.svg", nil, nil)
 	return err
 }
 
@@ -227,7 +241,7 @@ func (github *Github) Badge(owner, repo, branch string) error {
 // See Badge for more details.
 func (github *Github) Badge_SignedURL(owner, repo, branch string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*github)
-	return (&cd).SignedURL("/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/badge.svg", nil, duration)
+	return (&cd).SignedURL("/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+url.PathEscape(branch)+"/badge.svg", nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -242,7 +256,7 @@ func (github *Github) Badge_SignedURL(owner, repo, branch string, duration time.
 // See #repository
 func (github *Github) Repository(owner, repo string) (*RepositoryResponse, error) {
 	cd := tcclient.Client(*github)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo), new(RepositoryResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo), new(RepositoryResponse), nil)
 	return responseObject.(*RepositoryResponse), err
 }
 
@@ -255,7 +269,7 @@ func (github *Github) Repository(owner, repo string) (*RepositoryResponse, error
 // See Repository for more details.
 func (github *Github) Repository_SignedURL(owner, repo string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*github)
-	return (&cd).SignedURL("/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo), nil, duration)
+	return (&cd).SignedURL("/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo), nil, duration)
 }
 
 // For a given branch of a repository, this will always point
@@ -271,7 +285,7 @@ func (github *Github) Repository_SignedURL(owner, repo string, duration time.Dur
 // See #latest
 func (github *Github) Latest(owner, repo, branch string) error {
 	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/latest", nil, nil)
+	_, _, err := (&cd).APICall(nil, "GET", "/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+url.PathEscape(branch)+"/latest", nil, nil)
 	return err
 }
 
@@ -284,7 +298,7 @@ func (github *Github) Latest(owner, repo, branch string) error {
 // See Latest for more details.
 func (github *Github) Latest_SignedURL(owner, repo, branch string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*github)
-	return (&cd).SignedURL("/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/"+url.QueryEscape(branch)+"/latest", nil, duration)
+	return (&cd).SignedURL("/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+url.PathEscape(branch)+"/latest", nil, duration)
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -301,7 +315,7 @@ func (github *Github) Latest_SignedURL(owner, repo, branch string, duration time
 // See #createStatus
 func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatusRequest) error {
 	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/statuses/"+url.QueryEscape(sha), nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/statuses/"+url.PathEscape(sha), nil, nil)
 	return err
 }
 
@@ -314,8 +328,22 @@ func (github *Github) CreateStatus(owner, repo, sha string, payload *CreateStatu
 // See #createComment
 func (github *Github) CreateComment(owner, repo, number string, payload *CreateCommentRequest) error {
 	cd := tcclient.Client(*github)
-	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.QueryEscape(owner)+"/"+url.QueryEscape(repo)+"/issues/"+url.QueryEscape(number)+"/comments", nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/repository/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/issues/"+url.PathEscape(number)+"/comments", nil, nil)
 	return err
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// This endpoint allows to render the .taskcluster.yml file for a given event or payload.
+// This is useful to preview the result of the .taskcluster.yml file before pushing it to
+// the repository.
+// Read more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)
+//
+// See #renderTaskclusterYml
+func (github *Github) RenderTaskclusterYml(payload *RenderTaskclusterYmlInput) (*RenderTaskclusterYmlOutput, error) {
+	cd := tcclient.Client(*github)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/taskcluster-yml", new(RenderTaskclusterYmlOutput), nil)
+	return responseObject.(*RenderTaskclusterYmlOutput), err
 }
 
 // Respond with a service heartbeat.

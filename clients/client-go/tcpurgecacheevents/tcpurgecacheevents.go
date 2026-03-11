@@ -38,7 +38,7 @@
 //	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcpurgecacheevents
 
 import (
@@ -65,14 +65,14 @@ func (binding PurgeCache) ExchangeName() string {
 	return "exchange/taskcluster-purge-cache/v1/purge-cache"
 }
 
-func (binding PurgeCache) NewPayloadObject() interface{} {
+func (binding PurgeCache) NewPayloadObject() any {
 	return new(PurgeCacheMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
-	for i := 0; i < val.NumField(); i++ {
+	for i := range val.NumField() {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag

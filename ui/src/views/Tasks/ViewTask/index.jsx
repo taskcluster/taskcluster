@@ -21,6 +21,7 @@ import CloseIcon from 'mdi-react/CloseIcon';
 import FlashIcon from 'mdi-react/FlashIcon';
 import ConsoleLineIcon from 'mdi-react/ConsoleLineIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
+import ChartIcon from 'mdi-react/ChartBarIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import Markdown from '../../../components/Markdown';
@@ -61,6 +62,7 @@ import cancelTaskQuery from './cancelTask.graphql';
 import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
 import pageArtifactsQuery from './pageArtifacts.graphql';
 import createTaskQuery from '../createTask.graphql';
+import { AuthContext } from '../../../utils/Auth';
 
 const updateTaskIdHistory = id => {
   if (!VALID_TASK.test(id)) {
@@ -130,43 +132,14 @@ export default class ViewTask extends Component {
     const {
       data: { task },
     } = props;
-    const taskActions = [];
-    const actionInputs = state.actionInputs || {};
-    const actionData = state.actionData || {};
 
     if (taskId !== state.previousTaskId && task) {
-      const { taskActions: actions } = task;
-
       updateTaskIdHistory(taskId);
 
-      actions &&
-        actions.actions.forEach(action => {
-          const schema = action.schema || {};
-
-          // if an action with this name has already been selected,
-          // don't consider this version
-          if (
-            task &&
-            task.tags &&
-            taskInContext(action.context, task.tags) &&
-            !taskActions.some(({ name }) => name === action.name)
-          ) {
-            taskActions.push(action);
-          } else {
-            return;
-          }
-
-          actionInputs[action.name] = dump(jsonSchemaDefaults(schema) || {});
-          actionData[action.name] = {
-            action,
-          };
-        });
       const caches = getCachesFromTask(task);
 
       return {
-        taskActions,
-        actionInputs,
-        actionData,
+        dialogOpen: false,
         previousTaskId: taskId,
         caches,
         selectedCaches: new Set(caches),
@@ -176,12 +149,42 @@ export default class ViewTask extends Component {
     return null;
   }
 
+  getTaskActionsData() {
+    const taskActions = [];
+    const actionInputs = {};
+    const actionData = {};
+    const {
+      data: { task },
+    } = this.props;
+
+    if (Array.isArray(task?.taskActions?.actions)) {
+      task?.taskActions?.actions.forEach(action => {
+        // if an action with this name has already been selected,
+        // don't consider this version
+        if (
+          task &&
+          task.tags &&
+          taskInContext(action.context, task.tags) &&
+          !taskActions.some(({ name }) => name === action.name)
+        ) {
+          taskActions.push(action);
+        } else {
+          return;
+        }
+
+        const schema = action.schema || {};
+
+        actionInputs[action.name] = dump(jsonSchemaDefaults(schema) || {});
+        actionData[action.name] = { action };
+      });
+    }
+
+    return { taskActions, actionInputs, actionData };
+  }
+
   state = {
     // eslint-disable-next-line react/no-unused-state
     previousTaskId: null,
-    taskActions: [],
-    actionInputs: {},
-    actionData: {},
     selectedAction: null,
     dialogOpen: false,
     actionLoading: false,
@@ -189,6 +192,7 @@ export default class ViewTask extends Component {
     dialogError: null,
     caches: null,
     selectedCaches: null,
+    formInputs: null,
   };
 
   listener = null;
@@ -199,7 +203,7 @@ export default class ViewTask extends Component {
       data: { task, subscribeToMore, refetch },
     } = this.props;
 
-    if (task && taskId !== task) {
+    if (task && taskId !== task.taskId) {
       this.subscribe(task.taskId, subscribeToMore, refetch);
     }
   }
@@ -250,12 +254,14 @@ export default class ViewTask extends Component {
   }
 
   handleActionClick = name => () => {
-    const { action } = this.state.actionData[name];
+    const { actionData, actionInputs } = this.getTaskActionsData();
+    const { action } = actionData[name];
 
     this.setState({
       dialogError: null,
       dialogOpen: true,
       selectedAction: action,
+      formInputs: actionInputs[name] ?? '',
     });
   };
 
@@ -291,13 +297,13 @@ export default class ViewTask extends Component {
       client,
       data: { task },
     } = this.props;
-    const { actionInputs, actionData } = this.state;
-    const form = actionInputs[name];
+    const { formInputs } = this.state;
+    const { actionData } = this.getTaskActionsData();
     const { action } = actionData[name];
     const taskId = await submitTaskAction({
       task,
       taskActions: task.taskActions,
-      form,
+      form: formInputs,
       action,
       apolloClient: client,
     });
@@ -384,7 +390,6 @@ export default class ViewTask extends Component {
           'taskGroupId',
           'schedulerId',
           'priority',
-          'dependencies',
           'requires',
         ],
         task
@@ -528,14 +533,20 @@ export default class ViewTask extends Component {
     this.handleEdit(task);
   };
 
-  handleFormChange = (value, name) =>
+  handleFormChange = value =>
     this.setState({
-      actionInputs: {
-        // eslint-disable-next-line react/no-access-state-in-setstate
-        ...this.state.actionInputs,
-        [name]: value,
-      },
+      formInputs: value,
     });
+
+  handleOpenLogProfiler = () => {
+    const { taskId } = this.props.match.params;
+    const profileUrl = `${window.env.TASKCLUSTER_ROOT_URL}/api/web-server/v1/task/${taskId}/profile`;
+    const profilerUrl = `https://profiler.firefox.com/from-url/${encodeURIComponent(
+      profileUrl
+    )}`;
+
+    window.open(profilerUrl, '_blank');
+  };
 
   handlePurgeWorkerCacheClick = () => {
     const title = 'Purge Worker Cache';
@@ -588,7 +599,6 @@ export default class ViewTask extends Component {
                 <li>
                   Update deadlines and other timestamps for the current time
                 </li>
-                <li>Strip self-dependencies from the task definition</li>
                 <li>
                   Set number of <code>retries</code> to zero
                 </li>
@@ -778,7 +788,7 @@ export default class ViewTask extends Component {
 
   retriggerTask = async () => {
     const taskId = nice();
-    const task = omit('dependencies', gqlTaskToApi(this.props.data.task));
+    const task = gqlTaskToApi(this.props.data.task);
     const now = Date.now();
     const created = Date.parse(task.created);
 
@@ -868,19 +878,18 @@ export default class ViewTask extends Component {
     const {
       classes,
       description,
-      data: { loading, error, task, dependentTasks, dependents },
+      data: { loading, error, task, dependents },
       match,
     } = this.props;
     const {
       dialogActionProps,
-      actionData,
-      taskActions,
       selectedAction,
       dialogOpen,
-      actionInputs,
       actionLoading,
       dialogError,
+      formInputs,
     } = this.state;
+    const { actionData, taskActions } = this.getTaskActionsData();
     let tags;
 
     if (task) {
@@ -951,12 +960,16 @@ export default class ViewTask extends Component {
             <br />
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <TaskDetailsCard
-                  task={task}
-                  dependentTasks={dependentTasks}
-                  dependents={dependents}
-                  onDependentsPageChange={this.handleDependentsPageChange}
-                />
+                <AuthContext.Consumer>
+                  {auth => (
+                    <TaskDetailsCard
+                      task={task}
+                      user={auth.user}
+                      dependents={dependents}
+                      onDependentsPageChange={this.handleDependentsPageChange}
+                    />
+                  )}
+                </AuthContext.Consumer>
               </Grid>
 
               <Grid item xs={12} md={6}>
@@ -1058,6 +1071,12 @@ export default class ViewTask extends Component {
                   onClick={this.handleCreateInteractiveTaskClick}
                 />
               )}
+              <SpeedDialAction
+                tooltipOpen
+                icon={<ChartIcon />}
+                tooltipTitle="Profile Task Log"
+                onClick={this.handleOpenLogProfiler}
+              />
               {taskActions &&
                 taskActions.length &&
                 taskActions.map(action => (
@@ -1084,7 +1103,7 @@ export default class ViewTask extends Component {
                   body: (
                     <TaskActionForm
                       action={selectedAction}
-                      form={actionInputs[selectedAction.name]}
+                      form={formInputs}
                       onFormChange={this.handleFormChange}
                     />
                   ),

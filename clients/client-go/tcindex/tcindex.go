@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/index/v1/api.json
+// This package was generated from the reference schema of
+// the Index service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/index/v1/api.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The index service is responsible for indexing tasks. The service ensures that
 // tasks can be located by user-defined names.
 //
@@ -43,7 +47,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type Index tcclient.Client
@@ -136,7 +140,7 @@ func (index *Index) Version() error {
 // See #findTask
 func (index *Index) FindTask(indexPath string) (*IndexedTaskResponse, error) {
 	cd := tcclient.Client(*index)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(indexPath), new(IndexedTaskResponse), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(indexPath), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), err
 }
 
@@ -149,7 +153,35 @@ func (index *Index) FindTask(indexPath string) (*IndexedTaskResponse, error) {
 // See FindTask for more details.
 func (index *Index) FindTask_SignedURL(indexPath string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*index)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(indexPath), nil, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(indexPath), nil, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// # List the tasks given their labels
+//
+// This endpoint
+// lists up to 1000 tasks. If more tasks are present, a
+// `continuationToken` will be returned, which can be given in the next
+// request, along with the same input data. If the input data is different
+// the continuationToken will have no effect.
+//
+// Required scopes:
+//
+//	For indexPath in indexPaths each index:find-task:<indexPath>
+//
+// See #findTasksAtIndex
+func (index *Index) FindTasksAtIndex(continuationToken, limit string, payload *ListTasksAtIndexRequest) (*ListTasksResponse, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	cd := tcclient.Client(*index)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/tasks/indexes", new(ListTasksResponse), v)
+	return responseObject.(*ListTasksResponse), err
 }
 
 // List the namespaces immediately under a given namespace.
@@ -174,7 +206,7 @@ func (index *Index) ListNamespaces(namespace, continuationToken, limit string) (
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*index)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/namespaces/"+url.QueryEscape(namespace), new(ListNamespacesResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/namespaces/"+url.PathEscape(namespace), new(ListNamespacesResponse), v)
 	return responseObject.(*ListNamespacesResponse), err
 }
 
@@ -194,7 +226,7 @@ func (index *Index) ListNamespaces_SignedURL(namespace, continuationToken, limit
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*index)
-	return (&cd).SignedURL("/namespaces/"+url.QueryEscape(namespace), v, duration)
+	return (&cd).SignedURL("/namespaces/"+url.PathEscape(namespace), v, duration)
 }
 
 // List the tasks immediately under a given namespace.
@@ -222,7 +254,7 @@ func (index *Index) ListTasks(namespace, continuationToken, limit string) (*List
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*index)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/tasks/"+url.QueryEscape(namespace), new(ListTasksResponse), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/tasks/"+url.PathEscape(namespace), new(ListTasksResponse), v)
 	return responseObject.(*ListTasksResponse), err
 }
 
@@ -242,7 +274,7 @@ func (index *Index) ListTasks_SignedURL(namespace, continuationToken, limit stri
 		v.Add("limit", limit)
 	}
 	cd := tcclient.Client(*index)
-	return (&cd).SignedURL("/tasks/"+url.QueryEscape(namespace), v, duration)
+	return (&cd).SignedURL("/tasks/"+url.PathEscape(namespace), v, duration)
 }
 
 // Insert a task into the index.  If the new rank is less than the existing rank
@@ -258,7 +290,7 @@ func (index *Index) ListTasks_SignedURL(namespace, continuationToken, limit stri
 // See #insertTask
 func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*IndexedTaskResponse, error) {
 	cd := tcclient.Client(*index)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(namespace), new(IndexedTaskResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/task/"+url.PathEscape(namespace), new(IndexedTaskResponse), nil)
 	return responseObject.(*IndexedTaskResponse), err
 }
 
@@ -274,7 +306,7 @@ func (index *Index) InsertTask(namespace string, payload *InsertTaskRequest) (*I
 // See #deleteTask
 func (index *Index) DeleteTask(namespace string) error {
 	cd := tcclient.Client(*index)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/task/"+url.QueryEscape(namespace), nil, nil)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/task/"+url.PathEscape(namespace), nil, nil)
 	return err
 }
 
@@ -300,7 +332,7 @@ func (index *Index) DeleteTask(namespace string) error {
 // See #findArtifactFromTask
 func (index *Index) FindArtifactFromTask(indexPath, name string) error {
 	cd := tcclient.Client(*index)
-	_, _, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(indexPath)+"/artifacts/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(nil, "GET", "/task/"+url.PathEscape(indexPath)+"/artifacts/"+url.PathEscape(name), nil, nil)
 	return err
 }
 
@@ -313,7 +345,7 @@ func (index *Index) FindArtifactFromTask(indexPath, name string) error {
 // See FindArtifactFromTask for more details.
 func (index *Index) FindArtifactFromTask_SignedURL(indexPath, name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*index)
-	return (&cd).SignedURL("/task/"+url.QueryEscape(indexPath)+"/artifacts/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/task/"+url.PathEscape(indexPath)+"/artifacts/"+url.PathEscape(name), nil, duration)
 }
 
 // Respond with a service heartbeat.

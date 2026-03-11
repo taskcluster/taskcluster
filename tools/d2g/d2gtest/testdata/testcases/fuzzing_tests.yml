@@ -1,0 +1,88 @@
+testSuite:
+  description: Tests features used by the Fuzzing team in the Community deployment
+    of Taskcluster.
+  name: Community Fuzzing task tests
+  payloadTests:
+  - d2gConfig:
+      allowChainOfTrust: true
+      allowDisableSeccomp: true
+      allowGPUs: false
+      allowHostSharedMemory: true
+      allowInteractive: true
+      allowKVM: true
+      allowLoopbackAudio: true
+      allowLoopbackVideo: true
+      allowPrivileged: true
+      allowPtrace: true
+      allowTaskclusterProxy: true
+      gpus: all
+    description: The Bugmon Processor tasks is based on a real production task that
+      uses the discontinued `disableSeccomp` capability property.
+    dockerWorkerTaskPayload:
+      artifacts:
+        project/fuzzing/bugmon:
+          path: /bugmon-artifacts/
+          type: directory
+      cache: {}
+      capabilities:
+        devices:
+          hostSharedMemory: true
+          loopbackAudio: true
+        disableSeccomp: true
+        privileged: true
+      env:
+        BUG_ACTION: process
+        MONITOR_ARTIFACT: monitor-1881157-dnCUWpVmTzC-dQguT0njPQ.json
+        PROCESSOR_ARTIFACT: processor-result-1881157-dnCUWpVmTzC-dQguT0njPQ.json
+      features:
+        taskclusterProxy: true
+      image:
+        namespace: project.fuzzing.orion.bugmon.master
+        path: public/bugmon.tar.zst
+        type: indexed-image
+      maxRunTime: 14400
+    genericWorkerTaskPayload:
+      artifacts:
+      - name: project/fuzzing/bugmon
+        optional: true
+        path: artifact0
+        type: directory
+      command:
+      - - docker
+        - run
+        - -t
+        - --name
+        - taskcontainer
+        - --memory-swap
+        - "-1"
+        - --pids-limit
+        - "-1"
+        - --privileged
+        - --security-opt=seccomp=unconfined
+        - --add-host=localhost.localdomain:127.0.0.1
+        - -v
+        - /dev/shm:/dev/shm
+        - --device=/dev/snd
+        - --add-host=taskcluster:host-gateway
+        - --env-file
+        - env.list
+        - __D2G_IMAGE_ID__
+      features:
+        backingLog: true
+        liveLog: true
+        loopbackAudio: true
+        resourceMonitor: true
+        taskclusterProxy: true
+      logs:
+        backing: public/logs/live_backing.log
+        live: public/logs/live.log
+      maxRunTime: 14400
+      mounts:
+      - content:
+          artifact: public/bugmon.tar.zst
+          namespace: project.fuzzing.orion.bugmon.master
+        file: dockerimage
+      osGroups:
+      - docker
+      taskclusterProxyInterface: docker-bridge
+    name: Bugmon Processor disableSeccomp test task

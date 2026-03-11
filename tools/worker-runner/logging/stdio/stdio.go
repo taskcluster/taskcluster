@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/logging/logging"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/logging/logging"
 )
 
 type stdioLogDestination struct {
@@ -16,7 +16,7 @@ func (dst *stdioLogDestination) LogUnstructured(message string) {
 	dst.log.Println(message)
 }
 
-func (dst *stdioLogDestination) LogStructured(message map[string]interface{}) {
+func (dst *stdioLogDestination) LogStructured(message map[string]any) {
 	dst.log.Println(logging.ToUnstructured(message))
 }
 

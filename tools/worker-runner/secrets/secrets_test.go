@@ -4,14 +4,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
 )
 
 func setup(t *testing.T) (*cfg.RunnerConfig, *run.State) {
+	t.Helper()
 	tc.FakeSecretsReset()
 
 	runnerWorkerConfig := cfg.NewWorkerConfig()

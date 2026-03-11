@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const assert = require('assert').strict;
-const { paginateResults } = require('../');
-const testing = require('taskcluster-lib-testing');
-const Hashids = require('hashids/cjs');
+import _ from 'lodash';
+import { strict as assert } from 'assert';
+import { paginateResults } from '../src/pagination.js';
+import testing from '@taskcluster/lib-testing';
+import Hashids from 'hashids';
 
 suite(testing.suiteName(), function() {
   suite('offset/limit', function() {
@@ -46,6 +46,13 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(
         await paginateResults({ query: { limit: 2, continuationToken }, fetch: fetcher(7) }),
         { rows: _.range(3, 5), continuationToken: hashids.encode(5) });
+    });
+
+    test('paginate with invalid continuationToken throws error', async function() {
+      const continuationToken = 'this-is-rubbish';
+      await assert.rejects(
+        () => paginateResults({ query: { limit: 2, continuationToken }, fetch: fetcher(7) }),
+        /Invalid continuation token/);
     });
   });
 

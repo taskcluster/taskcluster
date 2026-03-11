@@ -1,36 +1,43 @@
-const assert = require('assert');
-const builder = require('../src/api');
-const taskcluster = require('taskcluster-client');
-const load = require('../src/main');
-const { fakeauth, stickyLoader, Secrets, withPulse, withMonitor, withDb, resetTables } = require('taskcluster-lib-testing');
+import assert from 'assert';
+import builder from '../src/api.js';
+import taskcluster from '@taskcluster/client';
+import loadMain from '../src/main.js';
+import { globalAgent } from 'http';
+import { satisfiesExpression } from 'taskcluster-lib-scopes';
 
-const helper = module.exports;
+import testing from '@taskcluster/lib-testing';
 
-exports.load = stickyLoader(load);
+export const load = testing.stickyLoader(loadMain);
+
+const helper = { load };
+export default helper;
 
 suiteSetup(async function() {
-  exports.load.inject('profile', 'test');
-  exports.load.inject('process', 'test');
+  load.inject('profile', 'test');
+  load.inject('process', 'test');
 });
 
-withMonitor(exports);
+testing.withMonitor(helper);
 
 // set up the testing secrets
-exports.secrets = new Secrets({
+export const secrets = new testing.Secrets({
   secrets: {
   },
-  load: exports.load,
+  load: load,
 });
+helper.secrets = secrets;
 
 helper.rootUrl = 'http://localhost:60020';
 
-exports.withDb = (mock, skipping) => {
-  withDb(mock, skipping, exports, 'index');
+export const withDb = (mock, skipping) => {
+  testing.withDb(mock, skipping, helper, 'index');
 };
+helper.withDb = withDb;
 
-exports.withPulse = (mock, skipping) => {
-  withPulse({ helper: exports, skipping, namespace: 'taskcluster-index' });
+export const withPulse = (mock, skipping) => {
+  testing.withPulse({ helper, skipping, namespace: 'taskcluster-index' });
 };
+helper.withPulse = withPulse;
 
 /**
  * Set up a fake tc-queue object that supports only the `task` method,
@@ -39,16 +46,43 @@ exports.withPulse = (mock, skipping) => {
  *
  * The component is available at `helper.queue`.
  */
-exports.withFakeQueue = (mock, skipping) => {
+export const withFakeQueue = (mock, skipping) => {
   suiteSetup(function() {
     if (skipping()) {
       return;
     }
 
     helper.queue = stubbedQueue();
-    helper.load.inject('queue', helper.queue);
+    load.inject('queue', helper.queue);
   });
 };
+helper.withFakeQueue = withFakeQueue;
+
+let anonymousScopes = [];
+
+helper.setAnonymousScopes = (scopes) => {
+  anonymousScopes = scopes;
+};
+
+export const withFakeAnonymousScopeCache = (mock, skipping) => {
+  suiteSetup(function() {
+    if (skipping()) {
+      return;
+    }
+
+    load.inject('isPublicArtifact', (artifactName) => {
+      return satisfiesExpression(anonymousScopes, `queue:get-artifact:${artifactName}`);
+    });
+  });
+
+  setup(function() {
+    if (skipping()) {
+      return;
+    }
+    anonymousScopes = [];
+  });
+};
+helper.withFakeAnonymousScopeCache = withFakeAnonymousScopeCache;
 
 /**
  * Set up an API server.  Call this after withDb, so the server
@@ -57,20 +91,20 @@ exports.withFakeQueue = (mock, skipping) => {
  * This also sets up helper.scopes to set the scopes for helper.queue, the
  * API client object, and stores a client class a helper.Index.
  */
-exports.withServer = (mock, skipping) => {
+export const withServer = (mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
     if (skipping()) {
       return;
     }
-    await exports.load('cfg');
+    await load('cfg');
 
     // even if we are using a "real" rootUrl for access to Azure, we use
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
-    exports.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    fakeauth.start({
+    load.cfg('taskcluster.rootUrl', helper.rootUrl);
+    testing.fakeauth.start({
       'test-client': ['*'],
     }, { rootUrl: helper.rootUrl });
 
@@ -80,7 +114,7 @@ exports.withServer = (mock, skipping) => {
       const options = {
         // Ensure that we use global agent, to avoid problems with keepAlive
         // preventing tests from exiting
-        agent: require('http').globalAgent,
+        agent: globalAgent,
         rootUrl: helper.rootUrl,
         retries: 0,
       };
@@ -95,7 +129,7 @@ exports.withServer = (mock, skipping) => {
       helper.index = new helper.Index(options);
     };
 
-    webServer = await helper.load('server');
+    webServer = await load('server');
   });
 
   setup(async function() {
@@ -114,9 +148,10 @@ exports.withServer = (mock, skipping) => {
       await webServer.terminate();
       webServer = null;
     }
-    fakeauth.stop();
+    testing.fakeauth.stop();
   });
 };
+helper.withServer = withServer;
 
 /**
  * make a queue object with the `task` method stubbed out, and with
@@ -124,6 +159,7 @@ exports.withServer = (mock, skipping) => {
  */
 const stubbedQueue = () => {
   const tasks = {};
+  const artifacts = {};
   const queue = new taskcluster.Queue({
     rootUrl: helper.rootUrl,
     credentials: {
@@ -136,6 +172,12 @@ const stubbedQueue = () => {
         assert(task, `fake queue has no task ${taskId}`);
         return task;
       },
+      latestArtifact: async (taskId, name) => {
+        const key = `${taskId}/${name}`;
+        const artifact = artifacts[key];
+        assert(artifact, `fake queue has no artifact ${key}`);
+        return artifact;
+      },
     },
   });
 
@@ -143,14 +185,19 @@ const stubbedQueue = () => {
     tasks[taskId] = task;
   };
 
+  queue.setArtifact = function(taskId, name, response) {
+    artifacts[`${taskId}/${name}`] = response;
+  };
+
   return queue;
 };
 
-exports.resetTables = (mock, skipping) => {
+export const resetTables = (mock, skipping) => {
   setup('reset tables', async function() {
-    await resetTables({ tableNames: [
+    await testing.resetTables({ tableNames: [
       'indexed_tasks',
       'index_namespaces',
     ] });
   });
 };
+helper.resetTables = resetTables;

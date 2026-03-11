@@ -8,13 +8,14 @@ import (
 
 type localExposer struct {
 	publicIP net.IP
+	port     uint16
 }
 
 // Create a local exposer implementation.  Local exposers are useful for local
 // testing, and simply exposes the URL as given, or (for ExposeTCPPort) proxies
 // a websocket on localhost to the port.
-func NewLocal(publicIP net.IP) (Exposer, error) {
-	return &localExposer{publicIP}, nil
+func NewLocal(publicIP net.IP, port uint16) (Exposer, error) {
+	return &localExposer{publicIP, port}, nil
 }
 
 func (exposer *localExposer) ExposeHTTP(targetPort uint16) (Exposure, error) {
@@ -53,8 +54,9 @@ type localHTTPExposure struct {
 }
 
 func (exposure *localHTTPExposure) start() error {
-	// allocate a port dynamically by specifying :0
-	listener, err := net.Listen("tcp", ":0")
+	// port can be allocated dynamically `:0`
+	// or passed as predefined port which could be used for testing or local development
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", exposure.exposer.port))
 	if err != nil {
 		return err
 	}

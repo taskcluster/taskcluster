@@ -1,8 +1,9 @@
-const { Octokit } = require('@octokit/rest');
-const fs = require('fs');
-const util = require('util');
-const path = require('path');
-const {
+import { Octokit } from '@octokit/rest';
+import fs from 'fs';
+import util from 'util';
+import path from 'path';
+
+import {
   ensureTask,
   npmPublish,
   cargoPublish,
@@ -11,11 +12,11 @@ const {
   readRepoFile,
   dockerPush,
   REPO_ROOT,
-} = require('../../utils');
+} from '../../utils/index.js';
 
 const readFile = util.promisify(fs.readFile);
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Get ChangeLog',
     requires: ['release-version'],
@@ -72,7 +73,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
           './tools/websocktunnel/cmd/websocktunnel',
         ],
         dir: REPO_ROOT,
-        logfile: path.join(logsDir, '/websocktunnel-build.log'),
+        logfile: path.join(logsDir, 'websocktunnel-build.log'),
         utils,
         env: { CGO_ENABLED: '0', ...process.env },
       });
@@ -121,7 +122,7 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'websocktunnel-docker-push.log'),
         tag,
         utils,
         baseDir,
@@ -141,7 +142,6 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'release-version',
       'client-shell-artifacts',
       'generic-worker-artifacts',
-      'docker-worker-artifacts',
       'worker-runner-artifacts',
       'taskcluster-proxy-artifacts',
       'changelog-text',
@@ -174,7 +174,6 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       const files = requirements['client-shell-artifacts']
         .concat(requirements['generic-worker-artifacts'])
-        .concat(requirements['docker-worker-artifacts'])
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
         .concat(requirements['taskcluster-proxy-artifacts'])

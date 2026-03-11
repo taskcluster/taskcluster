@@ -1,8 +1,10 @@
-const { range } = require('lodash');
-const _ = require('lodash');
-const { dollarQuote, paginatedIterator } = require('../src/util');
-const assert = require('assert');
-const path = require('path');
+import _ from 'lodash';
+import { dollarQuote, paginatedIterator } from '../src/util.js';
+import assert from 'assert';
+import path from 'path';
+
+const { range } = _;
+const __filename = new URL('', import.meta.url).pathname;
 
 suite(path.basename(__filename), function() {
   suite('dollarQuote', function() {
@@ -65,7 +67,7 @@ suite(path.basename(__filename), function() {
 
     suite('index-based', function() {
       const indexColumns = ['a', 'b'];
-      const data = (A, B) => _.range(0, A).flatMap(a => _.range(0, B).map(b => ({ a, b })));
+      const data = (A, B) => range(0, A).flatMap(a => range(0, B).map(b => ({ a, b })));
       let calls;
       const fetcher = (A, B, maxSize) => {
         return async (size, after) => {

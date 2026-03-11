@@ -13,7 +13,7 @@ tasks:
         events:
           - push
     payload:
-      image: "ubuntu:latest"
+      image: "ubuntu:jammy"
       command:
         - test
     metadata:
@@ -31,7 +31,7 @@ tasks:
           - pull_request.synchronize
           - pull_request.reopened
     payload:
-      image: "ubuntu:latest"
+      image: "ubuntu:jammy"
       command:
         - test
     metadata:
@@ -47,7 +47,7 @@ tasks:
         events:
           - release
     payload:
-      image: "ubuntu:latest"
+      image: "ubuntu:jammy"
       command:
         - test
     metadata:

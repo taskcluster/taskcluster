@@ -19,12 +19,17 @@ spec:
     spec:
       serviceAccountName: taskcluster-index
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+      terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-index-handlers
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - index/handlers
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.index.procs.handlers.cpu }}'
@@ -39,6 +44,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-index
+            - configMapRef:
+                name: taskcluster-index
           ports: []
           livenessProbe:
             exec:
@@ -46,6 +53,6 @@ spec:
                 - /bin/sh
                 - '-c'
                 - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
-            initialDelaySeconds: 86400
+            initialDelaySeconds: 432000
             periodSeconds: 60
             failureThreshold: 1

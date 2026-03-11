@@ -12,7 +12,7 @@ const URL = require('url');
 const poll = require('./helper/poll');
 const sleep = require('./helper/sleep');
 const util = require('util');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const helper = require('../helper');
 
 const pseudoRandomBytes = util.promisify(crypto.pseudoRandomBytes);

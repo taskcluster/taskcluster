@@ -1,13 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
+)
 
 // A resource is something that can be deleted. Rating provides an indication
 // of how "valuable" it is. A higher value means it should be preserved in
 // favour of a resource with a lower rating.
 type Resource interface {
 	Rating() float64
-	Evict(task *TaskRun) error
+	Evict(taskMount *TaskMount) error
 }
 
 // Resources is a type that can be sorted in order to establish in which order
@@ -47,26 +52,60 @@ func (r Resources) Swap(i, j int) {
 func runGarbageCollection(r Resources) error {
 	currentFreeSpace, err := freeDiskSpaceBytes(taskContext.TaskDir)
 	if err != nil {
-		return fmt.Errorf("Could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
 	}
 	requiredFreeSpace := requiredSpaceBytes()
+
+	if currentFreeSpace < requiredFreeSpace && config.D2GEnabled() {
+		err := host.Run("docker", "volume", "prune", "--all", "--force")
+		if err != nil {
+			return fmt.Errorf("could not run docker volume prune to garbage collect due to error %#v", err)
+		}
+
+		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		if err != nil {
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+		}
+	}
+
+	if currentFreeSpace < requiredFreeSpace && config.D2GEnabled() {
+		err := host.Run("docker", "system", "prune", "--all", "--force")
+		if err != nil {
+			return fmt.Errorf("could not run docker system prune to garbage collect due to error %#v", err)
+		}
+
+		err = os.Remove("d2g-image-cache.json")
+		if err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
+		}
+
+		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		if err != nil {
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+		}
+	}
+
 	for currentFreeSpace < requiredFreeSpace {
 		// need to free up space
 		if r.Empty() {
 			break
 		}
+
 		err = r.EvictNext()
 		if err != nil {
 			return err
 		}
+
 		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
 		}
 	}
+
 	if currentFreeSpace < requiredFreeSpace {
-		return fmt.Errorf("Not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredFreeSpace, currentFreeSpace)
+		return fmt.Errorf("not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredFreeSpace, currentFreeSpace)
 	}
+
 	return nil
 }
 

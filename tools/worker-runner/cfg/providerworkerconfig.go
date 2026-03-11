@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/files"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/files"
 )
 
 // ProviderWorkerConfig handles the configuration format provided from
@@ -35,14 +35,14 @@ func ParseProviderWorkerConfig(runnercfg *RunnerConfig, body *json.RawMessage) (
 	var bodyMap map[string]json.RawMessage
 	err := json.Unmarshal(*body, &bodyMap)
 	if err != nil {
-		return pwc, fmt.Errorf("While parsing workerConfig from worker-manager: %s", err)
+		return pwc, fmt.Errorf("while parsing workerConfig from worker-manager: %s", err)
 	}
 
 	if len(bodyMap) == 1 {
 		if inner, ok := bodyMap[workerImpl]; ok {
 			err = json.Unmarshal(inner, &pwc)
 			if err != nil {
-				return pwc, fmt.Errorf("While parsing workerConfig from worker-manager: %s", err)
+				return pwc, fmt.Errorf("while parsing workerConfig from worker-manager: %s", err)
 			}
 			return pwc, nil
 		}
@@ -52,7 +52,7 @@ func ParseProviderWorkerConfig(runnercfg *RunnerConfig, body *json.RawMessage) (
 	pwc.Config = NewWorkerConfig()
 	err = json.Unmarshal(*body, pwc.Config)
 	if err != nil {
-		return pwc, fmt.Errorf("While parsing workerConfig from worker-manager: %s", err)
+		return pwc, fmt.Errorf("while parsing workerConfig from worker-manager: %s", err)
 	}
 
 	return pwc, nil

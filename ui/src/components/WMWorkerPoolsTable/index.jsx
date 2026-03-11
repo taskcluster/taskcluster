@@ -1,18 +1,19 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
-import { shape, func, arrayOf, string } from 'prop-types';
+import { shape, func, arrayOf, string, bool } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import { camelCase } from 'camel-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
+import Hidden from '@material-ui/core/Hidden';
 import LinkIcon from 'mdi-react/LinkIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import WorkerIcon from 'mdi-react/WorkerIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import { withRouter } from 'react-router-dom';
-import memoize from 'fast-memoize';
+import { memoize } from '../../utils/memoize';
 import {
   WorkerManagerWorkerPoolSummary,
   pageInfo,
@@ -48,6 +49,17 @@ const sorted = pipe(
   linksButton: {
     marginRight: theme.spacing(3),
   },
+  hiddenLabel: {
+    display: 'inline-block',
+    width: theme.spacing(16),
+    color: theme.palette.text.hint,
+    [theme.breakpoints.up('md')]: {
+      display: 'none',
+    },
+  },
+  errorsPool: {
+    color: theme.palette.error.dark,
+  },
 }))
 export default class WorkerManagerWorkerPoolsTable extends Component {
   static propTypes = {
@@ -57,6 +69,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     }).isRequired,
     deleteRequest: func.isRequired,
     searchTerm: string,
+    errorStatsLoading: bool,
   };
 
   static defaultProps = {
@@ -181,10 +194,17 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     });
   };
 
+  getPendingTasksLink(workerPoolId) {
+    const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
+
+    return `/provisioners/${provisionerId}/worker-types/${workerType}/pending-tasks`;
+  }
+
   renderRow = ({ node: workerPool }) => {
     const {
       match: { path },
       classes,
+      errorStatsLoading,
     } = this.props;
     const { actionLoading } = this.state;
     const iconSize = 16;
@@ -193,7 +213,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     );
 
     return (
-      <TableRow key={workerPool.workerPoolId}>
+      <TableRow key={workerPool.workerPoolId} hover>
         <TableCell>
           <Link to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}`}>
             <TableCellItem button>
@@ -211,42 +231,71 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
           )}
         </TableCell>
 
-        <TableCell>{workerPool.currentCapacity}</TableCell>
+        <TableCell>
+          <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
+            Current Capacity:
+          </Hidden>
+          {workerPool.currentCapacity}
+        </TableCell>
 
-        <TableCell>{workerPool.runningCapacity}</TableCell>
+        <TableCell>
+          <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
+            Running Capacity:
+          </Hidden>
+          {workerPool.runningCapacity}
+        </TableCell>
 
-        <TableCell>{workerPool.pendingTasks}</TableCell>
+        <TableCell>
+          <Link to={this.getPendingTasksLink(workerPool.workerPoolId)}>
+            <TableCellItem button>
+              <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
+                Pending Tasks:
+              </Hidden>
+              {workerPool.pendingTasks}
+              <LinkIcon size={iconSize} />
+            </TableCellItem>
+          </Link>
+        </TableCell>
 
         <TableCell>
           <Link
-            to={`/provisioners/${encodeURIComponent(
-              provisionerId
-            )}/worker-types/${encodeURIComponent(workerType)}`}>
+            title={`View ${workerPool.workerPoolId} workers`}
+            to={`${path}/${encodeURIComponent(
+              workerPool.workerPoolId
+            )}/errors`}>
+            <TableCellItem button>
+              <div
+                className={
+                  workerPool.errorsCount > 0 ? classes.errorsPool : ''
+                }>
+                <Hidden
+                  lgUp
+                  implementation="css"
+                  className={classes.hiddenLabel}>
+                  Total Errors:
+                </Hidden>
+                {errorStatsLoading ? '...' : workerPool.errorsCount}
+              </div>
+              <MessageAlertIcon className={classes.linksIcon} size={iconSize} />
+            </TableCellItem>
+          </Link>
+        </TableCell>
+
+        <TableCell>
+          <Link
+            to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
             <Button
               className={classes.linksButton}
               variant="outlined"
               disabled={actionLoading}
               size="small">
               <WorkerIcon className={classes.linksIcon} size={iconSize} />
-              View Workers
-            </Button>
-          </Link>
-          <Link
-            to={`${path}/${encodeURIComponent(
-              workerPool.workerPoolId
-            )}/errors`}>
-            <Button
-              className={classes.linksButton}
-              variant="outlined"
-              disabled={actionLoading}
-              size="small">
-              <MessageAlertIcon className={classes.linksIcon} size={iconSize} />
-              View Errors
+              Workers
             </Button>
           </Link>
           {workerPool.providerId !== NULL_PROVIDER ? (
             <IconButton
-              title="Delete Worker Pool ID"
+              title={`Delete Worker Pool ${workerPool.workerPoolId}`}
               className={classes.button}
               name={`${workerPool.workerPoolId}`}
               onClick={this.handleDialogActionOpen(workerPool)}
@@ -281,6 +330,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       'Current Capacity',
       'Running Capacity',
       'Pending Tasks',
+      'Errors Count',
       '',
     ];
 

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -90,6 +90,12 @@ type (
 	// Information about an artifact
 	Artifact struct {
 
+		// Size of the artifact content in bytes, if reported by the worker.
+		// This value is null if the worker did not report the size.
+		//
+		// Mininum:    0
+		ContentLength int64 `json:"contentLength,omitempty"`
+
 		// Expected content-type of the artifact.  This is informational only:
 		// it is suitable for use to choose an icon for the artifact, for example.
 		// The accurate content-type of the artifact can only be determined by
@@ -146,6 +152,24 @@ type (
 		TaskIds []string `json:"taskIds"`
 	}
 
+	// Payload for task and task-group reprioritization endpoints.
+	ChangeTaskPriorityRequest struct {
+
+		// New priority to apply. Claimed runs keep their current run priority until
+		// they are retried.
+		//
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		//   * "normal"
+		NewPriority string `json:"newPriority"`
+	}
+
 	// Request to claim a task for a worker to process.
 	ClaimWorkRequest struct {
 
@@ -184,10 +208,9 @@ type (
 	CountPendingTasksResponse struct {
 
 		// An approximate number of pending tasks for the given `provisionerId` and
-		// `workerType`. This is based on Azure Queue Storage metadata API, thus,
-		// number of reported here may be higher than actual number of pending tasks.
-		// But there cannot be more pending tasks reported here. Ie. this is an
-		// **upper-bound** on the number of pending tasks.
+		// `workerType`. Number of reported here may be higher than actual number of
+		// pending tasks. But there cannot be more pending tasks reported here.
+		// Ie. this is an **upper-bound** on the number of pending tasks.
 		//
 		// Mininum:    0
 		PendingTasks int64 `json:"pendingTasks"`
@@ -235,6 +258,7 @@ type (
 		//   * "file-missing-on-worker"
 		//   * "invalid-resource-on-worker"
 		//   * "too-large-file-on-worker"
+		//   * "file-not-readable-on-worker"
 		Reason string `json:"reason"`
 
 		// Artifact storage type, in this case `error`
@@ -403,6 +427,26 @@ type (
 		ContinuationToken string `json:"continuationToken,omitempty"`
 	}
 
+	// Response from a `listClaimedTasks` request.
+	ListClaimedTasksResponse struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of dependent tasks.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listClaimedTasks` with
+		// `continuationToken` until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of tasks that are currently claimed by workers and are not yet resolved.
+		// Results might not represent the actual state of the tasks,
+		// as they might be currently resolved by a worker or claim-resolver.
+		//
+		// Tasks are returned by claimed time, with the oldest claimed tasks first.
+		Tasks []Var4 `json:"tasks"`
+	}
+
 	// Response from a `listDependentTasks` request.
 	ListDependentTasksResponse struct {
 
@@ -422,6 +466,26 @@ type (
 
 		// List of tasks that have `taskId` in the `task.dependencies` property.
 		Tasks []TaskDefinitionAndStatus `json:"tasks"`
+	}
+
+	// Response from a `listPendingTasks` request.
+	ListPendingTasksResponse struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of dependent tasks.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listPendingTasks` with
+		// `continuationToken` until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of tasks that are currently waiting for workers to be claimed.
+		// Results may not represent the actual state of the tasks,
+		// as they might be actively claimed by a worker.
+		//
+		// Tasks are returned in inserted order.
+		Tasks []Var3 `json:"tasks"`
 	}
 
 	ListProvisionersResponse struct {
@@ -471,7 +535,7 @@ type (
 		SchedulerID string `json:"schedulerId"`
 
 		// Empty or date and time when task group was sealed.
-		Sealed tcclient.Time `json:"sealed,omitempty"`
+		Sealed tcclient.Time `json:"sealed,omitzero"`
 
 		// Identifier for the task-group.
 		//
@@ -532,6 +596,12 @@ type (
 
 	// Request to create an artifact via the object service.
 	ObjectArtifactRequest struct {
+
+		// Optional size of the artifact content, in bytes.
+		// This is informational and used for monitoring purposes.
+		//
+		// Mininum:    0
+		ContentLength int64 `json:"contentLength,omitempty"`
 
 		// Artifact content type.  This is advisory in nature and can be used,
 		// for example, to select appropriate icons to display artifact links.
@@ -686,7 +756,7 @@ type (
 
 		// Date and time after which the provisioner will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// This is the stability of the provisioner. Accepted values:
 		//   * `experimental`
@@ -853,7 +923,7 @@ type (
 		// Date-time at which this run was resolved, ie. when the run changed
 		// state from `running` to either `completed`, `failed` or `exception`.
 		// This property is only present after the run as been resolved.
-		Resolved tcclient.Time `json:"resolved,omitempty"`
+		Resolved tcclient.Time `json:"resolved,omitzero"`
 
 		// Id of this task run, `run-id`s always starts from `0`
 		//
@@ -868,7 +938,7 @@ type (
 		// Date-time at which this run was claimed, ie. when the run changed
 		// state from `pending` to `running`. This property is only present
 		// after the run has been claimed.
-		Started tcclient.Time `json:"started,omitempty"`
+		Started tcclient.Time `json:"started,omitzero"`
 
 		// State of this run
 		//
@@ -883,7 +953,7 @@ type (
 		// Time at which the run expires and is resolved as `failed`, if the
 		// run isn't reclaimed. Note, only present after the run has been
 		// claimed.
-		TakenUntil tcclient.Time `json:"takenUntil,omitempty"`
+		TakenUntil tcclient.Time `json:"takenUntil,omitzero"`
 
 		// Identifier for group that worker who executes this run is a part of,
 		// this identifier is mainly used for efficient routing.
@@ -908,6 +978,12 @@ type (
 	// to an S3 bucket managed by the queue.
 	S3ArtifactRequest struct {
 
+		// Optional size of the artifact content, in bytes.
+		// This is informational and used for monitoring purposes.
+		//
+		// Mininum:    0
+		ContentLength int64 `json:"contentLength,omitempty"`
+
 		// Artifact mime-type, when uploading artifact to the signed
 		// `PUT` URL returned from this request this must given with the
 		//  `ContentType` header. Please, provide correct mime-type,
@@ -920,7 +996,7 @@ type (
 		// Date-time after which the artifact should be deleted. Note, that
 		// these will be collected over time, and artifacts may remain
 		// available after expiration. S3 based artifacts are identified in
-		// azure table storage and explicitly deleted on S3 after expiration.
+		// the database and explicitly deleted on S3 after expiration.
 		Expires tcclient.Time `json:"expires"`
 
 		// Artifact storage type, in this case `'s3'`
@@ -954,6 +1030,22 @@ type (
 		//   * "s3"
 		StorageType string `json:"storageType"`
 	}
+
+	// Link to source of this task, should specify a file, revision and
+	// repository. This should be place someone can go an do a git/hg blame
+	// to who came up with recipe for this task.
+	//
+	// Syntax:     ^(https?://|ssh://|git@)
+	// Max length: 4096
+	Source string
+
+	// Link to source of this task, should specify a file, revision and
+	// repository. This should be place someone can go an do a git/hg blame
+	// to who came up with recipe for this task.
+	//
+	// Syntax:     ^(https?://|ssh://|git@)
+	// Max length: 4096
+	Source1 string
 
 	TaskClaim struct {
 
@@ -1134,6 +1226,8 @@ type (
 
 		// List of dependent tasks. These must either be _completed_ or _resolved_
 		// before this task is scheduled. See `requires` for semantics.
+		// There can be up to `max-task-dependencies` dependencies, but this value can be
+		// overridden per-deployment to allow lower values.
 		//
 		// Default:    []
 		//
@@ -1148,7 +1242,7 @@ type (
 		// Notice that all artifacts for the task must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may change).
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
@@ -1327,6 +1421,8 @@ type (
 
 		// List of dependent tasks. These must either be _completed_ or _resolved_
 		// before this task is scheduled. See `requires` for semantics.
+		// There can be up to `max-task-dependencies` dependencies, but this value can be
+		// overridden per-deployment to allow lower values.
 		//
 		// Default:    []
 		//
@@ -1341,7 +1437,7 @@ type (
 		// Notice that all artifacts for the task must have an expiration that is no
 		// later than this. If this property isn't it will be set to `deadline`
 		// plus one year (this default may change).
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// Object with properties that can hold any kind of extra data that should be
 		// associated with the task. This can be data for the task which doesn't
@@ -1506,6 +1602,28 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
+	// Definitions of multiple tasks
+	TaskDefinitionResponse1 struct {
+
+		// A continuation token is returned if there are more results than listed
+		// here. You can optionally provide the token in the request payload to
+		// load the additional results.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// Default:    []
+		Tasks []Var1 `json:"tasks"`
+	}
+
+	// Request to list definitions of multiple tasks.
+	TaskDefinitionsResponse struct {
+
+		// Default:    []
+		//
+		// Array items:
+		// ID of a task to list
+		TaskIds []string `json:"taskIds,omitempty"`
+	}
+
 	// Request for a run of a task to be resolved with an exception
 	TaskExceptionRequest struct {
 
@@ -1578,12 +1696,55 @@ type (
 		SchedulerID string `json:"schedulerId"`
 
 		// Empty or date and time when task group was sealed.
-		Sealed tcclient.Time `json:"sealed,omitempty"`
+		Sealed tcclient.Time `json:"sealed,omitzero"`
 
 		// Identifier for the task-group.
 		//
 		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
 		TaskGroupID string `json:"taskGroupId"`
+	}
+
+	// Response returned by the change task group priority call.
+	TaskGroupPriorityChangeResponse struct {
+
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		//   * "normal"
+		NewPriority string `json:"newPriority"`
+
+		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
+		//
+		// * it can represent the entity that created the task;
+		// * it can limit addition of new tasks to a task group: the caller of
+		//     `createTask` must have a scope related to the `schedulerId` of the task
+		//     group;
+		// * it controls who can manipulate tasks, again by requiring
+		//     `schedulerId`-related scopes; and
+		// * it appears in the routing key for Pulse messages about the task.
+		//
+		// Default:    "-"
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		SchedulerID string `json:"schedulerId"`
+
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskGroupID string `json:"taskGroupId"`
+
+		// Task identifiers that were updated. Present even if the list is empty.
+		//
+		// Array items:
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskIds []string `json:"taskIds"`
+
+		// Mininum:    0
+		TasksAffected int64 `json:"tasksAffected"`
 	}
 
 	// Required task metadata
@@ -1612,8 +1773,11 @@ type (
 		// repository. This should be place someone can go an do a git/hg blame
 		// to who came up with recipe for this task.
 		//
-		// Syntax:     ^(https?|ssh)://
+		// Syntax:     ^(https?://|ssh://|git@)
 		// Max length: 4096
+		// Any of:
+		//   * Source
+		//   * Source1
 		Source string `json:"source"`
 	}
 
@@ -1765,6 +1929,24 @@ type (
 		// must have an expiration that is no later than this.
 		Expires tcclient.Time `json:"expires"`
 
+		// Priority of task. This defaults to `lowest` and the scope
+		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
+		// to define a task with `<priority>`. The `normal` priority is treated as
+		// `lowest`.
+		//
+		// Possible values:
+		//   * "highest"
+		//   * "very-high"
+		//   * "high"
+		//   * "medium"
+		//   * "low"
+		//   * "very-low"
+		//   * "lowest"
+		//   * "normal"
+		//
+		// Default:    "lowest"
+		Priority string `json:"priority,omitempty"`
+
 		// The name for the "project" with which this task is associated.  This
 		// value can be used to control permission to manipulate tasks as well as
 		// for usage reporting.  Project ids are typically simple identifiers,
@@ -1853,6 +2035,118 @@ type (
 		WorkerType string `json:"workerType"`
 	}
 
+	// Status of multiple tasks
+	TasksStatusesResponse struct {
+
+		// A continuation token is returned if there are more results than listed
+		// here. You can optionally provide the token in the request payload to
+		// load the additional results.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// Default:    []
+		Statuses []Var2 `json:"statuses"`
+	}
+
+	// Response to a request for the number of pending and claimed tasks for a given
+	// `provisionerId` and `workerType`.
+	Var struct {
+
+		// An approximate number of claimed tasks for the given `provisionerId` and
+		// `workerType`. Number of reported here may be higher than actual number of
+		// claimed tasks.
+		//
+		// Mininum:    0
+		ClaimedTasks int64 `json:"claimedTasks"`
+
+		// An approximate number of pending tasks for the given `provisionerId` and
+		// `workerType`. Number of reported here may be higher than actual number of
+		// pending tasks.
+		//
+		// Mininum:    0
+		PendingTasks int64 `json:"pendingTasks"`
+
+		// Unique identifier for a provisioner, that can supply specified
+		// `workerType`. Deprecation is planned for this property as it
+		// will be replaced, together with `workerType`, by the new
+		// identifier `taskQueueId`.
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}$
+		ProvisionerID string `json:"provisionerId"`
+
+		// Unique identifier for a task queue
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		TaskQueueID string `json:"taskQueueId"`
+
+		// Unique identifier for a worker-type within a specific
+		// provisioner. Deprecation is planned for this property as it will
+		// be replaced, together with `provisionerId`, by the new
+		// identifier `taskQueueId`.
+		//
+		// Syntax:     ^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerType string `json:"workerType"`
+	}
+
+	Var1 struct {
+
+		// Definition of a task that can be scheduled
+		Task TaskDefinitionResponse `json:"task"`
+
+		TaskID string `json:"taskId"`
+	}
+
+	Var2 struct {
+
+		// A representation of **task status** as known by the queue
+		Status TaskStatusStructure `json:"status"`
+
+		TaskID string `json:"taskId"`
+	}
+
+	Var3 struct {
+		Inserted tcclient.Time `json:"inserted"`
+
+		// Unique run identifier, this is a number between 0 and 1000 inclusive.
+		//
+		// Mininum:    0
+		// Maximum:    1000
+		RunID int64 `json:"runId"`
+
+		// Definition of a task that can be scheduled
+		Task TaskDefinitionResponse `json:"task"`
+
+		// Unique task identifier, this is UUID encoded as
+		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+		// stripped of `=` padding.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskID string `json:"taskId"`
+	}
+
+	Var4 struct {
+		Claimed tcclient.Time `json:"claimed"`
+
+		// Unique run identifier, this is a number between 0 and 1000 inclusive.
+		//
+		// Mininum:    0
+		// Maximum:    1000
+		RunID int64 `json:"runId"`
+
+		// Definition of a task that can be scheduled
+		Task TaskDefinitionResponse `json:"task"`
+
+		// Unique task identifier, this is UUID encoded as
+		// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
+		// stripped of `=` padding.
+		//
+		// Syntax:     ^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$
+		TaskID string `json:"taskId"`
+
+		WorkerGroup string `json:"workerGroup"`
+
+		WorkerID string `json:"workerId"`
+	}
+
 	Worker struct {
 
 		// Date of the first time this worker claimed a task.
@@ -1864,16 +2158,16 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitzero"`
 
 		// A run of a task.
-		LatestTask TaskRun `json:"latestTask,omitempty"`
+		LatestTask TaskRun `json:"latestTask,omitzero"`
 
 		// Quarantining a worker allows the machine to remain alive but not accept jobs.
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitzero"`
 
 		// Identifier for the worker group containing this worker.
 		//
@@ -1963,7 +2257,7 @@ type (
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 	}
 
 	// Response containing information about a worker.
@@ -1983,7 +2277,7 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitzero"`
 
 		// Unique identifier for a provisioner, that can supply specified
 		// `workerType`. Deprecation is planned for this property as it
@@ -2001,7 +2295,7 @@ type (
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitzero"`
 
 		// List of 20 most recent tasks claimed by the worker.
 		RecentTasks []TaskRun `json:"recentTasks"`
@@ -2157,7 +2451,7 @@ type (
 
 		// Date and time after which the worker-type will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitempty"`
+		Expires tcclient.Time `json:"expires,omitzero"`
 
 		// This is the stability of the provisioner. Accepted values:
 		//   * `experimental`
@@ -2223,48 +2517,48 @@ type (
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // GetArtifactContentResponse is of type json.RawMessage...
-func (this *GetArtifactContentResponse) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *GetArtifactContentResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *GetArtifactContentResponse) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *GetArtifactContentResponse) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("GetArtifactContentResponse: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // PostArtifactRequest is of type json.RawMessage...
-func (this *PostArtifactRequest) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *PostArtifactRequest) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *PostArtifactRequest) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *PostArtifactRequest) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("PostArtifactRequest: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // PostArtifactResponse is of type json.RawMessage...
-func (this *PostArtifactResponse) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *PostArtifactResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *PostArtifactResponse) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *PostArtifactResponse) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("PostArtifactResponse: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }

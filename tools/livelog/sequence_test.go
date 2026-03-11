@@ -64,8 +64,8 @@ func TestSequence(t *testing.T) {
 
 	// generate some longish chunks
 	var chunks [][]byte
-	for i := 0; i < 5000; i++ {
-		chunks = append(chunks, []byte(fmt.Sprintf("%d|%s\n", i, TEXT)))
+	for i := range 5000 {
+		chunks = append(chunks, fmt.Appendf(nil, "%d|%s\n", i, TEXT))
 	}
 
 	client := http.Client{}

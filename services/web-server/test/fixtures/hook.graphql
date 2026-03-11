@@ -1,0 +1,5 @@
+query Hook($hookGroupId: ID!, $hookId: ID!) {
+  hook(hookGroupId: $hookGroupId, hookId: $hookId) {
+    hookId,
+  }
+}

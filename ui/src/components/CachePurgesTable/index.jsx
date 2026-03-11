@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { string, func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
-import memoize from 'fast-memoize';
 import { camelCase } from 'camel-case';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import DateDistance from '../DateDistance';
 import ConnectionDataTable from '../ConnectionDataTable';
 import { VIEW_CACHE_PURGES_PAGE_SIZE } from '../../utils/constants';
+import { memoize } from '../../utils/memoize';
 import sort from '../../utils/sort';
 import { pageInfo, cachePurge } from '../../utils/prop-types';
 

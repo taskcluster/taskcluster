@@ -8,9 +8,9 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
-	"github.com/taskcluster/taskcluster/v50/internal/httputil"
-	"github.com/taskcluster/taskcluster/v50/internal/mocktc/mocks3"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/internal/httputil"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/mocks3"
 )
 
 func Vars(r *http.Request) map[string]string {
@@ -26,7 +26,8 @@ func Vars(r *http.Request) map[string]string {
 	return decodedVars
 }
 
-func WriteAsJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
+func WriteAsJSON(t *testing.T, w http.ResponseWriter, resp any) {
+	t.Helper()
 	bytes, err := json.MarshalIndent(resp, "", "  ")
 	if err != nil {
 		t.Fatal(err)
@@ -37,7 +38,7 @@ func WriteAsJSON(t *testing.T, w http.ResponseWriter, resp interface{}) {
 	}
 }
 
-func JSON(w http.ResponseWriter, resp interface{}, err error) {
+func JSON(w http.ResponseWriter, resp any, err error) {
 	if err != nil {
 		ReportError(w, err)
 		return
@@ -78,7 +79,7 @@ func NoBody(w http.ResponseWriter, err error) {
 	w.WriteHeader(200)
 }
 
-func Marshal(req *http.Request, payload interface{}) {
+func Marshal(req *http.Request, payload any) {
 	dec := json.NewDecoder(req.Body)
 	dec.DisallowUnknownFields()
 	err := dec.Decode(payload)
@@ -88,8 +89,10 @@ func Marshal(req *http.Request, payload interface{}) {
 }
 
 func ServiceProviders(t *testing.T, baseURL string) []httputil.ServiceProvider {
+	t.Helper()
 	return []httputil.ServiceProvider{
 		NewAuthProvider(NewAuth(t)),
+		NewIndexProvider(NewIndex(t)),
 		NewQueueProvider(NewQueue(t, baseURL)),
 		NewSecretsProvider(NewSecrets()),
 		NewWorkerManagerProvider(NewWorkerManager(t)),

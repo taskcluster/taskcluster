@@ -22,7 +22,7 @@ func WritePrivateFile(filename string, content []byte) error {
 	// 0600 permissions actually mean what they say on POSIX (unlike Windows)
 	err := os.WriteFile(filename, content, 0600)
 	if err != nil {
-		return fmt.Errorf("Could not write to %s: %w", filename, err)
+		return fmt.Errorf("could not write to %s: %w", filename, err)
 	}
 
 	return verifyPrivateToOwner(filename)

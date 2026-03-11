@@ -27,7 +27,7 @@ func WritePrivateFile(filename string, content []byte) error {
 	// putting any sensitive content into it
 	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		return fmt.Errorf("Could not open %s for writing: %w", filename, err)
+		return fmt.Errorf("could not open %s for writing: %w", filename, err)
 	}
 
 	err = makePrivateToOwner(filename)
@@ -41,7 +41,7 @@ func WritePrivateFile(filename string, content []byte) error {
 		err = err1
 	}
 	if err != nil {
-		return fmt.Errorf("Could not write to file %s: %w", filename, err)
+		return fmt.Errorf("could not write to file %s: %w", filename, err)
 	}
 
 	return verifyPrivateToOwner(filename)
@@ -122,7 +122,7 @@ func verifyPrivateToOwner(filename string) (err error) {
 	}
 
 	if si.String() != OWNER_ONLY_SDDL {
-		return fmt.Errorf("File %s did not have expected DACL; got %s, expected %s", filename, si, OWNER_ONLY_SDDL)
+		return fmt.Errorf("file %s did not have expected DACL; got %s, expected %s", filename, si, OWNER_ONLY_SDDL)
 	}
 
 	si, err = windows.GetNamedSecurityInfo(
@@ -148,25 +148,20 @@ func verifyPrivateToOwner(filename string) (err error) {
 	}
 
 	if owner.String() != currentUser.String() {
-		return fmt.Errorf("File %s did not have expcted owner; got %s, expected %s", filename, owner, currentUser)
+		return fmt.Errorf("file %s did not have expcted owner; got %s, expected %s", filename, owner, currentUser)
 	}
 
 	if group.String() != NOBODY {
-		return fmt.Errorf("File %s did not have expcted group; got %s, expected %s", filename, group, NOBODY)
+		return fmt.Errorf("file %s did not have expcted group; got %s, expected %s", filename, group, NOBODY)
 	}
 
 	return
 }
 
 // Get the SID of the current user
-func getCurrentUser() (sid *windows.SID, err error) {
-	token, err := windows.OpenCurrentProcessToken()
-	if err != nil {
-		return
-	}
-	defer token.Close()
-
+func getCurrentUser() (*windows.SID, error) {
+	token := windows.GetCurrentProcessToken()
 	tokenuser, err := token.GetTokenUser()
-	sid = tokenuser.User.Sid
-	return
+	sid := tokenuser.User.Sid
+	return sid, err
 }

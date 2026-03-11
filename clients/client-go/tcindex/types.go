@@ -5,7 +5,7 @@ package tcindex
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -74,6 +74,16 @@ type (
 
 		// List of namespaces.
 		Namespaces []Namespace `json:"namespaces"`
+	}
+
+	// Request to list tasks at the given indexes.
+	ListTasksAtIndexRequest struct {
+
+		// Default:    []
+		//
+		// Array items:
+		// Index of a task to list
+		Indexes []string `json:"indexes,omitempty"`
 	}
 
 	// Representation of an indexed task.

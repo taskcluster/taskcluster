@@ -1,4 +1,4 @@
-const _ = require('lodash');
+import _ from 'lodash';
 
 const validRootTemplate = (template) =>
   validateTemplate(template) && (
@@ -200,7 +200,7 @@ const render = (compiledTemplate, params) => {
 };
 
 /** Scope expression templates handles extraction of parameters and rendering of intermediate state */
-module.exports = class ScopeExpressionTemplate {
+export default class ScopeExpressionTemplate {
   constructor(template) {
     this.template = template;
     this._compiledTemplate = compileTemplate(template);
@@ -239,4 +239,4 @@ module.exports = class ScopeExpressionTemplate {
   static validate(template) {
     return validRootTemplate(template);
   }
-};
+}

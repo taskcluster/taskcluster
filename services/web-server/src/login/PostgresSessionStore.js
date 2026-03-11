@@ -1,16 +1,16 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const { NOOP } = require('../utils/constants');
-const hash = require('../utils/hash');
+import assert from 'assert';
+import taskcluster from '@taskcluster/client';
+import { NOOP } from '../utils/constants.js';
+import hash from '../utils/hash.js';
 
-module.exports = function ({ session, db, options = {} }) {
+export default function ({ session, db, options = {} }) {
   const { Store } = session;
 
   assert(session, 'An express-session object is required');
   assert(db, 'A database is required');
 
   const {
-    // Session timeout in a format that `fromNow` (taskcluster-client) understands. Defaults to 1 day
+    // Session timeout in a format that `fromNow` (@taskcluster/client) understands. Defaults to 1 day
     sessionTimeout = '1 day',
   } = options;
 
@@ -52,7 +52,7 @@ module.exports = function ({ session, db, options = {} }) {
 
         if (!row) {
           return callback();
-        } else if (db.decrypt({ value: row.encrypted_session_id }).toString('utf8') !== sessionId){
+        } else if (db.decrypt({ value: row.encrypted_session_id }).toString('utf8') !== sessionId) {
           return callback();
         }
 
@@ -113,4 +113,4 @@ module.exports = function ({ session, db, options = {} }) {
       }
     }
   };
-};
+}

@@ -13,7 +13,7 @@ tasks:
         events:
           - pull_request.*
     payload:
-      image: "ubuntu:latest"
+      image: "ubuntu:jammy"
       command:
         - test
     metadata:

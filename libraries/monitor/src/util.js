@@ -20,7 +20,7 @@
  * bar
  * baz
  */
-const cleanupDescription = desc => {
+export const cleanupDescription = desc => {
   desc = desc.trim();
   const spl = desc.split('\n');
 
@@ -37,5 +37,3 @@ const cleanupDescription = desc => {
 
   return desc;
 };
-
-exports.cleanupDescription = cleanupDescription;

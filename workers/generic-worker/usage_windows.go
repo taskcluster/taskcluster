@@ -58,9 +58,35 @@ func exitCode74() string {
            desktop.`
 }
 
+func exitCode83() string {
+	return ""
+}
+
 func sidSID() string {
 	return `
     --sid SID                               A SID to be granted full control of the
                                             interactive windows station and desktop, for
                                             example: 'S-1-5-5-0-41431533'.`
+}
+
+func disableNativePayloads() string {
+	return ""
+}
+
+func d2gConfig() string {
+	return ""
+}
+
+func enableTaskFeatures() string {
+	return `
+          enableRDP                         Enables the RDP feature to be used in the task
+                                            payload. [default: true]
+          enableRunAsAdministrator          Enables the RunAsAdministrator feature to be used in
+                                            the task payload. [default: true]
+          enableRunTaskAsCurrentUser        Enables the Run Task As Current User feature to be
+                                            used in the task payload. [default: true]`
+}
+
+func loopbackDeviceNumbers() string {
+	return ""
 }

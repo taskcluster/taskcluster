@@ -5,7 +5,7 @@ const cmd = require('./helper/cmd');
 const { ZSTD_TASK_ID, LZ4_TASK_ID, TASK_ID, GZIP_CONTENT_ENCODING_TASK_ID, NAMESPACE } = require('../fixtures/image_artifacts');
 const { createHash } = require('crypto');
 const { removeImage } = require('../../src/util/remove_image');
-const { suiteName } = require('taskcluster-lib-testing');
+const { suiteName } = require('@taskcluster/lib-testing');
 const helper = require('../helper');
 
 let docker = Docker();

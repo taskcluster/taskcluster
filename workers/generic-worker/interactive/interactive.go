@@ -2,20 +2,25 @@
 package interactive
 
 import (
-	"bufio"
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"strings"
-	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/taskcluster/slugid-go/slugid"
 )
+
+type CreateInteractiveProcess func() (InteractiveCmdType, error)
+type CreateInteractiveIsReadyProcess func() (*exec.Cmd, error)
+type InteractiveCommands struct {
+	IsReadyCmd     CreateInteractiveIsReadyProcess
+	InteractiveCmd CreateInteractiveProcess
+}
 
 var upgrader = &websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -24,68 +29,23 @@ var upgrader = &websocket.Upgrader{
 }
 
 type Interactive struct {
-	TCPPort   uint16
-	GetURL    string
-	secret    string
-	conn      *websocket.Conn
-	connMutex *sync.Mutex
-	stdin     io.WriteCloser
-	stdout    io.ReadCloser
-	stderr    io.ReadCloser
-	cmd       *exec.Cmd
-	done      chan struct{}
-	errors    chan error
-	ctx       context.Context
+	TCPPort             uint16
+	GetURL              string
+	secret              string
+	ctx                 context.Context
+	interactiveCommands InteractiveCommands
 }
 
-func New(port uint16, cmd *exec.Cmd, ctx context.Context) (it *Interactive, err error) {
+func New(port uint16, interactiveCommands InteractiveCommands, ctx context.Context) (it *Interactive, err error) {
 	it = &Interactive{
-		TCPPort: port,
-		secret:  slugid.Nice(),
-		cmd:     cmd,
-		done:    make(chan struct{}),
-		// size of 3 is because there
-		// are only ever 3 goroutines
-		// who write to this channel
-		// and we don't want to block
-		errors: make(chan error, 3),
-		ctx:    ctx,
+		TCPPort:             port,
+		secret:              slugid.Nice(),
+		interactiveCommands: interactiveCommands,
+		ctx:                 ctx,
 	}
 
 	it.setRequestURL()
-
 	os.Setenv("INTERACTIVE_ACCESS_TOKEN", it.secret)
-
-	it.stdin, err = it.cmd.StdinPipe()
-	if err != nil {
-		log.Printf("StdinPipe error: %v", err)
-		return nil, err
-	}
-
-	it.stdout, err = it.cmd.StdoutPipe()
-	if err != nil {
-		log.Printf("StdoutPipe error: %v", err)
-		return nil, err
-	}
-
-	it.stderr, err = it.cmd.StderrPipe()
-	if err != nil {
-		log.Printf("StderrPipe error: %v", err)
-		return nil, err
-	}
-
-	go it.copyCommandOutputStream(it.stdout)
-	go it.copyCommandOutputStream(it.stderr)
-
-	if err = it.cmd.Start(); err != nil {
-		log.Printf("Command start error: %v", err)
-		return
-	}
-
-	go func() {
-		it.errors <- it.cmd.Wait()
-		close(it.done)
-	}()
 
 	return
 }
@@ -106,90 +66,72 @@ func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "WebSocket upgrade error", http.StatusInternalServerError)
 		return
 	}
-	it.conn = conn
-	it.connMutex = &sync.Mutex{}
+
+	err = it.waitUntilReady(conn)
+	if err != nil {
+		log.Printf("Failed while waiting to create an interactive job, closing connection. %v", err)
+		http.Error(w, "Failed to start interactive command", http.StatusInternalServerError)
+		return
+	}
+	itj, err := CreateInteractiveJob(it.interactiveCommands.InteractiveCmd, conn, it.ctx)
+	if err != nil {
+		log.Printf("Error while spawning interactive job: %v", err)
+		return
+	}
+
 	defer func() {
-		it.connMutex.Lock()
-		defer it.connMutex.Unlock()
-		if err := it.conn.Close(); err != nil {
+		if err := conn.Close(); err != nil {
 			log.Printf("WebSocket close error: %v", err)
 		}
 	}()
 
-	msgChan := make(chan []byte, 1)
-	go it.handleWebsocketMessages(msgChan)
-
 	select {
 	case <-it.ctx.Done():
-	case <-it.done:
+	case <-itj.done:
 	}
 }
 
-func (it *Interactive) handleWebsocketMessages(msgChan chan []byte) {
-	for {
-		select {
-		case <-it.ctx.Done():
-			return
-		case <-it.done:
-			return
-		case err := <-it.errors:
-			if err != nil {
-				if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-					return
-				} else {
-					log.Printf("streamError occured: %v", err)
-					return
-				}
-			}
-		case msg := <-msgChan:
-			if _, err := it.stdin.Write(msg); err != nil {
-				log.Printf("Write error: %v", err)
-				return
-			}
-		default:
-			msgType, msg, err := it.conn.ReadMessage()
-			if err != nil {
-				if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-					return
-				} else {
-					log.Printf("ReadMessage error: %v", err)
-					return
-				}
-			}
-			if msgType != websocket.TextMessage {
-				continue
-			}
-			msgChan <- msg
-		}
+// If the interactive task has a `IsReadyCmd` declared, run that command until it succeeds or until timeout.
+func (it *Interactive) waitUntilReady(conn *websocket.Conn) (err error) {
+	if it.interactiveCommands.IsReadyCmd == nil {
+		return nil
 	}
-}
+	err = conn.WriteMessage(websocket.BinaryMessage, []byte("Waiting for task to be ready."))
+	if err != nil {
+		return err
+	}
 
-func (it *Interactive) copyCommandOutputStream(stream io.ReadCloser) {
-	reader := bufio.NewReader(stream)
-	for {
-		select {
-		case <-it.ctx.Done():
-			return
-		case <-it.done:
-			return
-		default:
-			msg, err := reader.ReadString('\n')
-			if err != nil {
-				if err == io.EOF {
-					continue
-				}
-				it.errors <- err
-				return
-			}
-			it.connMutex.Lock()
-			if err := it.conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-				it.connMutex.Unlock()
-				it.errors <- err
-				return
-			}
-			it.connMutex.Unlock()
+	last_output := []byte("")
+	for range 20 {
+		var isReadyCmd *exec.Cmd
+		isReadyCmd, err = it.interactiveCommands.IsReadyCmd()
+		if err != nil {
+			_ = conn.WriteMessage(websocket.BinaryMessage, []byte("Invalid task ready command. This is a bug.\r\n"))
+			return err
 		}
+
+		last_output, err = isReadyCmd.CombinedOutput()
+		if err != nil {
+			err = conn.WriteMessage(websocket.BinaryMessage, []byte("."))
+			if err != nil {
+				return err
+			}
+			time.Sleep(1 * time.Second)
+			continue
+		}
+
+		break
 	}
+
+	if err != nil {
+		msg := fmt.Sprintf("Error while waiting for task to be ready: %v. Output:\r\n%s", err, last_output)
+		log.Print(msg)
+		_ = conn.WriteMessage(websocket.BinaryMessage, []byte("\r\n"+msg))
+		return err
+	}
+
+	err = conn.WriteMessage(websocket.BinaryMessage, []byte("\r\n"))
+	return err
 }
 
 func (it *Interactive) ListenAndServe(ctx context.Context) error {
@@ -208,35 +150,13 @@ func (it *Interactive) ListenAndServe(ctx context.Context) error {
 		}
 	}()
 
-	select {
-	case <-it.ctx.Done():
-	case <-it.done:
-	}
+	<-it.ctx.Done()
 
 	if err := server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown failed: %v", err)
 	}
 
 	return nil
-}
-
-func (it *Interactive) Terminate() error {
-	if err := it.stdout.Close(); err != nil {
-		log.Printf("StdoutPipe close error: %v", err)
-	}
-	if err := it.stderr.Close(); err != nil {
-		log.Printf("StderrPipe close error: %v", err)
-	}
-	if err := it.stdin.Close(); err != nil {
-		log.Printf("StdinPipe close error: %v", err)
-	}
-
-	// no process is running, so there is nothing to terminate
-	if it.cmd.Process == nil {
-		return nil
-	}
-
-	return it.cmd.Process.Kill()
 }
 
 func (it *Interactive) setRequestURL() {

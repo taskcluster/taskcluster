@@ -1,6 +1,9 @@
-const { Schema } = require('..');
-const path = require('path');
-const assert = require('assert').strict;
+import Schema from '../src/Schema.js';
+import path from 'path';
+import { strict as assert } from 'assert';
+
+const __dirname = new URL('.', import.meta.url).pathname;
+const __filename = new URL('', import.meta.url).pathname;
 
 suite(path.basename(__filename), function() {
   suite('fromDbDirectory', function() {

@@ -1,12 +1,14 @@
-const { Client, Exchanges, connectionStringCredentials } = require('../src');
-const path = require('path');
-const amqplib = require('amqplib');
-const assume = require('assume');
-const assert = require('assert');
-const SchemaSet = require('taskcluster-lib-validate');
-const libUrls = require('taskcluster-lib-urls');
-const helper = require('./helper');
-const { suiteName, poll } = require('taskcluster-lib-testing');
+import { Client, Exchanges, connectionStringCredentials } from '../src/index.js';
+import path from 'path';
+import amqplib from 'amqplib';
+import assume from 'assume';
+import assert from 'assert';
+import SchemaSet from '@taskcluster/lib-validate';
+import libUrls from 'taskcluster-lib-urls';
+import helper from './helper.js';
+import { suiteName, poll } from '@taskcluster/lib-testing';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   if (mock) {
@@ -15,7 +17,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   let connectionString;
   const exchangeOptions = {
     serviceName: 'lib-pulse',
-    projectName: 'taskcluster-lib-pulse',
+    projectName: '@taskcluster/lib-pulse',
     apiVersion: 'v2',
     title: 'tc-lib-pulse tests',
     description: 'testing stuff',
@@ -132,7 +134,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       assume(exchanges.reference()).to.deeply.equal({
         $schema: '/schemas/common/exchanges-reference-v0.json#',
         apiVersion: 'v2',
-        exchangePrefix: 'exchange/taskcluster-lib-pulse/v2/',
+        exchangePrefix: 'exchange/@taskcluster/lib-pulse/v2/',
         serviceName: 'lib-pulse',
         title: 'tc-lib-pulse tests',
         description: 'testing stuff',
@@ -160,7 +162,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       assume(exchanges.reference()).to.deeply.equal({
         $schema: '/schemas/common/exchanges-reference-v0.json#',
         apiVersion: 'v2',
-        exchangePrefix: 'exchange/taskcluster-lib-pulse/v2/',
+        exchangePrefix: 'exchange/@taskcluster/lib-pulse/v2/',
         serviceName: 'lib-pulse',
         title: 'tc-lib-pulse tests',
         description: 'testing stuff',

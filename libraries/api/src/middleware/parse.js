@@ -1,11 +1,14 @@
-const bodyParser = require('body-parser');
+import bodyParser from 'body-parser';
 
 /**
  * Use body-parser to parse JSON requests and also store the text of the
  * response at req.text.
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{ inputLimit: string }} opts
+ * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */
-
-const parseBody = ({ inputLimit }) => {
+export const parseBody = ({ inputLimit }) => {
   const wrapped = bodyParser.text({
     limit: inputLimit,
     type: 'application/json',
@@ -28,7 +31,7 @@ const parseBody = ({ inputLimit }) => {
           } catch (err) {
             return res.reportError(
               'MalformedPayload', 'Failed to parse JSON: {{errMsg}}', {
-                errMsg: err.message,
+                errMsg: (err instanceof Error) ? err.message : String(err),
               });
           }
         } else {
@@ -36,11 +39,9 @@ const parseBody = ({ inputLimit }) => {
           req.body = {};
         }
         next();
-      } catch(err) {
+      } catch (err) {
         next(err);
       }
     });
   };
 };
-
-exports.parseBody = parseBody;

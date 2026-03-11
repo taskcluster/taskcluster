@@ -1,12 +1,12 @@
-const crypto = require('crypto');
-const assert = require('assert');
-const helper = require('../helper');
-const builder = require('../../src/api');
+import crypto from 'crypto';
+import assert from 'assert';
+import { load, testObjectName } from '../helper/index.js';
+import { DOWNLOAD_METHODS } from '../../src/api.js';
 
 /**
  * Test properties general to all backends.
  */
-exports.testBackend = ({
+export const testBackend = ({
   mock, skipping,
 
   // optional title suffix
@@ -35,17 +35,17 @@ exports.testBackend = ({
 
     let backend;
     setup(async function() {
-      const backends = await helper.load('backends');
+      const backends = await load('backends');
       backend = backends.get(backendId);
     });
 
     test('supports only defined downlad methods', async function() {
       const data = crypto.randomBytes(256);
-      const name = helper.testObjectName(prefix);
+      const name = testObjectName(prefix);
       const object = await makeObject({ name, data, hashes: { }, gzipped: false });
 
       const methods = await backend.availableDownloadMethods(object);
-      const unknown = methods.filter(m => !builder.DOWNLOAD_METHODS.includes(m));
+      const unknown = methods.filter(m => !DOWNLOAD_METHODS.includes(m));
       if (unknown.length > 0) {
         assert.fail(`backend.availableDownloadMethods returned unknown method(s) ${unknown.join(', ')}`);
       }

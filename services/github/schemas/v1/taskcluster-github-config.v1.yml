@@ -23,8 +23,15 @@ properties:
           - public_restricted
           - collaborators
           - collaborators_quiet
+      allowComments:
+        type: string
+        description: |
+          Allow to trigger tasks from github comments. When set, collaborators would be able to trigger taskcluster bot
+          by adding a comment that starts with `/taskcluster` and followed by command.
+          Details can be found in [RFC 168](https://github.com/taskcluster/taskcluster-rfcs/blob/main/rfcs/0168-Trigger-Tests-Based-on-PR-Comments.md)
+        enum:
+          - collaborators
     additionalProperties: false
-    required: [pullRequests]
   reporting:
     description: Policy for reporting status of PR or a commit. If absent, Github Statuses API is used
     type: string

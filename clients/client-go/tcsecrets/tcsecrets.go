@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/secrets/v1/api.json
+// This package was generated from the reference schema of
+// the Secrets service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/secrets/v1/api.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The secrets service provides a simple key/value store for small bits of secret
 // data.  Access is limited by scopes, so values can be considered secret from
 // those who do not have the relevant scopes.
@@ -43,7 +47,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type Secrets tcclient.Client
@@ -136,7 +140,7 @@ func (secrets *Secrets) Version() error {
 // See #set
 func (secrets *Secrets) Set(name string, payload *Secret) error {
 	cd := tcclient.Client(*secrets)
-	_, _, err := (&cd).APICall(payload, "PUT", "/secret/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(payload, "PUT", "/secret/"+url.PathEscape(name), nil, nil)
 	return err
 }
 
@@ -149,7 +153,7 @@ func (secrets *Secrets) Set(name string, payload *Secret) error {
 // See #remove
 func (secrets *Secrets) Remove(name string) error {
 	cd := tcclient.Client(*secrets)
-	_, _, err := (&cd).APICall(nil, "DELETE", "/secret/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(nil, "DELETE", "/secret/"+url.PathEscape(name), nil, nil)
 	return err
 }
 
@@ -165,7 +169,7 @@ func (secrets *Secrets) Remove(name string) error {
 // See #get
 func (secrets *Secrets) Get(name string) (*Secret, error) {
 	cd := tcclient.Client(*secrets)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/secret/"+url.QueryEscape(name), new(Secret), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/secret/"+url.PathEscape(name), new(Secret), nil)
 	return responseObject.(*Secret), err
 }
 
@@ -178,7 +182,7 @@ func (secrets *Secrets) Get(name string) (*Secret, error) {
 // See Get for more details.
 func (secrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*secrets)
-	return (&cd).SignedURL("/secret/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/secret/"+url.PathEscape(name), nil, duration)
 }
 
 // List the names of all secrets.

@@ -45,7 +45,7 @@ type CallSummary struct {
 	HTTPRequestBody string
 	// The Go Type which is marshaled into json and used as the http request
 	// body.
-	HTTPRequestObject interface{}
+	HTTPRequestObject any
 	HTTPResponse      *http.Response
 	// Keep a copy of response body in addition to the *http.Response, since
 	// accessing the Body via the *http.Response object, you get a
@@ -110,7 +110,7 @@ func setURL(client *Client, route string, query url.Values) (u *url.URL, err err
 	URL := tcurls.API(client.RootURL, client.ServiceName, client.APIVersion, route)
 	u, err = url.Parse(URL)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot parse url: '%v', is RootURL (%v) set correctly?\n%v\n", URL, client.RootURL, err)
+		return nil, fmt.Errorf("cannot parse url: '%v', is RootURL (%v) set correctly?\n%v", URL, client.RootURL, err)
 	}
 	if query != nil {
 		u.RawQuery = query.Encode()
@@ -133,11 +133,11 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 		ioReader := bytes.NewReader(rawPayload)
 		u, err := setURL(client, route, query)
 		if err != nil {
-			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
+			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v", err)
 		}
 		callSummary.HTTPRequest, err = http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the RootURL (%v) set correctly?\n%v\n", u.String(), client.RootURL, err)
+			return nil, nil, fmt.Errorf("internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the RootURL (%v) set correctly?\n%v", u.String(), client.RootURL, err)
 		}
 		if len(rawPayload) > 0 {
 			callSummary.HTTPRequest.Header.Set("Content-Type", "application/json")
@@ -206,7 +206,7 @@ func (c *Credentials) SignRequest(req *http.Request) (err error) {
 	reqAuth := hawk.NewRequestAuth(req, credentials, 0)
 	reqAuth.Ext, err = getExtHeader(c)
 	if err != nil {
-		return fmt.Errorf("Internal error: was not able to generate hawk ext header from provided credentials:\n%s\n%s", c, err)
+		return fmt.Errorf("internal error: was not able to generate hawk ext header from provided credentials:\n%s\n%s", c, err)
 	}
 	req.Header.Set("Authorization", reqAuth.RequestHeader())
 	return nil
@@ -224,7 +224,7 @@ func (err *APICallException) Error() string {
 // APICall is the generic REST API calling method which performs all REST API
 // calls for this library.  Each auto-generated REST API method simply is a
 // wrapper around this method, calling it with specific specific arguments.
-func (client *Client) APICall(payload interface{}, method, route string, result interface{}, query url.Values) (interface{}, *CallSummary, error) {
+func (client *Client) APICall(payload any, method, route string, result any, query url.Values) (any, *CallSummary, error) {
 	rawPayload := []byte{}
 	var err error
 	if reflect.ValueOf(payload).IsValid() && !reflect.ValueOf(payload).IsNil() {

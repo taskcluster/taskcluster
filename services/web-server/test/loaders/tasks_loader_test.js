@@ -1,14 +1,9 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const { ApolloClient } = require('apollo-client');
-const { InMemoryCache } = require('apollo-cache-inmemory');
-const { HttpLink } = require('apollo-link-http');
-const fetch = require('node-fetch');
-const gql = require('graphql-tag');
-const testing = require('taskcluster-lib-testing');
-const helper = require('../helper');
-const createTaskQuery = require('../fixtures/createTask.graphql');
-const loader = require('../../src/loaders/tasks');
+import assert from 'assert';
+import taskcluster from '@taskcluster/client';
+import gql from 'graphql-tag';
+import testing from '@taskcluster/lib-testing';
+import helper from '../helper.js';
+import loader from '../../src/loaders/tasks.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -16,21 +11,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  const getClient = () => {
-    const cache = new InMemoryCache();
-    const httpLink = new HttpLink({
-      uri: `http://localhost:${helper.serverPort}/graphql`,
-      fetch,
-    });
-
-    return new ApolloClient({ cache, link: httpLink });
-  };
-
   suite('tasks loaders', function() {
     // Make sure we still get tasks even if we end up loading some tasks that don't exist
     test('load multiple tasks while gracefully handling errors', async function() {
-      const client = getClient();
+      const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
+
+      const createTaskQuery = await helper.loadFixture('createTask.graphql');
 
       // 1. create task
       await client.mutate({

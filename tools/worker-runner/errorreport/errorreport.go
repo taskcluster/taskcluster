@@ -6,11 +6,11 @@ import (
 	"reflect"
 
 	"github.com/pkg/errors"
-	taskcluster "github.com/taskcluster/taskcluster/v50/clients/client-go"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v50/tools/workerproto"
+	taskcluster "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 type ErrorReporter struct {
@@ -31,7 +31,7 @@ func (er *ErrorReporter) HandleMessage(msg workerproto.Message) {
 	er.state.Lock()
 	defer er.state.Unlock()
 
-	validate := func(things map[string]interface{}, key, expectedType string) bool {
+	validate := func(things map[string]any, key, expectedType string) bool {
 		if _, ok := things[key]; !ok {
 			return false
 		}
@@ -59,7 +59,7 @@ func (er *ErrorReporter) HandleMessage(msg workerproto.Message) {
 		return
 	}
 
-	extra := msg.Properties["extra"].(map[string]interface{})
+	extra := msg.Properties["extra"].(map[string]any)
 	extraMsg, err := json.Marshal(extra)
 	if err != nil {
 		log.Printf("Error processing error-report message, could not marshal extra")

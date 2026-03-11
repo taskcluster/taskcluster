@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"encoding/base64"
+	"fmt"
 	"log/syslog"
 	"net/http"
 	"os"
@@ -12,18 +13,18 @@ import (
 	mozlog "github.com/mozilla-services/go-mozlogrus"
 	log "github.com/sirupsen/logrus"
 	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
-	"github.com/taskcluster/taskcluster/v50/internal"
-	"github.com/taskcluster/taskcluster/v50/tools/websocktunnel/wsproxy"
+	"github.com/taskcluster/taskcluster/v97/internal"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/wsproxy"
 )
 
 const usage = `Websocketunnel Server
 
-Usage: websocktunnel [-h | --help]
+Usage: websocktunnel [-h | --help | --short-version | --version]
 
 Environment:
  URL_PREFIX (required)								URL prefix (http(s)://hostname(:port)) at which
 													this service is publicly exposed
- PORT (optional; defaults to 80 or 443)				port on which to listent
+ PORT (optional; defaults to 80 or 443)				port on which to listen
  TLS_CERTIFICATE (optional; no TLS if not provided) base64-encoded TLS certificate
  TLS_KEY											corresponding base64-encoded TLS key
  TASKCLUSTER_PROXY_SECRET_A							JWT secret
@@ -32,10 +33,16 @@ Environment:
  AUDIENCE											JWT 'audience' claim
 
 Options:
--h --help       Show help`
+-h --help       Show help
+--short-version Show only the semantic version`
 
 func main() {
-	_, _ = docopt.ParseArgs(usage, nil, "websocktunnel "+internal.Version)
+	opts, _ := docopt.ParseArgs(usage, nil, "websocktunnel "+internal.Version)
+
+	if opts["--short-version"].(bool) {
+		fmt.Printf("%s\n", internal.Version)
+		os.Exit(0)
+	}
 
 	urlPrefix := os.Getenv("URL_PREFIX")
 	if urlPrefix == "" {

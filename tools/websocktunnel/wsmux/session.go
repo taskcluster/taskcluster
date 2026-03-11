@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v50/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/util"
 )
 
 const (

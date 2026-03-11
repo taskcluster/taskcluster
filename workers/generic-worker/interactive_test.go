@@ -1,8 +1,9 @@
-//go:build (multiuser || simple) && (darwin || linux || freebsd)
+//go:build darwin || linux || freebsd
 
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"testing"
@@ -14,7 +15,13 @@ import (
 
 func TestInteractiveArtifact(t *testing.T) {
 	setup(t)
+
+	oldEnableInteractive := config.EnableInteractive
+	defer func(oldEnableInteractive bool) {
+		config.EnableInteractive = oldEnableInteractive
+	}(oldEnableInteractive)
 	config.EnableInteractive = true
+
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(0),
 		MaxRunTime: 10,
@@ -53,7 +60,13 @@ func TestInteractiveArtifact(t *testing.T) {
 
 func TestInteractiveCommand(t *testing.T) {
 	setup(t)
+
+	oldEnableInteractive := config.EnableInteractive
+	defer func(oldEnableInteractive bool) {
+		config.EnableInteractive = oldEnableInteractive
+	}(oldEnableInteractive)
 	config.EnableInteractive = true
+
 	payload := GenericWorkerPayload{
 		Command:    sleep(5),
 		MaxRunTime: 10,
@@ -75,6 +88,7 @@ func TestInteractiveCommand(t *testing.T) {
 
 	var conn *websocket.Conn
 	var err error
+	const SENTINEL = "S3ntin3lValue"
 
 	for {
 		select {
@@ -86,19 +100,29 @@ func TestInteractiveCommand(t *testing.T) {
 			url := fmt.Sprintf("ws://localhost:%v/shell/%v", config.InteractivePort, os.Getenv("INTERACTIVE_ACCESS_TOKEN"))
 			conn, _, err = websocket.DefaultDialer.Dial(url, nil)
 			if err == nil {
-				err = conn.WriteMessage(websocket.TextMessage, []byte("echo hello\n"))
+				err = conn.WriteMessage(websocket.TextMessage, fmt.Appendf(nil, "\x01echo %s\n", SENTINEL))
 				if err != nil {
 					t.Fatalf("write error: %v", err)
 				}
 
 				var output []byte
-				_, output, err = conn.ReadMessage()
-				if err != nil {
-					t.Fatalf("read error: %v", err)
+				expectedBytes := []byte(SENTINEL)
+				completeOutput := []byte{}
+				ok := false
+				for range 20 {
+					_, output, err = conn.ReadMessage()
+					if err != nil {
+						t.Fatalf("read error: %v", err)
+					}
+					completeOutput = append(completeOutput, output...)
+					if bytes.Count(completeOutput, expectedBytes) == 3 {
+						ok = true
+						break
+					}
 				}
-				expected := "hello\n"
-				if string(output) != expected {
-					t.Fatalf("unexpected output: %v\nexpected: %v", string(output), expected)
+
+				if !ok {
+					t.Fatalf("Couldn't find expected output: %v. Complete output: %v", expectedBytes, completeOutput)
 				}
 
 				err = conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Closing connection"))
@@ -129,7 +153,13 @@ func TestInteractiveCommand(t *testing.T) {
 
 func TestInteractiveWrongSecret(t *testing.T) {
 	setup(t)
+
+	oldEnableInteractive := config.EnableInteractive
+	defer func(oldEnableInteractive bool) {
+		config.EnableInteractive = oldEnableInteractive
+	}(oldEnableInteractive)
 	config.EnableInteractive = true
+
 	payload := GenericWorkerPayload{
 		Command:    sleep(5),
 		MaxRunTime: 10,
@@ -171,7 +201,13 @@ func TestInteractiveWrongSecret(t *testing.T) {
 
 func TestInteractiveNoConfigSetMalformedPayload(t *testing.T) {
 	setup(t)
+
+	oldEnableInteractive := config.EnableInteractive
+	defer func(oldEnableInteractive bool) {
+		config.EnableInteractive = oldEnableInteractive
+	}(oldEnableInteractive)
 	config.EnableInteractive = false
+
 	payload := GenericWorkerPayload{
 		Command:    returnExitCode(0),
 		MaxRunTime: 10,

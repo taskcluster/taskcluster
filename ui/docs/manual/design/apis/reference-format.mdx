@@ -3,7 +3,7 @@ filename: design/apis/reference-format.mdx
 title: Reference Formats
 order: 40
 ---
-import SchemaTable from 'taskcluster-ui/components/SchemaTable'
+import SchemaTable from '@taskcluster/ui/components/SchemaTable'
 
 # Reference Formats
 
@@ -83,6 +83,13 @@ Each service generates log messages that match formats defined in log references
 These reference documents have metadata name `logs` and the following schema:
 
 <SchemaTable schema="/schemas/common/logs-reference-v0.json#" />
+
+### Metrics References
+
+Each service generates metrics that match formats defined in metrics references.
+These reference documents have metadata name `metrics` and the following schema:
+
+<SchemaTable schema="/schemas/common/metrics-reference-v0.json#" />
 
 ## Rolled-Up References
 

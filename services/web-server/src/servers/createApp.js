@@ -1,26 +1,24 @@
-const bodyParser = require('body-parser');
-const path = require('path');
-const bodyParserGraphql = require('body-parser-graphql');
-const session = require('express-session');
-const compression = require('compression');
-const cors = require('cors');
-const express = require('express');
-const playground = require('graphql-playground-middleware-express').default;
-const passport = require('passport');
-const url = require('url');
-const MemoryStore = require('memorystore')(session);
-const credentials = require('./credentials');
-const oauth2AccessToken = require('./oauth2AccessToken');
-const oauth2 = require('./oauth2');
-const PostgresSessionStore = require('../login/PostgresSessionStore');
-const { traceMiddleware } = require('taskcluster-lib-app');
+import bodyParser from 'body-parser';
+import path from 'path';
+import bodyParserGraphql from 'body-parser-graphql';
+import session from 'express-session';
+import compression from 'compression';
+import cors from 'cors';
+import express from 'express';
+import graphqlPlayground from 'graphql-playground-middleware-express';
+const playground = graphqlPlayground.default;
+import passport from 'passport';
+import MemoryStoreFactory from 'memorystore';
+const MemoryStore = MemoryStoreFactory(session);
+import credentials from './credentials.js';
+import oauth2AccessToken from './oauth2AccessToken.js';
+import oauth2 from './oauth2.js';
+import PostgresSessionStore from '../login/PostgresSessionStore.js';
+import { traceMiddleware } from '@taskcluster/lib-app';
 
-const REPO_ROOT = path.join(__dirname, '../../../../');
+const __dirname = new URL('.', import.meta.url).pathname;
 
-const taskclusterVersionFile = path.resolve(REPO_ROOT, 'version.json');
-const taskclusterVersion = require(taskclusterVersionFile);
-
-module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
+export default async ({ cfg, strategies, auth, monitor, db, clients, rootUrl, api }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -70,13 +68,14 @@ module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
     saveUninitialized: false,
     unset: 'destroy',
     cookie: {
-      secure: url.parse(cfg.app.publicUrl).hostname !== 'localhost',
+      secure: URL.parse(cfg.app.publicUrl)?.hostname !== 'localhost',
       httpOnly: true,
       // 1 week
       maxAge: 7 * 24 * 60 * 60 * 1000,
     },
   }));
 
+  app.disable('x-powered-by');
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(compression());
@@ -115,11 +114,18 @@ module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
     return done(null, obj);
   });
 
-  app.post('/login/logout', cors(corsOptions), (req, res) => {
+  app.post('/login/logout', cors(corsOptions), async (req, res) => {
     // Remove the req.user property and clear the login session
-    req.logout();
+    await new Promise((resolve, reject) => {
+      try {
+        req.logout(resolve);
+      } catch (err) {
+        reject(err);
+      }
+    });
+
     res
-      .status('200')
+      .status(200)
       .send();
   });
 
@@ -145,29 +151,27 @@ module.exports = async ({ cfg, strategies, auth, monitor, db }) => {
   app.options('/login/oauth/credentials', cors(thirdPartyCorsOptions));
   app.get('/login/oauth/credentials', cors(thirdPartyCorsOptions), oauth2AccessToken(), getCredentials);
 
-  // Dockerflow endpoints
-  // https://github.com/mozilla-services/Dockerflow
-  app.get('/api/web-server/v1/__lbheartbeat__', (_req, res) => {
-    res.json({});
-  });
-  app.get('/api/web-server/v1/__version__', (_req, res) => {
-    res.json(taskclusterVersion);
-  });
-  // TODO: add implementation
-  app.get('/api/web-server/v1/__heartbeat__', (_req, res) => {
-    res.json({});
-  });
+  // Mount lib-api routes (profiler endpoints, Dockerflow health checks)
+  if (api) {
+    api.express(app);
+  }
 
   // Error handling middleware
   app.use((err, req, res, next) => {
     // Minimize the amount of information we disclose. The err could potentially disclose something to an attacker.
     const error = { code: err.code, name: err.name };
+    monitor.reportError(err);
+    let statusCode = 500;
 
     if (err.name === 'InputError') {
       Object.assign(error, { message: err.message });
     }
+    if (err.name === 'PayloadTooLargeError') {
+      Object.assign(error, { code: 413, message: 'Payload too large' });
+      statusCode = 413;
+    }
 
-    res.status(500).json(error);
+    res.status(statusCode).json(error);
   });
 
   return app;

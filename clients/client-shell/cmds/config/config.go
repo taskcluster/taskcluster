@@ -8,9 +8,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
-	"github.com/taskcluster/taskcluster/v50/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v50/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/config"
 )
 
 var (
@@ -55,14 +55,14 @@ func init() {
 			Description: "Certificate as required if using temporary credentials (must be given as string).",
 			Default:     nil,
 			Env:         "TASKCLUSTER_CERTIFICATE",
-			Validate: func(value interface{}) error {
+			Validate: func(value any) error {
 				s, ok := value.(string)
 				if !ok {
-					return errors.New("Must be a string containing certificate in JSON")
+					return errors.New("must be a string containing certificate in JSON")
 				}
 				var cert tcclient.Certificate
 				if err := json.Unmarshal([]byte(s), &cert); err != nil {
-					return fmt.Errorf("Failed to parse JSON string, error: %s", err)
+					return fmt.Errorf("failed to parse JSON string, error: %s", err)
 				}
 				return nil
 			},
@@ -70,8 +70,8 @@ func init() {
 		"authorizedScopes": config.OptionDefinition{
 			Description: `Set of scopes to be used for authorizing requests, defaults to all the scopes you have.`,
 			Parse:       true,
-			Validate: func(value interface{}) error {
-				strs, ok := value.([]interface{})
+			Validate: func(value any) error {
+				strs, ok := value.([]any)
 				if ok {
 					for _, str := range strs {
 						if _, ok2 := str.(string); !ok2 {
@@ -81,7 +81,7 @@ func init() {
 					}
 				}
 				if !ok {
-					return errors.New("Must be a list of strings")
+					return errors.New("must be a list of strings")
 				}
 				return nil
 			},
@@ -97,14 +97,15 @@ func cmdConfig(cmd *cobra.Command, args []string) error {
 	}
 
 	// select formatter
-	var formatter func(interface{}) []byte
+	var formatter func(any) []byte
 	format, _ := cmd.Flags().GetString("format")
 
-	if format == "yaml" {
+	switch format {
+	case "yaml":
 		formatter = formatYAML
-	} else if format == "json" {
+	case "json":
 		formatter = formatJSON
-	} else {
+	default:
 		return fmt.Errorf("unsupported output format '%s'", format)
 	}
 
@@ -115,7 +116,8 @@ func cmdConfig(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to create output file '%s', error: %s", output, err)
 		}
 		defer file.Close()
-		cmd.SetOutput(file)
+		cmd.SetOut(file)
+		cmd.SetErr(file)
 	}
 
 	// write output

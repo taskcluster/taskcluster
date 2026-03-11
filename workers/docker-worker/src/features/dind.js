@@ -59,7 +59,7 @@ class DockerInDocker {
 
     try {
       await waitForSocket(socketPath, INIT_TIMEOUT);
-    } catch(err) {
+    } catch (err) {
       debug('Failed to start dind-service');
       throw new Error('Failed to initialize dind-service waiting for socket');
     }

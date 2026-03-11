@@ -1,8 +1,5 @@
-const fs = require('fs');
-
-const checks = [];
-const targets = [];
-const scopeExpression = { AllOf: [] };
+import path from 'path';
+import { enumFiles } from '../../utils/load-tasks.js';
 
 /**
  * Each file in this directory is expected to export `tasks` containing a list of
@@ -13,27 +10,24 @@ const scopeExpression = { AllOf: [] };
  * some foo.
  */
 
-fs.readdirSync(`${__dirname}/`).forEach(file => {
-  if (file !== 'index.js' && file.match(/\.js$/)) {
-    const exports = require(`./${file}`);
+export const loadChecks = async (dirname) => {
+  const checks = [];
+  const scopeExpressions = { AllOf: [] };
 
-    for (let task of exports.tasks) {
+  const files = enumFiles(dirname);
+
+  await Promise.all(files.map(async (file) => {
+    const { tasks, scopeExpression } = await import(path.join(dirname, file));
+    tasks.forEach(task => {
       checks.push(task);
-      for (let prov of task.provides) {
-        if (prov.startsWith('target-')) {
-          targets.push(prov.slice(7));
-        }
+
+      if (scopeExpression) {
+        scopeExpression.AllOf.push(scopeExpression);
+      } else {
+        throw new Error(`${file} has no scopeExpression`);
       }
-    }
+    });
+  }));
 
-    if (exports.scopeExpression) {
-      scopeExpression.AllOf.push(exports.scopeExpression);
-    } else {
-      throw new Error(`${file} has no scopeExpression`);
-    }
-  }
-});
-
-exports.checks = checks;
-exports.scopeExpression = scopeExpression;
-exports.targets = targets;
+  return { checks, scopeExpression: scopeExpressions };
+};

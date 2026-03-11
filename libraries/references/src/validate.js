@@ -1,6 +1,6 @@
-const regexEscape = require('regex-escape');
-const { URL } = require('url');
-const libUrls = require('taskcluster-lib-urls');
+import regexEscape from 'regex-escape';
+import { URL } from 'url';
+import libUrls from 'taskcluster-lib-urls';
 
 /**
  * Schemas that are not referenced from a service definition, but are otherwise
@@ -10,6 +10,16 @@ const UNREFERENCED_SCHEMAS = [
   // schemas used in documentation
   { service: 'github', schema: 'v1/taskcluster-github-config.json#' },
   { service: 'github', schema: 'v1/taskcluster-github-config.v1.json#' },
+
+  // schemas for webhook endpoint (server-side only, not published to clients)
+  { service: 'github', schema: 'v1/github-webhook-event.json#' },
+  { service: 'github', schema: 'v1/webhook-pull-request-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-push-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-issue-comment-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-release-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-installation-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-check-run-payload.json#' },
+  { service: 'github', schema: 'v1/webhook-ping-payload.json#' },
 
   // schemas for an unpublished, deprecated API methods
   { service: 'index', schema: 'v1/list-namespaces-request.json#' },
@@ -24,7 +34,7 @@ const UNREFERENCED_SCHEMAS = [
   { service: 'worker-manager', schema: 'v1/config-azure.json#' },
 
   // schemas for workers
-  { service: 'generic-worker', schema: 'simple_posix.json#' },
+  { service: 'generic-worker', schema: 'insecure_posix.json#' },
   { service: 'generic-worker', schema: 'multiuser_windows.json#' },
   { service: 'generic-worker', schema: 'multiuser_posix.json#' },
   { service: 'docker-worker', schema: 'v1/payload.json#' },
@@ -72,7 +82,7 @@ const forAllRefs = (content, cb) => {
   }
 };
 
-exports.validate = (references) => {
+export const validate = (references) => {
   const problems = [];
 
   // first check for some basic structural issues that will cause Ajv to
@@ -254,6 +264,8 @@ exports.validate = (references) => {
         }
       } else if (metadata.name === 'logs') {
         // Nothing to do..
+      } else if (metadata.name === 'metrics') {
+        // Nothing to do..
       } else {
         problems.push(`${filename}: unknown metadata.name ${metadata.name}`);
       }
@@ -330,11 +342,9 @@ exports.validate = (references) => {
  * An error indicating validation failed.  This has a ;-separated
  * message, or the problems themselves are in the array err.problems.
  */
-class ValidationProblems extends Error {
+export class ValidationProblems extends Error {
   constructor(problems) {
     super(problems.join('; '));
     this.problems = problems;
   }
 }
-
-exports.ValidationProblems = ValidationProblems;

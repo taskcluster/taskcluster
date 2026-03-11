@@ -9,9 +9,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/mholt/archiver/v3"
+	"github.com/taskcluster/slugid-go/slugid"
 )
 
-func WriteToFileAsJSON(obj interface{}, filename string) error {
+func WriteToFileAsJSON(obj any, filename string) error {
 	jsonBytes, err := json.MarshalIndent(obj, "", "  ")
 	if err != nil {
 		return err
@@ -26,8 +29,14 @@ func WriteToFileAsJSON(obj interface{}, filename string) error {
 	} else {
 		log.Printf("Saving file %v", filename)
 	}
-
-	return os.WriteFile(filename, append(jsonBytes, '\n'), 0644)
+	tempFilename := filename + "-" + slugid.Nice()
+	if err := os.WriteFile(tempFilename, append(jsonBytes, '\n'), 0644); err != nil {
+		return fmt.Errorf("failed to write to temp file: %w", err)
+	}
+	if err := os.Rename(tempFilename, filename); err != nil {
+		return fmt.Errorf("failed to rename temp file: %w", err)
+	}
+	return nil
 }
 
 func CalculateSHA256(file string) (hash string, err error) {
@@ -52,7 +61,7 @@ func Copy(dst, src string) (nBytes int64, err error) {
 		return
 	}
 	if !sourceFileStat.Mode().IsRegular() {
-		err = fmt.Errorf("Cannot copy %s to %s: %s is not a regular file", src, dst, src)
+		err = fmt.Errorf("cannot copy %s to %s: %s is not a regular file", src, dst, src)
 		return
 	}
 	var source *os.File
@@ -75,4 +84,71 @@ func Copy(dst, src string) (nBytes int64, err error) {
 	defer closeFile(destination)
 	nBytes, err = io.Copy(destination, source)
 	return
+}
+
+func CopyToTempFile(src string) (tempFilePath string, err error) {
+	baseName := filepath.Base(src)
+	var tempFile *os.File
+	tempFile, err = os.CreateTemp("", baseName)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err2 := tempFile.Close()
+		if err == nil {
+			err = err2
+		}
+	}()
+	tempFilePath = tempFile.Name()
+	_, err = Copy(tempFilePath, src)
+	return
+}
+
+func CreateFile(file string) (err error) {
+	var f *os.File
+	f, err = os.Create(file)
+	defer func() {
+		closeErr := f.Close()
+		if err == nil {
+			err = closeErr
+		}
+	}()
+	return
+}
+
+func CreateDir(dir string) error {
+	return os.MkdirAll(dir, 0700)
+}
+
+func Unarchive(source, destination, format string) error {
+	var unarchiver archiver.Unarchiver
+	switch format {
+	case "zip":
+		unarchiver = &archiver.Zip{}
+	case "tar.gz":
+		unarchiver = &archiver.TarGz{
+			Tar: &archiver.Tar{},
+		}
+	case "rar":
+		unarchiver = &archiver.Rar{}
+	case "tar.bz2":
+		unarchiver = &archiver.TarBz2{
+			Tar: &archiver.Tar{},
+		}
+	case "tar.xz":
+		unarchiver = &archiver.TarXz{
+			Tar: &archiver.Tar{},
+		}
+	case "tar.zst":
+		unarchiver = &archiver.TarZstd{
+			Tar: &archiver.Tar{},
+		}
+	case "tar.lz4":
+		unarchiver = &archiver.TarLz4{
+			Tar: &archiver.Tar{},
+		}
+	default:
+		return fmt.Errorf("unsupported archive format %v", format)
+	}
+	return unarchiver.Unarchive(source, destination)
 }

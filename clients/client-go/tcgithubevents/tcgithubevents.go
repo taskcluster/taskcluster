@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/github/v1/exchanges.json
+// This package was generated from the reference schema of
+// the GithubEvents service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/github/v1/exchanges.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The github service publishes a pulse
 // message for supported github events, translating Github webhook
 // events into pulse messages.
@@ -37,7 +41,7 @@
 //	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcgithubevents
 
 import (
@@ -65,7 +69,7 @@ func (binding PullRequest) ExchangeName() string {
 	return "exchange/taskcluster-github/v1/pull-request"
 }
 
-func (binding PullRequest) NewPayloadObject() interface{} {
+func (binding PullRequest) NewPayloadObject() any {
 	return new(GitHubPullRequestMessage)
 }
 
@@ -88,7 +92,7 @@ func (binding Push) ExchangeName() string {
 	return "exchange/taskcluster-github/v1/push"
 }
 
-func (binding Push) NewPayloadObject() interface{} {
+func (binding Push) NewPayloadObject() any {
 	return new(GitHubPushMessage)
 }
 
@@ -111,7 +115,7 @@ func (binding Release) ExchangeName() string {
 	return "exchange/taskcluster-github/v1/release"
 }
 
-func (binding Release) NewPayloadObject() interface{} {
+func (binding Release) NewPayloadObject() any {
 	return new(GitHubReleaseMessage)
 }
 
@@ -135,7 +139,7 @@ func (binding Rerun) ExchangeName() string {
 	return "exchange/taskcluster-github/v1/rerun"
 }
 
-func (binding Rerun) NewPayloadObject() interface{} {
+func (binding Rerun) NewPayloadObject() any {
 	return new(GitHubReRunRequestMessage)
 }
 
@@ -161,14 +165,14 @@ func (binding TaskGroupCreationRequested) ExchangeName() string {
 	return "exchange/taskcluster-github/v1/task-group-creation-requested"
 }
 
-func (binding TaskGroupCreationRequested) NewPayloadObject() interface{} {
+func (binding TaskGroupCreationRequested) NewPayloadObject() any {
 	return new(TaskGroupDefinedCreateStatus)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
-	for i := 0; i < val.NumField(); i++ {
+	for i := range val.NumField() {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag

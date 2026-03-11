@@ -1,7 +1,10 @@
-const uuid = require('uuid');
-const { ErrorReply } = require('../error-reply');
+import { v4 } from 'uuid';
+import { ErrorReply } from '../error-reply.js';
 
-exports.isProduction = process.env.NODE_ENV === 'production';
+export let isProduction = process.env.NODE_ENV === 'production';
+// needed for testing
+/** @param {boolean} value */
+export const setIsProduction = value => isProduction = value;
 
 /**
  * Create parameter validation middle-ware instance, given a mapping from
@@ -11,8 +14,15 @@ exports.isProduction = process.env.NODE_ENV === 'production';
  * Parameters not listed in `req.params` will be ignored. But parameters
  * present must match the pattern given in `options` or the request will be
  * rejected with a 400 error message.
+ *
+ * @template {Record<string, any>} TContext
+ * @param {{
+ *   entry: import('../../@types/index.d.ts').APIEntryOptions<TContext>,
+ *   errorCodes: Record<string, number>,
+ * }} options
+ * @returns {import('../../@types/index.d.ts').APIRequestErrrorHandler<{}>}
  */
-const expressError = ({ errorCodes, entry }) => {
+export const expressError = ({ errorCodes, entry }) => {
   const { name: method, cleanPayload } = entry;
   return (err, req, res, next) => {
 
@@ -23,7 +33,7 @@ const expressError = ({ errorCodes, entry }) => {
     }
 
     if (!(err instanceof ErrorReply)) {
-      const incidentId = uuid.v4();
+      const incidentId = v4();
 
       err.incidentId = incidentId;
       err.method = method;
@@ -36,8 +46,9 @@ const expressError = ({ errorCodes, entry }) => {
       req.tcContext.monitor.reportError(err);
 
       // then formulate a generic error to send to the HTTP client
+      /** @type {Record<string, any>} */
       const details = { incidentId };
-      if (!exports.isProduction) {
+      if (!isProduction) {
         if (err.stack) {
           details.error = err.stack.toString();
         } else {
@@ -45,7 +56,7 @@ const expressError = ({ errorCodes, entry }) => {
         }
       }
       const message = 'Internal Server Error, incidentId {{incidentId}}.' +
-        (exports.isProduction ?
+        (isProduction ?
           '' :
           ' Error (not shown in production):\n```\n{{error}}\n```');
 
@@ -67,6 +78,7 @@ const expressError = ({ errorCodes, entry }) => {
         (message || 'Missing message!');
       code = 'InternalServerError';
       status = 500;
+      /** @type {Error & Record<string, any>} */
       const err = new Error(newMessage);
       err.badMessage = message;
       err.badCode = code;
@@ -96,8 +108,6 @@ const expressError = ({ errorCodes, entry }) => {
       '* time:       ' + requestInfo.time,
     ].join('\n');
 
-    return res.status(errorCodes[code]).json({ code, message, requestInfo });
+    res.status(errorCodes[code]).json({ code, message, requestInfo });
   };
 };
-
-exports.expressError = expressError;

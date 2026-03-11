@@ -1,9 +1,10 @@
-const _ = require('lodash');
-const debug = require('debug')('purge-cache');
-const { APIBuilder } = require('taskcluster-lib-api');
-const taskcluster = require('taskcluster-client');
-const { paginateResults } = require('taskcluster-lib-api');
-const { splitWorkerPoolId } = require('./util');
+import _ from 'lodash';
+import debugFactory from 'debug';
+const debug = debugFactory('purge-cache');
+import { APIBuilder } from '@taskcluster/lib-api';
+import taskcluster from '@taskcluster/client';
+import { paginateResults } from '@taskcluster/lib-api';
+import { splitWorkerPoolId } from './util.js';
 
 // Common patterns URL parameters
 const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
@@ -12,7 +13,7 @@ const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
 const builder = new APIBuilder({
   title: 'Purge Cache Service',
   context: [
-    'cfg', // A taskcluster-lib-config instance
+    'cfg', // A @taskcluster/lib-config instance
     'cachePurgeCache', // An Promise for cacheing cachepurge responses
     'db',
   ],
@@ -32,7 +33,7 @@ const builder = new APIBuilder({
 });
 
 // Export API
-module.exports = builder;
+export default builder;
 
 /** Define tasks */
 builder.declare({

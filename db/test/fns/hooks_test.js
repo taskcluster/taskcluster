@@ -1,10 +1,11 @@
-const _ = require('lodash');
-const { fromNow } = require('taskcluster-client');
-const slug = require('slugid');
-const assert = require('assert').strict;
-const helper = require('../helper');
-const testing = require('taskcluster-lib-testing');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
+import _ from 'lodash';
+import tc from '@taskcluster/client';
+const { fromNow } = tc;
+import slug from 'slugid';
+import { strict as assert } from 'assert';
+import helper from '../helper.js';
+import testing from '@taskcluster/lib-testing';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'hooks' });
@@ -58,12 +59,12 @@ suite(testing.suiteName(), function() {
   };
 
   suite(`${testing.suiteName()} - hooks_last_fires`, function() {
-    helper.dbTest('create_last_fire/get_last_fires', async function(db) {
+    helper.dbTest('create_last_fire/get_last_fires_with_task_state', async function(db) {
       const now = new Date();
       const taskId = slug.nice();
       await create_last_fire(db, { task_id: taskId, task_create_time: now });
 
-      const rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
+      const rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 1);
       assert.equal(rows[0].hook_group_id, 'hook/group/id');
       assert.equal(rows[0].hook_id, 'hook-id');
@@ -88,7 +89,11 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_last_fires does not throw when no such row', async function(db) {
-      const rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
+      const rows = await db.deprecatedFns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
+      assert.equal(rows.length, 0);
+    });
+    helper.dbTest('get_last_fires_with_task_state does not throw when no such row', async function(db) {
+      const rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 0);
     });
 
@@ -97,14 +102,66 @@ suite(testing.suiteName(), function() {
         await create_last_fire(db, { task_id: slug.nice() });
       }
 
-      let rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 4, 0);
+      let rows = await db.deprecatedFns.get_last_fires('hook/group/id', 'hook-id', 4, 0);
       assert.equal(rows.length, 4);
 
-      rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 4, 4);
+      rows = await db.deprecatedFns.get_last_fires('hook/group/id', 'hook-id', 4, 4);
       assert.equal(rows.length, 4);
 
-      rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 4, 8);
+      rows = await db.deprecatedFns.get_last_fires('hook/group/id', 'hook-id', 4, 8);
       assert.equal(rows.length, 2);
+    });
+
+    helper.dbTest('get_last_fires_with_task_state full, pagination', async function(db) {
+      await helper.withDbClient(async client => {
+        const createTask = async (db, options = {}) => {
+          const taskId = options.taskId || slug.nice();
+          await client.query(
+            'select create_task_projid($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18);',
+            [
+              taskId, // task_id text,
+              'prov/wt', // task_queue_id text,
+              'hooks', // scheduler_id text,
+              'proj', // project_id text,
+              options.taskGroupId || slug.nice(), // task_group_id text,
+              '[]', // dependencies jsonb,
+              'all-resolved', // requires task_requires,
+              '[]', // routes jsonb,
+              'high', // priority task_priority,
+              5, // retries integer,
+              new Date(), // created timestamptz,
+              new Date(), // deadline timestamptz,
+              new Date(), // expires timestamptz,
+              '[]', // scopes jsonb,
+              '{}', // payload jsonb,
+              '{}', // metadata jsonb,
+              '{}', // tags jsonb,
+              '{}', // extra jsonb
+            ],
+          );
+          await client.query(
+            'update tasks set runs = $1 where task_id = $2;',
+            [JSON.stringify(options.runs) || '[]', taskId],
+          );
+        };
+        for (let i = 0; i < 10; i++) {
+          const taskId = slug.nice();
+          await create_last_fire(db, { task_id: taskId });
+          await createTask(db, { taskId, runs: [{ state: 'failed' }] });
+        }
+
+        let rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 4, 0);
+        assert.equal(rows.length, 4);
+        assert.equal(rows[0].task_state, 'failed');
+
+        rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 4, 4);
+        assert.equal(rows.length, 4);
+        assert.equal(rows[0].task_state, 'failed');
+
+        rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 4, 8);
+        assert.equal(rows.length, 2);
+        assert.equal(rows[0].task_state, 'failed');
+      });
     });
 
     helper.dbTest('delete_last_fires', async function(db) {
@@ -113,10 +170,10 @@ suite(testing.suiteName(), function() {
         return create_last_fire(db, { task_id: taskId });
       }));
 
-      let rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
+      let rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 5);
       await db.fns.delete_last_fires('hook/group/id', 'hook-id');
-      rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
+      rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 0);
     });
 
@@ -131,7 +188,7 @@ suite(testing.suiteName(), function() {
 
       await db.fns.expire_last_fires();
 
-      const rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
+      const rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 3);
     });
 
@@ -143,7 +200,7 @@ suite(testing.suiteName(), function() {
       const count = (await db.fns.expire_last_fires())[0].expire_last_fires;
       assert.equal(count, 2);
 
-      const rows = await db.fns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
+      const rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 1);
     });
   });
@@ -474,6 +531,41 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('delete_hook does not throw when no such row', async function(db) {
       await db.fns.delete_hook('hook/group/id', 'hook-id');
+    });
+
+    helper.dbTest('get_hook_groups returns unique groups', async function(db) {
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/1', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/2', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'baz', hook_id: 'hook-id/3', next_scheduled_date: fromNow('1 day') });
+
+      let rows = await db.fns.get_hook_groups();
+      assert.equal(rows.length, 2);
+      assert.equal(rows[0].hook_group_id, 'baz');
+      assert.equal(rows[1].hook_group_id, 'foo');
+    });
+  });
+
+  suite(`${testing.suiteName()} - hooks audit history`, function() {
+    helper.dbTest('insert_hooks_audit_history creates audit entry', async function(db) {
+      await db.fns.insert_hooks_audit_history(
+        'hook/1',
+        'client-1',
+        'created',
+      );
+
+      const rows = await helper.withDbClient(async client => {
+        const result = await client.query(`
+          SELECT client_id, action_type, created
+          FROM audit_history
+          WHERE entity_id = $1 AND entity_type = $2
+        `, ['hook/1', 'hook']);
+        return result.rows;
+      });
+
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].client_id, 'client-1');
+      assert.equal(rows[0].action_type, 'created');
+      assert(rows[0].created instanceof Date);
     });
   });
 });

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcauth"
 )
 
 type Auth struct {
@@ -44,6 +44,7 @@ func (auth *Auth) WebsocktunnelToken(wstAudience, wstClientId string) (*tcauth.W
 /////////////////////////////////////////////////
 
 func NewAuth(t *testing.T) *Auth {
+	t.Helper()
 	a := &Auth{}
 	return a
 }

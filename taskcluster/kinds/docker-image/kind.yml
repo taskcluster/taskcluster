@@ -1,0 +1,20 @@
+meta:
+  - &uv_version 0.10.0
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - taskgraph.transforms.docker_image:transforms
+  - taskgraph.transforms.cached_tasks:transforms
+  - taskgraph.transforms.task:transforms
+
+tasks:
+  browser-test: {}
+  ci:
+    args:
+      UV_VERSION: *uv_version
+  rabbit-test: {}
+  python:
+    args:
+      PYTHON_VERSIONS: "3.14 3.13 3.12 3.11 3.10 3.9"
+      UV_VERSION: *uv_version

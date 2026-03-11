@@ -1,7 +1,11 @@
-const path = require('path');
-const { omit } = require('lodash');
-const Method = require('../src/Method');
-const assert = require('assert').strict;
+import path from 'path';
+import _ from 'lodash';
+import Method from '../src/Method.js';
+import { strict as assert } from 'assert';
+
+const { omit } = _;
+
+const __filename = new URL('', import.meta.url).pathname;
 
 suite(path.basename(__filename), function() {
   suite('_check', function() {

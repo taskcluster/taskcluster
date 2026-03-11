@@ -1,10 +1,10 @@
-const jparam = require('json-parameterization');
-const _ = require('lodash');
-const slugid = require('slugid');
-const jsone = require('json-e');
-const tc = require('taskcluster-client');
-const TopoSort = require('topo-sort');
-const { GITHUB_TASKS_FOR } = require('./constants');
+import jparam from 'json-parameterization';
+import _ from 'lodash';
+import slugid from 'slugid';
+import jsone from 'json-e';
+import tc from '@taskcluster/client';
+import TopoSort from 'topo-sort';
+import { GITHUB_TASKS_FOR } from './constants.js';
 
 // Assert that only scope-valid characters are in branches
 const branchTest = branch => {
@@ -180,7 +180,7 @@ class VersionOne extends TcYaml {
   createScopes(cfg, config, payload) {
     config.scopes = [];
 
-    if (payload.tasks_for === GITHUB_TASKS_FOR.PULL_REQUEST) {
+    if ([GITHUB_TASKS_FOR.PULL_REQUEST, GITHUB_TASKS_FOR.ISSUE_COMMENT].includes(payload.tasks_for)) {
       config.scopes = [
         `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
       ];
@@ -306,4 +306,4 @@ class VersionOne extends TcYaml {
   }
 }
 
-module.exports = TcYaml;
+export default TcYaml;

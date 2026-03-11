@@ -1,6 +1,8 @@
-const Relations = require('../src/Relations');
-const path = require('path');
-const assert = require('assert').strict;
+import Relations from '../src/Relations.js';
+import path from 'path';
+import { strict as assert } from 'assert';
+
+const __filename = new URL('', import.meta.url).pathname;
 
 suite(path.basename(__filename), function() {
   suite('checking', function() {

@@ -1,18 +1,20 @@
-const appRootDir = require('app-root-dir');
-const {
+import appRootDir from 'app-root-dir';
+
+import {
   dockerPull,
   dockerImages,
   dockerRegistryCheck,
   ensureTask,
   dockerPush,
   execCommand,
-} = require('../../utils');
-const path = require('path');
+} from '../../utils/index.js';
+
+import path from 'path';
 
 /**
  * This builds generic worker docker image containing all tools required to run generic worker
  */
-module.exports = ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
+export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
   const sourceDir = appRootDir.get();
 
   ensureTask(tasks, {
@@ -87,7 +89,7 @@ module.exports = ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
       await execCommand({
         command,
         dir: sourceDir,
-        logfile: path.join(logsDir, 'docker-build.log'),
+        logfile: path.join(logsDir, 'generic-worker-docker-build.log'),
         utils,
         env: { DOCKER_BUILDKIT: 1, ...process.env },
       });
@@ -126,7 +128,7 @@ module.exports = ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'generic-worker-docker-push.log'),
         tag,
         utils,
         baseDir,

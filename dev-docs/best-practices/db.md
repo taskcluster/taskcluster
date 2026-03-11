@@ -16,7 +16,7 @@ have isolated these into utility functions and tested them thoroughly.  If you
 find a need for more utility functions, add them, but be careful to test lots
 of cases, including backslashes.  In particular, note that there is an
 "alternative" string-escaping syntax `E'..'` documented at
-https://www.postgresql.org/docs/11/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS.
+https://www.postgresql.org/docs/15/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS.
 
 **Avoid Selecting Star**.  Using `select * from`, from a table which may someday
 grow additional columns, is likely to lead to unhappy surprises when data
@@ -27,7 +27,7 @@ timezone, so it could mean anything!  Use `timestamptz` instead.  This is
 enforced in CI.
 
 **Transactions Aren't Magic**. Bookmark [this mind-blowing
-page](https://www.postgresql.org/docs/11/transaction-iso.html), noting that
+page](https://www.postgresql.org/docs/15/transaction-iso.html), noting that
 *read committed* is the default and what we use for all transactions.  That
 means that even inside a transaction, two read operations may return different
 data.  Where necessary, use locking primitives such as `select .. for update`
@@ -37,7 +37,7 @@ regard.
 
 **Prefer JSONB over JSON**.  Use JSONB data types, and where possible use `jsonb_`
 utility functions.  The
-[docs](https://www.postgresql.org/docs/11/datatype-json.html) provide a good
+[docs](https://www.postgresql.org/docs/15/datatype-json.html) provide a good
 description of the difference between the types.
 
 **Always Use Objects for JSON data**.  The node-pg library has no context to
@@ -50,7 +50,7 @@ JSON-encode the value before passing it to `db.fns.<function>(..)`.  See
 **Utility Functions**.
 
 * `entity_buf_{encode,decode}` encode and decocde the `__buf`+base64 encoding
-taskcluster-lib-postgres uses to store binary values.
+@taskcluster/lib-postgres uses to store binary values.
 * `sha512(t)` computes the sha512 hash of a value
 * `uuid_to_slugid(uuid)` and `slugid_to_uuid(slugid)` convert between a uuid
 string and a slugid.  While some entities tables stored slugIds in UUID format,
@@ -65,7 +65,7 @@ Use your own discretion.
 ## Pagination
 
 See the [pagination section](https://github.com/taskcluster/taskcluster/tree/main/libraries/postgres#pagination)
-in taskcluster-lib-postgres.
+in @taskcluster/lib-postgres.
 
 ## Testing
 
@@ -80,12 +80,22 @@ then a service outage may occur while upgrading to the new version.  And if
 corner cases for the DB functions are not carefully tested, we may cause data
 loss when those cases occur in production.
 
+## Creating new versions
+
+To create new version and test for it you can run:
+
+```shell
+yarn db:new
+```
+
+This will create `db/versions/<next_version>.yml` and `db/test/versions/<next_version>_test.js` files.
+
 ## Rebasing
 
 As many people are writing versions, it's common to need to re-number a DB version. There is a temporary script that can help:
 
 ```shell
-node infrastructure/renumber-db-version.js <oldversion> <newversion>
+yarn db:renumber <oldversion> <newversion>
 ```
 
 ---

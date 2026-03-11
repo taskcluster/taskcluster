@@ -20,4 +20,4 @@ class Denier {
   }
 }
 
-module.exports = Denier;
+export default Denier;

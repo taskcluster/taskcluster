@@ -2,10 +2,11 @@ package artifacts
 
 import (
 	"fmt"
+	"log"
 
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v50/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v50/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
 )
 
 type ErrorArtifact struct {
@@ -15,13 +16,17 @@ type ErrorArtifact struct {
 	Reason  string
 }
 
-func (errArtifact *ErrorArtifact) ProcessResponse(response interface{}, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
-	logger.Errorf("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", errArtifact.Name, errArtifact.Path, errArtifact.Message, errArtifact.Reason, errArtifact.Expires)
+func (errArtifact *ErrorArtifact) ProcessResponse(response any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) error {
+	printLog := logger.Errorf
+	if errArtifact.Optional {
+		printLog = log.Printf
+	}
+	printLog("Uploading error artifact %v from file %v with message %q, reason %q and expiry %v", errArtifact.Name, errArtifact.Path, errArtifact.Message, errArtifact.Reason, errArtifact.Expires)
 	// TODO: process error response
 	return nil
 }
 
-func (errArtifact *ErrorArtifact) RequestObject() interface{} {
+func (errArtifact *ErrorArtifact) RequestObject() any {
 	return &tcqueue.ErrorArtifactRequest{
 		Expires:     errArtifact.Expires,
 		Message:     errArtifact.Message,
@@ -30,7 +35,7 @@ func (errArtifact *ErrorArtifact) RequestObject() interface{} {
 	}
 }
 
-func (errArtifact *ErrorArtifact) ResponseObject() interface{} {
+func (errArtifact *ErrorArtifact) ResponseObject() any {
 	return new(tcqueue.ErrorArtifactResponse)
 }
 

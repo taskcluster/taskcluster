@@ -1,45 +1,46 @@
-const mkdirp = require('mkdirp');
-const rimraf = require('rimraf');
-const path = require('path');
-const fs = require('fs');
+import mkdirp from 'mkdirp';
+import { rimraf } from 'rimraf';
+import path from 'path';
+import fs from 'fs/promises';
 
-const writeUriStructured = ({ directory, serializable }) => {
-  rimraf.sync(directory);
+export const writeUriStructured = async ({ directory, serializable }) => {
+  // Delete contents of directory rather than the directory itself
+  // This is important when running as non-root user and the directory
+  // is at the filesystem root (e.g., /references)
+  await rimraf(path.join(directory, '*'), { glob: true });
 
   const dirs = new Set();
   for (let { filename, content } of serializable) {
     const pathname = path.join(directory, filename);
     const dirname = path.dirname(pathname);
     if (!dirs.has(dirname)) {
-      mkdirp.sync(dirname);
+      await mkdirp(dirname);
       dirs.add(dirname);
     }
-    fs.writeFileSync(pathname, JSON.stringify(content, null, 2));
+    await fs.writeFile(pathname, JSON.stringify(content, null, 2));
   }
 };
 
-const readUriStructured = ({ directory }) => {
+export const readUriStructured = async ({ directory }) => {
   const files = [];
 
   const queue = ['.'];
   while (queue.length) {
     const filename = queue.shift();
     const fqfilename = path.join(directory, filename);
-    const st = fs.lstatSync(fqfilename);
-    if (st.isDirectory()) {
-      for (let dentry of fs.readdirSync(fqfilename)) {
+    if ((await fs.lstat(fqfilename)).isDirectory()) {
+      const entries = await fs.readdir(fqfilename);
+      for (let dentry of entries) {
         queue.push(path.join(filename, dentry));
       }
     } else {
+      const content = await fs.readFile(fqfilename);
       files.push({
         filename,
-        content: JSON.parse(fs.readFileSync(fqfilename)),
+        content: JSON.parse(content),
       });
     }
   }
 
   return files;
 };
-
-exports.writeUriStructured = writeUriStructured;
-exports.readUriStructured = readUriStructured;

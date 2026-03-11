@@ -22,7 +22,7 @@ type proxy struct {
 
 var debug = false
 
-func (p *proxy) logf(format string, v ...interface{}) {
+func (p *proxy) logf(format string, v ...any) {
 	if debug {
 		fmt.Printf(format+"\n", v...)
 	}

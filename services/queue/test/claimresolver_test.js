@@ -1,10 +1,11 @@
-const debug = require('debug')('test:claim-work');
-const assert = require('assert');
-const slugid = require('slugid');
-const taskcluster = require('taskcluster-client');
-const helper = require('./helper');
-const testing = require('taskcluster-lib-testing');
-const { LEVELS } = require('taskcluster-lib-monitor');
+import debugFactory from 'debug';
+const debug = debugFactory('test:claim-work');
+import assert from 'assert';
+import slugid from 'slugid';
+import taskcluster from '@taskcluster/client';
+import helper from './helper.js';
+import testing from '@taskcluster/lib-testing';
+import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -12,7 +13,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.withPollingServices(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);
-  helper.withQueueService(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
@@ -40,6 +40,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   suiteSetup(async function() {
     monitor = await helper.load('monitor');
   });
+
+  const checkMetricExists = async (metricName, labelName, labelValue) => {
+    const metrics = await monitor.manager._prometheus.metricsJson();
+    const metric = metrics.find(({ name }) => name === metricName);
+    assert(metric, `${metricName} metric should exist`);
+    const labelEntry = metric.values.find(v => v.labels[labelName] === labelValue);
+    assert(labelEntry, `${metricName} should have ${labelName}=${labelValue} label`);
+    assert(labelEntry.value >= 1, `${metricName} counter should be incremented for ${labelValue}`);
+  };
 
   test('createTask , claimWork, claim expires, retried', async () => {
     let taskId = slugid.v4();
@@ -111,6 +120,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         });
       },
       100, 250);
+
+    await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'claim-expired');
 
     await helper.stopPollingService();
   });

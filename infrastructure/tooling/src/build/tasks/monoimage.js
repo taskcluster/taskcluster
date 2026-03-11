@@ -1,5 +1,6 @@
-const appRootDir = require('app-root-dir');
-const {
+import appRootDir from 'app-root-dir';
+
+import {
   dockerPull,
   dockerImages,
   dockerRegistryCheck,
@@ -8,11 +9,11 @@ const {
   execCommand,
   writeRepoFile,
   REPO_ROOT,
-} = require('../../utils');
-const path = require('path');
-const util = require('util');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
+} from '../../utils/index.js';
+
+import path from 'path';
+import { rimraf } from 'rimraf';
+import mkdirp from 'mkdirp';
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 
@@ -99,7 +100,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       await execCommand({
         command,
         dir: sourceDir,
-        logfile: path.join(logsDir, 'docker-build.log'),
+        logfile: path.join(logsDir, 'monoimage-docker-build.log'),
         utils,
         env: { DOCKER_BUILDKIT: 1, ...process.env },
       });
@@ -162,7 +163,9 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
       await writeRepoFile('temp/devel-image/Dockerfile', [
         `FROM ${requirements['monoimage-docker-image']}`,
+        'USER root',
         'RUN npm install --global nodemon',
+        'USER 1000',
         'RUN yarn install && yarn cache clean --all',
       ].join('\n'));
 
@@ -170,7 +173,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
         await execCommand({
           command: ['docker', 'build', '--progress', 'plain', '--tag', tag, '.'],
           dir: dockerDir,
-          logfile: path.join(logsDir, 'docker-build-devel.log'),
+          logfile: path.join(logsDir, 'monoimage-devel-docker-build.log'),
           utils,
           env: { DOCKER_BUILDKIT: 1, ...process.env },
         });
@@ -212,7 +215,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'monoimage-docker-push.log'),
         tag,
         utils,
         baseDir,
@@ -253,7 +256,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       }
 
       await dockerPush({
-        logfile: path.join(logsDir, 'docker-push.log'),
+        logfile: path.join(logsDir, 'monoimage-devel-docker-push.log'),
         tag,
         utils,
         baseDir,
@@ -293,4 +296,4 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
   });
 };
 
-module.exports = generateMonoimageTasks;
+export default generateMonoimageTasks;

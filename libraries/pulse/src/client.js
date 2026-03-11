@@ -1,8 +1,8 @@
-const events = require('events');
-const amqplib = require('amqplib');
-const assert = require('assert');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const URL = require('url');
+import events from 'events';
+import amqplib from 'amqplib';
+import assert from 'assert';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import URL from 'url';
 
 let clientCounter = 0;
 
@@ -55,11 +55,11 @@ MonitorManager.register({
  * * recycleInterval (ms; default 1h)
  * * retirementDelay (ms; default 30s)
  * * minReconnectionInterval (ms; default 15s)
- * * monitor (taskcluster-lib-monitor instance)
+ * * monitor (@taskcluster/lib-monitor instance)
  *
  * The pulse namespace for this user is available as `client.namespace`.
  */
-class Client extends events.EventEmitter {
+export class Client extends events.EventEmitter {
   constructor({ namespace, recycleInterval, retirementDelay, minReconnectionInterval, monitor, credentials,
     username, password, hostname, vhost, connectionString }) {
     super();
@@ -269,8 +269,6 @@ class Client extends events.EventEmitter {
   }
 }
 
-exports.Client = Client;
-
 let nextConnectionId = 1;
 
 /**
@@ -308,7 +306,7 @@ let nextConnectionId = 1;
  *  `retiring`.
  *
  */
-class Connection extends events.EventEmitter {
+export class Connection extends events.EventEmitter {
   constructor(monitor, retirementDelay) {
     super();
 
@@ -412,5 +410,3 @@ class Connection extends events.EventEmitter {
     }, this.retirementDelay);
   }
 }
-
-exports.Connection = Connection;

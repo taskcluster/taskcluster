@@ -1,8 +1,9 @@
-const assert = require('assert');
-const SchemaSet = require('../');
-const debug = require('debug')('test');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
+import assert from 'assert';
+import SchemaSet from '../src/index.js';
+import debugFactory from 'debug';
+const debug = debugFactory('test');
+import libUrls from 'taskcluster-lib-urls';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), () => {
   const rootUrl = libUrls.testRootUrl();
@@ -135,6 +136,6 @@ suite(testing.suiteName(), () => {
       { value: 42, unwanted_value: 1729 },
       libUrls.schema(rootUrl, 'whatever', '/v1/default-schema'));
     assert.notEqual(error, null);
-    assert(error.includes('data should NOT have additional properties: "unwanted_value"'));
+    assert(error.includes('data must NOT have additional properties: "unwanted_value"'));
   });
 });

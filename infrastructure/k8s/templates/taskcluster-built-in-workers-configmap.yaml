@@ -1,0 +1,16 @@
+{{- if not (has "configmap" .Values.skipResourceTypes) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: taskcluster-built-in-workers
+  labels:
+    app.kubernetes.io/name: taskcluster-built-in-workers
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-built-in-workers-secrets
+    app.kubernetes.io/part-of: taskcluster
+data:
+  TASKCLUSTER_ROOT_URL: '{{ if typeIs "<nil>" .Values.rootUrl }}{{ else }}{{ if typeIs "string" .Values.rootUrl }}{{ .Values.rootUrl }}{{ else }}{{ .Values.rootUrl | toJson }}{{ end }}{{ end }}'
+  TASKCLUSTER_CLIENT_ID: '{{ if typeIs "<nil>" .Values.built_in_workers.taskcluster_client_id }}{{ else }}{{ if typeIs "string" .Values.built_in_workers.taskcluster_client_id }}{{ .Values.built_in_workers.taskcluster_client_id }}{{ else }}{{ .Values.built_in_workers.taskcluster_client_id | toJson }}{{ end }}{{ end }}'
+  LEVEL: '{{ if typeIs "<nil>" .Values.built_in_workers.level }}{{ else }}{{ if typeIs "string" .Values.built_in_workers.level }}{{ .Values.built_in_workers.level }}{{ else }}{{ .Values.built_in_workers.level | toJson }}{{ end }}{{ end }}'
+  DEBUG: '{{ if typeIs "<nil>" .Values.built_in_workers.debug }}{{ else }}{{ if typeIs "string" .Values.built_in_workers.debug }}{{ .Values.built_in_workers.debug }}{{ else }}{{ .Values.built_in_workers.debug | toJson }}{{ end }}{{ end }}'
+{{- end }}

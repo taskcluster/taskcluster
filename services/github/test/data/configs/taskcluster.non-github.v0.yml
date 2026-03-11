@@ -8,7 +8,7 @@ tasks:
   - provisionerId: aprovisioner
     workerType: worker
     payload:
-      image: "ubuntu:latest"
+      image: "ubuntu:jammy"
       command:
         - test
     metadata:
@@ -21,7 +21,7 @@ tasks:
     extra:
         mercurial: true
     payload:
-      image: "ubuntu:latest"
+      image: "ubuntu:jammy"
       command:
         - test
     metadata:

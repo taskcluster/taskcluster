@@ -1,8 +1,8 @@
-const DataLoader = require('dataloader');
-const sift = require('../utils/sift');
-const ConnectionLoader = require('../ConnectionLoader');
+import DataLoader from 'dataloader';
+import sift from '../utils/sift.js';
+import ConnectionLoader from '../ConnectionLoader.js';
 
-module.exports = ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const provisioner = new DataLoader(provisionerIds =>
     Promise.all(
       provisionerIds.map(async provisionerId => {

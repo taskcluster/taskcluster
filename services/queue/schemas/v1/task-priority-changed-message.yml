@@ -1,0 +1,21 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Task Priority Changed Message"
+description: |
+  Message emitted whenever `changeTaskPriority` updates
+  the priority of an unresolved task.
+type: object
+properties:
+  version: {$const: message-version}
+  status: {$ref: "task-status.json#"}
+  oldPriority:
+    type: string
+    enum: {$const: task-priorities}
+  newPriority:
+    type: string
+    enum: {$const: task-priorities}
+additionalProperties: false
+required:
+  - version
+  - status
+  - oldPriority
+  - newPriority

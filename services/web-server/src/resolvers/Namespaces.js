@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   Query: {
     namespaces(parent, { namespace, connection, filter }, { loaders }) {
       return loaders.namespaces.load({ namespace, connection, filter });

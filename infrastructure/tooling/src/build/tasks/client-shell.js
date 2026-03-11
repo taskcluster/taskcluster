@@ -1,27 +1,19 @@
-const path = require('path');
-const {
-  ensureTask,
-  execCommand,
-  REPO_ROOT,
-} = require('../../utils');
+import path from 'path';
+import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build client-shell artifacts',
     requires: ['clean-artifacts-dir'],
     provides: ['client-shell-artifacts'],
     run: async (requirements, utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
-      await execCommand({
-        dir: artifactsDir,
-        command: ['go', 'install', 'github.com/goreleaser/goreleaser@latest'],
-        utils,
-      });
-
       let goreleaserCmd = [
+        'go',
+        'tool',
         'goreleaser',
         'release',
-        '--rm-dist',
+        '--clean',
       ];
 
       if (cmdOptions.staging || !cmdOptions.push) {
@@ -46,14 +38,14 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
           'taskcluster-linux-arm64.tar.gz',
           'taskcluster-freebsd-amd64.tar.gz',
           'taskcluster-freebsd-arm64.tar.gz',
-          'taskcluster-windows-386.zip',
+          'taskcluster-windows-arm64.zip',
           'taskcluster-windows-amd64.zip',
           artifactsDir,
         ],
         utils,
       });
 
-      const osarch = 'linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/386 freebsd/amd64 freebsd/arm64';
+      const osarch = 'linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64 freebsd/amd64 freebsd/arm64';
       const artifacts = osarch.split(' ')
         .map(osarch => {
           const [os, arch] = osarch.split('/');

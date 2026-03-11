@@ -16,7 +16,7 @@ echo "Building worker-runner:"
 build linux amd64
 build linux arm64
 build windows amd64
-build windows 386
+build windows arm64
 build darwin amd64
 build darwin arm64
 build freebsd amd64

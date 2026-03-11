@@ -1,8 +1,10 @@
 node_modules
+install-state.gz
 .eslintcache
 user-build-config.yml
 *.log
 .idea
+.vscode
 user-config.*
 dev-config.*
 /artifacts/
@@ -34,6 +36,7 @@ _testmain.go
 
 # Coverage report
 /coverage.report
+coverage
 
 # Created by generic worker tests
 /downloads/
@@ -48,6 +51,7 @@ worker_type_definitions
 generic-worker.config
 directory-caches.json
 file-caches.json
+d2g-image-cache.json
 tasks-resolved-count.txt
 current-task-user.json
 next-task-user.json

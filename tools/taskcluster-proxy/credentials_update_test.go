@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type RoutesTest struct {
@@ -96,6 +96,7 @@ func (routesTest *RoutesTest) request(method string, content []byte) (res *httpt
 }
 
 func NewRoutesTest(t *testing.T) *RoutesTest {
+	t.Helper()
 	return &RoutesTest{
 		Routes: Routes{
 			Client: tcclient.Client{

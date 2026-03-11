@@ -1,15 +1,21 @@
 {
-  "name": "taskcluster-lib-validate",
+  "name": "@taskcluster/lib-validate",
   "private": true,
-  "version": "50.1.1",
+  "version": "97.1.0",
   "author": "Brian Stack <bstack@mozilla.com>",
   "description": "Validate schemas for Taskcluster projects",
   "license": "MPL-2.0",
+  "type": "module",
   "scripts": {
     "coverage": "c8 yarn test",
     "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "lint": "eslint src/*.js test/*.js",
     "test": "mocha test/*_test.js"
   },
-  "main": "./src/index.js"
+  "main": "./src/index.js",
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.57.0",
+    "mocha": "^10.8.2"
+  }
 }

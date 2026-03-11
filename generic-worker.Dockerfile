@@ -1,27 +1,40 @@
-# Simple generic worker
+# Insecure generic worker
 
-FROM golang:1.19.9-buster as build
+FROM golang:1.26.1-alpine AS build
+
+ENV CGO_ENABLED=0
 
 WORKDIR /app
 
 # build depends on the .git
 COPY . .
 
-ENV CGO_ENABLED=0
-RUN cd tools/livelog && go build -o /livelog && cd ..
-RUN cd tools/worker-runner && go build -o /start-worker ./cmd/start-worker && cd ..
-RUN cd tools/taskcluster-proxy && go build -o /taskcluster-proxy && cd ..
-RUN cd clients/client-shell && go build -o /taskcluster && cd ../..
-RUN cd workers/generic-worker && \
-  ./build.sh && \
-  mv generic-worker-multiuser-* /generic-worker-multiuser && \
-  mv generic-worker-simple-* /generic-worker
+RUN apk add --no-cache bash git
 
+WORKDIR /app/tools/livelog
+RUN go build -o /livelog
 
-FROM ubuntu:kinetic
+WORKDIR /app/tools/worker-runner
+RUN go build -o /start-worker ./cmd/start-worker
 
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y ca-certificates curl gzip
+WORKDIR /app/tools/taskcluster-proxy
+RUN go build -o /taskcluster-proxy
+
+WORKDIR /app/clients/client-shell
+RUN go build -o /taskcluster
+
+WORKDIR /app/workers/generic-worker
+RUN ./build.sh && \
+  mv generic-worker-multiuser-* /generic-worker && \
+  mv generic-worker-insecure-* /generic-worker-insecure
+
+FROM ubuntu:jammy
+
+RUN apt-get update && apt-get install -y \
+  ca-certificates \
+  curl \
+  gzip \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /livelog /taskcluster-proxy /start-worker /taskcluster /generic-worker* /usr/local/bin/
 RUN ls -la /usr/local/bin
@@ -37,10 +50,10 @@ ARG DOCKER_FLOW_VERSION
 RUN if [ -n "${DOCKER_FLOW_VERSION}" ]; then \
     echo "${DOCKER_FLOW_VERSION}" > /version.json; \
 else \
-    echo \{\"version\": \"50.1.1\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > /version.json; \
+    echo \{\"version\": \"97.1.0\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > /version.json; \
 fi
 
-VOLUME /etc/generic-worker/config.json
+VOLUME /etc/generic-worker
 VOLUME /var/local/generic-worker
 
 COPY workers/entrypoint.sh /entrypoint.sh

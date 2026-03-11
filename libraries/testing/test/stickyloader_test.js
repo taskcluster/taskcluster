@@ -1,6 +1,6 @@
-const _ = require('lodash');
-const assert = require('assert');
-const { stickyLoader, suiteName } = require('../');
+import _ from 'lodash';
+import assert from 'assert';
+import { stickyLoader, suiteName } from '../src/index.js';
 
 suite(suiteName(), function() {
   let loads, sticky;
@@ -68,10 +68,10 @@ suite(suiteName(), function() {
     const first = await sticky('abc');
     sticky.save();
     const second = await sticky('def');
-    assert(await sticky('abc') === first, 'abc should be the same object');
+    assert((await sticky('abc')) === first, 'abc should be the same object');
     (await sticky('abc')).updated = true;
     sticky.restore();
-    assert(await sticky('def') !== second, 'def should be a different object');
+    assert((await sticky('def')) !== second, 'def should be a different object');
     assert((await sticky('abc')).updated, 'in-place modification to abc persists');
   });
 
@@ -79,9 +79,9 @@ suite(suiteName(), function() {
     sticky.inject('abc', 'AAA');
     sticky.save();
     sticky.inject('abc', 'BBB');
-    assert(await sticky('abc') === 'BBB', 'should get the updated injected value');
+    assert((await sticky('abc')) === 'BBB', 'should get the updated injected value');
     sticky.restore();
-    assert(await sticky('abc') === 'AAA', 'should get the original injected value');
+    assert((await sticky('abc')) === 'AAA', 'should get the original injected value');
   });
 
   test('save/restore with remove', async function() {
@@ -90,7 +90,7 @@ suite(suiteName(), function() {
     sticky.remove('abc');
     assert(_.isEqual(await sticky('abc'), { component: 'abc' }), 'should load abc from loader');
     sticky.restore();
-    assert(await sticky('abc') === 'AAA', 'should get the original injected value');
+    assert((await sticky('abc')) === 'AAA', 'should get the original injected value');
   });
 
   test('save/restore with cfg', async function() {

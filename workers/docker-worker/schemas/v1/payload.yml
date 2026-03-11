@@ -13,6 +13,7 @@ definitions:
         enum:
           - file
           - directory
+          - volume
       path:
         title: Location of artifact in container, as an absolute path.
         type: string
@@ -114,6 +115,15 @@ properties:
           configured to enable it.
         type: boolean
         default: false
+      disableSeccomp:
+        title: Container does not have a seccomp profile set. NO LONGER SUPPORTED IN DOCKER WORKER.
+        description: >-
+          Allowed a task to run without seccomp, similar to running docker with
+          `--security-opt seccomp=unconfined`.  This only worked for worker-types
+          configured to enable it. NO LONGER SUPPORTED IN DOCKER WORKER, but payload
+          still includes feature in order for d2g to work with it.
+        type: boolean
+        default: false
       devices:
         title: Devices to be attached to task containers
         description: >-
@@ -167,7 +177,6 @@ properties:
       Maximum time the task container can run in seconds.
     multipleOf: 1
     minimum: 1
-    maximum: 86400
   onExitStatus:
     title: Exit status handling
     description: >-
@@ -179,7 +188,7 @@ properties:
       retry:
         title: Retriable exit statuses
         description: >-
-          If the task exists with a retriable exit status, the task will be
+          If the task exits with a retriable exit status, the task will be
           marked as an exception and a new run created.
         type: array
         items:
@@ -188,7 +197,7 @@ properties:
       purgeCaches:
         title: Purge caches exit status
         description: >-
-          If the task exists with a purge caches exit status, all caches
+          If the task exits with a purge caches exit status, all caches
           associated with the task will be purged.
         type: array
         items:
@@ -199,10 +208,19 @@ properties:
   artifacts:
     type: object
     title: Artifacts
-    description: >-
-      Artifact upload map example: ```{"public/build.tar.gz": {"path":
-      "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z",
-      "type": "file"}}```
+    description: |-
+      Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
+      Artifacts can be an individual `file`, a `directory` containing
+      potentially multiple files with recursively included subdirectories,
+      or a `volume` (d2g only) which will create a volume mount from the
+      host to the running container. Unlike `directory` artifacts, the
+      `volume` directory will already exist as the task starts. Since the
+      artifacts will be created directly on the host, they do not need to
+      be copied from the container to the host prior to being published,
+      so perform more efficiently, and simplify the d2g-generated task payload.
+      Moreover, in the case of time-critical spot terminations, tasks have
+      more chance of successfully publishing volume artifacts than directory
+      artifacts, due to the efficiency gain.
     additionalProperties:
       $ref: '#/definitions/artifact'
   supersederUrl:
@@ -243,19 +261,6 @@ properties:
         title: Artifact uploads
         description: ''
         default: true
-      dind:
-        type: boolean
-        title: Docker in Docker
-        description: >-
-          Runs docker-in-docker and binds `/var/run/docker.sock` into the
-          container. Doesn't allow privileged mode, capabilities or host volume
-          mounts.
-        default: false
-      dockerSave:
-        type: boolean
-        title: Docker save
-        description: Uploads docker images as artifacts
-        default: false
       interactive:
         type: boolean
         title: Docker Exec Interactive

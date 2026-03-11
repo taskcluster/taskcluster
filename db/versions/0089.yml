@@ -1,0 +1,24 @@
+version: 89
+description: github checks fetching to use indexes
+methods:
+  get_github_check_by_task_id:
+    deprecated: true
+  get_github_check_by_task_group_and_task_id:
+    serviceName: github
+    description: Get a single check from a (task_group_id, task_id).
+    mode: read
+    args: task_group_id_in text, task_id_in text
+    returns: table (task_group_id text, task_id text, check_suite_id text, check_run_id text)
+    body: |-
+      begin
+        return query select
+          github_checks.task_group_id,
+          github_checks.task_id,
+          github_checks.check_suite_id,
+          github_checks.check_run_id
+        from github_checks
+        where
+          github_checks.task_group_id = task_group_id_in
+          and
+          github_checks.task_id = task_id_in;
+      end

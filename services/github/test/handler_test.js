@@ -1,13 +1,19 @@
-const debug = require('debug')('test');
-const helper = require('./helper');
-const assert = require('assert');
-const sinon = require('sinon');
-const libUrls = require('taskcluster-lib-urls');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
-const { LEVELS } = require('taskcluster-lib-monitor');
-const { CHECKLOGS_TEXT, CHECKRUN_TEXT } = require('../src/constants');
-const utils = require('../src/utils');
+import debugFactory from 'debug';
+const debug = debugFactory('test');
+import helper from './helper.js';
+import assert from 'assert';
+import sinon from 'sinon';
+import libUrls from 'taskcluster-lib-urls';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
+import { LEVELS } from '@taskcluster/lib-monitor';
+import { CHECKLOGS_TEXT, CHECKRUN_TEXT, CHECK_TASK_GROUP_TEXT } from '../src/constants.js';
+import utils from '../src/utils.js';
+import fs from 'fs';
+import path from 'path';
+
+const dataDir = new URL('./data', import.meta.url).pathname;
+const loadJson = filename => JSON.parse(fs.readFileSync(path.join(dataDir, filename), 'utf8'));
 
 /**
  * This tests the event handlers, faking out all of the services they
@@ -19,6 +25,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withPulse(mock, skipping);
   helper.resetTables(mock, skipping);
 
+  const validYamlJson = loadJson('yml/valid-yaml.json');
+  const validYamlV1Json = loadJson('yml/valid-yaml-v1.json');
+  const validYamlCommentsJson = loadJson('yml/valid-yaml-comments.json');
+  const invalidTaskJson = loadJson('yml/invalid-task.json');
+  const invalidYamlJson = loadJson('yml/invalid-yaml.json');
+
+  const webhookCommentEditedJson = loadJson('webhooks/webhook.issue_comment.edited.json');
+
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
   const CUSTOM_CHECKRUN_TASKID = 'apple';
   const CUSTOM_LIVELOG_NAME_TASKID = 'banana';
@@ -27,12 +41,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   const CUSTOM_CHECKRUN_ANNOTATIONS = JSON.stringify([
     { path: 'assets/css/main.css', start_line: 1, end_line: 2, annotation_level: 'notice', message: 'Hi there!' },
   ]);
+
   const COMMIT_SHA = '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf';
+  const INST_ID = 5828;
 
   let github = null;
   let handlers = null;
 
-  async function addBuild({ state, taskGroupId, pullNumber }) {
+  function buildArtifactLinks(limit, taskId) {
+
+    const artifactLinks = [];
+
+    for (let i = 0;i < limit;i++) {
+      artifactLinks.push(`\\- [artifact-${i}](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`);
+    }
+
+    return artifactLinks.join('\n');
+  }
+  async function addBuild({ state, taskGroupId, pullNumber, eventType = 'push' }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
     await helper.db.fns.create_github_build_pr(
       'TaskclusterRobot',
@@ -43,7 +69,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       new Date(),
       new Date(),
       9988,
-      'push',
+      eventType,
       'aaa-bbb',
       pullNumber,
     );
@@ -62,7 +88,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   async function simulateExchangeMessage({
     taskGroupId, exchange, routingKey,
     taskId, state, reasonResolved,
-    runId = 0,
+    runId = 0, started,
+    resolved, retriesLeft,
   }) {
     // set up to resolve when the handler has finished (even if it finishes with error)
     const handlerComplete = new Promise((resolve, reject) => {
@@ -80,7 +107,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           taskGroupId,
           taskId,
           state,
-          runs: Array.from({ length: runId + 1 }).map(() => ({ reasonResolved })),
+          retriesLeft,
+          runs: Array.from({ length: runId + 1 }).map(() => ({
+            reasonResolved,
+            state: 'completed',
+            started: started,
+            resolved: resolved,
+          })),
         },
         taskGroupId,
         runId,
@@ -144,6 +177,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         }
       },
       listTaskGroup: async () => ({ tasks: [] }),
+      listArtifacts: async (taskId, runId, options) => {
+
+        const artifacts = [];
+
+        for (let i = 0;i < options.limit;i++) {
+          artifacts.push({
+            name: `artifact-${i}`,
+          });
+        }
+        return Promise.resolve({ artifacts });
+      },
       use: () => ({
         getArtifact: async () => CUSTOM_CHECKRUN_TEXT,
         buildSignedUrl: async () => 'http://example.com',
@@ -154,7 +198,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     handlers.cancelPreviousTaskGroups = sinon.stub();
 
     // set up the allowPullRequests key
-    github.inst(5828).setRepoInfo({
+    github.inst(INST_ID).setRepoInfo({
       owner: 'TaskclusterRobot',
       repo: 'hooks-testing',
       info: { default_branch: 'development' },
@@ -284,7 +328,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     test('does not call queue.sealTaskGroup/cancelTaskGroup if no previous builds', async function () {
       await handlers.realCancelPreviousTaskGroups({
-        organization: 'random', repo: 'none', sha: 'none', debug: sinon.stub() });
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: { sha: 'none', organization: 'none', repository: 'none' },
+      });
       assert.equal(sealedTaskGroups.length, 0);
       assert.equal(cancelledTaskGroups.length, 0);
     });
@@ -302,30 +349,94 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         },
       });
 
-      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1 });
-      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1 });
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1, eventType: 'pull_request.synchronize' });
+
+      const instGithub = github.inst(INST_ID);
 
       await handlers.realCancelPreviousTaskGroups({
-        organization: 'TaskclusterRobot', repo: 'hooks-testing', pullNumber: 1, debug: sinon.stub(),
+        instGithub,
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA, organization: 'TaskclusterRobot', repository: 'hooks-testing',
+          pull_number: 1, event_type: 'pull_request.synchronize',
+        },
       });
+      assert(instGithub.issues.createComment.calledOnce);
+      let args = instGithub.issues.createComment.args;
+      assert.equal(args[0][0].owner, 'TaskclusterRobot');
+      assert.equal(args[0][0].repo, 'hooks-testing');
+      assert.equal(args[0][0].issue_number, 1);
 
       const monitor = await helper.load('monitor');
       assert(monitor.manager.messages.some(
-        ({ Type, Severity, Fields }) => Type === 'monitor.error' && Severity === LEVELS.err && Fields.message === 'sealTaskGroup error: missing scopes',
+        ({ Type, Severity, Fields }) => Type === 'monitor.error' && Severity === LEVELS.err && Fields.message.includes('sealTaskGroup error: missing scopes'),
       ));
       monitor.manager.reset();
     });
 
-    test('calls queue.sealTaskGroup/cancelTaskGroup for pulNumber excluding new task group id', async function () {
-      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1 });
-      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1 });
-      await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 1 });
+    test('non-existent task groups queue.sealTask/cancelTaskGroup group are ignored', async function () {
+      const err = new Error('ResourceNotFound');
+      err.code = 'ResourceNotFound';
+      err.statusCode = 404;
+      handlers.queueClient = new taskcluster.Queue({
+        rootUrl: 'https://tc.example.com',
+        fake: {
+          sealTaskGroup: async (taskGroupId) => {
+            err.method = 'sealTaskGroup';
+            throw err;
+          },
+          cancelTaskGroup: async (taskGroupId) => {
+            err.method = 'cancelTaskGroup';
+            throw err;
+          },
+        },
+      });
+
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1, eventType: 'pull_request.synchronize' });
+
+      const instGithub = github.inst(INST_ID);
+
       await handlers.realCancelPreviousTaskGroups({
-        organization: 'TaskclusterRobot',
-        repo: 'hooks-testing',
-        pullNumber: 1,
-        newTaskGroupId: 'bb',
+        instGithub,
         debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA, organization: 'TaskclusterRobot', repository: 'hooks-testing',
+          pull_number: 1, event_type: 'pull_request.synchronize',
+        },
+      });
+      assert(instGithub.issues.createComment.notCalled);
+
+      const monitor = await helper.load('monitor');
+      assert(monitor.manager.messages.some(
+        ({ Type, Severity, Fields }) => Type === 'monitor.error' && Severity === LEVELS.err && Fields.message.includes('Task group not found in queue'),
+      ));
+      monitor.manager.reset();
+
+      // builds should still be cancelled in db
+      const [[buildA], [buildB]] = await Promise.all([
+        helper.db.fns.get_github_build_pr('aa'),
+        helper.db.fns.get_github_build_pr('bb'),
+      ]);
+      assert.equal(buildA.state, 'cancelled');
+      assert.equal(buildB.state, 'cancelled');
+    });
+
+    test('calls queue.sealTaskGroup/cancelTaskGroup for pulNumber excluding new task group id', async function () {
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1, eventType: 'pull_request.synchronize' });
+      await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 1, eventType: 'pull_request.synchronize' });
+      await addBuild({ state: 'pending', taskGroupId: 'dd', pullNumber: 1, eventType: 'pull_request.closed' });
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: {
+          sha: 'none', task_group_id: 'bb',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing', pull_number: 1,
+          event_type: 'pull_request.synchronize',
+        },
       });
 
       assert.deepEqual(sealedTaskGroups, ['aa', 'cc']);
@@ -341,15 +452,84 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await addBuild({ state: 'pending', taskGroupId: 'bb' });
       await addBuild({ state: 'pending', taskGroupId: 'cc' });
       await handlers.realCancelPreviousTaskGroups({
-        organization: 'TaskclusterRobot',
-        repo: 'hooks-testing',
-        sha: COMMIT_SHA,
-        newTaskGroupId: 'bb',
+        instGithub: sinon.stub(),
         debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA, task_group_id: 'bb',
+          organization: 'TaskclusterRobot', repository: 'hooks-testing', event_type: 'push',
+        },
       });
 
-      assert.deepEqual(sealedTaskGroups, ['aa', 'cc']);
-      assert.deepEqual(cancelledTaskGroups, ['aa', 'cc']);
+      // tasks should not cancelled for push events
+      assert.deepEqual(sealedTaskGroups, []);
+      assert.deepEqual(cancelledTaskGroups, []);
+    });
+
+    test('respects same event types for pull_request', async function () {
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 3, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 3, eventType: 'pull_request.synchronize' });
+      await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 3, eventType: 'pull_request.closed' });
+      await addBuild({ state: 'pending', taskGroupId: 'dd', pullNumber: 3, eventType: 'pull_request.assigned' });
+      await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
+      await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
+
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA,
+          task_group_id: 'bb',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing',
+          event_type: 'pull_request.synchronize',
+          pull_number: 3,
+        },
+      });
+      assert.deepEqual(sealedTaskGroups, ['aa']);
+      assert.deepEqual(cancelledTaskGroups, ['aa']);
+    });
+
+    test('cancels nothing on release event', async function () {
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: null, eventType: 'release' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1012, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
+      await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
+
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA,
+          task_group_id: 'gg',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing',
+          event_type: 'release',
+        },
+      });
+
+      assert.deepEqual(sealedTaskGroups, []);
+      assert.deepEqual(cancelledTaskGroups, []);
+    });
+    test('cancels nothing on unknown event', async function () {
+      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: null, eventType: 'release' });
+      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1012, eventType: 'pull_request.opened' });
+      await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
+      await addBuild({ state: 'pending', taskGroupId: 'ff', pullNumber: null, eventType: 'push' });
+
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA,
+          task_group_id: 'gg',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing',
+          event_type: 'bogus',
+        },
+      });
+
+      assert.deepEqual(sealedTaskGroups, []);
+      assert.deepEqual(cancelledTaskGroups, []);
     });
   });
 
@@ -440,7 +620,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           details,
           repository: 'hooks-testing',
           eventId: '26370a80-ed65-11e6-8f4c-80082678482d',
-          installationId: 5828,
+          installationId: INST_ID,
           version: 1,
           body,
           tasks_for: `github-${exchange}`,
@@ -455,7 +635,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     }
 
     test('tasks generated as non-list', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
@@ -463,8 +643,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
-      assert(github.inst(5828).repos.createCommitComment.calledOnce);
-      let args = github.inst(5828).repos.createCommitComment.args;
+      assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
+      let args = github.inst(INST_ID).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
@@ -472,7 +652,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('tasks generated as undefined is OK', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
@@ -480,15 +660,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
-      assert(github.inst(5828).repos.createCommitComment.notCalled);
+      assert(github.inst(INST_ID).repos.createCommitComment.notCalled);
     });
 
     test('valid push (owner is collaborator) creates a taskGroup', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
@@ -503,22 +683,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid pull_request (user is collaborator) creates a taskGroup', async function () {
-      github.inst(5828).setRepoCollaborator({
+      github.inst(INST_ID).setRepoCollaborator({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         username: 'goodBuddy',
       });
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA, // HEAD
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
 
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
@@ -534,17 +714,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid pull_request (user is not a collaborator) does not create tasks', async function() {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA, // HEAD
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
 
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
@@ -553,16 +733,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid pull_request (user is not a collaborator, policy is public) creates a taskGroup', async function() {
-      let tcyaml = { ...require('./data/yml/valid-yaml-v1.json') };
+      let tcyaml = { ...validYamlV1Json };
       tcyaml['policy'] = { 'pullRequests': 'public' };
 
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA, // HEAD
         content: tcyaml,
       });
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
@@ -584,16 +764,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid pull_request (user is not a collaborator, policy is public_restricted) creates a taskGroup', async function() {
-      let tcyaml = { ...require('./data/yml/valid-yaml-v1.json') };
+      let tcyaml = { ...validYamlV1Json };
       tcyaml['policy'] = { 'pullRequests': 'public_restricted' };
 
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA, // HEAD
         content: tcyaml,
       });
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
@@ -615,11 +795,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid push (but not collaborator) creates a taskGroup', async function() {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({ user: 'TaskclusterCollaborator', eventType: 'push' });
 
@@ -634,11 +814,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid tag push (but not collaborator) creates a taskGroup', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({
         user: 'TaskclusterRobotCollaborator',
@@ -658,68 +838,208 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('invalid task list results in a comment', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/invalid-task.json'),
+        content: invalidTaskJson,
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
-      assert(github.inst(5828).repos.createCommitStatus.callCount === 0, 'Status was unexpectedly updated!');
-      assert(github.inst(5828).repos.createCommitComment.calledOnce);
-      let args = github.inst(5828).repos.createCommitComment.args;
+      assert(github.inst(INST_ID).repos.createCommitStatus.callCount === 0, 'Status was unexpectedly updated!');
+      assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
+      let args = github.inst(INST_ID).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
-      assert(args[0][0].body.indexOf('data/tasks should be array') !== -1);
+      assert(args[0][0].body.indexOf('data/tasks must be array') !== -1);
     });
 
     test('invalid YAML results in a comment', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/invalid-yaml.json'),
+        content: invalidYamlJson,
       });
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
-      assert(github.inst(5828).repos.createCommitStatus.callCount === 0, 'Status was unexpectedly updated!');
-      assert(github.inst(5828).repos.createCommitComment.calledOnce);
-      let args = github.inst(5828).repos.createCommitComment.args;
+      assert(github.inst(INST_ID).repos.createCommitStatus.callCount === 0, 'Status was unexpectedly updated!');
+      assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
+      let args = github.inst(INST_ID).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
-      assert(args[0][0].body.indexOf('data should NOT have additional properties') !== -1);
+      assert(args[0][0].body.indexOf('data must NOT have additional properties') !== -1);
     });
 
     test('error creating task is reported correctly', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       handlers.createTasks.rejects({ body: { error: 'oh noes' } });
       await simulateJobMessage({ user: 'goodBuddy' });
 
-      assert(github.inst(5828).repos.createCommitComment.calledOnce);
-      let args = github.inst(5828).repos.createCommitComment.args;
+      assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
+      let args = github.inst(INST_ID).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
       assert(args[0][0].body.indexOf('oh noes') !== -1);
     });
 
+    suite('Issue comment', function () {
+      async function simulateIssueCommentMessage({ user, body = null }) {
+        if (!body) {
+          body = webhookCommentEditedJson.body;
+        }
+        // patch body to have some user
+        body.comment.user.login = user;
+
+        const handlerComplete = new Promise((resolve, reject) => {
+          handlers.handlerComplete = resolve;
+          handlers.handlerRejected = reject;
+        });
+        const message = {
+          exchange: `exchange/taskcluster-github/v1/pull-request`,
+          routingKey: `primary.taskcluster.tc-dev-integration-test.updated`,
+          routes: [],
+          payload: {
+            organization: 'taskcluster',
+            details: {
+              'event.type': 'issue_comment.edited',
+              'event.head.user.login': user,
+              'taskcluster_comment': 'test',
+            },
+            repository: 'tc-dev-integration-test',
+            eventId: '89f8d660-272e-11ef-94cc-d31d5b8b32ee',
+            installationId: INST_ID,
+            version: 1,
+            body,
+            tasks_for: `github-issue-comment`,
+          },
+        };
+        await helper.fakePulseMessage(message);
+        await handlerComplete;
+      }
+
+      let instGithub;
+
+      setup(function () {
+        instGithub = github.inst(INST_ID);
+        instGithub.setRepoCollaborator({
+          owner: 'taskcluster',
+          repo: 'tc-dev-integration-test',
+          username: 'lotas',
+        });
+        instGithub.setTaskclusterYml({
+          owner: 'taskcluster',
+          repo: 'tc-dev-integration-test',
+          ref: COMMIT_SHA,
+          content: validYamlCommentsJson,
+        });
+        instGithub.setTaskclusterYml({
+          owner: 'taskcluster',
+          repo: 'tc-dev-integration-test',
+          ref: 'development',
+          content: validYamlCommentsJson,
+        });
+        instGithub.setTaskclusterYml({
+          owner: 'taskcluster',
+          repo: 'tc-dev-integration-test-nocomments',
+          ref: 'development',
+          content: validYamlV1Json,
+        });
+        instGithub.setPullInfo({
+          owner: 'taskcluster',
+          repo: 'tc-dev-integration-test',
+          pull_number: 15,
+          info: {
+            number: 15,
+            head: { sha: COMMIT_SHA },
+          },
+        });
+        instGithub.setRepoInfo({
+          owner: 'taskcluster',
+          repo: 'tc-dev-integration-test',
+          info: { default_branch: 'development' },
+        });
+      });
+
+      test('valid issue_comment (user is collaborator) creates a taskGroup', async function () {
+        await simulateIssueCommentMessage({ user: 'lotas' });
+
+        assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
+        let args = handlers.createTasks.firstCall.args[0];
+        let taskGroupId = args.tasks[0].task.taskGroupId;
+        let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+        assert.equal(build.organization, 'taskcluster');
+        assert.equal(build.repository, 'tc-dev-integration-test');
+        assert.equal(build.sha, COMMIT_SHA);
+        assert.equal(build.state, 'pending');
+      });
+
+      test('valid issue_comment (user is collaborator) no tasks created', async function () {
+        instGithub.setTaskclusterYml({
+          owner: 'taskcluster',
+          repo: 'tc-dev-integration-test',
+          ref: COMMIT_SHA,
+          content: {
+            ...validYamlCommentsJson,
+            tasks: [],
+          },
+        });
+
+        await simulateIssueCommentMessage({ user: 'lotas' });
+
+        assert(handlers.createTasks.notCalled);
+        assert(instGithub.issues.createComment.calledOnce);
+      });
+
+      test('valid issue_comment (user is not a collaborator) skips task creation', async function () {
+        await simulateIssueCommentMessage({ user: 'notCollaborator' });
+
+        assert(handlers.createTasks.notCalled);
+        assert(instGithub.issues.createComment.calledOnce);
+        let args = instGithub.issues.createComment.args;
+        assert.equal(args[0][0].owner, 'taskcluster');
+        assert.equal(args[0][0].repo, 'tc-dev-integration-test');
+        assert.equal(args[0][0].issue_number, 15);
+        assert(args[0][0].body.indexOf('is not a collaborator') !== -1);
+      });
+
+      test('.taskcluster.yml does not allow comments - no tasks created ', async function () {
+        instGithub.setTaskclusterYml({
+          owner: 'taskcluster',
+          repo: 'tc-dev-integration-test',
+          ref: 'development',
+          content: validYamlV1Json,
+        });
+        await simulateIssueCommentMessage({ user: 'notCollaborator' });
+
+        assert(handlers.createTasks.notCalled);
+        assert(instGithub.issues.createComment.calledOnce);
+        let args = instGithub.issues.createComment.args;
+        assert.equal(args[0][0].owner, 'taskcluster');
+        assert.equal(args[0][0].repo, 'tc-dev-integration-test');
+        assert.equal(args[0][0].issue_number, 15);
+        assert(args[0][0].body.indexOf('does not allow starting tasks from comments') !== -1);
+        assert(instGithub.reactions.createForIssueComment.calledOnce);
+      });
+    });
+
     suite('Cancel running task groups', function () {
       test('should not cancel task groups on the default branch', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
-        github.inst(5828).setRepoCollaborator({
+        const tcYaml = validYamlV1Json;
+        github.inst(INST_ID).setRepoCollaborator({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
           username: 'goodBuddy',
         });
-        github.inst(5828).setTaskclusterYml({
+        github.inst(INST_ID).setTaskclusterYml({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
           ref: 'development',
@@ -739,9 +1059,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.cancelPreviousTaskGroups.notCalled);
       });
       test('should respect .taskcluster.yml autoCancelPreviousChecks config', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
+        const tcYaml = validYamlV1Json;
         tcYaml['autoCancelPreviousChecks'] = false;
-        github.inst(5828).setTaskclusterYml({
+        github.inst(INST_ID).setTaskclusterYml({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
           ref: COMMIT_SHA,
@@ -752,7 +1072,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.cancelPreviousTaskGroups.notCalled);
 
         tcYaml['autoCancelPreviousChecks'] = true;
-        github.inst(5828).setTaskclusterYml({
+        github.inst(INST_ID).setTaskclusterYml({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
           ref: COMMIT_SHA,
@@ -765,21 +1085,38 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
         assert(handlers.cancelPreviousTaskGroups.calledOnce);
         const cancelCallArgs = handlers.cancelPreviousTaskGroups.firstCall.args[0];
-        assert.equal(cancelCallArgs.organization, 'TaskclusterRobot');
-        assert.equal(cancelCallArgs.repository, 'hooks-testing');
-        assert.equal(cancelCallArgs.newTaskGroupId, taskGroupId);
-        assert.equal(cancelCallArgs.sha, COMMIT_SHA);
-        assert.equal(cancelCallArgs.pullNumber, null);
+        assert.equal(cancelCallArgs.newBuild.organization, 'TaskclusterRobot');
+        assert.equal(cancelCallArgs.newBuild.repository, 'hooks-testing');
+        assert.equal(cancelCallArgs.newBuild.task_group_id, taskGroupId);
+        assert.equal(cancelCallArgs.newBuild.sha, COMMIT_SHA);
+        assert.equal(cancelCallArgs.newBuild.pull_number, null);
       });
-      test('should cancel task groups for same pull request number', async function () {
-        const tcYaml = require('./data/yml/valid-yaml-v1.json');
-        tcYaml['autoCancelPreviousChecks'] = true;
-        github.inst(5828).setRepoCollaborator({
+      test('should cancel by default', async function () {
+        const tcYaml = validYamlV1Json;
+        github.inst(INST_ID).setRepoCollaborator({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
           username: 'goodBuddy',
         });
-        github.inst(5828).setTaskclusterYml({
+        github.inst(INST_ID).setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: tcYaml,
+        });
+        await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
+        assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
+        assert(handlers.cancelPreviousTaskGroups.calledOnce);
+      });
+      test('should cancel task groups for same pull request number', async function () {
+        const tcYaml = validYamlV1Json;
+        tcYaml['autoCancelPreviousChecks'] = true;
+        github.inst(INST_ID).setRepoCollaborator({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          username: 'goodBuddy',
+        });
+        github.inst(INST_ID).setTaskclusterYml({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
           ref: COMMIT_SHA,
@@ -794,11 +1131,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.cancelPreviousTaskGroups.calledOnce);
 
         const cancelCallArgs = handlers.cancelPreviousTaskGroups.firstCall.args[0];
-        assert.equal(cancelCallArgs.organization, 'TaskclusterRobot');
-        assert.equal(cancelCallArgs.repository, 'hooks-testing');
-        assert.equal(cancelCallArgs.newTaskGroupId, taskGroupId);
-        assert.equal(cancelCallArgs.sha, null);
-        assert.equal(cancelCallArgs.pullNumber, 1001);
+        assert.equal(cancelCallArgs.newBuild.organization, 'TaskclusterRobot');
+        assert.equal(cancelCallArgs.newBuild.repository, 'hooks-testing');
+        assert.equal(cancelCallArgs.newBuild.task_group_id, taskGroupId);
+        assert.equal(cancelCallArgs.newBuild.pull_number, 1001);
 
         await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.synchronize', pullNumber: 1001 });
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
@@ -807,34 +1143,33 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
         assert(handlers.cancelPreviousTaskGroups.calledTwice);
         const cancelCallArgs2 = handlers.cancelPreviousTaskGroups.secondCall.args[0];
-        assert.equal(cancelCallArgs2.organization, 'TaskclusterRobot');
-        assert.equal(cancelCallArgs2.repository, 'hooks-testing');
-        assert.equal(cancelCallArgs2.newTaskGroupId, taskGroupId2);
-        assert.equal(cancelCallArgs2.sha, null);
-        assert.equal(cancelCallArgs2.pullNumber, 1001);
+        assert.equal(cancelCallArgs2.newBuild.organization, 'TaskclusterRobot');
+        assert.equal(cancelCallArgs2.newBuild.repository, 'hooks-testing');
+        assert.equal(cancelCallArgs2.newBuild.task_group_id, taskGroupId2);
+        assert.equal(cancelCallArgs2.newBuild.pull_number, 1001);
       });
     });
 
     suite('PR permissions (collaborators)', function () {
       const testPermissions = (name, { opener, headUser, succeed }) => {
         test(name, async function () {
-          github.inst(5828).setRepoCollaborator({
+          github.inst(INST_ID).setRepoCollaborator({
             owner: 'TaskclusterRobot',
             repo: 'hooks-testing',
             username: 'friendlyFace',
           });
-          github.inst(5828).setRepoCollaborator({
+          github.inst(INST_ID).setRepoCollaborator({
             owner: 'TaskclusterRobot',
             repo: 'hooks-testing',
             username: 'goodBuddy',
           });
-          github.inst(5828).setTaskclusterYml({
+          github.inst(INST_ID).setTaskclusterYml({
             owner: 'TaskclusterRobot',
             repo: 'hooks-testing',
             ref: COMMIT_SHA,
-            content: require('./data/yml/valid-yaml.json'),
+            content: validYamlJson,
           });
-          github.inst(5828).setTaskclusterYml({
+          github.inst(INST_ID).setTaskclusterYml({
             owner: 'TaskclusterRobot',
             repo: 'hooks-testing',
             ref: 'development',
@@ -846,8 +1181,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           if (succeed) {
             assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
           } else {
-            assert(github.inst(5828).issues.createComment.calledOnce);
-            let args = github.inst(5828).issues.createComment.args;
+            assert(github.inst(INST_ID).issues.createComment.calledOnce);
+            let args = github.inst(INST_ID).issues.createComment.args;
             assert.equal(args[0][0].owner, 'TaskclusterRobot');
             assert.equal(args[0][0].repo, 'hooks-testing');
             assert.equal(args[0][0].issue_number, '36');
@@ -866,13 +1201,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('specifying allowPullRequests: public in the default branch allows all', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
@@ -880,17 +1215,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       await simulateJobMessage({ user: 'imbstack', eventType: 'pull_request.opened' });
 
-      assert(github.inst(5828).issues.createComment.callCount === 0);
+      assert(github.inst(INST_ID).issues.createComment.callCount === 0);
     });
 
     test('specifying allowPullRequests: collaborators in the default branch disallows public', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
@@ -898,31 +1233,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       await simulateJobMessage({ user: 'imbstack', eventType: 'pull_request.opened' });
 
-      assert(github.inst(5828).repos.createCommitStatus.callCount === 0);
-      assert(github.inst(5828).issues.createComment.callCount === 1);
+      assert(github.inst(INST_ID).repos.createCommitStatus.callCount === 0);
+      assert(github.inst(INST_ID).issues.createComment.callCount === 1);
     });
 
     test('user name not checked for pushes, so status is created', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
       await simulateJobMessage({ user: 'imbstack', eventType: 'push' });
 
-      assert(github.inst(5828).repos.createCommitComment.callCount === 0);
+      assert(github.inst(INST_ID).repos.createCommitComment.callCount === 0);
     });
 
     test('sha for release fetched correctly', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
         // note that this ends up compiling to zero tasks for a release
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
-      github.inst(5828).setCommit({
+      github.inst(INST_ID).setCommit({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'refs/tags/v1.2.3',
@@ -930,22 +1265,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       await simulateJobMessage({ user: 'imbstack', eventType: 'release' });
 
-      assert(github.inst(5828).repos.createCommitComment.callCount === 0);
+      assert(github.inst(INST_ID).repos.createCommitComment.callCount === 0);
     });
 
     test('no .taskcluster.yml, using collaborators policy', async function () {
-      github.inst(5828).setRepoCollaborator({
+      github.inst(INST_ID).setRepoCollaborator({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         username: 'goodBuddy',
       });
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: COMMIT_SHA,
-        content: require('./data/yml/valid-yaml.json'),
+        content: validYamlJson,
       });
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
@@ -957,7 +1292,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('using collaborators_quiet policy should not create comment', async function () {
-      github.inst(5828).setTaskclusterYml({
+      github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
         repo: 'hooks-testing',
         ref: 'development', // default branch
@@ -965,8 +1300,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       await simulateJobMessage({ user: 'not-a-collaborator', eventType: 'pull_request.opened' });
 
-      assert(github.inst(5828).repos.createCommitStatus.callCount === 0);
-      assert(github.inst(5828).issues.createComment.callCount === 0);
+      assert(github.inst(INST_ID).repos.createCommitStatus.callCount === 0);
+      assert(github.inst(INST_ID).issues.createComment.callCount === 0);
     });
   });
 
@@ -1083,6 +1418,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(github.inst(9988).repos.createCommitStatus.calledOnce === false);
       await assertBuildState('pending');
     });
+    test('task failure does not change cancelled build state', async function() {
+      await addBuild({ state: 'cancelled', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-failed',
+        routingKey: 'route.statuses',
+        runId: 0,
+        state: 'running',
+      });
+      await assertBuildState('cancelled');
+    });
   });
 
   suite('Checks API: result status handler', function () {
@@ -1117,6 +1463,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       'internal-error': 'failure',
       'intermittent-task': 'neutral', // means: will be retried
     };
+    const STARTED = '2024-07-16T18:23:18.118Z';
+    const RESOLVED = '2024-07-17T18:23:18.118Z';
 
     async function assertChecksUpdate(state) {
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
@@ -1186,6 +1534,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await assertChecksUpdate('failed');
     });
 
+    test('intermittent task with retries left gets neutral check result', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-exception',
+        routingKey: 'route.checks',
+        taskId: TASKID,
+        reasonResolved: 'intermittent-task',
+        state: 'exception',
+        retriesLeft: 2,
+      });
+      await assertChecksUpdate('intermittent-task');
+    });
+
+    test('intermittent task with no retries left gets failure check result', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-exception',
+        routingKey: 'route.checks',
+        taskId: TASKID,
+        reasonResolved: 'intermittent-task',
+        state: 'exception',
+        retriesLeft: 0,
+      });
+      // For intermittent tasks with no retries left, we expect 'failure' conclusion
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      let args = github.inst(9988).checks.update.firstCall.args[0];
+      assert.equal(args.owner, 'TaskclusterRobot');
+      assert.equal(args.repo, 'hooks-testing');
+      assert.equal(args.check_run_id, '22222');
+      assert.equal(args.conclusion, 'failure');
+    });
+
     test('successful task started by decision task gets a success comment', async function () {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await simulateExchangeMessage({
@@ -1234,6 +1618,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         taskId: CUSTOM_CHECKRUN_TASKID,
         reasonResolved: 'completed',
         state: 'completed',
+        started: STARTED,
+        resolved: RESOLVED,
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
@@ -1241,7 +1627,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
-        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log)\n${CUSTOM_CHECKRUN_TEXT}\n`
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_CHECKRUN_TASKID}**\nRunId: **0**\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_CHECKRUN_TASKID)}\n${CUSTOM_CHECKRUN_TEXT}\n`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();
@@ -1265,6 +1651,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         taskId: CUSTOM_CHECKRUN_TASKID,
         reasonResolved: 'completed',
         state: 'completed',
+        started: STARTED,
+        resolved: RESOLVED,
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
@@ -1272,7 +1660,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
-        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log)\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_CHECKRUN_TASKID}**\nRunId: **0**\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_CHECKRUN_TASKID)}\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();
@@ -1296,6 +1684,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         taskId: CUSTOM_LIVELOG_NAME_TASKID,
         reasonResolved: 'completed',
         state: 'completed',
+        started: STARTED,
+        resolved: RESOLVED,
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
@@ -1303,7 +1693,47 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
-        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID})\n[${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log)\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_LIVELOG_NAME_TASKID}**\nRunId: **0**\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_LIVELOG_NAME_TASKID)}\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
+      );
+      /* eslint-enable comma-dangle */
+      sinon.restore();
+    });
+
+    test('ignores when list artifacts sends 404', async function () {
+      handlers.queueClient.listArtifacts = async () => {
+        const error = new Error('Not found');
+        error.statusCode = 404;
+        error.errorCoe = 'ResourceNotFoundz';
+        throw error;
+      };
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
+      sinon.restore();
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({ status: 200, text: LIVE_LOG_TEXT })
+        .onSecondCall()
+        .returns({ status: 404 })
+        .onThirdCall()
+        .returns({ status: 404 });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_LIVELOG_NAME_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+        started: STARTED,
+        resolved: RESOLVED,
+      });
+
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      assert(github.inst(9988).repos.createCommitComment.notCalled, 'createCommitComment should not be called'); // not expecting 404 to be reported
+      let [args] = github.inst(9988).checks.update.firstCall.args;
+      /* eslint-disable comma-dangle */
+      assert.strictEqual(
+        args.output.text,
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_LIVELOG_NAME_TASKID}**\nRunId: **0**\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
       /* eslint-enable comma-dangle */
       sinon.restore();
@@ -1421,6 +1851,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       assert.equal(false, github.inst(9988).checks.update.called);
       assert.equal(false, github.inst(9988).checks.create.called);
+    });
+
+    test('undefined started and resolved timestamps in check run output', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
+      sinon.restore();
+      sinon.stub(utils, "throttleRequest")
+        .onFirstCall()
+        .returns({ status: 200, text: LIVE_LOG_TEXT })
+        .onSecondCall()
+        .returns({ status: 404 })
+        .onThirdCall()
+        .returns({ status: 404 });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_LIVELOG_NAME_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+        started: undefined,
+        resolved: undefined,
+      });
+
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      let [args] = github.inst(9988).checks.update.firstCall.args;
+      /* eslint-disable comma-dangle */
+      assert.strictEqual(
+        args.output.text,
+        `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: n/a\nResolved: n/a\nTask Execution Time: n/a\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_LIVELOG_NAME_TASKID}**\nRunId: **0**\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_LIVELOG_NAME_TASKID)}\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
+      );
+      /* eslint-enable comma-dangle */
+      sinon.restore();
     });
   });
 
@@ -1701,7 +2164,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         payload: {
           organization: 'taskcluster',
           eventId: '26370a8b-b9b1-4f5d-b8d7-f8f9f8f8f8f8',
-          installationId: 5828,
+          installationId: INST_ID,
           checkRunId: 6725570353,
           checkSuiteId: 6781240077,
           version: 1,
@@ -1739,7 +2202,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         payload: {
           organization: 'taskcluster',
           eventId: '26370a8b-b9b1-4f5d-b8d7-f8f9f8f8f8f8',
-          installationId: 5828,
+          installationId: INST_ID,
           checkRunId: 'non-existant-id',
           checkSuiteId: 'not-a-number',
           version: 1,

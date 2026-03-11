@@ -1,5 +1,5 @@
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const helpers = require('./helpers');
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import helpers from './helpers.js';
 
 /**
  * API end-point for version v1/
@@ -23,14 +23,14 @@ let builder = new APIBuilder({
   projectName: 'taskcluster-index',
   serviceName: 'index',
   apiVersion: 'v1',
-  context: ['queue', 'db'],
+  context: ['queue', 'db', 'isPublicArtifact'],
   params: {
     namespace: helpers.namespaceFormat,
     indexPath: helpers.namespaceFormat,
   },
 });
 
-module.exports = builder;
+export default builder;
 
 /** Get specific indexed task */
 builder.declare({
@@ -64,6 +64,46 @@ builder.declare({
   }
 
   return res.reply(helpers.taskUtils.serialize(task));
+});
+
+/** List tasks from given task labels */
+builder.declare({
+  method: 'post',
+  route: '/tasks/indexes',
+  query: paginateResults.query,
+  name: 'findTasksAtIndex',
+  scopes: { AllOf: [{
+    for: 'indexPath',
+    in: 'indexPaths',
+    each: 'index:find-task:<indexPath>',
+  }] },
+  input: 'list-tasks-at-index.yml',
+  stability: APIBuilder.stability.experimental,
+  category: 'Index Service',
+  output: 'list-tasks-response.yml',
+  title: 'Find tasks at indexes',
+  description: [
+    'List the tasks given their labels',
+    '',
+    'This endpoint',
+    'lists up to 1000 tasks. If more tasks are present, a',
+    '`continuationToken` will be returned, which can be given in the next',
+    'request, along with the same input data. If the input data is different',
+    'the continuationToken will have no effect.',
+  ].join('\n'),
+}, async function (req, res) {
+  const indexes = req.body.indexes;
+  await req.authorize({ indexPaths: indexes });
+  const { continuationToken, tasks } = await helpers.taskUtils.findTasksAtIndexes(
+    this.db,
+    { indexes },
+    { query: req.query },
+  );
+
+  res.reply({
+    tasks: tasks.map(helpers.taskUtils.serialize),
+    continuationToken,
+  });
 });
 
 /** GET List namespaces inside another namespace */
@@ -322,16 +362,37 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Indexed task not found', {});
   }
 
-  // Build signed url for artifact
-  let url;
-  url = that.queue.externalBuildSignedUrl(
+  let isPublic = false;
+  try {
+    isPublic = await that.isPublicArtifact(artifactName);
+  } catch {
+    isPublic = false;
+  }
+
+  if (isPublic) {
+    try {
+      const artifact = await that.queue.latestArtifact(task.taskId, artifactName);
+      if (artifact.url) {
+        return res.redirect(303, artifact.url);
+      }
+    } catch {
+      // fall through to queue redirect
+    }
+    const url = that.queue.externalBuildUrl(
+      that.queue.getLatestArtifact,
+      task.taskId,
+      artifactName,
+    );
+    return res.redirect(303, url);
+  }
+
+  const url = that.queue.externalBuildSignedUrl(
     that.queue.getLatestArtifact,
     task.taskId,
     artifactName, {
       expiration: 15 * 60,
     },
   );
-  // Redirect to artifact
   return res.redirect(303, url);
 });
 

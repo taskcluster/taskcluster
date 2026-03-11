@@ -1,0 +1,11 @@
+query dashboardStatsWmPoolsStats {
+  WorkerManagerErrorsStats {
+    totals {
+      total
+      hourly
+      daily
+      title
+      code
+    }
+  }
+}

@@ -1,6 +1,9 @@
+//go:build darwin || linux || freebsd
+
 package interactive
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
@@ -13,11 +16,44 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func TestInteractive(t *testing.T) {
+func TestInteractiveWithReadyCommand(t *testing.T) {
+	ctx := t.Context()
+
+	isReadyCreated := false
+	cmd := func() (*exec.Cmd, error) { return exec.CommandContext(ctx, "bash"), nil }
+	isReadyCmd := func() (*exec.Cmd, error) {
+		isReadyCreated = true
+		return exec.CommandContext(ctx, "true"), nil
+	}
+
+	interactiveCommands := InteractiveCommands{
+		IsReadyCmd:     isReadyCmd,
+		InteractiveCmd: cmd,
+	}
+
+	testInteractive(t, 53766, interactiveCommands, ctx)
+
+	if !isReadyCreated {
+		t.Fatalf("The isReady command never got created")
+	}
+}
+
+func TestInteractiveNormal(t *testing.T) {
+	ctx := t.Context()
+
+	cmd := func() (*exec.Cmd, error) { return exec.CommandContext(ctx, "bash"), nil }
+	interactiveCommands := InteractiveCommands{
+		IsReadyCmd:     nil,
+		InteractiveCmd: cmd,
+	}
+
+	testInteractive(t, 53765, interactiveCommands, ctx)
+}
+
+func testInteractive(t *testing.T, port uint16, interactiveCommands InteractiveCommands, ctx context.Context) {
+	t.Helper()
 	// Start an interactive session on a test server
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	interactive, err := New(53765, exec.CommandContext(ctx, "bash"), ctx)
+	interactive, err := New(port, interactiveCommands, ctx)
 	if err != nil {
 		t.Fatalf("could not create interactive session: %v", err)
 	}
@@ -30,38 +66,39 @@ func TestInteractive(t *testing.T) {
 	if err != nil {
 		t.Fatal("dial error:", err)
 	}
+	const SENTINEL = "S3ntin3lValue"
 
 	// Send some input to the interactive session
-	input := "echo hello\n"
+	input := fmt.Sprintf("\x01echo %s\n", SENTINEL)
 	err = conn.WriteMessage(websocket.TextMessage, []byte(input))
 	if err != nil {
 		t.Fatal("write error:", err)
 	}
 
 	// Wait for the output from the interactive session
-	_, output, err := conn.ReadMessage()
-	if err != nil {
-		t.Fatal("read error:", err)
-	}
-	expected := "hello\n"
-	if string(output) != expected {
-		t.Fatalf("unexpected output: %v\nexpected: %v", string(output), expected)
+	var output []byte
+	expectedBytes := []byte(SENTINEL)
+	completeOutput := []byte{}
+	ok := false
+	for range 20 {
+		_, output, err = conn.ReadMessage()
+		if err != nil {
+			t.Fatalf("read error: %v", err)
+		}
+		completeOutput = append(completeOutput, output...)
+		if bytes.Count(completeOutput, expectedBytes) == 3 {
+			ok = true
+			break
+		}
 	}
 
-	input = "notABashCommand\n"
-	err = conn.WriteMessage(websocket.TextMessage, []byte(input))
-	if err != nil {
-		t.Fatal("write error:", err)
+	nonExpectedBytes := []byte("Inappropriate ioctl for device")
+	if bytes.Contains(completeOutput, nonExpectedBytes) {
+		t.Fatalf("Bash complained about ioctls (%v)", completeOutput)
 	}
 
-	// Wait for the output from the interactive session
-	_, output, err = conn.ReadMessage()
-	if err != nil {
-		t.Fatal("read error:", err)
-	}
-	expected = "bash: line 2: notABashCommand: command not found\n"
-	if string(output) != expected {
-		t.Fatalf("unexpected output: %v\nexpected: %v", string(output), expected)
+	if !ok {
+		t.Fatalf("Couldn't find expected output: %v. Complete output: %v", expectedBytes, completeOutput)
 	}
 
 	err = conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Closing connection"))
@@ -79,11 +116,5 @@ func TestInteractive(t *testing.T) {
 	err = conn.Close()
 	if err != nil {
 		t.Fatalf("Error closing WebSocket connection: %v", err)
-	}
-
-	// Terminate the interactive session
-	err = interactive.Terminate()
-	if err != nil {
-		t.Fatal("terminate error:", err)
 	}
 }

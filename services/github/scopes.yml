@@ -6,3 +6,4 @@
 - queue:list-task-group:*
 - queue:seal-task-group:taskcluster-github/*
 - queue:cancel-task-group:taskcluster-github/*
+- queue:list-artifacts:*

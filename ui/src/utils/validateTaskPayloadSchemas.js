@@ -1,17 +1,17 @@
-import urls from 'taskcluster-lib-urls';
 import ajv from './ajv';
 
-const schemas = {};
-const fetchSchema = async (service, schema) => {
-  const res = await fetch(urls.schema('', service, schema));
-
-  return res.json();
-};
-
 const prefetch = async () => {
-  ajv.addSchema(await fetchSchema('common', 'metaschema.json'));
-  ajv.addSchema(await fetchSchema('queue', 'v1/task.json'));
-  ajv.addSchema(await fetchSchema('queue', 'v1/task-metadata.json'));
+  // metaschema needs to be loaded first as other schemas depend on it
+  await ajv.loadServiceSchema('common', 'metaschema.json');
+  await Promise.all([
+    ajv.loadServiceSchema('queue', 'v1/task.json'),
+    ajv.loadServiceSchema('queue', 'v1/task-metadata.json'),
+    ajv.loadServiceSchema(
+      'queue',
+      'v1/create-task-request.json',
+      'create-task'
+    ),
+  ]);
 };
 
 const prefetchPromise = prefetch();
@@ -31,15 +31,8 @@ export const formatErrorDetails = error => {
 export default async (value, service, schema) => {
   await prefetchPromise;
 
-  if (!schemas['create-task']) {
-    schemas['create-task'] = await fetchSchema(
-      'queue',
-      'v1/create-task-request.json'
-    );
-  }
-
   const errors = [];
-  const taskValidation = ajv.validate(schemas['create-task'], value);
+  const taskValidation = ajv.validate('create-task', value);
 
   if (!taskValidation) {
     (ajv.errors || []).forEach(error => {
@@ -49,11 +42,8 @@ export default async (value, service, schema) => {
 
   // allow to validate create task payload only when schema is not provided
   if (service && schema) {
-    if (!schemas[schema]) {
-      schemas[schema] = await fetchSchema(service, schema);
-    }
-
-    const validation = ajv.validate(schemas[schema], value.payload);
+    const doc = await ajv.loadServiceSchema(service, schema);
+    const validation = ajv.validate(doc.$id, value.payload);
 
     if (!validation) {
       (ajv.errors || []).forEach(error => {

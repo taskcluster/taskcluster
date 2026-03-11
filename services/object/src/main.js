@@ -1,15 +1,16 @@
-require('../../prelude');
-const tcdb = require('taskcluster-db');
-const builder = require('../src/api');
-const loader = require('taskcluster-lib-loader');
-const SchemaSet = require('taskcluster-lib-validate');
-const { MonitorManager } = require('taskcluster-lib-monitor');
-const { App } = require('taskcluster-lib-app');
-const libReferences = require('taskcluster-lib-references');
-const config = require('taskcluster-lib-config');
-const { Backends } = require('./backends');
-const { Middleware } = require('./middleware');
-const expireObjects = require('./expire');
+import '../../prelude.js';
+import tcdb from '@taskcluster/db';
+import builder from '../src/api.js';
+import loader from '@taskcluster/lib-loader';
+import SchemaSet from '@taskcluster/lib-validate';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import { App } from '@taskcluster/lib-app';
+import libReferences from '@taskcluster/lib-references';
+import config from '@taskcluster/lib-config';
+import { Backends } from './backends/index.js';
+import { Middleware } from './middleware/index.js';
+import expireObjects from './expire.js';
+import { fileURLToPath } from 'url';
 
 let load = loader({
   cfg: {
@@ -51,10 +52,10 @@ let load = loader({
 
   generateReferences: {
     requires: ['cfg', 'schemaset'],
-    setup: ({ cfg, schemaset }) => libReferences.fromService({
+    setup: async ({ cfg, schemaset }) => libReferences.fromService({
       schemaset,
-      references: [builder.reference(), MonitorManager.reference('object')],
-    }).generateReferences(),
+      references: [builder.reference(), MonitorManager.reference('object'), MonitorManager.metricsReference('object')],
+    }).then(ref => ref.generateReferences()),
   },
 
   backends: {
@@ -69,12 +70,17 @@ let load = loader({
 
   api: {
     requires: ['cfg', 'db', 'schemaset', 'monitor', 'backends', 'middleware'],
-    setup: async ({ cfg, db, schemaset, monitor, backends, middleware }) => builder.build({
-      rootUrl: cfg.taskcluster.rootUrl,
-      context: { cfg, db, backends, middleware },
-      monitor: monitor.childMonitor('api'),
-      schemaset,
-    }),
+    setup: async ({ cfg, db, schemaset, monitor, backends, middleware }) => {
+      const api = builder.build({
+        rootUrl: cfg.taskcluster.rootUrl,
+        context: { cfg, db, backends, middleware },
+        monitor: monitor.childMonitor('api'),
+        schemaset,
+      });
+
+      monitor.exposeMetrics('default');
+      return api;
+    },
   },
 
   server: {
@@ -84,6 +90,7 @@ let load = loader({
       env: cfg.server.env,
       forceSSL: cfg.server.forceSSL,
       trustProxy: cfg.server.trustProxy,
+      keepAliveTimeoutSeconds: cfg.server.keepAliveTimeoutSeconds,
       apis: [api],
     }),
   },
@@ -99,8 +106,8 @@ let load = loader({
 });
 
 // If this file is executed launch component from first argument
-if (!module.parent) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   load.crashOnError(process.argv[2]);
 }
 
-module.exports = load;
+export default load;

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { lowerCase } from 'lower-case';
 import catchLinks from 'catch-links';
 import { MDXProvider } from '@mdx-js/react';
 import 'prismjs';
@@ -27,6 +26,9 @@ import PageMeta from './PageMeta';
   theme => ({
     documentation: {
       fontFamily: theme.typography.fontFamily,
+      '& a': {
+        ...theme.mixins.link,
+      },
     },
   }),
   { withTheme: true }
@@ -104,7 +106,7 @@ export default class Documentation extends Component {
       return null;
     }
 
-    const rootNode = docsTableOfContents[lowerCase(menuItem.label)];
+    const rootNode = docsTableOfContents[menuItem.label.toLowerCase()];
 
     return this.findChildFromRootNode(rootNode);
   }

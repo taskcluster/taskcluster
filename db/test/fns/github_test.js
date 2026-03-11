@@ -1,8 +1,9 @@
-const assert = require('assert').strict;
-const testing = require('taskcluster-lib-testing');
-const { fromNow } = require('taskcluster-client');
-const helper = require('../helper');
-const slugid = require('slugid');
+import { strict as assert } from 'assert';
+import testing from '@taskcluster/lib-testing';
+import tc from '@taskcluster/client';
+const { fromNow } = tc;
+import helper from '../helper.js';
+import slugid from 'slugid';
 
 suite(testing.suiteName(), function() {
   helper.withDbForProcs({ serviceName: 'github' });
@@ -174,6 +175,18 @@ suite(testing.suiteName(), function() {
       assert.equal(prBuilds.length, 1);
       assert.deepEqual(prBuilds[0].pull_request_number, builds[0].pull_request_number);
     });
+    helper.dbTest('list pending', async function(db, isFake) {
+      for (let i = 0; i < 10; i++) {
+        await create_build(db, { ...builds[i], state: i < 5 ? 'pending' : 'success' });
+      }
+      const fetched = await db.fns.get_pending_github_builds(null, null, 'org', 'repo', null, null);
+      assert.equal(fetched.length, 5);
+
+      // list by PR
+      const prBuilds = await db.fns.get_pending_github_builds(null, null, 'org', 'repo', null, builds[0].pull_request_number);
+      assert.equal(prBuilds.length, 1);
+      assert.deepEqual(prBuilds[0].pull_request_number, builds[0].pull_request_number);
+    });
     helper.dbTest('delete', async function(db, isFake) {
       await create_build(db, builds[0]);
       const [fetched] = await db.fns.get_github_build_pr(builds[0].task_group_id);
@@ -272,17 +285,22 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('create and get', async function(db, isFake) {
       await create_check(db, checks[0]);
-      let [fetched] = await db.fns.get_github_check_by_task_id(checks[0].task_id);
+      let [fetched] = await db.deprecatedFns.get_github_check_by_task_id(checks[0].task_id);
       assert.deepEqual(fetched, checks[0]);
 
-      assert.deepEqual([], await db.fns.get_github_check_by_task_id(null));
-      assert.deepEqual([], await db.fns.get_github_check_by_task_id('doesntexist'));
+      let [fetched2] = await db.fns.get_github_check_by_task_group_and_task_id(
+        checks[0].task_group_id, checks[0].task_id);
+      assert.deepEqual(fetched2, checks[0]);
+
+      assert.deepEqual([], await db.deprecatedFns.get_github_check_by_task_id(null));
+      assert.deepEqual([], await db.fns.get_github_check_by_task_group_and_task_id(null, null));
+      assert.deepEqual([], await db.deprecatedFns.get_github_check_by_task_id('doesntexist'));
     });
 
     helper.dbTest('create idempotency', async function(db, isFake) {
       await create_check(db, checks[0]);
       await create_check(db, { ...checks[0], check_run_id: 'abc' });
-      let [fetched] = await db.fns.get_github_check_by_task_id(checks[0].task_id);
+      let [fetched] = await db.deprecatedFns.get_github_check_by_task_id(checks[0].task_id);
       assert.deepEqual(fetched, { ...checks[0], check_run_id: 'abc' });
     });
 

@@ -1,4 +1,4 @@
-const { MonitorManager } = require('taskcluster-lib-monitor');
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 MonitorManager.register({
   name: 'workerPoolProvisioned',
@@ -34,13 +34,14 @@ MonitorManager.register({
   name: 'workerRunning',
   title: 'Worker Running',
   type: 'worker-running',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: 'A worker has been marked as running',
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that is running',
+    registrationDuration: 'Time in seconds from worker creation to registration',
   },
 });
 
@@ -48,13 +49,15 @@ MonitorManager.register({
   name: 'workerStopped',
   title: 'Worker Stopped',
   type: 'worker-stopped',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: 'A worker has been marked as stopped',
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that was stopped',
+    workerAge: 'Total time in seconds since worker was created',
+    runningDuration: 'Time in seconds since worker registered (null if never registered)',
   },
 });
 
@@ -62,7 +65,7 @@ MonitorManager.register({
   name: 'workerRemoved',
   title: 'Worker Removed',
   type: 'worker-removed',
-  version: 1,
+  version: 2,
   level: 'notice',
   description: `
     A request has been made to stop a worker.  This operation can sometimes
@@ -73,6 +76,8 @@ MonitorManager.register({
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that is being removed',
     reason: 'The reason this worker is being removed',
+    workerAge: 'Total time in seconds since worker was created',
+    runningDuration: 'Time in seconds since worker registered (null if never registered)',
   },
 });
 
@@ -161,6 +166,29 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'cloudApiMetrics',
+  title: 'Cloud API call metrics',
+  type: 'cloud-api-metrics',
+  version: 1,
+  level: 'notice',
+  description: 'Metrics for cloud api calls',
+  fields: {
+    providerId: 'Metrics for the given provider',
+    total: 'Total number of API calls made',
+    success: 'Number of successful API calls',
+    failed: 'Number of failed API calls',
+    retries: 'Number of retried API calls',
+    byStatus: 'Map of HTTP status codes to counts',
+    min: 'Minimum API call duration in milliseconds',
+    max: 'Maximum API call duration in milliseconds',
+    avg: 'Average API call duration in milliseconds',
+    median: 'Median API call duration in milliseconds',
+    p95: '95th percentile API call duration in milliseconds',
+    p99: '99th percentile API call duration in milliseconds',
+  },
+});
+
+MonitorManager.register({
   name: 'registrationErrorWarning',
   title: 'Registration Error Warning',
   type: 'registration-error-warning',
@@ -195,4 +223,272 @@ MonitorManager.register({
     fingerprint: 'The fingerprint of the certificate',
     url: 'The URL from which the certificate was downloaded',
   },
+});
+
+MonitorManager.register({
+  name: 'launchConfigSelectorsDebug',
+  title: 'Launch Config Selector Debug Information',
+  type: 'launch-config-selector-debug',
+  version: 1,
+  level: 'debug',
+  description: `
+    During worker pool provisioning, launch config selector may change config weight
+    based on current state of the system and initial data.
+    This event may help to understand how launch configs were used at selection time
+    and what their adjusted weights were.
+  `,
+  fields: {
+    workerPoolId: 'Worker Pool ID',
+    weights: 'An object with launchConfigId as a key and adjusted weight as value',
+    remainingCapacity: 'An object with launchConfigId as a key and remaining capacity',
+  },
+});
+
+MonitorManager.register({
+  name: 'azureResourceGroupEnsured',
+  title: 'Azure Resource Group Create or Update Information',
+  type: 'azure-resource-group-ensure',
+  version: 1,
+  level: 'notice',
+  description: `
+    When ARM template is being deployed with custom resource group name,
+    Azure provider would create or update the resource group.
+    This is to make sure that deployment is run in the existing resource group.
+  `,
+  fields: {
+    workerPoolId: 'Worker Pool ID',
+    resourceGroupName: 'Resource Group Name',
+    location: 'Location',
+  },
+});
+
+MonitorManager.register({
+  name: 'azureInstanceViewRepeated404',
+  title: 'Azure InstanceView Repeated 404',
+  type: 'azure-instance-view-repeated-404',
+  version: 1,
+  level: 'warning',
+  description: `
+    Azure VM instanceView returned 404 repeatedly for the same worker.
+    Worker Manager treats this as missing to avoid getting stuck in a transient loop.
+  `,
+  fields: {
+    providerId: 'Provider ID',
+    workerPoolId: 'Worker Pool ID',
+    workerGroup: 'Worker Group',
+    workerId: 'Worker ID',
+    vmName: 'Azure VM name',
+    provisioningState: 'Provisioning state returned by virtualMachines.get',
+    instanceView404Streak: 'Consecutive count of instanceView 404 responses',
+  },
+});
+
+const commonLabels = {
+  workerPoolId: 'The worker pool ID',
+  providerId: 'ID of the provider',
+};
+const labelsWithWorkerGroup = {
+  ...commonLabels,
+  workerGroup: 'Worker group (region/zone/location)',
+};
+
+MonitorManager.registerMetric('existingCapacity', {
+  name: 'worker_manager_existing_capacity',
+  type: 'gauge',
+  title: 'Existing capacity',
+  description: `
+    This number represents the running capacity of running and not quarantined workers.
+  `,
+  labels: labelsWithWorkerGroup,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('stoppingCapacity', {
+  name: 'worker_manager_stopping_capacity',
+  type: 'gauge',
+  title: 'Stopping capacity',
+  description: `
+    This number represents the running capacity of workers that are stopping.
+  `,
+  labels: labelsWithWorkerGroup,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('requestedCapacity', {
+  name: 'worker_manager_requested_capacity',
+  type: 'gauge',
+  title: 'Requested capacity',
+  description: `
+    This number represents the running capacity of workers that are requested.
+  `,
+  labels: labelsWithWorkerGroup,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('desiredCapacity', {
+  name: 'worker_manager_desired_capacity',
+  type: 'gauge',
+  title: 'Desired capacity',
+  description: `
+    This number represents calculation of the estimator for a given worker pool,
+    with regards to min and max capacity of the worker pool, number of adjusted
+    pending tasks and scaling ratio. Refer to estimator.js for exact logic.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('totalIdleCapacity', {
+  name: 'worker_manager_total_idle_capacity',
+  type: 'gauge',
+  title: 'Total idle capacity',
+  description: `
+    This number represents difference in existing capacity
+    (running capacity of running and not quarantined workers), and the number of
+    claimed tasks.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('adjustedPendingTasks', {
+  name: 'worker_manager_adjusted_pending_tasks',
+  type: 'gauge',
+  title: 'Adjusted pending tasks',
+  description: `
+    This number represents difference in pending tasks and idle capacity.
+    Adjustment is needed to make sure workers that are still running and are currently
+    not doing any work, will soon pick up those tasks, so we don't need additional workers for those.
+    Assumption is that those idling workers would pick up tasks soon.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('pendingTasks', {
+  name: 'worker_manager_pending_tasks',
+  type: 'gauge',
+  title: 'Pending tasks',
+  description: `
+    This number represents the number of pending tasks.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('claimedTasks', {
+  name: 'worker_manager_claimed_tasks',
+  type: 'gauge',
+  title: 'Claimed tasks',
+  description: `
+    This number represents the number of claimed tasks.
+  `,
+  labels: commonLabels,
+  registers: ['provision'],
+});
+
+MonitorManager.registerMetric('provisionDuration', {
+  name: 'worker_manager_worker_pool_provision_seconds',
+  type: 'histogram',
+  title: 'Worker pool provision duration',
+  description: 'Time it took to provision a single worker pool',
+  labels: commonLabels,
+  registers: ['provision'],
+  buckets: [0.01, 0.05, 0.1, 0.5, 1, 5, 10],
+});
+
+MonitorManager.registerMetric('workerRegistrationDuration', {
+  name: 'worker_manager_worker_registration_seconds',
+  type: 'histogram',
+  title: 'Worker registration duration',
+  description: `
+    Time for a worker to go from being requested to successfully registering
+    with worker-manager
+  `,
+  labels: commonLabels,
+  registers: ['default', 'provision', 'scan'],
+  buckets: [15, 30, 45, 60, 90, 120, 180, 300, 600, 1200, 1800],
+});
+
+MonitorManager.registerMetric('workerProvisionDuration', {
+  name: 'worker_manager_worker_provision_seconds',
+  type: 'histogram',
+  title: 'Worker provision duration',
+  description: `
+    Time from when a worker was requested to when the system booted,
+    measuring cloud VM provisioning time. Only recorded when the worker
+    provides systemBootTime in its registration request.
+  `,
+  labels: labelsWithWorkerGroup,
+  registers: ['default', 'provision'],
+  buckets: [15, 30, 45, 60, 90, 120, 180, 300, 600, 1200, 1800],
+});
+
+MonitorManager.registerMetric('workerStartupDuration', {
+  name: 'worker_manager_worker_startup_seconds',
+  type: 'histogram',
+  title: 'Worker startup duration',
+  description: `
+    Time from when the system booted to when the worker registered with
+    worker-manager, measuring worker startup time. Only recorded when
+    the worker provides systemBootTime in its registration request.
+  `,
+  labels: labelsWithWorkerGroup,
+  registers: ['default', 'provision'],
+  buckets: [5, 10, 15, 30, 45, 60, 90, 120, 180, 300, 600],
+});
+
+MonitorManager.registerMetric('workerLifetime', {
+  name: 'worker_manager_worker_lifetime_seconds',
+  type: 'histogram',
+  title: 'Worker lifetime',
+  description: `
+    Time for a worker to go from running to either being removed or fully
+    stopped
+  `,
+  labels: commonLabels,
+  registers: ['default', 'provision', 'scan'],
+  buckets: [60, 300, 900, 1800, 3600, 7200, 14400, 28800, 86400, 172800, 604800, 1209600],
+});
+
+MonitorManager.registerMetric('workerRegistrationFailure', {
+  name: 'worker_manager_worker_registration_failures_total',
+  type: 'counter',
+  title: 'Workers that never registered',
+  description: `
+    Counts workers that were requested but never registered before being
+    removed or stopped.
+  `,
+  labels: commonLabels,
+  registers: ['default', 'provision', 'scan'],
+});
+
+MonitorManager.registerMetric('scanSeen', {
+  name: 'worker_manager_worker_pool_scan_seen_workers',
+  type: 'gauge',
+  title: 'Worker pool workers checked during scan',
+  description: 'Total number of workers checked for given workerPoolId during scanning.',
+  labels: commonLabels,
+  registers: ['scan'],
+});
+
+MonitorManager.registerMetric('scanErrors', {
+  name: 'worker_manager_worker_pool_scan_errors',
+  type: 'gauge',
+  title: 'Worker pool errors during scan',
+  description: 'Total number of errors for worker pool during scanning',
+  labels: commonLabels,
+  registers: ['scan'],
+});
+
+MonitorManager.registerMetric('workersToTerminate', {
+  name: 'worker_manager_workers_to_terminate',
+  type: 'gauge',
+  title: 'Workers marked for termination',
+  description: 'Number of workers marked for termination per worker pool during scanning, labeled by reason.',
+  labels: {
+    ...commonLabels,
+    reason: 'Reason for termination (over_capacity, launch_config_archived)',
+  },
+  registers: ['scan'],
 });

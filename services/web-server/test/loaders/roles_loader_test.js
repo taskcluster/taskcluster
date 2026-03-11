@@ -1,14 +1,9 @@
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const { ApolloClient } = require('apollo-client');
-const { InMemoryCache } = require('apollo-cache-inmemory');
-const { HttpLink } = require('apollo-link-http');
-const fetch = require('node-fetch');
-const gql = require('graphql-tag');
-const testing = require('taskcluster-lib-testing');
-const helper = require('../helper');
-const createRoleMutation = require('../fixtures/createRole.graphql');
-const loader = require('../../src/loaders/roles');
+import assert from 'assert';
+import taskcluster from '@taskcluster/client';
+import gql from 'graphql-tag';
+import testing from '@taskcluster/lib-testing';
+import helper from '../helper.js';
+import loader from '../../src/loaders/roles.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -16,24 +11,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  const getClient = () => {
-    const cache = new InMemoryCache();
-    const httpLink = new HttpLink({
-      uri: `http://localhost:${helper.serverPort}/graphql`,
-      fetch,
-    });
-
-    return new ApolloClient({ cache, link: httpLink });
-  };
-
   suite('roles loaders', function() {
     test('load role while gracefully handling errors', async function() {
-      const client = getClient();
+      const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
         description: "Test Scope",
       };
+
+      const createRoleMutation = await helper.loadFixture('createRole.graphql');
 
       // 1. create role
       await client.mutate({
@@ -59,12 +46,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('load roles', async function() {
-      const client = getClient();
+      const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
         scopes: ["scope1"],
         description: "Test Scope",
       };
+      const createRoleMutation = await helper.loadFixture('createRole.graphql');
 
       // 1. create role
       await client.mutate({

@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/errorreport"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/exit"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/files"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/logging"
-	loggingProtocol "github.com/taskcluster/taskcluster/v50/tools/worker-runner/logging/protocol"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/provider"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/registration"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/secrets"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/worker"
-	"github.com/taskcluster/taskcluster/v50/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/errorreport"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/exit"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/files"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/logging"
+	loggingProtocol "github.com/taskcluster/taskcluster/v97/tools/worker-runner/logging/protocol"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/provider"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/registration"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/secrets"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/worker"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
 )
 
 // Run the worker.  This embodies the execution of the start-worker command.
@@ -25,7 +25,7 @@ func Run(configFile string) (state run.State, err error) {
 	log.Printf("Loading worker-runner configuration from %s", configFile)
 	runnercfg, err := cfg.LoadRunnerConfig(configFile)
 	if err != nil {
-		err = fmt.Errorf("Error loading runner config file %s: %s", configFile, err)
+		err = fmt.Errorf("error loading runner config file %s: %s", configFile, err)
 		return
 	}
 

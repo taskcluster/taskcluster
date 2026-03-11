@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/object/v1/api.json
+// This package was generated from the reference schema of
+// the Object service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/object/v1/api.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The object service provides HTTP-accessible storage for large blobs of data.
 //
 // Objects can be uploaded and downloaded, with the object data flowing directly
@@ -41,7 +45,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type Object tcclient.Client
@@ -150,7 +154,7 @@ func (object *Object) Version() error {
 // See #createUpload
 func (object *Object) CreateUpload(name string, payload *CreateUploadRequest) (*CreateUploadResponse, error) {
 	cd := tcclient.Client(*object)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/upload/"+url.QueryEscape(name), new(CreateUploadResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/upload/"+url.PathEscape(name), new(CreateUploadResponse), nil)
 	return responseObject.(*CreateUploadResponse), err
 }
 
@@ -173,7 +177,7 @@ func (object *Object) CreateUpload(name string, payload *CreateUploadRequest) (*
 // See #finishUpload
 func (object *Object) FinishUpload(name string, payload *FinishUploadRequest) error {
 	cd := tcclient.Client(*object)
-	_, _, err := (&cd).APICall(payload, "POST", "/finish-upload/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/finish-upload/"+url.PathEscape(name), nil, nil)
 	return err
 }
 
@@ -191,7 +195,7 @@ func (object *Object) FinishUpload(name string, payload *FinishUploadRequest) er
 // See #startDownload
 func (object *Object) StartDownload(name string, payload *DownloadObjectRequest) (*DownloadObjectResponse, error) {
 	cd := tcclient.Client(*object)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/start-download/"+url.QueryEscape(name), new(DownloadObjectResponse), nil)
+	responseObject, _, err := (&cd).APICall(payload, "PUT", "/start-download/"+url.PathEscape(name), new(DownloadObjectResponse), nil)
 	return responseObject.(*DownloadObjectResponse), err
 }
 
@@ -205,7 +209,7 @@ func (object *Object) StartDownload(name string, payload *DownloadObjectRequest)
 // See #object
 func (object *Object) Object(name string) (*ObjectMetadata, error) {
 	cd := tcclient.Client(*object)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/metadata/"+url.QueryEscape(name), new(ObjectMetadata), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/metadata/"+url.PathEscape(name), new(ObjectMetadata), nil)
 	return responseObject.(*ObjectMetadata), err
 }
 
@@ -218,7 +222,7 @@ func (object *Object) Object(name string) (*ObjectMetadata, error) {
 // See Object for more details.
 func (object *Object) Object_SignedURL(name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*object)
-	return (&cd).SignedURL("/metadata/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/metadata/"+url.PathEscape(name), nil, duration)
 }
 
 // Get the data in an object directly.  This method does not return a JSON body, but
@@ -242,7 +246,7 @@ func (object *Object) Object_SignedURL(name string, duration time.Duration) (*ur
 // See #download
 func (object *Object) Download(name string) error {
 	cd := tcclient.Client(*object)
-	_, _, err := (&cd).APICall(nil, "GET", "/download/"+url.QueryEscape(name), nil, nil)
+	_, _, err := (&cd).APICall(nil, "GET", "/download/"+url.PathEscape(name), nil, nil)
 	return err
 }
 
@@ -255,7 +259,7 @@ func (object *Object) Download(name string) error {
 // See Download for more details.
 func (object *Object) Download_SignedURL(name string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*object)
-	return (&cd).SignedURL("/download/"+url.QueryEscape(name), nil, duration)
+	return (&cd).SignedURL("/download/"+url.PathEscape(name), nil, duration)
 }
 
 // Respond with a service heartbeat.

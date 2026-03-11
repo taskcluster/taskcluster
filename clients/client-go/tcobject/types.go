@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -35,11 +35,11 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty"`
 		//  }
 		//
 		// Additional properties allowed
@@ -135,11 +135,11 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty"`
 		//  }
 		//
 		// Additional properties allowed
@@ -192,11 +192,11 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty"`
 		//  }
 		//
 		// Additional properties allowed
@@ -226,11 +226,11 @@ type (
 	//
 	//  	// Syntax:     ^[a-z0-9]{64}$
 	//  	//
-	//	//  	Sha256 string `json:"sha256,omitempty"`
+	//	//  	SHA256 string `json:"sha256,omitempty"`
 	//
 	//  	// Syntax:     ^[a-z0-9]{128}$
 	//  	//
-	//	//  	Sha512 string `json:"sha512,omitempty"`
+	//	//  	SHA512 string `json:"sha512,omitempty"`
 	//  }
 	//
 	// Additional properties allowed
@@ -246,11 +246,11 @@ type (
 	//
 	//  	// Syntax:     ^[a-z0-9]{64}$
 	//  	//
-	//	//  	Sha256 string `json:"sha256,omitempty"`
+	//	//  	SHA256 string `json:"sha256,omitempty"`
 	//
 	//  	// Syntax:     ^[a-z0-9]{128}$
 	//  	//
-	//	//  	Sha512 string `json:"sha512,omitempty"`
+	//	//  	SHA512 string `json:"sha512,omitempty"`
 	//  }
 	//
 	// Additional properties allowed
@@ -270,11 +270,11 @@ type (
 		//
 		//  	// Syntax:     ^[a-z0-9]{64}$
 		//  	//
-		//		//  	Sha256 string `json:"sha256,omitempty"`
+		//		//  	SHA256 string `json:"sha256,omitempty"`
 		//
 		//  	// Syntax:     ^[a-z0-9]{128}$
 		//  	//
-		//		//  	Sha512 string `json:"sha512,omitempty"`
+		//		//  	SHA512 string `json:"sha512,omitempty"`
 		//  }
 		//
 		// Additional properties allowed
@@ -297,10 +297,10 @@ type (
 		// be used only for value that are known to be of constant, fairly small size to avoid surprises as
 		// the payload grows. In general, this is useful for testing and for metadata objects such as
 		// separate cryptographic signatures.
-		DataInline DataInlineUploadRequest `json:"dataInline,omitempty"`
+		DataInline DataInlineUploadRequest `json:"dataInline,omitzero"`
 
 		// Request a URL to which a PUT request can be made.
-		PutURL PutURLUploadRequest `json:"putUrl,omitempty"`
+		PutURL PutURLUploadRequest `json:"putUrl,omitzero"`
 	}
 
 	// Request a URL to which a PUT request can be made.
@@ -347,7 +347,7 @@ type (
 		DataInline bool `json:"dataInline,omitempty"`
 
 		// Response containing a URL to which to PUT the data.
-		PutURL PutURLUploadResponse `json:"putUrl,omitempty"`
+		PutURL PutURLUploadResponse `json:"putUrl,omitzero"`
 	}
 
 	// A simple download returns a URL to which the caller should make a GET request.
@@ -374,48 +374,48 @@ type (
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // DownloadObjectResponse is of type json.RawMessage...
-func (this *DownloadObjectResponse) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *DownloadObjectResponse) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *DownloadObjectResponse) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *DownloadObjectResponse) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("DownloadObjectResponse: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // ObjectContentHashes is of type json.RawMessage...
-func (this *ObjectContentHashes) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *ObjectContentHashes) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *ObjectContentHashes) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *ObjectContentHashes) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("ObjectContentHashes: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // ObjectContentHashesForDownload is of type json.RawMessage...
-func (this *ObjectContentHashesForDownload) MarshalJSON() ([]byte, error) {
-	x := json.RawMessage(*this)
+func (m *ObjectContentHashesForDownload) MarshalJSON() ([]byte, error) {
+	x := json.RawMessage(*m)
 	return (&x).MarshalJSON()
 }
 
 // UnmarshalJSON is a copy of the json.RawMessage implementation.
-func (this *ObjectContentHashesForDownload) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *ObjectContentHashesForDownload) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("ObjectContentHashesForDownload: UnmarshalJSON on nil pointer")
 	}
-	*this = append((*this)[0:0], data...)
+	*m = append((*m)[0:0], data...)
 	return nil
 }

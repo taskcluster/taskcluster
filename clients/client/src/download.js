@@ -1,8 +1,8 @@
-const got = require('got');
-const util = require('util');
-const pipeline = util.promisify(require('stream').pipeline);
-const retry = require('./retry');
-const { HashStream, ACCEPTABLE_HASHES } = require('./hashstream');
+import got, { HTTPError } from 'got';
+import { pipeline } from 'node:stream/promises';
+import retry from './retry.js';
+import { HashStream, ACCEPTABLE_HASHES } from './hashstream.js';
+import { clients } from './client.js';
 
 // apply default retry config
 const makeRetryCfg = ({ retries, delayFactor, randomizationFactor, maxDelay }) => ({
@@ -16,7 +16,7 @@ const s3 = async ({ url, streamFactory, retryCfg }) => {
   return await retry(retryCfg, async (retriableError, attempt) => {
     let contentType = 'application/binary';
     try {
-      const src = got.stream(url, { retry: false });
+      const src = got.stream(url, { retry: { limit: 0 } });
       src.on('response', res => {
         contentType = res.headers['content-type'] || contentType;
       });
@@ -25,7 +25,7 @@ const s3 = async ({ url, streamFactory, retryCfg }) => {
       return contentType;
     } catch (err) {
       // treat non-500 HTTP responses as fatal errors, and retry everything else
-      if (err instanceof got.HTTPError && err.response.statusCode < 500) {
+      if (err instanceof HTTPError && err.response.statusCode < 500) {
         throw err;
       }
       return retriableError(err);
@@ -48,7 +48,7 @@ const getUrl = async ({ object, name, resp, streamFactory, retryCfg }) => {
 
     try {
       responseUsed = true;
-      const src = got.stream(resp.url, { retry: false });
+      const src = got.stream(resp.url, { retry: { limit: 0 } });
       src.on('response', res => {
         contentType = res.headers['content-type'] || contentType;
       });
@@ -59,7 +59,7 @@ const getUrl = async ({ object, name, resp, streamFactory, retryCfg }) => {
       return;
     } catch (err) {
       // treat non-500 HTTP responses as fatal errors, and retry everything else
-      if (err instanceof got.HTTPError && err.response.statusCode < 500) {
+      if (err instanceof HTTPError && err.response.statusCode < 500) {
         throw err;
       }
       return retriableError(err);
@@ -98,7 +98,8 @@ const verifyHashes = (observedHashes, expectedHashes) => {
   }
 };
 
-const download = async ({ name, object, streamFactory, retries, delayFactor, randomizationFactor, maxDelay }) => {
+export const download = async ({ name, object, streamFactory,
+  retries, delayFactor, randomizationFactor, maxDelay }) => {
   const retryCfg = makeRetryCfg({ retries, delayFactor, randomizationFactor, maxDelay });
 
   const acceptDownloadMethods = {
@@ -114,7 +115,7 @@ const download = async ({ name, object, streamFactory, retries, delayFactor, ran
   }
 };
 
-const downloadArtifact = async ({
+export const downloadArtifact = async ({
   taskId, runId, name, queue, streamFactory, retries, delayFactor, randomizationFactor, maxDelay,
 }) => {
   const retryCfg = makeRetryCfg({ retries, delayFactor, randomizationFactor, maxDelay });
@@ -128,10 +129,7 @@ const downloadArtifact = async ({
     }
 
     case "object": {
-      // `taskcluster.Object` is created at runtime, so we cannot require this
-      // at the top level.
-      const taskcluster = require('./index');
-      const object = new taskcluster.Object({
+      const object = new clients.Object({
         rootUrl: queue._options._trueRootUrl,
         credentials: artifact.credentials,
       });
@@ -149,4 +147,4 @@ const downloadArtifact = async ({
   }
 };
 
-module.exports = { download, downloadArtifact };
+export default { download, downloadArtifact };

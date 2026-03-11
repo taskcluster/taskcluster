@@ -1,11 +1,9 @@
-const { FakeCloud } = require('./fake');
-const assert = require('assert').strict;
-const auth = require('@azure/ms-rest-nodeauth');
-const armCompute = require('@azure/arm-compute');
-const armNetwork = require('@azure/arm-network');
-//const msRestJS = require('@azure/ms-rest-js');
-const msRestAzure = require('@azure/ms-rest-azure-js');
-const slugid = require('slugid');
+import { FakeCloud } from './fake.js';
+import { strict as assert } from 'assert';
+
+import azureApi from '../../src/providers/azure/azure-api.js';
+
+import slugid from 'slugid';
 
 /**
  * Fake the Azure SDK.
@@ -13,25 +11,38 @@ const slugid = require('slugid');
  * Instances have `computeClient`, `networkClient`, and `restClient` properties
  * that allow access to fakes for those interfaces.
  */
-class FakeAzure extends FakeCloud {
+export class FakeAzure extends FakeCloud {
   constructor() {
     super();
   }
 
   _patch() {
-    this.sinon.stub(auth, 'loginWithServicePrincipalSecret').returns('fake-credentials');
-    this.sinon.stub(armCompute, 'ComputeManagementClient').callsFake((creds, subId) => {
-      assert.equal(creds, 'fake-credentials');
-      return this.computeClient;
-    });
-    this.sinon.stub(armNetwork, 'NetworkManagementClient').callsFake((creds, subId) => {
-      assert.equal(creds, 'fake-credentials');
-      return this.networkClient;
-    });
-    this.sinon.stub(msRestAzure, 'AzureServiceClient').callsFake((creds) => {
-      assert.equal(creds, 'fake-credentials');
+    this.sinon.stub(azureApi, 'AzureServiceClient').callsFake((creds) => {
+      assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.restClient;
     });
+    this.sinon.stub(azureApi, 'ComputeManagementClient').callsFake((creds, subId) => {
+      assert.equal(creds?.getToken()?.token, 'fake-credentials');
+      return this.computeClient;
+    });
+    this.sinon.stub(azureApi, 'NetworkManagementClient').callsFake((creds, subId) => {
+      assert.equal(creds?.getToken()?.token, 'fake-credentials');
+      return this.networkClient;
+    });
+    this.sinon.stub(azureApi, 'ResourceManagementClient').callsFake((creds, subId) => {
+      assert.equal(creds?.getToken()?.token, 'fake-credentials');
+      return this.resourcesClient;
+    });
+    this.sinon.stub(azureApi, 'DeploymentsClient').callsFake((creds, subId) => {
+      assert.equal(creds?.getToken()?.token, 'fake-credentials');
+      return this.deploymentsClient;
+    });
+    this.sinon.stub(azureApi, 'ClientSecretCredential').returns({
+      getToken() {
+        return { token: 'fake-credentials', expiresOnTimestamp: Date.now() + 3600 * 1000 };
+      },
+    });
+
     this._reset();
   }
 
@@ -43,6 +54,8 @@ class FakeAzure extends FakeCloud {
       disk: new ResourceManager(this, 'disk'),
       nic: new ResourceManager(this, 'nic', 'azure-nic.yml'),
       ip: new ResourceManager(this, 'ip', 'azure-ip.yml'),
+      deployment: new DeploymentManager(this, 'deployment'),
+      resourceGroup: new ResourceGroupManager(this),
     };
 
     this.computeClient = {
@@ -53,6 +66,11 @@ class FakeAzure extends FakeCloud {
       networkInterfaces: this._managers['nic'],
       publicIPAddresses: this._managers['ip'],
     };
+    this.resourcesClient = {
+      resourceGroups: this._managers['resourceGroup'],
+    };
+    this.deploymentsClient = this._managers['deployment'];
+
     this.restClient = new FakeRestClient(this);
   }
 }
@@ -74,9 +92,12 @@ class ResourceRequest {
     this.error = undefined;
   }
 
-  getPollState() {
+  getOperationState() {
     return {
-      azureAsyncOperationHeaderValue: `op/${this.resourceType}/${this.resourceGroupName}/${this.name}`,
+      status: this.status,
+      config: {
+        operationLocation: `op/${this.resourceType}/${this.resourceGroupName}/${this.name}`,
+      },
     };
   }
 }
@@ -117,7 +138,7 @@ class ResourceManager {
     return req;
   }
 
-  async beginDeleteMethod(resourceGroupName, name) {
+  async beginDelete(resourceGroupName, name) {
     const key = `${resourceGroupName}/${name}`;
     if (!this._resources.has(key)) {
       throw makeError(`${this.resourceType} ${key} does not exist`, 404);
@@ -214,7 +235,7 @@ class ResourceManager {
   }
 }
 
-class VMResourceManager extends ResourceManager {
+export class VMResourceManager extends ResourceManager {
   constructor(fake, resourceType, createSchema) {
     super(fake, resourceType, createSchema);
     this._instanceViews = new Map();
@@ -266,7 +287,218 @@ class VMResourceManager extends ResourceManager {
   }
 }
 
-class FakeRestClient {
+export class DeploymentManager extends ResourceManager {
+  constructor(fake, resourceType) {
+    super(fake, resourceType);
+    this._deployments = new Map();
+    this._deploymentOperations = new Map();
+    this._conflictOnDelete = new Set();
+
+    this.deployments = {
+      get: async (rg, name) => this.get(rg, name),
+      beginCreateOrUpdate: async (rg, name, params) => this.beginCreateOrUpdate(rg, name, params),
+      beginDelete: async (rg, name) => this.beginDelete(rg, name),
+      deploymentExists: (rg, name) => this.deploymentExists(rg, name),
+      setFakeDeploymentState: (rg, name, state, error) => this.setFakeDeploymentState(rg, name, state, error),
+      setFakeDeploymentOutputs: (rg, name, outputs) => this.setFakeDeploymentOutputs(rg, name, outputs),
+      setFakeShouldConflictOnDelete: (rg, name, shouldConflict) =>
+        this.setFakeShouldConflictOnDelete(rg, name, shouldConflict),
+    };
+
+    this.deploymentOperations = {
+      list: (rg, name) => this.listDeploymentOperations(rg, name),
+      setFakeDeploymentOperations: (rg, name, operations) => this.setFakeDeploymentOperations(rg, name, operations),
+    };
+  }
+
+  async get(resourceGroupName, name) {
+    const key = `${resourceGroupName}/${name}`;
+    if (this._deployments.has(key)) {
+      return this._deployments.get(key);
+    }
+    throw makeError(`${this.resourceType} ${key} not found`, 404);
+  }
+
+  async beginCreateOrUpdate(resourceGroupName, name, parameters) {
+    const key = `${resourceGroupName}/${name}`;
+
+    const deployment = {
+      id: `id/${name}`,
+      name,
+      properties: {
+        provisioningState: 'Succeeded',
+        outputs: {
+          vmName: {
+            type: 'String',
+            value: parameters.parameters?.vmName?.value || 'fake-vm-name',
+          },
+        },
+      },
+    };
+
+    this._deployments.set(key, deployment);
+
+    const req = new ResourceRequest('create', this.resourceType, resourceGroupName, name, parameters);
+    req.status = 'Complete';
+    this._requests.set(key, req);
+
+    return req;
+  }
+
+  async beginDelete(resourceGroupName, name) {
+    const key = `${resourceGroupName}/${name}`;
+
+    // Check if we should simulate a conflict
+    if (this._conflictOnDelete.has(key)) {
+      this._conflictOnDelete.delete(key); // Clear flag after first attempt
+      throw makeError(
+        `Unable to edit or replace deployment '${name}': previous deployment is still active`,
+        409,
+      );
+    }
+
+    this._deployments.delete(key);
+
+    const req = new ResourceRequest('delete', this.resourceType, resourceGroupName, name, {});
+    req.status = 'Complete';
+    this._requests.set(key, req);
+
+    return req;
+  }
+
+  /**
+   * Set deployment provisioning state for testing
+   */
+  setFakeDeploymentState(resourceGroupName, name, state, error = null) {
+    const key = `${resourceGroupName}/${name}`;
+    const deployment = this._deployments.get(key);
+    if (deployment) {
+      deployment.properties.provisioningState = state;
+      if (error) {
+        deployment.properties.error = { message: error };
+      }
+    }
+  }
+
+  /**
+   * Set deployment outputs for testing
+   */
+  setFakeDeploymentOutputs(resourceGroupName, name, outputs) {
+    const key = `${resourceGroupName}/${name}`;
+    const deployment = this._deployments.get(key);
+    if (deployment) {
+      deployment.properties.outputs = outputs;
+    }
+  }
+
+  /**
+   * Set whether deletion should fail with a 409 conflict for testing
+   */
+  setFakeShouldConflictOnDelete(resourceGroupName, name, shouldConflict) {
+    const key = `${resourceGroupName}/${name}`;
+    if (shouldConflict) {
+      this._conflictOnDelete.add(key);
+    } else {
+      this._conflictOnDelete.delete(key);
+    }
+  }
+
+  /**
+   * Check if deployment exists
+   */
+  deploymentExists(resourceGroupName, name) {
+    const key = `${resourceGroupName}/${name}`;
+    return this._deployments.has(key);
+  }
+
+  /**
+   * List deployment operations (returns async iterator)
+   */
+  async *listDeploymentOperations(resourceGroupName, name) {
+    const key = `${resourceGroupName}/${name}`;
+    const operations = this._deploymentOperations.get(key) || [];
+    for (const operation of operations) {
+      yield operation;
+    }
+  }
+
+  /**
+   * Set fake deployment operations for testing
+   * @param {string} resourceGroupName
+   * @param {string} name
+   * @param {Array} operations - Array of operation objects
+   */
+  setFakeDeploymentOperations(resourceGroupName, name, operations) {
+    const key = `${resourceGroupName}/${name}`;
+    this._deploymentOperations.set(key, operations);
+  }
+}
+
+export class ResourceGroupManager {
+  constructor(fake) {
+    this.fake = fake;
+    this._resourceGroups = new Map();
+  }
+
+  /**
+   * Check if a resource group exists
+   * Returns Azure SDK response format with body property
+   */
+  async checkExistence(resourceGroupName) {
+    return { body: this._resourceGroups.has(resourceGroupName) };
+  }
+
+  /**
+   * Create or update a resource group
+   */
+  async createOrUpdate(resourceGroupName, parameters) {
+    const rg = {
+      id: `/subscriptions/fake-sub/resourceGroups/${resourceGroupName}`,
+      name: resourceGroupName,
+      location: parameters.location,
+      properties: {
+        provisioningState: 'Succeeded',
+      },
+    };
+    this._resourceGroups.set(resourceGroupName, rg);
+    return rg;
+  }
+
+  /**
+   * Get a resource group
+   */
+  async get(resourceGroupName) {
+    if (this._resourceGroups.has(resourceGroupName)) {
+      return this._resourceGroups.get(resourceGroupName);
+    }
+    throw makeError(`Resource group ${resourceGroupName} not found`, 404);
+  }
+
+  /**
+   * Create a fake resource group directly (for testing)
+   */
+  makeFakeResourceGroup(resourceGroupName, location = 'westus') {
+    const rg = {
+      id: `/subscriptions/fake-sub/resourceGroups/${resourceGroupName}`,
+      name: resourceGroupName,
+      location,
+      properties: {
+        provisioningState: 'Succeeded',
+      },
+    };
+    this._resourceGroups.set(resourceGroupName, rg);
+    return rg;
+  }
+
+  /**
+   * Check if a resource group exists in the fake (for testing)
+   */
+  hasFakeResourceGroup(resourceGroupName) {
+    return this._resourceGroups.has(resourceGroupName);
+  }
+}
+
+export class FakeRestClient {
   constructor(fake) {
     this.fake = fake;
   }
@@ -291,5 +523,3 @@ class FakeRestClient {
     };
   }
 }
-
-exports.FakeAzure = FakeAzure;

@@ -16,8 +16,22 @@ const ViewWorker = lazy(() =>
 const ViewWorkers = lazy(() =>
   import(/* webpackChunkName: 'Provisioners.ViewWorkers' */ './ViewWorkers')
 );
+const PendingTasks = lazy(() =>
+  import(/* webpackChunkName: 'Provisioners.PendingTasks' */ './PendingTasks')
+);
+const ClaimedTasks = lazy(() =>
+  import(/* webpackChunkName: 'Provisioners.ClaimedTasks' */ './ClaimedTasks')
+);
 
 export default path => [
+  {
+    component: PendingTasks,
+    path: `${path}/:provisionerId/worker-types/:workerType/pending-tasks`,
+  },
+  {
+    component: ClaimedTasks,
+    path: `${path}/:provisionerId/worker-types/:workerType/claimed-tasks`,
+  },
   {
     component: ViewWorker,
     path: `${path}/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId`,

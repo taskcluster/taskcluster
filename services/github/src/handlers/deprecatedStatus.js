@@ -1,11 +1,12 @@
-const { makeDebug, taskGroupUI } = require('./utils');
+import { GITHUB_BUILD_STATES } from '../constants.js';
+import { makeDebug, taskGroupUI } from './utils.js';
 
 /**
  * Post updates to GitHub, when the status of a task changes. Uses Statuses API
  * Taskcluster States: https://docs.taskcluster.net/docs/reference/platform/queue/exchanges
  * GitHub Statuses: https://developer.github.com/v3/repos/statuses/
  **/
-async function deprecatedStatusHandler(message) {
+export async function deprecatedStatusHandler(message) {
   let taskGroupId = message.payload.taskGroupId || message.payload.status.taskGroupId;
 
   let debug = makeDebug(this.monitor, { taskGroupId });
@@ -26,7 +27,7 @@ async function deprecatedStatusHandler(message) {
 
   const { exchangeNames } = this;
 
-  let state = 'success';
+  let state = GITHUB_BUILD_STATES.SUCCESS;
   let usesChecks = false;
 
   if (message.exchange === exchangeNames.taskGroupResolved) {
@@ -43,18 +44,18 @@ async function deprecatedStatusHandler(message) {
 
       for (let i = 0; i < group.tasks.length; i++) {
         if (['failed', 'exception'].includes(group.tasks[i].status.state)) {
-          state = 'failure';
+          state = GITHUB_BUILD_STATES.FAILURE;
           break; // one failure is enough
         }
       }
-    } while (params.continuationToken && state === 'success');
+    } while (params.continuationToken && state === GITHUB_BUILD_STATES.SUCCESS);
   } else if ([exchangeNames.taskException, exchangeNames.taskFailed].includes(message.exchange)) {
-    state = 'failure';
+    state = GITHUB_BUILD_STATES.FAILURE;
   } else if ([exchangeNames.taskRunning, exchangeNames.taskPending].includes(message.exchange)) {
     // if build is not pending, it means it was already resolved as success or failure
     // seeing a running task means it was retried, so we should set the status back to pending
-    if (build.state !== 'pending') {
-      state = 'pending';
+    if (build.state !== GITHUB_BUILD_STATES.PENDING) {
+      state = GITHUB_BUILD_STATES.PENDING;
     } else {
       // no need to update state at this point, as we need the final status
       debug(`Not updating status for ${taskGroupId} as it is still pending`);
@@ -66,9 +67,13 @@ async function deprecatedStatusHandler(message) {
     return;
   }
 
-  // It is worth noting that we always want to change the state of the build in the database.
-  // Although this handler is marked as deprecated, taskGroupResolved event should be handled in one place
-  await this.context.db.fns.set_github_build_state(taskGroupId, state);
+  // when github service cancels previous builds, they are going to be resolved with exception and end up here
+  // we don't want to update the status of the build in this case
+  if (build.state !== GITHUB_BUILD_STATES.CANCELLED) {
+    // It is worth noting that we always want to change the state of the build in the database.
+    // Although this handler is marked as deprecated, taskGroupResolved event should be handled in one place
+    await this.context.db.fns.set_github_build_state(taskGroupId, state);
+  }
 
   if (usesChecks) {
     debug(`Create commit status not called: Task group ${taskGroupId} uses Checks API. Exiting`);
@@ -98,6 +103,4 @@ async function deprecatedStatusHandler(message) {
   }
 }
 
-module.exports = {
-  deprecatedStatusHandler,
-};
+export default deprecatedStatusHandler;

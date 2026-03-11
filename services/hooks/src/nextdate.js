@@ -1,4 +1,4 @@
-const parser = require('cron-parser');
+import { CronExpressionParser as parser } from 'cron-parser';
 
 // Far in the future, but still within Azure's range
 const FUTURE = new Date(4000, 1, 1);
@@ -10,7 +10,7 @@ const nextDate = function(schedule, reference) {
 
   let next;
   schedule.forEach((pattern) => {
-    let interval = parser.parseExpression(pattern, {
+    let interval = parser.parse(pattern, {
       currentDate: reference,
       utc: true,
     });
@@ -22,4 +22,4 @@ const nextDate = function(schedule, reference) {
   return next || FUTURE;
 };
 
-module.exports = nextDate;
+export default nextDate;

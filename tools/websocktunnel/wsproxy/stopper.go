@@ -18,29 +18,29 @@ func newStopper() *stopper {
 
 // set this stopper.  This can be called multiple times, and only the
 // first call will have any effect.
-func (self *stopper) stop() {
-	self.cond.L.Lock()
-	self.stopped = true
-	self.cond.Broadcast()
-	self.cond.L.Unlock()
+func (s *stopper) stop() {
+	s.cond.L.Lock()
+	s.stopped = true
+	s.cond.Broadcast()
+	s.cond.L.Unlock()
 }
 
 // check this stopper (without blocking)
-func (self *stopper) is_stopped() bool {
-	self.cond.L.Lock()
-	stopped := self.stopped
-	self.cond.L.Unlock()
+func (s *stopper) isStopped() bool {
+	s.cond.L.Lock()
+	stopped := s.stopped
+	s.cond.L.Unlock()
 	return stopped
 }
 
 // wait for this stopper to stop
-func (self *stopper) wait() {
-	self.cond.L.Lock()
-	defer self.cond.L.Unlock()
+func (s *stopper) wait() {
+	s.cond.L.Lock()
+	defer s.cond.L.Unlock()
 	for {
-		if self.stopped {
+		if s.stopped {
 			return
 		}
-		self.cond.Wait()
+		s.cond.Wait()
 	}
 }

@@ -197,6 +197,40 @@ type TasksConnection implements Connection {
   edges: [TasksEdge]
 }
 
+type PendingTask {
+  taskId: ID!
+  runId: Int!
+  task: Task!
+  inserted: DateTime!
+}
+
+type PendingTasksEdge implements Edge {
+  cursor: String
+  node: PendingTask
+}
+
+type PendingTasksConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [PendingTasksEdge]
+}
+
+type ClaimedTask {
+  taskId: ID!
+  runId: Int!
+  workerGroup: String!
+  workerId: String!
+  task: Task!
+  claimed: DateTime!
+}
+type ClaimedTasksEdge implements Edge {
+  cursor: String
+  node: ClaimedTask
+}
+type ClaimedTasksConnection implements Connection {
+  pageInfo: PageInfo
+  edges: [ClaimedTasksEdge]
+}
+
 type TaskGroupInfo {
   taskGroupId: String!
   schedulerId: String!
@@ -275,6 +309,11 @@ extend type Query {
 
   # Actions exposed by the decision task defined in the public/actions.json artifact.
   taskActions(taskGroupId: ID!, filter: JSON): TaskActionsJson
+
+  # pending tasks paginated
+  listPendingTasks(taskQueueId: String!, connection: PageConnection): PendingTasksConnection
+  # claimed tasks paginated
+  listClaimedTasks(taskQueueId: String!, connection: PageConnection): ClaimedTasksConnection
 }
 
 extend type Mutation {

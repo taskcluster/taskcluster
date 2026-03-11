@@ -2,7 +2,7 @@
 package task
 
 import (
-	"github.com/taskcluster/taskcluster/v50/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v97/clients/client-shell/cmds/root"
 
 	"github.com/spf13/cobra"
 )

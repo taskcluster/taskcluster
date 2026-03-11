@@ -6,13 +6,13 @@ import (
 	raven "github.com/getsentry/raven-go"
 )
 
-func ReportCrashToSentry(r interface{}) {
+func ReportCrashToSentry(r any) {
 	if config.SentryProject == "" {
 		log.Println("No sentry project defined, not reporting to sentry")
 		return
 	}
-	Auth := serviceFactory.Auth(config.Credentials(), config.RootURL)
-	res, err := Auth.SentryDSN(config.SentryProject)
+	auth := serviceFactory.Auth(config.Credentials(), config.RootURL)
+	res, err := auth.SentryDSN(config.SentryProject)
 	if err != nil {
 		log.Printf("WARNING: Could not get sentry DSN: %v", err)
 		return

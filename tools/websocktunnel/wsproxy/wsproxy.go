@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v50/tools/websocktunnel/wsmux"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/wsmux"
 )
 
 func (p *proxy) websocketProxy(w http.ResponseWriter, r *http.Request, session *wsmux.Session, tunnelID string, path string) error {
@@ -162,7 +162,7 @@ func copyWsData(dest *websocket.Conn, src *websocket.Conn, stopper *stopper) err
 			return err
 		}
 
-		if stopper.is_stopped() {
+		if stopper.isStopped() {
 			return nil
 		}
 	}

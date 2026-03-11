@@ -1,7 +1,19 @@
-let aws = require('aws-sdk');
-let _ = require('lodash');
-let debug = require('debug')('app:bucket');
-let assert = require('assert');
+import {
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  GetBucketCorsCommand,
+  GetObjectCommand,
+  PutBucketCorsCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { getEndpointFromInstructions } from '@aws-sdk/middleware-endpoint';
+import _ from 'lodash';
+import path from 'path';
+import debugFactory from 'debug';
+const debug = debugFactory('app:bucket');
+import assert from 'assert';
 
 /**
  * Create S3 bucket wrapper.
@@ -12,7 +24,7 @@ let assert = require('assert');
  *   awsOptions: {
  *     accessKeyId:      // ...
  *     secretAccessKey:  // ...
- *     ..any other AWS option; see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#constructor-property
+ *     ..any other AWS option; see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/s3/
  *     // --or--
  *     mock: <obj>,     // use mock S3 object
  *   },
@@ -38,11 +50,16 @@ let Bucket = function(options) {
   this.bucket = options.bucket;
   // Create S3 client
   if (!options.awsOptions.mock) {
-    this.s3 = new aws.S3(_.defaults({
-      params: {
-        Bucket: options.bucket,
+    this.s3 = new S3Client({
+      credentials: {
+        accessKeyId: options.awsOptions.accessKeyId,
+        secretAccessKey: options.awsOptions.secretAccessKey,
       },
-    }, options.awsOptions));
+      region: options.awsOptions.region || 'us-east-1',
+      followRegionRedirects: true,
+      ...options.awsOptions,
+      forcePathStyle: !!options.awsOptions.s3ForcePathStyle,
+    });
   } else {
     this.s3 = options.awsOptions.mock;
   }
@@ -52,7 +69,7 @@ let Bucket = function(options) {
 };
 
 // Export Bucket
-module.exports = Bucket;
+export default Bucket;
 
 /**
  * Create a signed PUT URL
@@ -69,31 +86,35 @@ Bucket.prototype.createPutUrl = function(prefix, options) {
   assert(options.contentType, 'contentType must be given');
   assert(options.expires, 'expires must be given');
 
-  // This is an explicitly created promise due to
-  // https://github.com/aws/aws-sdk-js/issues/1008
-  return new Promise((accept, reject) => {
-    this.s3.getSignedUrl('putObject', {
-      Key: prefix,
-      ContentType: options.contentType,
-      Expires: options.expires,
-    }, (err, url) => {
-      if (err) {
-        return reject(err);
-      }
-      return accept(url);
-    });
+  const command = new PutObjectCommand({
+    Bucket: this.bucket,
+    Key: prefix,
+    ContentType: options.contentType,
+  });
+  return getSignedUrl(this.s3, command, {
+    expiresIn: options.expires,
   });
 };
 
 /**
  * Create an unsigned GET URL
  */
-Bucket.prototype.createGetUrl = function(prefix, forceS3 = false) {
+Bucket.prototype.createGetUrl = async function(prefix, forceS3 = false) {
   assert(prefix, 'prefix must be given');
   if (this.bucketCDN && !forceS3) {
-    return `${this.bucketCDN}/${prefix}`;
+    return `${this.bucketCDN}/${encodeURI(prefix)}`;
   }
-  return `${this.s3.endpoint.href}${this.bucket}/${prefix}`;
+  const command = new GetObjectCommand({
+    Bucket: this.bucket,
+    Key: prefix,
+  });
+  const { url } = await getEndpointFromInstructions(command.input, GetObjectCommand, this.s3.config);
+  // Some aws-sdk versions return prefix already in pathname,
+  // avoid double prefixing
+  if (!url.pathname.endsWith(prefix)) {
+    url.pathname = path.join(url.pathname, prefix);
+  }
+  return url.href;
 };
 
 /**
@@ -109,27 +130,22 @@ Bucket.prototype.createSignedGetUrl = function(prefix, options) {
   assert(options, 'options must be given');
   assert(options.expires, 'expires must be given');
 
-  // This is an explicitly created promise due to
-  // https://github.com/aws/aws-sdk-js/issues/1008
-  return new Promise((accept, reject) => {
-    this.s3.getSignedUrl('getObject', {
-      Key: prefix,
-      Expires: options.expires,
-    }, (err, url) => {
-      if (err) {
-        return reject(err);
-      }
-      return accept(url);
-    });
+  const command = new GetObjectCommand({
+    Bucket: this.bucket,
+    Key: prefix,
+  });
+  return getSignedUrl(this.s3, command, {
+    expiresIn: options.expires,
   });
 };
 
 /** Delete a object */
 Bucket.prototype.deleteObject = function(prefix) {
   assert(prefix, 'prefix must be provided');
-  return this.s3.deleteObject({
+  return this.s3.send(new DeleteObjectCommand({
+    Bucket: this.bucket,
     Key: prefix,
-  }).promise();
+  }));
 };
 
 /** Delete a list of objects */
@@ -137,16 +153,17 @@ Bucket.prototype.deleteObjects = function(prefixes, quiet = false) {
   assert(prefixes instanceof Array, 'prefixes must be an array');
   // S3 API limit: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObjects.html
   assert(prefixes.length <= 1000, 'not more than 1000 prefixes can be deleted');
-  return this.s3.deleteObjects({
+  return this.s3.send(new DeleteObjectsCommand({
+    Bucket: this.bucket,
     Delete: {
       Objects: prefixes.map(function(prefix) {
         return {
           Key: prefix,
         };
       }),
-      ...(quiet ? { Quiet: true } : {} ),
+      ...(quiet ? { Quiet: true } : {}),
     },
-  }).promise();
+  }));
 };
 
 /** Setup CORS policy, so it can opened from a browser, when authenticated */
@@ -167,7 +184,9 @@ Bucket.prototype.setupCORSIfNecessary = async function() {
   }
   try {
     // Fetch CORS to see if they as expected already
-    let req = await this.s3.getBucketCors().promise();
+    let req = await this.s3.send(new GetBucketCorsCommand({
+      Bucket: this.bucket,
+    }));
     if (_.isEqual(req.CORSRules, rules)) {
       debug('CORS already set for bucket: %s', this.bucket);
       return;
@@ -179,9 +198,10 @@ Bucket.prototype.setupCORSIfNecessary = async function() {
   }
 
   // Set CORS
-  return this.s3.putBucketCors({
+  return this.s3.send(new PutBucketCorsCommand({
+    Bucket: this.bucket,
     CORSConfiguration: {
       CORSRules: rules,
     },
-  }).promise();
+  }));
 };

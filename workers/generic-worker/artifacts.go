@@ -4,20 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"mime"
 	"net"
 	"net/url"
 	"os"
-	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v50/workers/generic-worker/artifacts"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
 )
 
 var (
@@ -30,178 +29,6 @@ var (
 	}
 )
 
-// PayloadArtifacts returns the artifacts as listed in the payload of the task (note this does
-// not include log files)
-func (task *TaskRun) PayloadArtifacts() []artifacts.TaskArtifact {
-	payloadArtifacts := make([]artifacts.TaskArtifact, 0)
-	for _, artifact := range task.Payload.Artifacts {
-		basePath := artifact.Path
-		base := &artifacts.BaseArtifact{
-			Name:    artifact.Name,
-			Expires: artifact.Expires,
-		}
-		// if no name given, use canonical path
-		if base.Name == "" {
-			base.Name = canonicalPath(basePath)
-		}
-		// default expiry should be task expiry
-		if time.Time(base.Expires).IsZero() {
-			base.Expires = task.Definition.Expires
-		}
-		switch artifact.Type {
-		case "file":
-			payloadArtifacts = append(payloadArtifacts, resolve(base, "file", basePath, artifact.ContentType, artifact.ContentEncoding))
-		case "directory":
-			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType, artifact.ContentEncoding); errArtifact != nil {
-				payloadArtifacts = append(payloadArtifacts, errArtifact)
-				continue
-			}
-			walkFn := func(path string, info os.FileInfo, incomingErr error) error {
-				// I think we don't need to handle incomingErr != nil since
-				// resolve(...) gets called which should catch the same issues
-				// raised in incomingErr - *** I GUESS *** !!
-				subPath, err := filepath.Rel(taskContext.TaskDir, path)
-				if err != nil {
-					// this indicates a bug in the code
-					panic(err)
-				}
-				relativePath, err := filepath.Rel(basePath, subPath)
-				if err != nil {
-					// this indicates a bug in the code
-					panic(err)
-				}
-				subName := filepath.Join(base.Name, relativePath)
-				b := &artifacts.BaseArtifact{
-					Name:    canonicalPath(subName),
-					Expires: base.Expires,
-				}
-				switch {
-				case info.IsDir():
-					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding); errArtifact != nil {
-						payloadArtifacts = append(payloadArtifacts, errArtifact)
-					}
-				default:
-					payloadArtifacts = append(payloadArtifacts, resolve(b, "file", subPath, artifact.ContentType, artifact.ContentEncoding))
-				}
-				return nil
-			}
-			_ = filepath.Walk(filepath.Join(taskContext.TaskDir, basePath), walkFn)
-		}
-	}
-	return payloadArtifacts
-}
-
-// File should be resolved as an S3Artifact if file exists as file and is
-// readable, otherwise i) if it does not exist or ii) cannot be read, as a
-// "file-missing-on-worker" ErrorArtifact, otherwise if it exists as a
-// directory, as "invalid-resource-on-worker" ErrorArtifact. A directory should
-// resolve as `nil` if directory exists as directory and is readable, otherwise
-// i) if it does not exist or ii) cannot be read, as a "file-missing-on-worker"
-// ErrorArtifact, otherwise if it exists as a file, as
-// "invalid-resource-on-worker" ErrorArtifact
-// TODO: need to also handle "too-large-file-on-worker"
-func resolve(base *artifacts.BaseArtifact, artifactType string, path string, contentType string, contentEncoding string) artifacts.TaskArtifact {
-	fullPath := filepath.Join(taskContext.TaskDir, path)
-	fileReader, err := os.Open(fullPath)
-	if err != nil {
-		// cannot read file/dir, create an error artifact
-		return &artifacts.ErrorArtifact{
-			BaseArtifact: base,
-			Message:      fmt.Sprintf("Could not read %s '%s'", artifactType, fullPath),
-			Reason:       "file-missing-on-worker",
-			Path:         path,
-		}
-	}
-	defer fileReader.Close()
-	// ok it exists, but is it right type?
-	fileinfo, err := fileReader.Stat()
-	if err != nil {
-		return &artifacts.ErrorArtifact{
-			BaseArtifact: base,
-			Message:      fmt.Sprintf("Could not stat %s '%s'", artifactType, fullPath),
-			Reason:       "invalid-resource-on-worker",
-			Path:         path,
-		}
-	}
-	if artifactType == "file" && fileinfo.IsDir() {
-		return &artifacts.ErrorArtifact{
-			BaseArtifact: base,
-			Message:      fmt.Sprintf("File artifact '%s' exists as a directory, not a file, on the worker", fullPath),
-			Reason:       "invalid-resource-on-worker",
-			Path:         path,
-		}
-	}
-	if artifactType == "directory" && !fileinfo.IsDir() {
-		return &artifacts.ErrorArtifact{
-			BaseArtifact: base,
-			Message:      fmt.Sprintf("Directory artifact '%s' exists as a file, not a directory, on the worker", fullPath),
-			Reason:       "invalid-resource-on-worker",
-			Path:         path,
-		}
-	}
-	if artifactType == "directory" {
-		return nil
-	}
-	// Is content type specified in task payload?
-	if contentType == "" {
-		extension := filepath.Ext(path)
-		// first look up our own custom mime type mappings
-		contentType = customMimeMappings[strings.ToLower(extension)]
-		// then fall back to system mime type mappings
-		if contentType == "" {
-			contentType = mime.TypeByExtension(extension)
-		}
-		// lastly, fall back to application/octet-stream in the absense of any other value
-		if contentType == "" {
-			// application/octet-stream is the mime type for "unknown"
-			contentType = "application/octet-stream"
-		}
-	}
-	// Is content encoding specified in task payload?
-	if contentEncoding == "" {
-		extension := filepath.Ext(path)
-		// originally based on https://github.com/evansd/whitenoise/blob/03f6ea846394e01cbfe0c730141b81eb8dd6e88a/whitenoise/compress.py#L21-L29
-		SkipCompressionExtensions := map[string]bool{
-			".7z":    true,
-			".bz2":   true,
-			".deb":   true,
-			".dmg":   true,
-			".flv":   true,
-			".gif":   true,
-			".gz":    true,
-			".jpeg":  true,
-			".jpg":   true,
-			".png":   true,
-			".swf":   true,
-			".tbz":   true,
-			".tgz":   true,
-			".webp":  true,
-			".whl":   true, // Python wheel are already zip file
-			".woff":  true,
-			".woff2": true,
-			".xz":    true,
-			".zip":   true,
-			".zst":   true,
-		}
-		// When the file extension is blacklisted in SkipCompressionExtensions then "identity" should be used, otherwise "gzip".
-		if SkipCompressionExtensions[extension] {
-			contentEncoding = "identity"
-		} else {
-			contentEncoding = "gzip"
-		}
-	}
-	return createDataArtifact(base, fullPath, contentType, contentEncoding)
-}
-
-// The Queue expects paths to use a forward slash, so let's make sure we have a
-// way to generate a path in this format
-func canonicalPath(path string) string {
-	if os.PathSeparator == '/' {
-		return path
-	}
-	return strings.Replace(path, string(os.PathSeparator), "/", -1)
-}
-
 // createDataArtifact creates a TaskArtifact for the given data, according to
 // the CreateObjectArtifacts configuration.
 //
@@ -210,23 +37,31 @@ func canonicalPath(path string) string {
 func createDataArtifact(
 	base *artifacts.BaseArtifact,
 	path string,
+	contentPath string,
 	contentType string,
 	contentEncoding string,
 ) artifacts.TaskArtifact {
+	var contentLength int64
+	if info, err := os.Stat(contentPath); err == nil {
+		contentLength = info.Size()
+	}
 	if config.CreateObjectArtifacts {
 		// note that contentEncoding is currently ignored for object artifacts
 		return &artifacts.ObjectArtifact{
-			BaseArtifact: base,
-			Path:         path,
-			ContentType:  contentType,
+			BaseArtifact:  base,
+			Path:          path,
+			ContentType:   contentType,
+			ContentLength: contentLength,
 		}
 	}
 
 	return &artifacts.S3Artifact{
 		BaseArtifact:    base,
 		Path:            path,
+		ContentPath:     contentPath,
 		ContentType:     contentType,
 		ContentEncoding: contentEncoding,
+		ContentLength:   contentLength,
 	}
 }
 
@@ -239,6 +74,7 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 				Expires: task.Definition.Expires,
 			},
 			path,
+			path,
 			"text/plain; charset=utf-8",
 			"gzip",
 		),
@@ -246,63 +82,25 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 }
 
 func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExecutionError {
+	task.artifactsMux.Lock()
 	task.Artifacts[artifact.Base().Name] = artifact
+	task.artifactsMux.Unlock()
 	payload, err := json.Marshal(artifact.RequestObject())
 	if err != nil {
 		panic(err)
 	}
 	par := tcqueue.PostArtifactRequest(json.RawMessage(payload))
 	task.queueMux.RLock()
-	parsp, err := task.Queue.CreateArtifact(
+	queue := task.Queue
+	task.queueMux.RUnlock()
+	parsp, err := queue.CreateArtifact(
 		task.TaskID,
 		strconv.Itoa(int(task.RunID)),
 		artifact.Base().Name,
 		&par,
 	)
-	task.queueMux.RUnlock()
 	if err != nil {
-		switch t := err.(type) {
-		case *tcclient.APICallException:
-			switch rootCause := t.RootCause.(type) {
-			case httpbackoff.BadHttpResponseCode:
-				if rootCause.HttpResponseCode/100 == 5 {
-					return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
-				}
-				// was artifact already uploaded ( => malformed payload)?
-				if rootCause.HttpResponseCode == 409 {
-					fullError := fmt.Errorf(
-						"There was a conflict uploading artifact %v - this suggests artifact %v was already uploaded to this task with different content earlier on in this task.\n"+
-							"Check the artifacts section of the task payload at %v\n"+
-							"%v",
-						artifact.Base().Name,
-						artifact.Base().Name,
-						tcurls.API(config.RootURL, "queue", "v1", "task/"+task.TaskID),
-						rootCause,
-					)
-					return MalformedPayloadError(fullError)
-				}
-				// was task cancelled or deadline exceeded?
-				task.StatusManager.UpdateStatus()
-				status := task.StatusManager.LastKnownStatus()
-				if status == deadlineExceeded || status == cancelled {
-					return nil
-				}
-				// assume a problem with the request == worker bug
-				panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
-			case *url.Error:
-				switch subCause := rootCause.Err.(type) {
-				case *net.OpError:
-					log.Printf("Got *net.OpError - probably got no network at the moment: %#v", *subCause)
-					return nil
-				default:
-					panic(fmt.Errorf("WORKER EXCEPTION due to unexpected *url.Error when requesting url from queue to upload artifact to: %#v", subCause))
-				}
-			default:
-				panic(fmt.Errorf("WORKER EXCEPTION due to *tcclient.APICallException error when requesting url from queue to upload artifact to. Root cause: %#v", rootCause))
-			}
-		default:
-			panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when requesting url from queue to upload artifact to: %#v", t))
-		}
+		return task.classifyCreateArtifactError(artifact, payload, err)
 	}
 	// unmarshal response into object
 	resp := artifact.ResponseObject()
@@ -316,11 +114,78 @@ func (task *TaskRun) uploadArtifact(artifact artifacts.TaskArtifact) *CommandExe
 		return ResourceUnavailable(e)
 	}
 
-	e = artifact.FinishArtifact(resp, task.Queue, task.TaskID, strconv.Itoa(int(task.RunID)), artifact.Base().Name)
+	e = artifact.FinishArtifact(resp, queue, task.TaskID, strconv.Itoa(int(task.RunID)), artifact.Base().Name)
 	if e != nil {
 		task.Errorf("Error finishing artifact: %v", e)
 		return ResourceUnavailable(e)
 	}
 
 	return nil
+}
+
+func (task *TaskRun) classifyCreateArtifactError(artifact artifacts.TaskArtifact, payload []byte, err error) *CommandExecutionError {
+	switch t := err.(type) {
+	case *tcclient.APICallException:
+		switch rootCause := t.RootCause.(type) {
+		case httpbackoff.BadHttpResponseCode:
+			if rootCause.HttpResponseCode/100 == 5 {
+				return ResourceUnavailable(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
+			}
+			// was artifact already uploaded ( => malformed payload)?
+			if rootCause.HttpResponseCode == 409 {
+				fullError := fmt.Errorf(
+					"there was a conflict uploading artifact %v - this suggests artifact %v was already uploaded to this task with different content earlier on in this task.\n"+
+						"Check the artifacts section of the task payload at %v\n"+
+						"%v",
+					artifact.Base().Name,
+					artifact.Base().Name,
+					tcurls.API(config.RootURL, "queue", "v1", "task/"+task.TaskID),
+					rootCause,
+				)
+				return MalformedPayloadError(fullError)
+			}
+			// was task cancelled or deadline exceeded?
+			task.StatusManager.UpdateStatus()
+			status := task.StatusManager.LastKnownStatus()
+			if status == deadlineExceeded || status == cancelled {
+				return nil
+			}
+			// assume a problem with the request == worker bug
+			panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
+		case *url.Error:
+			switch subCause := rootCause.Err.(type) {
+			case *net.OpError:
+				log.Printf("Got *net.OpError - probably got no network at the moment: %#v", *subCause)
+				return nil
+			default:
+				panic(fmt.Errorf("WORKER EXCEPTION due to unexpected *url.Error when requesting url from queue to upload artifact to: %#v", subCause))
+			}
+		default:
+			panic(fmt.Errorf("WORKER EXCEPTION due to *tcclient.APICallException error when requesting url from queue to upload artifact to. Root cause: %#v", rootCause))
+		}
+	default:
+		panic(fmt.Errorf("WORKER EXCEPTION due to non-recoverable error when requesting url from queue to upload artifact to: %#v", t))
+	}
+}
+
+func copyToTempFileAsTaskUser(filePath string, pd *process.PlatformData) (tempFilePath string, err error) {
+	tempFilePath, err = gwCopyToTempFile(filePath, pd)
+
+	if runtime.GOOS == "windows" {
+		// Windows syscall logs are sent to stdout, even though the code appears
+		// to send to stderr through the log package.
+		// TODO: Figure out why this is the case and remove this hack.
+		// https://github.com/taskcluster/taskcluster/issues/6677
+		//
+		// We need to get the filepath from the final line of output.
+		//
+		// Example output:
+		// 2023/11/07 19:56:06Z Making system call GetProfilesDirectoryW with args: [C0000C15F0 C00027E980]
+		// 2023/11/07 19:56:06Z   Result: 1 0 The operation completed successfully.
+		// C:\Windows\SystemTemp\TestPrivilegedFileUpload664016823956663638
+		outputLines := strings.Split(tempFilePath, "\n")
+		tempFilePath = strings.TrimSpace(outputLines[len(outputLines)-1])
+	}
+
+	return
 }

@@ -48,6 +48,9 @@ const PulseMessages = lazy(() =>
 const Quickstart = lazy(() =>
   import(/* webpackChunkName: 'Quickstart' */ '../views/Quickstart')
 );
+const TcYamlDebug = lazy(() =>
+  import(/* webpackChunkName: 'TcYamlDebug' */ '../views/TcYamlDebug')
+);
 const Profile = lazy(() =>
   import(/* webpackChunkName: 'Profile' */ '../views/Profile')
 );
@@ -129,6 +132,10 @@ export default [
   {
     component: Quickstart,
     path: '/quickstart',
+  },
+  {
+    component: TcYamlDebug,
+    path: '/tcyaml-debug',
   },
   {
     component: Profile,

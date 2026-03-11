@@ -14,7 +14,7 @@ tasks:
           - push
 
     payload:
-      image: "ubuntu:latest"
+      image: "ubuntu:jammy"
       command:
         - test
     metadata:

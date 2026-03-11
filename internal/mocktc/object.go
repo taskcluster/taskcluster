@@ -6,8 +6,10 @@ import (
 	"testing"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcobject"
+	"maps"
+
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcobject"
 )
 
 type (
@@ -70,7 +72,7 @@ func (object *Object) CreateUpload(name string, payload *tcobject.CreateUploadRe
 func (object *Object) FinishUpload(name string, payload *tcobject.FinishUploadRequest) error {
 	o, exists := object.objects[name]
 	if !exists {
-		return fmt.Errorf("Cannot finish upload for %v (not found)", name)
+		return fmt.Errorf("cannot finish upload for %v (not found)", name)
 	}
 	o.uploadFinished = true
 
@@ -81,9 +83,7 @@ func (object *Object) FinishUpload(name string, payload *tcobject.FinishUploadRe
 			return err
 		}
 
-		for k, v := range newHashes {
-			o.hashes[k] = v
-		}
+		maps.Copy(o.hashes, newHashes)
 	}
 
 	return nil
@@ -93,14 +93,14 @@ func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjec
 	object.startDownloadCount++
 	o, exists := object.objects[name]
 	if !exists {
-		return nil, fmt.Errorf("Cannot start download for upload ID %v (not found)", name)
+		return nil, fmt.Errorf("cannot start download for upload ID %v (not found)", name)
 	}
 
 	hashesJson, _ := json.Marshal(o.hashes)
 
 	var err error
 	var dor tcobject.DownloadObjectResponse
-	var resp interface{}
+	var resp any
 	switch {
 	case payload.AcceptDownloadMethods.Simple:
 		if o.onMockS3 {
@@ -159,6 +159,7 @@ func (object *Object) StartDownloadCount() int {
 /////////////////////////////////////////////////
 
 func NewObject(t *testing.T, baseURL string) *Object {
+	t.Helper()
 	o := &Object{
 		t:       t,
 		objects: map[string]Obj{},

@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v50/tools/livelog/writer"
+	"github.com/taskcluster/taskcluster/v97/tools/livelog/writer"
 )
 
 func listenOnRandomPort() (net.Listener, uint16, error) {
@@ -26,7 +26,7 @@ func listenOnRandomPort() (net.Listener, uint16, error) {
 		return nil, 0, err
 	}
 
-	port, err := strconv.Atoi(portStr)
+	port, err := strconv.ParseUint(portStr, 10, 16)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -49,6 +49,7 @@ type TestLivelogServer struct {
 }
 
 func StartServer(t *testing.T, tls bool) *TestLivelogServer {
+	t.Helper()
 	tempdir, err := os.MkdirTemp("", "livelog-tests-")
 	require.NoError(t, err)
 
@@ -71,7 +72,8 @@ func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 		if err != nil {
 			return err
 		}
-		if addr == ":getport" {
+		switch addr {
+		case ":getport":
 			ts.getCond.L.Lock()
 			if ts.getPort != 0 {
 				panic("runServer called more than once!")
@@ -80,7 +82,7 @@ func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 			ts.getServer = server
 			ts.getCond.Broadcast()
 			ts.getCond.L.Unlock()
-		} else if addr == ":putport" {
+		case ":putport":
 			ts.putCond.L.Lock()
 			if ts.putPort != 0 {
 				panic("runServer called more than once!")
@@ -89,7 +91,7 @@ func StartServer(t *testing.T, tls bool) *TestLivelogServer {
 			ts.putServer = server
 			ts.putCond.Broadcast()
 			ts.putCond.L.Unlock()
-		} else {
+		default:
 			panic(fmt.Sprintf("Expected addr :putport or :getport, got %s", addr))
 		}
 		if crtFile != "" || keyFile != "" {
@@ -141,10 +143,7 @@ func (ts *TestLivelogServer) Close() {
 func (ts *TestLivelogServer) PutPort() uint16 {
 	ts.putCond.L.Lock()
 	defer ts.putCond.L.Unlock()
-	for {
-		if ts.putPort != 0 {
-			break
-		}
+	for ts.putPort == 0 {
 		ts.putCond.Wait()
 	}
 	return ts.putPort
@@ -154,10 +153,7 @@ func (ts *TestLivelogServer) PutPort() uint16 {
 func (ts *TestLivelogServer) GetPort() uint16 {
 	ts.getCond.L.Lock()
 	defer ts.getCond.L.Unlock()
-	for {
-		if ts.getPort != 0 {
-			break
-		}
+	for ts.getPort == 0 {
 		ts.getCond.Wait()
 	}
 	return ts.getPort

@@ -3,18 +3,20 @@ package mocktc
 import (
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v50/internal/mocktc/tc"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
 )
 
 type ServiceFactory struct {
 	auth          tc.Auth
 	queue         tc.Queue
+	index         tc.Index
 	secrets       tc.Secrets
 	purgeCache    tc.PurgeCache
 	workerManager tc.WorkerManager
@@ -22,6 +24,7 @@ type ServiceFactory struct {
 }
 
 func NewServiceFactory(t *testing.T) *ServiceFactory {
+	t.Helper()
 	creds := &tcclient.Credentials{
 		ClientID:    "test-client-id",
 		AccessToken: "test-access-token",
@@ -30,6 +33,7 @@ func NewServiceFactory(t *testing.T) *ServiceFactory {
 
 	return &ServiceFactory{
 		auth:          tcauth.New(creds, rootURL),
+		index:         tcindex.New(creds, rootURL),
 		queue:         tcqueue.New(creds, rootURL),
 		secrets:       tcsecrets.New(creds, rootURL),
 		purgeCache:    NewPurgeCache(t),
@@ -40,6 +44,10 @@ func NewServiceFactory(t *testing.T) *ServiceFactory {
 
 func (sf *ServiceFactory) Auth(creds *tcclient.Credentials, rootURL string) tc.Auth {
 	return sf.auth
+}
+
+func (sf *ServiceFactory) Index(creds *tcclient.Credentials, rootURL string) tc.Index {
+	return sf.index
 }
 
 func (sf *ServiceFactory) Queue(creds *tcclient.Credentials, rootURL string) tc.Queue {

@@ -1,16 +1,11 @@
-const path = require('path');
-const os = require('os');
-const util = require('util');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
-const taskcluster = require('taskcluster-client');
-const { TaskGraph, Lock, ConsoleRenderer, LogRenderer } = require('console-taskgraph');
-const generateTasks = require('./tasks');
-const {
-  gitIsDirty,
-  gitDescribe,
-  REPO_ROOT,
-} = require('../utils');
+import path from 'path';
+import os from 'os';
+import { rimraf } from 'rimraf';
+import mkdirp from 'mkdirp';
+import taskcluster from '@taskcluster/client';
+import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
+import { generateTasks } from './tasks/index.js';
+import { gitIsDirty, gitDescribe, REPO_ROOT } from '../utils/index.js';
 
 class Base {
   constructor(cmdOptions) {
@@ -44,7 +39,7 @@ class Base {
     const versionInfo = await this.versionInfo();
 
     const tasks = [];
-    generateTasks({
+    await generateTasks({
       tasks,
       baseDir: this.baseDir,
       logsDir: this.logsDir,
@@ -126,7 +121,6 @@ class Build extends Base {
       'target-monoimage-devel',
       'target-livelog',
       'target-client-shell',
-      'target-docker-worker',
       'target-generic-worker',
       'target-generic-worker-image',
       'target-worker-runner',
@@ -237,14 +231,12 @@ class Publish extends Base {
   }
 }
 
-const build = async (options) => {
+export const build = async (options) => {
   const build = new Build(options);
   await build.run();
 };
 
-const publish = async (options) => {
+export const publish = async (options) => {
   const publish = new Publish(options);
   await publish.run();
 };
-
-module.exports = { build, publish };

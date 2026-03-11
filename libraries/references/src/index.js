@@ -1,3 +1,3 @@
-const { References } = require('./references');
+import { References } from './references.js';
 
-module.exports = References;
+export default References;

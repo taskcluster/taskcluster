@@ -1,14 +1,9 @@
-const fs = require('fs');
-const glob = require('glob');
-const path = require('path');
-const {
-  ensureTask,
-  execCommand,
-  dockerPush,
-  REPO_ROOT,
-} = require('../../utils');
+import fs from 'fs';
+import glob from 'glob';
+import path from 'path';
+import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils/index.js';
 
-module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build livelog artifacts',
     requires: ['clean-artifacts-dir'],
@@ -72,10 +67,8 @@ module.exports = ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
       fs.writeFileSync(dockerfile, [
-        'FROM ubuntu:latest AS certs',
-        'RUN apt-get update',
-        'RUN apt-get upgrade -y',
-        'RUN apt-get install -y ca-certificates',
+        'FROM alpine:3 AS certs',
+        'RUN apk add --no-cache ca-certificates',
         'RUN mkdir /empty',
         'FROM scratch',
         'EXPOSE 60023',

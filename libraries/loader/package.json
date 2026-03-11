@@ -1,9 +1,16 @@
 {
-  "name": "taskcluster-lib-loader",
+  "name": "@taskcluster/lib-loader",
   "private": true,
-  "version": "50.1.1",
+  "version": "97.1.0",
   "description": "a component loader for taskcluster",
-  "main": "src/index.js",
+  "exports": {
+    ".": {
+      "default": "./src/index.js",
+      "types": "./@types/index.d.ts"
+    }
+  },
+  "types": "./@types/index.d.ts",
+  "type": "module",
   "directories": {
     "test": "test"
   },
@@ -14,5 +21,10 @@
     "lint": "eslint src/*.js test/*.js"
   },
   "author": "John Ford <jhford.mozilla@com>",
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "c8": "^8.0.1",
+    "eslint": "^8.57.0",
+    "mocha": "^10.8.2"
+  }
 }

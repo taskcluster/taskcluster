@@ -7,7 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v50/tools/jsonschema2go/text"
+	"slices"
+
+	"github.com/taskcluster/taskcluster/v97/tools/jsonschema2go/text"
 )
 
 //////////////////////////////////////////////////////////////////
@@ -31,16 +33,17 @@ func (api *API) Name() string {
 }
 
 func (api *API) String() string {
-	result := fmt.Sprintf(
+	var result strings.Builder
+	fmt.Fprintf(&result,
 		"Schema      = '%v'\n"+
 			"Title       = '%v'\n"+
 			"Description = '%v'\n",
 		api.Schema, api.Title, api.Description,
 	)
 	for i, entry := range api.Entries {
-		result += fmt.Sprintf("Entry %-6v=\n%v", i, entry.String())
+		fmt.Fprintf(&result, "Entry %-6v=\n%v", i, entry.String())
 	}
-	return result
+	return result.String()
 }
 
 func (api *API) postPopulate(apiDef *APIDefinition) {
@@ -122,7 +125,7 @@ import (
 	"errors"
 	"net/url"
 	"time"
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type ` + api.Name() + ` tcclient.Client
@@ -172,13 +175,15 @@ type ` + api.Name() + ` tcclient.Client
 			maxLength = len(j[0])
 		}
 	}
+	var loopContent strings.Builder
 	for _, j := range commentedSection {
 		if len(j[1]) > 0 {
-			content += j[0] + strings.Repeat(" ", maxLength-len(j[0])+3) + j[1] + "\n"
+			loopContent.WriteString(j[0] + strings.Repeat(" ", maxLength-len(j[0])+3) + j[1] + "\n")
 		} else {
-			content += j[0] + "\n"
+			loopContent.WriteString(j[0] + "\n")
 		}
 	}
+	content += loopContent.String()
 
 	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
@@ -221,9 +226,11 @@ func NewFromEnv() *` + api.Name() + ` {
 }
 
 `
+	var entriesContent strings.Builder
 	for _, entry := range api.Entries {
-		content += entry.generateAPICode(apiName)
+		entriesContent.WriteString(entry.generateAPICode(apiName))
 	}
+	content += entriesContent.String()
 	return content
 }
 
@@ -285,7 +292,7 @@ func (entry *APIEntry) generateAPICode(apiName string) string {
 }
 
 func (entry *APIEntry) getInputParamsAndQueryStringCode() (inputParams, queryCode, queryExpr string) {
-	inputArgs := append([]string{}, entry.Args...)
+	inputArgs := slices.Clone(entry.Args)
 
 	// add optional query parameters
 	queryCode = ""
@@ -318,7 +325,7 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	if len(comment) >= 1 && comment[len(comment)-1:] != "\n" {
 		comment += "\n"
 	}
-	comment += requiredScopesComment(&entry.Scopes)
+	comment += requiredScopesComment(entry.Scopes)
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v#%v\n", entry.Parent.apiDef.DocRoot, entry.Name)
 
@@ -345,19 +352,22 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	content += queryCode
 	content += "\tcd := tcclient.Client(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	if entry.OutputURL != "" {
-		content += "\tresponseObject, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), " + queryExpr + ")\n"
+		content += "\tresponseObject, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.PathEscape("), ">", ") + \"") + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), " + queryExpr + ")\n"
 		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas.SubSchema(entry.OutputURL).TypeName + "), err\n"
 	} else {
-		content += "\t_, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", nil, " + queryExpr + ")\n"
+		content += "\t_, _, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.PathEscape("), ">", ") + \"") + "\", nil, " + queryExpr + ")\n"
 		content += "\treturn err\n"
 	}
 	content += "}\n"
 	content += "\n"
 	// can remove any code that added an empty string to another string
-	return strings.Replace(content, ` + ""`, "", -1)
+	return strings.ReplaceAll(content, ` + ""`, "")
 }
 
 func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
+	if entry.Scopes == nil {
+		entry.Scopes = new(ScopeExpressionTemplate)
+	}
 	// if no required scopes, no reason to provide a signed url
 	// method, since no auth is required, so unsigned url already works,
 	// except for TestAuthenticateGet, which can be usefully used to test
@@ -366,7 +376,7 @@ func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 		return ""
 	}
 	comment := "// Returns a signed URL for " + entry.MethodName + ", valid for the specified duration.\n"
-	comment += requiredScopesComment(&entry.Scopes)
+	comment += requiredScopesComment(entry.Scopes)
 	comment += "//\n"
 	comment += fmt.Sprintf("// See %v for more details.\n", entry.MethodName)
 	inputParams, queryCode, queryExpr := entry.getInputParamsAndQueryStringCode()
@@ -380,14 +390,17 @@ func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.Name() + ") " + entry.MethodName + "_SignedURL(" + inputParams + ") (*url.URL, error) {\n"
 	content += queryCode
 	content += "\tcd := tcclient.Client(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
-	content += "\treturn (&cd).SignedURL(\"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", " + queryExpr + ", duration)\n"
+	content += "\treturn (&cd).SignedURL(\"" + strings.ReplaceAll(strings.ReplaceAll(entry.Route, "<", "\" + url.PathEscape("), ">", ") + \"") + "\", " + queryExpr + ", duration)\n"
 	content += "}\n"
 	content += "\n"
 	// can remove any code that added an empty string to another string
-	return strings.Replace(content, ` + ""`, "", -1)
+	return strings.ReplaceAll(content, ` + ""`, "")
 }
 
 func requiredScopesComment(scopes *ScopeExpressionTemplate) string {
+	if scopes == nil {
+		scopes = new(ScopeExpressionTemplate)
+	}
 	if scopes.Type == "" {
 		return ""
 	}
@@ -426,14 +439,14 @@ func (allOf *Conjunction) String() string {
 	case 1:
 		return allOf.AllOf[0].String()
 	}
-	var desc string
+	var desc strings.Builder
 	for _, exp := range allOf.AllOf {
 		x := text.Indent(exp.String(), "  ")
 		if len(x) >= 2 {
-			desc += "\n" + "* " + x[2:]
+			desc.WriteString("\n" + "* " + x[2:])
 		}
 	}
-	return "All of:" + desc
+	return "All of:" + desc.String()
 }
 
 func (anyOf *Disjunction) String() string {
@@ -443,14 +456,14 @@ func (anyOf *Disjunction) String() string {
 	if len(anyOf.AnyOf) == 1 {
 		return anyOf.AnyOf[0].String()
 	}
-	var desc string
+	var desc strings.Builder
 	for _, exp := range anyOf.AnyOf {
 		x := text.Indent(exp.String(), "  ")
 		if len(x) >= 2 {
-			desc += "\n" + "- " + x[2:]
+			desc.WriteString("\n" + "- " + x[2:])
 		}
 	}
-	return "Any of:" + desc
+	return "Any of:" + desc.String()
 }
 
 func (forEachIn *ForAll) String() string {
@@ -467,72 +480,72 @@ func (rs *RequiredScope) String() string {
 
 // MarshalJSON calls json.RawMessage method of the same name. Required since
 // ScopeExpressionTemplate is of type json.RawMessage...
-func (this *ScopeExpressionTemplate) MarshalJSON() ([]byte, error) {
-	return (this.RawMessage).MarshalJSON()
+func (m *ScopeExpressionTemplate) MarshalJSON() ([]byte, error) {
+	return (m.RawMessage).MarshalJSON()
 }
 
 // UnmarshalJSON identifies the data structure at runtime, and unmarshals in
 // the appropriate type
-func (this *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
-	if this == nil {
+func (m *ScopeExpressionTemplate) UnmarshalJSON(data []byte) error {
+	if m == nil {
 		return errors.New("ScopeExpressionTemplate: UnmarshalJSON on nil pointer")
 	}
-	this.RawMessage = append((this.RawMessage)[0:0], data...)
-	var tempObj interface{}
-	err := json.Unmarshal(this.RawMessage, &tempObj)
+	m.RawMessage = append((m.RawMessage)[0:0], data...)
+	var tempObj any
+	err := json.Unmarshal(m.RawMessage, &tempObj)
 	if err != nil {
 		panic("Internal error: " + err.Error())
 	}
 	switch t := tempObj.(type) {
 	case string:
-		this.Type = "RequiredScope"
-		this.RequiredScope = new(RequiredScope)
-		*(this.RequiredScope) = RequiredScope(t)
-	case map[string]interface{}:
+		m.Type = "RequiredScope"
+		m.RequiredScope = new(RequiredScope)
+		*(m.RequiredScope) = RequiredScope(t)
+	case map[string]any:
 		j, err := json.Marshal(t)
 		if err != nil {
 			panic("Internal error: " + err.Error())
 		}
 		if _, exists := t["AnyOf"]; exists {
-			this.Type = "AnyOf"
-			this.AnyOf = new(Disjunction)
-			err = json.Unmarshal(j, this.AnyOf)
+			m.Type = "AnyOf"
+			m.AnyOf = new(Disjunction)
+			err = json.Unmarshal(j, m.AnyOf)
 		}
 		if _, exists := t["AllOf"]; exists {
-			this.Type = "AllOf"
-			this.AllOf = new(Conjunction)
-			err = json.Unmarshal(j, this.AllOf)
+			m.Type = "AllOf"
+			m.AllOf = new(Conjunction)
+			err = json.Unmarshal(j, m.AllOf)
 		}
 		if _, exists := t["if"]; exists {
-			this.Type = "IfThen"
-			this.IfThen = new(Conditional)
-			err = json.Unmarshal(j, this.IfThen)
+			m.Type = "IfThen"
+			m.IfThen = new(Conditional)
+			err = json.Unmarshal(j, m.IfThen)
 		}
 		if _, exists := t["for"]; exists {
-			this.Type = "ForEachIn"
-			this.ForEachIn = new(ForAll)
-			err = json.Unmarshal(j, this.ForEachIn)
+			m.Type = "ForEachIn"
+			m.ForEachIn = new(ForAll)
+			err = json.Unmarshal(j, m.ForEachIn)
 		}
 		if err != nil {
 			panic("Internal error: " + err.Error())
 		}
 	// for old style scopesets [][]string (normal disjunctive form)
-	case []interface{}:
-		this.Type = "AnyOf"
-		this.AnyOf = &Disjunction{
-			AnyOf: make([]ScopeExpressionTemplate, len(t)),
+	case []any:
+		m.Type = "AnyOf"
+		m.AnyOf = &Disjunction{
+			AnyOf: make([]*ScopeExpressionTemplate, len(t)),
 		}
 		for i, j := range t {
-			allOf := j.([]interface{})
-			this.AnyOf.AnyOf[i] = ScopeExpressionTemplate{
+			allOf := j.([]any)
+			m.AnyOf.AnyOf[i] = &ScopeExpressionTemplate{
 				Type: "AllOf",
 				AllOf: &Conjunction{
-					AllOf: make([]ScopeExpressionTemplate, len(allOf)),
+					AllOf: make([]*ScopeExpressionTemplate, len(allOf)),
 				},
 			}
 			for k, l := range allOf {
 				rs := RequiredScope(l.(string))
-				this.AnyOf.AnyOf[i].AllOf.AllOf[k] = ScopeExpressionTemplate{
+				m.AnyOf.AnyOf[i].AllOf.AllOf[k] = &ScopeExpressionTemplate{
 					Type:          "RequiredScope",
 					RequiredScope: &rs,
 				}

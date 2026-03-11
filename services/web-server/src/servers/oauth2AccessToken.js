@@ -1,4 +1,4 @@
-module.exports = () => (request, response, next) => {
+export default () => (request, response, next) => {
   if (
     (!request.accessToken && !request.headers.authorization) ||
     !request.headers.authorization.startsWith('Bearer')

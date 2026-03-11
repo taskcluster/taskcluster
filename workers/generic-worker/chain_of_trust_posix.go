@@ -3,9 +3,9 @@
 package main
 
 import (
-	"github.com/taskcluster/taskcluster/v50/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
 )
 
 func (cot *ChainOfTrustTaskFeature) catCotKeyCommand() (*process.Command, error) {
-	return process.NewCommand([]string{"/bin/cat", config.Ed25519SigningKeyLocation}, cwd, cot.task.EnvVars(), taskContext.pd)
+	return process.NewCommand([]string{"/bin/cat", config.Ed25519SigningKeyLocation}, cwd, cot.task.EnvVars(), cot.task.pd)
 }

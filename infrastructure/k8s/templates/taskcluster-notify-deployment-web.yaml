@@ -8,30 +8,43 @@ metadata:
     app.kubernetes.io/component: taskcluster-notify-web
     app.kubernetes.io/part-of: taskcluster
 spec:
+  {{- if not .Values.notify.autoscaling.enabled }}
   replicas: {{ int (.Values.notify.procs.web.replicas) }}
+  {{- end }}
   selector:
     matchLabels: *ref_0
   template:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-notify-secret.yaml") . | sha256sum }}'
-      labels: *ref_0
+      labels:
+        app.kubernetes.io/name: taskcluster-notify
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: taskcluster-notify-web
+        app.kubernetes.io/part-of: taskcluster
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9100'
     spec:
       serviceAccountName: taskcluster-notify
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+      terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-notify-web
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - notify/web
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.notify.procs.web.cpu }}'
               memory: '{{ .Values.notify.procs.web.memory }}'
           env:
             - name: PORT
-              value: '80'
+              value: '8080'
             - name: TASKCLUSTER_ROOT_URL
               value: '{{ .Values.rootUrl }}'
             - name: USE_KUBERNETES_DNS_SERVICE_DISCOVERY
@@ -41,21 +54,31 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-notify
+            - configMapRef:
+                name: taskcluster-notify
           ports:
-            - containerPort: 80
+            - containerPort: 8080
+            - name: prometheus
+              containerPort: 9100
+              protocol: TCP
           readinessProbe:
             httpGet:
               path: /api/notify/v1/ping
-              port: 80
+              port: 8080
             timeoutSeconds: 5
             periodSeconds: 10
-            initialDelaySeconds: 3
+            initialDelaySeconds: 6
           livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - '-c'
-                - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
-            initialDelaySeconds: 86400
-            periodSeconds: 60
-            failureThreshold: 1
+            httpGet:
+              path: /api/notify/v1/ping
+              port: 8080
+            timeoutSeconds: 3
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - '-c'
+                  - sleep 120

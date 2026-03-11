@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { withRouter } from 'react-router-dom';
-import memoize from 'fast-memoize';
 import { titleCase } from 'title-case';
 import Grid from '@material-ui/core/Grid';
 import Autocomplete from '@material-ui/lab/Autocomplete/Autocomplete';
 import { compareVersions, validate } from 'compare-versions';
 import Switch from '@material-ui/core/Switch';
 import { Chip, FormControlLabel } from '@material-ui/core';
+import { memoize } from '../../../utils/memoize';
 import Markdown from '../../../components/Markdown';
 import ChangelogMd from '../../../../../CHANGELOG.md';
 import TextField from '../../../components/TextField';
@@ -58,6 +58,12 @@ const FILTERS = ['version', 'from', 'to', 'q', 'all', 'audience'];
     '& strong': {
       background: theme.palette.secondary.main,
       fontWeight: 'bold',
+    },
+    '& summary': {
+      cursor: 'pointer',
+    },
+    '& summary::marker': {
+      color: theme.palette.secondary.main,
     },
   },
   cbx: {
@@ -243,16 +249,18 @@ export default class Changelog extends Component {
                 onClick={() => onToggleFilter('version', section.version)}>
                 {section.version}
               </span>
-              <Chip
-                className={classes.chip}
-                size="small"
-                color="primary"
-                label={section.audience}
-                clickable
-                onClick={() => onToggleFilter('audience', section.audience)}
-              />
+              {section.audience && (
+                <Chip
+                  className={classes.chip}
+                  size="small"
+                  color="primary"
+                  label={section.audience}
+                  clickable
+                  onClick={() => onToggleFilter('audience', section.audience)}
+                />
+              )}
             </h1>
-            <Markdown className={classes.md}>
+            <Markdown allowHtml className={classes.md}>
               {maybeHighlight(section.html, this.state.q)}
             </Markdown>
           </Grid>

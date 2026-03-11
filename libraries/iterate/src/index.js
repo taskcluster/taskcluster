@@ -1,7 +1,8 @@
-const WatchDog = require('./watchdog');
-const debug = require('debug')('iterate');
-const events = require('events');
-const { hrtime } = require('process');
+import WatchDog from './watchdog.js';
+import debugFactory from 'debug';
+const debug = debugFactory('iterate');
+import events from 'events';
+import { hrtime } from 'process';
 
 /**
  * The Iterate Class.  See README.md for explanation of constructor
@@ -61,7 +62,7 @@ class Iterate extends events.EventEmitter {
     this.handler = opts.handler;
 
     if (!opts.monitor || typeof opts.monitor !== 'object') {
-      throw new Error('monitor is required and must be an object from taskcluster-lib-monitor');
+      throw new Error('monitor is required and must be an object from @taskcluster/lib-monitor');
     }
     this.monitor = opts.monitor;
 
@@ -217,4 +218,4 @@ class Iterate extends events.EventEmitter {
   }
 }
 
-module.exports = Iterate;
+export default Iterate;

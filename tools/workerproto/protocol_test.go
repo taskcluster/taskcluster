@@ -8,15 +8,24 @@ import (
 )
 
 func RequireInitialized(t *testing.T, prot *Protocol, initialized bool) {
-	prot.initializedCond.L.Lock()
-	defer prot.initializedCond.L.Unlock()
-	require.Equal(t, initialized, prot.initialized)
+	t.Helper()
+	select {
+	case <-prot.initializedChan:
+		if !initialized {
+			t.Errorf("Expected protocol to be not initialized, but it is initialized")
+		}
+	default:
+		if initialized {
+			t.Errorf("Expected protocol to be initialized, but it is not initialized")
+		}
+	}
 }
 
 func TestCapabilityNegotiation(t *testing.T) {
 	test := func(t *testing.T, runnerHasCap bool, workerHasCap bool) {
 		// wire transports together in both directions, and finish them at
 		// the end of the test
+		t.Helper()
 		r2wReader, r2wWriter := io.Pipe()
 		defer r2wWriter.Close()
 		w2rReader, w2rWriter := io.Pipe()

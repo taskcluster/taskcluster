@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/purge-cache/v1/api.json
+// This package was generated from the reference schema of
+// the PurgeCache service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/purge-cache/v1/api.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The purge-cache service is responsible for tracking cache-purge requests.
 //
 // User create purge requests for specific caches on specific workers, and
@@ -41,7 +45,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type PurgeCache tcclient.Client
@@ -137,7 +141,7 @@ func (purgeCache *PurgeCache) Version() error {
 // See #purgeCache
 func (purgeCache *PurgeCache) PurgeCache(workerPoolId string, payload *PurgeCacheRequest) error {
 	cd := tcclient.Client(*purgeCache)
-	_, _, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(workerPoolId), nil, nil)
+	_, _, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.PathEscape(workerPoolId), nil, nil)
 	return err
 }
 
@@ -202,7 +206,7 @@ func (purgeCache *PurgeCache) PurgeRequests(workerPoolId, since string) (*OpenPu
 		v.Add("since", since)
 	}
 	cd := tcclient.Client(*purgeCache)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.QueryEscape(workerPoolId), new(OpenPurgeRequestList), v)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/purge-cache/"+url.PathEscape(workerPoolId), new(OpenPurgeRequestList), v)
 	return responseObject.(*OpenPurgeRequestList), err
 }
 
@@ -219,7 +223,7 @@ func (purgeCache *PurgeCache) PurgeRequests_SignedURL(workerPoolId, since string
 		v.Add("since", since)
 	}
 	cd := tcclient.Client(*purgeCache)
-	return (&cd).SignedURL("/purge-cache/"+url.QueryEscape(workerPoolId), v, duration)
+	return (&cd).SignedURL("/purge-cache/"+url.PathEscape(workerPoolId), v, duration)
 }
 
 // Respond with a service heartbeat.

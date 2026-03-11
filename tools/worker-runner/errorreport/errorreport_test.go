@@ -6,16 +6,16 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v50/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v50/tools/workerproto"
-	ptesting "github.com/taskcluster/taskcluster/v50/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
+	ptesting "github.com/taskcluster/taskcluster/v97/tools/workerproto/testing"
 )
 
 func TestHandleMessage(t *testing.T) {
 	description := "this is a serious error"
-	extra := map[string]interface{}{
+	extra := map[string]any{
 		"foo": "bar",
 	}
 	kind := "severe"
@@ -38,7 +38,7 @@ func TestHandleMessage(t *testing.T) {
 	wkr.WorkerProtocol.Start(true)
 	wkr.WorkerProtocol.Send(workerproto.Message{
 		Type: "error-report",
-		Properties: map[string]interface{}{
+		Properties: map[string]any{
 			"description": description,
 			"extra":       extra,
 			"kind":        kind,
@@ -49,7 +49,7 @@ func TestHandleMessage(t *testing.T) {
 	var reports []*tcworkermanager.WorkerErrorReport
 	var err error
 	func() {
-		for i := 0; i < 200; i++ {
+		for range 200 {
 			reports, err = tc.FakeWorkerManagerWorkerErrorReports()
 			if len(reports) == 1 {
 				return

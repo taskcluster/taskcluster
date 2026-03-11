@@ -1,13 +1,22 @@
 {
-  "name": "taskcluster-notify",
-  "version": "50.1.1",
+  "name": "@taskcluster/notify",
+  "version": "97.1.0",
   "private": true,
   "description": "Collect all of the ways of notifying users into one place for other tc services.",
   "license": "MPL-2.0",
+  "exports": "./src/main.js",
+  "type": "module",
   "scripts": {
     "coverage": "c8 yarn test",
     "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "test": "mocha test/*_test.js",
     "lint": "eslint src/*.js test/*.js"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-sns": "^3.864.0",
+    "@aws-sdk/client-sqs": "^3.864.0",
+    "c8": "^8.0.1",
+    "eslint": "^8.57.0",
+    "mocha": "^10.8.2"
   }
 }

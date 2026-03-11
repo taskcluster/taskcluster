@@ -6,14 +6,14 @@ if [ -z "${TASK_ID}" ]; then
 fi
 
 # (redundant to the same script in the docker image; this can be removed a day or two after #3116 lands)
-pg_version=11
+pg_version=15
 echo 'local all all trust' > /etc/postgresql/$pg_version/main/pg_hba.conf
 echo 'host all all 127.0.0.1/32 trust' >> /etc/postgresql/$pg_version/main/pg_hba.conf
 echo 'host all all ::1/128 trust' >> /etc/postgresql/$pg_version/main/pg_hba.conf
 
 # start the server
 echo "Starting pg server.."
-pg_ctlcluster 11 main start
+pg_ctlcluster 15 main start
 
 # if necessary, create the required users
 if [ "$1" = "--users" ]; then

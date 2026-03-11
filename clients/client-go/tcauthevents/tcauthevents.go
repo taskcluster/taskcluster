@@ -1,12 +1,16 @@
 // The following code is AUTO-GENERATED. Please DO NOT edit.
-// To update this generated code, run the following command:
-// in the /codegenerator/model subdirectory of this project,
-// making sure that `${GOPATH}/bin` is in your `PATH`:
-//
-// go install && go generate
+// To update this generated code, run `go generate` in the
+// clients/client-go/codegenerator/model subdirectory of the
+// taskcluster git repository.
 
-// This package was generated from the schema defined at
-// /references/auth/v1/exchanges.json
+// This package was generated from the reference schema of
+// the AuthEvents service, which is also published here:
+//
+//   * ${TASKCLUSTER_ROOT_URL}/references/auth/v1/exchanges.json
+//
+// where ${TASKCLUSTER_ROOT_URL} points to the root URL of
+// your taskcluster deployment.
+
 // The auth service is responsible for storing credentials, managing
 // assignment of scopes, and validation of request signatures from other
 // services.
@@ -39,7 +43,7 @@
 //	queueevents.TaskDefined{WorkerType: "gaia"}
 //
 // In addition, this means that you will also get objects in your callback method like *queueevents.TaskDefinedMessage
-// rather than just interface{}.
+// rather than just any.
 package tcauthevents
 
 import (
@@ -62,7 +66,7 @@ func (binding ClientCreated) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/client-created"
 }
 
-func (binding ClientCreated) NewPayloadObject() interface{} {
+func (binding ClientCreated) NewPayloadObject() any {
 	return new(ClientMessage)
 }
 
@@ -81,7 +85,7 @@ func (binding ClientUpdated) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/client-updated"
 }
 
-func (binding ClientUpdated) NewPayloadObject() interface{} {
+func (binding ClientUpdated) NewPayloadObject() any {
 	return new(ClientMessage)
 }
 
@@ -100,7 +104,7 @@ func (binding ClientDeleted) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/client-deleted"
 }
 
-func (binding ClientDeleted) NewPayloadObject() interface{} {
+func (binding ClientDeleted) NewPayloadObject() any {
 	return new(ClientMessage)
 }
 
@@ -119,7 +123,7 @@ func (binding RoleCreated) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/role-created"
 }
 
-func (binding RoleCreated) NewPayloadObject() interface{} {
+func (binding RoleCreated) NewPayloadObject() any {
 	return new(RoleMessage)
 }
 
@@ -138,7 +142,7 @@ func (binding RoleUpdated) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/role-updated"
 }
 
-func (binding RoleUpdated) NewPayloadObject() interface{} {
+func (binding RoleUpdated) NewPayloadObject() any {
 	return new(RoleMessage)
 }
 
@@ -157,14 +161,14 @@ func (binding RoleDeleted) ExchangeName() string {
 	return "exchange/taskcluster-auth/v1/role-deleted"
 }
 
-func (binding RoleDeleted) NewPayloadObject() interface{} {
+func (binding RoleDeleted) NewPayloadObject() any {
 	return new(RoleMessage)
 }
 
-func generateRoutingKey(x interface{}) string {
+func generateRoutingKey(x any) string {
 	val := reflect.ValueOf(x).Elem()
 	p := make([]string, 0, val.NumField())
-	for i := 0; i < val.NumField(); i++ {
+	for i := range val.NumField() {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		tag := typeField.Tag

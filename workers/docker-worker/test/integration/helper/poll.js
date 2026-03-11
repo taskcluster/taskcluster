@@ -1,5 +1,5 @@
 const Debug = require('debug');
-const debug = Debug('taskcluster-lib-testing:poll');
+const debug = Debug('@taskcluster/lib-testing:poll');
 const sleep = require('./sleep');
 
 /**

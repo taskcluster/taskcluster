@@ -129,7 +129,7 @@ dependencies:
 
 1. `cd /vagrant`
 2. `./build.sh` -- builds some Docker images
-3. `yarn install --frozen-lockfile` -- installs Node modules
+3. `yarn install --immutable` -- installs Node modules
 
 #### Running Tests
 

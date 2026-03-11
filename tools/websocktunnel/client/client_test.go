@@ -13,7 +13,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v50/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/util"
 )
 
 func testConfigurer(id, addr string, retryConfig RetryConfig, logger *log.Logger) Configurer {
@@ -114,7 +114,16 @@ func TestExponentialBackoffFailure(t *testing.T) {
 		t.Fatalf("should not run for more than %d milliseconds", maxTime)
 	}
 
-	if count > 10 || count < 4 {
+	// Under load we have seen as many as 13 attempts before the timeout has
+	// taken effect, even though technically 13 attempts, which would includes
+	// 12x 200ms timeouts, should not be possible in 2s. But no need to be
+	// super strict here; websocktunnel doesn't run on a RTOS. Let's generously
+	// allow 15 retries.
+	//
+	// See:
+	//   * https://github.com/taskcluster/taskcluster/issues/6414
+	//   * https://github.com/taskcluster/taskcluster/issues/6852
+	if count > 15 || count < 4 {
 		t.Fatalf("wrong number of retries: %d", count)
 	}
 }
@@ -155,7 +164,7 @@ func TestAuthorizer(t *testing.T) {
 			return
 		}
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("unexpected signing method")
 			}

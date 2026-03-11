@@ -1,13 +1,14 @@
-const _ = require('lodash');
-const util = require('util');
-const assert = require('assert');
-const taskcluster = require('taskcluster-client');
-const events = require('events');
-const LRU = require('quick-lru');
-const debug = require('debug')('auth:ScopeResolver');
-const trie = require('./trie');
-const ScopeSetBuilder = require('./scopesetbuilder');
-const { consume } = require('taskcluster-lib-pulse');
+import _ from 'lodash';
+import util from 'util';
+import assert from 'assert';
+import taskcluster from '@taskcluster/client';
+import events from 'events';
+import LRU from 'quick-lru';
+import debugFactory from 'debug';
+const debug = debugFactory('auth:ScopeResolver');
+import * as trie from './trie.js';
+import ScopeSetBuilder from './scopesetbuilder.js';
+import { consume } from '@taskcluster/lib-pulse';
 
 const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 
@@ -29,7 +30,7 @@ class ScopeResolver extends events.EventEmitter {
       disableCache: false, // useful for performance measurement
     });
     this._maxLastUsedDelay = options.maxLastUsedDelay;
-    assert(options.monitor, 'expected an instance of taskcluster-lib-monitor');
+    assert(options.monitor, 'expected an instance of @taskcluster/lib-monitor');
     assert(/^ *-/.test(options.maxLastUsedDelay),
       'maxLastUsedDelay must be negative');
 
@@ -366,4 +367,4 @@ class ScopeResolver extends events.EventEmitter {
 }
 
 // Export ScopeResolver
-module.exports = ScopeResolver;
+export default ScopeResolver;

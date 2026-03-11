@@ -1,5 +1,5 @@
-import logging
 import asyncio
+import logging
 
 from .. import utils
 
@@ -20,7 +20,7 @@ async def retry(maxRetries, tryFn):
         # if this isn't the first retry then we sleep
         if retry > 0:
             snooze = float(retry * retry) / 10.0
-            log.info('Sleeping %0.2f seconds for exponential backoff', snooze)
+            log.info("Sleeping %0.2f seconds for exponential backoff", snooze)
             await asyncio.sleep(utils.calculateSleepTime(retry))
 
         retriableException = None
@@ -35,7 +35,7 @@ async def retry(maxRetries, tryFn):
             return res
 
         if retry < maxRetries:
-            log.warning(f'Retrying because of: {retriableException}')
+            log.warning(f"Retrying because of: {retriableException}")
             continue
 
         raise retriableException

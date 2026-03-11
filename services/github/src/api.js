@@ -1,8 +1,22 @@
-const crypto = require('crypto');
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const _ = require('lodash');
-const { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS, GITHUB_TASKS_FOR } = require('./constants');
-const { shouldSkipCommit, shouldSkipPullRequest } = require('./utils');
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import _ from 'lodash';
+import libUrls from 'taskcluster-lib-urls';
+import yaml from 'js-yaml';
+import path from 'path';
+
+const __dirname = new URL('.', import.meta.url).pathname;
+const assetsPath = path.join(__dirname, '/../assets/');
+
+import {
+  EVENT_TYPES,
+  CHECK_RUN_ACTIONS,
+  PUBLISHERS,
+  GITHUB_TASKS_FOR,
+  GITHUB_BUILD_STATES,
+} from './constants.js';
+
+import { shouldSkipCommit, shouldSkipPullRequest, checkGithubSignature, shouldSkipComment, getTaskclusterCommand } from './utils.js';
+import { getEventPayload } from './fake-payloads.js';
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
@@ -100,26 +114,13 @@ function getRerunDetails(eventData) {
   };
 }
 
-/**
- * Hashes a payload by some secret, using the same algorithm that
- * GitHub uses to compute their X-Hub-Signature HTTP header. Used
- * for verifying the legitimacy of WebHooks.
- **/
-function generateXHubSignature(secret, payload) {
-  return 'sha1=' + crypto.createHmac('sha1', secret).update(payload).digest('hex');
-}
-
-/**
- * Compare hmac.digest('hex') signatures in constant time
- * Double hmac verification is the preferred way to do this
- * since we can't predict optimizations performed by the runtime.
- * https: *www.isecpartners.com/blog/2011/february/double-hmac-verification.aspx
- **/
-function compareSignatures(sOne, sTwo) {
-  const secret = crypto.randomBytes(16).toString('hex');
-  let h1 = crypto.createHmac('sha1', secret).update(sOne);
-  let h2 = crypto.createHmac('sha1', secret).update(sTwo);
-  return h1.digest('hex') === h2.digest('hex');
+function getIssueCommentDetails(eventData) {
+  return {
+    'event.type': `issue_comment.${eventData.action}`,
+    'event.head.user.login': eventData.sender.login,
+    'taskcluster_comment': getTaskclusterCommand(eventData.comment),
+    // rest of the details would be fetched in the handler
+  };
 }
 
 /***
@@ -154,7 +155,12 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
   let statuses;
 
   try {
-    statuses = (await github.repos.listCommitStatusesForRef({ owner, repo, ref: branch })).data;
+    statuses = (await github.repos.listCommitStatusesForRef({
+      owner,
+      repo,
+      ref: branch,
+      request: { retries: 1 },
+    })).data;
   } catch (e) {
     // github sends 422 when branch doesn't exist
     if (e.code === 404 || e.code === 422) {
@@ -173,7 +179,7 @@ async function findTCChecks(github, owner, repo, branch, configuration) {
   let checks;
 
   try {
-    checks = (await github.checks.listForRef({ owner, repo, ref: branch })).data.check_runs;
+    checks = (await github.checks.listForRef({ owner, repo, ref: branch, request: { retries: 1 } })).data.check_runs;
   } catch (e) {
     if (e.code === 404 || e.code === 422) {
       return [];
@@ -199,24 +205,26 @@ let builder = new APIBuilder({
   ].join('\n'),
   serviceName: 'github',
   apiVersion: 'v1',
-  context: ['db', 'monitor', 'publisher', 'cfg', 'ajv', 'github'],
+  context: ['db', 'monitor', 'publisher', 'cfg', 'ajv', 'github', 'queueClient', 'intree', 'schemaset'],
   errorCodes: {
     ForbiddenByGithub: 403,
   },
 });
 
 // Export API
-module.exports = builder;
+export default builder;
 
 /** Define tasks */
 builder.declare({
   method: 'post',
   route: '/github',
+  input: 'github-webhook-event.yml',
   name: 'githubWebHookConsumer',
   scopes: null,
   title: 'Consume GitHub WebHook',
   category: 'Github Service',
   stability: 'stable',
+  noPublish: true, // Webhook endpoint is server-side only, not called by clients
   description: [
     'Capture a GitHub event and publish it via pulse, if it\'s a push,',
     'release, check run or pull request.',
@@ -242,21 +250,31 @@ builder.declare({
   if (!body) {
     return resolve(res, 400, 'Request missing a body');
   }
+  const installationId = body.installation && body.installation.id;
 
   let webhookSecrets = this.cfg.webhook.secret;
-  let xHubSignature = req.headers['x-hub-signature'];
+  // sha256 version is recommended by github but if it's missing we fallback to sha1
+  // sha256 can be missing in some older Github Enterprise versions
+  // checkGithubSignature function will handle both cases
+  let xHubSignature = req.headers['x-hub-signature-256'] || req.headers['x-hub-signature'];
 
   if (xHubSignature && !webhookSecrets) {
     return resolve(res, 400, 'Server is not setup to handle secrets');
   } else if (webhookSecrets && !xHubSignature) {
     return resolve(res, 400, 'Request missing a secret');
   } else if (webhookSecrets && xHubSignature) {
+    const bodyPayload = JSON.stringify(body);
     // Verify that our payload is legitimate
-    if (!webhookSecrets.some(webhookSecret => {
-      let calculatedSignature = generateXHubSignature(webhookSecret,
-        JSON.stringify(body));
-      return compareSignatures(calculatedSignature, xHubSignature);
-    })) {
+    if (!webhookSecrets.some(webhookSecret => checkGithubSignature(webhookSecret, bodyPayload, xHubSignature))) {
+      // let sentry know about this
+      await this.monitor.reportError(
+        new Error('X-hub-signature does not match'), {
+          xHubSignature,
+          installationId,
+          event: req.headers['x-github-event'],
+          eventId: req.headers['x-github-delivery'],
+        },
+      );
       return resolve(res, 403, 'X-hub-signature does not match; bad webhook secret?');
     }
   }
@@ -264,7 +282,6 @@ builder.declare({
   let msg = {};
   let publisherKey = '';
 
-  const installationId = body.installation && body.installation.id;
   this.monitor.log.webhookReceived({ eventId, eventType, installationId });
 
   debugMonitor.debug({
@@ -313,6 +330,31 @@ builder.declare({
         msg.branch = body.ref.split('/').slice(2).join('/');
         break;
 
+      case EVENT_TYPES.ISSUE_COMMENT:
+        // Comments on PRs can trigger tasks, too
+        // For this to work, there should be a `/taskcluster cmd` in the comment
+        // Plus repository should have a `.taskcluster.yml` in default branch with
+        // "policy.allowComments: collaborators" in it
+        // Message is being processed in the same way as PULL_REQUEST
+        // and missing data would be fetched from the PR
+
+        if (shouldSkipComment(body)) {
+          debugMonitor.debug({
+            message: 'Skipping issue_comment event',
+            body,
+          });
+          return resolve(res, 200, 'Skipping issue_comment event');
+        }
+
+        publisherKey = PUBLISHERS.PULL_REQUEST;
+        msg.organization = sanitizeGitHubField(body.repository.owner.login);
+        msg.installationId = installationId;
+        msg.tasks_for = GITHUB_TASKS_FOR.ISSUE_COMMENT;
+        msg.action = body.action; // not a PR action, but a comment action
+        msg.branch = 'unknown'; // not yet available at this point
+        msg.details = getIssueCommentDetails(body);
+        break;
+
       case EVENT_TYPES.PING:
         return resolve(res, 200, 'Received ping event!');
 
@@ -336,7 +378,7 @@ builder.declare({
       case EVENT_TYPES.CHECK_RUN:
         // We only want to check if re-run was requested
         if (body.action !== CHECK_RUN_ACTIONS.REREQUESTED) {
-          return resolve(res, 400, 'Only rerequested for check runs is supported');
+          return resolve(res, 200, 'Only rerequested for check runs is supported');
         }
 
         if (body?.sender?.type?.toLowerCase() === 'bot') {
@@ -361,7 +403,7 @@ builder.declare({
         break;
 
       default:
-        return resolve(res, 400, 'No publisher available for X-GitHub-Event: ' + eventType);
+        return resolve(res, 200, 'No publisher available for X-GitHub-Event: ' + eventType);
     }
   } catch (e) {
     e.webhookPayload = body;
@@ -373,11 +415,27 @@ builder.declare({
   const instGithub = await this.github.getInstallationGithub(installationId);
 
   // Not all webhook payloads include an e-mail for the user who triggered an event
-  let headUser = msg.details['event.head.user.login'].toString();
-  let userDetails = (await instGithub.users.getByUsername({ username: headUser })).data;
-  msg.details['event.head.user.email'] = this.ajv.validate({ type: 'string', format: 'email' }, userDetails.email)
-    ? userDetails.email
-    : msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
+  const headUser = msg.details['event.head.user.login'].toString();
+  const defaultEmail = msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
+  let resolvedEmail = defaultEmail;
+
+  try {
+    const { data: userDetails } = await instGithub.users.getByUsername({ username: headUser });
+    if (this.ajv.validate({ type: 'string', format: 'email' }, userDetails.email)) {
+      resolvedEmail = userDetails.email;
+    }
+  } catch (err) {
+    if (err.status !== 404 && err.code !== 404) {
+      throw err;
+    }
+    debugMonitor.debug({
+      message: `GitHub user ${headUser} not found when resolving email, falling back to noreply`,
+      status: err.status || err.code,
+      fallbackEmail: defaultEmail,
+    });
+  }
+
+  msg.details['event.head.user.email'] = resolvedEmail;
   msg.repository = sanitizeGitHubField(body.repository.name);
   msg.eventId = eventId;
 
@@ -418,6 +476,12 @@ builder.declare({
       'Must provide `repository` if querying `sha`',
       {});
   }
+  if (pullRequest && !repository) {
+    return res.reportError('InputError',
+      'Must provide `repository` if querying `pullRequest`',
+      {});
+  }
+
   let { continuationToken, rows: builds } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_github_builds_pr(
@@ -450,6 +514,95 @@ builder.declare({
 });
 
 builder.declare({
+  method: 'post',
+  route: '/builds/:owner/:repo/cancel',
+  name: 'cancelBuilds',
+  scopes: 'github:cancel-builds:<owner>:<repo>',
+  title: 'Cancel repository builds',
+  stability: 'stable',
+  category: 'Github Service',
+  output: 'build-list.yml',
+  query: {
+    sha: /./,
+    pullRequest: /^([0-9]*)$/,
+  },
+  description: [
+    'Cancel all running Task Groups associated with given repository and sha or pullRequest number',
+  ].join('\n'),
+}, async function(req, res) {
+  const { owner: organization, repo: repository } = req.params;
+  const { sha, pullRequest } = req.query;
+
+  if (repository && !organization) {
+    return res.reportError('InputError',
+      'Must provide `organization` if querying `repository`',
+      {});
+  }
+  if (sha && !repository) {
+    return res.reportError('InputError',
+      'Must provide `repository` if querying `sha`',
+      {});
+  }
+  if (pullRequest && !repository) {
+    return res.reportError('InputError',
+      'Must provide `repository` if querying `pullRequest`',
+      {});
+  }
+
+  const debugMon = this.monitor.childMonitor({ organization, repository, sha, pullRequest });
+  const builds = await this.db.fns.get_pending_github_builds(
+    null, null, organization, repository, sha, pullRequest,
+  );
+
+  if (!builds.length) {
+    debugMon.debug('No builds found to cancel');
+    return res.reportError('ResourceNotFound', 'No cancellable builds found', {});
+  }
+
+  const taskGroupIds = builds.map(build => build.task_group_id);
+  debugMon.debug(`Cancelling ${taskGroupIds.length} task groups: ${taskGroupIds.join(', ')}`);
+
+  try {
+    const limitedQueueClient = this.queueClient.use({
+      authorizedScopes: [
+        `assume:repo:github.com/${organization}/${repository}:*`,
+        'queue:seal-task-group:taskcluster-github/*',
+        'queue:cancel-task-group:taskcluster-github/*',
+      ],
+    });
+
+    await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.sealTaskGroup(taskGroupId)));
+    await Promise.all(taskGroupIds.map(taskGroupId => limitedQueueClient.cancelTaskGroup(taskGroupId)));
+    await Promise.all(taskGroupIds.map(taskGroupId => this.db.fns.set_github_build_state(
+      taskGroupId, GITHUB_BUILD_STATES.CANCELLED,
+    )));
+  } catch (err) {
+    await this.monitor.reportError(err);
+    if (err.code === 'InsufficientScopes') {
+      return res.reportError('InsufficientScopes', err.message, {});
+    }
+    return res.reportError('InputError', err.message, {});
+  }
+
+  return res.reply({
+    builds: builds.map(entry => {
+      return {
+        organization: entry.organization,
+        repository: entry.repository,
+        sha: entry.sha,
+        state: GITHUB_BUILD_STATES.CANCELLED, // no need to refetch from db, we just updated it
+        taskGroupId: entry.task_group_id,
+        eventType: entry.event_type,
+        eventId: entry.event_id,
+        created: entry.created.toJSON(),
+        updated: entry.updated.toJSON(),
+        pullRequestNumber: entry.pull_request_number || undefined,
+      };
+    }),
+  });
+});
+
+builder.declare({
   name: 'badge',
   scopes: 'github:get-badge:<owner>:<repo>:<branch>',
   title: 'Latest Build Status Badge',
@@ -467,7 +620,7 @@ builder.declare({
 
   // This has nothing to do with user input, so we should be safe
   let fileConfig = {
-    root: __dirname + '/../assets/',
+    root: assetsPath,
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Content-Security-Policy': "default-source 'none'; style-source 'unsafe-inline'",
@@ -733,6 +886,86 @@ builder.declare({
   }
 
   return res.reportError('ResourceNotFound', 'Issue not found', {});
+});
+
+builder.declare({
+  name: 'renderTaskclusterYml',
+  title: 'Render .taskcluster.yml file',
+  description: [
+    'This endpoint allows to render the .taskcluster.yml file for a given event or payload.',
+    'This is useful to preview the result of the .taskcluster.yml file before pushing it to',
+    'the repository.',
+    'Read more about the .taskcluster.yml file in the [documentation](https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1)',
+  ].join('\n'),
+  stability: 'experimental',
+  method: 'post',
+  category: 'Github Service',
+  route: '/taskcluster-yml',
+  input: 'render-taskcluster-yml-input.yml',
+  output: 'render-taskcluster-yml-output.yml',
+  scopes: null,
+}, async function(req, res) {
+  let {
+    body,
+    organization = 'taskcluster',
+    repository = 'testing',
+    fakeEvent: {
+      type: fakeEventType,
+      action: fakeEventAction,
+      overrides: fakeEventData,
+    } = {},
+  } = req.body;
+
+  const fakeEventToFnMap = {
+    'github-push': getPushDetails,
+    'github-pull-request': getPullRequestDetails,
+    'github-pull-request-untrusted': getPullRequestDetails,
+    'github-release': getReleaseDetails,
+    'github-issue-comment': getIssueCommentDetails,
+  };
+
+  const branch = fakeEventData?.branch || 'main';
+  const fakePayload = getEventPayload(
+    fakeEventType, fakeEventAction, organization, repository, branch, fakeEventData,
+  );
+
+  const payload = {
+    organization,
+    repository,
+    installationId: Math.floor(Math.random() * 100000),
+    eventId: `evt-${organization}-${repository}-${fakeEventType}-${fakeEventAction}`,
+    branch,
+    tasks_for: fakeEventType,
+    fakeEventAction,
+    body: fakePayload,
+    details: fakeEventToFnMap[fakeEventType](fakePayload),
+    ...fakeEventData,
+  };
+
+  // simulate what handlers/job.js:219 would do with injecting extra variable
+  if (fakeEventType === 'github-issue-comment') {
+    payload.body.taskcluster_comment = payload.details.taskcluster_comment;
+  }
+
+  const { rootUrl } = this.cfg.taskcluster;
+  const validator = await this.schemaset.validator(rootUrl);
+
+  try {
+    const tcYml = yaml.load(body);
+    const { tasks, scopes } = this.intree({
+      config: tcYml,
+      payload,
+      validator,
+      schema: {
+        0: libUrls.schema(rootUrl, 'github', 'v1/taskcluster-github-config.yml'),
+        1: libUrls.schema(rootUrl, 'github', 'v1/taskcluster-github-config.v1.yml'),
+      },
+    });
+
+    return res.reply({ tasks, scopes });
+  } catch (e) {
+    return res.reportError('InvalidInput', e.message, {});
+  }
 });
 
 builder.declare({

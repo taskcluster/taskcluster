@@ -35,7 +35,7 @@ properties:
           description: Github revision associated with the build.
         state:
           type: string
-          enum: ['pending', 'success', 'error', 'failure']
+          enum: ['pending', 'success', 'error', 'failure', 'cancelled']
           description: Github status associated with the build.
         taskGroupId:
           type: string

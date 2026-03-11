@@ -25,6 +25,7 @@ union Node =
   WorkerType |
   Worker |
   WorkerCompact |
+  WMWorker |
   Namespace |
   IndexedTask |
   CachePurge |
@@ -35,7 +36,11 @@ union Node =
   WorkerManagerWorkerPoolSummary |
   WorkerManagerProvider |
   WorkerManagerError |
-  HookLastFire
+  HookLastFire |
+  PendingTask |
+  ClaimedTask |
+  WorkerPoolLaunchConfig |
+  WorkerPoolLaunchConfigStats
 
 interface Edge {
   cursor: String

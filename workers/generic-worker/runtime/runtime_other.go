@@ -10,35 +10,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v50/workers/generic-worker/gdm3"
-	"github.com/taskcluster/taskcluster/v50/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gdm3"
 )
 
 const (
 	gdm3CustomConfFile = "/etc/gdm3/custom.conf"
 )
 
-func (user *OSUser) CreateNew(okIfExists bool) (err error) {
-	if okIfExists {
-		panic("(*(runtime.OSUser)).CreateNew(true) not implemented on linux")
-	}
-
-	createUserScript := `
-		set -eu
-		username="${0}"
-		homedir="/home/${0}"
-		password="${1}"
-		echo "Creating user '${username}' with home directory '${homedir}' and password '${password}'..."
-		/usr/bin/sudo /usr/sbin/adduser --disabled-password --gecos "" --debug --home "${homedir}" "${username}"
-		echo "${username}:${password}" | /usr/bin/sudo /usr/sbin/chpasswd
-	`
-
-	return host.Run("/bin/bash", "-c", createUserScript, user.Name, user.Password)
-}
-
-func DeleteUser(username string) (err error) {
-	return host.Run("/usr/bin/sudo", "/usr/sbin/deluser", "--force", "--remove-all-files", username)
-}
+var (
+	cachedInteractiveUsername string = ""
+)
 
 func ListUserAccounts() (usernames []string, err error) {
 	var passwd []byte
@@ -60,43 +41,58 @@ func UserHomeDirectoriesParent() string {
 	return "/home"
 }
 
-func WaitForLoginCompletion(timeout time.Duration) error {
+func WaitForLoginCompletion(timeout time.Duration, username string) (err error) {
 	deadline := time.Now().Add(timeout)
 	log.Print("Checking if user is logged in...")
+	var interactiveUsername string
 	for time.Now().Before(deadline) {
-		_, err := InteractiveUsername()
+		interactiveUsername, err = InteractiveUsername()
 		if err != nil {
 			log.Printf("WARNING: Error checking for interactive user: %v", err)
 			time.Sleep(time.Second)
 			continue
 		}
-		return nil
+		if interactiveUsername != username {
+			log.Printf("WARNING: user %v appears to be logged in but was expecting %v.", interactiveUsername, username)
+			cachedInteractiveUsername = ""
+			time.Sleep(time.Second)
+			continue
+		}
+		return
 	}
 	log.Print("Timed out waiting for user login")
-	return errors.New("No user logged in with console session")
+	if interactiveUsername == "" {
+		return errors.New("no user logged in with console session")
+	}
+	return fmt.Errorf("interactive username %v does not match task user %v", interactiveUsername, username)
+
 }
 
-func InteractiveUsername() (string, error) {
-	return gdm3.InteractiveUsername()
+func InteractiveUsername() (interactiveUsername string, err error) {
+	// Cache the result if successful, for both reliability and efficiency.
+	// Caller is responsible for retries.  The logged in user does not
+	// change during lifetime of generic-worker process, so we can cache
+	// result. See
+	//  https://github.com/taskcluster/taskcluster/issues/7012
+	if cachedInteractiveUsername != "" {
+		return cachedInteractiveUsername, nil
+	}
+	interactiveUsername, err = gdm3.InteractiveUsername()
+	if err == nil {
+		cachedInteractiveUsername = interactiveUsername
+	}
+	return
 }
 
 func SetAutoLogin(user *OSUser) error {
 	source, err := os.ReadFile(gdm3CustomConfFile)
 	if err != nil {
-		return fmt.Errorf("Could not read file %v to update auto login user: %v", gdm3CustomConfFile, err)
+		return fmt.Errorf("could not read file %v to update auto login user: %v", gdm3CustomConfFile, err)
 	}
 	updated := gdm3.SetAutoLogin(user.Name, source)
 	err = os.WriteFile(gdm3CustomConfFile, updated, 0644)
 	if err != nil {
-		return fmt.Errorf("Error overwriting file %v: %v", gdm3CustomConfFile, err)
+		return fmt.Errorf("error overwriting file %v: %v", gdm3CustomConfFile, err)
 	}
 	return nil
-}
-
-func AutoLogonUser() (username string) {
-	source, err := os.ReadFile(gdm3CustomConfFile)
-	if err != nil {
-		return ""
-	}
-	return gdm3.AutoLogonUser(source)
 }

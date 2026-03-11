@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v50/internal/jsontest"
+	"github.com/taskcluster/taskcluster/v97/internal/jsontest"
 )
 
 func (c *Client) quickBackoff() {
@@ -134,6 +134,7 @@ type ExtHeaderRawCert struct {
 // header; if they are set to anything, including an empty array, that this
 // matches what is found in the header.
 func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
+	t.Helper()
 	tempCredentials, err := permCreds.CreateTemporaryCredentials(time.Second*1, "d", "e", "f")
 	if err != nil {
 		t.Fatalf("Received error when generating temporary credentials: %s", err)
@@ -181,6 +182,7 @@ func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
 // checkExtHeader simply checks if getExtHeader returns the same results as the
 // specified expected header.
 func checkExtHeader(t *testing.T, creds *Credentials, expectedHeader string) {
+	t.Helper()
 	actualHeader, err := getExtHeader(creds)
 	if err != nil {
 		t.Fatalf("Received error when generating ext header: %s", err)
@@ -288,12 +290,12 @@ func TestNoFollowRedirects(t *testing.T) {
 		Authenticate: false,
 	}
 
-	var result map[string]interface{}
+	var result map[string]any
 	res, cs, err := client.APICall(nil, "GET", "/whatever", &result, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 303, cs.HTTPResponse.StatusCode)
 	assert.Equal(t,
-		&map[string]interface{}{"url": "http://nosuch.example.com"},
+		&map[string]any{"url": "http://nosuch.example.com"},
 		res)
 }
 

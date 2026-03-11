@@ -14,12 +14,14 @@ run_standalone() {
     echo '  "accessToken": "---access--token---,'
     echo '  "clientId": "---client-id----",'
     echo '  "ed25519SigningKeyLocation": "/etc/generic-worker/ed25519_key",'
-    echo '  "rootURL": "https://taskcluster.url/",'
-    echo '  "workerId": "workerId",'
-    echo '  "workerType": "workerType",'
+    echo '  "headlessTasks": true,'
     echo '  "livelogExecutable": "/usr/local/bin/livelog",'
+    echo '  "publicIP": "127.1.2.3",'
+    echo '  "requiredDiskSpaceMegabytes": 512,'
+    echo '  "rootURL": "https://taskcluster.url/",'
     echo '  "taskclusterProxyExecutable": "/usr/local/bin/taskcluster-proxy",'
-    echo '  "publicIP": "127.1.2.3"'
+    echo '  "workerId": "workerId",'
+    echo '  "workerType": "workerType"'
     echo "}"
     exit 2
   fi
@@ -33,7 +35,7 @@ run_static() {
   if [ ! -f /etc/generic-worker/worker-runner.json ]
   then
     echo "No /etc/generic-worker/worker-runner.json found, please create one"
-    echo "Example config.json:"
+    echo "Example worker-runner.json:"
     echo '{'
     echo '  "worker": {'
     echo '    "implementation": "generic-worker",'
@@ -44,17 +46,16 @@ run_static() {
     echo '    "providerID": "static",'
     echo '    "providerType": "static",'
     echo '    "rootURL": "http://taskcluster/",'
-    echo '    "workerID": "vm-1",'
+    echo '    "staticSecret": "---static-secret---",'
     echo '    "workerGroup": "local",'
-    echo '    "workerPoolID": "docker-compose/generic-worker",'
+    echo '    "workerID": "vm-1",'
     echo '    "workerNodeType": "generic-worker",'
-    echo '    "staticSecret": "---static-secret---"'
+    echo '    "workerPoolID": "docker-compose/generic-worker"'
     echo '  },'
     echo '  "workerConfig": {'
     echo '    "ed25519SigningKeyLocation": "/etc/generic-worker/ed25519_key",'
-    echo '    "shutdown": {'
-    echo '      "enabled": false'
-    echo '    }'
+    echo '    "headlessTasks": true',
+    echo '    "requiredDiskSpaceMegabytes": 512'
     echo '  }'
     echo '}'
     exit 2

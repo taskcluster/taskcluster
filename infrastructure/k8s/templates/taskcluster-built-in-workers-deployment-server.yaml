@@ -19,12 +19,17 @@ spec:
     spec:
       serviceAccountName: taskcluster-built-in-workers
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+      terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-built-in-workers-server
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - built-in-workers/server
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.built_in_workers.procs.server.cpu }}'
@@ -39,6 +44,8 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-built-in-workers
+            - configMapRef:
+                name: taskcluster-built-in-workers
           ports: []
           livenessProbe:
             exec:
@@ -46,6 +53,6 @@ spec:
                 - /bin/sh
                 - '-c'
                 - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
-            initialDelaySeconds: 86400
+            initialDelaySeconds: 432000
             periodSeconds: 60
             failureThreshold: 1

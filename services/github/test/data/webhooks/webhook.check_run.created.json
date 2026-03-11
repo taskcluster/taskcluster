@@ -6,7 +6,8 @@
     "X-GitHub-Event": "check_run",
     "X-GitHub-Delivery": "81254e00-d9c1-11e6-8964-748a671f0cee",
     "content-type": "application/json",
-    "X-Hub-Signature": "sha1=3d74eaa88b247c1b160bfb8b870cbdefc651b2e0"
+    "X-Hub-Signature": "sha1=3d74eaa88b247c1b160bfb8b870cbdefc651b2e0",
+    "X-Hub-Signature-256": "sha256=0000003d74eaa88b247c1b160bfb8b870cbdefc651b2e0"
   },
   "body": {
     "action": "created",

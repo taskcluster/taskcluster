@@ -1,11 +1,11 @@
-const DataLoader = require('dataloader');
-const sift = require('../utils/sift');
-const fetch = require('../utils/fetch');
-const ConnectionLoader = require('../ConnectionLoader');
-const Task = require('../entities/Task');
-const maybeSignedUrl = require('../utils/maybeSignedUrl');
+import DataLoader from 'dataloader';
+import sift from '../utils/sift.js';
+import got from 'got';
+import ConnectionLoader from '../ConnectionLoader.js';
+import Task from '../entities/Task.js';
+import maybeSignedUrl from '../utils/maybeSignedUrl.js';
 
-module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const task = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async (taskId) => {
@@ -53,7 +53,7 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
             'public/actions.json',
           );
 
-          const raw = await fetch(url);
+          const raw = await got(url).json();
 
           return raw.actions
             ? {
@@ -63,7 +63,7 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
             : null;
         } catch (err) {
           // if the URL does not exist or is an error artifact, return nothing
-          if (err.response && (err.response.status === 404 || err.response.status === 424)) {
+          if (err.response && (err.response.statusCode === 404 || err.response.statusCode === 424)) {
             return null;
           }
 
@@ -85,6 +85,38 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
       };
     },
   );
+  const listPendingTasks = new ConnectionLoader(
+    async ({ taskQueueId, options }) => {
+      const raw = await queue.listPendingTasks(taskQueueId, options);
+
+      return {
+        ...raw,
+        items: raw.tasks.map(({ taskId, runId, task, inserted }) => ({
+          taskId,
+          runId,
+          inserted,
+          task: new Task(taskId, null, task),
+        })),
+      };
+    },
+  );
+  const listClaimedTasks = new ConnectionLoader(
+    async ({ taskQueueId, options }) => {
+      const raw = await queue.listClaimedTasks(taskQueueId, options);
+
+      return {
+        ...raw,
+        items: raw.tasks.map(({ taskId, runId, task, claimed, workerGroup, workerId }) => ({
+          taskId,
+          runId,
+          claimed,
+          workerGroup,
+          workerId,
+          task: new Task(taskId, null, task),
+        })),
+      };
+    },
+  );
 
   return {
     dependents,
@@ -92,5 +124,7 @@ module.exports = ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req,
     indexedTask,
     taskGroup,
     taskActions,
+    listPendingTasks,
+    listClaimedTasks,
   };
 };

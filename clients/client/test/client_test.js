@@ -1,13 +1,14 @@
-const taskcluster = require('../');
-const assert = require('assert');
-const path = require('path');
-const nock = require('nock');
-const testing = require('taskcluster-lib-testing');
-const net = require('net');
-const helper = require('./helper');
+import taskcluster from '../src/index.js';
+import assert from 'assert';
+import path from 'path';
+import nock from 'nock';
+import net from 'net';
+import testing from './helper.js';
+
+const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
-  helper.withRestoredEnvVars();
+  testing.withRestoredEnvVars();
 
   // This suite exercises the request and response functionality of
   // the client against a totally fake service defined by this reference
@@ -148,7 +149,7 @@ suite(testing.suiteName(), function() {
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
       serviceDiscoveryScheme: 'k8s-dns',
-      makeClient: () => {
+      makeClient: async () => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         return new Fake({
           rootUrl: 'https://example.not-there',
@@ -167,7 +168,7 @@ suite(testing.suiteName(), function() {
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
       serviceDiscoveryScheme: 'k8s-dns',
-      makeClient: () => {
+      makeClient: async () => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         taskcluster.setServiceDiscoveryScheme('k8s-dns');
         const clnt = new Fake({
@@ -186,7 +187,7 @@ suite(testing.suiteName(), function() {
       urlPrefix: 'https://whatever.net/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
-      makeClient: () => {
+      makeClient: async () => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         return new Fake({
           rootUrl: 'https://whatever.net',
@@ -202,7 +203,7 @@ suite(testing.suiteName(), function() {
       urlPrefix: 'https://whatever.net/taskcluster/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net/taskcluster',
-      makeClient: () => {
+      makeClient: async () => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         return new Fake({
           rootUrl: 'https://whatever.net/taskcluster',
@@ -218,7 +219,7 @@ suite(testing.suiteName(), function() {
       urlPrefix: 'https://foo.whatever.net/taskcluster/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://foo.whatever.net/taskcluster',
-      makeClient: () => {
+      makeClient: async () => {
         const Fake = taskcluster.createClient(referenceNameStyle);
         return new Fake({
           rootUrl: 'https://foo.whatever.net/taskcluster',
@@ -234,11 +235,10 @@ suite(testing.suiteName(), function() {
       urlPrefix: 'https://whatever.net/api/fake2',
       Fake: taskcluster.createClient(referenceNameStyle),
       rootUrl: 'https://whatever.net',
-      makeClient: () => {
+      makeClient: async () => {
         process.env.TASKCLUSTER_ROOT_URL = 'https://whatever.net';
         const clientPath = path.resolve(__dirname, '..', 'src', 'client.js');
-        delete require.cache[clientPath];
-        const cleanClient = require(clientPath);
+        const cleanClient = await import(clientPath);
         const Fake = cleanClient.createClient(referenceNameStyle);
         const fake = new Fake(Object.assign({},
           taskcluster.fromEnvVars(), {
@@ -283,8 +283,8 @@ suite(testing.suiteName(), function() {
     const { name, urlPrefix, trueUrlPrefix, makeClient, Fake, rootUrl, serviceDiscoveryScheme } = subjects[subject];
     suite(name, () => {
       let client;
-      suiteSetup('create client', function() {
-        client = makeClient();
+      suiteSetup('create client', async function() {
+        client = await makeClient();
       });
 
       test('Simple GET', async () => {

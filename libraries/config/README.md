@@ -45,6 +45,10 @@ Each of these is also supported with a trailing `:optional` which does nothing
 during loading of the configuration but does help us generate schemas for
 allowed configuration options for deployments of taskcluster.
 
+To be able to know which values are sensitive and should be treated as secrets,
+the `!env` syntax is extended with a `!env:secret` suffix.
+If used with optional, it should be marked as secret first: `!env:secret:optional`.
+
 Loading Configuration
 ---------------------
 
@@ -62,9 +66,9 @@ provide credentials. So in most cases, services load load configuration with
 
 The default options are shown here:
 ```js
-var config = require('taskcluster-lib-config');
+import config from '@taskcluster/lib-config';
 
-var cfg = config({
+const cfg = config({
   files: [ // Files to load configuration from
    // Paths are relative to services/<serviceName>
    {path: 'config.yml', required: true},

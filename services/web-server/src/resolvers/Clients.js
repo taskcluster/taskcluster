@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   Query: {
     clients(parent, { clientOptions, connection, filter }, { loaders }) {
       return loaders.clients.load({ clientOptions, connection, filter });

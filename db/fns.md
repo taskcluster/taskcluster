@@ -4,11 +4,14 @@
  * [auth functions](#auth)
    * [`create_client`](#create_client)
    * [`delete_client`](#delete_client)
-   * [`expire_clients`](#expire_clients)
+   * [`expire_clients_return_client_ids`](#expire_clients_return_client_ids)
    * [`get_client`](#get_client)
    * [`get_clients`](#get_clients)
+   * [`get_combined_audit_history`](#get_combined_audit_history)
    * [`get_roles`](#get_roles)
+   * [`insert_auth_audit_history`](#insert_auth_audit_history)
    * [`modify_roles`](#modify_roles)
+   * [`purge_audit_history`](#purge_audit_history)
    * [`update_client`](#update_client)
    * [`update_client_last_used`](#update_client_last_used)
  * [github functions](#github)
@@ -18,10 +21,11 @@
    * [`get_github_build_pr`](#get_github_build_pr)
    * [`get_github_builds_pr`](#get_github_builds_pr)
    * [`get_github_check_by_run_id`](#get_github_check_by_run_id)
-   * [`get_github_check_by_task_id`](#get_github_check_by_task_id)
+   * [`get_github_check_by_task_group_and_task_id`](#get_github_check_by_task_group_and_task_id)
    * [`get_github_checks_by_task_group_id`](#get_github_checks_by_task_group_id)
    * [`get_github_integration`](#get_github_integration)
    * [`get_github_integrations`](#get_github_integrations)
+   * [`get_pending_github_builds`](#get_pending_github_builds)
    * [`set_github_build_state`](#set_github_build_state)
    * [`upsert_github_integration`](#upsert_github_integration)
  * [hooks functions](#hooks)
@@ -33,10 +37,12 @@
    * [`delete_last_fires`](#delete_last_fires)
    * [`expire_last_fires`](#expire_last_fires)
    * [`get_hook`](#get_hook)
+   * [`get_hook_groups`](#get_hook_groups)
    * [`get_hooks`](#get_hooks)
    * [`get_hooks_queues`](#get_hooks_queues)
    * [`get_last_fire`](#get_last_fire)
-   * [`get_last_fires`](#get_last_fires)
+   * [`get_last_fires_with_task_state`](#get_last_fires_with_task_state)
+   * [`insert_hooks_audit_history`](#insert_hooks_audit_history)
    * [`update_hook`](#update_hook)
    * [`update_hooks_queue_bindings`](#update_hooks_queue_bindings)
  * [index functions](#index)
@@ -49,6 +55,7 @@
    * [`get_index_namespaces`](#get_index_namespaces)
    * [`get_indexed_task`](#get_indexed_task)
    * [`get_indexed_tasks`](#get_indexed_tasks)
+   * [`get_tasks_from_indexes_and_namespaces`](#get_tasks_from_indexes_and_namespaces)
    * [`update_index_namespace`](#update_index_namespace)
    * [`update_indexed_task`](#update_indexed_task)
  * [notify functions](#notify)
@@ -70,18 +77,13 @@
    * [`purge_cache_wpid`](#purge_cache_wpid)
    * [`purge_requests_wpid`](#purge_requests_wpid)
  * [queue functions](#queue)
+   * [`add_task_dependencies`](#add_task_dependencies)
    * [`add_task_dependency`](#add_task_dependency)
-   * [`azure_queue_count`](#azure_queue_count)
-   * [`azure_queue_delete`](#azure_queue_delete)
-   * [`azure_queue_delete_expired`](#azure_queue_delete_expired)
-   * [`azure_queue_get`](#azure_queue_get)
-   * [`azure_queue_put`](#azure_queue_put)
-   * [`azure_queue_update`](#azure_queue_update)
    * [`cancel_task`](#cancel_task)
    * [`cancel_task_group`](#cancel_task_group)
    * [`check_task_claim`](#check_task_claim)
    * [`claim_task`](#claim_task)
-   * [`create_queue_artifact`](#create_queue_artifact)
+   * [`create_queue_artifact_2`](#create_queue_artifact_2)
    * [`create_task_projid`](#create_task_projid)
    * [`delete_queue_artifact`](#delete_queue_artifact)
    * [`delete_queue_artifacts`](#delete_queue_artifacts)
@@ -93,10 +95,14 @@
    * [`expire_task_groups`](#expire_task_groups)
    * [`expire_task_queues`](#expire_task_queues)
    * [`expire_tasks`](#expire_tasks)
+   * [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
+   * [`get_claimed_tasks_by_worker`](#get_claimed_tasks_by_worker)
    * [`get_dependent_tasks`](#get_dependent_tasks)
-   * [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
-   * [`get_queue_artifact`](#get_queue_artifact)
-   * [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+   * [`get_expired_artifacts_for_deletion_2`](#get_expired_artifacts_for_deletion_2)
+   * [`get_multiple_tasks`](#get_multiple_tasks)
+   * [`get_pending_tasks_by_task_queue_id`](#get_pending_tasks_by_task_queue_id)
+   * [`get_queue_artifact_2`](#get_queue_artifact_2)
+   * [`get_queue_artifacts_paginated_2`](#get_queue_artifacts_paginated_2)
    * [`get_task_group_size`](#get_task_group_size)
    * [`get_task_group2`](#get_task_group2)
    * [`get_task_projid`](#get_task_projid)
@@ -109,10 +115,32 @@
    * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
    * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
    * [`queue_artifact_present`](#queue_artifact_present)
+   * [`queue_change_task_group_priority`](#queue_change_task_group_priority)
+   * [`queue_change_task_priority`](#queue_change_task_priority)
+   * [`queue_claimed_task_delete`](#queue_claimed_task_delete)
+   * [`queue_claimed_task_get`](#queue_claimed_task_get)
+   * [`queue_claimed_task_put`](#queue_claimed_task_put)
+   * [`queue_claimed_task_resolved`](#queue_claimed_task_resolved)
+   * [`queue_claimed_tasks_count`](#queue_claimed_tasks_count)
+   * [`queue_pending_task_delete`](#queue_pending_task_delete)
+   * [`queue_pending_tasks_add`](#queue_pending_tasks_add)
+   * [`queue_pending_tasks_count`](#queue_pending_tasks_count)
+   * [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
+   * [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
+   * [`queue_pending_tasks_get`](#queue_pending_tasks_get)
+   * [`queue_pending_tasks_release`](#queue_pending_tasks_release)
+   * [`queue_resolved_task_delete`](#queue_resolved_task_delete)
+   * [`queue_resolved_task_get`](#queue_resolved_task_get)
+   * [`queue_resolved_task_put`](#queue_resolved_task_put)
+   * [`queue_task_deadline_delete`](#queue_task_deadline_delete)
+   * [`queue_task_deadline_get`](#queue_task_deadline_get)
+   * [`queue_task_deadline_put`](#queue_task_deadline_put)
    * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
+   * [`queue_worker_stats`](#queue_worker_stats)
    * [`queue_worker_task_seen`](#queue_worker_task_seen)
    * [`reclaim_task`](#reclaim_task)
    * [`remove_task`](#remove_task)
+   * [`remove_task_dependencies`](#remove_task_dependencies)
    * [`remove_task_dependency`](#remove_task_dependency)
    * [`rerun_task`](#rerun_task)
    * [`resolve_task`](#resolve_task)
@@ -124,9 +152,10 @@
    * [`update_queue_artifact_2`](#update_queue_artifact_2)
  * [secrets functions](#secrets)
    * [`delete_secret`](#delete_secret)
-   * [`expire_secrets`](#expire_secrets)
+   * [`expire_secrets_return_names`](#expire_secrets_return_names)
    * [`get_secret`](#get_secret)
    * [`get_secrets`](#get_secrets)
+   * [`insert_secrets_audit_history`](#insert_secrets_audit_history)
    * [`upsert_secret`](#upsert_secret)
  * [web_server functions](#web_server)
    * [`add_github_access_token`](#add_github_access_token)
@@ -143,42 +172,59 @@
    * [`session_remove`](#session_remove)
    * [`session_touch`](#session_touch)
  * [worker_manager functions](#worker_manager)
-   * [`create_worker`](#create_worker)
-   * [`create_worker_pool`](#create_worker_pool)
-   * [`create_worker_pool_error`](#create_worker_pool_error)
+   * [`collect_launch_configs_if_exist`](#collect_launch_configs_if_exist)
+   * [`create_worker_pool_error_launch_config`](#create_worker_pool_error_launch_config)
+   * [`create_worker_pool_launch_config`](#create_worker_pool_launch_config)
+   * [`create_worker_pool_with_launch_configs`](#create_worker_pool_with_launch_configs)
+   * [`create_worker_with_lc`](#create_worker_with_lc)
    * [`delete_worker`](#delete_worker)
    * [`delete_worker_pool`](#delete_worker_pool)
    * [`delete_worker_pool_error`](#delete_worker_pool_error)
    * [`expire_worker_pool_errors`](#expire_worker_pool_errors)
+   * [`expire_worker_pool_launch_configs`](#expire_worker_pool_launch_configs)
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
-   * [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
-   * [`get_queue_worker_with_wm_join_2`](#get_queue_worker_with_wm_join_2)
-   * [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
-   * [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
-   * [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
+   * [`get_non_stopped_workers_with_launch_config_scanner`](#get_non_stopped_workers_with_launch_config_scanner)
+   * [`get_queue_worker_with_wm_data`](#get_queue_worker_with_wm_data)
+   * [`get_queue_workers_with_wm_data`](#get_queue_workers_with_wm_data)
    * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
    * [`get_task_queues_wm`](#get_task_queues_wm)
-   * [`get_worker_2`](#get_worker_2)
-   * [`get_worker_pool_error`](#get_worker_pool_error)
-   * [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
-   * [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
-   * [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
-   * [`get_workers_without_provider_data`](#get_workers_without_provider_data)
+   * [`get_worker_3`](#get_worker_3)
+   * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
+   * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
+   * [`get_worker_pool_counts_and_capacity_lc`](#get_worker_pool_counts_and_capacity_lc)
+   * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
+   * [`get_worker_pool_error_launch_config`](#get_worker_pool_error_launch_config)
+   * [`get_worker_pool_error_launch_configs`](#get_worker_pool_error_launch_configs)
+   * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
+   * [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
+   * [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
+   * [`get_worker_pool_error_worker_pools`](#get_worker_pool_error_worker_pools)
+   * [`get_worker_pool_errors_for_worker_pool2`](#get_worker_pool_errors_for_worker_pool2)
+   * [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
+   * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
+   * [`get_worker_pool_with_launch_configs`](#get_worker_pool_with_launch_configs)
+   * [`get_worker_pools_counts_and_capacity`](#get_worker_pools_counts_and_capacity)
+   * [`get_worker_pools_with_launch_configs`](#get_worker_pools_with_launch_configs)
+   * [`insert_worker_manager_audit_history`](#insert_worker_manager_audit_history)
    * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
-   * [`update_worker_2`](#update_worker_2)
+   * [`update_worker_3`](#update_worker_3)
    * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
-   * [`update_worker_pool_with_capacity_and_counts_by_state`](#update_worker_pool_with_capacity_and_counts_by_state)
+   * [`update_worker_pool_with_launch_configs`](#update_worker_pool_with_launch_configs)
+   * [`upsert_worker_pool_launch_configs`](#upsert_worker_pool_launch_configs)
 
 ## auth
 
 * [`create_client`](#create_client)
 * [`delete_client`](#delete_client)
-* [`expire_clients`](#expire_clients)
+* [`expire_clients_return_client_ids`](#expire_clients_return_client_ids)
 * [`get_client`](#get_client)
 * [`get_clients`](#get_clients)
+* [`get_combined_audit_history`](#get_combined_audit_history)
 * [`get_roles`](#get_roles)
+* [`insert_auth_audit_history`](#insert_auth_audit_history)
 * [`modify_roles`](#modify_roles)
+* [`purge_audit_history`](#purge_audit_history)
 * [`update_client`](#update_client)
 * [`update_client_last_used`](#update_client_last_used)
 
@@ -202,6 +248,56 @@ description, and expires match, disabled is false, and it was created in
 the last 15 minutes, then nothing is changed.  Otherwise, a
 UNIQUE_VIOLATION is raised.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  begin
+    insert into clients (
+      client_id,
+      description,
+      encrypted_access_token,
+      expires,
+      disabled,
+      scopes,
+      created,
+      last_modified,
+      last_date_used,
+      last_rotated,
+      delete_on_expiration
+    ) values (
+      client_id_in,
+      description_in,
+      encrypted_access_token_in,
+      expires_in,
+      disabled_in,
+      scopes_in,
+      now(),
+      now(),
+      now(),
+      now(),
+      delete_on_expiration_in
+    );
+  exception
+    when UNIQUE_VIOLATION then
+      perform 1
+      from clients
+      where
+        client_id = client_id_in and
+        scopes = scopes_in and
+        expires = expires_in and
+        description = description_in and
+        not disabled and
+        created > now() - interval '15 minutes';
+      if not found then
+        raise exception 'client already exists with different values' using errcode = 'unique_violation';
+      end if;
+  end;
+end
+```
+
+</details>
+
 ### delete_client
 
 * *Mode*: write
@@ -212,14 +308,39 @@ UNIQUE_VIOLATION is raised.
 
 Delete the given client.  If the client does not exist, nothing happens.
 
-### expire_clients
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from clients
+  where client_id = client_id_in;
+end
+```
+
+</details>
+
+### expire_clients_return_client_ids
 
 * *Mode*: write
 * *Arguments*:
-* *Returns*: `integer`
-* *Last defined on version*: 41
+* *Returns*: `table`
+  * `client_id text`
+* *Last defined on version*: 114
 
-Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set.
+Delete all clients with an 'expires' in the past and with 'delete_on_expiration' set and return client_ids
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  delete from clients
+  where expires < now() and delete_on_expiration
+  returning clients.client_id;
+end
+```
+
+</details>
 
 ### get_client
 
@@ -241,6 +362,30 @@ Delete all clients with an 'expires' in the past and with 'delete_on_expiration'
 * *Last defined on version*: 41
 
 Get a client. Returns an empty set if the client does not exist.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    clients.client_id,
+    clients.description,
+    clients.encrypted_access_token,
+    clients.expires,
+    clients.disabled,
+    clients.scopes,
+    clients.created,
+    clients.last_modified,
+    clients.last_date_used,
+    clients.last_rotated,
+    clients.delete_on_expiration
+  from clients
+  where clients.client_id = client_id_in;
+end
+```
+
+</details>
 
 ### get_clients
 
@@ -268,6 +413,81 @@ client_id beginning with `prefix` are returned.  If the pagination
 arguments are both NULL, all rows are returned.  Otherwise, page_size
 rows are returned at offset page_offset.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    clients.client_id,
+    clients.description,
+    clients.encrypted_access_token,
+    clients.expires,
+    clients.disabled,
+    clients.scopes,
+    clients.created,
+    clients.last_modified,
+    clients.last_date_used,
+    clients.last_rotated,
+    clients.delete_on_expiration
+  from clients
+  where prefix_in is null or starts_with(clients.client_id, prefix_in)
+  order by clients.client_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_combined_audit_history
+
+* *Mode*: read
+* *Arguments*:
+  * `client_id_in text`
+  * `entity_id_in text`
+  * `entity_type_in text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * ` entity_id text`
+  * `entity_type text`
+  * `client_id text`
+  * `action_type text`
+  * `created timestamptz `
+* *Last defined on version*: 111
+
+Get Audit History by client ID OR by entity ID and entity type.
+If client_id_in is provided, returns full audit records for that client.
+If entity_id_in and entity_type_in are provided, returns filtered audit records for that entity.
+At least one search parameter must be provided.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    audit_history.entity_id,
+    audit_history.entity_type,
+    audit_history.client_id,
+    audit_history.action_type,
+    audit_history.created
+  from audit_history
+  where (audit_history.client_id = client_id_in OR client_id_in IS NULL)
+    AND (
+      (audit_history.entity_id = entity_id_in AND audit_history.entity_type = entity_type_in)
+      OR (entity_id_in IS NULL OR entity_type_in IS NULL)
+    )
+  order by audit_history.created
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
 ### get_roles
 
 * *Mode*: read
@@ -285,6 +505,61 @@ Get the full set of roles.  Each result row has an etag, but all such
 etags will be the same, representing the etag for the most recent
 modification of the table.  Results are sorted by role_id.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    roles.role_id,
+    roles.scopes,
+    roles.created,
+    roles.description,
+    roles.last_modified,
+    roles.etag
+  from roles
+  order by role_id;
+end
+```
+
+</details>
+
+### insert_auth_audit_history
+
+* *Mode*: write
+* *Arguments*:
+  * `entity_id_in text`
+  * `entity_type_in text`
+  * `client_id_in text`
+  * `action_type_in text`
+* *Returns*: `void`
+* *Last defined on version*: 106
+
+Insert an audit history entry for a given entity.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO audit_history (
+    entity_id,
+    entity_type,
+    client_id,
+    action_type,
+    created
+  ) VALUES (
+    entity_id_in,
+    entity_type_in,
+    client_id_in,
+    action_type_in,
+    now()
+  );
+end
+```
+
+</details>
+
 ### modify_roles
 
 * *Mode*: write
@@ -298,6 +573,63 @@ Replace the current set of roles entirely with the given set of roles, if the cu
 The role objects are specified with underscore spelling (`role_id`).
 If the etag has changed, this returns P0004 signalling that the caller should fetch a fresh set of roles and try again.
 If there are no existing roles, then the old etag is not used.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  new_etag uuid := public.gen_random_uuid();
+begin
+  -- lock the table, avoiding risk of conflicts when inserting after
+  -- finding no rows
+  lock table roles;
+
+  delete from roles where etag = old_etag_in;
+  if not found then
+    -- delete may have done nothing because the table is empty (which is
+    -- ok) or because the etag did not match (which is an unsuccessful
+    -- update)
+    perform role_id from roles limit 1;
+    if found then
+      raise exception 'unsuccessful update' using errcode = 'P0004';
+    end if;
+  end if;
+
+  insert into roles
+  select
+    (role ->> 'role_id') as role_id,
+    (role ->> 'scopes')::jsonb as scopes,
+    (role ->> 'created')::timestamptz as created,
+    (role ->> 'description') as description,
+    (role ->> 'last_modified')::timestamptz as last_modified,
+    new_etag as etag
+  from jsonb_array_elements(roles_in) as role;
+end
+```
+
+</details>
+
+### purge_audit_history
+
+* *Mode*: write
+* *Arguments*:
+  * `cutoff_date_in timestamptz`
+* *Returns*: `void`
+* *Last defined on version*: 106
+
+Purge audit history entries older than the specified date
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+    DELETE FROM audit_history
+    WHERE created < cutoff_date_in;
+end
+```
+
+</details>
 
 ### update_client
 
@@ -329,6 +661,29 @@ exists, an empty set.  This does not implement optimistic concurrency: any non-n
 arguments to this function will overwrite existing values.  The last_modified
 column is updated automatically, as is last_rotated if the access token is set.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  update clients set
+    description = coalesce(description_in, clients.description),
+    encrypted_access_token = coalesce(encrypted_access_token_in, clients.encrypted_access_token),
+    expires = coalesce(expires_in, clients.expires),
+    disabled = coalesce(disabled_in, clients.disabled),
+    scopes = coalesce(scopes_in, clients.scopes),
+    delete_on_expiration = coalesce(delete_on_expiration_in, clients.delete_on_expiration),
+    last_modified = now(),
+    last_rotated = case when encrypted_access_token_in is null then clients.last_rotated else now() end
+  where clients.client_id = client_id_in;
+
+  if found then
+    return query select * from get_client(client_id_in);
+  end if;
+end
+```
+
+</details>
+
 ### update_client_last_used
 
 * *Mode*: write
@@ -340,6 +695,18 @@ column is updated automatically, as is last_rotated if the access token is set.
 Indicate that this client has been recently used, updating its last_date_used field.
 Does nothing if the client does not exist.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  update clients
+  set last_date_used = now()
+  where clients.client_id = client_id_in;
+end
+```
+
+</details>
+
 ## github
 
 * [`create_github_build_pr`](#create_github_build_pr)
@@ -348,10 +715,11 @@ Does nothing if the client does not exist.
 * [`get_github_build_pr`](#get_github_build_pr)
 * [`get_github_builds_pr`](#get_github_builds_pr)
 * [`get_github_check_by_run_id`](#get_github_check_by_run_id)
-* [`get_github_check_by_task_id`](#get_github_check_by_task_id)
+* [`get_github_check_by_task_group_and_task_id`](#get_github_check_by_task_group_and_task_id)
 * [`get_github_checks_by_task_group_id`](#get_github_checks_by_task_group_id)
 * [`get_github_integration`](#get_github_integration)
 * [`get_github_integrations`](#get_github_integrations)
+* [`get_pending_github_builds`](#get_pending_github_builds)
 * [`set_github_build_state`](#set_github_build_state)
 * [`upsert_github_integration`](#upsert_github_integration)
 
@@ -375,6 +743,18 @@ Does nothing if the client does not exist.
 
 Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert
+    into github_builds (organization, repository, sha, task_group_id, state, created, updated, installation_id, event_type, event_id, pull_request_number)
+    values (organization_in, repository_in, sha_in, task_group_id_in, state_in, created_in, updated_in, installation_id_in, event_type_in, event_id_in, pull_request_number_in);
+end
+```
+
+</details>
+
 ### create_github_check
 
 * *Mode*: write
@@ -388,6 +768,19 @@ Create a new github build.  Raises UNIQUE_VIOLATION if the pool already exists.
 
 Upsert a single check.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert into github_checks (task_group_id, task_id, check_suite_id, check_run_id) values (task_group_id_in, task_id_in, check_suite_id_in, check_run_id_in)
+  on conflict (task_group_id, task_id) do update set
+    check_suite_id = check_suite_id_in,
+    check_run_id = check_run_id_in;
+end
+```
+
+</details>
+
 ### delete_github_build
 
 * *Mode*: write
@@ -397,6 +790,18 @@ Upsert a single check.
 * *Last defined on version*: 23
 
 Delete a github build.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete
+  from github_builds
+  where github_builds.task_group_id = task_group_id_in;
+end
+```
+
+</details>
 
 ### get_github_build_pr
 
@@ -419,6 +824,31 @@ Delete a github build.
 * *Last defined on version*: 85
 
 Get a github build. The returned table will have one or zero rows.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    github_builds.organization,
+    github_builds.repository,
+    github_builds.sha,
+    github_builds.task_group_id,
+    github_builds.state,
+    github_builds.created,
+    github_builds.updated,
+    github_builds.installation_id,
+    github_builds.event_type,
+    github_builds.event_id,
+    github_builds.pull_request_number,
+    public.gen_random_uuid()
+  from github_builds
+  where github_builds.task_group_id = task_group_id_in;
+end
+```
+
+</details>
 
 ### get_github_builds_pr
 
@@ -447,6 +877,38 @@ Get a github build. The returned table will have one or zero rows.
 
 Get github builds.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    github_builds.organization,
+    github_builds.repository,
+    github_builds.sha,
+    github_builds.task_group_id,
+    github_builds.state,
+    github_builds.created,
+    github_builds.updated,
+    github_builds.installation_id,
+    github_builds.event_type,
+    github_builds.event_id,
+    github_builds.pull_request_number,
+    public.gen_random_uuid()
+  from github_builds
+  where
+    (organization_in is null or github_builds.organization = organization_in) and
+    (repository_in is null or github_builds.repository = repository_in) and
+    (sha_in is null or github_builds.sha = sha_in) and
+    (pull_request_number_in is null or github_builds.pull_request_number = pull_request_number_in)
+  order by github_builds.updated asc
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
 ### get_github_check_by_run_id
 
 * *Mode*: read
@@ -462,19 +924,60 @@ Get github builds.
 
 Get github check run id and check suite id
 
-### get_github_check_by_task_id
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    github_checks.task_group_id,
+    github_checks.task_id,
+    github_checks.check_suite_id,
+    github_checks.check_run_id
+  from github_checks
+  where
+    github_checks.check_suite_id = check_suite_id_in
+    and
+    github_checks.check_run_id = check_run_id_in
+    ;
+end
+```
+
+</details>
+
+### get_github_check_by_task_group_and_task_id
 
 * *Mode*: read
 * *Arguments*:
+  * `task_group_id_in text`
   * `task_id_in text`
 * *Returns*: `table`
   * `task_group_id text`
   * `task_id text`
   * `check_suite_id text`
   * `check_run_id text`
-* *Last defined on version*: 37
+* *Last defined on version*: 89
 
-Get a single check from a task_id.
+Get a single check from a (task_group_id, task_id).
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select
+    github_checks.task_group_id,
+    github_checks.task_id,
+    github_checks.check_suite_id,
+    github_checks.check_run_id
+  from github_checks
+  where
+    github_checks.task_group_id = task_group_id_in
+    and
+    github_checks.task_id = task_id_in;
+end
+```
+
+</details>
 
 ### get_github_checks_by_task_group_id
 
@@ -492,6 +995,25 @@ Get a single check from a task_id.
 
 Get github check runs by task group id
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    github_checks.task_group_id,
+    github_checks.task_id,
+    github_checks.check_suite_id,
+    github_checks.check_run_id
+  from github_checks
+  where github_checks.task_group_id = task_group_id_in
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
 ### get_github_integration
 
 * *Mode*: read
@@ -503,6 +1025,16 @@ Get github check runs by task group id
 * *Last defined on version*: 36
 
 Get a single integration by owner.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select github_integrations.owner, github_integrations.installation_id from github_integrations where github_integrations.owner = owner_in;
+end
+```
+
+</details>
 
 ### get_github_integrations
 
@@ -517,6 +1049,82 @@ Get a single integration by owner.
 
 Get a list of integrations.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select
+    github_integrations.owner,
+    github_integrations.installation_id
+  from github_integrations
+  order by github_integrations.installation_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_pending_github_builds
+
+* *Mode*: read
+* *Arguments*:
+  * `page_size_in integer`
+  * `page_offset_in integer`
+  * `organization_in text`
+  * `repository_in text`
+  * `sha_in text`
+  * `pull_request_number_in integer`
+* *Returns*: `table`
+  * `organization text`
+  * `repository text`
+  * `sha text`
+  * `task_group_id text`
+  * `state text`
+  * `created timestamptz`
+  * `updated timestamptz`
+  * `installation_id integer`
+  * `event_type text`
+  * `event_id text`
+  * `pull_request_number integer`
+  * `etag uuid`
+* *Last defined on version*: 86
+
+Get github builds that are pending (not yet resolved) for a given organization and repository
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    github_builds.organization,
+    github_builds.repository,
+    github_builds.sha,
+    github_builds.task_group_id,
+    github_builds.state,
+    github_builds.created,
+    github_builds.updated,
+    github_builds.installation_id,
+    github_builds.event_type,
+    github_builds.event_id,
+    github_builds.pull_request_number,
+    public.gen_random_uuid()
+  from github_builds
+  where
+    github_builds.organization = organization_in and
+    github_builds.repository = repository_in and
+    (sha_in is null or github_builds.sha = sha_in) and
+    (pull_request_number_in is null or github_builds.pull_request_number = pull_request_number_in) and
+    github_builds.state in ('pending')
+  order by github_builds.updated asc
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
 ### set_github_build_state
 
 * *Mode*: write
@@ -527,6 +1135,23 @@ Get a list of integrations.
 * *Last defined on version*: 49
 
 Only update the state of a build and update the `updated` timestamp
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  update github_builds
+  set (state, updated) = (
+    state_in,
+    now()
+  ) where github_builds.task_group_id = task_group_id_in;
+  if not found then
+    raise exception 'no such row' using errcode = 'P0002';
+  end if;
+end
+```
+
+</details>
 
 ### upsert_github_integration
 
@@ -539,11 +1164,16 @@ Only update the state of a build and update the `updated` timestamp
 
 Create a single integration.
 
-### deprecated methods
+<details><summary>Function Body</summary>
 
-* `create_github_build(organization_in text, repository_in text, sha_in text, task_group_id_in text, state_in text, created_in timestamptz, updated_in timestamptz, installation_id_in integer, event_type_in text, event_id_in text)` (compatibility guaranteed until v52.0.0)
-* `get_github_build(task_group_id_in text)` (compatibility guaranteed until v52.0.0)
-* `get_github_builds(page_size_in integer, page_offset_in integer, organization_in text, repository_in text, sha_in text)` (compatibility guaranteed until v52.0.0)
+```
+begin
+  insert into github_integrations (owner, installation_id) values (owner_in, installation_id_in)
+  on conflict (owner) do update set installation_id = installation_id_in;
+end
+```
+
+</details>
 
 ## hooks
 
@@ -555,10 +1185,12 @@ Create a single integration.
 * [`delete_last_fires`](#delete_last_fires)
 * [`expire_last_fires`](#expire_last_fires)
 * [`get_hook`](#get_hook)
+* [`get_hook_groups`](#get_hook_groups)
 * [`get_hooks`](#get_hooks)
 * [`get_hooks_queues`](#get_hooks_queues)
 * [`get_last_fire`](#get_last_fire)
-* [`get_last_fires`](#get_last_fires)
+* [`get_last_fires_with_task_state`](#get_last_fires_with_task_state)
+* [`insert_hooks_audit_history`](#insert_hooks_audit_history)
 * [`update_hook`](#update_hook)
 * [`update_hooks_queue_bindings`](#update_hooks_queue_bindings)
 
@@ -592,6 +1224,29 @@ Create a single integration.
 Create a new hook. Raises UNIQUE_VIOLATION if the artifact already exists.
 Returns the newly created hook.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query insert
+    into hooks (hook_group_id, hook_id, metadata, task, bindings, schedule, encrypted_trigger_token, encrypted_next_task_id, next_scheduled_date, trigger_schema)
+    values (hook_group_id_in, hook_id_in, metadata_in, task_in, bindings_in, schedule_in, encrypted_trigger_token_in, encrypted_next_task_id_in, next_scheduled_date_in, trigger_schema_in)
+  returning
+    hooks.hook_group_id,
+    hooks.hook_id,
+    hooks.metadata,
+    hooks.task,
+    hooks.bindings,
+    hooks.schedule,
+    hooks.encrypted_trigger_token,
+    hooks.encrypted_next_task_id,
+    hooks.next_scheduled_date,
+    hooks.trigger_schema;
+end
+```
+
+</details>
+
 ### create_hooks_queue
 
 * *Mode*: write
@@ -604,6 +1259,20 @@ Returns the newly created hook.
 * *Last defined on version*: 49
 
 Create a new hooks queue. Raises UNIQUE_VIOLATION if the hook already exists.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert
+    into hooks_queues (hook_group_id, hook_id, queue_name, bindings)
+    values (hook_group_id_in, hook_id_in, queue_name_in, bindings_in);
+
+    return public.gen_random_uuid();
+end
+```
+
+</details>
 
 ### create_last_fire
 
@@ -621,6 +1290,20 @@ Create a new hooks queue. Raises UNIQUE_VIOLATION if the hook already exists.
 
 Create a new hook last fire. Raises UNIQUE_VIOLATION if the hook already exists.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert
+    into hooks_last_fires (hook_group_id, hook_id, fired_by, task_id, task_create_time, result, error)
+    values (hook_group_id_in, hook_id_in, fired_by_in, task_id_in, task_create_time_in, result_in, error_in);
+
+    return public.gen_random_uuid();
+end
+```
+
+</details>
+
 ### delete_hook
 
 * *Mode*: write
@@ -631,6 +1314,19 @@ Create a new hook last fire. Raises UNIQUE_VIOLATION if the hook already exists.
 * *Last defined on version*: 35
 
 Delete a hook.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from hooks
+  where
+    hooks.hook_group_id = hook_group_id_in and
+    hooks.hook_id = hook_id_in;
+end
+```
+
+</details>
 
 ### delete_hooks_queue
 
@@ -643,6 +1339,19 @@ Delete a hook.
 
 Delete a hooks queue.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from hooks_queues
+  where
+    hooks_queues.hook_group_id = hook_group_id_in and
+    hooks_queues.hook_id = hook_id_in;
+end
+```
+
+</details>
+
 ### delete_last_fires
 
 * *Mode*: write
@@ -654,6 +1363,19 @@ Delete a hooks queue.
 
 Delete last fires that match a given `hook_group_id` and `hook_id`.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from hooks_last_fires
+  where
+    hooks_last_fires.hook_group_id = hook_group_id_in and
+    hooks_last_fires.hook_id = hook_id_in;
+end
+```
+
+</details>
+
 ### expire_last_fires
 
 * *Mode*: write
@@ -663,6 +1385,23 @@ Delete last fires that match a given `hook_group_id` and `hook_id`.
 
 Expire last fires that are older than a year.
 Returns a count of rows that have been deleted.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from hooks_last_fires where hooks_last_fires.task_create_time < now() - interval '1 year';
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
 
 ### get_hook
 
@@ -684,6 +1423,53 @@ Returns a count of rows that have been deleted.
 * *Last defined on version*: 35
 
 Get a hook. The returned table will have one or zero rows.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select
+    hooks.hook_group_id,
+    hooks.hook_id,
+    hooks.metadata,
+    hooks.task,
+    hooks.bindings,
+    hooks.schedule,
+    hooks.encrypted_trigger_token,
+    hooks.encrypted_next_task_id,
+    hooks.next_scheduled_date,
+    hooks.trigger_schema
+  from hooks
+  where
+    hooks.hook_group_id = hook_group_id_in and
+    hooks.hook_id = hook_id_in;
+end
+```
+
+</details>
+
+### get_hook_groups
+
+* *Mode*: read
+* *Arguments*:
+* *Returns*: `table`
+  * `hook_group_id text`
+* *Last defined on version*: 115
+
+Get existing hooks groups
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select distinct hooks.hook_group_id
+  from hooks
+  order by hooks.hook_group_id;
+end
+```
+
+</details>
 
 ### get_hooks
 
@@ -711,6 +1497,34 @@ ordered by the `hook_group_id` and `hook_id`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    hooks.hook_group_id,
+    hooks.hook_id,
+    hooks.metadata,
+    hooks.task,
+    hooks.bindings,
+    hooks.schedule,
+    hooks.encrypted_trigger_token,
+    hooks.encrypted_next_task_id,
+    hooks.next_scheduled_date,
+    hooks.trigger_schema
+  from hooks
+  where
+    (hooks.hook_group_id = hook_group_id_in or hook_group_id_in is null) and
+    (hooks.next_scheduled_date < next_scheduled_date_in or next_scheduled_date_in is null)
+  order by hooks.hook_group_id, hooks.hook_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
 ### get_hooks_queues
 
 * *Mode*: read
@@ -728,6 +1542,26 @@ Otherwise, page_size rows are returned at offset page_offset.
 Get hooks queues ordered by `hook_group_id` and `hook_id`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    hooks_queues.hook_group_id,
+    hooks_queues.hook_id,
+    hooks_queues.queue_name,
+    hooks_queues.bindings,
+    public.gen_random_uuid()
+  from hooks_queues
+  order by hook_group_id, hook_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
 
 ### get_last_fire
 
@@ -749,7 +1583,31 @@ Otherwise, page_size rows are returned at offset page_offset.
 
 Get a hook last fire.
 
-### get_last_fires
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    hooks_last_fires.hook_group_id,
+    hooks_last_fires.hook_id,
+    hooks_last_fires.fired_by,
+    hooks_last_fires.task_id,
+    hooks_last_fires.task_create_time,
+    hooks_last_fires.result,
+    hooks_last_fires.error,
+    public.gen_random_uuid()
+  from hooks_last_fires
+  where
+    hooks_last_fires.hook_group_id = hook_group_id_in and
+    hooks_last_fires.hook_id = hook_id_in and
+    hooks_last_fires.task_id = task_id_in;
+end
+```
+
+</details>
+
+### get_last_fires_with_task_state
 
 * *Mode*: read
 * *Arguments*:
@@ -766,12 +1624,78 @@ Get a hook last fire.
   * `result text`
   * `error text`
   * `etag uuid`
-* *Last defined on version*: 79
+  * `task_state text`
+* *Last defined on version*: 88
 
 Get hooks last fires filtered by the `hook_group_id` and `hook_id` arguments,
 ordered by `hook_group_id`, `hook_id`, and `task_create_time`.
+Results will include the last run state of the task that fired the hook,
+if it exists.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    hooks_last_fires.hook_group_id,
+    hooks_last_fires.hook_id,
+    hooks_last_fires.fired_by,
+    hooks_last_fires.task_id,
+    hooks_last_fires.task_create_time,
+    hooks_last_fires.result,
+    hooks_last_fires.error,
+    public.gen_random_uuid(),
+    tasks.runs -> -1 ->> 'state'
+  from hooks_last_fires
+  left join tasks on tasks.task_id = hooks_last_fires.task_id
+  where
+    hooks_last_fires.hook_group_id = hook_group_id_in and
+    hooks_last_fires.hook_id = hook_id_in
+  order by hook_group_id, hook_id, task_create_time DESC
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### insert_hooks_audit_history
+
+* *Mode*: write
+* *Arguments*:
+  * `hook_id_in text`
+  * `client_id_in text`
+  * `action_type_in text`
+* *Returns*: `void`
+* *Last defined on version*: 106
+
+Insert an audit history entry for a given entity.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO audit_history (
+    entity_id,
+    entity_type,
+    client_id,
+    action_type,
+    created
+  ) VALUES (
+    hook_id_in,
+    'hook',
+    client_id_in,
+    action_type_in,
+    now()
+  );
+end;
+```
+
+</details>
 
 ### update_hook
 
@@ -803,6 +1727,59 @@ Otherwise, page_size rows are returned at offset page_offset.
 Update a queue artifact.
 Returns the up-to-date hook row that have the same hook group id and hook id.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  updated_row hooks%ROWTYPE;
+begin
+  update hooks
+  set (metadata, task, bindings, schedule, encrypted_trigger_token, encrypted_next_task_id, next_scheduled_date, trigger_schema) = (
+    coalesce(metadata_in, hooks.metadata),
+    coalesce(task_in, hooks.task),
+    coalesce(bindings_in, hooks.bindings),
+    coalesce(schedule_in, hooks.schedule),
+    coalesce(encrypted_trigger_token_in, hooks.encrypted_trigger_token),
+    coalesce(encrypted_next_task_id_in, hooks.encrypted_next_task_id),
+    coalesce(next_scheduled_date_in, hooks.next_scheduled_date),
+    coalesce(trigger_schema_in, hooks.trigger_schema)
+  )
+  where
+    hooks.hook_group_id = hook_group_id_in and
+    hooks.hook_id = hook_id_in
+  returning
+    hooks.hook_group_id,
+    hooks.hook_id,
+    hooks.metadata,
+    hooks.task,
+    hooks.bindings,
+    hooks.schedule,
+    hooks.encrypted_trigger_token,
+    hooks.encrypted_next_task_id,
+    hooks.next_scheduled_date,
+    hooks.trigger_schema
+  into updated_row;
+  if found then
+    return query select
+      updated_row.hook_group_id,
+      updated_row.hook_id,
+      updated_row.metadata,
+      updated_row.task,
+      updated_row.bindings,
+      updated_row.schedule,
+      updated_row.encrypted_trigger_token,
+      updated_row.encrypted_next_task_id,
+      updated_row.next_scheduled_date,
+      updated_row.trigger_schema;
+    return;
+  else
+    raise exception 'no such row' using errcode = 'P0002';
+  end if;
+end
+```
+
+</details>
+
 ### update_hooks_queue_bindings
 
 * *Mode*: write
@@ -821,6 +1798,27 @@ Returns the up-to-date hook row that have the same hook group id and hook id.
 Update bindings of a hooks queue. If no such queue exists,
 the return value is an empty set.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query update hooks_queues
+  set
+    bindings = bindings_in
+  where
+    hooks_queues.hook_group_id = hook_group_id_in and
+    hooks_queues.hook_id = hook_id_in
+  returning
+    hooks_queues.hook_group_id,
+    hooks_queues.hook_id,
+    hooks_queues.queue_name,
+    hooks_queues.bindings,
+    public.gen_random_uuid();
+end
+```
+
+</details>
+
 ## index
 
 * [`create_index_namespace`](#create_index_namespace)
@@ -832,6 +1830,7 @@ the return value is an empty set.
 * [`get_index_namespaces`](#get_index_namespaces)
 * [`get_indexed_task`](#get_indexed_task)
 * [`get_indexed_tasks`](#get_indexed_tasks)
+* [`get_tasks_from_indexes_and_namespaces`](#get_tasks_from_indexes_and_namespaces)
 * [`update_index_namespace`](#update_index_namespace)
 * [`update_indexed_task`](#update_indexed_task)
 
@@ -850,6 +1849,19 @@ the return value is an empty set.
 
 Create a new namespace. Raises UNIQUE_VIOLATION if the namespace already exists.
 Returns the newly created namespace.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query insert
+    into index_namespaces (parent, name, expires)
+    values (parent_in, name_in, expires_in)
+    returning index_namespaces.parent, index_namespaces.name, index_namespaces.expires;
+end
+```
+
+</details>
 
 ### create_indexed_task
 
@@ -873,6 +1885,19 @@ Returns the newly created namespace.
 Create a new indexed task. Raises UNIQUE_VIOLATION if the indexed task already exists.
 Returns the newly created indexed task.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query insert
+    into indexed_tasks (namespace, name, rank, task_id, data, expires)
+    values (namespace_in, name_in, rank_in, slugid_to_uuid(task_id_in), data_in, expires_in)
+    returning indexed_tasks.namespace, indexed_tasks.name, indexed_tasks.rank, indexed_tasks.task_id, indexed_tasks.data, indexed_tasks.expires;
+end
+```
+
+</details>
+
 ### delete_indexed_task
 
 * *Mode*: write
@@ -885,6 +1910,20 @@ Returns the newly created indexed task.
 Delete the named task from the index.  Returns succesfully even if the named
 task does not exist.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete
+  from indexed_tasks
+  where
+    indexed_tasks.namespace = namespace_in and
+    indexed_tasks.name = name_in;
+end
+```
+
+</details>
+
 ### expire_index_namespaces
 
 * *Mode*: write
@@ -895,6 +1934,23 @@ task does not exist.
 Expire index_namespaces that come before the current time.
 Returns a count of rows that have been deleted.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from index_namespaces where index_namespaces.expires < now();
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
+
 ### expire_indexed_tasks
 
 * *Mode*: write
@@ -904,6 +1960,23 @@ Returns a count of rows that have been deleted.
 
 Expire indexed tasks that come before the current time.
 Returns a count of rows that have been deleted.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from indexed_tasks where indexed_tasks.expires < now();
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
 
 ### get_index_namespace
 
@@ -918,6 +1991,23 @@ Returns a count of rows that have been deleted.
 * *Last defined on version*: 26
 
 Get a namespace. The returned table will have one or zero rows.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select
+    index_namespaces.parent,
+    index_namespaces.name,
+    index_namespaces.expires
+  from index_namespaces
+  where
+    index_namespaces.parent = parent_in and
+    index_namespaces.name = name_in;
+end
+```
+
+</details>
 
 ### get_index_namespaces
 
@@ -938,6 +2028,29 @@ ordered by the `parent` and `name`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    index_namespaces.parent,
+    index_namespaces.name,
+    index_namespaces.expires
+  from index_namespaces
+  where
+    (index_namespaces.parent = parent_in or parent_in is null) and
+    (index_namespaces.name = name_in or name_in is null) and
+    (index_namespaces.expires > now())
+  -- we previously used to order by the hashed parent but there's probably no need to add this complication.
+  order by index_namespaces.parent, name
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
 ### get_indexed_task
 
 * *Mode*: read
@@ -954,6 +2067,26 @@ Otherwise, page_size rows are returned at offset page_offset.
 * *Last defined on version*: 26
 
 Get an indexed task. The returned table will have one or zero rows.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select
+    indexed_tasks.namespace,
+    indexed_tasks.name,
+    indexed_tasks.rank,
+    uuid_to_slugid(indexed_tasks.task_id) as task_id,
+    indexed_tasks.data,
+    indexed_tasks.expires
+  from indexed_tasks
+  where
+    indexed_tasks.namespace = namespace_in and
+    indexed_tasks.name = name_in;
+end
+```
+
+</details>
 
 ### get_indexed_tasks
 
@@ -977,6 +2110,82 @@ ordered by the `namespace` and `name`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    indexed_tasks.namespace,
+    indexed_tasks.name,
+    indexed_tasks.rank,
+    uuid_to_slugid(indexed_tasks.task_id) as task_id,
+    indexed_tasks.data,
+    indexed_tasks.expires
+  from indexed_tasks
+  where
+    (indexed_tasks.namespace = namespace_in or namespace_in is null) and
+    (indexed_tasks.name = name_in or name_in is null) and
+    (indexed_tasks.expires > now())
+  -- we previously used to order by the hashed namespace but there's probably no need to add this complication.
+  order by indexed_tasks.namespace, name
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_tasks_from_indexes_and_namespaces
+
+* *Mode*: read
+* *Arguments*:
+  * `indexes_in jsonb`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `namespace text`
+  * `name text`
+  * `rank integer`
+  * `task_id text`
+  * `data jsonb`
+  * `expires timestamptz`
+* *Last defined on version*: 100
+
+Get tasks matching the given indexes, 0 or 1 per input index.
+
+Indexes are expected to be a JSON array of "namespace.name" values:
+'["ns.one.name1", "ns.two.name2"]'
+
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select
+    indexed_tasks.namespace,
+    indexed_tasks.name,
+    indexed_tasks.rank,
+    uuid_to_slugid(indexed_tasks.task_id) as task_id,
+    indexed_tasks.data,
+    indexed_tasks.expires
+  from indexed_tasks
+  cross join jsonb_array_elements_text(indexes_in) as index_pairs
+  where
+    -- use regexp to extract namespace part of index
+    indexed_tasks.namespace = (select (regexp_matches(index_pairs, '(.+)\.[^.]+'))[1])
+    and
+    -- use regexp to extract name part of index
+    indexed_tasks.name = (select (regexp_matches(index_pairs, '.+\.([^.]+)'))[1])
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
 ### update_index_namespace
 
 * *Mode*: write
@@ -993,6 +2202,35 @@ Otherwise, page_size rows are returned at offset page_offset.
 Update a namespace.
 Returns the up-to-date namespace row that have the same parent and name.
 If the row is not found then an exception with code 'P0002' is thrown.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  updated_row index_namespaces%ROWTYPE;
+begin
+  update index_namespaces
+  set expires = coalesce(expires_in, index_namespaces.expires)
+  where
+    index_namespaces.parent = parent_in and
+    index_namespaces.name = name_in
+  returning
+    index_namespaces.parent,
+    index_namespaces.name,
+    index_namespaces.expires
+  into updated_row;
+  if found then
+    return query select
+      updated_row.parent,
+      updated_row.name,
+      updated_row.expires;
+    return;
+  end if;
+  raise exception 'no such row' using errcode = 'P0002';
+end
+```
+
+</details>
 
 ### update_indexed_task
 
@@ -1016,6 +2254,47 @@ If the row is not found then an exception with code 'P0002' is thrown.
 Update an indexed task.
 Returns the up-to-date indexed task row that have the same namespace and name.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  updated_row indexed_tasks%ROWTYPE;
+begin
+  update indexed_tasks
+  set (rank, task_id, data, expires) = (
+    coalesce(rank_in, indexed_tasks.rank),
+    coalesce(slugid_to_uuid(task_id_in), indexed_tasks.task_id),
+    coalesce(data_in, indexed_tasks.data),
+    coalesce(expires_in, indexed_tasks.expires)
+  )
+  where
+    indexed_tasks.namespace = namespace_in and
+    indexed_tasks.name = name_in
+  returning
+    indexed_tasks.namespace,
+    indexed_tasks.name,
+    indexed_tasks.rank,
+    uuid_to_slugid(indexed_tasks.task_id),
+    indexed_tasks.data,
+    indexed_tasks.expires
+  into updated_row;
+  if found then
+    return query select
+      updated_row.namespace,
+      updated_row.name,
+      updated_row.rank,
+      updated_row.task_id,
+      updated_row.data,
+      updated_row.expires;
+    return;
+  else
+    raise exception 'no such row' using errcode = 'P0002';
+  end if;
+end
+```
+
+</details>
+
 ## notify
 
 * [`add_denylist_address`](#add_denylist_address)
@@ -1035,6 +2314,20 @@ Returns the up-to-date indexed task row that have the same namespace and name.
 If the denylist address already exists, this is a no-op. Otherwise, add the denylist
 address for the taskcluster-notify service, with a new random etag.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert into denylisted_notifications(notification_type, notification_address)
+  values (
+    notification_type_in,
+    notification_address_in
+  ) on conflict do nothing;
+end
+```
+
+</details>
+
 ### all_denylist_addresses
 
 * *Mode*: read
@@ -1048,6 +2341,20 @@ address for the taskcluster-notify service, with a new random etag.
 
 List all denylist addresses for the taskcluster-notify service.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select denylisted_notifications.notification_type, denylisted_notifications.notification_address
+  from denylisted_notifications
+  order by 1, 2
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
 ### delete_denylist_address
 
 * *Mode*: write
@@ -1060,6 +2367,22 @@ List all denylist addresses for the taskcluster-notify service.
 Delete a denylist address for the taskcluster-notify service.
 Returns number of rows deleted (0 or 1).
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from denylisted_notifications where
+  denylisted_notifications.notification_type = notification_type_in and
+  denylisted_notifications.notification_address = notification_address_in;
+  if found then
+    return 1;
+  end if;
+  return 0;
+end
+```
+
+</details>
+
 ### exists_denylist_address
 
 * *Mode*: read
@@ -1070,6 +2393,19 @@ Returns number of rows deleted (0 or 1).
 * *Last defined on version*: 17
 
 Returns a boolean indicating whether the denylist type/address exists.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  perform 1 from denylisted_notifications where
+  denylisted_notifications.notification_type = notification_type_in and
+  denylisted_notifications.notification_address = notification_address_in;
+  return found;
+end
+```
+
+</details>
 
 ## object
 
@@ -1097,6 +2433,57 @@ This function raises a CHECK_VIOLATION if the object's upload has been
 finished (upload_id is null) or FOREIGN_KEY_VIOLATION if the object does
 not exist.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  item record;
+  object record;
+begin
+  select objects.name, objects.upload_id
+    into object
+    from objects
+    where name = name_in;
+  raise log 'object %', object;
+  if not found then
+    raise exception 'object does not exist' using errcode = 'foreign_key_violation';
+  end if;
+  if object.upload_id is null then
+    raise exception 'object upload is already finished' using errcode = 'check_violation';
+  end if;
+
+  -- insert each hash individually; in this case at least all hashes
+  -- end up inserted in the same transaction.  On conflict, we verify
+  -- that the hash value matches.
+  for item in
+    select
+      name_in as name,
+      key as algorithm,
+      value as hash
+    from jsonb_each_text(hashes_in)
+  loop
+    begin
+      insert
+      into object_hashes (name, algorithm, hash)
+      values (item.name, item.algorithm, item.hash);
+    exception
+      when UNIQUE_VIOLATION then
+        perform 1
+        from object_hashes
+        where
+          name = item.name and
+          algorithm = item.algorithm and
+          hash = item.hash;
+        if not found then
+          raise exception 'object hash already exists with different value' using errcode = 'unique_violation';
+        end if;
+    end;
+  end loop;
+end
+```
+
+</details>
+
 ### create_object_for_upload
 
 * *Mode*: write
@@ -1118,6 +2505,39 @@ the same parameters, as long as `upload_id` is still set (that is, until
 the upload is completed).  Otherwise it will raise a UNIQUE_VIOLATION
 exception.  `upload_expires_in` is excluded from this comparison.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  if upload_id_in is null or upload_expires_in is null then
+    raise exception 'upload_id and upload_expires are required' using errcode = 'NOT_NULL_VIOLATION';
+  end if;
+
+  -- NOTE: This table has two unique columns (name and upload_id).  If the inserted name is novel
+  -- but the inserted upload_id is not, this will generate a UNIQUE_VIOLATION error as desired.
+  -- If the inserted name exists, but the upload_id is novel, then the on-conflict clause will
+  -- apply and we will raise UNIQUE_VIOLATION manually.
+  insert
+    into objects (name, data, project_id, backend_id, upload_id, upload_expires, expires)
+    values (name_in, data_in, project_id_in, backend_id_in, upload_id_in, upload_expires_in, expires_in)
+  on conflict (name) do
+  update set name = name_in
+  where
+    objects.name = name_in
+    and objects.data = data_in
+    and objects.project_id = project_id_in
+    and objects.backend_id = backend_id_in
+    and objects.upload_id = upload_id_in
+    -- note that upload_expires isn't consulted
+    and objects.expires = expires_in;
+  if not found then
+    raise exception 'upload already exists' using errcode = 'unique_violation';
+  end if;
+end
+```
+
+</details>
+
 ### delete_object
 
 * *Mode*: write
@@ -1127,6 +2547,18 @@ exception.  `upload_expires_in` is excluded from this comparison.
 * *Last defined on version*: 54
 
 Delete an object.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete
+  from objects
+  where name = name_in;
+end
+```
+
+</details>
 
 ### get_expired_objects
 
@@ -1148,6 +2580,28 @@ objects with a name greater than `start_at_in` are returned.  The
 both expired objects (expires < now) and expired uploads (upload_expires
 < now).
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    objects.name,
+    objects.data,
+    objects.project_id,
+    objects.backend_id,
+    objects.expires
+  from objects
+  where
+    (start_at_in is null or objects.name > start_at_in) and
+    (objects.expires < now() or objects.upload_expires < now())
+  order by name
+  limit limit_in;
+end
+```
+
+</details>
+
 ### get_object_hashes
 
 * *Mode*: read
@@ -1160,6 +2614,22 @@ both expired objects (expires < now) and expired uploads (upload_expires
 
 Get all hashes for the named object.  If the given object has no hashes,
 or doesn't exist, this function returns an empty result.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+    select
+      object_hashes.algorithm,
+      object_hashes.hash
+    from object_hashes
+    where name = name_in
+    order by algorithm;
+end
+```
+
+</details>
 
 ### get_object_with_upload
 
@@ -1178,6 +2648,27 @@ or doesn't exist, this function returns an empty result.
 
 Get an object by name, or an empty set if no such object exists.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    objects.name,
+    objects.data,
+    objects.project_id,
+    objects.backend_id,
+    objects.upload_id,
+    objects.upload_expires,
+    objects.expires
+  from objects
+  where
+    objects.name = name_in;
+end
+```
+
+</details>
+
 ### object_upload_complete
 
 * *Mode*: write
@@ -1191,6 +2682,22 @@ Mark an object as uploaded and ready for download.
 
 This method is idempotent, and will succeed if the object is already ready
 for download.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  update objects
+  set
+    upload_id = null,
+    upload_expires = null
+  where
+    name = name_in
+    and upload_id = upload_id_in;
+end
+```
+
+</details>
 
 ## purge_cache
 
@@ -1213,6 +2720,26 @@ for download.
 
 View all active purge requests.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    cache_purges.worker_pool_id,
+    cache_purges.cache_name,
+    cache_purges.before
+  from cache_purges
+  order by
+    cache_purges.worker_pool_id,
+    cache_purges.cache_name
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
 ### expire_cache_purges
 
 * *Mode*: write
@@ -1223,6 +2750,23 @@ View all active purge requests.
 
 Expire cache purges that come before `expires_in`.
 Returns a count of rows that have been deleted.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from cache_purges where cache_purges.expires < expires_in;
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
 
 ### purge_cache_wpid
 
@@ -1238,6 +2782,27 @@ Returns a count of rows that have been deleted.
 Publish a request to purge caches with name `cache_name_in`
 on `provisioner_id_in`/`worker_type_in` workers.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert into cache_purges(worker_pool_id, cache_name, before, expires)
+  values (
+    worker_pool_id_in,
+    cache_name_in,
+    before_in,
+    expires_in
+  ) on conflict (worker_pool_id, cache_name) do
+  update
+  set (before, expires) = (before_in, expires_in)
+  where
+    cache_purges.worker_pool_id = worker_pool_id_in and
+    cache_purges.cache_name = cache_name_in;
+end
+```
+
+</details>
+
 ### purge_requests_wpid
 
 * *Mode*: read
@@ -1251,20 +2816,32 @@ on `provisioner_id_in`/`worker_type_in` workers.
 
 List the caches for this `provisioner_id_in`/`worker_type_in`.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    cache_purges.worker_pool_id,
+    cache_purges.cache_name,
+    cache_purges.before
+  from cache_purges
+  where
+    cache_purges.worker_pool_id = worker_pool_id_in;
+end
+```
+
+</details>
+
 ## queue
 
+* [`add_task_dependencies`](#add_task_dependencies)
 * [`add_task_dependency`](#add_task_dependency)
-* [`azure_queue_count`](#azure_queue_count)
-* [`azure_queue_delete`](#azure_queue_delete)
-* [`azure_queue_delete_expired`](#azure_queue_delete_expired)
-* [`azure_queue_get`](#azure_queue_get)
-* [`azure_queue_put`](#azure_queue_put)
-* [`azure_queue_update`](#azure_queue_update)
 * [`cancel_task`](#cancel_task)
 * [`cancel_task_group`](#cancel_task_group)
 * [`check_task_claim`](#check_task_claim)
 * [`claim_task`](#claim_task)
-* [`create_queue_artifact`](#create_queue_artifact)
+* [`create_queue_artifact_2`](#create_queue_artifact_2)
 * [`create_task_projid`](#create_task_projid)
 * [`delete_queue_artifact`](#delete_queue_artifact)
 * [`delete_queue_artifacts`](#delete_queue_artifacts)
@@ -1276,10 +2853,14 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`expire_task_groups`](#expire_task_groups)
 * [`expire_task_queues`](#expire_task_queues)
 * [`expire_tasks`](#expire_tasks)
+* [`get_claimed_tasks_by_task_queue_id`](#get_claimed_tasks_by_task_queue_id)
+* [`get_claimed_tasks_by_worker`](#get_claimed_tasks_by_worker)
 * [`get_dependent_tasks`](#get_dependent_tasks)
-* [`get_expired_artifacts_for_deletion`](#get_expired_artifacts_for_deletion)
-* [`get_queue_artifact`](#get_queue_artifact)
-* [`get_queue_artifacts_paginated`](#get_queue_artifacts_paginated)
+* [`get_expired_artifacts_for_deletion_2`](#get_expired_artifacts_for_deletion_2)
+* [`get_multiple_tasks`](#get_multiple_tasks)
+* [`get_pending_tasks_by_task_queue_id`](#get_pending_tasks_by_task_queue_id)
+* [`get_queue_artifact_2`](#get_queue_artifact_2)
+* [`get_queue_artifacts_paginated_2`](#get_queue_artifacts_paginated_2)
 * [`get_task_group_size`](#get_task_group_size)
 * [`get_task_group2`](#get_task_group2)
 * [`get_task_projid`](#get_task_projid)
@@ -1292,10 +2873,32 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`mark_task_ever_resolved`](#mark_task_ever_resolved)
 * [`quarantine_queue_worker_with_last_date_active_and_details`](#quarantine_queue_worker_with_last_date_active_and_details)
 * [`queue_artifact_present`](#queue_artifact_present)
+* [`queue_change_task_group_priority`](#queue_change_task_group_priority)
+* [`queue_change_task_priority`](#queue_change_task_priority)
+* [`queue_claimed_task_delete`](#queue_claimed_task_delete)
+* [`queue_claimed_task_get`](#queue_claimed_task_get)
+* [`queue_claimed_task_put`](#queue_claimed_task_put)
+* [`queue_claimed_task_resolved`](#queue_claimed_task_resolved)
+* [`queue_claimed_tasks_count`](#queue_claimed_tasks_count)
+* [`queue_pending_task_delete`](#queue_pending_task_delete)
+* [`queue_pending_tasks_add`](#queue_pending_tasks_add)
+* [`queue_pending_tasks_count`](#queue_pending_tasks_count)
+* [`queue_pending_tasks_delete`](#queue_pending_tasks_delete)
+* [`queue_pending_tasks_delete_expired`](#queue_pending_tasks_delete_expired)
+* [`queue_pending_tasks_get`](#queue_pending_tasks_get)
+* [`queue_pending_tasks_release`](#queue_pending_tasks_release)
+* [`queue_resolved_task_delete`](#queue_resolved_task_delete)
+* [`queue_resolved_task_get`](#queue_resolved_task_get)
+* [`queue_resolved_task_put`](#queue_resolved_task_put)
+* [`queue_task_deadline_delete`](#queue_task_deadline_delete)
+* [`queue_task_deadline_get`](#queue_task_deadline_get)
+* [`queue_task_deadline_put`](#queue_task_deadline_put)
 * [`queue_worker_seen_with_last_date_active`](#queue_worker_seen_with_last_date_active)
+* [`queue_worker_stats`](#queue_worker_stats)
 * [`queue_worker_task_seen`](#queue_worker_task_seen)
 * [`reclaim_task`](#reclaim_task)
 * [`remove_task`](#remove_task)
+* [`remove_task_dependencies`](#remove_task_dependencies)
 * [`remove_task_dependency`](#remove_task_dependency)
 * [`rerun_task`](#rerun_task)
 * [`resolve_task`](#resolve_task)
@@ -1305,6 +2908,39 @@ List the caches for this `provisioner_id_in`/`worker_type_in`.
 * [`seal_task_group`](#seal_task_group)
 * [`task_queue_seen`](#task_queue_seen)
 * [`update_queue_artifact_2`](#update_queue_artifact_2)
+
+### add_task_dependencies
+
+* *Mode*: write
+* *Arguments*:
+  * `dependent_task_id_in text`
+  * `required_task_ids_in jsonb`
+  * `requires_in task_requires`
+  * `expires_in timestamptz`
+* *Returns*: `void`
+* *Last defined on version*: 103
+
+Create multiple un-satisfied task dependencies between the two tasks, with the given
+requirement style and expiration. If the dependency already exists, nothing
+happens.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO task_dependencies (dependent_task_id, required_task_id, requires, satisfied, expires)
+  SELECT
+      dependent_task_id_in,
+      required_task_id_in::text,
+      requires_in,
+      false,
+      expires_in
+  FROM jsonb_array_elements_text(required_task_ids_in) AS r(required_task_id_in)
+  ON CONFLICT DO NOTHING;
+end
+```
+
+</details>
 
 ### add_task_dependency
 
@@ -1321,92 +2957,24 @@ Create an un-satisfied task dependency between the two tasks, with the given
 requirement style and expiration. If the dependency already exists, nothing
 happens.
 
-### azure_queue_count
+<details><summary>Function Body</summary>
 
-* *Mode*: read
-* *Arguments*:
-  * `queue_name text`
-* *Returns*: `integer`
-* *Last defined on version*: 6
+```
+begin
+  insert
+  into task_dependencies (dependent_task_id, required_task_id, requires, satisfied, expires)
+  values (
+    dependent_task_id_in,
+    required_task_id_in,
+    requires_in,
+    false,
+    expires_in
+  )
+  on conflict do nothing;
+end
+```
 
-Count non-expired messages in the named queue.
-
-
-### azure_queue_delete
-
-* *Mode*: write
-* *Arguments*:
-  * `queue_name text`
-  * `message_id uuid`
-  * `pop_receipt uuid`
-* *Returns*: `void`
-* *Last defined on version*: 3
-
-Delete the message identified by the given `queue_name`, `message_id` and
-`pop_receipt`.
-
-
-### azure_queue_delete_expired
-
-* *Mode*: write
-* *Arguments*:
-* *Returns*: `void`
-* *Last defined on version*: 3
-
-Delete all expired messages.  This is a maintenance task that should occur
-about once an hour.
-
-
-### azure_queue_get
-
-* *Mode*: write
-* *Arguments*:
-  * `queue_name text`
-  * `visible timestamp`
-  * `count integer`
-* *Returns*: `table`
-  * `message_id uuid`
-  * `message_text text`
-  * `pop_receipt uuid`
-* *Last defined on version*: 5
-
-Get up to `count` messages from the given queue, setting the `visible`
-column of each to the given value.  Returns a `message_id` and
-`pop_receipt` for each one, for use with `azure_queue_delete` and
-`azure_queue_update`.
-
-
-### azure_queue_put
-
-* *Mode*: write
-* *Arguments*:
-  * `queue_name text`
-  * `message_text text`
-  * `visible timestamp`
-  * `expires timestamp`
-* *Returns*: `void`
-* *Last defined on version*: 3
-
-Put the given message into the given queue.  The message will not be visible until
-after the visible timestamp, and will disappear after the expires timestamp.
-
-
-### azure_queue_update
-
-* *Mode*: write
-* *Arguments*:
-  * `queue_name text`
-  * `message_text text`
-  * `message_id uuid`
-  * `pop_receipt uuid`
-  * `visible timestamp`
-* *Returns*: `void`
-* *Last defined on version*: 3
-
-Update the message identified by the given `queue_name`, `message_id` and
-`pop_receipt`, setting its `visible` and `message_text` properties as
-given.
-
+</details>
 
 ### cancel_task
 
@@ -1424,6 +2992,67 @@ If the current run is pending or running, mark it as exception with the given
 reason.  If the task is unscheduled, a run with that status is
 created to represent the cancellation.  This returns the task's updated
 status, or nothing if the current status was not as expected.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  runs jsonb;
+  run jsonb;
+  new_runs jsonb;
+  last_run_id int;
+begin
+  -- lock the task row to prevent concurrent updates
+  select tasks.runs
+  into runs
+  from tasks
+  where tasks.task_id = cancel_task.task_id
+  for update;
+
+  if runs is null then
+    -- the task row was not found
+    return;
+  end if;
+
+  last_run_id := jsonb_array_length(runs) - 1;
+  if last_run_id >= 0 then
+    -- if the most recent run is not pending or running, then
+    -- there is nothing to cancel
+    run = runs -> last_run_id;
+    if not run ->> 'state' in ('pending', 'running') then
+      return;
+    end if;
+
+    -- reconstruct the runs object with an updated run
+    new_runs = (runs - last_run_id) || jsonb_build_array(
+      run || jsonb_build_object(
+        'state', 'exception',
+        'reasonResolved', reason,
+        'resolved', now()));
+  else
+    new_runs = jsonb_build_array(
+      jsonb_build_object(
+        'state', 'exception',
+        'reasonCreated', 'exception',
+        'reasonResolved', reason,
+        'scheduled', now(),
+        'resolved', now()));
+  end if;
+
+  update tasks
+  set
+    runs = new_runs,
+    taken_until = null
+  where tasks.task_id = cancel_task.task_id;
+
+  return query
+  select tasks.retries_left, tasks.runs, tasks.taken_until
+  from tasks
+  where tasks.task_id = cancel_task.task_id;
+end
+```
+
+</details>
 
 ### cancel_task_group
 
@@ -1449,6 +3078,47 @@ This cancels all non-resolved tasks for the given task group
 by calling existing cancel_task() procedure. It will return
 only the tasks that were cancelled with this call.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  task_record RECORD;
+  cancellation_result RECORD;
+begin
+  FOR task_record IN (
+    SELECT tasks.task_id, tasks.deadline
+    FROM tasks
+    WHERE tasks.task_group_id = task_group_id_in
+      AND tasks.deadline > now()
+    FOR UPDATE
+  )
+  LOOP
+    -- call cancel which will check status and create an exception run
+    SELECT cancel_task(task_record.task_id, reason) INTO cancellation_result;
+    -- only return result if task was cancelled
+    IF cancellation_result IS NOT NULL THEN
+      RETURN QUERY
+        SELECT
+          tasks.task_id,
+          tasks.task_queue_id,
+          tasks.project_id,
+          tasks.scheduler_id,
+          tasks.task_group_id,
+          tasks.deadline,
+          tasks.expires,
+          tasks.retries_left,
+          tasks.routes,
+          tasks.runs,
+          tasks.taken_until
+        FROM tasks
+        WHERE tasks.task_id = task_record.task_id;
+    END IF;
+  END LOOP;
+end
+```
+
+</details>
+
 ### check_task_claim
 
 * *Mode*: write
@@ -1468,6 +3138,84 @@ a retry scheduled (if retries_left).
 
 This returns the task's updated status, or nothing if the current status
 was not as expected.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  task record;
+  runs jsonb;
+  run jsonb;
+  new_runs jsonb;
+  new_taken_until timestamptz;
+begin
+  -- lock the task row to prevent concurrent updates
+  select tasks.retries_left, tasks.runs, tasks.deadline
+  into task
+  from tasks
+  where
+    tasks.task_id = check_task_claim.task_id and
+    tasks.taken_until = taken_until_in
+  for update;
+
+  if task.runs is null then
+    -- no such task, or taken_until did not match
+    return;
+  end if;
+
+  if jsonb_array_length(task.runs) != run_id + 1 then
+    -- run_id is not the latest run
+    return;
+  end if;
+
+  run = task.runs -> run_id;
+  if run ->> 'state' != 'running' then
+    -- run is not running
+    return;
+  end if;
+
+  if (run ->> 'takenUntil')::timestamptz != taken_until_in then
+    -- run has updated takenUntil
+    return;
+  end if;
+
+  if task.deadline < now() then
+    -- task has passed its deadline, so let check_task_deadline handle it
+    return;
+  end if;
+
+  -- reconstruct the runs object with an updated run
+  new_runs = (task.runs - run_id) || jsonb_build_array(
+    run || jsonb_build_object(
+      'state', 'exception',
+      'reasonResolved', 'claim-expired',
+      'resolved', now()));
+
+  -- add a retry if there are any left
+  if task.retries_left > 0 then
+    new_runs = new_runs || jsonb_build_array(
+      jsonb_build_object(
+        'state', 'pending',
+        'reasonCreated', 'retry',
+        'scheduled', now()));
+    task.retries_left = task.retries_left - 1;
+  end if;
+
+  update tasks
+  set
+    retries_left = task.retries_left,
+    runs = new_runs,
+    taken_until = null
+  where tasks.task_id = check_task_claim.task_id;
+
+  return query
+  select tasks.retries_left, tasks.runs, tasks.taken_until
+  from tasks
+  where tasks.task_id = check_task_claim.task_id;
+end
+```
+
+</details>
 
 ### claim_task
 
@@ -1489,7 +3237,63 @@ Claim the given run of the given task for the given worker.  The hint is recorde
 for comparison when the claim expires.  This returns the task's updated
 status, or nothing if the current status was not as expected.
 
-### create_queue_artifact
+<details><summary>Function Body</summary>
+
+```
+declare
+  runs jsonb;
+  run jsonb;
+  new_runs jsonb;
+begin
+  -- lock the task row to prevent concurrent updates
+  select tasks.runs
+  into runs
+  from tasks
+  where tasks.task_id = claim_task.task_id
+  for update;
+
+  if runs is null then
+    -- the task row was not found
+    return;
+  end if;
+
+  if jsonb_array_length(runs) != run_id + 1 then
+    -- run_id is not the latest run
+    return;
+  end if;
+
+  run = runs -> run_id;
+  if run ->> 'state' != 'pending' then
+    -- run is not pending
+    return;
+  end if;
+
+  -- reconstruct the runs object with an updated run
+  new_runs = (runs - run_id) || jsonb_build_array(
+    run || jsonb_build_object(
+      'state', 'running',
+      'workerGroup', worker_group,
+      'workerId', worker_id,
+      'hintId', hint_id,
+      'takenUntil', taken_until_in,
+      'started', now()));
+
+  update tasks
+  set
+    runs = new_runs,
+    taken_until = taken_until_in
+  where tasks.task_id = claim_task.task_id;
+
+  return query
+  select tasks.retries_left, tasks.runs, tasks.taken_until
+  from tasks
+  where tasks.task_id = claim_task.task_id;
+end
+```
+
+</details>
+
+### create_queue_artifact_2
 
 * *Mode*: write
 * *Arguments*:
@@ -1501,19 +3305,43 @@ status, or nothing if the current status was not as expected.
   * `details_in jsonb`
   * `present_in boolean`
   * `expires_in timestamptz`
+  * `content_length_in bigint`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 24
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Create a new artifact. Raises UNIQUE_VIOLATION if the artifact already exists.
-Returns the newly created artifact.
+Create a new queue artifact. Raises UNIQUE_VIOLATION if the artifact already exists.
+Includes content_length parameter for tracking artifact file size.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query insert
+    into queue_artifacts (task_id, run_id, name, storage_type, content_type, details, present, expires, content_length)
+    values (task_id_in, run_id_in, name_in, storage_type_in, content_type_in, details_in, present_in, expires_in, content_length_in)
+  returning
+    queue_artifacts.task_id,
+    queue_artifacts.run_id,
+    queue_artifacts.name,
+    queue_artifacts.storage_type,
+    queue_artifacts.content_type,
+    queue_artifacts.details,
+    queue_artifacts.present,
+    queue_artifacts.expires,
+    queue_artifacts.content_length;
+end
+```
+
+</details>
 
 ### create_task_projid
 
@@ -1543,6 +3371,65 @@ Returns the newly created artifact.
 Create a new task, without scheduling it, and with empty values
 for the status information.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert
+  into tasks (
+    task_id,
+    task_queue_id,
+    scheduler_id,
+    project_id,
+    task_group_id,
+    dependencies,
+    requires,
+    routes,
+    priority,
+    retries,
+    created,
+    deadline,
+    expires,
+    scopes,
+    payload,
+    metadata,
+    tags,
+    extra,
+    retries_left,
+    runs,
+    taken_until,
+    ever_resolved
+  )
+  values (
+    task_id,
+    task_queue_id,
+    scheduler_id,
+    project_id,
+    task_group_id,
+    dependencies,
+    requires,
+    routes,
+    priority,
+    retries,
+    created,
+    deadline,
+    expires,
+    scopes,
+    payload,
+    metadata,
+    tags,
+    extra,
+    -- default values for the mutable bits
+    retries,
+    jsonb_build_array(),
+    null, -- not taken
+    false
+  );
+end
+```
+
+</details>
+
 ### delete_queue_artifact
 
 * *Mode*: write
@@ -1555,6 +3442,20 @@ for the status information.
 
 Delete a queue artifact.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from queue_artifacts
+  where
+    queue_artifacts.task_id = task_id_in and
+    queue_artifacts.run_id = run_id_in and
+    queue_artifacts.name = name_in;
+end
+```
+
+</details>
+
 ### delete_queue_artifacts
 
 * *Mode*: write
@@ -1565,6 +3466,25 @@ Delete a queue artifact.
 
 Delete multiple queue artifacts.
 Input is a jsonb array of objects with task_id, run_id, and name.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from queue_artifacts
+  where
+    (task_id, run_id, name)
+    IN (
+      select
+        rec->>'task_id',
+        (rec->>'run_id')::integer,
+        rec->>'name'
+      from jsonb_array_elements(task_id_run_id_names) as rec
+    );
+end
+```
+
+</details>
 
 ### delete_queue_provisioner
 
@@ -1578,6 +3498,18 @@ Input is a jsonb array of objects with task_id, run_id, and name.
 
 Delete a queue provisioner.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from queue_provisioners
+  where
+    queue_provisioners.provisioner_id = provisioner_id_in;
+end
+```
+
+</details>
+
 ### delete_queue_worker_type
 
 * *Mode*: write
@@ -1590,6 +3522,19 @@ Delete a queue provisioner.
 * *Last defined on version*: 44
 
 Delete a queue worker type.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from queue_worker_types
+  where
+    queue_worker_types.provisioner_id = provisioner_id_in and
+    queue_worker_types.worker_type = worker_type_in;
+end
+```
+
+</details>
 
 ### ensure_task_group
 
@@ -1607,6 +3552,56 @@ bumped by an hour at a time to avoid unnecessary updates.  This returns
 23505 (UNIQUE_VIOLATION) when the group exists with a different
 scheduler_id.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  task_group task_groups%ROWTYPE;
+begin
+  select *
+  from task_groups
+  where task_groups.task_group_id = task_group_id_in
+  for update
+  into task_group;
+
+  -- insert with expiration one hour later than given
+  if task_group.task_group_id is NULL then
+    begin
+      insert
+      into task_groups (task_group_id, scheduler_id, expires)
+      values (
+        task_group_id_in,
+        scheduler_id_in,
+        expires_in + interval '1 hour'
+      );
+      return;
+    exception
+      when unique_violation then
+        -- we raced with another call's insert, so get that inserted row
+        select *
+        from task_groups
+        where task_groups.task_group_id = task_group_id_in
+        for update
+        into task_group;
+    end;
+  end if;
+
+  if task_group.scheduler_id != scheduler_id_in then
+    raise exception 'task group exists with different scheduler_id'
+      using errcode = '23505';
+  end if;
+
+  -- if necessary, update the expires value
+  if expires_in > task_group.expires then
+    update task_groups
+    set expires = expires_in + interval '1 hour'
+    where task_groups.task_group_id = task_group_id_in;
+  end if;
+end
+```
+
+</details>
+
 ### expire_queue_workers
 
 * *Mode*: write
@@ -1617,6 +3612,26 @@ scheduler_id.
 
 Expire non-quarantined queue workers that come before `expires_in`.
 Returns a count of rows that have been deleted.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from queue_workers
+  where
+    queue_workers.expires < expires_in and
+    (queue_workers.expires < expires_in and queue_workers.quarantine_until < expires_in);
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
 
 ### expire_task_dependencies
 
@@ -1629,6 +3644,26 @@ Returns a count of rows that have been deleted.
 Delete task dependencies with expiration dates before `expires_in`.
 Returns a count of rows that have been deleted.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete
+  from task_dependencies
+  where expires < expires_in;
+
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
+
 ### expire_task_groups
 
 * *Mode*: write
@@ -1639,6 +3674,26 @@ Returns a count of rows that have been deleted.
 
 Delete task groups with expiration dates before `expires_in`.
 Returns a count of rows that have been deleted.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete
+  from task_groups
+  where expires < expires_in;
+
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
 
 ### expire_task_queues
 
@@ -1651,6 +3706,24 @@ Returns a count of rows that have been deleted.
 Expire task queues that come before `expires_in`.
 Returns a count of rows that have been deleted.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from task_queues
+  where task_queues.expires < expires_in;
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
+
 ### expire_tasks
 
 * *Mode*: write
@@ -1661,6 +3734,150 @@ Returns a count of rows that have been deleted.
 
 Delete tasks with expiration dates before `expires_in`.
 Returns a count of rows that have been deleted.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete
+  from tasks
+  where expires < expires_in;
+
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
+
+### get_claimed_tasks_by_task_queue_id
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `page_size_in integer`
+  * `after_claimed_in timestamptz`
+  * `after_task_id_in text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left int`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  run_id integer`
+  * `  worker_group text`
+  * `  worker_id text`
+  * `  claimed timestamptz `
+* *Last defined on version*: 117
+
+Get all tasks that are currently claimed by workers in a given task queue.
+Returns only the latest claim for each unique task ID to avoid duplicates
+when tasks are being reclaimed.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    tasks.task_id,
+    tasks.task_queue_id,
+    tasks.scheduler_id,
+    coalesce(tasks.project_id, 'none') as project_id,
+    tasks.task_group_id,
+    tasks.dependencies,
+    tasks.requires,
+    tasks.routes,
+    tasks.priority,
+    tasks.retries,
+    tasks.retries_left,
+    tasks.created,
+    tasks.deadline,
+    tasks.expires,
+    tasks.scopes,
+    tasks.payload,
+    tasks.metadata,
+    tasks.tags,
+    tasks.extra,
+    tasks.runs,
+    tasks.taken_until,
+    -- for pagination and results
+    q.run_id,
+    q.worker_group,
+    q.worker_id,
+    q.claimed
+  from queue_claimed_tasks q
+  inner join tasks on tasks.task_id = q.task_id
+  where q.task_queue_id = task_queue_id_in
+    and (after_claimed_in is null or q.claimed > after_claimed_in)
+    and (after_task_id_in is null or q.task_id != after_task_id_in)
+    and not exists (
+      select 1
+      from queue_claimed_tasks q2
+      where q2.task_id = q.task_id
+        and q2.task_queue_id = q.task_queue_id
+        and q2.claimed > q.claimed
+    )
+  order by q.claimed asc
+  limit get_page_limit(page_size_in);
+end
+```
+
+</details>
+
+### get_claimed_tasks_by_worker
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  run_id integer `
+* *Last defined on version*: 120
+
+Get all task_id and run_id pairs currently claimed by a specific worker,
+identified by task_queue_id, worker_group, and worker_id.
+Uses the existing queue_claimed_task_queue_idx index.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    q.task_id,
+    q.run_id
+  from queue_claimed_tasks q
+  where q.task_queue_id = task_queue_id_in
+    and q.worker_group = worker_group_in
+    and q.worker_id = worker_id_in;
+end
+```
+
+</details>
 
 ### get_dependent_tasks
 
@@ -1685,31 +3902,234 @@ This supports paginated queries that are not susceptible to rows being
 added or removed.  Typically only one of `page_offset_in` and
 `tasks_after_in` are non-null.
 
-### get_expired_artifacts_for_deletion
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    task_dependencies.dependent_task_id,
+    task_dependencies.requires,
+    task_dependencies.satisfied
+  from task_dependencies
+  where
+    required_task_id = required_task_id_in and
+    expires > now() and
+    (satisfied_in is null or task_dependencies.satisfied = satisfied_in) and
+    (tasks_after_in is null or task_dependencies.dependent_task_id > tasks_after_in)
+  order by dependent_task_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_expired_artifacts_for_deletion_2
 
 * *Mode*: read
 * *Arguments*:
   * `expires_in timestamptz`
   * `page_size_in integer`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 84
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Get existing queue artifacts with expiration date below given.
-Note that this method doesn't use ordering to avoid using
-complex and expensive table scans.
-As table is very big doing a sequential scan without ordering is faster.
-Expired entities are expected to be deleted right after as this function
-doesn't support pagination with offsets.
+Get expired artifacts for deletion, including content_length for logging deleted sizes.
 
-### get_queue_artifact
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    queue_artifacts.task_id,
+    queue_artifacts.run_id,
+    queue_artifacts.name,
+    queue_artifacts.storage_type,
+    queue_artifacts.content_type,
+    queue_artifacts.details,
+    queue_artifacts.present,
+    queue_artifacts.expires,
+    queue_artifacts.content_length
+  from queue_artifacts
+  where
+    queue_artifacts.expires < expires_in
+  limit get_page_limit(page_size_in);
+end
+```
+
+</details>
+
+### get_multiple_tasks
+
+* *Mode*: read
+* *Arguments*:
+  * `tasks_in jsonb`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left int`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz `
+* *Last defined on version*: 99
+
+Get tasks matching the given taskIds.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    tasks.task_id,
+    tasks.task_queue_id,
+    tasks.scheduler_id,
+    -- treat null project_id as 'none'
+    coalesce(tasks.project_id, 'none') as project_id,
+    tasks.task_group_id,
+    tasks.dependencies,
+    tasks.requires,
+    tasks.routes,
+    tasks.priority,
+    tasks.retries,
+    tasks.retries_left,
+    tasks.created,
+    tasks.deadline,
+    tasks.expires,
+    tasks.scopes,
+    tasks.payload,
+    tasks.metadata,
+    tasks.tags,
+    tasks.extra,
+    tasks.runs,
+    tasks.taken_until
+  from tasks
+  where
+    tasks.task_id in (SELECT jsonb_array_elements_text(tasks_in))
+    limit get_page_limit(page_size_in)
+    offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_pending_tasks_by_task_queue_id
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `page_size_in integer`
+  * `after_inserted_in timestamptz`
+  * `after_task_id_in text`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left int`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  run_id integer`
+  * `  inserted timestamptz `
+* *Last defined on version*: 102
+
+Get all tasks that are currently pending in a given task queue.
+Records would be returned by insert time, or when tasks were scheduled.
+To iterate over all pending tasks, `after_inserted_in`, `after_task_id_in`
+parameters can be used.
+
+Full task record is being returned plus `inserted` for pagination purposes
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    tasks.task_id,
+    tasks.task_queue_id,
+    tasks.scheduler_id,
+    coalesce(tasks.project_id, 'none') as project_id,
+    tasks.task_group_id,
+    tasks.dependencies,
+    tasks.requires,
+    tasks.routes,
+    tasks.priority,
+    tasks.retries,
+    tasks.retries_left,
+    tasks.created,
+    tasks.deadline,
+    tasks.expires,
+    tasks.scopes,
+    tasks.payload,
+    tasks.metadata,
+    tasks.tags,
+    tasks.extra,
+    tasks.runs,
+    tasks.taken_until,
+    -- one for the pagination
+    q.run_id,
+    q.inserted
+  from queue_pending_tasks q
+  left join tasks on tasks.task_id=q.task_id
+  where q.task_queue_id = task_queue_id_in
+    and tasks.task_id is not null
+    and (after_inserted_in is null or q.inserted > after_inserted_in)
+    and q.expires > now()
+    -- timestamp alone might not be enough
+    -- since time part is truncated to 1000th of a second
+    and (after_task_id_in is null or q.task_id != after_task_id_in)
+  order by q.inserted asc
+  limit get_page_limit(page_size_in);
+end
+```
+
+</details>
+
+### get_queue_artifact_2
 
 * *Mode*: read
 * *Arguments*:
@@ -1717,19 +4137,45 @@ doesn't support pagination with offsets.
   * `run_id_in integer`
   * `name_in text`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 24
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Get a queue artifact. The returned table will have one or zero row.
+Get a single queue artifact by task_id, run_id, and name.
+Returns content_length in the result.
 
-### get_queue_artifacts_paginated
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select
+    queue_artifacts.task_id,
+    queue_artifacts.run_id,
+    queue_artifacts.name,
+    queue_artifacts.storage_type,
+    queue_artifacts.content_type,
+    queue_artifacts.details,
+    queue_artifacts.present,
+    queue_artifacts.expires,
+    queue_artifacts.content_length
+  from queue_artifacts
+  where
+    queue_artifacts.task_id = task_id_in and
+    queue_artifacts.run_id = run_id_in and
+    queue_artifacts.name = name_in;
+end
+```
+
+</details>
+
+### get_queue_artifacts_paginated_2
 
 * *Mode*: read
 * *Arguments*:
@@ -1741,21 +4187,59 @@ Get a queue artifact. The returned table will have one or zero row.
   * `after_run_id_in integer`
   * `after_name_in text`
 * *Returns*: `table`
-  * `task_id text`
-  * `run_id integer`
-  * `name text`
-  * `storage_type text`
-  * `content_type text`
-  * `details jsonb`
-  * `present boolean`
-  * `expires timestamptz`
-* *Last defined on version*: 69
+  * `   task_id text`
+  * `  run_id integer`
+  * `  name text`
+  * `  storage_type text`
+  * `  content_type text`
+  * `  details jsonb`
+  * `  present boolean`
+  * `  expires timestamptz`
+  * `  content_length bigint `
+* *Last defined on version*: 121
 
-Get existing queue artifacts, filtered by the optional arguments, ordered
-by the `task_id`, `run_id`, and `name`.  The `after_*` arguments specify
-where the page of results should begin, and must all be specified if any
-are specified.  Typically these values would be drawn from the last item
-in the previous page.
+Get queue artifacts with cursor-based pagination.
+Returns content_length in the result.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    queue_artifacts.task_id,
+    queue_artifacts.run_id,
+    queue_artifacts.name,
+    queue_artifacts.storage_type,
+    queue_artifacts.content_type,
+    queue_artifacts.details,
+    queue_artifacts.present,
+    queue_artifacts.expires,
+    queue_artifacts.content_length
+  from queue_artifacts
+  where
+    (queue_artifacts.task_id = task_id_in or task_id_in is null) and
+    (queue_artifacts.run_id = run_id_in or run_id_in is null) and
+    (queue_artifacts.expires < expires_in or expires_in is null) and
+    (after_task_id_in is null or
+      (queue_artifacts.task_id >= after_task_id_in and
+        (queue_artifacts.task_id > after_task_id_in or
+          (queue_artifacts.task_id = after_task_id_in and
+            (queue_artifacts.run_id > after_run_id_in or
+              (queue_artifacts.run_id = after_run_id_in and
+                queue_artifacts.name > after_name_in
+              )
+            )
+          )
+        )
+      )
+    )
+  order by queue_artifacts.task_id, queue_artifacts.run_id, queue_artifacts.name
+  limit get_page_limit(page_size_in);
+end
+```
+
+</details>
 
 ### get_task_group_size
 
@@ -1766,6 +4250,18 @@ in the previous page.
 * *Last defined on version*: 82
 
 Return number of tasks that exist in the current task group.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return (select count(*)
+  from tasks
+  where tasks.task_group_id = task_group_id_in);
+end
+```
+
+</details>
 
 ### get_task_group2
 
@@ -1780,6 +4276,23 @@ Return number of tasks that exist in the current task group.
 * *Last defined on version*: 81
 
 Get a task group with sealed column.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    task_groups.task_group_id,
+    task_groups.scheduler_id,
+    task_groups.expires,
+    task_groups.sealed
+  from task_groups
+  where task_groups.task_group_id = task_group_id_in;
+end
+```
+
+</details>
 
 ### get_task_projid
 
@@ -1813,6 +4326,42 @@ Get a task group with sealed column.
 Get all properties of a task.  Note that all properties but `runs`,
 `retries_left`, and `taken_until` are immutable.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    tasks.task_id,
+    tasks.task_queue_id,
+    tasks.scheduler_id,
+    -- treat null project_id as 'none'
+    coalesce(tasks.project_id, 'none') as project_id,
+    tasks.task_group_id,
+    tasks.dependencies,
+    tasks.requires,
+    tasks.routes,
+    tasks.priority,
+    tasks.retries,
+    tasks.retries_left,
+    tasks.created,
+    tasks.deadline,
+    tasks.expires,
+    tasks.scopes,
+    tasks.payload,
+    tasks.metadata,
+    tasks.tags,
+    tasks.extra,
+    tasks.runs,
+    tasks.taken_until
+  from tasks
+  where
+    tasks.task_id = task_id_in;
+end
+```
+
+</details>
+
 ### get_task_queue
 
 * *Mode*: read
@@ -1829,6 +4378,27 @@ Get all properties of a task.  Note that all properties but `runs`,
 * *Last defined on version*: 53
 
 Get a non-expired task queue by task_queue_id.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    task_queues.task_queue_id,
+    task_queues.expires,
+    task_queues.last_date_active,
+    task_queues.description,
+    task_queues.stability,
+    public.gen_random_uuid()
+  from task_queues
+  where
+    task_queues.task_queue_id = task_queue_id_in and
+    task_queues.expires > expires_in;
+  end
+```
+
+</details>
 
 ### get_task_queues
 
@@ -1850,6 +4420,30 @@ Get a non-expired task queue by task_queue_id.
 Get task queues ordered by `task_queue_id`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    task_queues.task_queue_id,
+    task_queues.expires,
+    task_queues.last_date_active,
+    task_queues.description,
+    task_queues.stability,
+    public.gen_random_uuid()
+  from task_queues
+  where
+    (task_queues.task_queue_id = task_queue_id_in or task_queue_id_in is null) and
+    (task_queues.expires > expires_in or expires_in is null)
+  order by task_queue_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
 
 ### get_tasks_by_task_group_projid
 
@@ -1880,9 +4474,47 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `  extra jsonb`
   * `  runs jsonb`
   * `  taken_until timestamptz `
-* *Last defined on version*: 63
+* *Last defined on version*: 122
 
 Get all properties of all tasks in the given task group.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    tasks.task_id,
+    tasks.task_queue_id,
+    tasks.scheduler_id,
+    -- treat null project_id as 'none'
+    coalesce(tasks.project_id, 'none') as project_id,
+    tasks.task_group_id,
+    tasks.dependencies,
+    tasks.requires,
+    tasks.routes,
+    tasks.priority,
+    tasks.retries,
+    tasks.retries_left,
+    tasks.created,
+    tasks.deadline,
+    tasks.expires,
+    tasks.scopes,
+    tasks.payload,
+    tasks.metadata,
+    tasks.tags,
+    tasks.extra,
+    tasks.runs,
+    tasks.taken_until
+  from tasks
+  where tasks.task_group_id = task_group_id_in
+  order by tasks.task_id  -- to avoid pagination overlaps
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
 
 ### is_task_blocked
 
@@ -1893,6 +4525,22 @@ Get all properties of all tasks in the given task group.
 * *Last defined on version*: 28
 
 Return true if the task has remaining un-satisfied dependencies.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  perform 1
+  from task_dependencies
+  where
+    dependent_task_id = dependent_task_id_in and
+    not task_dependencies.satisfied
+  limit 1;
+  return found;
+end
+```
+
+</details>
 
 ### is_task_group_active
 
@@ -1910,6 +4558,22 @@ added, so this value may change from tue to false or false to true at any
 time unless a task group is sealed.
 
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  perform true
+  from tasks
+  where
+    task_group_id = task_group_id_in and
+    not ever_resolved
+  limit 1;
+  return found;
+end
+```
+
+</details>
+
 ### is_task_group_sealed
 
 * *Mode*: read
@@ -1920,6 +4584,22 @@ time unless a task group is sealed.
 
 Return true if task group was sealed.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  perform 1
+  from task_groups
+  where
+    task_groups.task_group_id = task_group_id_in and
+    task_groups.sealed is not null
+  limit 1;
+  return found;
+end
+```
+
+</details>
+
 ### mark_task_ever_resolved
 
 * *Mode*: write
@@ -1929,6 +4609,18 @@ Return true if task group was sealed.
 * *Last defined on version*: 28
 
 temp, removed in next commit
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  update tasks
+  set ever_resolved = true
+  where task_id = task_id_in;
+end
+```
+
+</details>
 
 ### quarantine_queue_worker_with_last_date_active_and_details
 
@@ -1958,6 +4650,40 @@ no such worker exists.
 Additional metadata can be added to the worker to help identify the reason for the quarantine.
 Worker will keep a history of all quarantine details.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query update queue_workers
+  set
+    quarantine_until = quarantine_until_in,
+    expires = greatest(queue_workers.expires, now() + interval '1 day'),
+    -- append new row to the quarantine details array if it exists or create new
+    quarantine_details = case
+      when queue_workers.quarantine_details is null then
+        jsonb_build_array(quarantine_details_in)
+      else
+        queue_workers.quarantine_details || quarantine_details_in
+    end
+  where
+    queue_workers.task_queue_id = task_queue_id_in and
+    queue_workers.worker_group = worker_group_in and
+    queue_workers.worker_id = worker_id_in
+  returning
+    queue_workers.task_queue_id,
+    queue_workers.worker_group,
+    queue_workers.worker_id,
+    queue_workers.quarantine_until,
+    queue_workers.expires,
+    queue_workers.first_claim,
+    queue_workers.recent_tasks,
+    queue_workers.last_date_active,
+    queue_workers.quarantine_details;
+end
+```
+
+</details>
+
 ### queue_artifact_present
 
 * *Mode*: write
@@ -1979,6 +4705,851 @@ Worker will keep a history of all quarantine details.
 Mark the given queue artifact as present, returning the updated artifact.  Returns
 nothing if no such artifact exists.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  update queue_artifacts
+  set present = true
+  where
+    queue_artifacts.task_id = task_id_in and
+    queue_artifacts.run_id = run_id_in and
+    queue_artifacts.name = name_in
+  returning
+    queue_artifacts.task_id,
+    queue_artifacts.run_id,
+    queue_artifacts.name,
+    queue_artifacts.storage_type,
+    queue_artifacts.content_type,
+    queue_artifacts.details,
+    queue_artifacts.present,
+    queue_artifacts.expires;
+end
+```
+
+</details>
+
+### queue_change_task_group_priority
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `new_priority_in task_priority`
+  * `batch_size_in integer`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left integer`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  old_priority task_priority `
+* *Last defined on version*: 119
+
+Update the priority of unresolved tasks within a task group.
+Matching pending queue entries are updated in tandem. Returns each updated
+task row alongside its previous priority.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  pending_priority integer;
+  _limit integer;
+  task_upd record;
+  _row tasks%ROWTYPE;
+begin
+  pending_priority := case new_priority_in
+    when 'highest' then 7
+    when 'very-high' then 6
+    when 'high' then 5
+    when 'medium' then 4
+    when 'low' then 3
+    when 'very-low' then 2
+    when 'lowest' then 1
+  end;
+
+  _limit := coalesce(batch_size_in, 100);
+  if _limit < 1 then _limit := 100; end if;
+
+  FOR task_upd IN
+    select tasks.task_id, tasks.priority
+    from tasks
+    where tasks.task_group_id = task_group_id_in
+      and not tasks.ever_resolved
+      and tasks.deadline > now()
+      and tasks.priority <> new_priority_in
+    order by tasks.task_id
+    limit _limit
+    for update
+  LOOP
+
+    update tasks
+    set priority = new_priority_in
+    where tasks.task_id = task_upd.task_id
+    returning * into _row;
+
+    update queue_pending_tasks
+    set priority = pending_priority
+    where queue_pending_tasks.task_id = task_upd.task_id;
+
+    return query select
+      _row.task_id,
+      _row.task_queue_id,
+      _row.scheduler_id,
+      _row.project_id,
+      _row.task_group_id,
+      _row.dependencies,
+      _row.requires,
+      _row.routes,
+      _row.priority,
+      _row.retries,
+      _row.retries_left,
+      _row.created,
+      _row.deadline,
+      _row.expires,
+      _row.scopes,
+      _row.payload,
+      _row.metadata,
+      _row.tags,
+      _row.extra,
+      _row.runs,
+      _row.taken_until,
+      task_upd.priority;
+  END LOOP;
+
+  return;
+end
+```
+
+</details>
+
+### queue_change_task_priority
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `new_priority_in task_priority`
+* *Returns*: `table`
+  * `   task_id text`
+  * `  task_queue_id text`
+  * `  scheduler_id text`
+  * `  project_id text`
+  * `  task_group_id text`
+  * `  dependencies jsonb`
+  * `  requires task_requires`
+  * `  routes jsonb`
+  * `  priority task_priority`
+  * `  retries integer`
+  * `  retries_left integer`
+  * `  created timestamptz`
+  * `  deadline timestamptz`
+  * `  expires timestamptz`
+  * `  scopes jsonb`
+  * `  payload jsonb`
+  * `  metadata jsonb`
+  * `  tags jsonb`
+  * `  extra jsonb`
+  * `  runs jsonb`
+  * `  taken_until timestamptz`
+  * `  old_priority task_priority `
+* *Last defined on version*: 119
+
+Update the priority of a single unresolved task and keep matching pending queue
+  entries in sync. Returns the updated task row along with the previous priority.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  pending_priority integer;
+  old_priority_val task_priority;
+  _row tasks%ROWTYPE;
+begin
+  pending_priority := case new_priority_in
+    when 'highest' then 7
+    when 'very-high' then 6
+    when 'high' then 5
+    when 'medium' then 4
+    when 'low' then 3
+    when 'very-low' then 2
+    when 'lowest' then 1
+  end;
+
+  -- lock row and capture old priority
+  select tasks.priority into old_priority_val
+  from tasks
+  where tasks.task_id = task_id_in
+    and not tasks.ever_resolved
+    and tasks.deadline > now()
+    and tasks.priority <> new_priority_in
+  for update;
+
+  if not found then
+    return;
+  end if;
+
+  update tasks
+  set priority = new_priority_in
+  where tasks.task_id = task_id_in
+  returning * into _row;
+
+  update queue_pending_tasks
+  set priority = pending_priority
+  where queue_pending_tasks.task_id = task_id_in;
+
+  return query select
+      _row.task_id,
+      _row.task_queue_id,
+      _row.scheduler_id,
+      _row.project_id,
+      _row.task_group_id,
+      _row.dependencies,
+      _row.requires,
+      _row.routes,
+      _row.priority,
+      _row.retries,
+      _row.retries_left,
+      _row.created,
+      _row.deadline,
+      _row.expires,
+      _row.scopes,
+      _row.payload,
+      _row.metadata,
+      _row.tags,
+      _row.extra,
+      _row.runs,
+      _row.taken_until,
+      old_priority_val;
+end
+```
+
+</details>
+
+### queue_claimed_task_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete single claimed task from the queue.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from queue_claimed_tasks
+  where task_id = task_id_in
+    and pop_receipt = pop_receipt_in;
+end
+```
+
+</details>
+
+### queue_claimed_task_get
+
+* *Mode*: write
+* *Arguments*:
+  * `visible_in timestamptz`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `run_id integer`
+  * `taken_until timestamptz`
+  * `pop_receipt uuid`
+* *Last defined on version*: 93
+
+Get up to `count` tasks from the claimed queue.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+    with updated as (
+      update queue_claimed_tasks q
+      set pop_receipt = public.gen_random_uuid(),
+        visible = visible_in
+      where
+        (q.task_id, q.run_id, q.visible) in (
+          select q2.task_id, q2.run_id, q2.visible
+          from queue_claimed_tasks q2
+          where q2.visible <= now()
+          order by q2.taken_until
+          for update skip locked
+          limit count
+      )
+      returning q.task_id, q.run_id, q.taken_until, q.pop_receipt
+    )
+    select u.task_id, u.run_id, u.taken_until, u.pop_receipt
+    from updated as u
+    order by u.taken_until;
+end
+```
+
+</details>
+
+### queue_claimed_task_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `run_id_in integer`
+  * `taken_until_in timestamptz`
+  * `task_queue_id_in text`
+  * `worker_group_in text`
+  * `worker_id_in text`
+* *Returns*: `void`
+* *Last defined on version*: 95
+
+Track when task was claimed and when it should be reclaimed.
+It is possible to have multiple records for a given taskId+runId combination.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO queue_claimed_tasks (
+    task_id,
+    run_id,
+    task_queue_id,
+    worker_group,
+    worker_id,
+    claimed,
+    taken_until,
+    visible
+  )
+  VALUES (
+    task_id_in,
+    run_id_in,
+    task_queue_id_in,
+    worker_group_in,
+    worker_id_in,
+    now(),
+    taken_until_in,
+    taken_until_in -- visible initially same as taken_until
+  );
+end
+```
+
+</details>
+
+### queue_claimed_task_resolved
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `run_id_in integer`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Once the task gets resolved it is no longer relevant for the claim queue, since it cannot expire anymore.
+We can safely delete given run from the claim queue.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from queue_claimed_tasks
+  where task_id = task_id_in
+    and run_id = run_id_in;
+end
+```
+
+</details>
+
+### queue_claimed_tasks_count
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+* *Returns*: `integer`
+* *Last defined on version*: 113
+
+Count the number of claimed tasks for given task queue.
+Because queue_claimed_tasks table might have several records for the same task-run
+when the task is being reclaimed, we count distinct (task_id, run_id)
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return (
+    select count(distinct (task_id, run_id))
+    from queue_claimed_tasks
+    where task_queue_id = task_queue_id_in
+      and taken_until > now()
+  );
+end
+```
+
+</details>
+
+### queue_pending_task_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `run_id_in integer`
+* *Returns*: `void`
+* *Last defined on version*: 101
+
+Delete single pending task run from the queue.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from queue_pending_tasks
+  where task_id = task_id_in
+    and run_id = run_id_in
+    and pop_receipt IS NULL;
+end
+```
+
+</details>
+
+### queue_pending_tasks_add
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `priority_in integer`
+  * `task_id_in text`
+  * `run_id_in integer`
+  * `hint_id_in text`
+  * `expires_in timestamp`
+* *Returns*: `void`
+* *Last defined on version*: 95
+
+Put the task into the pending queue.
+When record already exists, we update the priority, run_id, hint_id and expiration.
+This also sends a notification to the `task_pending` channel with the `task_queue_id` as its payload.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO queue_pending_tasks
+    (task_queue_id, priority, task_id, run_id, hint_id, inserted, expires, visible)
+  VALUES (
+    task_queue_id_in,
+    priority_in,
+    task_id_in,
+    run_id_in,
+    hint_id_in,
+    now(),
+    expires_in,
+    now()
+  )
+  ON CONFLICT (task_id, run_id) DO UPDATE
+    SET
+      expires = greatest(coalesce(expires_in, queue_pending_tasks.expires), queue_pending_tasks.expires),
+      priority = priority_in,
+      hint_id = hint_id_in
+    WHERE
+      queue_pending_tasks.task_queue_id = task_queue_id_in
+      AND queue_pending_tasks.task_id = task_id_in
+      AND queue_pending_tasks.run_id = run_id_in
+      AND queue_pending_tasks.pop_receipt is null;
+  -- notify listeners that there is a new task in the queue
+  EXECUTE 'NOTIFY task_pending, ' || quote_literal(task_queue_id_in) || ';';
+end
+```
+
+</details>
+
+### queue_pending_tasks_count
+
+* *Mode*: read
+* *Arguments*:
+  * `task_queue_id_in text`
+* *Returns*: `integer`
+* *Last defined on version*: 91
+
+Count the number of pending tasks for given task queue.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return (
+    select count(*)
+    from queue_pending_tasks
+    where task_queue_id = task_queue_id_in
+      and expires > now()
+  );
+end
+```
+
+</details>
+
+### queue_pending_tasks_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete single pending task from the queue.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  DELETE FROM queue_pending_tasks
+  WHERE task_id = task_id_in AND pop_receipt = pop_receipt_in;
+end
+```
+
+</details>
+
+### queue_pending_tasks_delete_expired
+
+* *Mode*: write
+* *Arguments*:
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete all expired tasks from pending queue.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  DELETE FROM queue_pending_tasks
+    WHERE expires <= now();
+end
+```
+
+</details>
+
+### queue_pending_tasks_get
+
+* *Mode*: write
+* *Arguments*:
+  * `task_queue_id_in text`
+  * `visible_in timestamptz`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `run_id integer`
+  * `hint_id text`
+  * `pop_receipt uuid`
+* *Last defined on version*: 93
+
+Get up to `count` tasks for the pending tasks from the given taskQueueId.
+Tasks are locked and will temporarily become invisible for the `visible` period.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+    with updated as (
+      update queue_pending_tasks q
+      set pop_receipt = public.gen_random_uuid(),
+        visible = visible_in
+      where
+        (q.task_id, q.run_id, q.visible) in (
+          select q2.task_id, q2.run_id, q2.visible
+          from queue_pending_tasks q2
+          where q2.task_queue_id = task_queue_id_in
+            and q2.visible <= now()
+            and q2.expires > now()
+          order by q2.priority desc, q2.inserted asc
+          for update skip locked
+          limit count
+      )
+      returning q.priority, q.inserted, q.task_id, q.run_id, q.hint_id, q.pop_receipt
+    )
+    select u.task_id, u.run_id, u.hint_id, u.pop_receipt
+    from updated as u
+    order by u.priority desc, u.inserted asc;
+end
+```
+
+</details>
+
+### queue_pending_tasks_release
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Release task back to the queue to be picked up by another worker.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  UPDATE queue_pending_tasks
+  SET visible = now()
+  WHERE task_id = task_id_in AND pop_receipt = pop_receipt_in;
+end
+```
+
+</details>
+
+### queue_resolved_task_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete single task from claimed queue.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from queue_resolved_tasks
+  where task_id = task_id_in
+    and pop_receipt = pop_receipt_in;
+end
+```
+
+</details>
+
+### queue_resolved_task_get
+
+* *Mode*: write
+* *Arguments*:
+  * `visible_in timestamptz`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `task_group_id text`
+  * `scheduler_id text`
+  * `resolution text`
+  * `pop_receipt uuid`
+* *Last defined on version*: 91
+
+Get up to `count` tasks from the resolved queue.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+    with updated as (
+      update queue_resolved_tasks q
+      set pop_receipt = public.gen_random_uuid(),
+        visible = visible_in
+      where
+        q.task_id in (
+          select q2.task_id
+          from queue_resolved_tasks q2
+          where q2.visible <= now()
+          order by q2.visible
+          for update skip locked
+          limit count
+      )
+      returning q.task_id, q.task_group_id, q.scheduler_id, q.resolution, q.visible, q.pop_receipt
+    )
+    select u.task_id, u.task_group_id, u.scheduler_id, u.resolution, u.pop_receipt
+    from updated as u
+    order by u.visible;
+end
+```
+
+</details>
+
+### queue_resolved_task_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `task_id_in text`
+  * `scheduler_id_in text`
+  * `resolution_in text`
+* *Returns*: `void`
+* *Last defined on version*: 95
+
+Track when task was resolved.
+This is a short-lived record that is used by dependency resolver to update dependencies.
+Notification is sent to `task_resolved` channel with the `task_id` as its payload.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert into queue_resolved_tasks (
+    task_group_id,
+    task_id,
+    scheduler_id,
+    resolution,
+    resolved,
+    visible
+  )
+  values (
+    task_group_id_in,
+    task_id_in,
+    scheduler_id_in,
+    resolution_in,
+    now(),
+    now()
+  );
+
+  -- notify listeners that task was resolved
+  EXECUTE 'NOTIFY task_resolved';
+end
+```
+
+</details>
+
+### queue_task_deadline_delete
+
+* *Mode*: write
+* *Arguments*:
+  * `task_id_in text`
+  * `pop_receipt_in uuid`
+* *Returns*: `void`
+* *Last defined on version*: 91
+
+Delete single deadline task.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from queue_task_deadlines
+  where task_id = task_id_in
+    and pop_receipt = pop_receipt_in;
+end
+```
+
+</details>
+
+### queue_task_deadline_get
+
+* *Mode*: write
+* *Arguments*:
+  * `visible_in timestamptz`
+  * `count integer`
+* *Returns*: `table`
+  * `task_id text`
+  * `task_group_id text`
+  * `scheduler_id text`
+  * `deadline timestamptz`
+  * `pop_receipt uuid`
+* *Last defined on version*: 93
+
+Get up to `count` tasks from the deadline queue.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+    with updated as (
+      update queue_task_deadlines q
+      set pop_receipt = public.gen_random_uuid(),
+        visible = visible_in
+      where
+        (q.task_id, q.visible) in (
+          select q2.task_id, q2.visible
+          from queue_task_deadlines q2
+          where q2.visible <= now()
+          order by q2.deadline
+          for update skip locked
+          limit count
+      )
+      returning q.task_id, q.task_group_id, q.scheduler_id, q.deadline, q.pop_receipt
+    )
+    select u.task_id, u.task_group_id, u.scheduler_id, u.deadline, u.pop_receipt
+    from updated as u
+    order by u.deadline;
+end
+```
+
+</details>
+
+### queue_task_deadline_put
+
+* *Mode*: write
+* *Arguments*:
+  * `task_group_id_in text`
+  * `task_id_in text`
+  * `scheduler_id_in text`
+  * `deadline_in timestamptz`
+  * `visible timestamptz`
+* *Returns*: `void`
+* *Last defined on version*: 95
+
+Track task deadline upon task creation. This would stay until task
+deadline to see if it was ever scheduled or resolved.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert into queue_task_deadlines (
+    task_group_id,
+    task_id,
+    scheduler_id,
+    created,
+    deadline,
+    visible
+  )
+  values (
+    task_group_id_in,
+    task_id_in,
+    scheduler_id_in,
+    now(),
+    deadline_in,
+    visible
+  );
+end
+```
+
+</details>
+
 ### queue_worker_seen_with_last_date_active
 
 * *Mode*: write
@@ -1997,6 +5568,107 @@ Will also always bump its last date active time.
 This function always writes to the DB, so calls should be suitably rate-limited at the
 client side.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert
+    into queue_workers (task_queue_id, worker_group, worker_id, quarantine_until, expires, first_claim, recent_tasks, last_date_active)
+    values (
+      task_queue_id_in,
+      worker_group_in,
+      worker_id_in,
+      now() - interval '10 years',
+      expires_in,
+      now(),
+      jsonb_build_array(),
+      now()
+    )
+    on conflict (task_queue_id, worker_group, worker_id) do update
+    set
+      expires = greatest(coalesce(expires_in, queue_workers.expires), queue_workers.expires),
+      last_date_active = now()
+    where
+      queue_workers.task_queue_id = task_queue_id_in and
+      queue_workers.worker_group = worker_group_in and
+      queue_workers.worker_id = worker_id_in;
+end
+```
+
+</details>
+
+### queue_worker_stats
+
+* *Mode*: read
+* *Arguments*:
+* *Returns*: `table`
+  * `task_queue_id text`
+  * `worker_count integer`
+  * `quarantined_count integer`
+  * `claimed_count integer`
+  * `pending_count integer`
+* *Last defined on version*: 113
+
+Retrieve comprehensive statistics for task queues including worker counts,
+quarantined workers, claimed tasks, and pending tasks. This method performs
+a full outer join across queue_workers, queue_claimed_tasks, and
+queue_pending_tasks tables to provide a unified view of queue metrics.
+
+Returns one row per task_queue_id with the following metrics:
+- worker_count: Total number of active workers (not expired)
+- quarantined_count: Number of workers currently under quarantine
+- claimed_count: Number of distinct tasks currently claimed by workers
+- pending_count: Number of distinct tasks waiting to be claimed
+
+All counts default to 0 when no data exists for a given metric.
+
+Updated from 112 version to increase distinct performance
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN QUERY
+  WITH worker_stats AS (
+    SELECT
+      queue_workers.task_queue_id,
+      COUNT(*)::int AS worker_count,
+      SUM(CASE WHEN quarantine_until > now() THEN 1 ELSE 0 END)::int AS quarantined_count
+    FROM queue_workers
+    WHERE expires > now()
+    GROUP BY queue_workers.task_queue_id
+  ),
+  claimed_stats AS (
+    SELECT
+      queue_claimed_tasks.task_queue_id,
+      COUNT(DISTINCT (task_id, run_id))::int AS claimed_count
+    FROM queue_claimed_tasks
+    WHERE taken_until > now()
+    GROUP BY queue_claimed_tasks.task_queue_id
+  ),
+  pending_stats AS (
+    SELECT
+      queue_pending_tasks.task_queue_id,
+      COUNT(DISTINCT (task_id, run_id))::int AS pending_count
+    FROM queue_pending_tasks
+    WHERE expires > now()
+    GROUP BY queue_pending_tasks.task_queue_id
+  )
+  SELECT
+    COALESCE(ws.task_queue_id, cs.task_queue_id, ps.task_queue_id) AS task_queue_id,
+    COALESCE(ws.worker_count, 0) AS worker_count,
+    COALESCE(ws.quarantined_count, 0) AS quarantined_count,
+    COALESCE(cs.claimed_count, 0) AS claimed_count,
+    COALESCE(ps.pending_count, 0) AS pending_count
+  FROM worker_stats ws
+  FULL OUTER JOIN claimed_stats cs ON ws.task_queue_id = cs.task_queue_id
+  FULL OUTER JOIN pending_stats ps ON cs.task_queue_id = ps.task_queue_id;
+end
+```
+
+</details>
+
 ### queue_worker_task_seen
 
 * *Mode*: write
@@ -2014,6 +5686,26 @@ add the task to `recent_tasks`, keeping the most recent 20 tasks. This
 will do nothing, but not fail, if the worker does not exist, as it is
 unusual for a nonexistent worker to claim work.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  update queue_workers
+  set
+    -- append without increasing size over 20
+    recent_tasks = case
+      when jsonb_array_length(recent_tasks) > 19 then (recent_tasks - 0)
+      else recent_tasks
+    end || jsonb_build_array(task_run_in)
+  where
+    queue_workers.task_queue_id = task_queue_id_in and
+    queue_workers.worker_group = worker_group_in and
+    queue_workers.worker_id = worker_id_in;
+end
+```
+
+</details>
+
 ### reclaim_task
 
 * *Mode*: write
@@ -2030,6 +5722,61 @@ unusual for a nonexistent worker to claim work.
 Relaim the given run of the given task run, until the new taken_until time.
 This returns the task's updated status, or nothing if the current status was not as expected.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  runs jsonb;
+  run jsonb;
+  new_runs jsonb;
+  new_taken_until timestamptz;
+begin
+  -- lock the task row to prevent concurrent updates
+  select tasks.runs
+  into runs
+  from tasks
+  where tasks.task_id = reclaim_task.task_id
+  for update;
+
+  if runs is null then
+    -- the task row was not found
+    return;
+  end if;
+
+  if jsonb_array_length(runs) != run_id + 1 then
+    -- run_id is not the latest run
+    return;
+  end if;
+
+  run = runs -> run_id;
+  if run ->> 'state' != 'running' then
+    -- run is not running
+    return;
+  end if;
+
+  -- always set the taken_until forward in time
+  new_taken_until = greatest(taken_until_in, (run ->> 'taken_until')::timestamptz);
+
+  -- reconstruct the runs object with an updated run
+  new_runs = (runs - run_id) || jsonb_build_array(
+    run || jsonb_build_object(
+      'takenUntil', new_taken_until));
+
+  update tasks
+  set
+    runs = new_runs,
+    taken_until = new_taken_until
+  where tasks.task_id = reclaim_task.task_id;
+
+  return query
+  select tasks.retries_left, tasks.runs, tasks.taken_until
+  from tasks
+  where tasks.task_id = reclaim_task.task_id;
+end
+```
+
+</details>
+
 ### remove_task
 
 * *Mode*: write
@@ -2040,6 +5787,43 @@ This returns the task's updated status, or nothing if the current status was not
 
 Remove the given task, regardless of its expiration status.  This is
 typically used when task creation has failed.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete
+  from tasks
+  where tasks.task_id = remove_task.task_id;
+end
+```
+
+</details>
+
+### remove_task_dependencies
+
+* *Mode*: write
+* *Arguments*:
+  * `dependent_task_id_in text`
+  * `required_task_ids_in jsonb`
+* *Returns*: `void`
+* *Last defined on version*: 103
+
+Mark all task dependencies as satisfied.  If the dependency does not exist, nothing
+happens.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from task_dependencies
+  where
+    dependent_task_id = dependent_task_id_in and
+    required_task_id in (SELECT jsonb_array_elements_text(required_task_ids_in));
+end
+```
+
+</details>
 
 ### remove_task_dependency
 
@@ -2052,6 +5836,19 @@ typically used when task creation has failed.
 
 Mark the given dependency as satisfied.  If the dependency does not exist, nothing
 happens.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from task_dependencies
+  where
+    dependent_task_id = dependent_task_id_in and
+    required_task_id = required_task_id_in;
+end
+```
+
+</details>
 
 ### rerun_task
 
@@ -2069,6 +5866,61 @@ pending run with the given reason.  This also resets the retries_left
 column to `retries` (unless the sanity-check maximum runs has been
 reached).  This returns the task's updated status, or nothing if the
 current status was not as expected.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  runs jsonb;
+  run jsonb;
+  last_run_id int;
+  max_runs_allowed constant int = 50;
+begin
+  -- lock the task row to prevent concurrent updates
+  select tasks.runs
+  into runs
+  from tasks
+  where tasks.task_id = rerun_task.task_id
+  for update;
+
+  if runs is null then
+    -- the task row was not found
+    return;
+  end if;
+
+  last_run_id := jsonb_array_length(runs) - 1;
+  if last_run_id >= 0 then
+    -- verify the most recent run is not pending or running
+    run = runs -> last_run_id;
+    if run ->> 'state' in ('pending', 'running') then
+      return;
+    end if;
+  end if;
+
+  -- apply a sanity check on the number of runs
+  if last_run_id + 1 >= max_runs_allowed then
+    return;
+  end if;
+
+  update tasks
+  set
+    retries_left = least(tasks.retries, max_runs_allowed - last_run_id - 2),
+    runs = tasks.runs || jsonb_build_array(
+      jsonb_build_object(
+        'state', 'pending',
+        'reasonCreated', 'rerun',
+        'scheduled', now())),
+    taken_until = null
+  where tasks.task_id = rerun_task.task_id;
+
+  return query
+  select tasks.retries_left, tasks.runs, tasks.taken_until
+  from tasks
+  where tasks.task_id = rerun_task.task_id;
+end
+```
+
+</details>
 
 ### resolve_task
 
@@ -2091,6 +5943,71 @@ and there are `retries_left`, a new pending run is added, and
 `retries_left` is decremented.  This returns the task's updated status,
 or nothing if the current status was not as expected.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  task record;
+  run jsonb;
+  new_runs jsonb;
+  new_taken_until timestamptz;
+begin
+  -- lock the task row to prevent concurrent updates
+  select tasks.retries_left, tasks.runs
+  into task
+  from tasks
+  where tasks.task_id = resolve_task.task_id
+  for update;
+
+  if task.runs is null then
+    return;
+  end if;
+
+  if jsonb_array_length(task.runs) != run_id + 1 then
+    -- run_id is not the latest run
+    return;
+  end if;
+
+  run = task.runs -> run_id;
+  if run ->> 'state' != 'running' then
+    -- run is not running
+    return;
+  end if;
+
+
+  -- reconstruct the task.runs object with an updated run
+  new_runs = (task.runs - run_id) || jsonb_build_array(
+    run || jsonb_build_object(
+      'state', state,
+      'reasonResolved', reason,
+      'resolved', now()));
+
+  -- add a retry if there are any left
+  if retry_reason is not null and task.retries_left > 0 then
+    new_runs = new_runs || jsonb_build_array(
+      jsonb_build_object(
+        'state', 'pending',
+        'reasonCreated', retry_reason,
+        'scheduled', now()));
+    task.retries_left = task.retries_left - 1;
+  end if;
+
+  update tasks
+  set
+    retries_left = task.retries_left,
+    runs = new_runs,
+    taken_until = null
+  where tasks.task_id = resolve_task.task_id;
+
+  return query
+  select tasks.retries_left, tasks.runs, tasks.taken_until
+  from tasks
+  where tasks.task_id = resolve_task.task_id;
+end
+```
+
+</details>
+
 ### resolve_task_at_deadline
 
 * *Mode*: write
@@ -2106,6 +6023,84 @@ The given task has reached its deadline, so mark it as resolved, adding a
 run if necessary.  This returns the task's updated status, or nothing if
 the current status was not as expected.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  task record;
+  runs jsonb;
+  run jsonb;
+  new_runs jsonb;
+  new_taken_until timestamptz;
+begin
+  -- lock the task row to prevent concurrent updates
+  select tasks.retries_left, tasks.runs, tasks.deadline
+  into task
+  from tasks
+  where
+    tasks.task_id = check_task_claim.task_id and
+    tasks.taken_until = taken_until_in
+  for update;
+
+  if task.runs is null then
+    -- no such task, or taken_until did not match
+    return;
+  end if;
+
+  if jsonb_array_length(task.runs) != run_id + 1 then
+    -- run_id is not the latest run
+    return;
+  end if;
+
+  run = task.runs -> run_id;
+  if run ->> 'state' != 'running' then
+    -- run is not running
+    return;
+  end if;
+
+  if (run ->> 'takenUntil')::timestamptz != taken_until_in then
+    -- run has updated takenUntil
+    return;
+  end if;
+
+  if task.deadline < now() then
+    -- task has passed its deadline, so let check_task_deadline handle it
+    return;
+  end if;
+
+  -- reconstruct the runs object with an updated run
+  new_runs = (task.runs - run_id) || jsonb_build_array(
+    run || jsonb_build_object(
+      'state', 'exception',
+      'reasonResolved', 'claim-expired',
+      'resolved', now()));
+
+  -- add a retry if there are any left
+  if task.retries_left > 0 then
+    new_runs = new_runs || jsonb_build_array(
+      jsonb_build_object(
+        'state', 'pending',
+        'reasonCreated', 'retry',
+        'scheduled', now()));
+    task.retries_left = task.retries_left - 1;
+  end if;
+
+  update tasks
+  set
+    retries_left = task.retries_left,
+    runs = new_runs,
+    taken_until = null
+  where tasks.task_id = check_task_claim.task_id;
+
+  return query
+  select tasks.retries_left, tasks.runs, tasks.taken_until
+  from tasks
+  where tasks.task_id = check_task_claim.task_id;
+end
+```
+
+</details>
+
 ### satisfy_task_dependency
 
 * *Mode*: write
@@ -2117,6 +6112,20 @@ the current status was not as expected.
 
 Mark the given dependency as satisfied.  If the dependency does not exist, nothing
 happens.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  update task_dependencies
+  set satisfied = true
+  where
+    dependent_task_id = dependent_task_id_in and
+    required_task_id = required_task_id_in;
+end
+```
+
+</details>
 
 ### schedule_task
 
@@ -2134,6 +6143,49 @@ Schedule the initial run for a task, moving the task from "unscheduled" to "pend
 This returns the task's updated status, or nothing if the current status was not
 as expected.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  runs jsonb;
+  run_id int;
+begin
+  -- lock the task row to prevent concurrent updates
+  select tasks.runs
+  into runs
+  from tasks
+  where tasks.task_id = schedule_task.task_id
+  for update;
+
+  if runs is null then
+    -- the task row was not found
+    return;
+  end if;
+
+  run_id := jsonb_array_length(runs);
+  if run_id != 0 then
+    return;
+  end if;
+
+  update tasks
+  set
+    runs = jsonb_build_array(
+      jsonb_build_object(
+        'state', 'pending',
+        'reasonCreated', reason_created,
+        'scheduled', now())),
+    taken_until = null
+  where tasks.task_id = schedule_task.task_id;
+
+  return query
+  select tasks.retries_left, tasks.runs, tasks.taken_until
+  from tasks
+  where tasks.task_id = schedule_task.task_id;
+end
+```
+
+</details>
+
 ### seal_task_group
 
 * *Mode*: write
@@ -2147,6 +6199,44 @@ as expected.
 * *Last defined on version*: 81
 
 Marks task group as sealed by adding sealed timestamp to it.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  updated_row task_groups%ROWTYPE;
+begin
+  UPDATE task_groups
+  SET sealed = NOW()
+  WHERE task_groups.task_group_id = task_group_id_in
+  AND task_groups.sealed IS NULL
+  RETURNING
+    task_groups.task_group_id,
+    task_groups.scheduler_id,
+    task_groups.expires,
+    task_groups.sealed
+  INTO updated_row;
+
+  IF FOUND THEN
+    return query select
+      updated_row.task_group_id,
+      updated_row.scheduler_id,
+      updated_row.expires,
+      updated_row.sealed;
+  ELSE
+      -- If no rows were updated, return the existing row
+      return query SELECT
+        task_groups.task_group_id,
+        task_groups.scheduler_id,
+        task_groups.expires,
+        task_groups.sealed
+      FROM task_groups
+      WHERE task_groups.task_group_id = task_group_id_in;
+  END IF;
+end
+```
+
+</details>
 
 ### task_queue_seen
 
@@ -2165,6 +6255,31 @@ The expiration time is not allowed to move backward.
 
 This function always writes to the DB, so calls should be suitably rate-limited at the
 client side.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert
+    into task_queues (task_queue_id, expires, last_date_active, description, stability)
+    values (
+      task_queue_id_in,
+      expires_in,
+      now(),
+      coalesce(description_in, ''),
+      coalesce(stability_in, 'experimental')
+    )
+    on conflict (task_queue_id) do update
+    set
+      expires = greatest(coalesce(expires_in, task_queues.expires), task_queues.expires),
+      last_date_active = now(),
+      description = coalesce(description_in, task_queues.description),
+      stability = coalesce(stability_in, task_queues.stability)
+    where task_queues.task_queue_id = task_queue_id_in;
+end
+```
+
+</details>
 
 ### update_queue_artifact_2
 
@@ -2190,12 +6305,65 @@ client side.
 Update a queue artifact, including its storageType.
 Returns the up-to-date artifact row that have the same task id, run id, and name.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  updated_row queue_artifacts%ROWTYPE;
+begin
+  update queue_artifacts
+  set (details, storage_type, expires) = (
+    coalesce(details_in, queue_artifacts.details),
+    coalesce(storage_type_in, queue_artifacts.storage_type),
+    coalesce(expires_in, queue_artifacts.expires)
+  )
+  where
+    queue_artifacts.task_id = task_id_in and
+    queue_artifacts.run_id = run_id_in and
+    queue_artifacts.name = name_in
+  returning
+    queue_artifacts.task_id,
+    queue_artifacts.run_id,
+    queue_artifacts.name,
+    queue_artifacts.storage_type,
+    queue_artifacts.content_type,
+    queue_artifacts.details,
+    queue_artifacts.present,
+    queue_artifacts.expires
+  into updated_row;
+  if found then
+    return query select
+      updated_row.task_id,
+      updated_row.run_id,
+      updated_row.name,
+      updated_row.storage_type,
+      updated_row.content_type,
+      updated_row.details,
+      updated_row.present,
+      updated_row.expires
+    return;
+  else
+    raise exception 'no such row' using errcode = 'P0002';
+  end if;
+end
+```
+
+</details>
+
+### deprecated methods
+
+* `create_queue_artifact(task_id_in text, run_id_in integer, name_in text, storage_type_in text, content_type_in text, details_in jsonb, present_in boolean, expires_in timestamptz)` (compatibility guaranteed until v98.0.0)
+* `get_expired_artifacts_for_deletion(expires_in timestamptz, page_size_in integer)` (compatibility guaranteed until v98.0.0)
+* `get_queue_artifact(task_id_in text, run_id_in integer, name_in text)` (compatibility guaranteed until v98.0.0)
+* `get_queue_artifacts_paginated(task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, after_task_id_in text, after_run_id_in integer, after_name_in text)` (compatibility guaranteed until v98.0.0)
+
 ## secrets
 
 * [`delete_secret`](#delete_secret)
-* [`expire_secrets`](#expire_secrets)
+* [`expire_secrets_return_names`](#expire_secrets_return_names)
 * [`get_secret`](#get_secret)
 * [`get_secrets`](#get_secrets)
+* [`insert_secrets_audit_history`](#insert_secrets_audit_history)
 * [`upsert_secret`](#upsert_secret)
 
 ### delete_secret
@@ -2208,14 +6376,40 @@ Returns the up-to-date artifact row that have the same task id, run id, and name
 
 Delete a secret entirely
 
-### expire_secrets
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from secrets
+  where
+    secrets.name = name_in;
+end
+```
+
+</details>
+
+### expire_secrets_return_names
 
 * *Mode*: write
 * *Arguments*:
-* *Returns*: `integer`
-* *Last defined on version*: 42
+* *Returns*: `table`
+  * `name text`
+* *Last defined on version*: 114
 
-Delete all secrets with an 'expires' in the past.
+Delete all secrets with an 'expires' in the past and return names
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  delete from secrets
+  where secrets.expires < now()
+  returning secrets.name;
+end
+```
+
+</details>
 
 ### get_secret
 
@@ -2230,6 +6424,20 @@ Delete all secrets with an 'expires' in the past.
 
 Get a single secret (including secret content and expiration)
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select secrets.name, secrets.encrypted_secret, secrets.expires from secrets
+  where
+    secrets.name = name_in and
+    secrets.expires >= now()
+  limit 1;
+end
+```
+
+</details>
+
 ### get_secrets
 
 * *Mode*: read
@@ -2243,6 +6451,56 @@ Get a single secret (including secret content and expiration)
 Get many secrets at once. This only includes names.
 Fetch an individual secret to get the contents
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query select secrets.name from secrets
+  where
+    secrets.expires >= now()
+  order by secrets.name
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### insert_secrets_audit_history
+
+* *Mode*: write
+* *Arguments*:
+  * `secret_id_in text`
+  * `client_id_in text`
+  * `action_type_in text`
+* *Returns*: `void`
+* *Last defined on version*: 106
+
+Insert an audit history entry for a given entity.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO audit_history (
+    entity_id,
+    entity_type,
+    client_id,
+    action_type,
+    created
+  ) VALUES (
+    secret_id_in,
+    'secret',
+    client_id_in,
+    action_type_in,
+    now()
+  );
+end
+```
+
+</details>
+
 ### upsert_secret
 
 * *Mode*: write
@@ -2254,6 +6512,22 @@ Fetch an individual secret to get the contents
 * *Last defined on version*: 42
 
 Store an encrypted secret whether it is new or being updated
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert into secrets (name, encrypted_secret, expires) values (
+    name_in,
+    encrypted_secret_in,
+    expires_in
+  ) on conflict (name) do update set
+    encrypted_secret = encrypted_secret_in,
+    expires = expires_in;
+end
+```
+
+</details>
 
 ## web_server
 
@@ -2287,6 +6561,23 @@ If no access token is currently set for `user_id_in`, a new row is
 inserted, otherwise the existing row's encrypted access token is updated
 to `encrypted_access_token_in`.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert into github_access_tokens(user_id, encrypted_access_token)
+  values (
+    user_id_in,
+    encrypted_access_token_in
+  ) on conflict (user_id) do
+  update
+  set encrypted_access_token = encrypted_access_token_in
+  where github_access_tokens.user_id = add_github_access_token.user_id_in;
+end
+```
+
+</details>
+
 ### create_access_token
 
 * *Mode*: write
@@ -2312,6 +6603,27 @@ to `encrypted_access_token_in`.
 
 Create an access token entry.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query insert
+    into access_tokens (hashed_access_token, encrypted_access_token, client_id, redirect_uri, identity, identity_provider_id, expires, client_details)
+    values (hashed_access_token_in, encrypted_access_token_in, client_id_in, redirect_uri_in, identity_in, identity_provider_id_in, expires_in, client_details_in)
+    returning
+      access_tokens.hashed_access_token,
+      access_tokens.encrypted_access_token,
+      access_tokens.client_id,
+      access_tokens.redirect_uri,
+      access_tokens.identity,
+      access_tokens.identity_provider_id,
+      access_tokens.expires,
+      access_tokens.client_details;
+end
+```
+
+</details>
+
 ### create_authorization_code
 
 * *Mode*: write
@@ -2335,6 +6647,26 @@ Create an access token entry.
 
 Create an authorization code.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query insert
+    into authorization_codes (code, client_id, redirect_uri, identity, identity_provider_id, expires, client_details)
+    values (code_in, client_id_in, redirect_uri_in, identity_in, identity_provider_id_in, expires_in, client_details_in)
+    returning
+      authorization_codes.code,
+      authorization_codes.client_id,
+      authorization_codes.redirect_uri,
+      authorization_codes.identity,
+      authorization_codes.identity_provider_id,
+      authorization_codes.expires,
+      authorization_codes.client_details;
+end
+```
+
+</details>
+
 ### expire_access_tokens
 
 * *Mode*: write
@@ -2345,6 +6677,23 @@ Create an authorization code.
 
 Delete access token entries that expireq before the current time.
 Returns a count of rows that have been deleted.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from access_tokens where access_tokens.expires < expires_in;
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
 
 ### expire_authorization_codes
 
@@ -2357,6 +6706,23 @@ Returns a count of rows that have been deleted.
 Delete authorization codes that expire before `expires_in`.
 Returns a count of rows that have been deleted.
 
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from authorization_codes where authorization_codes.expires < expires_in;
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
+
 ### expire_sessions
 
 * *Mode*: write
@@ -2366,6 +6732,23 @@ Returns a count of rows that have been deleted.
 
 Delete sessions that expire before the current time.
 Returns a count of rows that have been deleted.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from sessions where sessions.expires < now();
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
 
 ### get_access_token
 
@@ -2385,6 +6768,27 @@ Returns a count of rows that have been deleted.
 
 Get an access token entry.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    access_tokens.hashed_access_token,
+    access_tokens.encrypted_access_token,
+    access_tokens.client_id,
+    access_tokens.redirect_uri,
+    access_tokens.identity,
+    access_tokens.identity_provider_id,
+    access_tokens.expires,
+    access_tokens.client_details
+  from access_tokens
+  where access_tokens.hashed_access_token = hashed_access_token_in;
+end
+```
+
+</details>
+
 ### get_authorization_code
 
 * *Mode*: read
@@ -2402,6 +6806,26 @@ Get an access token entry.
 
 Get an authorization code entry given a code.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    authorization_codes.code,
+    authorization_codes.client_id,
+    authorization_codes.redirect_uri,
+    authorization_codes.identity,
+    authorization_codes.identity_provider_id,
+    authorization_codes.expires,
+    authorization_codes.client_details
+  from authorization_codes
+  where authorization_codes.code = code_in;
+end
+```
+
+</details>
+
 ### load_github_access_token
 
 * *Mode*: read
@@ -2412,6 +6836,18 @@ Get an authorization code entry given a code.
 * *Last defined on version*: 27
 
 Returns the encrypted github access token for a given user.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select github_access_tokens.encrypted_access_token from github_access_tokens
+  where github_access_tokens.user_id = user_id_in;
+end
+```
+
+</details>
 
 ### session_add
 
@@ -2430,6 +6866,25 @@ If no session exists with hashed session id `hashed_session_id_in`,
 a new row is inserted, otherwise the existing session's data is replaced
 with the data in `data_in`.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert into sessions(hashed_session_id, encrypted_session_id, data, expires)
+  values (
+    hashed_session_id_in,
+    encrypted_session_id_in,
+    data_in,
+    expires_in
+  ) on conflict (hashed_session_id) do
+  update
+  set (encrypted_session_id, data, expires) = (encrypted_session_id_in, data_in, expires_in)
+  where sessions.hashed_session_id = session_add.hashed_session_id_in;
+end
+```
+
+</details>
+
 ### session_load
 
 * *Mode*: read
@@ -2444,6 +6899,18 @@ with the data in `data_in`.
 
 Returns the session for a given hashed session id.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select sessions.hashed_session_id, sessions.encrypted_session_id, sessions.data, sessions.expires from sessions
+  where sessions.hashed_session_id = hashed_session_id_in;
+end
+```
+
+</details>
+
 ### session_remove
 
 * *Mode*: write
@@ -2453,6 +6920,18 @@ Returns the session for a given hashed session id.
 * *Last defined on version*: 38
 
 Removes a web session
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete from sessions
+  where
+    sessions.hashed_session_id = hashed_session_id_in;
+end
+```
+
+</details>
 
 ### session_touch
 
@@ -2467,36 +6946,227 @@ Removes a web session
 Touch a given session given a hashed session id and session `data`.
 If the hashed session id does not exist, then an error code `P0002` will be thrown.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  perform 1 from sessions where sessions.hashed_session_id = hashed_session_id_in;
+
+  if found then
+   update sessions
+     set
+      data = data_in,
+      expires = expires_in
+     where sessions.hashed_session_id = hashed_session_id_in;
+    return;
+  else
+    raise exception 'no such row' using errcode = 'P0002';
+  end if;
+end
+```
+
+</details>
+
 ## worker_manager
 
-* [`create_worker`](#create_worker)
-* [`create_worker_pool`](#create_worker_pool)
-* [`create_worker_pool_error`](#create_worker_pool_error)
+* [`collect_launch_configs_if_exist`](#collect_launch_configs_if_exist)
+* [`create_worker_pool_error_launch_config`](#create_worker_pool_error_launch_config)
+* [`create_worker_pool_launch_config`](#create_worker_pool_launch_config)
+* [`create_worker_pool_with_launch_configs`](#create_worker_pool_with_launch_configs)
+* [`create_worker_with_lc`](#create_worker_with_lc)
 * [`delete_worker`](#delete_worker)
 * [`delete_worker_pool`](#delete_worker_pool)
 * [`delete_worker_pool_error`](#delete_worker_pool_error)
 * [`expire_worker_pool_errors`](#expire_worker_pool_errors)
+* [`expire_worker_pool_launch_configs`](#expire_worker_pool_launch_configs)
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
-* [`get_non_stopped_workers_quntil_providers`](#get_non_stopped_workers_quntil_providers)
-* [`get_queue_worker_with_wm_join_2`](#get_queue_worker_with_wm_join_2)
-* [`get_queue_workers_with_wm_join`](#get_queue_workers_with_wm_join)
-* [`get_queue_workers_with_wm_join_quarantined_2`](#get_queue_workers_with_wm_join_quarantined_2)
-* [`get_queue_workers_with_wm_join_state`](#get_queue_workers_with_wm_join_state)
+* [`get_non_stopped_workers_with_launch_config_scanner`](#get_non_stopped_workers_with_launch_config_scanner)
+* [`get_queue_worker_with_wm_data`](#get_queue_worker_with_wm_data)
+* [`get_queue_workers_with_wm_data`](#get_queue_workers_with_wm_data)
 * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
 * [`get_task_queues_wm`](#get_task_queues_wm)
-* [`get_worker_2`](#get_worker_2)
-* [`get_worker_pool_error`](#get_worker_pool_error)
-* [`get_worker_pool_errors_for_worker_pool`](#get_worker_pool_errors_for_worker_pool)
-* [`get_worker_pool_with_capacity_and_counts_by_state`](#get_worker_pool_with_capacity_and_counts_by_state)
-* [`get_worker_pools_with_capacity_and_counts_by_state`](#get_worker_pools_with_capacity_and_counts_by_state)
-* [`get_workers_without_provider_data`](#get_workers_without_provider_data)
+* [`get_worker_3`](#get_worker_3)
+* [`get_worker_manager_workers2`](#get_worker_manager_workers2)
+* [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
+* [`get_worker_pool_counts_and_capacity_lc`](#get_worker_pool_counts_and_capacity_lc)
+* [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
+* [`get_worker_pool_error_launch_config`](#get_worker_pool_error_launch_config)
+* [`get_worker_pool_error_launch_configs`](#get_worker_pool_error_launch_configs)
+* [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
+* [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
+* [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
+* [`get_worker_pool_error_worker_pools`](#get_worker_pool_error_worker_pools)
+* [`get_worker_pool_errors_for_worker_pool2`](#get_worker_pool_errors_for_worker_pool2)
+* [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
+* [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
+* [`get_worker_pool_with_launch_configs`](#get_worker_pool_with_launch_configs)
+* [`get_worker_pools_counts_and_capacity`](#get_worker_pools_counts_and_capacity)
+* [`get_worker_pools_with_launch_configs`](#get_worker_pools_with_launch_configs)
+* [`insert_worker_manager_audit_history`](#insert_worker_manager_audit_history)
 * [`remove_worker_pool_previous_provider_id`](#remove_worker_pool_previous_provider_id)
-* [`update_worker_2`](#update_worker_2)
+* [`update_worker_3`](#update_worker_3)
 * [`update_worker_pool_provider_data`](#update_worker_pool_provider_data)
-* [`update_worker_pool_with_capacity_and_counts_by_state`](#update_worker_pool_with_capacity_and_counts_by_state)
+* [`update_worker_pool_with_launch_configs`](#update_worker_pool_with_launch_configs)
+* [`upsert_worker_pool_launch_configs`](#upsert_worker_pool_launch_configs)
 
-### create_worker
+### collect_launch_configs_if_exist
+
+* *Mode*: write
+* *Arguments*:
+  * `config_in jsonb`
+  * `worker_pool_id_in text`
+* *Returns*: `jsonb`
+* *Last defined on version*: 105
+
+Assemble the launch configurations for a worker pool and set them in the config.
+This is useful at the moment to maintain backwards compatibility.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  launch_configs jsonb;
+begin
+  -- also make sure launchConfigId is set in the returned configuration
+  select coalesce(jsonb_agg(
+    case
+      when configuration ? 'workerManager' then
+        jsonb_set(configuration, '{workerManager,launchConfigId}', to_jsonb(launch_config_id))
+      else
+        configuration || jsonb_build_object('workerManager', jsonb_build_object('launchConfigId', launch_config_id))
+    end
+  ), null) into launch_configs
+  from worker_pool_launch_configs
+  where worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
+    and worker_pool_launch_configs.is_archived = false;
+
+  if launch_configs is not null then
+    return jsonb_set(config_in, '{launchConfigs}', launch_configs);
+  end if;
+
+  return config_in;
+end
+```
+
+</details>
+
+### create_worker_pool_error_launch_config
+
+* *Mode*: write
+* *Arguments*:
+  * `error_id_in text`
+  * `worker_pool_id_in text`
+  * `reported_in timestamptz`
+  * `kind_in text`
+  * `title_in text`
+  * `description_in text`
+  * `extra_in jsonb`
+  * `launch_config_id_in text`
+* *Returns*: `uuid`
+* *Last defined on version*: 105
+
+Create a new worker pool error.  Raises UNIQUE_VIOLATION if the error already exists.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  new_etag uuid := public.gen_random_uuid();
+begin
+  insert
+    into worker_pool_errors (error_id, worker_pool_id, reported, kind, title, description, extra, launch_config_id)
+    values (error_id_in, worker_pool_id_in, reported_in, kind_in, title_in, description_in, extra_in, launch_config_id_in);
+  return new_etag;
+end
+```
+
+</details>
+
+### create_worker_pool_launch_config
+
+* *Mode*: write
+* *Arguments*:
+  * `launch_config_id_in text`
+  * `worker_pool_id_in text`
+  * `is_archived_in boolean`
+  * `configuration_in jsonb`
+  * `created_in timestamptz`
+  * `last_modified_in timestamptz`
+* *Returns*: `void`
+* *Last defined on version*: 105
+
+Create a new launch configuration.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  insert into worker_pool_launch_configs (
+    launch_config_id,
+    worker_pool_id,
+    is_archived,
+    configuration,
+    created,
+    last_modified
+  ) values (
+    coalesce(launch_config_id_in, get_or_create_launch_config_id(worker_pool_id_in, configuration_in)),
+    worker_pool_id_in,
+    is_archived_in,
+    configuration_in,
+    created_in,
+    last_modified_in
+  );
+end
+```
+
+</details>
+
+### create_worker_pool_with_launch_configs
+
+* *Mode*: write
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `provider_id_in text`
+  * `previous_provider_ids_in jsonb`
+  * `description_in text`
+  * `config_in jsonb`
+  * `created_in timestamptz`
+  * `last_modified_in timestamptz`
+  * `owner_in text`
+  * `email_on_error_in boolean`
+  * `provider_data_in jsonb`
+* *Returns*: `table`
+  * `updated_launch_configs text[]`
+  * `created_launch_configs text[]`
+  * `archived_launch_configs text[]`
+* *Last defined on version*: 105
+
+Create a new worker pool.
+Raises UNIQUE_VIOLATION if the pool already exists or launch configs are not unique.
+Launch configurations are stored in a separate table.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  config_without_lc jsonb;
+  config jsonb;
+begin
+  config_without_lc := config_in;
+  config_without_lc := config_without_lc - 'launchConfigs';
+
+  insert
+    into worker_pools (worker_pool_id, provider_id, previous_provider_ids, description, config, created, last_modified, owner, email_on_error, provider_data)
+    values (worker_pool_id_in, provider_id_in, previous_provider_ids_in, description_in, config_without_lc, created_in, last_modified_in, owner_in, email_on_error_in, provider_data_in);
+
+  return query select * from upsert_worker_pool_launch_configs(worker_pool_id_in, config_in);
+end
+```
+
+</details>
+
+### create_worker_with_lc
 
 * *Mode*: write
 * *Arguments*:
@@ -2511,46 +7181,28 @@ If the hashed session id does not exist, then an error code `P0002` will be thro
   * `capacity_in integer`
   * `last_modified_in timestamptz`
   * `last_checked_in timestamptz`
+  * `launch_config_id_in text`
 * *Returns*: `uuid`
-* *Last defined on version*: 12
+* *Last defined on version*: 105
 
 Create a new worker. Raises UNIQUE_VIOLATION if the worker already exists.
 Returns the etag of the newly created worker.
 
-### create_worker_pool
+<details><summary>Function Body</summary>
 
-* *Mode*: write
-* *Arguments*:
-  * `worker_pool_id_in text`
-  * `provider_id_in text`
-  * `previous_provider_ids_in jsonb`
-  * `description_in text`
-  * `config_in jsonb`
-  * `created_in timestamptz`
-  * `last_modified_in timestamptz`
-  * `owner_in text`
-  * `email_on_error_in boolean`
-  * `provider_data_in jsonb`
-* *Returns*: `void`
-* *Last defined on version*: 10
+```
+declare
+  new_etag uuid := public.gen_random_uuid();
+begin
+  insert
+    into workers (worker_pool_id, worker_group, worker_id, provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag, launch_config_id)
+    values (worker_pool_id_in, worker_group_in, worker_id_in, provider_id_in, created_in, expires_in, state_in, provider_data_in, capacity_in, last_modified_in, last_checked_in, new_etag, launch_config_id_in);
 
-Create a new worker pool.  Raises UNIQUE_VIOLATION if the pool already exists.
+  return new_etag;
+end
+```
 
-### create_worker_pool_error
-
-* *Mode*: write
-* *Arguments*:
-  * `error_id_in text`
-  * `worker_pool_id_in text`
-  * `reported_in timestamptz`
-  * `kind_in text`
-  * `title_in text`
-  * `description_in text`
-  * `extra_in jsonb`
-* *Returns*: `uuid`
-* *Last defined on version*: 29
-
-Create a new worker pool error.  Raises UNIQUE_VIOLATION if the error already exists.
+</details>
 
 ### delete_worker
 
@@ -2564,6 +7216,21 @@ Create a new worker pool error.  Raises UNIQUE_VIOLATION if the error already ex
 
 Delete a worker.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete
+  from workers
+  where
+    workers.worker_pool_id = worker_pool_id_in and
+    workers.worker_group = worker_group_in and
+    workers.worker_id = worker_id_in;
+end
+```
+
+</details>
+
 ### delete_worker_pool
 
 * *Mode*: write
@@ -2573,6 +7240,18 @@ Delete a worker.
 * *Last defined on version*: 10
 
 Delete a worker pool immediately.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete
+  from worker_pools
+  where worker_pools.worker_pool_id = worker_pool_id_in;
+end
+```
+
+</details>
 
 ### delete_worker_pool_error
 
@@ -2585,6 +7264,20 @@ Delete a worker pool immediately.
 
 Delete a worker pool error immediately.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  delete
+  from worker_pool_errors
+  where
+  worker_pool_errors.worker_pool_id = worker_pool_id_in and
+  worker_pool_errors.error_id = error_id_in;
+end
+```
+
+</details>
+
 ### expire_worker_pool_errors
 
 * *Mode*: write
@@ -2595,6 +7288,54 @@ Delete a worker pool error immediately.
 
 Expire worker pool errors reported before `expires_in`.
 Returns a count of rows that have been deleted.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from worker_pool_errors where worker_pool_errors.reported < expires_in;
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
+
+### expire_worker_pool_launch_configs
+
+* *Mode*: write
+* *Arguments*:
+* *Returns*: `table`
+  * `launch_config_id text`
+* *Last defined on version*: 105
+
+Expire worker pools launch configs, that no longer have any workers associated with them
+Returns the launch config ids that it deletes.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  delete from worker_pool_launch_configs wplc
+  where
+    wplc.is_archived = true
+    AND
+    not exists (
+      select 1
+      from workers w
+      where w.launch_config_id = wplc.launch_config_id
+    )
+  returning wplc.launch_config_id;
+end
+```
+
+</details>
 
 ### expire_worker_pools
 
@@ -2607,6 +7348,20 @@ Returns a count of rows that have been deleted.
 Expire worker pools, deleting those which have provider-id null-provider and
 no previous_provider_ids.  Returns the worker pool ids that it deletes.
 
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query delete
+  from worker_pools
+  where worker_pools.provider_id = 'null-provider'
+  and worker_pools.previous_provider_ids = '[]'::jsonb
+  returning worker_pools.worker_pool_id;
+end
+```
+
+</details>
+
 ### expire_workers
 
 * *Mode*: write
@@ -2618,15 +7373,32 @@ no previous_provider_ids.  Returns the worker pool ids that it deletes.
 Expire workers that come before `expires_in`.
 Returns a count of rows that have been deleted.
 
-### get_non_stopped_workers_quntil_providers
+<details><summary>Function Body</summary>
+
+```
+declare
+  count integer;
+begin
+  delete from workers where workers.expires < expires_in;
+  if found then
+    get diagnostics count = row_count;
+    return count;
+  end if;
+  return 0;
+end
+```
+
+</details>
+
+### get_non_stopped_workers_with_launch_config_scanner
 
 * *Mode*: read
 * *Arguments*:
   * `worker_pool_id_in text`
   * `worker_group_in text`
   * `worker_id_in text`
-  * `providers_filter_cond text`
-  * `providers_filter_value text`
+  * `providers_filter_cond_in text`
+  * `providers_filter_value_in text`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
@@ -2643,8 +7415,11 @@ Returns a count of rows that have been deleted.
   * `last_checked timestamptz`
   * `secret jsonb`
   * `etag uuid`
+  * `launch_config_id text`
   * `quarantine_until timestamptz`
-* *Last defined on version*: 71
+  * `first_claim timestamptz`
+  * `last_date_active timestamptz`
+* *Last defined on version*: 105
 
 Get non-stopped workers filtered by the optional arguments,
 ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
@@ -2652,10 +7427,62 @@ If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset `page_offset`.
 The `quaratine_until` contains NULL or a date in the past if the
 worker is not quarantined, otherwise the date until which it is
-quaratined. `providers_filter_cond` and `providers_filter_value` used to
+quaratined. `first_claim` and `last_date_active` contains information
+known to the queue service about the worker.
+`providers_filter_cond` and `providers_filter_value` used to
 filter `=` or `<>` provider by value.
 
-### get_queue_worker_with_wm_join_2
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    workers.worker_pool_id,
+    workers.worker_group,
+    workers.worker_id,
+    workers.provider_id,
+    workers.created,
+    workers.expires,
+    workers.state,
+    workers.provider_data,
+    workers.capacity,
+    workers.last_modified,
+    workers.last_checked,
+    workers.secret,
+    workers.etag,
+    workers.launch_config_id,
+    queue_workers.quarantine_until,
+    queue_workers.first_claim,
+    queue_workers.last_date_active
+  from
+    workers
+    left join queue_workers on
+      workers.worker_pool_id = queue_workers.task_queue_id and
+      workers.worker_id = queue_workers.worker_id and
+      workers.worker_group = queue_workers.worker_group
+  where
+    (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+    (workers.worker_group = worker_group_in or worker_group_in is null) and
+    (workers.worker_id = worker_id_in or worker_id_in is null) and
+    (workers.state <> 'stopped') and
+    (providers_filter_cond_in is null or providers_filter_value_in is null or
+      case
+        when providers_filter_cond_in = '='
+          then workers.provider_id = ANY(string_to_array(providers_filter_value_in, ','))
+        when providers_filter_cond_in = '<>'
+          then workers.provider_id <> ALL(string_to_array(providers_filter_value_in, ','))
+      end
+      )
+  order by worker_pool_id, worker_group, worker_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_queue_worker_with_wm_data
 
 * *Mode*: read
 * *Arguments*:
@@ -2677,77 +7504,58 @@ filter `=` or `<>` provider by value.
   * `capacity int4`
   * `provider_id text`
   * `etag uuid`
-* *Last defined on version*: 83
+  * `launch_config_id text`
+* *Last defined on version*: 105
 
 Get a non-expired queue worker by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
 This also performs an outer join with the worker_manager.worker table for more data.
 
-### get_queue_workers_with_wm_join
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    queue_workers.task_queue_id as worker_pool_id,
+    queue_workers.worker_group,
+    queue_workers.worker_id,
+    queue_workers.quarantine_until,
+    queue_workers.quarantine_details,
+    queue_workers.expires,
+    queue_workers.first_claim,
+    queue_workers.recent_tasks,
+    queue_workers.last_date_active,
+    workers.state,
+    workers.capacity,
+    workers.provider_id,
+    public.gen_random_uuid(),
+    workers.launch_config_id
+  from queue_workers
+  full outer join workers on workers.worker_id = queue_workers.worker_id
+    and workers.worker_pool_id = queue_workers.task_queue_id
+    and workers.worker_group = queue_workers.worker_group
+  where
+    queue_workers.task_queue_id = task_queue_id_in and
+    queue_workers.worker_group = worker_group_in and
+    queue_workers.worker_id = worker_id_in and
+    (queue_workers.expires > expires_in or queue_workers.quarantine_until > expires_in);
+  end
+```
+
+</details>
+
+### get_queue_workers_with_wm_data
 
 * *Mode*: read
 * *Arguments*:
   * `task_queue_id_in text`
   * `expires_in timestamptz`
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * `worker_pool_id text`
-  * `worker_group text`
-  * `worker_id text`
-  * `quarantine_until timestamptz`
-  * `expires timestamptz`
-  * `first_claim timestamptz`
-  * `recent_tasks jsonb`
-  * `last_date_active timestamptz`
-  * `state text`
-  * `capacity int4`
-  * `provider_id text`
-  * `etag uuid`
-* *Last defined on version*: 80
-
-Get non-expired queue workers ordered by worker_pool_id, worker_group, and worker_id.
-Workers are not considered expired until after their quarantine date expires.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
-This also performs an outer join with the worker_manager.worker table for more data.
-
-### get_queue_workers_with_wm_join_quarantined_2
-
-* *Mode*: read
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * `worker_pool_id text`
-  * `worker_group text`
-  * `worker_id text`
-  * `quarantine_until timestamptz`
-  * `expires timestamptz`
-  * `first_claim timestamptz`
-  * `recent_tasks jsonb`
-  * `last_date_active timestamptz`
-  * `state text`
-  * `capacity int4`
-  * `provider_id text`
-  * `etag uuid`
-* *Last defined on version*: 78
-
-Get quarantined queue workers ordered by worker_pool_id, worker_group, and worker_id.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
-This also performs an outer join with the worker_manager.worker table for more data.
-
-### get_queue_workers_with_wm_join_state
-
-* *Mode*: read
-* *Arguments*:
-  * `task_queue_id_in text`
-  * `expires_in timestamptz`
-  * `page_size_in integer`
-  * `page_offset_in integer`
   * `worker_state_in text`
+  * `only_quarantined_in boolean`
+  * `launch_config_id_in text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
 * *Returns*: `table`
   * `worker_pool_id text`
   * `worker_group text`
@@ -2761,13 +7569,69 @@ This also performs an outer join with the worker_manager.worker table for more d
   * `capacity int4`
   * `provider_id text`
   * `etag uuid`
-* *Last defined on version*: 77
+  * `launch_config_id text`
+* *Last defined on version*: 105
 
-Get non-expired queue workers by state ordered by worker_pool_id, worker_group, and worker_id.
+Get workers ordered by worker_pool_id, worker_group, and worker_id.
 Workers are not considered expired until after their quarantine date expires.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 This also performs an outer join with the worker_manager.worker table for more data.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    queue_workers.task_queue_id as worker_pool_id,
+    queue_workers.worker_group as worker_group,
+    queue_workers.worker_id as worker_id,
+    queue_workers.quarantine_until,
+    queue_workers.expires,
+    queue_workers.first_claim,
+    queue_workers.recent_tasks,
+    queue_workers.last_date_active,
+    workers.state,
+    workers.capacity,
+    workers.provider_id,
+    public.gen_random_uuid(),
+    workers.launch_config_id
+  from queue_workers
+  full outer join workers on workers.worker_id = queue_workers.worker_id
+  where
+    (
+      queue_workers.task_queue_id = task_queue_id_in
+      or task_queue_id_in is null
+    )
+    and
+    (
+      -- Normal expiration check
+      (not only_quarantined_in and expires_in is not null and
+      queue_workers.expires > expires_in and
+      queue_workers.quarantine_until < expires_in)
+      or
+      -- Only quarantined check
+      (only_quarantined_in and queue_workers.quarantine_until >= now())
+      or
+      -- No filtering if both flags are false/null
+      (not only_quarantined_in and expires_in is null)
+    )
+    and (
+      workers.state = worker_state_in
+      or worker_state_in is null
+    )
+    and (
+      workers.launch_config_id = launch_config_id_in
+      or launch_config_id_in is null
+    )
+  order by worker_pool_id, worker_group, worker_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
 
 ### get_task_queue_wm_2
 
@@ -2785,6 +7649,27 @@ This also performs an outer join with the worker_manager.worker table for more d
 * *Last defined on version*: 75
 
 Get a non-expired task queue by task_queue_id.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    task_queues.task_queue_id,
+    task_queues.expires,
+    task_queues.last_date_active,
+    task_queues.description,
+    task_queues.stability,
+    public.gen_random_uuid()
+  from task_queues
+  where
+    task_queues.task_queue_id = task_queue_id_in and
+    task_queues.expires > expires_in;
+  end
+```
+
+</details>
 
 ### get_task_queues_wm
 
@@ -2807,7 +7692,31 @@ Get task queues ordered by `task_queue_id`.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
 
-### get_worker_2
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    task_queues.task_queue_id,
+    task_queues.expires,
+    task_queues.last_date_active,
+    task_queues.description,
+    task_queues.stability,
+    public.gen_random_uuid()
+  from task_queues
+  where
+    (task_queues.task_queue_id = task_queue_id_in or task_queue_id_in is null) and
+    (task_queues.expires > expires_in or expires_in is null)
+  order by task_queue_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_worker_3
 
 * *Mode*: read
 * *Arguments*:
@@ -2828,112 +7737,42 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `last_checked timestamptz`
   * `secret jsonb`
   * `etag uuid`
-* *Last defined on version*: 14
+  * `launch_config_id text`
+* *Last defined on version*: 105
 
 Get an existing worker. The returned table will have one or (if no such worker is defined) zero rows.
 
-### get_worker_pool_error
+<details><summary>Function Body</summary>
 
-* *Mode*: read
-* *Arguments*:
-  * `error_id_in text`
-  * `worker_pool_id_in text`
-* *Returns*: `table`
-  * `error_id text`
-  * `worker_pool_id text`
-  * `reported timestamptz`
-  * `kind text`
-  * `title text`
-  * `description text`
-  * `extra jsonb`
-* *Last defined on version*: 29
+```
+begin
+  return query
+  select
+    workers.worker_pool_id,
+    workers.worker_group,
+    workers.worker_id,
+    workers.provider_id,
+    workers.created,
+    workers.expires,
+    workers.state,
+    workers.provider_data,
+    workers.capacity,
+    workers.last_modified,
+    workers.last_checked,
+    workers.secret,
+    workers.etag,
+    workers.launch_config_id
+  from workers
+  where
+    workers.worker_pool_id = worker_pool_id_in and
+    workers.worker_group = worker_group_in and
+    workers.worker_id = worker_id_in;
+end
+```
 
-Get an existing worker pool error.  The returned table will have one or (if no such worker pool error is defined) zero rows.
+</details>
 
-### get_worker_pool_errors_for_worker_pool
-
-* *Mode*: read
-* *Arguments*:
-  * `error_id_in text`
-  * `worker_pool_id_in text`
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * `error_id text`
-  * `worker_pool_id text`
-  * `reported timestamptz`
-  * `kind text`
-  * `title text`
-  * `description text`
-  * `extra jsonb`
-* *Last defined on version*: 31
-
-Get existing worker pool errors filtered by `worker_pool_id` and `error_id`,
-ordered by `reported`.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
-
-### get_worker_pool_with_capacity_and_counts_by_state
-
-* *Mode*: read
-* *Arguments*:
-  * `worker_pool_id_in text`
-* *Returns*: `table`
-  * `worker_pool_id text`
-  * `provider_id text`
-  * `previous_provider_ids jsonb`
-  * `description text`
-  * `config jsonb`
-  * `created timestamptz`
-  * `last_modified timestamptz`
-  * `owner text`
-  * `email_on_error boolean`
-  * `provider_data jsonb`
-  * `current_capacity integer`
-  * `requested_count integer`
-  * `running_count integer`
-  * `stopping_count integer`
-  * `stopped_count integer`
-  * `requested_capacity integer`
-  * `running_capacity integer`
-  * `stopping_capacity integer`
-  * `stopped_capacity integer`
-* *Last defined on version*: 70
-
-Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.
-
-### get_worker_pools_with_capacity_and_counts_by_state
-
-* *Mode*: read
-* *Arguments*:
-  * `page_size_in integer`
-  * `page_offset_in integer`
-* *Returns*: `table`
-  * `worker_pool_id text`
-  * `provider_id text`
-  * `previous_provider_ids jsonb`
-  * `description text`
-  * `config jsonb`
-  * `created timestamptz`
-  * `last_modified timestamptz`
-  * `owner text`
-  * `email_on_error boolean`
-  * `provider_data jsonb`
-  * `current_capacity integer`
-  * `requested_count integer`
-  * `running_count integer`
-  * `stopping_count integer`
-  * `stopped_count integer`
-  * `requested_capacity integer`
-  * `running_capacity integer`
-  * `stopping_capacity integer`
-  * `stopped_capacity integer`
-* *Last defined on version*: 70
-
-Get existing worker pools, ordered by `worker_pool_id`.  If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset page_offset.
-
-### get_workers_without_provider_data
+### get_worker_manager_workers2
 
 * *Mode*: read
 * *Arguments*:
@@ -2941,6 +7780,7 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `worker_group_in text`
   * `worker_id_in text`
   * `state_in text`
+  * `launch_config_id_in text`
   * `page_size_in integer`
   * `page_offset_in integer`
 * *Returns*: `table`
@@ -2954,12 +7794,688 @@ Otherwise, page_size rows are returned at offset page_offset.
   * `capacity integer`
   * `last_modified timestamptz`
   * `last_checked timestamptz`
-* *Last defined on version*: 48
+  * `launch_config_id text`
+* *Last defined on version*: 105
 
-Get existing workers (without their `provider_data`) filtered by the optional arguments,
-ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
+Get workers created by worker manager filtered by the optional arguments,
+ordered by `created` timestamp.
+This returns only worker manager view without queue data.
 If the pagination arguments are both NULL, all rows are returned.
 Otherwise, page_size rows are returned at offset page_offset.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    workers.worker_pool_id,
+    workers.worker_group,
+    workers.worker_id,
+    workers.provider_id,
+    workers.created,
+    workers.expires,
+    workers.state,
+    workers.capacity,
+    workers.last_modified,
+    workers.last_checked,
+    workers.launch_config_id
+  from workers
+  where
+    (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+    (workers.worker_group = worker_group_in or worker_group_in is null) and
+    (workers.worker_id = worker_id_in or worker_id_in is null) and
+    (workers.launch_config_id = launch_config_id_in or launch_config_id_in is null) and
+    (workers.state = state_in or state_in is null)
+  order by created desc
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_worker_pool_counts_and_capacity
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `current_capacity integer`
+  * `stopped_capacity integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `requested_count integer`
+  * `running_capacity integer`
+  * `running_count integer`
+  * `stopping_capacity integer`
+  * `stopping_count integer`
+* *Last defined on version*: 105
+
+Get the capacity of workers in each state for a given worker pool.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pools.worker_pool_id,
+    coalesce( sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(  sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer
+  from worker_pools
+  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
+  where worker_pools.worker_pool_id = worker_pool_id_in
+  group by worker_pools.worker_pool_id;
+end
+```
+
+</details>
+
+### get_worker_pool_counts_and_capacity_lc
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `launch_config_id_in text`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `launch_config_id text`
+  * `current_capacity integer`
+  * `stopped_capacity integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `requested_count integer`
+  * `running_capacity integer`
+  * `running_count integer`
+  * `stopping_capacity integer`
+  * `stopping_count integer`
+* *Last defined on version*: 109
+
+Get the capacity of workers in each state for a given worker pool and launch config if provided
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pools.worker_pool_id,
+    workers.launch_config_id,
+    coalesce( sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(  sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer
+  from worker_pools
+  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
+  where worker_pools.worker_pool_id = worker_pool_id_in
+  and (workers.launch_config_id = launch_config_id_in or launch_config_id_in is null)
+  group by worker_pools.worker_pool_id, workers.launch_config_id
+  order by workers.launch_config_id;
+end
+```
+
+</details>
+
+### get_worker_pool_error_codes
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `code text`
+  * `count integer`
+* *Last defined on version*: 96
+
+Returns errors grouped by error code for given worker pool or all worker pools
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN query
+  SELECT COALESCE(worker_pool_errors.extra->>'code', 'other'), count(*)::int
+  FROM worker_pool_errors
+  WHERE
+    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+  GROUP BY worker_pool_errors.extra->>'code';
+end
+```
+
+</details>
+
+### get_worker_pool_error_launch_config
+
+* *Mode*: read
+* *Arguments*:
+  * `error_id_in text`
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `error_id text`
+  * `worker_pool_id text`
+  * `reported timestamptz`
+  * `kind text`
+  * `title text`
+  * `description text`
+  * `extra jsonb`
+  * `launch_config_id text`
+* *Last defined on version*: 105
+
+Get an existing worker pool error.  The returned table will have one or (if no such worker pool error is defined) zero rows.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pool_errors.error_id,
+    worker_pool_errors.worker_pool_id,
+    worker_pool_errors.reported,
+    worker_pool_errors.kind,
+    worker_pool_errors.title,
+    worker_pool_errors.description,
+    worker_pool_errors.extra,
+    worker_pool_errors.launch_config_id
+  from worker_pool_errors
+  where
+    worker_pool_errors.worker_pool_id = worker_pool_id_in and
+    worker_pool_errors.error_id = error_id_in;
+end
+```
+
+</details>
+
+### get_worker_pool_error_launch_configs
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `reported_since_in timestamptz`
+* *Returns*: `table`
+  * `worker_pool text`
+  * `launch_config_id text`
+  * `count integer`
+* *Last defined on version*: 105
+
+Returns errors grouped by launch config
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN query
+  SELECT worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id, count(*)::int
+  FROM worker_pool_errors
+  WHERE
+    (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+    (worker_pool_errors.reported > reported_since_in or reported_since_in is null)
+  GROUP BY worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id;
+end
+```
+
+</details>
+
+### get_worker_pool_error_stats_last_24_hours
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `hour timestamptz`
+  * `count integer`
+* *Last defined on version*: 96
+
+Returns total number of errors for given worker pool or all worker pools
+broken down by hour.
+There will be a breakdown for the last 24h even if there are no errors.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  -- fill in missing hours and add zeroes for them
+  RETURN query
+  WITH hours AS (
+    SELECT generate_series(
+      date_trunc('hour', now() - interval '23 hours'),
+      date_trunc('hour', now()), -- including now
+      interval '1 hour'
+    ) as hour
+  )
+  SELECT
+    hours.hour,
+    COALESCE(worker_pool_errors.count, 0)::int
+  FROM hours
+  LEFT JOIN (
+    SELECT
+      date_trunc('hour', reported) as hour,
+      count(*) as count
+    FROM worker_pool_errors
+    WHERE
+      (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+    GROUP BY hour
+  ) worker_pool_errors ON worker_pool_errors.hour = hours.hour;
+end
+```
+
+</details>
+
+### get_worker_pool_error_stats_last_7_days
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `day timestamptz`
+  * `count integer`
+* *Last defined on version*: 96
+
+Returns total number of errors for given worker pool or all worker pools
+broken down by hour.
+There will be a breakdown for the last 7 days even if there are no errors.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  -- fill in missing hours and add zeroes for them
+  RETURN query
+  WITH days AS (
+    SELECT generate_series(
+      date_trunc('day', now() - interval '6 days'),
+      date_trunc('day', now()), -- including now
+      interval '1 day'
+    ) as day
+  )
+  SELECT
+    days.day,
+    COALESCE(worker_pool_errors.count, 0)::int
+  FROM days
+  LEFT JOIN (
+    SELECT
+      date_trunc('day', reported) as day,
+      count(*) as count
+    FROM worker_pool_errors
+    WHERE
+      (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+    GROUP BY day
+  ) worker_pool_errors ON worker_pool_errors.day = days.day;
+end
+```
+
+</details>
+
+### get_worker_pool_error_titles
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `title text`
+  * `count integer`
+* *Last defined on version*: 96
+
+Returns errors grouped by title for given worker pool or all worker pools
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN query
+  SELECT worker_pool_errors.title, count(*)::int
+  FROM worker_pool_errors
+  WHERE
+    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+  GROUP BY worker_pool_errors.title;
+end
+```
+
+</details>
+
+### get_worker_pool_error_worker_pools
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `worker_pool text`
+  * `count integer`
+* *Last defined on version*: 97
+
+Returns errors grouped by worker pool
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN query
+  SELECT worker_pool_errors.worker_pool_id, count(*)::int
+  FROM worker_pool_errors
+  WHERE
+    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+  GROUP BY worker_pool_errors.worker_pool_id;
+end
+```
+
+</details>
+
+### get_worker_pool_errors_for_worker_pool2
+
+* *Mode*: read
+* *Arguments*:
+  * `error_id_in text`
+  * `worker_pool_id_in text`
+  * `launch_config_id_in text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `error_id text`
+  * `worker_pool_id text`
+  * `reported timestamptz`
+  * `kind text`
+  * `title text`
+  * `description text`
+  * `extra jsonb`
+  * `launch_config_id text`
+* *Last defined on version*: 105
+
+Get existing worker pool errors filtered by `worker_pool_id`, `error_id` or `launch_config_id`,
+ordered by `reported`.
+If the pagination arguments are both NULL, all rows are returned.
+Otherwise, page_size rows are returned at offset page_offset.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pool_errors.error_id,
+    worker_pool_errors.worker_pool_id,
+    worker_pool_errors.reported,
+    worker_pool_errors.kind,
+    worker_pool_errors.title,
+    worker_pool_errors.description,
+    worker_pool_errors.extra,
+    worker_pool_errors.launch_config_id
+  from worker_pool_errors
+  where
+    (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
+    (worker_pool_errors.launch_config_id = launch_config_id_in or launch_config_id_in is null) and
+    (worker_pool_errors.error_id = error_id_in or error_id_in is null)
+  order by worker_pool_errors.reported desc
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_worker_pool_launch_config_stats
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `state text`
+  * `launch_config_id text`
+  * `count bigint`
+* *Last defined on version*: 105
+
+Get the number of workers in each state for a given worker pool.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    state,
+    launch_config_id,
+    count(*)
+  from workers
+  where
+    worker_pool_id = worker_pool_id_in
+  group by state, launch_config_id;
+end
+```
+
+</details>
+
+### get_worker_pool_launch_configs
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `is_archived_in boolean`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `launch_config_id text`
+  * `worker_pool_id text`
+  * `is_archived boolean`
+  * `configuration jsonb`
+  * `created timestamp with time zone`
+  * `last_modified timestamp with time zone`
+* *Last defined on version*: 105
+
+Get worker pool launch configs by worker_pool_id.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    wplc.launch_config_id,
+    wplc.worker_pool_id,
+    wplc.is_archived,
+    wplc.configuration,
+    wplc.created,
+    wplc.last_modified
+  from worker_pool_launch_configs wplc
+  where
+    wplc.worker_pool_id = worker_pool_id_in and
+    (is_archived_in is null or wplc.is_archived = is_archived_in)
+  order by wplc.launch_config_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_worker_pool_with_launch_configs
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `provider_id text`
+  * `previous_provider_ids jsonb`
+  * `description text`
+  * `config jsonb`
+  * `created timestamptz`
+  * `last_modified timestamptz`
+  * `owner text`
+  * `email_on_error boolean`
+  * `provider_data jsonb`
+* *Last defined on version*: 105
+
+Get an existing worker pool.  The returned table will have one or (if no such worker pool is defined) zero rows.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pools.worker_pool_id,
+    worker_pools.provider_id,
+    worker_pools.previous_provider_ids,
+    worker_pools.description,
+    collect_launch_configs_if_exist(worker_pools.config, worker_pools.worker_pool_id) as config,
+    worker_pools.created,
+    worker_pools.last_modified,
+    worker_pools.owner,
+    worker_pools.email_on_error,
+    worker_pools.provider_data
+  from worker_pools
+  where worker_pools.worker_pool_id = worker_pool_id_in;
+end
+```
+
+</details>
+
+### get_worker_pools_counts_and_capacity
+
+* *Mode*: read
+* *Arguments*:
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `current_capacity integer`
+  * `stopped_capacity integer`
+  * `stopped_count integer`
+  * `requested_capacity integer`
+  * `requested_count integer`
+  * `running_capacity integer`
+  * `running_count integer`
+  * `stopping_capacity integer`
+  * `stopping_count integer`
+* *Last defined on version*: 105
+
+Get the capacity of workers in each state for all worker pools.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pools.worker_pool_id,
+    coalesce( sum(case when workers.state != 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(  sum(case when workers.state = 'stopped' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopped' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'requested' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'requested' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'running' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'running' then workers.worker_id end))::integer,
+    coalesce(  sum(case when workers.state = 'stopping' then workers.capacity else 0 end))::integer,
+    coalesce(count(case when workers.state = 'stopping' then workers.worker_id end))::integer
+  from worker_pools
+  left join workers on workers.worker_pool_id = worker_pools.worker_pool_id
+  group by worker_pools.worker_pool_id
+  order by worker_pools.worker_pool_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### get_worker_pools_with_launch_configs
+
+* *Mode*: read
+* *Arguments*:
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `worker_pool_id text`
+  * `provider_id text`
+  * `previous_provider_ids jsonb`
+  * `description text`
+  * `config jsonb`
+  * `created timestamptz`
+  * `last_modified timestamptz`
+  * `owner text`
+  * `email_on_error boolean`
+  * `provider_data jsonb`
+* *Last defined on version*: 105
+
+Get the capacity and counts of workers in all worker pools, grouped by state.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    worker_pools.worker_pool_id,
+    worker_pools.provider_id,
+    worker_pools.previous_provider_ids,
+    worker_pools.description,
+    collect_launch_configs_if_exist(worker_pools.config, worker_pools.worker_pool_id) as config,
+    worker_pools.created,
+    worker_pools.last_modified,
+    worker_pools.owner,
+    worker_pools.email_on_error,
+    worker_pools.provider_data
+  from worker_pools
+  order by worker_pools.worker_pool_id
+  limit get_page_limit(page_size_in)
+  offset get_page_offset(page_offset_in);
+end
+```
+
+</details>
+
+### insert_worker_manager_audit_history
+
+* *Mode*: write
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `client_id_in text`
+  * `action_type_in text`
+* *Returns*: `void`
+* *Last defined on version*: 107
+
+Insert an audit history entry for a given entity.
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  INSERT INTO audit_history (
+    entity_id,
+    entity_type,
+    client_id,
+    action_type,
+    created
+  ) VALUES (
+    worker_pool_id_in,
+    'worker-pool',
+    client_id_in,
+    action_type_in,
+    now()
+  );
+end;
+```
+
+</details>
 
 ### remove_worker_pool_previous_provider_id
 
@@ -2974,7 +8490,21 @@ Remove the given provider_id from the worker pool's previous_provider_ids.  It i
 not an error if the worker pool does not exist, or if the provider_id is not in the
 previous_provider_ids set.
 
-### update_worker_2
+<details><summary>Function Body</summary>
+
+```
+begin
+  update worker_pools
+  set
+    previous_provider_ids = previous_provider_ids - provider_id_in
+  where
+    worker_pool_id = worker_pool_id_in;
+end
+```
+
+</details>
+
+### update_worker_3
 
 * *Mode*: write
 * *Arguments*:
@@ -3005,12 +8535,90 @@ previous_provider_ids set.
   * `last_checked timestamptz`
   * `etag uuid`
   * `secret jsonb`
-* *Last defined on version*: 14
+  * `launch_config_id text`
+* *Last defined on version*: 110
 
 Update a worker.
 Returns the up-to-date worker row that have the same worker_pool_id, worker_group, and worker_id.
 If the etag argument is empty then the update will overwrite the matched row.
 Else, the function will fail if the etag is out of date. This is useful for concurency handling.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  new_etag uuid := public.gen_random_uuid();
+  updated_row workers%ROWTYPE;
+begin
+  update workers
+  set (provider_id, created, expires, state, provider_data, capacity, last_modified, last_checked, etag, secret) = (
+    coalesce(provider_id_in, workers.provider_id),
+    coalesce(created_in, workers.created),
+    coalesce(expires_in, workers.expires),
+    coalesce(state_in, workers.state),
+    coalesce(provider_data_in, workers.provider_data),
+    coalesce(capacity_in, workers.capacity),
+    coalesce(last_modified_in, workers.last_modified),
+    coalesce(last_checked_in, workers.last_checked),
+    new_etag,
+    coalesce(secret_in, workers.secret)
+  )
+  where
+    workers.worker_pool_id = worker_pool_id_in and
+    workers.worker_group = worker_group_in and
+    workers.worker_id = worker_id_in and
+    workers.etag = coalesce(etag_in, workers.etag)
+  returning
+    workers.worker_pool_id,
+    workers.worker_group,
+    workers.worker_id,
+    workers.provider_id,
+    workers.created,
+    workers.expires,
+    workers.state,
+    workers.provider_data,
+    workers.capacity,
+    workers.last_modified,
+    workers.last_checked,
+    workers.etag,
+    workers.secret,
+    workers.launch_config_id
+  into updated_row;
+
+  if found then
+    return query select
+      updated_row.worker_pool_id,
+      updated_row.worker_group,
+      updated_row.worker_id,
+      updated_row.provider_id,
+      updated_row.created,
+      updated_row.expires,
+      updated_row.state,
+      updated_row.provider_data,
+      updated_row.capacity,
+      updated_row.last_modified,
+      updated_row.last_checked,
+      updated_row.etag,
+      updated_row.secret,
+      updated_row.launch_config_id;
+    return;
+  end if;
+
+  perform workers.etag from workers
+    where
+      workers.worker_pool_id = worker_pool_id_in and
+      workers.worker_group = worker_group_in and
+      workers.worker_id = worker_id_in;
+
+  if found then
+    raise exception 'unsuccessful update' using errcode = 'P0004';
+  else
+    raise exception 'no such row' using errcode = 'P0002';
+  end if;
+end
+```
+
+</details>
 
 ### update_worker_pool_provider_data
 
@@ -3027,7 +8635,21 @@ this sets the provider_data property unconditionally, and it is up to the servic
 to ensure that concurrent modifications do not occur.  It is not an error if the
 worker pool does not exist.
 
-### update_worker_pool_with_capacity_and_counts_by_state
+<details><summary>Function Body</summary>
+
+```
+begin
+  update worker_pools
+  set
+    provider_data = provider_data || jsonb_build_object(provider_id_in, provider_data_in)
+  where
+    worker_pool_id = worker_pool_id_in;
+end
+```
+
+</details>
+
+### update_worker_pool_with_launch_configs
 
 * *Mode*: write
 * *Arguments*:
@@ -3039,25 +8661,19 @@ worker pool does not exist.
   * `owner_in text`
   * `email_on_error_in boolean`
 * *Returns*: `table`
-  * `worker_pool_id text`
-  * `provider_id text`
-  * `description text`
-  * `config jsonb`
-  * `created timestamptz`
-  * `last_modified timestamptz`
-  * `owner text`
-  * `email_on_error boolean`
-  * `previous_provider_id text`
-  * `current_capacity integer`
-  * `requested_count integer`
-  * `running_count integer`
-  * `stopping_count integer`
-  * `stopped_count integer`
-  * `requested_capacity integer`
-  * `running_capacity integer`
-  * `stopping_capacity integer`
-  * `stopped_capacity integer`
-* *Last defined on version*: 70
+  * `   worker_pool_id text`
+  * `  provider_id text`
+  * `  description text`
+  * `  config jsonb`
+  * `  created timestamptz`
+  * `  last_modified timestamptz`
+  * `  owner text`
+  * `  email_on_error boolean`
+  * `  previous_provider_id text`
+  * `  updated_launch_configs text[]`
+  * `  created_launch_configs text[]`
+  * `  archived_launch_configs text[] `
+* *Last defined on version*: 105
 
 Update API-accessible columns on an existig worker pool.  All fields are
 overridden, but if the provider_id changes, then the existing provider_id
@@ -3065,3 +8681,185 @@ is added to previous_provider_ids.  The return value contains values
 required for an API response and previous_provider_id (singular) containing
 the provider_id found before the update.  If no such worker pool exists,
 the return value is an empty set.
+All existing not archived launch configurations would be marked as archived if they are not present in the new configuration.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  existing record;
+  updated_wp record;
+  config_without_lc jsonb;
+  updated_wplc record;
+begin
+  select
+    worker_pools.provider_id,
+    worker_pools.previous_provider_ids
+  from worker_pools
+  where worker_pools.worker_pool_id = worker_pool_id_in
+  -- lock this row for the duration of this transaction..
+  for update
+  into existing;
+
+  if not found then
+    return;
+  end if;
+
+  -- update previous_provider_ids, if the provider_id has changed
+  if existing.provider_id <> provider_id_in then
+    -- remove both provider IDs to avoid duplicates, then re-add existing.provider_id
+    existing.previous_provider_ids = (existing.previous_provider_ids - provider_id_in - existing.provider_id) || jsonb_build_array(existing.provider_id);
+  end if;
+
+  config_without_lc := config_in;
+  config_without_lc := config_without_lc - 'launchConfigs';
+
+  UPDATE worker_pools
+  SET
+    provider_id = provider_id_in,
+    description = description_in,
+    config = config_without_lc,
+    last_modified = last_modified_in,
+    owner = owner_in,
+    email_on_error = email_on_error_in,
+    previous_provider_ids = existing.previous_provider_ids
+  WHERE worker_pools.worker_pool_id = worker_pool_id_in
+  RETURNING
+    worker_pools.worker_pool_id,
+    worker_pools.provider_id,
+    worker_pools.description,
+    worker_pools.config,
+    worker_pools.created,
+    worker_pools.last_modified,
+    worker_pools.owner,
+    worker_pools.email_on_error,
+    existing.provider_id as previous_provider_id
+  INTO updated_wp;
+
+  SELECT * FROM upsert_worker_pool_launch_configs(worker_pool_id_in, config_in) INTO updated_wplc;
+
+  RETURN QUERY
+  SELECT
+    updated_wp.worker_pool_id,
+    updated_wp.provider_id,
+    updated_wp.description,
+    collect_launch_configs_if_exist(config_without_lc, worker_pool_id_in) as config,
+    updated_wp.created,
+    updated_wp.last_modified,
+    updated_wp.owner,
+    updated_wp.email_on_error,
+    updated_wp.previous_provider_id,
+    updated_wplc.updated_launch_configs,
+    updated_wplc.created_launch_configs,
+    updated_wplc.archived_launch_configs;
+end
+```
+
+</details>
+
+### upsert_worker_pool_launch_configs
+
+* *Mode*: write
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `config_in jsonb`
+* *Returns*: `table`
+  * `updated_launch_configs text[]`
+  * `created_launch_configs text[]`
+  * `archived_launch_configs text[]`
+* *Last defined on version*: 116
+
+Creates or updates launch configs and marks the old ones as archived.
+If a launch config already exist but is archived, it would be unarchived.
+All launch configs that are not in the updated list will be archived.
+
+This will return list of launch config ids that were updated, created, archived.
+
+Raises UNIQUE_VIOLATION if the pool already exists with given launchConfigId and content differs.
+
+<details><summary>Function Body</summary>
+
+```
+declare
+  config_without_lc jsonb;
+  updated_lcs text[];
+  created_lcs text[];
+  archived_lcs text[];
+  processed_lcs text[];
+  wp_launch_config_id text;
+  config jsonb;
+  tmp text[];
+  existing_config jsonb;
+begin
+  -- update launch configurations
+  created_lcs := '{}';
+  updated_lcs := '{}';
+  archived_lcs := '{}';
+
+  FOR config IN SELECT jsonb_array_elements(config_in->'launchConfigs') LOOP
+    wp_launch_config_id := get_or_create_launch_config_id(worker_pool_id_in, config);
+    processed_lcs := array_append(processed_lcs, wp_launch_config_id);
+
+    -- Check if config exists and get its content
+    SELECT configuration INTO existing_config
+    FROM worker_pool_launch_configs
+    WHERE worker_pool_id = worker_pool_id_in AND launch_config_id = wp_launch_config_id;
+
+    -- check for  uniqueness
+    IF existing_config IS NOT NULL THEN
+      -- Config exists, check if content matches
+      IF (
+        jsonb_typeof(existing_config) = 'object'
+        AND jsonb_typeof(config) = 'object'
+        AND (existing_config - 'workerManager') != (config - 'workerManager')
+      ) THEN
+        RAISE EXCEPTION 'Launch config with ID `%` already exists with different configuration',
+          wp_launch_config_id
+          USING ERRCODE = 'unique_violation';
+      END IF;
+      -- make sure it is not archived and workerManager specific fields are updated
+      UPDATE worker_pool_launch_configs
+      SET is_archived = false,
+          last_modified = now(),
+          configuration = config
+      WHERE
+        worker_pool_id = worker_pool_id_in
+        AND launch_config_id = wp_launch_config_id;
+
+      updated_lcs := array_append(updated_lcs, wp_launch_config_id);
+    ELSE
+      created_lcs := array_append(created_lcs, wp_launch_config_id);
+      PERFORM create_worker_pool_launch_config(
+        wp_launch_config_id,
+        worker_pool_id_in,
+        false,
+        config,
+        now(),
+        now()
+      );
+    END IF;
+  END LOOP;
+
+  -- mark all launch configs that are not in the updated list as archived
+  WITH updated_rows AS (
+    UPDATE worker_pool_launch_configs
+    SET is_archived = true
+    WHERE
+      worker_pool_launch_configs.worker_pool_id = worker_pool_id_in
+      AND (
+        -- if the array is empty, ALL(array[]) will return null and not TRUE
+        array_length(processed_lcs, 1) IS NULL
+        OR worker_pool_launch_configs.launch_config_id != ALL(processed_lcs)
+      )
+      AND worker_pool_launch_configs.is_archived = false
+    RETURNING launch_config_id
+  )
+  SELECT COALESCE(array_agg(launch_config_id), '{}') FROM updated_rows INTO tmp;
+  archived_lcs := array_cat(archived_lcs, tmp);
+
+  return query
+  select updated_lcs, created_lcs, archived_lcs;
+end
+```
+
+</details>

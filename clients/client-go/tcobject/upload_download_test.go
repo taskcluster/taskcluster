@@ -15,15 +15,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v50/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v50/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v97/internal/mocktc"
 )
 
 func mockObjectServer(t *testing.T) (*httptest.Server, *mux.Router, *tcobject.Object, *mocktc.Object) {
+	t.Helper()
 	r := mux.NewRouter().UseEncodedPath()
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)
-		_, _ = w.Write([]byte(fmt.Sprintf("URL %v with method %v NOT FOUND\n", req.URL, req.Method)))
+		_, _ = w.Write(fmt.Appendf(nil, "URL %v with method %v NOT FOUND\n", req.URL, req.Method))
 	})
 	srv := httptest.NewServer(r)
 	mockobj := mocktc.NewObject(t, srv.URL)

@@ -89,7 +89,7 @@ module.exports = async function(queue, stream, taskId, artifactPath, destination
         `Downloaded ${(receivedSize / 1024 / 1024).toFixed(3)} mb over the wire`,
       ));
       return `sha256:${hash.digest('hex')}`;
-    } catch(e) {
+    } catch (e) {
       debug(`Error downloading "${artifactPath}" from task ID "${taskId}". ${e}`);
 
       if (attempts >= maxAttempts || [404, 401].includes(e.statusCode)) {

@@ -34,4 +34,4 @@ let parseTime = function(str) {
 };
 
 // Export parseTime
-module.exports = parseTime;
+export default parseTime;

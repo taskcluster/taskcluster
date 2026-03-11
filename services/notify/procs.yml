@@ -1,9 +1,10 @@
 web:
   type: web
-  command: node services/notify/src/main server
+  command: node services/notify/src/main.js server
+  metrics: true
 handler:
   type: background
-  command: node services/notify/src/main handler
+  command: node services/notify/src/main.js handler
 write-docs:
   type: build
-  command: node services/notify/src/main writeDocs
+  command: node services/notify/src/main.js writeDocs

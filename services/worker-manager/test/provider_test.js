@@ -1,12 +1,14 @@
-const assert = require('assert');
-const helper = require('./helper');
-const { Provider } = require('../src/providers/provider');
-const testing = require('taskcluster-lib-testing');
-const { WorkerPool, WorkerPoolError } = require('../src/data');
-const { LEVELS } = require('taskcluster-lib-monitor');
+import assert from 'assert';
+import helper from './helper.js';
+import { Provider } from '../src/providers/provider.js';
+import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
+import { WorkerPool, WorkerPoolError, Worker } from '../src/data.js';
+import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
+  helper.withPulse(mock, skipping);
   helper.withFakeNotify(mock, skipping);
   helper.resetTables(mock, skipping);
 
@@ -25,73 +27,155 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     Date.now = oldnow;
   });
 
-  test('no lifecycle', async function() {
-    assert.equal(345600100, Provider.interpretLifecycle({}).terminateAfter);
+  const createWP = async (overrides = {}) => {
+    const workerPool = WorkerPool.fromApi({
+      workerPoolId: 'ww/tt',
+      providerId: 'testing1',
+      description: 'none',
+      scheduledForDeletion: false,
+      config: {},
+      owner: 'whatever@example.com',
+      emailOnError: false,
+      ...overrides,
+    });
+    await workerPool.create(helper.db);
+    return workerPool;
+  };
+
+  const createProvider = async () =>
+    new Provider({
+      providerId: 'testing1',
+      notify: await helper.load('notify'),
+      db: helper.db,
+      monitor,
+      WorkerPoolError: WorkerPoolError,
+      estimator: await helper.load('estimator'),
+      validator: await helper.load('validator'),
+      publisher: await helper.load('publisher'),
+      launchConfigSelector: await helper.load('launchConfigSelector'),
+    });
+
+  suite('interpretLifecycle', function() {
+    test('no lifecycle', async function() {
+      assert.equal(345600100, Provider.interpretLifecycle({}).terminateAfter);
+    });
+
+    test('empty lifecycle', async function() {
+      assert.equal(345600100, Provider.interpretLifecycle({ lifecycle: {} }).terminateAfter);
+    });
+
+    test('no queueInactivityTimeout', async function () {
+      assert.equal(7200000, Provider.interpretLifecycle({}).queueInactivityTimeout);
+    });
+
+    test('only queueInactivityTimeout', async function () {
+      assert.equal(4000, Provider.interpretLifecycle({
+        lifecycle: { queueInactivityTimeout: 4 } }).queueInactivityTimeout);
+    });
+
+    test('only registrationTimeout', async function() {
+      assert.deepEqual({
+        terminateAfter: 10100,
+        reregistrationTimeout: 345600000,
+        queueInactivityTimeout: 7200000,
+      }, Provider.interpretLifecycle({ lifecycle: { registrationTimeout: 10 } }));
+    });
+
+    test('only reregistrationTimeout', async function() {
+      assert.deepEqual({
+        terminateAfter: 10100,
+        reregistrationTimeout: 10000,
+        queueInactivityTimeout: 7200000,
+      }, Provider.interpretLifecycle({ lifecycle: { reregistrationTimeout: 10 } }));
+    });
+
+    test('greater registrationTimeout', async function() {
+      assert.deepEqual({
+        terminateAfter: 10100,
+        reregistrationTimeout: 10000,
+        queueInactivityTimeout: 5000,
+      }, Provider.interpretLifecycle({ lifecycle: {
+        registrationTimeout: 100,
+        reregistrationTimeout: 10,
+        queueInactivityTimeout: 5,
+      } }));
+    });
+
+    test('greater reregistrationTimeout', async function() {
+      assert.deepEqual({
+        terminateAfter: 10100,
+        reregistrationTimeout: 100000,
+        queueInactivityTimeout: 7200000,
+      }, Provider.interpretLifecycle({ lifecycle: {
+        registrationTimeout: 10,
+        reregistrationTimeout: 100,
+      } }));
+    });
   });
 
-  test('empty lifecycle', async function() {
-    assert.equal(345600100, Provider.interpretLifecycle({ lifecycle: {} }).terminateAfter);
-  });
-
-  test('only registrationTimeout', async function() {
-    assert.deepEqual({
-      terminateAfter: 10100,
-      reregistrationTimeout: 345600000,
-    }, Provider.interpretLifecycle({ lifecycle: { registrationTimeout: 10 } }));
-  });
-
-  test('only reregistrationTimeout', async function() {
-    assert.deepEqual({
-      terminateAfter: 10100,
-      reregistrationTimeout: 10000,
-    }, Provider.interpretLifecycle({ lifecycle: { reregistrationTimeout: 10 } }));
-  });
-
-  test('greater registrationTimeout', async function() {
-    assert.deepEqual({
-      terminateAfter: 10100,
-      reregistrationTimeout: 10000,
-    }, Provider.interpretLifecycle({ lifecycle: {
-      registrationTimeout: 100,
-      reregistrationTimeout: 10,
-    } }));
-  });
-
-  test('greater reregistrationTimeout', async function() {
-    assert.deepEqual({
-      terminateAfter: 10100,
-      reregistrationTimeout: 100000,
-    }, Provider.interpretLifecycle({ lifecycle: {
-      registrationTimeout: 10,
-      reregistrationTimeout: 100,
-    } }));
+  suite('isZombie', function() {
+    test('default queue inactivity timeout', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({});
+      worker.created = taskcluster.fromNow('-4 hours');
+      worker.firstClaim = null;
+      worker.lastDateActive = null;
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, true);
+      assert.match(res.reason, /queueInactivityTimeout=7200s/);
+    });
+    test('no firstClaim', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({});
+      worker.created = taskcluster.fromNow('-4 hours');
+      worker.firstClaim = null;
+      worker.lastDateActive = null;
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, true);
+      assert.match(res.reason, /worker never claimed work/);
+    });
+    test('not active within queueInactivityTimeout', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({
+        providerData: {
+          queueInactivityTimeout: 1,
+        },
+      });
+      worker.created = taskcluster.fromNow('-5 minutes');
+      worker.firstClaim = taskcluster.fromNow('-4 minutes');
+      worker.lastDateActive = taskcluster.fromNow('-3 minutes');
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, true);
+      assert.match(res.reason, /worker inactive/);
+    });
+    test('not a zombie', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({
+        providerData: {
+          queueInactivityTimeout: 60 * 60 * 24 * 1000,
+        },
+      });
+      worker.created = taskcluster.fromNow('-5 minutes');
+      worker.firstClaim = taskcluster.fromNow('-4 minutes');
+      worker.lastDateActive = taskcluster.fromNow('-3 minutes');
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, false);
+    });
+    test('fields not fetched from database (defensive check)', function() {
+      Date.now = oldnow;
+      const worker = Worker.fromApi({});
+      worker.created = taskcluster.fromNow('-4 hours');
+      // Intentionally leave firstClaim and lastDateActive as undefined
+      const res = Provider.isZombie({ worker });
+      assert.equal(res.isZombie, false);
+      assert.match(res.reason, /queue fields not fetched/);
+    });
   });
 
   suite('reportError', function() {
-    const createWP = async (overrides = {}) => {
-      const workerPool = WorkerPool.fromApi({
-        workerPoolId: 'ww/tt',
-        providerId: 'testing1',
-        description: 'none',
-        scheduledForDeletion: false,
-        config: {},
-        owner: 'whatever@example.com',
-        emailOnError: false,
-        ...overrides,
-      });
-      await workerPool.create(helper.db);
-      return workerPool;
-    };
-
     let provider;
     suiteSetup(async function() {
-      provider = new Provider({
-        notify: await helper.load('notify'),
-        db: helper.db,
-        monitor,
-        WorkerPoolError: WorkerPoolError,
-        // other stuff omitted..
-      });
+      provider = await createProvider();
     });
 
     test('report errors (no email)', async function() {
@@ -106,7 +190,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         WorkerPoolError: WorkerPoolError,
       });
 
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, 'ww/tt', null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].worker_pool_id, 'ww/tt');
 
@@ -125,12 +209,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         WorkerPoolError: WorkerPoolError,
       });
 
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, 'ww/tt', null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].worker_pool_id, 'ww/tt');
 
       assert.equal(helper.notify.emails.length, 1);
       assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
+    });
+
+    test('report errors (no duplicate emails)', async function() {
+      const workerPool = await createWP({ emailOnError: true });
+      const errorDetails = {
+        workerPool,
+        kind: 'duplicate-email-error',
+        title: 'I want only one copy of this please',
+        description: 'availability bla-bla',
+        notify: helper.notify,
+        WorkerPoolError: WorkerPoolError,
+      };
+      await provider.reportError(errorDetails);
+
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
+      assert.equal(errors.length, 1);
+      assert.equal(errors[0].worker_pool_id, 'ww/tt');
+
+      assert.equal(helper.notify.emails.length, 1);
+      assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
+
+      await provider.reportError(errorDetails);
+      await provider.reportError(errorDetails);
+
+      const errors2 = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
+      assert.equal(errors2.length, 3);
+      assert.equal(helper.notify.emails.length, 1);
     });
 
     test('report errors (w/ email and extraInfo)', async function() {
@@ -148,7 +259,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
 
-      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool(null, 'ww/tt', null, null);
+      const errors = await helper.db.fns.get_worker_pool_errors_for_worker_pool2(null, 'ww/tt', null, null, null);
       assert.equal(errors.length, 1);
       assert.equal(errors[0].worker_pool_id, 'ww/tt');
 
@@ -188,6 +299,201 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'gecko-t/win7-gpu': 1,
         'gecko-t/win7-x64': 1,
       }));
+    });
+  });
+
+  suite('selectLaunchConfigsForSpawn', function () {
+    let provider;
+
+    suiteSetup(async function() {
+      provider = await createProvider();
+    });
+
+    test('selects configs', async function () {
+      const workerPool = await createWP();
+
+      const configs = await provider.selectLaunchConfigsForSpawn({ workerPool, toSpawn: 1 });
+      assert.deepEqual([], configs);
+
+      const monitor = await helper.load('monitor');
+      const monitorErrors = monitor.manager.messages.filter(
+        ({ Type }) => Type === 'monitor.generic',
+      ) || [];
+      assert.equal(monitorErrors.length, 1);
+      assert.equal(monitorErrors[0].Fields.message, `No launch configs found for worker pool ${workerPool.workerPoolId}`);
+      monitor.manager.reset();
+    });
+  });
+
+  suite('worker metrics', function() {
+    let provider;
+
+    suiteSetup(async function() {
+      provider = await createProvider();
+    });
+
+    const createWorker = async (overrides = {}) => {
+      const worker = Worker.fromApi({
+        workerPoolId: 'ww/tt',
+        workerGroup: 'wg',
+        workerId: 'wi',
+        providerId: 'testing1',
+        created: new Date(Date.now() - 60000),
+        expires: taskcluster.fromNow('1 hour'),
+        state: Worker.states.REQUESTED,
+        capacity: 1,
+        launchConfigId: 'lc-1',
+        providerData: {},
+        ...overrides,
+      });
+      await worker.create(helper.db);
+      return worker;
+    };
+
+    test('records registration duration on workerRunning', async function() {
+      const worker = await createWorker();
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerRegistrationDuration;
+      monitor.metric.workerRegistrationDuration = () => { metricRecorded = true; };
+
+      monitor.manager.reset();
+      await provider.onWorkerRunning({ worker });
+      assert.equal(metricRecorded, true);
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-running');
+      assert.ok(msg, 'worker-running log event should be emitted');
+      assert.equal(msg.Fields.registrationDuration, 60);
+
+      monitor.metric.workerRegistrationDuration = originalMetric;
+    });
+
+    test('includes workerAge and runningDuration on workerStopped', async function() {
+      const worker = await createWorker({
+        workerId: 'wi-stopped',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 30000).toJSON(),
+          },
+        },
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerStopped({ worker });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.ok(msg, 'worker-stopped log event should be emitted');
+      assert.equal(msg.Fields.workerAge, 60);
+      assert.equal(msg.Fields.runningDuration, 30);
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('includes workerAge and runningDuration on workerRemoved', async function() {
+      const worker = await createWorker({
+        workerId: 'wi-removed',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 20000).toJSON(),
+          },
+        },
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerRemoved({ worker, reason: 'test-reason' });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-removed');
+      assert.ok(msg, 'worker-removed log event should be emitted');
+      assert.equal(msg.Fields.workerAge, 60);
+      assert.equal(msg.Fields.runningDuration, 20);
+      assert.equal(msg.Fields.reason, 'test-reason');
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('omits runningDuration when worker never registered', async function() {
+      const worker = await createWorker({
+        workerId: 'wi-never-reg',
+        state: Worker.states.REQUESTED,
+      });
+
+      const originalMetric = monitor.metric.workerRegistrationFailure;
+      monitor.metric.workerRegistrationFailure = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerStopped({ worker });
+
+      const msg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.ok(msg, 'worker-stopped log event should be emitted');
+      assert.equal(msg.Fields.workerAge, 60);
+      assert.equal(msg.Fields.runningDuration, null);
+
+      monitor.metric.workerRegistrationFailure = originalMetric;
+    });
+
+    test('records lifetime on workerStopped', async function() {
+      const worker = await createWorker({
+        workerId: 'wi2',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 60000).toJSON(),
+          },
+        },
+      });
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => { metricRecorded = true; };
+
+      await provider.onWorkerStopped({ worker });
+      assert.equal(metricRecorded, true);
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('records registration failure when worker never registered', async function() {
+      const worker = await createWorker({ workerId: 'wi3' });
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerRegistrationFailure;
+      monitor.metric.workerRegistrationFailure = () => { metricRecorded = true; };
+
+      await provider.onWorkerStopped({ worker });
+      assert.equal(metricRecorded, true);
+
+      monitor.metric.workerRegistrationFailure = originalMetric;
+    });
+
+    test('does not double-record lifetime', async function() {
+      const worker = await createWorker({
+        workerId: 'wi4',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 60000).toJSON(),
+            stoppedAt: new Date().toJSON(),
+            previousState: Worker.states.RUNNING,
+          },
+        },
+      });
+
+      let metricRecorded = false;
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => { metricRecorded = true; };
+
+      await provider.onWorkerStopped({ worker });
+      assert.equal(metricRecorded, false);
+
+      monitor.metric.workerLifetime = originalMetric;
     });
   });
 });

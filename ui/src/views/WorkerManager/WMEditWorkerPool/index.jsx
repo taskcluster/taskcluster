@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import { bool } from 'prop-types';
+import { Typography, Box } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import createWorkerPoolQuery from './createWorkerPool.graphql';
@@ -10,6 +11,10 @@ import workerPoolQuery from './workerPool.graphql';
 import providersQuery from './providers.graphql';
 import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
 import ErrorPanel from '../../../components/ErrorPanel';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import Link from '../../../utils/Link';
+import { splitWorkerPoolId } from '../../../utils/workerPool';
+import WorkersNavbar from '../../../components/WorkersNavbar';
 
 @withApollo
 @graphql(providersQuery, {
@@ -20,7 +25,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
   options: ({ match: { params } }) => ({
     fetchPolicy: 'network-only',
     variables: {
-      workerPoolId: decodeURIComponent(params.workerPoolId),
+      workerPoolId: decodeURIComponent(params?.workerPoolId),
     },
   }),
 })
@@ -116,6 +121,7 @@ export default class WMEditWorkerPool extends Component {
       (!isNewWorkerPool && (!data || !data.WorkerPool || data.loading));
     const error =
       (providersData && providersData.error) || (data && data.error);
+    const workerPoolId = decodeURIComponent(match.params.workerPoolId ?? '');
 
     return (
       <Dashboard
@@ -123,8 +129,35 @@ export default class WMEditWorkerPool extends Component {
         title={
           isNewWorkerPool
             ? 'Create Worker Pool'
-            : `Worker Pool "${decodeURIComponent(match.params.workerPoolId)}"`
+            : `Worker Pool "${workerPoolId}"`
         }>
+        <Box
+          marginBottom={2}
+          sx={{
+            display: 'flex',
+            width: '100%',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}>
+          <div style={{ flexGrow: 1, marginRight: 8 }}>
+            <Breadcrumbs style={{ flexGrow: 1, marginRight: 8 }}>
+              <Link to="/worker-manager">
+                <Typography variant="body2">Worker Manager</Typography>
+              </Link>
+              <Typography variant="body2" color="textSecondary">
+                {workerPoolId}
+              </Typography>
+              {workerPoolId && (
+                <WorkersNavbar
+                  provisionerId={splitWorkerPoolId(workerPoolId).provisionerId}
+                  workerType={splitWorkerPoolId(workerPoolId).workerType}
+                  hasWorkerPool
+                />
+              )}
+            </Breadcrumbs>
+          </div>
+        </Box>
+
         <ErrorPanel fixed error={error} />
         {loading && <Spinner loading />}
         {!loading &&
@@ -137,6 +170,7 @@ export default class WMEditWorkerPool extends Component {
           ) : (
             <WMWorkerPoolEditor
               workerPool={data.WorkerPool}
+              errorStats={data.WorkerManagerErrorsStats}
               providers={providers}
               saveRequest={this.updateWorkerPoolRequest}
               deleteRequest={this.deleteRequest}

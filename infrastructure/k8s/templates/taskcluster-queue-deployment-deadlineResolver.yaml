@@ -15,16 +15,27 @@ spec:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-queue-secret.yaml") . | sha256sum }}'
-      labels: *ref_0
+      labels:
+        app.kubernetes.io/name: taskcluster-queue
+        app.kubernetes.io/instance: '{{ .Release.Name }}'
+        app.kubernetes.io/component: taskcluster-queue-deadlineresolver
+        app.kubernetes.io/part-of: taskcluster
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9100'
     spec:
       serviceAccountName: taskcluster-queue
       imagePullSecrets: {{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}
+      terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
         - name: taskcluster-queue-deadlineresolver
           image: '{{ .Values.dockerImage }}'
           imagePullPolicy: Always
           args:
             - queue/deadlineResolver
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             requests:
               cpu: '{{ .Values.queue.procs.deadlineResolver.cpu }}'
@@ -39,13 +50,18 @@ spec:
           envFrom:
             - secretRef:
                 name: taskcluster-queue
-          ports: []
+            - configMapRef:
+                name: taskcluster-queue
+          ports:
+            - name: prometheus
+              containerPort: 9100
+              protocol: TCP
           livenessProbe:
             exec:
               command:
                 - /bin/sh
                 - '-c'
                 - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
-            initialDelaySeconds: 86400
+            initialDelaySeconds: 432000
             periodSeconds: 60
             failureThreshold: 1

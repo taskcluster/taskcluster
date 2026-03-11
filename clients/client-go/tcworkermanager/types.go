@@ -5,7 +5,7 @@ package tcworkermanager
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v50/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
 )
 
 type (
@@ -133,6 +133,12 @@ type (
 		// Max length: 38
 		ProviderID string `json:"providerId"`
 
+		// The time that the worker's system booted.
+		// This is used to increase granularity of worker
+		// registration time metrics.
+		// See https://github.com/taskcluster/taskcluster/issues/8232.
+		SystemBootTime tcclient.Time `json:"systemBootTime,omitzero"`
+
 		// Worker group to which this worker belongs
 		//
 		// Syntax:     ^([a-zA-Z0-9-_]*)$
@@ -252,6 +258,33 @@ type (
 		Secret string `json:"secret"`
 	}
 
+	// Decision returned to a worker asking whether to keep running or be terminated
+	ShouldWorkerTerminateResponse struct {
+
+		// Reason why worker should be terminated
+		//
+		// Min length: 1
+		Reason string `json:"reason"`
+
+		Terminate bool `json:"terminate"`
+	}
+
+	// Link to source of this task, should specify a file, revision and
+	// repository. This should be place someone can go an do a git/hg blame
+	// to who came up with recipe for this task.
+	//
+	// Syntax:     ^(https?://|ssh://|git@)
+	// Max length: 4096
+	Source string
+
+	// Link to source of this task, should specify a file, revision and
+	// repository. This should be place someone can go an do a git/hg blame
+	// to who came up with recipe for this task.
+	//
+	// Syntax:     ^(https?://|ssh://|git@)
+	// Max length: 4096
+	Source1 string
+
 	// Provider-specific information
 	StaticProviderType struct {
 
@@ -301,8 +334,11 @@ type (
 		// repository. This should be place someone can go an do a git/hg blame
 		// to who came up with recipe for this task.
 		//
-		// Syntax:     ^(https?|ssh)://
+		// Syntax:     ^(https?://|ssh://|git@)
 		// Max length: 4096
+		// Any of:
+		//   * Source
+		//   * Source1
 		Source string `json:"source"`
 	}
 
@@ -323,6 +359,43 @@ type (
 		TaskID string `json:"taskId"`
 	}
 
+	Totals struct {
+
+		// Breakdown by error code where available
+		//
+		// Additional properties allowed
+		Code json.RawMessage `json:"code"`
+
+		// Breakdown by day
+		//
+		// Additional properties allowed
+		Daily json.RawMessage `json:"daily"`
+
+		// Breakdown by hour
+		//
+		// Additional properties allowed
+		Hourly json.RawMessage `json:"hourly"`
+
+		// Breakdown by launchConfigId where available
+		//
+		// Additional properties allowed
+		LaunchConfig json.RawMessage `json:"launchConfig"`
+
+		// Breakdown by title
+		//
+		// Additional properties allowed
+		Title json.RawMessage `json:"title"`
+
+		// Total number of errors
+		Total float64 `json:"total"`
+
+		// Breakdown by worker pool if workerPoolId is not specified.
+		// If specified, this will only include the worker pool specified.
+		//
+		// Additional properties allowed
+		WorkerPool json.RawMessage `json:"workerPool"`
+	}
+
 	Var struct {
 
 		// The id of this provider
@@ -331,6 +404,141 @@ type (
 		// The provider implementation underlying this provider
 		ProviderType string `json:"providerType"`
 	}
+
+	Var1 struct {
+
+		// The launch configuration
+		//
+		// Additional properties allowed
+		Configuration json.RawMessage `json:"configuration"`
+
+		// Time when this launch configuration was created
+		Created tcclient.Time `json:"created"`
+
+		// Whether this launch configuration is archived
+		IsArchived bool `json:"isArchived"`
+
+		// Time when this launch configuration was last modified
+		LastModified tcclient.Time `json:"lastModified"`
+
+		// Unique identifier for this launch configuration
+		LaunchConfigID string `json:"launchConfigId"`
+
+		// The worker pool ID this launch config belongs to
+		WorkerPoolID string `json:"workerPoolId"`
+	}
+
+	Var2 struct {
+
+		// Total capacity available across all workers for this launch configuration that are currently not "stopped"
+		//
+		// Mininum:    0
+		CurrentCapacity int64 `json:"currentCapacity"`
+
+		// The ID of the launch configuration
+		LaunchConfigID string `json:"launchConfigId"`
+
+		// Total capacity available across all workers for this launch configuration with state "requested"
+		//
+		// Mininum:    0
+		RequestedCapacity int64 `json:"requestedCapacity"`
+
+		// Total worker count in "requested" state for this launch configuration
+		//
+		// Mininum:    0
+		RequestedCount int64 `json:"requestedCount"`
+
+		// Total capacity available across all workers for this launch configuration with state "running"
+		//
+		// Mininum:    0
+		RunningCapacity int64 `json:"runningCapacity"`
+
+		// Total worker count in "running" state for this launch configuration
+		//
+		// Mininum:    0
+		RunningCount int64 `json:"runningCount"`
+
+		// Total capacity available across all workers for this launch configuration with state "stopped"
+		//
+		// Mininum:    0
+		StoppedCapacity int64 `json:"stoppedCapacity"`
+
+		// Total worker count in "stopped" state for this launch configuration
+		//
+		// Mininum:    0
+		StoppedCount int64 `json:"stoppedCount"`
+
+		// Total capacity available across all workers for this launch configuration with state "stopping"
+		//
+		// Mininum:    0
+		StoppingCapacity int64 `json:"stoppingCapacity"`
+
+		// Total worker count in "stopping" state for this launch configuration
+		//
+		// Mininum:    0
+		StoppingCount int64 `json:"stoppingCount"`
+
+		// The ID of this worker pool
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId"`
+	}
+
+	Var3 struct {
+
+		// Total capacity available across all workers for this worker pool that are currently not "stopped"
+		//
+		// Mininum:    0
+		CurrentCapacity int64 `json:"currentCapacity"`
+
+		// Total capacity available across all workers for this worker pool with state "requested"
+		//
+		// Mininum:    0
+		RequestedCapacity int64 `json:"requestedCapacity"`
+
+		// Total worker count in "requested" state for this worker pool
+		//
+		// Mininum:    0
+		RequestedCount int64 `json:"requestedCount"`
+
+		// Total capacity available across all workers for this worker pool with state "running"
+		//
+		// Mininum:    0
+		RunningCapacity int64 `json:"runningCapacity"`
+
+		// Total worker count in "running" state for this worker pool
+		//
+		// Mininum:    0
+		RunningCount int64 `json:"runningCount"`
+
+		// Total capacity available across all workers for this worker pool with state "stopped"
+		//
+		// Mininum:    0
+		StoppedCapacity int64 `json:"stoppedCapacity"`
+
+		// Total worker count in "stopped" state for this worker pool
+		//
+		// Mininum:    0
+		StoppedCount int64 `json:"stoppedCount"`
+
+		// Total capacity available across all workers for this worker pool with state "stopping"
+		//
+		// Mininum:    0
+		StoppingCapacity int64 `json:"stoppingCapacity"`
+
+		// Total worker count in "stopping" state for this worker pool
+		//
+		// Mininum:    0
+		StoppingCount int64 `json:"stoppingCount"`
+
+		// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+		//
+		// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+		WorkerPoolID string `json:"workerPoolId"`
+	}
+
+	// Constant value: ""
+	Var4 string
 
 	Worker struct {
 
@@ -342,7 +550,7 @@ type (
 		Capacity int64 `json:"capacity,omitempty"`
 
 		// Date of the first time this worker claimed a task.
-		FirstClaim tcclient.Time `json:"firstClaim"`
+		FirstClaim tcclient.Time `json:"firstClaim,omitzero"`
 
 		// Date of the last time this worker was seen active. Updated each time a worker calls
 		// `queue.claimWork`, `queue.reclaimTask`, and `queue.declareWorker` for this task queue.
@@ -350,10 +558,22 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitzero"`
 
 		// A run of a task.
-		LatestTask TaskRun `json:"latestTask,omitempty"`
+		LatestTask TaskRun `json:"latestTask,omitzero"`
+
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
 
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.
@@ -368,7 +588,7 @@ type (
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitzero"`
 
 		// A string specifying the state this worker is in so far as worker-manager knows.
 		// A "requested" worker is in the process of starting up, and if successful will enter
@@ -558,6 +778,18 @@ type (
 		// Date and time when this worker last changed state
 		LastModified tcclient.Time `json:"lastModified"`
 
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
+
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.
 		//
@@ -663,7 +895,7 @@ type (
 		Config json.RawMessage `json:"config"`
 
 		// Ignored on update
-		Created tcclient.Time `json:"created,omitempty"`
+		Created tcclient.Time `json:"created,omitzero"`
 
 		// A description of this worker pool.
 		//
@@ -674,7 +906,7 @@ type (
 		EmailOnError bool `json:"emailOnError"`
 
 		// Ignored on update
-		LastModified tcclient.Time `json:"lastModified,omitempty"`
+		LastModified tcclient.Time `json:"lastModified,omitzero"`
 
 		// An email address to notify when there are provisioning errors for this
 		// worker pool.
@@ -718,6 +950,13 @@ type (
 		// Max length: 128
 		Kind string `json:"kind"`
 
+		// The launch config ID that was used when the error occurred.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
+
 		// Date and time when this error was reported
 		Reported tcclient.Time `json:"reported"`
 
@@ -746,6 +985,18 @@ type (
 
 		// List of worker pool errors
 		WorkerPoolErrors []WorkerPoolError `json:"workerPoolErrors"`
+	}
+
+	// Total number of errors for given worker pool or all worker pools
+	// broken down daily for the past 7 days, hourly for the past 24 hours.
+	// Also includes breakdown by title and error code.
+	WorkerPoolErrorStats struct {
+		Totals Totals `json:"totals"`
+
+		// One of:
+		//   * WorkerPoolID
+		//   * Var4
+		WorkerPoolID json.RawMessage `json:"workerPoolId"`
 	}
 
 	// A complete worker pool definition.
@@ -833,6 +1084,27 @@ type (
 		WorkerPoolID string `json:"workerPoolId,omitempty"`
 	}
 
+	// The ID of this worker pool (of the form `providerId/workerType` for compatibility)
+	//
+	// Syntax:     ^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$
+	WorkerPoolID string
+
+	// A list of worker pool launch configurations
+	WorkerPoolLaunchConfigList struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of worker pool launch configurations.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listWorkerPoolLaunchConfigs` with `continuationToken`
+		// until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of all worker pool launch configurations
+		WorkerPoolLaunchConfigs []Var1 `json:"workerPoolLaunchConfigs"`
+	}
+
 	// A list of worker pools
 	WorkerPoolList struct {
 
@@ -847,6 +1119,30 @@ type (
 
 		// List of all worker pools
 		WorkerPools []WorkerPoolFullDefinition `json:"workerPools"`
+	}
+
+	// A list of worker pools stats
+	WorkerPoolListStats struct {
+
+		// Opaque `continuationToken` to be given as query-string option to get the
+		// next set of worker-types in the worker-manager.
+		// This property is only present if another request is necessary to fetch all
+		// results. In practice the next request with a `continuationToken` may not
+		// return additional results, but it can. Thus, you can only be sure to have
+		// all the results if you've called `listWorkerPoolsStats` with `continuationToken`
+		// until you get a result without a `continuationToken`.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		// List of all worker pools stats
+		WorkerPoolsStats []Var3 `json:"workerPoolsStats"`
+	}
+
+	// Statistics for a worker pool, showing counts and capacities of workers in different states,
+	// broken down by launch configuration.
+	WorkerPoolStatistics struct {
+
+		// Statistics broken down by launch configuration
+		LaunchConfigStats []Var2 `json:"launchConfigStats"`
 	}
 
 	// Response containing information about a worker.
@@ -873,7 +1169,19 @@ type (
 		// Nonetheless, `lastDateActive` is a good indicator of when the worker was last seen active.
 		// This defaults to null in the database, and is set to the current time when the worker
 		// is first seen.
-		LastDateActive tcclient.Time `json:"lastDateActive,omitempty"`
+		LastDateActive tcclient.Time `json:"lastDateActive,omitzero"`
+
+		// The ID of the launch configuration. Must be unique forever within the worker pool.
+		// Any change to the launch configuration (except `workerManager` fields) must use a new ID
+		// to ensure proper tracking of configuration metrics.
+		// If not provided, worker-manager will generate a unique ID.
+		// Must be between 1 and 38 characters long and contain only alphanumeric
+		// characters, dashes, and underscores.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_]*)$
+		// Min length: 1
+		// Max length: 38
+		LaunchConfigID string `json:"launchConfigId,omitempty"`
 
 		// The provider that had started the worker and responsible for managing it.
 		// Can be different from the provider that's currently in the worker pool config.
@@ -900,7 +1208,7 @@ type (
 		// Once the quarantineUntil time has elapsed, the worker resumes accepting jobs.
 		// Note that a quarantine can be lifted by setting `quarantineUntil` to the present time (or
 		// somewhere in the past).
-		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitempty"`
+		QuarantineUntil tcclient.Time `json:"quarantineUntil,omitzero"`
 
 		// List of 20 most recent tasks claimed by the worker.
 		RecentTasks []TaskRun `json:"recentTasks"`

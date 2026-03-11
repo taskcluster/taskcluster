@@ -17,4 +17,4 @@ class SlackBot {
   }
 }
 
-module.exports = SlackBot;
+export default SlackBot;

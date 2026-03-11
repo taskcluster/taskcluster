@@ -1,0 +1,48 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "List Pending Tasks Response"
+description: |
+  Response from a `listPendingTasks` request.
+type: object
+properties:
+  tasks:
+    type: array
+    title: "Tasks that are currently pending in a given task queue"
+    description: |
+      List of tasks that are currently waiting for workers to be claimed.
+      Results may not represent the actual state of the tasks,
+      as they might be actively claimed by a worker.
+
+      Tasks are returned in inserted order.
+
+    uniqueItems: true
+    items:
+      type: object
+      properties:
+        taskId: { $const: "taskId" }
+        runId: { $const: "runId" }
+        task: { $ref: "task.json#" }
+        inserted:
+          type: string
+          format: date-time
+          title: "Date and time when the task was inserted in the pending queue"
+      additionalProperties: false
+      required:
+        - taskId
+        - runId
+        - task
+        - inserted
+
+  continuationToken:
+    type: string
+    title: "Continuation Token"
+    description: |
+      Opaque `continuationToken` to be given as query-string option to get the
+      next set of dependent tasks.
+      This property is only present if another request is necessary to fetch all
+      results. In practice the next request with a `continuationToken` may not
+      return additional results, but it can. Thus, you can only be sure to have
+      all the results if you've called `listPendingTasks` with
+      `continuationToken` until you get a result without a `continuationToken`.
+additionalProperties: false
+required:
+  - tasks

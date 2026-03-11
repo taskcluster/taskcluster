@@ -27,7 +27,9 @@ export const TASK_GROUP_PAGE_SIZE = 1000;
 export const VIEW_WORKER_TYPES_PAGE_SIZE = 1000;
 export const VIEW_WORKERS_PAGE_SIZE = 1000;
 export const VIEW_WORKER_POOLS_PAGE_SIZE = 1000;
+export const VIEW_WORKER_POOL_LAUNCH_CONFIG_PAGE_SIZE = 1000;
 export const VIEW_WORKER_POOL_ERRORS_PAGE_SIZE = 100;
+export const VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE = 100;
 export const VIEW_CLIENTS_PAGE_SIZE = 1000;
 export const VIEW_CLIENT_SCOPES_INSPECT_SIZE = 10;
 export const VIEW_ROLES_PAGE_SIZE = 1000;
@@ -202,9 +204,7 @@ export const DENYLIST_NOTIFICATION_TYPES = {
 
 export const KNOWN_ACRONYMS = ['IRC', 'API'];
 export const AUTH_STORE = '@@TASKCLUSTER_WEB_AUTH';
-// The delay (in milliseconds) for `setTimeout` is a 32 bit signed quantity,
-// which limits it to 2^31-1 ms (2147483647 ms) or 24.855 days.
-export const MAX_SET_TIMEOUT_DELAY = 2 ** 31 - 1;
+export const AUTH_STARTED = '@@TASKCLUSTER_AUTH_STARTED';
 export const GROUP_NOTIFY_TASK_FAILED_KEY = 'group-notify-task-failed';
 export const GROUP_NOTIFY_SUCCESS_KEY = 'group-notify-success';
 
@@ -221,7 +221,9 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
         {
           region: 'us-west1',
           zone: 'us-west1-a',
-          capacityPerInstance: 1,
+          workerManager: {
+            capacityPerInstance: 1,
+          },
           disks: [
             {
               autoDelete: true,
@@ -261,7 +263,9 @@ export const PROVIDER_DEFAULT_CONFIGS = new Map([
       launchConfigs: [
         {
           location: 'westus',
-          capacityPerInstance: 1,
+          workerManager: {
+            capacityPerInstance: 1,
+          },
           subnetId: '...',
           hardwareProfile: {
             vmSize: 'Basic_A1',
@@ -297,7 +301,7 @@ export const UI_SCHEDULER_ID = 'taskcluster-ui';
 const payloadCommand = [
   '/bin/bash',
   '-c',
-  'for ((i=1;i<=600;i++)); do echo $i; sleep 1; done',
+  'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done',
 ];
 
 export const TASK_PAYLOAD_SCHEMAS = {
@@ -308,16 +312,16 @@ export const TASK_PAYLOAD_SCHEMAS = {
     samplePayload: {
       image: 'ubuntu:latest',
       command: payloadCommand,
-      maxRunTime: 600 + 30,
+      maxRunTime: 60 + 30,
     },
   },
-  'generic-simple-posix': {
-    label: 'Generic worker simple posix',
+  'generic-insecure-posix': {
+    label: 'Generic worker insecure posix',
     type: 'generic-worker',
-    schema: 'simple_posix.json',
+    schema: 'insecure_posix.json',
     samplePayload: {
       command: [payloadCommand],
-      maxRunTime: 600 + 30,
+      maxRunTime: 60 + 30,
     },
   },
   'generic-multi-win': {
@@ -326,7 +330,7 @@ export const TASK_PAYLOAD_SCHEMAS = {
     schema: 'multiuser_windows.json',
     samplePayload: {
       command: ['dir'],
-      maxRunTime: 600 + 30,
+      maxRunTime: 60 + 30,
     },
   },
   'generic-multi-posix': {
@@ -335,16 +339,7 @@ export const TASK_PAYLOAD_SCHEMAS = {
     schema: 'multiuser_posix.json',
     samplePayload: {
       command: [payloadCommand],
-      maxRunTime: 600 + 30,
-    },
-  },
-  'generic-docker-posix': {
-    label: 'Generic worker docker posix',
-    type: 'generic-worker',
-    schema: 'docker_posix.json',
-    samplePayload: {
-      command: [payloadCommand],
-      maxRunTime: 600 + 30,
+      maxRunTime: 60 + 30,
     },
   },
 };

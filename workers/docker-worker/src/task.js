@@ -6,7 +6,7 @@ const Debug = require('debug');
 const DockerProc = require('dockerode-process');
 const { PassThrough } = require('stream');
 const States = require('./states');
-const taskcluster = require('taskcluster-client');
+const taskcluster = require('@taskcluster/client');
 const promiseRetry = require('promise-retry');
 const os = require('os');
 
@@ -111,11 +111,11 @@ async function buildVolumeBindings(runtime, taskVolumeBindings, volumeCache, exp
       'The task is missing the following scopes:',
       '',
       '```',
-      `${unsatisfied}`,
+      JSON.stringify(unsatisfied),
       '```',
       'This requested devices requires the task scopes to satisfy the following scope expression:',
       '```',
-      `${scopeExpression}`,
+      JSON.stringify(scopeExpression),
       '```',
     ].join('\n'));
   }
@@ -440,12 +440,12 @@ class Task extends EventEmitter {
       procConfig.create.HostConfig.Binds = binds;
     }
 
-    if(this.task.payload.features && this.task.payload.features.interactive) {
+    if (this.task.payload.features && this.task.payload.features.interactive) {
       //TODO: test with things that aren't undefined
       let oldEntrypoint = (await this.runtime.docker.getImage(imageId).inspect()).Entrypoint;
-      if(typeof oldEntrypoint === 'string') {
+      if (typeof oldEntrypoint === 'string') {
         oldEntrypoint = ['/bin/sh', '-c', oldEntrypoint];
-      } else if(oldEntrypoint === undefined) {
+      } else if (oldEntrypoint === undefined) {
         oldEntrypoint = [];
       }
       procConfig.create.Entrypoint = ['/.taskclusterutils/busybox',
@@ -455,7 +455,7 @@ class Task extends EventEmitter {
         .concat(oldEntrypoint);
     }
 
-    if(this.task.payload.features && this.task.payload.features.allowPtrace) {
+    if (this.task.payload.features && this.task.payload.features.allowPtrace) {
       procConfig.create.HostConfig.CapAdd = ['SYS_PTRACE'];
     }
 
@@ -902,7 +902,7 @@ class Task extends EventEmitter {
         pull: false,
       });
       monitor.measure('task.runtime', Date.now() - taskStart);
-    } catch(error) {
+    } catch (error) {
       // Catch any errors starting the docker container.  This can be form an invalid
       // command being specified in the task payload, or a docker related issue.
       // XXX Look into determining if this was an issue starting the container because
@@ -960,7 +960,7 @@ class Task extends EventEmitter {
 
     try {
       await this.states.killed(this);
-    } catch(e) {
+    } catch (e) {
       // If killing states was unsucessful, mark task as failed.  If error is not
       // caught the task remains in limbo until claim expires.
       success = false;

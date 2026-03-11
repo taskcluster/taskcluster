@@ -21,8 +21,14 @@ and reports back results to the queue.
                                             [--worker-runner-protocol-pipe PIPE]
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
+    generic-worker copy-to-temp-file        --copy-file COPY-FILE
+    generic-worker create-file              --create-file CREATE-FILE
+    generic-worker create-dir               --create-dir CREATE-DIR
+    generic-worker unarchive                --archive-src ARCHIVE-SRC --archive-dst ARCHIVE-DST --archive-fmt ARCHIVE-FMT
+    generic-worker status
     generic-worker --help
     generic-worker --version
+    generic-worker --short-version
 
   Targets:
     run                                     Runs the generic-worker.  Pass --with-worker-runner if
@@ -38,6 +44,19 @@ and reports back results to the queue.
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.
+    copy-to-temp-file                       This will copy the specified file to a temporary
+                                            location and will return the temporary file path
+                                            to stdout. Intended for internal use.
+    create-file                             This will create a file at the specified path.
+                                            Intended for internal use.
+    create-dir                              This will create a directory (including missing
+                                            parent directories) at the specified path.
+                                            Intended for internal use.
+    unarchive                               This will unarchive the specified archive file
+                                            to the specified destination directory.
+                                            Intended for internal use.
+    status                                  This will print whether the worker is currently
+                                            running a task, and if so, what the task ID is.
 
   Options:
     --config CONFIG-FILE                    Json configuration file to use. See
@@ -56,8 +75,23 @@ and reports back results to the queue.
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.
+    --copy-file COPY-FILE                   The path to the file to copy.
+    --create-file CREATE-FILE               The path to the file to create.
+    --create-dir CREATE-DIR                 The path to the directory to create.
+    --archive-src ARCHIVE-SRC               The path to the archive file to unarchive.
+    --archive-dst ARCHIVE-DST               The path to the directory to unarchive to.
+    --archive-fmt ARCHIVE-FMT               The format of the archive file to unarchive.
+                                            One of:
+                                              * rar
+                                              * tar.bz2
+                                              * tar.gz
+                                              * tar.lz4
+                                              * tar.xz
+                                              * tar.zst
+                                              * zip
     --help                                  Display this help text.
     --version                               The release version of the generic-worker.
+    --short-version                         Only the semantic version of generic-worker.
 
 
   Configuring the generic worker:
@@ -83,6 +117,15 @@ and reports back results to the queue.
         ** OPTIONAL ** properties
         =========================
 
+          allowedHighMemoryDurationSecs     The number of seconds the resource monitor will
+                                            allow the system memory usage to be above the high
+                                            memory thresholds (see minAvailableMemoryBytes
+                                            and maxMemoryUsagePercent) before aborting
+                                            the task. If the memory usage is above the high
+                                            memory thresholds for longer than this time, the
+                                            worker will abort the task. Does nothing if
+                                            disableOOMProtection is set to true.
+                                            [default: 5]
           availabilityZone                  The EC2 availability zone of the worker.
           cachesDir                         The directory where task caches should be stored on
                                             the worker. The directory will be created if it does
@@ -91,11 +134,6 @@ and reports back results to the queue.
                                             [default: "caches"]
           certificate                       Taskcluster certificate, when using temporary
                                             credentials only.
-          checkForNewDeploymentEverySecs    The number of seconds between consecutive calls
-                                            to the provisioner, to check if there has been a
-                                            new deployment of the current worker type. If a
-                                            new deployment is discovered, worker will shut
-                                            down. See deploymentId property. [default: 1800]
           cleanUpTaskDirs                   Whether to delete the home directories of the task
                                             users after the task completes. Normally you would
                                             want to do this to avoid filling up disk space,
@@ -106,15 +144,10 @@ and reports back results to the queue.
                                             containing data.  If false, use artifact type 's3'.
                                             The 'object' type will become the default when the
                                             's3' type is deprecated.
-          deploymentId                      If running with --configure-for-aws, then between
-                                            tasks, at a chosen maximum frequency (see
-                                            checkForNewDeploymentEverySecs property), the
-                                            worker will query the provisioner to get the
-                                            updated worker type definition. If the deploymentId
-                                            in the config of the worker type definition is
-                                            different to the worker's current deploymentId, the
-                                            worker will shut itself down. See
-                                            https://bugzil.la/1298010
+          disableNativePayloads             Disables native Generic Worker payloads. D2G should be
+                                            enabled (d2gConfig.enableD2G) when this is set to true.
+                                            Tasks submitted with native payloads will be resolved
+                                            as exception/malformed-payload. [default: false]
           disableReboots                    If true, no system reboot will be initiated by
                                             generic-worker program, but it will still return
                                             with exit code 67 if the system needs rebooting.
@@ -124,19 +157,76 @@ and reports back results to the queue.
                                             (such as formatting a hard drive) and then
                                             rebooting in the run-generic-worker.bat script.
                                             [default: false]
+          disableOOMProtection              If true, the worker will continue to monitor system
+                                            memory usage, but will not abort tasks when the
+                                            system memory usage hits the minAvailableMemoryBytes
+                                            AND maxMemoryUsagePercent for longer than
+                                            allowedHighMemoryDurationSecs seconds.
+                                            [default: false]
           downloadsDir                      The directory to cache downloaded files for
                                             populating preloaded caches and readonly mounts. The
                                             directory will be created if it does not exist. This
                                             may be a relative path to the current directory, or
                                             an absolute path. [default: "downloads"]
-          enableInteractive                 Enables interactive mode. This allows an
-                                            interactive shell session to run on the worker.
-                                            [default: false]
+          d2gConfig                         D2G-specific (Docker Worker to Generic Worker payload
+                                            transformation) configuration. This allows finer tuning
+                                            of the internal D2G payload translation. Available
+                                            config with provided defaults:
+                                              * enableD2G - Enables D2G. [default: false]
+                                              * allowChainOfTrust - Allows Chain of Trust. [default: true]
+                                              * allowDisableSeccomp - Allows disabling Seccomp. [default: true]
+                                              * allowGPUs - Allows the use of NVIDIA GPUs. [default: false]
+                                              * allowHostSharedMemory - Allows Host Shared Memory. [default: true]
+                                              * allowInteractive - Allows Interactive. [default: true]
+                                              * allowKVM - Allows KVM. [default: true]
+                                              * allowLoopbackAudio - Allows Loopback Audio. [default: true]
+                                              * allowLoopbackVideo - Allows Loopback Video. [default: true]
+                                              * allowPrivileged - Allows Privileged. [default: true]
+                                              * allowPtrace - Allows Ptrace. [default: true]
+                                              * allowTaskclusterProxy - Allows Taskcluster Proxy. [default: true]
+                                              * gpus - The NVIDIA GPUs to make available to the running container.
+                                                Only used if allowGPUs is true. [default: "all"]
+                                              * logTranslation (unused) - Logs the D2G-translated task definition to the task logs.
+                                                [default: true]
+          enableChainOfTrust                Enables the Chain of Trust feature to be used in the
+                                            task payload. [default: true]
+          enableLiveLog                     Enables the LiveLog feature to be used in the task
+                                            payload. [default: true]
+          enableMetadata                    Enables the Metadata feature to have generic worker
+                                            write out a file "generic-worker-metadata.json"
+                                            (in the current working directory of the generic
+                                            worker process) containing information about the
+                                            last task run. [default: true]
+          enableMounts                      Enables the Mounts feature to be used in the task
+                                            payload. [default: true]
+          enableOSGroups                    Enables the OS Groups feature to be used in the task
+                                            payload. [default: true]
+          enableResourceMonitor             Enables the Resource Monitor feature to be used in
+                                            the task payload. [default: true]
+          enableTaskclusterProxy            Enables the Taskcluster Proxy feature to be used in
+                                            the task payload. [default: true]
+          enableInteractive                 Enables the Interactive feature to be used in the
+                                            task payload. [default: true]
+          enableLoopbackAudio               Enables the Loopback Audio feature to be used in the
+                                            task payload. [default: true]
+          enableLoopbackVideo               Enables the Loopback Video feature to be used in the
+                                            task payload. [default: true]
+          enableRunTaskAsCurrentUser        Enables the Run Task As Current User feature to be
+                                            used in the task payload. [default: true]
+          headlessTasks                     If true, no dedicated graphical session will be available to tasks.
+                                            There will also be no reboots between tasks and multiple workers
+                                            can be run on the same host. Useful for tasks that don't require
+                                            a graphical session, such as software builds. [default: false]
           idleTimeoutSecs                   How many seconds to wait without getting a new
                                             task to perform, before the worker process exits.
                                             An integer, >= 0. A value of 0 means "never reach
                                             the idle state" - i.e. continue running
-                                            indefinitely. See also shutdownMachineOnIdle.
+                                            indefinitely. When running with worker-runner, the
+                                            worker checks with Worker Manager before shutting
+                                            down; if Worker Manager says the worker is still
+                                            needed (e.g. to satisfy minCapacity), the idle
+                                            timer resets instead of shutting down.
+                                            See also shutdownMachineOnIdle.
                                             [default: 0]
           instanceID                        The EC2 instance ID of the worker. Used by chain of trust.
           instanceType                      The EC2 instance Type of the worker. Used by chain of trust.
@@ -150,6 +240,41 @@ and reports back results to the queue.
           livelogPortBase                   Set the base port number for livelog. Livelog requires two
                                             ports: livelogPortBase & livelogPortBase + 1 are used.
                                             [default: 60098]
+          livelogExposePort                 When not using websocktunnel, livelog would be exposed using this port.
+                                            If it is set to 0, logs would be exposed using a random port.
+                                            [default: 0]
+          loopbackAudioDeviceNumber         The audio loopback device number. The resulting devices inside /dev/snd
+                                            will take the form controlC<DEVICE_NUMBER>, pcmC<DEVICE_NUMBER>D0c,
+                                            pcmC<DEVICE_NUMBER>D0p, pcmC<DEVICE_NUMBER>D1c, pcmC<DEVICE_NUMBER>D1p
+                                            where <DEVICE_NUMBER> is an integer between 0 and 31.
+                                            [default: 16]
+          loopbackVideoDeviceNumber         The video loopback device number. Its value will take the form
+                                            /dev/video<DEVICE_NUMBER> where <DEVICE_NUMBER> is an integer
+                                            between 0 and 255. This setting may be used to change it.
+                                            [default: 0]
+          maxMemoryUsagePercent             A percent used by the resource monitor to determine
+                                            when to abort a task due to high memory usage.
+                                            This is a relative value, meaning that it is
+                                            relative to the total memory available on the
+                                            worker. For example, if the value is 90, then
+                                            the worker will abort a task if the memory
+                                            usage is at 90% or higher for longer than
+                                            allowedHighMemoryDurationSecs seconds. Can be used
+                                            in conjunction with minAvailableMemoryBytes.
+                                            Does nothing if disableOOMProtection is set to true.
+                                            [default: 90]
+          maxTaskRunTime                    The maximum value allowed for maxRunTime on generic-worker payloads.
+                                            [default: 86400]
+          minAvailableMemoryBytes           Number of bytes the resource monitor uses to
+                                            determine when to abort a task due to high
+                                            memory usage. This is an absolute number of bytes
+                                            needed of available memory before aborting the task.
+                                            For example, if the value is 524288000, then the worker will
+                                            abort a task if the memory available is 500MiB or less
+                                            for longer than allowedHighMemoryDurationSecs seconds.
+                                            Can be used in conjunction with maxMemoryUsagePercent.
+                                            Does nothing if disableOOMProtection is set to true.
+                                            [default: 524288000] (500MiB)
           numberOfTasksToRun                If zero, run tasks indefinitely. Otherwise, after
                                             this many tasks, exit. [default: 0]
           privateIP                         The private IP of the worker, used by chain of trust.
@@ -173,12 +298,7 @@ and reports back results to the queue.
                                             should apply to all generated users (and thus all
                                             tasks) and be run as the task user itself. This
                                             option does *not* support running a command as
-                                            Administrator. Furthermore, even if
-                                            runTasksAsCurrentUser is true, the script will still
-                                            be executed as the task user, rather than the
-                                            current user (that runs the generic-worker process).
-          runTasksAsCurrentUser             If true, users will still be created for tasks, but
-                                            tasks will be executed as the current OS user. [default: false]
+                                            Administrator.
           sentryProject                     The project name used in https://sentry.io for
                                             reporting worker crashes. Permission to publish
                                             crash reports is granted via the scope
@@ -252,22 +372,27 @@ and reports back results to the queue.
            config setting disableReboots is set to true - in either code this exit code will
            be issued.
     68     The generic-worker hit its idle timeout limit (see config settings idleTimeoutSecs
-           and shutdownMachineOnIdle).
+           and shutdownMachineOnIdle). When running with worker-runner, this only occurs if
+           Worker Manager also confirms the worker should terminate.
     69     Worker panic - either a worker bug, or the environment is not suitable for running
            a task, e.g. a file cannot be written to the file system, or something else did
            not work that was required in order to execute a task. See config setting
            shutdownMachineOnInternalError.
-    70     A new deploymentId has been issued in the AWS worker type configuration, meaning
-           this worker environment is no longer up-to-date. Typcially workers should
-           terminate.
+    70     Worker Manager advised this worker that it is no longer needed and should be
+           terminated.
     71     The worker was terminated via an interrupt signal (e.g. Ctrl-C pressed).
-    72     The worker is running on spot infrastructure in AWS EC2 and has been served a
+    72     The worker is running on spot infrastructure and has been served a
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.
     75     Not able to create an ed25519 key pair.
+    76     Not able to copy --copy-file to a temporary file.
     77     Not able to apply required file access permissions to the generic-worker config
            file so that task users can't read from or write to it.
     78     Not able to connect to --worker-runner-protocol-pipe.
+    79     Not able to create file at --create-file path.
+    80     Not able to create directory at --create-dir path.
+    81     Not able to unarchive --archive-src to --archive-dst.
+    82     Missing ed25519 private key. Did you run generic-worker new-ed25519-keypair?
 ```
 <!-- HELP END -->
 
@@ -309,7 +434,7 @@ Then cd into the source directory, and run:
 ./build.sh -t
 ```
 
-Note that this will require `sudo` access on Linux, unless you set `GW_TESTS_RUN_AS_CURRENT_USER` (see below).
+Note that this will require `sudo` access on Linux.
 
 Most tests run without needing credentials, but some will skip or fail in that circumstance.
 To run all tests, you will need to provide Taskcluster credentials.

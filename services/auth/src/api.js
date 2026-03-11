@@ -1,13 +1,39 @@
-const { APIBuilder, paginateResults } = require('taskcluster-lib-api');
-const scopeUtils = require('taskcluster-lib-scopes');
-const { UNIQUE_VIOLATION } = require('taskcluster-lib-postgres');
-const slugid = require('slugid');
-const _ = require('lodash');
-const signaturevalidator = require('./signaturevalidator');
-const ScopeResolver = require('./scoperesolver');
-const Hashids = require('hashids/cjs');
-const { modifyRoles } = require('../src/data');
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import scopeUtils from 'taskcluster-lib-scopes';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import slugid from 'slugid';
+import _ from 'lodash';
+import createSignatureValidator from './signaturevalidator.js';
+import ScopeResolver from './scoperesolver.js';
+import Hashids from 'hashids';
+import { modifyRoles } from '../src/data.js';
+import { awsBuilder } from './aws.js';
+import { gcpBuilder } from './gcp.js';
+import { azureBuilder } from './azure.js';
+import { sentryBuilder } from './sentry.js';
+import { websocktunnelBuilder } from './websocktunnel.js';
 
+export const AUDIT_ENTRY_TYPE = Object.freeze({
+  CLIENT: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+    ENABLED: 'client enabled',
+    DISABLED: 'client disabled',
+    ACCESS_TOKEN_RESET: 'access token reset',
+    EXPIRED: 'expired',
+  },
+  ROLE: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+  },
+  SECRET: {
+    CREATED: 'created',
+    UPDATED: 'updated',
+    DELETED: 'deleted',
+  },
+});
 /**
  * Helper to return a role as defined in the blob to one suitable for return.
  * This involves adding expandedRoles using the resolver.
@@ -40,6 +66,17 @@ const clientToJson = (client, context) => ({
 });
 
 /**
+ * Helper to return object of audit history as defined in the blob to one suitable for return.
+ */
+const auditToJson = (audit) => ({
+  clientId: audit?.client_id,
+  actionType: audit?.action_type,
+  created: audit?.created.toJSON(),
+  entityId: audit?.entity_id,
+  entityType: audit.entity_type,
+});
+
+/**
  * Helper to fetch roles
  * This involves building response for pagination
  */
@@ -51,7 +88,12 @@ const rolesResponseBuilder = async (that, req, res) => {
 
   // Assign the continuationToken
   if (req.query.continuationToken) {
-    continuationToken = hashids.decode(req.query.continuationToken);
+    try {
+      continuationToken = hashids.decode(req.query.continuationToken);
+    } catch (err) {
+      // hashids.decode will throw an error if token contains invalid characters
+      return res.reportError('InputError', 'Invalid continuationToken', {});
+    }
     // If continuationToken is invalid
     if (continuationToken.length === 0) {
       return res.reportError('InputError', 'Invalid continuationToken', {});
@@ -145,11 +187,12 @@ const builder = new APIBuilder({
     // An object containing {googleapis, auth, credentials} for interacting
     // with GCP.
     'gcp',
+    'monitor',
   ],
 });
 
 // Export API
-module.exports = builder;
+export default builder;
 
 /** List clients */
 builder.declare({
@@ -229,8 +272,8 @@ builder.declare({
     'You should store the `accessToken` from this API call as there is no',
     'other way to retrieve it.',
     '',
-    'If you loose the `accessToken` you can call `resetAccessToken` to reset',
-    'it, and a new `accessToken` will be returned, but you cannot retrieve the',
+    'If you lose the `accessToken` you can call `resetAccessToken` to reset',
+    'it, and a new `accessToken` will be returned. You cannot retrieve the',
     'current `accessToken`.',
     '',
     'If a client with the same `clientId` already exists this operation will',
@@ -278,6 +321,20 @@ builder.declare({
     return res.reportError('RequestConflict', 'Client already exists', {});
   }
 
+  this.monitor.log.auditEvent({
+    service: 'auth',
+    entity: 'client',
+    entityId: clientId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.CLIENT.CREATED,
+  });
+
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.CREATED,
+  );
   // Send pulse message
   await Promise.all([
     this.publisher.clientCreated({ clientId }),
@@ -289,6 +346,66 @@ builder.declare({
   let result = clientToJson(client, this);
   result.accessToken = this.db.decrypt({ value: client.encrypted_access_token }).toString('utf8');
   return res.reply(result);
+});
+
+builder.declare({
+  method: 'get',
+  route: '/audit/:entityType/:entityId',
+  query: {
+    ...paginateResults.query,
+  },
+  params: {
+    entityType: /^(client|role|secret|hook|worker-pool)$/,
+  },
+  name: 'getEntityHistory',
+  category: 'Audit',
+  output: 'get-entity-history-response.yml',
+  scopes: 'auth:audit-history:<entityType>',
+  stability: 'stable',
+  title: 'Get Entity History',
+  description: [
+    'Get entity history based on entity type and entity name',
+  ].join('\n'),
+}, async function(req, res) {
+
+  const entityType = req.params.entityType;
+  const entityId = req.params.entityId;
+
+  const { continuationToken, rows } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_combined_audit_history(null, entityId, entityType, size, offset),
+    maxLimit: 1000,
+  });
+
+  return res.reply({ auditHistory: rows.map(c => auditToJson(c)), continuationToken });
+});
+
+builder.declare({
+  method: 'get',
+  route: '/clients/:clientId/audit',
+  query: {
+    ...paginateResults.query,
+  },
+  name: 'listAuditHistory',
+  category: 'Audit',
+  output: 'get-entity-history-response.yml',
+  scopes: 'auth:client-audit-history:<clientId>',
+  stability: 'stable',
+  title: 'List Audit History',
+  description: [
+    'Get audit history of a client based on clientId.',
+  ].join('\n'),
+}, async function(req, res) {
+
+  let client_id = req.params.clientId;
+
+  const { continuationToken, rows } = await paginateResults({
+    query: req.query,
+    fetch: (size, offset) => this.db.fns.get_combined_audit_history(client_id, null, null, size, offset),
+    maxLimit: 1000,
+  });
+
+  return res.reply({ auditHistory: rows.map(c => auditToJson(c)), continuationToken });
 });
 
 /** Reset access token for client */
@@ -306,7 +423,7 @@ builder.declare({
     '`accessToken`, generate a new `accessToken` and return it from this',
     'call.',
     '',
-    'There is no way to retrieve an existing `accessToken`, so if you loose it',
+    'There is no way to retrieve an existing `accessToken`, so if you lose it',
     'you must reset the accessToken to acquire it again.',
   ].join('\n'),
 }, async function(req, res) {
@@ -339,6 +456,20 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
+  this.monitor.log.auditEvent({
+    service: 'auth',
+    entity: 'client',
+    entityId: clientId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.CLIENT.ACCESS_TOKEN_RESET,
+  });
+
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.ACCESS_TOKEN_RESET,
+  );
   // Publish message on pulse to clear caches...
   await Promise.all([
     this.publisher.clientUpdated({ clientId }),
@@ -418,6 +549,21 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
+  this.monitor.log.auditEvent({
+    service: 'auth',
+    entity: 'client',
+    entityId: clientId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.CLIENT.UPDATED,
+  });
+
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.UPDATED,
+  );
+
   // Publish message on pulse to clear caches...
   await Promise.all([
     this.publisher.clientUpdated({ clientId }),
@@ -474,6 +620,20 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
+  this.monitor.log.auditEvent({
+    service: 'auth',
+    entity: 'client',
+    entityId: clientId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.CLIENT.ENABLED,
+  });
+
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.ENABLED,
+  );
   // Publish message on pulse to clear caches...
   await Promise.all([
     this.publisher.clientUpdated({ clientId }),
@@ -529,6 +689,20 @@ builder.declare({
     return res.reportError('ResourceNotFound', 'Client not found', {});
   }
 
+  this.monitor.log.auditEvent({
+    service: 'auth',
+    entity: 'client',
+    entityId: clientId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.CLIENT.DISABLED,
+  });
+
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.DISABLED,
+  );
   // Publish message on pulse to clear caches...
   await Promise.all([
     this.publisher.clientUpdated({ clientId }),
@@ -567,6 +741,21 @@ builder.declare({
   await req.authorize({ clientId });
 
   await this.db.fns.delete_client(clientId);
+
+  this.monitor.log.auditEvent({
+    service: 'auth',
+    entity: 'client',
+    entityId: clientId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.CLIENT.DELETED,
+  });
+
+  await this.db.fns.insert_auth_audit_history(
+    clientId,
+    'client',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.CLIENT.DELETED,
+  );
 
   await Promise.all([
     this.publisher.clientDeleted({ clientId }),
@@ -768,6 +957,22 @@ builder.declare({
         roles.push(role);
       }
     });
+
+    this.monitor.log.auditEvent({
+      service: 'auth',
+      entity: 'role',
+      entityId: roleId,
+      clientId: await req.clientId(),
+      action: AUDIT_ENTRY_TYPE.ROLE.CREATED,
+    });
+
+    await this.db.fns.insert_auth_audit_history(
+      roleId,
+      'role',
+      await req.clientId(),
+      AUDIT_ENTRY_TYPE.ROLE.CREATED,
+    );
+
   } catch (err) {
     switch (err.code) {
       case 'InvalidScopeError':
@@ -854,6 +1059,21 @@ builder.declare({
       role.description = input.description;
       role.last_modified = new Date();
     });
+
+    this.monitor.log.auditEvent({
+      service: 'auth',
+      entity: 'role',
+      entityId: roleId,
+      clientId: await req.clientId(),
+      action: AUDIT_ENTRY_TYPE.ROLE.UPDATED,
+    });
+
+    await this.db.fns.insert_auth_audit_history(
+      roleId,
+      'role',
+      await req.clientId(),
+      AUDIT_ENTRY_TYPE.ROLE.UPDATED,
+    );
   } catch (err) {
     switch (err.code) {
       case 'InvalidScopeError':
@@ -901,6 +1121,21 @@ builder.declare({
       roles.splice(i, 1);
     }
   });
+
+  this.monitor.log.auditEvent({
+    service: 'auth',
+    entity: 'role',
+    entityId: roleId,
+    clientId: await req.clientId(),
+    action: AUDIT_ENTRY_TYPE.ROLE.DELETED,
+  });
+
+  await this.db.fns.insert_auth_audit_history(
+    roleId,
+    'role',
+    await req.clientId(),
+    AUDIT_ENTRY_TYPE.ROLE.DELETED,
+  );
 
   await Promise.all([
     this.publisher.roleDeleted({ roleId }),
@@ -951,11 +1186,11 @@ builder.declare({
 
 // Load aws and azure API implementations, these loads API and declares methods
 // on the API object exported from this file
-require('./aws');
-require('./azure');
-require('./sentry');
-require('./websocktunnel');
-require('./gcp');
+awsBuilder(builder);
+azureBuilder(builder);
+sentryBuilder(builder);
+websocktunnelBuilder(builder);
+gcpBuilder(builder);
 
 /** Get all client information */
 builder.declare({
@@ -1014,7 +1249,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   await new Promise(next => APIBuilder.middleware.remoteAuthentication({
-    signatureValidator: signaturevalidator.createSignatureValidator({
+    signatureValidator: createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
           throw new Error('Client with clientId \'' + clientId + '\' not found');
@@ -1071,7 +1306,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   await new Promise(next => APIBuilder.middleware.remoteAuthentication({
-    signatureValidator: signaturevalidator.createSignatureValidator({
+    signatureValidator: createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
           throw new Error('Client with clientId \'' + clientId + '\' not found');

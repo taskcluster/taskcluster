@@ -1,13 +1,13 @@
-const util = require('util');
-const stringify = require('json-stable-stringify');
-const path = require('path');
-const { omit } = require('lodash');
-const { compile } = require('ejs');
-const { REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile } = require('../../utils');
-const rimraf = util.promisify(require('rimraf'));
-const mkdirp = require('mkdirp');
+import stringify from 'json-stable-stringify';
+import path from 'path';
+import lodash from 'lodash';
+const { omit } = lodash;
+import { compile } from 'ejs';
+import { REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile } from '../../utils/index.js';
+import { rimraf } from 'rimraf';
+import mkdirp from 'mkdirp';
 
-exports.tasks = [{
+export const tasks = [{
   title: 'Generate Taskcluster-Client-Web',
   requires: ['apis'],
   provides: ['target-taskcluster-client-web'],

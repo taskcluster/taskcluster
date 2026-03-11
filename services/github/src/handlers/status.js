@@ -1,11 +1,19 @@
-const { CONCLUSIONS, CHECKLOGS_TEXT, CHECKRUN_TEXT, LIVE_BACKING_LOG_ARTIFACT_NAME,
-  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME, CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
-  CHECK_RUN_STATES, TASK_STATE_TO_CHECK_RUN_STATE,
-} = require('../constants');
-const QueueLock = require('../queue-lock');
-const { tailLog, markdownLog, markdownAnchor } = require('../utils');
-const { requestArtifact } = require('./requestArtifact');
-const { taskUI, makeDebug, taskLogUI, GithubCheck } = require('./utils');
+import {
+  CONCLUSIONS,
+  CHECKLOGS_TEXT,
+  CHECKRUN_TEXT,
+  LIVE_BACKING_LOG_ARTIFACT_NAME,
+  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME,
+  CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
+  CHECK_RUN_STATES,
+  TASK_STATE_TO_CHECK_RUN_STATE,
+  CHECK_TASK_GROUP_TEXT,
+} from '../constants.js';
+
+import QueueLock from '../queue-lock.js';
+import { markdownLog, markdownAnchor, extractLog } from '../utils.js';
+import { requestArtifact } from './requestArtifact.js';
+import { taskUI, makeDebug, taskLogUI, GithubCheck, getTimeDifference, taskGroupUI, buildUrl, buildLogUrl } from './utils.js';
 
 /**
  * Tracking events order to prevent older events from overwriting newer updates
@@ -34,8 +42,8 @@ const qLock = new QueueLock({
  *  taskException: https://docs.taskcluster.net/docs/reference/platform/taskcluster-queue/references/events#taskException
  * @returns {Promise<void>}
  **/
-async function statusHandler(message) {
-  const { taskGroupId, state, runs, taskId } = message.payload.status;
+export async function statusHandler(message) {
+  const { taskGroupId, state, runs, taskId, retriesLeft } = message.payload.status;
   let { runId } = message.payload;
   runId = typeof runId === 'undefined' ? 0 : runId;
   const { reasonResolved } = runs[runId] || {};
@@ -46,7 +54,12 @@ async function statusHandler(message) {
   let debug = makeDebug(this.monitor, { taskGroupId, taskId });
   debug(`Handling state change for task ${taskId} in group ${taskGroupId}, reason=${reasonResolved || state || 'taskDefined'}`, { exchange: message.exchange });
 
-  const conclusion = CONCLUSIONS[reasonResolved || state];
+  // check if it was the last try
+  let conclusion = CONCLUSIONS[reasonResolved || state];
+  if (reasonResolved === 'intermittent-task' && retriesLeft === 0) {
+    conclusion = 'failure';
+    debug(`Intermittent task ${taskId} has no retries left, marking as failure instead of neutral`);
+  }
   const checkRunStatus = conclusion ? CHECK_RUN_STATES.COMPLETED : TASK_STATE_TO_CHECK_RUN_STATE[state];
 
   let [build] = await this.context.db.fns.get_github_build_pr(taskGroupId);
@@ -157,9 +170,18 @@ async function statusHandler(message) {
       output_summary: outputSummary || taskDefinition.metadata.description,
       output_annotations: customCheckRunAnnotations,
     });
+
     const output = githubCheck.output;
-    output.addText(markdownAnchor(CHECKRUN_TEXT, taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId)));
-    output.addText(markdownAnchor(
+
+    const CHECK_RUN_TEXT_OUTPUT = markdownAnchor(
+      CHECKRUN_TEXT,
+      taskUI(
+        this.context.cfg.taskcluster.rootUrl,
+        taskGroupId,
+        taskId,
+      ),
+    );
+    const CHECK_LOGS_TEXT_OUTPUT = markdownAnchor(
       CHECKLOGS_TEXT,
       taskLogUI(
         this.context.cfg.taskcluster.rootUrl,
@@ -169,15 +191,66 @@ async function statusHandler(message) {
         // generic worker uses `task.payload.logs.live`
         taskDefinition.payload?.logs?.live || taskDefinition.payload?.log,
       ),
-    ));
+    );
+    const CHECK_TASK_GROUP_TEXT_OUTPUT = markdownAnchor(
+      CHECK_TASK_GROUP_TEXT,
+      taskGroupUI(
+        this.context.cfg.taskcluster.rootUrl,
+        taskGroupId,
+      ),
+    );
+
+    output.addText(`${CHECK_RUN_TEXT_OUTPUT} | ${CHECK_LOGS_TEXT_OUTPUT} | ${CHECK_TASK_GROUP_TEXT_OUTPUT}`);
+
+    if (runs.length > 0) {
+      const taskExecutionTime = getTimeDifference(runs[runId]?.started, runs[runId]?.resolved);
+      output.addText(`### Task Status`);
+      output.addText(`Started: ${runs[runId]?.started ?? "n/a"}`);
+      output.addText(`Resolved: ${runs[runId]?.resolved ?? "n/a"}`);
+      output.addText(`Task Execution Time: ${taskExecutionTime ?? "n/a"}`);
+      output.addText(`Task Status: **${runs[runId]?.state ?? "n/a"}**`);
+      output.addText(`Reason Resolved: **${runs[runId]?.reasonResolved ?? "n/a"}**`);
+      output.addText(`TaskId: **${taskId}**`);
+      output.addText(`RunId: **${runId}**`);
+    }
+
+    try {
+      const artifactList = await this.queueClient.listArtifacts(taskId, runId, { limit: 50 });
+
+      if (artifactList.artifacts.length > 0) {
+        output.addText(`### Artifacts`);
+      }
+
+      artifactList.artifacts.forEach(element => {
+
+        let artifactUrl;
+
+        if (element.name === 'public/logs/live_backing.log' || element.name === 'public/logs/live.log') {
+          artifactUrl = buildLogUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
+        } else {
+          artifactUrl = buildUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
+        }
+
+        const ARTIFACT_LINK = markdownAnchor(
+          element.name,
+          artifactUrl,
+        );
+        output.addText(`\\- ${ARTIFACT_LINK}`);
+      });
+    } catch (e) {
+      if (e.statusCode !== 404) {
+        await createExceptionComment(e);
+      }
+    }
+
     if (customCheckRunText) {
       output.addText(customCheckRunText);
     }
     if (liveLogText) {
-      output.addText(markdownLog(tailLog(liveLogText, 250, githubCheck.output.getRemainingMaxSize())));
+      output.addText(markdownLog(extractLog(liveLogText, 20, 200, githubCheck.output.getRemainingMaxSize())));
     }
 
-    let [checkRun] = await this.context.db.fns.get_github_check_by_task_id(taskId);
+    let [checkRun] = await this.context.db.fns.get_github_check_by_task_group_and_task_id(taskGroupId, taskId);
     const isRerun = checkRunStatus === CHECK_RUN_STATES.IN_PROGRESS && runId > 0;
 
     if (checkRun && !isRerun) {
@@ -209,6 +282,4 @@ async function statusHandler(message) {
   }
 }
 
-module.exports = {
-  statusHandler,
-};
+export default statusHandler;

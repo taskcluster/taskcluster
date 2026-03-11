@@ -11,15 +11,31 @@ spec:
     metadata:
       annotations:
         checksum/secret: '{{ include (print $.Template.BasePath "/${projectName}-secret.yaml") . | sha256sum }}'
-      labels: {$eval: labels}
+      labels:
+        $if: 'exposesMetrics'
+        then:
+          $merge:
+            - {$eval: labels}
+            - 'prometheus.io/scrape': 'true'
+              'prometheus.io/port': '9100'
+        else:
+          {$eval: labels}
     spec:
       serviceAccountName: ${projectName}
       imagePullSecrets: IMAGE_PULL_SECRETS_STRING
+      # allow server to terminate gracefully while still serving existing connections
+      # new connections would be rejected as server will be closed
+      # and under normal conditions pod will stop faster than this timeout
+      terminationGracePeriodSeconds: 210
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: ${projectName}-${lowercase(procName)}
         image: '{{ .Values.dockerImage }}'
         imagePullPolicy: Always
         args: ['${serviceName}/${procName}']
+        securityContext:
+          allowPrivilegeEscalation: false
         resources:
           requests:
             cpu: '{{ .Values.${configName}.procs.${configProcName}.cpu }}'
@@ -29,7 +45,7 @@ spec:
             - $if: 'needsService'
               then:
                 name: PORT
-                value: '80'
+                value: '8080'
             - name: TASKCLUSTER_ROOT_URL
               value: '{{ .Values.rootUrl }}'
             - name: USE_KUBERNETES_DNS_SERVICE_DISCOVERY
@@ -39,28 +55,48 @@ spec:
         envFrom:
             - secretRef:
                 name: ${projectName}
+            - configMapRef:
+                name: ${projectName}
         ports:
         - $if: 'needsService'
           then:
-            containerPort: 80
+            containerPort: 8080
+        - $if: 'exposesMetrics'
+          then:
+            name: prometheus
+            containerPort: 9100
+            protocol: TCP
         readinessProbe:
           $if: 'needsService'
           then:
             httpGet:
               path: ${readinessPath}
-              port: 80
+              port: 8080
             timeoutSeconds: 5
             periodSeconds: 10
-            initialDelaySeconds: 3
-        # After 24 hours, we start randomly deciding to exit the container.
-        # Taskcluster services are created with the assumption that they will
-        # not run indefinitely.
+            initialDelaySeconds: 6
         livenessProbe:
-          exec:
-            command:
-            - /bin/sh
-            - -c
-            - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
-          initialDelaySeconds: 86400
-          periodSeconds: 60
-          failureThreshold: 1
+          $if: 'needsService'
+          then:
+            httpGet:
+              path: ${readinessPath}
+              port: 8080
+            timeoutSeconds: 3
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          else:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - exit $(awk 'BEGIN{srand(); print (rand() > 0.3)}')
+            initialDelaySeconds: 432000 # 5 days
+            periodSeconds: 60
+            failureThreshold: 1
+        # allow graceful termination of existing connections and let them finish
+        lifecycle:
+          $if: 'needsService'
+          then:
+            preStop:
+              exec:
+                command: ['/bin/sh', '-c', 'sleep 120']

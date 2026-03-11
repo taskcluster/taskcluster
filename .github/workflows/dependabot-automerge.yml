@@ -4,11 +4,11 @@ on: pull_request
 jobs:
   dependabot:
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
     steps:
       - name: Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v1.4.0
+        uses: dependabot/fetch-metadata@v2.5.0
         with:
           github-token: "${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}"
       - name: Approve a PR

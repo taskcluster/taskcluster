@@ -1,11 +1,11 @@
-const assert = require('assert');
-const helper = require('./helper');
-const { modifyRoles } = require('../src/data');
-const slugid = require('slugid');
-const _ = require('lodash');
-const assume = require('assume');
-const testing = require('taskcluster-lib-testing');
-const taskcluster = require('taskcluster-client');
+import assert from 'assert';
+import helper from './helper.js';
+import { modifyRoles } from '../src/data.js';
+import slugid from 'slugid';
+import _ from 'lodash';
+import assume from 'assume';
+import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
 
 helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) {
   helper.withCfg(mock, skipping);
@@ -296,6 +296,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     query.limit = 1;
     query.continuationToken = 'FOOBAR';
 
+    await helper.apiClient.listRoleIds(query)
+      .then(() => assert(false, 'Expected error'),
+        err => assert(err.statusCode === 400, 'Expected 400'));
+
+    // testing unexpected characters that make hashids.decode throw error
+    query.continuationToken = '@@something##';
     await helper.apiClient.listRoleIds(query)
       .then(() => assert(false, 'Expected error'),
         err => assert(err.statusCode === 400, 'Expected 400'));

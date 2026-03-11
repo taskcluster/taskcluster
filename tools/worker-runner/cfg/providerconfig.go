@@ -12,7 +12,7 @@ import (
 // plus any additional provider-specific properties.
 type ProviderConfig struct {
 	ProviderType string
-	Data         map[string]interface{}
+	Data         map[string]any
 }
 
 func (pc *ProviderConfig) UnmarshalYAML(node *yaml.Node) error {
@@ -40,9 +40,9 @@ func (pc *ProviderConfig) UnmarshalYAML(node *yaml.Node) error {
 //
 // Structs should be tagged with `provider:"name"`, with the name defaulting to the
 // lowercased version of the field name.
-func (pc *ProviderConfig) Unpack(out interface{}) error {
+func (pc *ProviderConfig) Unpack(out any) error {
 	outval := reflect.ValueOf(out)
-	if outval.Kind() != reflect.Ptr || outval.IsNil() {
+	if outval.Kind() != reflect.Pointer || outval.IsNil() {
 		return fmt.Errorf("expected a pointer, got %s", outval.Kind())
 	}
 	destval := reflect.Indirect(outval)
@@ -51,7 +51,7 @@ func (pc *ProviderConfig) Unpack(out interface{}) error {
 	}
 	desttype := destval.Type()
 	numfield := desttype.NumField()
-	for i := 0; i < numfield; i++ {
+	for i := range numfield {
 		// get the expected property name
 		field := desttype.Field(i)
 		var name string
@@ -65,14 +65,14 @@ func (pc *ProviderConfig) Unpack(out interface{}) error {
 		// get the value
 		val, ok := pc.Data[name]
 		if !ok {
-			return fmt.Errorf("Configuration value `provider.%s` not found", name)
+			return fmt.Errorf("configuration value `provider.%s` not found", name)
 		}
 
 		// check types and set the struct field
 		destfield := destval.Field(i)
 		gotval := reflect.ValueOf(val)
 		if destfield.Type() != gotval.Type() {
-			return fmt.Errorf("Configuration value `provider.%s` should have type %s", name, destfield.Type())
+			return fmt.Errorf("configuration value `provider.%s` should have type %s", name, destfield.Type())
 		}
 		destfield.Set(gotval)
 	}

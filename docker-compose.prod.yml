@@ -16,6 +16,13 @@ services:
       - cron
       - auth
       - auth-cron
+  auth-cron-purgeAuditHistory:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - cron
+      - auth
+      - auth-cron
   built-in-workers-server:
     environment:
       NODE_ENV: production
@@ -117,6 +124,13 @@ services:
       - background
       - queue
       - queue-background
+  queue-background-workerRemovedResolver:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - background
+      - queue
+      - queue-background
   queue-background-deadlineResolver:
     environment:
       NODE_ENV: production
@@ -173,6 +187,13 @@ services:
       - cron
       - queue
       - queue-cron
+  queue-background-workerMetrics:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - background
+      - queue
+      - queue-background
   secrets-web:
     environment:
       NODE_ENV: production
@@ -187,6 +208,13 @@ services:
     environment:
       NODE_ENV: production
   web-server-cron-scanner:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - cron
+      - web-server
+      - web-server-cron
+  web-server-cron-cleanup-session-storage:
     environment:
       NODE_ENV: production
     profiles:
@@ -239,6 +267,13 @@ services:
       - worker-manager
       - worker-manager-cron
   worker-manager-cron-expire-worker-pools:
+    environment:
+      NODE_ENV: production
+    profiles:
+      - cron
+      - worker-manager
+      - worker-manager-cron
+  worker-manager-cron-expire-launch-configs:
     environment:
       NODE_ENV: production
     profiles:

@@ -20,11 +20,11 @@ func MergeEnvLists(envLists ...*[]string) (*[]string, error) {
 		}
 		for _, env := range *envList {
 			if utf8.RuneCountInString(env) > 32767 {
-				return nil, fmt.Errorf("Env setting is more than 32767 runes: %v", env)
+				return nil, fmt.Errorf("env setting is more than 32767 runes: %v", env)
 			}
 			spl := strings.SplitN(env, "=", 2)
 			if len(spl) != 2 {
-				return nil, fmt.Errorf("Could not interpret string %q as `key=value`", env)
+				return nil, fmt.Errorf("could not interpret string %q as `key=value`", env)
 			}
 			newVarName := spl[0]
 			newVarValue := spl[1]
