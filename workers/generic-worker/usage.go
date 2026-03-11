@@ -36,7 +36,8 @@ and reports back results to the queue.
   Usage:
     generic-worker run                      [--config         CONFIG-FILE]
                                             [--with-worker-runner]
-                                            [--worker-runner-protocol-pipe PIPE]` + installServiceSummary() + `
+                                            [--worker-runner-protocol-pipe PIPE]
+    generic-worker run-worker               [--config CONFIG-FILE]` + installServiceSummary() + `
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE` + customTargetsSummary() + `
     generic-worker copy-to-temp-file        --copy-file COPY-FILE
@@ -52,6 +53,9 @@ and reports back results to the queue.
     run                                     Runs the generic-worker.  Pass --with-worker-runner if
                                             running under that service, otherwise generic-worker will
                                             not communicate with worker-runner.
+    run-worker                              Run the worker loop directly (for testing).
+                                            Expects config to be pre-loaded, mock services
+                                            running, and next-task-user.json present.
     show-payload-schema                     Each taskcluster task defines a payload to be
                                             interpreted by the worker that executes it. This
                                             payload is validated against a json schema baked

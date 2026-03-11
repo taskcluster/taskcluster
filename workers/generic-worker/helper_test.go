@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -99,13 +100,38 @@ func execute(t *testing.T, expectedExitCode ExitCode) {
 	if err != nil {
 		t.Fatalf("Test setup failure - could not write to file %q: %v", trcPath, err)
 	}
-	exitCode := RunWorker()
+
+	var exitCode ExitCode
+	if binaryPath := os.Getenv("GW_BINARY_UNDER_TEST"); binaryPath != "" {
+		exitCode = executeExternalBinary(t, binaryPath)
+	} else {
+		exitCode = RunWorker()
+	}
 
 	if exitCode != expectedExitCode {
 		t.Fatalf("Something went wrong executing worker - got exit code %v but was expecting exit code %v", exitCode, expectedExitCode)
 	} else {
 		t.Logf("Worker exited with exit code %v as required.", exitCode)
 	}
+}
+
+func executeExternalBinary(t *testing.T, binaryPath string) ExitCode {
+	t.Helper()
+	cmd := exec.Command(binaryPath, "run-worker", "--config", configFile.Path)
+	cmd.Dir = cwd
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	// Pass through environment
+	cmd.Env = os.Environ()
+
+	err := cmd.Run()
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			return ExitCode(exitErr.ExitCode())
+		}
+		t.Fatalf("Error running external binary %v: %v", binaryPath, err)
+	}
+	return TASKS_COMPLETE
 }
 
 func testTask(t *testing.T) *tcqueue.TaskDefinitionRequest {
