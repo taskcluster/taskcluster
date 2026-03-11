@@ -1,7 +1,7 @@
 ##
 # Build /app
 
-FROM node:24.13.0 AS build
+FROM node:24.14.0 AS build
 
 RUN mkdir -p /base/cache
 ENV YARN_CACHE_FOLDER=/base/cache
@@ -42,7 +42,7 @@ ARG DOCKER_FLOW_VERSION
 RUN if [ -n "${DOCKER_FLOW_VERSION}" ]; then \
     echo "${DOCKER_FLOW_VERSION}" > version.json; \
 else \
-    echo \{\"version\": \"97.0.1\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json; \
+    echo \{\"version\": \"97.1.0\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json; \
 fi
 
 # Build the UI and discard everything else in that directory
@@ -62,7 +62,7 @@ RUN /bin/bash -c "\
 ##
 # build the final image
 
-FROM node:24.13.0-alpine AS image
+FROM node:24.14.0-alpine AS image
 RUN apk --no-cache add --update nginx bash
 COPY --from=build --chown=1000:1000 /base/app /app
 ENV HOME=/app

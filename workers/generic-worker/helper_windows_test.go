@@ -7,9 +7,44 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"testing"
 
+	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
 )
+
+// makeDirWorldWritable makes a directory writable by any user, so that
+// the multiuser engine task user can write to it. On Windows this
+// grants full control to Everyone via icacls.
+func makeDirWorldWritable(t *testing.T, dir string) {
+	t.Helper()
+	err := host.Run("icacls", dir, "/grant", "Everyone:(OI)(CI)F")
+	if err != nil {
+		t.Fatalf("Failed to grant Everyone access to %s: %v", dir, err)
+	}
+}
+
+// worldWritableTempDir creates a temporary directory that any user can
+// write to. On Windows, this uses the Public folder (retrieved via
+// SHGetKnownFolderPath) as the base, since os.TempDir() returns
+// C:\Windows\SystemTemp when running as SYSTEM, which is not writable
+// by regular users.
+func worldWritableTempDir(t *testing.T, pattern string) string {
+	t.Helper()
+	publicDir, err := win32.GetFolder(0, &win32.FOLDERID_Public, 0)
+	if err != nil {
+		t.Fatalf("Failed to get Public folder path: %v", err)
+	}
+	dir, err := os.MkdirTemp(publicDir, pattern)
+	if err != nil {
+		t.Fatalf("Failed to create temp dir in %s: %v", publicDir, err)
+	}
+	t.Cleanup(func() {
+		os.RemoveAll(dir)
+	})
+	makeDirWorldWritable(t, dir)
+	return dir
+}
 
 func helloGoodbye() []string {
 	return []string{
@@ -40,20 +75,20 @@ func returnExitCode(exitCode uint) []string {
 	}
 }
 
-func incrementCounterInCache() []string {
+func incrementCounterInCacheDir(dir string) []string {
 	// The `echo | set /p dummyName...` construction is to avoid printing a
 	// newline. See answer by xmechanix on:
 	// http://stackoverflow.com/questions/7105433/windows-batch-echo-without-new-line/19468559#19468559
-	command := `
+	command := fmt.Sprintf(`
 		setlocal EnableDelayedExpansion
-		if exist my-task-caches\test-modifications\counter (
-		  set /p counter=<my-task-caches\test-modifications\counter
+		if exist %s\counter (
+		  set /p counter=<%s\counter
 		  set /a counter=counter+1
-		  echo | set /p dummyName="!counter!" > my-task-caches\test-modifications\counter
+		  echo | set /p dummyName="!counter!" > %s\counter
 		) else (
-		  echo | set /p dummyName="1" > my-task-caches\test-modifications\counter
+		  echo | set /p dummyName="1" > %s\counter
 		)
-`
+`, dir, dir, dir, dir)
 	return []string{command}
 }
 

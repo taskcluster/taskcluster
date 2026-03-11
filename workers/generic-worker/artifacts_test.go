@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -1161,4 +1162,68 @@ func TestObjectArtifact(t *testing.T) {
 
 	td := testTask(t)
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
+}
+
+func TestFileArtifactWithAbsolutePath(t *testing.T) {
+
+	setup(t)
+	validateArtifacts(t,
+
+		// what appears in task payload
+		[]Artifact{
+			{
+				Expires: inAnHour,
+				Path:    filepath.Join(testdataDir, "SampleArtifacts", "b", "c", "d.jpg"),
+				Type:    "file",
+				Name:    "public/build/firefox.exe",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/build/firefox.exe",
+					Expires: inAnHour,
+				},
+				ContentType:     "image/jpeg",
+				ContentEncoding: "identity",
+				ContentLength:   17,
+				Path:            filepath.Join(testdataDir, "SampleArtifacts", "b", "c", "d.jpg"),
+			},
+		})
+}
+
+// TestFileArtifactUploadFromAbsolutePath verifies that a task can create
+// a file at an absolute path outside the task directory and publish it
+// as an artifact.
+func TestFileArtifactUploadFromAbsolutePath(t *testing.T) {
+	setup(t)
+	absDir := worldWritableTempDir(t, t.Name())
+	absFile := filepath.Join(absDir, "artifact.txt")
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFileTo("SampleArtifacts/_/X.txt", absFile),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: absFile,
+				Type: "file",
+				Name: "public/abs-path-artifact.txt",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+	// Verify the artifact content matches the original file
+	expectedData, err := os.ReadFile(filepath.Join(testdataDir, "SampleArtifacts", "_", "X.txt"))
+	if err != nil {
+		t.Fatalf("Error reading source file: %v", err)
+	}
+	actualData := getArtifactContent(t, taskID, "public/abs-path-artifact.txt")
+	if string(expectedData) != string(actualData) {
+		t.Fatalf("Artifact content mismatch: expected %d bytes, got %d bytes", len(expectedData), len(actualData))
+	}
 }

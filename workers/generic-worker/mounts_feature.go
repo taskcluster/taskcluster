@@ -512,7 +512,7 @@ func (f *FileMount) FSContent() (FSContent, error) {
 }
 
 func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
-	target := filepath.Join(taskContext.TaskDir, w.Directory)
+	target := fileutil.AbsFrom(taskContext.TaskDir, w.Directory)
 	// cache already there?
 	if _, dirCacheExists := directoryCaches[w.CacheName]; dirCacheExists {
 		// bump counter
@@ -565,10 +565,11 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 			}
 		}
 	}
-	// Regardless of whether we are running as current user, grant task user access
-	// since the mounted folder sits inside the task directory of the task user,
-	// which is owned and controlled by the task user, even if commands execute as
-	// LocalSystem, the file system resources should still be owned by task user.
+	// Regardless of whether we are running as current user, grant task
+	// user access. The mounted folder may be inside the task directory
+	// or at an absolute path outside it. Either way, the file system
+	// resources should be owned by the task user, even if commands
+	// execute as LocalSystem.
 	err := exchangeDirectoryOwnership(taskMount, target, directoryCaches[w.CacheName])
 	if err != nil {
 		panic(err)
@@ -580,7 +581,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) error {
 func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 	cache := directoryCaches[w.CacheName]
 	cacheDir := cache.Location
-	taskCacheDir := filepath.Join(taskContext.TaskDir, w.Directory)
+	taskCacheDir := fileutil.AbsFrom(taskContext.TaskDir, w.Directory)
 	taskMount.Infof("Preserving cache: Moving %q to %q", taskCacheDir, cacheDir)
 	err := RenameCrossDevice(taskCacheDir, cacheDir)
 	if err != nil {
@@ -611,9 +612,10 @@ func (w *WritableDirectoryCache) Unmount(taskMount *TaskMount) error {
 		if evictErr != nil {
 			panic(evictErr)
 		}
-		// The cache directory inside the task (taskCacheDir) will in any case
-		// be cleaned up when task folder is deleted so no need to do anything
-		// with it.
+		// If taskCacheDir is a relative path inside the task directory,
+		// it will be cleaned up when the task folder is deleted. If it
+		// is an absolute path outside the task directory, the orphaned
+		// directory will remain until the machine is reimaged.
 		return Failure(fmt.Errorf("could not persist cache %q due to %v", cache.Key, err))
 	}
 	return nil
@@ -624,7 +626,7 @@ func (r *ReadOnlyDirectory) Mount(taskMount *TaskMount) error {
 	if err != nil {
 		return fmt.Errorf("not able to retrieve FSContent: %v", err)
 	}
-	dir := filepath.Join(taskContext.TaskDir, r.Directory)
+	dir := fileutil.AbsFrom(taskContext.TaskDir, r.Directory)
 	err = extract(c, r.Format, dir, taskMount)
 	if err != nil {
 		return err
@@ -643,7 +645,7 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 		return err
 	}
 
-	file := filepath.Join(taskContext.TaskDir, f.File)
+	file := fileutil.AbsFrom(taskContext.TaskDir, f.File)
 	if info, err := os.Stat(file); err == nil && info.IsDir() {
 		return fmt.Errorf("cannot mount file at path %v since it already exists as a directory", file)
 	}

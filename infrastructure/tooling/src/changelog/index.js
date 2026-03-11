@@ -99,7 +99,7 @@ export class ChangeLog {
         throw new Error(`Snippet ${filename} is malformed or has no body`);
       }
 
-      if (!audience || !ALLOWED_AUDIENCES.includes(audience)) {
+      if (level !== 'silent' && (!audience || !ALLOWED_AUDIENCES.includes(audience))) {
         throw new Error(`Snippet ${filename}: invalid audience '${audience}'. Must be in ${JSON.stringify(ALLOWED_AUDIENCES)}`);
       }
 
@@ -325,8 +325,8 @@ export const add = async (options) => {
     audience = 'users';
   } else if (options.developers) {
     audience = 'developers';
-  } else if (level === 'silent') { // We allow defaulting silent changes to `general` other levels _must_ specify
-    audience = 'general';
+  } else if (level === 'silent') { // silent changes don't need an audience
+    audience = undefined;
   } else {
     console.log('Must specify one of --general, --deployers, --worker-deployers, --admins, --users, or --developers');
     bad = true;
@@ -375,7 +375,8 @@ export const add = async (options) => {
 
   const helpText =
     '<!-- replace this text with your changelog entry.  See dev-docs/best-practices/changelog.md for help writing changelog entries. -->';
-  await writeRepoFile(filename, `audience: ${audience}\nlevel: ${level}\n${reference}---\n${level === 'silent' ? '' : helpText}`);
+  const audienceLine = audience ? `audience: ${audience}\n` : '';
+  await writeRepoFile(filename, `${audienceLine}level: ${level}\n${reference}---\n${level === 'silent' ? '' : helpText}`);
   await gitAdd({ dir: REPO_ROOT, files: [filename] });
   console.log(`wrote ${filename}`);
 
