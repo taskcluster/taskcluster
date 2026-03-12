@@ -115,7 +115,7 @@ export default class HooksListTable extends Component {
           {schedule?.length ? (
             <Link to={hookUrl}>
               <TableCellItem>
-                {<code>{schedule[0]}</code>}
+                <code>{schedule[0]}</code>
                 {schedule.length > 1 && (
                   <Tooltip
                     title={
@@ -139,11 +139,9 @@ export default class HooksListTable extends Component {
           {bindings?.length ? (
             <Link to={hookUrl}>
               <TableCellItem>
-                {
-                  <code>
-                    {bindings[0].exchange.replace('exchange/taskcluster-', '')}
-                  </code>
-                }
+                <code>
+                  {bindings[0].exchange.replace('exchange/taskcluster-', '')}
+                </code>
                 {bindings.length > 1 && (
                   <Tooltip
                     title={

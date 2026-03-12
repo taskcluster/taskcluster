@@ -1,5 +1,5 @@
 module.exports = {
-  parser: 'babel-eslint',
+  parser: '@babel/eslint-parser',
   root: true,
   extends: [
     'eslint-config-airbnb',
@@ -13,17 +13,14 @@ module.exports = {
     'react/state-in-constructor': 'off',
     'new-cap': 'off',
     'no-invalid-this': 'off',
-    'object-curly-spacing': 'off',
-    semi: 'off',
+    'object-curly-spacing': [ 'error', 'always' ],
+    semi: [ 'error', 'always' ],
     'no-unused-expressions': 'off',
-    'babel/new-cap': 'off',
-    'babel/no-invalid-this': 'off',
-    'babel/object-curly-spacing': [ 'error', 'always' ],
-    'babel/semi': [ 'error', 'always' ],
-    'babel/no-unused-expressions': 'off',
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     'import/no-extraneous-dependencies': 'off',
+    // Allow .js extensions for ESM compatibility (required for Vitest)
+    'import/extensions': 'off',
     'max-len': [
       'error',
       80,
@@ -119,12 +116,33 @@ module.exports = {
     'react/jsx-no-bind': 'off'
   },
   env: { es6: true, browser: true, commonjs: true },
-  globals: { process: true },
+  globals: {
+    process: true,
+    // Vitest globals
+    vi: 'readonly',
+    describe: 'readonly',
+    it: 'readonly',
+    expect: 'readonly',
+    beforeEach: 'readonly',
+    afterEach: 'readonly',
+    beforeAll: 'readonly',
+    afterAll: 'readonly',
+  },
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
-    ecmaFeatures: { legacyDecorators: true }
+    ecmaFeatures: {
+      legacyDecorators: true,
+      jsx: true
+    },
+    requireConfigFile: false,
+    babelOptions: {
+      presets: ['@babel/preset-react'],
+      plugins: [
+        ['@babel/plugin-proposal-decorators', { legacy: true }]
+      ]
+    }
   },
-  plugins: [ 'babel', 'react', 'react-hooks', 'prettier', 'react-hooks' ],
+  plugins: [ 'react', 'react-hooks', 'prettier' ],
   settings: { react: { version: 'detect' } }
 }

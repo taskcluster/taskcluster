@@ -21,7 +21,7 @@ it('should render ListHookGroupss page', async () => {
           <ListHookGroups
             location={{
               search: {
-                slice: jest.fn().mockReturnValue('search=test'),
+                slice: vi.fn().mockReturnValue('search=test'),
               },
             }}
           />
