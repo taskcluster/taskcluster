@@ -256,10 +256,12 @@ yarn start
 
 ### Making a Pull Request
 1. Run tests locally
-2. Run `yarn generate` if you changed APIs or database
+2. Run `yarn generate` if you changed APIs, database, or Go code (requires Postgres running)
 3. Run `yarn lint:fix` to fix style issues
-4. Commit changes (including generated files)
-5. CI will run full test suite and linting
+4. For Go changes, also run `go tool goimports -w <dir>` and `golangci-lint` (see `.golangci.yml`)
+5. Add a changelog entry in `changelog/` (see `dev-docs/best-practices/changelog.md`)
+6. Commit changes (including generated files)
+7. CI will run full test suite and linting
 
 ## Tools and Workers
 
