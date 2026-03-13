@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
 )
@@ -45,14 +44,15 @@ func (r Resources) Swap(i, j int) {
 	r[i], r[j] = r[j], r[i]
 }
 
-// Note ideally this would run in an independent thread, but since we have one
-// job at a time, we can sequence it between task runs. Also it should be
-// independent of mounts feature, but let's go with it here as currently that
-// is the only feature that uses it.
+// Note this runs in the main loop goroutine between claim attempts. With
+// capacity > 1, other tasks may be running concurrently, but docker pruning
+// only removes unused resources so this is safe. It should be independent of
+// mounts feature, but let's go with it here as currently that is the only
+// feature that uses it.
 func runGarbageCollection(r Resources) error {
-	currentFreeSpace, err := freeDiskSpaceBytes(taskContext.TaskDir)
+	currentFreeSpace, err := freeDiskSpaceBytes(config.TasksDir)
 	if err != nil {
-		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
 	}
 	requiredFreeSpace := requiredSpaceBytes()
 
@@ -62,9 +62,9 @@ func runGarbageCollection(r Resources) error {
 			return fmt.Errorf("could not run docker volume prune to garbage collect due to error %#v", err)
 		}
 
-		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		currentFreeSpace, err = freeDiskSpaceBytes(config.TasksDir)
 		if err != nil {
-			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
 		}
 	}
 
@@ -74,14 +74,14 @@ func runGarbageCollection(r Resources) error {
 			return fmt.Errorf("could not run docker system prune to garbage collect due to error %#v", err)
 		}
 
-		err = os.Remove("d2g-image-cache.json")
-		if err != nil && !os.IsNotExist(err) {
+		err = removeD2GCacheFile()
+		if err != nil {
 			return fmt.Errorf("could not remove d2g-image-cache.json due to error %#v", err)
 		}
 
-		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		currentFreeSpace, err = freeDiskSpaceBytes(config.TasksDir)
 		if err != nil {
-			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
 		}
 	}
 
@@ -96,9 +96,9 @@ func runGarbageCollection(r Resources) error {
 			return err
 		}
 
-		currentFreeSpace, err = freeDiskSpaceBytes(taskContext.TaskDir)
+		currentFreeSpace, err = freeDiskSpaceBytes(config.TasksDir)
 		if err != nil {
-			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", taskContext.TaskDir, err)
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
 		}
 	}
 
