@@ -493,11 +493,16 @@ type (
 		// Since: generic-worker 55.3.0
 		//
 		// Possible values:
+		//   * "br"
 		//   * "bz2"
 		//   * "gz"
+		//   * "lz"
 		//   * "lz4"
+		//   * "mz"
+		//   * "sz"
 		//   * "xz"
 		//   * "zst"
+		//   * "zz"
 		Format string `json:"format,omitempty"`
 	}
 
@@ -717,12 +722,19 @@ type (
 		// Since: generic-worker 5.4.0
 		//
 		// Possible values:
+		//   * "7z"
 		//   * "rar"
+		//   * "tar"
+		//   * "tar.br"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.lz"
 		//   * "tar.lz4"
+		//   * "tar.mz"
+		//   * "tar.sz"
 		//   * "tar.xz"
 		//   * "tar.zst"
+		//   * "tar.zz"
 		//   * "zip"
 		Format string `json:"format"`
 	}
@@ -777,12 +789,19 @@ type (
 		// Since: generic-worker 5.4.0
 		//
 		// Possible values:
+		//   * "7z"
 		//   * "rar"
+		//   * "tar"
+		//   * "tar.br"
 		//   * "tar.bz2"
 		//   * "tar.gz"
+		//   * "tar.lz"
 		//   * "tar.lz4"
+		//   * "tar.mz"
+		//   * "tar.sz"
 		//   * "tar.xz"
 		//   * "tar.zst"
+		//   * "tar.zz"
 		//   * "zip"
 		Format string `json:"format,omitempty"`
 	}
@@ -973,11 +992,16 @@ func JSONSchema() string {
         "format": {
           "description": "Compression format of the preloaded content.\n\nSince: generic-worker 55.3.0",
           "enum": [
+            "br",
             "bz2",
             "gz",
+            "lz",
             "lz4",
+            "mz",
+            "sz",
             "xz",
-            "zst"
+            "zst",
+            "zz"
           ],
           "title": "Format",
           "type": "string"
@@ -1020,12 +1044,19 @@ func JSONSchema() string {
         "format": {
           "description": "Archive format of content for read only directory.\n\nSince: generic-worker 5.4.0",
           "enum": [
+            "7z",
             "rar",
+            "tar",
+            "tar.br",
             "tar.bz2",
             "tar.gz",
+            "tar.lz",
             "tar.lz4",
+            "tar.mz",
+            "tar.sz",
             "tar.xz",
             "tar.zst",
+            "tar.zz",
             "zip"
           ],
           "title": "Format",
@@ -1069,12 +1100,19 @@ func JSONSchema() string {
         "format": {
           "description": "Archive format of the preloaded content (if ` + "`" + `content` + "`" + ` provided).\n\nSince: generic-worker 5.4.0",
           "enum": [
+            "7z",
             "rar",
+            "tar",
+            "tar.br",
             "tar.bz2",
             "tar.gz",
+            "tar.lz",
             "tar.lz4",
+            "tar.mz",
+            "tar.sz",
             "tar.xz",
             "tar.zst",
+            "tar.zz",
             "zip"
           ],
           "title": "Format",

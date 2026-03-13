@@ -1,16 +1,19 @@
 package fileutil
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
-	"github.com/mholt/archiver/v3"
+	"github.com/mholt/archives"
 	"github.com/taskcluster/slugid-go/slugid"
 )
 
@@ -121,34 +124,67 @@ func CreateDir(dir string) error {
 }
 
 func Unarchive(source, destination, format string) error {
-	var unarchiver archiver.Unarchiver
-	switch format {
-	case "zip":
-		unarchiver = &archiver.Zip{}
-	case "tar.gz":
-		unarchiver = &archiver.TarGz{
-			Tar: &archiver.Tar{},
-		}
-	case "rar":
-		unarchiver = &archiver.Rar{}
-	case "tar.bz2":
-		unarchiver = &archiver.TarBz2{
-			Tar: &archiver.Tar{},
-		}
-	case "tar.xz":
-		unarchiver = &archiver.TarXz{
-			Tar: &archiver.Tar{},
-		}
-	case "tar.zst":
-		unarchiver = &archiver.TarZstd{
-			Tar: &archiver.Tar{},
-		}
-	case "tar.lz4":
-		unarchiver = &archiver.TarLz4{
-			Tar: &archiver.Tar{},
-		}
-	default:
-		return fmt.Errorf("unsupported archive format %v", format)
+	f, err := os.Open(source)
+	if err != nil {
+		return fmt.Errorf("opening archive %v: %w", source, err)
 	}
-	return unarchiver.Unarchive(source, destination)
+	defer f.Close()
+
+	// Identify the archive format using the format string as a filename
+	// hint (the actual source files have random slugid names with no
+	// extension). Identify also validates the stream content matches.
+	detected, stream, err := archives.Identify(context.Background(), "archive."+format, f)
+	if err != nil {
+		return fmt.Errorf("unsupported or unrecognized archive format %v: %w", format, err)
+	}
+
+	extractor, ok := detected.(archives.Extractor)
+	if !ok {
+		return fmt.Errorf("format %v does not support extraction", format)
+	}
+
+	cleanDest := filepath.Clean(destination) + string(os.PathSeparator)
+
+	return extractor.Extract(context.Background(), stream, func(ctx context.Context, info archives.FileInfo) error {
+		destPath := filepath.Join(destination, info.NameInArchive)
+
+		// Prevent path traversal (zip-slip)
+		if !strings.HasPrefix(destPath, cleanDest) && destPath != filepath.Clean(destination) {
+			return fmt.Errorf("illegal file path in archive: %s", info.NameInArchive)
+		}
+
+		if info.IsDir() {
+			return os.MkdirAll(destPath, info.Mode()|0700)
+		}
+
+		if info.LinkTarget != "" {
+			if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+				return err
+			}
+			if info.Mode()&fs.ModeSymlink != 0 {
+				return os.Symlink(info.LinkTarget, destPath)
+			}
+			// Hardlink
+			return os.Link(filepath.Join(destination, info.LinkTarget), destPath)
+		}
+
+		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+			return err
+		}
+
+		inFile, err := info.Open()
+		if err != nil {
+			return err
+		}
+		defer inFile.Close()
+
+		outFile, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
+		if err != nil {
+			return err
+		}
+		defer outFile.Close()
+
+		_, err = io.Copy(outFile, inFile)
+		return err
+	})
 }

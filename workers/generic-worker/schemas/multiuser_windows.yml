@@ -507,11 +507,16 @@ definitions:
 
           Since: generic-worker 55.3.0
         enum:
+        - br
         - bz2
         - gz
+        - lz
         - lz4
+        - mz
+        - sz
         - xz
         - zst
+        - zz
     additionalProperties: false
     required:
     - file
@@ -557,12 +562,19 @@ definitions:
 
           Since: generic-worker 5.4.0
         enum:
+        - 7z
         - rar
+        - tar
+        - tar.br
         - tar.bz2
         - tar.gz
+        - tar.lz
         - tar.lz4
+        - tar.mz
+        - tar.sz
         - tar.xz
         - tar.zst
+        - tar.zz
         - zip
     additionalProperties: false
     required:
@@ -603,12 +615,19 @@ definitions:
 
           Since: generic-worker 5.4.0
         enum:
+        - 7z
         - rar
+        - tar
+        - tar.br
         - tar.bz2
         - tar.gz
+        - tar.lz
         - tar.lz4
+        - tar.mz
+        - tar.sz
         - tar.xz
         - tar.zst
+        - tar.zz
         - zip
     additionalProperties: false
     required:
