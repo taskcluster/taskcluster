@@ -54,6 +54,32 @@ builder.declare({
   return res.reply({ groups });
 });
 
+/** Search hooks across all groups **/
+builder.declare({
+  method: 'get',
+  route: '/hooks/search',
+  name: 'searchHooks',
+  scopes: 'hooks:list-hooks:',
+  category: 'Hooks',
+  output: 'search-hooks-response.yml',
+  query: {
+    q: /^.*$/,
+  },
+  title: 'Search for hooks',
+  stability: 'stable',
+  description: [
+    'Search for hooks by a query string that matches hook group ID or hook ID',
+    '(case-insensitive substring match). Returns at most 1000 results.',
+    '',
+    'This endpoint requires the `hooks:list-hooks:` scope.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { q } = req.query;
+  const hookRows = await this.db.fns.search_hooks(q || '', 1000, 0);
+  const hooks = hookRows.map(hookUtils.fromDb).map(hookUtils.definition);
+  return res.reply({ hooks });
+});
+
 /** Get hooks in a given group **/
 builder.declare({
   method: 'get',

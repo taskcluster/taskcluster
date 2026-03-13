@@ -1,0 +1,14 @@
+$schema: "/schemas/common/metaschema.json#"
+title:          "Hook search results"
+description:    |
+  List of hooks matching a search query across all hook groups.
+type:           object
+properties:
+  hooks:
+    title: "Hooks"
+    type: array
+    uniqueItems: true
+    items: {$ref: "hook-definition.json#"}
+additionalProperties: false
+required:
+  - hooks

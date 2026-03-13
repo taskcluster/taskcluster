@@ -1,0 +1,38 @@
+version: 123
+description: Add search_hooks function for cross-group hook search
+methods:
+  search_hooks:
+    description: |-
+      Search hooks across all groups, returning full hook rows where
+      hook_group_id or hook_id contains the search term (case-insensitive
+      substring match). Returns at most page_size_in rows starting at
+      page_offset_in.
+    mode: read
+    serviceName: hooks
+    args: 'search_term_in text, page_size_in integer, page_offset_in integer'
+    returns: table(hook_group_id text, hook_id text, metadata jsonb, task jsonb, bindings jsonb, schedule jsonb, encrypted_trigger_token jsonb, encrypted_next_task_id jsonb, next_scheduled_date timestamptz, trigger_schema jsonb)
+    body: |-
+      begin
+        return query
+        select
+          hooks.hook_group_id,
+          hooks.hook_id,
+          hooks.metadata,
+          hooks.task,
+          hooks.bindings,
+          hooks.schedule,
+          hooks.encrypted_trigger_token,
+          hooks.encrypted_next_task_id,
+          hooks.next_scheduled_date,
+          hooks.trigger_schema
+        from hooks
+        where (
+          search_term_in is null
+          or search_term_in = ''
+          or hooks.hook_group_id ilike '%' || search_term_in || '%'
+          or hooks.hook_id ilike '%' || search_term_in || '%'
+        )
+        order by hooks.hook_group_id, hooks.hook_id
+        limit page_size_in
+        offset page_offset_in;
+      end

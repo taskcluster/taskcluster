@@ -1,0 +1,17 @@
+query SearchHooks($query: String!) {
+  searchHooks(query: $query) {
+    hookId
+    hookGroupId
+    lastFire {
+      taskId
+      taskCreateTime
+      result
+      taskState
+      error
+    }
+    bindings {
+      exchange
+    }
+    schedule
+  }
+}

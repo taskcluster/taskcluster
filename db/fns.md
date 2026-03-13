@@ -43,6 +43,7 @@
    * [`get_last_fire`](#get_last_fire)
    * [`get_last_fires_with_task_state`](#get_last_fires_with_task_state)
    * [`insert_hooks_audit_history`](#insert_hooks_audit_history)
+   * [`search_hooks`](#search_hooks)
    * [`update_hook`](#update_hook)
    * [`update_hooks_queue_bindings`](#update_hooks_queue_bindings)
  * [index functions](#index)
@@ -1191,6 +1192,7 @@ end
 * [`get_last_fire`](#get_last_fire)
 * [`get_last_fires_with_task_state`](#get_last_fires_with_task_state)
 * [`insert_hooks_audit_history`](#insert_hooks_audit_history)
+* [`search_hooks`](#search_hooks)
 * [`update_hook`](#update_hook)
 * [`update_hooks_queue_bindings`](#update_hooks_queue_bindings)
 
@@ -1693,6 +1695,62 @@ begin
     now()
   );
 end;
+```
+
+</details>
+
+### search_hooks
+
+* *Mode*: read
+* *Arguments*:
+  * `search_term_in text`
+  * `page_size_in integer`
+  * `page_offset_in integer`
+* *Returns*: `table`
+  * `hook_group_id text`
+  * `hook_id text`
+  * `metadata jsonb`
+  * `task jsonb`
+  * `bindings jsonb`
+  * `schedule jsonb`
+  * `encrypted_trigger_token jsonb`
+  * `encrypted_next_task_id jsonb`
+  * `next_scheduled_date timestamptz`
+  * `trigger_schema jsonb`
+* *Last defined on version*: 123
+
+Search hooks across all groups, returning full hook rows where
+hook_group_id or hook_id contains the search term (case-insensitive
+substring match). Returns at most page_size_in rows starting at
+page_offset_in.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  select
+    hooks.hook_group_id,
+    hooks.hook_id,
+    hooks.metadata,
+    hooks.task,
+    hooks.bindings,
+    hooks.schedule,
+    hooks.encrypted_trigger_token,
+    hooks.encrypted_next_task_id,
+    hooks.next_scheduled_date,
+    hooks.trigger_schema
+  from hooks
+  where (
+    search_term_in is null
+    or search_term_in = ''
+    or hooks.hook_group_id ilike '%' || search_term_in || '%'
+    or hooks.hook_id ilike '%' || search_term_in || '%'
+  )
+  order by hooks.hook_group_id, hooks.hook_id
+  limit page_size_in
+  offset page_offset_in;
+end
 ```
 
 </details>

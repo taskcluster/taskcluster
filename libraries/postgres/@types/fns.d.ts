@@ -1242,6 +1242,18 @@ type HooksQueuesEntitiesScanDeprecatedFn = {
   page: number;
  }): Promise<Array<{partition_key: string, row_key: string, value: JsonB, version: number, etag: string}>>;
 };
+type HooksSearchHooksFn = {
+ (
+   search_term_in: string | null,
+   page_size_in: number | null,
+   page_offset_in: number | null
+ ): Promise<Array<{hook_group_id: string, hook_id: string, metadata: JsonB, task: JsonB, bindings: JsonB, schedule: JsonB, encrypted_trigger_token: JsonB, encrypted_next_task_id: JsonB, next_scheduled_date: Date, trigger_schema: JsonB}>>;
+ (params: {
+  search_term_in?: string | null;
+  page_size_in?: number | null;
+  page_offset_in?: number | null;
+ }): Promise<Array<{hook_group_id: string, hook_id: string, metadata: JsonB, task: JsonB, bindings: JsonB, schedule: JsonB, encrypted_trigger_token: JsonB, encrypted_next_task_id: JsonB, next_scheduled_date: Date, trigger_schema: JsonB}>>;
+};
 type HooksUpdateHookFn = {
  (
    hook_group_id_in: string,
@@ -6255,6 +6267,7 @@ export interface DbFunctions {
   get_last_fire: HooksGetLastFireFn;
   get_last_fires_with_task_state: HooksGetLastFiresWithTaskStateFn;
   insert_hooks_audit_history: HooksInsertHooksAuditHistoryFn;
+  search_hooks: HooksSearchHooksFn;
   update_hook: HooksUpdateHookFn;
   update_hooks_queue_bindings: HooksUpdateHooksQueueBindingsFn;
 

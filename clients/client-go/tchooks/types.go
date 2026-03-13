@@ -155,6 +155,11 @@ type (
 		Owner string `json:"owner"`
 	}
 
+	// List of hooks matching a search query across all hook groups.
+	HookSearchResults struct {
+		Hooks []HookDefinition `json:"hooks"`
+	}
+
 	// A snapshot of the current status of a hook.
 	HookStatusResponse struct {
 
