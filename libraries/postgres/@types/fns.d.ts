@@ -946,6 +946,14 @@ type HooksGetHookGroupsFn = {
  (params: {
  }): Promise<Array<{hook_group_id: string}>>;
 };
+type HooksGetHookGroups2Fn = {
+ (
+   search_term_in: string | null
+ ): Promise<Array<{hook_group_id: string}>>;
+ (params: {
+  search_term_in?: string | null;
+ }): Promise<Array<{hook_group_id: string}>>;
+};
 type HooksGetHooksFn = {
  (
    hook_group_id_in: string | null,
@@ -6250,6 +6258,7 @@ export interface DbFunctions {
   expire_last_fires: HooksExpireLastFiresFn;
   get_hook: HooksGetHookFn;
   get_hook_groups: HooksGetHookGroupsFn;
+  get_hook_groups_2: HooksGetHookGroups2Fn;
   get_hooks: HooksGetHooksFn;
   get_hooks_queues: HooksGetHooksQueuesFn;
   get_last_fire: HooksGetLastFireFn;

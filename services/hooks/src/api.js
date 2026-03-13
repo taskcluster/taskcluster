@@ -43,13 +43,20 @@ builder.declare({
   scopes: 'hooks:list-hooks:',
   category: 'Hooks',
   output: 'list-hook-groups-response.yml',
+  query: {
+    search: /^.*$/,
+  },
   title: 'List hook groups',
   stability: 'stable',
   description: [
     'This endpoint will return a list of all hook groups with at least one hook.',
+    '',
+    'Use the optional `search` query parameter to filter groups where the group ID',
+    'or any hook ID within the group contains the search term (case-insensitive).',
   ].join('\n'),
 }, async function(req, res) {
-  const hookGroups = await this.db.fns.get_hook_groups();
+  const { search } = req.query;
+  const hookGroups = await this.db.fns.get_hook_groups_2(search || '');
   const groups = hookGroups.map(row => row.hook_group_id);
   return res.reply({ groups });
 });

@@ -7929,6 +7929,21 @@
         }
       },
       "version": 122
+    },
+    {
+      "description": "Add search support to hook groups listing",
+      "methods": {
+        "get_hook_groups_2": {
+          "args": "search_term_in text",
+          "body": "begin\n  if search_term_in is null or search_term_in = '' then\n    return query\n    select distinct hooks.hook_group_id\n    from hooks\n    order by hooks.hook_group_id;\n  else\n    return query\n    select distinct hooks.hook_group_id\n    from hooks\n    where hooks.hook_group_id ilike '%' || search_term_in || '%'\n       or hooks.hook_id ilike '%' || search_term_in || '%'\n    order by hooks.hook_group_id;\n  end if;\nend",
+          "deprecated": false,
+          "description": "Get existing hook groups, optionally filtered by a search term that\nmatches either the hook_group_id or any hook_id within the group\n(case-insensitive substring match).\nWhen search_term_in is NULL or empty, all groups are returned.",
+          "mode": "read",
+          "returns": "table(hook_group_id text)",
+          "serviceName": "hooks"
+        }
+      },
+      "version": 123
     }
   ]
 }

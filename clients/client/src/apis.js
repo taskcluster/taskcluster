@@ -1216,11 +1216,12 @@ export default {
           "args": [
           ],
           "category": "Hooks",
-          "description": "This endpoint will return a list of all hook groups with at least one hook.",
+          "description": "This endpoint will return a list of all hook groups with at least one hook.\n\nUse the optional `search` query parameter to filter groups where the group ID\nor any hook ID within the group contains the search term (case-insensitive).",
           "method": "get",
           "name": "listHookGroups",
           "output": "v1/list-hook-groups-response.json#",
           "query": [
+            "search"
           ],
           "route": "/hooks",
           "scopes": "hooks:list-hooks:",

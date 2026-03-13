@@ -1,0 +1,29 @@
+version: 123
+description: Add search support to hook groups listing
+methods:
+  get_hook_groups_2:
+    description: |-
+      Get existing hook groups, optionally filtered by a search term that
+      matches either the hook_group_id or any hook_id within the group
+      (case-insensitive substring match).
+      When search_term_in is NULL or empty, all groups are returned.
+    mode: read
+    serviceName: hooks
+    args: 'search_term_in text'
+    returns: table(hook_group_id text)
+    body: |-
+      begin
+        if search_term_in is null or search_term_in = '' then
+          return query
+          select distinct hooks.hook_group_id
+          from hooks
+          order by hooks.hook_group_id;
+        else
+          return query
+          select distinct hooks.hook_group_id
+          from hooks
+          where hooks.hook_group_id ilike '%' || search_term_in || '%'
+             or hooks.hook_id ilike '%' || search_term_in || '%'
+          order by hooks.hook_group_id;
+        end if;
+      end

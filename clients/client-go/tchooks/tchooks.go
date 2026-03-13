@@ -126,14 +126,21 @@ func (hooks *Hooks) Version() error {
 
 // This endpoint will return a list of all hook groups with at least one hook.
 //
+// Use the optional `search` query parameter to filter groups where the group ID
+// or any hook ID within the group contains the search term (case-insensitive).
+//
 // Required scopes:
 //
 //	hooks:list-hooks:
 //
 // See #listHookGroups
-func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
+func (hooks *Hooks) ListHookGroups(search string) (*HookGroups, error) {
+	v := url.Values{}
+	if search != "" {
+		v.Add("search", search)
+	}
 	cd := tcclient.Client(*hooks)
-	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks", new(HookGroups), nil)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks", new(HookGroups), v)
 	return responseObject.(*HookGroups), err
 }
 
@@ -144,9 +151,13 @@ func (hooks *Hooks) ListHookGroups() (*HookGroups, error) {
 //	hooks:list-hooks:
 //
 // See ListHookGroups for more details.
-func (hooks *Hooks) ListHookGroups_SignedURL(duration time.Duration) (*url.URL, error) {
+func (hooks *Hooks) ListHookGroups_SignedURL(search string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if search != "" {
+		v.Add("search", search)
+	}
 	cd := tcclient.Client(*hooks)
-	return (&cd).SignedURL("/hooks", nil, duration)
+	return (&cd).SignedURL("/hooks", v, duration)
 }
 
 // This endpoint will return a list of all the hook definitions within a

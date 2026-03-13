@@ -15,8 +15,15 @@ import hookGroupsQuery from './hookGroups.graphql';
 
 @withApollo
 @graphql(hookGroupsQuery, {
-  options: {
-    fetchPolicy: 'network-only',
+  options: ownProps => {
+    const { search } = parse(ownProps.location.search.slice(1));
+
+    return {
+      fetchPolicy: 'network-only',
+      variables: {
+        search: search || null,
+      },
+    };
   },
 })
 @withStyles(theme => ({
@@ -69,7 +76,7 @@ export default class ListHookGroups extends Component {
         helpView={<HelpView description={description} />}
         search={
           <Search
-            placeholder="Hook group contains"
+            placeholder="Hook group or hook ID contains"
             defaultValue={search}
             onSubmit={this.handleHookSearchSubmit}
           />
@@ -78,14 +85,12 @@ export default class ListHookGroups extends Component {
         <ErrorPanel fixed error={error} />
         {!loading &&
           (hookGroupIds?.length ? (
-            <HookGroupsTable
-              searchTerm={search}
-              hookGroups={hookGroupIds}
-              classes={classes}
-            />
+            <HookGroupsTable hookGroups={hookGroupIds} classes={classes} />
           ) : (
             <Typography variant="subtitle1">
-              No hook groups are defined
+              {search
+                ? 'No hook groups match your search'
+                : 'No hook groups are defined'}
             </Typography>
           ))}
         <Button
