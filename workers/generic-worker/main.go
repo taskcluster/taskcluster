@@ -580,6 +580,7 @@ func RunWorker() (exitCode ExitCode) {
 		select {
 		case <-wait5Seconds.C:
 		case <-sigInterrupt:
+			log.Println("Received SIGINT, worker is exiting")
 			return WORKER_STOPPED
 		}
 	}
