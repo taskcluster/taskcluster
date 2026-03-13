@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
-import { graphql } from 'react-apollo';
+import { graphql } from '@apollo/client/react/hoc';
 import cloneDeep from 'lodash.clonedeep';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';

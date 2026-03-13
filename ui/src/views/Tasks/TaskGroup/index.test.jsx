@@ -1,67 +1,119 @@
 import React from 'react';
 import { render, waitFor, act } from '@testing-library/react';
-import { ApolloProvider } from 'react-apollo';
-import setupClient from 'apollo-client-mock';
+import { MockedProvider } from '@apollo/client/testing';
 import { MemoryRouter } from 'react-router-dom';
 import TaskGroup from './index';
+import taskGroupQuery from './taskGroup.graphql';
+import taskGroupSubscription from './taskGroupSubscription.graphql';
 
-const typeDefs = `
-  schema {
-    query: TaskGroup
-    subscription: TaskGroup
-  }
-  type Task {
-    taskId: ID
-  }
-  type TaskActions {
-    id: String
-  }
-  type TaskGroup {
-    taskGroup: ID
-    task: ID
-    taskActions: TaskActions
-  }
-  enum TaskSubscriptions {
-    tasksDefined
-    tasksPending
-    tasksRunning
-    tasksCompleted
-    tasksFailed
-    tasksException
-  }
-  subscription TaskGroupSubscription {
-    tasksSubscriptions: TaskSubscriptions
-    state: String
-    taskId: ID
-    taskGroupId: ID
-    task: String
-  }
-`;
-const defaultMocks = {
-  TaskGroup: () => ({
-    taskGroup: () => ({
-      taskId: 'taskId',
-      taskGroupId: 'taskId',
-    }),
-    task: () => ({
-      taskId: 'taskId',
-      taskGroupId: 'taskId',
-    }),
-    taskActions: () => ({}),
-  }),
-  TaskGroupSubscription: () => ({
-    tasksSubscriptions: () => ({
-      taskId: 'taskId',
-      taskGroupId: 'taskGroupId',
-      state: 'state',
-      task: {},
-    }),
-  }),
-};
+const taskGroupId = 'aI8bvUB2SDmpHVqTUOFCWw';
+const mocks = [
+  {
+    request: {
+      query: taskGroupQuery,
+      variables: {
+        taskGroupId,
+        taskGroupConnection: {
+          limit: 20,
+        },
+        taskActionsFilter: {
+          kind: {
+            $in: ['task', 'hook'],
+          },
+          $or: [{ context: { $size: 0 } }, { context: { $size: 1 } }],
+        },
+      },
+    },
+    result: {
+      data: {
+        taskGroup: {
+          pageInfo: {
+            hasNextPage: false,
+            hasPreviousPage: false,
+            cursor: 'initial',
+            previousCursor: null,
+            nextCursor: null,
+          },
+          taskGroup: {
+            taskGroupId,
+            schedulerId: '-',
+            expires: '2027-01-01T00:00:00.000Z',
+            sealed: null,
+          },
+          edges: [
+            {
+              node: {
+                taskId: 'taskAbc123',
+                metadata: { name: 'Example Task' },
+                taskGroupId,
+                status: {
+                  state: 'completed',
+                  runs: [
+                    {
+                      runId: 0,
+                      started: '2024-01-15T10:00:00.000Z',
+                      resolved: '2024-01-15T10:05:00.000Z',
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        task: {
+          taskQueueId: 'proj-releng/linux',
+          schedulerId: '-',
+          taskId: taskGroupId,
+          taskGroupId,
+          dependencies: [],
+          requires: 'all-completed',
+          routes: [],
+          priority: 'normal',
+          retries: 5,
+          created: '2024-01-15T09:55:00.000Z',
+          deadline: '2024-01-16T09:55:00.000Z',
+          scopes: [],
+          payload: {},
+          metadata: {
+            name: 'Decision Task',
+            description: 'The decision task for this task group.',
+            owner: 'owner@example.com',
+            source: 'https://example.com',
+          },
+          tags: {},
+          extra: {},
+        },
+        taskActions: {
+          actions: [],
+          variables: {},
+          version: 1,
+        },
+      },
+    },
+  },
+  {
+    request: {
+      query: taskGroupSubscription,
+      variables: {
+        taskGroupId,
+        subscriptions: [
+          'tasksDefined',
+          'tasksPending',
+          'tasksRunning',
+          'tasksCompleted',
+          'tasksFailed',
+          'tasksException',
+        ],
+      },
+    },
+    result: {
+      data: null,
+    },
+  },
+];
 
 describe('TaskGroup page', () => {
   it('should render TaskGroup page', async () => {
-    const createClient = setupClient(defaultMocks, typeDefs);
     const location = {
       hash: '#term',
     };
@@ -69,12 +121,12 @@ describe('TaskGroup page', () => {
     await act(async () => {
       const { asFragment } = render(
         <MemoryRouter keyLength={0}>
-          <ApolloProvider client={createClient()}>
+          <MockedProvider mocks={mocks} addTypename={false}>
             <TaskGroup
-              match={{ params: { taskGroupId: 'aI8bvUB2SDmpHVqTUOFCWw' } }}
+              match={{ params: { taskGroupId } }}
               location={location}
             />
-          </ApolloProvider>
+          </MockedProvider>
         </MemoryRouter>
       );
 

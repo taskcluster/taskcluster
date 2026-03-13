@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import dotProp from 'dot-prop-immutable';
-import { withApollo, graphql } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { Typography, Box, Button, Drawer } from '@material-ui/core';

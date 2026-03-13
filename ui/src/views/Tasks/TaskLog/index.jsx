@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql } from '@apollo/client/react/hoc';
 import { withStyles } from '@material-ui/core/styles';
 import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';

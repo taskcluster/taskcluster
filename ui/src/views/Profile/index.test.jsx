@@ -1,23 +1,29 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { ApolloProvider } from 'react-apollo';
-import setupClient from 'apollo-client-mock';
+import { MockedProvider } from '@apollo/client/testing';
 import { MemoryRouter } from 'react-router-dom';
 import Profile from './index';
+import profileQuery from './profile.graphql';
 
-const typeDefs = `
-  type User {
-    id: ID!
-  }
-`;
+const mocks = [
+  {
+    request: {
+      query: profileQuery,
+    },
+    result: {
+      data: {
+        currentScopes: ['scope:read', 'scope:write', 'hooks:manage:*'],
+      },
+    },
+  },
+];
 
 it('should render Profile page', () => {
-  const createClient = setupClient({}, typeDefs);
   const { asFragment } = render(
     <MemoryRouter keyLength={0}>
-      <ApolloProvider client={createClient()}>
+      <MockedProvider mocks={mocks} addTypename={false}>
         <Profile />
-      </ApolloProvider>
+      </MockedProvider>
     </MemoryRouter>
   );
 

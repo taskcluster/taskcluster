@@ -1,23 +1,32 @@
 import React from 'react';
 import { render, waitFor, act } from '@testing-library/react';
-import { ApolloProvider } from 'react-apollo';
-import setupClient from 'apollo-client-mock';
+import { MockedProvider } from '@apollo/client/testing';
 import { MemoryRouter } from 'react-router-dom';
 import ListHookGroups from './index';
+import hookGroupsQuery from './hookGroups.graphql';
 
-const typeDefs = `
-  type User {
-    id: ID!
-  }
-`;
+const mocks = [
+  {
+    request: {
+      query: hookGroupsQuery,
+    },
+    result: {
+      data: {
+        hookGroups: [
+          { hookGroupId: 'project-releng' },
+          { hookGroupId: 'project-gecko' },
+          { hookGroupId: 'taskcluster' },
+        ],
+      },
+    },
+  },
+];
 
 it('should render ListHookGroupss page', async () => {
-  const createClient = setupClient({}, typeDefs);
-
   await act(async () => {
     const { asFragment } = render(
       <MemoryRouter keyLength={0}>
-        <ApolloProvider client={createClient()}>
+        <MockedProvider mocks={mocks} addTypename={false}>
           <ListHookGroups
             location={{
               search: {
@@ -25,7 +34,7 @@ it('should render ListHookGroupss page', async () => {
               },
             }}
           />
-        </ApolloProvider>
+        </MockedProvider>
       </MemoryRouter>
     );
 

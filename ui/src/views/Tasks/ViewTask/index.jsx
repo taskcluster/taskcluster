@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { withApollo, graphql } from 'react-apollo';
+import { useQuery, useApolloClient } from '@apollo/client';
 import { omit, pathOr, mergeRight } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
 import { withStyles } from '@material-ui/core/styles';
@@ -81,7 +81,6 @@ const taskInContext = (tagSetList, taskTags) =>
 const getCachesFromTask = task =>
   Object.keys(pathOr({}, ['payload', 'cache'], task));
 
-@withApollo
 @withStyles(theme => ({
   title: {
     marginBottom: theme.spacing(1),
@@ -100,33 +99,7 @@ const getCachesFromTask = task =>
     ...theme.mixins.link,
   },
 }))
-@graphql(taskQuery, {
-  options: props => ({
-    fetchPolicy: 'network-only',
-    pollInterval: TASK_POLL_INTERVAL,
-    errorPolicy: 'all',
-    variables: {
-      taskId: props.match.params.taskId,
-      artifactsConnection: {
-        limit: ARTIFACTS_PAGE_SIZE,
-      },
-      dependentsConnection: {
-        limit: DEPENDENTS_PAGE_SIZE,
-      },
-      taskActionsFilter: {
-        kind: {
-          $in: ACTIONS_JSON_KNOWN_KINDS,
-        },
-        context: {
-          $not: {
-            $size: 0,
-          },
-        },
-      },
-    },
-  }),
-})
-export default class ViewTask extends Component {
+class ViewTask extends Component {
   static getDerivedStateFromProps(props, state) {
     const taskId = props.match.params.taskId || '';
     const {
@@ -1121,3 +1094,36 @@ export default class ViewTask extends Component {
     );
   }
 }
+
+function ViewTaskWrapper(props) {
+  const client = useApolloClient();
+  const queryResult = useQuery(taskQuery, {
+    fetchPolicy: 'network-only',
+    pollInterval: TASK_POLL_INTERVAL,
+    errorPolicy: 'all',
+    variables: {
+      taskId: props.match.params.taskId,
+      artifactsConnection: {
+        limit: ARTIFACTS_PAGE_SIZE,
+      },
+      dependentsConnection: {
+        limit: DEPENDENTS_PAGE_SIZE,
+      },
+      taskActionsFilter: {
+        kind: {
+          $in: ACTIONS_JSON_KNOWN_KINDS,
+        },
+        context: {
+          $not: {
+            $size: 0,
+          },
+        },
+      },
+    },
+  });
+  const data = { ...queryResult, ...(queryResult.data || {}) };
+
+  return <ViewTask {...props} client={client} data={data} />;
+}
+
+export default ViewTaskWrapper;

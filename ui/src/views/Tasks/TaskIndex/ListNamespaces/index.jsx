@@ -1,6 +1,6 @@
 import { Redirect } from 'react-router-dom';
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import dotProp from 'dot-prop-immutable';
 import { defaultTo } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
