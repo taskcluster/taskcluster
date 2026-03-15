@@ -543,6 +543,54 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].hook_group_id, 'baz');
       assert.equal(rows[1].hook_group_id, 'foo');
     });
+
+    helper.dbTest('get_hook_groups_2 returns all groups when search is empty', async function(db) {
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/1', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'baz', hook_id: 'hook-id/2', next_scheduled_date: fromNow('1 day') });
+
+      let rows = await db.fns.get_hook_groups_2('');
+      assert.equal(rows.length, 2);
+      assert.equal(rows[0].hook_group_id, 'baz');
+      assert.equal(rows[1].hook_group_id, 'foo');
+    });
+
+    helper.dbTest('get_hook_groups_2 returns all groups when search is null', async function(db) {
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/1', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'baz', hook_id: 'hook-id/2', next_scheduled_date: fromNow('1 day') });
+
+      let rows = await db.fns.get_hook_groups_2(null);
+      assert.equal(rows.length, 2);
+    });
+
+    helper.dbTest('get_hook_groups_2 filters groups by group ID substring (case-insensitive)', async function(db) {
+      await create_hook(db, { hook_group_id: 'project-releng', hook_id: 'hook-one', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'project-ci', hook_id: 'hook-two', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'taskcluster', hook_id: 'hook-three', next_scheduled_date: fromNow('1 day') });
+
+      let rows = await db.fns.get_hook_groups_2('project');
+      assert.equal(rows.length, 2);
+      assert.deepEqual(rows.map(r => r.hook_group_id), ['project-ci', 'project-releng']);
+    });
+
+    helper.dbTest('get_hook_groups_2 filters groups by hook ID substring (case-insensitive)', async function(db) {
+      await create_hook(db, { hook_group_id: 'group-a', hook_id: 'translations-hook', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'group-b', hook_id: 'build-hook', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'group-c', hook_id: 'other-hook', next_scheduled_date: fromNow('1 day') });
+
+      let rows = await db.fns.get_hook_groups_2('Translations');
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].hook_group_id, 'group-a');
+    });
+
+    helper.dbTest('get_hook_groups_2 matches groups where any hook matches', async function(db) {
+      await create_hook(db, { hook_group_id: 'group-a', hook_id: 'hook-one', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'group-a', hook_id: 'special-hook', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'group-b', hook_id: 'other-hook', next_scheduled_date: fromNow('1 day') });
+
+      let rows = await db.fns.get_hook_groups_2('special');
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].hook_group_id, 'group-a');
+    });
   });
 
   suite(`${testing.suiteName()} - hooks audit history`, function() {

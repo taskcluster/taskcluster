@@ -13,7 +13,7 @@ export default class Hooks extends Client {
     this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
     this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listHookGroups.entry = {"args":[],"category":"Hooks","method":"get","name":"listHookGroups","output":true,"query":[],"route":"/hooks","scopes":"hooks:list-hooks:","stability":"stable","type":"function"}; // eslint-disable-line
+    this.listHookGroups.entry = {"args":[],"category":"Hooks","method":"get","name":"listHookGroups","output":true,"query":["search"],"route":"/hooks","scopes":"hooks:list-hooks:","stability":"stable","type":"function"}; // eslint-disable-line
     this.listHooks.entry = {"args":["hookGroupId"],"category":"Hooks","method":"get","name":"listHooks","output":true,"query":[],"route":"/hooks/<hookGroupId>","scopes":"hooks:list-hooks:<hookGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.hook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"get","name":"hook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>","scopes":"hooks:get:<hookGroupId>:<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.getHookStatus.entry = {"args":["hookGroupId","hookId"],"category":"Hook Status","method":"get","name":"getHookStatus","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/status","scopes":"hooks:status:<hookGroupId>/<hookId>","stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -56,6 +56,8 @@ export default class Hooks extends Client {
   }
   /* eslint-disable max-len */
   // This endpoint will return a list of all hook groups with at least one hook.
+  // Use the optional `search` query parameter to filter groups where the group ID
+  // or any hook ID within the group contains the search term (case-insensitive).
   /* eslint-enable max-len */
   listHookGroups(...args) {
     this.validate(this.listHookGroups.entry, args);

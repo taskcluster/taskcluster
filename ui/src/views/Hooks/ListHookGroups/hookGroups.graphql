@@ -1,5 +1,5 @@
-query HookGroups {
-  hookGroups {
+query HookGroups($search: String) {
+  hookGroups(search: $search) {
     hookGroupId
   }
 }

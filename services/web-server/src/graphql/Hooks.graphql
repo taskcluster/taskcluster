@@ -128,7 +128,7 @@ type HookLastFireEdge implements Edge {
 }
 
 extend type Query {
-  hookGroups(filter: JSON): [HookGroup]
+  hookGroups(filter: JSON, search: String): [HookGroup]
   hooks(hookGroupId: ID!, filter: JSON): [Hook]
   hook(hookGroupId: ID!, hookId: ID!): Hook
   hookStatus(hookGroupId: ID!, hookId: ID!): HookStatus

@@ -5,9 +5,10 @@ import ConnectionLoader from '../ConnectionLoader.js';
 export default ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const hookGroups = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({ filter }) => {
+      queries.map(async ({ filter, search }) => {
         try {
-          const { groups } = await hooks.listHookGroups();
+          const options = search ? { search } : {};
+          const { groups } = await hooks.listHookGroups(options);
           const raw = groups.map(hookGroupId => ({ hookGroupId }));
 
           return sift(filter, raw);

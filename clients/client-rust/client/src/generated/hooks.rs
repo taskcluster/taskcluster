@@ -130,30 +130,36 @@ impl Hooks {
     /// List hook groups
     ///
     /// This endpoint will return a list of all hook groups with at least one hook.
-    pub async fn listHookGroups(&self) -> Result<Value, Error> {
+    ///
+    /// Use the optional `search` query parameter to filter groups where the group ID
+    /// or any hook ID within the group contains the search term (case-insensitive).
+    pub async fn listHookGroups(&self, search: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
-        let (path, query) = Self::listHookGroups_details();
+        let (path, query) = Self::listHookGroups_details(search);
         let body = None;
         let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the listHookGroups endpoint
-    pub fn listHookGroups_url(&self) -> Result<String, Error> {
-        let (path, query) = Self::listHookGroups_details();
+    pub fn listHookGroups_url(&self, search: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::listHookGroups_details(search);
         self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the listHookGroups endpoint
-    pub fn listHookGroups_signed_url(&self, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::listHookGroups_details();
+    pub fn listHookGroups_signed_url(&self, search: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::listHookGroups_details(search);
         self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for listHookGroups
-    fn listHookGroups_details<'a>() -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+    fn listHookGroups_details<'a>(search: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
         let path = "hooks";
-        let query = None;
+        let mut query = None;
+        if let Some(q) = search {
+            query.get_or_insert_with(Vec::new).push(("search", q));
+        }
 
         (path, query)
     }

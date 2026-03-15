@@ -38,6 +38,7 @@
    * [`expire_last_fires`](#expire_last_fires)
    * [`get_hook`](#get_hook)
    * [`get_hook_groups`](#get_hook_groups)
+   * [`get_hook_groups_2`](#get_hook_groups_2)
    * [`get_hooks`](#get_hooks)
    * [`get_hooks_queues`](#get_hooks_queues)
    * [`get_last_fire`](#get_last_fire)
@@ -1186,6 +1187,7 @@ end
 * [`expire_last_fires`](#expire_last_fires)
 * [`get_hook`](#get_hook)
 * [`get_hook_groups`](#get_hook_groups)
+* [`get_hook_groups_2`](#get_hook_groups_2)
 * [`get_hooks`](#get_hooks)
 * [`get_hooks_queues`](#get_hooks_queues)
 * [`get_last_fire`](#get_last_fire)
@@ -1466,6 +1468,42 @@ begin
   select distinct hooks.hook_group_id
   from hooks
   order by hooks.hook_group_id;
+end
+```
+
+</details>
+
+### get_hook_groups_2
+
+* *Mode*: read
+* *Arguments*:
+  * `search_term_in text`
+* *Returns*: `table`
+  * `hook_group_id text`
+* *Last defined on version*: 123
+
+Get existing hook groups, optionally filtered by a search term that
+matches either the hook_group_id or any hook_id within the group
+(case-insensitive substring match).
+When search_term_in is NULL or empty, all groups are returned.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  if search_term_in is null or search_term_in = '' then
+    return query
+    select distinct hooks.hook_group_id
+    from hooks
+    order by hooks.hook_group_id;
+  else
+    return query
+    select distinct hooks.hook_group_id
+    from hooks
+    where hooks.hook_group_id ilike '%' || search_term_in || '%'
+       or hooks.hook_id ilike '%' || search_term_in || '%'
+    order by hooks.hook_group_id;
+  end if;
 end
 ```
 

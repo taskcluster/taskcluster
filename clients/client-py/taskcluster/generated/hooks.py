@@ -65,6 +65,9 @@ class Hooks(BaseClient):
 
         This endpoint will return a list of all hook groups with at least one hook.
 
+        Use the optional `search` query parameter to filter groups where the group ID
+        or any hook ID within the group contains the search term (case-insensitive).
+
         This method is ``stable``
         """
 
@@ -287,6 +290,7 @@ class Hooks(BaseClient):
             "method": "get",
             "name": "listHookGroups",
             "output": "v1/list-hook-groups-response.json#",
+            "query": ["search"],
             "route": "/hooks",
             "stability": "stable",
         },

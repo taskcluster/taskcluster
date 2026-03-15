@@ -49,8 +49,8 @@ export default {
     },
   },
   Query: {
-    hookGroups(parent, { filter }, { loaders }) {
-      return loaders.hookGroups.load({ filter });
+    hookGroups(parent, { filter, search }, { loaders }) {
+      return loaders.hookGroups.load({ filter, search });
     },
     hooks(parent, { hookGroupId, filter }, { loaders }) {
       return loaders.hooks.load({ hookGroupId, filter });
