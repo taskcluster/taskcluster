@@ -1,5 +1,5 @@
-import ajv from './ajv';
-import urls from './urls';
+import ajv from './ajv.js';
+import urls from './urls.js';
 
 let actionsJsonSchemaResponse;
 let validateActionsJson;

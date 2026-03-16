@@ -1,33 +1,11 @@
 import lazy from '../../utils/lazy';
 
-const WorkerManagerViewWorkerPools = lazy(() =>
-  import(
-    /* webpackChunkName: 'WorkerManager.WMViewWorkerPools' */ './WMViewWorkerPools'
-  )
-);
-const WorkerManagerViewWorkers = lazy(() =>
-  import(
-    /* webpackChunkName: 'WorkerManager.WMViewWorkers' */ './WMViewWorkers'
-  )
-);
-const WorkerManagerViewErrors = lazy(() =>
-  import(/* webpackChunkName: 'WorkerManager.WMViewErrors' */ './WMViewErrors')
-);
-const WorkerManagerViewErrorCenter = lazy(() =>
-  import(
-    /* webpackChunkName: 'WorkerManager.WMViewErrorCenter' */ './WMViewErrorCenter'
-  )
-);
-const WMWorkerPoolEditor = lazy(() =>
-  import(
-    /* webpackChunkName: 'WorkerManager.WMEditWorkerPool' */ './WMEditWorkerPool'
-  )
-);
-const WMWorkerPoolLaunchConfigs = lazy(() =>
-  import(
-    /* webpackChunkName: 'WorkerManager.WMLaunchConfigs' */ './WMLaunchConfigs'
-  )
-);
+const WorkerManagerViewWorkerPools = lazy(() => import('./WMViewWorkerPools'));
+const WorkerManagerViewWorkers = lazy(() => import('./WMViewWorkers'));
+const WorkerManagerViewErrors = lazy(() => import('./WMViewErrors'));
+const WorkerManagerViewErrorCenter = lazy(() => import('./WMViewErrorCenter'));
+const WMWorkerPoolEditor = lazy(() => import('./WMEditWorkerPool'));
+const WMWorkerPoolLaunchConfigs = lazy(() => import('./WMLaunchConfigs'));
 
 export default path => [
   {

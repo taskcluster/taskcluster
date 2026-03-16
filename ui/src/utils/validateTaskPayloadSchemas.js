@@ -1,4 +1,4 @@
-import ajv from './ajv';
+import ajv from './ajv.js';
 
 const prefetch = async () => {
   // metaschema needs to be loaded first as other schemas depend on it

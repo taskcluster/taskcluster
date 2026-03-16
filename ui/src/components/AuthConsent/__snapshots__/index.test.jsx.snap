@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`should render AuthConsent page 1`] = `
 <DocumentFragment>
@@ -23,7 +23,7 @@ exports[`should render AuthConsent page 1`] = `
     />
     <div>
       <div
-        class="MuiCardHeader-root AuthConsent-header-1"
+        class="MuiCardHeader-root AuthConsent2-header-1"
       >
         <div
           class="MuiCardHeader-avatar"
@@ -31,7 +31,7 @@ exports[`should render AuthConsent page 1`] = `
           <img
             alt="Logo"
             height="40"
-            src="test-file-stub"
+            src="/src/images/brandLogo.png"
           />
         </div>
         <div
@@ -119,7 +119,7 @@ exports[`should render AuthConsent page 1`] = `
                   class="MuiAccordionDetails-root"
                 >
                   <ul
-                    class="MuiList-root AuthConsent-list-2 MuiList-padding"
+                    class="MuiList-root AuthConsent2-list-2 MuiList-padding"
                   >
                     <li
                       class="MuiListItem-root MuiListItem-gutters"
@@ -169,7 +169,7 @@ exports[`should render AuthConsent page 1`] = `
                           class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
                         />
                         <div
-                          class="MuiFormControl-root MuiTextField-root DatePicker-datePicker-6"
+                          class="MuiFormControl-root MuiTextField-root DatePicker2-datePicker-6"
                         >
                           <div
                             class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorSecondary MuiInput-colorSecondary MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
@@ -270,7 +270,7 @@ exports[`should render AuthConsent page 1`] = `
       </div>
     </div>
     <span
-      class="AuthConsent-fab-3 AuthConsent-denySpanProps-5"
+      class="AuthConsent2-fab-3 AuthConsent2-denySpanProps-5"
       title="Deny"
     >
       <button
@@ -301,11 +301,11 @@ exports[`should render AuthConsent page 1`] = `
       </button>
     </span>
     <span
-      class="AuthConsent-fab-3"
+      class="AuthConsent2-fab-3"
       title="Allow"
     >
       <button
-        class="MuiButtonBase-root MuiFab-root AuthConsent-allowIcon-4"
+        class="MuiButtonBase-root MuiFab-root AuthConsent2-allowIcon-4"
         tabindex="0"
         type="submit"
       >
