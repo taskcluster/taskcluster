@@ -162,10 +162,19 @@ func Unarchive(source, destination, format string) error {
 				return err
 			}
 			if info.Mode()&fs.ModeSymlink != 0 {
+				// Validate symlink target resolves within destination to prevent path traversal
+				resolvedTarget := filepath.Clean(filepath.Join(filepath.Dir(destPath), info.LinkTarget))
+				if !strings.HasPrefix(resolvedTarget, cleanDest) && resolvedTarget != filepath.Clean(destination) {
+					return fmt.Errorf("illegal symlink target in archive: %s -> %s", info.NameInArchive, info.LinkTarget)
+				}
 				return os.Symlink(info.LinkTarget, destPath)
 			}
-			// Hardlink
-			return os.Link(filepath.Join(destination, info.LinkTarget), destPath)
+			// Hardlink - validate target resolves within destination to prevent path traversal
+			hardlinkTarget := filepath.Clean(filepath.Join(destination, info.LinkTarget))
+			if !strings.HasPrefix(hardlinkTarget, cleanDest) && hardlinkTarget != filepath.Clean(destination) {
+				return fmt.Errorf("illegal hardlink target in archive: %s -> %s", info.NameInArchive, info.LinkTarget)
+			}
+			return os.Link(hardlinkTarget, destPath)
 		}
 
 		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
