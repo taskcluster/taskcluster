@@ -1094,6 +1094,11 @@ builder.declare({
     'This call both marks the worker as running and returns the credentials',
     'the worker will require to perform its work.  The worker must provide',
     'some proof of its identity, and that proof varies by provider type.',
+    '',
+    'This method may also be called by integration tests by passing a `workerPoolId`',
+    'beginning with `test-provisioner-id/`. Such integration tests do not require',
+    'a valid `workerIdentityProof`, `workerId` or `workerGroup`. The response',
+    'will include fake `credentials`, `expires` and `secret`, but a valid `workerConfig`.',
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId, providerId, workerGroup, workerId, workerIdentityProof, systemBootTime } = req.body;
@@ -1128,6 +1133,19 @@ builder.declare({
   if (workerPool.providerId !== providerId && !workerPool.previousProviderIds.includes(providerId)) {
     return res.reportError('InputError',
       `Worker pool ${workerPoolId} not associated with provider ${providerId}`, {});
+  }
+
+  if (workerPoolId.startsWith("test-provisioner-id/")) {
+    return res.reply({
+      expires: "2000-00-00T00:00:00Z",
+      credentials: {
+        accessToken: "test-access-token",
+        certificate: "test-certificate",
+        clientId: "test-client-id",
+	  },
+      workerConfig,
+      secret: "test-secret",
+    });
   }
 
   const worker = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
