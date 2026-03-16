@@ -142,7 +142,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'release-version',
       'client-shell-artifacts',
       'generic-worker-artifacts',
-      'worker-runner-artifacts',
+      'docker-worker-artifacts',
       'taskcluster-proxy-artifacts',
       'changelog-text',
       'monoimage-push',
@@ -174,7 +174,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       const files = requirements['client-shell-artifacts']
         .concat(requirements['generic-worker-artifacts'])
-        .concat(requirements['worker-runner-artifacts'])
+        .concat(requirements['docker-worker-artifacts'])
         .concat(requirements['livelog-artifacts'])
         .concat(requirements['taskcluster-proxy-artifacts'])
         .map(name => ({ name, contentType: 'application/octet-stream' }));
