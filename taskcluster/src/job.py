@@ -1,22 +1,22 @@
+from typing import Union
+
 from taskgraph.transforms.run import run_task_using
 from taskgraph.util.schema import Schema
 
-from voluptuous import Required, Optional, Extra, Any
 
-bare_schema = Schema({
-    Required("using"): "bare",
-    Required("command"): Any(str, [str]),
-    Optional("install"): Any(str, [str]),
-    Optional("clone"): bool,
-    Extra: object
-    })
+class BareSchema(Schema, forbid_unknown_fields=False):
+    using: str
+    command: Union[str, list[str]]
+    install: Union[str, list[str], None] = None
+    clone: bool = True
+
 
 bare_defaults = {
     "clone": True,
 }
 
 
-@run_task_using("docker-worker", "bare", schema=bare_schema, defaults=bare_defaults)
+@run_task_using("docker-worker", "bare", schema=BareSchema, defaults=bare_defaults)
 def bare_docker_worker(config, job, taskdesc):
     run = job["run"]
     worker = taskdesc['worker'] = job['worker']
@@ -43,7 +43,7 @@ def bare_docker_worker(config, job, taskdesc):
     worker["command"] = ["/bin/bash", "-ec", "".join(command)]
 
 
-@run_task_using("generic-worker", "bare", schema=bare_schema, defaults=bare_defaults)
+@run_task_using("generic-worker", "bare", schema=BareSchema, defaults=bare_defaults)
 def bare_generic_worker(config, job, taskdesc):
     run = job['run']
     worker = taskdesc['worker'] = job['worker']
