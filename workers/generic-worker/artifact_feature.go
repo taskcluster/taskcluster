@@ -344,6 +344,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 		// originally based on https://github.com/evansd/whitenoise/blob/03f6ea846394e01cbfe0c730141b81eb8dd6e88a/whitenoise/compress.py#L21-L29
 		SkipCompressionExtensions := map[string]bool{
 			".7z":    true,
+			".br":    true,
 			".bz2":   true,
 			".deb":   true,
 			".dmg":   true,
@@ -352,9 +353,13 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 			".gz":    true,
 			".jpeg":  true,
 			".jpg":   true,
+			".lz":    true,
+			".lz4":   true,
+			".mz":    true,
 			".npz":   true,
 			".png":   true,
 			".swf":   true,
+			".sz":    true,
 			".tbz":   true,
 			".tgz":   true,
 			".webp":  true,
@@ -364,6 +369,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 			".xz":    true,
 			".zip":   true,
 			".zst":   true,
+			".zz":    true,
 		}
 		// When the file extension is blacklisted in SkipCompressionExtensions then "identity" should be used, otherwise "gzip".
 		if SkipCompressionExtensions[extension] {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,7 +16,7 @@ import (
 
 	"slices"
 
-	"github.com/mholt/archiver/v3"
+	"github.com/mholt/archives"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
@@ -798,19 +799,7 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		return err
 	}
 
-	var d archiver.Decompressor
-	switch format {
-	case "bz2":
-		d = &archiver.Bz2{}
-	case "gz":
-		d = &archiver.Gz{}
-	case "lz4":
-		d = &archiver.Lz4{}
-	case "xz":
-		d = &archiver.Xz{}
-	case "zst":
-		d = &archiver.Zstd{}
-	case "":
+	if format == "" {
 		// No compression, just copy file.
 		// Let's copy rather than move, since we want to be totally sure that the
 		// task can't modify the contents, and setting as read-only is not enough -
@@ -833,24 +822,40 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 			return err
 		}
 		return nil
-	default:
-		return fmt.Errorf("unsupported decompression format %v", format)
 	}
 
-	taskMount.Infof("Decompressing %v file %v to '%v'", format, cacheFile, file)
-	// Useful for worker logs too (not just task logs)
-	log.Printf("[mounts] Decompressing %v file %v to '%v'", format, cacheFile, file)
 	src, err := os.Open(cacheFile)
 	if err != nil {
 		return fmt.Errorf("not able to open %v: %v", cacheFile, err)
 	}
 	defer src.Close()
+
+	// Identify the compression format using the format string as a
+	// filename hint. Identify also validates the stream content matches.
+	detected, stream, err := archives.Identify(context.Background(), "file."+format, src)
+	if err != nil {
+		return fmt.Errorf("unsupported or unrecognized decompression format %v: %w", format, err)
+	}
+
+	d, ok := detected.(archives.Decompressor)
+	if !ok {
+		return fmt.Errorf("format %v does not support decompression", format)
+	}
+
+	taskMount.Infof("Decompressing %v file %v to '%v'", format, cacheFile, file)
+	// Useful for worker logs too (not just task logs)
+	log.Printf("[mounts] Decompressing %v file %v to '%v'", format, cacheFile, file)
 	dst, err := CreateFileAsTaskUser(file, taskMount.task.pd)
 	if err != nil {
 		return fmt.Errorf("not able to create %v as task user: %v", file, err)
 	}
 	defer dst.Close()
-	err = d.Decompress(src, dst)
+	rc, err := d.OpenReader(stream)
+	if err != nil {
+		return fmt.Errorf("not able to decompress %v to %v: %v", cacheFile, file, err)
+	}
+	defer rc.Close()
+	_, err = io.Copy(dst, rc)
 	if err != nil {
 		return fmt.Errorf("not able to decompress %v to %v: %v", cacheFile, file, err)
 	}
