@@ -52,17 +52,11 @@ tasks:
           'tasks_for in ["cron", "action", "pr-action"]': '${push.branch}'
           'tasks_for == "github-release"': ${event.release.tag_name}
       base_sha:
-        $let:
-          computed_base_sha:
-            $switch:
-              'tasks_for == "github-push"': '${event.before}'
-              'tasks_for == "github-release"': '${event.release.target_commitish}'
-              'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.sha}'
-              'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
-        in:
-          $if: 'computed_base_sha == "0000000000000000000000000000000000000000"'
-          then: "main"
-          else: '${computed_base_sha}'
+        $switch:
+          'tasks_for == "github-push"': '${event.before}'
+          'tasks_for == "github-release"': '${event.release.target_commitish}'
+          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.sha}'
+          'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
       head_sha:
         $switch:
           'tasks_for == "github-push"': '${event.after}'
@@ -152,7 +146,7 @@ tasks:
 
           # Note: This task is built server side without the context or tooling that
           # exist in tree so we must hard code the hash
-          image: mozillareleases/taskgraph:decision-v18.1.0@sha256:e89736b69b43595f66beb86d88eaf4fdd9faccf56fdec8042e939bab4f31b53a
+          image: mozillareleases/taskgraph:decision-v20.0.0@sha256:afae5e5d3caaeb10a93fae56bc3176d1e73faf9b616c01facf811e488db4eafe
 
           maxRunTime: 600
 
