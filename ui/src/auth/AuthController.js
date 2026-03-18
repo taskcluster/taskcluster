@@ -106,8 +106,10 @@ export default class AuthController {
           credentials,
         }),
       );
-    } catch (_e) {
+    } catch (e) {
       this.setUser(null);
+      // biome-ignore lint/suspicious/noConsole: intentional error logging for login renewal failures
+      console.error('Could not renew login:', e);
     }
   }
 

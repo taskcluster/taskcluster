@@ -157,6 +157,15 @@
           }
         }
       }
+    },
+    {
+      "includes": ["ui/src/scripts/**"],
+      "linter": {
+        "rules": {
+          "suspicious": { "noConsole": "off" },
+          "style": { "useNodejsImportProtocol": "error" }
+        }
+      }
     }
   ]
 }

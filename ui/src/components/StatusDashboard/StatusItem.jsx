@@ -59,10 +59,11 @@ export const StatusItem = ({
 }) => {
   const [styles, setStyles] = useState({});
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional re-trigger on value change for highlight animation
   useEffect(() => {
     setStyles({ backgroundColor: '#A459D1' });
     setTimeout(() => setStyles({}), 2000);
-  }, []);
+  }, [value]);
 
   const graphHeight = tiny ? 54 : 72;
   const titleVariant = tiny ? 'h6' : 'h5';

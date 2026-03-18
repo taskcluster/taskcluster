@@ -30,17 +30,19 @@ function SpeedDial(props) {
   }
 
   // hide upon navigation
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cleanup-only effect runs on unmount
   useEffect(() => {
     return () => {
       resetTimeout();
       setOpen(false);
     };
-  }, [resetTimeout]);
+  }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on route change only
   useEffect(() => {
     resetTimeout();
     setOpen(false);
-  }, [resetTimeout]);
+  }, [location.pathname]);
 
   function handleClose(evt) {
     if (evt.type === 'click') {

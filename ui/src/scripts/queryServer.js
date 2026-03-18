@@ -56,12 +56,16 @@ const req = executor.request(options, (res) => {
     response.data.__schema.types = filteredData;
     fs.writeFile('./src/fragments/fragmentTypes.json', `${JSON.stringify(response.data)}\n`, (err) => {
       if (err) {
+        console.error('Error writing fragmentTypes file', err);
       } else {
+        console.log('Fragment types successfully extracted!');
       }
     });
   });
 });
 
-req.on('error', (_error) => {});
+req.on('error', (error) => {
+  console.error(error);
+});
 req.write(data);
 req.end();
