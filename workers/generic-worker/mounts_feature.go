@@ -766,17 +766,10 @@ func (f *FileMount) Mount(taskMount *TaskMount) error {
 	// content is cached and pass the cache info to the handler instead of
 	// copying the file to the task directory.
 	if handler, ok := taskMount.task.FileMountHandlers[f.File]; ok {
-		cachedFile, err := ensureCached(fsContent, taskMount)
+		cachedFile, sha256, err := ensureCached(fsContent, taskMount)
 		if err != nil {
 			return err
 		}
-
-		cacheKey, err := fsContent.UniqueKey(taskMount)
-		if err != nil {
-			return err
-		}
-
-		sha256 := fileCaches[cacheKey].SHA256
 		taskMount.Infof("File mount %q handled by registered handler (cache: %v, SHA256: %v)", f.File, cachedFile, sha256)
 		return handler(cachedFile, sha256)
 	}
@@ -795,12 +788,11 @@ func (f *FileMount) Unmount(taskMount *TaskMount) error {
 }
 
 // ensureCached returns a file containing the given content
-func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, err error) {
+func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha256 string, err error) {
 	cacheKey, err := fsContent.UniqueKey(taskMount)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	var sha256 string
 	requiredSHA256 := fsContent.RequiredSHA256()
 	cacheMutex.Lock()
 	cachedEntry, inCache := fileCaches[cacheKey]
@@ -875,7 +867,7 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, err e
 
 func extract(fsContent FSContent, format string, dir string, taskMount *TaskMount) (err error) {
 	var cacheFile string
-	cacheFile, err = ensureCached(fsContent, taskMount)
+	cacheFile, _, err = ensureCached(fsContent, taskMount)
 	if err != nil {
 		log.Printf("Could not cache content: %v", err)
 		return
@@ -908,7 +900,7 @@ func extract(fsContent FSContent, format string, dir string, taskMount *TaskMoun
 }
 
 func decompress(fsContent FSContent, format string, file string, taskMount *TaskMount) error {
-	cacheFile, err := ensureCached(fsContent, taskMount)
+	cacheFile, _, err := ensureCached(fsContent, taskMount)
 	if err != nil {
 		log.Printf("Could not cache content: %v", err)
 		return err
