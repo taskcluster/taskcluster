@@ -1,4 +1,3 @@
-
 import { v4 } from 'uuid';
 
 /**
@@ -13,7 +12,9 @@ export const modifyRoles = async (db, modifier) => {
     try {
       const roles = await db.fns.get_roles();
       const etag = roles.length > 0 ? roles[0].etag : v4();
-      roles.forEach(r => { delete r.etag; });
+      roles.forEach((r) => {
+        delete r.etag;
+      });
       await modifier({ roles });
       await db.fns.modify_roles(JSON.stringify(roles), etag);
     } catch (e) {

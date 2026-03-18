@@ -26,19 +26,14 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Worker-Runner Complete',
-    requires: [
-      'clean-artifacts-dir',
-      'worker-runner-artifacts',
-    ],
-    provides: [
-      'target-worker-runner',
-    ],
+    requires: ['clean-artifacts-dir', 'worker-runner-artifacts'],
+    provides: ['target-worker-runner'],
     run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {
         'target-worker-runner': [
           'Worker-Runner artifacts:',
-          ...requirements['worker-runner-artifacts'].map(a => ` - ${artifactsDir}/${a}`),
+          ...requirements['worker-runner-artifacts'].map((a) => ` - ${artifactsDir}/${a}`),
         ].join('\n'),
       };
     },

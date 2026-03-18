@@ -3,7 +3,10 @@ import libUrls from 'taskcluster-lib-urls';
 import { CHECK_RUN_STATES } from '../constants.js';
 
 export const taskUI = (rootUrl, taskGroupId, taskId) =>
-  libUrls.ui(rootUrl, rootUrl === 'https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`);
+  libUrls.ui(
+    rootUrl,
+    rootUrl === 'https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`,
+  );
 export const taskGroupUI = (rootUrl, taskGroupId) =>
   libUrls.ui(rootUrl, `${rootUrl === 'https://taskcluster.net' ? '' : '/tasks'}/groups/${taskGroupId}`);
 export const taskLogUI = (rootUrl, runId, taskId, liveLogName = 'public/logs/live.log') =>
@@ -17,29 +20,25 @@ let debugCounter = 0;
 export const makeDebug = (monitor, attrs = {}) => {
   const debugId = `id-${debugCounter}`;
   debugCounter += 1;
-  const debug = message => monitor.log.handlerDebug({
-    eventId: null,
-    installationId: null,
-    taskGroupId: null,
-    taskId: null,
-    owner: null,
-    repo: null,
-    sha: null,
-    ...attrs,
-    message,
-    debugId,
-  });
-  debug.refine = moreAttrs => makeDebug(monitor, { ...attrs, ...moreAttrs, debugId });
+  const debug = (message) =>
+    monitor.log.handlerDebug({
+      eventId: null,
+      installationId: null,
+      taskGroupId: null,
+      taskId: null,
+      owner: null,
+      repo: null,
+      sha: null,
+      ...attrs,
+      message,
+      debugId,
+    });
+  debug.refine = (moreAttrs) => makeDebug(monitor, { ...attrs, ...moreAttrs, debugId });
   return debug;
 };
 
 export class GithubCheckOutput {
-  constructor({
-    title = '',
-    summary = '',
-    text = '',
-    annotations = [],
-  }) {
+  constructor({ title = '', summary = '', text = '', annotations = [] }) {
     this.title = title;
     this.summary = summary;
     this.text = text;
@@ -175,28 +174,31 @@ export class GithubCheck {
 }
 
 export const isCollaborator = async (instGithub, organization, repository, login) => {
-  return Boolean(await instGithub.repos.checkCollaborator({
-    owner: organization,
-    repo: repository,
-    username: login,
-    // avoid "default" retry strategy on 404 errors
-    request: {
-      retries: 1,
-      retryAfter: 1,
-      doNotRetry: [400, 401, 403],
-    },
-  }).catch(e => {
-    if (e.status !== 404) {
-      throw e;
-    }
-    return false; // 404 -> false
-  }));
+  return Boolean(
+    await instGithub.repos
+      .checkCollaborator({
+        owner: organization,
+        repo: repository,
+        username: login,
+        // avoid "default" retry strategy on 404 errors
+        request: {
+          retries: 1,
+          retryAfter: 1,
+          doNotRetry: [400, 401, 403],
+        },
+      })
+      .catch((e) => {
+        if (e.status !== 404) {
+          throw e;
+        }
+        return false; // 404 -> false
+      }),
+  );
 };
 
 export const getTimeDifference = (timestamp1, timestamp2) => {
-
   const isValidDate = (date) => {
-    return !isNaN(Date.parse(date));
+    return !Number.isNaN(Date.parse(date));
   };
 
   if (timestamp1 === undefined || timestamp2 === undefined) {
@@ -220,11 +222,21 @@ export const getTimeDifference = (timestamp1, timestamp2) => {
 
   const parts = [];
 
-  if (days > 0) {parts.push(`${days} day${days > 1 ? 's' : ''}`);}
-  if (hours % 24 > 0) {parts.push(`${hours % 24} hour${hours % 24 > 1 ? 's' : ''}`);}
-  if (minutes % 60 > 0) {parts.push(`${minutes % 60} minute${minutes % 60 > 1 ? 's' : ''}`);}
-  if (seconds % 60 > 0) {parts.push(`${seconds % 60} second${seconds % 60 > 1 ? 's' : ''}`);}
-  if (ms > 0) {parts.push(`${ms} millisecond${ms > 1 ? 's' : ''}`);}
+  if (days > 0) {
+    parts.push(`${days} day${days > 1 ? 's' : ''}`);
+  }
+  if (hours % 24 > 0) {
+    parts.push(`${hours % 24} hour${hours % 24 > 1 ? 's' : ''}`);
+  }
+  if (minutes % 60 > 0) {
+    parts.push(`${minutes % 60} minute${minutes % 60 > 1 ? 's' : ''}`);
+  }
+  if (seconds % 60 > 0) {
+    parts.push(`${seconds % 60} second${seconds % 60 > 1 ? 's' : ''}`);
+  }
+  if (ms > 0) {
+    parts.push(`${ms} millisecond${ms > 1 ? 's' : ''}`);
+  }
 
   const formattedDifference = parts.join(', ');
 

@@ -3,24 +3,24 @@ import _ from 'lodash';
 import assert from 'node:assert';
 import nock from 'nock';
 
-suite(suiteName(), function() {
+suite(suiteName(), function () {
   let oldTaskId;
   let savedEnv;
 
-  suiteSetup(function() {
+  suiteSetup(function () {
     // make sure $TASK_ID isn't set for the duration of this suite
     oldTaskId = process.env.TASK_ID;
     delete process.env.TASK_ID;
     savedEnv = _.cloneDeep(process.env);
   });
 
-  teardown(function() {
+  teardown(function () {
     // reset process.env back to savedEnv, in-place (without $TASK_ID)
-    Object.keys(process.env).forEach(k => delete process.env[k]);
-    Object.entries(savedEnv).forEach(([k, v]) => process.env[k] = v);
+    Object.keys(process.env).forEach((k) => delete process.env[k]);
+    Object.entries(savedEnv).forEach(([k, v]) => (process.env[k] = v));
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(function () {
     if (oldTaskId) {
       process.env.TASK_ID = oldTaskId;
     }
@@ -35,17 +35,17 @@ suite(suiteName(), function() {
   };
   const sticky = stickyLoader(loader);
 
-  setup(function() {
+  setup(function () {
     sticky.save();
   });
 
-  teardown(function() {
+  teardown(function () {
     sticky.restore();
   });
 
-  suite('have / get', function() {
+  suite('have / get', function () {
     let secrets;
-    setup(function() {
+    setup(function () {
       secrets = new Secrets({
         secretName: 'path/to/secret',
         secrets: {
@@ -62,7 +62,7 @@ suite(suiteName(), function() {
       sticky.inject('cfg', {});
     });
 
-    test('with nothing', async function() {
+    test('with nothing', async function () {
       await secrets.setup();
       assert(!secrets.have('envOnly'));
       assert.throws(() => secrets.get('envOnly'));
@@ -72,7 +72,7 @@ suite(suiteName(), function() {
       assert.throws(() => secrets.get('envAndCfg'));
     });
 
-    test('with no cfg properties', async function() {
+    test('with no cfg properties', async function () {
       secrets = new Secrets({
         secretName: 'path/to/secret',
         secrets: {
@@ -87,7 +87,7 @@ suite(suiteName(), function() {
       assert.throws(() => secrets.get('envOnly'));
     });
 
-    test('with config', async function() {
+    test('with config', async function () {
       sticky.inject('cfg', { cfgonly: { pass: 'PP' }, both: { pass: 'P2' } });
       await secrets.setup();
       assert(!secrets.have('envOnly'));
@@ -98,14 +98,14 @@ suite(suiteName(), function() {
       assert.deepEqual(secrets.get('envAndCfg'), { PASS_IN_BOTH: 'P2' });
     });
 
-    test('have with a false value', async function() {
+    test('have with a false value', async function () {
       sticky.inject('cfg', { cfgonly: { pass: false } });
       await secrets.setup();
       assert(secrets.have('cfgOnly'));
       assert.deepEqual(secrets.get('cfgOnly'), { cfgonly: false });
     });
 
-    test('with env', async function() {
+    test('with env', async function () {
       process.env.PASS_IN_ENV = 'PIE';
       process.env.PASS_IN_BOTH = 'PIB';
       await secrets.setup();
@@ -118,7 +118,7 @@ suite(suiteName(), function() {
       assert(!process.env.PASS_IN_ENV, '$PASS_IN_ENV is still set');
     });
 
-    test('with env via secrets service', async function() {
+    test('with env via secrets service', async function () {
       process.env.TASK_ID = 'abc123'; // so fetching occurs
       secrets._fetchSecrets = async () => ({ PASS_IN_ENV: 'PIE', PASS_IN_BOTH: 'PIB' });
       await secrets.setup();
@@ -131,7 +131,7 @@ suite(suiteName(), function() {
       assert(!process.env.PASS_IN_ENV, '$PASS_IN_ENV is set');
     });
 
-    test('with env and config', async function() {
+    test('with env and config', async function () {
       process.env.PASS_IN_ENV = 'PIE';
       process.env.PASS_IN_BOTH = 'PIB';
       sticky.inject('cfg', { cfgonly: { pass: 'PP' }, both: { pass: 'P2' } });
@@ -147,7 +147,7 @@ suite(suiteName(), function() {
     });
   });
 
-  suite('mockSuite with secrets missing', function() {
+  suite('mockSuite with secrets missing', function () {
     const secrets = new Secrets({
       secretName: 'path/to/secret',
       secrets: {
@@ -157,18 +157,18 @@ suite(suiteName(), function() {
     });
     const testsRun = [];
 
-    secrets.mockSuite('outer', ['sec'], function(mock) {
+    secrets.mockSuite('outer', ['sec'], function (mock) {
       test('inner', () => {
         testsRun.push(mock);
       });
     });
 
-    suiteTeardown(function() {
+    suiteTeardown(function () {
       assert.deepEqual(testsRun, [true], 'expected just the mock run');
     });
   });
 
-  suite('mockSuite with secrets present', function() {
+  suite('mockSuite with secrets present', function () {
     const secrets = new Secrets({
       secretName: 'path/to/secret',
       secrets: {
@@ -178,23 +178,23 @@ suite(suiteName(), function() {
     });
     const testsRun = [];
 
-    suiteSetup(function() {
+    suiteSetup(function () {
       sticky.inject('cfg', { sec: 'here' });
     });
 
-    secrets.mockSuite('outer', ['sec'], function(secrets) {
+    secrets.mockSuite('outer', ['sec'], function (secrets) {
       test('inner', () => {
         testsRun.push(secrets);
       });
     });
 
-    suiteTeardown(function() {
+    suiteTeardown(function () {
       assert.deepEqual(testsRun, [true, false], 'expected both runs');
     });
   });
   // NOTE: testing NO_TEST_SKIP would generate a failed test, so we do not attempt to test that.
 
-  suite('_fetchSecrets', function() {
+  suite('_fetchSecrets', function () {
     const secrets = new Secrets({
       secretName: 'path/to/secret',
       secrets: {
@@ -202,7 +202,7 @@ suite(suiteName(), function() {
       },
     });
 
-    suiteSetup(function() {
+    suiteSetup(function () {
       nock('http://proxy')
         .get('/api/secrets/v1/secret/path%2Fto%2Fsecret')
         .reply(200, (_uri, _requestBody) => {
@@ -210,11 +210,11 @@ suite(suiteName(), function() {
         });
     });
 
-    suiteTeardown(function() {
+    suiteTeardown(function () {
       nock.cleanAll();
     });
 
-    test('with TASK_ID set', async function() {
+    test('with TASK_ID set', async function () {
       process.env.TASK_ID = '1234';
       process.env.TASKCLUSTER_PROXY_URL = 'http://proxy';
       assert.deepEqual(await secrets._fetchSecrets(), { SECRET_VALUE: '13' });

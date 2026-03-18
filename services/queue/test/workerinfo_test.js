@@ -6,7 +6,7 @@ import testing from '@taskcluster/lib-testing';
 import { Worker, TaskQueue } from '../src/data.js';
 import { splitTaskQueueId } from '../src/utils.js';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -43,18 +43,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     if (opts.quarantineUntil) {
       // quarantine_queue_worker_with_last_date_active would bump the expires column, so we set it manually
-      await helper.withDbClient(async client => {
-        await client.query(`
+      await helper.withDbClient(async (client) => {
+        await client.query(
+          `
           update queue_workers
           set quarantine_until = $1
           where task_queue_id = $2 and worker_group = $3 and worker_id = $4`,
-        [opts.quarantineUntil, task_queue_id_in, worker_group_in, worker_id_in]);
+          [opts.quarantineUntil, task_queue_id_in, worker_group_in, worker_id_in],
+        );
       });
     }
 
     for (const task of opts.recentTasks || []) {
       await db.fns.queue_worker_task_seen({
-        task_queue_id_in, worker_group_in, worker_id_in,
+        task_queue_id_in,
+        worker_group_in,
+        worker_id_in,
         task_run_in: task,
       });
     }
@@ -63,7 +67,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   let workerInfo;
-  suiteSetup('load workerInfo', async function() {
+  suiteSetup('load workerInfo', async function () {
     if (skipping()) {
       return;
     }
@@ -80,7 +84,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('none');
     await assert.rejects(
       () => helper.queue.listProvisioners(),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 
   test('queue.listProvisioners returns provisioners', async () => {
@@ -98,10 +103,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('provisioner seen creates and updates a provisioner', async () => {
     const workerInfo = await helper.load('workerInfo');
 
-    await Promise.all([
-      workerInfo.seen('prov2/not-important'),
-      workerInfo.seen('prov2/not-important'),
-    ]);
+    await Promise.all([workerInfo.seen('prov2/not-important'), workerInfo.seen('prov2/not-important')]);
     await workerInfo.seen('prov2/not-important');
 
     const result = await helper.queue.listProvisioners();
@@ -127,7 +129,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('none');
     await assert.rejects(
       () => helper.queue.listWorkerTypes('no-provisioner'),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 
   test('queue.listWorkerTypes returns workerTypes', async () => {
@@ -165,10 +168,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const workerInfo = await helper.load('workerInfo');
     const workerType = 'gecko-b-2-linux-extended-extended';
 
-    await Promise.all([
-      workerInfo.seen(`prov2/${workerType}`),
-      workerInfo.seen(`prov2/${workerType}`),
-    ]);
+    await Promise.all([workerInfo.seen(`prov2/${workerType}`), workerInfo.seen(`prov2/${workerType}`)]);
 
     const result = await helper.queue.listWorkerTypes('prov2');
     assert.equal(result.workerTypes.length, 1, 'expected a worker-type');
@@ -195,7 +195,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('none');
     await assert.rejects(
       () => helper.queue.listTaskQueues(),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 
   test('queue.listTaskQueues returns taskQueues', async () => {
@@ -229,7 +230,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('queue.listWorkers returns an empty list', async () => {
-    const result = await helper.queue.listWorkers('prov1-extended-extended-extended', 'gecko-b-2-linux-extended-extended');
+    const result = await helper.queue.listWorkers(
+      'prov1-extended-extended-extended',
+      'gecko-b-2-linux-extended-extended',
+    );
 
     assert.equal(result.workers.length, 0, 'Did not expect any workers');
   });
@@ -238,7 +242,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('none');
     await assert.rejects(
       () => helper.queue.listWorkers('prov', 'wt'),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 
   test('queue.listWorkers returns workers', async () => {
@@ -246,7 +251,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const taskId2 = slugid.v4();
 
     const worker = await makeWorker({
-      recentTasks: [{ taskId, runId: 0 }, { taskId: taskId2, runId: 0 }],
+      recentTasks: [
+        { taskId, runId: 0 },
+        { taskId: taskId2, runId: 0 },
+      ],
     });
 
     const [provisionerId, workerType] = worker.taskQueueId.split('/');
@@ -258,10 +266,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(!result.workers[0].quarantineUntil, 'expected quarantineUntil to not be defined');
     assert(result.workers[0].latestTask.taskId === taskId2, `expected ${taskId2}`);
     assert(
-      new Date(result.workers[0].firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`,
+      new Date(result.workers[0].firstClaim).getTime() === worker.firstClaim.getTime(),
+      `expected ${worker.firstClaim}`,
     );
     assert(
-      new Date(result.workers[0].lastDateActive).getTime() === worker.lastDateActive.getTime(), `expected ${worker.lastDateActive}`,
+      new Date(result.workers[0].lastDateActive).getTime() === worker.lastDateActive.getTime(),
+      `expected ${worker.lastDateActive}`,
     );
   });
 
@@ -278,23 +288,23 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const [provisionerId, workerType] = workers[0].taskQueueId.split('/');
     const result = await helper.queue.listWorkers(provisionerId, workerType);
 
-    assert.equal(result.workers.length, 3, `expected three workers, got ${result.workers.map(w => w.workerId).join(', ')}`);
-    assert(result.workers.some(w => w.workerId === 'q'));
-    assert(result.workers.some(w => w.workerId === 'new'));
-    assert(result.workers.some(w => w.workerId === 'newq'));
+    assert.equal(
+      result.workers.length,
+      3,
+      `expected three workers, got ${result.workers.map((w) => w.workerId).join(', ')}`,
+    );
+    assert(result.workers.some((w) => w.workerId === 'q'));
+    assert(result.workers.some((w) => w.workerId === 'new'));
+    assert(result.workers.some((w) => w.workerId === 'newq'));
   });
 
   test('queue.listWorkers returns filtered workers', async () => {
     const worker = await makeWorker({});
     const [provisionerId, workerType] = worker.taskQueueId.split('/');
 
-    const result = await helper.queue.listWorkers(
-      provisionerId, workerType, { quarantined: false },
-    );
+    const result = await helper.queue.listWorkers(provisionerId, workerType, { quarantined: false });
 
-    const result2 = await helper.queue.listWorkers(
-      provisionerId, workerType, { quarantined: true },
-    );
+    const result2 = await helper.queue.listWorkers(provisionerId, workerType, { quarantined: true });
 
     assert.equal(result.workers.length, 1, 'expected 1 worker');
     assert.equal(result2.workers.length, 0, 'expected no worker');
@@ -304,13 +314,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const worker = await makeWorker({});
     const [provisionerId, workerType] = worker.taskQueueId.split('/');
 
-    const result = await helper.queue.listWorkers(
-      provisionerId, workerType, { quarantined: false },
-    );
+    const result = await helper.queue.listWorkers(provisionerId, workerType, { quarantined: false });
 
-    const result2 = await helper.queue.listWorkers(
-      provisionerId, 'a-non-existing-worker', { quarantined: false },
-    );
+    const result2 = await helper.queue.listWorkers(provisionerId, 'a-non-existing-worker', { quarantined: false });
 
     assert.equal(result.workers.length, 1, 'expected 1 worker');
     assert.equal(result2.workers.length, 0, 'expected no worker');
@@ -373,18 +379,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     };
 
     const [provisionerId, workerType] = worker.taskQueueId.split('/');
-    await helper.queue.quarantineWorker(
-      provisionerId,
-      workerType,
-      worker.workerGroup,
-      worker.workerId,
-      update);
+    await helper.queue.quarantineWorker(provisionerId, workerType, worker.workerGroup, worker.workerId, update);
 
-    const result = await helper.queue.getWorker(
-      provisionerId,
-      workerType,
-      worker.workerGroup,
-      worker.workerId);
+    const result = await helper.queue.getWorker(provisionerId, workerType, worker.workerGroup, worker.workerId);
 
     assert(
       result.quarantineUntil === update.quarantineUntil,
@@ -396,7 +393,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('none');
     await assert.rejects(
       () => helper.queue.getWorkerType('some-prov', 'some-wt'),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 
   test('queue.getWorkerType returns a worker-type', async () => {
@@ -416,7 +414,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('none');
     await assert.rejects(
       () => helper.queue.getTaskQueue('some-prov/some-wt'),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 
   test('queue.getTaskQueue returns a task queue', async () => {
@@ -486,7 +485,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('none');
     await assert.rejects(
       () => helper.queue.getProvisioner('some-prov'),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 
   test('queue.getProvisioner returns 404 when no such provisioner is found', async () => {
@@ -504,14 +504,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const provisionerId = 'prov1-extended-extended-extended';
     const updateProps = {
       description: 'desc-provisioner',
-      actions: [{
-        name: 'kill',
-        title: 'Kill Provisioner',
-        context: 'provisioner',
-        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle/<provisionerId>',
-        method: 'DELETE',
-        description: 'Remove provisioner desc-provisioner',
-      }],
+      actions: [
+        {
+          name: 'kill',
+          title: 'Kill Provisioner',
+          context: 'provisioner',
+          url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle/<provisionerId>',
+          method: 'DELETE',
+          description: 'Remove provisioner desc-provisioner',
+        },
+      ],
     };
 
     let err;
@@ -532,14 +534,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     const updateProps = {
       description: 'desc-provisioner',
-      actions: [{
-        name: 'kill',
-        title: 'Kill Provisioner',
-        context: 'provisioner',
-        url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle/<provisionerId>',
-        method: 'DELETE',
-        description: 'Remove provisioner desc-provisioner',
-      }],
+      actions: [
+        {
+          name: 'kill',
+          title: 'Kill Provisioner',
+          context: 'provisioner',
+          url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle/<provisionerId>',
+          method: 'DELETE',
+          description: 'Remove provisioner desc-provisioner',
+        },
+      ],
     };
 
     await helper.queue.declareProvisioner(provisionerId, updateProps);
@@ -596,11 +600,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     const [provisionerId, workerType] = worker.taskQueueId.split('/');
-    const result = await helper.queue.getWorker(
-      provisionerId,
-      workerType,
-      worker.workerGroup,
-      worker.workerId);
+    const result = await helper.queue.getWorker(provisionerId, workerType, worker.workerGroup, worker.workerId);
 
     assert(result.provisionerId === provisionerId, `expected ${provisionerId}`);
     assert(result.workerType === workerType, `expected ${workerType}`);
@@ -608,14 +608,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(result.workerId === worker.workerId, `expected ${worker.workerId}`);
     assert(new Date(result.expires).getTime() === worker.expires.getTime(), `expected ${worker.expires}`);
     assert(new Date(result.firstClaim).getTime() === worker.firstClaim.getTime(), `expected ${worker.firstClaim}`);
-    assert(new Date(result.lastDateActive).getTime() === worker.lastDateActive.getTime(), `expected ${worker.lastDateActive}`);
+    assert(
+      new Date(result.lastDateActive).getTime() === worker.lastDateActive.getTime(),
+      `expected ${worker.lastDateActive}`,
+    );
     assert(result.recentTasks[0].taskId === taskId, `expected ${taskId}`);
     assert(result.recentTasks[0].runId === 0, 'expected 0');
     assert(result.recentTasks[1].taskId === taskId, `expected ${taskId}`);
     assert(result.recentTasks[1].runId === 1, 'expected 1');
     assert(result.recentTasks[2].taskId === taskId2, `expected ${taskId2}`);
     assert(result.recentTasks[2].runId === 0, 'expected 0');
-
   });
 
   test('queue.getWorker returns 404 for a missing Worker', async () => {
@@ -624,10 +626,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     let err;
     try {
-      await helper.queue.getWorker(
-        provisionerId,
-        workerType,
-        'no-such', 'no-such');
+      await helper.queue.getWorker(provisionerId, workerType, 'no-such', 'no-such');
     } catch (e) {
       err = e;
     }
@@ -642,11 +641,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     let err;
     try {
-      await helper.queue.getWorker(
-        provisionerId,
-        workerType,
-        worker.workerGroup,
-        worker.workerId);
+      await helper.queue.getWorker(provisionerId, workerType, worker.workerGroup, worker.workerId);
     } catch (e) {
       err = e;
     }
@@ -662,11 +657,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
     const [provisionerId, workerType] = worker.taskQueueId.split('/');
 
-    const result = await helper.queue.getWorker(
-      provisionerId,
-      workerType,
-      worker.workerGroup,
-      worker.workerId);
+    const result = await helper.queue.getWorker(provisionerId, workerType, worker.workerGroup, worker.workerId);
     assert.equal(result.workerId, worker.workerId);
   });
 
@@ -674,7 +665,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('none');
     await assert.rejects(
       () => helper.queue.getWorker('some-prov', 'some-wt', 'wg', 'wid'),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 
   test('queue.getWorker returns 404 for a missing WorkerType', async () => {
@@ -683,11 +675,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     let err;
     try {
-      await helper.queue.getWorker(
-        provisionerId,
-        workerType,
-        worker.workerGroup,
-        worker.workerId);
+      await helper.queue.getWorker(provisionerId, workerType, worker.workerGroup, worker.workerId);
     } catch (e) {
       err = e;
     }
@@ -708,13 +696,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     };
 
     const [provisionerId, workerType] = worker.taskQueueId.split('/');
-    await helper.queue.declareWorker(
-      provisionerId, workerType, worker.workerGroup, worker.workerId, updateProps,
-    );
+    await helper.queue.declareWorker(provisionerId, workerType, worker.workerGroup, worker.workerId, updateProps);
 
-    const result = await helper.queue.getWorker(
-      provisionerId, workerType, worker.workerGroup, worker.workerId,
-    );
+    const result = await helper.queue.getWorker(provisionerId, workerType, worker.workerGroup, worker.workerId);
 
     assert(result.provisionerId === provisionerId, `expected ${provisionerId}`);
     assert(result.workerType === workerType, `expected ${workerType}`);
@@ -735,8 +719,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       expires: new Date('3000-01-01'),
     };
 
-    await helper.queue.declareWorker(
-      provisionerId, workerType, workerGroup, workerId, updateProps);
+    await helper.queue.declareWorker(provisionerId, workerType, workerGroup, workerId, updateProps);
 
     const worker = await helper.queue.getWorker(provisionerId, workerType, workerGroup, workerId);
 
@@ -770,7 +753,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     try {
       await helper.queue.declareWorker(
-        worker.provisionerId, worker.workerType, worker.workerGroup, worker.workerId, updateProps,
+        worker.provisionerId,
+        worker.workerType,
+        worker.workerGroup,
+        worker.workerId,
+        updateProps,
       );
 
       assert(false, 'expected to not be able to update quarantineUntil');
@@ -859,6 +846,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const recentTasks = result.recentTasks;
 
     assert.equal(result.recentTasks.length, 20, 'expected to have 20 tasks');
-    assert.deepEqual(recentTasks.map(({ taskId }) => taskId), taskIds.slice(10));
+    assert.deepEqual(
+      recentTasks.map(({ taskId }) => taskId),
+      taskIds.slice(10),
+    );
   });
 });

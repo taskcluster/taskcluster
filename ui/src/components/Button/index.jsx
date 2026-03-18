@@ -52,7 +52,7 @@ export default class Button extends Component {
     id: string,
   };
 
-  handleButtonClick = e => {
+  handleButtonClick = (e) => {
     const { onClick, track } = this.props;
 
     if (track && window.env.GA_TRACKING_ID) {
@@ -84,24 +84,16 @@ export default class Button extends Component {
     } = this.props;
     const lackingAuth = requiresAuth && !user;
     const isDisabled = lackingAuth || disabled;
-    const MuiComponent =
-      variant === 'round' || variant === 'extended' ? Fab : MuiButton;
+    const MuiComponent = variant === 'round' || variant === 'extended' ? Fab : MuiButton;
     const ButtonComponent = (
-      <MuiComponent
-        onClick={this.handleButtonClick}
-        disabled={isDisabled}
-        variant={variant}
-        id={id}
-        {...props}>
+      <MuiComponent onClick={this.handleButtonClick} disabled={isDisabled} variant={variant} id={id} {...props}>
         {children}
       </MuiComponent>
     );
     const tooltipTitle = tooltipProps?.title;
 
     return tooltipProps ? (
-      <Tooltip
-        {...tooltipProps}
-        title={lackingAuth ? `${tooltipTitle} (Auth Required)` : tooltipTitle}>
+      <Tooltip {...tooltipProps} title={lackingAuth ? `${tooltipTitle} (Auth Required)` : tooltipTitle}>
         <span {...spanProps}>{ButtonComponent}</span>
       </Tooltip>
     ) : (

@@ -12,8 +12,8 @@ const badcreds = {
   accessToken: 'wrong',
 };
 
-suite(testing.suiteName(), function() {
-  helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+suite(testing.suiteName(), function () {
+  helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function (mock, skipping) {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);
@@ -23,14 +23,15 @@ suite(testing.suiteName(), function() {
     const testAuth = (name, { config, requiredScopes, clientScopes, errorCode }) => {
       test(name, async () => {
         const auth = new helper.AuthClient(config);
-        await auth.testAuthenticate({ requiredScopes, clientScopes }).then(() => {
-          assert(!errorCode, 'Request was successful, but expected an error ' +
-                             'with code: ' + errorCode);
-        }, err => {
-          assert(errorCode, 'Request failed!');
-          assert(err.code === errorCode, 'Expected error with code: ' +
-                                         errorCode + ' but got: ' + err.code);
-        });
+        await auth.testAuthenticate({ requiredScopes, clientScopes }).then(
+          () => {
+            assert(!errorCode, `Request was successful, but expected an error with code: ${errorCode}`);
+          },
+          (err) => {
+            assert(errorCode, 'Request failed!');
+            assert(err.code === errorCode, `Expected error with code: ${errorCode} but got: ${err.code}`);
+          },
+        );
       });
     };
 
@@ -100,7 +101,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.secrets.mockSuite('testAuthGet', ['azure', 'gcp'], function(mock, skipping) {
+  helper.secrets.mockSuite('testAuthGet', ['azure', 'gcp'], function (mock, skipping) {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);
@@ -110,14 +111,15 @@ suite(testing.suiteName(), function() {
     const testAuthGet = (name, { config, errorCode }) => {
       test(name, async () => {
         const auth = new helper.AuthClient(config);
-        await auth.testAuthenticateGet().then(() => {
-          assert(!errorCode, 'Request was successful, but expected an error ' +
-                             'with code: ' + errorCode);
-        }, err => {
-          assert(errorCode, 'Request failed!');
-          assert(err.code === errorCode, 'Expected error with code: ' +
-                                         errorCode + ' but got: ' + err.code);
-        });
+        await auth.testAuthenticateGet().then(
+          () => {
+            assert(!errorCode, `Request was successful, but expected an error with code: ${errorCode}`);
+          },
+          (err) => {
+            assert(errorCode, 'Request failed!');
+            assert(err.code === errorCode, `Expected error with code: ${errorCode} but got: ${err.code}`);
+          },
+        );
       });
     };
 

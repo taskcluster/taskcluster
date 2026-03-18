@@ -1,4 +1,3 @@
-
 import ListItemText from '@material-ui/core/ListItemText';
 
 export default function ListItem({ children, ...props }) {

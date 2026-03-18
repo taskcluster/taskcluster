@@ -9,7 +9,7 @@ import NumericIcon from 'mdi-react/NumericIcon';
 import TextField from '../TextField';
 import Button from '../Button';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   fabIcon: {
     ...theme.mixins.fabIcon,
   },
@@ -24,7 +24,7 @@ export default class GoToLineButton extends Component {
     lineNumber: '',
   };
 
-  handleChange = e => {
+  handleChange = (e) => {
     const number = e.target.value;
 
     this.setState({
@@ -41,7 +41,7 @@ export default class GoToLineButton extends Component {
     this.setState({ open: true });
   };
 
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault();
 
     if (this.state.isValid) {
@@ -62,13 +62,11 @@ export default class GoToLineButton extends Component {
           tooltipProps={{ title: 'Go to Line' }}
           color="secondary"
           onClick={this.handleOpenClick}
-          {...props}>
+          {...props}
+        >
           <NumericIcon size={20} />
         </Button>
-        <Dialog
-          open={open}
-          onClose={this.handleClose}
-          aria-labelledby="go-to-line-title">
+        <Dialog open={open} onClose={this.handleClose} aria-labelledby="go-to-line-title">
           <DialogTitle id="go-to-line-title">Go to line number</DialogTitle>
           <DialogContent>
             <form onSubmit={this.handleSubmit}>
@@ -86,11 +84,7 @@ export default class GoToLineButton extends Component {
           </DialogContent>
           <DialogActions>
             <Button onClick={this.handleClose}>Cancel</Button>
-            <Button
-              onClick={this.handleSubmit}
-              disabled={!isValid}
-              variant="contained"
-              color="secondary">
+            <Button onClick={this.handleSubmit} disabled={!isValid} variant="contained" color="secondary">
               Go to line
             </Button>
           </DialogActions>

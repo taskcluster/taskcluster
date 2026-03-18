@@ -29,14 +29,13 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.workerId, b.node.workerId)),
   map(
     ({ node: { workerId, latestTask } }) =>
-      `${workerId}.${latestTask?.run?.taskId ?? '-'}.${latestTask?.run?.runId ??
-        '-'}`
-  )
+      `${workerId}.${latestTask?.run?.taskId ?? '-'}.${latestTask?.run?.runId ?? '-'}`,
+  ),
 );
 
 @withAuth
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   linksIcon: {
     marginLeft: theme.spacing(1),
   },
@@ -89,14 +88,8 @@ export default class WorkersTable extends Component {
       return {
         ...workersConnection,
         edges: [...workersConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? this.valueFromNode(b.node)
-              : this.valueFromNode(a.node);
-          const secondElement =
-            sortDirection === 'desc'
-              ? this.valueFromNode(a.node)
-              : this.valueFromNode(b.node);
+          const firstElement = sortDirection === 'desc' ? this.valueFromNode(b.node) : this.valueFromNode(a.node);
+          const secondElement = sortDirection === 'desc' ? this.valueFromNode(a.node) : this.valueFromNode(b.node);
 
           return sort(firstElement, secondElement);
         }),
@@ -108,7 +101,7 @@ export default class WorkersTable extends Component {
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
-    }
+    },
   );
 
   handleDialogActionOpen = (workerPoolId, workerGroup, workerId) => () => {
@@ -141,7 +134,7 @@ export default class WorkersTable extends Component {
     }
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({
       error,
     });
@@ -154,7 +147,7 @@ export default class WorkersTable extends Component {
     });
   };
 
-  handleHeaderClick = sortByHeader => {
+  handleHeaderClick = (sortByHeader) => {
     const query = parse(this.props.location.search.slice(1));
     const sortBy = sortByHeader;
     const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
@@ -192,33 +185,17 @@ export default class WorkersTable extends Component {
     if (query.sortBy) return;
 
     this.props.history.replace({
-      search: stringify(
-        { sortBy: 'Last Active', sortDirection: 'desc', ...query },
-        { addQueryPrefix: true }
-      ),
+      search: stringify({ sortBy: 'Last Active', sortDirection: 'desc', ...query }, { addQueryPrefix: true }),
     });
   }
 
   render() {
     const query = parse(this.props.location.search.slice(1));
-    const { sortBy, sortDirection } = query.sortBy
-      ? query
-      : { sortBy: 'Last Active', sortDirection: 'desc' };
-    const {
-      provisionerId,
-      workerType,
-      onPageChange,
-      workersConnection,
-      classes,
-      ...props
-    } = this.props;
+    const { sortBy, sortDirection } = query.sortBy ? query : { sortBy: 'Last Active', sortDirection: 'desc' };
+    const { provisionerId, workerType, onPageChange, workersConnection, classes, ...props } = this.props;
     const { open, error, title, confirmText, body } = this.state;
     const iconSize = 16;
-    const connection = this.createSortedWorkersConnection(
-      workersConnection,
-      sortBy,
-      sortDirection
-    );
+    const connection = this.createSortedWorkersConnection(workersConnection, sortBy, sortDirection);
 
     return (
       <Fragment>
@@ -247,20 +224,15 @@ export default class WorkersTable extends Component {
               <TableCell>{workerGroup}</TableCell>
               <TableCell>
                 <Link
-                  to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
+                  to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}
+                >
                   <TableCellItem button>
                     {workerId}
                     <LinkIcon className={classes.linksIcon} size={iconSize} />
                   </TableCellItem>
                 </Link>
               </TableCell>
-              <TableCell>
-                {state ? (
-                  <StatusLabel state={state.toUpperCase()} />
-                ) : (
-                  <em>n/a</em>
-                )}
-              </TableCell>
+              <TableCell>{state ? <StatusLabel state={state.toUpperCase()} /> : <em>n/a</em>}</TableCell>
               <TableCell> {capacity || 0} </TableCell>
               {lastDateActive ? (
                 <CopyToClipboardTableCell
@@ -280,8 +252,7 @@ export default class WorkersTable extends Component {
               />
               <TableCell>
                 {latestTask?.run ? (
-                  <Link
-                    to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
+                  <Link to={`/tasks/${latestTask.run.taskId}/runs/${latestTask.run.runId}`}>
                     <TableCellItem button>
                       {latestTask.run.taskId}
                       <LinkIcon className={classes.linksIcon} size={iconSize} />
@@ -291,13 +262,7 @@ export default class WorkersTable extends Component {
                   <em>n/a</em>
                 )}
               </TableCell>
-              <TableCell>
-                {latestTask?.run ? (
-                  <StatusLabel state={latestTask.run.state} />
-                ) : (
-                  <em>n/a</em>
-                )}
-              </TableCell>
+              <TableCell>{latestTask?.run ? <StatusLabel state={latestTask.run.state} /> : <em>n/a</em>}</TableCell>
               {latestTask?.run ? (
                 <CopyToClipboardTableCell
                   tooltipTitle={latestTask.run.started}
@@ -317,8 +282,7 @@ export default class WorkersTable extends Component {
                 <TableCell>n/a</TableCell>
               )}
               <TableCell>
-                {quarantineUntil &&
-                parseISO(quarantineUntil).getTime() > Date.now()? (
+                {quarantineUntil && parseISO(quarantineUntil).getTime() > Date.now() ? (
                   formatDistanceStrict(new Date(), parseISO(quarantineUntil), {
                     unit: 'day',
                   })
@@ -333,12 +297,9 @@ export default class WorkersTable extends Component {
                     disabled={terminateDisabled(state, providerId)}
                     variant="outlined"
                     endIcon={<DeleteIcon size={iconSize} />}
-                    onClick={this.handleDialogActionOpen(
-                      workerPoolId,
-                      workerGroup,
-                      workerId
-                    )}
-                    tooltipProps={{ title: 'Terminate Worker' }}>
+                    onClick={this.handleDialogActionOpen(workerPoolId, workerGroup, workerId)}
+                    tooltipProps={{ title: 'Terminate Worker' }}
+                  >
                     Terminate
                   </Button>
                 )}

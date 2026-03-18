@@ -98,7 +98,7 @@ class Secrets {
     assert(this._setupComplete, 'must call secrets.setup() in a setup function first, or use mockSuite');
     assert(this.secrets[secret], `no such secret ${secret}`);
     const secrets = this.secrets[secret];
-    return secrets.every(secret => 'value' in secret);
+    return secrets.every((secret) => 'value' in secret);
   }
 
   get(secret) {
@@ -107,7 +107,7 @@ class Secrets {
     const secrets = this.secrets[secret];
     const result = {};
 
-    secrets.forEach(secret => {
+    secrets.forEach((secret) => {
       assert('value' in secret, `no value found for secret ${secret.name}`);
       result[secret.name] = secret.value;
     });
@@ -121,8 +121,8 @@ class Secrets {
 
     // if no secrets are required, just run this as a regular suite with no "(real)" suffix
     if (secretList.length === 0) {
-      suite(title, function() {
-        suiteSetup(async function() {
+      suite(title, function () {
+        suiteSetup(async function () {
           if (that.load) {
             that.load.save();
           }
@@ -130,7 +130,7 @@ class Secrets {
 
         fn.call(this, false, () => skipping);
 
-        suiteTeardown(function() {
+        suiteTeardown(function () {
           if (that.load) {
             that.load.restore();
           }
@@ -139,20 +139,20 @@ class Secrets {
       return;
     }
 
-    if (secretList.some(n => ! this.secrets[n])) {
+    if (secretList.some((n) => !this.secrets[n])) {
       throw new Error(`Unknown secrets in ${JSON.stringify(secretList)}`);
     }
 
-    suite(`${title} (mock)`, function() {
-      suiteSetup(async function() {
+    suite(`${title} (mock)`, function () {
+      suiteSetup(async function () {
         skipping = false;
         await that.setup();
         if (that.load) {
           that.load.save();
 
           // update the loader's cfg with `mock` default values
-          secretList.forEach(name => {
-            that.secrets[name].forEach(secret => {
+          secretList.forEach((name) => {
+            that.secrets[name].forEach((secret) => {
               if (secret.cfg && secret.mock) {
                 that.load.cfg(secret.cfg, secret.mock);
               }
@@ -163,18 +163,18 @@ class Secrets {
 
       fn.call(this, true, () => skipping);
 
-      suiteTeardown(function() {
+      suiteTeardown(function () {
         if (that.load) {
           that.load.restore();
         }
       });
     });
 
-    suite(`${title} (real)`, function() {
+    suite(`${title} (real)`, function () {
       let saveOccured = false;
-      suiteSetup(async function() {
+      suiteSetup(async function () {
         await that.setup();
-        const missing = secretList.filter(name => !that.have(name));
+        const missing = secretList.filter((name) => !that.have(name));
         if (missing.length) {
           if (process.env.NO_TEST_SKIP) {
             throw new Error(`secrets missing and NO_TEST_SKIP is set: ${missing.join(' ')}`);
@@ -190,8 +190,8 @@ class Secrets {
           saveOccured = true;
           // update the loader's cfg for every secret that has a cfg property; this will be restored
           // by the `load.restore()` in suiteTeardown.
-          secretList.forEach(name => {
-            that.secrets[name].forEach(secret => {
+          secretList.forEach((name) => {
+            that.secrets[name].forEach((secret) => {
               if (secret.cfg) {
                 that.load.cfg(secret.cfg, secret.value);
               }
@@ -202,7 +202,7 @@ class Secrets {
 
       fn.call(this, false, () => skipping);
 
-      suiteTeardown(function() {
+      suiteTeardown(function () {
         if (saveOccured) {
           that.load.restore();
         }

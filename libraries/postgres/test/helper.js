@@ -3,7 +3,7 @@ import { withMonitor } from '@taskcluster/lib-testing';
 import { MonitorManager } from '@taskcluster/lib-monitor';
 const testDbUrl = process.env.TEST_DB_URL;
 
-withMonitor({ }, { noLoader: true });
+withMonitor({}, { noLoader: true });
 
 const monitor = MonitorManager.setup({
   serviceName: 'tc-lib-postgres',
@@ -24,11 +24,11 @@ const helper = {
 
 if (testDbUrl) {
   helper.dbSuite = (...args) => {
-    suite(...args.slice(0, -1), function() {
-      suiteSetup('setup database', function() {
+    suite(...args.slice(0, -1), function () {
+      suiteSetup('setup database', function () {
         helper.dbUrl = testDbUrl;
       });
-      setup('clear database', async function() {
+      setup('clear database', async function () {
         await clearDb(testDbUrl);
       });
       args[args.length - 1].call(this);
@@ -36,16 +36,16 @@ if (testDbUrl) {
   };
 } else {
   helper.dbSuite = (...args) => {
-    suite(...args.slice(0, -1), function() {
+    suite(...args.slice(0, -1), function () {
       if (process.env.NO_TEST_SKIP) {
         throw new Error(`TEST_DB_URL not set and NO_TEST_SKIP is set`);
       }
-      test.skip('(TEST_DB_URL is not set)', function() { });
+      test.skip('(TEST_DB_URL is not set)', function () {});
     });
   };
 }
 
-const clearDb = async dbUrl => {
+const clearDb = async (dbUrl) => {
   const client = new pg.Client({ connectionString: dbUrl });
   await client.connect();
   try {

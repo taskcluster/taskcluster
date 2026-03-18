@@ -1,15 +1,5 @@
 import { Component, Fragment } from 'react';
-import {
-  arrayOf,
-  func,
-  number,
-  string,
-  oneOf,
-  oneOfType,
-  object,
-  shape,
-  bool,
-} from 'prop-types';
+import { arrayOf, func, number, string, oneOf, oneOfType, object, shape, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -19,7 +9,7 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   tableWrapper: {
     overflowX: 'auto',
   },
@@ -75,7 +65,7 @@ export default class DataTable extends Component {
          * A label to use for the column name.
          */
         label: string,
-      })
+      }),
     ),
     /**
      * A list of objects or strings to display. Each element in
@@ -117,7 +107,7 @@ export default class DataTable extends Component {
     page: 0,
   };
 
-  handleHeaderClick = header => {
+  handleHeaderClick = (header) => {
     const { onHeaderClick } = this.props;
 
     if (onHeaderClick) {
@@ -145,11 +135,9 @@ export default class DataTable extends Component {
       size,
       ...props
     } = this.props;
-    const colSpan = columnsSize || (headers?.length) || 0;
+    const colSpan = columnsSize || headers?.length || 0;
     const { page } = this.state;
-    const elements = paginate
-      ? items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-      : items;
+    const elements = paginate ? items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : items;
 
     return (
       <Fragment>
@@ -158,13 +146,14 @@ export default class DataTable extends Component {
             {headers && (
               <TableHead>
                 <TableRow>
-                  {headers.map(header => (
+                  {headers.map((header) => (
                     <TableCell key={`table-header-${header.id}`}>
                       <TableSortLabel
                         className={classes.sortHeader}
                         active={header.id === sortByLabel}
                         direction={sortDirection || 'desc'}
-                        onClick={() => this.handleHeaderClick(header)}>
+                        onClick={() => this.handleHeaderClick(header)}
+                      >
                         {header.label}
                       </TableSortLabel>
                     </TableCell>

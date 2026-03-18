@@ -14,20 +14,13 @@ SERVICES.forEach((name) => {
     requires: [],
     provides: [`lbheartbeat-${name}`],
     run: async (_requirements, utils) => {
-      const procs = await readRepoYAML(
-        path.join("services", name, "procs.yml"),
-      );
+      const procs = await readRepoYAML(path.join('services', name, 'procs.yml'));
 
       let checked = false;
 
       for (const proc of Object.values(procs)) {
-        if (proc.type === "web") {
-          const healthcheck = libUrls.api(
-            process.env.TASKCLUSTER_ROOT_URL,
-            name,
-            "v1",
-            "__lbheartbeat__",
-          );
+        if (proc.type === 'web') {
+          const healthcheck = libUrls.api(process.env.TASKCLUSTER_ROOT_URL, name, 'v1', '__lbheartbeat__');
           const resp = await got.get(healthcheck);
 
           // For now we just check statuscode because lbheartbeat doesn't return
@@ -41,7 +34,7 @@ SERVICES.forEach((name) => {
 
       if (!checked) {
         return utils.skip({
-          reason: "No exposed web service",
+          reason: 'No exposed web service',
         });
       }
     },
@@ -52,20 +45,13 @@ SERVICES.forEach((name) => {
     requires: [],
     provides: [`heartbeat-${name}`],
     run: async (_requirements, utils) => {
-      const procs = await readRepoYAML(
-        path.join("services", name, "procs.yml"),
-      );
+      const procs = await readRepoYAML(path.join('services', name, 'procs.yml'));
 
       let checked = false;
 
       for (const proc of Object.values(procs)) {
-        if (proc.type === "web") {
-          const healthcheck = libUrls.api(
-            process.env.TASKCLUSTER_ROOT_URL,
-            name,
-            "v1",
-            "__heartbeat__",
-          );
+        if (proc.type === 'web') {
+          const healthcheck = libUrls.api(process.env.TASKCLUSTER_ROOT_URL, name, 'v1', '__heartbeat__');
           const resp = await got.get(healthcheck);
 
           // For now we just check statuscode because heartbeat doesn't return
@@ -79,7 +65,7 @@ SERVICES.forEach((name) => {
 
       if (!checked) {
         return utils.skip({
-          reason: "No exposed web service",
+          reason: 'No exposed web service',
         });
       }
     },
@@ -90,34 +76,27 @@ SERVICES.forEach((name) => {
     requires: [],
     provides: [`version-${name}`],
     run: async (_requirements, utils) => {
-      const procs = await readRepoYAML(
-        path.join("services", name, "procs.yml"),
-      );
+      const procs = await readRepoYAML(path.join('services', name, 'procs.yml'));
 
       let checked = false;
 
       for (const proc of Object.values(procs)) {
-        if (proc.type === "web") {
-          const dunderVersion = libUrls.api(
-            process.env.TASKCLUSTER_ROOT_URL,
-            name,
-            "v1",
-            "__version__",
-          );
+        if (proc.type === 'web') {
+          const dunderVersion = libUrls.api(process.env.TASKCLUSTER_ROOT_URL, name, 'v1', '__version__');
           const resp = await got(dunderVersion, { throwHttpErrors: true });
 
           try {
             JSON.parse(resp.body);
             checked = true;
           } catch (_err) {
-            throw new Error("__version__ did not return valid JSON");
+            throw new Error('__version__ did not return valid JSON');
           }
         }
       }
 
       if (!checked) {
         return utils.skip({
-          reason: "No exposed web service",
+          reason: 'No exposed web service',
         });
       }
     },
@@ -126,13 +105,7 @@ SERVICES.forEach((name) => {
 
 tasks.push({
   title: `Dockerflow API endpoints succeed (--target dockerflow)`,
-  requires: [
-    ...SERVICES.flatMap((name) => [
-      `lbheartbeat-${name}`,
-      `heartbeat-${name}`,
-      `version-${name}`,
-    ]),
-  ],
+  requires: [...SERVICES.flatMap((name) => [`lbheartbeat-${name}`, `heartbeat-${name}`, `version-${name}`])],
   provides: [`target-dockerflow`],
   run: async (_requirements, _utils) => {},
 });

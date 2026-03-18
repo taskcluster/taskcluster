@@ -17,7 +17,7 @@ const helper = {
 };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async function () {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -32,7 +32,7 @@ helper.secrets = new testing.Secrets({
 
 // Build an http request from a json file with fields describing
 // headers and a body
-helper.jsonHttpRequest = function(jsonFile, options) {
+helper.jsonHttpRequest = function (jsonFile, options) {
   const defaultOptions = {
     hostname: 'localhost',
     port: 60415,
@@ -43,7 +43,7 @@ helper.jsonHttpRequest = function(jsonFile, options) {
   const jsonData = JSON.parse(fs.readFileSync(jsonFile));
   options.headers = jsonData.headers;
 
-  return new Promise(function(accept, reject) {
+  return new Promise(function (accept, reject) {
     try {
       const req = http.request(options, accept);
       req.write(JSON.stringify(jsonData.body));
@@ -67,15 +67,15 @@ helper.withPulse = (_mock, skipping) => {
  * This is reset before each test.  Call this before withServer.
  */
 helper.withFakeGithub = (_mock, _skipping) => {
-  suiteSetup(function() {
+  suiteSetup(function () {
     load.inject('github', fakeGithubAuth());
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(function () {
     load.remove('github');
   });
 
-  setup(async function() {
+  setup(async function () {
     const fakeGithub = await load('github');
     fakeGithub.resetStubs();
   });
@@ -85,20 +85,21 @@ helper.withFakeGithub = (_mock, _skipping) => {
  * Set the `queueClient` loader component to a fake version.
  */
 helper.withFakeQueue = (_mock, _skipping) => {
-  const fakeQueueClient = () => new taskcluster.Queue({
-    rootUrl: 'https://tc.example.com',
-    fake: {
-      sealTaskGroup: sinon.stub(),
-      cancelTaskGroup: sinon.stub(),
-      listArtifacts: sinon.stub(),
-    },
-  });
+  const fakeQueueClient = () =>
+    new taskcluster.Queue({
+      rootUrl: 'https://tc.example.com',
+      fake: {
+        sealTaskGroup: sinon.stub(),
+        cancelTaskGroup: sinon.stub(),
+        listArtifacts: sinon.stub(),
+      },
+    });
 
-  suiteSetup(function() {
+  suiteSetup(function () {
     load.inject('queueClient', fakeQueueClient());
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(function () {
     load.remove('queueClient');
   });
 };
@@ -112,7 +113,7 @@ helper.withFakeQueue = (_mock, _skipping) => {
 helper.withServer = (_mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -122,9 +123,12 @@ helper.withServer = (_mock, skipping) => {
     load.cfg('taskcluster.clientId', null);
     load.cfg('taskcluster.accessToken', null);
 
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl },
+    );
 
     helper.GithubClient = taskcluster.createClient(builder.reference());
 
@@ -137,7 +141,7 @@ helper.withServer = (_mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (skipping()) {
       return;
     }
@@ -150,11 +154,7 @@ helper.withServer = (_mock, skipping) => {
 };
 
 helper.resetTables = (_mock, _skipping) => {
-  setup('reset tables', async function() {
-    await testing.resetTables({ tableNames: [
-      'github_builds',
-      'github_checks',
-      'github_integrations',
-    ] });
+  setup('reset tables', async function () {
+    await testing.resetTables({ tableNames: ['github_builds', 'github_checks', 'github_integrations'] });
   });
 };

@@ -13,26 +13,9 @@ export const LEVELS = {
   debug: 7,
 };
 
-const LEVELS_REVERSE = [
-  'EMERGENCY',
-  'ALERT',
-  'CRITICAL',
-  'ERROR',
-  'WARNING',
-  'NOTICE',
-  'INFO',
-  'DEBUG',
-];
+const LEVELS_REVERSE = ['EMERGENCY', 'ALERT', 'CRITICAL', 'ERROR', 'WARNING', 'NOTICE', 'INFO', 'DEBUG'];
 
-const ELIDED = new Set([
-  'credentials',
-  'accessToken',
-  'password',
-  'secretAccessKey',
-  'secret',
-  'secrets',
-  'bewit',
-]);
+const ELIDED = new Set(['credentials', 'accessToken', 'password', 'secretAccessKey', 'secret', 'secrets', 'bewit']);
 
 /*
  * We will never allow certain keys to be logged, no matter what the
@@ -40,12 +23,13 @@ const ELIDED = new Set([
  * they should pick another one. This is not 100% safety but it does give
  * a bit of a nice fuzzy blanket.
  */
-const elideSecrets = fields => {
+const elideSecrets = (fields) => {
   if (!fields) {
     // Do nothing
   } else if (Array.isArray(fields)) {
     fields.forEach(elideSecrets);
-  } else if (fields.constructor === Object) { // Only plain objects, not strings, etc.
+  } else if (fields.constructor === Object) {
+    // Only plain objects, not strings, etc.
     Object.entries(fields).forEach(([key, val]) => {
       if (ELIDED.has(key)) {
         fields[key] = '...';
@@ -64,14 +48,7 @@ const elideSecrets = fields => {
  * later if we want.
  */
 export class Logger {
-  constructor({
-    name,
-    service,
-    level,
-    destination = process.stdout,
-    metadata = null,
-    taskclusterVersion = undefined,
-  }) {
+  constructor({ name, service, level, destination = process.stdout, metadata = null, taskclusterVersion = undefined }) {
     assert(name, 'Must specify Logger name.');
 
     this.name = name;
@@ -118,22 +95,22 @@ export class Logger {
     if (fields === null || typeof fields === 'boolean') {
       level = LEVELS.err;
       const origType = type;
-      type = 'monitor.loggingError',
-      fields = {
-        error: 'Invalid field to be logged.',
-        origType,
-        orig: fields,
-      };
+      (type = 'monitor.loggingError'),
+        (fields = {
+          error: 'Invalid field to be logged.',
+          origType,
+          orig: fields,
+        });
     }
     if (fields.meta !== undefined) {
       level = LEVELS.err;
       const origType = type;
-      type = 'monitor.loggingError',
-      fields = {
-        error: 'You may not set meta fields on logs directly.',
-        origType,
-        orig: fields,
-      };
+      (type = 'monitor.loggingError'),
+        (fields = {
+          error: 'You may not set meta fields on logs directly.',
+          origType,
+          orig: fields,
+        });
     }
 
     elideSecrets(fields);
@@ -150,8 +127,7 @@ export class Logger {
     // the stack
     if (fields.stack) {
       // capture just the first line of message and the stack frames:
-      message = fields.stack
-        .replace(/^([^\n]*)(?:\n[^\n]*)*?((?:\n {4}at[^\n]+)+)$/s, '$1$2');
+      message = fields.stack.replace(/^([^\n]*)(?:\n[^\n]*)*?((?:\n {4}at[^\n]+)+)$/s, '$1$2');
     } else if (fields.message) {
       // include only the first line of a non-stack-bearing message
       message = fields.message.toString().split('\n', 1)[0];
@@ -169,24 +145,27 @@ export class Logger {
       delete fields.requestId;
     }
 
-    this.destination.write(`${stringify({
-      Timestamp: Date.now() * 1000000,
-      Type: type,
-      Logger: this.name,
-      Hostname: this.hostname,
-      EnvVersion: '2.0',
-      Severity: level,
-      Pid: this.pid,
-      Fields: fields,
-      message, // will be omitted if undefined
-      traceId, // will be omitted if undefined
-      requestId, // will be omitted if undefined
-      severity: LEVELS_REVERSE[level], // for stackdriver
-      serviceContext: { // for stackdriver
-        service: this.service,
-        version: this.taskclusterVersion,
-      },
-    })}\n`);
+    this.destination.write(
+      `${stringify({
+        Timestamp: Date.now() * 1000000,
+        Type: type,
+        Logger: this.name,
+        Hostname: this.hostname,
+        EnvVersion: '2.0',
+        Severity: level,
+        Pid: this.pid,
+        Fields: fields,
+        message, // will be omitted if undefined
+        traceId, // will be omitted if undefined
+        requestId, // will be omitted if undefined
+        severity: LEVELS_REVERSE[level], // for stackdriver
+        serviceContext: {
+          // for stackdriver
+          service: this.service,
+          version: this.taskclusterVersion,
+        },
+      })}\n`,
+    );
   }
 
   emerg(type, fields) {

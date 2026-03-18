@@ -36,12 +36,7 @@ export default class ThirdPartyLogin extends Component {
     const scopes = (query.scope || '').split(' ');
     const registeredClientId = query.client_id;
 
-    if (
-      !data ||
-      state.formData ||
-      !(data.currentScopes instanceof Array) ||
-      !query.transactionID
-    ) {
+    if (!data || state.formData || !Array.isArray(data.currentScopes) || !query.transactionID) {
       return null;
     }
 
@@ -55,7 +50,7 @@ export default class ThirdPartyLogin extends Component {
     };
   }
 
-  handleExpirationChange = expires => {
+  handleExpirationChange = (expires) => {
     this.setState({
       formData: {
         ...this.state.formData,
@@ -73,7 +68,7 @@ export default class ThirdPartyLogin extends Component {
     });
   };
 
-  handleScopesChange = scopes => {
+  handleScopesChange = (scopes) => {
     this.setState({
       formData: {
         ...this.state.formData,
@@ -87,9 +82,7 @@ export default class ThirdPartyLogin extends Component {
     const { formData } = this.state;
     const hasValidRedirect = !!this.parsedQuery.redirect_uri;
     const getOrigin = () => {
-      const { origin } = new URL(
-        decodeURIComponent(this.parsedQuery.redirect_uri)
-      );
+      const { origin } = new URL(decodeURIComponent(this.parsedQuery.redirect_uri));
 
       return origin;
     };
@@ -113,9 +106,7 @@ export default class ThirdPartyLogin extends Component {
             Sign in to provide credentials to <code>{getOrigin()}</code>
           </Typography>
         )}
-        {!hasValidRedirect && (
-          <Typography variant="subtitle2">Invalid request</Typography>
-        )}
+        {!hasValidRedirect && <Typography variant="subtitle2">Invalid request</Typography>}
       </Dashboard>
     );
   }

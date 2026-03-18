@@ -1,4 +1,3 @@
-
 import { element, string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
@@ -7,7 +6,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import Anchor from '../Anchor';
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     position: 'relative',
     height: theme.spacing(25),

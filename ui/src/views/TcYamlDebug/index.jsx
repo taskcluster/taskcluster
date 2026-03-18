@@ -21,37 +21,17 @@ import JsonDisplay from '../../components/JsonDisplay';
 const prefetchSchema = async () => {
   await ajv.loadServiceSchema('common', 'metaschema.json');
   await Promise.all([
-    ajv.loadServiceSchema(
-      'github',
-      'v1/taskcluster-github-config.json',
-      'github-v0'
-    ),
-    ajv.loadServiceSchema(
-      'github',
-      'v1/taskcluster-github-config.v1.json',
-      'github-v1'
-    ),
+    ajv.loadServiceSchema('github', 'v1/taskcluster-github-config.json', 'github-v0'),
+    ajv.loadServiceSchema('github', 'v1/taskcluster-github-config.v1.json', 'github-v1'),
     ajv.loadServiceSchema('queue', 'v1/task-metadata.json'),
     ajv.loadServiceSchema('queue', 'v1/task.json'),
-    ajv.loadServiceSchema(
-      'queue',
-      'v1/create-task-request.json',
-      'create-task'
-    ),
+    ajv.loadServiceSchema('queue', 'v1/create-task-request.json', 'create-task'),
   ]);
 };
 
 prefetchSchema();
 
-const releaseActions = [
-  'published',
-  'unpublished',
-  'created',
-  'edited',
-  'deleted',
-  'prereleased',
-  'released',
-];
+const releaseActions = ['published', 'unpublished', 'created', 'edited', 'deleted', 'prereleased', 'released'];
 const pullRequestActions = [
   'opened',
   'synchronize',
@@ -72,16 +52,14 @@ const pullRequestActions = [
   'unlabeled',
 ];
 const issueCommentActions = ['created', 'edited'];
-const isValidYamlUrl = url => {
+const isValidYamlUrl = (url) => {
   const urlRe = /(.*)\/\.taskcluster.yml$/;
 
   try {
     const parsed = new URL(url);
     const allowedHosts = ['raw.githubusercontent.com'];
 
-    return (
-      allowedHosts.includes(parsed.hostname) && urlRe.test(parsed.pathname)
-    );
+    return allowedHosts.includes(parsed.hostname) && urlRe.test(parsed.pathname);
   } catch (_e) {
     return false;
   }
@@ -90,11 +68,9 @@ const isValidYamlUrl = url => {
 // we embed JSON-e here, which looks a lot like a template to eslint..
 /* eslint-disable no-template-curly-in-string */
 
-const getTaskDefinition = state => {
+const getTaskDefinition = (state) => {
   const { commands, image, taskName, taskDescription } = state;
-  const taskQueueId =
-    siteSpecificVariable('tutorial_worker_pool_id') ||
-    'proj-getting-started/tutorial';
+  const taskQueueId = siteSpecificVariable('tutorial_worker_pool_id') || 'proj-getting-started/tutorial';
 
   return dump({
     version: 1,
@@ -106,8 +82,7 @@ const getTaskDefinition = state => {
       $let: {
         head_rev: {
           $switch: {
-            'tasks_for == "github-pull-request"':
-              '${event.pull_request.head.sha}',
+            'tasks_for == "github-pull-request"': '${event.pull_request.head.sha}',
             'tasks_for == "github-push"': '${event.after}',
             $default: 'UNKNOWN',
           },
@@ -149,7 +124,7 @@ const getCustomContext = () => {
 };
 
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   separator: {
     padding: theme.spacing(2),
     paddingBottom: 0,
@@ -241,21 +216,21 @@ export default class TcYamlDebug extends Component {
     this.loadTaskclusterYml();
   }
 
-  handleEditorChange = editorValue => {
+  handleEditorChange = (editorValue) => {
     this.setState({
       editorValue,
     });
     this.analyzeLazy();
   };
 
-  handleExtraContextChange = extraContext => {
+  handleExtraContextChange = (extraContext) => {
     this.setState({
       extraContext,
     });
     this.analyzeLazy();
   };
 
-  handleTaskclusterYmlUrlChange = e => {
+  handleTaskclusterYmlUrlChange = (e) => {
     this.setState({
       taskclusterYmlUrl: e.target.value,
     });
@@ -309,7 +284,7 @@ export default class TcYamlDebug extends Component {
     }
   }
 
-  handleCustomEventSimulate = e => {
+  handleCustomEventSimulate = (e) => {
     const [tasksFor, action] = e.target.value.split('.');
 
     this.runEvent(tasksFor, action, {
@@ -332,13 +307,11 @@ export default class TcYamlDebug extends Component {
   }
 
   addFinding(item, prepend = false) {
-    this.setState(state => {
+    this.setState((state) => {
       const idx = state.findings.length + 1;
 
       return {
-        findings: prepend
-          ? [{ ...item, idx }, ...state.findings]
-          : [...state.findings, { ...item, idx }],
+        findings: prepend ? [{ ...item, idx }, ...state.findings] : [...state.findings, { ...item, idx }],
       };
     });
   }
@@ -386,9 +359,7 @@ export default class TcYamlDebug extends Component {
         this.addFinding({
           type: `schema-${i}`,
           sentiment: '⚠️',
-          message: `${error.instancePath} ${error.message} ${JSON.stringify(
-            error.params
-          )}`,
+          message: `${error.instancePath} ${error.message} ${JSON.stringify(error.params)}`,
         });
       });
     }
@@ -465,7 +436,7 @@ export default class TcYamlDebug extends Component {
         },
       });
       const tasks = Array.isArray(parsed?.tasks)
-        ? parsed.tasks.map(item => item.task)
+        ? parsed.tasks.map((item) => item.task)
         : Object.values(parsed.tasks).map(({ task }) => task);
       const tasksCount = tasks?.length || 0;
       const suspicious = opts.expectedZeroTasks && tasksCount > 0;
@@ -475,17 +446,13 @@ export default class TcYamlDebug extends Component {
           type: `${tasksFor}${action ? `.${action}` : ''}`,
           sentiment: suspicious ? '⛔️' : '✅',
           message:
-            tasksCount === 0
-              ? ''
-              : `${tasksCount} task(s) defined ${
-                  suspicious ? ', but normally should be 0' : ''
-                }`,
+            tasksCount === 0 ? '' : `${tasksCount} task(s) defined ${suspicious ? ', but normally should be 0' : ''}`,
           tasksCount,
           tasks: parsed?.tasks,
           scopes: parsed?.scopes,
           validation: this.validateTasks(tasks),
         },
-        opts.prepend
+        opts.prepend,
       );
     } catch (e) {
       this.addFinding(
@@ -499,7 +466,7 @@ export default class TcYamlDebug extends Component {
             e.columnNumber ? `column: ${e.columnNumber}` : '',
           ].join(' '),
         },
-        opts.prepend
+        opts.prepend,
       );
     }
   }
@@ -511,12 +478,8 @@ export default class TcYamlDebug extends Component {
       const validation = ajv.validate('create-task', task);
 
       if (!validation) {
-        ajv.errors.forEach(error => {
-          errors.push(
-            `Task #${i}: ${error.instancePath} ${
-              error.message
-            } ${JSON.stringify(error.params)}`
-          );
+        ajv.errors.forEach((error) => {
+          errors.push(`Task #${i}: ${error.instancePath} ${error.message} ${JSON.stringify(error.params)}`);
         });
       }
     });
@@ -534,59 +497,40 @@ export default class TcYamlDebug extends Component {
 
     return (
       <Grid container spacing={2} id="findings">
-        {findings.map(
-          ({
-            type,
-            sentiment,
-            message,
-            tasks,
-            scopes,
-            idx,
-            tasksCount,
-            validation,
-          }) => (
-            <Grid container key={idx} className={classes.findingsRow}>
-              <Grid item xs={12} sm={4}>
-                <ListItemText
-                  primary={
-                    <Typography>
-                      {sentiment} {type}
-                    </Typography>
-                  }
-                  secondary={message}
-                />
-                {scopes?.length ? (
-                  <React.Fragment>
-                    <JsonDisplay
-                      wrapperClassName={classes.scopes}
-                      syntax="yaml"
-                      objectContent={{ scopes }}
-                    />
-                  </React.Fragment>
-                ) : (
-                  ''
-                )}
-              </Grid>
-              <Grid item xs={12} sm={8} className={classes.tasks}>
-                {tasksCount ? (
-                  <JsonDisplay syntax="yaml" objectContent={{ tasks }} />
-                ) : (
-                  ''
-                )}
-                {tasksCount === 0 && scopes ? 'No tasks defined' : ''}
-                {validation?.length ? (
-                  <ul>
-                    {validation.map(error => (
-                      <li key={error}>⚠️ {error}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  ''
-                )}
-              </Grid>
+        {findings.map(({ type, sentiment, message, tasks, scopes, idx, tasksCount, validation }) => (
+          <Grid container key={idx} className={classes.findingsRow}>
+            <Grid item xs={12} sm={4}>
+              <ListItemText
+                primary={
+                  <Typography>
+                    {sentiment} {type}
+                  </Typography>
+                }
+                secondary={message}
+              />
+              {scopes?.length ? (
+                <React.Fragment>
+                  <JsonDisplay wrapperClassName={classes.scopes} syntax="yaml" objectContent={{ scopes }} />
+                </React.Fragment>
+              ) : (
+                ''
+              )}
             </Grid>
-          )
-        )}
+            <Grid item xs={12} sm={8} className={classes.tasks}>
+              {tasksCount ? <JsonDisplay syntax="yaml" objectContent={{ tasks }} /> : ''}
+              {tasksCount === 0 && scopes ? 'No tasks defined' : ''}
+              {validation?.length ? (
+                <ul>
+                  {validation.map((error) => (
+                    <li key={error}>⚠️ {error}</li>
+                  ))}
+                </ul>
+              ) : (
+                ''
+              )}
+            </Grid>
+          </Grid>
+        ))}
       </Grid>
     );
   }
@@ -614,11 +558,7 @@ export default class TcYamlDebug extends Component {
             <ListItem>
               <ListItemText
                 disableTypography
-                primary={
-                  <Typography variant="subtitle1">
-                    Your .taskcluster.yml
-                  </Typography>
-                }
+                primary={<Typography variant="subtitle1">Your .taskcluster.yml</Typography>}
               />
               <TextField
                 label="Link to .taskcluster.yml"
@@ -639,12 +579,7 @@ export default class TcYamlDebug extends Component {
               />
             </ListItem>
             <ListItem>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography variant="subtitle2">Extra context</Typography>
-                }
-              />
+              <ListItemText disableTypography primary={<Typography variant="subtitle2">Extra context</Typography>} />
             </ListItem>
             <ListItem className={classes.contextListItem}>
               <CodeEditor
@@ -662,7 +597,8 @@ export default class TcYamlDebug extends Component {
                     tooltipProps={{ title: 'Analyze' }}
                     onClick={this.handleAnalyze}
                     variant="contained"
-                    color="primary">
+                    color="primary"
+                  >
                     Analyze
                   </Button>
                 </Grid>
@@ -672,36 +608,26 @@ export default class TcYamlDebug extends Component {
                     select
                     label="Simulate custom event"
                     value=""
-                    onChange={this.handleCustomEventSimulate}>
-                    {releaseActions.map(action => (
-                      <MenuItem
-                        key={`gr-${action}`}
-                        value={`github-release.${action}`}>
+                    onChange={this.handleCustomEventSimulate}
+                  >
+                    {releaseActions.map((action) => (
+                      <MenuItem key={`gr-${action}`} value={`github-release.${action}`}>
                         <code>github-release</code>.<strong>{action}</strong>
                       </MenuItem>
                     ))}
-                    {pullRequestActions.map(action => (
-                      <MenuItem
-                        key={`gpr-${action}`}
-                        value={`github-pull-request.${action}`}>
-                        <code>github-pull-request</code>.
-                        <strong>{action}</strong>
+                    {pullRequestActions.map((action) => (
+                      <MenuItem key={`gpr-${action}`} value={`github-pull-request.${action}`}>
+                        <code>github-pull-request</code>.<strong>{action}</strong>
                       </MenuItem>
                     ))}
-                    {pullRequestActions.map(action => (
-                      <MenuItem
-                        key={`gpru-${action}`}
-                        value={`github-pull-request-untrusted.${action}`}>
-                        <code>github-pull-request-untrusted</code>.
-                        <strong>{action}</strong>
+                    {pullRequestActions.map((action) => (
+                      <MenuItem key={`gpru-${action}`} value={`github-pull-request-untrusted.${action}`}>
+                        <code>github-pull-request-untrusted</code>.<strong>{action}</strong>
                       </MenuItem>
                     ))}
-                    {issueCommentActions.map(action => (
-                      <MenuItem
-                        key={`gic-${action}`}
-                        value={`github-issue-comment.${action}`}>
-                        <code>github-issue-comment</code>.
-                        <strong>{action}</strong>
+                    {issueCommentActions.map((action) => (
+                      <MenuItem key={`gic-${action}`} value={`github-issue-comment.${action}`}>
+                        <code>github-issue-comment</code>.<strong>{action}</strong>
                       </MenuItem>
                     ))}
                   </TextField>
@@ -709,17 +635,9 @@ export default class TcYamlDebug extends Component {
                 {parsed && (
                   <Grid item>
                     <div>{parserOk ? '' : '⛔️ could not parse YAML'}</div>
-                    <div>
-                      {parserVersion === 0
-                        ? ` ⚠️ Uses v0, please migrate to v1`
-                        : ''}
-                    </div>
+                    <div>{parserVersion === 0 ? ` ⚠️ Uses v0, please migrate to v1` : ''}</div>
                     <div>{parserChecks ? '' : ' ⚠️ not using checks'}</div>
-                    <div>
-                      {parserAutoCancel
-                        ? ''
-                        : ' ⚠️ not using autoCancelPreviousChecks: true'}
-                    </div>
+                    <div>{parserAutoCancel ? '' : ' ⚠️ not using autoCancelPreviousChecks: true'}</div>
                   </Grid>
                 )}
               </Grid>

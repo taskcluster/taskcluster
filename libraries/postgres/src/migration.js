@@ -138,26 +138,27 @@ export const runOnlineBatches = async ({ client, showProgress, versionNum, kind 
   const batchFn = `online_${kind}_v${versionNum}_batch`;
   const isCompleteFn = `online_${kind}_v${versionNum}_is_complete`;
 
-  const runBatch = hooks.runBatch || (async (batchSize, state) => {
-    let res;
-    // expect the version to already be incremented (migration) or decremented (downgrade)
-    const expectedVersion = kind === 'migration' ? versionNum : versionNum - 1;
+  const runBatch =
+    hooks.runBatch ||
+    (async (batchSize, state) => {
+      let res;
+      // expect the version to already be incremented (migration) or decremented (downgrade)
+      const expectedVersion = kind === 'migration' ? versionNum : versionNum - 1;
 
-    await inTransaction(client, async () => {
-      await lockVersionTable({ client, expectedVersion });
-      res = await client.query(
-        `select * from ${batchFn}($1, $2)`,
-        [batchSize, state]);
+      await inTransaction(client, async () => {
+        await lockVersionTable({ client, expectedVersion });
+        res = await client.query(`select * from ${batchFn}($1, $2)`, [batchSize, state]);
+      });
+      assert(res.rows.length === 1);
+      return { state: res.rows[0].state, count: res.rows[0].count };
     });
-    assert(res.rows.length === 1);
-    return { state: res.rows[0].state, count: res.rows[0].count };
-  });
 
-  const isComplete = hooks.isComplete || (async () => {
-    const res = await client.query(
-      `select * from ${isCompleteFn}()`);
-    return res.rows[0][isCompleteFn];
-  });
+  const isComplete =
+    hooks.isComplete ||
+    (async () => {
+      const res = await client.query(`select * from ${isCompleteFn}()`);
+      return res.rows[0][isCompleteFn];
+    });
 
   // if there is no online-migration function, there's nothing to do
   if (!hooks.runBatch && !(await fnExists({ client, name: batchFn }))) {
@@ -200,7 +201,7 @@ export const runOnlineBatches = async ({ client, showProgress, versionNum, kind 
 
       // update the batch size to try to get to batchTime (but minimum of one)
       const rate = eta.rate();
-      if (!isNaN(rate)) {
+      if (!Number.isNaN(rate)) {
         batchSize = Math.round(Math.max(1, rate * batchTime));
       }
       if (hooks.batchSize) {

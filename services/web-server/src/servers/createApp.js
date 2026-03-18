@@ -25,13 +25,15 @@ export default async ({ cfg, strategies, auth, monitor, db, clients, rootUrl, ap
   app.set('view engine', 'ejs');
   app.set('views', path.resolve(path.join(__dirname, '../views')));
 
-  const allowedCORSOrigins = cfg.server.allowedCORSOrigins.map(o => {
-    if (typeof(o) === 'string' && o.startsWith('/')) {
-      return new RegExp(o.slice(1, o.length - 1));
-    }
+  const allowedCORSOrigins = cfg.server.allowedCORSOrigins
+    .map((o) => {
+      if (typeof o === 'string' && o.startsWith('/')) {
+        return new RegExp(o.slice(1, o.length - 1));
+      }
 
-    return o;
-  }).filter(o => o && o !== "");
+      return o;
+    })
+    .filter((o) => o && o !== '');
   const corsOptions = {
     origin: allowedCORSOrigins,
     credentials: true,
@@ -53,27 +55,30 @@ export default async ({ cfg, strategies, auth, monitor, db, clients, rootUrl, ap
   });
 
   app.use(traceMiddleware);
-  app.use(session({
-    store: process.env.NODE_ENV === 'production' ?
-      new SessionStore() :
-      // Run MemoryStore in local development so that we don't rely on Azure to store sessions.
-      // The login story is messy at the moment.
-      new MemoryStore({
-        // prune expired entries every 1h
-        checkPeriod: 1000 * 60 * 60,
-      }),
-    secret: cfg.login.sessionSecret,
-    sameSite: true,
-    resave: false,
-    saveUninitialized: false,
-    unset: 'destroy',
-    cookie: {
-      secure: URL.parse(cfg.app.publicUrl)?.hostname !== 'localhost',
-      httpOnly: true,
-      // 1 week
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    },
-  }));
+  app.use(
+    session({
+      store:
+        process.env.NODE_ENV === 'production'
+          ? new SessionStore()
+          : // Run MemoryStore in local development so that we don't rely on Azure to store sessions.
+            // The login story is messy at the moment.
+            new MemoryStore({
+              // prune expired entries every 1h
+              checkPeriod: 1000 * 60 * 60,
+            }),
+      secret: cfg.login.sessionSecret,
+      sameSite: true,
+      resave: false,
+      saveUninitialized: false,
+      unset: 'destroy',
+      cookie: {
+        secure: URL.parse(cfg.app.publicUrl)?.hostname !== 'localhost',
+        httpOnly: true,
+        // 1 week
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      },
+    }),
+  );
 
   app.disable('x-powered-by');
   app.use(passport.initialize());
@@ -124,21 +129,14 @@ export default async ({ cfg, strategies, auth, monitor, db, clients, rootUrl, ap
       }
     });
 
-    res
-      .status(200)
-      .send();
+    res.status(200).send();
   });
 
-  Object.values(strategies).forEach(strategy => {
+  Object.values(strategies).forEach((strategy) => {
     strategy.useStrategy(app, cfg);
   });
 
-  const {
-    authorization,
-    decision,
-    token,
-    getCredentials,
-  } = oauth2(cfg, db, strategies, auth, monitor);
+  const { authorization, decision, token, getCredentials } = oauth2(cfg, db, strategies, auth, monitor);
 
   // 1. Render a dialog asking the user to grant access
   app.get('/login/oauth/authorize', cors(corsOptions), authorization);

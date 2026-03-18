@@ -26,7 +26,7 @@ import Link from '../../../utils/Link';
     },
   }),
 })
-@withStyles(theme => ({
+@withStyles((theme) => ({
   actionButton: {
     ...theme.mixins.fab,
   },
@@ -50,7 +50,7 @@ export default class ListHooks extends Component {
     this.props.history.push('/hooks/create');
   };
 
-  handleHookSearchSubmit = hookSearch => {
+  handleHookSearchSubmit = (hookSearch) => {
     const query = parse(window.location.search.slice(1));
 
     this.props.history.push({
@@ -69,19 +69,14 @@ export default class ListHooks extends Component {
       match,
     } = this.props;
     const { search } = parse(window.location.search.slice(1));
-    const hooks = hookGroups?.flatMap(group => group?.hooks);
+    const hooks = hookGroups?.flatMap((group) => group?.hooks);
 
     return (
       <Dashboard
         title="Hooks"
         helpView={<HelpView description={description} />}
-        search={
-          <Search
-            placeholder="Hook contains"
-            defaultValue={search}
-            onSubmit={this.handleHookSearchSubmit}
-          />
-        }>
+        search={<Search placeholder="Hook contains" defaultValue={search} onSubmit={this.handleHookSearchSubmit} />}
+      >
         <div style={{ flexGrow: 1 }}>
           <Breadcrumbs>
             <Link to="/hooks">
@@ -96,11 +91,7 @@ export default class ListHooks extends Component {
         <ErrorPanel fixed error={error} />
         {!loading &&
           (hooks?.length ? (
-            <HooksListTable
-              searchTerm={search}
-              hooks={hooks}
-              classes={classes}
-            />
+            <HooksListTable searchTerm={search} hooks={hooks} classes={classes} />
           ) : (
             <Typography variant="subtitle1">No hooks are defined</Typography>
           ))}
@@ -109,7 +100,8 @@ export default class ListHooks extends Component {
           tooltipProps={{ title: 'Create Hook' }}
           color="secondary"
           variant="round"
-          onClick={this.handleCreateHook}>
+          onClick={this.handleCreateHook}
+        >
           <PlusIcon />
         </Button>
       </Dashboard>

@@ -12,8 +12,7 @@ import ExploreCard from '../../components/ExploreCard';
 const cards = [
   {
     title: 'Tutorial',
-    description:
-      'Learn about Taskcluster, focusing on the parts most relevant to you',
+    description: 'Learn about Taskcluster, focusing on the parts most relevant to you',
     icon: <OneTwoThreeIcon />,
     to: '/docs/tutorial',
   },
@@ -42,19 +41,14 @@ export default function GetStarted() {
     <Fragment>
       <HeaderWithAnchor>Documentation</HeaderWithAnchor>
       <Typography variant="body2">
-        Taskcluster is the task execution framework that supports Mozilla&#39;s
-        continuous integration and release processes.
+        Taskcluster is the task execution framework that supports Mozilla&#39;s continuous integration and release
+        processes.
       </Typography>
       <br />
       <Grid container spacing={2}>
         {cards.map(({ title, description, icon, to }) => (
           <Grid key={title} item sm={6} xs={12}>
-            <ExploreCard
-              title={title}
-              description={description}
-              icon={icon}
-              to={to}
-            />
+            <ExploreCard title={title} description={description} icon={icon} to={to} />
           </Grid>
         ))}
       </Grid>
@@ -62,18 +56,15 @@ export default function GetStarted() {
       <br />
       <HeaderWithAnchor type="h2">People</HeaderWithAnchor>
       <Typography variant="body2">
-        Find out more about the <Anchor href="/docs/people">people</Anchor> who
-        make Taskcluster, and get involved yourself!
+        Find out more about the <Anchor href="/docs/people">people</Anchor> who make Taskcluster, and get involved
+        yourself!
       </Typography>
       <br />
       <br />
       <HeaderWithAnchor type="h2">Questions?</HeaderWithAnchor>
       <Typography variant="body2">
-        We&#39;re always happy to help with code or other questions you might
-        have.{' '}
-        <Anchor href="https://github.com/taskcluster/taskcluster/issues/new">
-          Create an issue.
-        </Anchor>
+        We&#39;re always happy to help with code or other questions you might have.{' '}
+        <Anchor href="https://github.com/taskcluster/taskcluster/issues/new">Create an issue.</Anchor>
       </Typography>
     </Fragment>
   );

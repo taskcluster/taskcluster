@@ -13,8 +13,8 @@ it('should remove keys', () => {
           ok: 42,
         },
       },
-      ['a']
-    )
+      ['a'],
+    ),
   ).toEqual({
     ok: 41,
     nested: {

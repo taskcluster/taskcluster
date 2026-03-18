@@ -1,23 +1,19 @@
 {
-    "$schema": "http://json-schema.org/draft-06/schema#",
-    "title": "test json schema",
-    "type": "object",
-    "properties": {
-        "referenceWithDotDot": {
-            "$ref": "../v1/test-schema.json#"
-        },
-        "localReference": {
-            "$ref": "test-schema.json#"
-        },
-        "tid": {
-            "type": "string",
-            "format": "date-time"
-        }
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "test json schema",
+  "type": "object",
+  "properties": {
+    "referenceWithDotDot": {
+      "$ref": "../v1/test-schema.json#"
     },
-    "additionalProperties": false,
-    "required": [
-        "referenceWithDotDot",
-        "localReference",
-        "tid"
-    ]
+    "localReference": {
+      "$ref": "test-schema.json#"
+    },
+    "tid": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "required": ["referenceWithDotDot", "localReference", "tid"]
 }

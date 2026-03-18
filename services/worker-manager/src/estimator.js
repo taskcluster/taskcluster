@@ -63,8 +63,13 @@ export class Estimator {
   }) {
     const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
     const { desiredCapacity } = this.#calculateCapacity({
-      pendingTasks, claimedTasks, existingCapacity, stoppingCapacity,
-      minCapacity, maxCapacity, scalingRatio,
+      pendingTasks,
+      claimedTasks,
+      existingCapacity,
+      stoppingCapacity,
+      minCapacity,
+      maxCapacity,
+      scalingRatio,
     });
     return desiredCapacity;
   }
@@ -79,11 +84,15 @@ export class Estimator {
     workerInfoByWorkerGroup = new Map(),
   }) {
     const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
-    const { totalIdleCapacity, adjustedPendingTasks, totalNonStopped, desiredCapacity } =
-      this.#calculateCapacity({
-        pendingTasks, claimedTasks, existingCapacity, stoppingCapacity,
-        minCapacity, maxCapacity, scalingRatio,
-      });
+    const { totalIdleCapacity, adjustedPendingTasks, totalNonStopped, desiredCapacity } = this.#calculateCapacity({
+      pendingTasks,
+      claimedTasks,
+      existingCapacity,
+      stoppingCapacity,
+      minCapacity,
+      maxCapacity,
+      scalingRatio,
+    });
 
     const estimatorInfo = {
       workerPoolId,
@@ -108,14 +117,17 @@ export class Estimator {
     // Eventually we can disallow this condition but we allowed it at first so
     // we have to live with it for a bit.
     let overProvisioned = false;
-    if (existingCapacity > 25 && existingCapacity > (maxCapacity * 1.25)) {
+    if (existingCapacity > 25 && existingCapacity > maxCapacity * 1.25) {
       overProvisioned = true;
     }
 
     this.monitor.log.simpleEstimate(estimatorInfo, { level: overProvisioned ? 'err' : 'notice' });
 
     if (overProvisioned) {
-      this.monitor.reportError(new Error('Estimated existing capacity (pending and running) is much greater than max capacity'), estimatorInfo);
+      this.monitor.reportError(
+        new Error('Estimated existing capacity (pending and running) is much greater than max capacity'),
+        estimatorInfo,
+      );
     }
 
     // Workers turn themselves off so we just return a positive number for

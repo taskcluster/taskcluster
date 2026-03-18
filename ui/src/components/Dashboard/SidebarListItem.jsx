@@ -9,7 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Link from '../../utils/Link';
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   listLinkCell: {
     ...theme.mixins.hover,
   },
@@ -62,7 +62,7 @@ export default class SidebarListItem extends Component {
 
   // Some items have the same url prefix, however should not
   // be set active at the same time.
-  isItemActive = route => {
+  isItemActive = (route) => {
     if (!route) {
       return false;
     }
@@ -84,34 +84,19 @@ export default class SidebarListItem extends Component {
       !pathname.startsWith(paths.index) &&
       !pathname.startsWith(paths.groups) &&
       !pathname.startsWith(paths.create);
-    const isTaskIndexView =
-      route.url === paths.index && pathname.startsWith(paths.index);
-    const isTaskGroupView =
-      route.url === paths.groups && pathname.startsWith(paths.groups);
-    const isTaskCreateView =
-      route.url === paths.create && pathname.startsWith(paths.create);
+    const isTaskIndexView = route.url === paths.index && pathname.startsWith(paths.index);
+    const isTaskGroupView = route.url === paths.groups && pathname.startsWith(paths.groups);
+    const isTaskCreateView = route.url === paths.create && pathname.startsWith(paths.create);
     const isScopesView =
-      route.url === paths.auth &&
-      !pathname.startsWith(paths.compareScopes) &&
-      !pathname.startsWith(paths.expandScopes);
-    const isClientsView =
-      route.url === paths.clients && pathname.startsWith(paths.clients);
-    const isRolesView =
-      route.url === paths.roles && pathname.startsWith(paths.roles);
-    const isScopesCompareView =
-      route.url === paths.compareScopes &&
-      pathname.startsWith(paths.compareScopes);
-    const isScopesExpandView =
-      route.url === paths.expandScopes &&
-      pathname.startsWith(paths.expandScopes);
+      route.url === paths.auth && !pathname.startsWith(paths.compareScopes) && !pathname.startsWith(paths.expandScopes);
+    const isClientsView = route.url === paths.clients && pathname.startsWith(paths.clients);
+    const isRolesView = route.url === paths.roles && pathname.startsWith(paths.roles);
+    const isScopesCompareView = route.url === paths.compareScopes && pathname.startsWith(paths.compareScopes);
+    const isScopesExpandView = route.url === paths.expandScopes && pathname.startsWith(paths.expandScopes);
 
     if (route.url.startsWith(paths.tasks)) {
       return Boolean(
-        !route.url.startsWith(paths.tasks) ||
-          isTaskIndexView ||
-          isTaskView ||
-          isTaskGroupView ||
-          isTaskCreateView
+        !route.url.startsWith(paths.tasks) || isTaskIndexView || isTaskView || isTaskGroupView || isTaskCreateView,
       );
     }
 
@@ -122,15 +107,12 @@ export default class SidebarListItem extends Component {
           isScopesCompareView ||
           isScopesExpandView ||
           isClientsView ||
-          isRolesView
+          isRolesView,
       );
     }
 
     // don't highlight both links in sidebar that share same prefix
-    if (
-      route.url === '/worker-manager' &&
-      pathname.startsWith('/worker-manager/errors')
-    ) {
+    if (route.url === '/worker-manager' && pathname.startsWith('/worker-manager/errors')) {
       return false;
     }
 
@@ -138,16 +120,7 @@ export default class SidebarListItem extends Component {
   };
 
   render() {
-    const {
-      classes,
-      icon,
-      children,
-      rightIcon,
-      to,
-      skipPrefetch,
-      staticContext,
-      ...props
-    } = this.props;
+    const { classes, icon, children, rightIcon, to, skipPrefetch, staticContext, ...props } = this.props;
 
     return (
       <Link
@@ -156,16 +129,11 @@ export default class SidebarListItem extends Component {
         nav
         activeClassName={classes.active}
         isActive={this.isItemActive}
-        className={classes.listLinkCell}>
+        className={classes.listLinkCell}
+      >
         <ListItem disableGutters className={classes.listItem} {...props}>
-          {icon && (
-            <ListItemIcon classes={{ root: classes.icon }}>{icon}</ListItemIcon>
-          )}
-          <ListItemText
-            disableTypography
-            className={classes.text}
-            primary={children}
-          />
+          {icon && <ListItemIcon classes={{ root: classes.icon }}>{icon}</ListItemIcon>}
+          <ListItemText disableTypography className={classes.text} primary={children} />
           {rightIcon &&
             cloneElement(rightIcon, {
               className: classNames(classes.icon, rightIcon.props.className),

@@ -2,27 +2,22 @@ import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import QueueLock from '../src/queue-lock.js';
 
-suite(testing.suiteName(), function() {
-  suite('Lock', function() {
+suite(testing.suiteName(), function () {
+  suite('Lock', function () {
     test('should lock by name', async function () {
       const lock = new QueueLock();
 
       let counter = 0;
       const coroutine = async () => {
         const release = await lock.acquire('t1');
-        counter ++;
+        counter++;
         release();
       };
 
       await coroutine();
       assert.equal(1, counter);
 
-      const more = [
-        coroutine(),
-        coroutine(),
-        coroutine(),
-        coroutine(),
-      ];
+      const more = [coroutine(), coroutine(), coroutine(), coroutine()];
 
       assert.equal(1, counter);
       await Promise.all(more);
@@ -75,12 +70,7 @@ suite(testing.suiteName(), function() {
       await coroutine();
       assert.equal(1, counter);
 
-      const more = [
-        coroutine(),
-        coroutine(),
-        coroutine(),
-        coroutine(),
-      ];
+      const more = [coroutine(), coroutine(), coroutine(), coroutine()];
 
       assert.equal(1, counter);
       await Promise.all(more);

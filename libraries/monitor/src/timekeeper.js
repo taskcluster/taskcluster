@@ -8,7 +8,6 @@ import { hrtime } from 'node:process';
  * to submit the same doo dad twice.
  */
 class TimeKeeper {
-
   /**
    * Create a Timer and set the start time for the measurement.
    */
@@ -29,10 +28,15 @@ class TimeKeeper {
     }
     this.submitted = true;
     const end = hrtime.bigint();
-    this.monitor.log.timekeeper(Object.assign({
-      key: this.name,
-      duration: Number(end - this.start) / 1e6, // in ms
-    }, extra));
+    this.monitor.log.timekeeper(
+      Object.assign(
+        {
+          key: this.name,
+          duration: Number(end - this.start) / 1e6, // in ms
+        },
+        extra,
+      ),
+    );
   }
 }
 

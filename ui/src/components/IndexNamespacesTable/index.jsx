@@ -15,7 +15,7 @@ import { pageInfo, namespace } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.namespace, b.node.namespace)),
-  map(({ node: { namespace } }) => namespace)
+  map(({ node: { namespace } }) => namespace),
 );
 
 /**
@@ -48,14 +48,8 @@ export default class IndexNamespacesTable extends Component {
       return {
         ...connection,
         edges: [...connection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
+          const firstElement = sortDirection === 'desc' ? b.node[sortByProperty] : a.node[sortByProperty];
+          const secondElement = sortDirection === 'desc' ? a.node[sortByProperty] : b.node[sortByProperty];
 
           return sort(firstElement, secondElement);
         }),
@@ -67,10 +61,10 @@ export default class IndexNamespacesTable extends Component {
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = (sortBy) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
@@ -80,11 +74,7 @@ export default class IndexNamespacesTable extends Component {
   render() {
     const { onPageChange, connection } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedNamespacesConnection = this.createSortedNamespacesConnection(
-      connection,
-      sortBy,
-      sortDirection
-    );
+    const sortedNamespacesConnection = this.createSortedNamespacesConnection(connection, sortBy, sortDirection);
     const iconSize = 16;
 
     return (

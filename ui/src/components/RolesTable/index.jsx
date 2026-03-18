@@ -16,12 +16,12 @@ import Link from '../../utils/Link';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.roleId, b.node.roleId)),
-  map(({ node: { roleId } }) => roleId)
+  map(({ node: { roleId } }) => roleId),
 );
 const tableHeaders = ['Role ID'];
 const iconSize = 16;
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   roleIdLink: {
     display: 'flex',
     flexGrow: 1,
@@ -67,14 +67,8 @@ export default class RolesTable extends Component {
       return {
         ...rolesConnection,
         edges: [...rolesConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
+          const firstElement = sortDirection === 'desc' ? b.node[sortByProperty] : a.node[sortByProperty];
+          const secondElement = sortDirection === 'desc' ? a.node[sortByProperty] : b.node[sortByProperty];
 
           return sort(firstElement, secondElement);
         }),
@@ -86,10 +80,10 @@ export default class RolesTable extends Component {
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = (sortBy) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
@@ -97,19 +91,9 @@ export default class RolesTable extends Component {
   };
 
   render() {
-    const {
-      classes,
-      onPageChange,
-      rolesConnection,
-      searchTerm,
-      onDialogActionOpen,
-    } = this.props;
+    const { classes, onPageChange, rolesConnection, searchTerm, onDialogActionOpen } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedRolesConnection = this.createSortedRolesConnection(
-      rolesConnection,
-      sortBy,
-      sortDirection
-    );
+    const sortedRolesConnection = this.createSortedRolesConnection(rolesConnection, sortBy, sortDirection);
 
     return (
       <ConnectionDataTable
@@ -122,23 +106,20 @@ export default class RolesTable extends Component {
         sortByHeader={sortBy}
         sortDirection={sortDirection}
         allowFilter
-        filterFunc={({ node: role }, filterValue) =>
-          String(role.roleId).includes(filterValue)
-        }
+        filterFunc={({ node: role }, filterValue) => String(role.roleId).includes(filterValue)}
         lazyRender
         renderRow={({ node: role }, style, key) => (
           <TableRow key={key || role.roleId} style={style} hover>
             <TableCell className={classes.roleContainer}>
-              <Link
-                className={classes.roleIdLink}
-                to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
+              <Link className={classes.roleIdLink} to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
                 {role.roleId}
               </Link>
               <Button
                 requiresAuth
                 tooltipProps={{ title: 'Delete Role' }}
                 size="small"
-                onClick={() => onDialogActionOpen(role.roleId)}>
+                onClick={() => onDialogActionOpen(role.roleId)}
+              >
                 <DeleteIcon size={iconSize} />
               </Button>
             </TableCell>

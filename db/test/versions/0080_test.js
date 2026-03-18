@@ -3,7 +3,7 @@ import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 import helper from '../helper.js';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
 suite(testing.suiteName(), function () {
@@ -32,19 +32,23 @@ suite(testing.suiteName(), function () {
     }
     // create same worker with multiple queue ids
     const workerPoolIds = ['prov/w/1', 'some/other/pool', 'extra/pool'];
-    await Promise.all(workerPoolIds.map((pool, idx) => wmDb.deprecatedFns.create_worker(
-      pool,
-      `wg-${idx}`,
-      'worker-1',
-      'static',
-      new Date(),
-      new Date(),
-      'state',
-      { providerdata: true },
-      1,
-      new Date(),
-      new Date(),
-    )));
+    await Promise.all(
+      workerPoolIds.map((pool, idx) =>
+        wmDb.deprecatedFns.create_worker(
+          pool,
+          `wg-${idx}`,
+          'worker-1',
+          'static',
+          new Date(),
+          new Date(),
+          'state',
+          { providerdata: true },
+          1,
+          new Date(),
+          new Date(),
+        ),
+      ),
+    );
 
     await helper.upgradeTo(PREV_VERSION);
     const res = await queueDb.deprecatedFns.get_queue_workers_with_wm_join('prov/w/1', null, null, null);

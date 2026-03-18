@@ -21,7 +21,7 @@ export default class ApiReference extends Component {
   groupBy = (list, keyGetter) => {
     const map = new Map();
 
-    list.forEach(item => {
+    list.forEach((item) => {
       const key = keyGetter(item);
       const collection = map.get(key);
 
@@ -47,31 +47,24 @@ export default class ApiReference extends Component {
       throw new Error(`Reference document version ${version} not supported`);
     }
 
-    const functionEntries =
-      ref.entries?.filter(({ type }) => type === 'function');
-    const groupedEntries = Array.from(
-      this.groupBy(functionEntries, entry => entry.category)
-    );
+    const functionEntries = ref.entries?.filter(({ type }) => type === 'function');
+    const groupedEntries = Array.from(this.groupBy(functionEntries, (entry) => entry.category));
 
     return (
       <div>
         {ref.title && <HeaderWithAnchor>{ref.title}</HeaderWithAnchor>}
-        {ref.description && (
-          <MDX components={components}>{ref.description}</MDX>
-        )}
+        {ref.description && <MDX components={components}>{ref.description}</MDX>}
         {functionEntries && Boolean(functionEntries.length) && (
           <Fragment>
             <HeaderWithAnchor type="h3">Functions</HeaderWithAnchor>
             <Typography variant="body2">
-              For more information on invoking the API methods described here,
-              see{' '}
-              <Anchor href="/docs/manual/design/apis">Using the APIs</Anchor> in
-              the manual.
+              For more information on invoking the API methods described here, see{' '}
+              <Anchor href="/docs/manual/design/apis">Using the APIs</Anchor> in the manual.
             </Typography>
-            {groupedEntries.map(group => (
+            {groupedEntries.map((group) => (
               <Fragment key={group[0]}>
                 <HeaderWithAnchor type="h4">{group[0]}</HeaderWithAnchor>
-                {group[1].map(entry => (
+                {group[1].map((entry) => (
                   <Entry
                     key={`${entry.name}-${entry.query}`}
                     type="function"

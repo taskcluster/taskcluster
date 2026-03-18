@@ -24,7 +24,7 @@ import sort from '../../utils/sort';
 import { pageInfo, WMError } from '../../utils/prop-types';
 import Link from '../../utils/Link';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   errorDescription: {
     marginRight: theme.spacing(1),
     maxWidth: '55vw',
@@ -94,9 +94,7 @@ export default class WorkerManagerErrorsTable extends Component {
         edges: searchTerm
           ? errorsConnection.edges.filter(
               ({ node: { title, description, errorId } }) =>
-                title.includes(searchTerm) ||
-                description.includes(searchTerm) ||
-                errorId.includes(searchTerm)
+                title.includes(searchTerm) || description.includes(searchTerm) || errorId.includes(searchTerm),
             )
           : errorsConnection.edges,
       };
@@ -107,14 +105,8 @@ export default class WorkerManagerErrorsTable extends Component {
         edges: isEmpty(filtered.edges)
           ? filtered.edges
           : [...filtered.edges].sort((a, b) => {
-              const firstElement =
-                sortDirection === 'desc'
-                  ? b.node[sortByProperty]
-                  : a.node[sortByProperty];
-              const secondElement =
-                sortDirection === 'desc'
-                  ? a.node[sortByProperty]
-                  : b.node[sortByProperty];
+              const firstElement = sortDirection === 'desc' ? b.node[sortByProperty] : a.node[sortByProperty];
+              const secondElement = sortDirection === 'desc' ? a.node[sortByProperty] : b.node[sortByProperty];
 
               return sort(firstElement, secondElement);
             }),
@@ -124,15 +116,15 @@ export default class WorkerManagerErrorsTable extends Component {
       serializer: ([errorsConnection, sortBy, sortDirection, searchTerm]) => {
         const ids = pipe(
           rSort((a, b) => sort(a.node.errorId, b.node.errorId)),
-          map(({ node: { errorId } }) => errorId)
+          map(({ node: { errorId } }) => errorId),
         )(errorsConnection.edges);
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = (sortBy) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
@@ -147,41 +139,26 @@ export default class WorkerManagerErrorsTable extends Component {
 
   handleDrawerOpen(name) {
     const { errorsConnection } = this.props;
-    const drawerError = errorsConnection.edges.find(
-      ({ node }) => node.errorId === name
-    ).node;
+    const drawerError = errorsConnection.edges.find(({ node }) => node.errorId === name).node;
 
     this.setState({
       drawerError,
     });
   }
 
-  renderTableRow = error => {
+  renderTableRow = (error) => {
     const { classes, workerPoolId } = this.props;
-    const {
-      errorId,
-      title,
-      description,
-      reported,
-      launchConfigId,
-    } = error.node;
+    const { errorId, title, description, reported, launchConfigId } = error.node;
 
     return (
       <TableRow key={errorId}>
-        <TableCell
-          style={{ cursor: 'pointer' }}
-          onClick={() => this.handleDrawerOpen(errorId)}>
+        <TableCell style={{ cursor: 'pointer' }} onClick={() => this.handleDrawerOpen(errorId)}>
           <TableCellItem>
             <ListItemText disableTypography primary={title} />
           </TableCellItem>
         </TableCell>
-        <TableCell
-          style={{ cursor: 'pointer' }}
-          onClick={() => this.handleDrawerOpen(errorId)}>
-          <Typography
-            variant="body2"
-            className={classes.errorDescription}
-            title={description}>
+        <TableCell style={{ cursor: 'pointer' }} onClick={() => this.handleDrawerOpen(errorId)}>
+          <Typography variant="body2" className={classes.errorDescription} title={description}>
             {description}
           </Typography>
         </TableCell>
@@ -189,10 +166,9 @@ export default class WorkerManagerErrorsTable extends Component {
           {launchConfigId && (
             <Link
               to={`/worker-manager/${encodeURIComponent(
-                workerPoolId
-              )}/launch-configs?launchConfigId=${encodeURIComponent(
-                launchConfigId
-              )}&includeArchived=true`}>
+                workerPoolId,
+              )}/launch-configs?launchConfigId=${encodeURIComponent(launchConfigId)}&includeArchived=true`}
+            >
               <TableCellItem>
                 {launchConfigId ?? 'n/a'}
                 <LinkIcon size={16} style={{ marginLeft: 2 }} />
@@ -218,12 +194,7 @@ export default class WorkerManagerErrorsTable extends Component {
   render() {
     const { classes, errorsConnection, searchTerm, onPageChange } = this.props;
     const { sortBy, sortDirection, drawerError } = this.state;
-    const sortedErrors = this.sortErrors(
-      errorsConnection,
-      sortBy,
-      sortDirection,
-      searchTerm
-    );
+    const sortedErrors = this.sortErrors(errorsConnection, sortBy, sortDirection, searchTerm);
 
     return (
       <Fragment>
@@ -241,46 +212,30 @@ export default class WorkerManagerErrorsTable extends Component {
           anchor="right"
           open={Boolean(drawerError)}
           onClose={this.handleDrawerClose}
-          classes={{ paper: classes.drawerPaper }}>
+          classes={{ paper: classes.drawerPaper }}
+        >
           {drawerError && (
             <Fragment>
-              <IconButton
-                onClick={this.handleDrawerClose}
-                className={classes.drawerCloseIcon}>
+              <IconButton onClick={this.handleDrawerClose} className={classes.drawerCloseIcon}>
                 <CloseIcon />
               </IconButton>
               <div className={classes.metadataContainer}>
-                <Typography
-                  variant="h5"
-                  className={classes.headline}
-                  title={drawerError.errorId}>
+                <Typography variant="h5" className={classes.headline} title={drawerError.errorId}>
                   {drawerError.errorId}
                 </Typography>
                 <List>
                   <ListItem>
-                    <ListItemText
-                      primary="Title"
-                      secondary={drawerError.title}
-                    />
+                    <ListItemText primary="Title" secondary={drawerError.title} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText
-                      primary="Description"
-                      secondary={drawerError.description}
-                    />
+                    <ListItemText primary="Description" secondary={drawerError.description} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText
-                      primary="Reported"
-                      secondary={drawerError.reported}
-                    />
+                    <ListItemText primary="Reported" secondary={drawerError.reported} />
                   </ListItem>
                   {drawerError.launchConfigId && (
                     <ListItem>
-                      <ListItemText
-                        primary="Launch Config ID"
-                        secondary={drawerError.launchConfigId}
-                      />
+                      <ListItemText primary="Launch Config ID" secondary={drawerError.launchConfigId} />
                     </ListItem>
                   )}
                   <ListItem>
@@ -289,12 +244,7 @@ export default class WorkerManagerErrorsTable extends Component {
                       secondaryTypographyProps={{
                         component: 'div',
                       }}
-                      secondary={
-                        <JsonDisplay
-                          syntax="json"
-                          objectContent={drawerError.extra}
-                        />
-                      }
+                      secondary={<JsonDisplay syntax="json" objectContent={drawerError.extra} />}
                     />
                   </ListItem>
                 </List>

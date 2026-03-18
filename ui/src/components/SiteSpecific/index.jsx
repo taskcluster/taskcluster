@@ -1,11 +1,10 @@
-
 import { arrayOf, string } from 'prop-types';
 import { alpha, withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Markdown from '../Markdown';
 import { siteSpecificVariables } from '../../utils/siteSpecific';
 
-const styles = withStyles(theme => ({
+const styles = withStyles((theme) => ({
   root: {
     borderLeft: `5px solid ${theme.palette.specific.dark}`,
     backgroundColor: alpha(theme.palette.specific.main, 0.2),
@@ -51,7 +50,7 @@ const SiteSpecific = ({ classes, showIfNotSet, children }) => {
 
   // bail out if the "showIf.." condition is not met
   if (showIfNotSet) {
-    if (showIfNotSet.every(v => variables[v])) {
+    if (showIfNotSet.every((v) => variables[v])) {
       return null;
     }
   }

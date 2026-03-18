@@ -1,6 +1,6 @@
 describe('validation', () => {
   beforeAll(() => {
-    window.fetch = jest.fn().mockImplementation(url => {
+    window.fetch = jest.fn().mockImplementation((url) => {
       return {
         json: () =>
           Promise.resolve({
@@ -26,14 +26,14 @@ describe('validation', () => {
     expect(
       formatErrorDetails({
         message: 'Invalid',
-      })
+      }),
     ).toEqual('Invalid');
     expect(
       formatErrorDetails({
         message: 'Invalid',
         keyword: 'type',
         instancePath: '/cmd/0',
-      })
+      }),
     ).toEqual("Invalid '/cmd/0'");
     expect(
       formatErrorDetails({
@@ -42,7 +42,7 @@ describe('validation', () => {
         params: {
           additionalProperty: 'extra',
         },
-      })
+      }),
     ).toEqual("Invalid 'extra'");
   });
 });

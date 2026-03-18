@@ -2,13 +2,7 @@
  * Generate Rust client library examples for API endpoints
  */
 
-import {
-  PLACEHOLDERS,
-  getPlaceholderValue,
-  requiresAuth,
-  capitalize,
-  formatPayloadJson,
-} from './helpers';
+import { PLACEHOLDERS, getPlaceholderValue, requiresAuth, capitalize, formatPayloadJson } from './helpers';
 
 /**
  * Generate a Rust example for an API endpoint
@@ -19,14 +13,9 @@ import {
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} Rust code example
  */
-export default function generateRustExample(
-  serviceName,
-  _apiVersion,
-  entry,
-  payloadExample = null
-) {
+export default function generateRustExample(serviceName, _apiVersion, entry, payloadExample = null) {
   const className = capitalize(serviceName);
-  const params = entry.args.map(arg => `"${getPlaceholderValue(arg)}"`);
+  const params = entry.args.map((arg) => `"${getPlaceholderValue(arg)}"`);
   // Build imports
   const imports = entry.input
     ? `use taskcluster::{${className}, ClientBuilder, Credentials};

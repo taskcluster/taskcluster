@@ -5,16 +5,16 @@ import ConnectionLoader from '../ConnectionLoader.js';
 export default ({ secrets }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const secretsList = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await secrets.list(options);
-    const secretsList = raw.secrets.map(name => ({ name }));
+    const secretsList = raw.secrets.map((name) => ({ name }));
 
     return {
       ...raw,
       items: sift(filter, secretsList),
     };
   });
-  const secret = new DataLoader(names =>
+  const secret = new DataLoader((names) =>
     Promise.all(
-      names.map(async name => {
+      names.map(async (name) => {
         try {
           const secret = await secrets.get(name);
 

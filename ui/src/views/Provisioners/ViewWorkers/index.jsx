@@ -32,7 +32,7 @@ const STATES = {
 
 @withAuth
 @graphql(workersQuery, {
-  skip: props => !props.match.params.provisionerId,
+  skip: (props) => !props.match.params.provisionerId,
   options: ({ location, match: { params } }) => ({
     errorPolicy: 'all',
     variables: {
@@ -42,19 +42,14 @@ const STATES = {
       workersConnection: {
         limit: VIEW_WORKERS_PAGE_SIZE,
       },
-      quarantined:
-        parse(location.search.slice(1)).filterBy === 'quarantined'
-          ? true
-          : null,
-      workerState: Object.values(STATES).includes(
-        parse(location.search.slice(1)).filterBy
-      )
+      quarantined: parse(location.search.slice(1)).filterBy === 'quarantined' ? true : null,
+      workerState: Object.values(STATES).includes(parse(location.search.slice(1)).filterBy)
         ? parse(location.search.slice(1)).filterBy
         : null,
     },
   }),
 })
-@withStyles(theme => ({
+@withStyles((theme) => ({
   bar: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -81,11 +76,11 @@ export default class ViewWorkers extends Component {
     selectedAction: null,
   };
 
-  handleActionClick = async selectedAction => {
+  handleActionClick = async (selectedAction) => {
     this.setState({ dialogOpen: true, selectedAction });
   };
 
-  handleActionError = dialogError => {
+  handleActionError = (dialogError) => {
     this.setState({ dialogError, actionLoading: false });
   };
 
@@ -103,9 +98,7 @@ export default class ViewWorkers extends Component {
 
     await fetch(url, {
       method: selectedAction.method,
-      Authorization: `Bearer ${btoa(
-        JSON.stringify(this.props.user.credentials)
-      )}`,
+      Authorization: `Bearer ${btoa(JSON.stringify(this.props.user.credentials))}`,
     });
 
     this.setState({ actionLoading: false });
@@ -132,10 +125,7 @@ export default class ViewWorkers extends Component {
     }
 
     this.props.history.replace(
-      `/provisioners/${provisionerId}/worker-types/${workerType}${stringify(
-        query,
-        { addQueryPrefix: true }
-      )}`
+      `/provisioners/${provisionerId}/worker-types/${workerType}${stringify(query, { addQueryPrefix: true })}`,
     );
 
     refetch({
@@ -145,9 +135,7 @@ export default class ViewWorkers extends Component {
         limit: VIEW_WORKERS_PAGE_SIZE,
       },
       quarantined: target.value === 'quarantined' ? true : null,
-      workerState: Object.values(STATES).includes(target.value)
-        ? target.value
-        : null,
+      workerState: Object.values(STATES).includes(target.value) ? target.value : null,
     });
   };
 
@@ -180,31 +168,24 @@ export default class ViewWorkers extends Component {
           return previousResult;
         }
 
-        return dotProp.set(previousResult, 'workers', workers =>
-          dotProp.set(
-            dotProp.set(workers, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, 'workers', (workers) =>
+          dotProp.set(dotProp.set(workers, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
   };
 
-  shouldIgnoreGraphqlError = error => {
+  shouldIgnoreGraphqlError = (error) => {
     const { data } = this.props;
     const workers = path(['workers', 'edges'], data);
 
     if (error?.graphQLErrors && workers) {
-      error.graphQLErrors.map(error => {
+      error.graphQLErrors.map((error) => {
         const taskId = path(['requestInfo', 'params', 'taskId'], error);
 
         // ignores the error if task ID is not one of Most Recent Tasks
-        return filter(worker => {
-          return (
-            path(['node', 'latestTask', 'run', 'taskId'], worker) === taskId &&
-            error.statusCode === 404
-          );
+        return filter((worker) => {
+          return path(['node', 'latestTask', 'run', 'taskId'], worker) === taskId && error.statusCode === 404;
         }, workers);
       });
     }
@@ -213,12 +194,7 @@ export default class ViewWorkers extends Component {
   };
 
   render() {
-    const {
-      actionLoading,
-      selectedAction,
-      dialogOpen,
-      dialogError,
-    } = this.state;
+    const { actionLoading, selectedAction, dialogOpen, dialogError } = this.state;
     const {
       location,
       classes,
@@ -234,9 +210,7 @@ export default class ViewWorkers extends Component {
           {(!workers || !workerType) && loading && <Spinner loading />}
           {!shouldIgnoreGraphqlError && <ErrorPanel fixed error={error} />}
 
-          {shouldIgnoreGraphqlError && this.state.error && (
-            <ErrorPanel fixed error={this.state.error} />
-          )}
+          {shouldIgnoreGraphqlError && this.state.error && <ErrorPanel fixed error={this.state.error} />}
           <Box className={classes.bar}>
             <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
               <Link to="/provisioners">
@@ -266,7 +240,8 @@ export default class ViewWorkers extends Component {
                 select
                 label="Filter By"
                 value={query.filterBy || ''}
-                onChange={this.handleFilterChange}>
+                onChange={this.handleFilterChange}
+              >
                 <MenuItem value="">
                   <em>None</em>
                 </MenuItem>
@@ -286,7 +261,7 @@ export default class ViewWorkers extends Component {
           />
           {workerType?.actions?.length ? (
             <SpeedDial>
-              {workerType.actions.map(action => (
+              {workerType.actions.map((action) => (
                 <SpeedDialAction
                   requiresAuth
                   tooltipOpen

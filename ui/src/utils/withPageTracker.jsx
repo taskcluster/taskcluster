@@ -3,7 +3,7 @@ import ReactGA from 'react-ga';
 
 let currentPage;
 
-export default WrappedComponent =>
+export default (WrappedComponent) =>
   class WithPageTracker extends Component {
     componentDidMount() {
       this.trackPage(window.location.pathname);

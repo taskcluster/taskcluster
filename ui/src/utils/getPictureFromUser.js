@@ -1,7 +1,7 @@
 /**
  * Given a user profile, return a picture if any.
  */
-export default user => {
+export default (user) => {
   if (!user?.profile) {
     return null;
   }
@@ -14,9 +14,7 @@ export default user => {
 
     // http://www.passportjs.org/docs/profile/
     case 'github': {
-      return user.profile.photos?.length
-        ? user.profile.photos[0].value
-        : null;
+      return user.profile.photos?.length ? user.profile.photos[0].value : null;
     }
 
     default: {

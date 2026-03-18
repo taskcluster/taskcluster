@@ -20,7 +20,7 @@ export default class CredentialsDialog extends Component {
     certificate: '',
   };
 
-  handleFieldChange = e => {
+  handleFieldChange = (e) => {
     let { isCertificateValid } = this.state;
 
     try {
@@ -38,7 +38,7 @@ export default class CredentialsDialog extends Component {
     });
   };
 
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault();
 
     const { isCertificateValid, ...credentials } = this.state;
@@ -50,20 +50,13 @@ export default class CredentialsDialog extends Component {
 
   render() {
     const { onSignIn, ...props } = this.props;
-    const {
-      isCertificateValid,
-      clientId,
-      accessToken,
-      certificate,
-    } = this.state;
+    const { isCertificateValid, clientId, accessToken, certificate } = this.state;
     const isFormValid = clientId && accessToken && isCertificateValid;
 
     return (
       <Dialog {...props} aria-labelledby="credentials-dialog-title">
         <form onSubmit={this.handleSubmit}>
-          <DialogTitle id="credentials-dialog-title">
-            Sign in with credentials
-          </DialogTitle>
+          <DialogTitle id="credentials-dialog-title">Sign in with credentials</DialogTitle>
           <DialogContent>
             <DialogContentText>
               <em>Note: Credentials are not checked for validity.</em>
@@ -103,11 +96,7 @@ export default class CredentialsDialog extends Component {
             <Button onClick={this.props.onClose} aria-disabled={!isFormValid}>
               Cancel
             </Button>
-            <Button
-              color="secondary"
-              variant="contained"
-              disabled={!isFormValid}
-              type="submit">
+            <Button color="secondary" variant="contained" disabled={!isFormValid} type="submit">
               Sign In
             </Button>
           </DialogActions>

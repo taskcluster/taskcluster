@@ -1,4 +1,3 @@
-
 import { instanceOf } from 'prop-types';
 import { RedBoxError } from 'redbox-react';
 import ErrorStackParser from 'error-stack-parser';
@@ -31,9 +30,7 @@ export default class ErrorBox extends RedBoxError {
 
       return (
         <CardContent>
-          <Typography className={classes.redbox}>
-            {this.renderFrames(frames)}
-          </Typography>
+          <Typography className={classes.redbox}>{this.renderFrames(frames)}</Typography>
         </CardContent>
       );
     } catch (_err) {

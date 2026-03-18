@@ -16,13 +16,15 @@ export async function requestArtifact(artifactName, { taskId, runId, debug, inst
       let errorMessage = `Failed to fetch task artifact \`${artifactName}\` for GitHub integration.\n`;
       switch (res.status) {
         case 403:
-          errorMessage = errorMessage.concat(`Make sure your task has the scope \`${requiredScope}\`. See the documentation on the artifact naming.`);
+          errorMessage = errorMessage.concat(
+            `Make sure your task has the scope \`${requiredScope}\`. See the documentation on the artifact naming.`,
+          );
           break;
         case 404:
-          errorMessage = errorMessage.concat("Make sure the artifact exists, and there are no typos in its name.");
+          errorMessage = errorMessage.concat('Make sure the artifact exists, and there are no typos in its name.');
           break;
         case 424:
-          errorMessage = errorMessage.concat("Make sure the artifact exists on the worker or other location.");
+          errorMessage = errorMessage.concat('Make sure the artifact exists on the worker or other location.');
           break;
         default:
           if (res.response?.error?.message) {

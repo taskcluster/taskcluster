@@ -7,7 +7,7 @@ const load = stickyLoader(_load);
 const helper = { load };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async function () {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -22,7 +22,7 @@ suiteSetup(async function() {
 helper.rootUrl = 'http://localhost:8080';
 
 helper.withFakeQueue = () => {
-  suiteSetup(function() {
+  suiteSetup(function () {
     const queue = stubbedQueue(helper);
     load.inject('queue', queue);
   });
@@ -60,10 +60,13 @@ const stubbedQueue = (fakeQueue) => {
       claimWork: async function (_taskQueueId, payload) {
         assert.equal(this._options.credentials.clientId, 'built-in-workers');
         const work = fakeQueue.claimableWork.pop();
-        work.tasks.map(task => task.credentials = {
-          clientId: 'task-creds',
-          accessToken: 'none',
-        });
+        work.tasks.map(
+          (task) =>
+            (task.credentials = {
+              clientId: 'task-creds',
+              accessToken: 'none',
+            }),
+        );
         work.workerGroup = payload.workerGroup;
         work.workerId = payload.workerId;
         return work;

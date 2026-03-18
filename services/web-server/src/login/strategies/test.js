@@ -39,7 +39,7 @@ export default class Test {
         identityProviderId: 'test',
         identity: 'test/test',
       };
-      req.login(user, err => {
+      req.login(user, (err) => {
         if (err) {
           return next(err);
         }

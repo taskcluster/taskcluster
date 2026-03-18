@@ -1,4 +1,3 @@
-
 import { render, waitFor, act } from '@testing-library/react';
 import { ApolloProvider } from 'react-apollo';
 import setupClient from 'apollo-client-mock';
@@ -26,7 +25,7 @@ it('should render ListHookGroupss page', async () => {
             }}
           />
         </ApolloProvider>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     await waitFor(() => {});

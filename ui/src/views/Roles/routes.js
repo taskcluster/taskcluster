@@ -1,13 +1,9 @@
 import lazy from '../../utils/lazy';
 
-const ViewRoles = lazy(() =>
-  import(/* webpackChunkName: 'Roles.ViewRoles' */ './ViewRoles')
-);
-const ViewRole = lazy(() =>
-  import(/* webpackChunkName: 'Roles.ViewRole' */ './ViewRole')
-);
+const ViewRoles = lazy(() => import(/* webpackChunkName: 'Roles.ViewRoles' */ './ViewRoles'));
+const ViewRole = lazy(() => import(/* webpackChunkName: 'Roles.ViewRole' */ './ViewRole'));
 
-export default path => [
+export default (path) => [
   {
     component: ViewRole,
     path: `${path}/create`,

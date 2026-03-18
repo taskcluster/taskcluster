@@ -9,7 +9,7 @@ import Button from '../../../components/Button';
 import Link from '../../../utils/Link';
 import { VALID_TASK } from '../../../utils/constants';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   openButton: {
     marginTop: theme.spacing(2),
   },
@@ -38,16 +38,14 @@ export default class TaskProfiler extends Component {
       profileUrl = `${window.env.TASKCLUSTER_ROOT_URL}/api/web-server/v1/task/${taskId}/profile`;
     }
 
-    return `https://profiler.firefox.com/from-url/${encodeURIComponent(
-      profileUrl
-    )}`;
+    return `https://profiler.firefox.com/from-url/${encodeURIComponent(profileUrl)}`;
   };
 
   handleOpenProfiler = () => {
     window.open(this.getProfilerUrl(), '_blank');
   };
 
-  handleSearchSubmit = value => {
+  handleSearchSubmit = (value) => {
     if (!value || !VALID_TASK.test(value)) {
       return;
     }
@@ -62,18 +60,12 @@ export default class TaskProfiler extends Component {
       <Dashboard
         title="Task Profiler"
         helpView={<HelpView description={description} />}
-        search={
-          <Search
-            placeholder="Task Group ID"
-            onSubmit={this.handleSearchSubmit}
-          />
-        }>
+        search={<Search placeholder="Task Group ID" onSubmit={this.handleSearchSubmit} />}
+      >
         <Breadcrumbs>
           {this.isTaskGroupMode ? (
             <Link to={`/tasks/groups/${this.currentId}`}>
-              <Typography variant="body2">
-                Task Group {this.currentId}
-              </Typography>
+              <Typography variant="body2">Task Group {this.currentId}</Typography>
             </Link>
           ) : (
             <Link to={`/tasks/${this.currentId}`}>
@@ -90,15 +82,12 @@ export default class TaskProfiler extends Component {
               variant="contained"
               color="primary"
               className={classes.openButton}
-              onClick={this.handleOpenProfiler}>
+              onClick={this.handleOpenProfiler}
+            >
               Open in Firefox Profiler
             </Button>
-            <Typography
-              variant="body2"
-              color="textSecondary"
-              className={classes.helpText}>
-              Opens profiler.firefox.com with the task data. If the popup is
-              blocked, check your browser settings.
+            <Typography variant="body2" color="textSecondary" className={classes.helpText}>
+              Opens profiler.firefox.com with the task data. If the popup is blocked, check your browser settings.
             </Typography>
           </React.Fragment>
         )}

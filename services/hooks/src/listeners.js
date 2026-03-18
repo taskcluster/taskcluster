@@ -35,27 +35,33 @@ class HookListeners {
    * Setup a new pulse client using the credentials
    * Additionally create pulse consumers for the exchanges -
    * `hook-created, `hook-updated` and  `hook-deleted`
-  */
+   */
   async setup() {
     this.monitor.debug('Setting up the listeners');
     assert(this.listeners === null, 'Cannot setup twice');
 
     const client = this.client;
-    const consumer = await pulse.consume({
-      client,
-      bindings: [{
-        exchange: 'exchange/taskcluster-hooks/v1/hook-created',
-        routingKeyPattern: '#',
-      }, {
-        exchange: 'exchange/taskcluster-hooks/v1/hook-updated',
-        routingKeyPattern: '#',
-      }, {
-        exchange: 'exchange/taskcluster-hooks/v1/hook-deleted',
-        routingKeyPattern: '#',
-      }],
-      queueName: 'hookChanged',
-      maxLength: 50,
-    }, (_msg) => this.reconcileConsumers(),
+    const consumer = await pulse.consume(
+      {
+        client,
+        bindings: [
+          {
+            exchange: 'exchange/taskcluster-hooks/v1/hook-created',
+            routingKeyPattern: '#',
+          },
+          {
+            exchange: 'exchange/taskcluster-hooks/v1/hook-updated',
+            routingKeyPattern: '#',
+          },
+          {
+            exchange: 'exchange/taskcluster-hooks/v1/hook-deleted',
+            routingKeyPattern: '#',
+          },
+        ],
+        queueName: 'hookChanged',
+        maxLength: 50,
+      },
+      (_msg) => this.reconcileConsumers(),
     );
     this.monitor.debug('Listening to hook exchanges');
     this.pulseHookChangedListener = consumer;
@@ -73,24 +79,27 @@ class HookListeners {
     this.monitor.debug(`${queueName}: creating listener (and queue if necessary)`);
 
     const client = this.client;
-    const listener = await pulse.consume({
-      client,
-      queueName,
-      maxLength: 50,
-      // we manage bindings manually in syncBindings
-      bindings: [],
-    }, async ({ payload }) => {
-      // Get a fresh copy of the hook and fire it, if it still exists
-      const latestHook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
-      if (latestHook) {
-        try {
-          await this.taskcreator.fire(latestHook, { firedBy: 'pulseMessage', payload });
-        } catch (_err) {
-          // any errors were already reported via the LastFire table, so they
-          // can be safely ignored here
+    const listener = await pulse.consume(
+      {
+        client,
+        queueName,
+        maxLength: 50,
+        // we manage bindings manually in syncBindings
+        bindings: [],
+      },
+      async ({ payload }) => {
+        // Get a fresh copy of the hook and fire it, if it still exists
+        const latestHook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
+        if (latestHook) {
+          try {
+            await this.taskcreator.fire(latestHook, { firedBy: 'pulseMessage', payload });
+          } catch (_err) {
+            // any errors were already reported via the LastFire table, so they
+            // can be safely ignored here
+          }
         }
-      }
-    });
+      },
+    );
 
     this.listeners[queueName] = listener;
   }
@@ -110,7 +119,7 @@ class HookListeners {
     this.monitor.debug(`${queueName}: delete queue`);
     const fullQueueName = this.client.fullObjectName('queue', queueName);
     if (!this.client.isFakeClient) {
-      await this.client.withChannel(async channel => {
+      await this.client.withChannel(async (channel) => {
         await channel.deleteQueue(fullQueueName);
       });
     }
@@ -143,11 +152,10 @@ class HookListeners {
     // unbinding queues will always succeed, even if the binding is not in place, so we don't
     // do any special error handling here.
     if (delBindings.length > 0) {
-      await this.client.withChannel(async channel => {
+      await this.client.withChannel(async (channel) => {
         for (const { exchange, routingKeyPattern } of delBindings) {
           await channel.unbindQueue(fullQueueName, exchange, routingKeyPattern);
-          result = result.filter(
-            ({ exchange: e, routingKeyPattern: r }) => e !== exchange || r !== routingKeyPattern);
+          result = result.filter(({ exchange: e, routingKeyPattern: r }) => e !== exchange || r !== routingKeyPattern);
         }
       });
     }
@@ -157,8 +165,7 @@ class HookListeners {
     // as complete and leaving if for the next reconciliation to try again.
     for (const { exchange, routingKeyPattern } of addBindings) {
       try {
-        await this.client.withChannel(channel =>
-          channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
+        await this.client.withChannel((channel) => channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
         // success! add that binding to the list
         result.push({ exchange, routingKeyPattern });
       } catch (err) {
@@ -182,9 +189,7 @@ class HookListeners {
    * Run only one exeuction of this function at a time, reporting any errors to the monitor.
    */
   _synchronise(asyncfunc) {
-    return this._reconcileDone = this._reconcileDone
-      .then(asyncfunc)
-      .catch(err => this.monitor.reportError(err));
+    return (this._reconcileDone = this._reconcileDone.then(asyncfunc).catch((err) => this.monitor.reportError(err)));
   }
 
   /**

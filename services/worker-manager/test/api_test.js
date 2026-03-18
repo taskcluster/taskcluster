@@ -45,16 +45,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   };
 
   // create a test worker pool directly in the DB
-  const createWorkerPool = async overrides => {
-    const workerPool = WorkerPool.fromApi(
-      { ...defaultWorkerPool, ...overrides });
+  const createWorkerPool = async (overrides) => {
+    const workerPool = WorkerPool.fromApi({ ...defaultWorkerPool, ...overrides });
     await workerPool.create(helper.db);
   };
 
   // create a test worker pool directly in the DB
-  const createWorker = overrides => {
-    const worker = Worker.fromApi(
-      { ...defaultWorker, ...overrides });
+  const createWorker = (overrides) => {
+    const worker = Worker.fromApi({ ...defaultWorker, ...overrides });
     return worker.create(helper.db);
   };
 
@@ -111,8 +109,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     }
 
     assert.equal(pages, 6);
-    assert.deepStrictEqual(providerIds.sort(),
-      ['testing1', 'testing2', 'static', 'google', 'aws', 'azure'].sort());
+    assert.deepStrictEqual(providerIds.sort(), ['testing1', 'testing2', 'static', 'google', 'aws', 'azure'].sort());
   });
 
   const workerPoolCompare = (workerPoolId, input, result) => {
@@ -152,11 +149,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       owner: 'example@example.com',
       emailOnError: false,
     };
-    workerPoolCompare(workerPoolId, input,
-      await helper.workerManager.createWorkerPool(workerPoolId, input));
+    workerPoolCompare(workerPoolId, input, await helper.workerManager.createWorkerPool(workerPoolId, input));
     // check idempotency
-    workerPoolCompare(workerPoolId, input,
-      await helper.workerManager.createWorkerPool(workerPoolId, input));
+    workerPoolCompare(workerPoolId, input, await helper.workerManager.createWorkerPool(workerPoolId, input));
     const workerPoolId2 = 'pp/ee2';
     const input2 = {
       providerId: 'testing1',
@@ -165,8 +160,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       owner: 'example@example.com',
       emailOnError: false,
     };
-    workerPoolCompare(workerPoolId2, input2,
-      await helper.workerManager.createWorkerPool(workerPoolId2, input2));
+    workerPoolCompare(workerPoolId2, input2, await helper.workerManager.createWorkerPool(workerPoolId2, input2));
   });
 
   test('schema validation - queueInactivityTimeout', async function () {
@@ -189,10 +183,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     const apiClient = helper.workerManager.use({ retries: 0 });
     await assert.rejects(
       () => apiClient.createWorkerPool(workerPoolId, input),
-      err => (
-        err.statusCode === 400 &&
-        err.message.includes('queueInactivityTimeout must be >= 1200')
-      ));
+      (err) => err.statusCode === 400 && err.message.includes('queueInactivityTimeout must be >= 1200'),
+    );
   });
 
   test('create worker pool - launchConfigIds are added/preserved', async function () {
@@ -233,14 +225,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     const apiClient = helper.workerManager.use({ retries: 0 });
     await assert.rejects(
       () => apiClient.createWorkerPool(workerPoolId, input),
-      err => err.statusCode === 500);
+      (err) => err.statusCode === 500,
+    );
 
     const monitor = await helper.load('monitor');
     assert.equal(
-      monitor.manager.messages.filter(
-        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-      ).length,
-      1);
+      monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+        .length,
+      1,
+    );
     monitor.manager.reset();
   });
 
@@ -285,10 +278,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       providerId: 'aws',
       description: 'bar',
       config: {
-        launchConfigs: [
-          genAwsLaunchConfig({ launchConfigId: 'lc1' }),
-          genAwsLaunchConfig({ launchConfigId: 'lc2' }),
-        ],
+        launchConfigs: [genAwsLaunchConfig({ launchConfigId: 'lc1' }), genAwsLaunchConfig({ launchConfigId: 'lc2' })],
         minCapacity: 1,
         maxCapacity: 1,
       },
@@ -306,10 +296,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     const input2 = {
       ...input,
       config: {
-        launchConfigs: [
-          genAwsLaunchConfig({ launchConfigId: 'lc1' }),
-          genAwsLaunchConfig({ launchConfigId: 'lc3' }),
-        ],
+        launchConfigs: [genAwsLaunchConfig({ launchConfigId: 'lc1' }), genAwsLaunchConfig({ launchConfigId: 'lc3' })],
         minCapacity: 1,
         maxCapacity: 1,
       },
@@ -324,17 +311,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     // events should have been emitted for archival of lc2, creation of lc3 and update of lc1
     assert.equal(messages.length, 4);
     assert.deepEqual(
-      messages.filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-archived')
+      messages
+        .filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-archived')
         .map(({ data }) => data.launchConfigId),
-      ['lc2']);
+      ['lc2'],
+    );
     assert.deepEqual(
-      messages.filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-created')
+      messages
+        .filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-created')
         .map(({ data }) => data.launchConfigId),
-      ['lc3']);
+      ['lc3'],
+    );
     assert.deepEqual(
-      messages.filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-updated')
+      messages
+        .filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-updated')
         .map(({ data }) => data.launchConfigId),
-      ['lc1']);
+      ['lc1'],
+    );
 
     const input3 = {
       ...input,
@@ -348,9 +341,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     await helper.workerManager.updateWorkerPool(workerPoolId, input3);
     // all launch configs should have been archived
     assert.deepEqual(
-      messages.filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-archived')
+      messages
+        .filter(({ exchange }) => exchange === 'exchange/taskcluster-worker-manager/v1/launch-config-archived')
         .map(({ data }) => data.launchConfigId),
-      ['lc1', 'lc3']);
+      ['lc1', 'lc3'],
+    );
   });
 
   test('update worker pool - launchConfigs are always updated with full config', async function () {
@@ -414,10 +409,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       },
     );
     // no worker pool record should be created since launch configs are not unique
-    await assert.rejects(
-      async () => helper.workerManager.workerPool('non/unique'),
-      /ResourceNotFound/,
-    );
+    await assert.rejects(async () => helper.workerManager.workerPool('non/unique'), /ResourceNotFound/);
   });
 
   test('launchConfigIds should be unique across worker pool - update worker pool', async function () {
@@ -425,9 +417,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       providerId: 'aws',
       description: 'bar',
       config: {
-        launchConfigs: [
-          genAwsLaunchConfig({ launchConfigId: 'lc1' }, 'us-west-1'),
-        ],
+        launchConfigs: [genAwsLaunchConfig({ launchConfigId: 'lc1' }, 'us-west-1')],
         minCapacity: 1,
         maxCapacity: 1,
       },
@@ -506,14 +496,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     const apiClient = helper.workerManager.use({ retries: 0 });
     await assert.rejects(
       () => apiClient.updateWorkerPool(workerPoolId, input),
-      err => err.statusCode === 500);
+      (err) => err.statusCode === 500,
+    );
 
     const monitor = await helper.load('monitor');
     assert.equal(
-      monitor.manager.messages.filter(
-        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-      ).length,
-      1);
+      monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+        .length,
+      1,
+    );
     monitor.manager.reset();
   });
 
@@ -623,10 +614,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       providerId: 'aws',
       description: 'bar',
       config: {
-        launchConfigs: [
-          genAwsLaunchConfig({ launchConfigId: 'lc1' }),
-          genAwsLaunchConfig({ launchConfigId: 'lc2' }),
-        ],
+        launchConfigs: [genAwsLaunchConfig({ launchConfigId: 'lc1' }), genAwsLaunchConfig({ launchConfigId: 'lc2' })],
         minCapacity: 1,
         maxCapacity: 1,
       },
@@ -764,7 +752,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     await helper.workerManager.createWorkerPool(workerPoolId, input);
     const data = await helper.workerManager.listWorkerPools();
 
-    data.workerPools.forEach(wp => {
+    data.workerPools.forEach((wp) => {
       workerPoolCompare(workerPoolId, input, wp);
     });
   });
@@ -786,10 +774,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       input[i] = { workerPoolId, description, ...sampleInput };
     }
 
-    await Promise.all(input.map(async i => {
-      const { workerPoolId, ...definition } = i;
-      await helper.workerManager.createWorkerPool(workerPoolId, definition);
-    }));
+    await Promise.all(
+      input.map(async (i) => {
+        const { workerPoolId, ...definition } = i;
+        await helper.workerManager.createWorkerPool(workerPoolId, definition);
+      }),
+    );
 
     return input;
   };
@@ -829,8 +819,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   test('get 404 status when worker pool is not present', async function () {
     const workerPoolId = 'no/such';
-    await assert.rejects(() => helper.workerManager.listWorkersForWorkerPool(workerPoolId),
-      /Worker Pool does not exist/);
+    await assert.rejects(
+      () => helper.workerManager.listWorkersForWorkerPool(workerPoolId),
+      /Worker Pool does not exist/,
+    );
   });
 
   test('get one worker for a given worker pool', async function () {
@@ -855,7 +847,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     await createWorker(input);
 
     const data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
-    data.workers.forEach(worker => {
+    data.workers.forEach((worker) => {
       assert(!('secret' in worker));
     });
     input.created = input.created.toJSON();
@@ -906,7 +898,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     await createWorker(input[0]);
     await createWorker(input[1]);
 
-    input = input.map(i => {
+    input = input.map((i) => {
       i.created = i.created.toJSON();
       i.expires = i.expires.toJSON();
       i.lastModified = i.lastModified.toJSON();
@@ -917,7 +909,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     const data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
-    data.workers.forEach(worker => {
+    data.workers.forEach((worker) => {
       assert(!('secret' in worker));
     });
 
@@ -974,7 +966,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   test('get workers for a given worker pool - no workers', async function () {
     await createWorkerPool();
     const data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
-    data.workers.forEach(worker => {
+    data.workers.forEach((worker) => {
       assert(!('secret' in worker));
     });
 
@@ -983,7 +975,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   test('list workers for a given worker pool and group', async function () {
     const workerPoolId = 'apple/apple';
-    let input = ['wg-a', 'wg-b'].map(workerGroup => ({
+    let input = ['wg-a', 'wg-b'].map((workerGroup) => ({
       workerPoolId,
       providerId: 'google',
       workerGroup,
@@ -1001,7 +993,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     await createWorker(input[0]);
     await createWorker(input[1]);
 
-    input = input.map(i => {
+    input = input.map((i) => {
       i.created = i.created.toJSON();
       i.expires = i.expires.toJSON();
       i.lastModified = i.lastModified.toJSON();
@@ -1012,7 +1004,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     const data = await helper.workerManager.listWorkersForWorkerGroup(workerPoolId, 'wg-a');
 
-    data.workers.forEach(worker => {
+    data.workers.forEach((worker) => {
       assert(!('secret' in worker));
     });
 
@@ -1054,8 +1046,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   test('get a specific worker that does not exist', async function () {
     const workerPoolId = 'apple/apple';
-    await assert.rejects(() =>
-      helper.workerManager.worker(workerPoolId, 'wg-a', 's-3434'), { statusCode: 404 });
+    await assert.rejects(() => helper.workerManager.worker(workerPoolId, 'wg-a', 's-3434'), { statusCode: 404 });
   });
 
   test('worker pools stats', async function () {
@@ -1093,56 +1084,74 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   suite('worker creation / update / removal', function () {
     test('create a worker for a worker pool that does not exist', async function () {
-      await assert.rejects(() =>
-        helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
-          expires: taskcluster.fromNow('1 hour'),
-          capacity: 1,
-        }), new RegExp(`Worker pool ${workerPoolId} does not exist`));
+      await assert.rejects(
+        () =>
+          helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+            expires: taskcluster.fromNow('1 hour'),
+            capacity: 1,
+          }),
+        new RegExp(`Worker pool ${workerPoolId} does not exist`),
+      );
     });
 
     test('create a pre-expired worker', async function () {
       await createWorkerPool({});
-      await assert.rejects(() =>
-        helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
-          expires: taskcluster.fromNow('-1 hour'),
-          capacity: 1,
-        }), /expires must be in the future/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+            expires: taskcluster.fromNow('-1 hour'),
+            capacity: 1,
+          }),
+        /expires must be in the future/,
+      );
     });
 
     test('create a worker for a worker pool with invalid providerId', async function () {
       await createWorkerPool({ providerId: 'nosuch' });
-      await assert.rejects(() =>
-        helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
-          expires: taskcluster.fromNow('1 hour'),
-          capacity: 1,
-        }), /Provider nosuch for worker pool/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+            expires: taskcluster.fromNow('1 hour'),
+            capacity: 1,
+          }),
+        /Provider nosuch for worker pool/,
+      );
     });
 
     test('create a worker for a provider that does not want it', async function () {
       await createWorkerPool({});
-      await assert.rejects(() =>
-        helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
-          expires: taskcluster.fromNow('1 hour'),
-          capacity: 1,
-        }), /creating workers is not supported/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+            expires: taskcluster.fromNow('1 hour'),
+            capacity: 1,
+          }),
+        /creating workers is not supported/,
+      );
     });
 
     test('create a worker with a too-long workerId', async function () {
       const longWorkerId = 'a-really-long-worker-id-123456789123456789';
-      await assert.rejects(() =>
-        helper.workerManager.createWorker(workerPoolId, workerGroup, longWorkerId, {
-          expires: taskcluster.fromNow('1 hour'),
-          capacity: 1,
-        }), /workerId.*must match regular/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.createWorker(workerPoolId, workerGroup, longWorkerId, {
+            expires: taskcluster.fromNow('1 hour'),
+            capacity: 1,
+          }),
+        /workerId.*must match regular/,
+      );
     });
 
     test('create a worker with a too-long workerGroup', async function () {
       const longWorkerGroup = 'a-really-long-worker-group-123456789123456789';
-      await assert.rejects(() =>
-        helper.workerManager.createWorker(workerPoolId, longWorkerGroup, workerId, {
-          expires: taskcluster.fromNow('1 hour'),
-          capacity: 1,
-        }), /workerGroup.*must match regular/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.createWorker(workerPoolId, longWorkerGroup, workerId, {
+            expires: taskcluster.fromNow('1 hour'),
+            capacity: 1,
+          }),
+        /workerGroup.*must match regular/,
+      );
     });
 
     test('create a worker with existing workerId', async function () {
@@ -1158,15 +1167,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       await helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId);
 
-      await assert.rejects(async () => helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
-        expires: taskcluster.fromNow('1 hour'),
-        providerInfo: { staticSecret },
-      }), err => {
-        assert.equal(err.statusCode, 409);
-        assert.equal(err.code, 'RequestConflict');
-        assert.match(err.body.message, /Worker already exists/);
-        return true;
-      });
+      await assert.rejects(
+        async () =>
+          helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
+            expires: taskcluster.fromNow('1 hour'),
+            providerInfo: { staticSecret },
+          }),
+        (err) => {
+          assert.equal(err.statusCode, 409);
+          assert.equal(err.code, 'RequestConflict');
+          assert.match(err.body.message, /Worker already exists/);
+          return true;
+        },
+      );
     });
     test('create a worker for a provider that does want it', async function () {
       await createWorkerPool({
@@ -1187,30 +1200,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('update a worker for a worker pool that does not exist', async function () {
-      await assert.rejects(() =>
-        helper.workerManager.updateWorker(workerPoolId, workerGroup, workerId, {
-          expires: taskcluster.fromNow('1 hour'),
-          capacity: 1,
-        }), new RegExp(`Worker pool ${workerPoolId} does not exist`));
+      await assert.rejects(
+        () =>
+          helper.workerManager.updateWorker(workerPoolId, workerGroup, workerId, {
+            expires: taskcluster.fromNow('1 hour'),
+            capacity: 1,
+          }),
+        new RegExp(`Worker pool ${workerPoolId} does not exist`),
+      );
     });
 
     test('update a worker for a worker pool with invalid providerId', async function () {
       await createWorkerPool({ providerId: 'nosuch' });
-      await assert.rejects(() =>
-        helper.workerManager.updateWorker(workerPoolId, workerGroup, workerId, {
-          expires: taskcluster.fromNow('1 hour'),
-          capacity: 1,
-        }), /Provider nosuch for worker pool/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.updateWorker(workerPoolId, workerGroup, workerId, {
+            expires: taskcluster.fromNow('1 hour'),
+            capacity: 1,
+          }),
+        /Provider nosuch for worker pool/,
+      );
     });
 
     test('update a worker for a provider that does not want it', async function () {
       await createWorkerPool({});
       await createWorker({});
-      await assert.rejects(() =>
-        helper.workerManager.updateWorker(workerPoolId, workerGroup, workerId, {
-          expires: taskcluster.fromNow('1 hour'),
-          capacity: 1,
-        }), /updating workers is not supported/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.updateWorker(workerPoolId, workerGroup, workerId, {
+            expires: taskcluster.fromNow('1 hour'),
+            capacity: 1,
+          }),
+        /updating workers is not supported/,
+      );
     });
 
     test('update a worker for a provider that wants and appreciates it', async function () {
@@ -1218,38 +1240,38 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         providerData: { allowUpdateWorker: true },
       });
       await createWorker({});
-      const worker = await helper.workerManager.updateWorker(
-        workerPoolId,
-        workerGroup,
-        workerId, {
-          expires: taskcluster.fromNow('1 hour'),
-          capacity: 2,
-        });
+      const worker = await helper.workerManager.updateWorker(workerPoolId, workerGroup, workerId, {
+        expires: taskcluster.fromNow('1 hour'),
+        capacity: 2,
+      });
       assert.deepEqual(worker.capacity, 2);
     });
 
     test('remove a worker that does not exist', async function () {
-      await assert.rejects(() =>
-        helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId),
-      /Worker not found/);
+      await assert.rejects(
+        () => helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId),
+        /Worker not found/,
+      );
     });
 
     test('remove a worker that has an invalid provider', async function () {
       await createWorker({
         providerId: 'nosuch',
       });
-      await assert.rejects(() =>
-        helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId),
-      /Provider nosuch for this worker does not exist/);
+      await assert.rejects(
+        () => helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId),
+        /Provider nosuch for this worker does not exist/,
+      );
     });
 
     test('remove a worker for a provider that does not want to', async function () {
       await createWorker({
         providerData: { allowRemoveWorker: false },
       });
-      await assert.rejects(() =>
-        helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId),
-      /removing workers is not supported/);
+      await assert.rejects(
+        () => helper.workerManager.removeWorker(workerPoolId, workerGroup, workerId),
+        /removing workers is not supported/,
+      );
     });
 
     test('remove a worker for a provider that does want to', async function () {
@@ -1286,7 +1308,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     await helper.workerManager.reportWorkerError(workerPoolId, {
       workerGroup: 'wg',
       workerId: 'wi',
-      kind: "worker-error",
+      kind: 'worker-error',
       title: 'Something is Wrong',
       description: 'Uhoh!',
       extra: { amISure: true },
@@ -1304,7 +1326,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     assert.deepEqual(data.workerPoolErrors, [
       {
         workerPoolId,
-        kind: "worker-error",
+        kind: 'worker-error',
         title: 'Something is Wrong',
         description: 'Uhoh!',
         extra: {
@@ -1343,7 +1365,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     await helper.workerManager.reportWorkerError(workerPoolId, {
       workerGroup: worker2.workerGroup,
       workerId: worker2.workerId,
-      kind: "worker-error",
+      kind: 'worker-error',
       title: 'Something is definitely Wrong',
       description: 'Doh!',
       extra: { notes: 'launchConfigId should be here' },
@@ -1356,16 +1378,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   });
 
   test('Report a worker error, no such pool', async function () {
-    await assert.rejects(async () =>
-      await helper.workerManager.reportWorkerError('no/such', {
-        workerGroup: 'wg',
-        workerId: 'wi',
-        kind: "worker-error",
-        title: 'Something is Wrong',
-        description: 'Uhoh!',
-        extra: { amISure: true },
-      }),
-    /Worker pool does not exist/,
+    await assert.rejects(
+      async () =>
+        await helper.workerManager.reportWorkerError('no/such', {
+          workerGroup: 'wg',
+          workerId: 'wi',
+          kind: 'worker-error',
+          title: 'Something is Wrong',
+          description: 'Uhoh!',
+          extra: { amISure: true },
+        }),
+      /Worker pool does not exist/,
     );
   });
 
@@ -1384,8 +1407,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       owner: 'example@example.com',
       emailOnError: false,
     };
-    workerPoolCompare(workerPoolId, input,
-      await helper.workerManager.createWorkerPool(workerPoolId, input));
+    workerPoolCompare(workerPoolId, input, await helper.workerManager.createWorkerPool(workerPoolId, input));
 
     await helper.workerManager.reportWorkerError(workerPoolId, {
       kind: 'something-error',
@@ -1409,15 +1431,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     assert.deepEqual(data.workerPoolErrors, [
       {
-        description: "WHO KNOWS",
+        description: 'WHO KNOWS',
         extra: {
-          foo: "bar-123-456",
+          foo: 'bar-123-456',
           workerGroup: 'wg',
           workerId: 'wid',
         },
-        kind: "something-error",
-        title: "And Error about Something",
-        workerPoolId: "foobar/baz",
+        kind: 'something-error',
+        title: 'And Error about Something',
+        workerPoolId: 'foobar/baz',
       },
     ]);
   });
@@ -1465,7 +1487,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     const byLc = await helper.workerManager.listWorkerPoolErrors('foobar/baz', { launchConfigId: 'lcid' });
     assert.ok(byLc.workerPoolErrors);
     assert.equal(byLc.workerPoolErrors.length, 1);
-
   });
 
   test('get worker pool errors - multiple', async function () {
@@ -1477,8 +1498,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       owner: 'example@example.com',
       emailOnError: false,
     };
-    workerPoolCompare(workerPoolId, input,
-      await helper.workerManager.createWorkerPool(workerPoolId, input));
+    workerPoolCompare(workerPoolId, input, await helper.workerManager.createWorkerPool(workerPoolId, input));
 
     await helper.workerManager.reportWorkerError(workerPoolId, {
       kind: 'something-error',
@@ -1508,7 +1528,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     assert.strictEqual(data.workerPoolErrors.length, 2);
 
-    data.workerPoolErrors.forEach(wpe => {
+    data.workerPoolErrors.forEach((wpe) => {
       assert(wpe.reported);
       delete wpe.reported;
       assert(wpe.errorId);
@@ -1519,25 +1539,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     // first inserted comes second
     assert.deepStrictEqual(data.workerPoolErrors, [
       {
-        description: "huh",
+        description: 'huh',
         extra: {
           workerGroup: 'wg',
           workerId: 'wid',
         },
-        kind: "another-error",
-        title: "And Error about another something",
-        workerPoolId: "foobar/baz",
+        kind: 'another-error',
+        title: 'And Error about another something',
+        workerPoolId: 'foobar/baz',
       },
       {
-        description: "WHO KNOWS",
+        description: 'WHO KNOWS',
         extra: {
-          foo: "bar-123-456",
+          foo: 'bar-123-456',
           workerGroup: 'wg',
           workerId: 'wid',
         },
-        kind: "something-error",
-        title: "And Error about Something",
-        workerPoolId: "foobar/baz",
+        kind: 'something-error',
+        title: 'And Error about Something',
+        workerPoolId: 'foobar/baz',
       },
     ]);
   });
@@ -1552,10 +1572,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       owner: 'example@example.com',
       emailOnError: false,
     };
-    workerPoolCompare(workerPoolId1, input,
-      await helper.workerManager.createWorkerPool(workerPoolId1, input));
-    workerPoolCompare(workerPoolId2, input,
-      await helper.workerManager.createWorkerPool(workerPoolId2, input));
+    workerPoolCompare(workerPoolId1, input, await helper.workerManager.createWorkerPool(workerPoolId1, input));
+    workerPoolCompare(workerPoolId2, input, await helper.workerManager.createWorkerPool(workerPoolId2, input));
 
     await helper.workerManager.reportWorkerError(workerPoolId1, {
       kind: 'something-error',
@@ -1588,18 +1606,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     assert(data.totals !== undefined);
     assert.equal(data.totals.total, 2);
     assert.deepEqual(Object.values(data.totals.daily), [0, 0, 0, 0, 0, 0, 2]);
-    assert.deepEqual(Object.values(data.totals.hourly), [
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 2,
-    ]);
+    assert.deepEqual(
+      Object.values(data.totals.hourly),
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+    );
     assert.deepEqual(data.totals.title, {
       'And Error about Something': 1,
       'And Error about another something': 1,
     });
     assert.deepEqual(data.totals.code, {
       'error-code': 1,
-      'other': 1,
+      other: 1,
     });
     assert.deepEqual(data.totals.workerPool, {
       [workerPoolId1]: 1,
@@ -1617,10 +1634,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       owner: 'example@example.com',
       emailOnError: false,
     };
-    workerPoolCompare(workerPoolId1, input,
-      await helper.workerManager.createWorkerPool(workerPoolId1, input));
-    workerPoolCompare(workerPoolId2, input,
-      await helper.workerManager.createWorkerPool(workerPoolId2, input));
+    workerPoolCompare(workerPoolId1, input, await helper.workerManager.createWorkerPool(workerPoolId1, input));
+    workerPoolCompare(workerPoolId2, input, await helper.workerManager.createWorkerPool(workerPoolId2, input));
 
     await helper.workerManager.reportWorkerError(workerPoolId1, {
       kind: 'something-error',
@@ -1653,11 +1668,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     assert(data.totals !== undefined);
     assert.equal(data.totals.total, 1);
     assert.deepEqual(Object.values(data.totals.daily), [0, 0, 0, 0, 0, 0, 1]);
-    assert.deepEqual(Object.values(data.totals.hourly), [
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 1,
-    ]);
+    assert.deepEqual(
+      Object.values(data.totals.hourly),
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    );
     assert.deepEqual(data.totals.title, {
       'And Error about Something': 1,
     });
@@ -1697,15 +1711,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   };
 
   test('create (google) worker pool', async function () {
-    workerPoolCompare(workerPoolId, googleInput,
-      await helper.workerManager.createWorkerPool(workerPoolId, googleInput));
+    workerPoolCompare(
+      workerPoolId,
+      googleInput,
+      await helper.workerManager.createWorkerPool(workerPoolId, googleInput),
+    );
   });
 
   suite('registerWorker', function () {
     const providerId = 'testing1';
     const workerGroup = 'wg';
     const workerId = 'wi';
-    const workerIdentityProof = { 'token': 'tok' };
+    const workerIdentityProof = { token: 'tok' };
 
     suiteSetup(function () {
       helper.load.save();
@@ -1720,14 +1737,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     const defaultRegisterWorker = {
-      workerPoolId, providerId, workerGroup, workerId, workerIdentityProof,
+      workerPoolId,
+      providerId,
+      workerGroup,
+      workerId,
+      workerIdentityProof,
     };
 
     test('no such workerPool', async function () {
-      await assert.rejects(() => helper.workerManager.registerWorker({
-        ...defaultRegisterWorker,
-        workerPoolId: 'no/such',
-      }), /Worker pool no\/such does not exist/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.registerWorker({
+            ...defaultRegisterWorker,
+            workerPoolId: 'no/such',
+          }),
+        /Worker pool no\/such does not exist/,
+      );
     });
 
     test('no such provider', async function () {
@@ -1735,28 +1760,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await createWorkerPool({
         providerId,
       });
-      await assert.rejects(() => helper.workerManager.registerWorker({
-        ...defaultRegisterWorker,
-        providerId,
-      }), /Provider no-such does not exist/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.registerWorker({
+            ...defaultRegisterWorker,
+            providerId,
+          }),
+        /Provider no-such does not exist/,
+      );
     });
 
     test('provider not associated', async function () {
       await createWorkerPool({
         providerId: 'testing2',
       });
-      await assert.rejects(() => helper.workerManager.registerWorker({
-        ...defaultRegisterWorker,
-        providerId: 'testing1',
-      }), /Worker pool pp\/ee not associated with provider testing1/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.registerWorker({
+            ...defaultRegisterWorker,
+            providerId: 'testing1',
+          }),
+        /Worker pool pp\/ee not associated with provider testing1/,
+      );
     });
 
     test('no such worker', async function () {
-      await createWorkerPool({
-      });
-      await assert.rejects(() => helper.workerManager.registerWorker({
-        ...defaultRegisterWorker,
-      }), /Worker wg\/wi in worker pool pp\/ee does not exist/);
+      await createWorkerPool({});
+      await assert.rejects(
+        () =>
+          helper.workerManager.registerWorker({
+            ...defaultRegisterWorker,
+          }),
+        /Worker wg\/wi in worker pool pp\/ee does not exist/,
+      );
     });
 
     test('worker requests across pools', async function () {
@@ -1766,11 +1802,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         workerPoolId: 'ff/tt',
       });
 
-      await assert.rejects(() => helper.workerManager.registerWorker({
-        ...defaultRegisterWorker,
-        workerPoolId: 'ff/ee', // This is _not_ the pool this worker is in
-      }), /Worker wg\/wi in worker pool ff\/ee does not exist/);
-
+      await assert.rejects(
+        () =>
+          helper.workerManager.registerWorker({
+            ...defaultRegisterWorker,
+            workerPoolId: 'ff/ee', // This is _not_ the pool this worker is in
+          }),
+        /Worker wg\/wi in worker pool ff\/ee does not exist/,
+      );
     });
 
     test('worker does not have providerId', async function () {
@@ -1778,9 +1817,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await createWorker({
         providerId: 'testing2',
       });
-      await assert.rejects(() => helper.workerManager.registerWorker({
-        ...defaultRegisterWorker,
-      }), /Worker wg\/wi does not have provider testing1/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.registerWorker({
+            ...defaultRegisterWorker,
+          }),
+        /Worker wg\/wi does not have provider testing1/,
+      );
     });
 
     test('error from prov.registerWorker', async function () {
@@ -1788,9 +1831,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await createWorker({
         providerData: { failRegister: 'uhoh' },
       });
-      await assert.rejects(() => helper.workerManager.registerWorker({
-        ...defaultRegisterWorker,
-      }), /uhoh/);
+      await assert.rejects(
+        () =>
+          helper.workerManager.registerWorker({
+            ...defaultRegisterWorker,
+          }),
+        /uhoh/,
+      );
     });
 
     test('sweet success', async function () {
@@ -1798,7 +1845,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await createWorker({
         providerData: {
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
         },
       });
@@ -1806,10 +1853,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         ...defaultRegisterWorker,
       });
 
-      assert.equal(res.credentials.clientId,
-        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+      assert.equal(res.credentials.clientId, `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
 
-      assert.equal(res.workerConfig.someKey, "someValue");
+      assert.equal(res.workerConfig.someKey, 'someValue');
 
       // cheat a little and look in the certificate to check the scopes
       const scopes = new Set(JSON.parse(res.credentials.certificate).scopes);
@@ -1844,7 +1890,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           created: workerCreated,
           providerData: {
             workerConfig: {
-              "someKey": "someValue",
+              someKey: 'someValue',
             },
           },
         });
@@ -1853,12 +1899,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           systemBootTime: bootTime.toISOString(),
         });
 
-        assert.equal(res.credentials.clientId,
-          `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
-        assert.equal(res.workerConfig.someKey, "someValue");
+        assert.equal(res.credentials.clientId, `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+        assert.equal(res.workerConfig.someKey, 'someValue');
 
-        const provisionMetric = observed.find(m => m.name === 'worker_manager_worker_provision_seconds');
-        const startupMetric = observed.find(m => m.name === 'worker_manager_worker_startup_seconds');
+        const provisionMetric = observed.find((m) => m.name === 'worker_manager_worker_provision_seconds');
+        const startupMetric = observed.find((m) => m.name === 'worker_manager_worker_startup_seconds');
         assert(provisionMetric, 'workerProvisionDuration metric should be recorded');
         assert(startupMetric, 'workerStartupDuration metric should be recorded');
         assert(provisionMetric.value >= 0, 'provision duration should be non-negative');
@@ -1878,16 +1923,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         ...defaultRegisterWorker,
       });
 
-      assert.equal(res.credentials.clientId,
-        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+      assert.equal(res.credentials.clientId, `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
     });
 
     test('[Integration] Successful registering an AWS worker', async function () {
       const __dirname = new URL('.', import.meta.url).pathname;
       const awsProviderId = 'aws';
       const awsWorkerIdentityProof = {
-        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
-        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+        document: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        signature: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
       };
       const awsWorkerIdentityProofParsed = JSON.parse(awsWorkerIdentityProof.document);
 
@@ -1915,7 +1959,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         workerIdentityProof: awsWorkerIdentityProof,
       });
 
-      assert.equal(res.credentials.clientId,
+      assert.equal(
+        res.credentials.clientId,
         `worker/${awsProviderId}/${workerPoolId}/${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`,
       );
 
@@ -1925,7 +1970,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(scopes.has(`assume:worker-id:${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`), msg);
       assert(scopes.has(`secrets:get:worker-pool:${workerPoolId}`), msg);
       assert(scopes.has(`queue:claim-work:${workerPoolId}`), msg);
-      assert(scopes.has(`worker-manager:reregister-worker:${workerPoolId}/${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`), msg);
+      assert(
+        scopes.has(
+          `worker-manager:reregister-worker:${workerPoolId}/${workerGroup}/${awsWorkerIdentityProofParsed.instanceId}`,
+        ),
+        msg,
+      );
     });
   });
 
@@ -1933,7 +1983,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     const providerId = 'testing1';
     const workerGroup = 'wg';
     const workerId = 'wi';
-    const workerIdentityProof = { 'token': 'tok' };
+    const workerIdentityProof = { token: 'tok' };
 
     suiteSetup(function () {
       helper.load.save();
@@ -1948,7 +1998,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     const defaultRegisterWorker = {
-      workerPoolId, providerId, workerGroup, workerId, workerIdentityProof,
+      workerPoolId,
+      providerId,
+      workerGroup,
+      workerId,
+      workerIdentityProof,
     };
 
     const testExpires = async (config) => {
@@ -1958,16 +2012,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       // This is in milliseconds because interpretLifecycle does that math
       // _before_ it is stored in the db the first time so now reregister
       // works from that math
-      const reregistrationTimeout = config.providerData.reregistrationTimeout ?
-        config.providerData.reregistrationTimeout :
-        96 * 3600 * 1000;
+      const reregistrationTimeout = config.providerData.reregistrationTimeout
+        ? config.providerData.reregistrationTimeout
+        : 96 * 3600 * 1000;
 
       const firstResponse = await helper.workerManager.registerWorker({
         ...defaultRegisterWorker,
       });
 
-      assert.equal(firstResponse.credentials.clientId,
-        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
+      assert.equal(
+        firstResponse.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`,
+      );
 
       // This will use the values set by register in the first place
       const secondResponse = await helper.workerManager.reregisterWorker({
@@ -1977,8 +2033,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         secret: firstResponse.secret,
       });
 
-      assert(new Date(secondResponse.expires) - Date.now()> reregistrationTimeout - 250);
-      assert(new Date(secondResponse.expires) - Date.now()< reregistrationTimeout + 250);
+      assert(new Date(secondResponse.expires) - Date.now() > reregistrationTimeout - 250);
+      assert(new Date(secondResponse.expires) - Date.now() < reregistrationTimeout + 250);
       assert.equal(firstResponse.credentials.clientId, secondResponse.credentials.clientId);
       assert.notStrictEqual(firstResponse.secret, secondResponse.secret);
 
@@ -1996,8 +2052,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         secret: secondResponse.secret,
       });
 
-      assert(new Date(thirdResponse.expires) - Date.now()> reregistrationTimeout - 250);
-      assert(new Date(thirdResponse.expires) - Date.now()< reregistrationTimeout + 250);
+      assert(new Date(thirdResponse.expires) - Date.now() > reregistrationTimeout - 250);
+      assert(new Date(thirdResponse.expires) - Date.now() < reregistrationTimeout + 250);
       assert.equal(secondResponse.credentials.clientId, thirdResponse.credentials.clientId);
       assert.notStrictEqual(secondResponse.secret, thirdResponse.secret);
 
@@ -2011,7 +2067,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       const config = {
         providerData: {
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
         },
       };
@@ -2022,7 +2078,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       const config = {
         providerData: {
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
           // 2 hour
           reregistrationTimeout: 2 * 60 * 60 * 1000, // this is stored in milliseconds
@@ -2035,7 +2091,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       const config = {
         providerData: {
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
           // 2 hour
           reregistrationTimeout: 2 * 60 * 60 * 1000, // this is stored in milliseconds
@@ -2050,7 +2106,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await createWorker({
         providerData: {
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
         },
       });
@@ -2058,20 +2114,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         ...defaultRegisterWorker,
       });
 
-      assert.equal(firstResponse.credentials.clientId,
-        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
-
-      await assert.rejects(
-        async () => {
-          await helper.workerManager.reregisterWorker({
-            workerPoolId,
-            workerGroup,
-            workerId,
-            secret: `${slug.nice()}${slug.nice()}`,
-          });
-        },
-        /Could not generate credentials for this secret/,
+      assert.equal(
+        firstResponse.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`,
       );
+
+      await assert.rejects(async () => {
+        await helper.workerManager.reregisterWorker({
+          workerPoolId,
+          workerGroup,
+          workerId,
+          secret: `${slug.nice()}${slug.nice()}`,
+        });
+      }, /Could not generate credentials for this secret/);
     });
 
     test('throws when worker does not exist', async function () {
@@ -2079,7 +2134,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await createWorker({
         providerData: {
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
         },
       });
@@ -2087,20 +2142,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         ...defaultRegisterWorker,
       });
 
-      assert.equal(firstResponse.credentials.clientId,
-        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
-
-      await assert.rejects(
-        async () => {
-          await helper.workerManager.reregisterWorker({
-            workerPoolId: 'does-not/exist',
-            workerGroup,
-            workerId,
-            secret: firstResponse.secret,
-          });
-        },
-        /Could not generate credentials for this secret/,
+      assert.equal(
+        firstResponse.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`,
       );
+
+      await assert.rejects(async () => {
+        await helper.workerManager.reregisterWorker({
+          workerPoolId: 'does-not/exist',
+          workerGroup,
+          workerId,
+          secret: firstResponse.secret,
+        });
+      }, /Could not generate credentials for this secret/);
     });
 
     test('throws when secret is not defined', async function () {
@@ -2108,7 +2162,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await createWorker({
         providerData: {
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
         },
       });
@@ -2116,20 +2170,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         ...defaultRegisterWorker,
       });
 
-      assert.equal(firstResponse.credentials.clientId,
-        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`);
-
-      await assert.rejects(
-        async () => {
-          await helper.workerManager.reregisterWorker({
-            workerPoolId,
-            workerGroup,
-            workerId,
-            secret: null,
-          });
-        },
-        /Schema Validation Failed/,
+      assert.equal(
+        firstResponse.credentials.clientId,
+        `worker/${providerId}/${workerPoolId}/${workerGroup}/${workerId}`,
       );
+
+      await assert.rejects(async () => {
+        await helper.workerManager.reregisterWorker({
+          workerPoolId,
+          workerGroup,
+          workerId,
+          secret: null,
+        });
+      }, /Schema Validation Failed/);
     });
   });
 
@@ -2138,43 +2191,50 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.listProviders(),
-        err => err.code === 'InsufficientScopes');
+        (err) => err.code === 'InsufficientScopes',
+      );
     });
     test('workerPool without scopes', async function () {
       const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.workerPool('aa/bb'),
-        err => err.code === 'InsufficientScopes');
+        (err) => err.code === 'InsufficientScopes',
+      );
     });
     test('listWorkerPools without scopes', async function () {
       const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.listWorkerPools(),
-        err => err.code === 'InsufficientScopes');
+        (err) => err.code === 'InsufficientScopes',
+      );
     });
     test('listWorkerPoolErrors without scopes', async function () {
       const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.listWorkerPoolErrors('aa/bb'),
-        err => err.code === 'InsufficientScopes');
+        (err) => err.code === 'InsufficientScopes',
+      );
     });
     test('listWorkersForWorkerPool without scopes', async function () {
       const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.listWorkersForWorkerPool('aa/bb'),
-        err => err.code === 'InsufficientScopes');
+        (err) => err.code === 'InsufficientScopes',
+      );
     });
     test('listWorkersForWorkerGroup without scopes', async function () {
       const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.listWorkersForWorkerGroup('aa/bb', 'ff'),
-        err => err.code === 'InsufficientScopes');
+        (err) => err.code === 'InsufficientScopes',
+      );
     });
     test('worker without scopes', async function () {
       const client = new helper.WorkerManager({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.worker('aa/bb', 'ff', 'i-123'),
-        err => err.code === 'InsufficientScopes');
+        (err) => err.code === 'InsufficientScopes',
+      );
     });
   });
 
@@ -2184,16 +2244,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       // we cannot directly call queue_worker_seen_with_last_date_active
       // because worker-manager client doesn't have write access to that tables
       await helper.withAdminDbClient(async (client) => {
-        await client.query(`insert
+        await client.query(
+          `insert
           into queue_workers
           (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim, last_date_active) values
           ($1, $2, $3, jsonb_build_array(), now() - interval '1 hour', now() + interval '1 hour', now() - interval '1 hour', now())`,
-        [workerPoolId, workerGroup, workerId]);
-        await client.query(`insert
+          [workerPoolId, workerGroup, workerId],
+        );
+        await client.query(
+          `insert
           into task_queues
           (task_queue_id, expires, last_date_active, stability, description) values
           ($1, now() + interval '1 hour', now() - interval '1 hour', $2, $3)`,
-        [workerPoolId, 'experimental', 'description']);
+          [workerPoolId, 'experimental', 'description'],
+        );
       });
     };
 
@@ -2204,9 +2268,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       const [provisionerId, workerType] = workerPoolId.split('/');
 
       // worker is not yet visible to the queue so this method will fail
-      await assert.rejects(() =>
-        helper.workerManager.getWorker(provisionerId, workerType, workerGroup, workerId),
-      /Worker with workerId.+not found/,
+      await assert.rejects(
+        () => helper.workerManager.getWorker(provisionerId, workerType, workerGroup, workerId),
+        /Worker with workerId.+not found/,
       );
 
       await makeQueueVisible(workerPoolId, workerGroup, workerId);
@@ -2241,16 +2305,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       // we cannot directly call queue_worker_seen_with_last_date_active
       // because worker-manager client doesn't have write access to that tables
       await helper.withAdminDbClient(async (client) => {
-        await client.query(`insert
+        await client.query(
+          `insert
           into queue_workers
           (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim, last_date_active) values
           ($1, $2, $3, jsonb_build_array(), now() - interval '1 hour', now() + interval '1 hour', now() - interval '1 hour', now())`,
-        [wp, wg, wid]);
-        await client.query(`insert
+          [wp, wg, wid],
+        );
+        await client.query(
+          `insert
           into task_queues
           (task_queue_id, expires, last_date_active, stability, description) values
           ($1, now() + interval '1 hour', now() - interval '1 hour', $2, $3)`,
-        [wp, 'experimental', 'description']);
+          [wp, 'experimental', 'description'],
+        );
       });
     };
 
@@ -2265,9 +2333,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       const [provisionerId, workerType] = workerPoolId2.split('/');
 
       // worker is not yet visible to the queue so this method will fail
-      await assert.rejects(() =>
-        helper.workerManager.getWorker(provisionerId, workerType, workerGroup2, workerId2),
-      /Worker with workerId.+not found/,
+      await assert.rejects(
+        () => helper.workerManager.getWorker(provisionerId, workerType, workerGroup2, workerId2),
+        /Worker with workerId.+not found/,
       );
 
       await makeQueueVisible(workerPoolId2, workerGroup2, workerId2);
@@ -2339,8 +2407,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
   });
 
-  suite('shouldWorkerTerminate', function() {
-    test('worker marked terminate: true returns true', async function() {
+  suite('shouldWorkerTerminate', function () {
+    test('worker marked terminate: true returns true', async function () {
       await createWorkerPool();
       await createWorker({
         providerData: {
@@ -2356,7 +2424,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.strictEqual(result.reason, 'over capacity');
     });
 
-    test('worker marked terminate: false returns false', async function() {
+    test('worker marked terminate: false returns false', async function () {
       await createWorkerPool();
       await createWorker({
         providerData: {
@@ -2372,7 +2440,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.strictEqual(result.reason, 'needed');
     });
 
-    test('no decision yet returns terminate: false', async function() {
+    test('no decision yet returns terminate: false', async function () {
       await createWorkerPool();
       await createWorker();
       const result = await helper.workerManager.shouldWorkerTerminate(workerPoolId, workerGroup, workerId);
@@ -2380,10 +2448,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert.strictEqual(result.reason, 'none');
     });
 
-    test('non-existent worker returns 404', async function() {
+    test('non-existent worker returns 404', async function () {
       await assert.rejects(
         () => helper.workerManager.shouldWorkerTerminate('no/such', 'wg', 'wi'),
-        err => err.statusCode === 404,
+        (err) => err.statusCode === 404,
       );
     });
   });

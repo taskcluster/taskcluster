@@ -2,10 +2,7 @@
 export default (_formattedError, error) => {
   const data = error?.toJson?.() || error;
 
-  if (
-    error.originalError?.result?.errors &&
-    error.originalError.result.errors.length === 1
-  ) {
+  if (error.originalError?.result?.errors && error.originalError.result.errors.length === 1) {
     const [originalError] = error.originalError.result.errors;
 
     if (originalError.message === error.message) {

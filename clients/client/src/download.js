@@ -17,7 +17,7 @@ const s3 = async ({ url, streamFactory, retryCfg }) => {
     let contentType = 'application/binary';
     try {
       const src = got.stream(url, { retry: { limit: 0 } });
-      src.on('response', res => {
+      src.on('response', (res) => {
         contentType = res.headers['content-type'] || contentType;
       });
       const dest = await streamFactory();
@@ -49,7 +49,7 @@ const getUrl = async ({ object, name, resp, streamFactory, retryCfg }) => {
     try {
       responseUsed = true;
       const src = got.stream(resp.url, { retry: { limit: 0 } });
-      src.on('response', res => {
+      src.on('response', (res) => {
         contentType = res.headers['content-type'] || contentType;
       });
       const dest = await streamFactory();
@@ -94,12 +94,19 @@ const verifyHashes = (observedHashes, expectedHashes) => {
   }
 
   if (!someValidAcceptableHash) {
-    throw new Error("No acceptable hash algorithm found");
+    throw new Error('No acceptable hash algorithm found');
   }
 };
 
-export const download = async ({ name, object, streamFactory,
-  retries, delayFactor, randomizationFactor, maxDelay }) => {
+export const download = async ({
+  name,
+  object,
+  streamFactory,
+  retries,
+  delayFactor,
+  randomizationFactor,
+  maxDelay,
+}) => {
   const retryCfg = makeRetryCfg({ retries, delayFactor, randomizationFactor, maxDelay });
 
   const acceptDownloadMethods = {
@@ -111,24 +118,34 @@ export const download = async ({ name, object, streamFactory,
   if (resp.method === 'getUrl') {
     return await getUrl({ object, name, resp, streamFactory, retryCfg });
   } else {
-    throw new Error("Could not negotiate a download method");
+    throw new Error('Could not negotiate a download method');
   }
 };
 
 export const downloadArtifact = async ({
-  taskId, runId, name, queue, streamFactory, retries, delayFactor, randomizationFactor, maxDelay,
+  taskId,
+  runId,
+  name,
+  queue,
+  streamFactory,
+  retries,
+  delayFactor,
+  randomizationFactor,
+  maxDelay,
 }) => {
   const retryCfg = makeRetryCfg({ retries, delayFactor, randomizationFactor, maxDelay });
 
-  const artifact = await (runId === undefined ? queue.latestArtifact(taskId, name) : queue.artifact(taskId, runId, name));
+  const artifact = await (runId === undefined
+    ? queue.latestArtifact(taskId, name)
+    : queue.artifact(taskId, runId, name));
 
   switch (artifact.storageType) {
-    case "reference":
-    case "s3": {
+    case 'reference':
+    case 's3': {
       return await s3({ url: artifact.url, streamFactory, retryCfg });
     }
 
-    case "object": {
+    case 'object': {
       const object = new clients.Object({
         rootUrl: queue._options._trueRootUrl,
         credentials: artifact.credentials,
@@ -136,7 +153,7 @@ export const downloadArtifact = async ({
       return await download({ name: artifact.name, object, streamFactory, ...retryCfg });
     }
 
-    case "error": {
+    case 'error': {
       const err = new Error(artifact.message);
       err.reason = artifact.reason;
       throw err;

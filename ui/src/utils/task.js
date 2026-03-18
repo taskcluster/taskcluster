@@ -1,7 +1,7 @@
 import { curry, pipe, map, dropRepeatsWith } from 'ramda';
 import { memoize } from './memoize';
 
-export const taskLastRun = task => {
+export const taskLastRun = (task) => {
   const sorted = [...(task?.status?.runs || [])].sort((a, b) => b.runId - a.runId);
 
   if (sorted.length === 0 || !sorted[0].started) {
@@ -16,7 +16,7 @@ export const taskLastRun = task => {
   };
 };
 
-export const taskRunDurationInMs = run => {
+export const taskRunDurationInMs = (run) => {
   if (!run || !run.from) {
     return 0;
   }
@@ -27,19 +27,19 @@ export const taskRunDurationInMs = run => {
   return to.getTime() - from.getTime();
 };
 
-export const taskRunEarliestStart = task => {
+export const taskRunEarliestStart = (task) => {
   const started = [...(task?.status?.runs || [])]
-    .map(run => run.started)
-    .filter(item => item)
+    .map((run) => run.started)
+    .filter((item) => item)
     .sort((a, b) => a.started - b.started);
 
   return started.length ? new Date(started[0]).getTime() : Date.now();
 };
 
-export const taskRunLatestResolve = task => {
+export const taskRunLatestResolve = (task) => {
   const resolved = [...(task?.status?.runs || [])]
-    .map(run => run.resolved && new Date(run.resolved).getTime())
-    .filter(item => item)
+    .map((run) => run.resolved && new Date(run.resolved).getTime())
+    .filter((item) => item)
     .sort((a, b) => b - a);
 
   return resolved.length ? resolved[0] : Date.now();
@@ -47,15 +47,25 @@ export const taskRunLatestResolve = task => {
 
 export const filterTasksByState = curry((filter, tasks) =>
   filter
-    ? tasks.filter(({ node: { status: { state } } }) => filter.includes(state))
-    : tasks
+    ? tasks.filter(
+        ({
+          node: {
+            status: { state },
+          },
+        }) => filter.includes(state),
+      )
+    : tasks,
 );
 export const filterTasksByName = curry((searchTerm, tasks) =>
   searchTerm
-    ? tasks.filter(({ node: { metadata: { name } } }) =>
-        (name ? name.toLowerCase() : '').includes(searchTerm)
+    ? tasks.filter(
+        ({
+          node: {
+            metadata: { name },
+          },
+        }) => (name ? name.toLowerCase() : '').includes(searchTerm),
       )
-    : tasks
+    : tasks,
 );
 
 export const filterTasks = (tasks, state, searchTerm) =>
@@ -68,12 +78,10 @@ export const taskIds = map(
       status: { state },
       taskId,
     },
-  }) => `${taskId}-${name}-${state}`
+  }) => `${taskId}-${name}-${state}`,
 );
 
-export const taskDurationIds = map(
-  ({ taskId, name, state }) => `${taskId}-${name}-${state}`
-);
+export const taskDurationIds = map(({ taskId, name, state }) => `${taskId}-${name}-${state}`);
 
 export const filterTasksWithDuration = memoize(
   (tasks, filter, searchTerm) =>
@@ -89,9 +97,8 @@ export const filterTasksWithDuration = memoize(
       .filter(({ duration }) => !!duration)
       .sort((a, b) => a.duration - b.duration),
   {
-    serializer: ([tasks, filter, searchTerm]) =>
-      `${tasks ? taskIds(tasks) : ''}${filter}-${searchTerm}`,
-  }
+    serializer: ([tasks, filter, searchTerm]) => `${tasks ? taskIds(tasks) : ''}${filter}-${searchTerm}`,
+  },
 );
 
 // displaying thousands of tasks in graph degrades usability and performance
@@ -99,8 +106,7 @@ export const sampleTasks = memoize(
   (tasks, _filter, _searchTerm, maxTasks) => {
     let sampled = tasks;
     let precision = 10;
-    const compareDelta = (a, b) =>
-      Math.abs(a.duration - b.duration) < precision;
+    const compareDelta = (a, b) => Math.abs(a.duration - b.duration) < precision;
 
     while (sampled.length > maxTasks) {
       sampled = dropRepeatsWith(compareDelta, tasks);
@@ -111,10 +117,8 @@ export const sampleTasks = memoize(
   },
   {
     serializer: ([tasks, filter, searchTerm, maxTasks]) =>
-      `${
-        tasks ? taskDurationIds(tasks) : ''
-      }-${filter}-${searchTerm}-${maxTasks}`,
-  }
+      `${tasks ? taskDurationIds(tasks) : ''}-${filter}-${searchTerm}-${maxTasks}`,
+  },
 );
 
 // borrowed from https://stackoverflow.com/questions/48719873/how-to-get-median-and-quartiles-percentiles-of-an-array-in-javascript-or-php
@@ -134,7 +138,7 @@ export const quantile = (sorted, q) => {
   return sorted[base];
 };
 
-export const formatTime = ms => {
+export const formatTime = (ms) => {
   if (ms < 0 || ms === -Infinity) {
     return 'n/a';
   }
@@ -150,5 +154,5 @@ export const formatTime = ms => {
   parts.push(Math.floor((s - hours * 3600) / 60));
   parts.push(s % 60);
 
-  return parts.map(t => String(t).padStart(2, '0')).join(':');
+  return parts.map((t) => String(t).padStart(2, '0')).join(':');
 };

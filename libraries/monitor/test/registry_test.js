@@ -51,8 +51,8 @@ MonitorManager.register({
   },
 });
 
-suite(testing.suiteName(), function() {
-  test('can add custom message types', function() {
+suite(testing.suiteName(), function () {
+  test('can add custom message types', function () {
     const monitor = MonitorManager.setup({
       serviceName: 'taskcluster-testing-service',
       level: 'debug',
@@ -63,7 +63,7 @@ suite(testing.suiteName(), function() {
     assert.equal(monitor.manager.messages.length, 1);
   });
 
-  test('can verify custom types', function() {
+  test('can verify custom types', function () {
     const monitor = MonitorManager.setup({
       serviceName: 'taskcluster-testing-service',
       level: 'debug',
@@ -75,7 +75,7 @@ suite(testing.suiteName(), function() {
     assert.throws(() => monitor.log.auditLog({ foo: null }), /"auditLog" must include field "bar"/);
   });
 
-  test('can publish types', function() {
+  test('can publish types', function () {
     const serviceName = 'taskcluster-testing-service';
     assert.equal(MonitorManager.reference(serviceName).serviceName, serviceName);
     const ref = _.find(MonitorManager.reference(serviceName).types, { name: 'auditLog' });
@@ -86,7 +86,7 @@ suite(testing.suiteName(), function() {
     assert.deepEqual(ref.version, 1);
   });
 
-  test('can publish metrics in metrics reference', function() {
+  test('can publish metrics in metrics reference', function () {
     const serviceName = 'taskcluster-testing-service';
     const ref = MonitorManager.metricsReference(serviceName);
 
@@ -103,7 +103,7 @@ suite(testing.suiteName(), function() {
     assert.deepEqual(serviceMetric.buckets, [0.05, 0.1, 0.5, 1.0]);
   });
 
-  test('throws on duplicate metric registration', function() {
+  test('throws on duplicate metric registration', function () {
     assert.throws(() => {
       MonitorManager.registerMetric('aa1', {
         name: 'test_counter_xx',
@@ -124,7 +124,7 @@ suite(testing.suiteName(), function() {
     }, /Cannot register metric service_histogram_xx twice/);
   });
 
-  test('validates metric type and labels', function() {
+  test('validates metric type and labels', function () {
     assert.throws(() => {
       MonitorManager.registerMetric('aa3', {
         name: 'invalid_type_metric',
@@ -143,7 +143,7 @@ suite(testing.suiteName(), function() {
       });
     }, /Invalid label name 0invalid/);
   });
-  test('validates registers', function() {
+  test('validates registers', function () {
     assert.throws(() => {
       MonitorManager.registerMetric('aa5', {
         name: 'empty_registers',
@@ -155,7 +155,7 @@ suite(testing.suiteName(), function() {
     }, /Must provide at least one register/);
   });
 
-  test('can use metrics', async function() {
+  test('can use metrics', async function () {
     const monitor = MonitorManager.setup({
       serviceName: 'taskcluster-testing-service',
       level: 'debug',
@@ -177,18 +177,25 @@ suite(testing.suiteName(), function() {
     // histograms store values in buckets
     assert.equal(histogram.values.filter(({ value }) => value === 33).length, 1);
 
-    assert.ok(metrics.find(({ name }) => name.endsWith('shared_counter')),
-      'expected shared metric in default registry');
+    assert.ok(
+      metrics.find(({ name }) => name.endsWith('shared_counter')),
+      'expected shared metric in default registry',
+    );
 
     // special counter should not be in the default registry
-    assert.equal(metrics.find(({ name }) => name.endsWith('separate_counter')), undefined);
+    assert.equal(
+      metrics.find(({ name }) => name.endsWith('separate_counter')),
+      undefined,
+    );
 
     const specialMetrics = await monitor.manager._prometheus.metricsJson('special');
     const specialCounter = specialMetrics.find(({ name }) => name.endsWith('separate_counter'));
     assert.equal(specialCounter.values[0].value, 1);
 
-    assert.ok(specialMetrics.find(({ name }) => name.endsWith('shared_counter')),
-      'expected shared metric in special registry');
+    assert.ok(
+      specialMetrics.find(({ name }) => name.endsWith('shared_counter')),
+      'expected shared metric in special registry',
+    );
   });
 
   test('throws error when invalid metric names are used', async function () {

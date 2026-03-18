@@ -10,18 +10,10 @@ import { MonitorManager } from '@taskcluster/lib-monitor';
 import pgConnectionString from 'pg-connection-string';
 const { parse: parseConnectionString } = pgConnectionString;
 
-import {
-  runMigration,
-  runOnlineMigration,
-  runDowngrade,
-  runOnlineDowngrade,
-  dropOnlineFns,
-} from './migration.js';
+import { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade, dropOnlineFns } from './migration.js';
 
 // Postgres extensions to "create".
-const EXTENSIONS = [
-  'pgcrypto',
-];
+const EXTENSIONS = ['pgcrypto'];
 
 // Node-postgres assumes that all Date objects are in the local timezone.  In
 // Taskcluster, we always use Date objects in UTC.  Happily, the library's
@@ -72,8 +64,17 @@ class Database {
    * Get a new Database instance
    * @param {SetupOptions} options
    */
-  static async setup({ schema, readDbUrl, writeDbUrl, dbCryptoKeys,
-    azureCryptoKey, serviceName, monitor, statementTimeout, poolSize }) {
+  static async setup({
+    schema,
+    readDbUrl,
+    writeDbUrl,
+    dbCryptoKeys,
+    azureCryptoKey,
+    serviceName,
+    monitor,
+    statementTimeout,
+    poolSize,
+  }) {
     assert(readDbUrl, 'readDbUrl is required');
     assert(writeDbUrl, 'writeDbUrl is required');
     assert(schema, 'schema is required');
@@ -104,13 +105,13 @@ class Database {
    * @param {object} options
    * @param {import('./Schema.js').Schema} options.schema
    * @param {string} options.serviceName
-  */
+   */
   _createProcs({ schema, serviceName }) {
     // generate a JS method for each DB method defined in the schema
-    this.fns = /** @type {DbFunctions} */({});
-    this.deprecatedFns = /** @type {DeprecatedDbFunctions} */({});
-    schema.allMethods().forEach(method => {
-      let collection = /** @type {DbFunctions | DeprecatedDbFunctions} */(this.fns);
+    this.fns = /** @type {DbFunctions} */ ({});
+    this.deprecatedFns = /** @type {DeprecatedDbFunctions} */ ({});
+    schema.allMethods().forEach((method) => {
+      let collection = /** @type {DbFunctions | DeprecatedDbFunctions} */ (this.fns);
       if (method.deprecated && this.deprecatedFns) {
         collection = this.deprecatedFns;
       }
@@ -118,8 +119,7 @@ class Database {
       // @ts-ignore method name is known to be correct for DbFunctions
       collection[method.name] = async (...args) => {
         if (serviceName !== method.serviceName && method.mode !== READ) {
-          throw new Error(
-            `${serviceName} is not allowed to call read-write methods for ${method.serviceName}`);
+          throw new Error(`${serviceName} is not allowed to call read-write methods for ${method.serviceName}`);
         }
 
         this._logDbFunctionCall({ name: method.name });
@@ -127,22 +127,21 @@ class Database {
         // For now we only support named arguments that end with "_in" to make sure
         // functions that take a single object argument are not incorrectly labeled as named arguments.
         /** @param {string} key */
-        const validNamedArgument = key => /^[a-z0-9_]+_in$/.test(key);
-        const hasNamedArguments = args.length === 1
-          && _.isPlainObject(args[0])
-          && Object.keys(args[0]).every(validNamedArgument);
-        const res = await this._withClient(method.mode, async client => {
+        const validNamedArgument = (key) => /^[a-z0-9_]+_in$/.test(key);
+        const hasNamedArguments =
+          args.length === 1 && _.isPlainObject(args[0]) && Object.keys(args[0]).every(validNamedArgument);
+        const res = await this._withClient(method.mode, async (client) => {
           await client.query(method.mode === READ ? 'begin read only' : 'begin read write');
           try {
             let res;
             if (hasNamedArguments) {
               const obj = args[0];
               const keys = Object.keys(obj);
-              const values = keys.map(k => obj[k]); // order must match keys!
+              const values = keys.map((k) => obj[k]); // order must match keys!
               const placeholders = keys.map((key, i) => `${key} => $${i + 1}`).join(',');
               res = await client.query(`select * from "${method.name}"(${placeholders})`, values);
             } else {
-              const placeholders = [...new Array(args.length).keys()].map(i => `$${i + 1}`).join(',');
+              const placeholders = [...new Array(args.length).keys()].map((i) => `$${i + 1}`).join(',');
               res = await client.query(`select * from "${method.name}"(${placeholders})`, args);
             }
             await client.query('commit');
@@ -199,7 +198,7 @@ class Database {
       }
 
       // start by running the previous version's online migration, to ensure it finished
-      await db._withClient('admin', async client => {
+      await db._withClient('admin', async (client) => {
         await runOnlineMigration({ client, showProgress, versionNum: dbVersion });
         await dropOnlineFns({ client, kind: 'migration', versionNum: dbVersion, showProgress });
       });
@@ -208,7 +207,7 @@ class Database {
       for (let v = dbVersion + 1; v <= stopAt; v++) {
         showProgress(`upgrading database to version ${v}`);
         const version = schema.getVersion(v);
-        await db._withClient('admin', async client => {
+        await db._withClient('admin', async (client) => {
           await dropOnlineFns({ client, kind: 'migration', versionNum: version.version, showProgress });
           await runMigration({ client, version, showProgress, usernamePrefix });
           await runOnlineMigration({ client, showProgress, versionNum: v });
@@ -218,7 +217,7 @@ class Database {
       }
 
       showProgress('...updating users');
-      await db._withClient('admin', async client => {
+      await db._withClient('admin', async (client) => {
         // make sure all services have basic levels of access..
         for (const serviceName of schema.access.serviceNames()) {
           const username = `${usernamePrefix}_${serviceName.replace(/-/g, '_')}`;
@@ -274,7 +273,7 @@ class Database {
       if (dbVersion >= toVersion) {
         // start by running the subsequent version's online downgrade, if
         // defined, to ensure it finished
-        await db._withClient('admin', async client => {
+        await db._withClient('admin', async (client) => {
           await runOnlineDowngrade({ client, showProgress, versionNum: dbVersion + 1 });
           await dropOnlineFns({ client, kind: 'downgrade', versionNum: dbVersion + 1, showProgress });
         });
@@ -284,7 +283,7 @@ class Database {
           showProgress(`downgrading database from version ${v} to version ${v - 1}`);
           const fromVersion = schema.getVersion(v);
           const toVersion = v === 1 ? { version: 0, methods: [] } : schema.getVersion(v - 1);
-          await db._withClient('admin', async client => {
+          await db._withClient('admin', async (client) => {
             await dropOnlineFns({ client, kind: 'downgrade', versionNum: fromVersion.version, showProgress });
             await runDowngrade({
               client,
@@ -322,7 +321,8 @@ class Database {
       // was granting access to the entire table. We never use column
       // grants, so such an overestimation doesn't hurt. And revoking access
       // to a table implicitly revokes column grants for that table, too.
-      const res = await client.query(`
+      const res = await client.query(
+        `
         select grantee, table_name, privilege_type
           from information_schema.table_privileges
           where table_schema = 'public'
@@ -335,9 +335,10 @@ class Database {
           where table_schema = 'public'
            and grantee like $1
            and table_catalog = current_catalog
-           and table_name != 'tcversion'`, [usernamePattern]);
-      const currentPrivs = new Set(
-        res.rows.map(row => `${row.grantee}: ${row.privilege_type} on ${row.table_name}`));
+           and table_name != 'tcversion'`,
+        [usernamePattern],
+      );
+      const currentPrivs = new Set(res.rows.map((row) => `${row.grantee}: ${row.privilege_type} on ${row.table_name}`));
 
       const expectedPrivs = new Set();
       for (const serviceName of schema.access.serviceNames()) {
@@ -372,13 +373,14 @@ class Database {
 
       // look for unexpected user attributes
       const badAttrs = {
-        'superuser': 'rolsuper',
-        'createrole': 'rolcreaterole',
-        'createdb': 'rolcreatedb',
-        'replication': 'rolreplication',
+        superuser: 'rolsuper',
+        createrole: 'rolcreaterole',
+        createdb: 'rolcreatedb',
+        replication: 'rolreplication',
       };
 
-      const attrRes = await client.query(`
+      const attrRes = await client.query(
+        `
         select
           rolname as user,
           rolsuper,
@@ -389,7 +391,9 @@ class Database {
           pg_catalog.pg_roles
         where
           (${Object.values(badAttrs).join(' or ')}) and
-          rolname like $1`, [usernamePattern]);
+          rolname like $1`,
+        [usernamePattern],
+      );
       for (const row of attrRes.rows) {
         for (const [attr, col] of Object.entries(badAttrs)) {
           if (row[col]) {
@@ -399,7 +403,8 @@ class Database {
       }
 
       // look for unexpected granted roles
-      const roleRes = await client.query(`
+      const roleRes = await client.query(
+        `
         select
           r.rolname as role,
           u.rolname as user
@@ -410,7 +415,9 @@ class Database {
         where
          r.oid = roleid and
          u.oid = member and
-         u.rolname like $1`, [usernamePattern]);
+         u.rolname like $1`,
+        [usernamePattern],
+      );
       for (const row of roleRes.rows) {
         issues.push(`${row.user} has unexpected role ${row.role}`);
       }
@@ -426,7 +433,7 @@ class Database {
    * @param {{ db: Database, schema: import('./Schema.js').Schema }} param0
    */
   static async _checkTableColumns({ db, schema }) {
-    const current = await db._withClient('admin', async client => {
+    const current = await db._withClient('admin', async (client) => {
       /** @type {Record<string, Record<string, string>>} */
       const tables = {};
 
@@ -444,7 +451,8 @@ class Database {
       `);
 
       for (const { tablename, oid } of tablesres.rows) {
-        const rowsres = await client.query(`
+        const rowsres = await client.query(
+          `
           select
             attname,
             pg_catalog.format_type(a.atttypid, a.atttypmod) as type,
@@ -455,9 +463,12 @@ class Database {
             -- attnum's < 0 are internal
             -- dropped attributes are invisible
             a.attrelid=$1 and a.attnum > 0 and not attisdropped
-        `, [oid]);
+        `,
+          [oid],
+        );
         tables[tablename] = Object.fromEntries(
-          rowsres.rows.map(({ attname, type, notnull }) => ([attname, `${type}${notnull ? ' not null' : ''}`])));
+          rowsres.rows.map(({ attname, type, notnull }) => [attname, `${type}${notnull ? ' not null' : ''}`]),
+        );
       }
 
       return tables;
@@ -468,21 +479,21 @@ class Database {
 
   /** @private */
   async _checkVersion() {
-    await this._withClient('admin', async client => {
+    await this._withClient('admin', async (client) => {
       const version = await client.query(`
         SELECT current_setting('server_version_num');
       `);
       const ver = version.rows[0].current_setting;
       const majorVersion = Math.floor(ver / 10000);
       if (majorVersion !== 15) {
-        throw new Error("Postgres version is not 15.x. Please change to 15.x");
+        throw new Error('Postgres version is not 15.x. Please change to 15.x');
       }
     });
   }
 
   /** @private */
   async _createExtensions() {
-    await this._withClient('admin', async client => {
+    await this._withClient('admin', async (client) => {
       for (const ext of EXTENSIONS) {
         try {
           await client.query(`create extension ${ext}`);
@@ -498,7 +509,7 @@ class Database {
 
   /** @private */
   async _checkDbSettings() {
-    await this._withClient('admin', async client => {
+    await this._withClient('admin', async (client) => {
       // check the DB collation by its behavior, rather than by name, as names seem to vary.
       for (const pair of ['aA', 'ab', 'Ab', 'aB', 'AB', '0a', '0A']) {
         const res = await client.query(`select 1 where $1 >= $2`, [pair[0], pair[1]]);
@@ -508,11 +519,13 @@ class Database {
             FROM pg_database
             WHERE datname = current_database()`);
           const collation = res.rows[0].collation;
-          throw new Error([
-            'Postgres database must have default collation en_US.utf8 (and in particular sort',
-            '`0` < `a` < `A` < `b` < `B`, for proper slugid ordering);',
-            `this database is using ${collation}, and sorts '${pair[0]}' >= '${pair[1]}'.`,
-          ].join(' '));
+          throw new Error(
+            [
+              'Postgres database must have default collation en_US.utf8 (and in particular sort',
+              '`0` < `a` < `A` < `b` < `B`, for proper slugid ordering);',
+              `this database is using ${collation}, and sorts '${pair[0]}' >= '${pair[1]}'.`,
+            ].join(' '),
+          );
         }
       }
     });
@@ -533,7 +546,7 @@ class Database {
      * @param {string} dbUrl
      * @returns {pg.Pool}
      */
-    const makePool = dbUrl => {
+    const makePool = (dbUrl) => {
       const connectOptions = {
         // default to a max of 5 connections. For services running both a read
         // and write pool, this is a maximum of 10 concurrent connections.  Other
@@ -570,8 +583,8 @@ class Database {
       //
       // So Pool will handle those errors properly, and we must only register an
       // handler so that Node does not complain of an unhandled error event.
-      pool.on('error', _client => {});
-      pool.on('connect', async client => {
+      pool.on('error', (_client) => {});
+      pool.on('connect', async (client) => {
         if (statementTimeout) {
           // For web API servers, we want to abort queries that take too long, sa
           // the HTTP client has probably given up.
@@ -597,7 +610,7 @@ class Database {
 
     this.monitor = monitor;
 
-    this.pools = /** @type {Record<DbAccessMode, pg.Pool>} */({});
+    this.pools = /** @type {Record<DbAccessMode, pg.Pool>} */ ({});
     for (const mode of Object.keys(urlsByMode)) {
       // @ts-ignore mode is of a type DbAccessMode
       this.pools[mode] = makePool(urlsByMode[mode]);
@@ -605,8 +618,8 @@ class Database {
 
     this._startMonitoringPools();
 
-    this.fns = /** @type {DbFunctions} */({});
-    this.deprecatedFns = /** @type {DeprecatedDbFunctions} */({});
+    this.fns = /** @type {DbFunctions} */ ({});
+    this.deprecatedFns = /** @type {DeprecatedDbFunctions} */ ({});
     this.keyring = keyring;
   }
 
@@ -637,7 +650,7 @@ class Database {
     // or Node will kill the process.  However, when this happens we must
     // pass the error back to the pool or it won't know the client is bad.
     let clientError = undefined;
-    const handleError = err => clientError = err;
+    const handleError = (err) => (clientError = err);
     client.on('error', handleError);
     const wrapped = {
       /**
@@ -645,7 +658,7 @@ class Database {
        * @param {...any[]} args
        * @returns {Promise<pg.QueryResult>}
        */
-      query: async function(query, ...args) {
+      query: async function (query, ...args) {
         try {
           // it is important to keep await here, as we need to catch the error
           return await client.query(query, ...args);
@@ -668,7 +681,7 @@ class Database {
    */
   async currentVersion() {
     // get from the version table or return 0
-    return await this._withClient(READ, async client => {
+    return await this._withClient(READ, async (client) => {
       try {
         const res = await client.query('select version from tcversion');
         if (res.rowCount !== 1) {
@@ -718,7 +731,7 @@ class Database {
    */
   async close() {
     this._stopMonitoringPools();
-    await Promise.all(Object.values(this.pools).map(pool => pool.end()));
+    await Promise.all(Object.values(this.pools).map((pool) => pool.end()));
   }
 
   /**

@@ -16,18 +16,20 @@ export const loadChecks = async (dirname) => {
 
   const files = enumFiles(dirname);
 
-  await Promise.all(files.map(async (file) => {
-    const { tasks, scopeExpression } = await import(path.join(dirname, file));
-    tasks.forEach(task => {
-      checks.push(task);
+  await Promise.all(
+    files.map(async (file) => {
+      const { tasks, scopeExpression } = await import(path.join(dirname, file));
+      tasks.forEach((task) => {
+        checks.push(task);
 
-      if (scopeExpression) {
-        scopeExpression.AllOf.push(scopeExpression);
-      } else {
-        throw new Error(`${file} has no scopeExpression`);
-      }
-    });
-  }));
+        if (scopeExpression) {
+          scopeExpression.AllOf.push(scopeExpression);
+        } else {
+          throw new Error(`${file} has no scopeExpression`);
+        }
+      });
+    }),
+  );
 
   return { checks, scopeExpression: scopeExpressions };
 };

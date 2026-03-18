@@ -9,11 +9,7 @@ import { from, split } from 'apollo-link';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 import { ErrorBoundary } from 'react-error-boundary';
-import {
-  InMemoryCache,
-  IntrospectionFragmentMatcher,
-  defaultDataIdFromObject,
-} from 'apollo-cache-inmemory';
+import { InMemoryCache, IntrospectionFragmentMatcher, defaultDataIdFromObject } from 'apollo-cache-inmemory';
 import { CachePersistor } from 'apollo-cache-persist';
 import ReactGA from 'react-ga';
 import { init as initSentry } from '@sentry/browser';
@@ -31,8 +27,7 @@ import { route } from '../utils/prop-types';
 import AuthController from '../auth/AuthController';
 import './index.css';
 
-const absoluteUrl = (url, overrides = {}) =>
-  Object.assign(new URL(url, window.location), overrides).toString();
+const absoluteUrl = (url, overrides = {}) => Object.assign(new URL(url, window.location), overrides).toString();
 
 export default class App extends Component {
   static propTypes = {
@@ -52,14 +47,12 @@ export default class App extends Component {
   cache = new InMemoryCache({
     fragmentMatcher: this.fragmentMatcher,
     /* eslint-disable no-underscore-dangle */
-    dataIdFromObject: object => {
+    dataIdFromObject: (object) => {
       switch (object.__typename) {
         case 'TaskStatus': {
           const taskId = object.taskId || null;
 
-          return taskId
-            ? `${object.taskId}-${object.__typename}`
-            : defaultDataIdFromObject(object);
+          return taskId ? `${object.taskId}-${object.__typename}` : defaultDataIdFromObject(object);
         }
 
         default: {
@@ -89,7 +82,7 @@ export default class App extends Component {
     options: {
       reconnect: true,
       lazy: true,
-      connectionCallback: error => {
+      connectionCallback: (error) => {
         if (error?.message?.includes('InsufficientScopes')) {
           this.setState({ subscriptionError: error });
           // close without reconnect
@@ -146,7 +139,7 @@ export default class App extends Component {
           return kind === 'OperationDefinition' && operation === 'subscription';
         },
         this.wsLink,
-        this.httpLink
+        this.httpLink,
       ),
     ]),
   });
@@ -184,7 +177,7 @@ export default class App extends Component {
     this.state = state;
   }
 
-  handleUserChanged = user => {
+  handleUserChanged = (user) => {
     this.setState({
       auth: {
         ...this.state.auth,
@@ -214,23 +207,17 @@ export default class App extends Component {
     });
   }
 
-  authorize = user => this.authController.setUser(user);
+  authorize = (user) => this.authController.setUser(user);
 
   unauthorize = () => {
-    this.authController.signOut().catch(error => this.setState({ error }));
+    this.authController.signOut().catch((error) => this.setState({ error }));
   };
 
   toggleTheme = () => {
     this.setState({
-      theme:
-        this.state.theme.palette.type === 'dark'
-          ? theme.lightTheme
-          : theme.darkTheme,
+      theme: this.state.theme.palette.type === 'dark' ? theme.lightTheme : theme.darkTheme,
     });
-    const newTheme =
-      this.state.theme && this.state.theme.palette.type === 'dark'
-        ? theme.lightTheme
-        : theme.darkTheme;
+    const newTheme = this.state.theme && this.state.theme.palette.type === 'dark' ? theme.lightTheme : theme.darkTheme;
 
     db.userPreferences.put(newTheme.palette.type, 'theme');
     this.setState({ theme: newTheme });
@@ -252,17 +239,11 @@ export default class App extends Component {
             <ToggleThemeContext.Provider value={this.toggleTheme}>
               <MuiThemeProvider theme={theme}>
                 <CssBaseline />
-                <ErrorBoundary
-                  FallbackComponent={ErrorPanel}
-                  onError={reportError}>
+                <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
                   <Main
                     error={error}
                     subscriptionError={subscriptionError}
-                    key={
-                      auth.user?.credentials
-                        ? auth.user.credentials.clientId
-                        : ''
-                    }
+                    key={auth.user?.credentials ? auth.user.credentials.clientId : ''}
                     routes={routes}
                   />
                 </ErrorBoundary>

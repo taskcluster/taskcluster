@@ -1,14 +1,14 @@
 {
-  "$schema":      "http://json-schema.org/draft-06/schema#",
-  "title":        "test json schema",
-  "type":         "object",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "test json schema",
+  "type": "object",
   "properties": {
     "value": {
-      "type":           "integer",
-      "minimum":        1,
-      "maximum":        10
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
     }
   },
-  "additionalProperties":   false,
+  "additionalProperties": false,
   "required": ["value"]
 }

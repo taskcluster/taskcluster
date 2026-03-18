@@ -10,12 +10,66 @@ export default class WebServer extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.taskGroupProfile.entry = {"args":["taskGroupId"],"category":"Profiler","method":"get","name":"taskGroupProfile","query":[],"route":"/task-group/<taskGroupId>/profile","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.taskProfile.entry = {"args":["taskId"],"category":"Profiler","method":"get","name":"taskProfile","query":[],"route":"/task/<taskId>/profile","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'ping',
+      query: [],
+      route: '/ping',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.lbheartbeat.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'lbheartbeat',
+      query: [],
+      route: '/__lbheartbeat__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.version.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'version',
+      query: [],
+      route: '/__version__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.taskGroupProfile.entry = {
+      args: ['taskGroupId'],
+      category: 'Profiler',
+      method: 'get',
+      name: 'taskGroupProfile',
+      query: [],
+      route: '/task-group/<taskGroupId>/profile',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.taskProfile.entry = {
+      args: ['taskId'],
+      category: 'Profiler',
+      method: 'get',
+      name: 'taskProfile',
+      query: [],
+      route: '/task/<taskId>/profile',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.heartbeat.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'heartbeat',
+      query: [],
+      route: '/__heartbeat__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

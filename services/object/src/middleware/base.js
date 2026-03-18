@@ -9,8 +9,7 @@ export class Middleware {
    *
    * Subclasses should override this, if necessary
    */
-  async setup() {
-  }
+  async setup() {}
 
   /**
    * Intercept the startDownload API method.

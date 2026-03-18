@@ -3,7 +3,7 @@ import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { WorkerPoolStats } from '../src/data.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withProviders(mock, skipping);
@@ -47,7 +47,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     /** @type {Record<string, number>} */
     const counts = {};
 
-    weightedRandomConfig.selectCapacity(capacity).forEach(cfg => {
+    weightedRandomConfig.selectCapacity(capacity).forEach((cfg) => {
       const key = cfg.launchConfigId || 'unknown';
       counts[key] = counts[key] ? counts[key] + 1 : 1;
     });
@@ -64,11 +64,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     monitor.manager.reset();
   };
 
-  setup(async function() {
+  setup(async function () {
     launchConfigSelector = await helper.load('launchConfigSelector');
   });
 
-  test('missing launch configs', async function() {
+  test('missing launch configs', async function () {
     const wp = await createWorkerPool();
     const wrc = await launchConfigSelector.forWorkerPool(wp);
     assert.deepEqual(wrc.getAll(), []);
@@ -114,8 +114,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.ok(counts.lc1 > counts.lc2, 'lc1 should be chosen more often than lc2');
     assert.ok(counts.lc2 > counts.lc3, 'lc2 should be chosen more often than lc3');
     assert.ok(counts.unknown === undefined);
-    await assertDebugMessage(wp.workerPoolId, { lc1: 1, lc2: 0.5, lc3: 0.1 },
-      { lc1: maxCapacity, lc2: maxCapacity, lc3: maxCapacity });
+    await assertDebugMessage(
+      wp.workerPoolId,
+      { lc1: 1, lc2: 0.5, lc3: 0.1 },
+      { lc1: maxCapacity, lc2: maxCapacity, lc3: maxCapacity },
+    );
   });
 
   test('selectCapacity', async function () {
@@ -178,8 +181,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const wrc = await launchConfigSelector.forWorkerPool(wp, workerPoolStats);
     const counts = getDistribution(wrc, 5);
     assert.equal(counts.lc2, 5);
-    await assertDebugMessage(wp.workerPoolId, { lc1: 0, lc2: 0.5, lc3: 0 },
-      { lc1: 0, lc2: 5, lc3: 0 });
+    await assertDebugMessage(wp.workerPoolId, { lc1: 0, lc2: 0.5, lc3: 0 }, { lc1: 0, lc2: 5, lc3: 0 });
   });
 
   test('using workerPoolStats to respect errors by LC', async function () {
@@ -228,7 +230,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(wrc.selectCapacity(25).length, 5);
   });
 
-  test('single LC with negative weight due to errors still provisions when it has capacity', async function() {
+  test('single LC with negative weight due to errors still provisions when it has capacity', async function () {
     const wp = await createWorkerPool([
       genAwsLaunchConfig({ launchConfigId: 'lc1', initialWeight: 1, maxCapacity: 100 }),
     ]);
@@ -249,9 +251,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(configs.length, 10, 'Should provision 10 workers');
     assert.equal(configs[0].launchConfigId, 'lc1', 'Should select lc1');
 
-    await assertDebugMessage(wp.workerPoolId,
-      { lc1: 0.01 },
-      { lc1: 40 },
-    );
+    await assertDebugMessage(wp.workerPoolId, { lc1: 0.01 }, { lc1: 40 });
   });
 });

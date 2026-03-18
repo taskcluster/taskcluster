@@ -17,7 +17,7 @@ import Link from '../../../utils/Link';
 import scopesetQuery from './scopeset.graphql';
 import scopeLink from '../../../utils/scopeLink';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   actionButton: {
     ...theme.mixins.fab,
   },
@@ -66,7 +66,7 @@ export default class ScopesetExpander extends Component {
     this.setState({ scopes });
   };
 
-  handleScopesChange = scopeText => {
+  handleScopesChange = (scopeText) => {
     this.setState({ scopeText });
   };
 
@@ -77,9 +77,7 @@ export default class ScopesetExpander extends Component {
     scopes implied by any roles included.`;
 
     return (
-      <Dashboard
-        title="Expand Scopes"
-        helpView={<HelpView description={description} />}>
+      <Dashboard title="Expand Scopes" helpView={<HelpView description={description} />}>
         <Fragment>
           <CodeEditor
             className={classes.editor}
@@ -99,14 +97,14 @@ export default class ScopesetExpander extends Component {
                         <Spinner />
                       </ListItem>
                     )}
-                    {data?.expandScopes?.map(scope => (
-                        <Link key={scope} to={scopeLink(scope)}>
-                          <ListItem button className={classes.listItemButton}>
-                            <code>{scope}</code>
-                            <LinkIcon size={16} />
-                          </ListItem>
-                        </Link>
-                      ))}
+                    {data?.expandScopes?.map((scope) => (
+                      <Link key={scope} to={scopeLink(scope)}>
+                        <ListItem button className={classes.listItemButton}>
+                          <code>{scope}</code>
+                          <LinkIcon size={16} />
+                        </ListItem>
+                      </Link>
+                    ))}
                   </List>
                 </Fragment>
               )}
@@ -117,7 +115,8 @@ export default class ScopesetExpander extends Component {
             spanProps={{ className: classes.actionButton }}
             color="secondary"
             variant="round"
-            onClick={this.handleExpandScopesClick}>
+            onClick={this.handleExpandScopesClick}
+          >
             <ArrowExpandVerticalIcon />
           </Button>
         </Fragment>

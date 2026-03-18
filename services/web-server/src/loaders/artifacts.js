@@ -3,22 +3,18 @@ import ConnectionLoader from '../ConnectionLoader.js';
 import Artifacts from '../entities/Artifacts.js';
 
 export default ({ queue }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
-  const artifacts = new ConnectionLoader(
-    async ({ taskId, runId, filter, options }) => {
-      const raw = await queue.listArtifacts(taskId, runId, options);
-      const artifacts = sift(filter, raw.artifacts);
+  const artifacts = new ConnectionLoader(async ({ taskId, runId, filter, options }) => {
+    const raw = await queue.listArtifacts(taskId, runId, options);
+    const artifacts = sift(filter, raw.artifacts);
 
-      return new Artifacts(taskId, runId, { ...raw, artifacts });
-    },
-  );
-  const latestArtifacts = new ConnectionLoader(
-    async ({ taskId, filter, options }) => {
-      const raw = await queue.listLatestArtifacts(taskId, options);
-      const artifacts = sift(filter, raw.artifacts);
+    return new Artifacts(taskId, runId, { ...raw, artifacts });
+  });
+  const latestArtifacts = new ConnectionLoader(async ({ taskId, filter, options }) => {
+    const raw = await queue.listLatestArtifacts(taskId, options);
+    const artifacts = sift(filter, raw.artifacts);
 
-      return new Artifacts(taskId, null, { ...raw, artifacts });
-    },
-  );
+    return new Artifacts(taskId, null, { ...raw, artifacts });
+  });
 
   return {
     artifacts,

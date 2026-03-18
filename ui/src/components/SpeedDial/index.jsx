@@ -8,7 +8,7 @@ import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
 import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
 
-const styles = withStyles(theme => ({
+const styles = withStyles((theme) => ({
   speedDial: {
     ...theme.mixins.fab,
   },
@@ -69,9 +69,7 @@ function SpeedDial(props) {
   return (
     <MuiSpeedDial
       ariaLabel="speed-dial"
-      icon={
-        <SpeedDialIcon icon={<DotsVerticalIcon />} openIcon={<CloseIcon />} />
-      }
+      icon={<SpeedDialIcon icon={<DotsVerticalIcon />} openIcon={<CloseIcon />} />}
       FabProps={{ color: 'secondary' }}
       className={classNames(classes.speedDial, className)}
       onOpen={handleOpen}
@@ -79,7 +77,8 @@ function SpeedDial(props) {
       open={open}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      {...rest}>
+      {...rest}
+    >
       {children}
     </MuiSpeedDial>
   );

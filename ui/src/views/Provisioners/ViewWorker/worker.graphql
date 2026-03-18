@@ -1,11 +1,18 @@
-query ViewWorker($provisionerId: String!, $workerType: String!, $workerGroup: String!, $workerId: ID!, $workerPoolId: String!, $workerTypesConnection: PageConnection) {
+query ViewWorker(
+  $provisionerId: String!
+  $workerType: String!
+  $workerGroup: String!
+  $workerId: ID!
+  $workerPoolId: String!
+  $workerTypesConnection: PageConnection
+) {
   worker(provisionerId: $provisionerId, workerType: $workerType, workerGroup: $workerGroup, workerId: $workerId) {
     provisionerId
     workerType
     workerGroup
     workerId
     quarantineUntil
-    quarantineDetails  {
+    quarantineDetails {
       updatedAt
       clientId
       quarantineUntil

@@ -1,8 +1,8 @@
 import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
-  test('sleep', async function() {
+suite(testing.suiteName(), function () {
+  test('sleep', async function () {
     const start = Date.now();
     await testing.sleep(10);
     const end = Date.now();
@@ -23,13 +23,13 @@ suite(testing.suiteName(), function() {
     };
   };
 
-  test('poll (success)', async function() {
+  test('poll (success)', async function () {
     const poll = pollFunc();
     await testing.poll(poll, 4, 5);
     assert.equal(countDown, 0);
   });
 
-  test('poll (too-few iterations)', async function() {
+  test('poll (too-few iterations)', async function () {
     const poll = pollFunc();
     try {
       await testing.poll(poll, 3, 5);

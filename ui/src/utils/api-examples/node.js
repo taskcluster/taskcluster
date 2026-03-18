@@ -2,13 +2,7 @@
  * Generate Node.js client library examples for API endpoints
  */
 
-import {
-  PLACEHOLDERS,
-  getPlaceholderValue,
-  requiresAuth,
-  capitalize,
-  formatPayloadJson,
-} from './helpers';
+import { PLACEHOLDERS, getPlaceholderValue, requiresAuth, capitalize, formatPayloadJson } from './helpers';
 
 /**
  * Generate a Node.js example for an API endpoint
@@ -19,14 +13,9 @@ import {
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} Node.js code example
  */
-export default function generateNodeExample(
-  serviceName,
-  _apiVersion,
-  entry,
-  payloadExample = null
-) {
+export default function generateNodeExample(serviceName, _apiVersion, entry, payloadExample = null) {
   const className = capitalize(serviceName);
-  const params = entry.args.map(arg => `'${getPlaceholderValue(arg)}'`);
+  const params = entry.args.map((arg) => `'${getPlaceholderValue(arg)}'`);
   // Build client initialization
   let clientInit;
 
@@ -76,9 +65,7 @@ export default function generateNodeExample(
     apiCall = `${payloadCode}
 
     // Call the API method
-    const result = await ${serviceName}.${entry.name}(${params.join(
-      ', '
-    )}, payload);`;
+    const result = await ${serviceName}.${entry.name}(${params.join(', ')}, payload);`;
   } else {
     apiCall = `// Call the API method
     const result = await ${serviceName}.${entry.name}(${params.join(', ')});`;

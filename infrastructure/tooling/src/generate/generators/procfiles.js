@@ -8,7 +8,7 @@ export const tasks = [];
 tasks.push({
   title: `Read procs.yml for all services`,
   requires: [],
-  provides: SERVICES.map(name => `procs-${name}`),
+  provides: SERVICES.map((name) => `procs-${name}`),
   run: async (_requirements, _utils) => {
     const provides = {};
     for (const name of SERVICES) {

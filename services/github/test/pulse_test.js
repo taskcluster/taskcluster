@@ -6,7 +6,7 @@ import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
-const loadWebhookJson = async filename => {
+const loadWebhookJson = async (filename) => {
   return JSON.parse(await fs.readFile(path.join(__dirname, 'data', 'webhooks', filename)));
 };
 
@@ -14,7 +14,7 @@ const loadWebhookJson = async filename => {
 // https://github.com/organizations/taskcluster/settings/apps/community-tc-integration/advanced
 // It keeps list of recent webhooks
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeGithub(mock, skipping);
@@ -23,7 +23,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   let github = null;
 
-  setup(async function() {
+  setup(async function () {
     await helper.load('cfg');
     helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
 
@@ -46,14 +46,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
    *  branch:       'the head branch name; for v1'
    **/
   function pulseTest(params) {
-    test(params.testName, async function() {
+    test(params.testName, async function () {
       // Trigger a pull-request message
       const res = await helper.jsonHttpRequest(`./test/data/webhooks/${params.jsonFile}`);
       res.connection?.destroy();
 
       const webhook = await loadWebhookJson(params.jsonFile);
 
-      helper.assertPulseMessage(params.listenFor, m => {
+      helper.assertPulseMessage(params.listenFor, (m) => {
         if (m.routingKey === params.routingKey && m.payload.eventId === params.eventId) {
           // use assert.deepEqual so we get a decent diff of this large object on error
           assert.deepEqual(m.payload, {

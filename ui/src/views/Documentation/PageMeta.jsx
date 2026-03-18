@@ -8,7 +8,7 @@ import { docsPageInfo } from '../../utils/prop-types';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import { DOCS_PATH_PREFIX } from '../../utils/constants';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   divider: {
     margin: `${theme.spacing(3)}px 0`,
   },
@@ -51,24 +51,23 @@ export default class PageMeta extends Component {
           <footer
             className={classNames(classes.pageNavigation, {
               [classes.pageNavigationWithoutPrevious]: !hasPreviousPage,
-            })}>
+            })}
+          >
             {hasPreviousPage && (
               <PageNavigation
-                to={removeReadmeFromPath(
-                  join(DOCS_PATH_PREFIX, pageInfo.prev.path)
-                )}
+                to={removeReadmeFromPath(join(DOCS_PATH_PREFIX, pageInfo.prev.path))}
                 variant="prev"
-                aria-label="Previous Page">
+                aria-label="Previous Page"
+              >
                 {pageInfo.prev.title}
               </PageNavigation>
             )}
             {hasNextPage && (
               <PageNavigation
-                to={removeReadmeFromPath(
-                  join(DOCS_PATH_PREFIX, pageInfo.next.path)
-                )}
+                to={removeReadmeFromPath(join(DOCS_PATH_PREFIX, pageInfo.next.path))}
                 variant="next"
-                aria-label="Next Page">
+                aria-label="Next Page"
+              >
                 {pageInfo.next.title}
               </PageNavigation>
             )}

@@ -9,7 +9,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import { withAuth } from '../../../utils/Auth';
 
 @withAuth
-@withStyles(theme => ({
+@withStyles((theme) => ({
   rawDefinition: {
     bottom: theme.spacing(3),
     left: theme.spacing(1),
@@ -17,7 +17,7 @@ import { withAuth } from '../../../utils/Auth';
   },
 }))
 @graphql(taskQuery, {
-  options: props => ({
+  options: (props) => ({
     fetchPolicy: 'network-only',
     errorPolicy: 'all',
     variables: {
@@ -44,15 +44,8 @@ export default class TaskDefinition extends Component {
     }
 
     return (
-      <Dashboard
-        title={`${taskId} Definition`}
-        disableTitleFormatting
-        disablePadding>
-        <JsonDisplay
-          className={classes.rawDefinition}
-          syntax="yaml"
-          objectContent={rawDefinition}
-        />
+      <Dashboard title={`${taskId} Definition`} disableTitleFormatting disablePadding>
+        <JsonDisplay className={classes.rawDefinition} syntax="yaml" objectContent={rawDefinition} />
       </Dashboard>
     );
   }

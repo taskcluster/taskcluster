@@ -8,9 +8,7 @@
     "lastDateUsed": "2017-03-22T16:53:24.493Z",
     "lastRotated": "2017-03-22T16:53:24.493Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:notify"
-    ],
+    "scopes": ["assume:project:taskcluster:notify"],
     "expandedScopes": [
       "assume:project:taskcluster:notify",
       "assume:worker-id:dummy-test-workergroup/dummy-test-worker-id",
@@ -55,9 +53,7 @@
     "lastDateUsed": "2016-11-29T01:54:03.182Z",
     "lastRotated": "2016-11-29T01:54:03.182Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -797,12 +793,8 @@
     "lastDateUsed": "2017-06-22T01:48:50.322Z",
     "lastRotated": "2017-06-22T02:10:51.158Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:create-client:email/hwjeastd07@gmail.com/"
-    ],
-    "expandedScopes": [
-      "auth:create-client:email/hwjeastd07@gmail.com/"
-    ],
+    "scopes": ["auth:create-client:email/hwjeastd07@gmail.com/"],
+    "expandedScopes": ["auth:create-client:email/hwjeastd07@gmail.com/"],
     "disabled": false
   },
   {
@@ -918,12 +910,8 @@
     "lastDateUsed": "2018-02-01T18:33:47.436Z",
     "lastRotated": "2018-02-01T18:33:47.436Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:test"
-    ],
-    "expandedScopes": [
-      "assume:test"
-    ],
+    "scopes": ["assume:test"],
+    "expandedScopes": ["assume:test"],
     "disabled": false
   },
   {
@@ -935,12 +923,8 @@
     "lastDateUsed": "2018-01-30T19:04:27.786Z",
     "lastRotated": "2018-01-30T19:04:27.786Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:test"
-    ],
-    "expandedScopes": [
-      "assume:test"
-    ],
+    "scopes": ["assume:test"],
+    "expandedScopes": ["assume:test"],
     "disabled": false
   },
   {
@@ -952,12 +936,8 @@
     "lastDateUsed": "2018-02-01T18:36:55.228Z",
     "lastRotated": "2018-02-01T18:36:55.228Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:test"
-    ],
-    "expandedScopes": [
-      "assume:test"
-    ],
+    "scopes": ["assume:test"],
+    "expandedScopes": ["assume:test"],
     "disabled": false
   },
   {
@@ -5302,10 +5282,7 @@
     "lastDateUsed": "2018-06-27T21:52:57.144Z",
     "lastRotated": "2018-06-23T01:19:57.276Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes",
-      "queue:cancel-task:test-dummy-scheduler/*"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes", "queue:cancel-task:test-dummy-scheduler/*"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -5355,12 +5332,8 @@
     "lastDateUsed": "2018-04-25T14:40:40.897Z",
     "lastRotated": "2018-04-26T20:25:59.869Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:production"
-    ],
-    "expandedScopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:production"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:production"],
+    "expandedScopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:production"],
     "disabled": false
   },
   {
@@ -6055,9 +6028,7 @@
     "lastDateUsed": "2018-06-25T17:33:33.255Z",
     "lastRotated": "2018-06-22T19:30:49.462Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:generic-worker-tester"
-    ],
+    "scopes": ["assume:project:taskcluster:generic-worker-tester"],
     "expandedScopes": [
       "assume:project:taskcluster:generic-worker-tester",
       "assume:worker-id:test-worker-group/test-worker-id",
@@ -9912,12 +9883,8 @@
     "lastDateUsed": "2018-05-02T15:23:50.008Z",
     "lastRotated": "2018-04-23T16:37:29.055Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:master"
-    ],
-    "expandedScopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:master"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:master"],
+    "expandedScopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:master"],
     "disabled": false
   },
   {
@@ -9929,9 +9896,7 @@
     "lastDateUsed": "2018-03-23T06:44:00.570Z",
     "lastRotated": "2018-03-23T06:44:00.570Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:everybody"
-    ],
+    "scopes": ["assume:everybody"],
     "expandedScopes": [
       "assume:everybody",
       "assume:project:taskcluster:tutorial",
@@ -9974,12 +9939,8 @@
     "lastDateUsed": "2018-06-15T16:51:39.196Z",
     "lastRotated": "2018-06-14T19:01:22.341Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:quarantine-worker:releng-hardware/gecko-*"
-    ],
-    "expandedScopes": [
-      "queue:quarantine-worker:releng-hardware/gecko-*"
-    ],
+    "scopes": ["queue:quarantine-worker:releng-hardware/gecko-*"],
+    "expandedScopes": ["queue:quarantine-worker:releng-hardware/gecko-*"],
     "disabled": false
   },
   {
@@ -14434,12 +14395,8 @@
     "lastDateUsed": "2018-04-16T15:21:13.596Z",
     "lastRotated": "2018-04-16T15:21:13.596Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:staging"
-    ],
-    "expandedScopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:staging"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:staging"],
+    "expandedScopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:staging"],
     "disabled": false
   },
   {
@@ -14451,12 +14408,8 @@
     "lastDateUsed": "2018-05-24T20:14:47.584Z",
     "lastRotated": "2018-05-17T13:04:50.193Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:staging"
-    ],
-    "expandedScopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:staging"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:staging"],
+    "expandedScopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:staging"],
     "disabled": false
   },
   {
@@ -14468,9 +14421,7 @@
     "lastDateUsed": "2018-05-31T12:32:27.768Z",
     "lastRotated": "2018-05-09T19:23:46.090Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -14526,9 +14477,7 @@
     "lastDateUsed": "2018-05-03T15:53:07.291Z",
     "lastRotated": "2018-05-03T15:53:07.291Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:moz-tree:level:1:gecko"
-    ],
+    "scopes": ["assume:moz-tree:level:1:gecko"],
     "expandedScopes": [
       "assume:moz-tree:level:1:gecko",
       "assume:project:taskcluster:gecko:level-1-sccache-buckets",
@@ -14704,12 +14653,8 @@
     "lastDateUsed": "2018-03-12T17:20:59.923Z",
     "lastRotated": "2018-03-12T17:20:59.923Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "secrets:get:garbage/marco/test-code-coverage-secret"
-    ],
-    "expandedScopes": [
-      "secrets:get:garbage/marco/test-code-coverage-secret"
-    ],
+    "scopes": ["secrets:get:garbage/marco/test-code-coverage-secret"],
+    "expandedScopes": ["secrets:get:garbage/marco/test-code-coverage-secret"],
     "disabled": false
   },
   {
@@ -14721,10 +14666,7 @@
     "lastDateUsed": "2018-06-07T14:33:52.858Z",
     "lastRotated": "2018-03-14T22:13:05.476Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:moz-tree:level:1:gecko",
-      "assume:mozilla-group:active_scm_level_1"
-    ],
+    "scopes": ["assume:moz-tree:level:1:gecko", "assume:mozilla-group:active_scm_level_1"],
     "expandedScopes": [
       "assume:moz-tree:level:1:comm",
       "assume:moz-tree:level:1:gecko",
@@ -16716,12 +16658,8 @@
     "lastDateUsed": "2018-06-21T09:45:04.729Z",
     "lastRotated": "2018-05-08T08:50:36.357Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "aws-provisioner:view-worker-type:*"
-    ],
-    "expandedScopes": [
-      "aws-provisioner:view-worker-type:*"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:*"],
+    "expandedScopes": ["aws-provisioner:view-worker-type:*"],
     "disabled": false
   },
   {
@@ -17224,9 +17162,7 @@
     "lastDateUsed": "2018-04-16T15:08:41.858Z",
     "lastRotated": "2018-04-16T15:08:41.858Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:repo:github.com/mozilla-releng/services:branch:master"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla-releng/services:branch:master"],
     "expandedScopes": [
       "assume:hook-id:project-releng/services-master-*",
       "assume:project:taskcluster:mozilla-github-repository",
@@ -17265,12 +17201,8 @@
     "lastDateUsed": "2018-06-28T02:51:24.660Z",
     "lastRotated": "2018-06-28T02:51:24.660Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "project:releng:services/releng-tok22ens/*"
-    ],
-    "expandedScopes": [
-      "project:releng:services/releng-tok22ens/*"
-    ],
+    "scopes": ["project:releng:services/releng-tok22ens/*"],
+    "expandedScopes": ["project:releng:services/releng-tok22ens/*"],
     "disabled": false
   },
   {
@@ -25059,10 +24991,7 @@
     "lastDateUsed": "2016-07-29T21:31:33.766Z",
     "lastRotated": "2016-07-29T21:33:35.422Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "aws-provisioner:manage-worker-type:garbage-1",
-      "aws-provisioner:view-worker-type:garbage-test1"
-    ],
+    "scopes": ["aws-provisioner:manage-worker-type:garbage-1", "aws-provisioner:view-worker-type:garbage-test1"],
     "expandedScopes": [
       "aws-provisioner:manage-worker-type:garbage-1",
       "aws-provisioner:view-worker-type:garbage-test1"
@@ -25078,9 +25007,7 @@
     "lastDateUsed": "2016-08-19T21:10:39.738Z",
     "lastRotated": "2016-08-17T21:16:47.781Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -25110,9 +25037,7 @@
     "lastDateUsed": "2016-08-26T21:27:35.233Z",
     "lastRotated": "2016-08-17T00:22:55.553Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:hook-id:project-releng/nightly-fennec-dev"
-    ],
+    "scopes": ["assume:hook-id:project-releng/nightly-fennec-dev"],
     "expandedScopes": [
       "assume:hook-id:project-releng/nightly-fennec-dev",
       "assume:repo:hg.mozilla.org/projects/date:*",
@@ -25145,9 +25070,7 @@
     "lastDateUsed": "2018-05-16T13:39:38.686Z",
     "lastRotated": "2017-12-27T15:35:01.983Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:tc-hooks-tests"
-    ],
+    "scopes": ["assume:project:taskcluster:tc-hooks-tests"],
     "expandedScopes": [
       "assume:hook-id:tc-hooks-tests/tc-test-hook",
       "assume:project:taskcluster:tc-hooks-tests",
@@ -25167,12 +25090,8 @@
     "lastDateUsed": "2016-06-27T22:07:42.866Z",
     "lastRotated": "2016-06-27T17:29:48.642Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:aws-s3:read-write:tc-gp-public-31d/ateam/pulse-action-dev/*"
-    ],
-    "expandedScopes": [
-      "auth:aws-s3:read-write:tc-gp-public-31d/ateam/pulse-action-dev/*"
-    ],
+    "scopes": ["auth:aws-s3:read-write:tc-gp-public-31d/ateam/pulse-action-dev/*"],
+    "expandedScopes": ["auth:aws-s3:read-write:tc-gp-public-31d/ateam/pulse-action-dev/*"],
     "disabled": true
   },
   {
@@ -25220,9 +25139,7 @@
     "lastDateUsed": "2018-06-22T22:23:11.412Z",
     "lastRotated": "2018-03-01T03:29:13.613Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -25252,12 +25169,8 @@
     "lastDateUsed": "2018-05-03T15:26:12.598Z",
     "lastRotated": "2017-12-18T13:21:17.843Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:master"
-    ],
-    "expandedScopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:master"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:master"],
+    "expandedScopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:master"],
     "disabled": false
   },
   {
@@ -25269,9 +25182,7 @@
     "lastDateUsed": "2018-03-06T15:49:49.222Z",
     "lastRotated": "2017-06-06T10:00:26.868Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:repo:github.com/mozilla-releng/services:branch:staging"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla-releng/services:branch:staging"],
     "expandedScopes": [
       "assume:hook-id:project-releng/services-staging-*",
       "assume:project:taskcluster:mozilla-github-repository",
@@ -25361,12 +25272,8 @@
     "lastDateUsed": "2018-04-12T09:52:56.152Z",
     "lastRotated": "2018-02-28T14:45:25.311Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:master"
-    ],
-    "expandedScopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:master"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:master"],
+    "expandedScopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:master"],
     "disabled": false
   },
   {
@@ -25550,14 +25457,8 @@
     "lastDateUsed": "2017-05-16T20:04:22.381Z",
     "lastRotated": "2017-05-16T20:04:22.381Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:sentry:playground",
-      "auth:statsum:playground"
-    ],
-    "expandedScopes": [
-      "auth:sentry:playground",
-      "auth:statsum:playground"
-    ],
+    "scopes": ["auth:sentry:playground", "auth:statsum:playground"],
+    "expandedScopes": ["auth:sentry:playground", "auth:statsum:playground"],
     "disabled": false
   },
   {
@@ -25569,12 +25470,8 @@
     "lastDateUsed": "2017-06-12T17:40:00.739Z",
     "lastRotated": "2017-06-12T17:40:00.739Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "pulse:namespace:taskcluster*"
-    ],
-    "expandedScopes": [
-      "pulse:namespace:taskcluster*"
-    ],
+    "scopes": ["pulse:namespace:taskcluster*"],
+    "expandedScopes": ["pulse:namespace:taskcluster*"],
     "disabled": true
   },
   {
@@ -25586,10 +25483,7 @@
     "lastDateUsed": "2017-03-14T00:04:11.233Z",
     "lastRotated": "2017-03-14T00:02:06.568Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:aws-s3:read-only:taskcluster-raw-docs/",
-      "auth:aws-s3:read-write:test-bucket-for-any-garbage/"
-    ],
+    "scopes": ["auth:aws-s3:read-only:taskcluster-raw-docs/", "auth:aws-s3:read-write:test-bucket-for-any-garbage/"],
     "expandedScopes": [
       "auth:aws-s3:read-only:taskcluster-raw-docs/",
       "auth:aws-s3:read-write:test-bucket-for-any-garbage/"
@@ -25605,9 +25499,7 @@
     "lastDateUsed": "2017-03-08T18:23:14.362Z",
     "lastRotated": "2016-04-29T16:49:29.315Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -25637,12 +25529,8 @@
     "lastDateUsed": "2017-02-08T15:37:47.159Z",
     "lastRotated": "2016-10-14T20:12:53.283Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:github"
-    ],
-    "expandedScopes": [
-      "assume:project:taskcluster:github"
-    ],
+    "scopes": ["assume:project:taskcluster:github"],
+    "expandedScopes": ["assume:project:taskcluster:github"],
     "disabled": false
   },
   {
@@ -25723,9 +25611,7 @@
     "lastDateUsed": "2017-11-22T21:15:27.820Z",
     "lastRotated": "2016-09-08T01:44:01.180Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:notify"
-    ],
+    "scopes": ["assume:project:taskcluster:notify"],
     "expandedScopes": [
       "assume:project:taskcluster:notify",
       "assume:worker-id:dummy-test-workergroup/dummy-test-worker-id",
@@ -25749,12 +25635,8 @@
     "lastDateUsed": "2016-09-29T22:30:21.094Z",
     "lastRotated": "2016-09-29T22:30:21.094Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "pulse:namespace:bstack-test"
-    ],
-    "expandedScopes": [
-      "pulse:namespace:bstack-test"
-    ],
+    "scopes": ["pulse:namespace:bstack-test"],
+    "expandedScopes": ["pulse:namespace:bstack-test"],
     "disabled": false
   },
   {
@@ -25766,14 +25648,8 @@
     "lastDateUsed": "2018-02-07T19:42:50.848Z",
     "lastRotated": "2016-08-26T18:49:07.328Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "purge-cache:verifyprovisioner/verifyworker2:*",
-      "purge-cache:verifyprovisioner/verifyworker:*"
-    ],
-    "expandedScopes": [
-      "purge-cache:verifyprovisioner/verifyworker2:*",
-      "purge-cache:verifyprovisioner/verifyworker:*"
-    ],
+    "scopes": ["purge-cache:verifyprovisioner/verifyworker2:*", "purge-cache:verifyprovisioner/verifyworker:*"],
+    "expandedScopes": ["purge-cache:verifyprovisioner/verifyworker2:*", "purge-cache:verifyprovisioner/verifyworker:*"],
     "disabled": false
   },
   {
@@ -25831,12 +25707,8 @@
     "lastDateUsed": "2016-04-14T16:24:35.898Z",
     "lastRotated": "2016-04-13T20:37:25.044Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:statsum:tc-stats-collector"
-    ],
-    "expandedScopes": [
-      "auth:statsum:tc-stats-collector"
-    ],
+    "scopes": ["auth:statsum:tc-stats-collector"],
+    "expandedScopes": ["auth:statsum:tc-stats-collector"],
     "disabled": false
   },
   {
@@ -25880,9 +25752,7 @@
     "lastDateUsed": "2017-07-03T18:36:46.867Z",
     "lastRotated": "2017-06-13T22:10:13.432Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -25962,9 +25832,7 @@
     "lastDateUsed": "2018-02-06T06:11:48.180Z",
     "lastRotated": "2018-02-06T06:11:48.180Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:hook-id:garbage/"
-    ],
+    "scopes": ["assume:hook-id:garbage/"],
     "expandedScopes": [
       "assume:hook-id:garbage/",
       "assume:project:taskcluster:tutorial",
@@ -25984,9 +25852,7 @@
     "lastDateUsed": "2018-03-01T01:25:57.321Z",
     "lastRotated": "2018-02-28T02:17:10.752Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:hook-id:garbage/***"
-    ],
+    "scopes": ["assume:hook-id:garbage/***"],
     "expandedScopes": [
       "assume:hook-id:garbage/***",
       "assume:project:taskcluster:tutorial",
@@ -26006,9 +25872,7 @@
     "lastDateUsed": "2018-02-02T01:59:34.072Z",
     "lastRotated": "2018-02-02T02:01:43.272Z",
     "deleteOnExpiration": true,
-    "scopes": [
-      "assume:hook-id:garbage/../*"
-    ],
+    "scopes": ["assume:hook-id:garbage/../*"],
     "expandedScopes": [
       "assume:hook-id:garbage/../*",
       "assume:project:taskcluster:tutorial",
@@ -26057,12 +25921,8 @@
     "lastDateUsed": "2017-02-08T13:41:55.578Z",
     "lastRotated": "2016-12-22T16:51:45.010Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:github"
-    ],
-    "expandedScopes": [
-      "assume:project:taskcluster:github"
-    ],
+    "scopes": ["assume:project:taskcluster:github"],
+    "expandedScopes": ["assume:project:taskcluster:github"],
     "disabled": false
   },
   {
@@ -26074,12 +25934,8 @@
     "lastDateUsed": "2017-04-10T22:32:32.910Z",
     "lastRotated": "2017-03-20T17:05:21.273Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:index-test-scopes"
-    ],
-    "expandedScopes": [
-      "assume:project:taskcluster:index-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:index-test-scopes"],
+    "expandedScopes": ["assume:project:taskcluster:index-test-scopes"],
     "disabled": false
   },
   {
@@ -26091,12 +25947,8 @@
     "lastDateUsed": "2018-04-25T15:51:19.637Z",
     "lastRotated": "2017-03-03T17:46:00.830Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:aws-s3:read-write:test-bucket-for-any-garbage/docs-testing/"
-    ],
-    "expandedScopes": [
-      "auth:aws-s3:read-write:test-bucket-for-any-garbage/docs-testing/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:test-bucket-for-any-garbage/docs-testing/"],
+    "expandedScopes": ["auth:aws-s3:read-write:test-bucket-for-any-garbage/docs-testing/"],
     "disabled": false
   },
   {
@@ -26131,9 +25983,7 @@
     "lastDateUsed": "2016-10-24T14:36:35.089Z",
     "lastRotated": "2016-10-24T14:36:35.089Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:tc-purge-cache-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:tc-purge-cache-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:tc-purge-cache-test-scopes",
       "purge-cache:verifyprovisioner/verifyworker:verifycache"
@@ -26149,12 +25999,8 @@
     "lastDateUsed": "2017-08-05T04:10:12.316Z",
     "lastRotated": "2017-08-04T19:07:22.378Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:azure-table:read-write:taskclusterqueuev1/QueueTaskDependency"
-    ],
-    "expandedScopes": [
-      "auth:azure-table:read-write:taskclusterqueuev1/QueueTaskDependency"
-    ],
+    "scopes": ["auth:azure-table:read-write:taskclusterqueuev1/QueueTaskDependency"],
+    "expandedScopes": ["auth:azure-table:read-write:taskclusterqueuev1/QueueTaskDependency"],
     "disabled": false
   },
   {
@@ -26229,10 +26075,7 @@
     "lastDateUsed": "2017-01-18T16:48:59.450Z",
     "lastRotated": "2017-01-18T16:48:32.276Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:mozilla-group:taskcluster",
-      "assume:mozilla-user:dmitchell@mozilla.com"
-    ],
+    "scopes": ["assume:mozilla-group:taskcluster", "assume:mozilla-user:dmitchell@mozilla.com"],
     "expandedScopes": [
       "assume:mozilla-group:taskcluster",
       "assume:mozilla-user:dmitchell@mozilla.com",
@@ -26254,12 +26097,8 @@
     "lastDateUsed": "2017-11-08T14:57:08.012Z",
     "lastRotated": "2017-11-08T15:02:48.741Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/tutorial"
-    ],
-    "expandedScopes": [
-      "queue:create-task:aws-provisioner-v1/tutorial"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/tutorial"],
+    "expandedScopes": ["queue:create-task:aws-provisioner-v1/tutorial"],
     "disabled": false
   },
   {
@@ -26271,9 +26110,7 @@
     "lastDateUsed": "2016-11-29T17:07:47.586Z",
     "lastRotated": "2016-11-29T17:07:47.586Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -26303,12 +26140,8 @@
     "lastDateUsed": "2017-03-06T10:01:03.218Z",
     "lastRotated": "2017-03-08T13:38:17.339Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:staging-provisioner"
-    ],
-    "expandedScopes": [
-      "assume:staging-provisioner"
-    ],
+    "scopes": ["assume:staging-provisioner"],
+    "expandedScopes": ["assume:staging-provisioner"],
     "disabled": true
   },
   {
@@ -26320,12 +26153,8 @@
     "lastDateUsed": "2018-01-04T19:06:40.281Z",
     "lastRotated": "2017-11-16T22:48:17.910Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "ec2-manager:manage-instances:*"
-    ],
-    "expandedScopes": [
-      "ec2-manager:manage-instances:*"
-    ],
+    "scopes": ["ec2-manager:manage-instances:*"],
+    "expandedScopes": ["ec2-manager:manage-instances:*"],
     "disabled": false
   },
   {
@@ -26337,10 +26166,7 @@
     "lastDateUsed": "2017-05-28T13:43:41.671Z",
     "lastRotated": "2018-02-21T16:07:36.263Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:*",
-      "assume:test"
-    ],
+    "scopes": ["assume:*", "assume:test"],
     "expandedScopes": [
       "assume:*",
       "auth:*",
@@ -26398,9 +26224,7 @@
     "lastDateUsed": "2017-12-01T14:55:19.151Z",
     "lastRotated": "2017-12-01T14:55:19.151Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:*"
-    ],
+    "scopes": ["assume:*"],
     "expandedScopes": [
       "assume:*",
       "auth:*",
@@ -26432,9 +26256,7 @@
     "lastDateUsed": "2016-07-13T13:02:38.992Z",
     "lastRotated": "2016-07-13T13:02:38.992Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:repo:github.com/mozilla-releng/funsize-balrogworker:branch:master"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla-releng/funsize-balrogworker:branch:master"],
     "expandedScopes": [
       "assume:project:taskcluster:mozilla-github-repository",
       "assume:repo:github.com/mozilla-releng/funsize-balrogworker:branch:master",
@@ -26465,9 +26287,7 @@
     "lastDateUsed": "2016-06-28T13:48:57.203Z",
     "lastRotated": "2016-06-28T13:48:57.203Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -26510,9 +26330,7 @@
     "lastDateUsed": "2016-07-26T20:03:04.125Z",
     "lastRotated": "2016-07-08T18:50:06.068Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -26542,12 +26360,8 @@
     "lastDateUsed": "2016-06-16T12:04:20.982Z",
     "lastRotated": "2016-05-20T14:10:58.213Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/desktop-test*"
-    ],
-    "expandedScopes": [
-      "queue:create-task:aws-provisioner-v1/desktop-test*"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/desktop-test*"],
+    "expandedScopes": ["queue:create-task:aws-provisioner-v1/desktop-test*"],
     "disabled": true
   },
   {
@@ -26559,12 +26373,8 @@
     "lastDateUsed": "2017-01-24T18:44:39.034Z",
     "lastRotated": "2016-12-26T23:26:02.751Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:github"
-    ],
-    "expandedScopes": [
-      "assume:project:taskcluster:github"
-    ],
+    "scopes": ["assume:project:taskcluster:github"],
+    "expandedScopes": ["assume:project:taskcluster:github"],
     "disabled": false
   },
   {
@@ -26714,12 +26524,8 @@
     "lastDateUsed": "2018-02-06T12:09:03.884Z",
     "lastRotated": "2018-01-31T13:03:36.649Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:sentry:cloud-mirror"
-    ],
-    "expandedScopes": [
-      "auth:sentry:cloud-mirror"
-    ],
+    "scopes": ["auth:sentry:cloud-mirror"],
+    "expandedScopes": ["auth:sentry:cloud-mirror"],
     "disabled": true
   },
   {
@@ -26777,12 +26583,8 @@
     "lastDateUsed": "2017-06-20T09:20:25.422Z",
     "lastRotated": "2017-03-03T14:24:37.008Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:staging-provisioner"
-    ],
-    "expandedScopes": [
-      "assume:staging-provisioner"
-    ],
+    "scopes": ["assume:staging-provisioner"],
+    "expandedScopes": ["assume:staging-provisioner"],
     "disabled": true
   },
   {
@@ -26880,12 +26682,8 @@
     "lastDateUsed": "2018-06-22T12:34:58.769Z",
     "lastRotated": "2017-12-14T15:53:27.520Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:*"
-    ],
-    "expandedScopes": [
-      "queue:*"
-    ],
+    "scopes": ["queue:*"],
+    "expandedScopes": ["queue:*"],
     "disabled": false
   },
   {
@@ -26897,9 +26695,7 @@
     "lastDateUsed": "2016-11-07T18:51:50.667Z",
     "lastRotated": "2016-08-30T17:30:40.654Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -26929,9 +26725,7 @@
     "lastDateUsed": "2016-08-30T23:02:23.057Z",
     "lastRotated": "2016-08-30T23:02:23.057Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:hook-id:project-releng/nightly-fennec-dev"
-    ],
+    "scopes": ["assume:hook-id:project-releng/nightly-fennec-dev"],
     "expandedScopes": [
       "assume:hook-id:project-releng/nightly-fennec-dev",
       "assume:repo:hg.mozilla.org/projects/date:*",
@@ -26964,10 +26758,7 @@
     "lastDateUsed": "2017-01-08T15:48:02.398Z",
     "lastRotated": "2016-08-10T01:05:15.883Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes",
-      "project:releng:signing:*"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes", "project:releng:signing:*"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -26998,12 +26789,8 @@
     "lastDateUsed": "2018-02-27T18:23:12.474Z",
     "lastRotated": "2017-10-05T02:59:16.341Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:*"
-    ],
-    "expandedScopes": [
-      "queue:*"
-    ],
+    "scopes": ["queue:*"],
+    "expandedScopes": ["queue:*"],
     "disabled": false
   },
   {
@@ -27015,12 +26802,8 @@
     "lastDateUsed": "2017-11-24T17:05:01.671Z",
     "lastRotated": "2016-07-19T05:50:11.493Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:*"
-    ],
-    "expandedScopes": [
-      "queue:*"
-    ],
+    "scopes": ["queue:*"],
+    "expandedScopes": ["queue:*"],
     "disabled": false
   },
   {
@@ -27032,9 +26815,7 @@
     "lastDateUsed": "2016-10-18T13:19:53.142Z",
     "lastRotated": "2016-10-17T17:57:13.383Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -27064,9 +26845,7 @@
     "lastDateUsed": "2018-03-04T07:32:11.307Z",
     "lastRotated": "2018-02-28T19:45:04.606Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:mozillians-group:taskcluster-contributors"
-    ],
+    "scopes": ["assume:mozillians-group:taskcluster-contributors"],
     "expandedScopes": [
       "assume:hook-id:garbage/*",
       "assume:mozillians-group:taskcluster-contributors",
@@ -27183,10 +26962,7 @@
     "lastDateUsed": "2018-02-27T00:42:11.652Z",
     "lastRotated": "2018-02-27T00:42:11.652Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:generic-worker-tester",
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:generic-worker-tester", "assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:generic-worker-tester",
       "assume:project:taskcluster:worker-test-scopes",
@@ -27290,12 +27066,8 @@
     "lastDateUsed": "2016-08-19T20:17:50.166Z",
     "lastRotated": "2016-08-19T20:17:50.166Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:index-test-scopes"
-    ],
-    "expandedScopes": [
-      "assume:project:taskcluster:index-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:index-test-scopes"],
+    "expandedScopes": ["assume:project:taskcluster:index-test-scopes"],
     "disabled": false
   },
   {
@@ -27332,12 +27104,8 @@
     "lastDateUsed": "2018-02-03T00:28:12.329Z",
     "lastRotated": "2018-02-03T00:28:12.329Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "purge-cache:verifyprovisioner/verifyworker:verifycache"
-    ],
-    "expandedScopes": [
-      "purge-cache:verifyprovisioner/verifyworker:verifycache"
-    ],
+    "scopes": ["purge-cache:verifyprovisioner/verifyworker:verifycache"],
+    "expandedScopes": ["purge-cache:verifyprovisioner/verifyworker:verifycache"],
     "disabled": false
   },
   {
@@ -27446,9 +27214,7 @@
     "lastDateUsed": "2017-07-19T19:07:06.190Z",
     "lastRotated": "2016-09-12T20:52:24.317Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -27478,12 +27244,8 @@
     "lastDateUsed": "2016-08-18T22:30:56.455Z",
     "lastRotated": "2016-08-18T22:30:56.455Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "project:taskcluster:worker-test-scopes"
-    ],
-    "expandedScopes": [
-      "project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["project:taskcluster:worker-test-scopes"],
+    "expandedScopes": ["project:taskcluster:worker-test-scopes"],
     "disabled": false
   },
   {
@@ -27563,12 +27325,8 @@
     "lastDateUsed": "2017-02-06T18:10:54.109Z",
     "lastRotated": "2016-06-08T21:07:15.825Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:*"
-    ],
-    "expandedScopes": [
-      "queue:*"
-    ],
+    "scopes": ["queue:*"],
+    "expandedScopes": ["queue:*"],
     "disabled": false
   },
   {
@@ -27605,9 +27363,7 @@
     "lastDateUsed": "2017-01-20T20:27:45.298Z",
     "lastRotated": "2017-01-20T20:27:45.298Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:hook-id:project-releng/nightly-desktop/mozilla-central"
-    ],
+    "scopes": ["assume:hook-id:project-releng/nightly-desktop/mozilla-central"],
     "expandedScopes": [
       "assume:hook-id:project-releng/nightly-desktop/mozilla-central",
       "assume:moz-tree:level:1:gecko",
@@ -27963,9 +27719,7 @@
     "lastDateUsed": "2016-10-14T15:18:14.371Z",
     "lastRotated": "2016-09-09T17:29:13.948Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:hook-id:project-releng/nightly-desktop-dev"
-    ],
+    "scopes": ["assume:hook-id:project-releng/nightly-desktop-dev"],
     "expandedScopes": [
       "assume:hook-id:project-releng/nightly-desktop-dev",
       "assume:repo:hg.mozilla.org/projects/date:*",
@@ -27991,9 +27745,7 @@
     "lastDateUsed": "2017-01-20T20:28:24.293Z",
     "lastRotated": "2017-01-20T20:28:24.293Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:hook-id:project-releng/nightly-fennec/mozilla-central"
-    ],
+    "scopes": ["assume:hook-id:project-releng/nightly-fennec/mozilla-central"],
     "expandedScopes": [
       "assume:hook-id:project-releng/nightly-fennec/mozilla-central",
       "assume:moz-tree:level:1:gecko",
@@ -28349,9 +28101,7 @@
     "lastDateUsed": "2016-10-14T15:18:40.044Z",
     "lastRotated": "2016-09-06T18:52:05.823Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:hook-id:project-releng/nightly-fennec-dev"
-    ],
+    "scopes": ["assume:hook-id:project-releng/nightly-fennec-dev"],
     "expandedScopes": [
       "assume:hook-id:project-releng/nightly-fennec-dev",
       "assume:repo:hg.mozilla.org/projects/date:*",
@@ -28384,12 +28134,8 @@
     "lastDateUsed": "2017-11-06T18:25:17.982Z",
     "lastRotated": "2017-08-08T16:28:09.885Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:*"
-    ],
-    "expandedScopes": [
-      "queue:*"
-    ],
+    "scopes": ["queue:*"],
+    "expandedScopes": ["queue:*"],
     "disabled": false
   },
   {
@@ -28401,9 +28147,7 @@
     "lastDateUsed": "2017-08-14T17:55:09.522Z",
     "lastRotated": "2017-08-14T17:55:09.522Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -28433,12 +28177,8 @@
     "lastDateUsed": "2016-07-25T17:35:32.507Z",
     "lastRotated": "2016-07-22T17:57:46.988Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/kristel-test"
-    ],
-    "expandedScopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/kristel-test"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/kristel-test"],
+    "expandedScopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/kristel-test"],
     "disabled": true
   },
   {
@@ -28512,12 +28252,8 @@
     "lastDateUsed": "2018-05-31T09:06:51.797Z",
     "lastRotated": "2017-12-12T20:54:38.111Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:master"
-    ],
-    "expandedScopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:master"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:master"],
+    "expandedScopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:master"],
     "disabled": false
   },
   {
@@ -28529,12 +28265,8 @@
     "lastDateUsed": "2017-02-07T22:08:23.157Z",
     "lastRotated": "2017-02-07T22:08:23.157Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/tutorial"
-    ],
-    "expandedScopes": [
-      "queue:create-task:aws-provisioner-v1/tutorial"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/tutorial"],
+    "expandedScopes": ["queue:create-task:aws-provisioner-v1/tutorial"],
     "disabled": false
   },
   {
@@ -28546,10 +28278,7 @@
     "lastDateUsed": "2018-03-21T16:42:59.648Z",
     "lastRotated": "2018-01-11T16:46:58.158Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:moz-tree:level:1:comm",
-      "assume:moz-tree:level:1:gecko"
-    ],
+    "scopes": ["assume:moz-tree:level:1:comm", "assume:moz-tree:level:1:gecko"],
     "expandedScopes": [
       "assume:moz-tree:level:1:comm",
       "assume:moz-tree:level:1:gecko",
@@ -28750,9 +28479,7 @@
     "lastDateUsed": "2017-01-12T15:21:03.469Z",
     "lastRotated": "2016-09-29T14:31:58.622Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -28782,9 +28509,7 @@
     "lastDateUsed": "2017-01-12T16:22:57.712Z",
     "lastRotated": "2016-10-18T10:24:54.135Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -28814,9 +28539,7 @@
     "lastDateUsed": "2017-12-08T13:47:56.179Z",
     "lastRotated": "2017-12-08T13:45:07.069Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -28846,12 +28569,8 @@
     "lastDateUsed": "2017-09-12T20:43:32.322Z",
     "lastRotated": "2016-08-30T11:07:56.722Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:*"
-    ],
-    "expandedScopes": [
-      "queue:*"
-    ],
+    "scopes": ["queue:*"],
+    "expandedScopes": ["queue:*"],
     "disabled": false
   },
   {
@@ -28863,9 +28582,7 @@
     "lastDateUsed": "2017-05-05T18:52:29.860Z",
     "lastRotated": "2017-05-05T18:52:29.860Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:generic-worker-tester"
-    ],
+    "scopes": ["assume:project:taskcluster:generic-worker-tester"],
     "expandedScopes": [
       "assume:project:taskcluster:generic-worker-tester",
       "assume:worker-id:test-worker-group/test-worker-id",
@@ -28906,9 +28623,7 @@
     "lastDateUsed": "2017-01-04T15:05:51.769Z",
     "lastRotated": "2017-01-04T15:05:51.769Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:mozilla-user:pmoore@mozilla.com"
-    ],
+    "scopes": ["assume:mozilla-user:pmoore@mozilla.com"],
     "expandedScopes": [
       "assume:mozilla-user:pmoore@mozilla.com",
       "assume:project:taskcluster:tutorial",
@@ -29017,9 +28732,7 @@
     "lastDateUsed": "2018-03-05T15:08:26.150Z",
     "lastRotated": "2018-03-05T15:08:26.150Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:taskcluster-proxy-tester"
-    ],
+    "scopes": ["assume:project:taskcluster:taskcluster-proxy-tester"],
     "expandedScopes": [
       "assume:project:taskcluster:taskcluster-proxy-tester",
       "auth:azure-table:read-write:fakeaccount/DuMmYtAbLe",
@@ -29042,12 +28755,8 @@
     "lastDateUsed": "2018-02-21T18:00:31.319Z",
     "lastRotated": "2018-02-21T18:00:31.319Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:master"
-    ],
-    "expandedScopes": [
-      "secrets:get:repo:github.com/mozilla-releng/services:branch:master"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:master"],
+    "expandedScopes": ["secrets:get:repo:github.com/mozilla-releng/services:branch:master"],
     "disabled": false
   },
   {
@@ -29059,9 +28768,7 @@
     "lastDateUsed": "2016-11-12T07:54:04.751Z",
     "lastRotated": "2016-11-12T07:54:04.751Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:releng:treestatus/admin"
-    ],
+    "scopes": ["assume:project:releng:treestatus/admin"],
     "expandedScopes": [
       "assume:project:releng:treestatus/admin",
       "project:releng:treestatus/recent_changes/revert",
@@ -29643,9 +29350,7 @@
     "lastDateUsed": "2017-01-30T06:38:35.488Z",
     "lastRotated": "2017-01-30T06:38:35.488Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:releng:treestatus/admin"
-    ],
+    "scopes": ["assume:project:releng:treestatus/admin"],
     "expandedScopes": [
       "assume:project:releng:treestatus/admin",
       "project:releng:treestatus/recent_changes/revert",
@@ -29664,9 +29369,7 @@
     "lastDateUsed": "2017-01-30T06:39:33.500Z",
     "lastRotated": "2017-01-30T06:39:33.500Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:releng:treestatus/sheriff"
-    ],
+    "scopes": ["assume:project:releng:treestatus/sheriff"],
     "expandedScopes": [
       "assume:project:releng:treestatus/sheriff",
       "project:releng:treestatus/recent_changes/revert",
@@ -29721,12 +29424,8 @@
     "lastDateUsed": "2017-11-17T09:03:35.251Z",
     "lastRotated": "2017-11-17T09:03:35.251Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:claim-work:deepspeech-provisioner/dummy-worker-ds"
-    ],
-    "expandedScopes": [
-      "queue:claim-work:deepspeech-provisioner/dummy-worker-ds"
-    ],
+    "scopes": ["queue:claim-work:deepspeech-provisioner/dummy-worker-ds"],
+    "expandedScopes": ["queue:claim-work:deepspeech-provisioner/dummy-worker-ds"],
     "disabled": false
   },
   {
@@ -29980,9 +29679,7 @@
     "lastDateUsed": "2016-12-21T17:24:06.890Z",
     "lastRotated": "2016-11-29T12:06:57.786Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -30012,9 +29709,7 @@
     "lastDateUsed": "2017-11-09T12:26:29.060Z",
     "lastRotated": "2017-05-02T13:18:03.980Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -30044,9 +29739,7 @@
     "lastDateUsed": "2016-12-01T12:05:57.961Z",
     "lastRotated": "2017-07-17T10:07:11.692Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -30120,12 +29813,8 @@
     "lastDateUsed": "2017-04-25T17:37:00.132Z",
     "lastRotated": "2017-04-25T17:37:00.132Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "aws-provisioner:view-worker-type:*"
-    ],
-    "expandedScopes": [
-      "aws-provisioner:view-worker-type:*"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:*"],
+    "expandedScopes": ["aws-provisioner:view-worker-type:*"],
     "disabled": false
   },
   {
@@ -30275,10 +29964,7 @@
     "lastDateUsed": "2018-06-28T10:19:00.209Z",
     "lastRotated": "2018-04-30T17:54:14.713Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:claim-work:scriptworker-prov-v1/tb-balrog-v1",
-      "queue:worker-id:balrogworker-v1/tb-balrog-*"
-    ],
+    "scopes": ["queue:claim-work:scriptworker-prov-v1/tb-balrog-v1", "queue:worker-id:balrogworker-v1/tb-balrog-*"],
     "expandedScopes": [
       "queue:claim-work:scriptworker-prov-v1/tb-balrog-v1",
       "queue:worker-id:balrogworker-v1/tb-balrog-*"
@@ -30342,10 +30028,7 @@
     "lastDateUsed": "2018-06-28T10:05:39.490Z",
     "lastRotated": "2018-05-29T22:15:07.232Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:claim-work:scriptworker-prov-v1/tb-bouncer-dev",
-      "queue:worker-id:bouncer-v1/tb-bouncer-dev-*"
-    ],
+    "scopes": ["queue:claim-work:scriptworker-prov-v1/tb-bouncer-dev", "queue:worker-id:bouncer-v1/tb-bouncer-dev-*"],
     "expandedScopes": [
       "queue:claim-work:scriptworker-prov-v1/tb-bouncer-dev",
       "queue:worker-id:bouncer-v1/tb-bouncer-dev-*"
@@ -30361,10 +30044,7 @@
     "lastDateUsed": "2018-06-28T07:19:13.855Z",
     "lastRotated": "2018-06-07T23:07:02.366Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:claim-work:scriptworker-prov-v1/tb-bouncer-v1",
-      "queue:worker-id:bouncer-v1/tb-bouncer-*"
-    ],
+    "scopes": ["queue:claim-work:scriptworker-prov-v1/tb-bouncer-v1", "queue:worker-id:bouncer-v1/tb-bouncer-*"],
     "expandedScopes": [
       "queue:claim-work:scriptworker-prov-v1/tb-bouncer-v1",
       "queue:worker-id:bouncer-v1/tb-bouncer-*"
@@ -30380,10 +30060,7 @@
     "lastDateUsed": "2018-06-28T07:19:09.487Z",
     "lastRotated": "2018-05-22T18:13:16.851Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:claim-work:scriptworker-prov-v1/tb-shipit-dev",
-      "queue:worker-id:shipit-v1/tb-shipit-dev*"
-    ],
+    "scopes": ["queue:claim-work:scriptworker-prov-v1/tb-shipit-dev", "queue:worker-id:shipit-v1/tb-shipit-dev*"],
     "expandedScopes": [
       "queue:claim-work:scriptworker-prov-v1/tb-shipit-dev",
       "queue:worker-id:shipit-v1/tb-shipit-dev*"
@@ -30399,14 +30076,8 @@
     "lastDateUsed": "2018-06-28T09:02:56.702Z",
     "lastRotated": "2018-06-09T02:10:53.852Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "queue:claim-work:scriptworker-prov-v1/tb-shipit-v1",
-      "queue:worker-id:shipit-v1/tb-shipit-*"
-    ],
-    "expandedScopes": [
-      "queue:claim-work:scriptworker-prov-v1/tb-shipit-v1",
-      "queue:worker-id:shipit-v1/tb-shipit-*"
-    ],
+    "scopes": ["queue:claim-work:scriptworker-prov-v1/tb-shipit-v1", "queue:worker-id:shipit-v1/tb-shipit-*"],
+    "expandedScopes": ["queue:claim-work:scriptworker-prov-v1/tb-shipit-v1", "queue:worker-id:shipit-v1/tb-shipit-*"],
     "disabled": false
   },
   {
@@ -31247,9 +30918,7 @@
     "lastDateUsed": "2018-06-28T07:39:02.902Z",
     "lastRotated": "2017-02-08T11:19:26.087Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-type:localprovisioner/nss-aarch64"
-    ],
+    "scopes": ["assume:worker-type:localprovisioner/nss-aarch64"],
     "expandedScopes": [
       "assume:worker-type:localprovisioner/nss-aarch64",
       "auth:sentry:docker-worker",
@@ -31272,9 +30941,7 @@
     "lastDateUsed": "2018-06-28T09:58:43.291Z",
     "lastRotated": "2017-07-11T10:18:38.448Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-type:localprovisioner/nss-macos-10-12"
-    ],
+    "scopes": ["assume:worker-type:localprovisioner/nss-macos-10-12"],
     "expandedScopes": [
       "assume:worker-id:macosstadium/nss1-*",
       "assume:worker-type:localprovisioner/nss-macos-10-12",
@@ -31297,9 +30964,7 @@
     "lastDateUsed": "2017-12-04T16:14:05.396Z",
     "lastRotated": "2017-11-30T08:58:26.891Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-type:aws-provisioner-v1/nss-win2012r2"
-    ],
+    "scopes": ["assume:worker-type:aws-provisioner-v1/nss-win2012r2"],
     "expandedScopes": [
       "assume:worker-type:aws-provisioner-v1/nss-win2012r2",
       "auth:sentry:docker-worker",
@@ -31325,9 +30990,7 @@
     "lastDateUsed": "2017-05-19T00:50:45.941Z",
     "lastRotated": "2016-08-02T12:56:58.526Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-type:localprovisioner/nss-rpi"
-    ],
+    "scopes": ["assume:worker-type:localprovisioner/nss-rpi"],
     "expandedScopes": [
       "assume:worker-type:localprovisioner/nss-rpi",
       "queue:claim-task",
@@ -31444,20 +31107,8 @@
     "lastDateUsed": "2017-09-22T22:23:07.114Z",
     "lastRotated": "2016-03-02T19:14:10.446Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "docker-worker:*",
-      "project:releng:signing:*",
-      "queue:*",
-      "scheduler:*",
-      "signing:*"
-    ],
-    "expandedScopes": [
-      "docker-worker:*",
-      "project:releng:signing:*",
-      "queue:*",
-      "scheduler:*",
-      "signing:*"
-    ],
+    "scopes": ["docker-worker:*", "project:releng:signing:*", "queue:*", "scheduler:*", "signing:*"],
+    "expandedScopes": ["docker-worker:*", "project:releng:signing:*", "queue:*", "scheduler:*", "signing:*"],
     "disabled": false
   },
   {
@@ -31469,10 +31120,7 @@
     "lastDateUsed": "2018-06-28T08:38:39.051Z",
     "lastRotated": "2017-11-15T22:09:38.327Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-id:*",
-      "assume:worker-type:releng-hardware/gecko-t-win10-64-hw"
-    ],
+    "scopes": ["assume:worker-id:*", "assume:worker-type:releng-hardware/gecko-t-win10-64-hw"],
     "expandedScopes": [
       "assume:worker-id:*",
       "assume:worker-type:releng-hardware/gecko-t-win10-64-hw",
@@ -31497,10 +31145,7 @@
     "lastDateUsed": "2017-11-17T16:23:56.141Z",
     "lastRotated": "2017-11-17T16:23:56.141Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-id:*",
-      "assume:worker-type:releng-hardware/gecko-t-win7-32-hw"
-    ],
+    "scopes": ["assume:worker-id:*", "assume:worker-type:releng-hardware/gecko-t-win7-32-hw"],
     "expandedScopes": [
       "assume:worker-id:*",
       "assume:worker-type:releng-hardware/gecko-t-win7-32-hw",
@@ -31525,10 +31170,7 @@
     "lastDateUsed": "2018-06-28T09:38:39.035Z",
     "lastRotated": "2017-06-13T18:34:04.861Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-id:*",
-      "assume:worker-type:releng-hardware/gecko-t-osx-*"
-    ],
+    "scopes": ["assume:worker-id:*", "assume:worker-type:releng-hardware/gecko-t-osx-*"],
     "expandedScopes": [
       "assume:worker-id:*",
       "assume:worker-type:releng-hardware/gecko-t-osx-*",
@@ -32391,12 +32033,8 @@
     "lastDateUsed": "2016-04-21T13:12:59.154Z",
     "lastRotated": "2016-03-14T20:19:09.784Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "purge-cache:aws-provisioner-v1/*"
-    ],
-    "expandedScopes": [
-      "purge-cache:aws-provisioner-v1/*"
-    ],
+    "scopes": ["purge-cache:aws-provisioner-v1/*"],
+    "expandedScopes": ["purge-cache:aws-provisioner-v1/*"],
     "disabled": false
   },
   {
@@ -32913,9 +32551,7 @@
     "lastDateUsed": "2018-06-28T04:56:52.161Z",
     "lastRotated": "2017-06-02T12:42:32.100Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:repo:github.com/mozilla-releng/services:branch:production"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla-releng/services:branch:production"],
     "expandedScopes": [
       "assume:hook-id:project-releng/services-production-*",
       "assume:project:taskcluster:mozilla-github-repository",
@@ -32960,9 +32596,7 @@
     "lastDateUsed": "2018-06-28T05:57:24.345Z",
     "lastRotated": "2017-05-29T12:27:50.553Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:repo:github.com/mozilla-releng/services:branch:staging"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla-releng/services:branch:staging"],
     "expandedScopes": [
       "assume:hook-id:project-releng/services-staging-*",
       "assume:project:taskcluster:mozilla-github-repository",
@@ -33005,9 +32639,7 @@
     "lastDateUsed": "2018-06-28T10:39:15.914Z",
     "lastRotated": "2018-05-24T10:19:18.256Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:repo:github.com/mozilla-releng/services:branch:testing"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla-releng/services:branch:testing"],
     "expandedScopes": [
       "assume:hook-id:project-releng/services-testing-*",
       "assume:project:taskcluster:mozilla-github-repository",
@@ -33083,9 +32715,7 @@
     "lastDateUsed": "2017-12-14T15:35:43.198Z",
     "lastRotated": "2017-12-14T15:35:43.198Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-type:releng-hardware/gecko-t-win10-64-hw"
-    ],
+    "scopes": ["assume:worker-type:releng-hardware/gecko-t-win10-64-hw"],
     "expandedScopes": [
       "assume:worker-type:releng-hardware/gecko-t-win10-64-hw",
       "auth:sentry:generic-worker",
@@ -33109,9 +32739,7 @@
     "lastDateUsed": "2017-12-14T15:37:04.236Z",
     "lastRotated": "2017-12-14T15:37:04.236Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-type:releng-hardware/gecko-t-win7-32-hw"
-    ],
+    "scopes": ["assume:worker-type:releng-hardware/gecko-t-win7-32-hw"],
     "expandedScopes": [
       "assume:worker-type:releng-hardware/gecko-t-win7-32-hw",
       "auth:sentry:generic-worker",
@@ -33214,9 +32842,7 @@
     "lastDateUsed": "2018-03-06T15:49:32.440Z",
     "lastRotated": "2017-06-06T09:18:15.222Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:shipit:bot"
-    ],
+    "scopes": ["assume:project:shipit:bot"],
     "expandedScopes": [
       "assume:project:shipit:bot",
       "project:shipit:analysis/manage",
@@ -33234,11 +32860,7 @@
     "lastDateUsed": "2017-04-04T23:58:16.707Z",
     "lastRotated": "2017-01-12T16:23:48.588Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:hook-id:project-shipit/*",
-      "assume:project:shipit:bot",
-      "hooks:modify-hook:project-shipit/*"
-    ],
+    "scopes": ["assume:hook-id:project-shipit/*", "assume:project:shipit:bot", "hooks:modify-hook:project-shipit/*"],
     "expandedScopes": [
       "assume:hook-id:project-shipit/*",
       "assume:project:shipit:bot",
@@ -33260,9 +32882,7 @@
     "lastDateUsed": "2017-11-29T14:19:11.088Z",
     "lastRotated": "2017-02-16T08:54:09.069Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:shipit:bot"
-    ],
+    "scopes": ["assume:project:shipit:bot"],
     "expandedScopes": [
       "assume:project:shipit:bot",
       "project:shipit:analysis/manage",
@@ -33280,9 +32900,7 @@
     "lastDateUsed": "2018-02-28T14:41:17.841Z",
     "lastRotated": "2017-02-23T10:08:37.251Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:shipit:bot"
-    ],
+    "scopes": ["assume:project:shipit:bot"],
     "expandedScopes": [
       "assume:project:shipit:bot",
       "project:shipit:analysis/manage",
@@ -33376,9 +32994,7 @@
     "lastDateUsed": "2017-02-14T09:48:12.641Z",
     "lastRotated": "2017-02-14T09:48:12.641Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:shipit:static_analysis/bot"
-    ],
+    "scopes": ["assume:project:shipit:static_analysis/bot"],
     "expandedScopes": [
       "assume:project:shipit:static_analysis/bot",
       "project:shipit:bot",
@@ -33395,9 +33011,7 @@
     "lastDateUsed": "2017-02-14T09:51:17.824Z",
     "lastRotated": "2017-02-14T09:51:17.824Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:shipit:static_analysis/bot"
-    ],
+    "scopes": ["assume:project:shipit:static_analysis/bot"],
     "expandedScopes": [
       "assume:project:shipit:static_analysis/bot",
       "project:shipit:bot",
@@ -33414,9 +33028,7 @@
     "lastDateUsed": "2017-02-14T09:50:43.863Z",
     "lastRotated": "2017-02-14T09:50:43.863Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:shipit:static_analysis/bot"
-    ],
+    "scopes": ["assume:project:shipit:static_analysis/bot"],
     "expandedScopes": [
       "assume:project:shipit:static_analysis/bot",
       "project:shipit:bot",
@@ -33433,12 +33045,8 @@
     "lastDateUsed": "2017-06-13T14:34:51.375Z",
     "lastRotated": "2017-05-23T14:48:49.313Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "secrets:get:project/shipit/static_analysis_dev"
-    ],
-    "expandedScopes": [
-      "secrets:get:project/shipit/static_analysis_dev"
-    ],
+    "scopes": ["secrets:get:project/shipit/static_analysis_dev"],
+    "expandedScopes": ["secrets:get:project/shipit/static_analysis_dev"],
     "disabled": false
   },
   {
@@ -33659,14 +33267,8 @@
     "lastDateUsed": "2018-06-28T07:45:58.593Z",
     "lastRotated": "2018-04-16T20:16:14.477Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:sentry:cloud-mirror",
-      "auth:statsum:cloud-mirror"
-    ],
-    "expandedScopes": [
-      "auth:sentry:cloud-mirror",
-      "auth:statsum:cloud-mirror"
-    ],
+    "scopes": ["auth:sentry:cloud-mirror", "auth:statsum:cloud-mirror"],
+    "expandedScopes": ["auth:sentry:cloud-mirror", "auth:statsum:cloud-mirror"],
     "disabled": false
   },
   {
@@ -33678,9 +33280,7 @@
     "lastDateUsed": "2018-06-20T15:58:00.449Z",
     "lastRotated": "2017-08-16T00:04:30.194Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:repo:github.com/taskcluster/docker-worker:*"
-    ],
+    "scopes": ["assume:repo:github.com/taskcluster/docker-worker:*"],
     "expandedScopes": [
       "assume:assume:repo:github.com/taskcluster/docker-worker:pr",
       "assume:project:taskcluster:mozilla-github-repository",
@@ -33763,10 +33363,7 @@
     "lastDateUsed": "2018-06-28T02:00:17.601Z",
     "lastRotated": "2018-01-31T22:58:55.463Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:ec2-manager",
-      "auth:aws-s3:read-write:taskcluster-raw-docs/ec2-manager/"
-    ],
+    "scopes": ["assume:project:taskcluster:ec2-manager", "auth:aws-s3:read-write:taskcluster-raw-docs/ec2-manager/"],
     "expandedScopes": [
       "assume:project:taskcluster:ec2-manager",
       "auth:aws-s3:read-write:taskcluster-raw-docs/ec2-manager/",
@@ -33784,9 +33381,7 @@
     "lastDateUsed": "2018-06-28T04:21:55.132Z",
     "lastRotated": "2018-01-31T23:01:41.465Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:ec2-manager-staging"
-    ],
+    "scopes": ["assume:project:taskcluster:ec2-manager-staging"],
     "expandedScopes": [
       "assume:project:taskcluster:ec2-manager-staging",
       "auth:sentry:ec2-manager-staging",
@@ -33803,9 +33398,7 @@
     "lastDateUsed": "2017-05-31T08:33:55.624Z",
     "lastRotated": "2016-09-20T17:22:46.165Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:generic-worker-tester"
-    ],
+    "scopes": ["assume:project:taskcluster:generic-worker-tester"],
     "expandedScopes": [
       "assume:project:taskcluster:generic-worker-tester",
       "assume:worker-id:test-worker-group/test-worker-id",
@@ -33846,9 +33439,7 @@
     "lastDateUsed": "2018-06-28T07:04:20.917Z",
     "lastRotated": "2017-01-23T11:08:11.724Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:generic-worker-tester"
-    ],
+    "scopes": ["assume:project:taskcluster:generic-worker-tester"],
     "expandedScopes": [
       "assume:project:taskcluster:generic-worker-tester",
       "assume:worker-id:test-worker-group/test-worker-id",
@@ -33889,9 +33480,7 @@
     "lastDateUsed": "2018-06-28T07:05:11.108Z",
     "lastRotated": "2016-09-20T16:52:55.792Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:generic-worker-tester"
-    ],
+    "scopes": ["assume:project:taskcluster:generic-worker-tester"],
     "expandedScopes": [
       "assume:project:taskcluster:generic-worker-tester",
       "assume:worker-id:test-worker-group/test-worker-id",
@@ -37918,9 +37507,7 @@
     "lastDateUsed": "2018-06-14T07:10:14.870Z",
     "lastRotated": "2018-04-13T09:44:45.684Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:taskcluster-lib-artifact-go-tester"
-    ],
+    "scopes": ["assume:project:taskcluster:taskcluster-lib-artifact-go-tester"],
     "expandedScopes": [
       "assume:project:taskcluster:taskcluster-lib-artifact-go-tester",
       "assume:worker-id:my-worker-group/my-worker",
@@ -37969,14 +37556,8 @@
     "lastDateUsed": "2017-02-08T23:36:41.558Z",
     "lastRotated": "2016-06-01T22:46:01.217Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:sentry:tc-treeherder-staging",
-      "auth:statsum:tc-treeherder-staging"
-    ],
-    "expandedScopes": [
-      "auth:sentry:tc-treeherder-staging",
-      "auth:statsum:tc-treeherder-staging"
-    ],
+    "scopes": ["auth:sentry:tc-treeherder-staging", "auth:statsum:tc-treeherder-staging"],
+    "expandedScopes": ["auth:sentry:tc-treeherder-staging", "auth:statsum:tc-treeherder-staging"],
     "disabled": false
   },
   {
@@ -37988,9 +37569,7 @@
     "lastDateUsed": "2018-01-05T19:37:35.327Z",
     "lastRotated": "2017-07-20T22:56:04.296Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-type:manual-packet/tc-worker-qemu-v1"
-    ],
+    "scopes": ["assume:worker-type:manual-packet/tc-worker-qemu-v1"],
     "expandedScopes": [
       "assume:worker-type:manual-packet/tc-worker-qemu-v1",
       "auth:sentry:tc-worker-qemu-v1",
@@ -38012,9 +37591,7 @@
     "lastDateUsed": "2017-12-21T15:46:23.851Z",
     "lastRotated": "2017-02-17T19:59:03.908Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -38081,9 +37658,7 @@
     "lastDateUsed": "2018-06-28T05:02:29.961Z",
     "lastRotated": "2018-01-05T17:34:57.921Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:worker-type:terraform-packet/tc-worker-qemu-v1"
-    ],
+    "scopes": ["assume:worker-type:terraform-packet/tc-worker-qemu-v1"],
     "expandedScopes": [
       "assume:worker-type:terraform-packet/tc-worker-qemu-v1",
       "auth:sentry:tc-worker-qemu-v1",
@@ -38137,9 +37712,7 @@
     "lastDateUsed": "2016-09-15T12:07:59.079Z",
     "lastRotated": "2016-05-17T19:28:42.398Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:diagnostics"
-    ],
+    "scopes": ["assume:project:taskcluster:diagnostics"],
     "expandedScopes": [
       "assume:project:taskcluster:diagnostics",
       "assume:scheduler-id:tc-diagnostics/*",
@@ -38257,9 +37830,7 @@
     "lastDateUsed": "2017-07-13T23:38:32.027Z",
     "lastRotated": "2016-04-25T19:03:10.912Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:worker-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:worker-test-scopes"],
     "expandedScopes": [
       "assume:project:taskcluster:worker-test-scopes",
       "auth:sentry:test-dummy-worker",
@@ -38697,9 +38268,7 @@
     "lastDateUsed": "2018-06-27T12:57:01.631Z",
     "lastRotated": "2018-05-21T18:30:28.697Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:tests:taskcluster-github"
-    ],
+    "scopes": ["assume:project:taskcluster:tests:taskcluster-github"],
     "expandedScopes": [
       "assume:project:taskcluster:tests:taskcluster-github",
       "auth:azure-table:read-write:jungle/TaskclusterGithubBuilds",
@@ -39537,9 +39106,7 @@
     "lastDateUsed": "2018-06-25T22:25:16.671Z",
     "lastRotated": "2018-04-27T14:55:13.033Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:tests:taskcluster-hooks"
-    ],
+    "scopes": ["assume:project:taskcluster:tests:taskcluster-hooks"],
     "expandedScopes": [
       "assume:hook-id:tc-hooks-tests/tc-test-hook",
       "assume:project:taskcluster:tests:taskcluster-hooks",
@@ -39589,9 +39156,7 @@
     "lastDateUsed": "2018-06-25T16:54:27.314Z",
     "lastRotated": "2018-06-21T22:54:59.938Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:tests:taskcluster-index"
-    ],
+    "scopes": ["assume:project:taskcluster:tests:taskcluster-index"],
     "expandedScopes": [
       "assume:project:taskcluster:tests:taskcluster-index",
       "auth:azure-table:read-write:jungle/DummyTestIndexedTasks",
@@ -39804,9 +39369,7 @@
     "lastDateUsed": "2018-05-07T11:24:10.952Z",
     "lastRotated": "2016-03-10T21:16:44.585Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:taskcluster-proxy-tester"
-    ],
+    "scopes": ["assume:project:taskcluster:taskcluster-proxy-tester"],
     "expandedScopes": [
       "assume:project:taskcluster:taskcluster-proxy-tester",
       "auth:azure-table:read-write:fakeaccount/DuMmYtAbLe",
@@ -39854,9 +39417,7 @@
     "lastDateUsed": "2018-06-25T19:41:15.235Z",
     "lastRotated": "2018-06-05T18:13:09.146Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:tests:taskcluster-pulse"
-    ],
+    "scopes": ["assume:project:taskcluster:tests:taskcluster-pulse"],
     "expandedScopes": [
       "assume:project:taskcluster:tests:taskcluster-pulse",
       "auth:azure-table:read-write:jungle/TestPulseNamespaces",
@@ -39898,14 +39459,8 @@
     "lastDateUsed": "2018-06-04T19:21:57.396Z",
     "lastRotated": "2016-08-30T18:53:56.305Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "auth:azure-table-access:jungle/CachePurges",
-      "auth:azure-table:read-write:jungle/CachePurges"
-    ],
-    "expandedScopes": [
-      "auth:azure-table-access:jungle/CachePurges",
-      "auth:azure-table:read-write:jungle/CachePurges"
-    ],
+    "scopes": ["auth:azure-table-access:jungle/CachePurges", "auth:azure-table:read-write:jungle/CachePurges"],
+    "expandedScopes": ["auth:azure-table-access:jungle/CachePurges", "auth:azure-table:read-write:jungle/CachePurges"],
     "disabled": false
   },
   {
@@ -39917,12 +39472,8 @@
     "lastDateUsed": "2017-06-24T06:30:45.665Z",
     "lastRotated": "2016-03-07T22:10:43.106Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "*"
-    ],
-    "expandedScopes": [
-      "*"
-    ],
+    "scopes": ["*"],
+    "expandedScopes": ["*"],
     "disabled": false
   },
   {
@@ -39934,12 +39485,8 @@
     "lastDateUsed": "2018-06-28T04:58:38.143Z",
     "lastRotated": "2017-06-23T21:15:08.301Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "*"
-    ],
-    "expandedScopes": [
-      "*"
-    ],
+    "scopes": ["*"],
+    "expandedScopes": ["*"],
     "disabled": false
   },
   {
@@ -39951,9 +39498,7 @@
     "lastDateUsed": "2018-06-21T13:23:16.116Z",
     "lastRotated": "2018-06-15T18:33:26.762Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:tests:taskcluster-queue"
-    ],
+    "scopes": ["assume:project:taskcluster:tests:taskcluster-queue"],
     "expandedScopes": [
       "assume:project:taskcluster:tests:taskcluster-queue",
       "auth:azure-table:read-write:jungle/Artifacts",
@@ -40069,9 +39614,7 @@
     "lastDateUsed": "2018-06-25T21:05:21.249Z",
     "lastRotated": "2018-04-27T14:53:12.295Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "assume:project:taskcluster:tests:taskcluster-secrets"
-    ],
+    "scopes": ["assume:project:taskcluster:tests:taskcluster-secrets"],
     "expandedScopes": [
       "assume:project:taskcluster:tests:taskcluster-secrets",
       "auth:azure-table:read-write:jungle/SecretsTestTable"
@@ -40187,12 +39730,8 @@
     "lastDateUsed": "2018-06-27T00:09:52.668Z",
     "lastRotated": "2018-04-12T11:09:42.344Z",
     "deleteOnExpiration": false,
-    "scopes": [
-      "*"
-    ],
-    "expandedScopes": [
-      "*"
-    ],
+    "scopes": ["*"],
+    "expandedScopes": ["*"],
     "disabled": false
   }
 ]

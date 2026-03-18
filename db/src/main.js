@@ -14,12 +14,12 @@ const main = async () => {
   }
 
   /** @param {string} message */
-  const showProgress = message => {
+  const showProgress = (message) => {
     console.log(chalk.green(message));
   };
 
   const toVersion = process.argv[3] ? parseInt(process.argv[3], 10) : undefined;
-  if (toVersion !== undefined && (!process.argv[3].match(/^[0-9]+$/) || isNaN(toVersion))) {
+  if (toVersion !== undefined && (!process.argv[3].match(/^[0-9]+$/) || Number.isNaN(toVersion))) {
     throw new Error('invalid db version specified -- must be an integer DB version, not a TC release version');
   }
 
@@ -48,10 +48,9 @@ const main = async () => {
     default:
       throw new Error('invalid subcommand for db/src/main.js');
   }
-
 };
 
-main().catch(err => {
+main().catch((err) => {
   console.log(err);
   process.exit(1);
 });

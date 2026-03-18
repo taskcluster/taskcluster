@@ -10,7 +10,7 @@ const PARAM_TO_END = /\u001a.*$/; // eslint-disable-line no-control-regex
  */
 const withParam = (scopes, param) => {
   const pattern = param.endsWith('*') ? PARAM_TO_END : PARAM;
-  scopes = scopes.map(s => s.replace(pattern, param));
+  scopes = scopes.map((s) => s.replace(pattern, param));
   return ScopeSetBuilder.normalizeScopeSet(scopes);
 };
 
@@ -130,7 +130,7 @@ const traverse = (node, path, visit = () => {}) => {
  * Return scope without kleene '*' at the end if scope ends with kleene, otherwise
  * this just returns the scope given. Notice, this doesn't recursively strip '*'
  */
-const withoutKleene = (scope) => scope.endsWith('*') ? scope.slice(0, -1) : scope;
+const withoutKleene = (scope) => (scope.endsWith('*') ? scope.slice(0, -1) : scope);
 
 /**
  * Execute returns a ScopeSetBuilder with scopes granted by given input.
@@ -164,40 +164,39 @@ export const execute = (node, input, builder = new ScopeSetBuilder()) => {
  *  - matched, is the non-parameterized scopes, and
  *  - paramed, is the parameterized scopes with PARAM instead of '<..>'
  */
-const transformRules = (rules) => rules.map(({ pattern, scopes }) => {
-  // If not a prefix rule, then we can't have parameterized rules
-  if (!pattern.endsWith('*')) {
-    scopes = ScopeSetBuilder.normalizeScopeSet(scopes);
-    return { pattern, scopes, matched: scopes, paramed: [] };
-  }
-  // Find matched and paramed from scopes
-  const matched = ScopeSetBuilder.normalizeScopeSet(scopes.filter(s => !s.includes('<..>')));
-  const paramed = ScopeSetBuilder.normalizeScopeSet(
-    scopes
-      .filter(s => s.includes('<..>'))
-      .map(s => s.replace('<..>', PARAM)),
-  );
-  // Validate legallity of parameterized scopes
-  for (const s of paramed) {
-    // We forbid more than one parameter injection
-    if (s.includes('<..>')) {
-      const scope = s.replace(PARAM, '<..>');
-      const err = new Error(`parameterized scope '${scope}' contains multiple '<..>'`);
-      err.code = 'InvalidScopeError';
-      err.scope = scope;
-      throw err;
+const transformRules = (rules) =>
+  rules.map(({ pattern, scopes }) => {
+    // If not a prefix rule, then we can't have parameterized rules
+    if (!pattern.endsWith('*')) {
+      scopes = ScopeSetBuilder.normalizeScopeSet(scopes);
+      return { pattern, scopes, matched: scopes, paramed: [] };
     }
-    // We forbid ambiguous kleenes
-    if (s.endsWith(`*${PARAM}`)) {
-      const scope = s.replace(PARAM, '<..>');
-      const err = new Error(`parameterized scope '${scope}' ends with '*<..>' which implies an ambiguous kleene`);
-      err.code = 'InvalidScopeError';
-      err.scope = scope;
-      throw err;
+    // Find matched and paramed from scopes
+    const matched = ScopeSetBuilder.normalizeScopeSet(scopes.filter((s) => !s.includes('<..>')));
+    const paramed = ScopeSetBuilder.normalizeScopeSet(
+      scopes.filter((s) => s.includes('<..>')).map((s) => s.replace('<..>', PARAM)),
+    );
+    // Validate legallity of parameterized scopes
+    for (const s of paramed) {
+      // We forbid more than one parameter injection
+      if (s.includes('<..>')) {
+        const scope = s.replace(PARAM, '<..>');
+        const err = new Error(`parameterized scope '${scope}' contains multiple '<..>'`);
+        err.code = 'InvalidScopeError';
+        err.scope = scope;
+        throw err;
+      }
+      // We forbid ambiguous kleenes
+      if (s.endsWith(`*${PARAM}`)) {
+        const scope = s.replace(PARAM, '<..>');
+        const err = new Error(`parameterized scope '${scope}' ends with '*<..>' which implies an ambiguous kleene`);
+        err.code = 'InvalidScopeError';
+        err.scope = scope;
+        throw err;
+      }
     }
-  }
-  return { pattern, scopes, matched, paramed };
-});
+    return { pattern, scopes, matched, paramed };
+  });
 
 /**
  * Create a topological sorting of rules according to dependencies, defined
@@ -241,9 +240,11 @@ export const dependencyOrdering = (rules = []) => {
   const trie = new Node();
   rules.forEach((rule, index) => {
     // We use the index of a rule to indicate that it have been matched
-    trie.merge(withoutKleene(rule.pattern), rule.pattern.endsWith('*')
-      ? new Node([], [`${index}`]) // if pattern ends with kleene rule matches if node is entered
-      : new Node([`${index}`], []), // if pattern ends without kleene input must end in node
+    trie.merge(
+      withoutKleene(rule.pattern),
+      rule.pattern.endsWith('*')
+        ? new Node([], [`${index}`]) // if pattern ends with kleene rule matches if node is entered
+        : new Node([`${index}`], []), // if pattern ends without kleene input must end in node
     );
   });
   // To find dependencies we assume the worst case that a rule is parameterized
@@ -251,9 +252,15 @@ export const dependencyOrdering = (rules = []) => {
   // need to consider indirect dependencies as we are using this to build a
   // topological sorting which will take those into consideration.
   const dependencies = ({ matched, paramed }) => {
-    return new Set([].concat(...[...matched, ...withParam(paramed, '*')].map(
-      s => execute(trie, s).scopes().map(index => rules[index]),
-    )));
+    return new Set(
+      [].concat(
+        ...[...matched, ...withParam(paramed, '*')].map((s) =>
+          execute(trie, s)
+            .scopes()
+            .map((index) => rules[index]),
+        ),
+      ),
+    );
   };
   // We could also have computed this using:
   //   const dependencies = (R) => {
@@ -277,9 +284,9 @@ export const dependencyOrdering = (rules = []) => {
     // If R is on the stack (and !done.has(R)), we have a cycle...
     if (seen.has(R)) {
       const stack = [...seen]; // entries in Set are ordered by insertion order (neat)
-      const cycle = [...stack.slice(stack.indexOf(R)), R].map(r => r.pattern);
+      const cycle = [...stack.slice(stack.indexOf(R)), R].map((r) => r.pattern);
       // Throw an error with the cycle
-      const err = new Error(`Roles may not contain dependency cycles, found: '${cycle.join('\' -> \'')}'`);
+      const err = new Error(`Roles may not contain dependency cycles, found: '${cycle.join("' -> '")}'`);
       err.code = 'DependencyCycleError';
       err.cycle = cycle;
       throw err;
@@ -440,11 +447,7 @@ export const build = (rules = []) => {
   for (const { pattern, matched, paramed } of dependencyOrdering(rules)) {
     // Create node to merge in later
     const hasKleene = pattern.endsWith('*');
-    const node = new Node(
-      hasKleene ? [] : matched,
-      hasKleene ? matched : [],
-      hasKleene ? paramed : [],
-    );
+    const node = new Node(hasKleene ? [] : matched, hasKleene ? matched : [], hasKleene ? paramed : []);
 
     // For each parameterized scope granted by matching this pattern we
     // construct the trie for what they would match.
@@ -457,13 +460,15 @@ export const build = (rules = []) => {
       // Note: because we're inserting in dependency order this cannot possibly depend
       //       on another rule that haven't been inserted yet, not even itself.
       let transformed = trie;
-      if (prefix !== '') { // skip withPrefix if there is no prefix
+      if (prefix !== '') {
+        // skip withPrefix if there is no prefix
         // Note that rules on the form: 'A*<..>B' are forbidden, so we need not
         // worry about the limitations of withPrefix wrt. input on the form
         // '...*' (as this could never happen)
         transformed = withPrefix(transformed, prefix);
       }
-      if (suffix !== '') { // skip withSuffix if there is no suffix
+      if (suffix !== '') {
+        // skip withSuffix if there is no suffix
         transformed = withSuffix(transformed, suffix);
       }
       // Notice that node.merge ALWAYS creates new nodes and never references

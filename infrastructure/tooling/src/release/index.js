@@ -29,9 +29,7 @@ export class Release {
         git: new Lock(8),
       },
       target: staging ? 'target-staging-release' : 'target-release',
-      renderer: process.stdout.isTTY ?
-        new ConsoleRenderer({ elideCompleted: true }) :
-        new LogRenderer(),
+      renderer: process.stdout.isTTY ? new ConsoleRenderer({ elideCompleted: true }) : new LogRenderer(),
     });
     if (this.cmdOptions.dryRun) {
       console.log('Dry run successful.');

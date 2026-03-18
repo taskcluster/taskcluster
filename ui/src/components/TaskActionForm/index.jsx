@@ -8,7 +8,7 @@ import JsonDisplay from '../JsonDisplay';
 import ErrorPanel from '../ErrorPanel';
 import Markdown from '../Markdown';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   code: {
     maxHeight: '70vh',
     margin: 0,
@@ -68,18 +68,14 @@ export default class TaskActionForm extends Component {
                 mode="yaml"
                 lint
                 value={form}
-                onChange={value => this.props.onFormChange(value, name)}
+                onChange={(value) => this.props.onFormChange(value, name)}
               />
             </Grid>
             <Grid item lg={6} md={6} sm={12}>
               <Typography gutterBottom variant="subtitle1">
                 Schema
               </Typography>
-              <JsonDisplay
-                syntax="yaml"
-                wrapperClassName={classes.code}
-                objectContent={action.schema || {}}
-              />
+              <JsonDisplay syntax="yaml" wrapperClassName={classes.code} objectContent={action.schema || {}} />
             </Grid>
           </Grid>
         )}

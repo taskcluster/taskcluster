@@ -10,41 +10,439 @@ export default class Auth extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listClients.entry = {"args":[],"category":"Clients","method":"get","name":"listClients","output":true,"query":["prefix","continuationToken","limit"],"route":"/clients/","scopes":"auth:list-clients","stability":"stable","type":"function"}; // eslint-disable-line
-    this.client.entry = {"args":["clientId"],"category":"Clients","method":"get","name":"client","output":true,"query":[],"route":"/clients/<clientId>","scopes":"auth:get-client:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.createClient.entry = {"args":["clientId"],"category":"Clients","input":true,"method":"put","name":"createClient","output":true,"query":[],"route":"/clients/<clientId>","scopes":{"AllOf":["auth:create-client:<clientId>",{"each":"<scope>","for":"scope","in":"scopes"}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.getEntityHistory.entry = {"args":["entityType","entityId"],"category":"Audit","method":"get","name":"getEntityHistory","output":true,"query":["continuationToken","limit"],"route":"/audit/<entityType>/<entityId>","scopes":"auth:audit-history:<entityType>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listAuditHistory.entry = {"args":["clientId"],"category":"Audit","method":"get","name":"listAuditHistory","output":true,"query":["continuationToken","limit"],"route":"/clients/<clientId>/audit","scopes":"auth:client-audit-history:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.resetAccessToken.entry = {"args":["clientId"],"category":"Clients","method":"post","name":"resetAccessToken","output":true,"query":[],"route":"/clients/<clientId>/reset","scopes":"auth:reset-access-token:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.updateClient.entry = {"args":["clientId"],"category":"Clients","input":true,"method":"post","name":"updateClient","output":true,"query":[],"route":"/clients/<clientId>","scopes":{"AllOf":["auth:update-client:<clientId>",{"each":"<scope>","for":"scope","in":"scopesAdded"}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.enableClient.entry = {"args":["clientId"],"category":"Clients","method":"post","name":"enableClient","output":true,"query":[],"route":"/clients/<clientId>/enable","scopes":"auth:enable-client:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.disableClient.entry = {"args":["clientId"],"category":"Clients","method":"post","name":"disableClient","output":true,"query":[],"route":"/clients/<clientId>/disable","scopes":"auth:disable-client:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.deleteClient.entry = {"args":["clientId"],"category":"Clients","method":"delete","name":"deleteClient","query":[],"route":"/clients/<clientId>","scopes":"auth:delete-client:<clientId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listRoles.entry = {"args":[],"category":"Roles","method":"get","name":"listRoles","output":true,"query":[],"route":"/roles/","scopes":"auth:list-roles","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listRoles2.entry = {"args":[],"category":"Roles","method":"get","name":"listRoles2","output":true,"query":["continuationToken","limit"],"route":"/roles2/","scopes":"auth:list-roles","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listRoleIds.entry = {"args":[],"category":"Roles","method":"get","name":"listRoleIds","output":true,"query":["continuationToken","limit"],"route":"/roleids/","scopes":"auth:list-roles","stability":"stable","type":"function"}; // eslint-disable-line
-    this.role.entry = {"args":["roleId"],"category":"Roles","method":"get","name":"role","output":true,"query":[],"route":"/roles/<roleId>","scopes":"auth:get-role:<roleId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.createRole.entry = {"args":["roleId"],"category":"Roles","input":true,"method":"put","name":"createRole","output":true,"query":[],"route":"/roles/<roleId>","scopes":{"AllOf":["auth:create-role:<roleId>",{"each":"<scope>","for":"scope","in":"scopes"}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.updateRole.entry = {"args":["roleId"],"category":"Roles","input":true,"method":"post","name":"updateRole","output":true,"query":[],"route":"/roles/<roleId>","scopes":{"AllOf":["auth:update-role:<roleId>",{"each":"<scope>","for":"scope","in":"scopesAdded"}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.deleteRole.entry = {"args":["roleId"],"category":"Roles","method":"delete","name":"deleteRole","query":[],"route":"/roles/<roleId>","scopes":"auth:delete-role:<roleId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.expandScopes.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"expandScopes","output":true,"query":[],"route":"/scopes/expand","scopes":"auth:expand-scopes","stability":"stable","type":"function"}; // eslint-disable-line
-    this.currentScopes.entry = {"args":[],"category":"Scopes and Auth","method":"get","name":"currentScopes","output":true,"query":[],"route":"/scopes/current","scopes":"auth:current-scopes","stability":"stable","type":"function"}; // eslint-disable-line
-    this.awsS3Credentials.entry = {"args":["level","bucket","prefix"],"category":"AWS Credentials","method":"get","name":"awsS3Credentials","output":true,"query":["format"],"route":"/aws/s3/<level>/<bucket>/<prefix>","scopes":{"else":"auth:aws-s3:read-write:<bucket>/<prefix>","if":"levelIsReadOnly","then":{"AnyOf":["auth:aws-s3:read-only:<bucket>/<prefix>","auth:aws-s3:read-write:<bucket>/<prefix>"]}},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.azureAccounts.entry = {"args":[],"category":"Azure Credentials","method":"get","name":"azureAccounts","output":true,"query":[],"route":"/azure/accounts","scopes":"auth:azure-table:list-accounts","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.azureTables.entry = {"args":["account"],"category":"Azure Credentials","method":"get","name":"azureTables","output":true,"query":["continuationToken"],"route":"/azure/<account>/tables","scopes":"auth:azure-table:list-tables:<account>","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.azureTableSAS.entry = {"args":["account","table","level"],"category":"Azure Credentials","method":"get","name":"azureTableSAS","output":true,"query":[],"route":"/azure/<account>/table/<table>/<level>","scopes":{"else":"auth:azure-table:read-write:<account>/<table>","if":"levelIsReadOnly","then":{"AnyOf":["auth:azure-table:read-only:<account>/<table>","auth:azure-table:read-write:<account>/<table>"]}},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.azureContainers.entry = {"args":["account"],"category":"Azure Credentials","method":"get","name":"azureContainers","output":true,"query":["continuationToken"],"route":"/azure/<account>/containers","scopes":"auth:azure-container:list-containers:<account>","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.azureContainerSAS.entry = {"args":["account","container","level"],"category":"Azure Credentials","method":"get","name":"azureContainerSAS","output":true,"query":[],"route":"/azure/<account>/containers/<container>/<level>","scopes":{"else":"auth:azure-container:read-write:<account>/<container>","if":"levelIsReadOnly","then":{"AnyOf":["auth:azure-container:read-only:<account>/<container>","auth:azure-container:read-write:<account>/<container>"]}},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.sentryDSN.entry = {"args":["project"],"category":"Sentry Credentials","method":"get","name":"sentryDSN","output":true,"query":[],"route":"/sentry/<project>/dsn","scopes":"auth:sentry:<project>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.websocktunnelToken.entry = {"args":["wstAudience","wstClient"],"category":"Websocktunnel Credentials","method":"get","name":"websocktunnelToken","output":true,"query":[],"route":"/websocktunnel/<wstAudience>/<wstClient>","scopes":"auth:websocktunnel-token:<wstAudience>/<wstClient>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.gcpCredentials.entry = {"args":["projectId","serviceAccount"],"category":"GCP Credentials","method":"get","name":"gcpCredentials","output":true,"query":[],"route":"/gcp/credentials/<projectId>/<serviceAccount>","scopes":"auth:gcp:access-token:<projectId>/<serviceAccount>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.authenticateHawk.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"authenticateHawk","output":true,"query":[],"route":"/authenticate-hawk","stability":"stable","type":"function"}; // eslint-disable-line
-    this.testAuthenticate.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"testAuthenticate","output":true,"query":[],"route":"/test-authenticate","stability":"stable","type":"function"}; // eslint-disable-line
-    this.testAuthenticateGet.entry = {"args":[],"category":"Scopes and Auth","method":"get","name":"testAuthenticateGet","output":true,"query":[],"route":"/test-authenticate-get/","stability":"stable","type":"function"}; // eslint-disable-line
-    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'ping',
+      query: [],
+      route: '/ping',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.lbheartbeat.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'lbheartbeat',
+      query: [],
+      route: '/__lbheartbeat__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.version.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'version',
+      query: [],
+      route: '/__version__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listClients.entry = {
+      args: [],
+      category: 'Clients',
+      method: 'get',
+      name: 'listClients',
+      output: true,
+      query: ['prefix', 'continuationToken', 'limit'],
+      route: '/clients/',
+      scopes: 'auth:list-clients',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.client.entry = {
+      args: ['clientId'],
+      category: 'Clients',
+      method: 'get',
+      name: 'client',
+      output: true,
+      query: [],
+      route: '/clients/<clientId>',
+      scopes: 'auth:get-client:<clientId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.createClient.entry = {
+      args: ['clientId'],
+      category: 'Clients',
+      input: true,
+      method: 'put',
+      name: 'createClient',
+      output: true,
+      query: [],
+      route: '/clients/<clientId>',
+      scopes: { AllOf: ['auth:create-client:<clientId>', { each: '<scope>', for: 'scope', in: 'scopes' }] },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.getEntityHistory.entry = {
+      args: ['entityType', 'entityId'],
+      category: 'Audit',
+      method: 'get',
+      name: 'getEntityHistory',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/audit/<entityType>/<entityId>',
+      scopes: 'auth:audit-history:<entityType>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listAuditHistory.entry = {
+      args: ['clientId'],
+      category: 'Audit',
+      method: 'get',
+      name: 'listAuditHistory',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/clients/<clientId>/audit',
+      scopes: 'auth:client-audit-history:<clientId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.resetAccessToken.entry = {
+      args: ['clientId'],
+      category: 'Clients',
+      method: 'post',
+      name: 'resetAccessToken',
+      output: true,
+      query: [],
+      route: '/clients/<clientId>/reset',
+      scopes: 'auth:reset-access-token:<clientId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.updateClient.entry = {
+      args: ['clientId'],
+      category: 'Clients',
+      input: true,
+      method: 'post',
+      name: 'updateClient',
+      output: true,
+      query: [],
+      route: '/clients/<clientId>',
+      scopes: { AllOf: ['auth:update-client:<clientId>', { each: '<scope>', for: 'scope', in: 'scopesAdded' }] },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.enableClient.entry = {
+      args: ['clientId'],
+      category: 'Clients',
+      method: 'post',
+      name: 'enableClient',
+      output: true,
+      query: [],
+      route: '/clients/<clientId>/enable',
+      scopes: 'auth:enable-client:<clientId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.disableClient.entry = {
+      args: ['clientId'],
+      category: 'Clients',
+      method: 'post',
+      name: 'disableClient',
+      output: true,
+      query: [],
+      route: '/clients/<clientId>/disable',
+      scopes: 'auth:disable-client:<clientId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.deleteClient.entry = {
+      args: ['clientId'],
+      category: 'Clients',
+      method: 'delete',
+      name: 'deleteClient',
+      query: [],
+      route: '/clients/<clientId>',
+      scopes: 'auth:delete-client:<clientId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listRoles.entry = {
+      args: [],
+      category: 'Roles',
+      method: 'get',
+      name: 'listRoles',
+      output: true,
+      query: [],
+      route: '/roles/',
+      scopes: 'auth:list-roles',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listRoles2.entry = {
+      args: [],
+      category: 'Roles',
+      method: 'get',
+      name: 'listRoles2',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/roles2/',
+      scopes: 'auth:list-roles',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listRoleIds.entry = {
+      args: [],
+      category: 'Roles',
+      method: 'get',
+      name: 'listRoleIds',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/roleids/',
+      scopes: 'auth:list-roles',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.role.entry = {
+      args: ['roleId'],
+      category: 'Roles',
+      method: 'get',
+      name: 'role',
+      output: true,
+      query: [],
+      route: '/roles/<roleId>',
+      scopes: 'auth:get-role:<roleId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.createRole.entry = {
+      args: ['roleId'],
+      category: 'Roles',
+      input: true,
+      method: 'put',
+      name: 'createRole',
+      output: true,
+      query: [],
+      route: '/roles/<roleId>',
+      scopes: { AllOf: ['auth:create-role:<roleId>', { each: '<scope>', for: 'scope', in: 'scopes' }] },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.updateRole.entry = {
+      args: ['roleId'],
+      category: 'Roles',
+      input: true,
+      method: 'post',
+      name: 'updateRole',
+      output: true,
+      query: [],
+      route: '/roles/<roleId>',
+      scopes: { AllOf: ['auth:update-role:<roleId>', { each: '<scope>', for: 'scope', in: 'scopesAdded' }] },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.deleteRole.entry = {
+      args: ['roleId'],
+      category: 'Roles',
+      method: 'delete',
+      name: 'deleteRole',
+      query: [],
+      route: '/roles/<roleId>',
+      scopes: 'auth:delete-role:<roleId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.expandScopes.entry = {
+      args: [],
+      category: 'Scopes and Auth',
+      input: true,
+      method: 'post',
+      name: 'expandScopes',
+      output: true,
+      query: [],
+      route: '/scopes/expand',
+      scopes: 'auth:expand-scopes',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.currentScopes.entry = {
+      args: [],
+      category: 'Scopes and Auth',
+      method: 'get',
+      name: 'currentScopes',
+      output: true,
+      query: [],
+      route: '/scopes/current',
+      scopes: 'auth:current-scopes',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.awsS3Credentials.entry = {
+      args: ['level', 'bucket', 'prefix'],
+      category: 'AWS Credentials',
+      method: 'get',
+      name: 'awsS3Credentials',
+      output: true,
+      query: ['format'],
+      route: '/aws/s3/<level>/<bucket>/<prefix>',
+      scopes: {
+        else: 'auth:aws-s3:read-write:<bucket>/<prefix>',
+        if: 'levelIsReadOnly',
+        then: { AnyOf: ['auth:aws-s3:read-only:<bucket>/<prefix>', 'auth:aws-s3:read-write:<bucket>/<prefix>'] },
+      },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.azureAccounts.entry = {
+      args: [],
+      category: 'Azure Credentials',
+      method: 'get',
+      name: 'azureAccounts',
+      output: true,
+      query: [],
+      route: '/azure/accounts',
+      scopes: 'auth:azure-table:list-accounts',
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.azureTables.entry = {
+      args: ['account'],
+      category: 'Azure Credentials',
+      method: 'get',
+      name: 'azureTables',
+      output: true,
+      query: ['continuationToken'],
+      route: '/azure/<account>/tables',
+      scopes: 'auth:azure-table:list-tables:<account>',
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.azureTableSAS.entry = {
+      args: ['account', 'table', 'level'],
+      category: 'Azure Credentials',
+      method: 'get',
+      name: 'azureTableSAS',
+      output: true,
+      query: [],
+      route: '/azure/<account>/table/<table>/<level>',
+      scopes: {
+        else: 'auth:azure-table:read-write:<account>/<table>',
+        if: 'levelIsReadOnly',
+        then: {
+          AnyOf: ['auth:azure-table:read-only:<account>/<table>', 'auth:azure-table:read-write:<account>/<table>'],
+        },
+      },
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.azureContainers.entry = {
+      args: ['account'],
+      category: 'Azure Credentials',
+      method: 'get',
+      name: 'azureContainers',
+      output: true,
+      query: ['continuationToken'],
+      route: '/azure/<account>/containers',
+      scopes: 'auth:azure-container:list-containers:<account>',
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.azureContainerSAS.entry = {
+      args: ['account', 'container', 'level'],
+      category: 'Azure Credentials',
+      method: 'get',
+      name: 'azureContainerSAS',
+      output: true,
+      query: [],
+      route: '/azure/<account>/containers/<container>/<level>',
+      scopes: {
+        else: 'auth:azure-container:read-write:<account>/<container>',
+        if: 'levelIsReadOnly',
+        then: {
+          AnyOf: [
+            'auth:azure-container:read-only:<account>/<container>',
+            'auth:azure-container:read-write:<account>/<container>',
+          ],
+        },
+      },
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.sentryDSN.entry = {
+      args: ['project'],
+      category: 'Sentry Credentials',
+      method: 'get',
+      name: 'sentryDSN',
+      output: true,
+      query: [],
+      route: '/sentry/<project>/dsn',
+      scopes: 'auth:sentry:<project>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.websocktunnelToken.entry = {
+      args: ['wstAudience', 'wstClient'],
+      category: 'Websocktunnel Credentials',
+      method: 'get',
+      name: 'websocktunnelToken',
+      output: true,
+      query: [],
+      route: '/websocktunnel/<wstAudience>/<wstClient>',
+      scopes: 'auth:websocktunnel-token:<wstAudience>/<wstClient>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.gcpCredentials.entry = {
+      args: ['projectId', 'serviceAccount'],
+      category: 'GCP Credentials',
+      method: 'get',
+      name: 'gcpCredentials',
+      output: true,
+      query: [],
+      route: '/gcp/credentials/<projectId>/<serviceAccount>',
+      scopes: 'auth:gcp:access-token:<projectId>/<serviceAccount>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.authenticateHawk.entry = {
+      args: [],
+      category: 'Scopes and Auth',
+      input: true,
+      method: 'post',
+      name: 'authenticateHawk',
+      output: true,
+      query: [],
+      route: '/authenticate-hawk',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.testAuthenticate.entry = {
+      args: [],
+      category: 'Scopes and Auth',
+      input: true,
+      method: 'post',
+      name: 'testAuthenticate',
+      output: true,
+      query: [],
+      route: '/test-authenticate',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.testAuthenticateGet.entry = {
+      args: [],
+      category: 'Scopes and Auth',
+      method: 'get',
+      name: 'testAuthenticateGet',
+      output: true,
+      query: [],
+      route: '/test-authenticate-get/',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.heartbeat.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'heartbeat',
+      query: [],
+      route: '/__heartbeat__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

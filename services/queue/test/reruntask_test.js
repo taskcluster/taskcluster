@@ -6,7 +6,7 @@ import taskcluster from '@taskcluster/client';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -41,12 +41,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     taskId = slugid.v4();
   });
 
-  const createTask = async taskDef => {
+  const createTask = async (taskDef) => {
     debug('### Creating task');
     await helper.queue.createTask(taskId, taskDef);
     helper.assertPulseMessage('task-defined');
     if (!taskDef.dependencies) {
-      helper.assertPulseMessage('task-pending', m => m.payload.runId === 0);
+      helper.assertPulseMessage('task-pending', (m) => m.payload.runId === 0);
     }
   };
 
@@ -69,7 +69,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.rerunTask(taskId);
 
     debug('### Waiting for pending message repated for run 0');
-    helper.assertPulseMessage('task-pending', m => m.payload.runId === 0);
+    helper.assertPulseMessage('task-pending', (m) => m.payload.runId === 0);
   });
 
   test('rerun a pending task (does nothing - is idempotent)', async () => {
@@ -80,7 +80,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.rerunTask(taskId);
 
     debug('### Waiting for pending message repated for run 0');
-    helper.assertPulseMessage('task-pending', m => m.payload.runId === 0);
+    helper.assertPulseMessage('task-pending', (m) => m.payload.runId === 0);
   });
 
   test('rerun a completed task (twice - is idempotent)', async () => {
@@ -96,11 +96,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.rerunTask(taskId);
 
     debug('### Waiting for pending message again');
-    helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
+    helper.assertPulseMessage('task-pending', (m) => m.payload.runId === 1);
 
     debug('### Requesting task rerun (again - idempotent)');
     await helper.queue.rerunTask(taskId);
-    helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
+    helper.assertPulseMessage('task-pending', (m) => m.payload.runId === 1);
   });
 
   test('rerun a failed task', async () => {
@@ -116,7 +116,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.rerunTask(taskId);
 
     debug('### Waiting for pending message for run 1');
-    helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
+    helper.assertPulseMessage('task-pending', (m) => m.payload.runId === 1);
   });
 
   test('rerun an exception task', async () => {
@@ -132,7 +132,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.rerunTask(taskId);
 
     debug('### Waiting for pending message for run 1');
-    helper.assertPulseMessage('task-pending', m => m.payload.runId === 1);
+    helper.assertPulseMessage('task-pending', (m) => m.payload.runId === 1);
   });
 
   test('rerun with project scopes', async () => {
@@ -152,7 +152,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('queue:rerun-task-in-project:WRONG-PROJECT');
     await assert.rejects(
       () => helper.queue.rerunTask(taskId),
-      err => err.statusCode === 403);
+      (err) => err.statusCode === 403,
+    );
 
     helper.clearPulseMessages();
   });
@@ -161,10 +162,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const taskId = slugid.v4();
     await helper.queue.rerunTask(taskId).then(
       () => assert(0, 'expected an error'),
-      err => {
+      (err) => {
         if (err.code !== 'ResourceNotFound') {
           throw err;
         }
-      });
+      },
+    );
   });
 });

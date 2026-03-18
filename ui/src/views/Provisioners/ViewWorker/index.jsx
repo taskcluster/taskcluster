@@ -29,7 +29,7 @@ import { joinWorkerPoolId } from '../../../utils/workerPool';
 @withApollo
 @withAuth
 @graphql(workerQuery, {
-  skip: props => !props.match.params.provisionerId,
+  skip: (props) => !props.match.params.provisionerId,
   options: ({ match: { params } }) => ({
     fetchPolicy: 'network-only',
     errorPolicy: 'all',
@@ -39,7 +39,7 @@ import { joinWorkerPoolId } from '../../../utils/workerPool';
     },
   }),
 })
-@withStyles(theme => ({
+@withStyles((theme) => ({
   link: {
     ...theme.mixins.link,
   },
@@ -56,22 +56,21 @@ export default class ViewWorker extends Component {
       terminateDialogTitle: '',
       terminateDialogBody: '',
       terminateDialogConfirmText: '',
-      quarantineUntilInput:
-        props.worker?.quarantineUntil
-          ? parseISO(props.worker.quarantineUntil)
-          : addYears(new Date(), 1000),
+      quarantineUntilInput: props.worker?.quarantineUntil
+        ? parseISO(props.worker.quarantineUntil)
+        : addYears(new Date(), 1000),
       quarantineInfo: '',
     };
   }
 
-  handleActionDialogOpen = selectedAction => {
+  handleActionDialogOpen = (selectedAction) => {
     this.setState({
       dialogOpen: true,
       selectedAction,
     });
   };
 
-  handleActionError = e => {
+  handleActionError = (e) => {
     this.setState({ dialogError: e, actionLoading: false });
   };
 
@@ -97,12 +96,7 @@ export default class ViewWorker extends Component {
   };
 
   handleQuarantineDialogSubmit = async () => {
-    const {
-      provisionerId,
-      workerType,
-      workerGroup,
-      workerId,
-    } = this.props.match.params;
+    const { provisionerId, workerType, workerGroup, workerId } = this.props.match.params;
 
     this.setState({ actionLoading: true, dialogError: null });
 
@@ -114,9 +108,7 @@ export default class ViewWorker extends Component {
         workerGroup,
         workerId,
         payload: {
-          quarantineUntil: new Date(
-            this.state.quarantineUntilInput
-          ).toISOString(),
+          quarantineUntil: new Date(this.state.quarantineUntilInput).toISOString(),
           quarantineInfo: this.state.quarantineInfo,
         },
       },
@@ -161,12 +153,8 @@ export default class ViewWorker extends Component {
       return error;
     }
 
-    return error.graphQLErrors.find(error => {
-      return !(
-        error.statusCode === 404 &&
-        (error.path.includes('recentTasks') ||
-          error.path.includes('latestTasks'))
-      );
+    return error.graphQLErrors.find((error) => {
+      return !(error.statusCode === 404 && (error.path.includes('recentTasks') || error.path.includes('latestTasks')));
     });
   }
 
@@ -200,7 +188,7 @@ export default class ViewWorker extends Component {
     }
   };
 
-  handleTerminateDialogActionError = terminateDialogError => {
+  handleTerminateDialogActionError = (terminateDialogError) => {
     this.setState({
       terminateDialogError,
     });
@@ -231,8 +219,7 @@ export default class ViewWorker extends Component {
             {params.provisionerId}
           </Typography>
         </Link>
-        <Link
-          to={`/provisioners/${params.provisionerId}/worker-types/${params.workerType}`}>
+        <Link to={`/provisioners/${params.provisionerId}/worker-types/${params.workerType}`}>
           <Typography variant="body2" className={classes.link}>
             {params.workerType}
           </Typography>
@@ -273,16 +260,8 @@ export default class ViewWorker extends Component {
             <SpeedDialAction
               tooltipOpen
               requiresAuth
-              icon={
-                isAfter(worker.quarantineUntil || new Date(), new Date()) ? (
-                  <HomeLockOpenIcon />
-                ) : (
-                  <HomeLockIcon />
-                )
-              }
-              tooltipTitle={
-                worker.quarantineUntil ? 'Update Quarantine' : 'Quarantine'
-              }
+              icon={isAfter(worker.quarantineUntil || new Date(), new Date()) ? <HomeLockOpenIcon /> : <HomeLockIcon />}
+              tooltipTitle={worker.quarantineUntil ? 'Update Quarantine' : 'Quarantine'}
               onClick={this.handleDialogOpen}
               FabProps={{
                 disabled: actionLoading,
@@ -299,19 +278,16 @@ export default class ViewWorker extends Component {
                 this.handleTerminateDialogActionOpen(
                   terminateWorker.workerId,
                   terminateWorker.workerGroup,
-                  terminateWorker.workerPoolId
+                  terminateWorker.workerPoolId,
                 )
               }
               FabProps={{
-                disabled: terminateDisabled(
-                  terminateWorker.state,
-                  terminateWorker.providerId
-                ),
+                disabled: terminateDisabled(terminateWorker.state, terminateWorker.providerId),
               }}
             />
           )}
           {includeQueueActions &&
-            worker.actions.map(action => (
+            worker.actions.map((action) => (
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen
@@ -345,10 +321,8 @@ export default class ViewWorker extends Component {
               body={
                 <Fragment>
                   <Fragment>
-                    Quarantining a worker allows the machine to remain alive but
-                    not accept jobs. Note that a quarantine can be lifted by
-                    setting &quot;Quarantine Until&quot; to the present time or
-                    somewhere in the past.
+                    Quarantining a worker allows the machine to remain alive but not accept jobs. Note that a quarantine
+                    can be lifted by setting &quot;Quarantine Until&quot; to the present time or somewhere in the past.
                   </Fragment>
                   <br />
                   <br />
@@ -437,8 +411,7 @@ export default class ViewWorker extends Component {
       data: { loading, error, worker, WorkerManagerWorker },
     } = this.props;
     // we hide graphql errors if we have any worker data
-    const graphqlError =
-      !WorkerManagerWorker && !worker && this.getError(error);
+    const graphqlError = !WorkerManagerWorker && !worker && this.getError(error);
 
     return (
       <Dashboard title="Worker">

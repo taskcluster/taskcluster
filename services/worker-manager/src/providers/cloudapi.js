@@ -46,7 +46,6 @@ const defaultMetrics = () => ({
  * retries and status codes. Call `.resetMetrics()` to reset collected stats between runs if needed.
  */
 export class CloudAPI {
-
   constructor({
     types,
     apiRateLimits,
@@ -66,7 +65,7 @@ export class CloudAPI {
     this.collectMetrics = collectMetrics;
     this.metrics = defaultMetrics();
     for (const type of types) {
-      const { interval, intervalCap } = (apiRateLimits[type] || {});
+      const { interval, intervalCap } = apiRateLimits[type] || {};
       this.queues[type] = new PQueue({
         interval: interval || intervalDefault,
         intervalCap: intervalCap || intervalCapDefault,
@@ -92,13 +91,16 @@ export class CloudAPI {
       statusCode = err.statusCode || err.code || 500;
 
       if (!queue.isPaused) {
-        this.monitor.log.cloudApiPaused({
-          providerId: this.providerId,
-          queueName: type,
-          reason: reason || 'unknown',
-          queueSize: queue.size,
-          duration: backoff,
-        }, { level: level || 'notice' });
+        this.monitor.log.cloudApiPaused(
+          {
+            providerId: this.providerId,
+            queueName: type,
+            reason: reason || 'unknown',
+            queueSize: queue.size,
+            duration: backoff,
+          },
+          { level: level || 'notice' },
+        );
         queue.pause();
         setTimeout(() => {
           this.monitor.log.cloudApiResumed({

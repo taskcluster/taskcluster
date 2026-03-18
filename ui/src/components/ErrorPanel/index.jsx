@@ -5,7 +5,7 @@ import { bool, oneOfType, string, object } from 'prop-types';
 import MuiErrorPanel from './MuiErrorPanel';
 import { CONTENT_MAX_WIDTH } from '../../utils/constants';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   error: {
     '& svg': {
       fill: theme.palette.common.white,
@@ -26,8 +26,7 @@ import { CONTENT_MAX_WIDTH } from '../../utils/constants';
     maxHeight: '85vh',
   },
   fixedDocs: {
-    width: `calc(100% - ${2 * theme.docsDrawerWidth}px - ${2 *
-      theme.spacing(3)}px)`,
+    width: `calc(100% - ${2 * theme.docsDrawerWidth}px - ${2 * theme.spacing(3)}px)`,
     [theme.breakpoints.down('md')]: {
       width: `calc(100% - ${theme.docsDrawerWidth}px - ${theme.spacing(6)}px)`,
     },
@@ -87,14 +86,7 @@ export default class ErrorPanel extends Component {
   };
 
   render() {
-    const {
-      classes,
-      className,
-      fixed,
-      fixedDocs,
-      error: _,
-      ...props
-    } = this.props;
+    const { classes, className, fixed, fixedDocs, error: _, ...props } = this.props;
     const { error } = this.state;
     const hasWarning = Boolean(props.warning);
     const message = [];
@@ -108,18 +100,16 @@ export default class ErrorPanel extends Component {
       const errors = error.graphQLErrors;
 
       // Log extensions for all errors received
-      errors.forEach(err => {
+      errors.forEach((err) => {
         if (err?.extensions) {
         }
       });
 
       // construct a markdown summary of all of the errors (at most 3)
       if (errors.length > 1) {
-        message.push(
-          `${errors.length} errors occurred fetching data for this page:`
-        );
+        message.push(`${errors.length} errors occurred fetching data for this page:`);
 
-        errors.slice(0, 3).forEach(err => {
+        errors.slice(0, 3).forEach((err) => {
           message.push(`* ${err.message}`);
         });
 
@@ -132,10 +122,7 @@ export default class ErrorPanel extends Component {
     } else if (error.networkError) {
       // special-case networkError as well, although note that this still shows
       // JSON errors when the response is not JSON, regardless of content-type.
-      message.push(
-        `Network Error (${error.networkError.statusCode ||
-          'no status code'}): ${error.networkError}`
-      );
+      message.push(`Network Error (${error.networkError.statusCode || 'no status code'}): ${error.networkError}`);
     } else if (error.message) {
       message.push(error.message);
     } else {

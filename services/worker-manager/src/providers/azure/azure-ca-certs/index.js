@@ -18,5 +18,5 @@ export function loadCertificates() {
     return { certificate, root, url, filename };
   });
 
-  return certificateContents.filter(cert => !!cert);
+  return certificateContents.filter((cert) => !!cert);
 }

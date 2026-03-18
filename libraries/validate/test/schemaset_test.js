@@ -19,10 +19,7 @@ suite(testing.suiteName(), () => {
     const schemas = makeSchemaSet().abstractSchemas();
     assert.equal(_.keys(schemas).length, 9);
     assert(_.includes(_.keys(schemas), 'v1/default-schema.json'));
-    assert.equal(
-      schemas['v1/default-schema.json'].$id,
-      '/schemas/whatever/v1/default-schema.json#',
-    );
+    assert.equal(schemas['v1/default-schema.json'].$id, '/schemas/whatever/v1/default-schema.json#');
   });
 
   test('absolute schemas available', () => {
@@ -41,7 +38,7 @@ suite(testing.suiteName(), () => {
         folder: 'test/invalid-schemas/schema-with-id',
         serviceName: 'whatever',
       });
-      assert(false, 'Bad schema should\'ve thrown an exception!');
+      assert(false, "Bad schema should've thrown an exception!");
     } catch (e) {
       if (!e.toString().match(/attempts to set own id/)) {
         throw e;

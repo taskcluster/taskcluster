@@ -33,7 +33,7 @@ export default class PulseEngine {
 
     this.reset();
     // note that this may callback right away, so do it last-thing in the constructor.
-    this.client.onConnected(conn => this.connected(conn));
+    this.client.onConnected((conn) => this.connected(conn));
   }
 
   reset() {
@@ -42,7 +42,7 @@ export default class PulseEngine {
 
   connected(connection) {
     // reset everything and reconcile
-    Array.from(this.subscriptions.values()).forEach(sub => sub.reset());
+    Array.from(this.subscriptions.values()).forEach((sub) => sub.reset());
     this.reset();
     this.connection = connection;
     this.reconcileSubscriptions();
@@ -78,7 +78,7 @@ export default class PulseEngine {
 
   reconcileSubscriptions() {
     // handle async errors from reconciliation by reporting them
-    this.innerReconcileSubscriptions().catch(err => {
+    this.innerReconcileSubscriptions().catch((err) => {
       // if there's a connection active, signal that it has failed..
       if (this.connection) {
         this.connection.failed();
@@ -99,16 +99,12 @@ export default class PulseEngine {
       return;
     }
 
-    await Promise.all(
-      Array.from(this.subscriptions.values()).map(sub =>
-        sub.reconcile(client, connection),
-      ),
-    );
+    await Promise.all(Array.from(this.subscriptions.values()).map((sub) => sub.reconcile(client, connection)));
 
     // clean up any garbage
     Array.from(this.subscriptions.values())
-      .filter(sub => sub.garbage)
-      .forEach(sub => this.subscriptions.delete(sub.subscriptionId));
+      .filter((sub) => sub.garbage)
+      .forEach((sub) => this.subscriptions.delete(sub.subscriptionId));
   }
 
   /**
@@ -116,10 +112,7 @@ export default class PulseEngine {
    * {payload, exchange, routingKey, redelivered, cc}
    */
   messageIterator(eventName, subscriptions) {
-    return new MessageIterator(
-      new PulseIterator(this, subscriptions),
-      eventName,
-    );
+    return new MessageIterator(new PulseIterator(this, subscriptions), eventName);
   }
 
   /**

@@ -1,10 +1,9 @@
-
 import { withStyles } from '@material-ui/core/styles';
 import MuiSpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import { string, bool } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
 
-const styles = withStyles(theme => ({
+const styles = withStyles((theme) => ({
   icon: {
     ...theme.mixins.secondaryIcon,
   },
@@ -24,16 +23,7 @@ const styles = withStyles(theme => ({
  * A Material UI SpeedDialAction augmented with application specific props.
  */
 function SpeedDialAction(props) {
-  const {
-    classes,
-    requiresAuth,
-    FabProps,
-    user,
-    onAuthorize,
-    onUnauthorize,
-    tooltipTitle,
-    ...rest
-  } = props;
+  const { classes, requiresAuth, FabProps, user, onAuthorize, onUnauthorize, tooltipTitle, ...rest } = props;
   const other = {};
   const lackingAuth = requiresAuth && !user;
   const fabProps = {
@@ -42,9 +32,7 @@ function SpeedDialAction(props) {
   };
   const title = tooltipTitle
     ? {
-        tooltipTitle: lackingAuth
-          ? `${tooltipTitle} (Auth Required)`
-          : tooltipTitle,
+        tooltipTitle: lackingAuth ? `${tooltipTitle} (Auth Required)` : tooltipTitle,
       }
     : null;
 
@@ -62,9 +50,7 @@ function SpeedDialAction(props) {
     <MuiSpeedDialAction
       classes={{
         fab: classes.icon,
-        staticTooltipLabel: fabProps.disabled
-          ? classes.staticTooltipLabelDisabled
-          : classes.staticTooltipLabel,
+        staticTooltipLabel: fabProps.disabled ? classes.staticTooltipLabelDisabled : classes.staticTooltipLabel,
       }}
       FabProps={fabProps}
       {...rest}

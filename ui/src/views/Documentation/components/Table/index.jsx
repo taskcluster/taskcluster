@@ -1,8 +1,7 @@
-
 import { withStyles } from '@material-ui/core/styles';
 import { THEME } from '../../../../utils/constants';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     width: '100%',
     overflow: 'auto',
@@ -34,11 +33,7 @@ const styles = theme => ({
       color: theme.palette.text.primary,
       fontSize: theme.typography.pxToRem(13),
       fontWeight: theme.typography.fontWeightRegular,
-      borderBottom: `1px solid ${
-        theme.palette.type === 'dark'
-          ? THEME.TEN_PERCENT_WHITE
-          : THEME.TEN_PERCENT_BLACK
-      }`,
+      borderBottom: `1px solid ${theme.palette.type === 'dark' ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK}`,
       whiteSpace: 'nowrap',
       padding: '4px 56px 4px 24px',
       textAlign: 'left',

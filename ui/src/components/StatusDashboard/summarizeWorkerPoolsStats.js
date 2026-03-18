@@ -6,10 +6,7 @@ export default (wmStats, link = '/worker-manager/errors') => {
   let last24hours = 0;
 
   if (stats?.hourly) {
-    last24hours = Object.values(stats.hourly).reduce(
-      (acc, cur) => acc + cur,
-      0
-    );
+    last24hours = Object.values(stats.hourly).reduce((acc, cur) => acc + cur, 0);
   }
 
   return [

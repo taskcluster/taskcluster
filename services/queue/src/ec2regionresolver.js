@@ -15,7 +15,7 @@ const LOCAL_IP_RANGES = path.join(__dirname, 'ip-ranges.json');
 class EC2RegionResolver {
   /** Construct EC2RegionResolver given a list of regions we care about */
   constructor(regions, monitor) {
-    assert(regions instanceof Array, 'regions must be an array');
+    assert(Array.isArray(regions), 'regions must be an array');
     this.regions = regions;
     this.monitor = monitor;
     this.ipRanges = [];
@@ -34,7 +34,7 @@ class EC2RegionResolver {
     this._loadIpRanges();
 
     // then begin trying to load the latest from AWS
-    this._fetchPromise = new Promise(resolve => {
+    this._fetchPromise = new Promise((resolve) => {
       const tryLoad = async () => {
         if (!this._running) {
           return resolve();
@@ -87,16 +87,17 @@ class EC2RegionResolver {
 
   _setIpRanges(body) {
     // Add ip-ranges to regions
-    this.ipRanges = body.prefixes.filter(prefix => {
-      // Filter ip-ranges we're interested in
-      return prefix.service === 'EC2' &&
-             this.regions.indexOf(prefix.region) !== -1;
-    }).map(prefix => {
-      return {
-        range: new Netmask(prefix.ip_prefix),
-        region: prefix.region,
-      };
-    });
+    this.ipRanges = body.prefixes
+      .filter((prefix) => {
+        // Filter ip-ranges we're interested in
+        return prefix.service === 'EC2' && this.regions.indexOf(prefix.region) !== -1;
+      })
+      .map((prefix) => {
+        return {
+          range: new Netmask(prefix.ip_prefix),
+          region: prefix.region,
+        };
+      });
   }
 
   /** Get region that request originates from, or null if none */

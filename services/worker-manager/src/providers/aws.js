@@ -23,12 +23,15 @@ export class AwsProvider extends Provider {
     super(conf);
     this.configSchema = 'config-aws';
     this.ec2iid_RSA_key = fs.readFileSync(path.resolve(__dirname, 'aws-keys/RSA-key-forSignature')).toString();
-    this.providerConfig = Object.assign({}, {
-      intervalCapDefault: 150,
-      intervalDefault: 10 * 1000,
-      _backoffDelay: 2000,
-    }, conf.providerConfig);
-
+    this.providerConfig = Object.assign(
+      {},
+      {
+        intervalCapDefault: 150,
+        intervalDefault: 10 * 1000,
+        _backoffDelay: 2000,
+      },
+      conf.providerConfig,
+    );
   }
 
   async setup() {
@@ -41,7 +44,7 @@ export class AwsProvider extends Provider {
 
     const requestTypes = {};
     this.ec2s = {};
-    regions.forEach(r => {
+    regions.forEach((r) => {
       this.ec2s[r.RegionName] = new EC2Client({
         region: r.RegionName,
         credentials: this.providerConfig.credentials,
@@ -65,7 +68,11 @@ export class AwsProvider extends Provider {
       providerId: this.providerId,
       errorHandler: ({ err, tries }) => {
         if (err.code === 'RequestLimitExceeded') {
-          return { backoff: this.providerConfig._backoffDelay * 2 ** tries, reason: 'RequestLimitExceeded', level: 'warning' };
+          return {
+            backoff: this.providerConfig._backoffDelay * 2 ** tries,
+            reason: 'RequestLimitExceeded',
+            level: 'warning',
+          };
         }
         throw err;
       },
@@ -83,8 +90,7 @@ export class AwsProvider extends Provider {
     const workerInfoByWorkerGroup = workerPoolStats?.forProvisionByWorkerGroup() ?? new Map();
 
     if (!workerPool.providerData[this.providerId]) {
-      await this.db.fns.update_worker_pool_provider_data(
-        workerPool.workerPoolId, this.providerId, {});
+      await this.db.fns.update_worker_pool_provider_data(workerPool.workerPoolId, this.providerId, {});
     }
 
     const toSpawn = await this.estimator.simple({
@@ -101,9 +107,9 @@ export class AwsProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {
-      terminateAfter, reregistrationTimeout, queueInactivityTimeout,
-    } = Provider.interpretLifecycle(workerPool.config);
+    const { terminateAfter, reregistrationTimeout, queueInactivityTimeout } = Provider.interpretLifecycle(
+      workerPool.config,
+    );
 
     const cfgs = await this.selectLaunchConfigsForSpawn({
       workerPool,
@@ -117,15 +123,16 @@ export class AwsProvider extends Provider {
     let toSpawnCounter = toSpawn;
     for await (const lc of shuffledConfigs) {
       const config = lc.configuration;
-      if (toSpawnCounter <= 0) { break; // eslint-disable-line
-}
+      if (toSpawnCounter <= 0) {
+        break; // eslint-disable-line
+      }
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
       const TagSpecifications = config.launchConfig.TagSpecifications || [];
       let instanceTags = [];
       let volumeTags = [];
       const otherTagSpecs = [];
-      TagSpecifications.forEach(ts => {
+      TagSpecifications.forEach((ts) => {
         if (ts.ResourceType === 'instance') {
           instanceTags = instanceTags.concat(ts.Tags);
         } else if (ts.ResourceType === 'volume') {
@@ -135,16 +142,18 @@ export class AwsProvider extends Provider {
         }
       });
 
-      const userData = Buffer.from(JSON.stringify({
-        ...config.additionalUserData,
-        rootUrl: this.rootUrl,
-        workerPoolId,
-        providerId: this.providerId,
-        workerGroup: config.region,
-        launchConfigId: lc.launchConfigId,
-        // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
-        workerConfig: config.workerConfig || {},
-      }));
+      const userData = Buffer.from(
+        JSON.stringify({
+          ...config.additionalUserData,
+          rootUrl: this.rootUrl,
+          workerPoolId,
+          providerId: this.providerId,
+          workerGroup: config.region,
+          launchConfigId: lc.launchConfigId,
+          // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
+          workerConfig: config.workerConfig || {},
+        }),
+      );
       // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html#instancedata-add-user-data
       // The raw data should be 16KB maximum
       if (userData.length > 16384) {
@@ -164,65 +173,73 @@ export class AwsProvider extends Provider {
       const instanceCount = Math.ceil(Math.min(toSpawnCounter, toSpawnPerConfig) / capacityPerInstance);
       let spawned;
       try {
-        spawned = await this._enqueue(`${config.region}.modify`, () => this.ec2s[config.region].send(new RunInstancesCommand({
-          ...config.launchConfig,
+        spawned = await this._enqueue(`${config.region}.modify`, () =>
+          this.ec2s[config.region].send(
+            new RunInstancesCommand({
+              ...config.launchConfig,
 
-          UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
+              UserData: userData.toString('base64'), // The string needs to be base64-encoded. See the docs above
 
-          MaxCount: instanceCount,
-          MinCount: instanceCount,
-          TagSpecifications: [
-            ...otherTagSpecs,
-            {
-              ResourceType: 'instance',
-              Tags: [
-                ...instanceTags,
+              MaxCount: instanceCount,
+              MinCount: instanceCount,
+              TagSpecifications: [
+                ...otherTagSpecs,
                 {
-                  Key: 'CreatedBy',
-                  Value: `taskcluster-wm-${this.providerId}`,
-                }, {
-                  Key: 'Owner',
-                  Value: workerPool.owner,
+                  ResourceType: 'instance',
+                  Tags: [
+                    ...instanceTags,
+                    {
+                      Key: 'CreatedBy',
+                      Value: `taskcluster-wm-${this.providerId}`,
+                    },
+                    {
+                      Key: 'Owner',
+                      Value: workerPool.owner,
+                    },
+                    {
+                      Key: 'ManagedBy',
+                      Value: 'taskcluster',
+                    },
+                    {
+                      Key: 'Name',
+                      Value: `${workerPoolId}`,
+                    },
+                    {
+                      Key: 'WorkerPoolId',
+                      Value: `${workerPoolId}`,
+                    },
+                  ],
                 },
                 {
-                  Key: 'ManagedBy',
-                  Value: 'taskcluster',
+                  ResourceType: 'volume',
+                  Tags: [
+                    ...volumeTags,
+                    {
+                      Key: 'CreatedBy',
+                      Value: `taskcluster-wm-${this.providerId}`,
+                    },
+                    {
+                      Key: 'Owner',
+                      Value: workerPool.owner,
+                    },
+                    {
+                      Key: 'ManagedBy',
+                      Value: 'taskcluster',
+                    },
+                    {
+                      Key: 'Name',
+                      Value: `${workerPoolId}`,
+                    },
+                    {
+                      Key: 'WorkerPoolId',
+                      Value: `${workerPoolId}`,
+                    },
+                  ],
                 },
-                {
-                  Key: 'Name',
-                  Value: `${workerPoolId}`,
-                },
-                {
-                  Key: 'WorkerPoolId',
-                  Value: `${workerPoolId}`,
-                }],
-            },
-            {
-              ResourceType: 'volume',
-              Tags: [
-                ...volumeTags,
-                {
-                  Key: 'CreatedBy',
-                  Value: `taskcluster-wm-${this.providerId}`,
-                }, {
-                  Key: 'Owner',
-                  Value: workerPool.owner,
-                },
-                {
-                  Key: 'ManagedBy',
-                  Value: 'taskcluster',
-                },
-                {
-                  Key: 'Name',
-                  Value: `${workerPoolId}`,
-                },
-                {
-                  Key: 'WorkerPoolId',
-                  Value: `${workerPoolId}`,
-                }],
-            },
-          ],
-        })));
+              ],
+            }),
+          ),
+        );
       } catch (e) {
         return await this.reportError({
           workerPool,
@@ -239,37 +256,39 @@ export class AwsProvider extends Provider {
       // greater than toSpawnPerConfig due to rounding)
       toSpawnCounter -= instanceCount * capacityPerInstance;
 
-      await Promise.all(spawned.Instances.map(async (i) => {
-        const worker = Worker.fromApi({
-          workerPoolId,
-          providerId: this.providerId,
-          workerGroup: config.region,
-          workerId: i.InstanceId,
-          expires: taskcluster.fromNow('1 week'),
-          state: Worker.states.REQUESTED,
-          capacity: capacityPerInstance,
-          providerData: {
-            region: config.region,
-            groups: spawned.Groups,
-            amiLaunchIndex: i.AmiLaunchIndex,
-            imageId: i.ImageId,
-            instanceType: i.InstanceType,
-            architecture: i.Architecture,
-            availabilityZone: i.Placement.AvailabilityZone,
-            privateIp: i.PrivateIpAddress,
-            owner: spawned.OwnerId,
-            state: i.State.Name,
-            stateReason: i.StateReason.Message,
-            terminateAfter,
-            reregistrationTimeout,
-            queueInactivityTimeout,
-            workerConfig: config.workerConfig || {},
-          },
-          launchConfigId: lc.launchConfigId,
-        });
-        await this.onWorkerRequested({ worker, terminateAfter });
-        return worker.create(this.db);
-      }));
+      await Promise.all(
+        spawned.Instances.map(async (i) => {
+          const worker = Worker.fromApi({
+            workerPoolId,
+            providerId: this.providerId,
+            workerGroup: config.region,
+            workerId: i.InstanceId,
+            expires: taskcluster.fromNow('1 week'),
+            state: Worker.states.REQUESTED,
+            capacity: capacityPerInstance,
+            providerData: {
+              region: config.region,
+              groups: spawned.Groups,
+              amiLaunchIndex: i.AmiLaunchIndex,
+              imageId: i.ImageId,
+              instanceType: i.InstanceType,
+              architecture: i.Architecture,
+              availabilityZone: i.Placement.AvailabilityZone,
+              privateIp: i.PrivateIpAddress,
+              owner: spawned.OwnerId,
+              state: i.State.Name,
+              stateReason: i.StateReason.Message,
+              terminateAfter,
+              reregistrationTimeout,
+              queueInactivityTimeout,
+              workerConfig: config.workerConfig || {},
+            },
+            launchConfigId: lc.launchConfigId,
+          });
+          await this.onWorkerRequested({ worker, terminateAfter });
+          return worker.create(this.db);
+        }),
+      );
     }
   }
 
@@ -285,7 +304,7 @@ export class AwsProvider extends Provider {
     }
 
     const { document, signature } = workerIdentityProof;
-    if (!document || !signature || !(typeof document === "string")) {
+    if (!document || !signature || !(typeof document === 'string')) {
       throw new ApiError('Request must include both a document (string) and a signature');
     }
 
@@ -304,7 +323,7 @@ export class AwsProvider extends Provider {
 
     // mark it as running
     monitor.debug('setting state to RUNNING');
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       worker.lastModified = new Date();
       worker.providerData.terminateAfter = expires.getTime();
       worker.state = Worker.states.RUNNING;
@@ -326,11 +345,17 @@ export class AwsProvider extends Provider {
     let state;
     try {
       const region = worker.providerData.region;
-      const instanceStatuses = (await this._enqueue(`${region}.describe`, () => this.ec2s[region].send(new DescribeInstanceStatusCommand({
-        InstanceIds: [worker.workerId.toString()],
-        IncludeAllInstances: true,
-      })))).InstanceStatuses;
-      monitor.debug(`instance statuses: ${instanceStatuses.map(is => is.InstanceState.Name).join(', ')}`);
+      const instanceStatuses = (
+        await this._enqueue(`${region}.describe`, () =>
+          this.ec2s[region].send(
+            new DescribeInstanceStatusCommand({
+              InstanceIds: [worker.workerId.toString()],
+              IncludeAllInstances: true,
+            }),
+          ),
+        )
+      ).InstanceStatuses;
+      monitor.debug(`instance statuses: ${instanceStatuses.map((is) => is.InstanceState.Name).join(', ')}`);
       for (const is of instanceStatuses) {
         switch (is.InstanceState.Name) {
           case 'pending':
@@ -344,9 +369,13 @@ export class AwsProvider extends Provider {
 
           case 'terminated':
           case 'stopped':
-            await this._enqueue(`${region}.modify`, () => this.ec2s[region].send(new TerminateInstancesCommand({
-              InstanceIds: [worker.workerId.toString()],
-            })));
+            await this._enqueue(`${region}.modify`, () =>
+              this.ec2s[region].send(
+                new TerminateInstancesCommand({
+                  InstanceIds: [worker.workerId.toString()],
+                }),
+              ),
+            );
             await this.onWorkerStopped({ worker });
             state = Worker.states.STOPPED;
             break;
@@ -367,7 +396,8 @@ export class AwsProvider extends Provider {
         await this.removeWorker({ worker, reason });
       }
     } catch (e) {
-      if (![e.code, e.Code].includes('InvalidInstanceID.NotFound')) { // aws throws this error for instances that had been terminated, too
+      if (![e.code, e.Code].includes('InvalidInstanceID.NotFound')) {
+        // aws throws this error for instances that had been terminated, too
         throw e;
       }
       monitor.debug('instance status not found');
@@ -377,7 +407,7 @@ export class AwsProvider extends Provider {
 
     monitor.debug(`setting state to ${state}`);
     const now = new Date();
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       if (state !== undefined) {
         worker.state = state;
         worker.lastModified = now;
@@ -389,7 +419,7 @@ export class AwsProvider extends Provider {
   async removeWorker({ worker, reason }) {
     // trigger before state update so we can check the current state
     await this.onWorkerRemoved({ worker, reason });
-    await worker.update(this.db, w => {
+    await worker.update(this.db, (w) => {
       if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
         w.lastModified = new Date();
         w.state = Worker.states.STOPPING;
@@ -398,9 +428,13 @@ export class AwsProvider extends Provider {
     let result;
     try {
       const region = worker.providerData.region;
-      result = await this._enqueue(`${region}.modify`, () => this.ec2s[region].send(new TerminateInstancesCommand({
-        InstanceIds: [worker.workerId.toString()],
-      })));
+      result = await this._enqueue(`${region}.modify`, () =>
+        this.ec2s[region].send(
+          new TerminateInstancesCommand({
+            InstanceIds: [worker.workerId.toString()],
+          }),
+        ),
+      );
     } catch (e) {
       const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
       if (workerPool) {
@@ -415,13 +449,12 @@ export class AwsProvider extends Provider {
       return;
     }
 
-    result.TerminatingInstances.forEach(ti => {
+    result.TerminatingInstances.forEach((ti) => {
       if (!ti.InstanceId === worker.workerId || !ti.CurrentState.Name === 'shutting-down') {
         throw new Error(
           `Unexpected error: expected to shut down instance ${worker.workerId} but got ${ti.CurrentState.Name} state for ${ti.InstanceId} instance instead`,
         );
       }
-
     });
   }
 
@@ -445,7 +478,9 @@ export class AwsProvider extends Provider {
           providerId: this.providerId,
           workerPoolId,
           workerGroup,
-        })));
+        }),
+      ),
+    );
   }
 
   /**
@@ -485,13 +520,15 @@ export class AwsProvider extends Provider {
     const { providerData } = worker;
     const parsedDocument = JSON.parse(document);
 
-    return providerData.privateIp === parsedDocument.privateIp &&
+    return (
+      providerData.privateIp === parsedDocument.privateIp &&
       providerData.owner === parsedDocument.accountId &&
       providerData.availabilityZone === parsedDocument.availabilityZone &&
       providerData.architecture === parsedDocument.architecture &&
       providerData.imageId === parsedDocument.imageId &&
       worker.workerId === parsedDocument.instanceId &&
       providerData.instanceType === parsedDocument.instanceType &&
-      providerData.region === parsedDocument.region;
+      providerData.region === parsedDocument.region
+    );
   }
 }

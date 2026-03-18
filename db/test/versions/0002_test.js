@@ -12,7 +12,7 @@ const POSTGRES_TABLE_NAMES = {
   WMWorkerPoolErrors: 'wmworker_pool_errors',
 };
 
-const postgresTableName = azureTableName =>
+const postgresTableName = (azureTableName) =>
   `${POSTGRES_TABLE_NAMES[azureTableName] || snakeCase(azureTableName)}_entities`;
 
 const azureTableNames = [
@@ -48,7 +48,7 @@ const azureTableNames = [
   'WMWorkerPoolErrors',
 ];
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   helper.withDbForVersion();
 
   /* Note that these tests run in order */

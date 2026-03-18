@@ -4,7 +4,7 @@ import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 import { Worker, WorkerPoolError, WorkerPoolStats } from '../src/data.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.resetTables(mock, skipping);
 
@@ -21,7 +21,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
    * 17:55:16 worker is terminated for `terminateAfter` reasons
    *          (terminateAfter being set to exactly 30 minutes after requested)
    */
-  test('worker lifecycle data race', async function() {
+  test('worker lifecycle data race', async function () {
     const origTerminateAfter = Date.now() + 1800000;
     // First create a "requested worker"
     let w = Worker.fromApi({
@@ -36,14 +36,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // Now loop over the existing workers as we do in scanworker
     // we do an initial comparison to ensure they make sense up to this point
-    const fetched = Worker.fromDbRows(await helper.db.fns.get_non_stopped_workers_with_launch_config_scanner(
-      null, null, null, null, null, 10, 0));
+    const fetched = Worker.fromDbRows(
+      await helper.db.fns.get_non_stopped_workers_with_launch_config_scanner(null, null, null, null, null, 10, 0),
+    );
 
     assert.deepEqual(fetched.serializable(), w.serializable());
 
     // now we update the worker as if registerWorker happened
     const now = new Date();
-    await w.update(helper.db, worker => {
+    await w.update(helper.db, (worker) => {
       worker.providerData.terminateAfter = now.getTime() + 50000000;
       worker.state = Worker.states.RUNNING;
       worker.lastModified = now;
@@ -53,7 +54,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // now we call update from the workerscanner worker. This _should_ optimistically
     // update the row and not just overwrite the updates from registerWorker
-    await fetched.update(helper.db, worker => {
+    await fetched.update(helper.db, (worker) => {
       worker.lastChecked = new Date();
     });
 
@@ -100,25 +101,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   test('WorkerPoolStats', async function () {
     const wps = new WorkerPoolStats('wp/id', {});
 
-    wps.updateFromWorker(new Worker({
-      capacity: 1,
-      state: Worker.states.REQUESTED,
-      launchConfigId: 'lc-1',
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 1,
+        state: Worker.states.REQUESTED,
+        launchConfigId: 'lc-1',
+      }),
+    );
 
     assert.equal(wps.existingCapacity, 1);
     assert.equal(wps.requestedCapacity, 1);
 
-    wps.updateFromWorker(new Worker({
-      capacity: 5,
-      state: Worker.states.RUNNING,
-      launchConfigId: 'lc-2',
-    }));
-    wps.updateFromWorker(new Worker({
-      capacity: 1,
-      state: Worker.states.STOPPING,
-      launchConfigId: 'lc-3',
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 5,
+        state: Worker.states.RUNNING,
+        launchConfigId: 'lc-2',
+      }),
+    );
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 1,
+        state: Worker.states.STOPPING,
+        launchConfigId: 'lc-3',
+      }),
+    );
 
     assert.equal(wps.existingCapacity, 6);
     assert.equal(wps.requestedCapacity, 1);
@@ -139,32 +146,40 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const wps = new WorkerPoolStats('wp/id', {});
 
     // Add workers in us-west-2
-    wps.updateFromWorker(new Worker({
-      capacity: 2,
-      state: Worker.states.REQUESTED,
-      workerGroup: 'us-west-2',
-      launchConfigId: 'lc-1',
-    }));
-    wps.updateFromWorker(new Worker({
-      capacity: 3,
-      state: Worker.states.RUNNING,
-      workerGroup: 'us-west-2',
-      launchConfigId: 'lc-1',
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 2,
+        state: Worker.states.REQUESTED,
+        workerGroup: 'us-west-2',
+        launchConfigId: 'lc-1',
+      }),
+    );
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 3,
+        state: Worker.states.RUNNING,
+        workerGroup: 'us-west-2',
+        launchConfigId: 'lc-1',
+      }),
+    );
 
     // Add workers in us-east-1
-    wps.updateFromWorker(new Worker({
-      capacity: 1,
-      state: Worker.states.RUNNING,
-      workerGroup: 'us-east-1',
-      launchConfigId: 'lc-2',
-    }));
-    wps.updateFromWorker(new Worker({
-      capacity: 4,
-      state: Worker.states.STOPPING,
-      workerGroup: 'us-east-1',
-      launchConfigId: 'lc-2',
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        workerGroup: 'us-east-1',
+        launchConfigId: 'lc-2',
+      }),
+    );
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 4,
+        state: Worker.states.STOPPING,
+        workerGroup: 'us-east-1',
+        launchConfigId: 'lc-2',
+      }),
+    );
 
     // Verify pool-level stats
     assert.equal(wps.existingCapacity, 6);
@@ -194,19 +209,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const wps = new WorkerPoolStats('wp/id', {});
 
     // Add a quarantined worker
-    wps.updateFromWorker(new Worker({
-      capacity: 5,
-      state: Worker.states.RUNNING,
-      workerGroup: 'us-west-2',
-      quarantineUntil: new Date(Date.now() + 3600000), // 1 hour from now
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 5,
+        state: Worker.states.RUNNING,
+        workerGroup: 'us-west-2',
+        quarantineUntil: new Date(Date.now() + 3600000), // 1 hour from now
+      }),
+    );
 
     // Add a non-quarantined worker in same region
-    wps.updateFromWorker(new Worker({
-      capacity: 3,
-      state: Worker.states.RUNNING,
-      workerGroup: 'us-west-2',
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 3,
+        state: Worker.states.RUNNING,
+        workerGroup: 'us-west-2',
+      }),
+    );
 
     // Pool-level: quarantined workers don't count toward existing capacity
     assert.equal(wps.existingCapacity, 3);
@@ -222,8 +241,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('Worker.updateInstanceFields', function() {
-    test('preserves queue fields when undefined', function() {
+  suite('Worker.updateInstanceFields', function () {
+    test('preserves queue fields when undefined', function () {
       const worker = Worker.fromApi({
         workerPoolId: 'test/pool',
         workerGroup: 'test-group',
@@ -257,7 +276,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(worker.providerData, { updated: true });
     });
 
-    test('allows explicit null for queue fields', function() {
+    test('allows explicit null for queue fields', function () {
       const worker = Worker.fromApi({});
       worker.firstClaim = new Date('2025-01-01');
 

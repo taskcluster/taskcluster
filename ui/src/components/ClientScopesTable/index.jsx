@@ -15,10 +15,10 @@ import { pageInfo, client } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),
-  map(({ node: { clientId } }) => clientId)
+  map(({ node: { clientId } }) => clientId),
 );
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   listItemButton: {
     ...theme.mixins.listItemButton,
     display: 'flex',
@@ -66,16 +66,12 @@ export default class ClientScopesTable extends Component {
     (clientsConnection, selectedScope, searchTerm) => {
       const items = (clientsConnection.edges || [])
         .filter(
-          node =>
-            node.node.expandedScopes.filter(
-              scope => scope.toLowerCase() === selectedScope.toLowerCase()
-            ).length > 0
+          (node) =>
+            node.node.expandedScopes.filter((scope) => scope.toLowerCase() === selectedScope.toLowerCase()).length > 0,
         )
-        .map(node => node.node.clientId);
+        .map((node) => node.node.clientId);
 
-      return searchTerm
-        ? items.filter(item => item.includes(searchTerm))
-        : items;
+      return searchTerm ? items.filter((item) => item.includes(searchTerm)) : items;
     },
     {
       serializer: ([clientsConnection, selectedScope, searchTerm]) => {
@@ -83,51 +79,41 @@ export default class ClientScopesTable extends Component {
 
         return `${ids.join('-')}-${selectedScope}-${searchTerm}`;
       },
-    }
+    },
   );
 
-  renderItem = items => ({ index, style }) => {
-    const { selectedScope, classes } = this.props;
-    const item = items[index];
-    const iconSize = 16;
+  renderItem =
+    (items) =>
+    ({ index, style }) => {
+      const { selectedScope, classes } = this.props;
+      const item = items[index];
+      const iconSize = 16;
 
-    return (
-      <Fragment>
-        <Link
-          to={
-            selectedScope
-              ? `/auth/clients/${encodeURIComponent(item)}`
-              : `/auth/scopes/${encodeURIComponent(item)}`
-          }>
-          <ListItem className={classes.listItemButton} style={style} button>
-            {item}
-            <LinkIcon size={iconSize} />
-          </ListItem>
-        </Link>
-        <Divider
-          style={{
-            ...style,
-            height: 1,
-          }}
-        />
-      </Fragment>
-    );
-  };
+      return (
+        <Fragment>
+          <Link
+            to={
+              selectedScope ? `/auth/clients/${encodeURIComponent(item)}` : `/auth/scopes/${encodeURIComponent(item)}`
+            }
+          >
+            <ListItem className={classes.listItemButton} style={style} button>
+              {item}
+              <LinkIcon size={iconSize} />
+            </ListItem>
+          </Link>
+          <Divider
+            style={{
+              ...style,
+              height: 1,
+            }}
+          />
+        </Fragment>
+      );
+    };
 
   render() {
-    const {
-      searchTerm,
-      clientsConnection,
-      selectedScope,
-      onPageChange,
-      classes,
-      ...props
-    } = this.props;
-    const filteredItems = this.createSortedClientsConnection(
-      clientsConnection,
-      selectedScope,
-      searchTerm
-    );
+    const { searchTerm, clientsConnection, selectedScope, onPageChange, classes, ...props } = this.props;
+    const filteredItems = this.createSortedClientsConnection(clientsConnection, selectedScope, searchTerm);
     const windowHeight = window.innerHeight;
     const tableHeight = windowHeight > 400 ? 0.8 * windowHeight : 400;
     const itemCount = filteredItems.length;
@@ -140,9 +126,7 @@ export default class ClientScopesTable extends Component {
       </List>
     ) : (
       <Typography variant="body2" className={classes.noRolesText}>
-        {searchTerm
-          ? `No clients available for search term ${searchTerm}.`
-          : 'No clients found.'}
+        {searchTerm ? `No clients available for search term ${searchTerm}.` : 'No clients found.'}
       </Typography>
     );
   }

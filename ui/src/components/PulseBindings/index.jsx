@@ -13,7 +13,7 @@ import PlusIcon from 'mdi-react/PlusIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import TextField from '../TextField';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   iconButton: {
     '& svg': {
       fill: theme.palette.text.primary,
@@ -63,7 +63,7 @@ export default class PulseBindings extends Component {
       onPulseExchangeChange,
       exchangesDictionary,
     } = this.props;
-    const onKeyHandler = ev => {
+    const onKeyHandler = (ev) => {
       if (ev.key === 'Enter') {
         setTimeout(onBindingAdd, 1); // wait for onChange event to update value
         ev.preventDefault();
@@ -86,7 +86,7 @@ export default class PulseBindings extends Component {
                   },
                 })
               }
-              renderInput={params => (
+              renderInput={(params) => (
                 <TextField
                   {...params}
                   required
@@ -111,25 +111,22 @@ export default class PulseBindings extends Component {
             />
           </div>
           <Tooltip title="Add Binding">
-            <IconButton
-              className={classNames(classes.iconButton, classes.plusIcon)}
-              onClick={onBindingAdd}>
+            <IconButton className={classNames(classes.iconButton, classes.plusIcon)} onClick={onBindingAdd}>
               <PlusIcon />
             </IconButton>
           </Tooltip>
         </div>
         <List>
-          {bindings.map(binding => (
+          {bindings.map((binding) => (
             <ListItem
               className={classes.bindingListItem}
-              key={`${binding.exchange}-${binding.pattern ||
-                bindings.routingKeyPattern}`}>
+              key={`${binding.exchange}-${binding.pattern || bindings.routingKeyPattern}`}
+            >
               <ListItemText
                 disableTypography
                 primary={
                   <Typography variant="body1">
-                    <code>{binding.exchange}</code> with{' '}
-                    <code>{binding.pattern || binding.routingKeyPattern}</code>
+                    <code>{binding.exchange}</code> with <code>{binding.pattern || binding.routingKeyPattern}</code>
                   </Typography>
                 }
               />
@@ -137,7 +134,8 @@ export default class PulseBindings extends Component {
                 <IconButton
                   className={classNames(classes.iconButton, classes.deleteIcon)}
                   name={binding}
-                  onClick={() => onBindingRemove(binding)}>
+                  onClick={() => onBindingRemove(binding)}
+                >
                   <DeleteIcon />
                 </IconButton>
               </Tooltip>

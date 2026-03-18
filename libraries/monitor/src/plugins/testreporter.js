@@ -17,7 +17,7 @@ export class TestReporter {
     await new Promise((accept, _reject) => {
       setTimeout(accept, 500);
     });
-    this.internal.forEach(e => {
+    this.internal.forEach((e) => {
       this.bucket.push(e);
       if (this.log) {
         console.log('REPORTED ERROR');

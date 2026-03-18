@@ -12,63 +12,25 @@ import denylistRoutes from '../views/Denylist/routes';
 import cachePurgeRoutes from '../views/CachePurges/routes';
 import lazy from '../utils/lazy';
 
-const SwitchEntryPoint = lazy(() =>
-  import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint')
-);
-const Tasks = lazy(() =>
-  import(/* webpackChunkName: 'Tasks' */ '../views/Tasks')
-);
-const Provisioners = lazy(() =>
-  import(/* webpackChunkName: 'Provisioners' */ '../views/Provisioners')
-);
-const Clients = lazy(() =>
-  import(/* webpackChunkName: 'Clients' */ '../views/Clients')
-);
-const Roles = lazy(() =>
-  import(/* webpackChunkName: 'Roles' */ '../views/Roles')
-);
-const Scopes = lazy(() =>
-  import(/* webpackChunkName: 'Scopes' */ '../views/Scopes')
-);
-const Hooks = lazy(() =>
-  import(/* webpackChunkName: 'Hooks' */ '../views/Hooks')
-);
-const WorkerManager = lazy(() =>
-  import(/* webpackChunkName: 'Worker Manager' */ '../views/WorkerManager')
-);
-const Secrets = lazy(() =>
-  import(/* webpackChunkName: 'Secrets' */ '../views/Secrets')
-);
-const CachePurges = lazy(() =>
-  import(/* webpackChunkName: 'CachePurges' */ '../views/CachePurges')
-);
-const PulseMessages = lazy(() =>
-  import(/* webpackChunkName: 'PulseMessages' */ '../views/PulseMessages')
-);
-const Quickstart = lazy(() =>
-  import(/* webpackChunkName: 'Quickstart' */ '../views/Quickstart')
-);
-const TcYamlDebug = lazy(() =>
-  import(/* webpackChunkName: 'TcYamlDebug' */ '../views/TcYamlDebug')
-);
-const Profile = lazy(() =>
-  import(/* webpackChunkName: 'Profile' */ '../views/Profile')
-);
-const Shell = lazy(() =>
-  import(/* webpackChunkName: 'Shell' */ '../views/Shell')
-);
-const HomeOrDashboard = lazy(() =>
-  import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard')
-);
-const Denylist = lazy(() =>
-  import(/* webpackChunkName: 'Denylist' */ '../views/Denylist')
-);
-const ThirdPartyLogin = lazy(() =>
-  import(/* webpackChunkName: 'ThirdPartyLogin' */ '../views/ThirdPartyLogin')
-);
-const NotFound = lazy(() =>
-  import(/* webpackChunkName: 'NotFound' */ '../views/NotFound')
-);
+const SwitchEntryPoint = lazy(() => import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint'));
+const Tasks = lazy(() => import(/* webpackChunkName: 'Tasks' */ '../views/Tasks'));
+const Provisioners = lazy(() => import(/* webpackChunkName: 'Provisioners' */ '../views/Provisioners'));
+const Clients = lazy(() => import(/* webpackChunkName: 'Clients' */ '../views/Clients'));
+const Roles = lazy(() => import(/* webpackChunkName: 'Roles' */ '../views/Roles'));
+const Scopes = lazy(() => import(/* webpackChunkName: 'Scopes' */ '../views/Scopes'));
+const Hooks = lazy(() => import(/* webpackChunkName: 'Hooks' */ '../views/Hooks'));
+const WorkerManager = lazy(() => import(/* webpackChunkName: 'Worker Manager' */ '../views/WorkerManager'));
+const Secrets = lazy(() => import(/* webpackChunkName: 'Secrets' */ '../views/Secrets'));
+const CachePurges = lazy(() => import(/* webpackChunkName: 'CachePurges' */ '../views/CachePurges'));
+const PulseMessages = lazy(() => import(/* webpackChunkName: 'PulseMessages' */ '../views/PulseMessages'));
+const Quickstart = lazy(() => import(/* webpackChunkName: 'Quickstart' */ '../views/Quickstart'));
+const TcYamlDebug = lazy(() => import(/* webpackChunkName: 'TcYamlDebug' */ '../views/TcYamlDebug'));
+const Profile = lazy(() => import(/* webpackChunkName: 'Profile' */ '../views/Profile'));
+const Shell = lazy(() => import(/* webpackChunkName: 'Shell' */ '../views/Shell'));
+const HomeOrDashboard = lazy(() => import(/* webpackChunkName: 'HomeOrDashboard' */ '../views/HomeOrDashboard'));
+const Denylist = lazy(() => import(/* webpackChunkName: 'Denylist' */ '../views/Denylist'));
+const ThirdPartyLogin = lazy(() => import(/* webpackChunkName: 'ThirdPartyLogin' */ '../views/ThirdPartyLogin'));
+const NotFound = lazy(() => import(/* webpackChunkName: 'NotFound' */ '../views/NotFound'));
 
 export default [
   {

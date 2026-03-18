@@ -7,7 +7,7 @@ query Task($taskId: ID!) {
     status {
       runs {
         state
-        }
       }
+    }
   }
 }

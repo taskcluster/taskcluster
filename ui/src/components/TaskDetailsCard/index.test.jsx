@@ -1,4 +1,3 @@
-
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import TaskDetailsCard from './index';
@@ -24,11 +23,7 @@ it('should render TaskDetailsCard', () => {
           routes: [],
           dependencies: [],
           payload: {
-            command: [
-              '/bin/bash',
-              '-c',
-              'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done',
-            ],
+            command: ['/bin/bash', '-c', 'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done'],
             image: 'ubuntu:latest',
             maxRunTime: 90,
           },
@@ -41,7 +36,7 @@ it('should render TaskDetailsCard', () => {
         onDependentsPageChange={jest.fn()}
         objectContent={{}}
       />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
   expect(asFragment()).toMatchSnapshot();

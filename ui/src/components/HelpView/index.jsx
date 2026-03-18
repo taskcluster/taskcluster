@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   divider: {
     margin: `${theme.spacing(1)}px 0`,
   },
@@ -50,10 +50,7 @@ export default class HelpView extends PureComponent {
           </Fragment>
         )}
         {description && children && <Divider className={classes.divider} />}
-        <div
-          className={classNames({ [classes.hasNoDescription]: !description })}>
-          {children}
-        </div>
+        <div className={classNames({ [classes.hasNoDescription]: !description })}>{children}</div>
       </Fragment>
     );
   }

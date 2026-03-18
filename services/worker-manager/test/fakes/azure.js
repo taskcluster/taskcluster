@@ -12,7 +12,6 @@ import slugid from 'slugid';
  * that allow access to fakes for those interfaces.
  */
 export class FakeAzure extends FakeCloud {
-
   _patch() {
     this.sinon.stub(azureApi, 'AzureServiceClient').callsFake((creds) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
@@ -348,10 +347,7 @@ export class DeploymentManager extends ResourceManager {
     // Check if we should simulate a conflict
     if (this._conflictOnDelete.has(key)) {
       this._conflictOnDelete.delete(key); // Clear flag after first attempt
-      throw makeError(
-        `Unable to edit or replace deployment '${name}': previous deployment is still active`,
-        409,
-      );
+      throw makeError(`Unable to edit or replace deployment '${name}': previous deployment is still active`, 409);
     }
 
     this._deployments.delete(key);

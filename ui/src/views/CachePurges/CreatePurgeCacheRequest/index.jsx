@@ -11,7 +11,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import purgeCacheQuery from './purgeCache.graphql';
 
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   contentSaveButtonSpan: {
     ...theme.mixins.fab,
   },
@@ -63,13 +63,7 @@ export default class CreatePurgeCacheRequest extends Component {
 
   render() {
     const { classes } = this.props;
-    const {
-      error,
-      provisionerId,
-      workerType,
-      cacheName,
-      actionLoading,
-    } = this.state;
+    const { error, provisionerId, workerType, cacheName, actionLoading } = this.state;
 
     return (
       <Dashboard title="Create Purge Cache Request">
@@ -115,7 +109,8 @@ export default class CreatePurgeCacheRequest extends Component {
             disabled={!this.isFormFilled() || actionLoading}
             onClick={this.handleCreate}
             variant="round"
-            classes={{ root: classes.contentSaveIcon }}>
+            classes={{ root: classes.contentSaveIcon }}
+          >
             <ContentSaveIcon />
           </Button>
         </Fragment>

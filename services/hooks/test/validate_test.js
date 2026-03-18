@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   testing.schemas({
     schemasetOptions: {
       folder: path.join(__dirname, '..', 'schemas'),

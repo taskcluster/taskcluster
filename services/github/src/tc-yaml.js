@@ -7,7 +7,7 @@ import TopoSort from 'topo-sort';
 import { GITHUB_TASKS_FOR } from './constants.js';
 
 // Assert that only scope-valid characters are in branches
-const branchTest = branch => {
+const branchTest = (branch) => {
   if (!/^[\x20-\x7e]*$/.test(branch || '')) {
     throw new Error('Must have only ascii-printable chars in branch names!');
   }
@@ -30,32 +30,24 @@ class VersionZero extends TcYaml {
   }
 
   /**
- * Attach fields to a compiled taskcluster github config so that
- * it becomes a complete task graph config.
- **/
+   * Attach fields to a compiled taskcluster github config so that
+   * it becomes a complete task graph config.
+   **/
   completeInTreeConfig(cfg, config, payload) {
     config.scopes = [];
     branchTest(payload.details['event.base.repo.branch']);
     branchTest(payload.details['event.head.repo.branch']);
 
     if (payload.details['event.type'].startsWith('pull_request')) {
-      config.scopes = [
-        `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
-      ];
+      config.scopes = [`assume:repo:github.com/${payload.organization}/${payload.repository}:pull-request`];
     } else if (payload.details['event.type'] === 'push') {
-      const prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:branch:`;
-      config.scopes = [
-        prefix + payload.details['event.base.repo.branch'],
-      ];
+      const prefix = `assume:repo:github.com/${payload.organization}/${payload.repository}:branch:`;
+      config.scopes = [prefix + payload.details['event.base.repo.branch']];
     } else if (payload.details['event.type'] === 'release') {
-      config.scopes = [
-        `assume:repo:github.com/${ payload.organization }/${ payload.repository }:release:published`,
-      ];
+      config.scopes = [`assume:repo:github.com/${payload.organization}/${payload.repository}:release:published`];
     } else if (payload.details['event.type'] === 'tag') {
-      const prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:tag:`;
-      config.scopes = [
-        prefix + payload.details['event.head.tag'],
-      ];
+      const prefix = `assume:repo:github.com/${payload.organization}/${payload.repository}:tag:`;
+      config.scopes = [prefix + payload.details['event.head.tag']];
     }
 
     config.scopes.push(`queue:route:${cfg.app.statusTaskRoute}`); // v0 always uses statuses
@@ -63,31 +55,29 @@ class VersionZero extends TcYaml {
 
     // each task can optionally decide if it wants github specific environment
     // variables added to it
-    const stringify = x => x ? `${x}` : x;
+    const stringify = (x) => (x ? `${x}` : x);
     config.tasks = config.tasks.map((task) => {
       if (task.task.extra.github.env) {
-        task.task.payload.env = _.merge(
-          task.task.payload.env || {}, {
-            GITHUB_EVENT: payload.details['event.type'],
-            GITHUB_BRANCH: payload.details['event.base.repo.branch'],
-            GITHUB_PULL_REQUEST: stringify(payload.details['event.pullNumber']),
-            GITHUB_PULL_TITLE: stringify(payload.details['event.title']),
-            GITHUB_BASE_REPO_NAME: payload.details['event.base.repo.name'],
-            GITHUB_BASE_REPO_URL: payload.details['event.base.repo.url'],
-            GITHUB_BASE_USER: payload.details['event.base.user.login'],
-            GITHUB_BASE_SHA: payload.details['event.base.sha'],
-            GITHUB_BASE_BRANCH: payload.details['event.base.repo.branch'],
-            GITHUB_BASE_REF: payload.details['event.base.ref'],
-            GITHUB_HEAD_REPO_NAME: payload.details['event.head.repo.name'],
-            GITHUB_HEAD_REPO_URL: payload.details['event.head.repo.url'],
-            GITHUB_HEAD_USER: payload.details['event.head.user.login'],
-            GITHUB_HEAD_SHA: payload.details['event.head.sha'],
-            GITHUB_HEAD_BRANCH: payload.details['event.head.repo.branch'],
-            GITHUB_HEAD_TAG: payload.details['event.head.tag'],
-            GITHUB_HEAD_REF: payload.details['event.head.ref'],
-            GITHUB_HEAD_USER_EMAIL: payload.details['event.head.user.email'],
-          },
-        );
+        task.task.payload.env = _.merge(task.task.payload.env || {}, {
+          GITHUB_EVENT: payload.details['event.type'],
+          GITHUB_BRANCH: payload.details['event.base.repo.branch'],
+          GITHUB_PULL_REQUEST: stringify(payload.details['event.pullNumber']),
+          GITHUB_PULL_TITLE: stringify(payload.details['event.title']),
+          GITHUB_BASE_REPO_NAME: payload.details['event.base.repo.name'],
+          GITHUB_BASE_REPO_URL: payload.details['event.base.repo.url'],
+          GITHUB_BASE_USER: payload.details['event.base.user.login'],
+          GITHUB_BASE_SHA: payload.details['event.base.sha'],
+          GITHUB_BASE_BRANCH: payload.details['event.base.repo.branch'],
+          GITHUB_BASE_REF: payload.details['event.base.ref'],
+          GITHUB_HEAD_REPO_NAME: payload.details['event.head.repo.name'],
+          GITHUB_HEAD_REPO_URL: payload.details['event.head.repo.url'],
+          GITHUB_HEAD_USER: payload.details['event.head.user.login'],
+          GITHUB_HEAD_SHA: payload.details['event.head.sha'],
+          GITHUB_HEAD_BRANCH: payload.details['event.head.repo.branch'],
+          GITHUB_HEAD_TAG: payload.details['event.head.tag'],
+          GITHUB_HEAD_REF: payload.details['event.head.ref'],
+          GITHUB_HEAD_USER_EMAIL: payload.details['event.head.user.email'],
+        });
       }
       return task;
     });
@@ -95,62 +85,64 @@ class VersionZero extends TcYaml {
   }
 
   substituteParameters(config, cfg, payload) {
-    return jparam(config, _.merge(payload.details, {
-      $fromNow: (text) => tc.fromNowJSON(text),
-      timestamp: Math.floor(new Date()),
-      organization: payload.organization,
-      repository: payload.repository,
-      'taskcluster.docker.provisionerId': cfg.intree.provisionerId || 'unknown',
-      'taskcluster.docker.workerType': cfg.intree.workerType || 'unknown',
-    }));
+    return jparam(
+      config,
+      _.merge(payload.details, {
+        $fromNow: (text) => tc.fromNowJSON(text),
+        timestamp: Math.floor(new Date()),
+        organization: payload.organization,
+        repository: payload.repository,
+        'taskcluster.docker.provisionerId': cfg.intree.provisionerId || 'unknown',
+        'taskcluster.docker.workerType': cfg.intree.workerType || 'unknown',
+      }),
+    );
   }
   compileTasks(config, cfg, payload, _now) {
-    config.tasks = config.tasks.map((task) => {
-      task.routes = task.routes || [];
-      task.routes = Array.from(new Set([
-        ...task.routes,
-        cfg.app.statusTaskRoute,
-      ]));
+    config.tasks = config.tasks
+      .map((task) => {
+        task.routes = task.routes || [];
+        task.routes = Array.from(new Set([...task.routes, cfg.app.statusTaskRoute]));
 
-      return {
-        taskId: slugid.nice(),
-        task,
-      };
-    }).filter((task) => {
-      // Filter out tasks that aren't associated with github at all, or with
-      // the current event being handled
-      if (!task.task.extra || !task.task.extra.github) {
-        return false;
-      }
-
-      const event = payload.details['event.type'];
-      const events = task.task.extra.github.events;
-      const branch = payload.details['event.base.repo.branch'];
-      const includeBranches = task.task.extra.github.branches;
-      const excludeBranches = task.task.extra.github.excludeBranches;
-
-      if (includeBranches && excludeBranches) {
-        throw new Error('Cannot specify both `branches` and `excludeBranches` in the same task!');
-      }
-
-      return events.some(ev => {
-        if (!event.startsWith(_.trimEnd(ev, '*'))) {
+        return {
+          taskId: slugid.nice(),
+          task,
+        };
+      })
+      .filter((task) => {
+        // Filter out tasks that aren't associated with github at all, or with
+        // the current event being handled
+        if (!task.task.extra || !task.task.extra.github) {
           return false;
         }
 
-        if (event !== 'push') {
-          return true;
+        const event = payload.details['event.type'];
+        const events = task.task.extra.github.events;
+        const branch = payload.details['event.base.repo.branch'];
+        const includeBranches = task.task.extra.github.branches;
+        const excludeBranches = task.task.extra.github.excludeBranches;
+
+        if (includeBranches && excludeBranches) {
+          throw new Error('Cannot specify both `branches` and `excludeBranches` in the same task!');
         }
 
-        if (includeBranches) {
-          return includeBranches.includes(branch);
-        } else if (excludeBranches) {
-          return !excludeBranches.includes(branch);
-        } else {
-          return true;
-        }
+        return events.some((ev) => {
+          if (!event.startsWith(_.trimEnd(ev, '*'))) {
+            return false;
+          }
+
+          if (event !== 'push') {
+            return true;
+          }
+
+          if (includeBranches) {
+            return includeBranches.includes(branch);
+          } else if (excludeBranches) {
+            return !excludeBranches.includes(branch);
+          } else {
+            return true;
+          }
+        });
       });
-    });
 
     // Add common taskGroupId and schedulerId. taskGroupId is always the taskId of the first
     // task in taskcluster.
@@ -174,38 +166,28 @@ class VersionOne extends TcYaml {
   }
 
   /**
- * Get scopes and attach them to the task.
- * v1 function
- */
+   * Get scopes and attach them to the task.
+   * v1 function
+   */
   createScopes(cfg, config, payload) {
     config.scopes = [];
 
     if ([GITHUB_TASKS_FOR.PULL_REQUEST, GITHUB_TASKS_FOR.ISSUE_COMMENT].includes(payload.tasks_for)) {
-      config.scopes = [
-        `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
-      ];
+      config.scopes = [`assume:repo:github.com/${payload.organization}/${payload.repository}:pull-request`];
     } else if (payload.tasks_for === GITHUB_TASKS_FOR.PULL_REQUEST_UNTRUSTED) {
-      config.scopes = [
-        `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request-untrusted`,
-      ];
+      config.scopes = [`assume:repo:github.com/${payload.organization}/${payload.repository}:pull-request-untrusted`];
     } else if (payload.tasks_for === GITHUB_TASKS_FOR.PUSH) {
       if (payload.body.ref.split('/')[1] === 'tags') {
-        const prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:tag:`;
-        config.scopes = [
-          prefix + payload.details['event.head.tag'],
-        ];
+        const prefix = `assume:repo:github.com/${payload.organization}/${payload.repository}:tag:`;
+        config.scopes = [prefix + payload.details['event.head.tag']];
       } else {
-        const prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:branch:`;
-        config.scopes = [
-          prefix + payload.details['event.base.repo.branch'],
-        ];
+        const prefix = `assume:repo:github.com/${payload.organization}/${payload.repository}:branch:`;
+        config.scopes = [prefix + payload.details['event.base.repo.branch']];
       }
     } else if (payload.tasks_for === GITHUB_TASKS_FOR.RELEASE) {
       // role name would include release action
       const action = payload?.body?.action || 'published';
-      config.scopes = [
-        `assume:repo:github.com/${payload.organization}/${payload.repository}:release:${action}`,
-      ];
+      config.scopes = [`assume:repo:github.com/${payload.organization}/${payload.repository}:release:${action}`];
     }
 
     config.scopes.push(`queue:route:${config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute}`);
@@ -223,7 +205,7 @@ class VersionOne extends TcYaml {
       if (rv) {
         return rv;
       } else {
-        return slugids[label] = slugid.nice();
+        return (slugids[label] = slugid.nice());
       }
     };
 
@@ -274,17 +256,22 @@ class VersionOne extends TcYaml {
       const tsort = new TopoSort();
 
       // process tasks and set up topological sorting
-      config.tasks.forEach(task => {
-        task.routes = Array.from(new Set([
-          ...(task.routes ? task.routes : []),
-          config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute,
-        ]));
+      config.tasks.forEach((task) => {
+        task.routes = Array.from(
+          new Set([
+            ...(task.routes ? task.routes : []),
+            config.reporting ? cfg.app.checkTaskRoute : cfg.app.statusTaskRoute,
+          ]),
+        );
 
-        task = Object.assign({
-          taskId: defaultTaskId,
-          taskGroupId: defaultTaskGroupId,
-          created: now,
-        }, task);
+        task = Object.assign(
+          {
+            taskId: defaultTaskId,
+            taskGroupId: defaultTaskGroupId,
+            created: now,
+          },
+          task,
+        );
         defaultTaskId = slugid.nice(); // invent a new taskId for the next task
 
         const { taskId, ...taskWithoutTaskId } = task;
@@ -299,8 +286,11 @@ class VersionOne extends TcYaml {
         };
       });
 
-      config.tasks = tsort.sort().reverse().filter(id => taskMap[id]).map(id => taskMap[id]);
-
+      config.tasks = tsort
+        .sort()
+        .reverse()
+        .filter((id) => taskMap[id])
+        .map((id) => taskMap[id]);
     }
     return this.createScopes(cfg, config, payload);
   }

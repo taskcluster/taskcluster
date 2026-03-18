@@ -41,16 +41,12 @@ class DeadlineResolver {
   constructor(options) {
     assert(options, 'options must be given');
     assert(options.db, 'Expected db');
-    assert(options.queueService instanceof QueueService,
-      'Expected instance of QueueService');
+    assert(options.queueService instanceof QueueService, 'Expected instance of QueueService');
     assert(options.dependencyTracker, 'Expected a DependencyTracker instance');
     assert(options.publisher, 'Expected a publisher');
-    assert(typeof options.pollingDelay === 'number',
-      'Expected pollingDelay to be a number');
-    assert(typeof options.parallelism === 'number',
-      'Expected parallelism to be a number');
-    assert(typeof options.count === 'number',
-      'Expected count to be a number');
+    assert(typeof options.pollingDelay === 'number', 'Expected pollingDelay to be a number');
+    assert(typeof options.parallelism === 'number', 'Expected parallelism to be a number');
+    assert(typeof options.count === 'number', 'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
     this.db = options.db;
@@ -98,16 +94,18 @@ class DeadlineResolver {
     const messages = await this.queueService.pollDeadlineQueue(this.count);
     let failed = 0;
 
-    await Promise.all(messages.map(async (message) => {
-      // Don't let a single task error break the loop, it'll be retried later
-      // as we don't remove message unless they are handled
-      try {
-        await this.handleMessage(message);
-      } catch (err) {
-        failed += 1;
-        this.monitor.reportError(err, 'warning');
-      }
-    }));
+    await Promise.all(
+      messages.map(async (message) => {
+        // Don't let a single task error break the loop, it'll be retried later
+        // as we don't remove message unless they are handled
+        try {
+          await this.handleMessage(message);
+        } catch (err) {
+          failed += 1;
+          this.monitor.reportError(err, 'warning');
+        }
+      }),
+    );
 
     // If there were no messages, back off for a bit.
     if (messages.length === 0) {
@@ -136,8 +134,7 @@ class DeadlineResolver {
     // Check if the last run was resolved here (or possibly by a previous
     // attempt to process this message)
     const run = _.last(task.runs);
-    if (run.reasonResolved === 'deadline-exceeded' &&
-        run.state === 'exception') {
+    if (run.reasonResolved === 'deadline-exceeded' && run.state === 'exception') {
       debug('Resolved taskId: %s, by deadline', taskId);
 
       // Update dependency tracker
@@ -145,11 +142,14 @@ class DeadlineResolver {
 
       // Publish messages about the last run
       const runId = task.runs.length - 1;
-      await this.publisher.taskException({
-        status: task.status(),
-        runId,
-        task: { tags: task.tags || {} },
-      }, task.routes);
+      await this.publisher.taskException(
+        {
+          status: task.status(),
+          runId,
+          task: { tags: task.tags || {} },
+        },
+        task.routes,
+      );
       this.monitor.log.taskException({ taskId, runId });
 
       const metricLabels = splitTaskQueueId(task.taskQueueId);

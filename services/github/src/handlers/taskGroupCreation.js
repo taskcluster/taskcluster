@@ -10,21 +10,13 @@ import { makeDebug, taskGroupUI } from './utils.js';
  * @returns {Promise<void>}
  */
 export async function taskGroupCreationHandler(message) {
-  const {
-    taskGroupId,
-  } = message.payload;
+  const { taskGroupId } = message.payload;
 
   let debug = makeDebug(this.monitor, { taskGroupId });
   debug(`Task group ${taskGroupId} was defined. Creating group status...`);
 
-  const [{
-    sha,
-    event_type,
-    event_id,
-    installation_id,
-    organization,
-    repository,
-  }] = await this.context.db.fns.get_github_build_pr(taskGroupId);
+  const [{ sha, event_type, event_id, installation_id, organization, repository }] =
+    await this.context.db.fns.get_github_build_pr(taskGroupId);
   debug = debug.refine({ event_id, sha, owner: organization, repo: repository, installation_id });
 
   const statusContext = `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`;

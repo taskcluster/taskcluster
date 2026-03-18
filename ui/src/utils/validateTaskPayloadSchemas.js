@@ -6,17 +6,13 @@ const prefetch = async () => {
   await Promise.all([
     ajv.loadServiceSchema('queue', 'v1/task.json'),
     ajv.loadServiceSchema('queue', 'v1/task-metadata.json'),
-    ajv.loadServiceSchema(
-      'queue',
-      'v1/create-task-request.json',
-      'create-task'
-    ),
+    ajv.loadServiceSchema('queue', 'v1/create-task-request.json', 'create-task'),
   ]);
 };
 
 const prefetchPromise = prefetch();
 
-export const formatErrorDetails = error => {
+export const formatErrorDetails = (error) => {
   const msg = [error.message];
 
   if (error.keyword === 'type') {
@@ -35,7 +31,7 @@ export default async (value, service, schema) => {
   const taskValidation = ajv.validate('create-task', value);
 
   if (!taskValidation) {
-    (ajv.errors || []).forEach(error => {
+    (ajv.errors || []).forEach((error) => {
       errors.push(`Task ${formatErrorDetails(error)}`);
     });
   }
@@ -46,7 +42,7 @@ export default async (value, service, schema) => {
     const validation = ajv.validate(doc.$id, value.payload);
 
     if (!validation) {
-      (ajv.errors || []).forEach(error => {
+      (ajv.errors || []).forEach((error) => {
         errors.push(`Payload ${formatErrorDetails(error)}`);
       });
     }

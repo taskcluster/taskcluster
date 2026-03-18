@@ -22,7 +22,7 @@ export const tasks = [];
 /**
  * Extract the docs/refs information from each service
  */
-SERVICES.forEach(name => {
+SERVICES.forEach((name) => {
   tasks.push({
     title: `Generate References for ${name} `,
     requires: [],
@@ -49,28 +49,23 @@ SERVICES.forEach(name => {
 tasks.push({
   title: `Generate References`,
   requires: [
-    ...SERVICES.map(name => `refs-${name}`),
+    ...SERVICES.map((name) => `refs-${name}`),
     'config-values-schema',
     'generic-worker-schemas',
     'docker-worker-schemas',
   ],
-  provides: [
-    'target-references',
-    'references-json',
-  ],
+  provides: ['target-references', 'references-json'],
   run: async (requirements, _utils) => {
     await mkdirp(genDir);
 
     // combine all of the references, using a map to eliminate duplicate files
     // (the common schemas will be duplicated, for example)
     const files = new Map();
-    SERVICES.forEach(
-      name => requirements[`refs-${name}`].forEach(
-        ({ filename, content }) => files.set(filename, content)));
-    requirements['generic-worker-schemas'].forEach(
-      ({ filename, content }) => files.set(filename, content));
-    requirements['docker-worker-schemas'].forEach(
-      ({ filename, content }) => files.set(filename, content));
+    SERVICES.forEach((name) =>
+      requirements[`refs-${name}`].forEach(({ filename, content }) => files.set(filename, content)),
+    );
+    requirements['generic-worker-schemas'].forEach(({ filename, content }) => files.set(filename, content));
+    requirements['docker-worker-schemas'].forEach(({ filename, content }) => files.set(filename, content));
 
     // add config-values-schema, mostly so that it can be referenced in the manual
     files.set('schemas/common/values.schema.json', requirements['config-values-schema']);
@@ -78,8 +73,7 @@ tasks.push({
     // round-trip that through References to validate and disambiguate
     // everything
     const references = References.fromSerializable({
-      serializable: [...files.entries()].map(
-        ([filename, content]) => ({ filename, content })),
+      serializable: [...files.entries()].map(([filename, content]) => ({ filename, content })),
     });
 
     // sort the serializable output by filename to ensure consistency

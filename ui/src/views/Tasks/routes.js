@@ -1,55 +1,29 @@
 import indexedTaskRoutes from './TaskIndex/routes';
 import lazy from '../../utils/lazy';
 
-const NoTask = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.NoTask' */ './NoTask')
+const NoTask = lazy(() => import(/* webpackChunkName: 'Tasks.NoTask' */ './NoTask'));
+const NoTaskGroup = lazy(() => import(/* webpackChunkName: 'Tasks.NoTaskGroup' */ './NoTaskGroup'));
+const ViewTask = lazy(() => import(/* webpackChunkName: 'Tasks.ViewTask' */ './ViewTask'));
+const TaskArtifactRedirect = lazy(
+  () => import(/* webpackChunkName: 'Tasks.TaskArtifactRedirect' */ './TaskArtifactRedirect'),
 );
-const NoTaskGroup = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.NoTaskGroup' */ './NoTaskGroup')
+const TaskLog = lazy(() => import(/* webpackChunkName: 'Tasks.TaskLog' */ './TaskLog'));
+const CreateTask = lazy(() => import(/* webpackChunkName: 'Tasks.CreateTask' */ './CreateTask'));
+const TaskGroup = lazy(() => import(/* webpackChunkName: 'Tasks.TaskGroup' */ './TaskGroup'));
+const TaskDefinition = lazy(() => import(/* webpackChunkName: 'Tasks.TaskDefinition' */ './TaskDefinition'));
+const TaskIndex = lazy(() => import(/* webpackChunkName: 'Tasks.TaskIndex' */ './TaskIndex'));
+const TaskRedirect = lazy(() => import(/* webpackChunkName: 'Tasks.TaskRedirect' */ './TaskRedirect'));
+const InteractiveConnect = lazy(
+  () => import(/* webpackChunkName: 'Tasks.InteractiveConnect' */ './InteractiveConnect'),
 );
-const ViewTask = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.ViewTask' */ './ViewTask')
-);
-const TaskArtifactRedirect = lazy(() =>
-  import(
-    /* webpackChunkName: 'Tasks.TaskArtifactRedirect' */ './TaskArtifactRedirect'
-  )
-);
-const TaskLog = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.TaskLog' */ './TaskLog')
-);
-const CreateTask = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.CreateTask' */ './CreateTask')
-);
-const TaskGroup = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.TaskGroup' */ './TaskGroup')
-);
-const TaskDefinition = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.TaskDefinition' */ './TaskDefinition')
-);
-const TaskIndex = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.TaskIndex' */ './TaskIndex')
-);
-const TaskRedirect = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.TaskRedirect' */ './TaskRedirect')
-);
-const InteractiveConnect = lazy(() =>
-  import(
-    /* webpackChunkName: 'Tasks.InteractiveConnect' */ './InteractiveConnect'
-  )
-);
-const TaskProfiler = lazy(() =>
-  import(/* webpackChunkName: 'Tasks.TaskProfiler' */ './TaskProfiler')
-);
+const TaskProfiler = lazy(() => import(/* webpackChunkName: 'Tasks.TaskProfiler' */ './TaskProfiler'));
 const taskGroupDescription =
   'Inspect task groups, monitor progress, view dependencies and states, and inspect the individual tasks that make up a task group.';
-const taskDescription =
-  'Inspect the state, runs, public and private artifacts, definition, and logs of a task.';
+const taskDescription = 'Inspect the state, runs, public and private artifacts, definition, and logs of a task.';
 const createTaskDescription = `Write and submit a task to ${window.env.APPLICATION_NAME}.`;
-const profilerDescription =
-  'View task execution timelines and log event timelines in Firefox Profiler.';
+const profilerDescription = 'View task execution timelines and log event timelines in Firefox Profiler.';
 
-export default path => [
+export default (path) => [
   {
     component: TaskProfiler,
     path: `${path}/groups/:taskGroupId/profiler`,

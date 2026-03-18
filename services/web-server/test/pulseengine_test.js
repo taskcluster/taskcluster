@@ -20,22 +20,25 @@ class FakePulseEngine {
   }
 }
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   // pause for "a beat" to let async things filter out; `for await` in particular
   // does not activate immediately
-  const beat = () => new Promise(resolve => setTimeout(resolve, 1));
+  const beat = () => new Promise((resolve) => setTimeout(resolve, 1));
 
-  suite('PulseIterator', function() {
-    test('queues up pushed messages', async function() {
+  suite('PulseIterator', function () {
+    test('queues up pushed messages', async function () {
       const engine = new FakePulseEngine();
       const pi = new PulseIterator(engine, []);
 
-      assert.equal(engine.subscribed, true, "should have subscribed");
+      assert.equal(engine.subscribed, true, 'should have subscribed');
 
       // first push a bunch of messages..
       const sent = [];
       ['M1', 'M2', 'M3'].forEach((msg) => {
-        engine.handleMessage(msg).then(() => sent.push(msg), err => sent.push(err));
+        engine.handleMessage(msg).then(
+          () => sent.push(msg),
+          (err) => sent.push(err),
+        );
       });
 
       // messages aren't sent yet..
@@ -51,12 +54,12 @@ suite(testing.suiteName(), function() {
         }
       }
 
-      assert.equal(engine.subscribed, false, "should have been unsubscribed");
+      assert.equal(engine.subscribed, false, 'should have been unsubscribed');
       assert.deepEqual(sent, ['M1', 'M2', 'M3']);
       assert.deepEqual(received, ['M1', 'M2', 'M3']);
     });
 
-    test('waits for pushed messages', async function() {
+    test('waits for pushed messages', async function () {
       const engine = new FakePulseEngine();
       const pi = new PulseIterator(engine, []);
 
@@ -88,10 +91,10 @@ suite(testing.suiteName(), function() {
 
       await finished;
 
-      assert.equal(engine.subscribed, false, "should have been unsubscribed");
+      assert.equal(engine.subscribed, false, 'should have been unsubscribed');
     });
 
-    test('throws errors into the iterator', async function() {
+    test('throws errors into the iterator', async function () {
       const engine = new FakePulseEngine();
       const pi = new PulseIterator(engine, []);
 
@@ -102,9 +105,12 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(sent, ['M1']);
 
       // an unsent M2 will error out after handleError is called
-      engine.handleMessage('M2')
-        .then(() => { throw new Error('unexpected success'); })
-        .catch(err => sent.push(err.toString()));
+      engine
+        .handleMessage('M2')
+        .then(() => {
+          throw new Error('unexpected success');
+        })
+        .catch((err) => sent.push(err.toString()));
       assert.deepEqual(sent, ['M1']);
 
       engine.handleError(new Error('uhoh'));
@@ -116,7 +122,7 @@ suite(testing.suiteName(), function() {
       for (let i = 0; i < 3; i++) {
         try {
           await pi.next();
-          assert(false, "should have failed");
+          assert(false, 'should have failed');
         } catch (err) {
           // expected an 'uhoh' error..
           if (!err.toString().match(/uhoh/)) {
@@ -125,12 +131,12 @@ suite(testing.suiteName(), function() {
         }
       }
 
-      assert.equal(engine.subscribed, false, "should have been unsubscribed");
+      assert.equal(engine.subscribed, false, 'should have been unsubscribed');
 
       // sending further messages fails
       try {
         await engine.handleMessage('M3');
-        assert(false, "should have failed");
+        assert(false, 'should have failed');
       } catch (err) {
         if (!err.toString().match(/iterator cancelled/)) {
           throw err;

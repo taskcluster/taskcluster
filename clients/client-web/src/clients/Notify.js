@@ -10,17 +10,130 @@ export default class Notify extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.email.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"email","query":[],"route":"/email","scopes":"notify:email:<address>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.pulse.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"pulse","query":[],"route":"/pulse","scopes":"notify:pulse:<routingKey>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.matrix.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"matrix","query":[],"route":"/matrix","scopes":"notify:matrix-room:<roomId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.slack.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"slack","query":[],"route":"/slack","scopes":"notify:slack-channel:<channelId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.addDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"post","name":"addDenylistAddress","query":[],"route":"/denylist/add","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.deleteDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"delete","name":"deleteDenylistAddress","query":[],"route":"/denylist/delete","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.listDenylist.entry = {"args":[],"category":"Denylist","method":"get","name":"listDenylist","output":true,"query":["continuationToken","limit"],"route":"/denylist/list","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'ping',
+      query: [],
+      route: '/ping',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.lbheartbeat.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'lbheartbeat',
+      query: [],
+      route: '/__lbheartbeat__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.version.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'version',
+      query: [],
+      route: '/__version__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.email.entry = {
+      args: [],
+      category: 'Notifications',
+      input: true,
+      method: 'post',
+      name: 'email',
+      query: [],
+      route: '/email',
+      scopes: 'notify:email:<address>',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.pulse.entry = {
+      args: [],
+      category: 'Notifications',
+      input: true,
+      method: 'post',
+      name: 'pulse',
+      query: [],
+      route: '/pulse',
+      scopes: 'notify:pulse:<routingKey>',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.matrix.entry = {
+      args: [],
+      category: 'Notifications',
+      input: true,
+      method: 'post',
+      name: 'matrix',
+      query: [],
+      route: '/matrix',
+      scopes: 'notify:matrix-room:<roomId>',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.slack.entry = {
+      args: [],
+      category: 'Notifications',
+      input: true,
+      method: 'post',
+      name: 'slack',
+      query: [],
+      route: '/slack',
+      scopes: 'notify:slack-channel:<channelId>',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.addDenylistAddress.entry = {
+      args: [],
+      category: 'Denylist',
+      input: true,
+      method: 'post',
+      name: 'addDenylistAddress',
+      query: [],
+      route: '/denylist/add',
+      scopes: 'notify:manage-denylist',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.deleteDenylistAddress.entry = {
+      args: [],
+      category: 'Denylist',
+      input: true,
+      method: 'delete',
+      name: 'deleteDenylistAddress',
+      query: [],
+      route: '/denylist/delete',
+      scopes: 'notify:manage-denylist',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listDenylist.entry = {
+      args: [],
+      category: 'Denylist',
+      method: 'get',
+      name: 'listDenylist',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/denylist/list',
+      scopes: 'notify:manage-denylist',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.heartbeat.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'heartbeat',
+      query: [],
+      route: '/__heartbeat__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

@@ -62,10 +62,12 @@ export const resetTables = async ({ tableNames }) => {
  * It's up to the caller to set up and clear any data between test cases.
  */
 export const withDb = (_mock, skipping, helper, serviceName) => {
-  assert(testDbUrl,
-    "TEST_DB_URL must be set to run these tests - see dev-docs/development-process.md for more information");
+  assert(
+    testDbUrl,
+    'TEST_DB_URL must be set to run these tests - see dev-docs/development-process.md for more information',
+  );
 
-  suiteSetup('withDb', async function() {
+  suiteSetup('withDb', async function () {
     if (skipping()) {
       return;
     }
@@ -100,8 +102,8 @@ export const withDb = (_mock, skipping, helper, serviceName) => {
     });
 
     // wrap the withClient method as a convenience
-    helper.withDbClient = fn => helper.db._withClient('write', fn);
-    helper.withAdminDbClient = async fn => {
+    helper.withDbClient = (fn) => helper.db._withClient('write', fn);
+    helper.withAdminDbClient = async (fn) => {
       const client = new Client({ connectionString: testDbUrl });
       await client.connect();
       try {
@@ -116,7 +118,7 @@ export const withDb = (_mock, skipping, helper, serviceName) => {
     }
   });
 
-  suiteTeardown('withDb', async function() {
+  suiteTeardown('withDb', async function () {
     if (skipping()) {
       return;
     }

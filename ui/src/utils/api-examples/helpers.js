@@ -127,11 +127,7 @@ export function camelCase(str) {
  * @param {string} rootUrl - Taskcluster root URL
  * @returns {string} JSON string with placeholder payload
  */
-export function generatePlaceholderPayload(
-  serviceName,
-  schemaRef,
-  rootUrl = PLACEHOLDERS.rootUrl
-) {
+export function generatePlaceholderPayload(serviceName, schemaRef, rootUrl = PLACEHOLDERS.rootUrl) {
   const schemaUrl = `${rootUrl}/schemas/${serviceName}/${schemaRef}`;
 
   return `{
@@ -158,7 +154,5 @@ export function formatPayloadJson(payload, baseIndent = 0) {
   // Add base indentation to all lines except the first
   const lines = json.split('\n');
 
-  return lines
-    .map((line, index) => (index === 0 ? line : indentStr + line))
-    .join('\n');
+  return lines.map((line, index) => (index === 0 ? line : indentStr + line)).join('\n');
 }

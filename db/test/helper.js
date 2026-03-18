@@ -10,7 +10,7 @@ const debug = debugFactory('db-helper');
 import { UNDEFINED_TABLE, UNDEFINED_COLUMN, runOnlineBatches } from '@taskcluster/lib-postgres';
 
 export const dbUrl = process.env.TEST_DB_URL;
-assert(dbUrl, "TEST_DB_URL must be set to run db/ tests - see dev-docs/development-process.md for more information");
+assert(dbUrl, 'TEST_DB_URL must be set to run db/ tests - see dev-docs/development-process.md for more information');
 
 // helper will be dynamically populated by withDbForVersion and withDbForProcs methods
 const helper = { dbUrl, resetDb };
@@ -31,13 +31,13 @@ export default helper;
  * should implement a `setup` method that sets state for all relevant tables
  * before each test case.
  */
-helper.withDbForVersion = function() {
+helper.withDbForVersion = function () {
   let pool;
   let dbs = {};
 
   const showProgress = Debug('showProgress');
 
-  suiteSetup('setup database', async function() {
+  suiteSetup('setup database', async function () {
     pool = new Pool({ connectionString: dbUrl });
 
     helper.withDbClient = async (cb) => {
@@ -61,7 +61,7 @@ helper.withDbForVersion = function() {
       }
     };
 
-    helper.setupDb = async serviceName => {
+    helper.setupDb = async (serviceName) => {
       if (dbs[serviceName]) {
         return dbs[serviceName];
       }
@@ -125,7 +125,7 @@ helper.withDbForVersion = function() {
     await resetDb({ testDbUrl: dbUrl });
   });
 
-  suiteTeardown('teardown database', async function() {
+  suiteTeardown('teardown database', async function () {
     if (pool) {
       await pool.end();
     }
@@ -149,9 +149,9 @@ helper.withDbForVersion = function() {
  * should implement a `setup` method that sets state for all relevant tables
  * before each test case.
  */
-helper.withDbForProcs = function({ serviceName }) {
+helper.withDbForProcs = function ({ serviceName }) {
   let db;
-  suiteSetup('setup database', async function() {
+  suiteSetup('setup database', async function () {
     db = await tcdb.setup({
       writeDbUrl: dbUrl,
       readDbUrl: dbUrl,
@@ -168,7 +168,7 @@ helper.withDbForProcs = function({ serviceName }) {
       ],
     });
 
-    helper.withDbClient = fn => db._withClient(WRITE, fn);
+    helper.withDbClient = (fn) => db._withClient(WRITE, fn);
 
     // clear the DB and upgrade it to the latest version
     await resetDb({ testDbUrl: dbUrl });
@@ -179,7 +179,7 @@ helper.withDbForProcs = function({ serviceName }) {
     });
   });
 
-  suiteTeardown('teardown database', async function() {
+  suiteTeardown('teardown database', async function () {
     if (db) {
       await db.close();
     }
@@ -192,7 +192,7 @@ helper.withDbForProcs = function({ serviceName }) {
    * test function both with a real and fake db.  This is used for testing functions.
    */
   helper.dbTest = (description, testFn) => {
-    test(description, async function() {
+    test(description, async function () {
       return testFn(db);
     });
   };
@@ -202,8 +202,8 @@ helper.withDbForProcs = function({ serviceName }) {
  * Assert that the given table exists and is empty (used to test table creation
  * in versions)
  */
-helper.assertTable = async name => {
-  await helper.withDbClient(async client => {
+helper.assertTable = async (name) => {
+  await helper.withDbClient(async (client) => {
     const res = await client.query(`select * from ${name}`);
     assert.deepEqual(res.rows, []);
   });
@@ -213,7 +213,7 @@ helper.assertTable = async name => {
  * Assert that the given column exists.
  */
 helper.assertTableColumn = async (table, column) => {
-  await helper.withDbClient(async client => {
+  await helper.withDbClient(async (client) => {
     await client.query(`select ${column} from ${table}`);
   });
 };
@@ -222,9 +222,12 @@ helper.assertTableColumn = async (table, column) => {
  * Assert that the given table does not exist (used to test table deletion in
  * downgrade scripts).
  */
-helper.assertNoTable = async name => {
-  await helper.withDbClient(async client => {
-    await assert.rejects(() => client.query(`select * from ${name}`), err => err.code === UNDEFINED_TABLE);
+helper.assertNoTable = async (name) => {
+  await helper.withDbClient(async (client) => {
+    await assert.rejects(
+      () => client.query(`select * from ${name}`),
+      (err) => err.code === UNDEFINED_TABLE,
+    );
   });
 };
 
@@ -232,10 +235,11 @@ helper.assertNoTable = async name => {
  * Assert that the given column does not exist.
  */
 helper.assertNoTableColumn = async (table, column) => {
-  await helper.withDbClient(async client => {
+  await helper.withDbClient(async (client) => {
     await assert.rejects(
       () => client.query(`select ${column} from ${table}`),
-      err => err.code === UNDEFINED_COLUMN);
+      (err) => err.code === UNDEFINED_COLUMN,
+    );
   });
 };
 
@@ -263,7 +267,7 @@ const queryIndexInfo = async (client, table, index, column) =>
  * Assert that the table contains given index on specific column
  */
 helper.assertIndexOnColumn = async (table, index, column) => {
-  await helper.withDbClient(async client => {
+  await helper.withDbClient(async (client) => {
     const res = await queryIndexInfo(client, table, index, column);
     assert.deepEqual(res.rows, [{ table, index, column }]);
   });
@@ -273,7 +277,7 @@ helper.assertIndexOnColumn = async (table, index, column) => {
  * Assert that the table doesn't contain given index on a column
  */
 helper.assertNoIndexOnColumn = async (table, index, column) => {
-  await helper.withDbClient(async client => {
+  await helper.withDbClient(async (client) => {
     const res = await queryIndexInfo(client, table, index, column);
     assert.deepEqual(res.rows, []);
   });
@@ -305,7 +309,8 @@ helper.dbVersionTest = ({
   // the version being tested
   version,
   // true if there's an online migration / downgrade
-  onlineMigration, onlineDowngrade,
+  onlineMigration,
+  onlineDowngrade,
   // function (taking a client) to create data at the *previous* version
   createData,
   // function (taking a client) to check state at the previous version
@@ -329,7 +334,7 @@ helper.dbVersionTest = ({
   // of hooks to call checkpoint functions as the function progresses.  If any
   // of those return `abort`, the function returns immediately.
   const withCheckpoints = async (updown, checkpoints) => {
-    const check = async checkpoint => {
+    const check = async (checkpoint) => {
       debug(`checkpoint: ${checkpoint}`);
       if (checkpoints[checkpoint]) {
         await checkpoints[checkpoint]();
@@ -337,7 +342,7 @@ helper.dbVersionTest = ({
     };
 
     // do at most 10 items in a batch
-    runOnlineBatches.setHook('batchSize', async batchSize => Math.min(batchSize, 10));
+    runOnlineBatches.setHook('batchSize', async (batchSize) => Math.min(batchSize, 10));
 
     // hook in before each batch and call a checkpoint function
     runOnlineBatches.setHook('preBatch', async (outerCount, count) => {
@@ -383,8 +388,8 @@ helper.dbVersionTest = ({
     }
   };
 
-  suite(`dbVersionTest for v${version}`, function() {
-    setup(async function() {
+  suite(`dbVersionTest for v${version}`, function () {
+    setup(async function () {
       sawMigrationBatches = false;
       sawDowngradeBatches = false;
       await resetDb({ testDbUrl: dbUrl });
@@ -392,12 +397,12 @@ helper.dbVersionTest = ({
       await helper.withDbClient(createData);
     });
 
-    teardown(async function() {
+    teardown(async function () {
       runOnlineBatches.resetHooks();
     });
 
-    test('successful upgrade, downgrade process', async function() {
-      await helper.withDbClient(async client => {
+    test('successful upgrade, downgrade process', async function () {
+      await helper.withDbClient(async (client) => {
         await startCheck(client);
         await withCheckpoints('up', {
           start: async () => await concurrentCheck(client),
@@ -422,11 +427,13 @@ helper.dbVersionTest = ({
       return;
     }
 
-    test('upgrade fails mid-online, restarted, downgrade fails mid-online, restarted', async function() {
-      await helper.withDbClient(async client => {
+    test('upgrade fails mid-online, restarted, downgrade fails mid-online, restarted', async function () {
+      await helper.withDbClient(async (client) => {
         await startCheck(client);
         await withCheckpoints('up', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('up', {
           start: async () => await concurrentCheck(client),
@@ -436,7 +443,9 @@ helper.dbVersionTest = ({
         });
         await finishedCheck(client);
         await withCheckpoints('down', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('down', {
           start: async () => await concurrentCheck(client),
@@ -449,20 +458,28 @@ helper.dbVersionTest = ({
       });
     });
 
-    test('restart upgrades and downgrades repeatedly', async function() {
-      await helper.withDbClient(async client => {
+    test('restart upgrades and downgrades repeatedly', async function () {
+      await helper.withDbClient(async (client) => {
         await startCheck(client);
         await withCheckpoints('up', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('down', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('up', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('down', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('up', {
           start: async () => await concurrentCheck(client),
@@ -475,10 +492,12 @@ helper.dbVersionTest = ({
       });
     });
 
-    test('upgrade fails mid-online, downgrade', async function() {
-      await helper.withDbClient(async client => {
+    test('upgrade fails mid-online, downgrade', async function () {
+      await helper.withDbClient(async (client) => {
         await withCheckpoints('up', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('down', {
           start: async () => await concurrentCheck(client),

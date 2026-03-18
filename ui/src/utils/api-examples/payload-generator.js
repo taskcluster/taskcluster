@@ -31,10 +31,7 @@ function getContextualPlaceholder(propertyName, type) {
     return PLACEHOLDERS.taskId;
   }
 
-  if (
-    type === 'string' &&
-    (lowerName.includes('taskgroupid') || lowerName === 'taskgroupid')
-  ) {
+  if (type === 'string' && (lowerName.includes('taskgroupid') || lowerName === 'taskgroupid')) {
     return PLACEHOLDERS.taskGroupId;
   }
 
@@ -95,10 +92,7 @@ function getContextualPlaceholder(propertyName, type) {
   }
 
   // Common patterns for counts/limits
-  if (
-    (lowerName.includes('count') || lowerName === 'limit') &&
-    (type === 'number' || type === 'integer')
-  ) {
+  if ((lowerName.includes('count') || lowerName === 'limit') && (type === 'number' || type === 'integer')) {
     return 10;
   }
 
@@ -154,56 +148,36 @@ function resolveRef(ref, currentSchemaId, allSchemas, visitedRefs = new Set()) {
   // Internal reference (same file)
   if (!fileRef || fileRef === '') {
     // Find the root schema document using the current schema ID
-    targetSchema = allSchemas.find(
-      s => s.content && s.content.$id === currentSchemaId
-    );
+    targetSchema = allSchemas.find((s) => s.content && s.content.$id === currentSchemaId);
 
     if (!targetSchema) {
       return null;
     }
 
-    const resolved = navigateJsonPointer(
-      targetSchema.content,
-      `#${pathRef || ''}`
-    );
+    const resolved = navigateJsonPointer(targetSchema.content, `#${pathRef || ''}`);
 
     // If resolved schema has a $ref, resolve it recursively
     if (resolved?.$ref) {
-      return resolveRef(
-        resolved.$ref,
-        currentSchemaId,
-        allSchemas,
-        visitedRefs
-      );
+      return resolveRef(resolved.$ref, currentSchemaId, allSchemas, visitedRefs);
     }
 
     return resolved;
   }
 
   // External reference - find schema by filename in $id
-  targetSchema = allSchemas.find(
-    s => s.content?.$id?.endsWith(fileRef)
-  );
+  targetSchema = allSchemas.find((s) => s.content?.$id?.endsWith(fileRef));
 
   if (!targetSchema) {
     return null;
   }
 
   // Navigate path in target schema
-  const resolved = navigateJsonPointer(
-    targetSchema.content,
-    `#${pathRef || ''}`
-  );
+  const resolved = navigateJsonPointer(targetSchema.content, `#${pathRef || ''}`);
 
   // If resolved schema has a $ref, resolve it recursively with the new
   // schema context
   if (resolved?.$ref) {
-    return resolveRef(
-      resolved.$ref,
-      targetSchema.content.$id,
-      allSchemas,
-      visitedRefs
-    );
+    return resolveRef(resolved.$ref, targetSchema.content.$id, allSchemas, visitedRefs);
   }
 
   return resolved;
@@ -289,10 +263,7 @@ function generateStringExample(schema, propertyName) {
   // Use pattern as hint if available
   if (schema.pattern) {
     // Try to generate a realistic value for common patterns
-    if (
-      schema.pattern.includes('[a-z]') ||
-      schema.pattern.includes('[a-zA-Z]')
-    ) {
+    if (schema.pattern.includes('[a-z]') || schema.pattern.includes('[a-zA-Z]')) {
       return 'example-value';
     }
 
@@ -369,14 +340,7 @@ function generateNumberExample(schema, propertyName = '') {
  * @param {Set} visitedRefs - Set of visited $refs
  * @returns {Array} Example array value
  */
-function generateArrayExample(
-  schema,
-  propertyName,
-  visited,
-  allSchemas,
-  currentSchemaId,
-  visitedRefs
-) {
+function generateArrayExample(schema, propertyName, visited, allSchemas, currentSchemaId, visitedRefs) {
   // Use default if available
   if (schema.default !== undefined) {
     return schema.default;
@@ -403,7 +367,7 @@ function generateArrayExample(
       visited,
       allSchemas,
       currentSchemaId,
-      visitedRefs
+      visitedRefs,
     );
 
     return [itemExample];
@@ -423,13 +387,7 @@ function generateArrayExample(
  * @param {Set} visitedRefs - Set of visited $refs
  * @returns {object} Example object value
  */
-function generateObjectExample(
-  schema,
-  visited,
-  allSchemas,
-  currentSchemaId,
-  visitedRefs
-) {
+function generateObjectExample(schema, visited, allSchemas, currentSchemaId, visitedRefs) {
   // Use default if available (but avoid empty arrays as default)
   if (schema.default !== undefined && !Array.isArray(schema.default)) {
     return schema.default;
@@ -447,7 +405,7 @@ function generateObjectExample(
     const required = schema.required || [];
 
     // Add required properties first
-    required.forEach(propName => {
+    required.forEach((propName) => {
       if (schema.properties[propName]) {
         // eslint-disable-next-line no-use-before-define
         example[propName] = generateExampleValue(
@@ -456,15 +414,13 @@ function generateObjectExample(
           visited,
           allSchemas,
           currentSchemaId,
-          visitedRefs
+          visitedRefs,
         );
       }
     });
 
     // Optionally add one non-required property as an example
-    const optionalProps = Object.keys(schema.properties).filter(
-      propName => !required.includes(propName)
-    );
+    const optionalProps = Object.keys(schema.properties).filter((propName) => !required.includes(propName));
 
     if (optionalProps.length > 0 && required.length < 3) {
       // Only add optional if we don't have too many required
@@ -477,16 +433,13 @@ function generateObjectExample(
         visited,
         allSchemas,
         currentSchemaId,
-        visitedRefs
+        visitedRefs,
       );
     }
   }
 
   // If no properties defined but additionalProperties allowed, add example
-  if (
-    Object.keys(example).length === 0 &&
-    schema.additionalProperties !== false
-  ) {
+  if (Object.keys(example).length === 0 && schema.additionalProperties !== false) {
     example.exampleKey = 'example-value';
   }
 
@@ -510,7 +463,7 @@ function generateExampleValue(
   visited = new Set(),
   allSchemas = [],
   currentSchemaId = null,
-  visitedRefs = new Set()
+  visitedRefs = new Set(),
 ) {
   if (!schema) {
     return {};
@@ -520,25 +473,13 @@ function generateExampleValue(
   if (schema.$ref) {
     // Determine the schema ID to use for resolution
     const schemaIdForResolution = currentSchemaId || schema.$id;
-    const resolved = resolveRef(
-      schema.$ref,
-      schemaIdForResolution,
-      allSchemas,
-      visitedRefs
-    );
+    const resolved = resolveRef(schema.$ref, schemaIdForResolution, allSchemas, visitedRefs);
 
     if (resolved) {
       // Determine the new schema ID context
       const newSchemaId = resolved.$id || schemaIdForResolution;
 
-      return generateExampleValue(
-        resolved,
-        propertyName,
-        visited,
-        allSchemas,
-        newSchemaId,
-        visitedRefs
-      );
+      return generateExampleValue(resolved, propertyName, visited, allSchemas, newSchemaId, visitedRefs);
     }
     // If resolution fails, fall through to default handling
   }
@@ -557,33 +498,19 @@ function generateExampleValue(
 
   // Handle oneOf - pick the first option
   if (schema.oneOf && Array.isArray(schema.oneOf)) {
-    return generateExampleValue(
-      schema.oneOf[0],
-      propertyName,
-      visited,
-      allSchemas,
-      effectiveSchemaId,
-      visitedRefs
-    );
+    return generateExampleValue(schema.oneOf[0], propertyName, visited, allSchemas, effectiveSchemaId, visitedRefs);
   }
 
   // Handle anyOf - pick the first option
   if (schema.anyOf && Array.isArray(schema.anyOf)) {
-    return generateExampleValue(
-      schema.anyOf[0],
-      propertyName,
-      visited,
-      allSchemas,
-      effectiveSchemaId,
-      visitedRefs
-    );
+    return generateExampleValue(schema.anyOf[0], propertyName, visited, allSchemas, effectiveSchemaId, visitedRefs);
   }
 
   // Handle allOf - merge all schemas (simplified)
   if (schema.allOf && Array.isArray(schema.allOf)) {
     const merged = {};
 
-    schema.allOf.forEach(subSchema => {
+    schema.allOf.forEach((subSchema) => {
       // eslint-disable-next-line no-use-before-define
       const example = generateExampleValue(
         subSchema,
@@ -591,7 +518,7 @@ function generateExampleValue(
         visited,
         allSchemas,
         effectiveSchemaId,
-        visitedRefs
+        visitedRefs,
       );
 
       if (typeof example === 'object' && example !== null) {
@@ -615,7 +542,7 @@ function generateExampleValue(
   // Get type (can be string or array)
   const types = Array.isArray(schema.type) ? schema.type : [schema.type];
   // Prefer non-null types if available
-  const type = types.find(t => t !== 'null') || types[0];
+  const type = types.find((t) => t !== 'null') || types[0];
 
   // Generate value based on type
   switch (type) {
@@ -627,22 +554,9 @@ function generateExampleValue(
     case 'boolean':
       return schema.default !== undefined ? schema.default : false;
     case 'array':
-      return generateArrayExample(
-        schema,
-        propertyName,
-        visited,
-        allSchemas,
-        effectiveSchemaId,
-        visitedRefs
-      );
+      return generateArrayExample(schema, propertyName, visited, allSchemas, effectiveSchemaId, visitedRefs);
     case 'object':
-      return generateObjectExample(
-        schema,
-        visited,
-        allSchemas,
-        effectiveSchemaId,
-        visitedRefs
-      );
+      return generateObjectExample(schema, visited, allSchemas, effectiveSchemaId, visitedRefs);
     case 'null':
       // Avoid returning null for non-nullable fields
       return types.length === 1 ? {} : null;
@@ -665,14 +579,7 @@ export default function generatePayloadExample(schema, allSchemas = []) {
   }
 
   try {
-    return generateExampleValue(
-      schema,
-      '',
-      new Set(),
-      allSchemas,
-      schema.$id,
-      new Set()
-    );
+    return generateExampleValue(schema, '', new Set(), allSchemas, schema.$id, new Set());
   } catch (_error) {
     // Error generating payload example
     return null;

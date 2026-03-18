@@ -5,18 +5,18 @@ import TimeKeeper from './timekeeper.js';
 import { hrtime } from 'node:process';
 
 /**
-* @typedef {object} MonitorOptions
-* @property {import('./monitormanager.js').MonitorManager} manager
-* @property {string[]} name
-* @property {object} metadata
-* @property {boolean} verify
-* @property {boolean} fake
-* @property {boolean} patchGlobal
-* @property {boolean} bailOnUnhandledRejection
-* @property {number} resourceInterval
-* @property {string | null} processName
-* @property {boolean} monitorProcess
-*/
+ * @typedef {object} MonitorOptions
+ * @property {import('./monitormanager.js').MonitorManager} manager
+ * @property {string[]} name
+ * @property {object} metadata
+ * @property {boolean} verify
+ * @property {boolean} fake
+ * @property {boolean} patchGlobal
+ * @property {boolean} bailOnUnhandledRejection
+ * @property {number} resourceInterval
+ * @property {string | null} processName
+ * @property {boolean} monitorProcess
+ */
 
 class Monitor {
   /**
@@ -243,11 +243,14 @@ class Monitor {
       exitStatus = 1;
     } finally {
       const end = hrtime.bigint();
-      this.log.periodic({
-        name,
-        duration: Number(end - start) / 1e6, // in ms
-        status: exitStatus ? 'exception' : 'success',
-      }, { level: exitStatus ? 'err' : 'notice' });
+      this.log.periodic(
+        {
+          name,
+          duration: Number(end - start) / 1e6, // in ms
+          status: exitStatus ? 'exception' : 'success',
+        },
+        { level: exitStatus ? 'err' : 'notice' },
+      );
       if (!this.fake || this.fake.allowExit) {
         await this._exit(exitStatus);
       }
@@ -294,7 +297,7 @@ class Monitor {
    *
    */
   reportError(err, level = 'err', extra = {}) {
-    if (!(Object.prototype.hasOwnProperty.call(err, 'stack') || Object.prototype.hasOwnProperty.call(err, 'message'))) {
+    if (!(Object.hasOwn(err, 'stack') || Object.hasOwn(err, 'message'))) {
       err = new Error(err);
     }
     if (typeof level !== 'string') {
@@ -351,10 +354,15 @@ class Monitor {
     const requiredFields = Object.keys(fields);
     this.log[name] = (fields = {}, overrides = {}) => {
       if (this.verify) {
-        assert(level !== 'any' || overrides.level !== undefined, 'Must provide `overrides.level` if registered level is `any`.');
+        assert(
+          level !== 'any' || overrides.level !== undefined,
+          'Must provide `overrides.level` if registered level is `any`.',
+        );
         const providedFields = Object.keys(fields);
         assert(!providedFields.includes('v'), '"v" is a reserved field for logging messages.');
-        requiredFields.forEach(f => assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`));
+        requiredFields.forEach((f) =>
+          assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`),
+        );
       }
       const lv = level === 'any' ? overrides.level : level;
       this._log[lv](type, { v: version, ...fields });

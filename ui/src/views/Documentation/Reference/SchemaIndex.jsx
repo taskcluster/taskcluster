@@ -6,12 +6,12 @@ import HeaderWithAnchor from '../components/HeaderWithAnchor';
 import references from '../../../../../generated/references.json';
 
 const filteredSchemas = pipe(
-  filter(entry => entry.filename.startsWith('schemas/')),
-  map(entry => entry)
+  filter((entry) => entry.filename.startsWith('schemas/')),
+  map((entry) => entry),
 );
 const sortSchemas = pipe(
   rSort((a, b) => sort(a.content.$id, b.content.$id)),
-  map(entry => entry)
+  map((entry) => entry),
 );
 
 export default class SchemaIndex extends Component {
@@ -21,7 +21,7 @@ export default class SchemaIndex extends Component {
     return (
       <div>
         <HeaderWithAnchor>Schema Index</HeaderWithAnchor>
-        {sortedReferences.map(ref => (
+        {sortedReferences.map((ref) => (
           <Entry
             key={ref.content.$id}
             type="schema"

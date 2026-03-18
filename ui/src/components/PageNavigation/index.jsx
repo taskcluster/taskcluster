@@ -7,7 +7,7 @@ import { string, oneOf } from 'prop-types';
 import Link from '../../utils/Link';
 import Button from '../Button';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -52,23 +52,14 @@ export default class PageNavigation extends Component {
       <Link className={classes.link} to={to}>
         <Button variant="outlined" className={classes.button} {...props}>
           <Fragment>
-            {variant === 'prev' && (
-              <ArrowLeftIcon className={classes.leftIcon} />
-            )}
-            <div
-              className={
-                variant === 'prev'
-                  ? classes.leftButtonText
-                  : classes.rightButtonText
-              }>
+            {variant === 'prev' && <ArrowLeftIcon className={classes.leftIcon} />}
+            <div className={variant === 'prev' ? classes.leftButtonText : classes.rightButtonText}>
               <Typography variant="caption" color="textSecondary">
                 {variant}
               </Typography>
               <Typography variant="button">{children}</Typography>
             </div>
-            {variant === 'next' && (
-              <ArrowRightIcon className={classes.rightIcon} />
-            )}
+            {variant === 'next' && <ArrowRightIcon className={classes.rightIcon} />}
           </Fragment>
         </Button>
       </Link>

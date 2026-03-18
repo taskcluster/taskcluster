@@ -1,5 +1,5 @@
 query TaskNamespace($namespace: String!, $taskConnection: PageConnection) {
-  taskNamespace(namespace:$namespace, connection: $taskConnection) {
+  taskNamespace(namespace: $namespace, connection: $taskConnection) {
     pageInfo {
       hasNextPage
       hasPreviousPage

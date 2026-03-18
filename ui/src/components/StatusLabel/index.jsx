@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Label from '../Label';
 import labels from '../../utils/labels';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   pending: {
     backgroundColor: `${purple[400]} !important`,
     color: `${theme.palette.getContrastText(purple[400])} !important`,
@@ -51,9 +51,10 @@ export default class StatusLabel extends Component {
           {
             [classes.pending]: state === 'PENDING',
           },
-          className
+          className,
         )}
-        {...props}>
+        {...props}
+      >
         {state || 'UNKNOWN'}
       </Label>
     );

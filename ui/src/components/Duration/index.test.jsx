@@ -1,4 +1,3 @@
-
 import { render, act } from '@testing-library/react';
 import Duration from './index';
 
@@ -71,9 +70,7 @@ describe('Duration component', () => {
   it('should handle key prop change correctly (task switch due to filtering)', () => {
     const task1From = '2025-01-01T00:00:00.000Z';
     const task2From = '2025-01-01T00:10:00.000Z';
-    const { container, rerender } = render(
-      <Duration key="task1" from={task1From} />
-    );
+    const { container, rerender } = render(<Duration key="task1" from={task1From} />);
 
     rerender(<Duration key="task2" from={task2From} />);
 

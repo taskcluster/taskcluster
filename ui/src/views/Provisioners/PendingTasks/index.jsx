@@ -19,13 +19,10 @@ import WorkersNavbar from '../../../components/WorkersNavbar';
 import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
 
 @graphql(pendingTasks, {
-  options: props => ({
+  options: (props) => ({
     errorPolicy: 'all',
     variables: {
-      taskQueueId: joinWorkerPoolId(
-        props.match.params.provisionerId,
-        props.match.params.workerType
-      ),
+      taskQueueId: joinWorkerPoolId(props.match.params.provisionerId, props.match.params.workerType),
       connection: {
         limit: VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE,
       },
@@ -51,11 +48,7 @@ export default class WMViewPendingTasks extends Component {
       },
       updateQuery(previousResult, { fetchMoreResult: { listPendingTasks } }) {
         // use dotProp.set to avoid lint warning about assigning to properties
-        return dotProp.set(
-          previousResult,
-          'listPendingTasks',
-          listPendingTasks
-        );
+        return dotProp.set(previousResult, 'listPendingTasks', listPendingTasks);
       },
     });
   };
@@ -103,16 +96,15 @@ export default class WMViewPendingTasks extends Component {
     const wpMissing = error?.message?.includes('Worker pool does not exist');
 
     return (
-      <Dashboard
-        title={`Pending tasks in "${provisionerId}/${workerType}"`}
-        disableTitleFormatting>
+      <Dashboard title={`Pending tasks in "${provisionerId}/${workerType}"`} disableTitleFormatting>
         <Box
           sx={{
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
             width: '100%',
-          }}>
+          }}
+        >
           <div style={{ flexGrow: 1, marginRight: 8 }}>
             <Breadcrumbs>
               <Link to="/provisioners">
@@ -121,8 +113,7 @@ export default class WMViewPendingTasks extends Component {
               <Link to={`/provisioners/${provisionerId}`}>
                 <Typography variant="body2">{provisionerId}</Typography>
               </Link>
-              <Link
-                to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
+              <Link to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
                 <Typography variant="body2">{workerType}</Typography>
               </Link>
               <WorkersNavbar

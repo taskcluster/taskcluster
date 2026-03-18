@@ -6,7 +6,7 @@ import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { queueUtils } from '../src/utils.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -20,14 +20,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.db.fns.create_hook(
         hookGroupId,
         hookId,
-        {}, /* metadata */
-        {}, /* task */
-        JSON.stringify(bindings), /* bindings */
-        JSON.stringify([]), /* schedule */
-        helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_trigger_token */
-        helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_next_task_id */
-        taskcluster.fromNow('1 day'), /* next_scheduled_date */
-        {}, /* trigger_schema */
+        {} /* metadata */,
+        {} /* task */,
+        JSON.stringify(bindings) /* bindings */,
+        JSON.stringify([]) /* schedule */,
+        helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }) /* encrypted_trigger_token */,
+        helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }) /* encrypted_next_task_id */,
+        taskcluster.fromNow('1 day') /* next_scheduled_date */,
+        {} /* trigger_schema */,
       );
     }
   };
@@ -47,7 +47,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const assertQueueEntities = async (...queues) => {
     const exp = queues.reduce(
-      (acc, { hookId, bindings }) => Object.assign(acc, { [`${hookGroupId}/${hookId}`]: bindings }), {});
+      (acc, { hookId, bindings }) => Object.assign(acc, { [`${hookGroupId}/${hookId}`]: bindings }),
+      {},
+    );
     const got = {};
 
     const rows = await helper.db.fns.get_hooks_queues(null, null);
@@ -62,11 +64,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   const qn = (hookGroupId, hookId) => `${hookGroupId}/${hookId}`;
 
-  suite('syncBindings', function() {
+  suite('syncBindings', function () {
     let hookListeners;
     let channels = [];
 
-    suiteSetup(async function() {
+    suiteSetup(async function () {
       if (skipping()) {
         this.skip();
       }
@@ -112,17 +114,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       hookListeners.client = {
         fullObjectName: hookListeners.client.fullObjectName,
         isFakeClient: false,
-        withChannel: async fn => {
+        withChannel: async (fn) => {
           await fn(new Channel());
         },
       };
     });
 
-    setup(function() {
+    setup(function () {
       channels = [];
     });
 
-    suiteTeardown(function() {
+    suiteTeardown(function () {
       if (skipping()) {
         this.skip();
       }
@@ -137,10 +139,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       routingKeyPattern,
     });
 
-    test('add bindings', async function() {
-      const res = await hookListeners.syncBindings('qn',
+    test('add bindings', async function () {
+      const res = await hookListeners.syncBindings(
+        'qn',
         [binding('e', 'r1'), binding('e', 'r2')],
-        [binding('e', 'r2')]);
+        [binding('e', 'r2')],
+      );
 
       assert.deepEqual(new Set(res), new Set([binding('e', 'r1'), binding('e', 'r2')]));
 
@@ -149,10 +153,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(channels[0].unbindings, []);
     });
 
-    test('add bindings with nonexistent exchange', async function() {
-      const res = await hookListeners.syncBindings('qn',
+    test('add bindings with nonexistent exchange', async function () {
+      const res = await hookListeners.syncBindings(
+        'qn',
         [binding('e', 'r1'), binding('nonexistent', 'xx'), binding('e', 'r2')],
-        []);
+        [],
+      );
 
       assert.deepEqual(new Set(res), new Set([binding('e', 'r1'), binding('e', 'r2')]));
 
@@ -164,18 +170,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(channels[2].unbindings, []);
     });
 
-    test('add bindings with error', async function() {
+    test('add bindings with error', async function () {
       assert.rejects(async () => {
-        await hookListeners.syncBindings('qn',
-          [binding('explode', 'xx')],
-          []);
+        await hookListeners.syncBindings('qn', [binding('explode', 'xx')], []);
       }, /boom/);
     });
 
-    test('remove bindings', async function() {
-      const res = await hookListeners.syncBindings('qn',
+    test('remove bindings', async function () {
+      const res = await hookListeners.syncBindings(
+        'qn',
         [binding('e', 'r2')],
-        [binding('e', 'r1'), binding('e', 'r2')]);
+        [binding('e', 'r1'), binding('e', 'r2')],
+      );
 
       assert.deepEqual(res, [binding('e', 'r2')]);
 
@@ -184,10 +190,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(channels[0].unbindings, [namedbinding('qn', 'e', 'r1')]);
     });
 
-    test('no change', async function() {
-      const res = await hookListeners.syncBindings('qn',
+    test('no change', async function () {
+      const res = await hookListeners.syncBindings(
+        'qn',
         [binding('e', 'r1'), binding('e', 'r2')],
-        [binding('e', 'r1'), binding('e', 'r2')]);
+        [binding('e', 'r1'), binding('e', 'r2')],
+      );
 
       assert.deepEqual(new Set(res), new Set([binding('e', 'r1'), binding('e', 'r2')]));
 
@@ -195,33 +203,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('reconcileConsumers', function() {
+  suite('reconcileConsumers', function () {
     let hookListeners;
     let createdListeners;
     let createdQueues;
 
-    setup('load and mock HookListeners', async function() {
+    setup('load and mock HookListeners', async function () {
       hookListeners = await helper.load('listeners');
 
       createdListeners = new Set();
       createdQueues = new Map();
-      hookListeners.createListener = sinon.fake(
-        async queueName => {
-          createdListeners.add(queueName);
-          createdQueues.set(queueName, []);
-        });
-      hookListeners.removeListener = sinon.fake(
-        async queueName => createdListeners.delete(queueName));
-      hookListeners.deleteQueue = sinon.fake(
-        async queueName => createdQueues.delete(queueName));
-      hookListeners.syncBindings = sinon.fake(
-        async (queueName, newBindings, _oldBindings) => {
-          createdQueues.set(queueName, newBindings);
-          return newBindings;
-        });
+      hookListeners.createListener = sinon.fake(async (queueName) => {
+        createdListeners.add(queueName);
+        createdQueues.set(queueName, []);
+      });
+      hookListeners.removeListener = sinon.fake(async (queueName) => createdListeners.delete(queueName));
+      hookListeners.deleteQueue = sinon.fake(async (queueName) => createdQueues.delete(queueName));
+      hookListeners.syncBindings = sinon.fake(async (queueName, newBindings, _oldBindings) => {
+        createdQueues.set(queueName, newBindings);
+        return newBindings;
+      });
     });
 
-    test('with no changes does nothing', async function() {
+    test('with no changes does nothing', async function () {
       await hookListeners.reconcileConsumers();
 
       sinon.assert.callCount(hookListeners.createListener, 0);
@@ -230,7 +234,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       sinon.assert.callCount(hookListeners.syncBindings, 0);
     });
 
-    test('with a newly-minted hook creates listener, bindings', async function() {
+    test('with a newly-minted hook creates listener, bindings', async function () {
       const bindings = [{ exchange: 'e', routingKeyPattern: 'foo.#' }];
 
       await makeHookEntities({ hookId, bindings });
@@ -238,18 +242,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await hookListeners.reconcileConsumers();
 
       sinon.assert.calledOnce(hookListeners.createListener);
-      sinon.assert.calledWith(hookListeners.createListener,
-        hookGroupId, hookId, qn(hookGroupId, hookId));
+      sinon.assert.calledWith(hookListeners.createListener, hookGroupId, hookId, qn(hookGroupId, hookId));
       sinon.assert.callCount(hookListeners.removeListener, 0);
       sinon.assert.callCount(hookListeners.deleteQueue, 0);
       sinon.assert.calledOnce(hookListeners.syncBindings);
-      sinon.assert.calledWith(hookListeners.syncBindings,
-        qn(hookGroupId, hookId), bindings, []);
+      sinon.assert.calledWith(hookListeners.syncBindings, qn(hookGroupId, hookId), bindings, []);
 
       await assertQueueEntities({ hookId, bindings });
     });
 
-    test('with bindings already in Queues', async function() {
+    test('with bindings already in Queues', async function () {
       const bindings = [{ exchange: 'e', routingKeyPattern: 'foo.#' }];
 
       await makeHookEntities({ hookId, bindings });
@@ -258,18 +260,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await hookListeners.reconcileConsumers();
 
       sinon.assert.calledOnce(hookListeners.createListener);
-      sinon.assert.calledWith(hookListeners.createListener,
-        hookGroupId, hookId, qn(hookGroupId, hookId));
+      sinon.assert.calledWith(hookListeners.createListener, hookGroupId, hookId, qn(hookGroupId, hookId));
       sinon.assert.callCount(hookListeners.removeListener, 0);
       sinon.assert.callCount(hookListeners.deleteQueue, 0);
       sinon.assert.calledOnce(hookListeners.syncBindings);
-      sinon.assert.calledWith(hookListeners.syncBindings,
-        qn(hookGroupId, hookId), bindings, bindings); // no change
+      sinon.assert.calledWith(hookListeners.syncBindings, qn(hookGroupId, hookId), bindings, bindings); // no change
 
       await assertQueueEntities({ hookId, bindings });
     });
 
-    test('with changed bindings', async function() {
+    test('with changed bindings', async function () {
       const bindings = [{ exchange: 'e', routingKeyPattern: 'foo.#' }];
       const newBindings = [{ exchange: 'e2', routingKeyPattern: '#' }];
 
@@ -279,18 +279,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await hookListeners.reconcileConsumers();
 
       sinon.assert.calledOnce(hookListeners.createListener);
-      sinon.assert.calledWith(hookListeners.createListener,
-        hookGroupId, hookId, qn(hookGroupId, hookId));
+      sinon.assert.calledWith(hookListeners.createListener, hookGroupId, hookId, qn(hookGroupId, hookId));
       sinon.assert.callCount(hookListeners.removeListener, 0);
       sinon.assert.callCount(hookListeners.deleteQueue, 0);
       sinon.assert.calledOnce(hookListeners.syncBindings);
-      sinon.assert.calledWith(hookListeners.syncBindings,
-        qn(hookGroupId, hookId), newBindings, bindings);
+      sinon.assert.calledWith(hookListeners.syncBindings, qn(hookGroupId, hookId), newBindings, bindings);
 
       await assertQueueEntities({ hookId, bindings: newBindings });
     });
 
-    test('with deleted bindings and no listener', async function() {
+    test('with deleted bindings and no listener', async function () {
       const bindings = [{ exchange: 'e', routingKeyPattern: 'foo.#' }];
       const newBindings = [];
 
@@ -308,7 +306,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await assertQueueEntities();
     });
 
-    test('with deleted hook and active listener', async function() {
+    test('with deleted hook and active listener', async function () {
       const bindings = [{ exchange: 'e', routingKeyPattern: 'foo.#' }];
 
       await makeQueueEntities({ hookId, bindings });
@@ -327,16 +325,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('firing hooks', function() {
+  suite('firing hooks', function () {
     let hookListeners;
 
-    suiteSetup(function() {
+    suiteSetup(function () {
       if (skipping()) {
         this.skip();
       }
     });
 
-    setup('load and mock HookListeners', async function() {
+    setup('load and mock HookListeners', async function () {
       // force-reload the listeners component for each test
       helper.load.remove('listeners');
       hookListeners = await helper.load('listeners');
@@ -353,12 +351,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         payload: { location: 'Orlando' },
       });
 
-      assume(helper.creator.fireCalls).deep.equals([{
-        hookGroupId,
-        hookId,
-        context: { firedBy: 'pulseMessage', payload: { location: 'Orlando' } },
-        options: {},
-      }]);
+      assume(helper.creator.fireCalls).deep.equals([
+        {
+          hookGroupId,
+          hookId,
+          context: { firedBy: 'pulseMessage', payload: { location: 'Orlando' } },
+          options: {},
+        },
+      ]);
     });
 
     test('does nothing if the hook is gone', async () => {

@@ -10,7 +10,7 @@ import ListItem from '../ListItem';
 
 // Render a "Next Steps" section with links to further tutorial
 // sections.
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   divider: {
     margin: `${theme.spacing(3)}px 0`,
   },
@@ -28,10 +28,7 @@ export default function TutorialNavigation({ children, links }) {
         <List>
           {links.map(({ link, text }) => (
             <ListItem key={link}>
-              <Anchor
-                href={link.startsWith('/') ? link : `/docs/tutorial/${link}`}>
-                {text}
-              </Anchor>
+              <Anchor href={link.startsWith('/') ? link : `/docs/tutorial/${link}`}>{text}</Anchor>
             </ListItem>
           ))}
         </List>
@@ -46,6 +43,6 @@ TutorialNavigation.propTypes = {
     shape({
       link: string,
       text: string,
-    })
+    }),
   ),
 };

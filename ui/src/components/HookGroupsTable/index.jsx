@@ -25,7 +25,7 @@ export default class HookGroupsTable extends Component {
     sortDirection: null,
   };
 
-  handleHeaderClick = header => {
+  handleHeaderClick = (header) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
 
@@ -36,9 +36,7 @@ export default class HookGroupsTable extends Component {
     const { hookGroups, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
     const filteredGroups = searchTerm
-      ? hookGroups.filter(hookGroup =>
-          hookGroup.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+      ? hookGroups.filter((hookGroup) => hookGroup.toLowerCase().includes(searchTerm.toLowerCase()))
       : hookGroups;
 
     return isEmpty(filteredGroups) || !sortBy
@@ -51,7 +49,7 @@ export default class HookGroupsTable extends Component {
         });
   }
 
-  renderTableRow = hookGroupId => {
+  renderTableRow = (hookGroupId) => {
     const hookGroupUrl = `/hooks/${hookGroupId}`;
 
     return (
@@ -65,9 +63,7 @@ export default class HookGroupsTable extends Component {
 
   render() {
     const { sortBy, sortDirection } = this.state;
-    const headers = [
-      { label: 'Hook Group ID', id: 'hookGroupId', type: 'string' },
-    ];
+    const headers = [{ label: 'Hook Group ID', id: 'hookGroupId', type: 'string' }];
 
     return (
       <DataTable

@@ -11,7 +11,7 @@
 export default function computeWeightDistribution(configs) {
   const totalWeight = configs.reduce((sum, c) => sum + c.weight, 0);
 
-  return configs.map(c => {
+  return configs.map((c) => {
     if (totalWeight === 0) {
       return { ...c, share: null, workers: null };
     }

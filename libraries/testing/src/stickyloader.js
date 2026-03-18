@@ -1,13 +1,13 @@
 import _ from 'lodash';
 import assert from 'node:assert';
 
-const stickyLoader = load => {
+const stickyLoader = (load) => {
   let overwrites = {};
   const stack = [];
 
   // clone the overwrites, careful to do a shallow clone everything except cfg,
   // which gets a deep clone so it can be modified in place.
-  const _cloneOverwrites = overwrites => {
+  const _cloneOverwrites = (overwrites) => {
     const rv = _.clone(overwrites);
     if (overwrites.cfg) {
       rv.cfg = _.cloneDeep(overwrites.cfg);
@@ -49,7 +49,7 @@ const stickyLoader = load => {
   };
 
   // remove a dependency
-  sticky.remove = component => {
+  sticky.remove = (component) => {
     delete overwrites[component];
   };
 

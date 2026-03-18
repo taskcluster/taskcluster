@@ -23,7 +23,7 @@ import ErrorPanel from '../../components/ErrorPanel';
 import PageMeta from './PageMeta';
 
 @withStyles(
-  theme => ({
+  (theme) => ({
     documentation: {
       fontFamily: theme.typography.fontFamily,
       '& a': {
@@ -31,7 +31,7 @@ import PageMeta from './PageMeta';
       },
     },
   }),
-  { withTheme: true }
+  { withTheme: true },
 )
 export default class Documentation extends Component {
   state = {
@@ -48,7 +48,7 @@ export default class Documentation extends Component {
     window.setTimeout(() => {
       // catchLinks allows us to control the scrolling to the hash when the
       // user clicks on '#' beside a header.
-      catchLinks(document.querySelector('main'), href => {
+      catchLinks(document.querySelector('main'), (href) => {
         history.push(href);
 
         scrollToHash(theme.spacing(2));
@@ -66,18 +66,13 @@ export default class Documentation extends Component {
       this.load();
     }
 
-    if (
-      prevProps.location.hash !== this.props.location.hash &&
-      this.props.location.hash
-    ) {
+    if (prevProps.location.hash !== this.props.location.hash && this.props.location.hash) {
       scrollToHash(this.props.theme.spacing(2));
     }
   }
 
   findChildFromRootNode(node) {
-    const currentPath = window.location.pathname
-      .replace(/\/$/, '')
-      .replace(`${DOCS_PATH_PREFIX}/`, '');
+    const currentPath = window.location.pathname.replace(/\/$/, '').replace(`${DOCS_PATH_PREFIX}/`, '');
 
     if (node.path && currentPath === removeReadmeFromPath(node.path)) {
       return node;
@@ -99,7 +94,7 @@ export default class Documentation extends Component {
       ({ path }) =>
         window.location.pathname !== DOCS_PATH_PREFIX &&
         path !== DOCS_PATH_PREFIX &&
-        window.location.pathname.startsWith(path)
+        window.location.pathname.startsWith(path),
     );
 
     if (!menuItem) {
@@ -113,17 +108,13 @@ export default class Documentation extends Component {
 
   async readDocFile(path) {
     try {
-      return await import(
-        /* webpackMode: 'eager' */ `../../../docs/${path}.mdx`
-      );
+      return await import(/* webpackMode: 'eager' */ `../../../docs/${path}.mdx`);
     } catch (err) {
       if (err.code !== 'MODULE_NOT_FOUND') {
         throw err;
       }
 
-      return import(
-        /* webpackMode: 'eager' */ `../../../docs/${path}/README.mdx`
-      );
+      return import(/* webpackMode: 'eager' */ `../../../docs/${path}/README.mdx`);
     }
   }
 
@@ -149,17 +140,12 @@ export default class Documentation extends Component {
         className={classes.documentation}
         docs
         disableTitleFormatting
-        title={
-          pageInfo?.data.title
-            ? pageInfo.data.title
-            : 'Documentation'
-        }
-        search={<DocSearch options={docsSearchOptions} />}>
+        title={pageInfo?.data.title ? pageInfo.data.title : 'Documentation'}
+        search={<DocSearch options={docsSearchOptions} />}
+      >
         <ScrollToTop scrollKey={Page ? Page.toString() : null}>
           {error && error.code === 'MODULE_NOT_FOUND' && <NotFound isDocs />}
-          {error && error.code !== 'MODULE_NOT_FOUND' && (
-            <ErrorPanel fixedDocs error={error} />
-          )}
+          {error && error.code !== 'MODULE_NOT_FOUND' && <ErrorPanel fixedDocs error={error} />}
           {!error && Page && (
             <MDXProvider components={components}>
               <Page />

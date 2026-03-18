@@ -6,7 +6,7 @@ MonitorManager.register({
   type: 'worker-pool-provisioned',
   version: 2,
   level: 'info',
-  description: 'A worker pool\'s provisioning run has completed',
+  description: "A worker pool's provisioning run has completed",
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',

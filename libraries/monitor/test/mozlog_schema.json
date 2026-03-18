@@ -1,8 +1,6 @@
 {
   "type": "object",
-  "required": [
-    "Timestamp"
-  ],
+  "required": ["Timestamp"],
   "properties": {
     "Timestamp": {
       "type": "integer",
@@ -51,11 +49,7 @@
   },
   "definitions": {
     "field_value": {
-      "type": [
-        "string",
-        "number",
-        "boolean"
-      ]
+      "type": ["string", "number", "boolean"]
     },
     "field_array": {
       "type": "array",
@@ -80,9 +74,7 @@
     },
     "field_object": {
       "type": "object",
-      "required": [
-        "value"
-      ],
+      "required": ["value"],
       "properties": {
         "value": {
           "oneOf": [

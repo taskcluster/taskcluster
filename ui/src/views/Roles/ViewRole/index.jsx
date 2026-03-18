@@ -33,7 +33,7 @@ export default class ViewRole extends Component {
     },
   };
 
-  handleDeleteRole = async roleId => {
+  handleDeleteRole = async (roleId) => {
     this.setState({ dialogError: null, loading: true });
 
     await this.props.client.mutate({
@@ -44,7 +44,7 @@ export default class ViewRole extends Component {
     this.props.history.push(`/auth/roles`);
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({ dialogError: error, loading: false });
   };
 
@@ -115,11 +115,7 @@ export default class ViewRole extends Component {
         <Fragment>
           <ErrorPanel fixed error={error} />
           {isNewRole ? (
-            <RoleForm
-              isNewRole
-              loading={loading}
-              onRoleSave={this.handleSaveRole}
-            />
+            <RoleForm isNewRole loading={loading} onRoleSave={this.handleSaveRole} />
           ) : (
             <Fragment>
               {data.loading && <Spinner loading />}

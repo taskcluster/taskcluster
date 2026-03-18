@@ -42,26 +42,30 @@ class WorkerInfo {
 
     // task queue seen
     if (taskQueueId) {
-      promises.push(this.valueSeen(taskQueueId, async () => {
-        await this.db.fns.task_queue_seen({
-          task_queue_id_in: taskQueueId,
-          expires_in: newExpiration,
-          description_in: null,
-          stability_in: null,
-        });
-      }));
+      promises.push(
+        this.valueSeen(taskQueueId, async () => {
+          await this.db.fns.task_queue_seen({
+            task_queue_id_in: taskQueueId,
+            expires_in: newExpiration,
+            description_in: null,
+            stability_in: null,
+          });
+        }),
+      );
     }
 
     // worker seen
     if (taskQueueId && workerGroup && workerId) {
-      promises.push(this.valueSeen(`${taskQueueId}/${workerGroup}/${workerId}`, async () => {
-        await this.db.fns.queue_worker_seen_with_last_date_active({
-          task_queue_id_in: taskQueueId,
-          worker_group_in: workerGroup,
-          worker_id_in: workerId,
-          expires_in: newExpiration,
-        });
-      }));
+      promises.push(
+        this.valueSeen(`${taskQueueId}/${workerGroup}/${workerId}`, async () => {
+          await this.db.fns.queue_worker_seen_with_last_date_active({
+            task_queue_id_in: taskQueueId,
+            worker_group_in: workerGroup,
+            worker_id_in: workerId,
+            expires_in: newExpiration,
+          });
+        }),
+      );
     }
 
     await Promise.all(promises);

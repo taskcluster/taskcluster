@@ -11,7 +11,7 @@ import references from '../../../../generated/references.json';
 // Local copies of the json-schemas schemas, since TC schemas $refer to these
 const EXTERNAL_SCHEMAS = [jsonSchemaDraft06, jsonSchemaDraft07].reduce(
   (schemas, schema) => ({ ...schemas, [schema.$id]: schema }),
-  {}
+  {},
 );
 
 @withRouter
@@ -79,9 +79,9 @@ export default class SchemaTable extends Component {
   }
 
   async getSchemaReferences() {
-    const schemaReferences = references.map(schema => schema.content);
+    const schemaReferences = references.map((schema) => schema.content);
 
-    Object.values(EXTERNAL_SCHEMAS).forEach(schema => {
+    Object.values(EXTERNAL_SCHEMAS).forEach((schema) => {
       schemaReferences.push(schema);
     });
 
@@ -95,10 +95,6 @@ export default class SchemaTable extends Component {
       return <ErrorPanel error={error} />;
     }
 
-    return schema ? (
-      <SchemaViewer schema={schema} references={references} />
-    ) : (
-      <Spinner loading />
-    );
+    return schema ? <SchemaViewer schema={schema} references={references} /> : <Spinner loading />;
   }
 }

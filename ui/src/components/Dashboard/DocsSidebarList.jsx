@@ -15,7 +15,7 @@ import { DOCS_MENU_ITEMS, DOCS_PATH_PREFIX } from '../../utils/constants';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
 
-const getDocsSectionFromPathname = pathname => {
+const getDocsSectionFromPathname = (pathname) => {
   if (!pathname) {
     return null;
   }
@@ -32,7 +32,7 @@ const getDocsSectionFromPathname = pathname => {
 };
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   toc: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(3),
@@ -117,9 +117,7 @@ export default class DocsSidebarList extends Component {
     if (
       currentMenu !== previousMenu ||
       // When a section is collapsed but the user clicks on "next" or "previous"
-      (currentMenu === previousMenu &&
-        !state.menuOpen &&
-        state.previousPathname !== newState.previousPathname)
+      (currentMenu === previousMenu && !state.menuOpen && state.previousPathname !== newState.previousPathname)
     ) {
       Object.assign(newState, { menuOpen: true });
     }
@@ -127,7 +125,7 @@ export default class DocsSidebarList extends Component {
     return newState;
   }
 
-  renderInlineNodes = nodes => {
+  renderInlineNodes = (nodes) => {
     const {
       classes,
       history: { location },
@@ -153,15 +151,14 @@ export default class DocsSidebarList extends Component {
                   /
                 </Typography>
               )}
-              <Link
-                className={classNames(classes.inlineLink, classes.hover)}
-                to={href}>
+              <Link className={classNames(classes.inlineLink, classes.hover)} to={href}>
                 <Typography
                   variant="body2"
                   className={classNames({
                     [classes.linkActive]: isLinkActive,
                   })}
-                  component="span">
+                  component="span"
+                >
                   {node.name}
                 </Typography>
               </Link>
@@ -175,11 +172,7 @@ export default class DocsSidebarList extends Component {
     );
   };
 
-  shouldRenderNode = node =>
-    !(
-      !node.children ||
-      (node.path.includes('README') && !node.children.length)
-    );
+  shouldRenderNode = (node) => !(!node.children || (node.path.includes('README') && !node.children.length));
 
   renderNode = (node, isRoot = false) => {
     const {
@@ -200,7 +193,7 @@ export default class DocsSidebarList extends Component {
 
           return acc;
         },
-        [[], []]
+        [[], []],
       );
       const hasInlineNodes = inlineNodes.length > 0;
 
@@ -214,18 +207,14 @@ export default class DocsSidebarList extends Component {
                 [classes.header]: isRoot,
                 [classes.linkActive]: isLinkActive,
                 [classes.childWithInlineNodes]: hasInlineNodes,
-              })}>
+              })}
+            >
               {node.data.title || node.name}
             </Typography>
           </Link>
           {hasInlineNodes && this.renderInlineNodes(inlineNodes)}
           <ul className={classes.ul}>
-            {nodes.map(
-              child =>
-                this.shouldRenderNode(child) && (
-                  <li key={child.path}>{this.renderNode(child)}</li>
-                )
-            )}
+            {nodes.map((child) => this.shouldRenderNode(child) && <li key={child.path}>{this.renderNode(child)}</li>)}
           </ul>
         </Fragment>
       );
@@ -239,7 +228,8 @@ export default class DocsSidebarList extends Component {
             [classes.linkActive]: isLinkActive,
             [classes.header]: isRoot,
           })}
-          key={node.path}>
+          key={node.path}
+        >
           {node.data.title}
         </Typography>
       </Link>
@@ -262,7 +252,7 @@ export default class DocsSidebarList extends Component {
 
     return (
       <div className={classes.toc}>
-        {DOCS_MENU_ITEMS.map(item => (
+        {DOCS_MENU_ITEMS.map((item) => (
           <Fragment key={item.label}>
             {item.hasChildren && <Divider />}
             <Link to={removeReadmeFromPath(item.path)}>
@@ -270,26 +260,19 @@ export default class DocsSidebarList extends Component {
                 name={item.label}
                 button
                 onClick={this.handleSectionClick}
-                classes={{ container: classes.listItem }}>
+                classes={{ container: classes.listItem }}
+              >
                 <ListItemIcon>
                   <item.icon />
                 </ListItemIcon>
                 <ListItemText primary={item.label} />
-                {item.hasChildren &&
-                  (menuOpen && currentMenu === item.label ? (
-                    <ChevronUpIcon />
-                  ) : (
-                    <ChevronDownIcon />
-                  ))}
+                {item.hasChildren && (menuOpen && currentMenu === item.label ? <ChevronUpIcon /> : <ChevronDownIcon />)}
               </ListItem>
             </Link>
-            <Collapse
-              in={item.hasChildren && menuOpen && currentMenu === item.label}>
+            <Collapse in={item.hasChildren && menuOpen && currentMenu === item.label}>
               <div className={classes.collapse}>
                 {docsTableOfContents[item.label.toLowerCase()] &&
-                  docsTableOfContents[
-                    item.label.toLowerCase()
-                  ].children.map(child => this.renderNode(child, true))}
+                  docsTableOfContents[item.label.toLowerCase()].children.map((child) => this.renderNode(child, true))}
               </div>
             </Collapse>
           </Fragment>

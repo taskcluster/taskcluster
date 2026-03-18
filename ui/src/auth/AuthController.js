@@ -42,10 +42,7 @@ export default class AuthController {
     }
 
     // if expired or no credentials, try to renew the credentials
-    if (
-      this.user &&
-      (!this.user.credentials || new Date(this.user.expires) < new Date())
-    ) {
+    if (this.user && (!this.user.credentials || new Date(this.user.expires) < new Date())) {
       await this.renew();
     }
 
@@ -107,7 +104,7 @@ export default class AuthController {
           ...this.user,
           expires,
           credentials,
-        })
+        }),
       );
     } catch (_e) {
       this.setUser(null);

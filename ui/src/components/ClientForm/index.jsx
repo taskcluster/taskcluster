@@ -33,7 +33,7 @@ import Link from '../../utils/Link';
 import scopeLink from '../../utils/scopeLink';
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   fab: {
     ...theme.mixins.fab,
   },
@@ -157,7 +157,7 @@ export default class ClientForm extends Component {
     this.props.onEnableClient(this.state.clientId);
   };
 
-  handleExpirationChange = expires => {
+  handleExpirationChange = (expires) => {
     this.setState({
       expires,
     });
@@ -172,13 +172,7 @@ export default class ClientForm extends Component {
   };
 
   handleSaveClient = () => {
-    const {
-      clientId,
-      scopeText,
-      description,
-      expires,
-      deleteOnExpiration,
-    } = this.state;
+    const { clientId, scopeText, description, expires, deleteOnExpiration } = this.state;
     const scopes = splitLines(scopeText);
     const client = {
       expires,
@@ -229,12 +223,7 @@ export default class ClientForm extends Component {
           <ListItem>
             <FormGroup row>
               <FormControlLabel
-                control={
-                  <Switch
-                    checked={deleteOnExpiration}
-                    onChange={this.handleDeleteOnExpirationChange}
-                  />
-                }
+                control={<Switch checked={deleteOnExpiration} onChange={this.handleDeleteOnExpirationChange} />}
                 label="Delete on Expiration"
               />
             </FormGroup>
@@ -257,28 +246,16 @@ export default class ClientForm extends Component {
                 <ListItemText primary="Client ID" secondary={clientId} />
               </ListItem>
               <ListItem>
-                <ListItemText
-                  primary="Date Created"
-                  secondary={<DateDistance from={created} />}
-                />
+                <ListItemText primary="Date Created" secondary={<DateDistance from={created} />} />
               </ListItem>
               <ListItem>
-                <ListItemText
-                  primary="Date Last Modified"
-                  secondary={<DateDistance from={lastModified} />}
-                />
+                <ListItemText primary="Date Last Modified" secondary={<DateDistance from={lastModified} />} />
               </ListItem>
               <ListItem>
-                <ListItemText
-                  primary="Date Last Used"
-                  secondary={<DateDistance from={lastDateUsed} />}
-                />
+                <ListItemText primary="Date Last Used" secondary={<DateDistance from={lastDateUsed} />} />
               </ListItem>
               <ListItem>
-                <ListItemText
-                  primary="Date Last Rotated"
-                  secondary={<DateDistance from={lastRotated} />}
-                />
+                <ListItemText primary="Date Last Rotated" secondary={<DateDistance from={lastRotated} />} />
               </ListItem>
             </Fragment>
           )}
@@ -328,8 +305,7 @@ export default class ClientForm extends Component {
                   primary="Expanded Scopes"
                   secondary={
                     <span>
-                      Expanded scopes are determined from the client scopes,
-                      expanding roles for scopes beginning with{' '}
+                      Expanded scopes are determined from the client scopes, expanding roles for scopes beginning with{' '}
                       <code>assume:</code>.
                     </span>
                   }
@@ -341,7 +317,7 @@ export default class ClientForm extends Component {
                   className={classes.expandedScopesWrapper}
                   secondary={
                     <List dense>
-                      {expandedScopes.map(scope => (
+                      {expandedScopes.map((scope) => (
                         <Link key={scope} to={scopeLink(scope)}>
                           <ListItem button className={classes.listItemButton}>
                             <ListItemText secondary={<code>{scope}</code>} />
@@ -364,7 +340,8 @@ export default class ClientForm extends Component {
             disabled={loading || !isClientDirty}
             variant="round"
             onClick={this.handleSaveClient}
-            classes={{ root: classes.saveIcon }}>
+            classes={{ root: classes.saveIcon }}
+          >
             <ContentSaveIcon />
           </Button>
         ) : (
@@ -377,7 +354,8 @@ export default class ClientForm extends Component {
               }}
               tooltipProps={{ title: 'Save' }}
               disabled={loading || !isClientDirty}
-              classes={{ root: classes.saveIcon }}>
+              classes={{ root: classes.saveIcon }}
+            >
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
@@ -397,9 +375,7 @@ export default class ClientForm extends Component {
                 requiresAuth
                 tooltipOpen
                 icon={disabled ? <PowerIcon /> : <CancelIcon />}
-                onClick={
-                  disabled ? this.handleEnableClient : this.handleDisableClient
-                }
+                onClick={disabled ? this.handleEnableClient : this.handleDisableClient}
                 tooltipTitle={disabled ? 'Enable' : 'Disable'}
                 FabProps={{
                   disabled: loading,
@@ -427,11 +403,7 @@ export default class ClientForm extends Component {
             onError={onDialogActionError}
             error={dialogError}
             title="Delete Client?"
-            body={
-              <Typography variant="body2">
-                This will delete the {clientId} client.
-              </Typography>
-            }
+            body={<Typography variant="body2">This will delete the {clientId} client.</Typography>}
             confirmText="Delete Client"
           />
         )}

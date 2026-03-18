@@ -1,8 +1,4 @@
-import {
-  getArtifactUrl,
-  getLatestArtifactUrl,
-  findArtifactFromTaskUrl,
-} from './getArtifactUrl';
+import { getArtifactUrl, getLatestArtifactUrl, findArtifactFromTaskUrl } from './getArtifactUrl';
 
 describe('getArtifactUrl', () => {
   let originalEnv;
@@ -31,7 +27,7 @@ describe('getArtifactUrl', () => {
     });
 
     expect(url).toContain(
-      'https://taskcluster.net/api/queue/v1/task/taskId/runs/runId/artifacts/name?bewit=Y2xpZW50SWRcMTY'
+      'https://taskcluster.net/api/queue/v1/task/taskId/runs/runId/artifacts/name?bewit=Y2xpZW50SWRcMTY',
     );
   });
   it('should get artifact url with no credentials', () => {
@@ -44,9 +40,7 @@ describe('getArtifactUrl', () => {
       name: 'name',
     });
 
-    expect(url).toEqual(
-      'https://taskcluster.net/api/queue/v1/task/taskId/runs/runId/artifacts/name'
-    );
+    expect(url).toEqual('https://taskcluster.net/api/queue/v1/task/taskId/runs/runId/artifacts/name');
   });
   it('should get latest artifact url', () => {
     const url = getLatestArtifactUrl({
@@ -61,9 +55,7 @@ describe('getArtifactUrl', () => {
       name: 'name',
     });
 
-    expect(url).toContain(
-      'https://taskcluster.net/api/queue/v1/task/taskId/artifacts/name?bewit=Y2xpZW50SWRcMTY'
-    );
+    expect(url).toContain('https://taskcluster.net/api/queue/v1/task/taskId/artifacts/name?bewit=Y2xpZW50SWRcMTY');
   });
   it('should find artifact from task url', () => {
     const url = findArtifactFromTaskUrl({
@@ -77,8 +69,6 @@ describe('getArtifactUrl', () => {
       name: 'name',
     });
 
-    expect(url).toContain(
-      'https://taskcluster.net/api/index/v1/task/taskId/artifacts/name?bewit=Y2xpZW50SWRcMTY'
-    );
+    expect(url).toContain('https://taskcluster.net/api/index/v1/task/taskId/artifacts/name?bewit=Y2xpZW50SWRcMTY');
   });
 });

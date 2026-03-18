@@ -49,16 +49,19 @@ interface AzureARMDeployment {
     contentVersion?: string;
     queryString?: string;
   };
-  parameters?: Record<string, {
-    value?: any;
-    reference?: {
-      keyVault: {
-        id: string;
+  parameters?: Record<
+    string,
+    {
+      value?: any;
+      reference?: {
+        keyVault: {
+          id: string;
+        };
+        secretName: string;
+        secretVersion?: string;
       };
-      secretName: string;
-      secretVersion?: string;
-    };
-  }>;
+    }
+  >;
   parametersLink?: {
     uri: string;
     contentVersion?: string;
@@ -163,12 +166,6 @@ export interface GoogleConfigSchema extends BaseProviderConfig {
   launchConfigs: GoogleLaunchConfig[];
 }
 
-export type CloudLaunchConfig =
-  | AWSLaunchConfig
-  | GoogleLaunchConfig
-  | AzureLaunchConfig
+export type CloudLaunchConfig = AWSLaunchConfig | GoogleLaunchConfig | AzureLaunchConfig;
 
-export type WorkerPoolConfig =
-  | AWSConfigSchema
-  | AzureConfigSchema
-  | GoogleConfigSchema
+export type WorkerPoolConfig = AWSConfigSchema | AzureConfigSchema | GoogleConfigSchema;

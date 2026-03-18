@@ -2,17 +2,17 @@ import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import { strict as assert } from 'node:assert';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   helper.withDbForVersion();
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
   });
 
-  const b64 = x => Buffer.from(x).toString('base64');
+  const b64 = (x) => Buffer.from(x).toString('base64');
 
   const samples = [
     { __bufchunks_val: 0 },
@@ -23,25 +23,31 @@ suite(testing.suiteName(), function() {
   ];
 
   const mkContainer = async (properties) => {
-    return await helper.withDbClient(async client => {
-      const t = await client.query(`
+    return await helper.withDbClient(async (client) => {
+      const t = await client.query(
+        `
           select entity_to_crypto_container_v0($1, 'val') as container
-        `, [properties]);
+        `,
+        [properties],
+      );
 
       return t.rows[0].container;
     });
   };
   const encodeContainer = async (properties) => {
-    return await helper.withDbClient(async client => {
-      const t = await client.query(`
+    return await helper.withDbClient(async (client) => {
+      const t = await client.query(
+        `
           select encrypted_entity_buf_encode('{}'::jsonb, 'fooBar', $1) as encoded
-        `, [properties]);
+        `,
+        [properties],
+      );
 
       return t.rows[0].encoded;
     });
   };
   const entityToCryptoContainerV0 = (name, properties, expected) => {
-    test(`entity_to_crypto_container_v0: ${name}`, async function() {
+    test(`entity_to_crypto_container_v0: ${name}`, async function () {
       const c = await mkContainer(properties);
       assert.deepEqual(c, expected);
     });
@@ -55,7 +61,7 @@ suite(testing.suiteName(), function() {
   entityToCryptoContainerV0('multiple chunks', samples[4], { ...container, ...samples[4] });
 
   const encryptedEntityBufEncode = (name, properties) => {
-    test(`entity_buf_encode: ${name}`, async function() {
+    test(`entity_buf_encode: ${name}`, async function () {
       const c = await mkContainer(properties);
       const e = await encodeContainer(c);
       assert.equal(e.__bufchunks_fooBar, c.__bufchunks_val);

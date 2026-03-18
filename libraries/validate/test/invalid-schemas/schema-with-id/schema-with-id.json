@@ -1,13 +1,13 @@
 {
-  "$schema":      "http://json-schema.org/draft-06/schema#",
-  "id":           "http://schemas.taskcluster.net/i-am-a-bad-schema",
-  "title":        "test json schema",
-  "type":         "object",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "id": "http://schemas.taskcluster.net/i-am-a-bad-schema",
+  "title": "test json schema",
+  "type": "object",
   "properties": {
     "value": {
-      "type":           "integer"
+      "type": "integer"
     }
   },
-  "additionalProperties":   false,
+  "additionalProperties": false,
   "required": ["value"]
 }

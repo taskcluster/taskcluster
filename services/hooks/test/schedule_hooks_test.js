@@ -4,11 +4,11 @@ import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     await helper.load('cfg');
     helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
   });

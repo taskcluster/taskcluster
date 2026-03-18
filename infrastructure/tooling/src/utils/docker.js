@@ -22,27 +22,28 @@ const _dockerSetup = ({ baseDir }) => {
     // so that file ownership remains as expected.  Set up /etc/passwd and /etc/group
     // to define names for those uid/gid, too.
     const { uid, gid } = os.userInfo();
-    fs.writeFileSync(path.join(baseDir, 'passwd'),
-      `root:x:0:0:root:/root:/bin/bash\nbuilder:x:${uid}:${gid}:builder:/:/bin/bash\n`);
-    fs.writeFileSync(path.join(baseDir, 'group'),
-      `root:x:0:\nbuilder:x:${gid}:\n`);
+    fs.writeFileSync(
+      path.join(baseDir, 'passwd'),
+      `root:x:0:0:root:/root:/bin/bash\nbuilder:x:${uid}:${gid}:builder:/:/bin/bash\n`,
+    );
+    fs.writeFileSync(path.join(baseDir, 'group'), `root:x:0:\nbuilder:x:${gid}:\n`);
     const dockerRunOpts = {
       AutoRemove: true,
       User: `${uid}:${gid}`,
-      Env: [
-        'HOME=/base/app',
-      ],
-      Mounts: [{
-        Type: 'bind',
-        Target: '/etc/passwd',
-        Source: `${baseDir}/passwd`,
-        ReadOnly: true,
-      }, {
-        Type: 'bind',
-        Target: '/etc/group',
-        Source: `${baseDir}/group`,
-        ReadOnly: true,
-      },
+      Env: ['HOME=/base/app'],
+      Mounts: [
+        {
+          Type: 'bind',
+          Target: '/etc/passwd',
+          Source: `${baseDir}/passwd`,
+          ReadOnly: true,
+        },
+        {
+          Type: 'bind',
+          Target: '/etc/group',
+          Source: `${baseDir}/group`,
+          ReadOnly: true,
+        },
       ],
     };
 
@@ -165,45 +166,53 @@ export const dockerPull = async ({ baseDir, image, utils }) => {
   const { docker } = await _dockerSetup({ baseDir });
 
   utils.status({ message: `docker pull ${image}` });
-  const dockerStream = await new Promise(
-    (resolve, reject) => docker.pull(image, (err, stream) => err ? reject(err) : resolve(stream)));
+  const dockerStream = await new Promise((resolve, reject) =>
+    docker.pull(image, (err, stream) => (err ? reject(err) : resolve(stream))),
+  );
 
-  await utils.waitFor(new Observable(observer => {
-    const downloading = {}, extracting = {}, totals = {};
-    docker.modem.followProgress(dockerStream,
-      err => err ? observer.error(err) : observer.complete(),
-      update => {
-        // The format of this stream appears undocumented, but we can fake it based on observations..
-        // general messages seem to lack progressDetail
-        if (!update.progressDetail) {
-          return;
-        }
+  await utils.waitFor(
+    new Observable((observer) => {
+      const downloading = {},
+        extracting = {},
+        totals = {};
+      docker.modem.followProgress(
+        dockerStream,
+        (err) => (err ? observer.error(err) : observer.complete()),
+        (update) => {
+          // The format of this stream appears undocumented, but we can fake it based on observations..
+          // general messages seem to lack progressDetail
+          if (!update.progressDetail) {
+            return;
+          }
 
-        let progressed = false;
-        if (update.status === 'Waiting') {
-          totals[update.id] = 104857600; // a guess: 100MB
-          progressed = true;
-        } else if (update.status === 'Downloading') {
-          downloading[update.id] = update.progressDetail.current;
-          totals[update.id] = update.progressDetail.total;
-          progressed = true;
-        } else if (update.status === 'Extracting') {
-          extracting[update.id] = update.progressDetail.current;
-          totals[update.id] = update.progressDetail.total;
-          progressed = true;
-        }
+          let progressed = false;
+          if (update.status === 'Waiting') {
+            totals[update.id] = 104857600; // a guess: 100MB
+            progressed = true;
+          } else if (update.status === 'Downloading') {
+            downloading[update.id] = update.progressDetail.current;
+            totals[update.id] = update.progressDetail.total;
+            progressed = true;
+          } else if (update.status === 'Extracting') {
+            extracting[update.id] = update.progressDetail.current;
+            totals[update.id] = update.progressDetail.total;
+            progressed = true;
+          }
 
-        if (progressed) {
-          // calculate overall progress by assuming that every image must be
-          // downloaded and extracted, and that those both take the same amount
-          // of time per byte.
-          const total = Object.values(totals).reduce((a, b) => a + b, 0) * 2;
-          const current = Object.values(downloading).reduce((a, b) => a + b, 0) +
-            Object.values(extracting).reduce((a, b) => a + b, 0);
-          utils.status({ progress: current * 100 / total });
-        }
-      });
-  }));
+          if (progressed) {
+            // calculate overall progress by assuming that every image must be
+            // downloaded and extracted, and that those both take the same amount
+            // of time per byte.
+            const total = Object.values(totals).reduce((a, b) => a + b, 0) * 2;
+            const current =
+              Object.values(downloading).reduce((a, b) => a + b, 0) +
+              Object.values(extracting).reduce((a, b) => a + b, 0);
+            utils.status({ progress: (current * 100) / total });
+          }
+        },
+      );
+    }),
+  );
 };
 
 /**
@@ -231,7 +240,7 @@ export const dockerRegistryCheck = async ({ tag }) => {
     if (!res.body) {
       throw new Error('invalid response from hub.docker.com');
     }
-    if (res.body.map(l => l.name).includes(imagetag)) {
+    if (res.body.map((l) => l.name).includes(imagetag)) {
       return true;
     }
   } catch (err) {
@@ -262,8 +271,7 @@ export const dockerPush = async ({ baseDir, tag, logfile, credentials, utils }) 
    * for the first 5 retries:
    * [1ms,10ms,100ms,1s,10s]
    */
-  const delay = retryCount =>
-    new Promise(resolve => setTimeout(resolve, 10 ** retryCount));
+  const delay = (retryCount) => new Promise((resolve) => setTimeout(resolve, 10 ** retryCount));
 
   const execDockerPush = async (maxRetries, retryCount = 0, lastError = null) => {
     if (retryCount > maxRetries) {

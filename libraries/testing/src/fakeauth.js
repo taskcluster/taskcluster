@@ -8,7 +8,7 @@ import taskcluster from '@taskcluster/client';
 
 let anonymousScopes = [];
 
-export const start = function(clients, { rootUrl } = {}) {
+export const start = function (clients, { rootUrl } = {}) {
   assert(rootUrl, 'rootUrl option is required');
   const authPath = URL.parse(libUrls.api(rootUrl, 'auth', 'v1', '/authenticate-hawk'))?.pathname;
   assert(authPath, 'invalid rootUrl');
@@ -16,7 +16,7 @@ export const start = function(clients, { rootUrl } = {}) {
     .persist()
     .filteringRequestBody(/.*/, '*')
     .post(authPath, '*')
-    .reply(200, function(_uri, body) {
+    .reply(200, function (_uri, body) {
       let scopes = [];
       let from = 'client config';
       let ext = null;
@@ -71,16 +71,22 @@ export const start = function(clients, { rootUrl } = {}) {
         scopes = ext.certificate.scopes;
         from = 'ext.certificate.scopes';
       }
-      debug('authenticating access to ' + body.resource +
-          ' by ' + clientId +
-          ' with scopes ' + scopes.join(', ') +
-          ' from ' + from);
+      debug(
+        'authenticating access to ' +
+          body.resource +
+          ' by ' +
+          clientId +
+          ' with scopes ' +
+          scopes.join(', ') +
+          ' from ' +
+          from,
+      );
       const expires = taskcluster.fromNow('2 minutes');
       return { status: 'auth-success', scheme: 'hawk', scopes, clientId, expires };
     });
 };
 
-export const stop = function() {
+export const stop = function () {
   // this is a bit more aggressive than we want to be, since it clears
   // all nock interceptors, not just the one we installed.  See
   // https://github.com/pgte/nock/issues/438

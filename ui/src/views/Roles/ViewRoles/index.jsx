@@ -8,13 +8,13 @@ import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import HelpView from '../../../components/HelpView';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   plusIconSpan: {
     ...theme.mixins.fab,
   },
 }))
 export default class ViewRoles extends PureComponent {
-  handleRoleSearchSubmit = roleSearch => {
+  handleRoleSearchSubmit = (roleSearch) => {
     const { location, history } = this.props;
     const query = parse(location.search.slice(1));
 
@@ -43,20 +43,16 @@ export default class ViewRoles extends PureComponent {
       <Dashboard
         title="Roles"
         helpView={<HelpView description={description} />}
-        search={
-          <Search
-            onSubmit={this.handleRoleSearchSubmit}
-            placeholder="Role contains"
-            defaultValue={roleSearch}
-          />
-        }>
+        search={<Search onSubmit={this.handleRoleSearchSubmit} placeholder="Role contains" defaultValue={roleSearch} />}
+      >
         <Roles searchTerm={roleSearch} />
         <Button
           spanProps={{ className: classes.plusIconSpan }}
           tooltipProps={{ title: 'Create Role' }}
           onClick={this.handleCreate}
           variant="round"
-          color="secondary">
+          color="secondary"
+        >
           <PlusIcon />
         </Button>
       </Dashboard>

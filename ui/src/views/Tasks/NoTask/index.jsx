@@ -11,7 +11,7 @@ import Search from '../../../components/Search';
 import db from '../../../utils/db';
 import Link from '../../../utils/Link';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   infoText: {
     marginBottom: theme.spacing(1),
   },
@@ -27,15 +27,12 @@ export default class NoTask extends Component {
   };
 
   async componentDidMount() {
-    const recentTasks = await db.taskIdsHistory
-      .limit(5)
-      .reverse()
-      .toArray();
+    const recentTasks = await db.taskIdsHistory.limit(5).reverse().toArray();
 
     this.setState({ recentTasks });
   }
 
-  handleTaskSearchSubmit = taskId => {
+  handleTaskSearchSubmit = (taskId) => {
     this.props.history.push(`/tasks/${taskId}`);
   };
 
@@ -47,21 +44,13 @@ export default class NoTask extends Component {
       <Dashboard
         title="View Tasks"
         helpView={<HelpView description={description} />}
-        search={
-          <Search
-            placeholder="Search Task ID"
-            onSubmit={this.handleTaskSearchSubmit}
-          />
-        }>
+        search={<Search placeholder="Search Task ID" onSubmit={this.handleTaskSearchSubmit} />}
+      >
         <Typography variant="body2" className={classes.infoText}>
           Enter a task ID in the search box
         </Typography>
         {recentTasks && Boolean(recentTasks.length) && (
-          <List
-            dense
-            subheader={
-              <ListSubheader component="div">Recent Tasks</ListSubheader>
-            }>
+          <List dense subheader={<ListSubheader component="div">Recent Tasks</ListSubheader>}>
             {recentTasks.map(({ taskId }) => (
               <Link key={taskId} to={`/tasks/${taskId}`}>
                 <ListItem button className={classes.listItemButton}>

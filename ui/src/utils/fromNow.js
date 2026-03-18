@@ -21,6 +21,6 @@ export default (offset, reference = new Date()) => {
       parsedOffset.days * 24 * 60 * 60 * 1000 +
       parsedOffset.hours * 60 * 60 * 1000 +
       parsedOffset.minutes * 60 * 1000 +
-      parsedOffset.seconds * 1000
+      parsedOffset.seconds * 1000,
   );
 };

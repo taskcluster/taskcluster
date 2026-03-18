@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { APIBuilder } from '../src/index.js';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   // Create test api
   const builder = new APIBuilder({
     title: 'Test Api',
@@ -11,80 +11,98 @@ suite(testing.suiteName(), function() {
     apiVersion: 'v1',
   });
 
-  test('no scopes is OK', function() {
+  test('no scopes is OK', function () {
     // doesn't throw
-    builder.declare({
-      method: 'get',
-      route: '/test/:myparam',
-      name: 'noScopeOktestEP',
-      scopes: null,
-      category: 'API Library',
-      title: 'Test',
-      description: 'Test',
-    }, function(_req, _res) {});
-  });
-
-  test('string scope works', function() {
-    builder.declare({
-      method: 'get',
-      route: '/testString/:myparam',
-      scopes: 'test:unit',
-      name: 'strScopetestEP',
-      category: 'API Library',
-      title: 'Test',
-      description: 'Test',
-    }, function(_req, _res) {});
-  });
-
-  test('array of string scope rejected', function() {
-    assert.throws(function() {
-      builder.declare({
+    builder.declare(
+      {
         method: 'get',
-        route: '/testArr/:myparam',
-        scopes: ['test:unit'],
-        name: 'arrayScopeRejectedtestEP',
+        route: '/test/:myparam',
+        name: 'noScopeOktestEP',
+        scopes: null,
         category: 'API Library',
         title: 'Test',
         description: 'Test',
-      }, function(_req, _res) {});
-    }, /Invalid scope expression/);
+      },
+      function (_req, _res) {},
+    );
   });
 
-  test('array of arrays of scope rejected', function() {
-    assert.throws(function() {
-      builder.declare({
+  test('string scope works', function () {
+    builder.declare(
+      {
         method: 'get',
-        route: '/testArrArr/:myparam',
-        scopes: [[]],
-        name: 'arrayOfArraytestEP',
+        route: '/testString/:myparam',
+        scopes: 'test:unit',
+        name: 'strScopetestEP',
         category: 'API Library',
         title: 'Test',
         description: 'Test',
-      }, function(_req, _res) {});
+      },
+      function (_req, _res) {},
+    );
+  });
+
+  test('array of string scope rejected', function () {
+    assert.throws(function () {
+      builder.declare(
+        {
+          method: 'get',
+          route: '/testArr/:myparam',
+          scopes: ['test:unit'],
+          name: 'arrayScopeRejectedtestEP',
+          category: 'API Library',
+          title: 'Test',
+          description: 'Test',
+        },
+        function (_req, _res) {},
+      );
     }, /Invalid scope expression/);
   });
 
-  test('scope expression not rejected', function() {
-    builder.declare({
-      method: 'get',
-      route: '/testScope/:myparam',
-      scopes: { AnyOf: ['something'] },
-      name: 'expNotRejectedtestEP',
-      category: 'API Library',
-      title: 'Test',
-      description: 'Test',
-    }, function(_req, _res) {});
+  test('array of arrays of scope rejected', function () {
+    assert.throws(function () {
+      builder.declare(
+        {
+          method: 'get',
+          route: '/testArrArr/:myparam',
+          scopes: [[]],
+          name: 'arrayOfArraytestEP',
+          category: 'API Library',
+          title: 'Test',
+          description: 'Test',
+        },
+        function (_req, _res) {},
+      );
+    }, /Invalid scope expression/);
   });
 
-  test('scope expression with looping template not rejected', function() {
-    builder.declare({
-      method: 'get',
-      route: '/testScope2/:myparam',
-      scopes: { AnyOf: [{ for: 'foo', in: 'bar', each: '<foo>' }] },
-      name: 'expLoopNotRejectedtestEP',
-      category: 'API Library',
-      title: 'Test',
-      description: 'Test',
-    }, function(_req, _res) {});
+  test('scope expression not rejected', function () {
+    builder.declare(
+      {
+        method: 'get',
+        route: '/testScope/:myparam',
+        scopes: { AnyOf: ['something'] },
+        name: 'expNotRejectedtestEP',
+        category: 'API Library',
+        title: 'Test',
+        description: 'Test',
+      },
+      function (_req, _res) {},
+    );
+  });
+
+  test('scope expression with looping template not rejected', function () {
+    builder.declare(
+      {
+        method: 'get',
+        route: '/testScope2/:myparam',
+        scopes: { AnyOf: [{ for: 'foo', in: 'bar', each: '<foo>' }] },
+        name: 'expLoopNotRejectedtestEP',
+        category: 'API Library',
+        title: 'Test',
+        description: 'Test',
+      },
+      function (_req, _res) {},
+    );
   });
 });

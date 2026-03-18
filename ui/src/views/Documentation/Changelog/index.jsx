@@ -12,7 +12,7 @@ import Markdown from '../../../components/Markdown';
 import ChangelogMd from '../../../../../CHANGELOG.md';
 import TextField from '../../../components/TextField';
 
-const parseMarkdownIntoSections = markdown => {
+const parseMarkdownIntoSections = (markdown) => {
   const lines = markdown.split('\n');
   const sections = [];
   let version = '';
@@ -20,7 +20,7 @@ const parseMarkdownIntoSections = markdown => {
   let content = [];
   let id = 0;
 
-  lines.forEach(line => {
+  lines.forEach((line) => {
     if (line.startsWith('## ')) {
       if (version) {
         sections.push({ version, audience, content, html: content.join('\n') });
@@ -53,7 +53,7 @@ const parseMarkdownIntoSections = markdown => {
 const FILTERS = ['version', 'from', 'to', 'q', 'all', 'audience'];
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   md: {
     '& strong': {
       background: theme.palette.secondary.main,
@@ -93,13 +93,15 @@ export default class Changelog extends Component {
     super(props);
 
     this.sections = parseMarkdownIntoSections(ChangelogMd);
-    this.versions = [
-      ...new Set([...this.sections.map(section => section.version)]),
-    ].map(version => ({ label: version, value: version }));
+    this.versions = [...new Set([...this.sections.map((section) => section.version)])].map((version) => ({
+      label: version,
+      value: version,
+    }));
 
-    this.audiences = [
-      ...new Set([...this.sections.map(section => section.audience)]),
-    ].map(audience => ({ label: titleCase(audience), value: audience }));
+    this.audiences = [...new Set([...this.sections.map((section) => section.audience)])].map((audience) => ({
+      label: titleCase(audience),
+      value: audience,
+    }));
 
     const search = new URLSearchParams(this.props.location.search);
 
@@ -115,7 +117,7 @@ export default class Changelog extends Component {
 
   filteredSections = memoize(
     ({ version, from, to, q, all, audience }) => {
-      return this.sections.filter(section => {
+      return this.sections.filter((section) => {
         if (audience && section.audience !== audience) {
           return false;
         }
@@ -136,10 +138,7 @@ export default class Changelog extends Component {
           const releaseFrom = from || (all ? '0.0.0' : '45.0.0');
           const releaseTo = to || '999.999.999';
 
-          if (
-            compareVersions(section.version, releaseFrom) < 0 ||
-            compareVersions(section.version, releaseTo) > 0
-          ) {
+          if (compareVersions(section.version, releaseFrom) < 0 || compareVersions(section.version, releaseTo) > 0) {
             return false;
           }
         }
@@ -150,11 +149,11 @@ export default class Changelog extends Component {
     {
       serializer: ({ version, from, to, q, all, audience }) =>
         `${version}-${from}-${to}-${q}-${all ? '1' : ''}-${audience}`,
-    }
+    },
   );
 
   componentDidUpdate(_prevProps, prevState) {
-    if (FILTERS.map(key => prevState[key] !== this.state[key]).some(a => a)) {
+    if (FILTERS.map((key) => prevState[key] !== this.state[key]).some((a) => a)) {
       this.updateUrl();
     }
   }
@@ -163,7 +162,7 @@ export default class Changelog extends Component {
     const { history, location } = this.props;
     const newSearchParams = new URLSearchParams(location.search);
 
-    FILTERS.forEach(key => {
+    FILTERS.forEach((key) => {
       if (this.state[key]) {
         newSearchParams.set(key, this.state[key]);
       } else {
@@ -181,8 +180,7 @@ export default class Changelog extends Component {
       from: 'Version from',
       to: 'Version to',
     };
-    const maybeHighlight = (text, q) =>
-      q ? text.replace(new RegExp(`(${q})(?![^<>]*>)`, 'gi'), '**$1**') : text;
+    const maybeHighlight = (text, q) => (q ? text.replace(new RegExp(`(${q})(?![^<>]*>)`, 'gi'), '**$1**') : text);
     const onToggleFilter = (key, value) => {
       if (this.state[key] === value) {
         this.setState({ [key]: '' });
@@ -197,12 +195,10 @@ export default class Changelog extends Component {
           <Grid item xs={4} key={key}>
             <Autocomplete
               options={this.versions}
-              getOptionLabel={option => option.label}
+              getOptionLabel={(option) => option.label}
               onInputChange={(_event, value) => this.setState({ [key]: value })}
               defaultValue={{ label: this.state[key], value: this.state[key] }}
-              renderInput={params => (
-                <TextField {...params} label={label} fullWidth />
-              )}
+              renderInput={(params) => <TextField {...params} label={label} fullWidth />}
             />
           </Grid>
         ))}
@@ -211,21 +207,19 @@ export default class Changelog extends Component {
             label="Search for a keyword"
             value={this.state.q}
             fullWidth
-            onChange={ev => this.setState({ q: ev.target.value })}
+            onChange={(ev) => this.setState({ q: ev.target.value })}
           />
         </Grid>
         <Grid item xs={4}>
           <Autocomplete
             options={this.audiences}
-            getOptionLabel={option => option.label}
+            getOptionLabel={(option) => option.label}
             onInputChange={(_event, value) => this.setState({ audience: value })}
             defaultValue={{
               label: this.state.audience,
               value: this.state.audience,
             }}
-            renderInput={params => (
-              <TextField {...params} label="Audience" fullWidth />
-            )}
+            renderInput={(params) => <TextField {...params} label="Audience" fullWidth />}
           />
         </Grid>
         <Grid item xs={4}>
@@ -234,19 +228,17 @@ export default class Changelog extends Component {
             control={
               <Switch
                 checked={this.state.all}
-                onChange={ev => this.setState({ all: ev.target.checked })}
+                onChange={(ev) => this.setState({ all: ev.target.checked })}
                 value="yes"
               />
             }
             label="Include old versions"
           />
         </Grid>
-        {this.filteredSections(this.state).map(section => (
+        {this.filteredSections(this.state).map((section) => (
           <Grid key={section.id} item xs={12} className={classes.section}>
             <h1>
-              <span
-                className={classes.version}
-                onClick={() => onToggleFilter('version', section.version)}>
+              <span className={classes.version} onClick={() => onToggleFilter('version', section.version)}>
                 {section.version}
               </span>
               {section.audience && (

@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   dense: {
     minHeight: 20,
     padding: '4px 10px 3px',
@@ -30,9 +30,7 @@ import Button from '@material-ui/core/Button';
   },
   default: {
     backgroundColor: `${theme.palette.grey[700]} !important`,
-    color: `${theme.palette.getContrastText(
-      theme.palette.grey[700]
-    )} !important`,
+    color: `${theme.palette.getContrastText(theme.palette.grey[700])} !important`,
   },
   info: {
     backgroundColor: `${theme.palette.info[700]} !important`,
@@ -53,8 +51,7 @@ export default class Label extends Component {
     /**
      * An intent-driven color indicator.
      */
-    status: oneOf(['error', 'success', 'warning', 'default', 'info'])
-      .isRequired,
+    status: oneOf(['error', 'success', 'warning', 'default', 'info']).isRequired,
     /**
      * Show label using dense styling.
      */
@@ -82,7 +79,8 @@ export default class Label extends Component {
           sizeSmall: classes.dense,
           disabled: classNames(classes[status], classes.disabled),
         }}
-        {...props}>
+        {...props}
+      >
         {children}
       </Button>
     );

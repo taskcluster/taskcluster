@@ -31,13 +31,16 @@ export const throttleRequest = async ({ url, method, response = { status: 0 }, a
 
     if (e.status >= 500) {
       const newDelay = 2 ** attempt * delay;
-      return await setTimeoutPromise(newDelay, throttleRequest({
-        url,
-        method,
-        response: e,
-        attempt: attempt + 1,
-        delay,
-      }));
+      return await setTimeoutPromise(
+        newDelay,
+        throttleRequest({
+          url,
+          method,
+          response: e,
+          attempt: attempt + 1,
+          delay,
+        }),
+      );
     }
 
     throw e;
@@ -167,7 +170,8 @@ export const ansi2txt = (src) => {
  * @returns string
  */
 export const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
-  return ansi2txt(log).substring(log.length - maxPayloadLength)
+  return ansi2txt(log)
+    .substring(log.length - maxPayloadLength)
     .split('\n')
     .slice(-maxLines)
     .join('\n');
@@ -181,12 +185,11 @@ export const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
  * @returns string or null
  */
 export const extractTailLinesFromLog = (logString, maxPayloadLength, tailLines) => {
-
   if (tailLines === 0) {
     return null;
   }
 
-  const tailLog = logString.split("\n").slice(-tailLines).join("\n");
+  const tailLog = logString.split('\n').slice(-tailLines).join('\n');
 
   if (logString.length <= maxPayloadLength) {
     return tailLog;
@@ -206,7 +209,6 @@ export const extractTailLinesFromLog = (logString, maxPayloadLength, tailLines) 
  * @returns string
  */
 export const extractHeadLinesFromLog = (logString, maxPayloadLength) => {
-
   if (logString.length <= maxPayloadLength) {
     return logString;
   }
@@ -263,10 +265,7 @@ export function generateXHubSignature(secret, payload, algorithm = 'sha1') {
   if (!['sha1', 'sha256'].includes(algorithm)) {
     throw new Error('Invalid algorithm');
   }
-  return [
-    algorithm,
-    crypto.createHmac(algorithm, secret).update(payload).digest('hex'),
-  ].join('=');
+  return [algorithm, crypto.createHmac(algorithm, secret).update(payload).digest('hex')].join('=');
 }
 
 /**

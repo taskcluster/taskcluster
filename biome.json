@@ -10,7 +10,21 @@
     ],
     "maxSize": 5242880
   },
-  "formatter": { "enabled": false },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "always",
+      "quoteStyle": "single",
+      "trailingCommas": "all",
+      "bracketSpacing": true
+    }
+  },
   "assist": { "enabled": false },
   "linter": {
     "enabled": true,

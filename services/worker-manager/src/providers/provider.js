@@ -10,19 +10,19 @@ import { Worker, WorkerPoolError } from '../data.js';
 /** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
 
 /** @typedef {{
-*   monitor: object,
-*   notify: object,
-*   rootUrl: string,
-*   providerId: string,
-*   providerType: string,
-*   db: import('@taskcluster/lib-postgres').Database,
-*   estimator: import('../estimator.js').Estimator,
-*   Worker: import('../data.js').Worker,
-*   WorkerPoolError: import('../data.js').WorkerPoolError,
-*   validator: Function,
-*   publisher: import('@taskcluster/lib-pulse').PulsePublisher,
-*   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
-* }} ProviderConfigOptions */
+ *   monitor: object,
+ *   notify: object,
+ *   rootUrl: string,
+ *   providerId: string,
+ *   providerType: string,
+ *   db: import('@taskcluster/lib-postgres').Database,
+ *   estimator: import('../estimator.js').Estimator,
+ *   Worker: import('../data.js').Worker,
+ *   WorkerPoolError: import('../data.js').WorkerPoolError,
+ *   validator: Function,
+ *   publisher: import('@taskcluster/lib-pulse').PulsePublisher,
+ *   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
+ * }} ProviderConfigOptions */
 
 /**
  * The parent class for all providers.
@@ -72,34 +72,28 @@ export class Provider {
     this.emailCache = [];
   }
 
-  async setup() {
-  }
+  async setup() {}
 
-  async initiate() {
-  }
+  async initiate() {}
 
-  async terminate() {
-  }
+  async terminate() {}
 
   validate(config) {
     assert(this.configSchema); // This must be set up by a provider impl
     return this.validator(config, libUrls.schema(this.rootUrl, 'worker-manager', `v1/${this.configSchema}.yml`));
   }
 
-  async prepare() {
-  }
+  async prepare() {}
 
   /**
    * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
    */
-  async provision({ workerPool, workerPoolStats }) {
-  }
+  async provision({ workerPool, workerPoolStats }) {}
 
   /**
    * @param {{ workerPool: WorkerPool }} opts
    */
-  async deprovision({ workerPool }) {
-  }
+  async deprovision({ workerPool }) {}
 
   /**
    * @param {{ workerPool: WorkerPool, worker: Worker, workerIdentityProof: Record<string, any> }} opts
@@ -108,20 +102,16 @@ export class Provider {
     throw new ApiError('not supported for this provider');
   }
 
-  async cleanup() {
-  }
+  async cleanup() {}
 
-  async scanPrepare() {
-  }
+  async scanPrepare() {}
 
   /**
    * @param {{ worker: Worker }} opts
    */
-  async checkWorker({ worker }) {
-  }
+  async checkWorker({ worker }) {}
 
-  async scanCleanup() {
-  }
+  async scanCleanup() {}
 
   /**
    * Get active launch configs to spawn workers
@@ -231,7 +221,10 @@ export class Provider {
       runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
     };
     return this._onWorkerEvent({
-      worker, event: 'workerRemoved', extraLog, extraPublish: { reason },
+      worker,
+      event: 'workerRemoved',
+      extraLog,
+      extraPublish: { reason },
     });
   }
 
@@ -305,7 +298,7 @@ export class Provider {
       });
     }
 
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       const lifecycleData = Provider.ensureWorkerManagerData(worker);
       if (!lifecycleData.registeredAt) {
         lifecycleData.registeredAt = new Date(now).toJSON();
@@ -328,7 +321,7 @@ export class Provider {
     const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
     const currentState = worker.state; // Capture state before it changes
 
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       const lifecycleData = Provider.ensureWorkerManagerData(worker);
       if (!lifecycleData.stoppedAt) {
         lifecycleData.stoppedAt = new Date(now).toJSON();
@@ -412,9 +405,9 @@ export class Provider {
    * this is also set in the lifecycle schema so update there if
    * changing.
    */
-  static interpretLifecycle({ lifecycle: {
-    registrationTimeout, reregistrationTimeout, queueInactivityTimeout,
-  } = {} }) {
+  static interpretLifecycle({
+    lifecycle: { registrationTimeout, reregistrationTimeout, queueInactivityTimeout } = {},
+  }) {
     reregistrationTimeout = reregistrationTimeout || 345600;
     queueInactivityTimeout = queueInactivityTimeout || 7200; // 2 hours by default
     let terminateAfter = null;
@@ -529,10 +522,7 @@ export class Provider {
   }
 
   hashKey(idents) {
-    return crypto
-      .createHash('md5')
-      .update(JSON.stringify(idents))
-      .digest('hex');
+    return crypto.createHash('md5').update(JSON.stringify(idents)).digest('hex');
   }
 
   isDuplicate(...idents) {
@@ -583,8 +573,7 @@ export class Provider {
  * An error which, if thrown from API-related Provider methods, will be returned to
  * the user as a 400 Bad Request error containing `err.message`.
  */
-export class ApiError extends Error {
-}
+export class ApiError extends Error {}
 
 /**
  * Utility function for reportError

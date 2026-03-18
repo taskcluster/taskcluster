@@ -7,14 +7,14 @@ import _ from 'lodash';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  const makeTask = function() {
+  const makeTask = function () {
     return {
       provisionerId: 'dummy-test-provisioner',
       workerType: 'dummy-test-worker-type',
@@ -29,8 +29,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         'index.my-ns.slash/things-are-ignored',
       ],
       retries: 3,
-      created: (new Date()).toJSON(),
-      deadline: (new Date()).toJSON(),
+      created: new Date().toJSON(),
+      deadline: new Date().toJSON(),
       expires: taskcluster.fromNow('1 day'),
       payload: {},
       metadata: {
@@ -45,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     };
   };
 
-  suiteSetup('load handlers', async function() {
+  suiteSetup('load handlers', async function () {
     if (skipping()) {
       return;
     }
@@ -54,7 +54,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.load('handlers');
   });
 
-  test('Run task and test indexing', async function() {
+  test('Run task and test indexing', async function () {
     const taskId = slugid.nice();
     const task = makeTask();
     helper.queue.addTask(taskId, task);
@@ -90,32 +90,39 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       debug('### List task in namespace');
       result = await helper.index.listTasks('my-ns', {});
       assert.equal(result.tasks.length, 2, 'Expected 2 tasks');
-      result.tasks.forEach(function(task) {
+      result.tasks.forEach(function (task) {
         assert.equal(task.taskId, taskId, 'Wrong taskId');
       });
 
       debug('### List namespaces in namespace');
       result = await helper.index.listNamespaces('my-ns', {});
       assert.equal(result.namespaces.length, 2, 'Expected 2 namespaces');
-      assert(result.namespaces.some(function(ns) {
-        return ns.name === 'one-ns';
-      }), 'Expected to find one-ns');
-      assert(result.namespaces.some(function(ns) {
-        return ns.name === 'another-ns';
-      }), 'Expected to find another-ns');
+      assert(
+        result.namespaces.some(function (ns) {
+          return ns.name === 'one-ns';
+        }),
+        'Expected to find one-ns',
+      );
+      assert(
+        result.namespaces.some(function (ns) {
+          return ns.name === 'another-ns';
+        }),
+        'Expected to find another-ns',
+      );
 
       debug('### Find task in index');
-      await helper.index.findTask(
-        'my-ns.slash/things-are-ignored',
-      ).then(function() {
-        assert(false, 'Expected ill formated namespaces to be ignored!');
-      }, function(err) {
-        assert.equal(err.statusCode, 400, 'Expected 400');
-      });
+      await helper.index.findTask('my-ns.slash/things-are-ignored').then(
+        function () {
+          assert(false, 'Expected ill formated namespaces to be ignored!');
+        },
+        function (err) {
+          assert.equal(err.statusCode, 400, 'Expected 400');
+        },
+      );
     });
   });
 
-  test('Run task with a .extra and test indexing', async function() {
+  test('Run task with a .extra and test indexing', async function () {
     const taskId = slugid.nice();
     const task = makeTask();
     task.extra = {
@@ -141,7 +148,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.fakePulseMessage(message);
 
     debug('### Find task in index');
-    let result = await testing.poll(function() {
+    let result = await testing.poll(function () {
       return helper.index.findTask('my-ns.my-indexed-thing');
     });
     assert.equal(result.taskId, taskId, 'Wrong taskId');
@@ -153,7 +160,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(result.taskId, taskId, 'Wrong taskId');
   });
 
-  test('Expiring Indexed Tasks', async function() {
+  test('Expiring Indexed Tasks', async function () {
     // Create expiration
     const expiry = new Date();
 
@@ -196,11 +203,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
     }
-    assert(false, 'This shouldn\'t have worked');
-
+    assert(false, "This shouldn't have worked");
   });
 
-  test('Expiring Namespace', async function() {
+  test('Expiring Namespace', async function () {
     // Create expiration
     const expiry = new Date();
     expiry.setDate(expiry.getDate() - 1);
@@ -238,13 +244,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     result = await helper.index.listNamespaces(myns, {});
     assert.equal(result.namespaces.length, 1, 'Expected 1 namespace');
-    assert(result.namespaces.some(function(ns) {
-      return ns.name === 'one-ns';
-    }), 'Expected to find one-ns');
-
+    assert(
+      result.namespaces.some(function (ns) {
+        return ns.name === 'one-ns';
+      }),
+      'Expected to find one-ns',
+    );
   });
 
-  const insert10Tasks = async function(myns) {
+  const insert10Tasks = async function (myns) {
     const expiry = new Date();
     expiry.setDate(expiry.getDate() + 10);
     const res = [];
@@ -263,7 +271,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     return res;
   };
 
-  test('list top-level namespaces test limit and continuationToken params', async function() {
+  test('list top-level namespaces test limit and continuationToken params', async function () {
     const myns = slugid.v4();
     await insert10Tasks(myns);
     debug('listNamespaces returns continuationToken after limit = 10');
@@ -281,14 +289,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const obj = result.namespaces[0];
       debug('listNamespaces entries match the namespace regex');
       assert.equal(
-        new RegExp(`${myns}.my-task`).test(obj.namespace) &&
-        /my-task/.test(obj.name),
-        true, 'Expect namespace to match regex');
+        new RegExp(`${myns}.my-task`).test(obj.namespace) && /my-task/.test(obj.name),
+        true,
+        'Expect namespace to match regex',
+      );
       continuationToken = result.continuationToken;
-      i ++;
-    }
-    while (!_.isUndefined(continuationToken));
+      i++;
+    } while (!_.isUndefined(continuationToken));
     assert(i >= 10, 'continuationToken is valid till 10 listNamespaces');
   });
-
 });

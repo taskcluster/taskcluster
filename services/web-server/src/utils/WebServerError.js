@@ -3,6 +3,6 @@ export default class WebServerError extends Error {
     super();
     this.name = name;
     this.message = message;
-    this.stack = (new Error()).stack;
+    this.stack = new Error().stack;
   }
 }

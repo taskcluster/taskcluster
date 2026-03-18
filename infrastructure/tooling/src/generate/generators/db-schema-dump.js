@@ -5,175 +5,181 @@ const { parse: parseDbURL } = pgConnectionString;
 import { REPO_ROOT, writeRepoFile, execCommand, checkExecutableExists } from '../../utils/index.js';
 
 // Generate a readable JSON version of the schema.
-export const tasks = [{
-  title: 'DB Schema Dump',
-  requires: ['db-schema-serializable'],
-  provides: ['db-schema-dump'],
-  run: async (requirements, utils) => {
-    if (!process.env.TEST_DB_URL) {
-      throw new Error("'yarn generate' requires $TEST_DB_URL to be set");
-    }
+export const tasks = [
+  {
+    title: 'DB Schema Dump',
+    requires: ['db-schema-serializable'],
+    provides: ['db-schema-dump'],
+    run: async (requirements, utils) => {
+      if (!process.env.TEST_DB_URL) {
+        throw new Error("'yarn generate' requires $TEST_DB_URL to be set");
+      }
 
-    const hasNativePgDump = await checkExecutableExists('pg_dump');
-    const hasDocker = await checkExecutableExists('docker');
+      const hasNativePgDump = await checkExecutableExists('pg_dump');
+      const hasDocker = await checkExecutableExists('docker');
 
-    if (!hasNativePgDump && !hasDocker) {
-      throw new Error('Cannot find pg_dump or docker in PATH, cannot dump schema');
-    }
+      if (!hasNativePgDump && !hasDocker) {
+        throw new Error('Cannot find pg_dump or docker in PATH, cannot dump schema');
+      }
 
-    // reset the DB back to its empty state..
-    utils.step({ title: 'Reset Test Database' });
-    await testing.resetDb();
+      // reset the DB back to its empty state..
+      utils.step({ title: 'Reset Test Database' });
+      await testing.resetDb();
 
-    // .. and then upgrade to the latest version
-    utils.step({ title: 'Upgrade Test Database' });
-    const schema = tcpg.Schema.fromSerializable(requirements['db-schema-serializable']);
-    await tcpg.Database.upgrade({
-      schema,
-      showProgress: message => utils.status({ message }),
-      usernamePrefix: 'test',
-      adminDbUrl: process.env.TEST_DB_URL,
-    });
+      // .. and then upgrade to the latest version
+      utils.step({ title: 'Upgrade Test Database' });
+      const schema = tcpg.Schema.fromSerializable(requirements['db-schema-serializable']);
+      await tcpg.Database.upgrade({
+        schema,
+        showProgress: (message) => utils.status({ message }),
+        usernamePrefix: 'test',
+        adminDbUrl: process.env.TEST_DB_URL,
+      });
 
-    // now dump the schema of the DB
-    utils.step({ title: 'Dump Test Database' });
-    const { host, port, user, password, database } = parseDbURL(process.env.TEST_DB_URL);
+      // now dump the schema of the DB
+      utils.step({ title: 'Dump Test Database' });
+      const { host, port, user, password, database } = parseDbURL(process.env.TEST_DB_URL);
 
-    let commandPrefix = [];
-    // running in docker would be preferred, since it will have same version of pg_dump
-    if (hasDocker) {
-      // check if docker process is running
-      const dockerProcessId = await execCommand({
+      let commandPrefix = [];
+      // running in docker would be preferred, since it will have same version of pg_dump
+      if (hasDocker) {
+        // check if docker process is running
+        const dockerProcessId = await execCommand({
+          dir: REPO_ROOT,
+          command: ['docker', 'ps', '-q', '--filter', 'ancestor=postgres:15'],
+          keepAllOutput: true,
+          utils,
+        });
+
+        // having newline in the output means there are multiple docker processes running
+        if (dockerProcessId && !dockerProcessId.trim().includes('\n')) {
+          commandPrefix = ['docker', 'exec', dockerProcessId.trim()];
+        }
+      }
+
+      const pgdump = await execCommand({
         dir: REPO_ROOT,
-        command: ['docker', 'ps', '-q', '--filter', 'ancestor=postgres:15'],
+        command: [
+          ...commandPrefix,
+          'pg_dump',
+          '--schema-only',
+          '-h',
+          host,
+          '-p',
+          (port || 5432).toString(),
+          '-U',
+          user,
+          '-d',
+          database,
+        ],
         keepAllOutput: true,
+        env: {
+          ...process.env,
+          PGPASSWORD: password,
+        },
         utils,
       });
 
-      // having newline in the output means there are multiple docker processes running
-      if (dockerProcessId && !dockerProcessId.trim().includes('\n')) {
-        commandPrefix = ['docker', 'exec', dockerProcessId.trim()];
+      /* Parse the output as separated by comments of the form:
+       *
+       * --
+       * -- Name: access_token_table_entities; Type: TABLE; Schema: public; Owner: dustindev
+       * --
+       *
+       * for primary keys:
+       *
+       * -- Name: access_token_table_entities access_token_table_entities_pkey; Type: CONSTRAINT;
+       *    Schema: public; Owner: dustindev
+       *   [^newline added]
+       *
+       * and for indexes:
+       *
+       * -- Name: azure_queue_messages_inserted; Type: INDEX; Schema: public; Owner: dustindev
+       */
+
+      const re = /--\n-- Name: ([^;]+); Type: ([^;]+); Schema: [^;]+; Owner: [^;]+\n--\n/;
+      const statements = [];
+      const parts = pgdump.split(re);
+      parts.shift(); // throw out the header
+      for (let i = 0; i < parts.length; i += 3) {
+        const [name, type, body] = parts.slice(i, i + 3);
+        statements.push({ name, type, body });
       }
-    }
 
-    const pgdump = await execCommand({
-      dir: REPO_ROOT,
-      command: [
-        ...commandPrefix,
-        'pg_dump',
-        '--schema-only',
-        '-h', host,
-        '-p', (port || 5432).toString(),
-        '-U', user,
-        '-d', database,
-      ],
-      keepAllOutput: true,
-      env: {
-        ...process.env,
-        PGPASSWORD: password,
-      },
-      utils,
-    });
+      const byTable = new Map();
+      for (const { name, type, body } of statements) {
+        switch (type) {
+          case 'TABLE': {
+            byTable.set(name, { ...(byTable.get(name) || {}), create: body });
+            break;
+          }
 
-    /* Parse the output as separated by comments of the form:
-     *
-     * --
-     * -- Name: access_token_table_entities; Type: TABLE; Schema: public; Owner: dustindev
-     * --
-     *
-     * for primary keys:
-     *
-     * -- Name: access_token_table_entities access_token_table_entities_pkey; Type: CONSTRAINT;
-     *    Schema: public; Owner: dustindev
-     *   [^newline added]
-     *
-     * and for indexes:
-     *
-     * -- Name: azure_queue_messages_inserted; Type: INDEX; Schema: public; Owner: dustindev
-     */
+          case 'CONSTRAINT': {
+            const re = /ALTER TABLE ONLY public\.([0-9a-zA-Z_-]+)/;
+            const [_, tableName] = re.exec(body);
+            byTable.set(tableName, { ...(byTable.get(tableName) || {}), constraint: body });
+            break;
+          }
 
-    const re = /--\n-- Name: ([^;]+); Type: ([^;]+); Schema: [^;]+; Owner: [^;]+\n--\n/;
-    const statements = [];
-    const parts = pgdump.split(re);
-    parts.shift(); // throw out the header
-    for (let i = 0; i < parts.length; i += 3) {
-      const [name, type, body] = parts.slice(i, i + 3);
-      statements.push({ name, type, body });
-    }
-
-    const byTable = new Map();
-    for (const { name, type, body } of statements) {
-      switch (type) {
-        case 'TABLE': {
-          byTable.set(name, { ...(byTable.get(name) || {}), create: body });
-          break;
-        }
-
-        case 'CONSTRAINT': {
-          const re = /ALTER TABLE ONLY public\.([0-9a-zA-Z_-]+)/;
-          const [_, tableName] = re.exec(body);
-          byTable.set(tableName, { ...(byTable.get(tableName) || {}), constraint: body });
-          break;
-        }
-
-        case 'INDEX': {
-          const re = /CREATE (:?UNIQUE)? ?INDEX [0-9a-zA-Z_-]+ ON public\.([0-9a-zA-Z_-]+)/;
-          const [_, tableName] = re.exec(body);
-          const table = byTable.get(tableName) || {};
-          table.indexes = (table.indexes || []).concat([body]);
-          byTable.set(tableName, table);
-          break;
+          case 'INDEX': {
+            const re = /CREATE (:?UNIQUE)? ?INDEX [0-9a-zA-Z_-]+ ON public\.([0-9a-zA-Z_-]+)/;
+            const [_, tableName] = re.exec(body);
+            const table = byTable.get(tableName) || {};
+            table.indexes = (table.indexes || []).concat([body]);
+            byTable.set(tableName, table);
+            break;
+          }
         }
       }
-    }
 
-    // reformat that schema so that it contains only what we want, and in
-    // a format that doesn't change from run to run
+      // reformat that schema so that it contains only what we want, and in
+      // a format that doesn't change from run to run
 
-    const output = [];
-    output.push('# Database Schema\n');
-    output.push('<!-- AUTOGENERATED CONTENT; DO NOT EDIT -->');
+      const output = [];
+      output.push('# Database Schema\n');
+      output.push('<!-- AUTOGENERATED CONTENT; DO NOT EDIT -->');
 
-    for (const tableName of [...byTable.keys()].sort()) {
-      output.push(` * [\`${tableName}\`](#${tableName})`);
-    }
-
-    output.push('\n');
-
-    for (const tableName of [...byTable.keys()].sort()) {
-      const { create, constraint, indexes } = byTable.get(tableName);
-
-      output.push(`## ${tableName}\n`);
-
-      output.push("```sql");
-      if (create) {
-        const text = create
-          // drop the unnecessary ownership of this table
-          .replace(/ALTER TABLE [0-9a-zA-Z._-]+ OWNER TO [0-9a-zA-Z_-]+;/g, '')
-          // drop the unnecesary 'public.' in the table name
-          .replace(/CREATE TABLE public\./, 'CREATE TABLE ');
-        output.push(text.trim());
+      for (const tableName of [...byTable.keys()].sort()) {
+        output.push(` * [\`${tableName}\`](#${tableName})`);
       }
 
-      if (constraint) {
-        const text = constraint
-          // drop the unnecesary 'public.' in the table name
-          .replace(/ALTER TABLE ONLY public\./, 'ALTER TABLE ');
-        output.push(text.trim());
-      }
+      output.push('\n');
 
-      if (indexes) {
-        for (const statement of indexes) {
-          const text = statement
+      for (const tableName of [...byTable.keys()].sort()) {
+        const { create, constraint, indexes } = byTable.get(tableName);
+
+        output.push(`## ${tableName}\n`);
+
+        output.push('```sql');
+        if (create) {
+          const text = create
+            // drop the unnecessary ownership of this table
+            .replace(/ALTER TABLE [0-9a-zA-Z._-]+ OWNER TO [0-9a-zA-Z_-]+;/g, '')
             // drop the unnecesary 'public.' in the table name
-            .replace(/ON public\./, 'ON ');
+            .replace(/CREATE TABLE public\./, 'CREATE TABLE ');
           output.push(text.trim());
         }
+
+        if (constraint) {
+          const text = constraint
+            // drop the unnecesary 'public.' in the table name
+            .replace(/ALTER TABLE ONLY public\./, 'ALTER TABLE ');
+          output.push(text.trim());
+        }
+
+        if (indexes) {
+          for (const statement of indexes) {
+            const text = statement
+              // drop the unnecesary 'public.' in the table name
+              .replace(/ON public\./, 'ON ');
+            output.push(text.trim());
+          }
+        }
+
+        output.push('```\n');
       }
 
-      output.push("```\n");
-    }
-
-    await writeRepoFile('db/schema.md', output.join('\n'));
+      await writeRepoFile('db/schema.md', output.join('\n'));
+    },
   },
-}];
+];

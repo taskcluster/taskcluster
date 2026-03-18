@@ -43,7 +43,7 @@ export const pulseCredentials = ({ username, password, hostname, vhost, amqps })
 };
 
 /**
-  * Simply returns the same connectionstring send as a parameter,wrapped with an async function
+ * Simply returns the same connectionstring send as a parameter,wrapped with an async function
  */
 export const connectionStringCredentials = (connectionString) => {
   return async () => {

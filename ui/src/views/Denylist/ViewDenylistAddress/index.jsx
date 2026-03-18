@@ -45,7 +45,7 @@ export default class ViewDenylistAddress extends Component {
     });
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({ dialogError: error, loading: false });
   };
 
@@ -69,9 +69,7 @@ export default class ViewDenylistAddress extends Component {
 
       this.setState({ error: null, loading: false });
 
-      this.props.history.push(
-        `/notify/denylist/${encodeURIComponent(notificationAddress)}`
-      );
+      this.props.history.push(`/notify/denylist/${encodeURIComponent(notificationAddress)}`);
     } catch (error) {
       this.setState({ error, loading: false });
     }
@@ -96,20 +94,13 @@ export default class ViewDenylistAddress extends Component {
       data,
       match: { params },
     } = this.props;
-    const hasDenylistAddresses = Boolean(
-      data?.listDenylistAddresses?.edges.length
-    );
+    const hasDenylistAddresses = Boolean(data?.listDenylistAddresses?.edges.length);
 
     return (
-      <Dashboard
-        title={isNewAddress ? 'Add Denylist Address' : 'Denylist Address'}>
+      <Dashboard title={isNewAddress ? 'Add Denylist Address' : 'Denylist Address'}>
         <ErrorPanel fixed error={formatError(error)} />
         {isNewAddress ? (
-          <DenylistForm
-            loading={loading}
-            isNewAddress
-            onAddressAdd={this.handleAddressAdd}
-          />
+          <DenylistForm loading={loading} isNewAddress onAddressAdd={this.handleAddressAdd} />
         ) : (
           <Fragment>
             {data.loading && <Spinner loading />}
@@ -129,8 +120,7 @@ export default class ViewDenylistAddress extends Component {
             )}
             {!data.loading && !hasDenylistAddresses && (
               <Typography variant="body2">
-                <em>{decodeURIComponent(params.notificationAddress)}</em> cannot
-                be found.
+                <em>{decodeURIComponent(params.notificationAddress)}</em> cannot be found.
               </Typography>
             )}
           </Fragment>

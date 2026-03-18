@@ -42,7 +42,7 @@ export default class SignInDialog extends Component {
         window.removeEventListener('message', handler);
         await onAuthorize(UserSession.create(e.data));
       },
-      false
+      false,
     );
   }
 
@@ -54,7 +54,7 @@ export default class SignInDialog extends Component {
     this.setState({ credentialsDialogOpen: true });
   };
 
-  handleCredentialsSignIn = credentials => {
+  handleCredentialsSignIn = (credentials) => {
     const inOneThousandYears = new Date();
 
     inOneThousandYears.setDate(inOneThousandYears.getDate() + 365 * 1000);
@@ -69,7 +69,7 @@ export default class SignInDialog extends Component {
           username: credentials.clientId,
           displayName: credentials.clientId,
         },
-      })
+      }),
     );
     this.props.onClose();
   };
@@ -81,15 +81,10 @@ export default class SignInDialog extends Component {
   render() {
     const { onClose, open } = this.props;
     const { credentialsDialogOpen } = this.state;
-    const strategies = window.env.UI_LOGIN_STRATEGY_NAMES
-      ? window.env.UI_LOGIN_STRATEGY_NAMES.split(' ')
-      : [];
+    const strategies = window.env.UI_LOGIN_STRATEGY_NAMES ? window.env.UI_LOGIN_STRATEGY_NAMES.split(' ') : [];
 
     return strategies.length > 0 ? (
-      <Dialog
-        open={open}
-        onClose={onClose}
-        aria-labelledby="sign-in-dialog-title">
+      <Dialog open={open} onClose={onClose} aria-labelledby="sign-in-dialog-title">
         <DialogTitle id="sign-in-dialog-title">Sign In</DialogTitle>
         <DialogContent>
           <List>
@@ -100,7 +95,8 @@ export default class SignInDialog extends Component {
                 href="/login/mozilla-auth0"
                 rel="opener"
                 onClick={() => this.onAuthStart('mozilla-auth0')}
-                target="_blank">
+                target="_blank"
+              >
                 <ListItemAvatar>
                   <Avatar>
                     <LoginVariantIcon />
@@ -116,7 +112,8 @@ export default class SignInDialog extends Component {
                 href="/login/github"
                 rel="opener"
                 onClick={() => this.onAuthStart('github')}
-                target="_blank">
+                target="_blank"
+              >
                 <ListItemAvatar>
                   <Avatar>
                     <GithubCircleIcon />
@@ -128,7 +125,8 @@ export default class SignInDialog extends Component {
             <ListItem
               disabled={window.location.pathname === '/third-party'}
               button
-              onClick={this.handleCredentialsDialogOpen}>
+              onClick={this.handleCredentialsDialogOpen}
+            >
               <ListItemAvatar>
                 <Avatar>
                   <KeyboardOutlineIcon />
@@ -145,11 +143,7 @@ export default class SignInDialog extends Component {
         </DialogContent>
       </Dialog>
     ) : (
-      <CredentialsDialog
-        onSignIn={this.handleCredentialsSignIn}
-        open={open}
-        onClose={onClose}
-      />
+      <CredentialsDialog onSignIn={this.handleCredentialsSignIn} open={open} onClose={onClose} />
     );
   }
 }

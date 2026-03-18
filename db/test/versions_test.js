@@ -4,7 +4,7 @@ import testing from '@taskcluster/lib-testing';
 
 import { newVersion, renumberVersions } from '../src/versions.js';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   test('new migration', async () => {
     const next1 = await newVersion({ runGit: false });
     const next2 = await newVersion({ runGit: false });

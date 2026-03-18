@@ -15,7 +15,13 @@ export default class HooksEvents extends Client {
   // Whenever the api receives a request to create apulse based hook, a message is posted to this exchange andthe receiver creates a listener with the bindings, to create a task
   /* eslint-enable max-len */
   hookCreated(pattern) {
-    const entry = {"exchange":"hook-created","name":"hookCreated","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-hook-changed-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {
+      exchange: 'hook-created',
+      name: 'hookCreated',
+      routingKey: [{ multipleWords: true, name: 'reserved', required: false }],
+      schema: 'v1/pulse-hook-changed-message.json#',
+      type: 'topic-exchange',
+    }; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -23,7 +29,13 @@ export default class HooksEvents extends Client {
   // Whenever the api receives a request to update apulse based hook, a message is posted to this exchange andthe receiver updates the listener associated with that hook.
   /* eslint-enable max-len */
   hookUpdated(pattern) {
-    const entry = {"exchange":"hook-updated","name":"hookUpdated","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-hook-changed-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {
+      exchange: 'hook-updated',
+      name: 'hookUpdated',
+      routingKey: [{ multipleWords: true, name: 'reserved', required: false }],
+      schema: 'v1/pulse-hook-changed-message.json#',
+      type: 'topic-exchange',
+    }; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -31,7 +43,13 @@ export default class HooksEvents extends Client {
   // Whenever the api receives a request to delete apulse based hook, a message is posted to this exchange andthe receiver deletes the listener associated with that hook.
   /* eslint-enable max-len */
   hookDeleted(pattern) {
-    const entry = {"exchange":"hook-deleted","name":"hookDeleted","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/pulse-hook-changed-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {
+      exchange: 'hook-deleted',
+      name: 'hookDeleted',
+      routingKey: [{ multipleWords: true, name: 'reserved', required: false }],
+      schema: 'v1/pulse-hook-changed-message.json#',
+      type: 'topic-exchange',
+    }; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

@@ -73,7 +73,7 @@ export class FakeCloud {
       addFormats(ajv);
       ajv.addMetaSchema(jsonSchemaDraft06);
       const dir = path.join(__dirname, 'schemas');
-      fs.readdirSync(dir).forEach(file => {
+      fs.readdirSync(dir).forEach((file) => {
         if (!file.endsWith('.yml')) {
           return;
         }
@@ -93,10 +93,12 @@ export class FakeCloud {
         error.message += `: ${JSON.stringify(error.params.additionalProperty)}`;
       }
     }
-    throw new Error([
-      '\nSchema Validation Failed!',
-      `\nSchema Errors (${schemaFile}):\n  * `,
-      this.ajv.errorsText(this.ajv.errors, { separator: '\n  * ' }),
-    ].join(''));
+    throw new Error(
+      [
+        '\nSchema Validation Failed!',
+        `\nSchema Errors (${schemaFile}):\n  * `,
+        this.ajv.errorsText(this.ajv.errors, { separator: '\n  * ' }),
+      ].join(''),
+    );
   }
 }

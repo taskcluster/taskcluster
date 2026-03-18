@@ -22,10 +22,12 @@ export const loadTasks = async (dirname) => {
   const result = [];
   const files = enumFiles(dirname);
 
-  await Promise.all(files.map(async (file) => {
-    const { tasks } = await import(path.join(dirname, file));
-    tasks.forEach(val => result.push(val));
-  }));
+  await Promise.all(
+    files.map(async (file) => {
+      const { tasks } = await import(path.join(dirname, file));
+      tasks.forEach((val) => result.push(val));
+    }),
+  );
 
   return result;
 };

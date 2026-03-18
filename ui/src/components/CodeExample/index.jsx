@@ -8,7 +8,7 @@ import ContentCopyIcon from '@material-ui/icons/FileCopy';
 import CheckIcon from '@material-ui/icons/Check';
 import Code from '../Code';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   container: {
     position: 'relative',
     marginBottom: theme.spacing(2),
@@ -70,10 +70,7 @@ export default class CodeExample extends Component {
       <div className={classes.container}>
         <CopyToClipboard text={code} onCopy={this.handleCopy}>
           <Tooltip title={copied ? 'Copied!' : 'Copy to clipboard'}>
-            <IconButton
-              className={classes.copyButton}
-              size="small"
-              aria-label="copy code to clipboard">
+            <IconButton className={classes.copyButton} size="small" aria-label="copy code to clipboard">
               {copied ? <CheckIcon /> : <ContentCopyIcon />}
             </IconButton>
           </Tooltip>

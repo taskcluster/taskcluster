@@ -23,25 +23,21 @@ export const REPO_ROOT = path.join(__dirname, '../../../../');
 export const listServices = ({ repoDir } = {}) => {
   // look for package.json's, so that we're not fooled by any
   // stray empty or gitignore'd directories
-  const packageJsons = glob.sync(
-    'services/*/package.json',
-    { cwd: repoDir || REPO_ROOT });
-  return packageJsons.map(filename => filename.split('/')[1]);
+  const packageJsons = glob.sync('services/*/package.json', { cwd: repoDir || REPO_ROOT });
+  return packageJsons.map((filename) => filename.split('/')[1]);
 };
 
 /**
  * Asynchronously read a file (relative to REPO_ROOT) and return its contents as a utf8 string
  */
-export const readRepoFile = async filename => {
-  return await readFile(
-    path.join(REPO_ROOT, filename),
-    { encoding: 'utf8' });
+export const readRepoFile = async (filename) => {
+  return await readFile(path.join(REPO_ROOT, filename), { encoding: 'utf8' });
 };
 
 /**
  * Asynchronously read a JSON file from the current working copy
  */
-export const readRepoJSON = async filename => {
+export const readRepoJSON = async (filename) => {
   return JSON.parse(await readRepoFile(filename));
 };
 
@@ -67,9 +63,7 @@ export const writeRepoJSON = async (filename, data) => {
  */
 const modifySync = pSynchronize();
 export const modifyRepoFile = modifySync(async (filename, modifier) => {
-  const contents = await readFile(
-    path.join(REPO_ROOT, filename),
-    { encoding: 'utf8' });
+  const contents = await readFile(path.join(REPO_ROOT, filename), { encoding: 'utf8' });
   const modified = await modifier(contents);
   await writeFile(filename, modified, { encoding: 'utf8' });
 });
@@ -87,7 +81,7 @@ export const removeRepoFile = async (filename) => {
  * This relies on stability of JSON.parse / JSON.stringify
  */
 export const modifyRepoJSON = async (filename, modifier) => {
-  return modifyRepoFile(filename, async contents => {
+  return modifyRepoFile(filename, async (contents) => {
     const data = JSON.parse(contents);
     await modifier(data);
     return `${JSON.stringify(data, null, 2)}\n`;
@@ -98,7 +92,7 @@ export const modifyRepoJSON = async (filename, modifier) => {
  * Modify a YAML file in-place in the current working copy, calling `await modifier(contents)`.
  */
 export const modifyRepoYAML = async (filename, modifier) => {
-  return modifyRepoFile(filename, async contents => {
+  return modifyRepoFile(filename, async (contents) => {
     const data = yaml.load(contents);
     await modifier(data);
     return yaml.dump(data, { lineWidth: -1 });
@@ -110,16 +104,16 @@ export const modifyRepoYAML = async (filename, modifier) => {
  */
 export const gitLsFiles = async ({ patterns } = {}) => {
   const opts = { cwd: REPO_ROOT };
-  const files = (await exec('git', ['ls-files', '-z'].concat(patterns || []), opts))
-    .stdout.split(/\0/)
-    .filter(v => v !== '');
+  const files = (await exec('git', ['ls-files', '-z'].concat(patterns || []), opts)).stdout
+    .split(/\0/)
+    .filter((v) => v !== '');
   return files;
 };
 
 /**
  * Asynchronously read a yaml file from the current working copy
  */
-export const readRepoYAML = async filename => {
+export const readRepoYAML = async (filename) => {
   return yaml.load(await readRepoFile(filename));
 };
 

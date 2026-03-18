@@ -4,7 +4,7 @@ import taskcluster from '@taskcluster/client';
 import mocha from 'mocha';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -33,7 +33,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
    * instances of these test cases runs at the same time.
    */
   const test = (title, t) => {
-    mocha.test(title, async function() {
+    mocha.test(title, async function () {
       // Some of these tests can be a bit slow, especially without in-memory entities
       this.timeout(10 * 60 * 1000);
 
@@ -62,24 +62,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
       // Run tests for all clients
       let err = '';
-      await Promise.all(t.clients.map(async (c) => {
-        const client = await helper.apiClient.client(c.clientId);
-        const missing = _.difference(c.includes, client.expandedScopes);
-        const forbidden = _.intersection(c.exludes, client.expandedScopes);
-        if (missing.length !== 0 || forbidden.length !== 0) {
-          err += `Test failed: ${JSON.stringify(t, null, 2)}\n`;
-          err += `Client: ${JSON.stringify(client, null, 2)}\n`;
-        }
-        if (missing.length !== 0) {
-          err += `Missing: ${JSON.stringify(missing)}\n`;
-        }
-        if (forbidden.length !== 0) {
-          err += `Forbidden: ${JSON.stringify(forbidden)}\n`;
-        }
-        if (missing.length !== 0 || forbidden.length !== 0) {
-          err += '\n\n';
-        }
-      }));
+      await Promise.all(
+        t.clients.map(async (c) => {
+          const client = await helper.apiClient.client(c.clientId);
+          const missing = _.difference(c.includes, client.expandedScopes);
+          const forbidden = _.intersection(c.exludes, client.expandedScopes);
+          if (missing.length !== 0 || forbidden.length !== 0) {
+            err += `Test failed: ${JSON.stringify(t, null, 2)}\n`;
+            err += `Client: ${JSON.stringify(client, null, 2)}\n`;
+          }
+          if (missing.length !== 0) {
+            err += `Missing: ${JSON.stringify(missing)}\n`;
+          }
+          if (forbidden.length !== 0) {
+            err += `Forbidden: ${JSON.stringify(forbidden)}\n`;
+          }
+          if (missing.length !== 0 || forbidden.length !== 0) {
+            err += '\n\n';
+          }
+        }),
+      );
 
       // delete all roles and clients from the tests
       for (const c of t.clients) {
@@ -105,17 +107,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     clients: [
       {
         clientId: 'test-client',
-        scopes: [
-          'assume:thing-id:test',
-        ],
-        includes: [
-          'assume:thing-id:test',
-          'test-scope-1',
-        ],
-        excludes: [
-          'assume:thing-id:*',
-          '*',
-        ],
+        scopes: ['assume:thing-id:test'],
+        includes: ['assume:thing-id:test', 'test-scope-1'],
+        excludes: ['assume:thing-id:*', '*'],
       },
     ],
   });
@@ -130,12 +124,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     clients: [
       {
         clientId: 'test-client',
-        scopes: [
-          'assume:thing-id:test',
-        ],
-        includes: [
-          'assume:tree:*',
-        ],
+        scopes: ['assume:thing-id:test'],
+        includes: ['assume:tree:*'],
         excludes: [
           'assume:thing-id:test', // should be compressed away
         ],
@@ -143,18 +133,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     ],
   });
 
-  test('two clients don\'t get the same .. uh, look, something shiny!', {
+  test("two clients don't get the same .. uh, look, something shiny!", {
     roles: [
       {
         roleId: 'thing-id:test-client-1',
         scopes: ['scope-1'],
-      }, {
+      },
+      {
         roleId: 'thing-id:test-client-2',
         scopes: ['scope-2'],
-      }, {
+      },
+      {
         roleId: 'thing-id:test-client-*',
         scopes: ['scope-for-both'],
-      }, {
+      },
+      {
         roleId: 'thing-id:other-client',
         scopes: ['other-scope'],
       },
@@ -162,48 +155,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     clients: [
       {
         clientId: 'test-client-1',
-        scopes: [
-          'assume:thing-id:test-client-1',
-        ],
-        includes: [
-          'assume:thing-id:test-client-1',
-          'scope-1',
-          'scope-for-both',
-        ],
-        excludes: [
-          'assume:thing-id:test-client-2',
-          'scope-2',
-          'other-scope',
-          'thing-id:test-client-*',
-        ],
-      }, {
+        scopes: ['assume:thing-id:test-client-1'],
+        includes: ['assume:thing-id:test-client-1', 'scope-1', 'scope-for-both'],
+        excludes: ['assume:thing-id:test-client-2', 'scope-2', 'other-scope', 'thing-id:test-client-*'],
+      },
+      {
         clientId: 'test-client-2',
-        scopes: [
-          'assume:thing-id:test-client-2',
-        ],
-        includes: [
-          'scope-2',
-          'scope-for-both',
-        ],
-        excludes: [
-          'scope-1',
-          'other-scope',
-          'thing-id:test-client-*',
-        ],
-      }, {
+        scopes: ['assume:thing-id:test-client-2'],
+        includes: ['scope-2', 'scope-for-both'],
+        excludes: ['scope-1', 'other-scope', 'thing-id:test-client-*'],
+      },
+      {
         clientId: 'other-client',
-        scopes: [
-          'assume:thing-id:other-client',
-        ],
-        includes: [
-          'other-scope',
-        ],
-        excludes: [
-          'scope-for-both',
-          'scope-1',
-          'scope-2',
-          'thing-id:test-client-*',
-        ],
+        scopes: ['assume:thing-id:other-client'],
+        includes: ['other-scope'],
+        excludes: ['scope-for-both', 'scope-1', 'scope-2', 'thing-id:test-client-*'],
       },
     ],
   });
@@ -213,7 +179,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       {
         roleId: 'test-role-abc*',
         scopes: ['scope-1'],
-      }, {
+      },
+      {
         roleId: 'test-role-abc-*',
         scopes: ['scope-2'],
       },
@@ -221,24 +188,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     clients: [
       {
         clientId: 'test-client-abc',
-        scopes: [
-          'assume:test-role-abc',
-        ],
-        includes: [
-          'scope-1',
-        ],
-        excludes: [
-          'scope-2',
-        ],
-      }, {
+        scopes: ['assume:test-role-abc'],
+        includes: ['scope-1'],
+        excludes: ['scope-2'],
+      },
+      {
         clientId: 'test-client-abc-again',
-        scopes: [
-          'assume:test-role-abc-again',
-        ],
-        includes: [
-          'scope-1',
-          'scope-2',
-        ],
+        scopes: ['assume:test-role-abc-again'],
+        includes: ['scope-1', 'scope-2'],
         excludes: ['*'],
       },
     ],
@@ -249,7 +206,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       {
         roleId: 'test-client-1',
         scopes: ['assume:test-role'],
-      }, {
+      },
+      {
         roleId: 'test-role',
         scopes: ['special-scope'],
       },
@@ -257,13 +215,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     clients: [
       {
         clientId: 'test-client-1',
-        scopes: [
-          'assume:test-client-1',
-        ],
-        includes: [
-          'assume:test-role',
-          'special-scope',
-        ],
+        scopes: ['assume:test-client-1'],
+        includes: ['assume:test-role', 'special-scope'],
         excludes: ['*'],
       },
     ],
@@ -274,31 +227,40 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       {
         roleId: 'test-role-1',
         scopes: ['assume:test-role-2'],
-      }, {
+      },
+      {
         roleId: 'test-role-2',
         scopes: ['assume:test-role-3'],
-      }, {
+      },
+      {
         roleId: 'test-role-3',
         scopes: ['assume:test-role-4'],
-      }, {
+      },
+      {
         roleId: 'test-role-4',
         scopes: ['assume:test-role-5'],
-      }, {
+      },
+      {
         roleId: 'test-role-5',
         scopes: ['assume:test-role-6'],
-      }, {
+      },
+      {
         roleId: 'test-role-6',
         scopes: ['assume:test-role-7'],
-      }, {
+      },
+      {
         roleId: 'test-role-7',
         scopes: ['assume:test-role-8'],
-      }, {
+      },
+      {
         roleId: 'test-role-8',
         scopes: ['assume:test-role-9'],
-      }, {
+      },
+      {
         roleId: 'test-role-9',
         scopes: ['assume:test-role'],
-      }, {
+      },
+      {
         roleId: 'test-role',
         scopes: ['special-scope'],
       },
@@ -306,9 +268,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     clients: [
       {
         clientId: 'test-client-1',
-        scopes: [
-          'assume:test-role-1',
-        ],
+        scopes: ['assume:test-role-1'],
         includes: [
           'assume:test-role',
           'assume:test-role-1',
@@ -332,51 +292,32 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       {
         roleId: 'project-admin:*',
         scopes: ['assume:admin-role:project-<..>/*', 'secrets:get:project/<..>/*'],
-      }, {
+      },
+      {
         roleId: 'admin-role:*',
-        scopes: [
-          'auth:create-role:<..>',
-          'auth:update-role:<..>',
-          'auth:delete-role:<..>',
-        ],
+        scopes: ['auth:create-role:<..>', 'auth:update-role:<..>', 'auth:delete-role:<..>'],
       },
     ],
     clients: [
       {
         clientId: 'single-admin',
-        scopes: [
-          'assume:project-admin:proj1',
-        ],
-        includes: [
-          'auth:create-role:project-proj1/*',
-        ],
-        excludes: [
-          'auth:create-role:project-*',
-        ],
-      }, {
+        scopes: ['assume:project-admin:proj1'],
+        includes: ['auth:create-role:project-proj1/*'],
+        excludes: ['auth:create-role:project-*'],
+      },
+      {
         clientId: 'double-admin',
-        scopes: [
-          'assume:project-admin:proj1',
-          'assume:project-admin:proj2',
-        ],
-        includes: [
-          'auth:create-role:project-proj1/*',
-          'auth:create-role:project-proj2/*',
-        ],
-        excludes: [
-          'auth:create-role:project-*',
-        ],
-      }, {
+        scopes: ['assume:project-admin:proj1', 'assume:project-admin:proj2'],
+        includes: ['auth:create-role:project-proj1/*', 'auth:create-role:project-proj2/*'],
+        excludes: ['auth:create-role:project-*'],
+      },
+      {
         clientId: 'star-admin',
-        scopes: [
-          'assume:project-admin:proj*',
-        ],
+        scopes: ['assume:project-admin:proj*'],
         includes: [
           'auth:create-role:project-proj*', // note no slash
         ],
-        excludes: [
-          'auth:create-role:project-*',
-        ],
+        excludes: ['auth:create-role:project-*'],
       },
     ],
   });
@@ -387,25 +328,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       {
         roleId: 'big-test-client',
         scopes: ['assume:test-role-0'],
-      }, {
+      },
+      {
         roleId: `test-role-${N}`,
         scopes: ['special-scope'],
       },
-    ].concat(_.range(N).map(i => {
-      return {
-        roleId: `test-role-${i}`,
-        scopes: [`assume:test-role-${i + 1}`],
-      };
-    })),
+    ].concat(
+      _.range(N).map((i) => {
+        return {
+          roleId: `test-role-${i}`,
+          scopes: [`assume:test-role-${i + 1}`],
+        };
+      }),
+    ),
     clients: [
       {
         clientId: 'big-test-client',
-        scopes: [
-          'assume:big-test-client',
-        ],
-        includes: [
-          'special-scope',
-        ].concat(_.range(N + 1).map(i => `assume:test-role-${i}`)),
+        scopes: ['assume:big-test-client'],
+        includes: ['special-scope'].concat(_.range(N + 1).map((i) => `assume:test-role-${i}`)),
         excludes: ['*'],
       },
     ],
@@ -415,15 +355,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   const K = 25; // multiplier
   test(`test with depth = ${M} x ${K}`, {
     roles: _.flatten([
-      _.flatten(_.range(K).map(k => {
-        return _.flatten(_.range(M).map(m => {
-          return {
-            roleId: `k-${k}-${m}`,
-            scopes: [`assume:k-${k}-${m + 1}`],
-          };
-        }));
-      })),
-      _.range(K).map(k => {
+      _.flatten(
+        _.range(K).map((k) => {
+          return _.flatten(
+            _.range(M).map((m) => {
+              return {
+                roleId: `k-${k}-${m}`,
+                scopes: [`assume:k-${k}-${m + 1}`],
+              };
+            }),
+          );
+        }),
+      ),
+      _.range(K).map((k) => {
         return {
           roleId: `k-${k}-${M}`,
           scopes: ['special-scope'],
@@ -434,9 +378,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       {
         clientId: 'c',
         scopes: ['assume:k-2-0'],
-        includes: [
-          'special-scope',
-        ].concat(_.range(M + 1).map(i => `assume:k-2-${i}`)),
+        includes: ['special-scope'].concat(_.range(M + 1).map((i) => `assume:k-2-${i}`)),
         excludes: ['*'],
       },
     ],
@@ -452,15 +394,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     clients: [
       {
         clientId: 'test-client-1',
-        scopes: [
-          'a*',
-        ],
-        includes: [
-          'T',
-        ],
-        excludes: [
-          'scope-1', 'scope-2',
-        ],
+        scopes: ['a*'],
+        includes: ['T'],
+        excludes: ['scope-1', 'scope-2'],
       },
     ],
   });
@@ -475,15 +411,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     clients: [
       {
         clientId: 'test-client-1',
-        scopes: [
-          'assume*',
-        ],
-        includes: [
-          'T',
-        ],
-        excludes: [
-          'scope-1', 'scope-2',
-        ],
+        scopes: ['assume*'],
+        includes: ['T'],
+        excludes: ['scope-1', 'scope-2'],
       },
     ],
   });
@@ -498,15 +428,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     clients: [
       {
         clientId: 'test-client-1',
-        scopes: [
-          'assume:*',
-        ],
-        includes: [
-          'T',
-        ],
-        excludes: [
-          'scope-1', 'scope-2',
-        ],
+        scopes: ['assume:*'],
+        includes: ['T'],
+        excludes: ['scope-1', 'scope-2'],
       },
     ],
   });
@@ -521,16 +445,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     clients: [
       {
         clientId: 'test-client-1',
-        scopes: [
-          'assume:project:my-prj',
-        ],
-        includes: [
-          'irc:my-prj',
-          'artifacts:private/my-prj/*',
-        ],
-        excludes: [
-          'scope-1', 'scope-2',
-        ],
+        scopes: ['assume:project:my-prj'],
+        includes: ['irc:my-prj', 'artifacts:private/my-prj/*'],
+        excludes: ['scope-1', 'scope-2'],
       },
     ],
   });

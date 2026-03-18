@@ -13,7 +13,7 @@ import username from '../../utils/username';
 
 @withAuth
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   avatarButton: {
     height: 6 * theme.spacing(1),
     width: 6 * theme.spacing(1),
@@ -59,7 +59,8 @@ export default class UserMenuButton extends Component {
             onClick={onSignInDialogOpen}
             id="sign-in-button"
             {...buttonProps}
-            {...props}>
+            {...props}
+          >
             Sign in
           </Button>
           <SignInDialog open={signInDialogOpen} onClose={onSignInDialogClose} />
@@ -77,7 +78,8 @@ export default class UserMenuButton extends Component {
         aria-label="user menu"
         id="user-menu-button"
         onClick={onMenuClick}
-        {...props}>
+        {...props}
+      >
         {avatarSrc ? (
           <Avatar alt={profileName} src={avatarSrc} {...avatarProps} />
         ) : (

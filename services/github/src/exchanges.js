@@ -4,29 +4,32 @@ import assert from 'node:assert';
 import { PUBLISHERS } from './constants.js';
 
 /** Build common routing key construct for `exchanges.declare` */
-const commonRoutingKey = function(options) {
+const commonRoutingKey = function (options) {
   options = options || {};
   const routingKey = [
     {
       name: 'routingKeyKind',
-      summary: 'Identifier for the routing-key kind. This is ' +
-                        'always `"primary"` for the formalized routing key.',
+      summary: 'Identifier for the routing-key kind. This is ' + 'always `"primary"` for the formalized routing key.',
       constant: 'primary',
       required: true,
-    }, {
+    },
+    {
       name: 'organization',
-      summary: 'The GitHub `organization` which had an event. ' +
-                        'All periods have been replaced by % - such that ' +
-                        'foo.bar becomes foo%bar - and all other special ' +
-                        'characters aside from - and _ have been stripped.',
+      summary:
+        'The GitHub `organization` which had an event. ' +
+        'All periods have been replaced by % - such that ' +
+        'foo.bar becomes foo%bar - and all other special ' +
+        'characters aside from - and _ have been stripped.',
       maxSize: 100,
       required: true,
-    }, {
+    },
+    {
       name: 'repository',
-      summary: 'The GitHub `repository` which had an event.' +
-                        'All periods have been replaced by % - such that ' +
-                        'foo.bar becomes foo%bar - and all other special ' +
-                        'characters aside from - and _ have been stripped.',
+      summary:
+        'The GitHub `repository` which had an event.' +
+        'All periods have been replaced by % - such that ' +
+        'foo.bar becomes foo%bar - and all other special ' +
+        'characters aside from - and _ have been stripped.',
       maxSize: 100,
       required: true,
     },
@@ -34,9 +37,10 @@ const commonRoutingKey = function(options) {
   if (options.hasActions) {
     routingKey.push({
       name: 'action',
-      summary: 'The GitHub `action` which triggered an event. ' +
-                        'See for possible values see the payload actions ' +
-                        'property.',
+      summary:
+        'The GitHub `action` which triggered an event. ' +
+        'See for possible values see the payload actions ' +
+        'property.',
       maxSize: 22,
       required: true,
     });
@@ -44,7 +48,7 @@ const commonRoutingKey = function(options) {
   return routingKey;
 };
 
-const commonMessageBuilder = function(msg) {
+const commonMessageBuilder = function (msg) {
   msg.version = 1;
   return msg;
 };
@@ -52,7 +56,7 @@ const commonMessageBuilder = function(msg) {
 /** Build list of routing keys to CC */
 const commonCCBuilder = (_message, routes) => {
   assert(Array.isArray(routes), 'Routes must be an array');
-  return routes.map(route => `route.${route}`);
+  return routes.map((route) => `route.${route}`);
 };
 
 /** Declaration of exchanges offered by the github */
@@ -84,7 +88,7 @@ exchanges.declare({
   routingKey: commonRoutingKey({ hasActions: true }),
   schema: 'github-pull-request-message.yml',
   messageBuilder: commonMessageBuilder,
-  routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository', 'action'),
+  routingKeyBuilder: (msg) => _.pick(msg, 'organization', 'repository', 'action'),
   CCBuilder: () => [],
 });
 
@@ -101,7 +105,7 @@ exchanges.declare({
   routingKey: commonRoutingKey(),
   schema: 'github-push-message.yml',
   messageBuilder: commonMessageBuilder,
-  routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository'),
+  routingKeyBuilder: (msg) => _.pick(msg, 'organization', 'repository'),
   CCBuilder: () => [],
 });
 
@@ -118,7 +122,7 @@ exchanges.declare({
   routingKey: commonRoutingKey(),
   schema: 'github-release-message.yml',
   messageBuilder: commonMessageBuilder,
-  routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository'),
+  routingKeyBuilder: (msg) => _.pick(msg, 'organization', 'repository'),
   CCBuilder: () => [],
 });
 
@@ -136,7 +140,7 @@ exchanges.declare({
   routingKey: commonRoutingKey(),
   schema: 'github-rerun-message.yml',
   messageBuilder: commonMessageBuilder,
-  routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository'),
+  routingKeyBuilder: (msg) => _.pick(msg, 'organization', 'repository'),
   CCBuilder: () => [],
 });
 
@@ -156,7 +160,7 @@ exchanges.declare({
   routingKey: commonRoutingKey(),
   schema: 'task-group-creation-requested.yml',
   messageBuilder: commonMessageBuilder,
-  routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository'),
+  routingKeyBuilder: (msg) => _.pick(msg, 'organization', 'repository'),
   CCBuilder: commonCCBuilder,
 });
 

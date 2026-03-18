@@ -21,7 +21,7 @@ const config = ({
   serviceName,
   getEnvVars = false,
 }) => {
-  assert(files instanceof Array, 'Expected an array of files');
+  assert(Array.isArray(files), 'Expected an array of files');
   assert(typeof env === 'object', 'Expected env to be an object');
   assert(serviceName, 'serviceName is required');
 
@@ -59,8 +59,7 @@ const config = ({
 
     // Add defaults to list of configurations if present
     if (data.defaults) {
-      assert(typeof data.defaults === 'object',
-        '\'defaults\' must be an object');
+      assert(typeof data.defaults === 'object', "'defaults' must be an object");
       cfgs.unshift(data.defaults);
     }
 

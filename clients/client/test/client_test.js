@@ -7,7 +7,7 @@ import testing from './helper.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   testing.withRestoredEnvVars();
 
   // This suite exercises the request and response functionality of
@@ -136,7 +136,7 @@ suite(testing.suiteName(), function() {
     entries,
   };
 
-  teardown(function() {
+  teardown(function () {
     assert(nock.isDone());
     nock.cleanAll();
   });
@@ -240,14 +240,14 @@ suite(testing.suiteName(), function() {
         const clientPath = path.resolve(__dirname, '..', 'src', 'client.js');
         const cleanClient = await import(clientPath);
         const Fake = cleanClient.createClient(referenceNameStyle);
-        const fake = new Fake(Object.assign({},
-          taskcluster.fromEnvVars(), {
+        const fake = new Fake(
+          Object.assign({}, taskcluster.fromEnvVars(), {
             credentials: {
               clientId: 'nobody',
               accessToken: 'nothing',
             },
-          },
-        ));
+          }),
+        );
         delete process.env.TASKCLUSTER_ROOT_URL;
         return fake;
       },
@@ -272,32 +272,35 @@ suite(testing.suiteName(), function() {
   };
 
   const expectError = (promise, code) => {
-    return promise.then(() => {
-      assert(false, `Expected error code: ${code}, but got a response`);
-    }, err => {
-      assert(err.code === code, `Expected error with code: ${code} but got ${err.code}`);
-    });
+    return promise.then(
+      () => {
+        assert(false, `Expected error code: ${code}, but got a response`);
+      },
+      (err) => {
+        assert(err.code === code, `Expected error with code: ${code} but got ${err.code}`);
+      },
+    );
   };
 
-  Object.keys(subjects).forEach(subject => {
+  Object.keys(subjects).forEach((subject) => {
     const { name, urlPrefix, trueUrlPrefix, makeClient, Fake, rootUrl, serviceDiscoveryScheme } = subjects[subject];
     suite(name, () => {
       let client;
-      suiteSetup('create client', async function() {
+      suiteSetup('create client', async function () {
         client = await makeClient();
       });
 
       test('Simple GET', async () => {
-        nock(urlPrefix).get('/v1/get-test')
-          .reply(200, {});
+        nock(urlPrefix).get('/v1/get-test').reply(200, {});
         await client.get();
       });
 
       test('GET public resource (sets traceId)', async () => {
         const requestId = '123';
         const traceId = '456';
-        nock(urlPrefix).get('/v1/get-test')
-          .reply(function() {
+        nock(urlPrefix)
+          .get('/v1/get-test')
+          .reply(function () {
             return [200, { traceId: this.req.headers['x-taskcluster-trace-id'] }];
           });
         let c = new Fake({ rootUrl, serviceDiscoveryScheme });
@@ -306,51 +309,51 @@ suite(testing.suiteName(), function() {
       });
 
       test('Simple GET (unauthorized)', async () => {
-        nock(urlPrefix).get('/v1/get-test')
-          .reply(403, insufficientScopesError);
+        nock(urlPrefix).get('/v1/get-test').reply(403, insufficientScopesError);
         await expectError(client.get(), 'InsufficientScopes');
       });
 
       test('Simple GET (wrong accessToken)', async () => {
-        nock(urlPrefix).get('/v1/get-test')
-          .reply(403, authFailedError);
+        nock(urlPrefix).get('/v1/get-test').reply(403, authFailedError);
         await expectError(client.get(), 'AuthorizationFailed');
       });
 
       test('GET with parameter', async () => {
-        nock(urlPrefix).get('/v1/url-param/test/list')
+        nock(urlPrefix)
+          .get('/v1/url-param/test/list')
           .reply(200, { params: { param: 'test' } });
         const result = await client.param('test');
         assert(result.params.param === 'test');
       });
 
       test('GET with number as parameter', async () => {
-        nock(urlPrefix).get('/v1/url-param/1337/list')
+        nock(urlPrefix)
+          .get('/v1/url-param/1337/list')
           .reply(200, { params: { param: '1337' } });
         await client.param(1337);
       });
 
       test('GET with / in parameter', async () => {
-        nock(urlPrefix).get('/v1/url-param/te%2Fst/list')
+        nock(urlPrefix)
+          .get('/v1/url-param/te%2Fst/list')
           .reply(200, { params: { param: 'te/st' } });
         await client.param('te/st');
       });
 
       test('GET with two parameters', async () => {
-        nock(urlPrefix).get('/v1/url-param2/te%2Fst/tester/list')
+        nock(urlPrefix)
+          .get('/v1/url-param2/te%2Fst/tester/list')
           .reply(200, { params: { param: 'te/st' } });
         await client.param2('te/st', 'tester');
       });
 
       test('GET with query options', async () => {
-        nock(urlPrefix).get('/v1/query/test?option=42')
-          .reply(200, {});
+        nock(urlPrefix).get('/v1/query/test?option=42').reply(200, {});
         await client.query({ option: 42 });
       });
 
       test('GET with param and query options', async () => {
-        nock(urlPrefix).get('/v1/param-query/test?option=42')
-          .reply(200, {});
+        nock(urlPrefix).get('/v1/param-query/test?option=42').reply(200, {});
         await client.paramQuery('test', { option: 42 });
       });
 
@@ -364,85 +367,75 @@ suite(testing.suiteName(), function() {
       });
 
       test('GET without query options (for supported method)', async () => {
-        nock(urlPrefix).get('/v1/query/test')
-          .reply(200, {});
+        nock(urlPrefix).get('/v1/query/test').reply(200, {});
         await client.query();
       });
 
       test('GET param without query options (for supported method)', async () => {
-        nock(urlPrefix).get('/v1/param-query/test')
-          .reply(200, {});
+        nock(urlPrefix).get('/v1/param-query/test').reply(200, {});
         await client.paramQuery('test');
       });
 
       test('GET public resource', async () => {
-        nock(urlPrefix).get('/v1/get-test')
-          .reply(200, {});
+        nock(urlPrefix).get('/v1/get-test').reply(200, {});
         const c = new Fake({ rootUrl, serviceDiscoveryScheme });
         await c.get();
       });
 
       test('GET public resource with query-string', async () => {
-        nock(urlPrefix).get('/v1/query/test?option=31')
-          .reply(200, {});
+        nock(urlPrefix).get('/v1/query/test?option=31').reply(200, {});
         const c = new Fake({ rootUrl, serviceDiscoveryScheme });
         await c.query({ option: 31 });
       });
 
       test('GET public resource no query-string (supported method)', async () => {
-        nock(urlPrefix).get('/v1/query/test')
-          .reply(200, {});
+        nock(urlPrefix).get('/v1/query/test').reply(200, {});
         const c = new Fake({ rootUrl, serviceDiscoveryScheme });
         await c.query();
       });
 
       test('POST with payload', async () => {
-        nock(urlPrefix)
-          .post('/v1/post-test', { hello: 'world' })
-          .reply(200, { reply: 'hi' });
+        nock(urlPrefix).post('/v1/post-test', { hello: 'world' }).reply(200, { reply: 'hi' });
         const result = await client.post({ hello: 'world' });
         assert.deepEqual(result, { reply: 'hi' });
       });
 
       test('POST with payload and param', async () => {
-        nock(urlPrefix)
-          .post('/v1/post-param/test', { hello: 'world' })
-          .reply(200, {});
+        nock(urlPrefix).post('/v1/post-param/test', { hello: 'world' }).reply(200, {});
         await client.postParam('test', { hello: 'world' });
       });
 
       test('POST with payload, param and query', async () => {
-        nock(urlPrefix)
-          .post('/v1/post-param-query/test?option=32', { hello: 'world' })
-          .reply(200, {});
-        await client.postParamQuery('test', { hello: 'world' }, {
-          option: 32,
-        });
+        nock(urlPrefix).post('/v1/post-param-query/test?option=32', { hello: 'world' }).reply(200, {});
+        await client.postParamQuery(
+          'test',
+          { hello: 'world' },
+          {
+            option: 32,
+          },
+        );
       });
 
       test('POST with payload, param and no query (when supported)', async () => {
-        nock(urlPrefix)
-          .post('/v1/post-param-query/test', { hello: 'world' })
-          .reply(200, {});
+        nock(urlPrefix).post('/v1/post-param-query/test', { hello: 'world' }).reply(200, {});
         await client.postParamQuery('test', { hello: 'world' });
       });
 
       test('POST with payload, param and empty query', async () => {
-        nock(urlPrefix)
-          .post('/v1/post-param-query/test', { hello: 'world' })
-          .reply(200, {});
+        nock(urlPrefix).post('/v1/post-param-query/test', { hello: 'world' }).reply(200, {});
         await client.postParamQuery('test', { hello: 'world' }, {});
       });
 
       test('GET something that redirects', async () => {
-        nock(urlPrefix).get('/v1/redirect')
-          .reply(303, { url: 'http://example.com' }, { 'location': 'http://example.com' });
+        nock(urlPrefix)
+          .get('/v1/redirect')
+          .reply(303, { url: 'http://example.com' }, { location: 'http://example.com' });
         const c = new Fake({ rootUrl, serviceDiscoveryScheme });
         const res = await c.redirect();
         assert.deepEqual(res, { url: 'http://example.com' });
       });
 
-      const assertBewitUrl = function(url, expected) {
+      const assertBewitUrl = function (url, expected) {
         url = url.replace(/bewit=[^&]*/, 'bewit=XXX');
         assert.equal(url, expected);
       };
@@ -486,7 +479,7 @@ suite(testing.suiteName(), function() {
           type: 'external (per request)',
         },
       ]) {
-        suite(cl.type, function() {
+        suite(cl.type, function () {
           test('BuildUrl', async () => {
             const url = cl.buildUrl(client.get);
             assert.equal(url, `${cl.urlPrefix}/v1/get-test`);
@@ -514,8 +507,7 @@ suite(testing.suiteName(), function() {
 
           test('BuildSignedUrl with two parameters', async () => {
             const url = cl.buildSignedUrl(client.param2, 'test', 'te/st');
-            assertBewitUrl(url,
-              `${cl.urlPrefix}/v1/url-param2/test/te%2Fst/list?bewit=XXX`);
+            assertBewitUrl(url, `${cl.urlPrefix}/v1/url-param2/test/te%2Fst/list?bewit=XXX`);
           });
 
           test('BuildUrl with missing parameter', async () => {
@@ -581,8 +573,7 @@ suite(testing.suiteName(), function() {
 
           test('BuildSignedUrl with param and query-string', async () => {
             const url = cl.buildSignedUrl(client.paramQuery, 'test', { option: 2 });
-            assertBewitUrl(url,
-              `${cl.urlPrefix}/v1/param-query/test?option=2&bewit=XXX`);
+            assertBewitUrl(url, `${cl.urlPrefix}/v1/param-query/test?option=2&bewit=XXX`);
           });
 
           test('BuildUrl with param and no query (when supported)', async () => {
@@ -592,8 +583,7 @@ suite(testing.suiteName(), function() {
 
           test('BuildSignedUrl with param and no query (when supported)', async () => {
             const url = cl.buildSignedUrl(client.paramQuery, 'test', { option: 34 });
-            assertBewitUrl(url,
-              `${cl.urlPrefix}/v1/param-query/test?option=34&bewit=XXX`);
+            assertBewitUrl(url, `${cl.urlPrefix}/v1/param-query/test?option=34&bewit=XXX`);
           });
 
           test('BuildUrl with param and empty query', async () => {
@@ -646,7 +636,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('inject custom fake method', async function() {
+  test('inject custom fake method', async function () {
     let gotArgs;
 
     const Fake = taskcluster.createClient(referenceNameStyle);
@@ -657,7 +647,7 @@ suite(testing.suiteName(), function() {
         accessToken: 'nothing',
       },
       fake: {
-        postParam: async function() {
+        postParam: async function () {
           gotArgs = Array.prototype.slice.call(arguments);
           return { result: 42 };
         },
@@ -667,21 +657,25 @@ suite(testing.suiteName(), function() {
     const gotResult = await client.postParam('test', { hello: 'world' });
     assert.deepEqual(gotArgs, ['test', { hello: 'world' }]);
     assert.deepEqual(gotResult, { result: 42 });
-    assert.deepEqual(client.fakeCalls.postParam, [{
-      param: 'test',
-      payload: { hello: 'world' },
-    }]);
+    assert.deepEqual(client.fakeCalls.postParam, [
+      {
+        param: 'test',
+        payload: { hello: 'world' },
+      },
+    ]);
   });
 
-  test('timeout raises ECONNABORTED', async function() {
+  test('timeout raises ECONNABORTED', async function () {
     let server;
 
     await new Promise((resolve, reject) => {
-      server = net.createServer((socket) => {
-        testing.sleep(300).then(() => socket.destroy());
-      }).on('error', err => {
-        reject(err);
-      });
+      server = net
+        .createServer((socket) => {
+          testing.sleep(300).then(() => socket.destroy());
+        })
+        .on('error', (err) => {
+          reject(err);
+        });
       server.listen(resolve);
     });
 
@@ -700,9 +694,10 @@ suite(testing.suiteName(), function() {
       });
       await assert.rejects(
         taskcluster.makeRequest(client, 'GET', `https://127.0.0.1:${server.address().port}`),
-        err => err.code === 'ECONNABORTED');
+        (err) => err.code === 'ECONNABORTED',
+      );
     } finally {
-      await new Promise(resolve => server.close(resolve));
+      await new Promise((resolve) => server.close(resolve));
     }
   });
 });

@@ -1,10 +1,6 @@
 // @ts-check
 import libUrls from 'taskcluster-lib-urls';
-import {
-  getTaskGroupCategories,
-  getTaskGroupTaskSchema,
-  getTaskGroupSchema,
-} from './schemas.js';
+import { getTaskGroupCategories, getTaskGroupTaskSchema, getTaskGroupSchema } from './schemas.js';
 
 export function getEmptyThread() {
   return {
@@ -38,13 +34,27 @@ export function getEmptyThread() {
     },
     stackTable: { frame: [0], prefix: [null], category: [0], subcategory: [0], length: 1 },
     frameTable: {
-      address: [-1], inlineDepth: [0], category: [null], subcategory: [0],
-      func: [0], nativeSymbol: [null], innerWindowID: [0], implementation: [null],
-      line: [null], column: [null], length: 1,
+      address: [-1],
+      inlineDepth: [0],
+      category: [null],
+      subcategory: [0],
+      func: [0],
+      nativeSymbol: [null],
+      innerWindowID: [0],
+      implementation: [null],
+      line: [null],
+      column: [null],
+      length: 1,
     },
     funcTable: {
-      isJS: [false], relevantForJS: [false], name: [0], resource: [-1],
-      fileName: [null], lineNumber: [null], columnNumber: [null], length: 1,
+      isJS: [false],
+      relevantForJS: [false],
+      name: [0],
+      resource: [-1],
+      fileName: [null],
+      lineNumber: [null],
+      columnNumber: [null],
+      length: 1,
     },
     resourceTable: { lib: [], name: [], host: [], type: [], length: 0 },
     nativeSymbols: { libIndex: [], address: [], name: [], functionSize: [], length: 0 },
@@ -115,7 +125,7 @@ export class UniqueStringArray {
 }
 
 function getTaskGroupTimeRanges(taskGroups, filterTask = () => true) {
-  return taskGroups.map(taskGroup => {
+  return taskGroups.map((taskGroup) => {
     let start = null;
     let end = null;
     for (const taskAndStatus of taskGroup.tasks) {
@@ -164,7 +174,7 @@ export function getProfile(taskGroups, rootUrl) {
   }
 
   {
-    const ids = taskGroups.map(tg => tg.taskGroupId).join(', ');
+    const ids = taskGroups.map((tg) => tg.taskGroupId).join(', ');
     const date = new Date(profileStartTime).toLocaleDateString();
     profile.meta.product = `Task Group ${ids} - ${date}`;
   }
@@ -179,7 +189,7 @@ export function getProfile(taskGroups, rootUrl) {
     const taskGroupTimeRange = taskGroupTimeRanges[i];
     const taskGroupTimeRangeNoActions = taskGroupTimeRangesNoActions[i];
 
-    const sortedTasks = taskGroup.tasks.map(task => {
+    const sortedTasks = taskGroup.tasks.map((task) => {
       const { runs } = task.status;
       if (!runs || !runs.length || !runs[0].started) {
         return { task, start: null };
@@ -188,8 +198,12 @@ export function getProfile(taskGroups, rootUrl) {
     });
 
     sortedTasks.sort((ta, tb) => {
-      if (!ta.start) {return -1;}
-      if (!tb.start) {return 1;}
+      if (!ta.start) {
+        return -1;
+      }
+      if (!tb.start) {
+        return 1;
+      }
       return ta.start - tb.start;
     });
 
@@ -244,14 +258,18 @@ export function getProfile(taskGroups, rootUrl) {
 
     if (taskGroupTimeRange.start !== null) {
       for (const { task } of sortedTasks) {
-        if (!task.status.runs) {continue;}
+        if (!task.status.runs) {
+          continue;
+        }
         for (const run of task.status.runs) {
           const runStart = run.started ? new Date(run.started).valueOf() : null;
           let runEnd = run.resolved ? new Date(run.resolved).valueOf() : null;
           if (run.state === 'running' && runEnd === null) {
             runEnd = Date.now();
           }
-          if (runStart === null) {continue;}
+          if (runStart === null) {
+            continue;
+          }
 
           markers.startTime.push(runStart - profileStartTime);
           if (runEnd === null) {
@@ -263,11 +281,7 @@ export function getProfile(taskGroups, rootUrl) {
           }
           markers.category.push(5);
           const grouping = run.reasonResolved ?? run.state;
-          markers.name.push(
-            stringArray.indexForString(
-              run.state === 'completed' ? 'Task' : `Task (${grouping})`,
-            ),
-          );
+          markers.name.push(stringArray.indexForString(run.state === 'completed' ? 'Task' : `Task (${grouping})`));
 
           const taskName = task.task.metadata.name;
           const { retries } = task.task;

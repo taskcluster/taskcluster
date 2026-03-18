@@ -24,10 +24,7 @@ export default class Emitter {
   }
 
   on(eventName, handler) {
-    if (
-      process.env.NODE_ENV !== 'production' &&
-      typeof handler !== 'function'
-    ) {
+    if (process.env.NODE_ENV !== 'production' && typeof handler !== 'function') {
       throw new Error('Listener must be a function');
     }
 
@@ -53,6 +50,6 @@ export default class Emitter {
       return;
     }
 
-    handlers.forEach(handler => handler(...args));
+    handlers.forEach((handler) => handler(...args));
   }
 }

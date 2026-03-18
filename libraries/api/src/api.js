@@ -47,37 +47,27 @@ export default class API {
 
     // validate context
     this.builder.context?.forEach((property) => {
-      assert(resolvedOptions.context[property] !== undefined,
-        `Context must have declared property: \'${property}\'`);
+      assert(resolvedOptions.context[property] !== undefined, `Context must have declared property: \'${property}\'`);
     });
 
-    Object.keys(resolvedOptions.context).forEach(property => {
-      assert(this.builder.context?.indexOf(property) !== -1,
-        `Context has unexpected property: ${property}`);
+    Object.keys(resolvedOptions.context).forEach((property) => {
+      assert(this.builder.context?.indexOf(property) !== -1, `Context has unexpected property: ${property}`);
     });
 
     // Always make monitor available in context
     resolvedOptions.context.monitor = resolvedOptions.monitor;
 
-    this.entries = [...(this.builder.entries)];
+    this.entries = [...this.builder.entries];
 
     this.options = resolvedOptions;
   }
 
   /**
-    * Create an express router, rooted *after* the apiVersion in the URL path
-    */
+   * Create an express router, rooted *after* the apiVersion in the URL path
+   */
   router() {
-    const {
-      allowedCORSOrigin,
-      rootUrl,
-      inputLimit,
-      signatureValidator,
-      validator,
-      schemaset,
-      context,
-      monitor,
-    } = this.options;
+    const { allowedCORSOrigin, rootUrl, inputLimit, signatureValidator, validator, schemaset, context, monitor } =
+      this.options;
     const { errorCodes, serviceName } = this.builder;
     const absoluteSchemas = schemaset.absoluteSchemas(rootUrl);
 
@@ -92,7 +82,7 @@ export default class API {
     router.use(cacheHeaders());
 
     // Add entries to router
-    this.entries.forEach(entry => {
+    this.entries.forEach((entry) => {
       const middleware = [
         entry.route,
         perRequestContext({ entry, context }),
@@ -119,7 +109,8 @@ export default class API {
   express(app) {
     // generate the appropriate path for this service, based on the rootUrl
     const path = URL.parse(
-      libUrls.api(this.options.rootUrl, this.builder.serviceName, this.builder.apiVersion, ''))?.pathname;
+      libUrls.api(this.options.rootUrl, this.builder.serviceName, this.builder.apiVersion, ''),
+    )?.pathname;
     if (path === null) {
       throw new Error('Failed to parse path');
     }
@@ -145,29 +136,19 @@ const cacheHeaders = () => {
  * @param {string} allowedCORSOrigin
  * @returns {import('express').RequestHandler}
  */
-const corsHeaders = allowedCORSOrigin => {
+const corsHeaders = (allowedCORSOrigin) => {
   return (_req, res, next) => {
     res.header('Access-Control-Allow-Origin', allowedCORSOrigin);
     res.header('Access-Control-Max-Age', '900');
-    res.header('Access-Control-Allow-Methods', [
-      'OPTIONS',
-      'GET',
-      'HEAD',
-      'POST',
-      'PUT',
-      'DELETE',
-      'TRACE',
-      'CONNECT',
-    ].join(','));
+    res.header(
+      'Access-Control-Allow-Methods',
+      ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'TRACE', 'CONNECT'].join(','),
+    );
     res.header('Access-Control-Request-Method', '*');
-    res.header('Access-Control-Allow-Headers', [
-      'X-Requested-With',
-      'Content-Type',
-      'Authorization',
-      'Accept',
-      'Origin',
-      'Cache-Control',
-    ].join(','));
+    res.header(
+      'Access-Control-Allow-Headers',
+      ['X-Requested-With', 'Content-Type', 'Authorization', 'Accept', 'Origin', 'Cache-Control'].join(','),
+    );
     next();
   };
 };

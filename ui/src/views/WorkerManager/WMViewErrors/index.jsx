@@ -14,14 +14,14 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import WorkersNavbar from '../../../components/WorkersNavbar';
 
-const getLaunchConfigIdFromQuery = location => {
+const getLaunchConfigIdFromQuery = (location) => {
   const searchParams = new URLSearchParams(location.search ?? '');
 
   return decodeURIComponent(searchParams.get('launchConfigId') ?? '');
 };
 
 @graphql(errorsQuery, {
-  options: props => ({
+  options: (props) => ({
     variables: {
       workerPoolId: decodeURIComponent(props.match.params.workerPoolId),
       launchConfigId: getLaunchConfigIdFromQuery(props.location),
@@ -36,7 +36,7 @@ export default class WMViewErrors extends Component {
     search: '',
   };
 
-  handleSearchSubmit = search => {
+  handleSearchSubmit = (search) => {
     this.setState({ search });
   };
 
@@ -58,21 +58,14 @@ export default class WMViewErrors extends Component {
           previousCursor,
         },
       },
-      updateQuery(
-        previousResult,
-        { fetchMoreResult: { WorkerManagerErrors } }
-      ) {
+      updateQuery(previousResult, { fetchMoreResult: { WorkerManagerErrors } }) {
         // use dotProp.set to avoid lint warning about assigning to properties
-        return dotProp.set(
-          previousResult,
-          'WorkerManagerErrors',
-          WorkerManagerErrors
-        );
+        return dotProp.set(previousResult, 'WorkerManagerErrors', WorkerManagerErrors);
       },
     });
   };
 
-  handleStatClick = launchConfigId => {
+  handleStatClick = (launchConfigId) => {
     if (!launchConfigId || launchConfigId === 'unknown') {
       return;
     }
@@ -85,11 +78,9 @@ export default class WMViewErrors extends Component {
 
     // only launch config id is handled currently
     this.props.history.push(
-      `/worker-manager/${encodeURIComponent(
-        workerPoolId
-      )}/launch-configs?launchConfigId=${encodeURIComponent(
-        launchConfigId
-      )}&includeArchived=true`
+      `/worker-manager/${encodeURIComponent(workerPoolId)}/launch-configs?launchConfigId=${encodeURIComponent(
+        launchConfigId,
+      )}&includeArchived=true`,
     );
   };
 
@@ -114,12 +105,9 @@ export default class WMViewErrors extends Component {
         title={title}
         disableTitleFormatting
         search={
-          <Search
-            disabled={loading}
-            onSubmit={this.handleSearchSubmit}
-            placeholder="Title, description, or error ID"
-          />
-        }>
+          <Search disabled={loading} onSubmit={this.handleSearchSubmit} placeholder="Title, description, or error ID" />
+        }
+      >
         <ErrorPanel fixed error={error} />
 
         <div style={{ flexGrow: 1, marginRight: 8 }}>
@@ -128,15 +116,10 @@ export default class WMViewErrors extends Component {
               <Typography variant="body2">Worker Manager</Typography>
             </Link>
             <Link to={`/worker-manager/${workerPoolId}`}>
-              <Typography variant="body2">
-                {decodeURIComponent(workerPoolId)}
-              </Typography>
+              <Typography variant="body2">{decodeURIComponent(workerPoolId)}</Typography>
             </Link>
 
-            <WorkersNavbar
-              workerPoolId={decodeURIComponent(workerPoolId)}
-              hasWorkerPool
-            />
+            <WorkersNavbar workerPoolId={decodeURIComponent(workerPoolId)} hasWorkerPool />
           </Breadcrumbs>
         </div>
 
@@ -159,7 +142,8 @@ export default class WMViewErrors extends Component {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                }}>
+                }}
+              >
                 <Typography variant="subtitle1" style={{ padding: 12 }}>
                   Showing errors for Launch Config ID: &quot;
                   {decodeURIComponent(launchConfigId)}&quot;
@@ -167,10 +151,9 @@ export default class WMViewErrors extends Component {
                 <Button
                   variant="outlined"
                   component={Link}
-                  to={`/worker-manager/${encodeURIComponent(
-                    workerPoolId
-                  )}/errors`}
-                  style={{ marginLeft: 8 }}>
+                  to={`/worker-manager/${encodeURIComponent(workerPoolId)}/errors`}
+                  style={{ marginLeft: 8 }}
+                >
                   Show all errors
                 </Button>
               </Box>

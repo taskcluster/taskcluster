@@ -1,4 +1,3 @@
-
 import { node, string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -8,7 +7,7 @@ import CheckIcon from 'mdi-react/CheckIcon';
 import TableCellItem from '../TableCellItem';
 import useCopyToClipboard from '../../utils/useCopyToClipboard';
 
-const styles = theme => ({
+const styles = (theme) => ({
   icon: {
     marginLeft: theme.spacing(1),
     display: 'flex',
@@ -21,19 +20,12 @@ function CopyToClipboardTableCell(props) {
   const iconSize = 16;
 
   return (
-    <CopyToClipboard
-      onCopy={onCopyClick}
-      title={`${tooltipTitle} (${isCopy ? 'Copied!' : 'Copy'})`}
-      text={textToCopy}>
+    <CopyToClipboard onCopy={onCopyClick} title={`${tooltipTitle} (${isCopy ? 'Copied!' : 'Copy'})`} text={textToCopy}>
       <TableCell>
         <TableCellItem button>
           {text}
           <div className={classes.icon}>
-            {isCopy ? (
-              <CheckIcon size={iconSize} />
-            ) : (
-              <ContentCopyIcon size={iconSize} />
-            )}
+            {isCopy ? <CheckIcon size={iconSize} /> : <ContentCopyIcon size={iconSize} />}
           </div>
         </TableCellItem>
       </TableCell>

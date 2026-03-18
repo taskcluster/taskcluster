@@ -6,16 +6,8 @@ import libUrls from 'taskcluster-lib-urls';
 /** Handler listening for tasks that carries notifications */
 class Handler {
   constructor(options) {
-    const {
-      rootUrl,
-      notifier,
-      monitor,
-      routePrefix,
-      ignoreTaskReasonResolved,
-      pulseClient,
-      queue,
-      queueEvents,
-    } = options;
+    const { rootUrl, notifier, monitor, routePrefix, ignoreTaskReasonResolved, pulseClient, queue, queueEvents } =
+      options;
 
     this.rootUrl = rootUrl;
     this.queue = queue;
@@ -48,12 +40,13 @@ class Handler {
   }
 
   async listen() {
-    this.pq = await consume({
-      client: this.pulseClient,
-      bindings: this.bindings,
-      queueName: 'notifications',
-    },
-    this.monitor.timedHandler('notification', this.onMessage.bind(this)),
+    this.pq = await consume(
+      {
+        client: this.pulseClient,
+        bindings: this.bindings,
+        queueName: 'notifications',
+      },
+      this.monitor.timedHandler('notification', this.onMessage.bind(this)),
     );
   }
 
@@ -98,106 +91,120 @@ class Handler {
     const groupHref = libUrls.ui(this.rootUrl, `tasks/groups/${task.taskGroupId}/tasks`);
     const runCount = status.runs.length;
 
-    await Promise.allSettled(message.routes.map(async entry => {
-      const route = entry.split('.');
+    await Promise.allSettled(
+      message.routes.map(async (entry) => {
+        const route = entry.split('.');
 
-      // convert from on- syntax to state. e.g. on-exception -> exception
-      const decider = _.join(_.slice(route[route.length - 1], 3), '');
-      if (!this.shouldNotifyOnDecider(decider, status.state)) {
-        return;
-      }
+        // convert from on- syntax to state. e.g. on-exception -> exception
+        const decider = _.join(_.slice(route[route.length - 1], 3), '');
+        if (!this.shouldNotifyOnDecider(decider, status.state)) {
+          return;
+        }
 
-      switch (route[1]) {
-        case 'matrix-room': {
-          const roomId = route.slice(2, route.length - 1).join('.');
-          let body = `'${task.metadata.name}' resolved as '${status.state}': ${href}`;
-          const msgtype = _.get(task, 'extra.notify.matrixMsgtype') || 'm.notice';
-          let formattedBody = undefined;
-          const format = _.get(task, 'extra.notify.matrixFormat');
-          if (_.has(task, 'extra.notify.matrixBody')) {
-            body = this.renderMessage(task.extra.notify.matrixBody, { task, status, taskId, rootUrl: this.rootUrl });
-          }
-          if (_.has(task, 'extra.notify.matrixFormattedBody')) {
-            formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody,
-              { task, status, taskId, rootUrl: this.rootUrl });
-          }
-          try {
-            return await this.notifier.matrix({
-              roomId,
-              format,
-              formattedBody,
-              body,
-              msgtype,
-            });
-          } catch (err) {
-            // This just means that we haven't been invited to the room yet
-            if (err.errcode === 'M_FORBIDDEN') {
-              return this.monitor.log.matrixForbidden({ roomId });
+        switch (route[1]) {
+          case 'matrix-room': {
+            const roomId = route.slice(2, route.length - 1).join('.');
+            let body = `'${task.metadata.name}' resolved as '${status.state}': ${href}`;
+            const msgtype = _.get(task, 'extra.notify.matrixMsgtype') || 'm.notice';
+            let formattedBody = undefined;
+            const format = _.get(task, 'extra.notify.matrixFormat');
+            if (_.has(task, 'extra.notify.matrixBody')) {
+              body = this.renderMessage(task.extra.notify.matrixBody, { task, status, taskId, rootUrl: this.rootUrl });
             }
-            throw err;
+            if (_.has(task, 'extra.notify.matrixFormattedBody')) {
+              formattedBody = this.renderMessage(task.extra.notify.matrixFormattedBody, {
+                task,
+                status,
+                taskId,
+                rootUrl: this.rootUrl,
+              });
+            }
+            try {
+              return await this.notifier.matrix({
+                roomId,
+                format,
+                formattedBody,
+                body,
+                msgtype,
+              });
+            } catch (err) {
+              // This just means that we haven't been invited to the room yet
+              if (err.errcode === 'M_FORBIDDEN') {
+                return this.monitor.log.matrixForbidden({ roomId });
+              }
+              throw err;
+            }
           }
-        }
-        case 'slack-channel': {
-          const channelId = route.slice(2, route.length - 1).join('.');
+          case 'slack-channel': {
+            const channelId = route.slice(2, route.length - 1).join('.');
 
-          const emojiMap = {
-            pending: ':hourglass:',
-            running: ':hammer_and_wrench:',
-            completed: ':heavy_check_mark:',
-            failed: ':x:',
-            exception: ':heavy_exclamation_mark:',
-          };
-          const emoji = emojiMap[status.state] || ':question:';
+            const emojiMap = {
+              pending: ':hourglass:',
+              running: ':hammer_and_wrench:',
+              completed: ':heavy_check_mark:',
+              failed: ':x:',
+              exception: ':heavy_exclamation_mark:',
+            };
+            const emoji = emojiMap[status.state] || ':question:';
 
-          let text = `${emoji} *<${href}|${task.metadata.name}>* transitioned to _${status.state}_`;
-          if (_.has(task, 'extra.notify.slackText')) {
-            text = this.renderMessage(task.extra.notify.slackText, { task, status, taskId, rootUrl: this.rootUrl });
-          }
+            let text = `${emoji} *<${href}|${task.metadata.name}>* transitioned to _${status.state}_`;
+            if (_.has(task, 'extra.notify.slackText')) {
+              text = this.renderMessage(task.extra.notify.slackText, { task, status, taskId, rootUrl: this.rootUrl });
+            }
 
-          // This uses Slack blocks format, see https://api.slack.com/messaging/composing/layouts.
-          let blocks = [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text,
-              },
-            },
-            {
-              type: 'context',
-              elements: [
-                {
+            // This uses Slack blocks format, see https://api.slack.com/messaging/composing/layouts.
+            let blocks = [
+              {
+                type: 'section',
+                text: {
                   type: 'mrkdwn',
-                  text: `Part of task group *<${groupHref}|${task.taskGroupId}>*`,
+                  text,
                 },
-              ],
-            },
-          ];
-          if (_.has(task, 'extra.notify.slackBlocks')) {
-            blocks = this.renderMessage(task.extra.notify.slackBlocks, { task, status, taskId, rootUrl: this.rootUrl });
-          }
+              },
+              {
+                type: 'context',
+                elements: [
+                  {
+                    type: 'mrkdwn',
+                    text: `Part of task group *<${groupHref}|${task.taskGroupId}>*`,
+                  },
+                ],
+              },
+            ];
+            if (_.has(task, 'extra.notify.slackBlocks')) {
+              blocks = this.renderMessage(task.extra.notify.slackBlocks, {
+                task,
+                status,
+                taskId,
+                rootUrl: this.rootUrl,
+              });
+            }
 
-          let attachments = [];
-          if (_.has(task, 'extra.notify.slackAttachments')) {
-            attachments = this.renderMessage(task.extra.notify.slackAttachments,
-              { task, status, taskId, rootUrl: this.rootUrl });
-          }
+            let attachments = [];
+            if (_.has(task, 'extra.notify.slackAttachments')) {
+              attachments = this.renderMessage(task.extra.notify.slackAttachments, {
+                task,
+                status,
+                taskId,
+                rootUrl: this.rootUrl,
+              });
+            }
 
-          return this.notifier.slack({
-            channelId,
-            text,
-            blocks,
-            attachments,
-          });
-        }
-        case 'pulse': {
-          return await this.notifier.pulse({
-            routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),
-            message: status,
-          });
-        }
-        case 'email': {
-          let content = `
+            return this.notifier.slack({
+              channelId,
+              text,
+              blocks,
+              attachments,
+            });
+          }
+          case 'pulse': {
+            return await this.notifier.pulse({
+              routingKey: _.join(_.slice(route, 2, route.length - 1), '.'),
+              message: status,
+            });
+          }
+          case 'email': {
+            let content = `
 Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHref}) is complete.
 
 **Status:** ${status.state} (in ${runCount} run${runCount === 1 ? '' : 's'})
@@ -206,30 +213,34 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
 **Owner:** ${task.metadata.owner}
 **Source:** ${task.metadata.source}
           `;
-          let link = { text: 'Inspect Task', href };
-          let subject = `Task ${status.state}: ${task.metadata.name} - ${taskId}`;
-          let template = 'simple';
-          if (_.has(task, 'extra.notify.email')) {
-            const extra = task.extra.notify.email;
-            content = extra.content ? this.renderMessage(extra.content, { task, status, taskId, rootUrl: this.rootUrl })
-              : content;
-            subject = extra.subject ? this.renderMessage(extra.subject, { task, status, taskId, rootUrl: this.rootUrl })
-              : subject;
-            link = extra.link ? jsone(extra.link, { task, status, rootUrl: this.rootUrl }) : link;
-            template = extra.template ? jsone(extra.template, { task, status }) : template;
+            let link = { text: 'Inspect Task', href };
+            let subject = `Task ${status.state}: ${task.metadata.name} - ${taskId}`;
+            let template = 'simple';
+            if (_.has(task, 'extra.notify.email')) {
+              const extra = task.extra.notify.email;
+              content = extra.content
+                ? this.renderMessage(extra.content, { task, status, taskId, rootUrl: this.rootUrl })
+                : content;
+              subject = extra.subject
+                ? this.renderMessage(extra.subject, { task, status, taskId, rootUrl: this.rootUrl })
+                : subject;
+              link = extra.link ? jsone(extra.link, { task, status, rootUrl: this.rootUrl }) : link;
+              template = extra.template ? jsone(extra.template, { task, status }) : template;
+            }
+            return await this.notifier.email({
+              address: _.join(_.slice(route, 2, route.length - 1), '.'),
+              content,
+              subject,
+              link,
+              template,
+            });
           }
-          return await this.notifier.email({
-            address: _.join(_.slice(route, 2, route.length - 1), '.'),
-            content,
-            subject,
-            link,
-            template,
-          });
+          default: {
+            return null;
+          }
         }
-        default: {
-          return null;
-        }}
-    }));
+      }),
+    );
   }
 }
 

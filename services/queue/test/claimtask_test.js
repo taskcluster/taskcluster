@@ -6,7 +6,7 @@ import assume from 'assume';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -36,7 +36,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     },
   });
 
-  test('can claimTask', async function() {
+  test('can claimTask', async function () {
     const taskId = slugid.v4();
 
     debug('### Creating task');
@@ -116,16 +116,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       workerId: 'my-worker-extended-extended',
     });
 
-    await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker2-extended-extended',
-    }).then(() => {
-      throw new Error('This request should have failed');
-    }, (err) => {
-      if (err.code !== 'RequestConflict') {
-        throw err;
-      }
-    });
+    await helper.queue
+      .claimTask(taskId, 0, {
+        workerGroup: 'my-worker-group-extended-extended',
+        workerId: 'my-worker2-extended-extended',
+      })
+      .then(
+        () => {
+          throw new Error('This request should have failed');
+        },
+        (err) => {
+          if (err.code !== 'RequestConflict') {
+            throw err;
+          }
+        },
+      );
   });
 
   test('claimTask requires scopes', async () => {
@@ -139,16 +144,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       'assume:worker-id:my-worker-group/my-worker',
     );
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker-extended-extended',
-    }).then(() => {
-      throw new Error('Expected an authentication error');
-    }, (err) => {
-      if (err.code !== 'InsufficientScopes') {
-        throw err;
-      }
-    });
+    await helper.queue
+      .claimTask(taskId, 0, {
+        workerGroup: 'my-worker-group-extended-extended',
+        workerId: 'my-worker-extended-extended',
+      })
+      .then(
+        () => {
+          throw new Error('Expected an authentication error');
+        },
+        (err) => {
+          if (err.code !== 'InsufficientScopes') {
+            throw err;
+          }
+        },
+      );
 
     // leave out a required scope
     helper.scopes(
@@ -158,16 +168,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       `queue:status:${taskId}`,
     );
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker-extended-extended',
-    }).then(() => {
-      throw new Error('Expected an authentication error');
-    }, (err) => {
-      if (err.code !== 'InsufficientScopes') {
-        throw err;
-      }
-    });
+    await helper.queue
+      .claimTask(taskId, 0, {
+        workerGroup: 'my-worker-group-extended-extended',
+        workerId: 'my-worker-extended-extended',
+      })
+      .then(
+        () => {
+          throw new Error('Expected an authentication error');
+        },
+        (err) => {
+          if (err.code !== 'InsufficientScopes') {
+            throw err;
+          }
+        },
+      );
 
     // leave out a required scope
     helper.scopes(
@@ -177,15 +192,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       `queue:status:${taskId}`,
     );
     // First runId is always 0, so we should be able to claim it here
-    await helper.queue.claimTask(taskId, 0, {
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker-extended-extended',
-    }).then(() => {
-      throw new Error('Expected an authentication error');
-    }, (err) => {
-      if (err.code !== 'InsufficientScopes') {
-        throw err;
-      }
-    });
+    await helper.queue
+      .claimTask(taskId, 0, {
+        workerGroup: 'my-worker-group-extended-extended',
+        workerId: 'my-worker-extended-extended',
+      })
+      .then(
+        () => {
+          throw new Error('Expected an authentication error');
+        },
+        (err) => {
+          if (err.code !== 'InsufficientScopes') {
+            throw err;
+          }
+        },
+      );
   });
 });

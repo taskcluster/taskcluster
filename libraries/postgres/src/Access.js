@@ -61,11 +61,14 @@ class Access {
    */
   _check(content, filename) {
     assert(isPlainObject(content), `${filename} should define an object`);
-    Object.keys(content).forEach(serviceName => {
+    Object.keys(content).forEach((serviceName) => {
       const serviceAccess = content[serviceName];
       assert(isPlainObject(serviceAccess), `each service in ${filename} should define an object`);
-      assert.deepEqual(Object.keys(serviceAccess).sort(), ['tables'],
-        `each service in ${filename} should only have a 'tables' property`);
+      assert.deepEqual(
+        Object.keys(serviceAccess).sort(),
+        ['tables'],
+        `each service in ${filename} should only have a 'tables' property`,
+      );
       assert(isPlainObject(serviceAccess.tables), `${serviceName}.tables should be an object`);
       Object.entries(serviceAccess.tables).forEach(([table, mode]) => {
         assert(['read', 'write'].includes(mode), `${serviceName}.tables.${table} should be read or write`);

@@ -19,7 +19,7 @@ import hookGroupsQuery from './hookGroups.graphql';
     fetchPolicy: 'network-only',
   },
 })
-@withStyles(theme => ({
+@withStyles((theme) => ({
   actionButton: {
     ...theme.mixins.fab,
   },
@@ -43,7 +43,7 @@ export default class ListHookGroups extends Component {
     this.props.history.push('/hooks/create');
   };
 
-  handleHookSearchSubmit = hookSearch => {
+  handleHookSearchSubmit = (hookSearch) => {
     const query = parse(window.location.search.slice(1));
 
     this.props.history.push({
@@ -61,39 +61,31 @@ export default class ListHookGroups extends Component {
       data: { loading, error, hookGroups },
     } = this.props;
     const { search } = parse(window.location.search.slice(1));
-    const hookGroupIds = hookGroups?.flatMap(group => group?.hookGroupId);
+    const hookGroupIds = hookGroups?.flatMap((group) => group?.hookGroupId);
 
     return (
       <Dashboard
         title="Hooks Groups"
         helpView={<HelpView description={description} />}
         search={
-          <Search
-            placeholder="Hook group contains"
-            defaultValue={search}
-            onSubmit={this.handleHookSearchSubmit}
-          />
-        }>
+          <Search placeholder="Hook group contains" defaultValue={search} onSubmit={this.handleHookSearchSubmit} />
+        }
+      >
         {!hookGroups && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
         {!loading &&
           (hookGroupIds?.length ? (
-            <HookGroupsTable
-              searchTerm={search}
-              hookGroups={hookGroupIds}
-              classes={classes}
-            />
+            <HookGroupsTable searchTerm={search} hookGroups={hookGroupIds} classes={classes} />
           ) : (
-            <Typography variant="subtitle1">
-              No hook groups are defined
-            </Typography>
+            <Typography variant="subtitle1">No hook groups are defined</Typography>
           ))}
         <Button
           spanProps={{ className: classes.actionButton }}
           tooltipProps={{ title: 'Create Hook' }}
           color="secondary"
           variant="round"
-          onClick={this.handleCreateHook}>
+          onClick={this.handleCreateHook}
+        >
           <PlusIcon />
         </Button>
       </Dashboard>

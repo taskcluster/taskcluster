@@ -73,16 +73,16 @@ export class Backends {
         when = {};
       }
 
-      const makePatternFn = pattern => {
+      const makePatternFn = (pattern) => {
         if (typeof pattern === 'string') {
-          return value => value === pattern;
+          return (value) => value === pattern;
         }
         if (pattern.regexp) {
           const re = new RegExp(pattern.regexp);
           return re.test.bind(re);
         }
         if (pattern.is) {
-          return value => value === pattern.is;
+          return (value) => value === pattern.is;
         }
         throw new Error(`backendMap[${i}] has invalid pattern ${JSON.stringify(pattern)}`);
       };
@@ -90,13 +90,16 @@ export class Backends {
       const conditions = Object.entries(when).map(([param, pattern]) => {
         const patternFn = makePatternFn(pattern);
         switch (param) {
-          case 'projectId': return object => patternFn(object.projectId);
-          case 'name': return object => patternFn(object.name);
-          default: throw new Error(`backendMap[${i}] has invalid match parameter ${param}`);
+          case 'projectId':
+            return (object) => patternFn(object.projectId);
+          case 'name':
+            return (object) => patternFn(object.name);
+          default:
+            throw new Error(`backendMap[${i}] has invalid match parameter ${param}`);
         }
       });
 
-      return object => (conditions.every(p => p(object)) ? backendId : null);
+      return (object) => (conditions.every((p) => p(object)) ? backendId : null);
     });
   }
 

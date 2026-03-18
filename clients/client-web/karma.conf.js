@@ -1,6 +1,6 @@
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
-module.exports = config => {
+module.exports = (config) => {
   return config.set({
     frameworks: ['mocha'],
     files: [

@@ -1,4 +1,3 @@
-
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import TaskRunsCard from './index';
@@ -25,11 +24,7 @@ it('should render TaskRunsCard', () => {
           scopes: ['scopes'],
           routes: [],
           payload: {
-            command: [
-              '/bin/bash',
-              '-c',
-              'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done',
-            ],
+            command: ['/bin/bash', '-c', 'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done'],
             image: 'ubuntu:latest',
             maxRunTime: 90,
           },
@@ -93,7 +88,7 @@ it('should render TaskRunsCard', () => {
           },
         ]}
       />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
   expect(asFragment()).toMatchSnapshot();

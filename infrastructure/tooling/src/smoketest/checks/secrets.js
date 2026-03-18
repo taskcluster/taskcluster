@@ -2,31 +2,24 @@ import taskcluster from '@taskcluster/client';
 import assert from 'node:assert';
 
 export const scopeExpression = {
-  AllOf: [
-    'secrets:get:project/taskcluster/smoketest/*',
-    'secrets:set:project/taskcluster/smoketest/*',
-  ],
+  AllOf: ['secrets:get:project/taskcluster/smoketest/*', 'secrets:set:project/taskcluster/smoketest/*'],
 };
 
 export const tasks = [];
 
 tasks.push({
   title: 'Create and read secrets (--target secrets)',
-  requires: [
-    'ping-secrets',
-  ],
-  provides: [
-    'target-secrets',
-  ],
+  requires: ['ping-secrets'],
+  provides: ['target-secrets'],
   run: async () => {
     const secrets = new taskcluster.Secrets(taskcluster.fromEnvVars());
     const secretName = taskcluster.slugid();
     const secretPrefix = `project/taskcluster/smoketest/${secretName}`;
     const payload = {
-      "expires": taskcluster.fromNowJSON('2 minutes'),
-      "secret": {
-        "description": `Secret ${secretName}`,
-        "type": "object",
+      expires: taskcluster.fromNowJSON('2 minutes'),
+      secret: {
+        description: `Secret ${secretName}`,
+        type: 'object',
       },
     };
     await secrets.set(secretPrefix, payload);
@@ -35,7 +28,7 @@ tasks.push({
     await secrets.remove(secretPrefix);
     await assert.rejects(
       () => secrets.get(secretPrefix),
-      err => {
+      (err) => {
         assert.equal(err.code, 'ResourceNotFound');
         assert.equal(err.statusCode, 404);
         return true;

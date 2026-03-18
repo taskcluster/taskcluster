@@ -18,6 +18,5 @@
       "service": "EC2"
     }
   ],
-  "ipv6_prefixes": [
-  ]
+  "ipv6_prefixes": []
 }

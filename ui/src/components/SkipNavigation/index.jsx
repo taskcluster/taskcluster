@@ -24,7 +24,7 @@ export default class SkipNavigation extends Component {
     selector: null,
   };
 
-  handleClick = e => {
+  handleClick = (e) => {
     const { selector, onClick } = this.props;
 
     if (selector) {
@@ -49,7 +49,8 @@ export default class SkipNavigation extends Component {
         variant="contained"
         className={classNames(classes.skipButton, className)}
         onClick={this.handleClick}
-        {...props}>
+        {...props}
+      >
         Skip to main content
       </Button>
     );

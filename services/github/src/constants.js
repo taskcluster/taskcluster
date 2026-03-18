@@ -37,12 +37,13 @@ export const GITHUB_RELEASE_ACTION = {
   UNPUBLISHED: 'unpublished',
 };
 
-export const CONCLUSIONS = { // maps status communicated by the queue service to github checkrun conclusions
-  'completed': 'success',
-  'failed': 'failure',
-  'exception': 'failure',
+export const CONCLUSIONS = {
+  // maps status communicated by the queue service to github checkrun conclusions
+  completed: 'success',
+  failed: 'failure',
+  exception: 'failure',
   'deadline-exceeded': 'timed_out',
-  'canceled': 'cancelled',
+  canceled: 'cancelled',
   'claim-expired': 'failure',
   'worker-shutdown': 'neutral', // queue status means: will be retried
   'malformed-payload': 'action_required', // github status means "correct your task definition"

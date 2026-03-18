@@ -3,18 +3,16 @@ import sift from '../utils/sift.js';
 import ConnectionLoader from '../ConnectionLoader.js';
 
 export default ({ auth }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
-  const clients = new ConnectionLoader(
-    async ({ filter, options, clientOptions }) => {
-      const raw = await auth.listClients({ ...clientOptions, ...options });
-      const clients = sift(filter, raw.clients);
+  const clients = new ConnectionLoader(async ({ filter, options, clientOptions }) => {
+    const raw = await auth.listClients({ ...clientOptions, ...options });
+    const clients = sift(filter, raw.clients);
 
-      return {
-        ...raw,
-        items: clients,
-      };
-    },
-  );
-  const client = new DataLoader(clientIds =>
+    return {
+      ...raw,
+      items: clients,
+    };
+  });
+  const client = new DataLoader((clientIds) =>
     Promise.all(
       clientIds.map(async (clientId) => {
         try {

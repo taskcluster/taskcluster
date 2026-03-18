@@ -2,13 +2,7 @@
  * Generate Python client library examples for API endpoints
  */
 
-import {
-  PLACEHOLDERS,
-  getPlaceholderValue,
-  requiresAuth,
-  capitalize,
-  formatPayloadJson,
-} from './helpers';
+import { PLACEHOLDERS, getPlaceholderValue, requiresAuth, capitalize, formatPayloadJson } from './helpers';
 
 /**
  * Generate a Python example for an API endpoint
@@ -20,15 +14,9 @@ import {
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} Python code example
  */
-export default function generatePythonExample(
-  serviceName,
-  _apiVersion,
-  entry,
-  isAsync,
-  payloadExample = null
-) {
+export default function generatePythonExample(serviceName, _apiVersion, entry, isAsync, payloadExample = null) {
   const className = capitalize(serviceName);
-  const params = entry.args.map(arg => `'${getPlaceholderValue(arg)}'`);
+  const params = entry.args.map((arg) => `'${getPlaceholderValue(arg)}'`);
   const tcModule = isAsync ? 'taskcluster.aio' : 'taskcluster';
   // Build imports
   const imports = isAsync
@@ -81,9 +69,7 @@ ${serviceName} = ${tcModule}.${className}({'rootUrl': '${PLACEHOLDERS.rootUrl}'}
       }
 
       apiCall = `${payloadCode}
-        result = await ${serviceName}.${entry.name}(${params.join(
-        ', '
-      )}, payload)`;
+        result = await ${serviceName}.${entry.name}(${params.join(', ')}, payload)`;
     } else {
       apiCall = `# Call the API method
         result = await ${serviceName}.${entry.name}(${params.join(', ')})`;

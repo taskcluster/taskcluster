@@ -1,20 +1,20 @@
 type WorkerManagerWorkerPoolSummary {
-    workerPoolId: String!
-    description: String
-    owner: String!
-    providerId: String!
-    config: JSON
-    emailOnError: Boolean!
-    currentCapacity: Int!
-    requestedCount: Int!
-    runningCount: Int!
-    stoppingCount: Int!
-    stoppedCount: Int!
-    requestedCapacity: Int!
-    runningCapacity: Int!
-    stoppingCapacity: Int!
-    stoppedCapacity: Int!
-    pendingTasks: Int #this value comes from a separate request to queue
+  workerPoolId: String!
+  description: String
+  owner: String!
+  providerId: String!
+  config: JSON
+  emailOnError: Boolean!
+  currentCapacity: Int!
+  requestedCount: Int!
+  runningCount: Int!
+  stoppingCount: Int!
+  stoppedCount: Int!
+  requestedCapacity: Int!
+  runningCapacity: Int!
+  stoppingCapacity: Int!
+  stoppedCapacity: Int!
+  pendingTasks: Int #this value comes from a separate request to queue
 }
 
 type WorkerManagerWorkerPoolSummaryConnection implements Connection {
@@ -28,14 +28,14 @@ type WorkerManagerWorkerPoolSummaryEdge implements Edge {
 }
 
 type WorkerManagerError {
-    workerPoolId: String!
-    errorId: ID!
-    kind: String!
-    title: String!
-    description: String!
-    reported: DateTime!
-    extra: JSON!
-    launchConfigId: String
+  workerPoolId: String!
+  errorId: ID!
+  kind: String!
+  title: String!
+  description: String!
+  reported: DateTime!
+  extra: JSON!
+  launchConfigId: String
 }
 
 type WorkerManagerErrorsStatsConnection implements Connection {
@@ -54,8 +54,8 @@ type WorkerManagerErrorsEdge implements Edge {
 }
 
 type WorkerManagerProvider {
-    providerId: String!
-    providerType: String!
+  providerId: String!
+  providerType: String!
 }
 
 type WorkerManagerProvidersConnection implements Connection {
@@ -69,13 +69,12 @@ type WorkerManagerProvidersEdge implements Edge {
 }
 
 input WorkerPoolInput {
-    providerId: String!
-    description: String!
-    owner: String!
-    emailOnError: Boolean!
-    config: JSON!
+  providerId: String!
+  description: String!
+  owner: String!
+  emailOnError: Boolean!
+  config: JSON!
 }
-
 
 type WorkerPoolErrorTotals {
   total: Int!
@@ -154,26 +153,40 @@ type WorkerPoolStats {
 }
 
 extend type Query {
-    WorkerManagerWorkerPoolSummaries(connection: PageConnection, filter: JSON): WorkerManagerWorkerPoolSummaryConnection!
+  WorkerManagerWorkerPoolSummaries(connection: PageConnection, filter: JSON): WorkerManagerWorkerPoolSummaryConnection!
 
-    WorkerManagerErrors(workerPoolId: String, launchConfigId: String, connection: PageConnection, filter: JSON): WorkerManagerErrorsConnection!
-    WorkerManagerErrorsStats(workerPoolId: String): WorkerManagerErrorsStats!
+  WorkerManagerErrors(
+    workerPoolId: String
+    launchConfigId: String
+    connection: PageConnection
+    filter: JSON
+  ): WorkerManagerErrorsConnection!
+  WorkerManagerErrorsStats(workerPoolId: String): WorkerManagerErrorsStats!
 
-    WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
-    WorkerPoolLaunchConfigs(workerPoolId: String!, includeArchived: Boolean, connection: PageConnection): WorkerPoolLaunchConfigConnection!
-    WorkerPoolStats(workerPoolId: String!): WorkerPoolStats!
+  WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
+  WorkerPoolLaunchConfigs(
+    workerPoolId: String!
+    includeArchived: Boolean
+    connection: PageConnection
+  ): WorkerPoolLaunchConfigConnection!
+  WorkerPoolStats(workerPoolId: String!): WorkerPoolStats!
 
-    WorkerManagerProviders(connection: PageConnection, filter: JSON): WorkerManagerProvidersConnection!
+  WorkerManagerProviders(connection: PageConnection, filter: JSON): WorkerManagerProvidersConnection!
 
-    WorkerManagerWorkers(workerPoolId: String!, state: String, launchConfigId: String, connection: PageConnection): WorkerManagerWorkerConnection!
+  WorkerManagerWorkers(
+    workerPoolId: String!
+    state: String
+    launchConfigId: String
+    connection: PageConnection
+  ): WorkerManagerWorkerConnection!
 
-    WorkerManagerWorker(workerPoolId: String!, workerGroup: String!, workerId: ID!): WMWorker
+  WorkerManagerWorker(workerPoolId: String!, workerGroup: String!, workerId: ID!): WMWorker
 }
 
 extend type Mutation {
-    createWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
+  createWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
 
-    updateWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
+  updateWorkerPool(workerPoolId: String!, payload: WorkerPoolInput!): WorkerManagerWorkerPoolSummary
 
-    deleteWorkerPool(workerPoolId: String!): String
+  deleteWorkerPool(workerPoolId: String!): String
 }

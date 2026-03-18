@@ -29,29 +29,33 @@ const ports = {
   references: ['3023:8080'],
 };
 
-const servicePorts = (service) => (ports[service] || []);
+const servicePorts = (service) => ports[service] || [];
 const serviceHostPort = (service) => ports[service][0].split(':')[1];
 
 const METRICS_PORT = 9100;
 
 const staticClients = [
-  { 'clientId': 'static/taskcluster/built-in-workers', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/github', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/hooks', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/index', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/notify', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/object', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/purge-cache', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/queue', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/secrets', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/web-server', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/worker-manager', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/taskcluster/root', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
-  { 'clientId': 'static/generic-worker-compose-client', 'accessToken': 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA',
-    description: 'Static generic worker client', scopes: ['*'] },
+  { clientId: 'static/taskcluster/built-in-workers', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/github', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/hooks', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/index', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/notify', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/object', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/purge-cache', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/queue', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/secrets', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/web-server', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/worker-manager', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  { clientId: 'static/taskcluster/root', accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA' },
+  {
+    clientId: 'static/generic-worker-compose-client',
+    accessToken: 'j2Z6zW2QSLehailBXlosdw9e2Ti8R_Qh2M4buAEQfsMA',
+    description: 'Static generic worker client',
+    scopes: ['*'],
+  },
 ];
 
-const getTokenByService = (service) => staticClients.find(client => client.clientId.includes(service)).accessToken;
+const getTokenByService = (service) => staticClients.find((client) => client.clientId.includes(service)).accessToken;
 
 const workerManagerProviders = {
   static: {
@@ -92,7 +96,9 @@ const defaultValues = {
 
   // Auth
   STATIC_CLIENTS: JSON.stringify(staticClients),
-  DB_CRYPTO_KEYS: JSON.stringify([{ id: 'dev-init', algo: 'aes-256', key: 'AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4=' }]),
+  DB_CRYPTO_KEYS: JSON.stringify([
+    { id: 'dev-init', algo: 'aes-256', key: 'AUZzegzU1Xp3dW2tPRU615HXI04oJTt9NDIokH3HXN4=' },
+  ]),
 
   // Worker Manager
   PROVIDERS: JSON.stringify(workerManagerProviders),
@@ -107,7 +113,8 @@ const defaultValues = {
   EMAIL_SOURCE_ADDRESS: 'root@local',
 
   // Object
-  BACKENDS: '{"everything":{"backendType":"aws","accessKeyId":"localstackadmin","secretAccessKey":"localstackpassword","bucket":"public-bucket","signGetUrls":"false","s3ForcePathStyle":true,"endpoint":"http://taskcluster/"}}',
+  BACKENDS:
+    '{"everything":{"backendType":"aws","accessKeyId":"localstackadmin","secretAccessKey":"localstackpassword","bucket":"public-bucket","signGetUrls":"false","s3ForcePathStyle":true,"endpoint":"http://taskcluster/"}}',
   BACKEND_MAP: '[{"backendId":"everything","when":"all"}]',
 
   // Queue
@@ -168,8 +175,8 @@ const allowedBackgroundJobs = ['built-in-workers/server'];
 tasks.push({
   title: `Generate docker-compose files`,
   requires: [
-    ...SERVICES.map(name => `configs-${name}`),
-    ...SERVICES.map(name => `procslist-${name}`),
+    ...SERVICES.map((name) => `configs-${name}`),
+    ...SERVICES.map((name) => `procslist-${name}`),
     'target-nginx.conf',
   ],
   provides: [
@@ -197,38 +204,43 @@ tasks.push({
       }
 
       // prevent original object from being modified, as it will change autogenerated references
-      config = [...config, {
-        type: '!env',
-        var: 'DEBUG',
-        optional: true,
-      }];
+      config = [
+        ...config,
+        {
+          type: '!env',
+          var: 'DEBUG',
+          optional: true,
+        },
+      ];
 
-      return Object.fromEntries(config.map(cfg => {
-        let value = defaultValues[cfg.var];
+      return Object.fromEntries(
+        config.map((cfg) => {
+          let value = defaultValues[cfg.var];
 
-        switch (cfg.var) {
-          case 'PORT':
-            value = 8080;
-            break;
+          switch (cfg.var) {
+            case 'PORT':
+              value = 8080;
+              break;
 
-          case 'TASKCLUSTER_CLIENT_ID':
-            value = `static/taskcluster/${name}`;
-            break;
+            case 'TASKCLUSTER_CLIENT_ID':
+              value = `static/taskcluster/${name}`;
+              break;
 
-          case 'TASKCLUSTER_ACCESS_TOKEN':
-            value = getTokenByService(name);
-            break;
-        }
-
-        if (!value && !cfg.optional) {
-          if (value === undefined) {
-            console.warn(`${name} ${cfg.var} Missing required config`);
-            value = '### MISSING ###';
+            case 'TASKCLUSTER_ACCESS_TOKEN':
+              value = getTokenByService(name);
+              break;
           }
-        }
 
-        return [cfg.var, value];
-      }));
+          if (!value && !cfg.optional) {
+            if (value === undefined) {
+              console.warn(`${name} ${cfg.var} Missing required config`);
+              value = '### MISSING ###';
+            }
+          }
+
+          return [cfg.var, value];
+        }),
+      );
     };
 
     const serviceDefinition = (name, { _noPorts, _useEnvFile, ...opts } = {}) => ({
@@ -237,7 +249,8 @@ tasks.push({
       ...(_useEnvFile ? { env_file: `${ENV_FILE_PATH}.${name}` } : {}),
       ...opts,
       ...(!_noPorts && (opts.ports || servicePorts(name).length > 0)
-        ? { ports: opts.ports || servicePorts(name) } : {}),
+        ? { ports: opts.ports || servicePorts(name) }
+        : {}),
     });
 
     const serviceDefinitionProd = (_name, profiles = null) => ({
@@ -279,10 +292,7 @@ tasks.push({
         rabbitmq: serviceDefinition('rabbitmq', {
           image: 'rabbitmq:4.2.2-management',
           healthcheck: healthcheck('rabbitmq-diagnostics ping'),
-          ports: [
-            '5672:5672',
-            '15672:15672',
-          ],
+          ports: ['5672:5672', '15672:15672'],
           environment: {
             RABBITMQ_DEFAULT_USER: 'admin',
             RABBITMQ_DEFAULT_PASS: 'admin',
@@ -320,9 +330,7 @@ tasks.push({
         s3: serviceDefinition('s3', {
           image: 'localstack/localstack:4.12.0',
           ports: ['3090:4566'],
-          volumes: [
-            './docker/buckets:/var/lib/localstack',
-          ],
+          volumes: ['./docker/buckets:/var/lib/localstack'],
           environment: {
             SERVICES: 's3',
             AWS_ACCESS_KEY_ID: 'localstackadmin',
@@ -355,16 +363,12 @@ tasks.push({
         prometheus: serviceDefinition('prometheus', {
           image: 'prom/prometheus:latest',
           ports: ['9090:9090'],
-          volumes: [
-            './docker/prometheus.yml:/etc/prometheus/prometheus.yml',
-          ],
+          volumes: ['./docker/prometheus.yml:/etc/prometheus/prometheus.yml'],
         }),
         ui: serviceDefinition('ui', {
           command: 'ui/web',
           _useEnvFile: true,
-          volumes: [
-            './docker/nginx-ui-local-dev-only.conf:/app/ui/web-ui-nginx-site.conf',
-          ],
+          volumes: ['./docker/nginx-ui-local-dev-only.conf:/app/ui/web-ui-nginx-site.conf'],
         }),
         references: serviceDefinition('references', {
           command: 'references/web',
@@ -375,9 +379,7 @@ tasks.push({
         taskcluster: serviceDefinition('taskcluster', {
           image: 'nginx:1.29.4',
           depends_on: ['ui', 'web-server-web'],
-          volumes: [
-            './docker/nginx.conf:/etc/nginx/nginx.conf',
-          ],
+          volumes: ['./docker/nginx.conf:/etc/nginx/nginx.conf'],
           healthcheck: healthcheck('curl -I http://localhost/'),
         }),
         tc_admin_init: serviceDefinition('tc_admin_init', {
@@ -390,15 +392,12 @@ tasks.push({
             TASKCLUSTER_CLIENT_ID: 'static/taskcluster/root',
             TASKCLUSTER_ACCESS_TOKEN: getTokenByService('root'),
           },
-          entrypoint: [
-            '/bin/sh -c "',
-            'echo \'Applying config\'; tc-admin apply ||true;',
-            '"',
-          ].join('\n'),
+          entrypoint: ['/bin/sh -c "', "echo 'Applying config'; tc-admin apply ||true;", '"'].join('\n'),
           depends_on: Object.fromEntries(
-            ['auth-web', 'hooks-web', 'queue-web', 'worker-manager-web', 'secrets-web', 'taskcluster'].map(
-              svc => ([svc, { condition: 'service_healthy' }]),
-            ),
+            ['auth-web', 'hooks-web', 'queue-web', 'worker-manager-web', 'secrets-web', 'taskcluster'].map((svc) => [
+              svc,
+              { condition: 'service_healthy' },
+            ]),
           ),
         }),
       },
@@ -442,7 +441,7 @@ tasks.push({
       },
     };
 
-    ['standalone', 'static'].forEach(type => {
+    ['standalone', 'static'].forEach((type) => {
       dockerCompose.services[`generic-worker-${type}`] = serviceDefinition('generic-worker', {
         image: '${IMAGE_GENERIC_WORKER}',
         restart: 'unless-stopped', // if they crash, restart it to pick up next jobs
@@ -495,11 +494,13 @@ tasks.push({
           return;
         }
 
-        const extraDependencies = ['queue', 'object'].includes(name) ? {
-          s3_init_buckets: {
-            condition: 'service_completed_successfully',
-          },
-        } : {};
+        const extraDependencies = ['queue', 'object'].includes(name)
+          ? {
+              s3_init_buckets: {
+                condition: 'service_completed_successfully',
+              },
+            }
+          : {};
 
         if (allowedBackgroundJob) {
           extraDependencies['queue-web'] = {
@@ -524,7 +525,9 @@ tasks.push({
         };
 
         if (isWeb) {
-          serviceOptions.healthcheck = healthcheck(`wget -q --spider http://localhost:${serviceHostPort(name)}/api/${name}/v1/ping`);
+          serviceOptions.healthcheck = healthcheck(
+            `wget -q --spider http://localhost:${serviceHostPort(name)}/api/${name}/v1/ping`,
+          );
         }
 
         let serviceSuffix = '';
@@ -550,19 +553,25 @@ tasks.push({
     await writeRepoYAML(path.join('.', COMPOSE_FILENAME), dockerCompose, yamlOpts);
     await writeRepoYAML(path.join('.', PROD_COMPOSE_FILENAME), dockerComposeProd, yamlOpts);
     await writeRepoYAML(path.join('.', DEV_COMPOSE_FILENAME), dockerComposeDev, yamlOpts);
-    await writeRepoFile(path.join('.', GLOBAL_ENV),
-      `${Object.entries(globalEnvs).map(([key, value]) => `${key}=${value}`).join('\n')}\n`);
+    await writeRepoFile(
+      path.join('.', GLOBAL_ENV),
+      `${Object.entries(globalEnvs)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('\n')}\n`,
+    );
 
     await Promise.all(
-      Object.keys(envFiles)
-        .map(svcName => writeRepoFile(
+      Object.keys(envFiles).map((svcName) =>
+        writeRepoFile(
           `${ENV_FILE_PATH}.${svcName}`,
           `# This file is autogenerated for ${svcName} service\n` +
-          '# If you need to override some values, please use docker-compose.override.yml file instead\n' +
-          Object.entries(envFiles[svcName])
-            .map(([envName, envValue]) => `${envName}=${typeof envValue === 'undefined' ? '' : envValue}`)
-            .join('\n') + '\n',
-        )),
+            '# If you need to override some values, please use docker-compose.override.yml file instead\n' +
+            Object.entries(envFiles[svcName])
+              .map(([envName, envValue]) => `${envName}=${typeof envValue === 'undefined' ? '' : envValue}`)
+              .join('\n') +
+            '\n',
+        ),
+      ),
     );
 
     return {
@@ -657,12 +666,16 @@ http {
       set $pass http://s3:4566;
       proxy_pass $pass;
     }
-${SERVICES.filter(name => !!ports[name]).map(name => `
+${SERVICES.filter((name) => !!ports[name])
+  .map(
+    (name) => `
     location /api/${name} {
       set $pass http://${name}-web:${serviceHostPort(name)};
       proxy_pass $pass;
       ${extraDirectives}
-    }`).join('\n')}
+    }`,
+  )
+  .join('\n')}
   }
 }
 `;
@@ -673,29 +686,33 @@ ${SERVICES.filter(name => !!ports[name]).map(name => `
 
 tasks.push({
   title: `Generate prometheus.yml`,
-  requires: [...SERVICES.map(name => `procslist-${name}`)],
+  requires: [...SERVICES.map((name) => `procslist-${name}`)],
   provides: ['target-prometheus.yml'],
   run: async (requirements, _utils) => {
     const targets = [];
 
-    SERVICES.forEach(name => {
+    SERVICES.forEach((name) => {
       const procs = requirements[`procslist-${name}`];
-      Object.keys(procs).filter(procName => !!procs[procName].metrics).forEach(procName => {
-        const svc = [name, procs[procName].type, procName];
-        if (svc[2] === 'web') {
-          svc.splice(2, 1);
-        }
-        targets.push(`${svc.join('-')}:${METRICS_PORT}`);
-      });
+      Object.keys(procs)
+        .filter((procName) => !!procs[procName].metrics)
+        .forEach((procName) => {
+          const svc = [name, procs[procName].type, procName];
+          if (svc[2] === 'web') {
+            svc.splice(2, 1);
+          }
+          targets.push(`${svc.join('-')}:${METRICS_PORT}`);
+        });
     });
     const prometheusYml = {
       global: {
         scrape_interval: '30s',
       },
-      scrape_configs: [{
-        job_name: 'taskcluster-services',
-        static_configs: [{ targets }],
-      }],
+      scrape_configs: [
+        {
+          job_name: 'taskcluster-services',
+          static_configs: [{ targets }],
+        },
+      ],
     };
     await writeRepoYAML(path.join('.', 'docker', PROMETHEUS_FILENAME), prometheusYml);
   },

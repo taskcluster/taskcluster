@@ -8,18 +8,11 @@ export const getClient = ({ Class, user, ...options }) => {
   });
 };
 
-export const removeWorker = async ({
-  workerPoolId,
-  workerGroup,
-  workerId,
-  user,
-}) => {
+export const removeWorker = async ({ workerPoolId, workerGroup, workerId, user }) => {
   const wm = getClient({
     Class: WorkerManager,
     user,
-    authorizedScopes: [
-      `worker-manager:remove-worker:${workerPoolId}/${workerGroup}/${workerId}`,
-    ],
+    authorizedScopes: [`worker-manager:remove-worker:${workerPoolId}/${workerGroup}/${workerId}`],
   });
 
   await wm.removeWorker(workerPoolId, workerGroup, workerId);

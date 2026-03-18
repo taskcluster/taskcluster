@@ -5,7 +5,7 @@ import helper from './helper';
 
 use(chaiAsPromised);
 
-describe('Auth', function() {
+describe('Auth', function () {
   helper.withRootUrl();
 
   this.timeout(30000);
@@ -19,9 +19,7 @@ describe('Auth', function() {
       },
     });
 
-    return auth
-      .ping()
-      .then(({ alive }) => expect(alive).to.be.ok);
+    return auth.ping().then(({ alive }) => expect(alive).to.be.ok);
   });
 
   it('should build signed URL', () => {
@@ -33,8 +31,9 @@ describe('Auth', function() {
       },
     });
 
-    expect(auth.buildSignedUrl(auth.client, 'test'))
-      .to.eventually.match(new RegExp(`^${helper.rootUrl}/auth/v1/clients/test\\?bewit`));
+    expect(auth.buildSignedUrl(auth.client, 'test')).to.eventually.match(
+      new RegExp(`^${helper.rootUrl}/auth/v1/clients/test\\?bewit`),
+    );
   });
 
   it('should request from signed URL', () => {
@@ -46,8 +45,7 @@ describe('Auth', function() {
       },
     });
 
-    return auth.buildSignedUrl(auth.testAuthenticateGet)
-      .then(url => request(url));
+    return auth.buildSignedUrl(auth.testAuthenticateGet).then((url) => request(url));
   });
 
   it('should fetch from signed URL with authorized scopes', () => {
@@ -61,7 +59,7 @@ describe('Auth', function() {
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet)
-      .then(url => request(url))
+      .then((url) => request(url))
       .then(({ scopes }) => {
         expect(scopes).to.deep.equal(['assume:anonymous', 'test:authenticate-get', 'test:foo']);
       });
@@ -81,7 +79,7 @@ describe('Auth', function() {
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet)
-      .then(url => request(url))
+      .then((url) => request(url))
       .then(({ scopes }) => {
         expect(scopes).to.deep.equal(['assume:anonymous', 'test:authenticate-get', 'test:bar']);
       });
@@ -99,9 +97,7 @@ describe('Auth', function() {
         },
       }),
     });
-    return auth
-      .buildSignedUrl(auth.testAuthenticateGet, { expiration: 600 })
-      .then(url => request(url));
+    return auth.buildSignedUrl(auth.testAuthenticateGet, { expiration: 600 }).then((url) => request(url));
   });
 
   it('should fetch from signed URL with temporary credentials and authorized scopes', () => {
@@ -119,7 +115,7 @@ describe('Auth', function() {
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet)
-      .then(url => request(url))
+      .then((url) => request(url))
       .then(({ scopes }) => {
         expect(scopes).to.deep.equal(['assume:anonymous', 'test:authenticate-get']);
       });
@@ -139,7 +135,7 @@ describe('Auth', function() {
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet, { expiration: -600 })
-      .then(url => request(url))
+      .then((url) => request(url))
       .then(
         () => expect.fail('Expected request to fail'),
         (err) => {
@@ -160,7 +156,7 @@ describe('Auth', function() {
     });
     return auth
       .buildSignedUrl(auth.testAuthenticateGet)
-      .then(url => request(url))
+      .then((url) => request(url))
       .then(
         () => expect.fail('Expected request to fail'),
         (err) => {
@@ -195,9 +191,7 @@ describe('Auth', function() {
       rootUrl: helper.rootUrl,
     });
 
-    return auth
-      .listClients({ prefix: 'abc' })
-      .then(clients => expect(clients).to.deep.equal({ clients: [] }));
+    return auth.listClients({ prefix: 'abc' }).then((clients) => expect(clients).to.deep.equal({ clients: [] }));
   });
 
   it('should fetch using authorized scopes', () => {

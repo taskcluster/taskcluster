@@ -10,7 +10,7 @@ import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import Link from '../../utils/Link';
 import { splitWorkerPoolId } from '../../utils/workerPool';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   navbar: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -77,9 +77,7 @@ export default class WorkersNavbar extends Component {
       return `${this.props.provisionerId}/${this.props.workerType}`;
     }
 
-    throw new Error(
-      'workerPoolId, provisionerId and workerType are all missing'
-    );
+    throw new Error('workerPoolId, provisionerId and workerType are all missing');
   }
 
   get workerType() {
@@ -147,9 +145,7 @@ export default class WorkersNavbar extends Component {
       {
         icon: HexagonSlice4,
         label: 'Launch Configs',
-        to: `/worker-manager/${encodeURIComponent(
-          workerPoolId
-        )}/launch-configs`,
+        to: `/worker-manager/${encodeURIComponent(workerPoolId)}/launch-configs`,
         hint: 'Show worker pool definition',
         onlyWorkerManager: true,
       },
@@ -163,12 +159,12 @@ export default class WorkersNavbar extends Component {
     ];
 
     if (!this.props.hasWorkerPool) {
-      items = items.filter(item => !item.onlyWorkerManager);
+      items = items.filter((item) => !item.onlyWorkerManager);
     }
 
     return (
       <div className={classes.navbar}>
-        {items.map(item => (
+        {items.map((item) => (
           <Chip
             key={item.to}
             size="medium"

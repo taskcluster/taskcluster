@@ -1,6 +1,6 @@
 describe('exchangesList', () => {
   beforeAll(() => {
-    window.fetch = jest.fn().mockImplementation(url => {
+    window.fetch = jest.fn().mockImplementation((url) => {
       return {
         json: () =>
           Promise.resolve({
@@ -22,11 +22,7 @@ describe('exchangesList', () => {
     const exchanges = await fetchList();
 
     expect(exchanges).toBeDefined();
-    expect(
-      exchanges.includes(
-        'https://taskcluster.net/references/auth/v1/exchanges/exchange1'
-      )
-    ).toBeTruthy();
+    expect(exchanges.includes('https://taskcluster.net/references/auth/v1/exchanges/exchange1')).toBeTruthy();
     expect(window.fetch).toHaveBeenCalled();
   });
 });

@@ -20,20 +20,13 @@ import openEditor from 'open-editor';
 import { Octokit } from '@octokit/rest';
 
 const ALLOWED_LEVELS = {
-  'major': 1,
-  'minor': 2,
-  'patch': 3,
-  'silent': 4,
+  major: 1,
+  minor: 2,
+  patch: 3,
+  silent: 4,
 };
 
-const ALLOWED_AUDIENCES = [
-  'general',
-  'deployers',
-  'worker-deployers',
-  'admins',
-  'users',
-  'developers',
-];
+const ALLOWED_AUDIENCES = ['general', 'deployers', 'worker-deployers', 'admins', 'users', 'developers'];
 
 /**
  * compare levels, with major being first
@@ -78,45 +71,50 @@ export class ChangeLog {
   }
 
   async loadSnippets() {
-    const snippetFiles = glob.sync('changelog/*.md', { cwd: appRootDir.get() })
-      .filter(filename => filename !== 'changelog/README.md');
+    const snippetFiles = glob
+      .sync('changelog/*.md', { cwd: appRootDir.get() })
+      .filter((filename) => filename !== 'changelog/README.md');
 
-    this.snippets = await Promise.all(snippetFiles.map(async filename => {
-      // include a trailing newline in case the file lacks one
-      const snippetContent = `${(await readRepoFile(filename)).trimEnd()}\n`;
-      const [headerYaml, body] = snippetContent.split('\n---\n', 2);
+    this.snippets = await Promise.all(
+      snippetFiles.map(async (filename) => {
+        // include a trailing newline in case the file lacks one
+        const snippetContent = `${(await readRepoFile(filename)).trimEnd()}\n`;
+        const [headerYaml, body] = snippetContent.split('\n---\n', 2);
 
-      let { level, audience, reference, ...extra } = yaml.load(headerYaml);
-      if (Object.keys(extra).length !== 0) {
-        throw new Error(`Snippet ${filename}: extra properties in header`);
-      }
-
-      if (!level || !ALLOWED_LEVELS[level]) {
-        throw new Error(`Snippet ${filename}: invalid level. Must be in ${JSON.stringify(ALLOWED_LEVELS)}`);
-      }
-
-      if (level !== 'silent' && (!body || body.trim().length === 0)) {
-        throw new Error(`Snippet ${filename} is malformed or has no body`);
-      }
-
-      if (level !== 'silent' && (!audience || !ALLOWED_AUDIENCES.includes(audience))) {
-        throw new Error(`Snippet ${filename}: invalid audience '${audience}'. Must be in ${JSON.stringify(ALLOWED_AUDIENCES)}`);
-      }
-
-      if (reference) {
-        reference = reference.trim();
-        if (reference.match(/^issue \d+$/)) {
-          reference = `[#${reference.slice(6)}](https://github.com/taskcluster` +
-          `/taskcluster/issues/${reference.slice(6)})`;
-        } else if (reference.match(/^bug \d+$/)) {
-          reference = `[${reference}](http://bugzil.la/${reference.slice(4)})`;
-        } else {
-          throw new Error(`Snippet ${filename}: invalid reference '${reference}'`);
+        let { level, audience, reference, ...extra } = yaml.load(headerYaml);
+        if (Object.keys(extra).length !== 0) {
+          throw new Error(`Snippet ${filename}: extra properties in header`);
         }
-      }
 
-      return { filename, audience, level, reference, body };
-    }));
+        if (!level || !ALLOWED_LEVELS[level]) {
+          throw new Error(`Snippet ${filename}: invalid level. Must be in ${JSON.stringify(ALLOWED_LEVELS)}`);
+        }
+
+        if (level !== 'silent' && (!body || body.trim().length === 0)) {
+          throw new Error(`Snippet ${filename} is malformed or has no body`);
+        }
+
+        if (level !== 'silent' && (!audience || !ALLOWED_AUDIENCES.includes(audience))) {
+          throw new Error(
+            `Snippet ${filename}: invalid audience '${audience}'. Must be in ${JSON.stringify(ALLOWED_AUDIENCES)}`,
+          );
+        }
+
+        if (reference) {
+          reference = reference.trim();
+          if (reference.match(/^issue \d+$/)) {
+            reference =
+              `[#${reference.slice(6)}](https://github.com/taskcluster` + `/taskcluster/issues/${reference.slice(6)})`;
+          } else if (reference.match(/^bug \d+$/)) {
+            reference = `[${reference}](http://bugzil.la/${reference.slice(4)})`;
+          } else {
+            throw new Error(`Snippet ${filename}: invalid reference '${reference}'`);
+          }
+        }
+
+        return { filename, audience, level, reference, body };
+      }),
+    );
 
     const cmp = (a, b) => {
       return levelcmp(a.level, b.level) || strcmp(a.body, b.body);
@@ -129,7 +127,7 @@ export class ChangeLog {
     const lastVersion = await this.lastVersion();
     this.updates = await gitLog({
       dir: REPO_ROOT,
-      args: [`v${lastVersion}..HEAD`, '--author=dependabot', "--pretty=%s (%h)"],
+      args: [`v${lastVersion}..HEAD`, '--author=dependabot', '--pretty=%s (%h)'],
     });
   }
 
@@ -171,17 +169,18 @@ export class ChangeLog {
     }
 
     const levelLabels = {
-      'major': '[MAJOR]',
-      'minor': '[minor]',
-      'patch': '[patch]',
+      major: '[MAJOR]',
+      minor: '[minor]',
+      patch: '[patch]',
     };
 
-    const silent = this.snippets.filter(sn => sn.level === 'silent' && sn.reference);
+    const silent = this.snippets.filter((sn) => sn.level === 'silent' && sn.reference);
     const silentCount = silent.length;
-    const silentLinks = silent.map(sn => sn.reference).join(', ');
-    const silentSuffix = silentCount === 0 ?
-      '' :
-      `\n\n### OTHER\n\n▶ Additional change${silentCount === 1 ? '' : 's'} not described here: ${silentLinks}.`;
+    const silentLinks = silent.map((sn) => sn.reference).join(', ');
+    const silentSuffix =
+      silentCount === 0
+        ? ''
+        : `\n\n### OTHER\n\n▶ Additional change${silentCount === 1 ? '' : 's'} not described here: ${silentLinks}.`;
 
     // These changelog snippets are already sorted in level-order so when we insert
     // them here they remain in order. no need to re-sort
@@ -196,37 +195,34 @@ export class ChangeLog {
       return acc;
     }, {});
 
-    const formattedSnippets = ALLOWED_AUDIENCES
-      .map(audience => {
-        if (!categorizedSnippets[audience]) {
-          return '';
-        }
-        const snippets = categorizedSnippets[audience]
-          .map(({ level, reference, body }) => (
-            '▶ ' + levelLabels[level] +
-            (reference ? ` ${reference}` : '') + '\n' +
-            body.trim()
-          ))
-          .join('\n\n');
-        return `\n\n### ${audience.toUpperCase()}\n\n${snippets}`;
-      }).join('').trim();
+    const formattedSnippets = ALLOWED_AUDIENCES.map((audience) => {
+      if (!categorizedSnippets[audience]) {
+        return '';
+      }
+      const snippets = categorizedSnippets[audience]
+        .map(
+          ({ level, reference, body }) => `▶ ${levelLabels[level]}${reference ? ` ${reference}` : ''}\n${body.trim()}`,
+        )
+        .join('\n\n');
+      return `\n\n### ${audience.toUpperCase()}\n\n${snippets}`;
+    })
+      .join('')
+      .trim();
 
-    const formattedUpdates = this.updates.length > 0 ? (
-      [
-        '\n',
-        '### Automated Package Updates',
-        '',
-        '<details>',
-        `<summary>${this.updates.length} Dependabot updates</summary>`,
-        '', // without this newline, the list will not render correctly
-      ]
-        .concat(this.updates.map(u => `* ${u}`))
-        .concat([
-          '',
-          '</details>',
-        ])
-        .join('\n')
-    ) : '';
+    const formattedUpdates =
+      this.updates.length > 0
+        ? [
+            '\n',
+            '### Automated Package Updates',
+            '',
+            '<details>',
+            `<summary>${this.updates.length} Dependabot updates</summary>`,
+            '', // without this newline, the list will not render correctly
+          ]
+            .concat(this.updates.map((u) => `* ${u}`))
+            .concat(['', '</details>'])
+            .join('\n')
+        : '';
 
     return formattedSnippets + silentSuffix + formattedUpdates;
   }
@@ -247,8 +243,7 @@ const check_pr = async (pr) => {
     repo: 'taskcluster',
     pull_number: pr,
   });
-  const files = await octokit.paginate(options,
-    response => response.data.map(({ filename }) => filename));
+  const files = await octokit.paginate(options, (response) => response.data.map(({ filename }) => filename));
 
   // files that do not require a changelog entry if they are the only thing changed.  This
   // is similar to the list in .gitattributes., along with yarn and package.json
@@ -275,17 +270,19 @@ const check_pr = async (pr) => {
     /^clients\/client-go\/tc*\//,
     /^\.github\//,
   ];
-  const hasImportantFiles = files.some(filename => boringFiles.every(r => !r.test(filename)));
+  const hasImportantFiles = files.some((filename) => boringFiles.every((r) => !r.test(filename)));
 
   if (!hasImportantFiles) {
     console.log(`${chalk.bold.green(`PR ${pr} OK:`)} does not contain any changes requiring a changelog`);
     return true;
   }
 
-  const changelogFiles = files.filter(filename => filename.startsWith('changelog/'));
+  const changelogFiles = files.filter((filename) => filename.startsWith('changelog/'));
 
-  if (changelogFiles.some(filename => !filename.endsWith('.md'))) {
-    console.log(`${chalk.bold.red('ERROR:')} Pull Request ${pr} has an invalid file in 'changelog/'. All files must be '.md'`);
+  if (changelogFiles.some((filename) => !filename.endsWith('.md'))) {
+    console.log(
+      `${chalk.bold.red('ERROR:')} Pull Request ${pr} has an invalid file in 'changelog/'. All files must be '.md'`,
+    );
     return false;
   }
 
@@ -325,7 +322,8 @@ export const add = async (options) => {
     audience = 'users';
   } else if (options.developers) {
     audience = 'developers';
-  } else if (level === 'silent') { // silent changes don't need an audience
+  } else if (level === 'silent') {
+    // silent changes don't need an audience
     audience = undefined;
   } else {
     console.log('Must specify one of --general, --deployers, --worker-deployers, --admins, --users, or --developers');
@@ -359,7 +357,8 @@ export const add = async (options) => {
   }
 
   // invent a unique filename
-  let filename, i = 0;
+  let filename,
+    i = 0;
   while (1) {
     filename = path.join('changelog', `${name}${i > 0 ? `-${i}` : ''}.md`);
     try {
@@ -376,7 +375,10 @@ export const add = async (options) => {
   const helpText =
     '<!-- replace this text with your changelog entry.  See dev-docs/best-practices/changelog.md for help writing changelog entries. -->';
   const audienceLine = audience ? `audience: ${audience}\n` : '';
-  await writeRepoFile(filename, `${audienceLine}level: ${level}\n${reference}---\n${level === 'silent' ? '' : helpText}`);
+  await writeRepoFile(
+    filename,
+    `${audienceLine}level: ${level}\n${reference}---\n${level === 'silent' ? '' : helpText}`,
+  );
   await gitAdd({ dir: REPO_ROOT, files: [filename] });
   console.log(`wrote ${filename}`);
 

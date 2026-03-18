@@ -74,36 +74,26 @@ export default class Shell extends Component {
       switch (version) {
         // docker worker
         case '1':
-          io.sendString = d => this.client?.stdin.write(d);
+          io.sendString = (d) => this.client?.stdin.write(d);
           io.onVTKeystroke = io.sendString;
 
           this.client = new DockerExecClient(options);
           await this.client.execute();
 
-          this.client.resize.apply(this.client, [
-            terminal.screenSize.height,
-            terminal.screenSize.width,
-          ]);
+          this.client.resize.apply(this.client, [terminal.screenSize.height, terminal.screenSize.width]);
 
-          this.client.on('exit', code => {
+          this.client.on('exit', (code) => {
             io.writeUTF8(`\r\nRemote shell exited: ${code}\r\n`);
             terminal.uninstallKeyboard();
             terminal.setCursorVisible(false);
           });
 
-          this.client.resize(
-            terminal.screenSize.height,
-            terminal.screenSize.width
-          );
+          this.client.resize(terminal.screenSize.height, terminal.screenSize.width);
           // onTerminalResize provides width then height;
           // DockerExecClient.resize needs height then width
           io.onTerminalResize = (cols, rows) => this.client.resize(rows, cols);
-          this.client.stdout.on('data', data =>
-            io.writeUTF8(DECODER.decode(data))
-          );
-          this.client.stderr.on('data', data =>
-            io.writeUTF8(DECODER.decode(data))
-          );
+          this.client.stdout.on('data', (data) => io.writeUTF8(DECODER.decode(data)));
+          this.client.stderr.on('data', (data) => io.writeUTF8(DECODER.decode(data)));
           this.client.stdout.resume();
           this.client.stderr.resume();
 
@@ -112,7 +102,7 @@ export default class Shell extends Component {
         case '2':
           this.wsClient = new WebSocket(url);
           this.wsClient.binaryType = 'arraybuffer';
-          io.sendString = d => {
+          io.sendString = (d) => {
             const txt = new TextEncoder().encode(d);
             const buf = new Uint8Array([[MSG_PTY_DATA], ...txt]);
 
@@ -156,7 +146,7 @@ export default class Shell extends Component {
             terminal.setCursorVisible(false);
           };
 
-          this.wsClient.onerror = err => {
+          this.wsClient.onerror = (err) => {
             io.println(`\r\nRemote shell error: ${err}`);
             terminal.uninstallKeyboard();
             terminal.setCursorVisible(false);
@@ -178,11 +168,9 @@ export default class Shell extends Component {
     }
   }
 
-  registerChild = ref => (this.node = ref);
+  registerChild = (ref) => (this.node = ref);
 
   render() {
-    return (
-      <div ref={this.registerChild} className={this.props.classes.shell} />
-    );
+    return <div ref={this.registerChild} className={this.props.classes.shell} />;
   }
 }

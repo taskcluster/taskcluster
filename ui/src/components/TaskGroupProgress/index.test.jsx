@@ -1,4 +1,3 @@
-
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import TaskGroupProgress from './index';
@@ -21,7 +20,7 @@ it('should render TaskGroupProgress', () => {
         filter="RUNNING"
         onStatusClick={nop}
       />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
   expect(asFragment()).toMatchSnapshot();

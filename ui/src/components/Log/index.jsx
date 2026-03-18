@@ -16,7 +16,7 @@ const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
 const FOLLOW_STORAGE_KEY = 'follow-log';
 
 @withRouter
-@withStyles(theme => {
+@withStyles((theme) => {
   const filterStyles = {
     borderRadius: 4,
     padding: '4px 8px',
@@ -211,7 +211,7 @@ export default class Log extends Component {
     this.setState({ follow });
   };
 
-  handleHighlight = range => {
+  handleHighlight = (range) => {
     if (this.highlightRange?.equals(range)) {
       return;
     }
@@ -230,7 +230,7 @@ export default class Log extends Component {
     this.highlightRange = range;
   };
 
-  handleLineNumberChange = lineNumber => {
+  handleLineNumberChange = (lineNumber) => {
     this.setState({ lineNumber, follow: null });
   };
 
@@ -267,15 +267,7 @@ export default class Log extends Component {
   }
 
   render() {
-    const {
-      url,
-      stream,
-      classes,
-      actions,
-      GoToLineButtonProps,
-      FollowLogButtonProps,
-      ...props
-    } = this.props;
+    const { url, stream, classes, actions, GoToLineButtonProps, FollowLogButtonProps, ...props } = this.props;
     const highlight = this.getHighlightFromHash();
     const scrollToLine = this.getScrollToLine();
     const FollowLogButtonRest = omit(['className'], FollowLogButtonProps);
@@ -306,17 +298,13 @@ export default class Log extends Component {
             <div className={classes.logActions}>
               <GoToLineButton
                 onLineNumberChange={this.handleLineNumberChange}
-                className={classNames(
-                  classes.logToolbarButton,
-                  classes.goToLineButton
-                )}
+                className={classNames(classes.logToolbarButton, classes.goToLineButton)}
                 {...GoToLineButtonProps}
               />
               <Button
                 size="small"
                 spanProps={{
-                  className:
-                    FollowLogButtonProps?.className,
+                  className: FollowLogButtonProps?.className,
                 }}
                 tooltipProps={{
                   title: follow && stream ? 'Unfollow Log' : 'Follow Log',
@@ -326,7 +314,8 @@ export default class Log extends Component {
                 })}
                 color={follow && stream ? 'inherit' : 'secondary'}
                 onClick={this.handleFollowClick}
-                {...FollowLogButtonRest}>
+                {...FollowLogButtonRest}
+              >
                 <ArrowDownBoldCircleOutlineIcon
                   className={classNames({
                     [classes.followLogIconFollowing]: follow,

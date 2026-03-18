@@ -1,7 +1,7 @@
 import DataLoader from 'dataloader';
 
 export default ({ github }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
-  const githubRepository = new DataLoader(queries =>
+  const githubRepository = new DataLoader((queries) =>
     Promise.all(
       queries.map(async ({ owner, repo }) => {
         try {
@@ -13,7 +13,7 @@ export default ({ github }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _c
     ),
   );
 
-  const renderTaskclusterYml = new DataLoader(queries =>
+  const renderTaskclusterYml = new DataLoader((queries) =>
     Promise.all(
       queries.map(async ({ payload }) => {
         try {

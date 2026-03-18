@@ -16,7 +16,7 @@ import { THEME } from '../../utils/constants';
 
 @withAuth
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   leftIcon: {
     marginRight: theme.spacing(1),
   },
@@ -57,7 +57,7 @@ export default class UserMenu extends Component {
     this.props.onUnauthorize();
   };
 
-  handleMenuClick = e => {
+  handleMenuClick = (e) => {
     this.setState({ anchorEl: e.currentTarget });
   };
 
@@ -101,11 +101,7 @@ export default class UserMenu extends Component {
             onMenuClick={this.handleMenuClick}
           />
         )}
-        <Menu
-          id="user-menu"
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={this.handleMenuClose}>
+        <Menu id="user-menu" anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={this.handleMenuClose}>
           <Link to="/profile">
             <MenuItem title="Your Profile" id="user-menu-profile">
               <AccountIcon className={classes.leftIcon} />
@@ -115,7 +111,8 @@ export default class UserMenu extends Component {
           <MenuItem
             id="user-menu-sign-out"
             title={`Sign Out of ${window.env.APPLICATION_NAME}`}
-            onClick={this.handleSignOutClick}>
+            onClick={this.handleSignOutClick}
+          >
             <LogoutVariantIcon className={classes.leftIcon} />
             Sign Out
           </MenuItem>

@@ -30,7 +30,7 @@ const primaryTypographyProps = { variant: 'body1' };
 
 @withRouter
 @withStyles(
-  theme => ({
+  (theme) => ({
     expansionPanelSummaryContent: {
       display: 'flex',
       justifyContent: 'space-between',
@@ -75,9 +75,7 @@ const primaryTypographyProps = { variant: 'body1' };
     statusLabel: {
       display: 'block',
       fontSize: '0.6rem',
-      margin: `${theme.spacing(1)}px 0 ${theme.spacing(1)}px ${-theme.spacing(
-        2
-      )}px`,
+      margin: `${theme.spacing(1)}px 0 ${theme.spacing(1)}px ${-theme.spacing(2)}px`,
     },
     functionStatusLabel: {
       textAlign: 'center',
@@ -86,13 +84,12 @@ const primaryTypographyProps = { variant: 'body1' };
       padding: theme.spacing(3),
     },
   }),
-  { withTheme: true }
+  { withTheme: true },
 )
 export default class Entry extends Component {
   static propTypes = {
     /** Entry type. */
-    type: oneOf(['function', 'topic-exchange', 'logs', 'schema', 'metric'])
-      .isRequired,
+    type: oneOf(['function', 'topic-exchange', 'logs', 'schema', 'metric']).isRequired,
     /** The reference entry, or {$id, schema} for a schema. */
     entry: object,
     /** Required when `type` is `topic-exchange`. */
@@ -113,25 +110,20 @@ export default class Entry extends Component {
     expanded:
       this.props.entry.name === window.location.hash.slice(1) ||
       this.props.entry.type === window.location.hash.slice(1) ||
-      encodeURIComponent(path(['schema', '$id'], this.props.entry)) ===
-        window.location.hash.slice(1),
+      encodeURIComponent(path(['schema', '$id'], this.props.entry)) === window.location.hash.slice(1),
     selectedLanguage: 'curl',
     // Cache for generated examples to avoid regenerating
     exampleCache: {},
   };
 
   getSignatureFromEntry(entry) {
-    const parameters = entry.query.length
-      ? entry.args.concat(`{${entry.query.join(', ')}}`)
-      : [...entry.args];
+    const parameters = entry.query.length ? entry.args.concat(`{${entry.query.join(', ')}}`) : [...entry.args];
 
     if (entry.input) {
       parameters.push('payload');
     }
 
-    return `${entry.name}(${parameters.join(', ')}) : ${
-      entry.output ? 'result' : 'void'
-    }`;
+    return `${entry.name}(${parameters.join(', ')}) : ${entry.output ? 'result' : 'void'}`;
   }
 
   renderFunctionAccordionSummary = () => {
@@ -253,10 +245,7 @@ export default class Entry extends Component {
       <Grid className={classes.gridContainer} container spacing={1}>
         <Grid item xs={5}>
           <div>
-            <Typography
-              variant="body2"
-              id={encodeURIComponent(entry.schema.$id)}
-              component="h3">
+            <Typography variant="body2" id={encodeURIComponent(entry.schema.$id)} component="h3">
               {entry.schema.title}
             </Typography>
           </div>
@@ -295,75 +284,54 @@ export default class Entry extends Component {
       );
     }
 
-    if (['if', 'then'].every(prop => prop in scopes)) {
+    if (['if', 'then'].every((prop) => prop in scopes)) {
       return (
         <Fragment>
-          <Typography
-            variant="body2"
-            className={classes.boxTop}
-            component="span">
+          <Typography variant="body2" className={classes.boxTop} component="span">
             if{' '}
             <strong>
               <em>{scopes.if}</em>
             </strong>
           </Typography>
-          <div className={classes.subScopeBox}>
-            {this.renderScopeExpression(scopes.then)}
-          </div>
+          <div className={classes.subScopeBox}>{this.renderScopeExpression(scopes.then)}</div>
           {scopes.else && (
             <Fragment>
-              <Typography
-                variant="body2"
-                className={classes.boxTop}
-                component="span">
+              <Typography variant="body2" className={classes.boxTop} component="span">
                 else
               </Typography>
-              <div className={classes.subScopeBox}>
-                {this.renderScopeExpression(scopes.else)}
-              </div>
+              <div className={classes.subScopeBox}>{this.renderScopeExpression(scopes.else)}</div>
             </Fragment>
           )}
         </Fragment>
       );
     }
 
-    if (['for', 'each', 'in'].every(prop => prop in scopes)) {
+    if (['for', 'each', 'in'].every((prop) => prop in scopes)) {
       return (
         <Fragment>
-          <Typography
-            variant="body2"
-            className={classes.boxTop}
-            component="span">
+          <Typography variant="body2" className={classes.boxTop} component="span">
             for each{' '}
             <strong>
               <em>{scopes.for}</em>
             </strong>
           </Typography>
-          <Typography
-            variant="body2"
-            className={classes.boxTop}
-            component="span">
+          <Typography variant="body2" className={classes.boxTop} component="span">
             in{' '}
             <strong>
               <em>{scopes.in}</em>
             </strong>
           </Typography>
-          <div className={classes.subScopeBox}>
-            {this.renderScopeExpression(scopes.each)}
-          </div>
+          <div className={classes.subScopeBox}>{this.renderScopeExpression(scopes.each)}</div>
         </Fragment>
       );
     }
 
-    if (['AllOf', 'AnyOf'].some(prop => prop in scopes)) {
+    if (['AllOf', 'AnyOf'].some((prop) => prop in scopes)) {
       const operator = Object.keys(scopes)[0];
 
       return (
         <Fragment>
-          <Typography
-            variant="body2"
-            className={classes.boxTop}
-            component="span">
+          <Typography variant="body2" className={classes.boxTop} component="span">
             {'AllOf' in scopes ? 'all of' : 'any of'}
           </Typography>
           <div className={classes.subScopeBox}>
@@ -371,11 +339,7 @@ export default class Entry extends Component {
               <Fragment key={toString(scope)}>
                 {this.renderScopeExpression(scope)}
                 {index < scopes[operator].length - 1 && (
-                  <StatusLabel
-                    className={classes.statusLabel}
-                    mini
-                    state={'AllOf' in scopes ? 'AND' : 'OR'}
-                  />
+                  <StatusLabel className={classes.statusLabel} mini state={'AllOf' in scopes ? 'AND' : 'OR'} />
                 )}
               </Fragment>
             ))}
@@ -385,7 +349,7 @@ export default class Entry extends Component {
     }
   }
 
-  getExampleForLanguage = languageKey => {
+  getExampleForLanguage = (languageKey) => {
     const { serviceName, apiVersion, entry } = this.props;
     const { exampleCache } = this.state;
 
@@ -395,15 +359,10 @@ export default class Entry extends Component {
     }
 
     // Generate example for this language only (lazy loading)
-    const example = generateExamples(
-      serviceName,
-      apiVersion,
-      entry,
-      languageKey
-    );
+    const example = generateExamples(serviceName, apiVersion, entry, languageKey);
 
     // Cache it for future use
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       exampleCache: {
         ...prevState.exampleCache,
         [languageKey]: example,
@@ -428,13 +387,9 @@ export default class Entry extends Component {
       { key: 'shell', label: 'Shell' },
     ];
     // Get the currently selected language
-    const currentLanguage = exampleLanguages.find(
-      lang => lang.key === selectedLanguage
-    );
+    const currentLanguage = exampleLanguages.find((lang) => lang.key === selectedLanguage);
     // Only generate example for currently visible language (lazy loading)
-    const currentExample = currentLanguage
-      ? this.getExampleForLanguage(currentLanguage.key)
-      : null;
+    const currentExample = currentLanguage ? this.getExampleForLanguage(currentLanguage.key) : null;
 
     return (
       <List className={classes.list}>
@@ -446,11 +401,7 @@ export default class Entry extends Component {
           />
         </ListItem>
         <ListItem>
-          <ListItemText
-            primaryTypographyProps={primaryTypographyProps}
-            primary="Route"
-            secondary={entry.route}
-          />
+          <ListItemText primaryTypographyProps={primaryTypographyProps} primary="Route" secondary={entry.route} />
         </ListItem>
         {entry.scopes && (
           <ListItem>
@@ -466,11 +417,7 @@ export default class Entry extends Component {
           </ListItem>
         )}
         <ListItem>
-          <ListItemText
-            primaryTypographyProps={primaryTypographyProps}
-            primary="Signature"
-            secondary={signature}
-          />
+          <ListItemText primaryTypographyProps={primaryTypographyProps} primary="Signature" secondary={signature} />
         </ListItem>
         <ListItem>
           <ListItemText
@@ -489,11 +436,7 @@ export default class Entry extends Component {
           </ListItem>
         ) : (
           <ListItem>
-            <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
-              primary="Description"
-              secondary="n/a"
-            />
+            <ListItemText primaryTypographyProps={primaryTypographyProps} primary="Description" secondary="n/a" />
           </ListItem>
         )}
         {entry.type === 'function' && (
@@ -507,11 +450,10 @@ export default class Entry extends Component {
                   <FormControl size="small" sx={{ minWidth: 150, mb: 1 }}>
                     <Select
                       value={selectedLanguage}
-                      onChange={e =>
-                        this.setState({ selectedLanguage: e.target.value })
-                      }
+                      onChange={(e) => this.setState({ selectedLanguage: e.target.value })}
                       variant="outlined"
-                      sx={{ fontSize: '0.875rem' }}>
+                      sx={{ fontSize: '0.875rem' }}
+                    >
                       {exampleLanguages.map(({ key, label }) => (
                         <MenuItem key={key} value={key}>
                           {label}
@@ -521,11 +463,7 @@ export default class Entry extends Component {
                   </FormControl>
                   <Box sx={{ mt: 1 }}>
                     {currentExample && (
-                      <CodeExample
-                        key={currentLanguage.key}
-                        code={currentExample}
-                        language={currentLanguage.key}
-                      />
+                      <CodeExample key={currentLanguage.key} code={currentExample} language={currentLanguage.key} />
                     )}
                   </Box>
                 </Box>
@@ -533,16 +471,8 @@ export default class Entry extends Component {
             />
           </ListItem>
         )}
-        {entry.input &&
-          this.renderSchemaTable(
-            `/schemas/${serviceName}/${entry.input}`,
-            'Request Payload'
-          )}
-        {entry.output &&
-          this.renderSchemaTable(
-            `/schemas/${serviceName}/${entry.output}`,
-            'Response Payload'
-          )}
+        {entry.input && this.renderSchemaTable(`/schemas/${serviceName}/${entry.input}`, 'Request Payload')}
+        {entry.output && this.renderSchemaTable(`/schemas/${serviceName}/${entry.output}`, 'Response Payload')}
       </List>
     );
   };
@@ -569,11 +499,7 @@ export default class Entry extends Component {
       expanded && (
         <List className={classes.list}>
           <ListItem>
-            <ListItemText
-              primaryTypographyProps={primaryTypographyProps}
-              primary="Exchange"
-              secondary={exchange}
-            />
+            <ListItemText primaryTypographyProps={primaryTypographyProps} primary="Exchange" secondary={exchange} />
           </ListItem>
           {entry.description ? (
             <ListItem>
@@ -585,11 +511,7 @@ export default class Entry extends Component {
             </ListItem>
           ) : (
             <ListItem>
-              <ListItemText
-                primaryTypographyProps={primaryTypographyProps}
-                primary="Description"
-                secondary="n/a"
-              />
+              <ListItemText primaryTypographyProps={primaryTypographyProps} primary="Description" secondary="n/a" />
             </ListItem>
           )}
           <ListItem>
@@ -610,7 +532,8 @@ export default class Entry extends Component {
                       <TableCell className={classes.routingKeyCell}>
                         {routingKey.constant && (
                           <span
-                            title={`This key always assume the value ${routingKey.constant}. Used to allow additional routing key formats.`}>
+                            title={`This key always assume the value ${routingKey.constant}. Used to allow additional routing key formats.`}
+                          >
                             <StatusLabel state="CONSTANT_KEY" />
                           </span>
                         )}
@@ -631,11 +554,7 @@ export default class Entry extends Component {
               }
             />
           </ListItem>
-          {entry.schema &&
-            this.renderSchemaTable(
-              `/schemas/${serviceName}/${entry.schema}`,
-              'Message Payload'
-            )}
+          {entry.schema && this.renderSchemaTable(`/schemas/${serviceName}/${entry.schema}`, 'Message Payload')}
         </List>
       )
     );
@@ -663,7 +582,7 @@ export default class Entry extends Component {
                 <DataTable
                   size="medium"
                   items={Object.keys(entry.fields)}
-                  renderRow={field => (
+                  renderRow={(field) => (
                     <TableRow key={field}>
                       <TableCell>{field}</TableCell>
                       <TableCell>{entry.fields[field]}</TableCell>
@@ -698,7 +617,7 @@ export default class Entry extends Component {
               primary="Registers"
               secondary={
                 <div>
-                  {entry.registers.map(register => (
+                  {entry.registers.map((register) => (
                     <code key={register}>{register}</code>
                   ))}
                 </div>
@@ -713,7 +632,7 @@ export default class Entry extends Component {
                 <DataTable
                   size="medium"
                   items={Object.keys(entry.labels)}
-                  renderRow={field => (
+                  renderRow={(field) => (
                     <TableRow key={field}>
                       <TableCell>{field}</TableCell>
                       <TableCell>{entry.labels[field]}</TableCell>
@@ -733,15 +652,11 @@ export default class Entry extends Component {
     const { expanded } = this.state;
 
     return (
-      expanded && (
-        <List className={classes.list}>
-          {this.renderSchemaTable(entry.$id, entry.schema.description)}
-        </List>
-      )
+      expanded && <List className={classes.list}>{this.renderSchemaTable(entry.$id, entry.schema.description)}</List>
     );
   };
 
-  handlePanelChange = key => () => {
+  handlePanelChange = (key) => () => {
     const { entry, history } = this.props;
     const { expanded } = this.state;
     const hash = `#${encodeURIComponent(path(key.split('.'), entry))}`;
@@ -757,7 +672,7 @@ export default class Entry extends Component {
     });
   };
 
-  getEntryHashKey = type => {
+  getEntryHashKey = (type) => {
     switch (type) {
       case 'schema':
         return '$id';
@@ -783,14 +698,16 @@ export default class Entry extends Component {
         defaultExpanded={expanded}
         onChange={this.handlePanelChange(entryHashKey)}
         CollapseProps={{ unmountOnExit: true }}
-        elevation={2}>
+        elevation={2}
+      >
         <AccordionSummary
           classes={{
             content: classNames(classes.expansionPanelSummary, {
               [classes.expansionPanelSummaryContent]: !isExchangeType,
             }),
           }}
-          expandIcon={<ExpandMoreIcon />}>
+          expandIcon={<ExpandMoreIcon />}
+        >
           {isSchemaType && this.renderSchemaAccordionSummary()}
           {isExchangeType && this.renderExchangeAccordionSummary()}
           {isLogType && this.renderLogsAccordionSummary()}

@@ -42,12 +42,7 @@ export function findArtifactFromTaskUrl({ user, namespace, name }) {
   const index = getClient({ Class: Index, user });
 
   if (user?.credentials) {
-    return index.buildSignedUrlSync(
-      index.findArtifactFromTask,
-      namespace,
-      name,
-      { expiration: 60 }
-    );
+    return index.buildSignedUrlSync(index.findArtifactFromTask, namespace, name, { expiration: 60 });
   }
 
   return index.buildUrl(index.findArtifactFromTask, namespace, name);

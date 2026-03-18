@@ -5,12 +5,12 @@ import { readUriStructured, writeUriStructured } from '../src/uri-structured.js'
 import mockFs from 'mock-fs';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
-  teardown(function() {
+suite(testing.suiteName(), function () {
+  teardown(function () {
     mockFs.restore();
   });
 
-  test('writes files', async function() {
+  test('writes files', async function () {
     mockFs({});
 
     // write some data to check later that it's deleted
@@ -35,43 +35,49 @@ suite(testing.suiteName(), function() {
     assert.equal(await fs.readFile('/refdata/abc.json'), '"abc"');
   });
 
-  test('reads files', async function() {
+  test('reads files', async function () {
     mockFs({
       '/data/schemas/common/foo.json': '{"foo": "true"}',
       '/data/references/something/bar.json': '{"bar": "true"}',
     });
     const files = await readUriStructured({ directory: '/data' });
-    assert.deepEqual(files.sort(), [{
-      filename: 'references/something/bar.json',
-      content: { bar: 'true' },
-    }, {
-      filename: 'schemas/common/foo.json',
-      content: { foo: 'true' },
-    }]);
+    assert.deepEqual(files.sort(), [
+      {
+        filename: 'references/something/bar.json',
+        content: { bar: 'true' },
+      },
+      {
+        filename: 'schemas/common/foo.json',
+        content: { foo: 'true' },
+      },
+    ]);
   });
 
-  test('fromUriStructured', async function() {
+  test('fromUriStructured', async function () {
     mockFs({
       '/data/schemas/common/foo.json':
         '{"foo": "true", "$id": "/schemas/common/foo.json", "$schema": "http://json-schema.org/draft-06/schema#"}',
-      '/data/references/something/bar.json':
-        '{"bar": "true", "$schema": "/schemas/common/foo.json#"}',
+      '/data/references/something/bar.json': '{"bar": "true", "$schema": "/schemas/common/foo.json#"}',
     });
     const references = await References.fromUriStructured({ directory: '/data' });
-    assert.deepEqual(references.references, [{
-      filename: 'references/something/bar.json',
-      content: {
-        $schema: '/schemas/common/foo.json#',
-        bar: 'true',
+    assert.deepEqual(references.references, [
+      {
+        filename: 'references/something/bar.json',
+        content: {
+          $schema: '/schemas/common/foo.json#',
+          bar: 'true',
+        },
       },
-    }]);
-    assert.deepEqual(references.schemas, [{
-      filename: 'schemas/common/foo.json',
-      content: {
-        $id: '/schemas/common/foo.json',
-        $schema: 'http://json-schema.org/draft-06/schema#',
-        foo: 'true',
+    ]);
+    assert.deepEqual(references.schemas, [
+      {
+        filename: 'schemas/common/foo.json',
+        content: {
+          $id: '/schemas/common/foo.json',
+          $schema: 'http://json-schema.org/draft-06/schema#',
+          foo: 'true',
+        },
       },
-    }]);
+    ]);
   });
 });

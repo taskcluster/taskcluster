@@ -6,7 +6,7 @@ import assume from 'assume';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -50,12 +50,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.startPollingService('claim-resolver');
 
     debug('### Wait for task-pending message after reaping');
-    await testing.poll(async () => {
-      helper.assertPulseMessage('task-pending', m => (
-        m.payload.status.runs.length === 2 &&
-        m.payload.status.runs[0].state === 'exception' &&
-        m.payload.status.runs[0].reasonResolved === 'claim-expired'));
-    }, 100, 250);
+    await testing.poll(
+      async () => {
+        helper.assertPulseMessage(
+          'task-pending',
+          (m) =>
+            m.payload.status.runs.length === 2 &&
+            m.payload.status.runs[0].state === 'exception' &&
+            m.payload.status.runs[0].reasonResolved === 'claim-expired',
+        );
+      },
+      100,
+      250,
+    );
     helper.assertPulseMessage('task-exception');
     helper.clearPulseMessages();
 
@@ -78,14 +85,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.startPollingService('claim-resolver');
 
     debug('### Wait for task-exception message (again)');
-    await testing.poll(async () => {
-      helper.assertPulseMessage('task-exception', m => (
-        m.payload.status.runs.length === 2 &&
-        m.payload.status.runs[0].state === 'exception' &&
-        m.payload.status.runs[0].reasonResolved === 'claim-expired' &&
-        m.payload.status.runs[1].state === 'exception' &&
-        m.payload.status.runs[1].reasonResolved === 'claim-expired'));
-    }, 100, 250);
+    await testing.poll(
+      async () => {
+        helper.assertPulseMessage(
+          'task-exception',
+          (m) =>
+            m.payload.status.runs.length === 2 &&
+            m.payload.status.runs[0].state === 'exception' &&
+            m.payload.status.runs[0].reasonResolved === 'claim-expired' &&
+            m.payload.status.runs[1].state === 'exception' &&
+            m.payload.status.runs[1].reasonResolved === 'claim-expired',
+        );
+      },
+      100,
+      250,
+    );
 
     debug('### Stop claimResolver (again)');
     await helper.stopPollingService();

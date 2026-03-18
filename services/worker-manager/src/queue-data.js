@@ -49,25 +49,11 @@ export class TaskQueue {
   // The response will be of the form { rows, continationToken }.
   // If there are no worker types to show, the response will have the
   // `rows` field set to an empty array.
-  static async getTaskQueues(
-    db,
-    {
-      taskQueueId,
-      expires,
-    },
-    {
-      query,
-    } = {},
-  ) {
+  static async getTaskQueues(db, { taskQueueId, expires }, { query } = {}) {
     const fetchResults = async (query) => {
       const { continuationToken, rows } = await paginateResults({
         query,
-        fetch: (size, offset) => db.fns.get_task_queues_wm(
-          taskQueueId || null,
-          expires || null,
-          size,
-          offset,
-        ),
+        fetch: (size, offset) => db.fns.get_task_queues_wm(taskQueueId || null, expires || null, size, offset),
       });
       const entries = rows.map(TaskQueue.fromDb);
 
@@ -81,12 +67,7 @@ export class TaskQueue {
   // Get a list with all the task queues in the DB, possibly filtered
   // by `expires`, without pagination.
   static async getAllTaskQueues(db, expires) {
-    return (await db.fns.get_task_queues_wm(
-      null,
-      expires || null,
-      null,
-      null,
-    )).map(TaskQueue.fromDb);
+    return (await db.fns.get_task_queues_wm(null, expires || null, null, null)).map(TaskQueue.fromDb);
   }
 
   // return the serialization of this task queue

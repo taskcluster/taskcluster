@@ -18,7 +18,7 @@ import Link from '../../utils/Link';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),
-  map(({ node: { clientId } }) => clientId)
+  map(({ node: { clientId } }) => clientId),
 );
 const tableHeaders = ['Client ID', 'Last Date Used', ''];
 
@@ -50,14 +50,8 @@ export default class ClientsTable extends Component {
       return {
         ...clientsConnection,
         edges: [...clientsConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
+          const firstElement = sortDirection === 'desc' ? b.node[sortByProperty] : a.node[sortByProperty];
+          const secondElement = sortDirection === 'desc' ? a.node[sortByProperty] : b.node[sortByProperty];
 
           return sort(firstElement, secondElement);
         }),
@@ -69,10 +63,10 @@ export default class ClientsTable extends Component {
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = (sortBy) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
@@ -80,23 +74,14 @@ export default class ClientsTable extends Component {
   };
 
   render() {
-    const {
-      onPageChange,
-      clientsConnection,
-      searchTerm,
-      onDialogActionOpen,
-    } = this.props;
+    const { onPageChange, clientsConnection, searchTerm, onDialogActionOpen } = this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
 
     return (
       <ConnectionDataTable
         searchTerm={searchTerm}
-        connection={this.createSortedClientsConnection(
-          clientsConnection,
-          sortBy,
-          sortDirection
-        )}
+        connection={this.createSortedClientsConnection(clientsConnection, sortBy, sortDirection)}
         pageSize={VIEW_CLIENTS_PAGE_SIZE}
         headers={tableHeaders}
         sortByHeader={sortBy}
@@ -104,9 +89,7 @@ export default class ClientsTable extends Component {
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
         allowFilter
-        filterFunc={({ node: client }, filterValue) =>
-          String(client.clientId).includes(filterValue)
-        }
+        filterFunc={({ node: client }, filterValue) => String(client.clientId).includes(filterValue)}
         renderRow={({ node: client }) => (
           <TableRow key={client.clientId}>
             <TableCell width="100%">
@@ -125,7 +108,8 @@ export default class ClientsTable extends Component {
                 requiresAuth
                 tooltipProps={{ title: 'Delete Client' }}
                 size="small"
-                onClick={() => onDialogActionOpen(client.clientId)}>
+                onClick={() => onDialogActionOpen(client.clientId)}
+              >
                 <DeleteIcon size={iconSize} />
               </Button>
             </TableCell>

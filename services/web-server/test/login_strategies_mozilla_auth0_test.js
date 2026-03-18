@@ -11,7 +11,7 @@ const stubApi = () => {
     github_id_v3: {
       value: '1234',
     },
-    'firefox_accounts_id': {
+    firefox_accounts_id: {
       value: 'abcdef',
     },
     firefox_accounts_primary_email: {
@@ -40,7 +40,7 @@ const stubApi = () => {
           access_information: {
             ldap: {
               values: {
-                'taskcluster': null,
+                taskcluster: null,
               },
             },
           },
@@ -64,7 +64,7 @@ const stubApi = () => {
           access_information: {
             mozilliansorg: {
               values: {
-                'foxy': null,
+                foxy: null,
               },
             },
           },
@@ -132,14 +132,14 @@ suite(testing.suiteName(), () => {
         },
       },
       monitor: {
-        warning: () => { },
+        warning: () => {},
       },
     });
 
     strategy.fetchAccessToken = () => {
       return {
         accessToken: 'fakeToken',
-        expires: Date.now()+ 60 * 1000,
+        expires: Date.now() + 60 * 1000,
       };
     };
   });
@@ -197,11 +197,11 @@ suite(testing.suiteName(), () => {
   });
 
   suite('access token expiration', () => {
-    test('token should be requested once', async function() {
+    test('token should be requested once', async function () {
       let calls = 0;
       sinon.stub(strategy, 'fetchAccessToken').callsFake(() => {
         calls++;
-        return { accessToken: `a_${calls}`, expires: Date.now()+ 24 * 60 * 60 * 1000 };
+        return { accessToken: `a_${calls}`, expires: Date.now() + 24 * 60 * 60 * 1000 };
       });
 
       await strategy.userFromIdentity('mozilla-auth0/ad|Mozilla-LDAP|tcperson');
@@ -209,11 +209,11 @@ suite(testing.suiteName(), () => {
 
       assert.equal(calls, 1);
     });
-    test('token should be re-fetched after expiry', async function() {
+    test('token should be re-fetched after expiry', async function () {
       let calls = 0;
       sinon.stub(strategy, 'fetchAccessToken').callsFake(() => {
         calls++;
-        return { accessToken: `b_${calls}`, expires: Date.now()+ 9 * 60 * 1000 };
+        return { accessToken: `b_${calls}`, expires: Date.now() + 9 * 60 * 1000 };
       });
 
       await strategy.userFromIdentity('mozilla-auth0/ad|Mozilla-LDAP|tcperson');

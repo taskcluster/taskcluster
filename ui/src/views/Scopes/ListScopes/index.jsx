@@ -5,7 +5,7 @@ import Search from '../../../components/Search';
 import HelpView from '../../../components/HelpView';
 
 export default class ListScopes extends PureComponent {
-  handleSearchSubmit = searchTerm => {
+  handleSearchSubmit = (searchTerm) => {
     this.props.history.push(`/auth/scopes/${encodeURIComponent(searchTerm)}`);
   };
 
@@ -16,15 +16,10 @@ export default class ListScopes extends PureComponent {
       <Dashboard
         title="Scopes"
         helpView={<HelpView description={description} />}
-        search={
-          <Search
-            placeholder="Scope contains"
-            onSubmit={this.handleSearchSubmit}
-          />
-        }>
+        search={<Search placeholder="Scope contains" onSubmit={this.handleSearchSubmit} />}
+      >
         <Typography gutterBottom variant="subtitle1">
-          Enter a scope in the search box to find roles and clients with a given
-          scope.
+          Enter a scope in the search box to find roles and clients with a given scope.
         </Typography>
       </Dashboard>
     );

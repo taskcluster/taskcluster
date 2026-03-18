@@ -11,15 +11,7 @@ import { loadArtifactsRoutes } from './artifacts.js';
 // Maximum number runs allowed
 const MAX_RUNS_ALLOWED = 50;
 // Priority levels in order from high to low
-const PRIORITY_LEVELS = [
-  'highest',
-  'very-high',
-  'high',
-  'medium',
-  'low',
-  'very-low',
-  'lowest',
-];
+const PRIORITY_LEVELS = ['highest', 'very-high', 'high', 'medium', 'low', 'very-low', 'lowest'];
 
 /**
  * **Internal queues**
@@ -109,7 +101,7 @@ const builder = new APIBuilder({
     'store for you. These artifacts are only meant to indicate that you the',
     'worker or the task failed to generate a specific artifact, that you',
     'would otherwise have uploaded. For example docker-worker will upload an',
-    'error artifact, if the file it was supposed to upload doesn\'t exists or',
+    "error artifact, if the file it was supposed to upload doesn't exists or",
     'turns out to be a directory. Clients requesting an error artifact will',
     'get a `424` (Failed Dependency) response. This is mainly designed to',
     'ensure that dependent tasks can distinguish between artifacts that were',
@@ -135,7 +127,7 @@ const builder = new APIBuilder({
     '',
     '* A `reference` artifact can replace an existing `reference` artifact.',
     '* A `link` artifact can replace an existing `reference` artifact.',
-    '* Any artifact\'s `expires` can be extended (made later, but not earlier).',
+    "* Any artifact's `expires` can be extended (made later, but not earlier).",
   ].join('\n'),
   serviceName: 'queue',
   apiVersion: 'v1',
@@ -177,235 +169,248 @@ const builder = new APIBuilder({
 export default builder;
 
 /** Get task */
-builder.declare({
-  method: 'get',
-  route: '/task/:taskId',
-  name: 'task',
-  scopes: 'queue:get-task:<taskId>',
-  stability: APIBuilder.stability.stable,
-  category: 'Tasks',
-  output: 'task.yml',
-  title: 'Get Task Definition',
-  description: [
-    'This end-point will return the task-definition. Notice that the task',
-    'definition may have been modified by queue, if an optional property is',
-    'not specified the queue may provide a default value.',
-  ].join('\n'),
-}, async function(req, res) {
-  const { taskId } = req.params;
+builder.declare(
+  {
+    method: 'get',
+    route: '/task/:taskId',
+    name: 'task',
+    scopes: 'queue:get-task:<taskId>',
+    stability: APIBuilder.stability.stable,
+    category: 'Tasks',
+    output: 'task.yml',
+    title: 'Get Task Definition',
+    description: [
+      'This end-point will return the task-definition. Notice that the task',
+      'definition may have been modified by queue, if an optional property is',
+      'not specified the queue may provide a default value.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const { taskId } = req.params;
 
-  let task;
-  if (this.LRUcache.has(taskId)) {
-    task = this.LRUcache.get(taskId);
-  } else {
-    task = await Task.get(this.db, taskId);
-    if (task) {
-      this.LRUcache.set(taskId, task);
+    let task;
+    if (this.LRUcache.has(taskId)) {
+      task = this.LRUcache.get(taskId);
+    } else {
+      task = await Task.get(this.db, taskId);
+      if (task) {
+        this.LRUcache.set(taskId, task);
+      }
     }
-  }
 
-  // Handle cases where the task doesn't exist
-  if (!task) {
-    return res.reportError('ResourceNotFound', [
-      '`{{taskId}}` does not correspond to a task that exists.',
-      'Are you sure this task has already been submitted?',
-    ].join('\n'), { taskId });
-  }
+    // Handle cases where the task doesn't exist
+    if (!task) {
+      return res.reportError(
+        'ResourceNotFound',
+        [
+          '`{{taskId}}` does not correspond to a task that exists.',
+          'Are you sure this task has already been submitted?',
+        ].join('\n'),
+        { taskId },
+      );
+    }
 
-  // Create task definition
-  const definition = await task.definition();
+    // Create task definition
+    const definition = await task.definition();
 
-  return res.reply(definition);
-});
+    return res.reply(definition);
+  },
+);
 
 /** Get task batched */
-builder.declare({
-  method: 'post',
-  route: '/tasks',
-  query: paginateResults.query,
-  name: 'tasks',
-  scopes: { AllOf: [{
-    for: 'taskId',
-    in: 'taskIds',
-    each: 'queue:get-task:<taskId>',
-  }] },
-  input: 'tasks-request.yml',
-  stability: APIBuilder.stability.experimental,
-  category: 'Tasks',
-  output: 'tasks-response.yml',
-  title: 'Get multiple task definitions',
-  description: [
-    'This end-point will return the task definition for each input task id.',
-    'Notice that the task definitions may have been modified by queue.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskIds = req.body.taskIds;
+builder.declare(
+  {
+    method: 'post',
+    route: '/tasks',
+    query: paginateResults.query,
+    name: 'tasks',
+    scopes: {
+      AllOf: [
+        {
+          for: 'taskId',
+          in: 'taskIds',
+          each: 'queue:get-task:<taskId>',
+        },
+      ],
+    },
+    input: 'tasks-request.yml',
+    stability: APIBuilder.stability.experimental,
+    category: 'Tasks',
+    output: 'tasks-response.yml',
+    title: 'Get multiple task definitions',
+    description: [
+      'This end-point will return the task definition for each input task id.',
+      'Notice that the task definitions may have been modified by queue.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskIds = req.body.taskIds;
 
-  await req.authorize({ taskIds });
+    await req.authorize({ taskIds });
 
-  const { tasks, continuationToken } = await Task.getMultiple(
-    this.db,
-    { taskIds },
-    { query: req.query },
-  );
-  const definitions = [];
-  for (const task of tasks) {
-    definitions.push({ taskId: task.taskId, task: task.definition() });
-  }
-  return res.reply({ tasks: definitions, continuationToken });
-});
+    const { tasks, continuationToken } = await Task.getMultiple(this.db, { taskIds }, { query: req.query });
+    const definitions = [];
+    for (const task of tasks) {
+      definitions.push({ taskId: task.taskId, task: task.definition() });
+    }
+    return res.reply({ tasks: definitions, continuationToken });
+  },
+);
 
 /** Get task status batched */
-builder.declare({
-  method: 'post',
-  route: '/tasks/status',
-  query: paginateResults.query,
-  name: 'statuses',
-  scopes: { AllOf: [{
-    for: 'taskId',
-    in: 'taskIds',
-    each: 'queue:status:<taskId>',
-  }] },
-  input: 'tasks-request.yml',
-  stability: APIBuilder.stability.experimental,
-  category: 'Tasks',
-  output: 'tasks-statuses-response.yml',
-  title: 'Get multiple task definitions',
-  description: [
-    'This end-point will return the task statuses for each input task id.',
-    'If a given taskId does not match a task, it will be ignored,',
-    'and callers will need to handle the difference.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskIds = req.body.taskIds;
+builder.declare(
+  {
+    method: 'post',
+    route: '/tasks/status',
+    query: paginateResults.query,
+    name: 'statuses',
+    scopes: {
+      AllOf: [
+        {
+          for: 'taskId',
+          in: 'taskIds',
+          each: 'queue:status:<taskId>',
+        },
+      ],
+    },
+    input: 'tasks-request.yml',
+    stability: APIBuilder.stability.experimental,
+    category: 'Tasks',
+    output: 'tasks-statuses-response.yml',
+    title: 'Get multiple task definitions',
+    description: [
+      'This end-point will return the task statuses for each input task id.',
+      'If a given taskId does not match a task, it will be ignored,',
+      'and callers will need to handle the difference.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskIds = req.body.taskIds;
 
-  await req.authorize({ taskIds });
+    await req.authorize({ taskIds });
 
-  const { tasks, continuationToken } = await Task.getMultiple(
-    this.db,
-    { taskIds },
-    { query: req.query },
-  );
-  const statuses = [];
-  for (const task of tasks) {
-    statuses.push({ taskId: task.taskId, status: task.status() });
-  }
+    const { tasks, continuationToken } = await Task.getMultiple(this.db, { taskIds }, { query: req.query });
+    const statuses = [];
+    for (const task of tasks) {
+      statuses.push({ taskId: task.taskId, status: task.status() });
+    }
 
-  return res.reply({ statuses: statuses, continuationToken });
-});
+    return res.reply({ statuses: statuses, continuationToken });
+  },
+);
 
 /** Get task status */
-builder.declare({
-  method: 'get',
-  route: '/task/:taskId/status',
-  name: 'status',
-  scopes: 'queue:status:<taskId>',
-  stability: APIBuilder.stability.stable,
-  input: undefined, // No input is accepted
-  output: 'task-status-response.yml',
-  category: 'Tasks',
-  title: 'Get task status',
-  description: [
-    'Get task status structure from `taskId`',
-  ].join('\n'),
-}, async function(req, res) {
-  const task = await Task.get(this.db, req.params.taskId);
+builder.declare(
+  {
+    method: 'get',
+    route: '/task/:taskId/status',
+    name: 'status',
+    scopes: 'queue:status:<taskId>',
+    stability: APIBuilder.stability.stable,
+    input: undefined, // No input is accepted
+    output: 'task-status-response.yml',
+    category: 'Tasks',
+    title: 'Get task status',
+    description: ['Get task status structure from `taskId`'].join('\n'),
+  },
+  async function (req, res) {
+    const task = await Task.get(this.db, req.params.taskId);
 
-  // Handle cases where the task doesn't exist
-  if (!task) {
-    return res.reportError('ResourceNotFound', [
-      '`{{taskId}}` does not correspond to a task that exists.',
-      'Are you sure this task exists?',
-    ].join('\n'), {
-      taskId: req.params.taskId,
+    // Handle cases where the task doesn't exist
+    if (!task) {
+      return res.reportError(
+        'ResourceNotFound',
+        ['`{{taskId}}` does not correspond to a task that exists.', 'Are you sure this task exists?'].join('\n'),
+        {
+          taskId: req.params.taskId,
+        },
+      );
+    }
+
+    // Reply with task status
+    return res.reply({
+      status: task.status(),
     });
-  }
-
-  // Reply with task status
-  return res.reply({
-    status: task.status(),
-  });
-});
+  },
+);
 
 /** List taskIds by taskGroupId */
-builder.declare({
-  method: 'get',
-  route: '/task-group/:taskGroupId/list',
-  query: paginateResults.query,
-  name: 'listTaskGroup',
-  scopes: 'queue:list-task-group:<taskGroupId>',
-  stability: APIBuilder.stability.stable,
-  category: 'Task Groups',
-  output: 'list-task-group-response.yml',
-  title: 'List Task Group',
-  description: [
-    'List tasks sharing the same `taskGroupId`.',
-    '',
-    'As a task-group may contain an unbounded number of tasks, this end-point',
-    'may return a `continuationToken`. To continue listing tasks you must call',
-    'the `listTaskGroup` again with the `continuationToken` as the',
-    'query-string option `continuationToken`.',
-    '',
-    'By default this end-point will try to return up to 1000 members in one',
-    'request. But it **may return less**, even if more tasks are available.',
-    'It may also return a `continuationToken` even though there are no more',
-    'results. However, you can only be sure to have seen all results if you',
-    'keep calling `listTaskGroup` with the last `continuationToken` until you',
-    'get a result without a `continuationToken`.',
-    '',
-    'If you are not interested in listing all the members at once, you may',
-    'use the query-string option `limit` to return fewer.',
-    '',
-    'If you only want to to fetch task group metadata without the tasks,',
-    'you can call the `getTaskGroup` method.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskGroupId = req.params.taskGroupId;
+builder.declare(
+  {
+    method: 'get',
+    route: '/task-group/:taskGroupId/list',
+    query: paginateResults.query,
+    name: 'listTaskGroup',
+    scopes: 'queue:list-task-group:<taskGroupId>',
+    stability: APIBuilder.stability.stable,
+    category: 'Task Groups',
+    output: 'list-task-group-response.yml',
+    title: 'List Task Group',
+    description: [
+      'List tasks sharing the same `taskGroupId`.',
+      '',
+      'As a task-group may contain an unbounded number of tasks, this end-point',
+      'may return a `continuationToken`. To continue listing tasks you must call',
+      'the `listTaskGroup` again with the `continuationToken` as the',
+      'query-string option `continuationToken`.',
+      '',
+      'By default this end-point will try to return up to 1000 members in one',
+      'request. But it **may return less**, even if more tasks are available.',
+      'It may also return a `continuationToken` even though there are no more',
+      'results. However, you can only be sure to have seen all results if you',
+      'keep calling `listTaskGroup` with the last `continuationToken` until you',
+      'get a result without a `continuationToken`.',
+      '',
+      'If you are not interested in listing all the members at once, you may',
+      'use the query-string option `limit` to return fewer.',
+      '',
+      'If you only want to to fetch task group metadata without the tasks,',
+      'you can call the `getTaskGroup` method.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskGroupId = req.params.taskGroupId;
 
-  // Find taskGroup and list of members
-  const [
-    taskGroups,
-    { continuationToken, rows },
-  ] = await Promise.all([
-    this.db.fns.get_task_group2(taskGroupId),
-    paginateResults({
-      query: req.query,
-      fetch: (size, offset) => this.db.fns.get_tasks_by_task_group_projid(taskGroupId, size, offset),
-    }),
-  ]);
+    // Find taskGroup and list of members
+    const [taskGroups, { continuationToken, rows }] = await Promise.all([
+      this.db.fns.get_task_group2(taskGroupId),
+      paginateResults({
+        query: req.query,
+        fetch: (size, offset) => this.db.fns.get_tasks_by_task_group_projid(taskGroupId, size, offset),
+      }),
+    ]);
 
-  // If no taskGroup was found
-  if (taskGroups.length === 0) {
-    return res.reportError('ResourceNotFound',
-      'No task-group with taskGroupId: `{{taskGroupId}}`', {
+    // If no taskGroup was found
+    if (taskGroups.length === 0) {
+      return res.reportError('ResourceNotFound', 'No task-group with taskGroupId: `{{taskGroupId}}`', {
         taskGroupId,
-      },
-    );
-  }
+      });
+    }
 
-  const taskGroup = TaskGroup.fromDbRows(taskGroups);
+    const taskGroup = TaskGroup.fromDbRows(taskGroups);
 
-  // Build result
-  const result = {
-    taskGroupId,
-    schedulerId: taskGroup.schedulerId,
-    expires: taskGroup.expires.toJSON(),
-    sealed: taskGroup.sealed?.toJSON() || undefined,
+    // Build result
+    const result = {
+      taskGroupId,
+      schedulerId: taskGroup.schedulerId,
+      expires: taskGroup.expires.toJSON(),
+      sealed: taskGroup.sealed?.toJSON() || undefined,
 
-    tasks: rows.map(row => {
-      const task = Task.fromDb(row);
-      return {
-        status: task.status(),
-        task: task.definition(),
-      };
-    }),
-  };
-  if (continuationToken) {
-    result.continuationToken = continuationToken;
-  }
+      tasks: rows.map((row) => {
+        const task = Task.fromDb(row);
+        return {
+          status: task.status(),
+          task: task.definition(),
+        };
+      }),
+    };
+    if (continuationToken) {
+      result.continuationToken = continuationToken;
+    }
 
-  return res.reply(result);
-});
+    return res.reply(result);
+  },
+);
 
 const cancelSingleTask = async (task, ctx) => {
   // Get the last run, there should always be one
@@ -425,20 +430,20 @@ const cancelSingleTask = async (task, ctx) => {
     const runId = task.runs.length - 1;
 
     // Update dependency tracker
-    await ctx.queueService.putResolvedMessage(
-      task.taskId,
-      task.taskGroupId,
-      task.schedulerId,
-      'exception',
-      runId,
-    );
+    await ctx.queueService.putResolvedMessage(task.taskId, task.taskGroupId, task.schedulerId, 'exception', runId);
 
     // Publish message about the exception
-    await ctx.publisher.taskException(_.defaults({
-      status,
-      runId,
-      task: { tags: task.tags || {} },
-    }, _.pick(run, 'workerGroup', 'workerId')), task.routes);
+    await ctx.publisher.taskException(
+      _.defaults(
+        {
+          status,
+          runId,
+          task: { tags: task.tags || {} },
+        },
+        _.pick(run, 'workerGroup', 'workerId'),
+      ),
+      task.routes,
+    );
     ctx.monitor.log.taskException({ taskId: task.taskId, runId });
 
     const metricLabels = splitTaskQueueId(task.taskQueueId);
@@ -452,232 +457,233 @@ const cancelSingleTask = async (task, ctx) => {
 };
 
 /** Cancel all tasks in a group */
-builder.declare({
-  method: 'post',
-  route: '/task-group/:taskGroupId/cancel',
-  name: 'cancelTaskGroup',
-  scopes: 'queue:cancel-task-group:<schedulerId>/<taskGroupId>',
-  stability: APIBuilder.stability.experimental,
-  category: 'Tasks',
-  input: undefined,
-  output: 'cancel-task-group-response.yml',
-  title: 'Cancel Task Group',
-  description: [
-    'This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)',
-    'with the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.',
-    '',
-    'It is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.',
-    'If the task group is not sealed, this method will return a 409 response.',
-    '',
-    'It is possible to rerun a canceled task which will result in a new run.',
-    'Calling `cancelTaskGroup` again in this case will only cancel the new run.',
-    'Other tasks that were already canceled would not be canceled again.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskGroupId = req.params.taskGroupId;
+builder.declare(
+  {
+    method: 'post',
+    route: '/task-group/:taskGroupId/cancel',
+    name: 'cancelTaskGroup',
+    scopes: 'queue:cancel-task-group:<schedulerId>/<taskGroupId>',
+    stability: APIBuilder.stability.experimental,
+    category: 'Tasks',
+    input: undefined,
+    output: 'cancel-task-group-response.yml',
+    title: 'Cancel Task Group',
+    description: [
+      'This method will cancel all unresolved tasks (`unscheduled`, `pending` or `running` states)',
+      'with the given `taskGroupId`. Behaviour is similar to the `cancelTask` method.',
+      '',
+      'It is only possible to cancel a task group if it has been sealed using `sealTaskGroup`.',
+      'If the task group is not sealed, this method will return a 409 response.',
+      '',
+      'It is possible to rerun a canceled task which will result in a new run.',
+      'Calling `cancelTaskGroup` again in this case will only cancel the new run.',
+      'Other tasks that were already canceled would not be canceled again.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskGroupId = req.params.taskGroupId;
 
-  const taskGroup = await TaskGroup.get(this.db, taskGroupId);
-  if (!taskGroup) {
-    return res.reportError('ResourceNotFound',
-      'No task-group with taskGroupId: `{{taskGroupId}}`', {
+    const taskGroup = await TaskGroup.get(this.db, taskGroupId);
+    if (!taskGroup) {
+      return res.reportError('ResourceNotFound', 'No task-group with taskGroupId: `{{taskGroupId}}`', {
         taskGroupId,
-      },
-    );
-  }
-  if (!taskGroup.sealed) {
-    return res.reportError('RequestConflict',
-      'Cannot cancel unsealed task group: `{{taskGroupId}}`', {
+      });
+    }
+    if (!taskGroup.sealed) {
+      return res.reportError('RequestConflict', 'Cannot cancel unsealed task group: `{{taskGroupId}}`', {
         taskGroupId,
-      },
-    );
-  }
+      });
+    }
 
-  await req.authorize({
-    taskGroupId,
-    schedulerId: taskGroup.schedulerId,
-  });
+    await req.authorize({
+      taskGroupId,
+      schedulerId: taskGroup.schedulerId,
+    });
 
-  // this will iterate and cancel all tasks that can be canceled and return all tasks
-  const [allTasks, taskGroupSize] = await Promise.all([
-    this.db.fns.cancel_task_group(taskGroupId, 'canceled'),
-    this.db.fns.get_task_group_size(taskGroupId),
-  ]);
+    // this will iterate and cancel all tasks that can be canceled and return all tasks
+    const [allTasks, taskGroupSize] = await Promise.all([
+      this.db.fns.cancel_task_group(taskGroupId, 'canceled'),
+      this.db.fns.get_task_group_size(taskGroupId),
+    ]);
 
-  const response = {
-    taskGroupSize: taskGroupSize[0].get_task_group_size,
-    taskIds: [],
-    cancelledCount: 0,
-    taskGroupId,
-  };
+    const response = {
+      taskGroupSize: taskGroupSize[0].get_task_group_size,
+      taskIds: [],
+      cancelledCount: 0,
+      taskGroupId,
+    };
 
-  for (let task of allTasks) {
-    task = Task.fromDb(task);
-    await cancelSingleTask(task, this);
-    response.cancelledCount++;
-    response.taskIds.push(task.taskId);
-  }
+    for (let task of allTasks) {
+      task = Task.fromDb(task);
+      await cancelSingleTask(task, this);
+      response.cancelledCount++;
+      response.taskIds.push(task.taskId);
+    }
 
-  this.monitor.log.taskGroupCancelled({
-    taskGroupId,
-    taskGroupSize: response.taskGroupSize,
-    cancelledCount: response.cancelledCount,
-  });
+    this.monitor.log.taskGroupCancelled({
+      taskGroupId,
+      taskGroupSize: response.taskGroupSize,
+      cancelledCount: response.cancelledCount,
+    });
 
-  return res.reply(response);
-});
+    return res.reply(response);
+  },
+);
 
 /** Get task group info */
-builder.declare({
-  method: 'get',
-  route: '/task-group/:taskGroupId',
-  name: 'getTaskGroup',
-  scopes: 'queue:list-task-group:<taskGroupId>',
-  stability: APIBuilder.stability.stable,
-  category: 'Task Groups',
-  output: 'task-group-response.yml',
-  title: 'Get Task Group',
-  description: [
-    'Get task group information by `taskGroupId`.',
-    '',
-    'This will return meta-information associated with the task group.',
-    'It contains information about task group expiry date or if it is sealed.',
-    '',
-    'If you also want to see which tasks belong to this task group, you can call',
-    '`listTaskGroup` method.',
-  ].join('\n'),
-}, async function (req, res) {
-  const taskGroupId = req.params.taskGroupId;
+builder.declare(
+  {
+    method: 'get',
+    route: '/task-group/:taskGroupId',
+    name: 'getTaskGroup',
+    scopes: 'queue:list-task-group:<taskGroupId>',
+    stability: APIBuilder.stability.stable,
+    category: 'Task Groups',
+    output: 'task-group-response.yml',
+    title: 'Get Task Group',
+    description: [
+      'Get task group information by `taskGroupId`.',
+      '',
+      'This will return meta-information associated with the task group.',
+      'It contains information about task group expiry date or if it is sealed.',
+      '',
+      'If you also want to see which tasks belong to this task group, you can call',
+      '`listTaskGroup` method.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskGroupId = req.params.taskGroupId;
 
-  const taskGroup = await TaskGroup.get(this.db, taskGroupId);
-  if (!taskGroup) {
-    return res.reportError('ResourceNotFound',
-      'No task-group with taskGroupId: `{{taskGroupId}}`', {
+    const taskGroup = await TaskGroup.get(this.db, taskGroupId);
+    if (!taskGroup) {
+      return res.reportError('ResourceNotFound', 'No task-group with taskGroupId: `{{taskGroupId}}`', {
         taskGroupId,
       });
-  }
+    }
 
-  return res.reply(taskGroup.serialize());
-});
+    return res.reply(taskGroup.serialize());
+  },
+);
 
 /** Seal Task Group */
-builder.declare({
-  method: 'post',
-  route: '/task-group/:taskGroupId/seal',
-  name: 'sealTaskGroup',
-  scopes: 'queue:seal-task-group:<schedulerId>/<taskGroupId>',
-  stability: APIBuilder.stability.experimental,
-  category: 'Task Groups',
-  input: undefined,
-  output: 'task-group-response.yml',
-  title: 'Seal Task Group',
-  description: [
-    'Seal task group to prevent creation of new tasks.',
-    '',
-    'Task group can be sealed once and is irreversible. Calling it multiple times',
-    'will return same result and will not update it again.',
-  ].join('\n'),
-}, async function (req, res) {
-  const taskGroupId = req.params.taskGroupId;
+builder.declare(
+  {
+    method: 'post',
+    route: '/task-group/:taskGroupId/seal',
+    name: 'sealTaskGroup',
+    scopes: 'queue:seal-task-group:<schedulerId>/<taskGroupId>',
+    stability: APIBuilder.stability.experimental,
+    category: 'Task Groups',
+    input: undefined,
+    output: 'task-group-response.yml',
+    title: 'Seal Task Group',
+    description: [
+      'Seal task group to prevent creation of new tasks.',
+      '',
+      'Task group can be sealed once and is irreversible. Calling it multiple times',
+      'will return same result and will not update it again.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskGroupId = req.params.taskGroupId;
 
-  const taskGroup = await TaskGroup.get(this.db, taskGroupId);
-  if (!taskGroup) {
-    return res.reportError('ResourceNotFound',
-      'No task-group with taskGroupId: `{{taskGroupId}}`', {
+    const taskGroup = await TaskGroup.get(this.db, taskGroupId);
+    if (!taskGroup) {
+      return res.reportError('ResourceNotFound', 'No task-group with taskGroupId: `{{taskGroupId}}`', {
         taskGroupId,
       });
-  }
+    }
 
-  await req.authorize({
-    taskGroupId,
-    schedulerId: taskGroup.schedulerId,
-  });
+    await req.authorize({
+      taskGroupId,
+      schedulerId: taskGroup.schedulerId,
+    });
 
-  const updated = TaskGroup.fromDbRows(await this.db.fns.seal_task_group(taskGroupId));
-  const out = updated.serialize();
+    const updated = TaskGroup.fromDbRows(await this.db.fns.seal_task_group(taskGroupId));
+    const out = updated.serialize();
 
-  await this.publisher.taskGroupSealed(Object.assign({}, out), []);
-  this.monitor.log.taskGroupSealed(out);
+    await this.publisher.taskGroupSealed(Object.assign({}, out), []);
+    this.monitor.log.taskGroupSealed(out);
 
-  return res.reply(out);
-});
+    return res.reply(out);
+  },
+);
 
 /** List tasks dependents */
-builder.declare({
-  method: 'get',
-  route: '/task/:taskId/dependents',
-  query: paginateResults.query,
-  name: 'listDependentTasks',
-  scopes: 'queue:list-dependent-tasks:<taskId>',
-  category: 'Tasks',
-  stability: APIBuilder.stability.stable,
-  output: 'list-dependent-tasks-response.yml',
-  title: 'List Dependent Tasks',
-  description: [
-    'List tasks that depend on the given `taskId`.',
-    '',
-    'As many tasks from different task-groups may dependent on a single tasks,',
-    'this end-point may return a `continuationToken`. To continue listing',
-    'tasks you must call `listDependentTasks` again with the',
-    '`continuationToken` as the query-string option `continuationToken`.',
-    '',
-    'By default this end-point will try to return up to 1000 tasks in one',
-    'request. But it **may return less**, even if more tasks are available.',
-    'It may also return a `continuationToken` even though there are no more',
-    'results. However, you can only be sure to have seen all results if you',
-    'keep calling `listDependentTasks` with the last `continuationToken` until',
-    'you get a result without a `continuationToken`.',
-    '',
-    'If you are not interested in listing all the tasks at once, you may',
-    'use the query-string option `limit` to return fewer.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskId = req.params.taskId;
+builder.declare(
+  {
+    method: 'get',
+    route: '/task/:taskId/dependents',
+    query: paginateResults.query,
+    name: 'listDependentTasks',
+    scopes: 'queue:list-dependent-tasks:<taskId>',
+    category: 'Tasks',
+    stability: APIBuilder.stability.stable,
+    output: 'list-dependent-tasks-response.yml',
+    title: 'List Dependent Tasks',
+    description: [
+      'List tasks that depend on the given `taskId`.',
+      '',
+      'As many tasks from different task-groups may dependent on a single tasks,',
+      'this end-point may return a `continuationToken`. To continue listing',
+      'tasks you must call `listDependentTasks` again with the',
+      '`continuationToken` as the query-string option `continuationToken`.',
+      '',
+      'By default this end-point will try to return up to 1000 tasks in one',
+      'request. But it **may return less**, even if more tasks are available.',
+      'It may also return a `continuationToken` even though there are no more',
+      'results. However, you can only be sure to have seen all results if you',
+      'keep calling `listDependentTasks` with the last `continuationToken` until',
+      'you get a result without a `continuationToken`.',
+      '',
+      'If you are not interested in listing all the tasks at once, you may',
+      'use the query-string option `limit` to return fewer.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskId = req.params.taskId;
 
-  // Find task and list dependents
-  const [
-    task,
-    { continuationToken, rows },
-  ] = await Promise.all([
-    Task.get(this.db, taskId),
-    paginateResults({
-      query: req.query,
-      fetch: (size, offset) => this.db.fns.get_dependent_tasks(taskId, null, null, size, offset),
-    }),
-  ]);
+    // Find task and list dependents
+    const [task, { continuationToken, rows }] = await Promise.all([
+      Task.get(this.db, taskId),
+      paginateResults({
+        query: req.query,
+        fetch: (size, offset) => this.db.fns.get_dependent_tasks(taskId, null, null, size, offset),
+      }),
+    ]);
 
-  // Check if task exists
-  if (!task) {
-    return res.reportError(
-      'ResourceNotFound',
-      'Task with taskId: `{{taskId}}` was not found',
-      { taskId },
-    );
-  }
+    // Check if task exists
+    if (!task) {
+      return res.reportError('ResourceNotFound', 'Task with taskId: `{{taskId}}` was not found', { taskId });
+    }
 
-  // Load tasks
-  const tasks = await Promise.all(rows.map(row => Task.get(this.db, row.dependent_task_id)));
+    // Load tasks
+    const tasks = await Promise.all(rows.map((row) => Task.get(this.db, row.dependent_task_id)));
 
-  // Build result
-  const result = {
-    taskId,
-    tasks: await Promise.all(tasks.map(async (task) => {
-      return {
-        status: task.status(),
-        task: await task.definition(),
-      };
-    })),
-  };
-  if (continuationToken) {
-    result.continuationToken = continuationToken;
-  }
+    // Build result
+    const result = {
+      taskId,
+      tasks: await Promise.all(
+        tasks.map(async (task) => {
+          return {
+            status: task.status(),
+            task: await task.definition(),
+          };
+        }),
+      ),
+    };
+    if (continuationToken) {
+      result.continuationToken = continuationToken;
+    }
 
-  return res.reply(result);
-});
+    return res.reply(result);
+  },
+);
 
 /**
  * Generate the list of acceptable priorities for a task with this priority
  */
-const authorizeTaskCreation = async function(req, taskId, taskDef) {
+const authorizeTaskCreation = async function (req, taskId, taskDef) {
   const priority = taskDef.priority === 'normal' ? 'lowest' : taskDef.priority;
   const priorities = PRIORITY_LEVELS.slice(0, PRIORITY_LEVELS.indexOf(priority) + 1);
   assert(priorities.length > 0, 'must have a non-empty list of priorities');
@@ -697,7 +703,7 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
 };
 
 /** Construct default values and validate dates */
-const patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
+const patchAndValidateTaskDef = function (taskId, taskDef, maxTaskDeadlineDays) {
   // Set taskGroupId to taskId if not provided
   if (!taskDef.taskGroupId) {
     taskDef.taskGroupId = taskId;
@@ -706,14 +712,14 @@ const patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
   // Ensure: created < now < deadline (with drift up to 15 min)
   const created = new Date(taskDef.created);
   const deadline = new Date(taskDef.deadline);
-  if (created.getTime() < Date.now()- 15 * 60 * 1000) {
+  if (created.getTime() < Date.now() - 15 * 60 * 1000) {
     return {
       code: 'InputError',
       message: '`created` cannot be in the past (max 15min drift)',
       details: { created: taskDef.created },
     };
   }
-  if (created.getTime() > Date.now()+ 15 * 60 * 1000) {
+  if (created.getTime() > Date.now() + 15 * 60 * 1000) {
     return {
       code: 'InputError',
       message: '`created` cannot be in the future (max 15min drift)',
@@ -788,608 +794,640 @@ const ensureTaskGroup = async (ctx, _taskId, taskDef, res) => {
       throw err;
     }
     res.reportError(
-      'RequestConflict', [
+      'RequestConflict',
+      [
         'Task group `{{taskGroupId}}` contains tasks with a schedulerId other',
         'than `{{schedulerId}}`. All tasks in the same task-group must have',
         'the same schedulerId.',
-      ].join('\n'), { taskGroupId, schedulerId });
+      ].join('\n'),
+      { taskGroupId, schedulerId },
+    );
     return false;
   }
 
   const [isSealed] = await ctx.db.fns.is_task_group_sealed(taskGroupId);
   if (isSealed?.is_task_group_sealed) {
-    res.reportError(
-      'RequestConflict',
-      'Task group `{{taskGroupId}}` is sealed and does not accept new tasks.',
-      { taskGroupId });
+    res.reportError('RequestConflict', 'Task group `{{taskGroupId}}` is sealed and does not accept new tasks.', {
+      taskGroupId,
+    });
   }
 
   return true;
 };
 
 /** Create tasks */
-builder.declare({
-  method: 'put',
-  route: '/task/:taskId',
-  name: 'createTask',
-  stability: APIBuilder.stability.stable,
-  category: 'Tasks',
-  scopes: { AllOf: [
-    { for: 'scope', in: 'scopes', each: '<scope>' },
-    { for: 'route', in: 'routes', each: 'queue:route:<route>' },
-    'queue:create-task:project:<projectId>',
-    'queue:scheduler-id:<schedulerId>',
-    { AnyOf: [
-      {
-        for: 'priority',
-        in: 'priorities',
-        each: 'queue:create-task:<priority>:<provisionerId>/<workerType>',
-      },
-    ] },
-  ] },
-  input: 'create-task-request.yml',
-  output: 'task-status-response.yml',
-  title: 'Create New Task',
-  description: [
-    'Create a new task, this is an **idempotent** operation, so repeat it if',
-    'you get an internal server error or network connection is dropped.',
-    '',
-    '**Task `deadline`**: the deadline property can be no more than 5 days',
-    'into the future. This is to limit the amount of pending tasks not being',
-    'taken care of. Ideally, you should use a much shorter deadline.',
-    '',
-    '**Task expiration**: the `expires` property must be greater than the',
-    'task `deadline`. If not provided it will default to `deadline` + one',
-    'year. Notice that artifacts created by a task must expire before the',
-    'task\'s expiration.',
-    '',
-    '**Task specific routing-keys**: using the `task.routes` property you may',
-    'define task specific routing-keys. If a task has a task specific',
-    'routing-key: `<route>`, then when the AMQP message about the task is',
-    'published, the message will be CC\'ed with the routing-key:',
-    '`route.<route>`. This is useful if you want another component to listen',
-    'for completed tasks you have posted.  The caller must have scope',
-    '`queue:route:<route>` for each route.',
-    '',
-    '**Dependencies**: any tasks referenced in `task.dependencies` must have',
-    'already been created at the time of this call.',
-    '',
-    '**Scopes**: Note that the scopes required to complete this API call depend',
-    'on the content of the `scopes`, `routes`, `schedulerId`, `priority`,',
-    '`provisionerId`, and `workerType` properties of the task definition.',
-    '',
-    'If the task group was sealed, this end-point will return `409` reporting',
-    '`RequestConflict` to indicate that it is no longer possible to add new tasks',
-    'for this `taskGroupId`.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskId = req.params.taskId;
-  const taskDef = req.body;
-
-  // During the transition to the taskQueueId identifier, we have to
-  // accept all possible incoming definitions that may contain either
-  // the old, the new, or both identifiers
-  if (taskDef.provisionerId && taskDef.workerType && taskDef.taskQueueId) {
-    if (joinTaskQueueId(taskDef.provisionerId, taskDef.workerType) !== taskDef.taskQueueId) {
-      return res.reportError('InputError',
-        'taskQueueId must match "provisionerId/workerType"',
+builder.declare(
+  {
+    method: 'put',
+    route: '/task/:taskId',
+    name: 'createTask',
+    stability: APIBuilder.stability.stable,
+    category: 'Tasks',
+    scopes: {
+      AllOf: [
+        { for: 'scope', in: 'scopes', each: '<scope>' },
+        { for: 'route', in: 'routes', each: 'queue:route:<route>' },
+        'queue:create-task:project:<projectId>',
+        'queue:scheduler-id:<schedulerId>',
         {
+          AnyOf: [
+            {
+              for: 'priority',
+              in: 'priorities',
+              each: 'queue:create-task:<priority>:<provisionerId>/<workerType>',
+            },
+          ],
+        },
+      ],
+    },
+    input: 'create-task-request.yml',
+    output: 'task-status-response.yml',
+    title: 'Create New Task',
+    description: [
+      'Create a new task, this is an **idempotent** operation, so repeat it if',
+      'you get an internal server error or network connection is dropped.',
+      '',
+      '**Task `deadline`**: the deadline property can be no more than 5 days',
+      'into the future. This is to limit the amount of pending tasks not being',
+      'taken care of. Ideally, you should use a much shorter deadline.',
+      '',
+      '**Task expiration**: the `expires` property must be greater than the',
+      'task `deadline`. If not provided it will default to `deadline` + one',
+      'year. Notice that artifacts created by a task must expire before the',
+      "task's expiration.",
+      '',
+      '**Task specific routing-keys**: using the `task.routes` property you may',
+      'define task specific routing-keys. If a task has a task specific',
+      'routing-key: `<route>`, then when the AMQP message about the task is',
+      "published, the message will be CC'ed with the routing-key:",
+      '`route.<route>`. This is useful if you want another component to listen',
+      'for completed tasks you have posted.  The caller must have scope',
+      '`queue:route:<route>` for each route.',
+      '',
+      '**Dependencies**: any tasks referenced in `task.dependencies` must have',
+      'already been created at the time of this call.',
+      '',
+      '**Scopes**: Note that the scopes required to complete this API call depend',
+      'on the content of the `scopes`, `routes`, `schedulerId`, `priority`,',
+      '`provisionerId`, and `workerType` properties of the task definition.',
+      '',
+      'If the task group was sealed, this end-point will return `409` reporting',
+      '`RequestConflict` to indicate that it is no longer possible to add new tasks',
+      'for this `taskGroupId`.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskId = req.params.taskId;
+    const taskDef = req.body;
+
+    // During the transition to the taskQueueId identifier, we have to
+    // accept all possible incoming definitions that may contain either
+    // the old, the new, or both identifiers
+    if (taskDef.provisionerId && taskDef.workerType && taskDef.taskQueueId) {
+      if (joinTaskQueueId(taskDef.provisionerId, taskDef.workerType) !== taskDef.taskQueueId) {
+        return res.reportError('InputError', 'taskQueueId must match "provisionerId/workerType"', {
           provisionerId: taskDef.provisionerId,
           workerType: taskDef.workerType,
           taskQueueId: taskDef.taskQueueId,
         });
-    }
-  } else if (taskDef.provisionerId && taskDef.workerType) {
-    taskDef.taskQueueId = joinTaskQueueId(taskDef.provisionerId, taskDef.workerType);
-  } else if (taskDef.taskQueueId) {
-    addSplitFields(taskDef);
-  } else {
-    return res.reportError('InputError',
-      'at least a provisionerId and a workerType or a taskQueueId must be provided"',
-      {});
-  }
-
-  // schema defines 10.000 maximum dependencies but deployment can specify lower values
-  if (taskDef.dependencies && taskDef.dependencies.length > this.maxDependencies) {
-    return res.reportError('InputError',
-      'task.dependencies exceeds the maximum allowed number of dependencies',
-      { maxDependencies: this.taskMaxDependencies });
-  }
-
-  // fill in the default `none` projectId if none was given
-  if (!taskDef.projectId) {
-    taskDef.projectId = 'none';
-  }
-
-  await authorizeTaskCreation(req, taskId, taskDef);
-
-  // Patch default values and validate timestamps
-  const detail = patchAndValidateTaskDef(taskId, taskDef, this.maxTaskDeadlineDays);
-  if (detail) {
-    return res.reportError(detail.code, detail.message, detail.details);
-  }
-
-  if (taskDef.scopes.some(s => s.endsWith('**'))) {
-    return res.reportError('InputError', 'scopes must not end with `**`', {});
-  }
-
-  // Ensure group membership is declared, and that schedulerId isn't conflicting
-  if (!(await ensureTaskGroup(this, taskId, taskDef, res))) {
-    return;
-  }
-
-  // Insert entry in deadline queue
-  await this.queueService.putDeadlineMessage(
-    taskId,
-    taskDef.taskGroupId,
-    taskDef.schedulerId,
-    new Date(taskDef.deadline),
-  );
-
-  const task = Task.fromApi(taskId, taskDef);
-  useOnlyTaskQueueId(task);
-
-  // Fetch the status of the task before creation, so that `taskDefined` messages
-  // have a default status. This can't be run after create, since create is
-  // idempotent and does a DB fetch.
-  const initialStatus = task.status();
-
-  try {
-    await task.create(this.db);
-  } catch (err) {
-    if (err.code !== UNIQUE_VIOLATION) {
-      throw err;
+      }
+    } else if (taskDef.provisionerId && taskDef.workerType) {
+      taskDef.taskQueueId = joinTaskQueueId(taskDef.provisionerId, taskDef.workerType);
+    } else if (taskDef.taskQueueId) {
+      addSplitFields(taskDef);
+    } else {
+      return res.reportError(
+        'InputError',
+        'at least a provisionerId and a workerType or a taskQueueId must be provided"',
+        {},
+      );
     }
 
-    return res.reportError('RequestConflict', [
-      'taskId `{{taskId}}` already used by another task.',
-      'This could be the result of faulty idempotency!',
-    ].join('\n'), { taskId });
-  }
-
-  // if the task has no dependencies, schedule a run immediately
-  if (task.dependencies.length === 0) {
-    task.updateStatusWith(
-      await this.db.fns.schedule_task(taskId, 'scheduled'));
-  } else {
-    // Track dependencies, adds a pending run if ready to run
-    const err = await this.dependencyTracker.trackDependencies(task);
-    // If we get an error here the task will be left in state = 'unscheduled',
-    // any attempt to use the same taskId will fail. And eventually the task
-    // will be resolved deadline-expired. But since createTask never returned
-    // successfully...
-    if (err) {
-      return res.reportError('InputError', err.message, err.details);
+    // schema defines 10.000 maximum dependencies but deployment can specify lower values
+    if (taskDef.dependencies && taskDef.dependencies.length > this.maxDependencies) {
+      return res.reportError('InputError', 'task.dependencies exceeds the maximum allowed number of dependencies', {
+        maxDependencies: this.taskMaxDependencies,
+      });
     }
-  }
 
-  // Construct task status, as we'll return this many times
-  const status = task.status();
-  const taskPulseContents = {
-    tags: task.tags,
-  };
+    // fill in the default `none` projectId if none was given
+    if (!taskDef.projectId) {
+      taskDef.projectId = 'none';
+    }
 
-  // If the first run status is not unscheduled, then we are not the first
-  // call to create this task (due to idempotency). That call will have sent
-  // the `taskDefined` message. (This can happen when two identical calls are
-  // made to createTask in quick succession, but it is very unlikely.)
-  if (initialStatus.state === 'unscheduled') {
-    // Publish task-defined message, we want this arriving before the
-    // task-pending message, so we have to await publication here
-    await this.publisher.taskDefined({ status: initialStatus, task: taskPulseContents }, task.routes);
-    this.monitor.log.taskDefined({ taskId });
-  }
+    await authorizeTaskCreation(req, taskId, taskDef);
 
-  // for createTask it is always first runId we want to check and publish pending messages
-  const runId = 0;
+    // Patch default values and validate timestamps
+    const detail = patchAndValidateTaskDef(taskId, taskDef, this.maxTaskDeadlineDays);
+    if (detail) {
+      return res.reportError(detail.code, detail.message, detail.details);
+    }
 
-  // Same as above but for tasks with no dependencies, scheduling the first run.
-  const runZeroState = (task.runs[runId] || { state: 'unscheduled' }).state;
-  if (runZeroState === 'pending') {
-    await Promise.all([
-      // Put message into the task pending queue
-      this.queueService.putPendingMessage(task, runId),
+    if (taskDef.scopes.some((s) => s.endsWith('**'))) {
+      return res.reportError('InputError', 'scopes must not end with `**`', {});
+    }
 
-      // Publish message to pulse
-      this.publisher.taskPending({ status, task: taskPulseContents, runId }, task.routes),
-    ]);
-    this.monitor.log.taskPending({ taskId, runId });
-  }
+    // Ensure group membership is declared, and that schedulerId isn't conflicting
+    if (!(await ensureTaskGroup(this, taskId, taskDef, res))) {
+      return;
+    }
 
-  // Reply
-  return res.reply({ status });
-});
+    // Insert entry in deadline queue
+    await this.queueService.putDeadlineMessage(
+      taskId,
+      taskDef.taskGroupId,
+      taskDef.schedulerId,
+      new Date(taskDef.deadline),
+    );
+
+    const task = Task.fromApi(taskId, taskDef);
+    useOnlyTaskQueueId(task);
+
+    // Fetch the status of the task before creation, so that `taskDefined` messages
+    // have a default status. This can't be run after create, since create is
+    // idempotent and does a DB fetch.
+    const initialStatus = task.status();
+
+    try {
+      await task.create(this.db);
+    } catch (err) {
+      if (err.code !== UNIQUE_VIOLATION) {
+        throw err;
+      }
+
+      return res.reportError(
+        'RequestConflict',
+        ['taskId `{{taskId}}` already used by another task.', 'This could be the result of faulty idempotency!'].join(
+          '\n',
+        ),
+        { taskId },
+      );
+    }
+
+    // if the task has no dependencies, schedule a run immediately
+    if (task.dependencies.length === 0) {
+      task.updateStatusWith(await this.db.fns.schedule_task(taskId, 'scheduled'));
+    } else {
+      // Track dependencies, adds a pending run if ready to run
+      const err = await this.dependencyTracker.trackDependencies(task);
+      // If we get an error here the task will be left in state = 'unscheduled',
+      // any attempt to use the same taskId will fail. And eventually the task
+      // will be resolved deadline-expired. But since createTask never returned
+      // successfully...
+      if (err) {
+        return res.reportError('InputError', err.message, err.details);
+      }
+    }
+
+    // Construct task status, as we'll return this many times
+    const status = task.status();
+    const taskPulseContents = {
+      tags: task.tags,
+    };
+
+    // If the first run status is not unscheduled, then we are not the first
+    // call to create this task (due to idempotency). That call will have sent
+    // the `taskDefined` message. (This can happen when two identical calls are
+    // made to createTask in quick succession, but it is very unlikely.)
+    if (initialStatus.state === 'unscheduled') {
+      // Publish task-defined message, we want this arriving before the
+      // task-pending message, so we have to await publication here
+      await this.publisher.taskDefined({ status: initialStatus, task: taskPulseContents }, task.routes);
+      this.monitor.log.taskDefined({ taskId });
+    }
+
+    // for createTask it is always first runId we want to check and publish pending messages
+    const runId = 0;
+
+    // Same as above but for tasks with no dependencies, scheduling the first run.
+    const runZeroState = (task.runs[runId] || { state: 'unscheduled' }).state;
+    if (runZeroState === 'pending') {
+      await Promise.all([
+        // Put message into the task pending queue
+        this.queueService.putPendingMessage(task, runId),
+
+        // Publish message to pulse
+        this.publisher.taskPending({ status, task: taskPulseContents, runId }, task.routes),
+      ]);
+      this.monitor.log.taskPending({ taskId, runId });
+    }
+
+    // Reply
+    return res.reply({ status });
+  },
+);
 
 /** Schedule previously defined tasks */
-builder.declare({
-  method: 'post',
-  route: '/task/:taskId/schedule',
-  name: 'scheduleTask',
-  stability: APIBuilder.stability.stable,
-  category: 'Tasks',
-  scopes: { AnyOf: [
-    'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
-    'queue:schedule-task-in-project:<projectId>',
-    { AllOf: [ // Legacy scopes
-      'queue:schedule-task',
-      'assume:scheduler-id:<schedulerId>/<taskGroupId>',
-    ] },
-  ] },
-  input: undefined, // No input accepted
-  output: 'task-status-response.yml',
-  title: 'Schedule Defined Task',
-  description: [
-    'scheduleTask will schedule a task to be executed, even if it has',
-    'unresolved dependencies. A task would otherwise only be scheduled if',
-    'its dependencies were resolved.',
-    '',
-    'This is useful if you have defined a task that depends on itself or on',
-    'some other task that has not been resolved, but you wish the task to be',
-    'scheduled immediately.',
-    '',
-    'This will announce the task as pending and workers will be allowed to',
-    'claim it and resolve the task.',
-    '',
-    '**Note** this operation is **idempotent** and will not fail or complain',
-    'if called with a `taskId` that is already scheduled, or even resolved.',
-    'To reschedule a task previously resolved, use `rerunTask`.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskId = req.params.taskId;
-  const task = await Task.get(this.db, taskId);
-
-  // If task entity doesn't exists, we return ResourceNotFound
-  if (!task) {
-    return res.reportError(
-      'ResourceNotFound',
-      'taskId `{{taskId}}` not found. Are you sure it exists?',
-      { taskId },
-    );
-  }
-
-  await req.authorize({
-    taskId,
-    schedulerId: task.schedulerId,
-    taskGroupId: task.taskGroupId,
-    projectId: task.projectId,
-  });
-
-  // Attempt to schedule task
-  const status = await this.dependencyTracker.scheduleTask(task);
-
-  // If null it must because deadline is exceeded
-  if (status === null) {
-    return res.reportError(
-      'RequestConflict',
-      'Task `{{taskId}}` can\'t be scheduled past its deadline at ' +
-      '{{deadline}}.', {
-        taskId,
-        deadline: task.deadline.toJSON(),
-      },
-    );
-  }
-
-  return res.reply({ status });
-});
-
-/** Rerun a previously resolved task */
-builder.declare({
-  method: 'post',
-  route: '/task/:taskId/rerun',
-  name: 'rerunTask',
-  stability: APIBuilder.stability.stable,
-  category: 'Tasks',
-  scopes: { AnyOf: [
-    'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
-    'queue:rerun-task-in-project:<projectId>',
-    { AllOf: [ // Legacy scopes
-      'queue:rerun-task',
-      'assume:scheduler-id:<schedulerId>/<taskGroupId>',
-    ] },
-  ] },
-  input: undefined, // No input accepted
-  output: 'task-status-response.yml',
-  title: 'Rerun a Resolved Task',
-  description: [
-    'This method _reruns_ a previously resolved task, even if it was',
-    '_completed_. This is useful if your task completes unsuccessfully, and',
-    'you just want to run it from scratch again. This will also reset the',
-    'number of `retries` allowed. It will schedule a task that is _unscheduled_',
-    'regardless of the state of its dependencies.',
-    '',
-    'Remember that `retries` in the task status counts the number of runs that',
-    'the queue have started because the worker stopped responding, for example',
-    'because a spot node died.',
-    '',
-    '**Remark** this operation is idempotent: if it is invoked for a task that',
-    'is `pending` or `running`, it will just return the current task status.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskId = req.params.taskId;
-  const task = await Task.get(this.db, taskId);
-
-  // Report ResourceNotFound, if task entity doesn't exist
-  if (!task) {
-    return res.reportError('ResourceNotFound', [
-      '`{{taskId}}` does not correspond to a task that exists.',
-      'Are you sure this task has been submitted before?',
-    ].join('\n'), {
-      taskId,
-    });
-  }
-
-  await req.authorize({
-    taskId,
-    schedulerId: task.schedulerId,
-    taskGroupId: task.taskGroupId,
-    projectId: task.projectId,
-  });
-
-  // Validate deadline
-  if (task.deadline.getTime() < Date.now()) {
-    return res.reportError(
-      'RequestConflict',
-      'Task `{{taskId}}` can\'t be rescheduled past its deadline of ' +
-      '{{deadline}}.', {
-        taskId,
-        deadline: task.deadline.toJSON(),
-      },
-    );
-  }
-
-  task.updateStatusWith(
-    await this.db.fns.rerun_task(taskId));
-
-  const state = task.state();
-
-  // If not running or pending, and we couldn't create more runs then we have
-  // a conflict
-  if (state !== 'pending' && state !== 'running' &&
-      task.runs.length >= MAX_RUNS_ALLOWED) {
-    return res.reportError(
-      'RequestConflict',
-      'Maximum number of runs reached ({{max_runs_allowed}}).', {
-        max_runs_allowed: MAX_RUNS_ALLOWED,
-      },
-    );
-  }
-
-  // Put message in pending queue, and publish message to pulse,
-  // if the initial run is pending
-  const status = task.status();
-  if (state === 'pending') {
-    const runId = task.runs.length - 1;
-    await Promise.all([
-      this.queueService.putPendingMessage(task, runId),
-      this.publisher.taskPending({
-        status: status,
-        runId: runId,
-        task: { tags: task.tags || {} },
-      }, task.routes),
-    ]);
-    this.monitor.log.taskPending({ taskId, runId });
-  }
-
-  return res.reply({ status });
-});
-
-/** Cancel a task */
-builder.declare({
-  method: 'post',
-  route: '/task/:taskId/cancel',
-  name: 'cancelTask',
-  stability: APIBuilder.stability.stable,
-  category: 'Tasks',
-  scopes: { AnyOf: [
-    'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
-    'queue:cancel-task-in-project:<projectId>',
-    { AllOf: [ // Legacy scopes
-      'queue:cancel-task',
-      'assume:scheduler-id:<schedulerId>/<taskGroupId>',
-    ] },
-  ] },
-  input: undefined, // No input accepted
-  output: 'task-status-response.yml',
-  title: 'Cancel Task',
-  description: [
-    'This method will cancel a task that is either `unscheduled`, `pending` or',
-    '`running`. It will resolve the current run as `exception` with',
-    '`reasonResolved` set to `canceled`. If the task isn\'t scheduled yet, ie.',
-    'it doesn\'t have any runs, an initial run will be added and resolved as',
-    'described above. Hence, after canceling a task, it cannot be scheduled',
-    'with `queue.scheduleTask`, but a new run can be created with',
-    '`queue.rerun`. These semantics is equivalent to calling',
-    '`queue.scheduleTask` immediately followed by `queue.cancelTask`.',
-    '',
-    '**Remark** this operation is idempotent, if you try to cancel a task that',
-    'isn\'t `unscheduled`, `pending` or `running`, this operation will just',
-    'return the current task status.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskId = req.params.taskId;
-  let task = await Task.get(this.db, taskId);
-
-  // Report ResourceNotFound, if task entity doesn't exist
-  if (!task) {
-    return res.reportError('ResourceNotFound',
-      'Task `{{taskId}}` not found. Are you sure it was created?', {
-        taskId,
-      },
-    );
-  }
-
-  await req.authorize({
-    taskId,
-    schedulerId: task.schedulerId,
-    taskGroupId: task.taskGroupId,
-    projectId: task.projectId,
-  });
-
-  // Validate deadline
-  if (task.deadline.getTime() < Date.now()) {
-    return res.reportError(
-      'RequestConflict',
-      'Task `{{taskId}}` can\'t be canceled past its deadline of ' +
-      '{{deadline}}.', {
-        taskId,
-        deadline: task.deadline.toJSON(),
-      },
-    );
-  }
-
-  // Modify the task
-  if (!task.updateStatusWith(
-    await this.db.fns.cancel_task(taskId, 'canceled'))) {
-    // modification failed, so re-fetch the task and continue; this may send
-    // a duplicate pulse message, but that's OK
-    task = await Task.get(this.db, taskId);
-  }
-
-  const status = await cancelSingleTask(task, this);
-
-  return res.reply({ status });
-});
-
-builder.declare({
-  method: 'post',
-  route: '/task/:taskId/priority',
-  name: 'changeTaskPriority',
-  stability: APIBuilder.stability.experimental,
-  category: 'Tasks',
-  scopes: {
-    AnyOf: [
-      'queue:change-task-priority:<taskId>',
-      'queue:change-task-priority-in-queue:<taskQueueId>',
-    ],
+builder.declare(
+  {
+    method: 'post',
+    route: '/task/:taskId/schedule',
+    name: 'scheduleTask',
+    stability: APIBuilder.stability.stable,
+    category: 'Tasks',
+    scopes: {
+      AnyOf: [
+        'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
+        'queue:schedule-task-in-project:<projectId>',
+        {
+          AllOf: [
+            // Legacy scopes
+            'queue:schedule-task',
+            'assume:scheduler-id:<schedulerId>/<taskGroupId>',
+          ],
+        },
+      ],
+    },
+    input: undefined, // No input accepted
+    output: 'task-status-response.yml',
+    title: 'Schedule Defined Task',
+    description: [
+      'scheduleTask will schedule a task to be executed, even if it has',
+      'unresolved dependencies. A task would otherwise only be scheduled if',
+      'its dependencies were resolved.',
+      '',
+      'This is useful if you have defined a task that depends on itself or on',
+      'some other task that has not been resolved, but you wish the task to be',
+      'scheduled immediately.',
+      '',
+      'This will announce the task as pending and workers will be allowed to',
+      'claim it and resolve the task.',
+      '',
+      '**Note** this operation is **idempotent** and will not fail or complain',
+      'if called with a `taskId` that is already scheduled, or even resolved.',
+      'To reschedule a task previously resolved, use `rerunTask`.',
+    ].join('\n'),
   },
-  input: 'change-task-priority-request.yml',
-  output: 'task-status-response.yml',
-  title: 'Change Task Priority',
-  description: [
-    'This method updates the priority of a single unresolved task.',
-    '',
-    '* Claimed or running tasks keep their current run priority until they are retried.',
-    '* Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.',
-  ].join('\n'),
-}, async function (req, res) {
-  const { taskId } = req.params;
-  const { newPriority } = req.body;
-  const task = await Task.get(this.db, taskId);
+  async function (req, res) {
+    const taskId = req.params.taskId;
+    const task = await Task.get(this.db, taskId);
 
-  if (!task) {
-    return res.reportError('ResourceNotFound',
-      'Task `{{taskId}}` not found. Are you sure it was created?', {
-        taskId,
-      });
-  }
-
-  await req.authorize({
-    taskId,
-    taskQueueId: task.taskQueueId,
-  });
-
-  if (task.deadline.getTime() <= Date.now()) {
-    return res.reportError(
-      'RequestConflict',
-      'Task `{{taskId}}` can\'t be reprioritized past its deadline of {{deadline}}.', {
-        taskId,
-        deadline: task.deadline.toJSON(),
-      },
-    );
-  }
-
-  const updateResult = await task.updatePriority(this.db, newPriority);
-  if (!updateResult) {
-    return res.reportError(
-      'RequestConflict',
-      'Task `{{taskId}}` is already resolved and cannot be reprioritized.', {
-        taskId,
-      },
-    );
-  }
-
-  this.LRUcache.delete(taskId);
-
-  const status = task.status();
-  await this.publisher.taskPriorityChanged({
-    status,
-    oldPriority: updateResult.oldPriority,
-    newPriority,
-  }, task.routes || []);
-  this.monitor.log.taskPriorityChanged({
-    taskId,
-    oldPriority: updateResult.oldPriority,
-    newPriority,
-  });
-
-  return res.reply({ status });
-});
-
-builder.declare({
-  method: 'post',
-  route: '/task-group/:taskGroupId/priority',
-  name: 'changeTaskGroupPriority',
-  stability: APIBuilder.stability.experimental,
-  category: 'Task-Groups',
-  scopes: 'queue:change-task-group-priority:<schedulerId>/<taskGroupId>',
-  input: 'change-task-priority-request.yml',
-  output: 'task-group-priority-change-response.yml',
-  title: 'Change Task Group Priority',
-  description: [
-    'This method applies a new priority to unresolved tasks within a task group.',
-    '',
-    '* Updates run in bounded batches to avoid long locks.',
-    '* Claimed or running tasks keep their current run priority until they are retried.',
-    '* Emits `taskGroupPriorityChanged` summary event at the end.',
-  ].join('\n'),
-}, async function (req, res) {
-  const { taskGroupId } = req.params;
-  const { newPriority } = req.body;
-
-  const taskGroup = await TaskGroup.get(this.db, taskGroupId);
-  if (!taskGroup) {
-    return res.reportError('ResourceNotFound',
-      'Task group `{{taskGroupId}}` not found.', { taskGroupId });
-  }
-
-  await req.authorize({
-    schedulerId: taskGroup.schedulerId,
-    taskGroupId,
-  });
-
-  if (!PRIORITY_LEVELS.includes(newPriority)) {
-    return res.reportError('InputError', 'Unknown priority `{{priority}}`.', { priority: newPriority });
-  }
-
-  let tasksAffected = 0;
-  const taskIds = [];
-  while (true) {
-    const rows = await this.db.fns.queue_change_task_group_priority(taskGroupId, newPriority, 200);
-    if (!rows.length) {
-      break;
+    // If task entity doesn't exists, we return ResourceNotFound
+    if (!task) {
+      return res.reportError('ResourceNotFound', 'taskId `{{taskId}}` not found. Are you sure it exists?', { taskId });
     }
 
-    rows.forEach(row => {
-      const task = Task.fromDb(row);
-      this.LRUcache.delete(task.taskId);
-      taskIds.push(task.taskId);
+    await req.authorize({
+      taskId,
+      schedulerId: task.schedulerId,
+      taskGroupId: task.taskGroupId,
+      projectId: task.projectId,
     });
 
-    tasksAffected += rows.length;
-  }
+    // Attempt to schedule task
+    const status = await this.dependencyTracker.scheduleTask(task);
 
-  const event = {
-    taskGroupId,
-    schedulerId: taskGroup.schedulerId,
-    newPriority,
-    tasksAffected,
-  };
-  this.monitor.log.taskGroupPriorityChanged({ ...event });
-  await this.publisher.taskGroupPriorityChanged({ ...event }, []);
+    // If null it must because deadline is exceeded
+    if (status === null) {
+      return res.reportError(
+        'RequestConflict',
+        "Task `{{taskId}}` can't be scheduled past its deadline at " + '{{deadline}}.',
+        {
+          taskId,
+          deadline: task.deadline.toJSON(),
+        },
+      );
+    }
 
-  const response = { ...event, taskIds };
-  return res.reply(response);
-});
+    return res.reply({ status });
+  },
+);
+
+/** Rerun a previously resolved task */
+builder.declare(
+  {
+    method: 'post',
+    route: '/task/:taskId/rerun',
+    name: 'rerunTask',
+    stability: APIBuilder.stability.stable,
+    category: 'Tasks',
+    scopes: {
+      AnyOf: [
+        'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
+        'queue:rerun-task-in-project:<projectId>',
+        {
+          AllOf: [
+            // Legacy scopes
+            'queue:rerun-task',
+            'assume:scheduler-id:<schedulerId>/<taskGroupId>',
+          ],
+        },
+      ],
+    },
+    input: undefined, // No input accepted
+    output: 'task-status-response.yml',
+    title: 'Rerun a Resolved Task',
+    description: [
+      'This method _reruns_ a previously resolved task, even if it was',
+      '_completed_. This is useful if your task completes unsuccessfully, and',
+      'you just want to run it from scratch again. This will also reset the',
+      'number of `retries` allowed. It will schedule a task that is _unscheduled_',
+      'regardless of the state of its dependencies.',
+      '',
+      'Remember that `retries` in the task status counts the number of runs that',
+      'the queue have started because the worker stopped responding, for example',
+      'because a spot node died.',
+      '',
+      '**Remark** this operation is idempotent: if it is invoked for a task that',
+      'is `pending` or `running`, it will just return the current task status.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskId = req.params.taskId;
+    const task = await Task.get(this.db, taskId);
+
+    // Report ResourceNotFound, if task entity doesn't exist
+    if (!task) {
+      return res.reportError(
+        'ResourceNotFound',
+        [
+          '`{{taskId}}` does not correspond to a task that exists.',
+          'Are you sure this task has been submitted before?',
+        ].join('\n'),
+        {
+          taskId,
+        },
+      );
+    }
+
+    await req.authorize({
+      taskId,
+      schedulerId: task.schedulerId,
+      taskGroupId: task.taskGroupId,
+      projectId: task.projectId,
+    });
+
+    // Validate deadline
+    if (task.deadline.getTime() < Date.now()) {
+      return res.reportError(
+        'RequestConflict',
+        "Task `{{taskId}}` can't be rescheduled past its deadline of " + '{{deadline}}.',
+        {
+          taskId,
+          deadline: task.deadline.toJSON(),
+        },
+      );
+    }
+
+    task.updateStatusWith(await this.db.fns.rerun_task(taskId));
+
+    const state = task.state();
+
+    // If not running or pending, and we couldn't create more runs then we have
+    // a conflict
+    if (state !== 'pending' && state !== 'running' && task.runs.length >= MAX_RUNS_ALLOWED) {
+      return res.reportError('RequestConflict', 'Maximum number of runs reached ({{max_runs_allowed}}).', {
+        max_runs_allowed: MAX_RUNS_ALLOWED,
+      });
+    }
+
+    // Put message in pending queue, and publish message to pulse,
+    // if the initial run is pending
+    const status = task.status();
+    if (state === 'pending') {
+      const runId = task.runs.length - 1;
+      await Promise.all([
+        this.queueService.putPendingMessage(task, runId),
+        this.publisher.taskPending(
+          {
+            status: status,
+            runId: runId,
+            task: { tags: task.tags || {} },
+          },
+          task.routes,
+        ),
+      ]);
+      this.monitor.log.taskPending({ taskId, runId });
+    }
+
+    return res.reply({ status });
+  },
+);
+
+/** Cancel a task */
+builder.declare(
+  {
+    method: 'post',
+    route: '/task/:taskId/cancel',
+    name: 'cancelTask',
+    stability: APIBuilder.stability.stable,
+    category: 'Tasks',
+    scopes: {
+      AnyOf: [
+        'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
+        'queue:cancel-task-in-project:<projectId>',
+        {
+          AllOf: [
+            // Legacy scopes
+            'queue:cancel-task',
+            'assume:scheduler-id:<schedulerId>/<taskGroupId>',
+          ],
+        },
+      ],
+    },
+    input: undefined, // No input accepted
+    output: 'task-status-response.yml',
+    title: 'Cancel Task',
+    description: [
+      'This method will cancel a task that is either `unscheduled`, `pending` or',
+      '`running`. It will resolve the current run as `exception` with',
+      "`reasonResolved` set to `canceled`. If the task isn't scheduled yet, ie.",
+      "it doesn't have any runs, an initial run will be added and resolved as",
+      'described above. Hence, after canceling a task, it cannot be scheduled',
+      'with `queue.scheduleTask`, but a new run can be created with',
+      '`queue.rerun`. These semantics is equivalent to calling',
+      '`queue.scheduleTask` immediately followed by `queue.cancelTask`.',
+      '',
+      '**Remark** this operation is idempotent, if you try to cancel a task that',
+      "isn't `unscheduled`, `pending` or `running`, this operation will just",
+      'return the current task status.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskId = req.params.taskId;
+    let task = await Task.get(this.db, taskId);
+
+    // Report ResourceNotFound, if task entity doesn't exist
+    if (!task) {
+      return res.reportError('ResourceNotFound', 'Task `{{taskId}}` not found. Are you sure it was created?', {
+        taskId,
+      });
+    }
+
+    await req.authorize({
+      taskId,
+      schedulerId: task.schedulerId,
+      taskGroupId: task.taskGroupId,
+      projectId: task.projectId,
+    });
+
+    // Validate deadline
+    if (task.deadline.getTime() < Date.now()) {
+      return res.reportError(
+        'RequestConflict',
+        "Task `{{taskId}}` can't be canceled past its deadline of " + '{{deadline}}.',
+        {
+          taskId,
+          deadline: task.deadline.toJSON(),
+        },
+      );
+    }
+
+    // Modify the task
+    if (!task.updateStatusWith(await this.db.fns.cancel_task(taskId, 'canceled'))) {
+      // modification failed, so re-fetch the task and continue; this may send
+      // a duplicate pulse message, but that's OK
+      task = await Task.get(this.db, taskId);
+    }
+
+    const status = await cancelSingleTask(task, this);
+
+    return res.reply({ status });
+  },
+);
+
+builder.declare(
+  {
+    method: 'post',
+    route: '/task/:taskId/priority',
+    name: 'changeTaskPriority',
+    stability: APIBuilder.stability.experimental,
+    category: 'Tasks',
+    scopes: {
+      AnyOf: ['queue:change-task-priority:<taskId>', 'queue:change-task-priority-in-queue:<taskQueueId>'],
+    },
+    input: 'change-task-priority-request.yml',
+    output: 'task-status-response.yml',
+    title: 'Change Task Priority',
+    description: [
+      'This method updates the priority of a single unresolved task.',
+      '',
+      '* Claimed or running tasks keep their current run priority until they are retried.',
+      '* Emits `taskPriorityChanged` events so downstream tooling can observe manual overrides.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const { taskId } = req.params;
+    const { newPriority } = req.body;
+    const task = await Task.get(this.db, taskId);
+
+    if (!task) {
+      return res.reportError('ResourceNotFound', 'Task `{{taskId}}` not found. Are you sure it was created?', {
+        taskId,
+      });
+    }
+
+    await req.authorize({
+      taskId,
+      taskQueueId: task.taskQueueId,
+    });
+
+    if (task.deadline.getTime() <= Date.now()) {
+      return res.reportError(
+        'RequestConflict',
+        "Task `{{taskId}}` can't be reprioritized past its deadline of {{deadline}}.",
+        {
+          taskId,
+          deadline: task.deadline.toJSON(),
+        },
+      );
+    }
+
+    const updateResult = await task.updatePriority(this.db, newPriority);
+    if (!updateResult) {
+      return res.reportError('RequestConflict', 'Task `{{taskId}}` is already resolved and cannot be reprioritized.', {
+        taskId,
+      });
+    }
+
+    this.LRUcache.delete(taskId);
+
+    const status = task.status();
+    await this.publisher.taskPriorityChanged(
+      {
+        status,
+        oldPriority: updateResult.oldPriority,
+        newPriority,
+      },
+      task.routes || [],
+    );
+    this.monitor.log.taskPriorityChanged({
+      taskId,
+      oldPriority: updateResult.oldPriority,
+      newPriority,
+    });
+
+    return res.reply({ status });
+  },
+);
+
+builder.declare(
+  {
+    method: 'post',
+    route: '/task-group/:taskGroupId/priority',
+    name: 'changeTaskGroupPriority',
+    stability: APIBuilder.stability.experimental,
+    category: 'Task-Groups',
+    scopes: 'queue:change-task-group-priority:<schedulerId>/<taskGroupId>',
+    input: 'change-task-priority-request.yml',
+    output: 'task-group-priority-change-response.yml',
+    title: 'Change Task Group Priority',
+    description: [
+      'This method applies a new priority to unresolved tasks within a task group.',
+      '',
+      '* Updates run in bounded batches to avoid long locks.',
+      '* Claimed or running tasks keep their current run priority until they are retried.',
+      '* Emits `taskGroupPriorityChanged` summary event at the end.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const { taskGroupId } = req.params;
+    const { newPriority } = req.body;
+
+    const taskGroup = await TaskGroup.get(this.db, taskGroupId);
+    if (!taskGroup) {
+      return res.reportError('ResourceNotFound', 'Task group `{{taskGroupId}}` not found.', { taskGroupId });
+    }
+
+    await req.authorize({
+      schedulerId: taskGroup.schedulerId,
+      taskGroupId,
+    });
+
+    if (!PRIORITY_LEVELS.includes(newPriority)) {
+      return res.reportError('InputError', 'Unknown priority `{{priority}}`.', { priority: newPriority });
+    }
+
+    let tasksAffected = 0;
+    const taskIds = [];
+    while (true) {
+      const rows = await this.db.fns.queue_change_task_group_priority(taskGroupId, newPriority, 200);
+      if (!rows.length) {
+        break;
+      }
+
+      rows.forEach((row) => {
+        const task = Task.fromDb(row);
+        this.LRUcache.delete(task.taskId);
+        taskIds.push(task.taskId);
+      });
+
+      tasksAffected += rows.length;
+    }
+
+    const event = {
+      taskGroupId,
+      schedulerId: taskGroup.schedulerId,
+      newPriority,
+      tasksAffected,
+    };
+    this.monitor.log.taskGroupPriorityChanged({ ...event });
+    await this.publisher.taskGroupPriorityChanged({ ...event }, []);
+
+    const response = { ...event, taskIds };
+    return res.reply(response);
+  },
+);
 
 // Hack to get promises that resolve after 20s without creating a setTimeout
 // for each, instead we create a new promise every 2s and reuse that.
@@ -1398,367 +1436,335 @@ let _sleeping = null;
 const sleep20Seconds = () => {
   const time = Date.now();
   if (!_sleeping || time - _lastTime > 2000) {
-    _sleeping = new Promise(accept => setTimeout(accept, 20 * 1000));
+    _sleeping = new Promise((accept) => setTimeout(accept, 20 * 1000));
   }
   return _sleeping;
 };
 
 /** Claim any task */
-builder.declare({
-  method: 'post',
-  route: '/claim-work/:taskQueueId(*)',
-  name: 'claimWork',
-  stability: APIBuilder.stability.stable,
-  category: 'Worker Interface',
-  scopes: { AllOf: [
-    'queue:claim-work:<taskQueueId>',
-    'queue:worker-id:<workerGroup>/<workerId>',
-  ] },
-  input: 'claim-work-request.yml',
-  output: 'claim-work-response.yml',
-  title: 'Claim Work',
-  description: [
-    'Claim pending task(s) for the given task queue.',
-    '',
-    'If any work is available (even if fewer than the requested number of',
-    'tasks, this will return immediately. Otherwise, it will block for tens of',
-    'seconds waiting for work.  If no work appears, it will return an emtpy',
-    'list of tasks.  Callers should sleep a short while (to avoid denial of',
-    'service in an error condition) and call the endpoint again.  This is a',
-    'simple implementation of "long polling".',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskQueueId = req.params.taskQueueId;
-  const workerGroup = req.body.workerGroup;
-  const workerId = req.body.workerId;
-  const count = req.body.tasks;
+builder.declare(
+  {
+    method: 'post',
+    route: '/claim-work/:taskQueueId(*)',
+    name: 'claimWork',
+    stability: APIBuilder.stability.stable,
+    category: 'Worker Interface',
+    scopes: { AllOf: ['queue:claim-work:<taskQueueId>', 'queue:worker-id:<workerGroup>/<workerId>'] },
+    input: 'claim-work-request.yml',
+    output: 'claim-work-response.yml',
+    title: 'Claim Work',
+    description: [
+      'Claim pending task(s) for the given task queue.',
+      '',
+      'If any work is available (even if fewer than the requested number of',
+      'tasks, this will return immediately. Otherwise, it will block for tens of',
+      'seconds waiting for work.  If no work appears, it will return an emtpy',
+      'list of tasks.  Callers should sleep a short while (to avoid denial of',
+      'service in an error condition) and call the endpoint again.  This is a',
+      'simple implementation of "long polling".',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskQueueId = req.params.taskQueueId;
+    const workerGroup = req.body.workerGroup;
+    const workerId = req.body.workerId;
+    const count = req.body.tasks;
 
-  await req.authorize({
-    workerGroup,
-    workerId,
-    taskQueueId,
-  });
-
-  const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
-
-  // Don't claim tasks when worker is quarantined (but do record the worker
-  // being seen, and be sure to wait the 20 seconds so as not to cause a
-  // tight loop of claimWork calls from the worker
-  if (worker && worker.quarantineUntil.getTime() > Date.now()) {
-    await Promise.all([
-      this.workerInfo.seen(taskQueueId, workerGroup, workerId),
-      sleep20Seconds(),
-    ]);
-    return res.reply({
-      tasks: [],
-    });
-  }
-
-  // Allow request to abort their claim request, if the connection closes
-  const aborted = new Promise(accept => {
-    sleep20Seconds().then(accept);
-    res.once('close', accept);
-  });
-
-  const [result] = await Promise.all([
-    this.workClaimer.claim(
-      taskQueueId, workerGroup, workerId, count, aborted,
-    ),
-    this.workerInfo.seen(taskQueueId, workerGroup, workerId),
-  ]);
-
-  result.forEach(({ runId, status: { taskId } }) => {
-    this.monitor.log.taskClaimed({
-      taskQueueId,
+    await req.authorize({
       workerGroup,
       workerId,
-      taskId,
-      runId,
+      taskQueueId,
     });
-  });
 
-  await this.workerInfo.taskSeen(taskQueueId, workerGroup, workerId, result);
+    const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
-  return res.reply({
-    tasks: result,
-  });
-});
+    // Don't claim tasks when worker is quarantined (but do record the worker
+    // being seen, and be sure to wait the 20 seconds so as not to cause a
+    // tight loop of claimWork calls from the worker
+    if (worker && worker.quarantineUntil.getTime() > Date.now()) {
+      await Promise.all([this.workerInfo.seen(taskQueueId, workerGroup, workerId), sleep20Seconds()]);
+      return res.reply({
+        tasks: [],
+      });
+    }
+
+    // Allow request to abort their claim request, if the connection closes
+    const aborted = new Promise((accept) => {
+      sleep20Seconds().then(accept);
+      res.once('close', accept);
+    });
+
+    const [result] = await Promise.all([
+      this.workClaimer.claim(taskQueueId, workerGroup, workerId, count, aborted),
+      this.workerInfo.seen(taskQueueId, workerGroup, workerId),
+    ]);
+
+    result.forEach(({ runId, status: { taskId } }) => {
+      this.monitor.log.taskClaimed({
+        taskQueueId,
+        workerGroup,
+        workerId,
+        taskId,
+        runId,
+      });
+    });
+
+    await this.workerInfo.taskSeen(taskQueueId, workerGroup, workerId, result);
+
+    return res.reply({
+      tasks: result,
+    });
+  },
+);
 
 /** Claim a task */
-builder.declare({
-  method: 'post',
-  route: '/task/:taskId/runs/:runId/claim',
-  name: 'claimTask',
-  stability: APIBuilder.stability.deprecated,
-  category: 'Worker Interface',
-  scopes: { AllOf: [
-    'queue:claim-task:<provisionerId>/<workerType>',
-    'queue:worker-id:<workerGroup>/<workerId>',
-  ] },
-  input: 'task-claim-request.yml',
-  output: 'task-claim-response.yml',
-  title: 'Claim Task',
-  description: [
-    'claim a task - never documented',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskId = req.params.taskId;
-  const runId = parseInt(req.params.runId, 10);
+builder.declare(
+  {
+    method: 'post',
+    route: '/task/:taskId/runs/:runId/claim',
+    name: 'claimTask',
+    stability: APIBuilder.stability.deprecated,
+    category: 'Worker Interface',
+    scopes: { AllOf: ['queue:claim-task:<provisionerId>/<workerType>', 'queue:worker-id:<workerGroup>/<workerId>'] },
+    input: 'task-claim-request.yml',
+    output: 'task-claim-response.yml',
+    title: 'Claim Task',
+    description: ['claim a task - never documented'].join('\n'),
+  },
+  async function (req, res) {
+    const taskId = req.params.taskId;
+    const runId = parseInt(req.params.runId, 10);
 
-  const workerGroup = req.body.workerGroup;
-  const workerId = req.body.workerId;
+    const workerGroup = req.body.workerGroup;
+    const workerId = req.body.workerId;
 
-  const task = await Task.get(this.db, taskId);
+    const task = await Task.get(this.db, taskId);
 
-  // Handle cases where the task doesn't exist
-  if (!task) {
-    return res.reportError(
-      'ResourceNotFound',
-      'Task `{{taskId}}` not found. Are you sure it was created?', {
+    // Handle cases where the task doesn't exist
+    if (!task) {
+      return res.reportError('ResourceNotFound', 'Task `{{taskId}}` not found. Are you sure it was created?', {
         taskId,
-      },
-    );
-  }
+      });
+    }
 
-  const { provisionerId, workerType } = splitTaskQueueId(task.taskQueueId);
+    const { provisionerId, workerType } = splitTaskQueueId(task.taskQueueId);
 
-  await req.authorize({
-    workerGroup,
-    workerId,
-    provisionerId: provisionerId,
-    workerType: workerType,
-  });
+    await req.authorize({
+      workerGroup,
+      workerId,
+      provisionerId: provisionerId,
+      workerType: workerType,
+    });
 
-  // Check if task is past deadline
-  if (task.deadline.getTime() <= Date.now()) {
-    return res.reportError(
-      'RequestConflict',
-      'Task `{{taskId}}` can\'t be claimed past its deadline of ' +
-      '{{deadline}}.', {
-        taskId,
-        deadline: task.deadline.toJSON(),
-      },
-    );
-  }
+    // Check if task is past deadline
+    if (task.deadline.getTime() <= Date.now()) {
+      return res.reportError(
+        'RequestConflict',
+        "Task `{{taskId}}` can't be claimed past its deadline of " + '{{deadline}}.',
+        {
+          taskId,
+          deadline: task.deadline.toJSON(),
+        },
+      );
+    }
 
-  const worker = await Worker.get(this.db, task.taskQueueId, workerGroup, workerId, new Date());
+    const worker = await Worker.get(this.db, task.taskQueueId, workerGroup, workerId, new Date());
 
-  // Don't record task when worker is quarantined
-  if (worker && worker.quarantineUntil.getTime() > Date.now()) {
-    return res.reply({});
-  }
+    // Don't record task when worker is quarantined
+    if (worker && worker.quarantineUntil.getTime() > Date.now()) {
+      return res.reply({});
+    }
 
-  // Claim task
-  const [result] = await Promise.all([
-    this.workClaimer.claimTask(
-      taskId, runId, workerGroup, workerId, task,
-    ),
-    this.workerInfo.seen(task.taskQueueId),
-  ]);
+    // Claim task
+    const [result] = await Promise.all([
+      this.workClaimer.claimTask(taskId, runId, workerGroup, workerId, task),
+      this.workerInfo.seen(task.taskQueueId),
+    ]);
 
-  // If the run doesn't exist return ResourceNotFound
-  if (result === 'run-not-found') {
-    return res.reportError(
-      'ResourceNotFound',
-      'Run {{runId}} not found on task `{{taskId}}`.', {
+    // If the run doesn't exist return ResourceNotFound
+    if (result === 'run-not-found') {
+      return res.reportError('ResourceNotFound', 'Run {{runId}} not found on task `{{taskId}}`.', {
         taskId,
         runId,
-      },
-    );
-  }
+      });
+    }
 
-  // If already claimed we return RequestConflict
-  if (result === 'conflict') {
-    return res.reportError(
-      'RequestConflict',
-      'Run {{runId}} was already claimed by another worker.', {
+    // If already claimed we return RequestConflict
+    if (result === 'conflict') {
+      return res.reportError('RequestConflict', 'Run {{runId}} was already claimed by another worker.', {
         runId,
-      },
-    );
-  }
+      });
+    }
 
-  await this.queueService.removePendingMessage(taskId, runId);
-  await this.workerInfo.taskSeen(task.taskQueueId, workerGroup, workerId, [result]);
+    await this.queueService.removePendingMessage(taskId, runId);
+    await this.workerInfo.taskSeen(task.taskQueueId, workerGroup, workerId, [result]);
 
-  // Reply to caller
-  return res.reply(result);
-});
+    // Reply to caller
+    return res.reply(result);
+  },
+);
 
 /** Reclaim a task */
-builder.declare({
-  method: 'post',
-  route: '/task/:taskId/runs/:runId/reclaim',
-  name: 'reclaimTask',
-  stability: APIBuilder.stability.stable,
-  category: 'Worker Interface',
-  scopes: 'queue:reclaim-task:<taskId>/<runId>',
-  output: 'task-reclaim-response.yml',
-  title: 'Reclaim task',
-  description: [
-    'Refresh the claim for a specific `runId` for given `taskId`. This updates',
-    'the `takenUntil` property and returns a new set of temporary credentials',
-    'for performing requests on behalf of the task. These credentials should',
-    'be used in-place of the credentials returned by `claimWork`.',
-    '',
-    'The `reclaimTask` requests serves to:',
-    ' * Postpone `takenUntil` preventing the queue from resolving',
-    '   `claim-expired`,',
-    ' * Refresh temporary credentials used for processing the task, and',
-    ' * Abort execution if the task/run have been resolved.',
-    '',
-    'If the `takenUntil` timestamp is exceeded the queue will resolve the run',
-    'as _exception_ with reason `claim-expired`, and proceeded to retry to the',
-    'task. This ensures that tasks are retried, even if workers disappear',
-    'without warning.',
-    '',
-    'If the task is resolved, this end-point will return `409` reporting',
-    '`RequestConflict`. This typically happens if the task have been canceled',
-    'or the `task.deadline` have been exceeded. If reclaiming fails, workers',
-    'should abort the task and forget about the given `runId`. There is no',
-    'need to resolve the run or upload artifacts.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskId = req.params.taskId;
-  const runId = parseInt(req.params.runId, 10);
+builder.declare(
+  {
+    method: 'post',
+    route: '/task/:taskId/runs/:runId/reclaim',
+    name: 'reclaimTask',
+    stability: APIBuilder.stability.stable,
+    category: 'Worker Interface',
+    scopes: 'queue:reclaim-task:<taskId>/<runId>',
+    output: 'task-reclaim-response.yml',
+    title: 'Reclaim task',
+    description: [
+      'Refresh the claim for a specific `runId` for given `taskId`. This updates',
+      'the `takenUntil` property and returns a new set of temporary credentials',
+      'for performing requests on behalf of the task. These credentials should',
+      'be used in-place of the credentials returned by `claimWork`.',
+      '',
+      'The `reclaimTask` requests serves to:',
+      ' * Postpone `takenUntil` preventing the queue from resolving',
+      '   `claim-expired`,',
+      ' * Refresh temporary credentials used for processing the task, and',
+      ' * Abort execution if the task/run have been resolved.',
+      '',
+      'If the `takenUntil` timestamp is exceeded the queue will resolve the run',
+      'as _exception_ with reason `claim-expired`, and proceeded to retry to the',
+      'task. This ensures that tasks are retried, even if workers disappear',
+      'without warning.',
+      '',
+      'If the task is resolved, this end-point will return `409` reporting',
+      '`RequestConflict`. This typically happens if the task have been canceled',
+      'or the `task.deadline` have been exceeded. If reclaiming fails, workers',
+      'should abort the task and forget about the given `runId`. There is no',
+      'need to resolve the run or upload artifacts.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskId = req.params.taskId;
+    const runId = parseInt(req.params.runId, 10);
 
-  const task = await Task.get(this.db, taskId);
+    const task = await Task.get(this.db, taskId);
 
-  // Handle cases where the task doesn't exist
-  if (!task) {
-    return res.reportError(
-      'ResourceNotFound',
-      'Task `{{taskId}}` not found. Are you sure it was created?', {
+    // Handle cases where the task doesn't exist
+    if (!task) {
+      return res.reportError('ResourceNotFound', 'Task `{{taskId}}` not found. Are you sure it was created?', {
         taskId,
-      },
-    );
-  }
+      });
+    }
 
-  // Handle cases where the run doesn't exist
-  let run = task.runs[runId];
-  if (!run) {
-    return res.reportError(
-      'ResourceNotFound',
-      'Run {{runId}} not found on task `{{taskId}}`.', {
+    // Handle cases where the run doesn't exist
+    let run = task.runs[runId];
+    if (!run) {
+      return res.reportError('ResourceNotFound', 'Run {{runId}} not found on task `{{taskId}}`.', {
         taskId,
         runId,
-      },
-    );
-  }
+      });
+    }
 
-  await req.authorize({
-    taskId,
-    runId,
-    workerId: run.workerId,
-    workerGroup: run.workerGroup,
-  });
+    await req.authorize({
+      taskId,
+      runId,
+      workerId: run.workerId,
+      workerGroup: run.workerGroup,
+    });
 
-  // Check if task is past deadline
-  if (task.deadline.getTime() <= Date.now()) {
-    return res.reportError(
-      'RequestConflict',
-      'Task `{{taskId}}` can\'t be reclaimed past its deadline of ' +
-      '{{deadline}}.', {
-        taskId,
-        deadline: task.deadline.toJSON(),
-      },
-    );
-  }
+    // Check if task is past deadline
+    if (task.deadline.getTime() <= Date.now()) {
+      return res.reportError(
+        'RequestConflict',
+        "Task `{{taskId}}` can't be reclaimed past its deadline of " + '{{deadline}}.',
+        {
+          taskId,
+          deadline: task.deadline.toJSON(),
+        },
+      );
+    }
 
-  // Set takenUntil to now + claimTimeout
-  const takenUntil = new Date();
-  takenUntil.setSeconds(takenUntil.getSeconds() + this.claimTimeout);
+    // Set takenUntil to now + claimTimeout
+    const takenUntil = new Date();
+    takenUntil.setSeconds(takenUntil.getSeconds() + this.claimTimeout);
 
-  // Put claim-expiration message in queue, if not already done, before
-  // reclaiming.  If the reclaim DB operation fails, then this message
-  // will be ignored.
-  await this.queueService.putClaimMessage(taskId, runId, takenUntil, task.taskQueueId, run.workerGroup, run.workerId);
-  task.updateStatusWith(
-    await this.db.fns.reclaim_task(taskId, runId, takenUntil));
+    // Put claim-expiration message in queue, if not already done, before
+    // reclaiming.  If the reclaim DB operation fails, then this message
+    // will be ignored.
+    await this.queueService.putClaimMessage(taskId, runId, takenUntil, task.taskQueueId, run.workerGroup, run.workerId);
+    task.updateStatusWith(await this.db.fns.reclaim_task(taskId, runId, takenUntil));
 
-  await this.workerInfo.seen(task.taskQueueId, run.workerGroup, run.workerId);
+    await this.workerInfo.seen(task.taskQueueId, run.workerGroup, run.workerId);
 
-  // Find the run that we (may) have modified
-  run = task.runs[runId];
+    // Find the run that we (may) have modified
+    run = task.runs[runId];
 
-  // If run isn't running we had a conflict
-  if (task.runs.length - 1 !== runId || run.state !== 'running') {
-    return res.reportError(
-      'RequestConflict',
-      'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
+    // If run isn't running we had a conflict
+    if (task.runs.length - 1 !== runId || run.state !== 'running') {
+      return res.reportError('RequestConflict', 'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
         taskId,
         runId,
-      },
+      });
+    }
+
+    const credentials = taskCreds(
+      taskId,
+      runId,
+      run.workerGroup,
+      run.workerId,
+      takenUntil,
+      task.scopes,
+      this.credentials,
     );
-  }
 
-  const credentials = taskCreds(
-    taskId,
-    runId,
-    run.workerGroup,
-    run.workerId,
-    takenUntil,
-    task.scopes,
-    this.credentials,
-  );
+    this.monitor.log.taskReclaimed({
+      taskId,
+      runId,
+      workerId: run.workerId,
+      workerGroup: run.workerGroup,
+    });
 
-  this.monitor.log.taskReclaimed({
-    taskId,
-    runId,
-    workerId: run.workerId,
-    workerGroup: run.workerGroup,
-  });
-
-  // Reply to caller
-  return res.reply({
-    status: task.status(),
-    runId: runId,
-    workerGroup: run.workerGroup,
-    workerId: run.workerId,
-    takenUntil: takenUntil.toJSON(),
-    credentials: credentials,
-  });
-});
+    // Reply to caller
+    return res.reply({
+      status: task.status(),
+      runId: runId,
+      workerGroup: run.workerGroup,
+      workerId: run.workerId,
+      takenUntil: takenUntil.toJSON(),
+      credentials: credentials,
+    });
+  },
+);
 
 /**
  * Resolve a run of a task as `target` ('completed' or 'failed').
  * This function assumes the same context as the API.
  */
-const resolveTask = async function(req, res, taskId, runId, target) {
-  assert(target === 'completed' ||
-         target === 'failed', 'Expected a valid target');
+const resolveTask = async function (req, res, taskId, runId, target) {
+  assert(target === 'completed' || target === 'failed', 'Expected a valid target');
 
   const task = await Task.get(this.db, taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
-    return res.reportError('ResourceNotFound',
-      'Task `{{taskId}}` not found. Are you sure it was created?', {
-        taskId,
-      },
-    );
+    return res.reportError('ResourceNotFound', 'Task `{{taskId}}` not found. Are you sure it was created?', {
+      taskId,
+    });
   }
 
   // Handle cases where the run doesn't exist
   let run = task.runs[runId];
   if (!run) {
-    return res.reportError('ResourceNotFound',
-      'Run {{runId}} not found on task `{{taskId}}`.', {
-        taskId,
-        runId,
-      },
-    );
+    return res.reportError('ResourceNotFound', 'Run {{runId}} not found on task `{{taskId}}`.', {
+      taskId,
+      runId,
+    });
   }
 
   // only running tasks can be resolved, but allow for idempotency if
   // the run is already in the desired state.
   if (run.state !== 'running' && run.state !== target) {
-    return res.reportError('RequestConflict',
-      'Run {{runId}} of task `{{taskId}}` is not running or {{targetState}}.', {
-        taskId,
-        runId,
-        targetState: target,
-      },
-    );
+    return res.reportError('RequestConflict', 'Run {{runId}} of task `{{taskId}}` is not running or {{targetState}}.', {
+      taskId,
+      runId,
+      targetState: target,
+    });
   }
 
   await req.authorize({
@@ -1768,31 +1774,20 @@ const resolveTask = async function(req, res, taskId, runId, target) {
     workerId: run.workerId,
   });
 
-  task.updateStatusWith(
-    await this.db.fns.resolve_task(taskId, runId, target, target, null));
+  task.updateStatusWith(await this.db.fns.resolve_task(taskId, runId, target, target, null));
   // Find the run that we (may) have modified
   run = task.runs[runId];
 
   // If run isn't resolved to target, we had a conflict
-  if (task.runs.length - 1 !== runId ||
-      run.state !== target ||
-      run.reasonResolved !== target) {
-    return res.reportError('RequestConflict',
-      'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
-        taskId,
-        runId,
-      },
-    );
+  if (task.runs.length - 1 !== runId || run.state !== target || run.reasonResolved !== target) {
+    return res.reportError('RequestConflict', 'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
+      taskId,
+      runId,
+    });
   }
 
   // Update dependency tracker
-  await this.queueService.putResolvedMessage(
-    taskId,
-    task.taskGroupId,
-    task.schedulerId,
-    target,
-    runId,
-  );
+  await this.queueService.putResolvedMessage(taskId, task.taskGroupId, task.schedulerId, target, runId);
 
   // Construct status object
   const status = task.status();
@@ -1803,23 +1798,29 @@ const resolveTask = async function(req, res, taskId, runId, target) {
   const metricLabels = splitTaskQueueId(task.taskQueueId);
   // Post message about task resolution
   if (target === 'completed') {
-    await this.publisher.taskCompleted({
-      status,
-      runId,
-      task: taskPulseContents,
-      workerGroup: run.workerGroup,
-      workerId: run.workerId,
-    }, task.routes);
+    await this.publisher.taskCompleted(
+      {
+        status,
+        runId,
+        task: taskPulseContents,
+        workerGroup: run.workerGroup,
+        workerId: run.workerId,
+      },
+      task.routes,
+    );
     this.monitor.metric.completedTasks(1, metricLabels);
     this.monitor.log.taskCompleted({ taskId, runId });
   } else {
-    await this.publisher.taskFailed({
-      status,
-      runId,
-      task: taskPulseContents,
-      workerGroup: run.workerGroup,
-      workerId: run.workerId,
-    }, task.routes);
+    await this.publisher.taskFailed(
+      {
+        status,
+        runId,
+        task: taskPulseContents,
+        workerGroup: run.workerGroup,
+        workerId: run.workerId,
+      },
+      task.routes,
+    );
     this.monitor.metric.failedTasks(1, {
       ...metricLabels,
       reasonResolved: status.runs[runId].reasonResolved,
@@ -1831,939 +1832,999 @@ const resolveTask = async function(req, res, taskId, runId, target) {
 };
 
 /** Report task completed */
-builder.declare({
-  method: 'post',
-  route: '/task/:taskId/runs/:runId/completed',
-  name: 'reportCompleted',
-  stability: APIBuilder.stability.stable,
-  category: 'Worker Interface',
-  scopes: 'queue:resolve-task:<taskId>/<runId>',
-  input: undefined, // No input at this point
-  output: 'task-status-response.yml',
-  title: 'Report Run Completed',
-  description: [
-    'Report a task completed, resolving the run as `completed`.',
-  ].join('\n'),
-}, function(req, res) {
-  const taskId = req.params.taskId;
-  const runId = parseInt(req.params.runId, 10);
-  // Backwards compatibility with very old workers, should be dropped in the
-  // future
-  const target = req.body.success === false ? 'failed' : 'completed';
+builder.declare(
+  {
+    method: 'post',
+    route: '/task/:taskId/runs/:runId/completed',
+    name: 'reportCompleted',
+    stability: APIBuilder.stability.stable,
+    category: 'Worker Interface',
+    scopes: 'queue:resolve-task:<taskId>/<runId>',
+    input: undefined, // No input at this point
+    output: 'task-status-response.yml',
+    title: 'Report Run Completed',
+    description: ['Report a task completed, resolving the run as `completed`.'].join('\n'),
+  },
+  function (req, res) {
+    const taskId = req.params.taskId;
+    const runId = parseInt(req.params.runId, 10);
+    // Backwards compatibility with very old workers, should be dropped in the
+    // future
+    const target = req.body.success === false ? 'failed' : 'completed';
 
-  return resolveTask.call(this, req, res, taskId, runId, target);
-});
+    return resolveTask.call(this, req, res, taskId, runId, target);
+  },
+);
 
 /** Report task failed */
-builder.declare({
-  method: 'post',
-  route: '/task/:taskId/runs/:runId/failed',
-  name: 'reportFailed',
-  stability: APIBuilder.stability.stable,
-  category: 'Worker Interface',
-  scopes: 'queue:resolve-task:<taskId>/<runId>',
-  input: undefined, // No input at this point
-  output: 'task-status-response.yml',
-  title: 'Report Run Failed',
-  description: [
-    'Report a run failed, resolving the run as `failed`. Use this to resolve',
-    'a run that failed because the task specific code behaved unexpectedly.',
-    'For example the task exited non-zero, or didn\'t produce expected output.',
-    '',
-    'Do not use this if the task couldn\'t be run because if malformed',
-    'payload, or other unexpected condition. In these cases we have a task',
-    'exception, which should be reported with `reportException`.',
-  ].join('\n'),
-}, function(req, res) {
-  const taskId = req.params.taskId;
-  const runId = parseInt(req.params.runId, 10);
+builder.declare(
+  {
+    method: 'post',
+    route: '/task/:taskId/runs/:runId/failed',
+    name: 'reportFailed',
+    stability: APIBuilder.stability.stable,
+    category: 'Worker Interface',
+    scopes: 'queue:resolve-task:<taskId>/<runId>',
+    input: undefined, // No input at this point
+    output: 'task-status-response.yml',
+    title: 'Report Run Failed',
+    description: [
+      'Report a run failed, resolving the run as `failed`. Use this to resolve',
+      'a run that failed because the task specific code behaved unexpectedly.',
+      "For example the task exited non-zero, or didn't produce expected output.",
+      '',
+      "Do not use this if the task couldn't be run because if malformed",
+      'payload, or other unexpected condition. In these cases we have a task',
+      'exception, which should be reported with `reportException`.',
+    ].join('\n'),
+  },
+  function (req, res) {
+    const taskId = req.params.taskId;
+    const runId = parseInt(req.params.runId, 10);
 
-  return resolveTask.call(this, req, res, taskId, runId, 'failed');
-});
+    return resolveTask.call(this, req, res, taskId, runId, 'failed');
+  },
+);
 
 /** Report task exception */
-builder.declare({
-  method: 'post',
-  route: '/task/:taskId/runs/:runId/exception',
-  name: 'reportException',
-  stability: APIBuilder.stability.stable,
-  category: 'Worker Interface',
-  scopes: 'queue:resolve-task:<taskId>/<runId>',
-  input: 'task-exception-request.yml',
-  output: 'task-status-response.yml',
-  title: 'Report Task Exception',
-  description: [
-    'Resolve a run as _exception_. Generally, you will want to report tasks as',
-    'failed instead of exception. You should `reportException` if,',
-    '',
-    '  * The `task.payload` is invalid,',
-    '  * Non-existent resources are referenced,',
-    '  * Declared actions cannot be executed due to unavailable resources,',
-    '  * The worker had to shutdown prematurely,',
-    '  * The worker experienced an unknown error, or,',
-    '  * The task explicitly requested a retry.',
-    '',
-    'Do not use this to signal that some user-specified code crashed for any',
-    'reason specific to this code. If user-specific code hits a resource that',
-    'is temporarily unavailable worker should report task _failed_.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskId = req.params.taskId;
-  const runId = parseInt(req.params.runId, 10);
-  const reason = req.body.reason;
+builder.declare(
+  {
+    method: 'post',
+    route: '/task/:taskId/runs/:runId/exception',
+    name: 'reportException',
+    stability: APIBuilder.stability.stable,
+    category: 'Worker Interface',
+    scopes: 'queue:resolve-task:<taskId>/<runId>',
+    input: 'task-exception-request.yml',
+    output: 'task-status-response.yml',
+    title: 'Report Task Exception',
+    description: [
+      'Resolve a run as _exception_. Generally, you will want to report tasks as',
+      'failed instead of exception. You should `reportException` if,',
+      '',
+      '  * The `task.payload` is invalid,',
+      '  * Non-existent resources are referenced,',
+      '  * Declared actions cannot be executed due to unavailable resources,',
+      '  * The worker had to shutdown prematurely,',
+      '  * The worker experienced an unknown error, or,',
+      '  * The task explicitly requested a retry.',
+      '',
+      'Do not use this to signal that some user-specified code crashed for any',
+      'reason specific to this code. If user-specific code hits a resource that',
+      'is temporarily unavailable worker should report task _failed_.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskId = req.params.taskId;
+    const runId = parseInt(req.params.runId, 10);
+    const reason = req.body.reason;
 
-  const task = await Task.get(this.db, taskId);
+    const task = await Task.get(this.db, taskId);
 
-  // Handle cases where the task doesn't exist
-  if (!task) {
-    return res.reportError('ResourceNotFound',
-      'Task `{{taskId}}` not found. Are you sure it exists?', {
+    // Handle cases where the task doesn't exist
+    if (!task) {
+      return res.reportError('ResourceNotFound', 'Task `{{taskId}}` not found. Are you sure it exists?', {
         taskId,
-      },
-    );
-  }
+      });
+    }
 
-  // Handle cases where the run doesn't exist
-  let run = task.runs[runId];
-  if (!run) {
-    return res.reportError(
-      'ResourceNotFound',
-      'Run {{runId}} not found on task `{{taskId}}`.', {
+    // Handle cases where the run doesn't exist
+    let run = task.runs[runId];
+    if (!run) {
+      return res.reportError('ResourceNotFound', 'Run {{runId}} not found on task `{{taskId}}`.', {
         taskId,
         runId,
-      },
-    );
-  }
+      });
+    }
 
-  await req.authorize({
-    taskId,
-    runId,
-    workerGroup: run.workerGroup,
-    workerId: run.workerId,
-  });
+    await req.authorize({
+      taskId,
+      runId,
+      workerGroup: run.workerGroup,
+      workerId: run.workerId,
+    });
 
-  // for "infra" issue, we will retry with a specific reason
-  let retryReason;
-  if (reason === 'worker-shutdown') {
-    retryReason = 'retry';
-  } else if (reason === 'intermittent-task') {
-    retryReason = 'task-retry';
-  }
+    // for "infra" issue, we will retry with a specific reason
+    let retryReason;
+    if (reason === 'worker-shutdown') {
+      retryReason = 'retry';
+    } else if (reason === 'intermittent-task') {
+      retryReason = 'task-retry';
+    }
 
-  task.updateStatusWith(
-    await this.db.fns.resolve_task(taskId, runId, 'exception', reason, retryReason));
+    task.updateStatusWith(await this.db.fns.resolve_task(taskId, runId, 'exception', reason, retryReason));
 
-  // Find the run that we (may) have modified
-  run = task.runs[runId];
+    // Find the run that we (may) have modified
+    run = task.runs[runId];
 
-  // If run isn't resolved to exception with reason, we had a conflict
-  if (!run ||
-      task.runs.length - 1 > runId + 1 ||
-      run.state !== 'exception' ||
-      run.reasonResolved !== reason) {
-    return res.reportError('RequestConflict',
-      'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
+    // If run isn't resolved to exception with reason, we had a conflict
+    if (!run || task.runs.length - 1 > runId + 1 || run.state !== 'exception' || run.reasonResolved !== reason) {
+      return res.reportError('RequestConflict', 'Run {{runId}} on task `{{taskId}}` is resolved or not running.', {
         taskId,
         runId,
+      });
+    }
+
+    const status = task.status();
+    const taskPulseContents = {
+      tags: task.tags,
+    };
+
+    // Publish message about taskException
+    await this.publisher.taskException(
+      {
+        status,
+        runId,
+        task: taskPulseContents,
+        workerGroup: run.workerGroup,
+        workerId: run.workerId,
       },
+      task.routes,
     );
-  }
+    this.monitor.log.taskException({ taskId, runId });
 
-  const status = task.status();
-  const taskPulseContents = {
-    tags: task.tags,
-  };
+    const metricLabels = splitTaskQueueId(task.taskQueueId);
+    this.monitor.metric.exceptionTasks(1, {
+      ...metricLabels,
+      reasonResolved: run.reasonResolved,
+    });
 
-  // Publish message about taskException
-  await this.publisher.taskException({
-    status,
-    runId,
-    task: taskPulseContents,
-    workerGroup: run.workerGroup,
-    workerId: run.workerId,
-  }, task.routes);
-  this.monitor.log.taskException({ taskId, runId });
-
-  const metricLabels = splitTaskQueueId(task.taskQueueId);
-  this.monitor.metric.exceptionTasks(1, {
-    ...metricLabels,
-    reasonResolved: run.reasonResolved,
-  });
-
-  // If a newRun was created and it is a retry with state pending then we
-  // better publish messages about it. If we're not retrying the task, the task
-  // is resolved as it has no more runs.
-  const newRun = task.runs[runId + 1];
-  if (newRun &&
+    // If a newRun was created and it is a retry with state pending then we
+    // better publish messages about it. If we're not retrying the task, the task
+    // is resolved as it has no more runs.
+    const newRun = task.runs[runId + 1];
+    if (
+      newRun &&
       task.runs.length - 1 === runId + 1 &&
       newRun.state === 'pending' &&
-      (newRun.reasonCreated === 'retry' ||
-       newRun.reasonCreated === 'task-retry')) {
-    await Promise.all([
-      this.queueService.putPendingMessage(task, runId + 1),
-      this.publisher.taskPending({
-        status,
-        task: taskPulseContents,
-        runId: runId + 1,
-      }, task.routes),
-    ]);
-    this.monitor.log.taskPending({ taskId, runId: runId + 1 });
-  } else {
-    // Update dependency tracker, as the task is resolved (no new run)
-    await this.queueService.putResolvedMessage(
-      taskId,
-      task.taskGroupId,
-      task.schedulerId,
-      'exception',
-    );
-  }
+      (newRun.reasonCreated === 'retry' || newRun.reasonCreated === 'task-retry')
+    ) {
+      await Promise.all([
+        this.queueService.putPendingMessage(task, runId + 1),
+        this.publisher.taskPending(
+          {
+            status,
+            task: taskPulseContents,
+            runId: runId + 1,
+          },
+          task.routes,
+        ),
+      ]);
+      this.monitor.log.taskPending({ taskId, runId: runId + 1 });
+    } else {
+      // Update dependency tracker, as the task is resolved (no new run)
+      await this.queueService.putResolvedMessage(taskId, task.taskGroupId, task.schedulerId, 'exception');
+    }
 
-  // Reply to caller
-  return res.reply({ status });
-});
+    // Reply to caller
+    return res.reply({ status });
+  },
+);
 
 // Load artifacts.js so API end-points declared in that file is loaded
 loadArtifactsRoutes(builder);
 
 /** Get all active provisioners */
-builder.declare({
-  method: 'get',
-  route: '/provisioners',
-  query: paginateResults.query,
-  name: 'listProvisioners',
-  scopes: 'queue:list-provisioners',
-  category: 'Worker Metadata',
-  stability: APIBuilder.stability.deprecated,
-  output: 'list-provisioners-response.yml',
-  title: 'Get a list of all active provisioners',
-  description: [
-    'Get all active provisioners.',
-    '',
-    'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
-    'This does not necessarily mean there is an associated service performing any',
-    'provisioning activity.',
-    '',
-    'The response is paged. If this end-point returns a `continuationToken`, you',
-    'should call the end-point again with the `continuationToken` as a query-string',
-    'option. By default this end-point will list up to 1000 provisioners in a single',
-    'page. You may limit this with the query-string parameter `limit`.',
-  ].join('\n'),
-}, async function(req, res) {
-  const continuation = req.query.continuationToken || null;
-  const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
+builder.declare(
+  {
+    method: 'get',
+    route: '/provisioners',
+    query: paginateResults.query,
+    name: 'listProvisioners',
+    scopes: 'queue:list-provisioners',
+    category: 'Worker Metadata',
+    stability: APIBuilder.stability.deprecated,
+    output: 'list-provisioners-response.yml',
+    title: 'Get a list of all active provisioners',
+    description: [
+      'Get all active provisioners.',
+      '',
+      'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
+      'This does not necessarily mean there is an associated service performing any',
+      'provisioning activity.',
+      '',
+      'The response is paged. If this end-point returns a `continuationToken`, you',
+      'should call the end-point again with the `continuationToken` as a query-string',
+      'option. By default this end-point will list up to 1000 provisioners in a single',
+      'page. You may limit this with the query-string parameter `limit`.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const continuation = req.query.continuationToken || null;
+    const limit = Math.min(1000, parseInt(req.query.limit || 1000, 10));
 
-  const { rows: provisioners, continuationToken } = await Provisioner.getProvisioners(
-    this.db,
-    { expires: new Date() },
-    { query: { continuationToken: continuation, limit } },
-  );
+    const { rows: provisioners, continuationToken } = await Provisioner.getProvisioners(
+      this.db,
+      { expires: new Date() },
+      { query: { continuationToken: continuation, limit } },
+    );
 
-  const result = {
-    provisioners: provisioners.map(provisioner => provisioner.serialize()),
-  };
+    const result = {
+      provisioners: provisioners.map((provisioner) => provisioner.serialize()),
+    };
 
-  if (continuationToken) {
-    result.continuationToken = provisioners.continuationToken;
-  }
-  return res.reply(result);
-});
+    if (continuationToken) {
+      result.continuationToken = provisioners.continuationToken;
+    }
+    return res.reply(result);
+  },
+);
 
 /** Get a provisioner */
-builder.declare({
-  method: 'get',
-  route: '/provisioners/:provisionerId',
-  name: 'getProvisioner',
-  scopes: 'queue:get-provisioner:<provisionerId>',
-  stability: APIBuilder.stability.deprecated,
-  output: 'provisioner-response.yml',
-  category: 'Worker Metadata',
-  title: 'Get an active provisioner',
-  description: [
-    'Get an active provisioner.',
-    '',
-    'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
-    'This does not necessarily mean there is an associated service performing any',
-    'provisioning activity.',
-  ].join('\n'),
-}, async function(req, res) {
-  const provisionerId = req.params.provisionerId;
-  const provisioner = await Provisioner.get(this.db, provisionerId, new Date());
+builder.declare(
+  {
+    method: 'get',
+    route: '/provisioners/:provisionerId',
+    name: 'getProvisioner',
+    scopes: 'queue:get-provisioner:<provisionerId>',
+    stability: APIBuilder.stability.deprecated,
+    output: 'provisioner-response.yml',
+    category: 'Worker Metadata',
+    title: 'Get an active provisioner',
+    description: [
+      'Get an active provisioner.',
+      '',
+      'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
+      'This does not necessarily mean there is an associated service performing any',
+      'provisioning activity.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const provisionerId = req.params.provisionerId;
+    const provisioner = await Provisioner.get(this.db, provisionerId, new Date());
 
-  if (!provisioner) {
-    return res.reportError('ResourceNotFound',
-      'Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
-        provisionerId,
-      },
-    );
-  }
+    if (!provisioner) {
+      return res.reportError(
+        'ResourceNotFound',
+        'Provisioner `{{provisionerId}}` not found. Are you sure it was created?',
+        {
+          provisionerId,
+        },
+      );
+    }
 
-  return res.reply(provisioner.serialize());
-});
+    return res.reply(provisioner.serialize());
+  },
+);
 
 /** Update a provisioner */
-builder.declare({
-  method: 'put',
-  route: '/provisioners/:provisionerId',
-  name: 'declareProvisioner',
-  stability: APIBuilder.stability.deprecated,
-  category: 'Worker Metadata',
-  scopes: { AllOf: [{
-    for: 'property',
-    in: 'properties',
-    each: 'queue:declare-provisioner:<provisionerId>#<property>',
-  }] },
-  output: 'provisioner-response.yml',
-  input: 'update-provisioner-request.yml',
-  title: 'Update a provisioner',
-  description: [
-    'Declare a provisioner, supplying some details about it.',
-    '',
-    '`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are',
-    'possessed. For example, a request to update the `my-provisioner`',
-    'provisioner with a body `{description: \'This provisioner is great\'}` would require you to have the scope',
-    '`queue:declare-provisioner:my-provisioner#description`.',
-    '',
-    'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
-    'This does not necessarily mean there is an associated service performing any',
-    'provisioning activity.',
-  ].join('\n'),
-}, async function(req, res) {
-  const provisionerId = req.params.provisionerId;
+builder.declare(
+  {
+    method: 'put',
+    route: '/provisioners/:provisionerId',
+    name: 'declareProvisioner',
+    stability: APIBuilder.stability.deprecated,
+    category: 'Worker Metadata',
+    scopes: {
+      AllOf: [
+        {
+          for: 'property',
+          in: 'properties',
+          each: 'queue:declare-provisioner:<provisionerId>#<property>',
+        },
+      ],
+    },
+    output: 'provisioner-response.yml',
+    input: 'update-provisioner-request.yml',
+    title: 'Update a provisioner',
+    description: [
+      'Declare a provisioner, supplying some details about it.',
+      '',
+      '`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are',
+      'possessed. For example, a request to update the `my-provisioner`',
+      "provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope",
+      '`queue:declare-provisioner:my-provisioner#description`.',
+      '',
+      'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
+      'This does not necessarily mean there is an associated service performing any',
+      'provisioning activity.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const provisionerId = req.params.provisionerId;
 
-  await req.authorize({
-    provisionerId,
-    properties: Object.keys(req.body),
-  });
+    await req.authorize({
+      provisionerId,
+      properties: Object.keys(req.body),
+    });
 
-  const provisioner = await Provisioner.get(this.db, provisionerId, new Date());
+    const provisioner = await Provisioner.get(this.db, provisionerId, new Date());
 
-  if (!provisioner) {
-    return res.reportError('ResourceNotFound',
-      'Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
-        provisionerId,
-      },
-    );
-  }
+    if (!provisioner) {
+      return res.reportError(
+        'ResourceNotFound',
+        'Provisioner `{{provisionerId}}` not found. Are you sure it was created?',
+        {
+          provisionerId,
+        },
+      );
+    }
 
-  return res.reply(provisioner.serialize());
-});
+    return res.reply(provisioner.serialize());
+  },
+);
 
 /** Count pending tasks for workerType */
-builder.declare({
-  method: 'get',
-  route: '/pending/:taskQueueId(*)',
-  name: 'pendingTasks',
-  scopes: 'queue:pending-count:<taskQueueId>',
-  stability: APIBuilder.stability.deprecated,
-  category: 'Worker Metadata',
-  output: 'pending-tasks-response.yml',
-  title: 'Get Number of Pending Tasks',
-  description: [
-    'Get an approximate number of pending tasks for the given `taskQueueId`.',
-    '',
-    'As task states may change rapidly, this number may not represent the exact',
-    'number of pending tasks, but a very good approximation.',
-    '',
-    'This method is **deprecated**, use queue.taskQueueCounts instead.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskQueueId = req.params.taskQueueId;
-  const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
+builder.declare(
+  {
+    method: 'get',
+    route: '/pending/:taskQueueId(*)',
+    name: 'pendingTasks',
+    scopes: 'queue:pending-count:<taskQueueId>',
+    stability: APIBuilder.stability.deprecated,
+    category: 'Worker Metadata',
+    output: 'pending-tasks-response.yml',
+    title: 'Get Number of Pending Tasks',
+    description: [
+      'Get an approximate number of pending tasks for the given `taskQueueId`.',
+      '',
+      'As task states may change rapidly, this number may not represent the exact',
+      'number of pending tasks, but a very good approximation.',
+      '',
+      'This method is **deprecated**, use queue.taskQueueCounts instead.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const taskQueueId = req.params.taskQueueId;
+    const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
-  // Get number of pending message
-  const count = await this.queueService.countPendingTasks(taskQueueId);
+    // Get number of pending message
+    const count = await this.queueService.countPendingTasks(taskQueueId);
 
-  // Reply to call with count `pendingTasks`
-  return res.reply({
-    provisionerId: provisionerId,
-    workerType: workerType,
-    taskQueueId: taskQueueId,
-    pendingTasks: count,
-  });
-});
+    // Reply to call with count `pendingTasks`
+    return res.reply({
+      provisionerId: provisionerId,
+      workerType: workerType,
+      taskQueueId: taskQueueId,
+      pendingTasks: count,
+    });
+  },
+);
 
 /** Pending and claimed counts for a queue */
-builder.declare({
-  method: 'get',
-  route: '/task-queues/:taskQueueId(*)/counts',
-  name: 'taskQueueCounts',
-  scopes: {
-    AllOf: [
-      'queue:pending-count:<taskQueueId>',
-      'queue:claimed-count:<taskQueueId>',
-    ],
+builder.declare(
+  {
+    method: 'get',
+    route: '/task-queues/:taskQueueId(*)/counts',
+    name: 'taskQueueCounts',
+    scopes: {
+      AllOf: ['queue:pending-count:<taskQueueId>', 'queue:claimed-count:<taskQueueId>'],
+    },
+    stability: APIBuilder.stability.stable,
+    category: 'Worker Metadata',
+    output: 'task-queue-counts-response.yml',
+    title: 'Get Number of Pending and Claimed Tasks',
+    description: [
+      'Get an approximate number of pending and claimed tasks for the given `taskQueueId`.',
+      '',
+      'As task states may change rapidly, this number may not represent the exact',
+      'number of pending and claimed tasks, but a very good approximation.',
+    ].join('\n'),
   },
-  stability: APIBuilder.stability.stable,
-  category: 'Worker Metadata',
-  output: 'task-queue-counts-response.yml',
-  title: 'Get Number of Pending and Claimed Tasks',
-  description: [
-    'Get an approximate number of pending and claimed tasks for the given `taskQueueId`.',
-    '',
-    'As task states may change rapidly, this number may not represent the exact',
-    'number of pending and claimed tasks, but a very good approximation.',
-  ].join('\n'),
-}, async function(req, res) {
-  const taskQueueId = req.params.taskQueueId;
-  const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
+  async function (req, res) {
+    const taskQueueId = req.params.taskQueueId;
+    const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
-  // Get number of pending message
-  const [pendingCount, claimedCount] = await Promise.all([
-    this.queueService.countPendingTasks(taskQueueId),
-    this.queueService.countClaimedTasks(taskQueueId),
-  ]);
+    // Get number of pending message
+    const [pendingCount, claimedCount] = await Promise.all([
+      this.queueService.countPendingTasks(taskQueueId),
+      this.queueService.countClaimedTasks(taskQueueId),
+    ]);
 
-  // Reply to call with count `pendingTasks`
-  return res.reply({
-    provisionerId: provisionerId,
-    workerType: workerType,
-    taskQueueId: taskQueueId,
-    pendingTasks: pendingCount,
-    claimedTasks: claimedCount,
-  });
-});
+    // Reply to call with count `pendingTasks`
+    return res.reply({
+      provisionerId: provisionerId,
+      workerType: workerType,
+      taskQueueId: taskQueueId,
+      pendingTasks: pendingCount,
+      claimedTasks: claimedCount,
+    });
+  },
+);
 
 /** List pending tasks for given taskQueue */
-builder.declare({
-  method: 'get',
-  route: '/task-queues/:taskQueueId(*)/pending',
-  query: paginateResults.query,
-  name: 'listPendingTasks',
-  scopes: 'queue:pending-list:<taskQueueId>',
-  stability: APIBuilder.stability.experimental,
-  category: 'Worker Metadata',
-  output: 'list-pending-tasks-response.yml',
-  title: 'List Pending Tasks',
-  description: [
-    'List pending tasks for the given `taskQueueId`.',
-    '',
-    'As task states may change rapidly, this information might not represent the exact',
-    'state of such tasks, but a very good approximation.',
-  ].join('\n'),
-}, async function(req, res) {
-  const pendingTasks = await paginateResults({
-    query: req.query,
-    indexColumns: ['inserted', 'task_id'],
-    fetch: (page_size_in, after) => this.db.fns.get_pending_tasks_by_task_queue_id({
-      task_queue_id_in: req.params.taskQueueId,
-      page_size_in,
-      ...after,
-    }),
-  });
+builder.declare(
+  {
+    method: 'get',
+    route: '/task-queues/:taskQueueId(*)/pending',
+    query: paginateResults.query,
+    name: 'listPendingTasks',
+    scopes: 'queue:pending-list:<taskQueueId>',
+    stability: APIBuilder.stability.experimental,
+    category: 'Worker Metadata',
+    output: 'list-pending-tasks-response.yml',
+    title: 'List Pending Tasks',
+    description: [
+      'List pending tasks for the given `taskQueueId`.',
+      '',
+      'As task states may change rapidly, this information might not represent the exact',
+      'state of such tasks, but a very good approximation.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const pendingTasks = await paginateResults({
+      query: req.query,
+      indexColumns: ['inserted', 'task_id'],
+      fetch: (page_size_in, after) =>
+        this.db.fns.get_pending_tasks_by_task_queue_id({
+          task_queue_id_in: req.params.taskQueueId,
+          page_size_in,
+          ...after,
+        }),
+    });
 
-  const result = {
-    tasks: pendingTasks.rows?.map(({ task_id, run_id, inserted, ...taskColumns }) => ({
-      taskId: task_id,
-      runId: run_id,
-      task: Task.fromDb(taskColumns).definition(),
-      inserted: inserted.toJSON(),
-    })),
-  };
+    const result = {
+      tasks: pendingTasks.rows?.map(({ task_id, run_id, inserted, ...taskColumns }) => ({
+        taskId: task_id,
+        runId: run_id,
+        task: Task.fromDb(taskColumns).definition(),
+        inserted: inserted.toJSON(),
+      })),
+    };
 
-  if (pendingTasks.continuationToken) {
-    result.continuationToken = pendingTasks.continuationToken;
-  }
+    if (pendingTasks.continuationToken) {
+      result.continuationToken = pendingTasks.continuationToken;
+    }
 
-  return res.reply(result);
-});
+    return res.reply(result);
+  },
+);
 
 /** List claimed tasks for given taskQueue */
-builder.declare({
-  method: 'get',
-  route: '/task-queues/:taskQueueId(*)/claimed',
-  query: paginateResults.query,
-  name: 'listClaimedTasks',
-  scopes: 'queue:claimed-list:<taskQueueId>',
-  stability: APIBuilder.stability.experimental,
-  category: 'Worker Metadata',
-  output: 'list-claimed-tasks-response.yml',
-  title: 'List claimed Tasks',
-  description: [
-    'List claimed tasks for the given `taskQueueId`.',
-    '',
-    'As task states may change rapidly, this information might not represent the exact',
-    'state of such tasks, but a very good approximation.',
-  ].join('\n'),
-}, async function(req, res) {
-  const claimedTasks = await paginateResults({
-    query: req.query,
-    indexColumns: ['claimed', 'task_id'],
-    fetch: (page_size_in, after) => this.db.fns.get_claimed_tasks_by_task_queue_id({
-      task_queue_id_in: req.params.taskQueueId,
-      page_size_in,
-      ...after,
-    }),
-  });
+builder.declare(
+  {
+    method: 'get',
+    route: '/task-queues/:taskQueueId(*)/claimed',
+    query: paginateResults.query,
+    name: 'listClaimedTasks',
+    scopes: 'queue:claimed-list:<taskQueueId>',
+    stability: APIBuilder.stability.experimental,
+    category: 'Worker Metadata',
+    output: 'list-claimed-tasks-response.yml',
+    title: 'List claimed Tasks',
+    description: [
+      'List claimed tasks for the given `taskQueueId`.',
+      '',
+      'As task states may change rapidly, this information might not represent the exact',
+      'state of such tasks, but a very good approximation.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const claimedTasks = await paginateResults({
+      query: req.query,
+      indexColumns: ['claimed', 'task_id'],
+      fetch: (page_size_in, after) =>
+        this.db.fns.get_claimed_tasks_by_task_queue_id({
+          task_queue_id_in: req.params.taskQueueId,
+          page_size_in,
+          ...after,
+        }),
+    });
 
-  const result = {
-    tasks: claimedTasks.rows.map(({ task_id, run_id, claimed, worker_group, worker_id, ...taskColumns }) => ({
-      taskId: task_id,
-      runId: run_id,
-      workerGroup: worker_group,
-      workerId: worker_id,
-      claimed: claimed.toJSON(),
-      task: Task.fromDb(taskColumns).definition(),
-    })),
-  };
+    const result = {
+      tasks: claimedTasks.rows.map(({ task_id, run_id, claimed, worker_group, worker_id, ...taskColumns }) => ({
+        taskId: task_id,
+        runId: run_id,
+        workerGroup: worker_group,
+        workerId: worker_id,
+        claimed: claimed.toJSON(),
+        task: Task.fromDb(taskColumns).definition(),
+      })),
+    };
 
-  if (claimedTasks.continuationToken) {
-    result.continuationToken = claimedTasks.continuationToken;
-  }
+    if (claimedTasks.continuationToken) {
+      result.continuationToken = claimedTasks.continuationToken;
+    }
 
-  return res.reply(result);
-});
+    return res.reply(result);
+  },
+);
 
 /** List worker-types for a given provisioner */
-builder.declare({
-  method: 'get',
-  route: '/provisioners/:provisionerId/worker-types',
-  query: paginateResults.query,
-  name: 'listWorkerTypes',
-  scopes: 'queue:list-worker-types:<provisionerId>',
-  category: 'Worker Metadata',
-  stability: APIBuilder.stability.deprecated,
-  output: 'list-workertypes-response.yml',
-  title: 'Get a list of all active worker-types',
-  description: [
-    'Get all active worker-types for the given provisioner.',
-    '',
-    'The response is paged. If this end-point returns a `continuationToken`, you',
-    'should call the end-point again with the `continuationToken` as a query-string',
-    'option. By default this end-point will list up to 1000 worker-types in a single',
-    'page. You may limit this with the query-string parameter `limit`.',
-  ].join('\n'),
-}, async function(req, res) {
-  // We no longer have a provisioner_id field in the DB, so we have to
-  // do the filtering here for now.
-  let allTaskQueues = await TaskQueue.getAllTaskQueues(this.db, new Date());
-  allTaskQueues = allTaskQueues.filter(tq => {
-    const { provisionerId } = splitTaskQueueId(tq.taskQueueId);
-    return provisionerId === req.params.provisionerId;
-  });
+builder.declare(
+  {
+    method: 'get',
+    route: '/provisioners/:provisionerId/worker-types',
+    query: paginateResults.query,
+    name: 'listWorkerTypes',
+    scopes: 'queue:list-worker-types:<provisionerId>',
+    category: 'Worker Metadata',
+    stability: APIBuilder.stability.deprecated,
+    output: 'list-workertypes-response.yml',
+    title: 'Get a list of all active worker-types',
+    description: [
+      'Get all active worker-types for the given provisioner.',
+      '',
+      'The response is paged. If this end-point returns a `continuationToken`, you',
+      'should call the end-point again with the `continuationToken` as a query-string',
+      'option. By default this end-point will list up to 1000 worker-types in a single',
+      'page. You may limit this with the query-string parameter `limit`.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    // We no longer have a provisioner_id field in the DB, so we have to
+    // do the filtering here for now.
+    let allTaskQueues = await TaskQueue.getAllTaskQueues(this.db, new Date());
+    allTaskQueues = allTaskQueues.filter((tq) => {
+      const { provisionerId } = splitTaskQueueId(tq.taskQueueId);
+      return provisionerId === req.params.provisionerId;
+    });
 
-  // Apply pagination on the filtered results
-  const { rows: taskQueues, continuationToken } = await paginateResults({
-    query: req.query,
-    fetch: (size, offset) => allTaskQueues.slice(offset, offset + size),
-  });
+    // Apply pagination on the filtered results
+    const { rows: taskQueues, continuationToken } = await paginateResults({
+      query: req.query,
+      fetch: (size, offset) => allTaskQueues.slice(offset, offset + size),
+    });
 
-  const result = {
-    workerTypes: taskQueues.map(taskQueue => taskQueue.serialize()),
-  };
+    const result = {
+      workerTypes: taskQueues.map((taskQueue) => taskQueue.serialize()),
+    };
 
-  if (continuationToken) {
-    result.continuationToken = continuationToken;
-  }
+    if (continuationToken) {
+      result.continuationToken = continuationToken;
+    }
 
-  result.workerTypes.forEach(addSplitFields);
-  return res.reply(result);
-});
+    result.workerTypes.forEach(addSplitFields);
+    return res.reply(result);
+  },
+);
 
 /** Get a worker-type from a provisioner */
-builder.declare({
-  method: 'get',
-  route: '/provisioners/:provisionerId/worker-types/:workerType',
-  name: 'getWorkerType',
-  scopes: 'queue:get-worker-type:<provisionerId>/<workerType>',
-  stability: APIBuilder.stability.deprecated,
-  category: 'Worker Metadata',
-  output: 'workertype-response.yml',
-  title: 'Get a worker-type',
-  description: [
-    'Get a worker-type from a provisioner.',
-  ].join('\n'),
-}, async function(req, res) {
-  const { provisionerId, workerType } = req.params;
-  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
+builder.declare(
+  {
+    method: 'get',
+    route: '/provisioners/:provisionerId/worker-types/:workerType',
+    name: 'getWorkerType',
+    scopes: 'queue:get-worker-type:<provisionerId>/<workerType>',
+    stability: APIBuilder.stability.deprecated,
+    category: 'Worker Metadata',
+    output: 'workertype-response.yml',
+    title: 'Get a worker-type',
+    description: ['Get a worker-type from a provisioner.'].join('\n'),
+  },
+  async function (req, res) {
+    const { provisionerId, workerType } = req.params;
+    const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
-  const expires = new Date();
-  const tQueue = await TaskQueue.get(this.db, taskQueueId, expires);
+    const expires = new Date();
+    const tQueue = await TaskQueue.get(this.db, taskQueueId, expires);
 
-  if (!tQueue) {
-    return res.reportError('ResourceNotFound',
-      'Worker-type `{{workerType}}` with Provisioner `{{provisionerId}}` not found. Are you sure it was created?', {
-        workerType,
-        provisionerId,
-      },
-    );
-  }
+    if (!tQueue) {
+      return res.reportError(
+        'ResourceNotFound',
+        'Worker-type `{{workerType}}` with Provisioner `{{provisionerId}}` not found. Are you sure it was created?',
+        {
+          workerType,
+          provisionerId,
+        },
+      );
+    }
 
-  const tqResult = tQueue.serialize();
-  addSplitFields(tqResult);
+    const tqResult = tQueue.serialize();
+    addSplitFields(tqResult);
 
-  const actions = [];
-  return res.reply(Object.assign({}, tqResult, { actions }));
-});
+    const actions = [];
+    return res.reply(Object.assign({}, tqResult, { actions }));
+  },
+);
 
 /** Update a worker-type */
-builder.declare({
-  method: 'put',
-  route: '/provisioners/:provisionerId/worker-types/:workerType',
-  name: 'declareWorkerType',
-  stability: APIBuilder.stability.deprecated,
-  category: 'Worker Metadata',
-  scopes: { AllOf: [
-    {
-      for: 'property',
-      in: 'properties',
-      each: 'queue:declare-worker-type:<provisionerId>/<workerType>#<property>',
+builder.declare(
+  {
+    method: 'put',
+    route: '/provisioners/:provisionerId/worker-types/:workerType',
+    name: 'declareWorkerType',
+    stability: APIBuilder.stability.deprecated,
+    category: 'Worker Metadata',
+    scopes: {
+      AllOf: [
+        {
+          for: 'property',
+          in: 'properties',
+          each: 'queue:declare-worker-type:<provisionerId>/<workerType>#<property>',
+        },
+      ],
     },
-  ] },
-  output: 'workertype-response.yml',
-  input: 'update-workertype-request.yml',
-  title: 'Update a worker-type',
-  description: [
-    'Declare a workerType, supplying some details about it.',
-    '',
-    '`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are',
-    'possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`',
-    'provisioner with a body `{description: \'This worker type is great\'}` would require you to have the scope',
-    '`queue:declare-worker-type:my-provisioner/highmem#description`.',
-  ].join('\n'),
-}, async function(req, res) {
-  const { provisionerId, workerType } = req.params;
-  const { stability, description, expires } = req.body;
-  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
+    output: 'workertype-response.yml',
+    input: 'update-workertype-request.yml',
+    title: 'Update a worker-type',
+    description: [
+      'Declare a workerType, supplying some details about it.',
+      '',
+      '`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are',
+      'possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`',
+      "provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope",
+      '`queue:declare-worker-type:my-provisioner/highmem#description`.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const { provisionerId, workerType } = req.params;
+    const { stability, description, expires } = req.body;
+    const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
-  await req.authorize({
-    provisionerId,
-    workerType,
-    properties: Object.keys(req.body),
-  });
+    await req.authorize({
+      provisionerId,
+      workerType,
+      properties: Object.keys(req.body),
+    });
 
-  await this.db.fns.task_queue_seen({
-    task_queue_id_in: taskQueueId,
-    stability_in: stability,
-    description_in: description,
-    expires_in: expires || taskcluster.fromNow('5 days'),
-  });
+    await this.db.fns.task_queue_seen({
+      task_queue_id_in: taskQueueId,
+      stability_in: stability,
+      description_in: description,
+      expires_in: expires || taskcluster.fromNow('5 days'),
+    });
 
-  const tQueue = await TaskQueue.get(this.db, taskQueueId, new Date());
-  const tqResult = tQueue.serialize();
-  addSplitFields(tqResult);
+    const tQueue = await TaskQueue.get(this.db, taskQueueId, new Date());
+    const tqResult = tQueue.serialize();
+    addSplitFields(tqResult);
 
-  const actions = [];
-  return res.reply(Object.assign({}, tqResult, { actions }));
-});
+    const actions = [];
+    return res.reply(Object.assign({}, tqResult, { actions }));
+  },
+);
 
 /** List task queues */
-builder.declare({
-  method: 'get',
-  route: '/task-queues',
-  query: paginateResults.query,
-  name: 'listTaskQueues',
-  scopes: 'queue:list-task-queues',
-  category: 'Worker Metadata',
-  stability: APIBuilder.stability.stable,
-  output: 'list-taskqueues-response.yml',
-  title: 'Get a list of all active task queues',
-  description: [
-    'Get all active task queues.',
-    '',
-    'The response is paged. If this end-point returns a `continuationToken`, you',
-    'should call the end-point again with the `continuationToken` as a query-string',
-    'option. By default this end-point will list up to 1000 task queues in a single',
-    'page. You may limit this with the query-string parameter `limit`.',
-  ].join('\n'),
-}, async function(req, res) {
-  const { rows: taskQueues, continuationToken } = await TaskQueue.getTaskQueues(
-    this.db,
-    { expires: new Date() },
-    { query: req.query },
-  );
+builder.declare(
+  {
+    method: 'get',
+    route: '/task-queues',
+    query: paginateResults.query,
+    name: 'listTaskQueues',
+    scopes: 'queue:list-task-queues',
+    category: 'Worker Metadata',
+    stability: APIBuilder.stability.stable,
+    output: 'list-taskqueues-response.yml',
+    title: 'Get a list of all active task queues',
+    description: [
+      'Get all active task queues.',
+      '',
+      'The response is paged. If this end-point returns a `continuationToken`, you',
+      'should call the end-point again with the `continuationToken` as a query-string',
+      'option. By default this end-point will list up to 1000 task queues in a single',
+      'page. You may limit this with the query-string parameter `limit`.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const { rows: taskQueues, continuationToken } = await TaskQueue.getTaskQueues(
+      this.db,
+      { expires: new Date() },
+      { query: req.query },
+    );
 
-  const result = {
-    taskQueues: taskQueues.map(taskQueue => taskQueue.serialize()),
-  };
+    const result = {
+      taskQueues: taskQueues.map((taskQueue) => taskQueue.serialize()),
+    };
 
-  if (continuationToken) {
-    result.continuationToken = continuationToken;
-  }
+    if (continuationToken) {
+      result.continuationToken = continuationToken;
+    }
 
-  return res.reply(result);
-});
+    return res.reply(result);
+  },
+);
 
 /** Get a task queue */
-builder.declare({
-  method: 'get',
-  route: '/task-queues/:taskQueueId',
-  name: 'getTaskQueue',
-  scopes: 'queue:get-task-queue:<taskQueueId>',
-  stability: APIBuilder.stability.stable,
-  category: 'Worker Metadata',
-  output: 'taskqueue-response.yml',
-  title: 'Get a task queue',
-  description: [
-    'Get a task queue.',
-  ].join('\n'),
-}, async function(req, res) {
-  const { taskQueueId } = req.params;
+builder.declare(
+  {
+    method: 'get',
+    route: '/task-queues/:taskQueueId',
+    name: 'getTaskQueue',
+    scopes: 'queue:get-task-queue:<taskQueueId>',
+    stability: APIBuilder.stability.stable,
+    category: 'Worker Metadata',
+    output: 'taskqueue-response.yml',
+    title: 'Get a task queue',
+    description: ['Get a task queue.'].join('\n'),
+  },
+  async function (req, res) {
+    const { taskQueueId } = req.params;
 
-  const expires = new Date();
-  const tQueue = await TaskQueue.get(this.db, taskQueueId, expires);
+    const expires = new Date();
+    const tQueue = await TaskQueue.get(this.db, taskQueueId, expires);
 
-  if (!tQueue) {
-    return res.reportError('ResourceNotFound',
-      'Task queue with `{{taskQueueId}}` not found. Are you sure it was created?', {
-        taskQueueId,
-      },
-    );
-  }
+    if (!tQueue) {
+      return res.reportError(
+        'ResourceNotFound',
+        'Task queue with `{{taskQueueId}}` not found. Are you sure it was created?',
+        {
+          taskQueueId,
+        },
+      );
+    }
 
-  const result = tQueue.serialize();
+    const result = tQueue.serialize();
 
-  return res.reply(result);
-});
+    return res.reply(result);
+  },
+);
 
 /** List all active workerGroup/workerId of a workerType */
-builder.declare({
-  method: 'get',
-  route: '/provisioners/:provisionerId/worker-types/:workerType/workers',
-  query: {
-    ...paginateResults.query,
-    quarantined: /^(true|false)$/,
+builder.declare(
+  {
+    method: 'get',
+    route: '/provisioners/:provisionerId/worker-types/:workerType/workers',
+    query: {
+      ...paginateResults.query,
+      quarantined: /^(true|false)$/,
+    },
+    name: 'listWorkers',
+    scopes: 'queue:list-workers:<provisionerId>/<workerType>',
+    stability: APIBuilder.stability.deprecated,
+    category: 'Worker Metadata',
+    output: 'list-workers-response.yml',
+    title: 'Get a list of all active workers of a workerType',
+    description: [
+      'Get a list of all active workers of a workerType.',
+      '',
+      '`listWorkers` allows a response to be filtered by quarantined and non quarantined workers.',
+      'To filter the query, you should call the end-point with `quarantined` as a query-string option with a',
+      'true or false value.',
+      '',
+      'The response is paged. If this end-point returns a `continuationToken`, you',
+      'should call the end-point again with the `continuationToken` as a query-string',
+      'option. By default this end-point will list up to 1000 workers in a single',
+      'page. You may limit this with the query-string parameter `limit`.',
+    ].join('\n'),
   },
-  name: 'listWorkers',
-  scopes: 'queue:list-workers:<provisionerId>/<workerType>',
-  stability: APIBuilder.stability.deprecated,
-  category: 'Worker Metadata',
-  output: 'list-workers-response.yml',
-  title: 'Get a list of all active workers of a workerType',
-  description: [
-    'Get a list of all active workers of a workerType.',
-    '',
-    '`listWorkers` allows a response to be filtered by quarantined and non quarantined workers.',
-    'To filter the query, you should call the end-point with `quarantined` as a query-string option with a',
-    'true or false value.',
-    '',
-    'The response is paged. If this end-point returns a `continuationToken`, you',
-    'should call the end-point again with the `continuationToken` as a query-string',
-    'option. By default this end-point will list up to 1000 workers in a single',
-    'page. You may limit this with the query-string parameter `limit`.',
-  ].join('\n'),
-}, async function(req, res) {
-  const quarantined = req.query.quarantined || null;
-  const provisionerId = req.params.provisionerId;
-  const workerType = req.params.workerType;
-  const now = new Date();
-  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
+  async function (req, res) {
+    const quarantined = req.query.quarantined || null;
+    const provisionerId = req.params.provisionerId;
+    const workerType = req.params.workerType;
+    const now = new Date();
+    const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
-  const { rows: workers, continuationToken } = await Worker.getWorkers(
-    this.db,
-    { taskQueueId },
-    { query: req.query },
-  );
+    const { rows: workers, continuationToken } = await Worker.getWorkers(
+      this.db,
+      { taskQueueId },
+      { query: req.query },
+    );
 
-  const result = {
-    workers: workers.filter(worker => {
-      let quarantineFilter = true;
-      if (quarantined === 'true') {
-        quarantineFilter = worker.quarantineUntil >= now;
-      } else if (quarantined === 'false') {
-        quarantineFilter = worker.quarantineUntil < now;
-      }
-      // filter out anything that is both expired and not quarantined,
-      // so that quarantined workers remain visible even after expiration
-      return (worker.expires >= now || worker.quarantineUntil >= now) && quarantineFilter;
-    }).map(worker => {
-      const entry = {
-        workerGroup: worker.workerGroup,
-        workerId: worker.workerId,
-        firstClaim: worker.firstClaim.toJSON(),
-        lastDateActive: worker.lastDateActive?.toJSON(),
-      };
-      if (worker.recentTasks.length > 0) {
-        entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];
-      }
-      if (worker.quarantineUntil.getTime() > now.getTime()) {
-        entry.quarantineUntil = worker.quarantineUntil.toJSON();
-      }
-      return entry;
-    }),
-  };
+    const result = {
+      workers: workers
+        .filter((worker) => {
+          let quarantineFilter = true;
+          if (quarantined === 'true') {
+            quarantineFilter = worker.quarantineUntil >= now;
+          } else if (quarantined === 'false') {
+            quarantineFilter = worker.quarantineUntil < now;
+          }
+          // filter out anything that is both expired and not quarantined,
+          // so that quarantined workers remain visible even after expiration
+          return (worker.expires >= now || worker.quarantineUntil >= now) && quarantineFilter;
+        })
+        .map((worker) => {
+          const entry = {
+            workerGroup: worker.workerGroup,
+            workerId: worker.workerId,
+            firstClaim: worker.firstClaim.toJSON(),
+            lastDateActive: worker.lastDateActive?.toJSON(),
+          };
+          if (worker.recentTasks.length > 0) {
+            entry.latestTask = worker.recentTasks[worker.recentTasks.length - 1];
+          }
+          if (worker.quarantineUntil.getTime() > now.getTime()) {
+            entry.quarantineUntil = worker.quarantineUntil.toJSON();
+          }
+          return entry;
+        }),
+    };
 
-  if (continuationToken) {
-    result.continuationToken = continuationToken;
-  }
+    if (continuationToken) {
+      result.continuationToken = continuationToken;
+    }
 
-  return res.reply(result);
-});
+    return res.reply(result);
+  },
+);
 
 /** Get a worker from a worker-type */
-builder.declare({
-  method: 'get',
-  route: '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
-  name: 'getWorker',
-  scopes: 'queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
-  stability: APIBuilder.stability.deprecated,
-  output: 'worker-response.yml',
-  title: 'Get a worker from worker-type',
-  category: 'Worker Metadata',
-  description: [
-    'Get a worker from a worker-type.',
-  ].join('\n'),
-}, async function(req, res) {
-  const { provisionerId, workerType, workerGroup, workerId } = req.params;
-  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
+builder.declare(
+  {
+    method: 'get',
+    route: '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
+    name: 'getWorker',
+    scopes: 'queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
+    stability: APIBuilder.stability.deprecated,
+    output: 'worker-response.yml',
+    title: 'Get a worker from worker-type',
+    category: 'Worker Metadata',
+    description: ['Get a worker from a worker-type.'].join('\n'),
+  },
+  async function (req, res) {
+    const { provisionerId, workerType, workerGroup, workerId } = req.params;
+    const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
-  const now = new Date();
-  const [worker, tQueue] = await Promise.all([
-    Worker.get(this.db, taskQueueId, workerGroup, workerId, now),
-    TaskQueue.get(this.db, taskQueueId, now),
-  ]);
+    const now = new Date();
+    const [worker, tQueue] = await Promise.all([
+      Worker.get(this.db, taskQueueId, workerGroup, workerId, now),
+      TaskQueue.get(this.db, taskQueueId, now),
+    ]);
 
-  // do not consider workers expired until their quarantine date expires.
-  const expired = worker && worker.expires < now && worker.quarantineUntil < now;
+    // do not consider workers expired until their quarantine date expires.
+    const expired = worker && worker.expires < now && worker.quarantineUntil < now;
 
-  if (expired || !worker || !tQueue) {
-    return res.reportError('ResourceNotFound',
-      'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
-      'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found. ' +
-      'Are you sure it was created?', {
-        workerId,
-        workerGroup,
-        workerType,
-        provisionerId,
-      },
-    );
-  }
+    if (expired || !worker || !tQueue) {
+      return res.reportError(
+        'ResourceNotFound',
+        'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
+          'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found. ' +
+          'Are you sure it was created?',
+        {
+          workerId,
+          workerGroup,
+          workerType,
+          provisionerId,
+        },
+      );
+    }
 
-  const workerResult = worker.serialize();
-  addSplitFields(workerResult);
+    const workerResult = worker.serialize();
+    addSplitFields(workerResult);
 
-  const actions = [];
-  return res.reply(Object.assign({}, workerResult, { actions }));
-});
+    const actions = [];
+    return res.reply(Object.assign({}, workerResult, { actions }));
+  },
+);
 
 /** Quarantine a Worker */
-builder.declare({
-  method: 'put',
-  route: '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
-  name: 'quarantineWorker',
-  stability: APIBuilder.stability.experimental,
-  category: 'Worker Metadata',
-  scopes: { AllOf: [
-    'queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
-  ] },
-  input: 'quarantine-worker-request.yml',
-  output: 'worker-response.yml',
-  title: 'Quarantine a worker',
-  description: [
-    'Quarantine a worker',
-  ].join('\n'),
-}, async function(req, res) {
-  const { provisionerId, workerType, workerGroup, workerId } = req.params;
-  const { quarantineUntil, quarantineInfo } = req.body;
-  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
+builder.declare(
+  {
+    method: 'put',
+    route: '/provisioners/:provisionerId/worker-types/:workerType/workers/:workerGroup/:workerId',
+    name: 'quarantineWorker',
+    stability: APIBuilder.stability.experimental,
+    category: 'Worker Metadata',
+    scopes: { AllOf: ['queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>'] },
+    input: 'quarantine-worker-request.yml',
+    output: 'worker-response.yml',
+    title: 'Quarantine a worker',
+    description: ['Quarantine a worker'].join('\n'),
+  },
+  async function (req, res) {
+    const { provisionerId, workerType, workerGroup, workerId } = req.params;
+    const { quarantineUntil, quarantineInfo } = req.body;
+    const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
-  const quarantineDetails = {
-    clientId: await req.clientId(),
-    updatedAt: new Date().toJSON(),
-    quarantineUntil,
-    quarantineInfo: quarantineInfo || '[unspecified]',
-  };
+    const quarantineDetails = {
+      clientId: await req.clientId(),
+      updatedAt: new Date().toJSON(),
+      quarantineUntil,
+      quarantineInfo: quarantineInfo || '[unspecified]',
+    };
 
-  const [result] = await this.db.fns.quarantine_queue_worker_with_last_date_active_and_details({
-    task_queue_id_in: taskQueueId,
-    worker_group_in: workerGroup,
-    worker_id_in: workerId,
-    quarantine_until_in: quarantineUntil,
-    quarantine_details_in: quarantineDetails,
-  });
+    const [result] = await this.db.fns.quarantine_queue_worker_with_last_date_active_and_details({
+      task_queue_id_in: taskQueueId,
+      worker_group_in: workerGroup,
+      worker_id_in: workerId,
+      quarantine_until_in: quarantineUntil,
+      quarantine_details_in: quarantineDetails,
+    });
 
-  if (!result) {
-    return res.reportError('ResourceNotFound',
-      'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
-      'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found.', {
-        workerId,
-        workerGroup,
-        workerType,
-        provisionerId,
-      },
-    );
-  }
-  const worker = Worker.fromDb(result);
+    if (!result) {
+      return res.reportError(
+        'ResourceNotFound',
+        'Worker with workerId `{{workerId}}`, workerGroup `{{workerGroup}}`,' +
+          'worker-type `{{workerType}}` and provisionerId `{{provisionerId}}` not found.',
+        {
+          workerId,
+          workerGroup,
+          workerType,
+          provisionerId,
+        },
+      );
+    }
+    const worker = Worker.fromDb(result);
 
-  const workerResult = worker.serialize();
-  addSplitFields(workerResult);
+    const workerResult = worker.serialize();
+    addSplitFields(workerResult);
 
-  const actions = [];
-  return res.reply(Object.assign({}, workerResult, { actions }));
-});
+    const actions = [];
+    return res.reply(Object.assign({}, workerResult, { actions }));
+  },
+);
 
 /** Update a worker */
-builder.declare({
-  method: 'put',
-  route: '/provisioners/:provisionerId/worker-types/:workerType/:workerGroup/:workerId',
-  name: 'declareWorker',
-  stability: APIBuilder.stability.experimental,
-  category: 'Worker Metadata',
-  scopes: { AllOf: [
-    {
-      for: 'property',
-      in: 'properties',
-      each: 'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>',
+builder.declare(
+  {
+    method: 'put',
+    route: '/provisioners/:provisionerId/worker-types/:workerType/:workerGroup/:workerId',
+    name: 'declareWorker',
+    stability: APIBuilder.stability.experimental,
+    category: 'Worker Metadata',
+    scopes: {
+      AllOf: [
+        {
+          for: 'property',
+          in: 'properties',
+          each: 'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>',
+        },
+      ],
     },
-  ] },
-  output: 'worker-response.yml',
-  input: 'update-worker-request.yml',
-  title: 'Declare a worker',
-  description: [
-    'Declare a worker, supplying some details about it.',
-    '',
-    '`declareWorker` allows updating one or more properties of a worker as long as the required scopes are',
-    'possessed.',
-  ].join('\n'),
-}, async function(req, res) {
-  const { provisionerId, workerType, workerGroup, workerId } = req.params;
-  const { expires } = req.body;
-  const taskQueueId = joinTaskQueueId(provisionerId, workerType);
+    output: 'worker-response.yml',
+    input: 'update-worker-request.yml',
+    title: 'Declare a worker',
+    description: [
+      'Declare a worker, supplying some details about it.',
+      '',
+      '`declareWorker` allows updating one or more properties of a worker as long as the required scopes are',
+      'possessed.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const { provisionerId, workerType, workerGroup, workerId } = req.params;
+    const { expires } = req.body;
+    const taskQueueId = joinTaskQueueId(provisionerId, workerType);
 
-  await req.authorize({
-    provisionerId,
-    workerType,
-    workerGroup,
-    workerId,
-    properties: Object.keys(req.body),
-  });
+    await req.authorize({
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      properties: Object.keys(req.body),
+    });
 
-  await this.db.fns.task_queue_seen({
-    task_queue_id_in: taskQueueId,
-    expires_in: expires,
-    description_in: null,
-    stability_in: null,
-  });
-  await this.db.fns.queue_worker_seen_with_last_date_active({
-    task_queue_id_in: taskQueueId,
-    worker_group_in: workerGroup,
-    worker_id_in: workerId,
-    expires_in: expires,
-  });
+    await this.db.fns.task_queue_seen({
+      task_queue_id_in: taskQueueId,
+      expires_in: expires,
+      description_in: null,
+      stability_in: null,
+    });
+    await this.db.fns.queue_worker_seen_with_last_date_active({
+      task_queue_id_in: taskQueueId,
+      worker_group_in: workerGroup,
+      worker_id_in: workerId,
+      expires_in: expires,
+    });
 
-  const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
+    const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
-  const workerResult = worker.serialize();
-  addSplitFields(workerResult);
+    const workerResult = worker.serialize();
+    addSplitFields(workerResult);
 
-  const actions = [];
-  return res.reply(Object.assign({}, workerResult, { actions }));
-});
+    const actions = [];
+    return res.reply(Object.assign({}, workerResult, { actions }));
+  },
+);
 
-builder.declare({
-  method: 'get',
-  route: '/__heartbeat__',
-  name: 'heartbeat',
-  scopes: null,
-  category: 'Monitoring',
-  stability: 'stable',
-  title: 'Heartbeat',
-  description: [
-    'Respond with a service heartbeat.',
-    '',
-    'This endpoint is used to check on backing services this service',
-    'depends on.',
-  ].join('\n'),
-}, function(_req, res) {
-  // TODO: add implementation
-  res.reply({});
-});
+builder.declare(
+  {
+    method: 'get',
+    route: '/__heartbeat__',
+    name: 'heartbeat',
+    scopes: null,
+    category: 'Monitoring',
+    stability: 'stable',
+    title: 'Heartbeat',
+    description: [
+      'Respond with a service heartbeat.',
+      '',
+      'This endpoint is used to check on backing services this service',
+      'depends on.',
+    ].join('\n'),
+  },
+  function (_req, res) {
+    // TODO: add implementation
+    res.reply({});
+  },
+);

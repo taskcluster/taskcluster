@@ -21,14 +21,14 @@ export class SentryReporter {
       release: taskclusterVersion,
       autoSessionTracking: false,
     });
-    Sentry.configureScope(scope => {
+    Sentry.configureScope((scope) => {
       scope.setTag('service', serviceName);
       scope.setTag('proc', processName);
     });
   }
 
   report(error, level, extra) {
-    Sentry.withScope(scope => {
+    Sentry.withScope((scope) => {
       if (level) {
         scope.setLevel(tcToSentryLevel[level] || 'error');
       }

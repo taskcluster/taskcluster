@@ -88,30 +88,34 @@ export default {
       return loaders.task.load(taskId);
     },
     tasks(_parent, { taskIds }, { loaders }) {
-      return Promise.all(taskIds.map(async (taskId) => {
-        try {
-          return await loaders.task.load(taskId);
-        } catch (e) {
-          return e;
-        }
-      }));
+      return Promise.all(
+        taskIds.map(async (taskId) => {
+          try {
+            return await loaders.task.load(taskId);
+          } catch (e) {
+            return e;
+          }
+        }),
+      );
     },
     async dependentTasks(_parent, args, { loaders }) {
       const task = await loaders.task.load(args.taskId);
 
-      return Promise.all(task.dependencies.map(async (dependency) => {
-        // generate a DependentTask object from the task loader's result
-        try {
-          return await loaders.task.load(dependency);
-        } catch (e) {
-          // if the depended-on task does not exist (such as because it has expired),
-          // then return a valid DependentTask with only the taskId.
-          if (e.code === 'ResourceNotFound') {
-            return { taskId: dependency, status: null, metadata: null };
+      return Promise.all(
+        task.dependencies.map(async (dependency) => {
+          // generate a DependentTask object from the task loader's result
+          try {
+            return await loaders.task.load(dependency);
+          } catch (e) {
+            // if the depended-on task does not exist (such as because it has expired),
+            // then return a valid DependentTask with only the taskId.
+            if (e.code === 'ResourceNotFound') {
+              return { taskId: dependency, status: null, metadata: null };
+            }
+            return e;
           }
-          return e;
-        }
-      }));
+        }),
+      );
     },
     async dependents(_parent, { taskId, connection, filter }, { loaders }) {
       return loaders.dependents.load({ taskId, connection, filter });
@@ -166,16 +170,12 @@ export default {
   Subscription: {
     // by taskGroupId
     tasksSubscriptions: {
-      subscribe(
-        _parent,
-        { taskGroupId, subscriptions },
-        { pulseEngine, clients },
-      ) {
+      subscribe(_parent, { taskGroupId, subscriptions }, { pulseEngine, clients }) {
         const routingKey = { taskGroupId };
 
         return pulseEngine.eventIterator(
           'tasksSubscriptions',
-          subscriptions.map(eventName => {
+          subscriptions.map((eventName) => {
             const method = eventName.replace('tasks', 'task');
             const binding = clients.queueEvents[method](routingKey);
 
@@ -192,16 +192,12 @@ export default {
     },
     // by taskId
     taskSubscriptions: {
-      subscribe(
-        _parent,
-        { taskId, subscriptions },
-        { pulseEngine, clients },
-      ) {
+      subscribe(_parent, { taskId, subscriptions }, { pulseEngine, clients }) {
         const routingKey = { taskId };
 
         return pulseEngine.eventIterator(
           'taskSubscriptions',
-          subscriptions.map(eventName => {
+          subscriptions.map((eventName) => {
             const method = eventName.replace('tasks', 'task');
             const binding = clients.queueEvents[method](routingKey);
 

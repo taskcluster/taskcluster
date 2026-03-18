@@ -6,7 +6,7 @@ import Task from '../entities/Task.js';
 import maybeSignedUrl from '../utils/maybeSignedUrl.js';
 
 export default ({ queue, index }, isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
-  const task = new DataLoader(taskIds =>
+  const task = new DataLoader((taskIds) =>
     Promise.all(
       taskIds.map(async (taskId) => {
         try {
@@ -17,7 +17,7 @@ export default ({ queue, index }, isAuthed, _rootUrl, _monitor, _strategies, _re
       }),
     ),
   );
-  const indexedTask = new DataLoader(indexPaths =>
+  const indexedTask = new DataLoader((indexPaths) =>
     Promise.all(
       indexPaths.map(async (indexPath) => {
         try {
@@ -28,22 +28,18 @@ export default ({ queue, index }, isAuthed, _rootUrl, _monitor, _strategies, _re
       }),
     ),
   );
-  const taskGroup = new ConnectionLoader(
-    async ({ taskGroupId, options, filter }) => {
-      const taskGroup = await queue.getTaskGroup(taskGroupId);
-      const raw = await queue.listTaskGroup(taskGroupId, options);
-      const tasks = sift(filter, raw.tasks);
+  const taskGroup = new ConnectionLoader(async ({ taskGroupId, options, filter }) => {
+    const taskGroup = await queue.getTaskGroup(taskGroupId);
+    const raw = await queue.listTaskGroup(taskGroupId, options);
+    const tasks = sift(filter, raw.tasks);
 
-      return {
-        taskGroup,
-        ...raw,
-        items: tasks.map(
-          ({ task, status }) => new Task(status.taskId, status, task),
-        ),
-      };
-    },
-  );
-  const taskActions = new DataLoader(queries =>
+    return {
+      taskGroup,
+      ...raw,
+      items: tasks.map(({ task, status }) => new Task(status.taskId, status, task)),
+    };
+  });
+  const taskActions = new DataLoader((queries) =>
     Promise.all(
       queries.map(async ({ taskGroupId, filter }) => {
         try {
@@ -57,9 +53,9 @@ export default ({ queue, index }, isAuthed, _rootUrl, _monitor, _strategies, _re
 
           return raw.actions
             ? {
-              ...raw,
-              actions: sift(filter, raw.actions),
-            }
+                ...raw,
+                actions: sift(filter, raw.actions),
+              }
             : null;
         } catch (err) {
           // if the URL does not exist or is an error artifact, return nothing
@@ -72,51 +68,43 @@ export default ({ queue, index }, isAuthed, _rootUrl, _monitor, _strategies, _re
       }),
     ),
   );
-  const dependents = new ConnectionLoader(
-    async ({ taskId, options, filter }) => {
-      const raw = await queue.listDependentTasks(taskId, options);
-      const tasks = sift(filter, raw.tasks);
+  const dependents = new ConnectionLoader(async ({ taskId, options, filter }) => {
+    const raw = await queue.listDependentTasks(taskId, options);
+    const tasks = sift(filter, raw.tasks);
 
-      return {
-        ...raw,
-        items: tasks.map(
-          ({ task, status }) => new Task(status.taskId, status, task),
-        ),
-      };
-    },
-  );
-  const listPendingTasks = new ConnectionLoader(
-    async ({ taskQueueId, options }) => {
-      const raw = await queue.listPendingTasks(taskQueueId, options);
+    return {
+      ...raw,
+      items: tasks.map(({ task, status }) => new Task(status.taskId, status, task)),
+    };
+  });
+  const listPendingTasks = new ConnectionLoader(async ({ taskQueueId, options }) => {
+    const raw = await queue.listPendingTasks(taskQueueId, options);
 
-      return {
-        ...raw,
-        items: raw.tasks.map(({ taskId, runId, task, inserted }) => ({
-          taskId,
-          runId,
-          inserted,
-          task: new Task(taskId, null, task),
-        })),
-      };
-    },
-  );
-  const listClaimedTasks = new ConnectionLoader(
-    async ({ taskQueueId, options }) => {
-      const raw = await queue.listClaimedTasks(taskQueueId, options);
+    return {
+      ...raw,
+      items: raw.tasks.map(({ taskId, runId, task, inserted }) => ({
+        taskId,
+        runId,
+        inserted,
+        task: new Task(taskId, null, task),
+      })),
+    };
+  });
+  const listClaimedTasks = new ConnectionLoader(async ({ taskQueueId, options }) => {
+    const raw = await queue.listClaimedTasks(taskQueueId, options);
 
-      return {
-        ...raw,
-        items: raw.tasks.map(({ taskId, runId, task, claimed, workerGroup, workerId }) => ({
-          taskId,
-          runId,
-          claimed,
-          workerGroup,
-          workerId,
-          task: new Task(taskId, null, task),
-        })),
-      };
-    },
-  );
+    return {
+      ...raw,
+      items: raw.tasks.map(({ taskId, runId, task, claimed, workerGroup, workerId }) => ({
+        taskId,
+        runId,
+        claimed,
+        workerGroup,
+        workerId,
+        task: new Task(taskId, null, task),
+      })),
+    };
+  });
 
   return {
     dependents,

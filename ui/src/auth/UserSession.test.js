@@ -4,8 +4,7 @@ describe('UserSession', () => {
   it('should create user session', () => {
     const userSession = UserSession.create({
       identityProviderId: 'test-provider',
-      encodedProfile:
-        'eyJuYW1lIjoiVMOpc3QgTsOibcOoIiwiZW1haWwiOiJ0ZXN0QG1haWwifQ==',
+      encodedProfile: 'eyJuYW1lIjoiVMOpc3QgTsOibcOoIiwiZW1haWwiOiJ0ZXN0QG1haWwifQ==',
     });
 
     expect(userSession.identityProviderId).toEqual('test-provider');
@@ -17,8 +16,7 @@ describe('UserSession', () => {
   it('should serialize and deserialize session', () => {
     const userSession = UserSession.create({
       identityProviderId: 'test-provider',
-      encodedProfile:
-        'eyJuYW1lIjoiVMOpc3QgTsOibcOoIiwiZW1haWwiOiJ0ZXN0QG1haWwifQ==',
+      encodedProfile: 'eyJuYW1lIjoiVMOpc3QgTsOibcOoIiwiZW1haWwiOiJ0ZXN0QG1haWwifQ==',
     });
     const serialized = userSession.serialize();
 

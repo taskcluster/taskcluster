@@ -34,17 +34,13 @@ export default class WorkerManagerWorkersTable extends Component {
 
   sortWorkers = memoize(
     (workers, sortBy, sortDirection, searchTerm) => {
-      const filteredWorkers = searchTerm
-        ? workers.filter(({ w }) => w.includes(searchTerm))
-        : workers;
+      const filteredWorkers = searchTerm ? workers.filter(({ w }) => w.includes(searchTerm)) : workers;
 
       return isEmpty(filteredWorkers)
         ? filteredWorkers
         : [...filteredWorkers].sort((a, b) => {
-            const firstElement =
-              sortDirection === 'desc' ? b[sortBy] : a[sortBy];
-            const secondElement =
-              sortDirection === 'desc' ? a[sortBy] : b[sortBy];
+            const firstElement = sortDirection === 'desc' ? b[sortBy] : a[sortBy];
+            const secondElement = sortDirection === 'desc' ? a[sortBy] : b[sortBy];
 
             return sort(firstElement, secondElement);
           });
@@ -53,34 +49,26 @@ export default class WorkerManagerWorkersTable extends Component {
       serializer: ([workers, sortBy, sortDirection, searchTerm]) => {
         const ids = pipe(
           rSort((a, b) => sort(a.worker, b.worker)),
-          map(({ worker }) => worker)
+          map(({ worker }) => worker),
         )(workers);
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = header => {
+  handleHeaderClick = (header) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
 
     this.setState({ sortBy: header.id, sortDirection });
   };
 
-  renderTableRow = worker => {
+  renderTableRow = (worker) => {
     const {
       match: { path },
     } = this.props;
-    const {
-      workerId,
-      workerGroup,
-      latestTaskRun,
-      workerAge,
-      quarantineUntil,
-      recentErrors,
-      workerPool,
-    } = worker;
+    const { workerId, workerGroup, latestTaskRun, workerAge, quarantineUntil, recentErrors, workerPool } = worker;
     const iconSize = 16;
 
     return (
@@ -103,8 +91,7 @@ export default class WorkerManagerWorkersTable extends Component {
         />
         <TableCell>
           {latestTaskRun ? (
-            <Link
-              to={`/tasks/${latestTaskRun.taskId}/runs/${latestTaskRun.runId}`}>
+            <Link to={`/tasks/${latestTaskRun.taskId}/runs/${latestTaskRun.runId}`}>
               <TableCellItem button>
                 {latestTaskRun.taskId}
                 <LinkIcon size={iconSize} />
@@ -145,8 +132,7 @@ export default class WorkerManagerWorkersTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Link
-            to={`${path}/worker-types/${workerPool}/workers/${workerGroup}/${workerId}/resources`}>
+          <Link to={`${path}/worker-types/${workerPool}/workers/${workerGroup}/${workerId}/resources`}>
             <TableCellItem button>
               {`${recentErrors}`}
               <LinkIcon size={iconSize} />
@@ -170,12 +156,7 @@ export default class WorkerManagerWorkersTable extends Component {
   render() {
     const { workers, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedWorkers = this.sortWorkers(
-      workers,
-      sortBy,
-      sortDirection,
-      searchTerm
-    );
+    const sortedWorkers = this.sortWorkers(workers, sortBy, sortDirection, searchTerm);
     const headers = [
       { label: 'Worker Group', id: 'workerGroup', type: 'string' },
       {

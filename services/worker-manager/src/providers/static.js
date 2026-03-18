@@ -45,7 +45,7 @@ export class StaticProvider extends Provider {
   }
 
   async updateWorker({ workerPool, worker, input }) {
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       worker.expires = input.expires;
       worker.capacity = input.capacity;
       worker.providerData = {
@@ -70,7 +70,7 @@ export class StaticProvider extends Provider {
       runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
     });
 
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       worker.state = Worker.states.STOPPED;
     });
   }

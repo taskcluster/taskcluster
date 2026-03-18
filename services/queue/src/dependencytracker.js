@@ -49,27 +49,31 @@ class DependencyTracker {
 
     // Load all dependencies (tasks can have aup to max-task-dependencies)
     let rows = await this.db.fns.get_multiple_tasks(JSON.stringify(task.dependencies), null, null);
-    let requiredTasks = rows.map(row => Task.fromDb(row));
-    let loadedTasksIds = requiredTasks.map(task => task.taskId);
-    const missing = task.dependencies.filter(taskId => !loadedTasksIds.includes(taskId));
+    let requiredTasks = rows.map((row) => Task.fromDb(row));
+    let loadedTasksIds = requiredTasks.map((task) => task.taskId);
+    const missing = task.dependencies.filter((taskId) => !loadedTasksIds.includes(taskId));
 
     if (missing.length === 0) {
-      await Promise.all(requiredTasks.map(async (requiredTask) => {
-        // Check if requiredTask expires before the deadline
-        if (task.deadline.getTime() > requiredTask.expires.getTime()) {
-          return expiring.push(requiredTask.taskId);
-        }
+      await Promise.all(
+        requiredTasks.map(async (requiredTask) => {
+          // Check if requiredTask expires before the deadline
+          if (task.deadline.getTime() > requiredTask.expires.getTime()) {
+            return expiring.push(requiredTask.taskId);
+          }
 
-        // Check if requiredTask is satisfied
-        const state = requiredTask.state();
-        if (state === 'completed' || task.requires === 'all-resolved' &&
-            (state === 'exception' || state === 'failed')) {
-          await this.db.fns.satisfy_task_dependency(task.taskId, requiredTask.taskId);
-          // Track that we've deleted something, now we must check if any are left
-          // afterward (using isBlocked)
-          anySatisfied = true;
-        }
-      }));
+          // Check if requiredTask is satisfied
+          const state = requiredTask.state();
+          if (
+            state === 'completed' ||
+            (task.requires === 'all-resolved' && (state === 'exception' || state === 'failed'))
+          ) {
+            await this.db.fns.satisfy_task_dependency(task.taskId, requiredTask.taskId);
+            // Track that we've deleted something, now we must check if any are left
+            // afterward (using isBlocked)
+            anySatisfied = true;
+          }
+        }),
+      );
     }
     // free up memory
     rows = null;
@@ -83,18 +87,22 @@ class DependencyTracker {
       let msg = '';
       if (missing.length > 0) {
         msg += '`task.dependencies` references non-existing tasks: \n';
-        msg += `${missing.map(taskId => {
-          return ` * ${taskId}`;
-        }).join('\n')}\n`;
+        msg += `${missing
+          .map((taskId) => {
+            return ` * ${taskId}`;
+          })
+          .join('\n')}\n`;
         msg += 'All taskIds in `task.dependencies` **must** exist\n';
         msg += 'before the task is created.\n';
       }
       if (expiring.length > 0) {
         msg += '`task.dependencies` references tasks that expires\n';
         msg += 'before `task.deadline` this is not allowed, see tasks: \n';
-        msg += `${expiring.map(taskId => {
-          return ` * ${taskId},`;
-        }).join('\n')}\n`;
+        msg += `${expiring
+          .map((taskId) => {
+            return ` * ${taskId},`;
+          })
+          .join('\n')}\n`;
         msg += 'All taskIds in `task.dependencies` **must** have\n';
         msg += '`task.expires` greater than the `deadline` for this task.\n';
       }
@@ -152,11 +160,8 @@ class DependencyTracker {
 
     // If the task isn't blocked (dependencies resolved), or it has no
     // dependencies we ensure that the first run is pending (if not already).
-    if (anySatisfied && !(await this.isBlocked(task.taskId)) ||
-        task.dependencies.length === 0) {
-
-      task.updateStatusWith(
-        await this.db.fns.schedule_task(task.taskId, 'scheduled'));
+    if ((anySatisfied && !(await this.isBlocked(task.taskId))) || task.dependencies.length === 0) {
+      task.updateStatusWith(await this.db.fns.schedule_task(task.taskId, 'scheduled'));
     }
 
     // We don't have any error
@@ -165,9 +170,10 @@ class DependencyTracker {
 
   /** Track resolution of a task, scheduling any dependent tasks */
   async resolveTask(taskId, taskGroupId, schedulerId, resolution) {
-    assert(resolution === 'completed' || resolution === 'failed' ||
-         resolution === 'exception',
-    'resolution must be completed, failed or exception');
+    assert(
+      resolution === 'completed' || resolution === 'failed' || resolution === 'exception',
+      'resolution must be completed, failed or exception',
+    );
 
     // iterate through the dependencies in such a way that deletion of
     // a task does not cause a dependency to be skipped (which might occur
@@ -225,12 +231,15 @@ class DependencyTracker {
     if (!is_task_group_active) {
       const [{ sealed, expires }] = await this.db.fns.get_task_group2(taskGroupId);
 
-      await this.publisher.taskGroupResolved({
-        taskGroupId,
-        schedulerId,
-        expires: expires?.toJSON() || undefined,
-        sealed: sealed?.toJSON() || undefined,
-      }, []);
+      await this.publisher.taskGroupResolved(
+        {
+          taskGroupId,
+          schedulerId,
+          expires: expires?.toJSON() || undefined,
+          sealed: sealed?.toJSON() || undefined,
+        },
+        [],
+      );
     }
   }
 
@@ -250,8 +259,10 @@ class DependencyTracker {
         // This happens if we fail half-way through a createTask call.
         // It's not really a bug, but it's worth noticing. If it happens a lot
         // then clearly it's a bug. Occasional occurrences are expected...
-        console.log('scheduleTask was told to schedule: %s, but it does not ' +
-                    'exist, it was probably never created!', taskOrTaskId);
+        console.log(
+          'scheduleTask was told to schedule: %s, but it does not ' + 'exist, it was probably never created!',
+          taskOrTaskId,
+        );
         return null;
       }
     }
@@ -277,11 +288,14 @@ class DependencyTracker {
     if (task.runs && task.runs[0].state === 'pending') {
       await Promise.all([
         this.queueService.putPendingMessage(task, 0),
-        this.publisher.taskPending({
-          status: status,
-          runId: 0,
-          task: { tags: task.tags || {} },
-        }, task.routes),
+        this.publisher.taskPending(
+          {
+            status: status,
+            runId: 0,
+            task: { tags: task.tags || {} },
+          },
+          task.routes,
+        ),
       ]);
       this.monitor.log.taskPending({ taskId: task.taskId, runId: 0 });
     }

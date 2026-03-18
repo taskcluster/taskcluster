@@ -1,13 +1,5 @@
 import { Component, Fragment } from 'react';
-import {
-  func,
-  string,
-  bool,
-  oneOfType,
-  object,
-  array,
-  arrayOf,
-} from 'prop-types';
+import { func, string, bool, oneOfType, object, array, arrayOf } from 'prop-types';
 import classNames from 'classnames';
 import { equals, assocPath } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
@@ -76,7 +68,7 @@ const initialHook = {
   },
 };
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   actionButtonSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
@@ -242,10 +234,7 @@ export default class HookForm extends Component {
   };
 
   static getDerivedStateFromProps(props, state) {
-    if (
-      equals(props.hook, state.previousHook) &&
-      equals(props.hookLastFires, state.hookLastFires)
-    ) {
+    if (equals(props.hook, state.previousHook) && equals(props.hookLastFires, state.hookLastFires)) {
       return null;
     }
 
@@ -295,10 +284,10 @@ export default class HookForm extends Component {
     } = this.state;
 
     onCreateHook?.({
-        hookId,
-        hookGroupId,
-        payload: this.getHookDefinition(),
-      });
+      hookId,
+      hookGroupId,
+      payload: this.getHookDefinition(),
+    });
   };
 
   handleDeleteCronJob = ({ currentTarget: { name } }) => {
@@ -307,8 +296,8 @@ export default class HookForm extends Component {
     this.setState({
       hook: assocPath(
         ['schedule'],
-        hook.schedule.filter(cronJob => cronJob !== name),
-        hook
+        hook.schedule.filter((cronJob) => cronJob !== name),
+        hook,
       ),
     });
   };
@@ -329,11 +318,7 @@ export default class HookForm extends Component {
 
   handleEmailOnErrorChange = () => {
     this.setState({
-      hook: assocPath(
-        ['metadata', 'emailOnError'],
-        !this.state.hook.metadata.emailOnError,
-        this.state.hook
-      ),
+      hook: assocPath(['metadata', 'emailOnError'], !this.state.hook.metadata.emailOnError, this.state.hook),
     });
   };
 
@@ -346,15 +331,11 @@ export default class HookForm extends Component {
 
     this.setState({
       scheduleTextField: '',
-      hook: assocPath(
-        ['schedule'],
-        this.state.hook.schedule.concat(scheduleTextField),
-        hook
-      ),
+      hook: assocPath(['schedule'], this.state.hook.schedule.concat(scheduleTextField), hook),
     });
   };
 
-  handleTaskChange = value => {
+  handleTaskChange = (value) => {
     const { hook } = this.state;
 
     try {
@@ -371,7 +352,7 @@ export default class HookForm extends Component {
     }
   };
 
-  handleTriggerContextChange = triggerContextInput => {
+  handleTriggerContextChange = (triggerContextInput) => {
     this.setState({ triggerContextInput });
   };
 
@@ -389,7 +370,7 @@ export default class HookForm extends Component {
     });
   };
 
-  handleTriggerSchemaChange = value => {
+  handleTriggerSchemaChange = (value) => {
     try {
       this.setState({
         triggerSchemaInput: value,
@@ -411,19 +392,14 @@ export default class HookForm extends Component {
     } = this.state;
 
     onUpdateHook?.({
-        hookId,
-        hookGroupId,
-        payload: this.getHookDefinition(),
-      });
+      hookId,
+      hookGroupId,
+      payload: this.getHookDefinition(),
+    });
   };
 
   validHook = () => {
-    const {
-      hook,
-      taskValidYaml,
-      triggerSchemaValidYaml,
-      validation,
-    } = this.state;
+    const { hook, taskValidYaml, triggerSchemaValidYaml, validation } = this.state;
 
     return (
       hook.hookGroupId &&
@@ -437,22 +413,22 @@ export default class HookForm extends Component {
     );
   };
 
-  handleHookGroupIdChange = e =>
+  handleHookGroupIdChange = (e) =>
     this.setState({
       hook: assocPath(['hookGroupId'], e.target.value, this.state.hook),
     });
 
-  handleHookIdChange = e =>
+  handleHookIdChange = (e) =>
     this.setState({
       hook: assocPath(['hookId'], e.target.value, this.state.hook),
     });
 
-  handleNameChange = e =>
+  handleNameChange = (e) =>
     this.setState({
       hook: assocPath(['metadata', 'name'], e.target.value, this.state.hook),
     });
 
-  handleOwnerChange = e => {
+  handleOwnerChange = (e) => {
     this.setState({
       hook: assocPath(['metadata', 'owner'], e.target.value, this.state.hook),
       validation: {
@@ -464,13 +440,9 @@ export default class HookForm extends Component {
     });
   };
 
-  handleDescriptionChange = e =>
+  handleDescriptionChange = (e) =>
     this.setState({
-      hook: assocPath(
-        ['metadata', 'description'],
-        e.target.value,
-        this.state.hook
-      ),
+      hook: assocPath(['metadata', 'description'], e.target.value, this.state.hook),
     });
 
   handleDrawerClose = () => {
@@ -519,9 +491,7 @@ export default class HookForm extends Component {
 
   handleDeleteBinding = ({ exchange, routingKeyPattern }) => {
     const bindings = this.state.hook.bindings.filter(
-      binding =>
-        binding.exchange !== exchange ||
-        binding.routingKeyPattern !== routingKeyPattern
+      (binding) => binding.exchange !== exchange || binding.routingKeyPattern !== routingKeyPattern,
     );
 
     this.setState({
@@ -614,12 +584,7 @@ export default class HookForm extends Component {
             />
             <FormGroup row>
               <FormControlLabel
-                control={
-                  <Switch
-                    checked={hook.metadata.emailOnError}
-                    onChange={this.handleEmailOnErrorChange}
-                  />
-                }
+                control={<Switch checked={hook.metadata.emailOnError} onChange={this.handleEmailOnErrorChange} />}
                 label="Email on error"
               />
             </FormGroup>
@@ -640,10 +605,7 @@ export default class HookForm extends Component {
                 helperText={
                   <span>
                     See{' '}
-                    <a
-                      href="https://www.npmjs.com/package/cron-parser"
-                      target="_blank"
-                      rel="noopener noreferrer">
+                    <a href="https://www.npmjs.com/package/cron-parser" target="_blank" rel="noopener noreferrer">
                       cron-parser
                     </a>{' '}
                     for format information. Times are in UTC.
@@ -656,22 +618,17 @@ export default class HookForm extends Component {
                 value={scheduleTextField}
               />
               <Tooltip title="Add Schedule">
-                <IconButton
-                  className={classes.iconButton}
-                  onClick={this.handleNewCronJob}>
+                <IconButton className={classes.iconButton} onClick={this.handleNewCronJob}>
                   <PlusIcon />
                 </IconButton>
               </Tooltip>
             </div>
             <List>
-              {hook.schedule.map(cronJob => (
+              {hook.schedule.map((cronJob) => (
                 <ListItem className={classes.scheduleEntry} key={cronJob}>
                   <ListItemText primary={<code>{cronJob}</code>} />
                   <Tooltip title="Delete Schedule">
-                    <IconButton
-                      className={classes.iconButton}
-                      name={cronJob}
-                      onClick={this.handleDeleteCronJob}>
+                    <IconButton className={classes.iconButton} name={cronJob} onClick={this.handleDeleteCronJob}>
                       <DeleteIcon />
                     </IconButton>
                   </Tooltip>
@@ -685,29 +642,17 @@ export default class HookForm extends Component {
                 <ListItemText
                   primary="Next Scheduled Fire"
                   secondary={
-                    hook.status.nextScheduledDate ? (
-                      <DateDistance from={hook.status.nextScheduledDate} />
-                    ) : (
-                      'n/a'
-                    )
+                    hook.status.nextScheduledDate ? <DateDistance from={hook.status.nextScheduledDate} /> : 'n/a'
                   }
                 />
               </ListItem>
               <ListItem>
                 <ListItemText
                   disableTypography
-                  primary={
-                    <Typography variant="subtitle1">
-                      Last Fired Attempts
-                    </Typography>
-                  }
+                  primary={<Typography variant="subtitle1">Last Fired Attempts</Typography>}
                   secondary={
                     hookLastFires ? (
-                      <HookLastFiredTable
-                        items={hookLastFires}
-                        onErrorClick={this.handleDrawerOpen}
-                        paginate
-                      />
+                      <HookLastFiredTable items={hookLastFires} onErrorClick={this.handleDrawerOpen} paginate />
                     ) : (
                       'n/a'
                     )
@@ -744,16 +689,10 @@ export default class HookForm extends Component {
               }
               secondary={
                 <Fragment>
-                  <Typography
-                    gutterBottom
-                    color="textSecondary"
-                    variant="caption">
+                  <Typography gutterBottom color="textSecondary" variant="caption">
                     <span>
                       When the hook fires, this template is rendered with{' '}
-                      <a
-                        href="https://json-e.js.org/"
-                        target="_blank"
-                        rel="noopener noreferrer">
+                      <a href="https://json-e.js.org/" target="_blank" rel="noopener noreferrer">
                         JSON-e
                       </a>{' '}
                       to create the the task definition. See{' '}
@@ -761,22 +700,15 @@ export default class HookForm extends Component {
                         <a
                           target="_blank"
                           rel="noopener noreferrer"
-                          href={docs(
-                            window.env.TASKCLUSTER_ROOT_URL,
-                            'reference/core/hooks/firing-hooks'
-                          )}>
+                          href={docs(window.env.TASKCLUSTER_ROOT_URL, 'reference/core/hooks/firing-hooks')}
+                        >
                           firing hooks
                         </a>
                       }{' '}
                       for more information.
                     </span>
                   </Typography>
-                  <CodeEditor
-                    mode="yaml"
-                    lint
-                    value={taskInput}
-                    onChange={this.handleTaskChange}
-                  />
+                  <CodeEditor mode="yaml" lint value={taskInput} onChange={this.handleTaskChange} />
                 </Fragment>
               }
             />
@@ -791,19 +723,10 @@ export default class HookForm extends Component {
               }
               secondary={
                 <Fragment>
-                  <Typography
-                    gutterBottom
-                    color="textSecondary"
-                    variant="caption">
-                    The payload to <code>triggerHook</code> must match this
-                    schema.
+                  <Typography gutterBottom color="textSecondary" variant="caption">
+                    The payload to <code>triggerHook</code> must match this schema.
                   </Typography>
-                  <CodeEditor
-                    mode="yaml"
-                    lint
-                    value={triggerSchemaInput}
-                    onChange={this.handleTriggerSchemaChange}
-                  />
+                  <CodeEditor mode="yaml" lint value={triggerSchemaInput} onChange={this.handleTriggerSchemaChange} />
                 </Fragment>
               }
             />
@@ -817,23 +740,22 @@ export default class HookForm extends Component {
             classes={{ root: classes.successIcon }}
             variant="round"
             disabled={!this.validHook() || actionLoading || !isHookDirty}
-            onClick={this.handleCreateHook}>
+            onClick={this.handleCreateHook}
+          >
             <ContentSaveIcon />
           </Button>
         ) : (
           <Fragment>
             <Button
               spanProps={{
-                className: classNames(
-                  classes.actionButtonSpan,
-                  classes.saveHookSpan
-                ),
+                className: classNames(classes.actionButtonSpan, classes.saveHookSpan),
               }}
               tooltipProps={{ title: 'Save Hook' }}
               classes={{ root: classes.successIcon }}
               variant="round"
               disabled={!this.validHook() || actionLoading || !isHookDirty}
-              onClick={this.handleUpdateHook}>
+              onClick={this.handleUpdateHook}
+            >
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
@@ -903,11 +825,7 @@ export default class HookForm extends Component {
                     <Typography gutterBottom variant="subtitle1">
                       Schema
                     </Typography>
-                    <JsonDisplay
-                      syntax="yaml"
-                      className={classes.code}
-                      objectContent={hook.triggerSchema}
-                    />
+                    <JsonDisplay syntax="yaml" className={classes.code} objectContent={hook.triggerSchema} />
                   </Grid>
                 </Grid>
               </Fragment>
@@ -937,7 +855,8 @@ export default class HookForm extends Component {
           classes={{
             paper: classes.drawerPaper,
           }}
-          onClose={this.handleDrawerClose}>
+          onClose={this.handleDrawerClose}
+        >
           <div className={classes.metadataContainer}>
             <Typography variant="h6" className={classes.headline}>
               {drawerData?.taskId}
@@ -947,11 +866,7 @@ export default class HookForm extends Component {
                 <ListItemText
                   primary={
                     drawerData?.error && (
-                      <ErrorPanel
-                        className={classes.errorPanel}
-                        error={drawerData?.error}
-                        onClose={null}
-                      />
+                      <ErrorPanel className={classes.errorPanel} error={drawerData?.error} onClose={null} />
                     )
                   }
                 />

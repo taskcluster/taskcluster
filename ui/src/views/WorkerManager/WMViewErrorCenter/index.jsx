@@ -55,9 +55,10 @@ export default class WMViewErrorCenter extends Component {
     const items =
       !loading && !error
         ? this.sortItems(
-            Object.entries(
-              WorkerManagerErrorsStats?.totals?.workerPool
-            ).map(([key, value]) => ({ workerPool: key, errorsCount: value }))
+            Object.entries(WorkerManagerErrorsStats?.totals?.workerPool).map(([key, value]) => ({
+              workerPool: key,
+              errorsCount: value,
+            })),
           )
         : [];
     const headers = [
@@ -93,15 +94,11 @@ export default class WMViewErrorCenter extends Component {
             <DataTable
               items={items}
               headers={headers}
-              onHeaderClick={header => this.onHeaderClick(header)}
-              renderRow={row => (
+              onHeaderClick={(header) => this.onHeaderClick(header)}
+              renderRow={(row) => (
                 <TableRow key={row.workerPool}>
                   <TableCell>
-                    <Link
-                      title="View Worker Pool"
-                      to={`/worker-manager/${encodeURIComponent(
-                        row.workerPool
-                      )}`}>
+                    <Link title="View Worker Pool" to={`/worker-manager/${encodeURIComponent(row.workerPool)}`}>
                       <TableCellItem button>
                         {row.workerPool}
                         <LinkIcon />
@@ -109,11 +106,7 @@ export default class WMViewErrorCenter extends Component {
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <Link
-                      title="View errors"
-                      to={`/worker-manager/${encodeURIComponent(
-                        row.workerPool
-                      )}/errors`}>
+                    <Link title="View errors" to={`/worker-manager/${encodeURIComponent(row.workerPool)}/errors`}>
                       <TableCellItem button>
                         {row.errorsCount}
                         <MessageAlertIcon />

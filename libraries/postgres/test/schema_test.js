@@ -5,9 +5,9 @@ import { strict as assert } from 'node:assert';
 const __dirname = new URL('.', import.meta.url).pathname;
 const __filename = new URL('', import.meta.url).pathname;
 
-suite(path.basename(__filename), function() {
-  suite('fromDbDirectory', function() {
-    test('fromDbDirectory', function() {
+suite(path.basename(__filename), function () {
+  suite('fromDbDirectory', function () {
+    test('fromDbDirectory', function () {
       const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
       const ver2 = sch.latestVersion();
       assert.equal(ver2.version, 2);
@@ -18,8 +18,7 @@ suite(path.basename(__filename), function() {
       const ver1 = sch.getVersion(1);
       assert.deepEqual(Object.keys(ver1.methods), ['get_secret']);
 
-      assert.deepEqual([...sch.allMethods().map(meth => meth.name)].sort(),
-        ['get_secret', 'list_secrets']);
+      assert.deepEqual([...sch.allMethods().map((meth) => meth.name)].sort(), ['get_secret', 'list_secrets']);
 
       assert.deepEqual(sch.tables.get(), {
         secrets: {
@@ -30,7 +29,7 @@ suite(path.basename(__filename), function() {
       });
     });
 
-    test('fromDbDirectory with external SQL files', function() {
+    test('fromDbDirectory with external SQL files', function () {
       const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
       const ver1 = sch.getVersion(1);
       assert(ver1.migrationScript.startsWith('begin'));
@@ -61,11 +60,10 @@ suite(path.basename(__filename), function() {
       Schema.fromDbDirectory(path.join(__dirname, 'db-with-depr'));
       // does not crash..
     });
-
   });
 
-  suite('fromSerializable', function() {
-    test('fromSerializable', function() {
+  suite('fromSerializable', function () {
+    test('fromSerializable', function () {
       const sch = Schema.fromSerializable({
         access: {},
         tables: {},
@@ -90,69 +88,73 @@ suite(path.basename(__filename), function() {
     });
   });
 
-  suite('_checkMethodUpdates', function() {
-    const versions = v2overrides => Schema.fromSerializable({
-      versions: [
-        {
-          version: 1,
-          methods: {
-            whatever: {
-              description: 'test',
-              mode: 'read',
-              serviceName: 'test',
-              args: 'x integer',
-              returns: 'void',
-              body: 'hi',
+  suite('_checkMethodUpdates', function () {
+    const versions = (v2overrides) =>
+      Schema.fromSerializable({
+        versions: [
+          {
+            version: 1,
+            methods: {
+              whatever: {
+                description: 'test',
+                mode: 'read',
+                serviceName: 'test',
+                args: 'x integer',
+                returns: 'void',
+                body: 'hi',
+              },
             },
           },
-        },
-        {
-          version: 2,
-          methods: {
-            whatever: {
-              description: 'test',
-              mode: 'read',
-              serviceName: 'test',
-              args: 'x integer',
-              returns: 'void',
-              body: 'hi',
-              ...v2overrides,
+          {
+            version: 2,
+            methods: {
+              whatever: {
+                description: 'test',
+                mode: 'read',
+                serviceName: 'test',
+                args: 'x integer',
+                returns: 'void',
+                body: 'hi',
+                ...v2overrides,
+              },
             },
           },
-        },
-      ],
-      access: {},
-      tables: {},
-    }).versions;
+        ],
+        access: {},
+        tables: {},
+      }).versions;
 
-    test('method changes mode', function() {
+    test('method changes mode', function () {
       assert.throws(
         () => Schema._checkMethodUpdates(versions({ mode: 'write' })),
-        /method whatever changed mode in version 2/);
+        /method whatever changed mode in version 2/,
+      );
     });
 
-    test('method changes serviceName', function() {
+    test('method changes serviceName', function () {
       assert.throws(
         () => Schema._checkMethodUpdates(versions({ serviceName: 'queue' })),
-        /method whatever changed serviceName in version 2/);
+        /method whatever changed serviceName in version 2/,
+      );
     });
 
-    test('method changes args', function() {
+    test('method changes args', function () {
       assert.throws(
         () => Schema._checkMethodUpdates(versions({ args: 'x text' })),
-        /method whatever changed args in version 2/);
+        /method whatever changed args in version 2/,
+      );
     });
 
-    test('method changes returns', function() {
+    test('method changes returns', function () {
       assert.throws(
         () => Schema._checkMethodUpdates(versions({ returns: 'text' })),
-        /method whatever changed returns in version 2/);
+        /method whatever changed returns in version 2/,
+      );
     });
   });
 
-  test('allMethods', function() {
+  test('allMethods', function () {
     const sch = Schema.fromDbDirectory(path.join(__dirname, 'db-simple'));
-    assert.deepEqual([...sch.allMethods().map(meth => meth.name)].sort(),
-      ['get_secret', 'list_secrets']);
+    assert.deepEqual([...sch.allMethods().map((meth) => meth.name)].sort(), ['get_secret', 'list_secrets']);
   });
 });

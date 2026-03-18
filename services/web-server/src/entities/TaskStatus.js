@@ -6,7 +6,7 @@ export default class TaskStatus {
     Object.assign(this, data);
 
     if (this.runs) {
-      this.runs = this.runs.map(run => new TaskRun(taskId, run));
+      this.runs = this.runs.map((run) => new TaskRun(taskId, run));
     }
   }
 }

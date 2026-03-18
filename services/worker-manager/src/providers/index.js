@@ -18,7 +18,7 @@ const PROVIDER_TYPES = {
 let SETUP_RETRY_INTERVAL = 60 * 1000;
 
 // for tests..
-export const setSetupRetryInterval = i => SETUP_RETRY_INTERVAL = i;
+export const setSetupRetryInterval = (i) => (SETUP_RETRY_INTERVAL = i);
 
 /**
  * Load all of the providers in the configuration, including loading
@@ -45,7 +45,16 @@ export class Providers {
    * }} opts
    */
   async setup({
-    cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator, publisher, launchConfigSelector,
+    cfg,
+    monitor,
+    notify,
+    db,
+    estimator,
+    Worker,
+    WorkerPoolError,
+    validator,
+    publisher,
+    launchConfigSelector,
   }) {
     this.monitor = monitor;
 
@@ -124,8 +133,9 @@ export class Providers {
   forAll(cb) {
     return Promise.all(
       Object.values(this._providers)
-        .filter(p => !p.setupFailed)
-        .map(cb));
+        .filter((p) => !p.setupFailed)
+        .map(cb),
+    );
   }
 
   /**

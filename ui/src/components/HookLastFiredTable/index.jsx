@@ -1,4 +1,3 @@
-
 import { func, array } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
@@ -14,7 +13,7 @@ import StatusLabel from '../StatusLabel';
 import DataTable from '../DataTable';
 import Link from '../../utils/Link';
 
-const styles = theme => ({
+const styles = (theme) => ({
   informationIcon: {
     marginLeft: theme.spacing(1),
   },
@@ -47,7 +46,7 @@ function HookLastFiredTable({ classes, ...props }) {
     <DataTable
       items={items}
       headers={headers}
-      renderRow={hookFire => (
+      renderRow={(hookFire) => (
         <TableRow key={hookFire.taskId}>
           <TableCell>
             {(hookFire.result === 'SUCCESS' && (
@@ -63,10 +62,7 @@ function HookLastFiredTable({ classes, ...props }) {
           <TableCell>
             <StatusLabel state={hookFire.result} />
             {hookFire.result === 'ERROR' && (
-              <IconButton
-                className={classes.informationIcon}
-                name={hookFire.taskId}
-                onClick={onErrorClick}>
+              <IconButton className={classes.informationIcon} name={hookFire.taskId} onClick={onErrorClick}>
                 <InformationVariantIcon size={iconSize} />
               </IconButton>
             )}

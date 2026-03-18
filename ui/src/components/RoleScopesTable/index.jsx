@@ -16,11 +16,11 @@ import { role } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.roleId, b.roleId)),
-  map(({ roleId }) => roleId)
+  map(({ roleId }) => roleId),
 );
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   listItemButton: {
     ...theme.mixins.listItemButton,
     display: 'flex',
@@ -62,65 +62,48 @@ export default class RoleScopesTable extends Component {
     (roles, selectedScope, searchTerm) => {
       const items = (roles || [])
         .filter(
-          role =>
-            role.expandedScopes.filter(
-              scope => scope.toLowerCase() === selectedScope.toLowerCase()
-            ).length > 0
+          (role) =>
+            role.expandedScopes.filter((scope) => scope.toLowerCase() === selectedScope.toLowerCase()).length > 0,
         )
-        .map(role => role.roleId);
+        .map((role) => role.roleId);
 
-      return searchTerm
-        ? items.filter(item => item.includes(searchTerm))
-        : items;
+      return searchTerm ? items.filter((item) => item.includes(searchTerm)) : items;
     },
     {
-      serializer: ([roles, selectedScope, searchTerm]) =>
-        `${sorted(roles).join('-')}-${selectedScope}-${searchTerm}`,
-    }
+      serializer: ([roles, selectedScope, searchTerm]) => `${sorted(roles).join('-')}-${selectedScope}-${searchTerm}`,
+    },
   );
 
-  renderItem = items => ({ index, style }) => {
-    const { selectedScope, classes } = this.props;
-    const item = items[index];
-    const iconSize = 16;
+  renderItem =
+    (items) =>
+    ({ index, style }) => {
+      const { selectedScope, classes } = this.props;
+      const item = items[index];
+      const iconSize = 16;
 
-    return (
-      <Fragment>
-        <Link
-          to={
-            selectedScope
-              ? `/auth/roles/${encodeURIComponent(item)}`
-              : `/auth/scopes/${encodeURIComponent(item)}`
-          }>
-          <ListItem className={classes.listItemButton} style={style} button>
-            {item}
-            <LinkIcon size={iconSize} />
-          </ListItem>
-        </Link>
-        <Divider
-          style={{
-            ...style,
-            height: 1,
-          }}
-        />
-      </Fragment>
-    );
-  };
+      return (
+        <Fragment>
+          <Link
+            to={selectedScope ? `/auth/roles/${encodeURIComponent(item)}` : `/auth/scopes/${encodeURIComponent(item)}`}
+          >
+            <ListItem className={classes.listItemButton} style={style} button>
+              {item}
+              <LinkIcon size={iconSize} />
+            </ListItem>
+          </Link>
+          <Divider
+            style={{
+              ...style,
+              height: 1,
+            }}
+          />
+        </Fragment>
+      );
+    };
 
   render() {
-    const {
-      classes,
-      roles,
-      searchTerm,
-      selectedScope,
-      noItemsMessage,
-      ...props
-    } = this.props;
-    const filteredItems = this.createSortedRolesScopes(
-      roles,
-      selectedScope,
-      searchTerm
-    );
+    const { classes, roles, searchTerm, selectedScope, noItemsMessage, ...props } = this.props;
+    const filteredItems = this.createSortedRolesScopes(roles, selectedScope, searchTerm);
     const windowHeight = window.innerHeight;
     const tableHeight = windowHeight > 400 ? 0.8 * windowHeight : 400;
     const itemCount = filteredItems.length;
@@ -133,9 +116,7 @@ export default class RoleScopesTable extends Component {
       </List>
     ) : (
       <Typography variant="body2" className={classes.noRolesText}>
-        {searchTerm
-          ? `No roles available for search term ${searchTerm}.`
-          : noItemsMessage}
+        {searchTerm ? `No roles available for search term ${searchTerm}.` : noItemsMessage}
       </Typography>
     );
   }

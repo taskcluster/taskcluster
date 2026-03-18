@@ -1,7 +1,6 @@
-
 import { withStyles } from '@material-ui/core/styles';
 
-const styles = theme => ({
+const styles = (theme) => ({
   blockquote: {
     borderLeft: `5px solid ${theme.palette.text.hint}`,
     padding: `${theme.spacing(0.5)}px ${theme.spacing(3)}px`,

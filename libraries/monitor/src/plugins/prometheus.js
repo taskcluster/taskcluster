@@ -119,21 +119,14 @@ export class PrometheusPlugin {
    * @param {MetricDefinition} definition - The metric definition.
    * @returns {import('prom-client').Metric<string>} The registered metric.
    */
-  registerMetric(name, {
-    type,
-    description,
-    labels = {},
-    buckets,
-    percentiles,
-    registers = ['default'],
-  }) {
+  registerMetric(name, { type, description, labels = {}, buckets, percentiles, registers = ['default'] }) {
     /** @type {import('prom-client').Metric<string>} */
     let metric;
     const metricOptions = {
-      name: [...this.prefix, name].filter(a => a).join('_'),
+      name: [...this.prefix, name].filter((a) => a).join('_'),
       help: description,
       labelNames: Object.keys(labels),
-      registers: registers.map(name => this.#getRegistry(name)),
+      registers: registers.map((name) => this.#getRegistry(name)),
     };
 
     switch (type) {
@@ -188,8 +181,10 @@ export class PrometheusPlugin {
    */
   inc(name, value = 1, labels = {}) {
     const metricInfo = this.getMetric(name);
-    assert(metricInfo.type === 'counter' || metricInfo.type === 'gauge',
-      `Cannot increment metric ${name} of type ${metricInfo.type}`);
+    assert(
+      metricInfo.type === 'counter' || metricInfo.type === 'gauge',
+      `Cannot increment metric ${name} of type ${metricInfo.type}`,
+    );
 
     const normalizedLabels = this.#normalizeLabels(labels, metricInfo.labels);
 
@@ -278,10 +273,12 @@ export class PrometheusPlugin {
     if (Object.keys(metricInfo.labels).length > 0) {
       const end = metricInfo.metric.startTimer(normalizedLabels);
       return (finalLabels) => {
-        const finalCombinedLabels = finalLabels ? {
-          ...normalizedLabels,
-          ...this.#normalizeLabels(finalLabels, metricInfo.labels),
-        } : normalizedLabels;
+        const finalCombinedLabels = finalLabels
+          ? {
+              ...normalizedLabels,
+              ...this.#normalizeLabels(finalLabels, metricInfo.labels),
+            }
+          : normalizedLabels;
         return end(finalCombinedLabels);
       };
     }
@@ -410,15 +407,17 @@ export class PrometheusPlugin {
     const promises = [];
 
     if (this.server) {
-      promises.push(new Promise((resolve) => {
-        this.server.close((err) => {
-          if (err) {
-            this.monitor?.reportError(`Error closing metrics server: ${err.message}`);
-          }
-          this.server = null;
-          resolve();
-        });
-      }));
+      promises.push(
+        new Promise((resolve) => {
+          this.server.close((err) => {
+            if (err) {
+              this.monitor?.reportError(`Error closing metrics server: ${err.message}`);
+            }
+            this.server = null;
+            resolve();
+          });
+        }),
+      );
     }
 
     if (this.pushGateway) {

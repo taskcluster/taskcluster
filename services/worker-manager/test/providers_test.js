@@ -3,16 +3,16 @@ import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { setSetupRetryInterval } from '../src/providers/index.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeNotify(mock, skipping);
   helper.withProviders(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  suite('failing provider setup', function() {
+  suite('failing provider setup', function () {
     let monitor;
-    setup(async function() {
+    setup(async function () {
       monitor = await helper.load('monitor');
 
       setSetupRetryInterval(100); // 100ms by default, to avoid providers retrying for too long
@@ -24,28 +24,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       helper.load.remove('providers');
     });
 
-    teardown(function() {
+    teardown(function () {
       // check for and flush the errors about the provider starting up
       assert(
-        monitor.manager.messages.every(
-          msg => msg.Type === 'monitor.error' && msg.Fields.message === 'setup failure'));
+        monitor.manager.messages.every((msg) => msg.Type === 'monitor.error' && msg.Fields.message === 'setup failure'),
+      );
       monitor.manager.reset();
     });
 
-    test('failed provider is not included in forAll, but has returns true', async function() {
+    test('failed provider is not included in forAll, but has returns true', async function () {
       helper.load.cfg('providers.testing1.setupFailure', 1);
       const providers = await helper.load('providers');
-      await providers.forAll(prov => assert.notEqual(prov.providerId, 'testing1'));
+      await providers.forAll((prov) => assert.notEqual(prov.providerId, 'testing1'));
       assert(providers.has('testing1'));
     });
 
-    test('failed provider is returned by get with `setupFailed` property', async function() {
+    test('failed provider is returned by get with `setupFailed` property', async function () {
       helper.load.cfg('providers.testing1.setupFailure', 1);
       const providers = await helper.load('providers');
       assert.deepEqual(providers.get('testing1'), { setupFailed: true });
     });
 
-    test('provider is returned by get once it succeeds', async function() {
+    test('provider is returned by get once it succeeds', async function () {
       setSetupRetryInterval(5); // very short, since we want this to recover quickly
       helper.load.cfg('providers.testing1.setupFailure', 2);
       const providers = await helper.load('providers');

@@ -5,8 +5,8 @@
  * available.  Note that the rootUrl shouldn't be used at the suite level, as
  * it will not be set yet.
  */
-exports.withRootUrl = function() {
-  before(function() {
+exports.withRootUrl = function () {
+  before(function () {
     // the rootUrl is passed in via `.neutrinorc.js`
     exports.rootUrl = __karma__.config.args[0];
     if (!exports.rootUrl) {
@@ -19,7 +19,7 @@ exports.withRootUrl = function() {
     }
   });
 
-  after(function() {
+  after(function () {
     exports.rootUrl = undefined;
   });
 };

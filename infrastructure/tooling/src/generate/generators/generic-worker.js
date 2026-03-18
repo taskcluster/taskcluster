@@ -22,26 +22,26 @@ tasks.push({
 tasks.push({
   title: `Generate Generic-Worker Schemas`,
   requires: [],
-  provides: [
-    'generic-worker-schemas',
-  ],
+  provides: ['generic-worker-schemas'],
   run: async (_requirements, _utils) => {
     const schemaFiles = glob.sync('workers/generic-worker/schemas/*.yml', { cwd: REPO_ROOT });
     return {
-      'generic-worker-schemas': await Promise.all(schemaFiles.map(async filename => {
-        const content = await readRepoYAML(filename);
+      'generic-worker-schemas': await Promise.all(
+        schemaFiles.map(async (filename) => {
+          const content = await readRepoYAML(filename);
 
-        // the `title` property of the on-disk schema file is used to generate a Go identifier
-        // that must be the same (`GenericWorkerPayload`) for all of these schemas.  So we substitute
-        // a nicer title in here.
-        const [engine, platform] = path.basename(filename, '.yml').split('_');
-        content.title = `${content.title} - ${engine}, ${platform}`;
+          // the `title` property of the on-disk schema file is used to generate a Go identifier
+          // that must be the same (`GenericWorkerPayload`) for all of these schemas.  So we substitute
+          // a nicer title in here.
+          const [engine, platform] = path.basename(filename, '.yml').split('_');
+          content.title = `${content.title} - ${engine}, ${platform}`;
 
-        return ({
-          filename: filename.replace('workers/generic-worker/schemas', 'schemas/generic-worker'),
-          content,
-        });
-      })),
+          return {
+            filename: filename.replace('workers/generic-worker/schemas', 'schemas/generic-worker'),
+            content,
+          };
+        }),
+      ),
     };
   },
 });
@@ -64,7 +64,19 @@ tasks.push({
     if (process.platform === 'linux') {
       gwHelpCommand = [binary, '--help'];
     } else {
-      gwHelpCommand = ['docker', 'run', '--rm', '-q', '-v', `${tempDir}:/app`, '-w', '/app', 'alpine', './generic-worker', '--help'];
+      gwHelpCommand = [
+        'docker',
+        'run',
+        '--rm',
+        '-q',
+        '-v',
+        `${tempDir}:/app`,
+        '-w',
+        '/app',
+        'alpine',
+        './generic-worker',
+        '--help',
+      ];
     }
 
     let gwHelp = await execCommand({
@@ -84,13 +96,13 @@ tasks.push({
     [
       path.join('workers', 'generic-worker', 'README.md'),
       path.join('ui', 'docs', 'reference', 'workers', 'generic-worker', 'usage.mdx'),
-    ].forEach(async file => {
-      await modifyRepoFile(
-        file,
-        async content => content
-          .replace(
-            /(<!-- HELP BEGIN -->)(?:.|\n)*(<!-- HELP END -->)/m,
-            `$1\n${ticks}\n${gwHelp.trimRight()}\n${ticks}\n$2`));
+    ].forEach(async (file) => {
+      await modifyRepoFile(file, async (content) =>
+        content.replace(
+          /(<!-- HELP BEGIN -->)(?:.|\n)*(<!-- HELP END -->)/m,
+          `$1\n${ticks}\n${gwHelp.trimRight()}\n${ticks}\n$2`,
+        ),
+      );
     });
   },
 });
@@ -127,10 +139,14 @@ tasks.push({
     }
 
     const links = schemaFiles
-      .map(({ title, filename_base }) => ` * [Generic worker payload -${title.split('-')[1]}](/docs/reference/workers/generic-worker/${filename_base})`)
+      .map(
+        ({ title, filename_base }) =>
+          ` * [Generic worker payload -${title.split('-')[1]}](/docs/reference/workers/generic-worker/${filename_base})`,
+      )
       .join('\n');
 
-    await modifyRepoFile(path.join(gwDocsDir, 'README.mdx'),
-      content => content.replace(/(<!-- BEGIN PAYLOAD LINKS -->).*(<!-- END PAYLOAD LINKS -->)/ms, `$1\n${links}\n$2`));
+    await modifyRepoFile(path.join(gwDocsDir, 'README.mdx'), (content) =>
+      content.replace(/(<!-- BEGIN PAYLOAD LINKS -->).*(<!-- END PAYLOAD LINKS -->)/ms, `$1\n${links}\n$2`),
+    );
   },
 });

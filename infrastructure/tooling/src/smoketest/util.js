@@ -13,7 +13,7 @@ export const retryAssertionFailures = async (times, utils, fn) => {
       }
 
       utils.status({ message: `Try ${tries} failed; waiting 100ms` });
-      await new Promise(res => setTimeout(res, 100));
+      await new Promise((res) => setTimeout(res, 100));
       continue;
     }
 

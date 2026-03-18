@@ -14,7 +14,7 @@ import { VIEW_ROLES_PAGE_SIZE } from '../../../utils/constants';
 
 @withApollo
 @graphql(rolesQuery, {
-  options: props => ({
+  options: (props) => ({
     fetchPolicy: 'network-only',
     variables: {
       rolesConnection: {
@@ -77,22 +77,18 @@ export default class Roles extends PureComponent {
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.listRoleIds;
 
-        return dotProp.set(previousResult, 'listRoleIds', listRoleIds =>
-          dotProp.set(
-            dotProp.set(listRoleIds, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, 'listRoleIds', (listRoleIds) =>
+          dotProp.set(dotProp.set(listRoleIds, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
   };
 
-  handleDialogActionOpen = roleId => {
+  handleDialogActionOpen = (roleId) => {
     this.setState({ dialogOpen: true, deleteRoleId: roleId });
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({ dialogError: error });
   };
 
@@ -149,11 +145,7 @@ export default class Roles extends PureComponent {
             onError={this.handleDialogActionError}
             error={dialogError}
             title="Delete Role?"
-            body={
-              <Typography variant="body2">
-                This will delete the {deleteRoleId} role.
-              </Typography>
-            }
+            body={<Typography variant="body2">This will delete the {deleteRoleId} role.</Typography>}
             confirmText="Delete Role"
           />
         )}

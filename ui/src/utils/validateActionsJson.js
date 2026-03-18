@@ -6,9 +6,7 @@ let validateActionsJson;
 
 export default async () => {
   if (!validateActionsJson) {
-    actionsJsonSchemaResponse = await fetch(
-      urls.schema('common', 'action-schema-v1.json')
-    );
+    actionsJsonSchemaResponse = await fetch(urls.schema('common', 'action-schema-v1.json'));
 
     validateActionsJson = ajv.compile(await actionsJsonSchemaResponse.json());
   }

@@ -1,6 +1,11 @@
 #import "../../../fragments/artifacts.graphql"
 
-query Task($taskId: ID!, $artifactsConnection: PageConnection, $dependentsConnection: PageConnection, $taskActionsFilter: JSON) {
+query Task(
+  $taskId: ID!
+  $artifactsConnection: PageConnection
+  $dependentsConnection: PageConnection
+  $taskActionsFilter: JSON
+) {
   task(taskId: $taskId) {
     taskId
     taskGroupId

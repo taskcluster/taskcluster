@@ -4,22 +4,18 @@ import { retryAssertionFailures } from '../util.js';
 
 export const scopeExpression = {
   AllOf: [
-    "auth:create-role:project:taskcluster:smoketest:*",
-    "auth:delete-role:project:taskcluster:smoketest:*",
-    "auth:update-role:project:taskcluster:smoketest:*",
-    "project:taskcluster:smoketest:*",
+    'auth:create-role:project:taskcluster:smoketest:*',
+    'auth:delete-role:project:taskcluster:smoketest:*',
+    'auth:update-role:project:taskcluster:smoketest:*',
+    'project:taskcluster:smoketest:*',
   ],
 };
 
 export const tasks = [];
 tasks.push({
   title: 'Create role and expand smoketest (--target roles)',
-  requires: [
-    'ping-auth',
-  ],
-  provides: [
-    'target-roles',
-  ],
+  requires: ['ping-auth'],
+  provides: ['target-roles'],
   run: async (_requirements, utils) => {
     const auth = new taskcluster.Auth(taskcluster.fromEnvVars());
     const randomId = taskcluster.slugid();
@@ -42,9 +38,7 @@ tasks.push({
       const expandedRole = await auth.expandScopes(expandPayload);
 
       const expectedScopes = {
-        scopes:
-        [ `assume:project:taskcluster:smoketest:${randomId}:abc`,
-          'project:taskcluster:smoketest:abc/*' ],
+        scopes: [`assume:project:taskcluster:smoketest:${randomId}:abc`, 'project:taskcluster:smoketest:abc/*'],
       };
       assert.deepEqual(expandedRole.scopes, expectedScopes.scopes);
     });
@@ -54,12 +48,14 @@ tasks.push({
 
     // clean up any leftover roles, in case previous runs crashed or failed
     const query = {};
-    const anHourAgo = Date.now() - (1000 * 60 * 60);
+    const anHourAgo = Date.now() - 1000 * 60 * 60;
     while (1) {
       const res = await auth.listRoles2();
       for (const role of res.roles) {
-        if (role.roleId.includes('project:taskcluster:smoketest:') &&
-           new Date(role.lastModified) < new Date(anHourAgo)) {
+        if (
+          role.roleId.includes('project:taskcluster:smoketest:') &&
+          new Date(role.lastModified) < new Date(anHourAgo)
+        ) {
           await auth.deleteRole(role.roleId);
         }
       }

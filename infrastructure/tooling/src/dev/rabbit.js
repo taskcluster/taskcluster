@@ -20,7 +20,7 @@ export const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
     type: 'input',
     name: 'pulseHostname',
     message: 'What is the hostname of your rabbitmq cluster? (no protocol or trailing slash)',
-    validate: h => {
+    validate: (h) => {
       if (h.includes('://')) {
         return 'hostname must not include protocol';
       }
@@ -35,9 +35,9 @@ export const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
     when: () => !userConfig.pulseVhost,
     type: 'input',
     name: 'pulseVhost',
-    default: previous => previous.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix,
+    default: (previous) => previous.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix,
     message: 'What is the vhost for this deployment inside your rabbitmq cluster?',
-    validate: vhost => {
+    validate: (vhost) => {
       if (!/^[a-z0-9]+$/.test(vhost)) {
         return 'Must consist of lowercase characters and numbers';
       }
@@ -71,10 +71,11 @@ export const rabbitPrompts = ({ userConfig, prompts, configTmpl }) => {
         return `https://${userConfig.pulseHostname || previous.pulseHostname}`;
       }
 
-      return "";
+      return '';
     },
     name: 'meta.rabbitAdminManagementOrigin',
-    message: 'Now the origin of the management API for that RabbitMQ cluster (i.e. http://127.0.0.1:15672, https://your.rabbitmq.service.com).',
+    message:
+      'Now the origin of the management API for that RabbitMQ cluster (i.e. http://127.0.0.1:15672, https://your.rabbitmq.service.com).',
   });
 };
 
@@ -147,11 +148,13 @@ export const rabbitEnsureResources = async ({ userConfig, answer }) => {
       tags: '',
     });
     const regexName = `taskcluster\\-${name.replace(/_/g, '\\-')}`;
-    await agent.put(`${apiUrl}/permissions/${encodeURIComponent(vhost)}/${encodeURIComponent(cfg.pulse_username)}`).send({
-      configure: `^(queue/${regexName}/.*|exchange/${regexName}/.*)`,
-      write: `^(queue/${regexName}/.*|exchange/${regexName}/.*)`,
-      read: `^(queue/${regexName}/.*|exchange/.*)`,
-    });
+    await agent
+      .put(`${apiUrl}/permissions/${encodeURIComponent(vhost)}/${encodeURIComponent(cfg.pulse_username)}`)
+      .send({
+        configure: `^(queue/${regexName}/.*|exchange/${regexName}/.*)`,
+        write: `^(queue/${regexName}/.*|exchange/${regexName}/.*)`,
+        read: `^(queue/${regexName}/.*|exchange/.*)`,
+      });
   }
 };
 

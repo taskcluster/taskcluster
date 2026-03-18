@@ -5,8 +5,8 @@ import helper, { monitorManager } from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
-  setup(async function() {
+suite(testing.suiteName(), function () {
+  setup(async function () {
     await helper.setupServer({ builder });
   });
   teardown(helper.teardownServer);
@@ -19,50 +19,59 @@ suite(testing.suiteName(), function() {
     apiVersion: 'v1',
   });
 
-  builder.declare({
-    method: 'get',
-    route: '/single-param/:myparam',
-    name: 'testParam',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-    scopes: null,
-  }, function(req, res) {
-    res.status(200).send(req.params.myparam);
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/single-param/:myparam',
+      name: 'testParam',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      scopes: null,
+    },
+    function (req, res) {
+      res.status(200).send(req.params.myparam);
+    },
+  );
 
-  builder.declare({
-    method: 'get',
-    route: '/slash-param/:name(*)',
-    name: 'testSlashParam',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-    scopes: null,
-  }, function(req, res) {
-    res.status(404).send(req.params.name);
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/slash-param/:name(*)',
+      name: 'testSlashParam',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      scopes: null,
+    },
+    function (req, res) {
+      res.status(404).send(req.params.name);
+    },
+  );
 
-  builder.declare({
-    method: 'get',
-    route: '/another-param/:name(*)',
-    name: 'testAnotherParam',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-    scopes: null,
-  }, function(req, res) {
-    res.status(500).send(req.params.name);
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/another-param/:name(*)',
+      name: 'testAnotherParam',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      scopes: null,
+    },
+    function (req, res) {
+      res.status(500).send(req.params.name);
+    },
+  );
 
-  test('single parameter', async function() {
-    const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
+  test('single parameter', async function () {
+    const u = (path) => libUrls.api(helper.rootUrl, 'test', 'v1', path);
     await request.get(u('/single-param/Hello')),
-    await request.get(u('/single-param/Goodbye')),
-    await request.get(u('/slash-param/Slash')).catch(_err => {}),
-    await request.get(u('/another-param/Another')).catch(_err => {}),
-    assert.equal(monitorManager.messages.length, 4);
-    monitorManager.messages.forEach(event => {
+      await request.get(u('/single-param/Goodbye')),
+      await request.get(u('/slash-param/Slash')).catch((_err) => {}),
+      await request.get(u('/another-param/Another')).catch((_err) => {}),
+      assert.equal(monitorManager.messages.length, 4);
+    monitorManager.messages.forEach((event) => {
       assert.equal(event.Type, 'monitor.apiMethod');
       assert.equal(event.Logger, 'taskcluster.lib-api');
     });

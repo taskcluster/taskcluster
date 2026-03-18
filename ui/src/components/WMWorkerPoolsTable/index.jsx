@@ -14,10 +14,7 @@ import WorkerIcon from 'mdi-react/WorkerIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import { withRouter } from 'react-router-dom';
 import { memoize } from '../../utils/memoize';
-import {
-  WorkerManagerWorkerPoolSummary,
-  pageInfo,
-} from '../../utils/prop-types';
+import { WorkerManagerWorkerPoolSummary, pageInfo } from '../../utils/prop-types';
 import Label from '../Label';
 import ConnectionDataTable from '../ConnectionDataTable';
 import sort from '../../utils/sort';
@@ -25,19 +22,16 @@ import Link from '../../utils/Link';
 import Button from '../Button';
 import TableCellItem from '../TableCellItem';
 import DialogAction from '../DialogAction';
-import {
-  NULL_PROVIDER,
-  VIEW_WORKER_POOLS_PAGE_SIZE,
-} from '../../utils/constants';
+import { NULL_PROVIDER, VIEW_WORKER_POOLS_PAGE_SIZE } from '../../utils/constants';
 import { splitWorkerPoolId } from '../../utils/workerPool';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.workerPoolId, b.node.workerPoolId)),
-  map(({ node: { workerPoolId } }) => workerPoolId)
+  map(({ node: { workerPoolId } }) => workerPoolId),
 );
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   button: {
     marginLeft: -theme.spacing(2),
     marginRight: theme.spacing(1),
@@ -101,14 +95,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       return {
         ...workerPoolsConnection,
         edges: [...workerPoolsConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
+          const firstElement = sortDirection === 'desc' ? b.node[sortByProperty] : a.node[sortByProperty];
+          const secondElement = sortDirection === 'desc' ? a.node[sortByProperty] : b.node[sortByProperty];
 
           return sort(firstElement, secondElement);
         }),
@@ -120,10 +108,10 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = header => {
+  handleHeaderClick = (header) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === header ? toggled : 'desc';
 
@@ -163,7 +151,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     }
   };
 
-  handleDialogActionOpen = workerPool => () => {
+  handleDialogActionOpen = (workerPool) => () => {
     this.setState({
       dialogState: {
         open: true,
@@ -175,7 +163,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     });
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({
       dialogState: {
         ...this.state.dialogState,
@@ -208,9 +196,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     } = this.props;
     const { actionLoading } = this.state;
     const iconSize = 16;
-    const { provisionerId, workerType } = splitWorkerPoolId(
-      workerPool.workerPoolId
-    );
+    const { provisionerId, workerType } = splitWorkerPoolId(workerPool.workerPoolId);
 
     return (
       <TableRow key={workerPool.workerPoolId} hover>
@@ -260,18 +246,11 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         <TableCell>
           <Link
             title={`View ${workerPool.workerPoolId} workers`}
-            to={`${path}/${encodeURIComponent(
-              workerPool.workerPoolId
-            )}/errors`}>
+            to={`${path}/${encodeURIComponent(workerPool.workerPoolId)}/errors`}
+          >
             <TableCellItem button>
-              <div
-                className={
-                  workerPool.errorsCount > 0 ? classes.errorsPool : ''
-                }>
-                <Hidden
-                  lgUp
-                  implementation="css"
-                  className={classes.hiddenLabel}>
+              <div className={workerPool.errorsCount > 0 ? classes.errorsPool : ''}>
+                <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
                   Total Errors:
                 </Hidden>
                 {errorStatsLoading ? '...' : workerPool.errorsCount}
@@ -282,13 +261,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
         </TableCell>
 
         <TableCell>
-          <Link
-            to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
-            <Button
-              className={classes.linksButton}
-              variant="outlined"
-              disabled={actionLoading}
-              size="small">
+          <Link to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
+            <Button className={classes.linksButton} variant="outlined" disabled={actionLoading} size="small">
               <WorkerIcon className={classes.linksIcon} size={iconSize} />
               Workers
             </Button>
@@ -299,7 +273,8 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               className={classes.button}
               name={`${workerPool.workerPoolId}`}
               onClick={this.handleDialogActionOpen(workerPool)}
-              disabled={actionLoading}>
+              disabled={actionLoading}
+            >
               <DeleteIcon size={iconSize} />
             </IconButton>
           ) : (
@@ -322,7 +297,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     const sortedWorkerPoolsConnection = this.createSortedWorkerPoolsConnection(
       workerPoolsConnection,
       sortBy,
-      sortDirection
+      sortDirection,
     );
     const headers = [
       'Worker Pool ID',

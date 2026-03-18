@@ -6,7 +6,7 @@ import request from 'superagent';
 import crypto from 'node:crypto';
 import { toDataUrl, TestBackend } from '../src/backends/test.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.resetTables(mock, skipping);
   helper.withBackends(mock, skipping);
@@ -38,12 +38,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     return data;
   };
 
-  test('ping', async function() {
+  test('ping', async function () {
     await helper.apiClient.ping();
   });
 
-  suite('createUpload method', function() {
-    test('should be able to upload with a dataInline method', async function() {
+  suite('createUpload method', function () {
+    test('should be able to upload with a dataInline method', async function () {
       const data = crypto.randomBytes(128);
       const uploadId = taskcluster.slugid();
       await helper.apiClient.createUpload('public/foo', {
@@ -67,27 +67,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(rows[0].data, {});
     });
 
-    test('should fail if backend is not found', async function() {
+    test('should fail if backend is not found', async function () {
       const data = crypto.randomBytes(128);
       const uploadId = taskcluster.slugid();
 
       await helper.setBackendConfig({ backends: {}, backendMap: [] });
       await assert.rejects(
-        () => helper.apiClient.createUpload('public/foo', {
-          projectId: 'x',
-          uploadId,
-          expires: taskcluster.fromNow('1 year'),
-          proposedUploadMethods: {
-            dataInline: {
-              contentType: 'application/binary',
-              objectData: data.toString('base64'),
+        () =>
+          helper.apiClient.createUpload('public/foo', {
+            projectId: 'x',
+            uploadId,
+            expires: taskcluster.fromNow('1 year'),
+            proposedUploadMethods: {
+              dataInline: {
+                contentType: 'application/binary',
+                objectData: data.toString('base64'),
+              },
             },
-          },
-        }),
-        err => err.statusCode === 400);
+          }),
+        (err) => err.statusCode === 400,
+      );
     });
 
-    test('should return 409 if object is already uploaded', async function() {
+    test('should return 409 if object is already uploaded', async function () {
       const data = crypto.randomBytes(128);
       const uploadId = taskcluster.slugid();
       const expires = taskcluster.fromNow('1 day');
@@ -110,17 +112,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // note that the upload is completed during the call to createUpload, so
       // idempotency doesn't apply
       await assert.rejects(
-        () => helper.apiClient.createUpload('public/foo', {
-          projectId: 'x',
-          uploadId,
-          expires,
-          proposedUploadMethods,
-        }),
-        err => err.code === 'RequestConflict' && err.statusCode === 409,
+        () =>
+          helper.apiClient.createUpload('public/foo', {
+            projectId: 'x',
+            uploadId,
+            expires,
+            proposedUploadMethods,
+          }),
+        (err) => err.code === 'RequestConflict' && err.statusCode === 409,
       );
     });
 
-    test('should return 409 if upload is started with different expires or uploadId', async function() {
+    test('should return 409 if upload is started with different expires or uploadId', async function () {
       const uploadId = taskcluster.slugid();
       const expires = taskcluster.fromNow('1 day');
       const proposedUploadMethods = {}; // propose nothing
@@ -133,26 +136,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       await assert.rejects(
-        () => helper.apiClient.createUpload('public/foo', {
-          projectId: 'x',
-          uploadId: taskcluster.slugid(),
-          expires,
-          proposedUploadMethods,
-        }),
-        err => err.code === 'RequestConflict' && err.statusCode === 409,
+        () =>
+          helper.apiClient.createUpload('public/foo', {
+            projectId: 'x',
+            uploadId: taskcluster.slugid(),
+            expires,
+            proposedUploadMethods,
+          }),
+        (err) => err.code === 'RequestConflict' && err.statusCode === 409,
       );
       await assert.rejects(
-        () => helper.apiClient.createUpload('public/foo', {
-          projectId: 'x',
-          uploadId,
-          expires: taskcluster.fromNow('2 days'),
-          proposedUploadMethods,
-        }),
-        err => err.code === 'RequestConflict' && err.statusCode === 409,
+        () =>
+          helper.apiClient.createUpload('public/foo', {
+            projectId: 'x',
+            uploadId,
+            expires: taskcluster.fromNow('2 days'),
+            proposedUploadMethods,
+          }),
+        (err) => err.code === 'RequestConflict' && err.statusCode === 409,
       );
     });
 
-    test('should succeed on second attempt to create an upload', async function() {
+    test('should succeed on second attempt to create an upload', async function () {
       const data = crypto.randomBytes(128);
       const uploadId = taskcluster.slugid();
       const expires = taskcluster.fromNow('1 day');
@@ -186,7 +191,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(res.uploadMethod, { dataInline: true });
     });
 
-    test('should allow adding new hashes', async function() {
+    test('should allow adding new hashes', async function () {
       const data = crypto.randomBytes(128);
       const uploadId = taskcluster.slugid();
       const expires = taskcluster.fromNow('1 day');
@@ -227,7 +232,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(objRes.hashes, { sha256, sha512 });
     });
 
-    test('should disallow changing hashes', async function() {
+    test('should disallow changing hashes', async function () {
       const sha256a = 'e38808a4dbfdd9c82a351cc9a6055dffc7b4cc8e12020b2685f8eef92f5d1544';
       const sha256b = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
       const uploadId = taskcluster.slugid();
@@ -242,17 +247,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       await assert.rejects(
-        () => helper.apiClient.createUpload('public/foo', {
-          projectId: 'x',
-          uploadId,
-          expires,
-          hashes: { sha256: sha256b }, // different sha256 hash
-          proposedUploadMethods: {},
-        }),
-        err => err.statusCode === 409);
+        () =>
+          helper.apiClient.createUpload('public/foo', {
+            projectId: 'x',
+            uploadId,
+            expires,
+            hashes: { sha256: sha256b }, // different sha256 hash
+            proposedUploadMethods: {},
+          }),
+        (err) => err.statusCode === 409,
+      );
     });
 
-    test('should allow a putUrl method', async function() {
+    test('should allow a putUrl method', async function () {
       const uploadId = taskcluster.slugid();
       const expires = taskcluster.fromNow('1 day');
       const proposedUploadMethods = {
@@ -275,7 +282,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(res.uploadMethod, {});
     });
 
-    test('should succeed on a subsequent attempt if the upload fails', async function() {
+    test('should succeed on a subsequent attempt if the upload fails', async function () {
       const data = crypto.randomBytes(128);
       const uploadId = taskcluster.slugid();
       const expires = taskcluster.fromNow('1 day');
@@ -291,13 +298,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         TestBackend.failUpload = true;
 
         await assert.rejects(
-          () => helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
-            projectId: 'x',
-            uploadId,
-            expires,
-            proposedUploadMethods,
-          }),
-          err => err.statusCode === 500,
+          () =>
+            helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
+              projectId: 'x',
+              uploadId,
+              expires,
+              proposedUploadMethods,
+            }),
+          (err) => err.statusCode === 500,
         );
 
         // switch back to succeeding
@@ -305,24 +313,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
         // should fail with an incorrect uploadId
         await assert.rejects(
-          () => helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
-            projectId: 'x',
-            uploadId: taskcluster.slugid(),
-            expires,
-            proposedUploadMethods,
-          }),
-          err => err.statusCode === 409,
+          () =>
+            helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
+              projectId: 'x',
+              uploadId: taskcluster.slugid(),
+              expires,
+              proposedUploadMethods,
+            }),
+          (err) => err.statusCode === 409,
         );
 
         // should fail with an incorrect expires
         await assert.rejects(
-          () => helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
-            projectId: 'x',
-            uploadId,
-            expires: taskcluster.fromNow('2 days'),
-            proposedUploadMethods,
-          }),
-          err => err.statusCode === 409,
+          () =>
+            helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
+              projectId: 'x',
+              uploadId,
+              expires: taskcluster.fromNow('2 days'),
+              proposedUploadMethods,
+            }),
+          (err) => err.statusCode === 409,
         );
 
         // should succeed this time..
@@ -332,7 +342,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           expires,
           proposedUploadMethods,
         });
-
       } finally {
         delete TestBackend.failUpload;
       }
@@ -340,17 +349,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // check that the error was logged
       const monitor = await helper.load('monitor');
       assert.equal(
-        monitor.manager.messages.filter(
-          ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-        ).length,
-        1);
+        monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+          .length,
+        1,
+      );
       monitor.manager.reset();
     });
   });
 
-  suite('finishUpload method', function() {
+  suite('finishUpload method', function () {
     const projectId = 'proj';
-    const makeUpload = async name => {
+    const makeUpload = async (name) => {
       const data = crypto.randomBytes(128);
       const uploadId = taskcluster.slugid();
       await helper.apiClient.createUpload(name, {
@@ -367,34 +376,38 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return uploadId;
     };
 
-    test('fails for a nonexistent object', async function() {
+    test('fails for a nonexistent object', async function () {
       const uploadId = taskcluster.slugid();
       await assert.rejects(
         () => helper.apiClient.finishUpload('no/such', { uploadId, projectId }),
-        err => err.statusCode === 404);
+        (err) => err.statusCode === 404,
+      );
     });
 
-    test('fails with incorrect uploadId', async function() {
+    test('fails with incorrect uploadId', async function () {
       await makeUpload('foo/bar');
       await assert.rejects(
         () => helper.apiClient.finishUpload('foo/bar', { uploadId: taskcluster.slugid(), projectId }),
-        err => err.statusCode === 409);
+        (err) => err.statusCode === 409,
+      );
     });
 
-    test('fails with incorrect projectId', async function() {
+    test('fails with incorrect projectId', async function () {
       const uploadId = await makeUpload('foo/bar');
       await assert.rejects(
         () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId: 'different' }),
-        err => err.statusCode === 400);
+        (err) => err.statusCode === 400,
+      );
     });
 
-    test('completes an upload, including hashes', async function() {
+    test('completes an upload, including hashes', async function () {
       const uploadId = await makeUpload('foo/bar');
 
       // can't download this object yet..
       assert.rejects(
         () => helper.apiClient.startDownload('foo/bar', { acceptDownloadMethods: { simple: true } }),
-        err => err.stautsCode === 404);
+        (err) => err.stautsCode === 404,
+      );
 
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256 } });
 
@@ -405,54 +418,56 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(res.hashes, { sha256 });
     });
 
-    test('succeeds for an already-completed upload', async function() {
+    test('succeeds for an already-completed upload', async function () {
       const uploadId = await makeUpload('foo/bar');
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
     });
 
-    test('fails for an already-completed upload with different projectId', async function() {
+    test('fails for an already-completed upload with different projectId', async function () {
       const uploadId = await makeUpload('foo/bar');
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
       await assert.rejects(
         () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId: 'nosuch' }),
-        err => err.statusCode === 400);
+        (err) => err.statusCode === 400,
+      );
     });
 
-    test('succeeds for an already-completed upload with hashes', async function() {
+    test('succeeds for an already-completed upload with hashes', async function () {
       const uploadId = await makeUpload('foo/bar');
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256, sha512 } });
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256 } });
     });
 
-    test('fails for an already-completed upload with new hashes', async function() {
+    test('fails for an already-completed upload with new hashes', async function () {
       const uploadId = await makeUpload('foo/bar');
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256 } });
       await assert.rejects(
         () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256, sha512 } }),
-        err => err.statusCode === 409);
+        (err) => err.statusCode === 409,
+      );
     });
 
-    test('fails for an already-completed upload with changed hashes', async function() {
+    test('fails for an already-completed upload with changed hashes', async function () {
       const uploadId = await makeUpload('foo/bar');
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256 } });
       const badSha256 = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
       await assert.rejects(
         () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256: badSha256 } }),
-        err => err.statusCode === 409);
+        (err) => err.statusCode === 409,
+      );
     });
 
-    test('completes an upload, even if there are no hashes for the object', async function() {
+    test('completes an upload, even if there are no hashes for the object', async function () {
       const uploadId = await makeUpload('foo/bar');
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
       const res = await helper.apiClient.object('foo/bar');
-      assert.deepEqual(res.hashes, { });
+      assert.deepEqual(res.hashes, {});
     });
-
   });
 
-  suite('object method', function() {
-    test('succeeds for an object that exists', async function() {
+  suite('object method', function () {
+    test('succeeds for an object that exists', async function () {
       await createTestObject('public/foo');
       const res = await helper.apiClient.object('public/foo');
       assert.equal(res.projectId, 'x');
@@ -460,7 +475,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(res.hashes, {});
     });
 
-    test('contains hashes from upload', async function() {
+    test('contains hashes from upload', async function () {
       await createTestObject('public/foo', { hashes: { sha256 } });
       const res = await helper.apiClient.object('public/foo');
       assert.equal(res.projectId, 'x');
@@ -468,18 +483,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(res.hashes, { sha256 });
     });
 
-    test('404s for an object that does not exist', async function() {
+    test('404s for an object that does not exist', async function () {
       await assert.rejects(
         () => helper.apiClient.object('public/foo'),
-        err => err.statusCode === 404);
+        (err) => err.statusCode === 404,
+      );
     });
   });
 
-  suite('startDownload method', function() {
-    test('startDownload for simple method succeeds', async function() {
+  suite('startDownload method', function () {
+    test('startDownload for simple method succeeds', async function () {
       const data = await createTestObject('public/foo');
       const res = await helper.apiClient.startDownload('public/foo', {
-        acceptDownloadMethods: { 'simple': true },
+        acceptDownloadMethods: { simple: true },
       });
       assert.deepEqual(res, {
         method: 'simple',
@@ -487,20 +503,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     });
 
-    test('startDownload fails when backend is not defined', async function() {
+    test('startDownload fails when backend is not defined', async function () {
       await createTestObject('public/foo');
       await helper.setBackendConfig({ backends: {}, backendMap: [] });
       await assert.rejects(
-        () => helper.apiClient.startDownload('public/foo', {
-          acceptDownloadMethods: { 'simple': true },
-        }),
-        err => err.statusCode === 400);
+        () =>
+          helper.apiClient.startDownload('public/foo', {
+            acceptDownloadMethods: { simple: true },
+          }),
+        (err) => err.statusCode === 400,
+      );
     });
 
-    test('startDownload for a supported method succeeds', async function() {
+    test('startDownload for a supported method succeeds', async function () {
       const data = await createTestObject('public/foo');
       const res = await helper.apiClient.startDownload('public/foo', {
-        acceptDownloadMethods: { 'simple': true },
+        acceptDownloadMethods: { simple: true },
       });
       assert.deepEqual(res, {
         method: 'simple',
@@ -508,11 +526,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     });
 
-    test('startDownload handles middleware', async function() {
+    test('startDownload handles middleware', async function () {
       await createTestObject('dl/intercept');
 
       const res = await helper.apiClient.startDownload('dl/intercept', {
-        acceptDownloadMethods: { 'simple': true },
+        acceptDownloadMethods: { simple: true },
       });
 
       assert.deepEqual(res, {
@@ -521,52 +539,66 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     });
 
-    test('startDownload for an unsupported method returns 406', async function() {
+    test('startDownload for an unsupported method returns 406', async function () {
       await createTestObject('has/no/methods');
       await assert.rejects(
-        () => helper.apiClient.startDownload('has/no/methods', {
-          acceptDownloadMethods: { simple: true },
-        }),
-        err => err.code === 'NoMatchingMethod' && err.statusCode === 406,
+        () =>
+          helper.apiClient.startDownload('has/no/methods', {
+            acceptDownloadMethods: { simple: true },
+          }),
+        (err) => err.code === 'NoMatchingMethod' && err.statusCode === 406,
       );
     });
   });
 
-  suite('simple download method', function() {
-    test('simple download redirects to a URL', async function() {
+  suite('simple download method', function () {
+    test('simple download redirects to a URL', async function () {
       const data = await createTestObject('foo/bar');
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'foo/bar');
-      const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
+      const res = await request
+        .get(downloadUrl)
+        .redirects(0)
+        .ok((res) => res.status < 400);
       assert.equal(res.statusCode, 303);
       assert.equal(res.headers.location, toDataUrl(data));
     });
 
-    test('simple download handles middleware', async function() {
+    test('simple download handles middleware', async function () {
       await createTestObject('simple/intercept');
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'simple/intercept');
-      const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
+      const res = await request
+        .get(downloadUrl)
+        .redirects(0)
+        .ok((res) => res.status < 400);
       assert.equal(res.statusCode, 303);
       assert.equal(res.headers.location, 'http://intercepted');
     });
 
-    test('simple download for missing object returns 404', async function() {
+    test('simple download for missing object returns 404', async function () {
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'no/such');
-      const res = await request.get(downloadUrl).redirects(0).ok(res => res.status === 404);
+      const res = await request
+        .get(downloadUrl)
+        .redirects(0)
+        .ok((res) => res.status === 404);
       assert.equal(res.statusCode, 404);
     });
 
-    test('simple download fails when backend is not defined', async function() {
+    test('simple download fails when backend is not defined', async function () {
       await createTestObject('public/foo');
       await await helper.setBackendConfig({ backends: {}, backendMap: [] });
       await assert.rejects(
         () => helper.apiClient.download('public/foo'),
-        err => err.statusCode === 400);
+        (err) => err.statusCode === 400,
+      );
     });
 
-    test('simple download for object that does not support the method returns 406', async function() {
+    test('simple download for object that does not support the method returns 406', async function () {
       await createTestObject('has/no/methods');
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'has/no/methods');
-      const res = await request.get(downloadUrl).redirects(0).ok(res => res.status === 406);
+      const res = await request
+        .get(downloadUrl)
+        .redirects(0)
+        .ok((res) => res.status === 406);
       assert.equal(res.statusCode, 406);
     });
   });

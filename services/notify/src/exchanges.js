@@ -18,19 +18,18 @@ const exchanges = new Exchanges({
 export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-const buildCommonRoutingKey = function(options) {
+const buildCommonRoutingKey = function (options) {
   options = options || {};
   return [
     {
       name: 'routingKeyKind',
-      summary: 'Identifier for the routing-key kind. This is ' +
-                        'always `\'primary\'` for the formalized routing key.',
+      summary: 'Identifier for the routing-key kind. This is ' + "always `'primary'` for the formalized routing key.",
       constant: 'primary',
       required: true,
-    }, {
+    },
+    {
       name: 'topic',
-      summary: 'Custom topic. This is the <topic> portion of the ' +
-                        '`notify.pulse.<topic>.on-<event>` routes.',
+      summary: 'Custom topic. This is the <topic> portion of the ' + '`notify.pulse.<topic>.on-<event>` routes.',
       maxSize: 100,
       multipleWords: true,
       required: true,
@@ -39,22 +38,22 @@ const buildCommonRoutingKey = function(options) {
 };
 
 /** Build an AMQP compatible message from a message */
-const commonMessageBuilder = function(message) {
+const commonMessageBuilder = function (message) {
   message.version = 1;
   return message;
 };
 
 /** Build a message from message */
-const commonRoutingKeyBuilder = function(_message, routing) {
+const commonRoutingKeyBuilder = function (_message, routing) {
   return {
     topic: routing[0],
   };
 };
 
 /** Build list of routing keys to CC */
-const commonCCBuilder = function(_message, routes) {
-  assert(routes instanceof Array, 'Routes must be an array');
-  return routes.map(route => `route.${route}`);
+const commonCCBuilder = function (_message, routes) {
+  assert(Array.isArray(routes), 'Routes must be an array');
+  return routes.map((route) => `route.${route}`);
 };
 
 /** Notification exchange */

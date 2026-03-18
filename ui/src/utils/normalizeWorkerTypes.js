@@ -4,15 +4,13 @@ const normalizeWorkerTypes = (connection, workerTypeSummaries) =>
   workerTypeSummaries
     ? {
         ...connection,
-        edges: connection.edges.map(edge => ({
+        edges: connection.edges.map((edge) => ({
           ...edge,
           ...(workerTypeSummaries
             ? {
                 node: {
                   ...edge.node,
-                  ...find(propEq('workerType', edge.node.workerType))(
-                    workerTypeSummaries
-                  ),
+                  ...find(propEq('workerType', edge.node.workerType))(workerTypeSummaries),
                 },
               }
             : null),

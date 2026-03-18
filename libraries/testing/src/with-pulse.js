@@ -7,7 +7,7 @@ export default ({ helper, skipping, namespace }) => {
   let client;
   const debugPulseAssertion = debug('withPulse');
 
-  suiteSetup('withPulse', async function() {
+  suiteSetup('withPulse', async function () {
     if (skipping?.()) {
       return;
     }
@@ -17,19 +17,18 @@ export default ({ helper, skipping, namespace }) => {
     helper.load.inject('pulseClient', client);
 
     const matchingMessageExists = (exchange, check) =>
-      client.messages.some(message =>
-        (!exchange || message.exchange.endsWith(exchange)) &&
-        (!check || check(message)));
+      client.messages.some(
+        (message) => (!exchange || message.exchange.endsWith(exchange)) && (!check || check(message)),
+      );
 
-    helper.onPulsePublish = callback => {
+    helper.onPulsePublish = (callback) => {
       client._onPublish = callback;
     };
 
     helper.assertPulseMessage = (exchange, check) => {
       if (!matchingMessageExists(exchange, check)) {
         debugPulseAssertion(`${client.messages.length} pulse messages recorded:`);
-        client.messages.forEach(({ exchange, routingKey }) =>
-          debugPulseAssertion(`${exchange} - ${routingKey}`));
+        client.messages.forEach(({ exchange, routingKey }) => debugPulseAssertion(`${exchange} - ${routingKey}`));
         throw new Error(`No matching messages found with exchange ${exchange}`);
       }
     };
@@ -37,8 +36,7 @@ export default ({ helper, skipping, namespace }) => {
     helper.assertNoPulseMessage = (exchange, check) => {
       if (matchingMessageExists(exchange, check)) {
         debugPulseAssertion(`${client.messages.length} pulse messages recorded:`);
-        client.messages.forEach(({ exchange, routingKey }) =>
-          debugPulseAssertion(`${exchange} - ${routingKey}`));
+        client.messages.forEach(({ exchange, routingKey }) => debugPulseAssertion(`${exchange} - ${routingKey}`));
         throw new Error(`Matching messages found with exchange ${exchange}`);
       }
     };
@@ -61,7 +59,7 @@ export default ({ helper, skipping, namespace }) => {
             // use Qlobber in a really inefficient manner to match the routing key
             const q = new QlobberTrue();
             q.add(binding.routingKeyPattern);
-            if (q.test(routingKey) || routes.some(r => q.test(`route.${r}`))) {
+            if (q.test(routingKey) || routes.some((r) => q.test(`route.${r}`))) {
               delivered = true;
               await cons.handleMessage({ exchange, routingKey, routes, ...message });
             }
@@ -70,16 +68,20 @@ export default ({ helper, skipping, namespace }) => {
       }
       if (!delivered) {
         debugPulseAssertion(`${client.consumers.length} consumers registered:`);
-        client.consumers.forEach(cons =>
-          debugPulseAssertion(`- ${cons.bindings.map(({ exchange, routingKeyPattern }) =>
-            `${exchange} - ${routingKeyPattern}`).join('; ')}`));
+        client.consumers.forEach((cons) =>
+          debugPulseAssertion(
+            `- ${cons.bindings
+              .map(({ exchange, routingKeyPattern }) => `${exchange} - ${routingKeyPattern}`)
+              .join('; ')}`,
+          ),
+        );
 
         throw new Error('Fake message not delivered to any consumers');
       }
     };
   });
 
-  setup('withPulse', function() {
+  setup('withPulse', function () {
     if (skipping?.()) {
       return;
     }
@@ -112,7 +114,7 @@ class FakeClient {
     return `${kind}/${this.namespace}/${name}`;
   }
 
-  async stop() { }
+  async stop() {}
   async recycle() {}
   get activeConnection() {
     return undefined;
@@ -164,7 +166,7 @@ class FakePulseConsumer {
 
   async stop() {
     this.debug('stopping');
-    this.client.consumers = this.client.consumers.filter(c => c !== this);
+    this.client.consumers = this.client.consumers.filter((c) => c !== this);
   }
 
   /**

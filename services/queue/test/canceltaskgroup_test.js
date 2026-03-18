@@ -52,7 +52,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     await assert.rejects(
       () => helper.queue.cancelTaskGroup(taskGroupId),
-      err => err.statusCode === 409,
+      (err) => err.statusCode === 409,
     );
 
     helper.clearPulseMessages();
@@ -63,13 +63,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     const taskGroupId = slugid.v4();
 
     // Use the same task definition for everything
-    const taskDefs = new Array(INITIAL_TASK_COUNT).fill(0)
-      .map((_, i) => taskDef(`test-task-${i}`, { taskGroupId }));
+    const taskDefs = new Array(INITIAL_TASK_COUNT).fill(0).map((_, i) => taskDef(`test-task-${i}`, { taskGroupId }));
 
     debug('### Create tasks');
-    const responses = await Promise.all(taskDefs.map(({ taskId, ...def }) =>
-      helper.queue.createTask(taskId, def),
-    ));
+    const responses = await Promise.all(taskDefs.map(({ taskId, ...def }) => helper.queue.createTask(taskId, def)));
 
     debug('### Sealing task group');
     await helper.queue.sealTaskGroup(taskGroupId);
@@ -79,8 +76,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     assume(r1.status.state).equals('pending');
     assume(r1.status.runs.length).equals(1);
     assume(r1.status.runs[0].state).equals('pending');
-    helper.assertPulseMessage('task-defined', m => _.includes(m.routingKey, r1.status.taskId));
-    helper.assertPulseMessage('task-pending', m => _.includes(m.routingKey, r1.status.taskId));
+    helper.assertPulseMessage('task-defined', (m) => _.includes(m.routingKey, r1.status.taskId));
+    helper.assertPulseMessage('task-pending', (m) => _.includes(m.routingKey, r1.status.taskId));
 
     debug('### Cancel Task Group');
     const r2 = await helper.queue.cancelTaskGroup(taskGroupId);
@@ -91,7 +88,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     for (const td of taskDefs) {
       assume(r2.taskIds).includes(td.taskId);
-      helper.assertPulseMessage('task-exception', m => _.isEqual(m.payload.status.taskId, td.taskId));
+      helper.assertPulseMessage('task-exception', (m) => _.isEqual(m.payload.status.taskId, td.taskId));
     }
 
     helper.clearPulseMessages();
@@ -127,7 +124,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     helper.scopes('queue:cancel-task-group:wrong-scheduler/wrong-task-group');
     await assert.rejects(
       () => helper.queue.cancelTaskGroup(taskGroupId),
-      err => err.statusCode === 403,
+      (err) => err.statusCode === 403,
     );
 
     helper.scopes(`queue:cancel-task-group:${schedulerId}/${taskGroupId}`);
@@ -143,13 +140,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     const taskGroupId = slugid.v4();
 
     // Use the same task definition for everything
-    const taskDefs = new Array(INITIAL_TASK_COUNT).fill(0)
-      .map((_, i) => taskDef(`test-task-${i}`, { taskGroupId }));
+    const taskDefs = new Array(INITIAL_TASK_COUNT).fill(0).map((_, i) => taskDef(`test-task-${i}`, { taskGroupId }));
 
     debug('### Create tasks');
-    const responses = await Promise.all(taskDefs.map(({ taskId, ...def }) =>
-      helper.queue.createTask(taskId, def),
-    ));
+    const responses = await Promise.all(taskDefs.map(({ taskId, ...def }) => helper.queue.createTask(taskId, def)));
 
     assume(responses.length).equals(INITIAL_TASK_COUNT);
     const r1 = responses[0];
@@ -168,6 +162,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     assume(r2.taskGroupId).equals(taskGroupId);
     assume(r2.taskGroupSize).equals(INITIAL_TASK_COUNT);
     assume(r2.cancelledCount).equals(2);
-    assume(r2.taskIds.sort()).deep.equals(taskDefs.slice(1).map(({ taskId }) => taskId).sort());
+    assume(r2.taskIds.sort()).deep.equals(
+      taskDefs
+        .slice(1)
+        .map(({ taskId }) => taskId)
+        .sort(),
+    );
   });
 });

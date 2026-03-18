@@ -22,10 +22,7 @@ export default async ({ task, form, action, apolloClient, taskActions }) => {
   // writing, it's not clear whether the `task.decisionTask` case is even
   // valid anymore, but it's being kept for the time being because verifying
   // that is not a trivial matter.
-  const taskGroup =
-    task.taskId === task.taskGroupId || !task.decisionTask
-      ? task
-      : task.decisionTask;
+  const taskGroup = task.taskId === task.taskGroupId || !task.decisionTask ? task : task.decisionTask;
   const input = load(form);
   const validate = ajv.compile(action.schema || {});
   const valid = validate(input);
@@ -47,7 +44,7 @@ export default async ({ task, form, action, apolloClient, taskActions }) => {
       task,
       input,
     },
-    actions.variables
+    actions.variables,
   );
 
   if (action.kind === 'task') {
@@ -91,9 +88,7 @@ export default async ({ task, form, action, apolloClient, taskActions }) => {
   const expression = `in-tree:hook-action:${hookGroupId}/${hookId}`;
 
   if (!satisfiesExpression(expandScopes, expression)) {
-    throw new Error(
-      `Action is misconfigured: decision task's scopes do not satisfy ${expression}`
-    );
+    throw new Error(`Action is misconfigured: decision task's scopes do not satisfy ${expression}`);
   }
 
   const result = await apolloClient.mutate({

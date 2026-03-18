@@ -30,19 +30,14 @@ export default class MozillaAuth0 {
   // Get a personAPI instance, by requesting an API token as needed.
   // See https://github.com/mozilla-iam/cis/blob/f90ba5033785fd4fb14faf9f066e17356babb5aa/docs/PersonAPI.md#do-you-have-code-examples
   async fetchAccessToken() {
-    const res = await request.post(`https://${this.domain}/oauth/token`)
-      .set('content-type', 'application/json')
-      .send({
-        audience: 'api.sso.mozilla.com',
-        grant_type: 'client_credentials',
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-      });
-    const {
-      access_token: accessToken,
-      expires_in: expiresIn,
-    } = JSON.parse(res.text);
-    const expires = Date.now()+ (expiresIn * 1000);
+    const res = await request.post(`https://${this.domain}/oauth/token`).set('content-type', 'application/json').send({
+      audience: 'api.sso.mozilla.com',
+      grant_type: 'client_credentials',
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
+    });
+    const { access_token: accessToken, expires_in: expiresIn } = JSON.parse(res.text);
+    const expires = Date.now() + expiresIn * 1000;
 
     if (!accessToken) {
       throw new Error('did not receive a token from Auth0 /oauth/token endpoint');
@@ -162,9 +157,9 @@ export default class MozillaAuth0 {
     const { ldap, mozilliansorg, hris } = accessInformation;
 
     const groups = [
-      ...(ldap?.values ? Object.keys(ldap.values).map(group => `mozilla-group:${group}`) : []),
-      ...(hris?.values ? Object.keys(hris.values).map(group => `mozilla-hris:${group}`) : []),
-      ...(mozilliansorg?.values ? Object.keys(mozilliansorg.values).map(group => `mozillians-group:${group}`) : []),
+      ...(ldap?.values ? Object.keys(ldap.values).map((group) => `mozilla-group:${group}`) : []),
+      ...(hris?.values ? Object.keys(hris.values).map((group) => `mozilla-hris:${group}`) : []),
+      ...(mozilliansorg?.values ? Object.keys(mozilliansorg.values).map((group) => `mozillians-group:${group}`) : []),
     ];
 
     user.addRole(...groups);
@@ -176,9 +171,7 @@ export default class MozillaAuth0 {
     const loginMiddleware = login(cfg.app.publicUrl);
 
     if (!credentials || !credentials.clientId || !credentials.accessToken) {
-      throw new Error(
-        'Unable to use "mozilla-auth0" login strategy without taskcluster clientId and accessToken',
-      );
+      throw new Error('Unable to use "mozilla-auth0" login strategy without taskcluster clientId and accessToken');
     }
 
     const callback = '/login/mozilla-auth0/callback';
@@ -213,10 +206,12 @@ export default class MozillaAuth0 {
           }
 
           if (!user.identity) {
-            return done(new WebServerError(
-              'InputError',
-              'Could not read user identity. The client is probably not properly configured.',
-            ));
+            return done(
+              new WebServerError(
+                'InputError',
+                'Could not read user identity. The client is probably not properly configured.',
+              ),
+            );
           }
 
           const exp = await this.expFromIdToken(extraParams.id_token);
@@ -234,11 +229,6 @@ export default class MozillaAuth0 {
     // Called by the consumer
     app.get('/login/mozilla-auth0', applySecurityHeaders, passport.authenticate('auth0'));
     // Called by the provider
-    app.get(
-      callback,
-      applySecurityHeaders,
-      passport.authenticate('auth0'),
-      loginMiddleware,
-    );
+    app.get(callback, applySecurityHeaders, passport.authenticate('auth0'), loginMiddleware);
   }
 }

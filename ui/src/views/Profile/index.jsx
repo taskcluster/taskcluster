@@ -27,39 +27,26 @@ import username from '../../utils/username';
 })
 export default class Profile extends Component {
   render() {
-    const {
-      user,
-      classes,
-      data: { currentScopes, loading, error } = {},
-    } = this.props;
+    const { user, classes, data: { currentScopes, loading, error } = {} } = this.props;
 
     return (
       <Dashboard title="Profile">
         {!currentScopes && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
-        {!user && !loading && (
-          <Typography variant="subtitle1">
-            Sign in to view your profile
-          </Typography>
-        )}
+        {!user && !loading && <Typography variant="subtitle1">Sign in to view your profile</Typography>}
         {user && currentScopes && (
           <Fragment>
             <Typography variant="subtitle1">Credential Information</Typography>
             <List>
               <ListItem>
-                <ListItemText
-                  primary="Signed In As"
-                  secondary={username(user)}
-                />
+                <ListItemText primary="Signed In As" secondary={username(user)} />
               </ListItem>
               <ListItem>
                 <ListItemText
                   primary="Certificate"
                   secondary={
                     user.credentials.certificate ? (
-                      <code className={classes.certificate}>
-                        {user.credentials.certificate}
-                      </code>
+                      <code className={classes.certificate}>{user.credentials.certificate}</code>
                     ) : (
                       'n/a'
                     )
@@ -67,16 +54,10 @@ export default class Profile extends Component {
                 />
               </ListItem>
               <ListItem>
-                <ListItemText
-                  primary="Client ID"
-                  secondary={<code>{user.credentials.clientId}</code>}
-                />
+                <ListItemText primary="Client ID" secondary={<code>{user.credentials.clientId}</code>} />
               </ListItem>
               <ListItem>
-                <ListItemText
-                  primary="Expires"
-                  secondary={<DateDistance from={user.expires} />}
-                />
+                <ListItemText primary="Expires" secondary={<DateDistance from={user.expires} />} />
               </ListItem>
               <ListItem>
                 <ListItemText
@@ -85,7 +66,7 @@ export default class Profile extends Component {
                   secondary={
                     currentScopes.length ? (
                       <List>
-                        {currentScopes.map(scope => (
+                        {currentScopes.map((scope) => (
                           <ListItem key={scope}>
                             <ListItemText secondary={<code>{scope}</code>} />
                           </ListItem>

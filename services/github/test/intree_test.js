@@ -8,9 +8,9 @@ import yaml from 'js-yaml';
 import testing from '@taskcluster/lib-testing';
 
 const webhookDir = new URL('./data/webhooks/', import.meta.url).pathname;
-const loadWebhook = filename => JSON.parse(fs.readFileSync(path.join(webhookDir, filename), 'utf8'));
+const loadWebhook = (filename) => JSON.parse(fs.readFileSync(path.join(webhookDir, filename), 'utf8'));
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   let intree;
 
   const webhookPullRequestJson = loadWebhook('webhook.pull_request.open.json');
@@ -20,14 +20,14 @@ suite(testing.suiteName(), function() {
   const webhookReleaseJson = loadWebhook('webhook.release.json');
   const webhookTagPushJson = loadWebhook('webhook.tag_push.json');
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     helper.load.save();
     await helper.load('cfg');
     helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
     intree = await helper.load('intree');
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(function () {
     helper.load.restore();
   });
 
@@ -71,8 +71,8 @@ suite(testing.suiteName(), function() {
    * expected:    {}, keys=>values expected to exist in the compiled config
    * shouldError: if you want intree to throw an exception, set this to true
    **/
-  const buildConfigTest = function(testName, configPath, params, expected, count = -1, shouldError = false) {
-    test(testName, async function() {
+  const buildConfigTest = function (testName, configPath, params, expected, count = -1, shouldError = false) {
+    test(testName, async function () {
       params.config = yaml.load(fs.readFileSync(configPath));
       params.schema = {
         0: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.yml'),
@@ -113,7 +113,8 @@ suite(testing.suiteName(), function() {
     {
       tasks: [], // The github event doesn't match, so no tasks are created
       'metadata.owner': 'test@test.com',
-    });
+    },
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, v0',
@@ -129,7 +130,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Push Event (Push Task + Pull Task + Release Task), v0',
@@ -146,7 +148,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Pull Event (Push Task + Pull Task + Release Task), v0',
@@ -163,7 +166,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (on branch), v0',
@@ -180,7 +184,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (off branch), v0',
@@ -190,7 +195,8 @@ suite(testing.suiteName(), function() {
     },
     {
       tasks: [],
-    });
+    },
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Excluded (on branch), v0',
@@ -200,7 +206,8 @@ suite(testing.suiteName(), function() {
     },
     {
       tasks: [],
-    });
+    },
+  );
 
   buildConfigTest(
     'Pull Request Event, Single Task Config, Branch Excluded (on branch), v0',
@@ -208,9 +215,9 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({ details: { 'event.type': 'pull_request.opened', 'event.base.repo.branch': 'master' } }),
     },
-    {
-    },
-    1);
+    {},
+    1,
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Exclude and Include errors, v0',
@@ -218,10 +225,10 @@ suite(testing.suiteName(), function() {
     {
       payload: buildMessage({ details: { 'event.type': 'push', 'event.base.repo.branch': 'master' } }),
     },
-    {
-    },
+    {},
     0,
-    'should-error');
+    'should-error',
+  );
 
   buildConfigTest(
     'Star Pull Config, v0',
@@ -232,7 +239,8 @@ suite(testing.suiteName(), function() {
     {
       'tasks[0].task.extra.github.events': ['pull_request.*'],
       'metadata.owner': 'test@test.com',
-    });
+    },
+  );
 
   buildConfigTest(
     'Release Event, Single Task Config, v0',
@@ -248,7 +256,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Release Event (Push Task + Pull Task + Release Task), v0',
@@ -264,7 +273,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'No extra or extra.github generates an empty config, v0',
@@ -273,7 +283,8 @@ suite(testing.suiteName(), function() {
       payload: buildMessage({ details: { 'event.type': 'release' } }),
     },
     {},
-    0);
+    0,
+  );
 
   buildConfigTest(
     'Unicode branch names are not allowed, v0',
@@ -283,7 +294,8 @@ suite(testing.suiteName(), function() {
     },
     {},
     0,
-    true);
+    true,
+  );
 
   buildConfigTest(
     'Tag Event, Single Task Config, v0',
@@ -299,7 +311,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Tag Event, Single Task Config, Branch Limited (off branch), v0',
@@ -315,7 +328,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, v1',
@@ -337,7 +351,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Push Event with a task dependency not in the set of generated tasks (#4502)',
@@ -350,7 +365,8 @@ suite(testing.suiteName(), function() {
         branch: 'master',
       }),
     },
-    { 'tasks[0].task.workerType': 'worker' });
+    { 'tasks[0].task.workerType': 'worker' },
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, v1',
@@ -371,7 +387,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Push Event (Push Task + Pull Task + Release Task), v1',
@@ -392,7 +409,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Pull Event (Push Task + Pull Task + Release Task), v1',
@@ -412,7 +430,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (on branch), v1',
@@ -433,7 +452,8 @@ suite(testing.suiteName(), function() {
         'queue:route:checks',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (off branch), v1',
@@ -448,7 +468,8 @@ suite(testing.suiteName(), function() {
     },
     {
       tasks: [],
-    });
+    },
+  );
 
   buildConfigTest(
     'Release Event, Single Task Config, v1',
@@ -469,7 +490,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Release Event (Push Task + Pull Task + Release Task), v1',
@@ -490,7 +512,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Unicode branch names are not allowed, v1',
@@ -505,7 +528,8 @@ suite(testing.suiteName(), function() {
     },
     {},
     0,
-    true);
+    true,
+  );
 
   buildConfigTest(
     'Tag Event, Single Task Config, v1',
@@ -525,7 +549,8 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    },
+  );
 
   buildConfigTest(
     'Tasks must end up topologically sorted, v1',

@@ -65,7 +65,7 @@ export const gitRemoteRev = async ({ dir, remote, ref, utils }) => {
 
   assert(fs.existsSync(dir), `${dir} does not exist`);
   const res = await exec('git', ['ls-remote', remote, ref], opts);
-  const lines = res.stdout.split("\n");
+  const lines = res.stdout.split('\n');
   if (lines.length !== 2) {
     throw new Error(`Expected exactly one result from ls-remote; got ${res.stdout}`);
   }
@@ -79,9 +79,7 @@ export const gitRemoteRev = async ({ dir, remote, ref, utils }) => {
  */
 export const gitIsDirty = async ({ dir }) => {
   const opts = { cwd: dir };
-  const status = (await exec('git', ['status', '--porcelain'], opts))
-    .stdout.split(/\n/)
-    .filter(l => l !== '');
+  const status = (await exec('git', ['status', '--porcelain'], opts)).stdout.split(/\n/).filter((l) => l !== '');
   return status.length > 0;
 };
 
@@ -188,7 +186,5 @@ export const gitPush = async ({ dir, remote, refs, force, utils }) => {
 export const gitLog = async ({ dir, args }) => {
   const opts = { cwd: dir };
   const res = await exec('git', ['log', ...args], opts);
-  return res.stdout
-    .split(/\n/)
-    .filter(l => l !== '');
+  return res.stdout.split(/\n/).filter((l) => l !== '');
 };

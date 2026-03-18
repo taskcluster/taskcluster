@@ -1,20 +1,18 @@
 {
-    "metadata":
-    {
-        "name": "example hook",
-        "description": "todo",
-        "owner": "nobody@example.com"
-    },
-    "task":
-    {
-        "provisionerId": "test-provisioner",
-        "workerType": "gecko-t-linux-xlarge",
-        "payload": {},
-        "metadata": {
-            "name": "Example Task",
-            "description": "Markdown description of **what** this task does",
-            "owner": "name@example.com",
-            "source": "http://tc.example.com/tasks/create"
-        }
+  "metadata": {
+    "name": "example hook",
+    "description": "todo",
+    "owner": "nobody@example.com"
+  },
+  "task": {
+    "provisionerId": "test-provisioner",
+    "workerType": "gecko-t-linux-xlarge",
+    "payload": {},
+    "metadata": {
+      "name": "Example Task",
+      "description": "Markdown description of **what** this task does",
+      "owner": "name@example.com",
+      "source": "http://tc.example.com/tasks/create"
     }
+  }
 }

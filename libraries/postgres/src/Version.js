@@ -29,9 +29,9 @@ class Version {
       loadSql(content.migrationScript, path.dirname(filename)),
       loadSql(content.downgradeScript, path.dirname(filename)),
       content.description,
-      Object.fromEntries(Object.entries(content.methods).map(
-        ([name, meth]) => [name, Method.fromYamlFileContent(name, meth, filename)],
-      )),
+      Object.fromEntries(
+        Object.entries(content.methods).map(([name, meth]) => [name, Method.fromYamlFileContent(name, meth, filename)]),
+      ),
     );
   }
 
@@ -52,9 +52,9 @@ class Version {
       serializable.migrationScript,
       serializable.downgradeScript,
       serializable.description,
-      Object.fromEntries(Object.entries(serializable.methods).map(
-        ([name, meth]) => [name, Method.fromSerializable(name, meth)],
-      )),
+      Object.fromEntries(
+        Object.entries(serializable.methods).map(([name, meth]) => [name, Method.fromSerializable(name, meth)]),
+      ),
     );
   }
 
@@ -67,9 +67,7 @@ class Version {
       migrationScript: this.migrationScript,
       downgradeScript: this.downgradeScript,
       description: this.description,
-      methods: Object.fromEntries(Object.entries(this.methods).map(
-        ([name, meth]) => [name, meth.asSerializable()],
-      )),
+      methods: Object.fromEntries(Object.entries(this.methods).map(([name, meth]) => [name, meth.asSerializable()])),
     };
   }
 
@@ -98,8 +96,10 @@ class Version {
     assert(content.version, `version field missing in ${filename}`);
     assert(content.methods, `methods field missing in ${filename}`);
 
-    assert(!(Boolean(content.migrationScript) !== Boolean(content.downgradeScript)),
-      `Cannot specify just one of migrationScript and downgradeScript in ${filename}`);
+    assert(
+      !(Boolean(content.migrationScript) !== Boolean(content.downgradeScript)),
+      `Cannot specify just one of migrationScript and downgradeScript in ${filename}`,
+    );
 
     for (const k of Object.keys(content)) {
       if (!ALLOWED_KEYS.includes(k)) {

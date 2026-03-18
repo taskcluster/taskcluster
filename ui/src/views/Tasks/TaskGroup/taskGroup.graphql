@@ -30,7 +30,6 @@ query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter
             resolved
           }
         }
-
       }
     }
   }

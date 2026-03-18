@@ -1,6 +1,6 @@
 import format from './format';
 
-export default provisioners => {
+export default (provisioners) => {
   let total = 0;
 
   if (!provisioners.error && !provisioners.loading) {

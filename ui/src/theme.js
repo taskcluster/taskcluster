@@ -34,17 +34,11 @@ const specific = {
   light: purple[200],
   contrastText: THEME.PRIMARY_TEXT_LIGHT,
 };
-const themeOptions = isDarkTheme => {
+const themeOptions = (isDarkTheme) => {
   const primaryMain = isDarkTheme ? THEME.PRIMARY_DARK : THEME.PRIMARY_LIGHT;
-  const textPrimary = isDarkTheme
-    ? THEME.PRIMARY_TEXT_DARK
-    : THEME.PRIMARY_TEXT_LIGHT;
-  const textSecondary = isDarkTheme
-    ? THEME.SECONDARY_TEXT_DARK
-    : THEME.SECONDARY_TEXT_LIGHT;
-  const textHint = isDarkTheme
-    ? 'rgba(255, 255, 255, 0.5)'
-    : 'rgba(0, 0, 0, 0.5)';
+  const textPrimary = isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT;
+  const textSecondary = isDarkTheme ? THEME.SECONDARY_TEXT_DARK : THEME.SECONDARY_TEXT_LIGHT;
+  const textHint = isDarkTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
   const TYPOGRAPHY = {
     H1: Roboto300,
     H2: Roboto400,
@@ -112,15 +106,11 @@ const themeOptions = isDarkTheme => {
       text: {
         primary: textPrimary,
         secondary: textSecondary,
-        disabled: isDarkTheme
-          ? 'rgba(255, 255, 255, 0.5)'
-          : 'rgba(0, 0, 0, 0.5)',
+        disabled: isDarkTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
         hint: textHint,
         icon: isDarkTheme ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
         active: isDarkTheme ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
-        inactive: isDarkTheme
-          ? 'rgba(255, 255, 255, 0.4)'
-          : 'rgba(0, 0, 0, 0.4)',
+        inactive: isDarkTheme ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
       },
       diff: {
         red: {
@@ -159,18 +149,13 @@ const themeOptions = isDarkTheme => {
       link: {
         color: textPrimary,
         textDecoration: 'none',
-        borderBottom: `2px solid ${lighten(
-          THEME.SECONDARY,
-          THEME.TONAL_OFFSET
-        )}`,
+        borderBottom: `2px solid ${lighten(THEME.SECONDARY, THEME.TONAL_OFFSET)}`,
         '&:hover': {
           borderBottom: `2px solid ${THEME.SECONDARY}`,
         },
       },
       highlight: {
-        backgroundColor: isDarkTheme
-          ? THEME.TEN_PERCENT_WHITE
-          : THEME.TEN_PERCENT_BLACK,
+        backgroundColor: isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK,
         fontFamily: 'Consolas, "Liberation Mono", Menlo, Courier, monospace',
         lineHeight: 1.4,
         display: 'inline-block',
@@ -179,10 +164,7 @@ const themeOptions = isDarkTheme => {
       listItemButton: {
         '& svg': {
           transition: transitions.create('fill'),
-          fill: lighten(
-            isDarkTheme ? THEME.PRIMARY_TEXT_LIGHT : THEME.PRIMARY_TEXT_LIGHT,
-            0.4
-          ),
+          fill: lighten(isDarkTheme ? THEME.PRIMARY_TEXT_LIGHT : THEME.PRIMARY_TEXT_LIGHT, 0.4),
         },
         '&:hover svg, &:focus svg': {
           fill: textPrimary,
@@ -283,17 +265,13 @@ const themeOptions = isDarkTheme => {
       MuiFormLabel: {
         filled: {
           ...Roboto500,
-          color: isDarkTheme
-            ? THEME.PRIMARY_TEXT_DARK
-            : THEME.PRIMARY_TEXT_LIGHT,
+          color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
         },
       },
       MuiListSubheader: {
         root: {
           ...Roboto500,
-          color: isDarkTheme
-            ? THEME.PRIMARY_TEXT_DARK
-            : THEME.PRIMARY_TEXT_LIGHT,
+          color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
         },
       },
       MuiButton: {
@@ -355,9 +333,7 @@ const themeOptions = isDarkTheme => {
             position: 'relative',
             paddingLeft: '50%',
           },
-          borderBottom: `1px solid ${
-            isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK
-          }`,
+          borderBottom: `1px solid ${isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK}`,
           whiteSpace: 'nowrap',
         },
       },
@@ -394,14 +370,10 @@ const themeOptions = isDarkTheme => {
       MuiPickersYear: {
         root: {
           '&:focus': {
-            color: isDarkTheme
-              ? THEME.PRIMARY_TEXT_DARK
-              : THEME.PRIMARY_TEXT_LIGHT,
+            color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
           },
           '&$yearSelected': {
-            color: isDarkTheme
-              ? THEME.PRIMARY_TEXT_DARK
-              : THEME.PRIMARY_TEXT_LIGHT,
+            color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
           },
         },
       },
@@ -466,31 +438,21 @@ const themeOptions = isDarkTheme => {
           },
         },
         current: {
-          color: isDarkTheme
-            ? THEME.PRIMARY_TEXT_DARK
-            : THEME.PRIMARY_TEXT_LIGHT,
+          color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
         },
       },
       MuiPickersModal: {
         dialogAction: {
-          color: isDarkTheme
-            ? THEME.PRIMARY_TEXT_DARK
-            : THEME.PRIMARY_TEXT_LIGHT,
+          color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
           '&:hover': {
-            backgroundColor: isDarkTheme
-              ? THEME.TEN_PERCENT_WHITE
-              : THEME.TEN_PERCENT_BLACK,
+            backgroundColor: isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK,
           },
         },
         withAdditionalAction: {
           '& button': {
-            color: isDarkTheme
-              ? THEME.PRIMARY_TEXT_DARK
-              : THEME.PRIMARY_TEXT_LIGHT,
+            color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
             '&:hover': {
-              backgroundColor: isDarkTheme
-                ? THEME.TEN_PERCENT_WHITE
-                : THEME.TEN_PERCENT_BLACK,
+              backgroundColor: isDarkTheme ? THEME.TEN_PERCENT_WHITE : THEME.TEN_PERCENT_BLACK,
             },
           },
         },
@@ -509,9 +471,7 @@ const themeOptions = isDarkTheme => {
       },
       MuiMenuItem: {
         root: {
-          color: isDarkTheme
-            ? THEME.PRIMARY_TEXT_DARK
-            : THEME.PRIMARY_TEXT_LIGHT,
+          color: isDarkTheme ? THEME.PRIMARY_TEXT_DARK : THEME.PRIMARY_TEXT_LIGHT,
         },
       },
     },

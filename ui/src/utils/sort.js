@@ -7,10 +7,7 @@ import { or } from 'ramda';
  * after the compare element; 0 if they are equivalent.
  */
 const sort = (referenceElement, compareElement) => {
-  if (
-    typeof referenceElement === 'number' &&
-    typeof compareElement === 'number'
-  ) {
+  if (typeof referenceElement === 'number' && typeof compareElement === 'number') {
     const diff = referenceElement - compareElement;
 
     if (diff === 0) {

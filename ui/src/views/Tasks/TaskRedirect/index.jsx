@@ -10,7 +10,7 @@ import removeKeys from '../../../utils/removeKeys';
 import taskQuery from './task.graphql';
 
 @graphql(taskQuery, {
-  options: props => ({
+  options: (props) => ({
     variables: {
       taskId: props.match.params.taskId,
     },
@@ -38,15 +38,9 @@ export default class TaskRedirect extends Component {
               {!loading && task && (
                 <Redirect
                   to={{
-                    pathname:
-                      action === 'interactive'
-                        ? '/tasks/create?interactive=1'
-                        : '/tasks/create',
+                    pathname: action === 'interactive' ? '/tasks/create?interactive=1' : '/tasks/create',
                     state: {
-                      task:
-                        action === 'interactive'
-                          ? parameterizeTask(sanitizedTask)
-                          : sanitizedTask,
+                      task: action === 'interactive' ? parameterizeTask(sanitizedTask) : sanitizedTask,
                     },
                   }}
                 />

@@ -3,12 +3,12 @@ import sift from '../utils/sift.js';
 import ConnectionLoader from '../ConnectionLoader.js';
 
 export default ({ hooks }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
-  const hookGroups = new DataLoader(queries =>
+  const hookGroups = new DataLoader((queries) =>
     Promise.all(
       queries.map(async ({ filter }) => {
         try {
           const { groups } = await hooks.listHookGroups();
-          const raw = groups.map(hookGroupId => ({ hookGroupId }));
+          const raw = groups.map((hookGroupId) => ({ hookGroupId }));
 
           return sift(filter, raw);
         } catch (err) {
@@ -17,7 +17,7 @@ export default ({ hooks }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cf
       }),
     ),
   );
-  const hooksForGroup = new DataLoader(queries =>
+  const hooksForGroup = new DataLoader((queries) =>
     Promise.all(
       queries.map(async ({ hookGroupId, filter }) => {
         try {
@@ -30,7 +30,7 @@ export default ({ hooks }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cf
       }),
     ),
   );
-  const hook = new DataLoader(queries =>
+  const hook = new DataLoader((queries) =>
     Promise.all(
       queries.map(async ({ hookGroupId, hookId }) => {
         try {
@@ -41,7 +41,7 @@ export default ({ hooks }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cf
       }),
     ),
   );
-  const hookStatus = new DataLoader(queries =>
+  const hookStatus = new DataLoader((queries) =>
     Promise.all(
       queries.map(async ({ hookGroupId, hookId }) => {
         try {
@@ -49,31 +49,29 @@ export default ({ hooks }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cf
         } catch (err) {
           return err;
         }
-      },
-      ),
+      }),
     ),
   );
 
-  const hookLastFires = new ConnectionLoader(
-    async ({ hookGroupId, hookId, filter, options }) => {
-      try {
-        const raw = await hooks.listLastFires(hookGroupId, hookId, options);
+  const hookLastFires = new ConnectionLoader(async ({ hookGroupId, hookId, filter, options }) => {
+    try {
+      const raw = await hooks.listLastFires(hookGroupId, hookId, options);
 
-        return {
-          ...raw,
-          items: raw.lastFires,
-        };
-      } catch (err) {
-        if (err.statusCode === 404) {
-          // hooks last fires will return 404 when there are no last fires yet
-          return { items: [] };
-        } else if (err.statusCode === 424) {
-          return null;
-        }
-
-        return err;
+      return {
+        ...raw,
+        items: raw.lastFires,
+      };
+    } catch (err) {
+      if (err.statusCode === 404) {
+        // hooks last fires will return 404 when there are no last fires yet
+        return { items: [] };
+      } else if (err.statusCode === 424) {
+        return null;
       }
-    });
+
+      return err;
+    }
+  });
 
   return {
     hookGroups,

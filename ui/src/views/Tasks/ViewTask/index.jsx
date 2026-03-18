@@ -64,7 +64,7 @@ import pageArtifactsQuery from './pageArtifacts.graphql';
 import createTaskQuery from '../createTask.graphql';
 import { AuthContext } from '../../../utils/Auth';
 
-const updateTaskIdHistory = id => {
+const updateTaskIdHistory = (id) => {
   if (!VALID_TASK.test(id)) {
     return;
   }
@@ -73,16 +73,11 @@ const updateTaskIdHistory = id => {
 };
 
 const taskInContext = (tagSetList, taskTags) =>
-  tagSetList.some(tagSet =>
-    Object.keys(tagSet).every(
-      tag => taskTags[tag] && taskTags[tag] === tagSet[tag]
-    )
-  );
-const getCachesFromTask = task =>
-  Object.keys(pathOr({}, ['payload', 'cache'], task));
+  tagSetList.some((tagSet) => Object.keys(tagSet).every((tag) => taskTags[tag] && taskTags[tag] === tagSet[tag]));
+const getCachesFromTask = (task) => Object.keys(pathOr({}, ['payload', 'cache'], task));
 
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   title: {
     marginBottom: theme.spacing(1),
   },
@@ -101,7 +96,7 @@ const getCachesFromTask = task =>
   },
 }))
 @graphql(taskQuery, {
-  options: props => ({
+  options: (props) => ({
     fetchPolicy: 'network-only',
     pollInterval: TASK_POLL_INTERVAL,
     errorPolicy: 'all',
@@ -158,7 +153,7 @@ export default class ViewTask extends Component {
     } = this.props;
 
     if (Array.isArray(task?.taskActions?.actions)) {
-      task?.taskActions?.actions.forEach(action => {
+      task?.taskActions?.actions.forEach((action) => {
         // if an action with this name has already been selected,
         // don't consider this version
         if (
@@ -252,7 +247,7 @@ export default class ViewTask extends Component {
     this.listener = null;
   }
 
-  handleActionClick = name => () => {
+  handleActionClick = (name) => () => {
     const { actionData, actionInputs } = this.getTaskActionsData();
     const { action } = actionData[name];
 
@@ -264,7 +259,7 @@ export default class ViewTask extends Component {
     });
   };
 
-  handleActionComplete = action => taskId => {
+  handleActionComplete = (action) => (taskId) => {
     this.handleActionDialogClose();
     this.handleActionTaskComplete(action, taskId);
   };
@@ -289,26 +284,28 @@ export default class ViewTask extends Component {
     }
   };
 
-  handleActionTaskSubmit = ({ name }) => async () => {
-    this.preRunningAction();
+  handleActionTaskSubmit =
+    ({ name }) =>
+    async () => {
+      this.preRunningAction();
 
-    const {
-      client,
-      data: { task },
-    } = this.props;
-    const { formInputs } = this.state;
-    const { actionData } = this.getTaskActionsData();
-    const { action } = actionData[name];
-    const taskId = await submitTaskAction({
-      task,
-      taskActions: task.taskActions,
-      form: formInputs,
-      action,
-      apolloClient: client,
-    });
+      const {
+        client,
+        data: { task },
+      } = this.props;
+      const { formInputs } = this.state;
+      const { actionData } = this.getTaskActionsData();
+      const { action } = actionData[name];
+      const taskId = await submitTaskAction({
+        task,
+        taskActions: task.taskActions,
+        form: formInputs,
+        action,
+        apolloClient: client,
+      });
 
-    return taskId;
-  };
+      return taskId;
+    };
 
   handleArtifactsPageChange = ({ cursor, previousCursor }) => {
     const {
@@ -335,15 +332,8 @@ export default class ViewTask extends Component {
           return previousResult;
         }
 
-        return dotProp.set(
-          previousResult,
-          `task.status.runs.${runId}.artifacts`,
-          artifacts =>
-            dotProp.set(
-              dotProp.set(artifacts, 'edges', edges),
-              'pageInfo',
-              pageInfo
-            )
+        return dotProp.set(previousResult, `task.status.runs.${runId}.artifacts`, (artifacts) =>
+          dotProp.set(dotProp.set(artifacts, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
@@ -365,12 +355,8 @@ export default class ViewTask extends Component {
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.dependents;
 
-        return dotProp.set(previousResult, 'dependents', dependents =>
-          dotProp.set(
-            dotProp.set(dependents, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, 'dependents', (dependents) =>
+          dotProp.set(dotProp.set(dependents, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
@@ -382,18 +368,8 @@ export default class ViewTask extends Component {
     const task = removeKeys(cloneDeep(this.props.data.task), ['__typename']);
 
     return mergeRight(
-      omit(
-        [
-          ...TASK_ADDED_FIELDS,
-          'routes',
-          'taskGroupId',
-          'schedulerId',
-          'priority',
-          'requires',
-        ],
-        task
-      ),
-      { schedulerId: UI_SCHEDULER_ID }
+      omit([...TASK_ADDED_FIELDS, 'routes', 'taskGroupId', 'schedulerId', 'priority', 'requires'], task),
+      { schedulerId: UI_SCHEDULER_ID },
     );
   };
 
@@ -407,12 +383,12 @@ export default class ViewTask extends Component {
     this.props.data.refetch();
   };
 
-  handleCreateInteractiveComplete = taskId => {
+  handleCreateInteractiveComplete = (taskId) => {
     this.handleActionDialogClose();
     this.props.history.push(`/tasks/${taskId}/connect`);
   };
 
-  handleRetriggerComplete = taskId => {
+  handleRetriggerComplete = (taskId) => {
     this.handleActionDialogClose();
     this.props.history.push(`/tasks/${taskId}`);
   };
@@ -427,12 +403,9 @@ export default class ViewTask extends Component {
         body: (
           <Fragment>
             <Typography variant="body2">
-              This will duplicate the task and create it under a different{' '}
-              <code>taskId</code>.
+              This will duplicate the task and create it under a different <code>taskId</code>.
             </Typography>
-            <Typography variant="body2">
-              The new task will be altered to:
-            </Typography>
+            <Typography variant="body2">The new task will be altered to:</Typography>
             <ul>
               <li>
                 <Typography variant="body2">
@@ -446,8 +419,7 @@ export default class ViewTask extends Component {
               </li>
               <li>
                 <Typography variant="body2">
-                  Ensures <code>task.payload.maxRunTime</code> is minimum of 60
-                  minutes
+                  Ensures <code>task.payload.maxRunTime</code> is minimum of 60 minutes
                 </Typography>
               </li>
               <li>
@@ -457,14 +429,12 @@ export default class ViewTask extends Component {
               </li>
               <li>
                 <Typography variant="body2">
-                  Set the environment variable{' '}
-                  <code>TASKCLUSTER_INTERACTIVE=true</code>
+                  Set the environment variable <code>TASKCLUSTER_INTERACTIVE=true</code>
                 </Typography>
               </li>
             </ul>
             <Typography variant="body2">
-              Note: this may not work with all tasks. You may not have the
-              scopes required to create the task.
+              Note: this may not work with all tasks. You may not have the scopes required to create the task.
             </Typography>
           </Fragment>
         ),
@@ -498,7 +468,7 @@ export default class ViewTask extends Component {
     }
   };
 
-  handleEdit = task =>
+  handleEdit = (task) =>
     this.props.history.push({
       pathname: '/tasks/create',
       state: { task },
@@ -513,10 +483,9 @@ export default class ViewTask extends Component {
         fullScreen: false,
         body: (
           <Typography variant="body2">
-            Note that the edited task will not be linked to other tasks nor have
-            the same <code>task.routes</code> as other tasks, so this is not a
-            way to fix a failing task in a larger task group. Note that you may
-            also not have the scopes required to create the resulting task.
+            Note that the edited task will not be linked to other tasks nor have the same <code>task.routes</code> as
+            other tasks, so this is not a way to fix a failing task in a larger task group. Note that you may also not
+            have the scopes required to create the resulting task.
           </Typography>
         ),
         title: `${title}?`,
@@ -527,12 +496,12 @@ export default class ViewTask extends Component {
     });
   };
 
-  handleEditTaskComplete = task => {
+  handleEditTaskComplete = (task) => {
     this.handleActionDialogClose();
     this.handleEdit(task);
   };
 
-  handleFormChange = value =>
+  handleFormChange = (value) =>
     this.setState({
       formInputs: value,
     });
@@ -540,9 +509,7 @@ export default class ViewTask extends Component {
   handleOpenLogProfiler = () => {
     const { taskId } = this.props.match.params;
     const profileUrl = `${window.env.TASKCLUSTER_ROOT_URL}/api/web-server/v1/task/${taskId}/profile`;
-    const profilerUrl = `https://profiler.firefox.com/from-url/${encodeURIComponent(
-      profileUrl
-    )}`;
+    const profilerUrl = `https://profiler.firefox.com/from-url/${encodeURIComponent(profileUrl)}`;
 
     window.open(profilerUrl, '_blank');
   };
@@ -589,15 +556,12 @@ export default class ViewTask extends Component {
         body: (
           <Fragment>
             <Typography>
-              This will duplicate the task and create it under a different{' '}
-              <code>taskId</code>.
+              This will duplicate the task and create it under a different <code>taskId</code>.
             </Typography>
             <Typography>
               The new task will be altered to:
               <ul>
-                <li>
-                  Update deadlines and other timestamps for the current time
-                </li>
+                <li>Update deadlines and other timestamps for the current time</li>
                 <li>
                   Set number of <code>retries</code> to zero
                 </li>
@@ -623,10 +587,9 @@ export default class ViewTask extends Component {
         fullScreen: false,
         body: (
           <Typography variant="body2">
-            This will cause a new run of the task to be created with the same{' '}
-            <code>taskId</code>. It will only succeed if the task hasn&#39;t
-            passed it&#39;s deadline. Notice that this may interfere with
-            listeners who only expects this tasks to be resolved once.
+            This will cause a new run of the task to be created with the same <code>taskId</code>. It will only succeed
+            if the task hasn&#39;t passed it&#39;s deadline. Notice that this may interfere with listeners who only
+            expects this tasks to be resolved once.
           </Typography>
         ),
         title: `${title}?`,
@@ -646,10 +609,8 @@ export default class ViewTask extends Component {
         fullScreen: false,
         body: (
           <Typography variant="body2">
-            This will <strong>overwrite any scheduling process</strong> taking
-            place. If this task is part of a continuous integration process,
-            scheduling this task may cause your commit to land with failing
-            tests.
+            This will <strong>overwrite any scheduling process</strong> taking place. If this task is part of a
+            continuous integration process, scheduling this task may cause your commit to land with failing tests.
           </Typography>
         ),
         title: `${title}?`,
@@ -660,7 +621,7 @@ export default class ViewTask extends Component {
     });
   };
 
-  handleSelectCacheClick = cache => () => {
+  handleSelectCacheClick = (cache) => () => {
     // eslint-disable-next-line react/no-access-state-in-setstate
     const selectedCaches = new Set([...this.state.selectedCaches]);
 
@@ -680,17 +641,17 @@ export default class ViewTask extends Component {
     });
   };
 
-  handleTaskActionError = e => {
+  handleTaskActionError = (e) => {
     this.setState({ dialogError: e, actionLoading: false });
   };
 
-  handleTaskSearchSubmit = taskId => {
+  handleTaskSearchSubmit = (taskId) => {
     if (this.props.match.params.taskId !== taskId) {
       this.props.history.push(`/tasks/${taskId}`);
     }
   };
 
-  postRunningFailedAction = error => {
+  postRunningFailedAction = (error) => {
     this.setState({ dialogError: error, actionLoading: false });
   };
 
@@ -699,16 +660,14 @@ export default class ViewTask extends Component {
   };
 
   purgeWorkerCache = async () => {
-    const { provisionerId, workerType } = splitTaskQueueId(
-      this.props.data.task.taskQueueId
-    );
+    const { provisionerId, workerType } = splitTaskQueueId(this.props.data.task.taskQueueId);
     const { selectedCaches } = this.state;
 
     this.preRunningAction();
 
     try {
       await Promise.all(
-        [...selectedCaches].map(cacheName =>
+        [...selectedCaches].map((cacheName) =>
           this.props.client.mutate({
             mutation: purgeWorkerCacheQuery,
             variables: {
@@ -718,8 +677,8 @@ export default class ViewTask extends Component {
                 cacheName,
               },
             },
-          })
-        )
+          }),
+        ),
       );
     } catch (error) {
       this.postRunningFailedAction(error);
@@ -816,7 +775,7 @@ export default class ViewTask extends Component {
     }
   };
 
-  renderActionIcon = action => {
+  renderActionIcon = (action) => {
     if (/^(rerun|retrigger)/.test(action.name)) {
       return <RestartIcon />;
     }
@@ -844,27 +803,23 @@ export default class ViewTask extends Component {
     }
   };
 
-  renderPurgeWorkerCacheDialogBody = selectedCaches => {
+  renderPurgeWorkerCacheDialogBody = (selectedCaches) => {
     const { caches } = this.state;
 
     return (
       <Fragment>
         <Typography variant="body2">
-          This will purge caches used in this task across all workers of this
-          worker type.
+          This will purge caches used in this task across all workers of this worker type.
         </Typography>
         <Typography variant="body2">Select the caches to purge:</Typography>
         <List>
-          {caches.map(cache => (
+          {caches.map((cache) => (
             <ListItem
               className={this.props.classes.dialogListItem}
               onClick={this.handleSelectCacheClick(cache)}
-              key={cache}>
-              <Checkbox
-                checked={selectedCaches.has(cache)}
-                tabIndex={-1}
-                disableRipple
-              />
+              key={cache}
+            >
+              <Checkbox checked={selectedCaches.has(cache)} tabIndex={-1} disableRipple />
               <Typography variant="body2">{cache}</Typography>
             </ListItem>
           ))}
@@ -880,14 +835,7 @@ export default class ViewTask extends Component {
       data: { loading, error, task, dependents },
       match,
     } = this.props;
-    const {
-      dialogActionProps,
-      selectedAction,
-      dialogOpen,
-      actionLoading,
-      dialogError,
-      formInputs,
-    } = this.state;
+    const { dialogActionProps, selectedAction, dialogOpen, actionLoading, dialogError, formInputs } = this.state;
     const { actionData, taskActions } = this.getTaskActionsData();
     let tags;
 
@@ -900,12 +848,8 @@ export default class ViewTask extends Component {
         title={task ? `Task "${task.metadata.name}"` : 'Task'}
         helpView={<HelpView description={description} />}
         disableTitleFormatting
-        search={
-          <Search
-            onSubmit={this.handleTaskSearchSubmit}
-            defaultValue={match.params.taskId}
-          />
-        }>
+        search={<Search onSubmit={this.handleTaskSearchSubmit} defaultValue={match.params.taskId} />}
+      >
         <Helmet state={task?.status.state} />
         {loading && (
           <Fragment>
@@ -960,7 +904,7 @@ export default class ViewTask extends Component {
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <AuthContext.Consumer>
-                  {auth => (
+                  {(auth) => (
                     <TaskDetailsCard
                       task={task}
                       user={auth.user}
@@ -974,9 +918,7 @@ export default class ViewTask extends Component {
               <Grid item xs={12} md={6}>
                 <TaskRunsCard
                   selectedRunId={
-                    match.params.runId
-                      ? parseInt(match.params.runId, 10)
-                      : Math.max(task.status.runs.length - 1, 0)
+                    match.params.runId ? parseInt(match.params.runId, 10) : Math.max(task.status.runs.length - 1, 0)
                   }
                   runs={task.status.runs}
                   taskQueueId={task.taskQueueId}
@@ -1077,7 +1019,7 @@ export default class ViewTask extends Component {
                 onClick={this.handleOpenLogProfiler}
               />
               {taskActions?.length &&
-                taskActions.map(action => (
+                taskActions.map((action) => (
                   <SpeedDialAction
                     requiresAuth
                     tooltipOpen
@@ -1099,11 +1041,7 @@ export default class ViewTask extends Component {
                   onComplete: this.handleActionComplete(selectedAction),
                   title: `${selectedAction.title}?`,
                   body: (
-                    <TaskActionForm
-                      action={selectedAction}
-                      form={formInputs}
-                      onFormChange={this.handleFormChange}
-                    />
+                    <TaskActionForm action={selectedAction} form={formInputs} onFormChange={this.handleFormChange} />
                   ),
                   confirmText: selectedAction.title,
                 })}

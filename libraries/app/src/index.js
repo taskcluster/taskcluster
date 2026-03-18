@@ -39,7 +39,7 @@ let listenersAdded = false;
  * Create server; this becomes a method of the `app` object, so `this`
  * refers to an Express app.
  */
-const createServer = function() {
+const createServer = function () {
   // 404 Error handler
   this.use((_req, res, _next) => {
     res.setHeader('Content-Type', 'application/json');
@@ -65,11 +65,10 @@ const createServer = function() {
       }
       debug(`Connections open: ${count}`);
     });
-    server.terminate()
-      .then(() => {
-        debug('Server terminated');
-        process.exit(0);
-      });
+    server.terminate().then(() => {
+      debug('Server terminated');
+      process.exit(0);
+    });
   }
 
   if (!listenersAdded) {
@@ -139,12 +138,14 @@ export const App = async (options) => {
     robotsTxt: true,
   });
   assert(typeof options.port === 'number', 'Port must be a number');
-  assert(options.env === 'development' ||
-  options.env === 'production', 'env must be production or development');
+  assert(options.env === 'development' || options.env === 'production', 'env must be production or development');
   assert(options.forceSSL !== undefined, 'forceSSL must be defined');
   assert(options.trustProxy !== undefined, 'trustProxy must be defined');
   assert(options.apis, 'Must provide an array of apis');
-  assert(options.keepAliveTimeoutSeconds !== '' || typeof options.keepAliveTimeoutSeconds === 'number', 'keepAliveTimeout must be a number');
+  assert(
+    options.keepAliveTimeoutSeconds !== '' || typeof options.keepAliveTimeoutSeconds === 'number',
+    'keepAliveTimeout must be a number',
+  );
   assert(!options.rootDocsLink, '`rootDocsLink` is no longer allowed');
   assert(!options.docs, '`docs` is no longer allowed');
 
@@ -162,9 +163,11 @@ export const App = async (options) => {
 
   // ForceSSL if required suggested
   if (options.forceSSL) {
-    app.use(sslify.HTTPS({
-      trustProtoHeader: options.trustProxy,
-    }));
+    app.use(
+      sslify.HTTPS({
+        trustProtoHeader: options.trustProxy,
+      }),
+    );
   }
 
   // When we force SSL, we also want to set the HSTS header file correctly.  We
@@ -172,20 +175,24 @@ export const App = async (options) => {
   // generated correctly without having to generate an SSL cert and key and
   // have express listen on ssl
   if (options.forceSSL || options.forceHSTS) {
-    app.use(hsts({
-      maxAge: 1000 * 60 * 60 * 24 * 90,
-      force: true,
-    }));
+    app.use(
+      hsts({
+        maxAge: 1000 * 60 * 60 * 24 * 90,
+        force: true,
+      }),
+    );
   }
 
   if (options.contentSecurityPolicy) {
     // if you're loading HTML from an API, you're doing it wrong..
-    app.use(csp.getCSP({
-      'default-src': csp.SRC_NONE,
-      'frame-ancestors': csp.SRC_NONE,
-      'base-uri': csp.SRC_NONE,
-      'report-uri': '/__cspreport__',
-    }));
+    app.use(
+      csp.getCSP({
+        'default-src': csp.SRC_NONE,
+        'frame-ancestors': csp.SRC_NONE,
+        'base-uri': csp.SRC_NONE,
+        'report-uri': '/__cspreport__',
+      }),
+    );
   }
 
   if (options.trustProxy) {
@@ -234,7 +241,7 @@ export const App = async (options) => {
     res.status(200).send({});
   });
 
-  options.apis.forEach(api => {
+  options.apis.forEach((api) => {
     api.express(app);
   });
 

@@ -1,4 +1,3 @@
-
 import { node, string, object } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { makeStyles } from '@material-ui/core/styles';
@@ -8,7 +7,7 @@ import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import useCopyToClipboard from '../../utils/useCopyToClipboard';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   listItemButtonRoot: {
     ...theme.mixins.listItemButton,
   },
@@ -17,29 +16,12 @@ const useStyles = makeStyles(theme => ({
 function CopyToClipboardListItem(props) {
   const classes = useStyles();
   const { isCopy, onCopyClick } = useCopyToClipboard();
-  const {
-    tooltipTitle,
-    textToCopy,
-    primary,
-    secondary,
-    listItemTextProps,
-    listItemProps,
-  } = props;
+  const { tooltipTitle, textToCopy, primary, secondary, listItemTextProps, listItemProps } = props;
 
   return (
-    <CopyToClipboard
-      onCopy={onCopyClick}
-      title={`${tooltipTitle} (${isCopy ? 'Copied!' : 'Copy'})`}
-      text={textToCopy}>
-      <ListItem
-        button
-        classes={{ root: classes.listItemButtonRoot }}
-        {...listItemProps}>
-        <ListItemText
-          primary={primary}
-          secondary={secondary}
-          {...listItemTextProps}
-        />
+    <CopyToClipboard onCopy={onCopyClick} title={`${tooltipTitle} (${isCopy ? 'Copied!' : 'Copy'})`} text={textToCopy}>
+      <ListItem button classes={{ root: classes.listItemButtonRoot }} {...listItemProps}>
+        <ListItemText primary={primary} secondary={secondary} {...listItemTextProps} />
         {isCopy ? <CheckIcon /> : <ContentCopyIcon />}
       </ListItem>
     </CopyToClipboard>

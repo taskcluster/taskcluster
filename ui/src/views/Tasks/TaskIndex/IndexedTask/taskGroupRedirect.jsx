@@ -9,7 +9,7 @@ import indexedTaskQuery from './indexedTask.graphql';
 
 @graphql(indexedTaskQuery, {
   name: 'indexedTaskData',
-  options: props => ({
+  options: (props) => ({
     variables: {
       indexPath: `${props.match.params.namespace}.${props.match.params.namespaceTaskId}`,
     },
@@ -30,28 +30,16 @@ import indexedTaskQuery from './indexedTask.graphql';
 export default class IndexedTaskTaskGroupRedirect extends Component {
   render() {
     const {
-      latestArtifactsData: {
-        task,
-        error: latestArtifactsError,
-        loading: latestArtifactsLoading,
-      },
-      indexedTaskData: {
-        indexedTask,
-        error: indexedTaskError,
-        loading: indexedTaskLoading,
-      },
+      latestArtifactsData: { task, error: latestArtifactsError, loading: latestArtifactsLoading },
+      indexedTaskData: { indexedTask, error: indexedTaskError, loading: indexedTaskLoading },
     } = this.props;
     const loading = latestArtifactsLoading || indexedTaskLoading;
 
     return (
       <Dashboard title="Index Task Group Redirect">
         {loading && <Spinner loading />}
-        {!loading && (
-          <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />
-        )}
-        {indexedTask && task?.taskGroupId && (
-          <Redirect to={`/tasks/groups/${task.taskGroupId}`} />
-        )}
+        {!loading && <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />}
+        {indexedTask && task?.taskGroupId && <Redirect to={`/tasks/groups/${task.taskGroupId}`} />}
       </Dashboard>
     );
   }

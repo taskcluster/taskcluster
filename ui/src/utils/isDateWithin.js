@@ -11,8 +11,7 @@ import { parseISO, differenceInMinutes } from 'date-fns';
  */
 export default (date, dateToCompare, startInMinutes, endInMinutes) => {
   const d = typeof date === 'string' ? parseISO(date) : date;
-  const compareAgainst =
-    typeof dateToCompare === 'string' ? parseISO(dateToCompare) : dateToCompare;
+  const compareAgainst = typeof dateToCompare === 'string' ? parseISO(dateToCompare) : dateToCompare;
   const difference = Math.abs(differenceInMinutes(compareAgainst, d));
 
   return difference > startInMinutes && difference < endInMinutes;

@@ -7,7 +7,7 @@ import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { LEVELS } from '@taskcluster/lib-monitor';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPollingServices(mock, skipping);
@@ -22,7 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   const makeTask = (retries) => {
     return {
       taskQueueId,
-      priority: "normal",
+      priority: 'normal',
       retries,
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('30 min'),
@@ -37,7 +37,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   let monitor;
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     monitor = await helper.load('monitor');
   });
 
@@ -45,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const metrics = await monitor.manager._prometheus.metricsJson();
     const metric = metrics.find(({ name }) => name === metricName);
     assert(metric, `${metricName} metric should exist`);
-    const labelEntry = metric.values.find(v => v.labels[labelName] === labelValue);
+    const labelEntry = metric.values.find((v) => v.labels[labelName] === labelValue);
     assert(labelEntry, `${metricName} should have ${labelName}=${labelValue} label`);
     assert(labelEntry.value >= 1, `${metricName} counter should be incremented for ${labelValue}`);
   };
@@ -75,14 +75,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Wait for claim expiration');
     await testing.poll(
       async () => {
-        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-pending'), {
-          Logger: 'taskcluster.test.claim-resolver',
-          Type: 'task-pending',
-          Fields: { taskId, runId: 1, v: 1 },
-          Severity: LEVELS.notice,
-        });
+        assert.deepEqual(
+          monitor.manager.messages.find(({ Type }) => Type === 'task-pending'),
+          {
+            Logger: 'taskcluster.test.claim-resolver',
+            Type: 'task-pending',
+            Fields: { taskId, runId: 1, v: 1 },
+            Severity: LEVELS.notice,
+          },
+        );
       },
-      100, 250);
+      100,
+      250,
+    );
 
     await helper.stopPollingService();
   });
@@ -112,14 +117,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Wait for claim expiration');
     await testing.poll(
       async () => {
-        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-exception'), {
-          Logger: 'taskcluster.test.claim-resolver',
-          Type: 'task-exception',
-          Fields: { taskId, runId: 0, v: 1 },
-          Severity: LEVELS.notice,
-        });
+        assert.deepEqual(
+          monitor.manager.messages.find(({ Type }) => Type === 'task-exception'),
+          {
+            Logger: 'taskcluster.test.claim-resolver',
+            Type: 'task-exception',
+            Fields: { taskId, runId: 0, v: 1 },
+            Severity: LEVELS.notice,
+          },
+        );
       },
-      100, 250);
+      100,
+      250,
+    );
 
     await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'claim-expired');
 

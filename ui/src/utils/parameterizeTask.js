@@ -5,19 +5,11 @@ import fromNowJSON from './fromNowJSON';
 import { TASK_ADDED_FIELDS } from './constants';
 
 // Transform task to an interactive task
-export default task =>
+export default (task) =>
   merge(
     omit(
-      [
-        ...TASK_ADDED_FIELDS,
-        'taskGroupId',
-        'routes',
-        'dependencies',
-        'requires',
-        'scopes',
-        'payload',
-      ],
-      cloneDeep(task)
+      [...TASK_ADDED_FIELDS, 'taskGroupId', 'routes', 'dependencies', 'requires', 'scopes', 'payload'],
+      cloneDeep(task),
     ),
     {
       retries: 0,
@@ -25,12 +17,9 @@ export default task =>
       created: fromNowJSON(),
       expires: fromNowJSON('7 days'),
       // Delete cache scopes
-      scopes: task.scopes.filter(scope => !/^docker-worker:cache:/.test(scope)),
+      scopes: task.scopes.filter((scope) => !/^docker-worker:cache:/.test(scope)),
       payload: merge(omit(['artifacts', 'cache'], task.payload || {}), {
-        maxRunTime: Math.max(
-          task.payload?.maxRunTime,
-          3 * 60 * 60
-        ),
+        maxRunTime: Math.max(task.payload?.maxRunTime, 3 * 60 * 60),
         features: {
           interactive: true,
         },
@@ -38,5 +27,5 @@ export default task =>
           TASKCLUSTER_INTERACTIVE: 'true',
         },
       }),
-    }
+    },
   );

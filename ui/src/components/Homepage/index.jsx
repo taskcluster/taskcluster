@@ -8,7 +8,7 @@ import Button from '../Button';
 import Landing from '../Landing';
 import SignInDialog from '../SignInDialog';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   root: {
     padding: theme.spacing(10),
     [theme.breakpoints.down('sm')]: {
@@ -72,22 +72,15 @@ export default class HomePage extends Component {
           </Typography>
         </Hidden>
         <Typography variant="h5" className={classes.ciDescription}>
-          A task execution framework that supports Mozilla&apos;s continuous
-          integration and release processes.
+          A task execution framework that supports Mozilla&apos;s continuous integration and release processes.
         </Typography>
         <Divider className={classes.divider} />
         <div className={classes.actions}>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={this.handleOpenSignInDialog}>
+          <Button variant="contained" color="secondary" onClick={this.handleOpenSignInDialog}>
             <AccountCircleIcon className={classes.icon} />
             Sign in
           </Button>
-          <SignInDialog
-            open={signInDialogOpen}
-            onClose={this.handleCloseSignInDialog}
-          />
+          <SignInDialog open={signInDialogOpen} onClose={this.handleCloseSignInDialog} />
         </div>
       </Landing>
     );

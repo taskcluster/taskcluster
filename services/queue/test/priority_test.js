@@ -4,7 +4,7 @@ import taskcluster from '@taskcluster/client';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -37,7 +37,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     extra: {},
   };
 
-  const makeTaskDef = overrides => ({
+  const makeTaskDef = (overrides) => ({
     ...taskDef,
     ...overrides,
     created: taskcluster.fromNowJSON(),
@@ -54,7 +54,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(result.status.taskId, taskId);
     assert.equal(result.status.priority, 'highest');
 
-    await helper.withDbClient(async client => {
+    await helper.withDbClient(async (client) => {
       const { rows } = await client.query('select priority from queue_pending_tasks where task_id = $1', [taskId]);
       assert.equal(rows.length, 1);
       assert.equal(rows[0].priority, 7);
@@ -66,14 +66,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.createTask(taskId, makeTaskDef());
     helper.scopes(`queue:cancel-task:${taskDef.schedulerId}/${taskDef.taskGroupId}/${taskId}`);
     await helper.queue.cancelTask(taskId);
-    await helper.withDbClient(async client => {
+    await helper.withDbClient(async (client) => {
       await client.query('update tasks set ever_resolved = true where task_id = $1', [taskId]);
     });
 
     helper.scopes(`queue:change-task-priority:${taskId}`);
     await assert.rejects(
       () => helper.queue.changeTaskPriority(taskId, { newPriority: 'very-high' }),
-      err => err.code === 'RequestConflict',
+      (err) => err.code === 'RequestConflict',
     );
   });
 
@@ -84,7 +84,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     await assert.rejects(
       () => helper.queue.changeTaskPriority(taskId, { newPriority: 'medium' }),
-      err => err.code === 'InsufficientScopes',
+      (err) => err.code === 'InsufficientScopes',
     );
   });
 
@@ -105,8 +105,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(response.tasksAffected, tasks.length);
     assert.deepEqual(new Set(response.taskIds).size, tasks.length);
 
-    await helper.withDbClient(async client => {
-      const { rows } = await client.query('select distinct priority from queue_pending_tasks where task_id = any($1::text[])', [tasks]);
+    await helper.withDbClient(async (client) => {
+      const { rows } = await client.query(
+        'select distinct priority from queue_pending_tasks where task_id = any($1::text[])',
+        [tasks],
+      );
       assert.equal(rows.length, 1);
       assert.equal(rows[0].priority, 6);
     });
@@ -125,8 +128,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(`queue:rerun-task:${taskDef.schedulerId}/${taskDef.taskGroupId}/${taskId}`);
     await helper.queue.rerunTask(taskId);
 
-    await helper.withDbClient(async client => {
-      const { rows } = await client.query('select priority, run_id from queue_pending_tasks where task_id = $1 order by run_id desc limit 1', [taskId]);
+    await helper.withDbClient(async (client) => {
+      const { rows } = await client.query(
+        'select priority, run_id from queue_pending_tasks where task_id = $1 order by run_id desc limit 1',
+        [taskId],
+      );
       assert.equal(rows.length, 1);
       assert.equal(rows[0].priority, 7);
     });

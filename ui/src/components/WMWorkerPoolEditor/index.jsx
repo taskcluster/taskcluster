@@ -39,22 +39,14 @@ import {
   providersArray,
 } from '../../utils/prop-types';
 import ErrorPanel from '../ErrorPanel';
-import {
-  joinWorkerPoolId,
-  splitWorkerPoolId,
-  isWorkerPoolIdSecondHalfValid,
-} from '../../utils/workerPool';
+import { joinWorkerPoolId, splitWorkerPoolId, isWorkerPoolIdSecondHalfValid } from '../../utils/workerPool';
 import formatError from '../../utils/formatError';
-import {
-  NULL_WORKER_POOL,
-  PROVIDER_DEFAULT_CONFIGS,
-  THEME,
-} from '../../utils/constants';
+import { NULL_WORKER_POOL, PROVIDER_DEFAULT_CONFIGS, THEME } from '../../utils/constants';
 import SpeedDialAction from '../SpeedDialAction';
 import SpeedDial from '../SpeedDial';
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   saveIcon: {
     ...theme.mixins.successIcon,
   },
@@ -196,19 +188,15 @@ export default class WMWorkerPoolEditor extends Component {
 
   state = {
     workerPool: {
-      workerPoolId1: splitWorkerPoolId(this.props.workerPool.workerPoolId)
-        .provisionerId,
-      workerPoolId2: splitWorkerPoolId(this.props.workerPool.workerPoolId)
-        .workerType,
+      workerPoolId1: splitWorkerPoolId(this.props.workerPool.workerPoolId).provisionerId,
+      workerPoolId2: splitWorkerPoolId(this.props.workerPool.workerPoolId).workerType,
       providerId: this.props.workerPool.providerId,
       description: this.props.workerPool.description,
       owner: this.props.workerPool.owner,
       emailOnError: this.props.workerPool.emailOnError,
       config: JSON.stringify(this.props.workerPool.config || {}, null, 2),
     },
-    originalSerializedWorkerPool: this.props.isNewWorkerPool
-      ? null
-      : this.serializeWorkerPool(this.props.workerPool),
+    originalSerializedWorkerPool: this.props.isNewWorkerPool ? null : this.serializeWorkerPool(this.props.workerPool),
     invalidProviderConfig: false,
     actionLoading: false,
     error: null,
@@ -242,10 +230,7 @@ export default class WMWorkerPoolEditor extends Component {
       workerPoolId2 = wp.workerPoolId2;
     }
 
-    const config =
-      typeof wp.config === 'string'
-        ? wp.config
-        : JSON.stringify(wp.config || {}, null, 2);
+    const config = typeof wp.config === 'string' ? wp.config : JSON.stringify(wp.config || {}, null, 2);
 
     return JSON.stringify({
       workerPoolId1,
@@ -258,9 +243,7 @@ export default class WMWorkerPoolEditor extends Component {
     });
   }
 
-  handleInputChange = ({
-    currentTarget: { name, value, validity, validationMessage },
-  }) => {
+  handleInputChange = ({ currentTarget: { name, value, validity, validationMessage } }) => {
     const newState = {
       workerPool: { ...this.state.workerPool, [name]: value },
     };
@@ -278,10 +261,7 @@ export default class WMWorkerPoolEditor extends Component {
     }
 
     if (name === 'workerPoolId1' || name === 'workerPoolId2') {
-      const isValid =
-        name === 'workerPoolId1'
-          ? isWorkerTypeNameValid(value)
-          : isWorkerPoolIdSecondHalfValid(value);
+      const isValid = name === 'workerPoolId1' ? isWorkerTypeNameValid(value) : isWorkerPoolIdSecondHalfValid(value);
 
       Object.assign(newState, {
         validation: {
@@ -313,7 +293,7 @@ export default class WMWorkerPoolEditor extends Component {
     );
   }
 
-  handleSwitchChange = event => {
+  handleSwitchChange = (event) => {
     const {
       target: { value },
     } = event;
@@ -326,12 +306,12 @@ export default class WMWorkerPoolEditor extends Component {
     });
   };
 
-  handleProviderChange = event => {
+  handleProviderChange = (event) => {
     const {
       target: { value: providerId },
     } = event;
     const { providers } = this.props;
-    const providerInfo = providers.find(i => i.providerId === providerId);
+    const providerInfo = providers.find((i) => i.providerId === providerId);
 
     if (!providerInfo) {
       return;
@@ -340,17 +320,13 @@ export default class WMWorkerPoolEditor extends Component {
     this.setState({
       workerPool: {
         ...this.state.workerPool,
-        config: JSON.stringify(
-          PROVIDER_DEFAULT_CONFIGS.get(providerInfo.providerType) || {},
-          null,
-          2
-        ),
+        config: JSON.stringify(PROVIDER_DEFAULT_CONFIGS.get(providerInfo.providerType) || {}, null, 2),
         providerId: providerInfo.providerId,
       },
     });
   };
 
-  handleEditorChange = value => {
+  handleEditorChange = (value) => {
     const { workerPool } = this.state;
 
     try {
@@ -374,7 +350,7 @@ export default class WMWorkerPoolEditor extends Component {
     }
   };
 
-  handleOnClick = async event => {
+  handleOnClick = async (event) => {
     const { workerPoolId1, workerPoolId2, ...rest } = this.state.workerPool;
     const { name: requestName } = event.currentTarget;
 
@@ -388,9 +364,7 @@ export default class WMWorkerPoolEditor extends Component {
         payload,
       });
       this.setState({
-        originalSerializedWorkerPool: this.serializeWorkerPool(
-          this.state.workerPool
-        ),
+        originalSerializedWorkerPool: this.serializeWorkerPool(this.state.workerPool),
         actionLoading: false,
       });
     } catch (error) {
@@ -420,18 +394,9 @@ export default class WMWorkerPoolEditor extends Component {
       errorStats,
     } = this.props;
     const { workerPool, error, actionLoading, validation } = this.state;
-    const {
-      workerPoolId,
-      requestedCapacity,
-      runningCapacity,
-      stoppingCapacity,
-      pendingTasks,
-    } = this.props.workerPool;
-    const currentSerializedWorkerPool = this.serializeWorkerPool(
-      this.state.workerPool
-    );
-    const isWorkerPoolDirty =
-      this.state.originalSerializedWorkerPool !== currentSerializedWorkerPool;
+    const { workerPoolId, requestedCapacity, runningCapacity, stoppingCapacity, pendingTasks } = this.props.workerPool;
+    const currentSerializedWorkerPool = this.serializeWorkerPool(this.state.workerPool);
+    const isWorkerPoolDirty = this.state.originalSerializedWorkerPool !== currentSerializedWorkerPool;
     const { provisionerId, workerType } = splitWorkerPoolId(workerPoolId);
     const workerTypeUrl = `/provisioners/${provisionerId}/worker-types/${workerType}`;
     const workerPoolUrl = `/worker-manager/${encodeURIComponent(workerPoolId)}`;
@@ -479,46 +444,33 @@ export default class WMWorkerPoolEditor extends Component {
         {!isNewWorkerPool && (
           <Fragment>
             <Paper component="ul" className={classes.overviewList}>
-              {workerPoolStats.map(
-                ({ label, value, className, Icon, href }) => {
-                  return (
-                    <ButtonBase
-                      focusRipple
-                      key={className}
-                      name={className}
-                      variant="contained"
-                      href={href}
-                      className={classNames(
-                        classes[className],
-                        classes.statusButton
-                      )}>
-                      <div>
-                        <Icon
-                          color="white"
-                          className={classes.statusIcon}
-                          size={32}
-                        />
-                      </div>
-                      <div>
-                        <Typography
-                          align="right"
-                          className={classes.statusButtonTypography}
-                          variant="h4">
-                          {value || 0}
-                        </Typography>
-                        <Typography
-                          className={classNames(
-                            classes.statusTitle,
-                            classes.statusButtonTypography
-                          )}
-                          variant="caption">
-                          {titleCase(label)}
-                        </Typography>
-                      </div>
-                    </ButtonBase>
-                  );
-                }
-              )}
+              {workerPoolStats.map(({ label, value, className, Icon, href }) => {
+                return (
+                  <ButtonBase
+                    focusRipple
+                    key={className}
+                    name={className}
+                    variant="contained"
+                    href={href}
+                    className={classNames(classes[className], classes.statusButton)}
+                  >
+                    <div>
+                      <Icon color="white" className={classes.statusIcon} size={32} />
+                    </div>
+                    <div>
+                      <Typography align="right" className={classes.statusButtonTypography} variant="h4">
+                        {value || 0}
+                      </Typography>
+                      <Typography
+                        className={classNames(classes.statusTitle, classes.statusButtonTypography)}
+                        variant="caption"
+                      >
+                        {titleCase(label)}
+                      </Typography>
+                    </div>
+                  </ButtonBase>
+                );
+              })}
             </Paper>
           </Fragment>
         )}
@@ -577,11 +529,7 @@ export default class WMWorkerPoolEditor extends Component {
             <FormGroup row>
               <FormControlLabel
                 control={
-                  <Switch
-                    checked={workerPool.emailOnError}
-                    onChange={this.handleSwitchChange}
-                    value="emailOnError"
-                  />
+                  <Switch checked={workerPool.emailOnError} onChange={this.handleSwitchChange} value="emailOnError" />
                 }
                 label="Email the owner about errors"
               />
@@ -599,7 +547,8 @@ export default class WMWorkerPoolEditor extends Component {
                   className={classes.dropdown}
                   helperText="Which cloud do you want to run your tasks in?"
                   value={workerPool.providerId}
-                  onChange={this.handleProviderChange}>
+                  onChange={this.handleProviderChange}
+                >
                   {providers.map(({ providerId }) => (
                     <MenuItem key={providerId} value={providerId}>
                       {providerId}
@@ -618,29 +567,22 @@ export default class WMWorkerPoolEditor extends Component {
                   Configuration
                 </Typography>
               }
-              secondary={
-                <CodeEditor
-                  value={workerPool.config}
-                  onChange={this.handleEditorChange}
-                  lint
-                />
-              }
+              secondary={<CodeEditor value={workerPool.config} onChange={this.handleEditorChange} lint />}
             />
           </ListItem>
         </List>
 
         <Button
           spanProps={{
-            className: isNewWorkerPool
-              ? classes.createIconSpan
-              : classes.saveIconSpan,
+            className: isNewWorkerPool ? classes.createIconSpan : classes.saveIconSpan,
           }}
           name="saveRequest"
           disabled={!this.isValid() || !isWorkerPoolDirty}
           tooltipProps={{ title: 'Save Worker Pool' }}
           onClick={this.handleOnClick}
           classes={{ root: classes.saveIcon }}
-          variant="round">
+          variant="round"
+        >
           <ContentSaveIcon />
         </Button>
 
@@ -671,12 +613,7 @@ export default class WMWorkerPoolEditor extends Component {
             title="Delete Worker Pool?"
             body={
               <Typography variant="body2">
-                This will delete the worker pool{' '}
-                {joinWorkerPoolId(
-                  workerPool.workerPoolId1,
-                  workerPool.workerPoolId2
-                )}
-                .
+                This will delete the worker pool {joinWorkerPoolId(workerPool.workerPoolId1, workerPool.workerPoolId2)}.
               </Typography>
             }
             confirmText="Delete Worker Pool"

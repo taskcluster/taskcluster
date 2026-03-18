@@ -4,12 +4,7 @@ import { parse } from 'qs';
 export default () => {
   const query = parse(window.location.search.slice(1));
 
-  if (
-    query.client_id &&
-    query.response_type &&
-    query.scope &&
-    query.redirect_uri
-  ) {
+  if (query.client_id && query.response_type && query.scope && query.redirect_uri) {
     return true;
   }
 

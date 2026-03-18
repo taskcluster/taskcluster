@@ -11,7 +11,7 @@ import Search from '../../../components/Search';
 import Link from '../../../utils/Link';
 import db from '../../../utils/db';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   infoText: {
     marginBottom: theme.spacing(1),
   },
@@ -27,15 +27,12 @@ export default class NoTaskGroup extends Component {
   };
 
   async componentDidMount() {
-    const recentTaskGroups = await db.taskGroupIdsHistory
-      .limit(5)
-      .reverse()
-      .toArray();
+    const recentTaskGroups = await db.taskGroupIdsHistory.limit(5).reverse().toArray();
 
     this.setState({ recentTaskGroups });
   }
 
-  handleTaskGroupSearchSubmit = taskGroupId => {
+  handleTaskGroupSearchSubmit = (taskGroupId) => {
     this.props.history.push(`/tasks/groups/${taskGroupId}`);
   };
 
@@ -47,21 +44,13 @@ export default class NoTaskGroup extends Component {
       <Dashboard
         title="Task Groups"
         helpView={<HelpView description={description} />}
-        search={
-          <Search
-            placeholder="Search Task Group ID"
-            onSubmit={this.handleTaskGroupSearchSubmit}
-          />
-        }>
+        search={<Search placeholder="Search Task Group ID" onSubmit={this.handleTaskGroupSearchSubmit} />}
+      >
         <Typography variant="body2" className={classes.infoText}>
           Enter a task group ID in the search box
         </Typography>
         {recentTaskGroups && Boolean(recentTaskGroups.length) && (
-          <List
-            dense
-            subheader={
-              <ListSubheader component="div">Recent Task Groups</ListSubheader>
-            }>
+          <List dense subheader={<ListSubheader component="div">Recent Task Groups</ListSubheader>}>
             {recentTaskGroups.map(({ taskGroupId }) => (
               <Link key={taskGroupId} to={`/tasks/groups/${taskGroupId}`}>
                 <ListItem button className={classes.listItemButton}>

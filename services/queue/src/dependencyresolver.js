@@ -23,10 +23,8 @@ class DependencyResolver {
     assert(options, 'options are required');
     assert(options.dependencyTracker, 'Expected options.dependencyTracker');
     assert(options.queueService, 'Expected options.queueService');
-    assert(typeof options.pollingDelay === 'number',
-      'Expected pollingDelay to be a number');
-    assert(typeof options.count === 'number',
-      'Expected count to be a number');
+    assert(typeof options.pollingDelay === 'number', 'Expected pollingDelay to be a number');
+    assert(typeof options.count === 'number', 'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
 
@@ -68,17 +66,19 @@ class DependencyResolver {
   async _pollResolvedTasks() {
     const messages = await this.queueService.pollResolvedQueue(this.count);
     let failed = 0;
-    await Promise.all(messages.map(async (m) => {
-      // Don't let a single task error break the loop, it'll be retried later
-      // as we don't remove message unless they are handled
-      try {
-        await this.dependencyTracker.resolveTask(m.taskId, m.taskGroupId, m.schedulerId, m.resolution);
-        await m.remove();
-      } catch (err) {
-        failed += 1;
-        this.monitor.reportError(err, 'warning');
-      }
-    }));
+    await Promise.all(
+      messages.map(async (m) => {
+        // Don't let a single task error break the loop, it'll be retried later
+        // as we don't remove message unless they are handled
+        try {
+          await this.dependencyTracker.resolveTask(m.taskId, m.taskGroupId, m.schedulerId, m.resolution);
+          await m.remove();
+        } catch (err) {
+          failed += 1;
+          this.monitor.reportError(err, 'warning');
+        }
+      }),
+    );
 
     // If there were no messages, back off for a bit.
     if (messages.length === 0) {

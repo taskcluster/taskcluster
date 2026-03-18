@@ -18,13 +18,10 @@ import WorkersNavbar from '../../../components/WorkersNavbar';
 import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
 
 @graphql(claimedTasks, {
-  options: props => ({
+  options: (props) => ({
     errorPolicy: 'all',
     variables: {
-      taskQueueId: joinWorkerPoolId(
-        props.match.params.provisionerId,
-        props.match.params.workerType
-      ),
+      taskQueueId: joinWorkerPoolId(props.match.params.provisionerId, props.match.params.workerType),
       connection: {
         limit: VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE,
       },
@@ -50,11 +47,7 @@ export default class WMViewClaimedTasks extends Component {
       },
       updateQuery(previousResult, { fetchMoreResult: { listClaimedTasks } }) {
         // use dotProp.set to avoid lint warning about assigning to properties
-        return dotProp.set(
-          previousResult,
-          'listClaimedTasks',
-          listClaimedTasks
-        );
+        return dotProp.set(previousResult, 'listClaimedTasks', listClaimedTasks);
       },
     });
   };
@@ -86,11 +79,7 @@ export default class WMViewClaimedTasks extends Component {
             </TableCellItem>
           </Link>
         </TableCell>
-        <CopyToClipboardTableCell
-          tooltipTitle={claimed}
-          textToCopy={claimed}
-          text={<DateDistance from={claimed} />}
-        />
+        <CopyToClipboardTableCell tooltipTitle={claimed} textToCopy={claimed} text={<DateDistance from={claimed} />} />
         <TableCell>{task.metadata?.name}</TableCell>
       </TableRow>
     );
@@ -106,16 +95,15 @@ export default class WMViewClaimedTasks extends Component {
     const wpMissing = error?.message?.includes('Worker pool does not exist');
 
     return (
-      <Dashboard
-        title={`Claimed tasks in "${provisionerId}/${workerType}"`}
-        disableTitleFormatting>
+      <Dashboard title={`Claimed tasks in "${provisionerId}/${workerType}"`} disableTitleFormatting>
         <Box
           sx={{
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
             width: '100%',
-          }}>
+          }}
+        >
           <div style={{ flexGrow: 1, marginRight: 8 }}>
             <Breadcrumbs>
               <Link to="/provisioners">
@@ -124,8 +112,7 @@ export default class WMViewClaimedTasks extends Component {
               <Link to={`/provisioners/${provisionerId}`}>
                 <Typography variant="body2">{provisionerId}</Typography>
               </Link>
-              <Link
-                to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
+              <Link to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
                 <Typography variant="body2">{workerType}</Typography>
               </Link>
               <WorkersNavbar
@@ -145,16 +132,9 @@ export default class WMViewClaimedTasks extends Component {
             noItemsMessage="No claimed tasks"
             connection={listClaimedTasks}
             pageSize={VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE}
-            renderRow={row => this.renderRow(row)}
+            renderRow={(row) => this.renderRow(row)}
             onPageChange={this.handlePageChange}
-            headers={[
-              'Task ID',
-              'Run ID',
-              'Worker Group',
-              'Worker Id',
-              'Claimed',
-              'Title',
-            ]}
+            headers={['Task ID', 'Run ID', 'Worker Group', 'Worker Id', 'Claimed', 'Title']}
           />
         )}
       </Dashboard>

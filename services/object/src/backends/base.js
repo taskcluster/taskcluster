@@ -16,8 +16,7 @@ export class Backend {
    *
    * Subclasses should override this.
    */
-  async setup() {
-  }
+  async setup() {}
 
   /**
    * Negotiate the upload method based on the given proposed upload methods,

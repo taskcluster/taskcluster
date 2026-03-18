@@ -26,7 +26,7 @@ import { VIEW_WORKER_POOLS_PAGE_SIZE } from '../../../utils/constants';
     },
   }),
 })
-@withStyles(theme => ({
+@withStyles((theme) => ({
   createIconSpan: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
@@ -67,7 +67,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     }
   };
 
-  handleWorkerPoolSearchSubmit = async workerPoolSearch => {
+  handleWorkerPoolSearchSubmit = async (workerPoolSearch) => {
     const {
       data: { refetch },
     } = this.props;
@@ -130,20 +130,10 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           : null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {
-        const {
-          edges,
-          pageInfo,
-        } = fetchMoreResult.WorkerManagerWorkerPoolSummaries;
+        const { edges, pageInfo } = fetchMoreResult.WorkerManagerWorkerPoolSummaries;
 
-        return dotProp.set(
-          previousResult,
-          'WorkerManagerWorkerPoolSummaries',
-          workerPools =>
-            dotProp.set(
-              dotProp.set(workerPools, 'edges', edges),
-              'pageInfo',
-              pageInfo
-            )
+        return dotProp.set(previousResult, 'WorkerManagerWorkerPoolSummaries', (workerPools) =>
+          dotProp.set(dotProp.set(workerPools, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
@@ -190,7 +180,8 @@ export default class WorkerManagerWorkerPoolsView extends Component {
             onSubmit={this.handleWorkerPoolSearchSubmit}
             placeholder="Worker pool ID contains"
           />
-        }>
+        }
+      >
         <Fragment>
           {!WorkerManagerWorkerPoolSummaries && loading && <Spinner loading />}
           <ErrorPanel fixed error={error} />
@@ -211,7 +202,8 @@ export default class WorkerManagerWorkerPoolsView extends Component {
             requiresAuth
             color="secondary"
             variant="round"
-            onClick={this.handleCreate}>
+            onClick={this.handleCreate}
+          >
             <PlusIcon />
           </Button>
         </Fragment>

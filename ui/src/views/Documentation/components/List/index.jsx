@@ -1,7 +1,6 @@
-
 import { withStyles } from '@material-ui/core/styles';
 
-const styles = theme => ({
+const styles = (theme) => ({
   ul: {
     marginBottom: theme.spacing(2),
   },

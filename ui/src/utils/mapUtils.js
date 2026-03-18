@@ -11,7 +11,7 @@
  * @returns key {any | undefined}
  */
 exports.findKeyInMap = ({ map, value }) => {
-  const found = Array.from(map).find(kv => kv[1] === value);
+  const found = Array.from(map).find((kv) => kv[1] === value);
 
   return found ? found[0] : found;
 };

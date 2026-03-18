@@ -1,4 +1,3 @@
-
 import { boolean } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
@@ -6,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import { useLocation } from 'react-router-dom';
 import Link from '../../utils/Link';
 
-const styles = withStyles(theme => ({
+const styles = withStyles((theme) => ({
   card: {
     float: 'right',
     padding: theme.spacing(3),

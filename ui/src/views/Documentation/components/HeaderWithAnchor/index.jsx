@@ -5,7 +5,7 @@ import { string, oneOf } from 'prop-types';
 import { paramCase } from 'param-case';
 import Typography from '@material-ui/core/Typography';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   header: {
     color: theme.palette.text.primary,
     marginTop: theme.spacing(4),
@@ -53,7 +53,7 @@ export default class HeaderWithAnchor extends Component {
     id: null,
   };
 
-  getVariantFromType = type => {
+  getVariantFromType = (type) => {
     switch (type) {
       case 'h1':
         return 'h4';
@@ -78,7 +78,8 @@ export default class HeaderWithAnchor extends Component {
         component={type}
         variant={variant}
         className={classNames(classes.header, className)}
-        {...props}>
+        {...props}
+      >
         {children}
         <span>&nbsp;</span>
         <a className="anchor-link-style" href={`#${anchorId}`}>

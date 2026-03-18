@@ -114,15 +114,22 @@ type WorkersConnection implements Connection {
 
 extend type Query {
   worker(provisionerId: String!, workerType: String!, workerGroup: String!, workerId: ID!): Worker
-  workers(provisionerId: String!, workerType: String!, connection: PageConnection, filter: JSON, isQuarantined: Boolean, workerState: String): WorkersCompactConnection
+  workers(
+    provisionerId: String!
+    workerType: String!
+    connection: PageConnection
+    filter: JSON
+    isQuarantined: Boolean
+    workerState: String
+  ): WorkersCompactConnection
 }
 
 extend type Mutation {
   quarantineWorker(
-    provisionerId: String!,
-    workerType: String!,
-    workerGroup: String!,
-    workerId: ID!,
+    provisionerId: String!
+    workerType: String!
+    workerGroup: String!
+    workerId: ID!
     payload: WorkerQuarantine
   ): Worker
 }

@@ -37,7 +37,7 @@ if (isMainThread) {
     },
   });
 } else {
-  const status = message => {
+  const status = (message) => {
     parentPort.postMessage({ message });
   };
 
@@ -63,7 +63,9 @@ if (isMainThread) {
 
     used.add(packageName);
     if (!deps.includes(packageName)) {
-      throw new Error(`Dependency '${packageName}' in ${file} is missing! It must be included in package.json ${section}!`);
+      throw new Error(
+        `Dependency '${packageName}' in ${file} is missing! It must be included in package.json ${section}!`,
+      );
     }
   };
 
@@ -101,7 +103,7 @@ if (isMainThread) {
 
   // this portion runs in a worker thread..
   const main = async () => {
-    status("setting up");
+    status('setting up');
 
     // All of our dependencies live at the top level and all dependencies
     // are available in dev so we concat
@@ -110,26 +112,30 @@ if (isMainThread) {
     const devDeps = Object.keys(rootPkg.devDependencies).concat(deps);
     const specials = rootPkg.metatests.specialImports;
 
-    status("listing files");
-    let prodFiles = await gitLsFiles({ patterns: ['services/*/src/**.js', 'libraries/*/src/**.js', 'db/src/**.js', 'services/prelude.js'] });
-    prodFiles = prodFiles.filter(f => !f.startsWith('libraries/testing'));
-    const devFiles = await gitLsFiles({ patterns: [
-      'services/*/test/**.js',
-      'libraries/*/test/**.js',
-      'db/test/**.js',
-      'infrastructure/tooling/**.js',
-      'libraries/testing/src/**.js',
-      'test/**.js',
-    ] });
+    status('listing files');
+    let prodFiles = await gitLsFiles({
+      patterns: ['services/*/src/**.js', 'libraries/*/src/**.js', 'db/src/**.js', 'services/prelude.js'],
+    });
+    prodFiles = prodFiles.filter((f) => !f.startsWith('libraries/testing'));
+    const devFiles = await gitLsFiles({
+      patterns: [
+        'services/*/test/**.js',
+        'libraries/*/test/**.js',
+        'db/test/**.js',
+        'infrastructure/tooling/**.js',
+        'libraries/testing/src/**.js',
+        'test/**.js',
+      ],
+    });
 
     let usedInProd = new Set();
     let usedInDev = new Set();
 
-    status("parsing requires");
-    await Promise.all(prodFiles.map(f => handleFile(f, deps, usedInProd, 'dependencies')));
-    await Promise.all(devFiles.map(f => handleFile(f, devDeps, usedInDev, 'devDependencies')));
+    status('parsing requires');
+    await Promise.all(prodFiles.map((f) => handleFile(f, deps, usedInProd, 'dependencies')));
+    await Promise.all(devFiles.map((f) => handleFile(f, devDeps, usedInDev, 'devDependencies')));
 
-    status("calculating extra dependencies");
+    status('calculating extra dependencies');
     usedInProd = [...usedInProd.keys(), ...specials];
     usedInDev = [...usedInDev.keys(), ...specials];
 
@@ -139,20 +145,27 @@ if (isMainThread) {
     const extraDev = _.difference(devDeps, [...usedInProd, ...usedInDev]);
 
     if (shouldBeDev.length) {
-      throw new Error(`Dependencies for prod that should be dev! Move ${stringify(shouldBeDev)} from dependencies to devDependencies in package.json`);
+      throw new Error(
+        `Dependencies for prod that should be dev! Move ${stringify(shouldBeDev)} from dependencies to devDependencies in package.json`,
+      );
     }
     if (extraProd.length) {
-      throw new Error(`Extra production dependencies! Remove ${stringify(extraProd)} from dependencies in package.json`);
+      throw new Error(
+        `Extra production dependencies! Remove ${stringify(extraProd)} from dependencies in package.json`,
+      );
     }
     if (extraDev.length) {
-      throw new Error(`Extra development dependencies! Remove ${stringify(extraDev)} from devDependencies in package.json (or add to metatests.specialImports if required)`);
+      throw new Error(
+        `Extra development dependencies! Remove ${stringify(extraDev)} from devDependencies in package.json (or add to metatests.specialImports if required)`,
+      );
     }
   };
 
   main().then(
     () => process.exit(0),
-    err => {
+    (err) => {
       parentPort.postMessage({ err });
       process.exit(1);
-    });
+    },
+  );
 }

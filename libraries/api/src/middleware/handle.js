@@ -17,23 +17,28 @@ import assert from 'node:assert';
 export const callHandler = ({ entry, context, monitor }) => {
   assert(entry.handler, 'No handler is provided');
   return (req, res, next) => {
-    Promise.resolve(null).then(() => {
-      // @ts-ignore - we check this above already
-      return entry.handler.call(req.tcContext, req, res);
-    }).then(() => {
-      if (!req.public && !req.satisfyingScopes) {
-        // Note: This will not fail the request since a response has already
-        // been sent at this point. It will report to sentry however!
-        // This is only to catch the case where people do not use res.reply()
-        monitor.reportError(`${entry.name}: req.authorize was never called, ` +
-          'or some parameters were missing from the request', {
-          url: req.originalUrl,
-          method: req.method,
-          traceId: req.traceId,
-        });
-      }
-    }).catch((err) => {
-      return next(err);
-    });
+    Promise.resolve(null)
+      .then(() => {
+        // @ts-ignore - we check this above already
+        return entry.handler.call(req.tcContext, req, res);
+      })
+      .then(() => {
+        if (!req.public && !req.satisfyingScopes) {
+          // Note: This will not fail the request since a response has already
+          // been sent at this point. It will report to sentry however!
+          // This is only to catch the case where people do not use res.reply()
+          monitor.reportError(
+            `${entry.name}: req.authorize was never called, or some parameters were missing from the request`,
+            {
+              url: req.originalUrl,
+              method: req.method,
+              traceId: req.traceId,
+            },
+          );
+        }
+      })
+      .catch((err) => {
+        return next(err);
+      });
   };
 };

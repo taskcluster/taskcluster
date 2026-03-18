@@ -21,12 +21,10 @@ const serviceDocType = {
 
 export const tasks = [];
 
-SERVICES.forEach(name => {
+SERVICES.forEach((name) => {
   tasks.push({
     title: `Generate Monitoring Hints for ${name}`,
-    requires: [
-      `procs-${name}`,
-    ],
+    requires: [`procs-${name}`],
     provides: [`monitoring-hints-${name}`],
     run: async (requirements, _utils) => {
       const res = [];
@@ -46,44 +44,45 @@ SERVICES.forEach(name => {
 
 tasks.push({
   title: `Generate Monitoring Suggestions`,
-  requires: SERVICES.map(name => `monitoring-hints-${name}`),
+  requires: SERVICES.map((name) => `monitoring-hints-${name}`),
   provides: [],
   run: async (requirements, _utils) => {
     let res = [['Service', 'Name', 'Logger', 'Deadline (seconds)', 'Schedule']];
-    SERVICES.forEach(name => {
+    SERVICES.forEach((name) => {
       res = res.concat(requirements[`monitoring-hints-${name}`]);
     });
 
     const docFile = path.join('ui', 'docs', 'manual', 'deploying', 'monitoring.mdx');
-    await modifyRepoFile(docFile,
-      content => content.replace(
+    await modifyRepoFile(docFile, (content) =>
+      content.replace(
         /(-- BEGIN MONITORING TABLE -->)(?:.|\n)*(<!-- END MONITORING TABLE --)/m,
-        `$1\n${markdownTable(res)}\n$2`));
+        `$1\n${markdownTable(res)}\n$2`,
+      ),
+    );
   },
 });
 
 tasks.push({
   title: `Generate Metrics Table`,
-  requires: SERVICES.map(name => `procs-${name}`),
+  requires: SERVICES.map((name) => `procs-${name}`),
   provides: [],
   run: async (requirements, _utils) => {
     const res = [['Service', 'Name', 'Type', 'Reference']];
-    SERVICES.forEach(name => {
+    SERVICES.forEach((name) => {
       const procs = requirements[`procs-${name}`];
-      Object.entries(procs).filter(([_, { metrics }]) => !!metrics).forEach(([proc, ext]) => {
-        res.push([
-          name,
-          proc,
-          ext.type,
-          `[reference](/docs/reference/${serviceDocType[name]}/${name}/metrics)`,
-        ]);
-      });
+      Object.entries(procs)
+        .filter(([_, { metrics }]) => !!metrics)
+        .forEach(([proc, ext]) => {
+          res.push([name, proc, ext.type, `[reference](/docs/reference/${serviceDocType[name]}/${name}/metrics)`]);
+        });
     });
 
     const docFile = path.join('ui', 'docs', 'manual', 'deploying', 'monitoring.mdx');
-    await modifyRepoFile(docFile,
-      content => content.replace(
+    await modifyRepoFile(docFile, (content) =>
+      content.replace(
         /(<!-- BEGIN METRICS TABLE -->)(?:.|\n)*(<!-- END METRICS TABLE -->)/m,
-        `$1\n${markdownTable(res)}\n$2`));
+        `$1\n${markdownTable(res)}\n$2`,
+      ),
+    );
   },
 });

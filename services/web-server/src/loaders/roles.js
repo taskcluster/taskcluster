@@ -3,7 +3,7 @@ import sift from '../utils/sift.js';
 import ConnectionLoader from '../ConnectionLoader.js';
 
 export default ({ auth }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
-  const roles = new DataLoader(queries =>
+  const roles = new DataLoader((queries) =>
     Promise.all(
       queries.map(async ({ filter }) => {
         try {
@@ -18,7 +18,7 @@ export default ({ auth }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg
   );
   const roleIds = new ConnectionLoader(async ({ filter, options }) => {
     const raw = await auth.listRoleIds(options);
-    const roleIds = raw.roleIds.map(roleId => ({ roleId }));
+    const roleIds = raw.roleIds.map((roleId) => ({ roleId }));
     const roles = sift(filter, roleIds);
 
     return {
@@ -26,7 +26,7 @@ export default ({ auth }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg
       items: roles,
     };
   });
-  const role = new DataLoader(roleIds =>
+  const role = new DataLoader((roleIds) =>
     Promise.all(
       roleIds.map(async (roleId) => {
         try {

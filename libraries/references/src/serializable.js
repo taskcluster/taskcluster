@@ -6,7 +6,7 @@ import regexEscape from 'regex-escape';
  */
 export const makeSerializable = ({ references }) => {
   const urls = libUrls.withRootUrl(references.rootUrl || '');
-  const referenceFilename = content => {
+  const referenceFilename = (content) => {
     const serviceName = content.serviceName;
     const apiVersion = content.apiVersion || 'v1';
     const kind = references.getSchema(content.$schema).metadata.name;
@@ -24,7 +24,7 @@ export const makeSerializable = ({ references }) => {
   } else {
     urlPattern = /^\/schemas\/(.*)#/;
   }
-  const schemaFilename = content => content.$id.replace(urlPattern, 'schemas/$1');
+  const schemaFilename = (content) => content.$id.replace(urlPattern, 'schemas/$1');
 
   const namedSchemas = references.schemas.map(({ filename, content }) => ({
     content,
@@ -33,19 +33,25 @@ export const makeSerializable = ({ references }) => {
 
   const manifest = {
     $schema: urls.schema('common', 'manifest-v3.json#'),
-    references: namedReferences.map(({ filename }) => {
-      if (references.rootUrl) {
-        return `${references.rootUrl}/${filename}`;
-      } else {
-        return `/${filename}`;
-      }
-    }).sort(),
+    references: namedReferences
+      .map(({ filename }) => {
+        if (references.rootUrl) {
+          return `${references.rootUrl}/${filename}`;
+        } else {
+          return `/${filename}`;
+        }
+      })
+      .sort(),
   };
 
-  return [{
-    filename: 'references/manifest.json',
-    content: manifest,
-  }].concat(namedSchemas).concat(namedReferences);
+  return [
+    {
+      filename: 'references/manifest.json',
+      content: manifest,
+    },
+  ]
+    .concat(namedSchemas)
+    .concat(namedReferences);
 };
 
 export const fromSerializable = ({ serializable }) => {

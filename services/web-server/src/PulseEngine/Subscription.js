@@ -109,16 +109,14 @@ export default class Subscription {
             cc: [],
           };
 
-          if (
-            amqpMsg.properties?.headers &&
-            Array.isArray(amqpMsg.properties.headers.cc)
-          ) {
+          if (amqpMsg.properties?.headers && Array.isArray(amqpMsg.properties.headers.cc)) {
             message.cc = amqpMsg.properties.headers.cc;
           }
 
           handleMessage(message).then(
             () => channel.ack(amqpMsg),
-            () => channel.nack(amqpMsg));
+            () => channel.nack(amqpMsg),
+          );
         });
 
         this.consumerTag = consumerTag;

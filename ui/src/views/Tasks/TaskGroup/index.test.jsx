@@ -1,4 +1,3 @@
-
 import { render, waitFor, act } from '@testing-library/react';
 import { ApolloProvider } from 'react-apollo';
 import setupClient from 'apollo-client-mock';
@@ -70,12 +69,9 @@ describe('TaskGroup page', () => {
       const { asFragment } = render(
         <MemoryRouter keyLength={0}>
           <ApolloProvider client={createClient()}>
-            <TaskGroup
-              match={{ params: { taskGroupId: 'aI8bvUB2SDmpHVqTUOFCWw' } }}
-              location={location}
-            />
+            <TaskGroup match={{ params: { taskGroupId: 'aI8bvUB2SDmpHVqTUOFCWw' } }} location={location} />
           </ApolloProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {});

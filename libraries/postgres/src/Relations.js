@@ -61,7 +61,7 @@ class Relations {
    */
   static _check(content, filename) {
     assert(isPlainObject(content), `${filename} should define an object`);
-    Object.keys(content).forEach(tableName => {
+    Object.keys(content).forEach((tableName) => {
       const columns = content[tableName];
       assert(isPlainObject(columns), `each table in ${filename} should define an object`);
       for (const [name, type] of Object.entries(columns)) {

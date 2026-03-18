@@ -12,7 +12,7 @@ import { THEME } from '../../utils/constants';
 
 @withRouter
 @withStyles(
-  theme => ({
+  (theme) => ({
     autoCompleteItem: {
       width: '100%',
       height: '100%',
@@ -56,7 +56,7 @@ import { THEME } from '../../utils/constants';
       padding: 0,
     },
   }),
-  { withTheme: true }
+  { withTheme: true },
 )
 /**
  * An app-bar compatible search field for docs.
@@ -69,7 +69,7 @@ export default class DocSearch extends Component {
         title: string,
         subtitle: string,
         id: string,
-      })
+      }),
     ).isRequired,
   };
 
@@ -81,17 +81,15 @@ export default class DocSearch extends Component {
     this.props.history.push(this.linkFromOption(option));
   };
 
-  linkFromOption = option => {
+  linkFromOption = (option) => {
     const pathWithoutExtension = option.path.replace(/\.[^/.]+$/, '');
 
     return `/docs${pathWithoutExtension}#${option.id}`;
   };
 
-  renderGroup = params => {
+  renderGroup = (params) => {
     const { classes } = this.props;
-    const listKey = `${params.children[0].props.children.key.split('-')[0]}-${
-      params.key
-    }`;
+    const listKey = `${params.children[0].props.children.key.split('-')[0]}-${params.key}`;
 
     return (
       <li key={listKey}>
@@ -114,32 +112,28 @@ export default class DocSearch extends Component {
           inputRoot: classes.searchInputRoot,
         }}
         onChange={this.handleAutocompleteChange}
-        getOptionLabel={option =>
-          typeof option === 'string' ? option : option.subtitle || option.title
-        }
-        groupBy={option => option.title}
+        getOptionLabel={(option) => (typeof option === 'string' ? option : option.subtitle || option.title)}
+        groupBy={(option) => option.title}
         renderGroup={this.renderGroup}
         disableClearable
         options={options}
         style={{ width: 300 }}
-        renderOption={option => {
+        renderOption={(option) => {
           // handleRenderGroup relies on option.path showing up first
           // in Link's key prop
           return (
             <Link
               key={`${option.path}-${option.title}-${option.subtitle}`}
               className={classes.autoCompleteItem}
-              to={that.linkFromOption(option)}>
-              <Typography
-                color="textSecondary"
-                variant="body2"
-                className={classes.groupItem}>
+              to={that.linkFromOption(option)}
+            >
+              <Typography color="textSecondary" variant="body2" className={classes.groupItem}>
                 {option.subtitle || option.title}
               </Typography>
             </Link>
           );
         }}
-        renderInput={params => {
+        renderInput={(params) => {
           return (
             <TextField
               {...params}

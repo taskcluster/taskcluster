@@ -12,7 +12,7 @@ const options = {
   },
 };
 
-process.argv.slice(2).forEach(arg => {
+process.argv.slice(2).forEach((arg) => {
   options[arg.slice(2)] = true;
 });
 

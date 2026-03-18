@@ -36,21 +36,16 @@ export default class HooksListTable extends Component {
   sortHooks = memoize(
     (hooks, sortBy, sortDirection, searchTerm) => {
       const filteredHooks = searchTerm
-        ? hooks.filter(
-            ({ hookId, hookGroupId }) =>
-              hookGroupId.includes(searchTerm) || hookId.includes(searchTerm)
-          )
+        ? hooks.filter(({ hookId, hookGroupId }) => hookGroupId.includes(searchTerm) || hookId.includes(searchTerm))
         : hooks;
       const sortByPath = sortBy ? sortBy.split('.') : [];
-      const propValue = obj => path(sortByPath, obj);
+      const propValue = (obj) => path(sortByPath, obj);
 
       return isEmpty(filteredHooks) || !sortBy
         ? filteredHooks
         : [...filteredHooks].sort((a, b) => {
-            const firstElement =
-              sortDirection === 'desc' ? propValue(b) : propValue(a);
-            const secondElement =
-              sortDirection === 'desc' ? propValue(a) : propValue(b);
+            const firstElement = sortDirection === 'desc' ? propValue(b) : propValue(a);
+            const secondElement = sortDirection === 'desc' ? propValue(a) : propValue(b);
 
             return sort(firstElement, secondElement);
           });
@@ -59,22 +54,22 @@ export default class HooksListTable extends Component {
       serializer: ([hooks, sortBy, sortDirection, searchTerm]) => {
         const ids = pipe(
           rSort((a, b) => sort(a.hookId, b.hookId)),
-          map(({ hookId }) => hookId)
+          map(({ hookId }) => hookId),
         )(hooks);
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = header => {
+  handleHeaderClick = (header) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === header.id ? toggled : 'desc';
 
     this.setState({ sortBy: header.id, sortDirection });
   };
 
-  renderTableRow = hook => {
+  renderTableRow = (hook) => {
     const { hookId, hookGroupId, schedule, bindings, lastFire } = hook;
     const hookUrl = `/hooks/${hookGroupId}/${encodeURIComponent(hookId)}`;
     const { classes } = this.props;
@@ -120,50 +115,38 @@ export default class HooksListTable extends Component {
                   <Tooltip
                     title={
                       <React.Fragment>
-                        {schedule.slice(1, 10).map(b => (
+                        {schedule.slice(1, 10).map((b) => (
                           <pre key={b}>{b}</pre>
                         ))}
                       </React.Fragment>
-                    }>
-                    <Badge
-                      badgeContent={`+${schedule.length - 1}`}
-                      color="secondary"
-                    />
+                    }
+                  >
+                    <Badge badgeContent={`+${schedule.length - 1}`} color="secondary" />
                   </Tooltip>
                 )}
               </TableCellItem>
             </Link>
-          ) : (
-            undefined
-          )}
+          ) : undefined}
           {bindings?.length ? (
             <Link to={hookUrl}>
               <TableCellItem>
-                {
-                  <code>
-                    {bindings[0].exchange.replace('exchange/taskcluster-', '')}
-                  </code>
-                }
+                {<code>{bindings[0].exchange.replace('exchange/taskcluster-', '')}</code>}
                 {bindings.length > 1 && (
                   <Tooltip
                     title={
                       <React.Fragment>
-                        {bindings.slice(1, 10).map(b => (
+                        {bindings.slice(1, 10).map((b) => (
                           <pre key={b.exchange}>{b.exchange}</pre>
                         ))}
                       </React.Fragment>
-                    }>
-                    <Badge
-                      badgeContent={`+${bindings.length - 1}`}
-                      color="secondary"
-                    />
+                    }
+                  >
+                    <Badge badgeContent={`+${bindings.length - 1}`} color="secondary" />
                   </Tooltip>
                 )}
               </TableCellItem>
             </Link>
-          ) : (
-            undefined
-          )}
+          ) : undefined}
           {!schedule?.length && !bindings?.length && <em>n/a</em>}
         </TableCell>
 
@@ -177,33 +160,19 @@ export default class HooksListTable extends Component {
                 </span>
               </TableCellItem>
             </Link>
-          ) : (
-            undefined
-          )}
+          ) : undefined}
           {error ? (
             <Link to={hookUrl}>
               <pre>{error}</pre>
             </Link>
-          ) : (
-            undefined
-          )}
-          {!lastFire?.taskId && !error && lastFire?.result ? (
-            <span>{lastFire.result}</span>
-          ) : (
-            undefined
-          )}
+          ) : undefined}
+          {!lastFire?.taskId && !error && lastFire?.result ? <span>{lastFire.result}</span> : undefined}
         </TableCell>
 
         <CopyToClipboardTableCell
           tooltipTitle={lastFire?.taskCreateTime}
           textToCopy={lastFire?.taskCreateTime}
-          text={
-            lastFire?.taskCreateTime ? (
-              <DateDistance from={lastFire.taskCreateTime} />
-            ) : (
-              undefined
-            )
-          }
+          text={lastFire?.taskCreateTime ? <DateDistance from={lastFire.taskCreateTime} /> : undefined}
         />
       </TableRow>
     );
@@ -212,12 +181,7 @@ export default class HooksListTable extends Component {
   render() {
     const { hooks, searchTerm } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedHooks = this.sortHooks(
-      hooks,
-      sortBy,
-      sortDirection,
-      searchTerm
-    );
+    const sortedHooks = this.sortHooks(hooks, sortBy, sortDirection, searchTerm);
     const headers = [
       { label: 'Hook Group ID', id: 'hookGroupId', type: 'string' },
       { label: 'Hook ID', id: 'hookId', type: 'string' },

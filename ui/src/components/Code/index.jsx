@@ -43,9 +43,12 @@ export default class Code extends Component {
     /* eslint-disable react/no-danger */
     return (
       <pre className={classNames(`language-${language}`, className)} {...props}>
-        {code && <code
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: intentional for code highlighting
-          dangerouslySetInnerHTML={{ __html: code }} />}
+        {code && (
+          <code
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: intentional for code highlighting
+            dangerouslySetInnerHTML={{ __html: code }}
+          />
+        )}
       </pre>
     );
     /* eslint-enable react/no-danger */

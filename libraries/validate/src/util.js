@@ -7,7 +7,7 @@ export function renderConstants(schema, constants) {
   // Replace val with constant, if it is an {$const: <key>} schema
   const substitute = (val) => {
     // Primitives and arrays shouldn't event be considered
-    if (!(val instanceof Object) || val instanceof Array) {
+    if (!(val instanceof Object) || Array.isArray(val)) {
       return undefined;
     }
 
@@ -36,7 +36,7 @@ export function renderConstants(schema, constants) {
  * But this is enough to dissuade users from inter-service linking.
  */
 export const checkRefs = (schema, _serviceName) => {
-  const check = val => {
+  const check = (val) => {
     if (_.isObject(val)) {
       if (typeof val.$ref === 'string' && _.keys(val).length === 1) {
         const ref = URL.parse(val.$ref);

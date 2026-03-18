@@ -3,7 +3,7 @@ import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   testing.schemas({
     schemasetOptions: {
       folder: path.join(__dirname, 'schemas'),
@@ -15,7 +15,8 @@ suite(testing.suiteName(), function() {
         schema: 'case1.json#',
         path: 'case1.json',
         success: true,
-      }, {
+      },
+      {
         schema: 'case1.json#',
         path: 'case2.json',
         success: false,

@@ -6,7 +6,7 @@ import taskcluster from '@taskcluster/client';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -53,7 +53,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes('queue:schedule-task-in-project:WRONG-PROJECT');
     await assert.rejects(
       () => helper.queue.scheduleTask(taskId),
-      err => err.statusCode === 403);
+      (err) => err.statusCode === 403,
+    );
 
     helper.clearPulseMessages();
   });
@@ -62,10 +63,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const taskId = slugid.v4();
     await helper.queue.scheduleTask(taskId).then(
       () => assert(0, 'expected an error'),
-      err => {
+      (err) => {
         if (err.code !== 'ResourceNotFound') {
           throw err;
         }
-      });
+      },
+    );
   });
 });

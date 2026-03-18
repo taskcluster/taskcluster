@@ -10,57 +10,671 @@ export default class Queue extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.task.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"task","output":true,"query":[],"route":"/task/<taskId>","scopes":"queue:get-task:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.tasks.entry = {"args":[],"category":"Tasks","input":true,"method":"post","name":"tasks","output":true,"query":["continuationToken","limit"],"route":"/tasks","scopes":{"AllOf":[{"each":"queue:get-task:<taskId>","for":"taskId","in":"taskIds"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.statuses.entry = {"args":[],"category":"Tasks","input":true,"method":"post","name":"statuses","output":true,"query":["continuationToken","limit"],"route":"/tasks/status","scopes":{"AllOf":[{"each":"queue:status:<taskId>","for":"taskId","in":"taskIds"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.status.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"status","output":true,"query":[],"route":"/task/<taskId>/status","scopes":"queue:status:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listTaskGroup.entry = {"args":["taskGroupId"],"category":"Task Groups","method":"get","name":"listTaskGroup","output":true,"query":["continuationToken","limit"],"route":"/task-group/<taskGroupId>/list","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.cancelTaskGroup.entry = {"args":["taskGroupId"],"category":"Tasks","method":"post","name":"cancelTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>/cancel","scopes":"queue:cancel-task-group:<schedulerId>/<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.getTaskGroup.entry = {"args":["taskGroupId"],"category":"Task Groups","method":"get","name":"getTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>","scopes":"queue:list-task-group:<taskGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.sealTaskGroup.entry = {"args":["taskGroupId"],"category":"Task Groups","method":"post","name":"sealTaskGroup","output":true,"query":[],"route":"/task-group/<taskGroupId>/seal","scopes":"queue:seal-task-group:<schedulerId>/<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.listDependentTasks.entry = {"args":["taskId"],"category":"Tasks","method":"get","name":"listDependentTasks","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/dependents","scopes":"queue:list-dependent-tasks:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.createTask.entry = {"args":["taskId"],"category":"Tasks","input":true,"method":"put","name":"createTask","output":true,"query":[],"route":"/task/<taskId>","scopes":{"AllOf":[{"each":"<scope>","for":"scope","in":"scopes"},{"each":"queue:route:<route>","for":"route","in":"routes"},"queue:create-task:project:<projectId>","queue:scheduler-id:<schedulerId>",{"AnyOf":[{"each":"queue:create-task:<priority>:<provisionerId>/<workerType>","for":"priority","in":"priorities"}]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.scheduleTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"scheduleTask","output":true,"query":[],"route":"/task/<taskId>/schedule","scopes":{"AnyOf":["queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>","queue:schedule-task-in-project:<projectId>",{"AllOf":["queue:schedule-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.rerunTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"rerunTask","output":true,"query":[],"route":"/task/<taskId>/rerun","scopes":{"AnyOf":["queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>","queue:rerun-task-in-project:<projectId>",{"AllOf":["queue:rerun-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.cancelTask.entry = {"args":["taskId"],"category":"Tasks","method":"post","name":"cancelTask","output":true,"query":[],"route":"/task/<taskId>/cancel","scopes":{"AnyOf":["queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>","queue:cancel-task-in-project:<projectId>",{"AllOf":["queue:cancel-task","assume:scheduler-id:<schedulerId>/<taskGroupId>"]}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.changeTaskPriority.entry = {"args":["taskId"],"category":"Tasks","input":true,"method":"post","name":"changeTaskPriority","output":true,"query":[],"route":"/task/<taskId>/priority","scopes":{"AnyOf":["queue:change-task-priority:<taskId>","queue:change-task-priority-in-queue:<taskQueueId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.changeTaskGroupPriority.entry = {"args":["taskGroupId"],"category":"Task-Groups","input":true,"method":"post","name":"changeTaskGroupPriority","output":true,"query":[],"route":"/task-group/<taskGroupId>/priority","scopes":"queue:change-task-group-priority:<schedulerId>/<taskGroupId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.claimWork.entry = {"args":["taskQueueId"],"category":"Worker Interface","input":true,"method":"post","name":"claimWork","output":true,"query":[],"route":"/claim-work/<taskQueueId>","scopes":{"AllOf":["queue:claim-work:<taskQueueId>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.claimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"claimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/claim","scopes":{"AllOf":["queue:claim-task:<provisionerId>/<workerType>","queue:worker-id:<workerGroup>/<workerId>"]},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.reclaimTask.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reclaimTask","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/reclaim","scopes":"queue:reclaim-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.reportCompleted.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportCompleted","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/completed","scopes":"queue:resolve-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.reportFailed.entry = {"args":["taskId","runId"],"category":"Worker Interface","method":"post","name":"reportFailed","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/failed","scopes":"queue:resolve-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.reportException.entry = {"args":["taskId","runId"],"category":"Worker Interface","input":true,"method":"post","name":"reportException","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/exception","scopes":"queue:resolve-task:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.createArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","input":true,"method":"post","name":"createArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":"queue:create-artifact:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.finishArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","input":true,"method":"put","name":"finishArtifact","query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":"queue:create-artifact:<taskId>/<runId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.getArtifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"getArtifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.getLatestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"getLatestArtifact","output":true,"query":[],"route":"/task/<taskId>/artifacts/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.listArtifacts.entry = {"args":["taskId","runId"],"category":"Artifacts","method":"get","name":"listArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/runs/<runId>/artifacts","scopes":"queue:list-artifacts:<taskId>:<runId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listLatestArtifacts.entry = {"args":["taskId"],"category":"Artifacts","method":"get","name":"listLatestArtifacts","output":true,"query":["continuationToken","limit"],"route":"/task/<taskId>/artifacts","scopes":"queue:list-artifacts:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.artifactInfo.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"artifactInfo","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifact-info/<name>","scopes":"queue:list-artifacts:<taskId>:<runId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.latestArtifactInfo.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"latestArtifactInfo","output":true,"query":[],"route":"/task/<taskId>/artifact-info/<name>","scopes":"queue:list-artifacts:<taskId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.artifact.entry = {"args":["taskId","runId","name"],"category":"Artifacts","method":"get","name":"artifact","output":true,"query":[],"route":"/task/<taskId>/runs/<runId>/artifact-content/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.latestArtifact.entry = {"args":["taskId","name"],"category":"Artifacts","method":"get","name":"latestArtifact","output":true,"query":[],"route":"/task/<taskId>/artifact-content/<name>","scopes":{"AllOf":[{"each":"queue:get-artifact:<name>","for":"name","in":"names"}]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.getProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":"queue:get-provisioner:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.declareProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":{"AllOf":[{"each":"queue:declare-provisioner:<provisionerId>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.pendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<taskQueueId>","scopes":"queue:pending-count:<taskQueueId>","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.taskQueueCounts.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"taskQueueCounts","output":true,"query":[],"route":"/task-queues/<taskQueueId>/counts","scopes":{"AllOf":["queue:pending-count:<taskQueueId>","queue:claimed-count:<taskQueueId>"]},"stability":"stable","type":"function"}; // eslint-disable-line
-    this.listPendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"listPendingTasks","output":true,"query":["continuationToken","limit"],"route":"/task-queues/<taskQueueId>/pending","scopes":"queue:pending-list:<taskQueueId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.listClaimedTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"listClaimedTasks","output":true,"query":["continuationToken","limit"],"route":"/task-queues/<taskQueueId>/claimed","scopes":"queue:claimed-list:<taskQueueId>","stability":"experimental","type":"function"}; // eslint-disable-line
-    this.listWorkerTypes.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"listWorkerTypes","output":true,"query":["continuationToken","limit"],"route":"/provisioners/<provisionerId>/worker-types","scopes":"queue:list-worker-types:<provisionerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.getWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"getWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":"queue:get-worker-type:<provisionerId>/<workerType>","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.declareWorkerType.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","input":true,"method":"put","name":"declareWorkerType","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>","scopes":{"AllOf":[{"each":"queue:declare-worker-type:<provisionerId>/<workerType>#<property>","for":"property","in":"properties"}]},"stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.listTaskQueues.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listTaskQueues","output":true,"query":["continuationToken","limit"],"route":"/task-queues","scopes":"queue:list-task-queues","stability":"stable","type":"function"}; // eslint-disable-line
-    this.getTaskQueue.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"getTaskQueue","output":true,"query":[],"route":"/task-queues/<taskQueueId>","scopes":"queue:get-task-queue:<taskQueueId>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listWorkers.entry = {"args":["provisionerId","workerType"],"category":"Worker Metadata","method":"get","name":"listWorkers","output":true,"query":["continuationToken","limit","quarantined"],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers","scopes":"queue:list-workers:<provisionerId>/<workerType>","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.getWorker.entry = {"args":["provisionerId","workerType","workerGroup","workerId"],"category":"Worker Metadata","method":"get","name":"getWorker","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>","scopes":"queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>","stability":"deprecated","type":"function"}; // eslint-disable-line
-    this.quarantineWorker.entry = {"args":["provisionerId","workerType","workerGroup","workerId"],"category":"Worker Metadata","input":true,"method":"put","name":"quarantineWorker","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>","scopes":{"AllOf":["queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>"]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.declareWorker.entry = {"args":["provisionerId","workerType","workerGroup","workerId"],"category":"Worker Metadata","input":true,"method":"put","name":"declareWorker","output":true,"query":[],"route":"/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>","scopes":{"AllOf":[{"each":"queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>","for":"property","in":"properties"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'ping',
+      query: [],
+      route: '/ping',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.lbheartbeat.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'lbheartbeat',
+      query: [],
+      route: '/__lbheartbeat__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.version.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'version',
+      query: [],
+      route: '/__version__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.task.entry = {
+      args: ['taskId'],
+      category: 'Tasks',
+      method: 'get',
+      name: 'task',
+      output: true,
+      query: [],
+      route: '/task/<taskId>',
+      scopes: 'queue:get-task:<taskId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.tasks.entry = {
+      args: [],
+      category: 'Tasks',
+      input: true,
+      method: 'post',
+      name: 'tasks',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/tasks',
+      scopes: { AllOf: [{ each: 'queue:get-task:<taskId>', for: 'taskId', in: 'taskIds' }] },
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.statuses.entry = {
+      args: [],
+      category: 'Tasks',
+      input: true,
+      method: 'post',
+      name: 'statuses',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/tasks/status',
+      scopes: { AllOf: [{ each: 'queue:status:<taskId>', for: 'taskId', in: 'taskIds' }] },
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.status.entry = {
+      args: ['taskId'],
+      category: 'Tasks',
+      method: 'get',
+      name: 'status',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/status',
+      scopes: 'queue:status:<taskId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listTaskGroup.entry = {
+      args: ['taskGroupId'],
+      category: 'Task Groups',
+      method: 'get',
+      name: 'listTaskGroup',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/task-group/<taskGroupId>/list',
+      scopes: 'queue:list-task-group:<taskGroupId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.cancelTaskGroup.entry = {
+      args: ['taskGroupId'],
+      category: 'Tasks',
+      method: 'post',
+      name: 'cancelTaskGroup',
+      output: true,
+      query: [],
+      route: '/task-group/<taskGroupId>/cancel',
+      scopes: 'queue:cancel-task-group:<schedulerId>/<taskGroupId>',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.getTaskGroup.entry = {
+      args: ['taskGroupId'],
+      category: 'Task Groups',
+      method: 'get',
+      name: 'getTaskGroup',
+      output: true,
+      query: [],
+      route: '/task-group/<taskGroupId>',
+      scopes: 'queue:list-task-group:<taskGroupId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.sealTaskGroup.entry = {
+      args: ['taskGroupId'],
+      category: 'Task Groups',
+      method: 'post',
+      name: 'sealTaskGroup',
+      output: true,
+      query: [],
+      route: '/task-group/<taskGroupId>/seal',
+      scopes: 'queue:seal-task-group:<schedulerId>/<taskGroupId>',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listDependentTasks.entry = {
+      args: ['taskId'],
+      category: 'Tasks',
+      method: 'get',
+      name: 'listDependentTasks',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/task/<taskId>/dependents',
+      scopes: 'queue:list-dependent-tasks:<taskId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.createTask.entry = {
+      args: ['taskId'],
+      category: 'Tasks',
+      input: true,
+      method: 'put',
+      name: 'createTask',
+      output: true,
+      query: [],
+      route: '/task/<taskId>',
+      scopes: {
+        AllOf: [
+          { each: '<scope>', for: 'scope', in: 'scopes' },
+          { each: 'queue:route:<route>', for: 'route', in: 'routes' },
+          'queue:create-task:project:<projectId>',
+          'queue:scheduler-id:<schedulerId>',
+          {
+            AnyOf: [
+              { each: 'queue:create-task:<priority>:<provisionerId>/<workerType>', for: 'priority', in: 'priorities' },
+            ],
+          },
+        ],
+      },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.scheduleTask.entry = {
+      args: ['taskId'],
+      category: 'Tasks',
+      method: 'post',
+      name: 'scheduleTask',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/schedule',
+      scopes: {
+        AnyOf: [
+          'queue:schedule-task:<schedulerId>/<taskGroupId>/<taskId>',
+          'queue:schedule-task-in-project:<projectId>',
+          { AllOf: ['queue:schedule-task', 'assume:scheduler-id:<schedulerId>/<taskGroupId>'] },
+        ],
+      },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.rerunTask.entry = {
+      args: ['taskId'],
+      category: 'Tasks',
+      method: 'post',
+      name: 'rerunTask',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/rerun',
+      scopes: {
+        AnyOf: [
+          'queue:rerun-task:<schedulerId>/<taskGroupId>/<taskId>',
+          'queue:rerun-task-in-project:<projectId>',
+          { AllOf: ['queue:rerun-task', 'assume:scheduler-id:<schedulerId>/<taskGroupId>'] },
+        ],
+      },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.cancelTask.entry = {
+      args: ['taskId'],
+      category: 'Tasks',
+      method: 'post',
+      name: 'cancelTask',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/cancel',
+      scopes: {
+        AnyOf: [
+          'queue:cancel-task:<schedulerId>/<taskGroupId>/<taskId>',
+          'queue:cancel-task-in-project:<projectId>',
+          { AllOf: ['queue:cancel-task', 'assume:scheduler-id:<schedulerId>/<taskGroupId>'] },
+        ],
+      },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.changeTaskPriority.entry = {
+      args: ['taskId'],
+      category: 'Tasks',
+      input: true,
+      method: 'post',
+      name: 'changeTaskPriority',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/priority',
+      scopes: { AnyOf: ['queue:change-task-priority:<taskId>', 'queue:change-task-priority-in-queue:<taskQueueId>'] },
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.changeTaskGroupPriority.entry = {
+      args: ['taskGroupId'],
+      category: 'Task-Groups',
+      input: true,
+      method: 'post',
+      name: 'changeTaskGroupPriority',
+      output: true,
+      query: [],
+      route: '/task-group/<taskGroupId>/priority',
+      scopes: 'queue:change-task-group-priority:<schedulerId>/<taskGroupId>',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.claimWork.entry = {
+      args: ['taskQueueId'],
+      category: 'Worker Interface',
+      input: true,
+      method: 'post',
+      name: 'claimWork',
+      output: true,
+      query: [],
+      route: '/claim-work/<taskQueueId>',
+      scopes: { AllOf: ['queue:claim-work:<taskQueueId>', 'queue:worker-id:<workerGroup>/<workerId>'] },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.claimTask.entry = {
+      args: ['taskId', 'runId'],
+      category: 'Worker Interface',
+      input: true,
+      method: 'post',
+      name: 'claimTask',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/runs/<runId>/claim',
+      scopes: { AllOf: ['queue:claim-task:<provisionerId>/<workerType>', 'queue:worker-id:<workerGroup>/<workerId>'] },
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.reclaimTask.entry = {
+      args: ['taskId', 'runId'],
+      category: 'Worker Interface',
+      method: 'post',
+      name: 'reclaimTask',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/runs/<runId>/reclaim',
+      scopes: 'queue:reclaim-task:<taskId>/<runId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.reportCompleted.entry = {
+      args: ['taskId', 'runId'],
+      category: 'Worker Interface',
+      method: 'post',
+      name: 'reportCompleted',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/runs/<runId>/completed',
+      scopes: 'queue:resolve-task:<taskId>/<runId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.reportFailed.entry = {
+      args: ['taskId', 'runId'],
+      category: 'Worker Interface',
+      method: 'post',
+      name: 'reportFailed',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/runs/<runId>/failed',
+      scopes: 'queue:resolve-task:<taskId>/<runId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.reportException.entry = {
+      args: ['taskId', 'runId'],
+      category: 'Worker Interface',
+      input: true,
+      method: 'post',
+      name: 'reportException',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/runs/<runId>/exception',
+      scopes: 'queue:resolve-task:<taskId>/<runId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.createArtifact.entry = {
+      args: ['taskId', 'runId', 'name'],
+      category: 'Artifacts',
+      input: true,
+      method: 'post',
+      name: 'createArtifact',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/runs/<runId>/artifacts/<name>',
+      scopes: 'queue:create-artifact:<taskId>/<runId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.finishArtifact.entry = {
+      args: ['taskId', 'runId', 'name'],
+      category: 'Artifacts',
+      input: true,
+      method: 'put',
+      name: 'finishArtifact',
+      query: [],
+      route: '/task/<taskId>/runs/<runId>/artifacts/<name>',
+      scopes: 'queue:create-artifact:<taskId>/<runId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.getArtifact.entry = {
+      args: ['taskId', 'runId', 'name'],
+      category: 'Artifacts',
+      method: 'get',
+      name: 'getArtifact',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/runs/<runId>/artifacts/<name>',
+      scopes: { AllOf: [{ each: 'queue:get-artifact:<name>', for: 'name', in: 'names' }] },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.getLatestArtifact.entry = {
+      args: ['taskId', 'name'],
+      category: 'Artifacts',
+      method: 'get',
+      name: 'getLatestArtifact',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/artifacts/<name>',
+      scopes: { AllOf: [{ each: 'queue:get-artifact:<name>', for: 'name', in: 'names' }] },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listArtifacts.entry = {
+      args: ['taskId', 'runId'],
+      category: 'Artifacts',
+      method: 'get',
+      name: 'listArtifacts',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/task/<taskId>/runs/<runId>/artifacts',
+      scopes: 'queue:list-artifacts:<taskId>:<runId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listLatestArtifacts.entry = {
+      args: ['taskId'],
+      category: 'Artifacts',
+      method: 'get',
+      name: 'listLatestArtifacts',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/task/<taskId>/artifacts',
+      scopes: 'queue:list-artifacts:<taskId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.artifactInfo.entry = {
+      args: ['taskId', 'runId', 'name'],
+      category: 'Artifacts',
+      method: 'get',
+      name: 'artifactInfo',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/runs/<runId>/artifact-info/<name>',
+      scopes: 'queue:list-artifacts:<taskId>:<runId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.latestArtifactInfo.entry = {
+      args: ['taskId', 'name'],
+      category: 'Artifacts',
+      method: 'get',
+      name: 'latestArtifactInfo',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/artifact-info/<name>',
+      scopes: 'queue:list-artifacts:<taskId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.artifact.entry = {
+      args: ['taskId', 'runId', 'name'],
+      category: 'Artifacts',
+      method: 'get',
+      name: 'artifact',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/runs/<runId>/artifact-content/<name>',
+      scopes: { AllOf: [{ each: 'queue:get-artifact:<name>', for: 'name', in: 'names' }] },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.latestArtifact.entry = {
+      args: ['taskId', 'name'],
+      category: 'Artifacts',
+      method: 'get',
+      name: 'latestArtifact',
+      output: true,
+      query: [],
+      route: '/task/<taskId>/artifact-content/<name>',
+      scopes: { AllOf: [{ each: 'queue:get-artifact:<name>', for: 'name', in: 'names' }] },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listProvisioners.entry = {
+      args: [],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'listProvisioners',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/provisioners',
+      scopes: 'queue:list-provisioners',
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.getProvisioner.entry = {
+      args: ['provisionerId'],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'getProvisioner',
+      output: true,
+      query: [],
+      route: '/provisioners/<provisionerId>',
+      scopes: 'queue:get-provisioner:<provisionerId>',
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.declareProvisioner.entry = {
+      args: ['provisionerId'],
+      category: 'Worker Metadata',
+      input: true,
+      method: 'put',
+      name: 'declareProvisioner',
+      output: true,
+      query: [],
+      route: '/provisioners/<provisionerId>',
+      scopes: {
+        AllOf: [{ each: 'queue:declare-provisioner:<provisionerId>#<property>', for: 'property', in: 'properties' }],
+      },
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.pendingTasks.entry = {
+      args: ['taskQueueId'],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'pendingTasks',
+      output: true,
+      query: [],
+      route: '/pending/<taskQueueId>',
+      scopes: 'queue:pending-count:<taskQueueId>',
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.taskQueueCounts.entry = {
+      args: ['taskQueueId'],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'taskQueueCounts',
+      output: true,
+      query: [],
+      route: '/task-queues/<taskQueueId>/counts',
+      scopes: { AllOf: ['queue:pending-count:<taskQueueId>', 'queue:claimed-count:<taskQueueId>'] },
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listPendingTasks.entry = {
+      args: ['taskQueueId'],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'listPendingTasks',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/task-queues/<taskQueueId>/pending',
+      scopes: 'queue:pending-list:<taskQueueId>',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listClaimedTasks.entry = {
+      args: ['taskQueueId'],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'listClaimedTasks',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/task-queues/<taskQueueId>/claimed',
+      scopes: 'queue:claimed-list:<taskQueueId>',
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listWorkerTypes.entry = {
+      args: ['provisionerId'],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'listWorkerTypes',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/provisioners/<provisionerId>/worker-types',
+      scopes: 'queue:list-worker-types:<provisionerId>',
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.getWorkerType.entry = {
+      args: ['provisionerId', 'workerType'],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'getWorkerType',
+      output: true,
+      query: [],
+      route: '/provisioners/<provisionerId>/worker-types/<workerType>',
+      scopes: 'queue:get-worker-type:<provisionerId>/<workerType>',
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.declareWorkerType.entry = {
+      args: ['provisionerId', 'workerType'],
+      category: 'Worker Metadata',
+      input: true,
+      method: 'put',
+      name: 'declareWorkerType',
+      output: true,
+      query: [],
+      route: '/provisioners/<provisionerId>/worker-types/<workerType>',
+      scopes: {
+        AllOf: [
+          {
+            each: 'queue:declare-worker-type:<provisionerId>/<workerType>#<property>',
+            for: 'property',
+            in: 'properties',
+          },
+        ],
+      },
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listTaskQueues.entry = {
+      args: [],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'listTaskQueues',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/task-queues',
+      scopes: 'queue:list-task-queues',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.getTaskQueue.entry = {
+      args: ['taskQueueId'],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'getTaskQueue',
+      output: true,
+      query: [],
+      route: '/task-queues/<taskQueueId>',
+      scopes: 'queue:get-task-queue:<taskQueueId>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listWorkers.entry = {
+      args: ['provisionerId', 'workerType'],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'listWorkers',
+      output: true,
+      query: ['continuationToken', 'limit', 'quarantined'],
+      route: '/provisioners/<provisionerId>/worker-types/<workerType>/workers',
+      scopes: 'queue:list-workers:<provisionerId>/<workerType>',
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.getWorker.entry = {
+      args: ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
+      category: 'Worker Metadata',
+      method: 'get',
+      name: 'getWorker',
+      output: true,
+      query: [],
+      route: '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',
+      scopes: 'queue:get-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>',
+      stability: 'deprecated',
+      type: 'function',
+    }; // eslint-disable-line
+    this.quarantineWorker.entry = {
+      args: ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
+      category: 'Worker Metadata',
+      input: true,
+      method: 'put',
+      name: 'quarantineWorker',
+      output: true,
+      query: [],
+      route: '/provisioners/<provisionerId>/worker-types/<workerType>/workers/<workerGroup>/<workerId>',
+      scopes: { AllOf: ['queue:quarantine-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>'] },
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.declareWorker.entry = {
+      args: ['provisionerId', 'workerType', 'workerGroup', 'workerId'],
+      category: 'Worker Metadata',
+      input: true,
+      method: 'put',
+      name: 'declareWorker',
+      output: true,
+      query: [],
+      route: '/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>',
+      scopes: {
+        AllOf: [
+          {
+            each: 'queue:declare-worker:<provisionerId>/<workerType>/<workerGroup>/<workerId>#<property>',
+            for: 'property',
+            in: 'properties',
+          },
+        ],
+      },
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.heartbeat.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'heartbeat',
+      query: [],
+      route: '/__heartbeat__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

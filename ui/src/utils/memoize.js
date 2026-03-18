@@ -59,14 +59,11 @@ class BoundedCache {
  * Creates an optimized key for memoization
  * It replaces long keys with sha256 hash
  */
-const optimizeCacheKey = arg => {
+const optimizeCacheKey = (arg) => {
   const key = Array.isArray(arg) ? arg.join(',') : arg;
 
   if (key.length > MAX_KEY_LENGTH) {
-    return crypto
-      .createHash('sha256')
-      .update(key)
-      .digest('hex');
+    return crypto.createHash('sha256').update(key).digest('hex');
   }
 
   return key;
@@ -87,20 +84,14 @@ const optimizeCacheKey = arg => {
  * @returns {F & { cache: InstanceType<typeof BoundedCache> }}
  */
 export const memoize = (fn, options = {}) => {
-  const {
-    maxSize = MAX_SIZE,
-    cache = new BoundedCache(maxSize),
-    serializer,
-    ...otherOptions
-  } = options;
+  const { maxSize = MAX_SIZE, cache = new BoundedCache(maxSize), serializer, ...otherOptions } = options;
   const memoized = fastMemoize(fn, {
     cache: {
       create() {
         return cache;
       },
     },
-    serializer: (...args) =>
-      optimizeCacheKey(serializer ? serializer(...args) : args.join(',')),
+    serializer: (...args) => optimizeCacheKey(serializer ? serializer(...args) : args.join(',')),
     ...otherOptions,
   });
 
@@ -118,8 +109,8 @@ export { BoundedCache };
  *
  * @param {Array<{ cache?: { clear?: () => void } }>} memoizedFunctions
  */
-export const clearAllCaches = memoizedFunctions => {
-  memoizedFunctions.forEach(fn => {
+export const clearAllCaches = (memoizedFunctions) => {
+  memoizedFunctions.forEach((fn) => {
     if (fn?.cache && typeof fn.cache.clear === 'function') {
       fn.cache.clear();
     }

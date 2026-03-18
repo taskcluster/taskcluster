@@ -4,7 +4,7 @@ import ConnectionLoader from '../ConnectionLoader.js';
 import WorkerCompact from '../entities/WorkerCompact.js';
 
 export default ({ workerManager }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
-  const worker = new DataLoader(queries =>
+  const worker = new DataLoader((queries) =>
     Promise.all(
       queries.map(async ({ provisionerId, workerType, workerGroup, workerId }) => {
         try {
@@ -12,19 +12,11 @@ export default ({ workerManager }, _isAuthed, _rootUrl, _monitor, _strategies, _
         } catch (err) {
           return err;
         }
-      },
-      ),
+      }),
     ),
   );
   const workers = new ConnectionLoader(
-    async ({
-      provisionerId,
-      workerType,
-      options,
-      filter,
-      isQuarantined,
-      workerState,
-    }) => {
+    async ({ provisionerId, workerType, options, filter, isQuarantined, workerState }) => {
       const opts = { ...options };
       if (typeof isQuarantined === 'boolean') {
         opts.quarantined = isQuarantined;
@@ -32,18 +24,12 @@ export default ({ workerManager }, _isAuthed, _rootUrl, _monitor, _strategies, _
       if (typeof workerState === 'string') {
         opts.workerState = workerState;
       }
-      const raw = await workerManager.listWorkers(
-        provisionerId,
-        workerType,
-        opts,
-      );
+      const raw = await workerManager.listWorkers(provisionerId, workerType, opts);
       const workers = sift(filter, raw.workers);
 
       return {
         ...raw,
-        items: workers.map(
-          worker => new WorkerCompact(provisionerId, workerType, worker),
-        ),
+        items: workers.map((worker) => new WorkerCompact(provisionerId, workerType, worker)),
       };
     },
   );

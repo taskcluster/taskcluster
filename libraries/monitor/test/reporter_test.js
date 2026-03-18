@@ -3,14 +3,15 @@ import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import MonitorManager from '../src/monitormanager.js';
 
-suite(testing.suiteName(), function() {
-
-  suite('sentry', function() {
+suite(testing.suiteName(), function () {
+  suite('sentry', function () {
     let monitor, scope, reported;
-    setup(function() {
+    setup(function () {
       scope = nock('https://sentry.example.com')
         .post('/api/448/store/')
-        .reply(200, (_, report)=> {reported = report;});
+        .reply(200, (_, report) => {
+          reported = report;
+        });
 
       monitor = MonitorManager.setup({
         serviceName: 'testing-service',
@@ -27,13 +28,13 @@ suite(testing.suiteName(), function() {
       });
     });
 
-    teardown(async function() {
+    teardown(async function () {
       await monitor.terminate();
       reported = null;
       assert(scope.isDone());
     });
 
-    test('simple error report', async function() {
+    test('simple error report', async function () {
       monitor.reportError(new Error('hi'));
       await monitor.terminate();
       assert.equal(reported.tags.service, 'testing-service');
@@ -41,7 +42,7 @@ suite(testing.suiteName(), function() {
       assert.equal(reported.release, '123:foo');
       assert.equal(reported.level, 'error');
     });
-    test('error report with level', async function() {
+    test('error report with level', async function () {
       monitor.reportError(new Error('hi'), 'notice');
       await monitor.terminate();
       assert.equal(reported.tags.service, 'testing-service');
@@ -49,7 +50,7 @@ suite(testing.suiteName(), function() {
       assert.equal(reported.release, '123:foo');
       assert.equal(reported.level, 'info');
     });
-    test('error report with tags', async function() {
+    test('error report with tags', async function () {
       monitor.reportError(new Error('hi'), { baz: 'bing' });
       await monitor.terminate();
       assert.equal(reported.tags.service, 'testing-service');
@@ -58,7 +59,7 @@ suite(testing.suiteName(), function() {
       assert.equal(reported.release, '123:foo');
       assert.equal(reported.level, 'error');
     });
-    test('error report with level and tags', async function() {
+    test('error report with level and tags', async function () {
       monitor.reportError(new Error('hi'), 'warning', { baz: 'bing' });
       await monitor.terminate();
       assert.equal(reported.tags.service, 'testing-service');

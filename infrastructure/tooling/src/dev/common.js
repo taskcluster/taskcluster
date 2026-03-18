@@ -1,17 +1,16 @@
 export default ({ userConfig, prompts, configTmpl }) => {
-
   prompts.push({
     type: 'input',
     when: () => !userConfig.rootUrl,
     name: 'rootUrl',
     message: 'What is the root url you will use for this deployment?',
-    filter: rootUrl => {
+    filter: (rootUrl) => {
       if (!rootUrl.includes('://')) {
         rootUrl = `https://${rootUrl}`;
       }
       return rootUrl;
     },
-    validate: rootUrl => {
+    validate: (rootUrl) => {
       if (rootUrl.endsWith('/')) {
         return 'root url must not have trailing slash';
       }
@@ -43,7 +42,7 @@ export default ({ userConfig, prompts, configTmpl }) => {
     type: 'input',
     name: 'meta.deploymentPrefix',
     message: 'Specify a prefix to use for most resources needed by this deployment.',
-    validate: prefix => {
+    validate: (prefix) => {
       if (!/^[a-z0-9]+$/.test(prefix)) {
         return 'Must consist of lowercase characters and numbers';
       }
@@ -59,7 +58,7 @@ export default ({ userConfig, prompts, configTmpl }) => {
     type: 'input',
     name: 'ingressType',
     message: 'Leave blank if GLB is used, otherwise use "nginx" for ingress nginx type',
-    validate: ingressType => {
+    validate: (ingressType) => {
       if (ingressType !== '' && ingressType !== 'nginx') {
         return 'Must be either empty string or "nginx"';
       }
@@ -68,14 +67,14 @@ export default ({ userConfig, prompts, configTmpl }) => {
   });
 
   prompts.push({
-    when: () => !userConfig.ingressStaticIpName && userConfig.ingressType !== "nginx",
+    when: () => !userConfig.ingressStaticIpName && userConfig.ingressType !== 'nginx',
     type: 'input',
     name: 'ingressStaticIpName',
     message: 'Name of the google reserved static ip for this deployment. Or empty if ingress nginx is used.',
   });
 
   prompts.push({
-    when: () => !userConfig.ingressCertName && userConfig.ingressType !== "nginx",
+    when: () => !userConfig.ingressCertName && userConfig.ingressType !== 'nginx',
     type: 'input',
     name: 'ingressCertName',
     message: 'Name of the google cert for your cluster. Or empty if cert-manager is used.',
@@ -85,14 +84,16 @@ export default ({ userConfig, prompts, configTmpl }) => {
     when: () => !userConfig.ingressTlsSecretName,
     type: 'input',
     name: 'ingressTlsSecretName',
-    message: 'Name of the secret where cert-manager will store letsencrypt certificates, i.e. "my-tc-cert". Leave blank if cert-manager is not used.',
+    message:
+      'Name of the secret where cert-manager will store letsencrypt certificates, i.e. "my-tc-cert". Leave blank if cert-manager is not used.',
   });
 
   prompts.push({
     when: () => !userConfig.certManagerClusterIssuerName,
     type: 'input',
     name: 'certManagerClusterIssuerName',
-    message: 'Name of cert-manager\'s cluster issuer, if used, i.e. "letsencrypt-prod". Leave blank if cert-manager is not used.',
+    message:
+      'Name of cert-manager\'s cluster issuer, if used, i.e. "letsencrypt-prod". Leave blank if cert-manager is not used.',
   });
 
   prompts.push({

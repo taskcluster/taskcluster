@@ -12,11 +12,7 @@ import { WorkerPool, Worker } from '../data.js';
 /** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
 
 export class GoogleProvider extends Provider {
-
-  constructor({
-    providerConfig,
-    ...conf
-  }) {
+  constructor({ providerConfig, ...conf }) {
     super({ providerConfig, ...conf });
     let { project, creds, workerServiceAccountId, apiRateLimits = {}, _backoffDelay = 1000 } = providerConfig;
     this.configSchema = 'config-google';
@@ -41,10 +37,12 @@ export class GoogleProvider extends Provider {
       monitor: this.monitor,
       providerId: this.providerId,
       errorHandler: ({ err, tries }) => {
-        if (err.code === 403) { // google hands out 403 for rate limiting; back off significantly
+        if (err.code === 403) {
+          // google hands out 403 for rate limiting; back off significantly
           // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure
           return { backoff: _backoffDelay * 50, reason: 'rateLimit', level: 'notice' };
-        } else if (err.code === 403 || err.code >= 500) { // For 500s, let's take a shorter backoff
+        } else if (err.code === 403 || err.code >= 500) {
+          // For 500s, let's take a shorter backoff
           return { backoff: _backoffDelay * 2 ** tries, reason: 'errors', level: 'warning' };
         }
         // If we don't want to do anything special here, just throw and let the
@@ -92,18 +90,22 @@ export class GoogleProvider extends Provider {
       return err.errors;
     }
     if (err.response?.data?.error?.message) {
-      return [{
-        message: err.response.data.error.message,
-        code: err.response.data.error.code,
-      }];
+      return [
+        {
+          message: err.response.data.error.message,
+          code: err.response.data.error.code,
+        },
+      ];
     }
     return null;
   }
 
   async setup() {
-    const workerServiceAccount = (await this.iam.projects.serviceAccounts.get({
-      name: `projects/${this.project}/serviceAccounts/${this.workerServiceAccountId}`,
-    })).data;
+    const workerServiceAccount = (
+      await this.iam.projects.serviceAccounts.get({
+        name: `projects/${this.project}/serviceAccounts/${this.workerServiceAccountId}`,
+      })
+    ).data;
     this.workerServiceAccountEmail = workerServiceAccount.email;
   }
 
@@ -162,7 +164,7 @@ export class GoogleProvider extends Provider {
     }
 
     monitor.debug('setting state to RUNNING');
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       worker.state = Worker.states.RUNNING;
       worker.providerData.terminateAfter = expires.getTime();
       worker.lastModified = new Date();
@@ -184,7 +186,7 @@ export class GoogleProvider extends Provider {
   async removeWorker({ worker, reason }) {
     // trigger event before saving worker state
     await this.onWorkerRemoved({ worker, reason });
-    await worker.update(this.db, w => {
+    await worker.update(this.db, (w) => {
       if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
         w.lastModified = new Date();
         w.state = Worker.states.STOPPING;
@@ -195,11 +197,13 @@ export class GoogleProvider extends Provider {
       // that this fails due to user input being wrong are low so
       // we'll ignore it in order to save a bunch of traffic checking up on these
       // operations when many instances are terminated at once
-      await this._enqueue('query', () => this.compute.instances.delete({
-        project: this.project,
-        zone: worker.providerData.zone,
-        instance: worker.workerId,
-      }));
+      await this._enqueue('query', () =>
+        this.compute.instances.delete({
+          project: this.project,
+          zone: worker.providerData.zone,
+          instance: worker.workerId,
+        }),
+      );
     } catch (err) {
       if (err.code === 404) {
         return; // Nothing to do, it is already gone
@@ -217,8 +221,7 @@ export class GoogleProvider extends Provider {
     const workerInfoByWorkerGroup = workerPoolStats?.forProvisionByWorkerGroup() ?? new Map();
 
     if (!workerPool.providerData[this.providerId]) {
-      await this.db.fns.update_worker_pool_provider_data(
-        workerPool.workerPoolId, this.providerId, {});
+      await this.db.fns.update_worker_pool_provider_data(workerPool.workerPoolId, this.providerId, {});
     }
 
     const toSpawn = await this.estimator.simple({
@@ -233,154 +236,158 @@ export class GoogleProvider extends Provider {
       return; // Nothing to do
     }
 
-    const {
-      terminateAfter, reregistrationTimeout, queueInactivityTimeout,
-    } = Provider.interpretLifecycle(workerPool.config);
+    const { terminateAfter, reregistrationTimeout, queueInactivityTimeout } = Provider.interpretLifecycle(
+      workerPool.config,
+    );
 
     const cfgs = await this.selectLaunchConfigsForSpawn({ workerPool, toSpawn, workerPoolStats });
 
-    await Promise.all(cfgs.map(async launchConfig => {
-      const cfg = launchConfig.configuration;
+    await Promise.all(
+      cfgs.map(async (launchConfig) => {
+        const cfg = launchConfig.configuration;
 
-      // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
-      // The lost entropy from downcasing, etc should be ok due to the fact that
-      // only running instances need not be identical. We do not use this name to identify
-      // workers in taskcluster.
-      const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
-      const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
-      // Historically we set workerGroup to cfg.region (e.g. 'us-east1') but
-      // cfg.zone (e.g. 'us-east1-d') is more specific, and required for e.g.
-      // terminating instances with:
-      //   `gcloud compute instances delete <workerId> --zone=<workerGroup>`
-      const workerGroup = cfg.zone;
-      const labels = {
-        'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
-        'managed-by': 'taskcluster',
-        'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
-        'owner': workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
-        'launch-config-id': launchConfig.launchConfigId,
-      };
-      let op;
-
-      const disks = [
-        ...(cfg.disks || {}),
-      ];
-      for (const disk of disks) {
-        if (disk.type !== 'PERSISTENT') {
-          delete disk.labels;
-          continue;
-        }
-        const initializeParams = disk.initializeParams || {};
-        disk.initializeParams = {
-          ...initializeParams,
-          labels: {
-            ...initializeParams.labels,
-            ...disk.labels,
-            ...labels,
-          },
+        // This must be unique to currently existing instances and match [a-z]([-a-z0-9]*[a-z0-9])?
+        // The lost entropy from downcasing, etc should be ok due to the fact that
+        // only running instances need not be identical. We do not use this name to identify
+        // workers in taskcluster.
+        const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
+        const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
+        // Historically we set workerGroup to cfg.region (e.g. 'us-east1') but
+        // cfg.zone (e.g. 'us-east1-d') is more specific, and required for e.g.
+        // terminating instances with:
+        //   `gcloud compute instances delete <workerId> --zone=<workerGroup>`
+        const workerGroup = cfg.zone;
+        const labels = {
+          'created-by': `taskcluster-wm-${this.providerId}`.replace(/[^a-zA-Z0-9-]/g, '-'),
+          'managed-by': 'taskcluster',
+          'worker-pool-id': workerPoolId.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+          owner: workerPool.owner.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase(),
+          'launch-config-id': launchConfig.launchConfigId,
         };
-        delete disk.labels;
-      }
+        let op;
 
-      try {
-        const res = await this._enqueue('query', () => this.compute.instances.insert({
-          project: this.project,
-          zone: cfg.zone,
-          requestId: uuid.v4(), // This is just for idempotency
-          requestBody: {
-            ..._.omit(cfg, ['region', 'zone', 'workerConfig', 'workerManager', 'capacityPerInstance']),
-            name: instanceName,
+        const disks = [...(cfg.disks || {})];
+        for (const disk of disks) {
+          if (disk.type !== 'PERSISTENT') {
+            delete disk.labels;
+            continue;
+          }
+          const initializeParams = disk.initializeParams || {};
+          disk.initializeParams = {
+            ...initializeParams,
             labels: {
-              ...(cfg.labels || {}),
+              ...initializeParams.labels,
+              ...disk.labels,
               ...labels,
             },
-            description: cfg.description || workerPool.description,
-            disks,
-            serviceAccounts: [{
-              email: this.workerServiceAccountEmail,
-              scopes: [
-                /*
-                 * This looks scary but is ok. According to
-                 * https://cloud.google.com/compute/docs/access/service-accounts#accesscopesiam
-                 *
-                 * "A best practice is to set the full cloud-platform
-                 * access scope on the instance, then securely limit
-                 * the service account's API access with IAM roles."
-                 *
-                 * Which is what we do.
-                 */
-                'https://www.googleapis.com/auth/cloud-platform',
-              ],
-            }],
-            scheduling: {
-              ...(cfg.scheduling || {}),
-              automaticRestart: false,
-            },
-            metadata: {
-              items: [
-                ...(cfg.metadata?.items || []),
-                {
-                  key: 'taskcluster',
-                  value: JSON.stringify({
-                    workerPoolId,
-                    providerId: this.providerId,
-                    workerGroup,
-                    rootUrl: this.rootUrl,
-                    // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
-                    workerConfig: cfg.workerConfig || {},
-                  }),
-                },
-              ],
-            },
-          },
-        }));
-        op = res.data;
-      } catch (err) {
-        const errors = this.#extractGoogleApiErrors(err);
-        if (!errors) {
-          throw err;
+          };
+          delete disk.labels;
         }
-        for (const error of errors) {
-          await this.reportError({
-            workerPool,
-            kind: 'creation-error',
-            title: 'Instance Creation Error',
-            description: error.message,
-            extra: {
-              config: cfg,
-              errorCode: error.code,
-            },
-            launchConfigId: launchConfig.launchConfigId,
-          });
-        }
-        return;
-      }
 
-      const worker = Worker.fromApi({
-        workerPoolId,
-        providerId: this.providerId,
-        workerGroup,
-        workerId: op.targetId,
-        expires: taskcluster.fromNow('1 week'),
-        state: Worker.states.REQUESTED,
-        capacity: cfg?.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1,
-        providerData: {
-          project: this.project,
-          zone: cfg.zone,
-          operation: {
-            name: op.name,
-            zone: op.zone,
+        try {
+          const res = await this._enqueue('query', () =>
+            this.compute.instances.insert({
+              project: this.project,
+              zone: cfg.zone,
+              requestId: uuid.v4(), // This is just for idempotency
+              requestBody: {
+                ..._.omit(cfg, ['region', 'zone', 'workerConfig', 'workerManager', 'capacityPerInstance']),
+                name: instanceName,
+                labels: {
+                  ...(cfg.labels || {}),
+                  ...labels,
+                },
+                description: cfg.description || workerPool.description,
+                disks,
+                serviceAccounts: [
+                  {
+                    email: this.workerServiceAccountEmail,
+                    scopes: [
+                      /*
+                       * This looks scary but is ok. According to
+                       * https://cloud.google.com/compute/docs/access/service-accounts#accesscopesiam
+                       *
+                       * "A best practice is to set the full cloud-platform
+                       * access scope on the instance, then securely limit
+                       * the service account's API access with IAM roles."
+                       *
+                       * Which is what we do.
+                       */
+                      'https://www.googleapis.com/auth/cloud-platform',
+                    ],
+                  },
+                ],
+                scheduling: {
+                  ...(cfg.scheduling || {}),
+                  automaticRestart: false,
+                },
+                metadata: {
+                  items: [
+                    ...(cfg.metadata?.items || []),
+                    {
+                      key: 'taskcluster',
+                      value: JSON.stringify({
+                        workerPoolId,
+                        providerId: this.providerId,
+                        workerGroup,
+                        rootUrl: this.rootUrl,
+                        // NOTE: workerConfig is deprecated and isn't used after worker-runner v29.0.1
+                        workerConfig: cfg.workerConfig || {},
+                      }),
+                    },
+                  ],
+                },
+              },
+            }),
+          );
+          op = res.data;
+        } catch (err) {
+          const errors = this.#extractGoogleApiErrors(err);
+          if (!errors) {
+            throw err;
+          }
+          for (const error of errors) {
+            await this.reportError({
+              workerPool,
+              kind: 'creation-error',
+              title: 'Instance Creation Error',
+              description: error.message,
+              extra: {
+                config: cfg,
+                errorCode: error.code,
+              },
+              launchConfigId: launchConfig.launchConfigId,
+            });
+          }
+          return;
+        }
+
+        const worker = Worker.fromApi({
+          workerPoolId,
+          providerId: this.providerId,
+          workerGroup,
+          workerId: op.targetId,
+          expires: taskcluster.fromNow('1 week'),
+          state: Worker.states.REQUESTED,
+          capacity: cfg?.workerManager?.capacityPerInstance ?? cfg.capacityPerInstance ?? 1,
+          providerData: {
+            project: this.project,
+            zone: cfg.zone,
+            operation: {
+              name: op.name,
+              zone: op.zone,
+            },
+            terminateAfter,
+            reregistrationTimeout, // Record this for later reregistrations so that we can recalculate deadline
+            queueInactivityTimeout,
+            workerConfig: cfg.workerConfig || {},
           },
-          terminateAfter,
-          reregistrationTimeout, // Record this for later reregistrations so that we can recalculate deadline
-          queueInactivityTimeout,
-          workerConfig: cfg.workerConfig || {},
-        },
-        launchConfigId: launchConfig.launchConfigId,
-      });
-      await worker.create(this.db);
-      await this.onWorkerRequested({ worker, terminateAfter });
-    }));
+          launchConfigId: launchConfig.launchConfigId,
+        });
+        await worker.create(this.db);
+        await this.onWorkerRequested({ worker, terminateAfter });
+      }),
+    );
   }
 
   /*
@@ -406,11 +413,13 @@ export class GoogleProvider extends Provider {
 
     let state;
     try {
-      const { data } = await this._enqueue('get', () => this.compute.instances.get({
-        project: worker.providerData.project,
-        zone: worker.providerData.zone,
-        instance: worker.workerId,
-      }));
+      const { data } = await this._enqueue('get', () =>
+        this.compute.instances.get({
+          project: worker.providerData.project,
+          zone: worker.providerData.zone,
+          instance: worker.workerId,
+        }),
+      );
       const { status } = data;
       monitor.debug(`instance status is ${status}`);
       if (['PROVISIONING', 'STAGING', 'RUNNING'].includes(status)) {
@@ -430,11 +439,13 @@ export class GoogleProvider extends Provider {
           await this.removeWorker({ worker, reason });
         }
       } else if (['TERMINATED', 'STOPPED'].includes(status)) {
-        await this._enqueue('query', () => this.compute.instances.delete({
-          project: worker.providerData.project,
-          zone: worker.providerData.zone,
-          instance: worker.workerId,
-        }));
+        await this._enqueue('query', () =>
+          this.compute.instances.delete({
+            project: worker.providerData.project,
+            zone: worker.providerData.zone,
+            instance: worker.workerId,
+          }),
+        );
         state = states.STOPPED;
       }
     } catch (err) {
@@ -445,12 +456,14 @@ export class GoogleProvider extends Provider {
       if (worker.providerData.operation) {
         // We only check in on the operation if the worker failed to
         // start successfully
-        if (await this.handleOperation({
-          op: worker.providerData.operation,
-          errors: this.errors[worker.workerPoolId],
-          monitor,
-          worker,
-        })) {
+        if (
+          await this.handleOperation({
+            op: worker.providerData.operation,
+            errors: this.errors[worker.workerPoolId],
+            monitor,
+            worker,
+          })
+        ) {
           monitor.debug('operation still running');
           // return to poll the operation again..
           return;
@@ -464,7 +477,7 @@ export class GoogleProvider extends Provider {
       // trigger before changing worker.state
       await this.onWorkerStopped({ worker });
     }
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       if (state !== undefined) {
         worker.state = state;
         worker.lastModified = now;
@@ -483,29 +496,32 @@ export class GoogleProvider extends Provider {
       total: Provider.calcSeenTotal(this.seen),
     });
     this.cloudApi?.logAndResetMetrics();
-    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, _seen]) => {
-      const workerPool = await WorkerPool.get(this.db, workerPoolId);
-      if (!workerPool) {
-        return; // In this case, the workertype has been deleted so we can just move on
-      }
+    await Promise.all(
+      Object.entries(this.seen).map(async ([workerPoolId, _seen]) => {
+        const workerPool = await WorkerPool.get(this.db, workerPoolId);
+        if (!workerPool) {
+          return; // In this case, the workertype has been deleted so we can just move on
+        }
 
-      const seenByGroup = this.seenByWorkerGroup[workerPoolId] || {};
-      Object.entries(seenByGroup).forEach(([workerGroup, groupSeen]) =>
-        this.monitor.metric.scanSeen(groupSeen, {
+        const seenByGroup = this.seenByWorkerGroup[workerPoolId] || {};
+        Object.entries(seenByGroup).forEach(([workerGroup, groupSeen]) =>
+          this.monitor.metric.scanSeen(groupSeen, {
+            providerId: this.providerId,
+            workerPoolId,
+            workerGroup,
+          }),
+        );
+
+        if (this.errors[workerPoolId].length) {
+          await Promise.all(this.errors[workerPoolId].map((error) => this.reportError({ workerPool, ...error })));
+        }
+
+        this.monitor.metric.scanErrors(this.errors[workerPoolId].length, {
           providerId: this.providerId,
           workerPoolId,
-          workerGroup,
-        }));
-
-      if (this.errors[workerPoolId].length) {
-        await Promise.all(this.errors[workerPoolId].map(error => this.reportError({ workerPool, ...error })));
-      }
-
-      this.monitor.metric.scanErrors(this.errors[workerPoolId].length, {
-        providerId: this.providerId,
-        workerPoolId,
-      });
-    }));
+        });
+      }),
+    );
   }
 
   /**
@@ -563,7 +579,8 @@ export class GoogleProvider extends Provider {
     }
 
     if (operation.error) {
-      for (const err of operation.error.errors) { // Each operation can have multiple errors
+      for (const err of operation.error.errors) {
+        // Each operation can have multiple errors
         errors.push({
           kind: 'operation-error',
           title: 'Operation Error',

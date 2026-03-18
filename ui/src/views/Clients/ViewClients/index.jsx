@@ -20,7 +20,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 
 @withApollo
 @graphql(clientsQuery, {
-  options: props => ({
+  options: (props) => ({
     fetchPolicy: 'network-only',
     variables: {
       clientOptions: null,
@@ -30,9 +30,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
       filter: props.history.location.search
         ? {
             clientId: {
-              $regex: escapeStringRegexp(
-                parse(props.history.location.search.slice(1)).search
-              ),
+              $regex: escapeStringRegexp(parse(props.history.location.search.slice(1)).search),
               $options: 'i',
             },
           }
@@ -40,7 +38,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
     },
   }),
 })
-@withStyles(theme => ({
+@withStyles((theme) => ({
   plusIcon: {
     ...theme.mixins.fab,
   },
@@ -52,7 +50,7 @@ export default class ViewClients extends PureComponent {
     deleteClientId: null,
   };
 
-  handleClientSearchSubmit = async search => {
+  handleClientSearchSubmit = async (search) => {
     const {
       data: { refetch },
     } = this.props;
@@ -65,15 +63,11 @@ export default class ViewClients extends PureComponent {
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
-      filter: search
-        ? { clientId: { $regex: escapeStringRegexp(search), $options: 'i' } }
-        : null,
+      filter: search ? { clientId: { $regex: escapeStringRegexp(search), $options: 'i' } } : null,
     });
 
     if (search !== searchQuery) {
-      this.props.history.push(
-        search.length > 0 ? `?${stringify({ search })}` : '/auth/clients'
-      );
+      this.props.history.push(search.length > 0 ? `?${stringify({ search })}` : '/auth/clients');
     }
   };
 
@@ -92,7 +86,7 @@ export default class ViewClients extends PureComponent {
     });
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({ dialogError: error });
   };
 
@@ -110,7 +104,7 @@ export default class ViewClients extends PureComponent {
     });
   };
 
-  handleDialogActionOpen = clientId => {
+  handleDialogActionOpen = (clientId) => {
     this.setState({ dialogOpen: true, deleteClientId: clientId });
   };
 
@@ -133,9 +127,7 @@ export default class ViewClients extends PureComponent {
           ? {
               filter: {
                 clientId: {
-                  $regex: escapeStringRegexp(
-                    parse(history.location.search.slice(1)).search
-                  ),
+                  $regex: escapeStringRegexp(parse(history.location.search.slice(1)).search),
                   $options: 'i',
                 },
               },
@@ -145,12 +137,8 @@ export default class ViewClients extends PureComponent {
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.clients;
 
-        return dotProp.set(previousResult, 'clients', clients =>
-          dotProp.set(
-            dotProp.set(clients, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, 'clients', (clients) =>
+          dotProp.set(dotProp.set(clients, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
@@ -178,7 +166,8 @@ export default class ViewClients extends PureComponent {
             onSubmit={this.handleClientSearchSubmit}
             placeholder="Client contains"
           />
-        }>
+        }
+      >
         <Fragment>
           {loading && <Spinner loading />}
           <ErrorPanel fixed error={error} />
@@ -190,11 +179,7 @@ export default class ViewClients extends PureComponent {
               onDialogActionOpen={this.handleDialogActionOpen}
             />
           )}
-          <Button
-            onClick={this.handleCreate}
-            variant="round"
-            color="secondary"
-            className={classes.plusIcon}>
+          <Button onClick={this.handleCreate} variant="round" color="secondary" className={classes.plusIcon}>
             <PlusIcon />
           </Button>
           {dialogOpen && (
@@ -206,11 +191,7 @@ export default class ViewClients extends PureComponent {
               onError={this.handleDialogActionError}
               error={dialogError}
               title="Delete Client?"
-              body={
-                <Typography variant="body2">
-                  This will delete the {deleteClientId} client.
-                </Typography>
-              }
+              body={<Typography variant="body2">This will delete the {deleteClientId} client.</Typography>}
               confirmText="Delete Client"
             />
           )}

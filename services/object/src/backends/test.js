@@ -62,14 +62,18 @@ export class TestBackend extends Backend {
 
   async expireObject(object) {
     switch (object.data.expirationReturns) {
-      case 'fail': throw new Error('uhoh');
-      case false: return false;
-      case true: return true;
-      default: return true;
+      case 'fail':
+        throw new Error('uhoh');
+      case false:
+        return false;
+      case true:
+        return true;
+      default:
+        return true;
     }
   }
 }
 
-export const toDataUrl = data => `data:;base64,${data.toString('base64')}`;
+export const toDataUrl = (data) => `data:;base64,${data.toString('base64')}`;
 
 export default { TestBackend, toDataUrl };

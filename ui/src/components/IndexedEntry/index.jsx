@@ -42,7 +42,7 @@ const buildArtifactUrl = ({ user, namespace, name, contentType }) => {
 };
 
 @withAuth
-@withStyles(theme => ({
+@withStyles((theme) => ({
   listItemButton: {
     ...theme.mixins.listItemButton,
   },
@@ -81,14 +81,14 @@ export default class IndexedEntry extends Component {
     taskGroupId: string,
   };
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = (sortBy) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
     this.setState({ sortBy, sortDirection });
   };
 
-  loadArtifacts = artifactsConnection => {
+  loadArtifacts = (artifactsConnection) => {
     const {
       indexedTask: { taskId, namespace },
       user,
@@ -100,7 +100,7 @@ export default class IndexedEntry extends Component {
 
     return {
       ...artifactsConnection,
-      edges: artifactsConnection.edges.map(edge => ({
+      edges: artifactsConnection.edges.map((edge) => ({
         ...edge,
         node: {
           ...edge.node,
@@ -117,11 +117,7 @@ export default class IndexedEntry extends Component {
   };
 
   renderArtifactsTable() {
-    const {
-      classes,
-      onArtifactsPageChange,
-      latestArtifactsConnection,
-    } = this.props;
+    const { classes, onArtifactsPageChange, latestArtifactsConnection } = this.props;
     const artifacts = this.loadArtifacts(latestArtifactsConnection);
 
     return (
@@ -136,17 +132,17 @@ export default class IndexedEntry extends Component {
             className={classNames(classes.listItemButton, {
               [classes.pointer]: Boolean(artifact.url),
             })}
-            hover={Boolean(artifact.url)}>
+            hover={Boolean(artifact.url)}
+          >
             <TableCell>
               <Link
                 className={classes.artifactLink}
                 target="_blank"
                 to={artifact.url}
-                onClick={artifact.handleArtifactClick}>
+                onClick={artifact.handleArtifactClick}
+              >
                 <div className={classes.artifactIconWithName}>
-                  <div className={classes.artifactIcons}>
-                    {artifact.icon && <artifact.icon />}
-                  </div>
+                  <div className={classes.artifactIcons}>{artifact.icon && <artifact.icon />}</div>
                   {artifact.name}
                 </div>
                 <div>
@@ -172,11 +168,7 @@ export default class IndexedEntry extends Component {
           <ListItemText primary="Rank" secondary={indexedTask.rank} />
         </ListItem>
         <ListItem>
-          <ListItemText
-            title={created}
-            primary="Created"
-            secondary={<DateDistance from={created} />}
-          />
+          <ListItemText title={created} primary="Created" secondary={<DateDistance from={created} />} />
         </ListItem>
         <Link to={`/tasks/${indexedTask.taskId}`}>
           <ListItem button className={classes.listItemButton}>
@@ -198,9 +190,7 @@ export default class IndexedEntry extends Component {
             secondaryTypographyProps={{
               component: 'div',
             }}
-            secondary={
-              <JsonDisplay syntax="yaml" objectContent={indexedTask.data} />
-            }
+            secondary={<JsonDisplay syntax="yaml" objectContent={indexedTask.data} />}
           />
         </ListItem>
         <ListItem className={classes.latestArtifactsListItem}>

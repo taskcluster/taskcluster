@@ -21,7 +21,7 @@ import Link from '../../utils/Link';
 import splitLines from '../../utils/splitLines';
 import scopeLink from '../../utils/scopeLink';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   fab: {
     ...theme.mixins.fab,
   },
@@ -153,18 +153,8 @@ export default class RoleForm extends Component {
       onDialogActionOpen,
       onDialogActionComplete,
     } = this.props;
-    const {
-      description,
-      scopeText,
-      roleId,
-      created,
-      lastModified,
-      expandedScopes,
-    } = this.state;
-    const isRoleDirty =
-      isNewRole ||
-      description !== role.description ||
-      scopeText !== (role.scopes || []).join('\n');
+    const { description, scopeText, roleId, created, lastModified, expandedScopes } = this.state;
+    const isRoleDirty = isNewRole || description !== role.description || scopeText !== (role.scopes || []).join('\n');
 
     return (
       <Fragment>
@@ -190,10 +180,7 @@ export default class RoleForm extends Component {
                 <ListItemText primary="Date Created" secondary={created} />
               </ListItem>
               <ListItem>
-                <ListItemText
-                  primary="Date Last Modified"
-                  secondary={lastModified}
-                />
+                <ListItemText primary="Date Last Modified" secondary={lastModified} />
               </ListItem>
             </Fragment>
           )}
@@ -227,8 +214,7 @@ export default class RoleForm extends Component {
                   primary="Expanded Scopes"
                   secondary={
                     <span>
-                      Expanded scopes are determined from the role scopes,
-                      expanding roles for scopes beginning with{' '}
+                      Expanded scopes are determined from the role scopes, expanding roles for scopes beginning with{' '}
                       <code>assume:</code>.
                     </span>
                   }
@@ -240,7 +226,7 @@ export default class RoleForm extends Component {
                   className={classes.expandedScopesWrapper}
                   secondary={
                     <List dense>
-                      {expandedScopes.map(scope => (
+                      {expandedScopes.map((scope) => (
                         <Link key={scope} to={scopeLink(scope)}>
                           <ListItem button className={classes.listItemButton}>
                             <ListItemText secondary={<code>{scope}</code>} />
@@ -263,7 +249,8 @@ export default class RoleForm extends Component {
             disabled={loading || !isRoleDirty}
             variant="round"
             onClick={this.handleSaveRole}
-            classes={{ root: classes.saveIcon }}>
+            classes={{ root: classes.saveIcon }}
+          >
             <ContentSaveIcon />
           </Button>
         ) : (
@@ -277,7 +264,8 @@ export default class RoleForm extends Component {
               variant="round"
               tooltipProps={{ title: 'Save' }}
               disabled={loading || !isRoleDirty}
-              classes={{ root: classes.saveIcon }}>
+              classes={{ root: classes.saveIcon }}
+            >
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
@@ -304,11 +292,7 @@ export default class RoleForm extends Component {
             onError={onDialogActionError}
             error={dialogError}
             title="Delete Role?"
-            body={
-              <Typography variant="body2">
-                This will delete the {roleId} role.
-              </Typography>
-            }
+            body={<Typography variant="body2">This will delete the {roleId} role.</Typography>}
             confirmText="Delete Role"
           />
         )}

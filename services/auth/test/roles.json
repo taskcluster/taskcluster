@@ -9,9 +9,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "hook-id:garbage/*",
-    "scopes": [
-      "assume:project:taskcluster:tutorial"
-    ],
+    "scopes": ["assume:project:taskcluster:tutorial"],
     "description": "Scopes for garbage hooks, to let them run a tutorial task",
     "lastModified": "2017-09-20T20:01:39.414Z",
     "created": "2016-12-23T15:58:38.395Z"
@@ -399,9 +397,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/candidates-fennec-beta",
-    "scopes": [
-      "assume:project:releng:release:mozilla-beta"
-    ],
+    "scopes": ["assume:project:releng:release:mozilla-beta"],
     "description": "fennec candidates build on mozilla-beta",
     "lastModified": "2017-04-15T02:56:19.059Z",
     "created": "2017-03-07T19:08:48.351Z"
@@ -1139,10 +1135,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/candidates-fennec-release",
-    "scopes": [
-      "assume:project:releng:release:mozilla-beta",
-      "assume:project:releng:release:mozilla-release"
-    ],
+    "scopes": ["assume:project:releng:release:mozilla-beta", "assume:project:releng:release:mozilla-release"],
     "description": "fennec candidates build on mozilla-release",
     "lastModified": "2017-04-11T17:40:24.890Z",
     "created": "2017-04-11T12:47:26.505Z"
@@ -1510,9 +1503,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-integration-autoland",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/integration/autoland:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/integration/autoland:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `autoland`",
     "lastModified": "2018-06-15T17:51:51.233Z",
     "created": "2017-01-25T19:03:49.162Z"
@@ -1861,9 +1852,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-integration-mozilla-inbound",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/integration/mozilla-inbound:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/integration/mozilla-inbound:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `mozilla-inbound`",
     "lastModified": "2018-06-15T17:51:10.482Z",
     "created": "2017-01-25T19:03:51.507Z"
@@ -2212,9 +2201,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-mozilla-central",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/mozilla-central:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/mozilla-central:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `mozilla-central`",
     "lastModified": "2018-06-15T17:51:34.907Z",
     "created": "2017-01-25T19:03:44.404Z"
@@ -2561,9 +2548,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-projects-birch",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/birch:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/birch:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `birch`",
     "lastModified": "2018-06-15T17:52:49.904Z",
     "created": "2017-10-25T15:43:01.471Z"
@@ -2802,9 +2787,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-projects-elm",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/elm:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/elm:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `elm`",
     "lastModified": "2018-06-15T17:51:16.620Z",
     "created": "2017-01-25T19:03:29.685Z"
@@ -3151,9 +3134,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-projects-jamun",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/jamun:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/jamun:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `jamun`",
     "lastModified": "2018-06-15T17:52:07.808Z",
     "created": "2017-01-19T20:35:56.931Z"
@@ -3500,9 +3481,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-projects-maple",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/maple:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/maple:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `maple`",
     "lastModified": "2018-06-15T17:50:31.123Z",
     "created": "2017-10-25T15:42:53.858Z"
@@ -3849,9 +3828,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-projects-oak",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/oak:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/oak:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `oak`",
     "lastModified": "2018-06-15T17:50:46.347Z",
     "created": "2017-01-25T19:03:38.054Z"
@@ -4090,9 +4067,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-projects-pine",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/pine:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/pine:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `pine`",
     "lastModified": "2018-06-15T17:50:20.829Z",
     "created": "2017-01-25T19:03:40.372Z"
@@ -4441,9 +4416,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-releases-mozilla-beta",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/releases/mozilla-beta:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/releases/mozilla-beta:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `mozilla-beta`",
     "lastModified": "2018-06-15T17:53:09.404Z",
     "created": "2017-01-25T19:03:58.693Z"
@@ -4792,9 +4765,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/cron-task-releases-mozilla-release",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/releases/mozilla-release:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/releases/mozilla-release:cron:*"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `mozilla-release`",
     "lastModified": "2018-06-15T17:51:04.981Z",
     "created": "2017-01-25T19:04:03.353Z"
@@ -4822,9 +4793,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "hook-id:project-releng/nightly-desktop/mozilla-aurora",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/releases/mozilla-aurora:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/releases/mozilla-aurora:*"],
     "description": "Nightly hook for mozilla-aurora",
     "lastModified": "2017-03-31T12:44:46.038Z",
     "created": "2017-01-23T20:06:56.839Z"
@@ -5175,9 +5144,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/nightly-desktop/mozilla-central",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/mozilla-central:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/mozilla-central:*"],
     "description": "Hook for central",
     "lastModified": "2017-03-31T12:40:36.182Z",
     "created": "2017-01-17T21:37:55.449Z"
@@ -5526,9 +5493,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/nightly-desktop/oak",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/oak:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/oak:*"],
     "description": "Scopes for manual triggering of desktop nightlies on oak",
     "lastModified": "2017-04-10T14:29:04.917Z",
     "created": "2017-04-10T14:29:04.917Z"
@@ -5910,9 +5875,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/nightly-desktop-osx/mozilla-central",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/mozilla-central:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/mozilla-central:*"],
     "description": "Hook for OSX Nightlies on central",
     "lastModified": "2017-06-21T18:40:18.125Z",
     "created": "2017-06-21T18:40:18.125Z"
@@ -6259,9 +6222,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/nightly-desktop-osx/oak",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/oak:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/oak:cron:*"],
     "description": "",
     "lastModified": "2017-07-10T19:10:24.444Z",
     "created": "2017-07-10T18:48:56.084Z"
@@ -6608,9 +6569,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/nightly-desktop-win/oak",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/oak:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/oak:cron:*"],
     "description": "",
     "lastModified": "2017-07-26T19:32:40.300Z",
     "created": "2017-07-26T19:32:40.300Z"
@@ -6959,9 +6918,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/nightly-desktop-win32/mozilla-central",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/mozilla-central:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/mozilla-central:cron:*"],
     "description": "hook to manually trigger win32 nightlies",
     "lastModified": "2017-08-09T22:03:37.927Z",
     "created": "2017-08-09T22:03:37.927Z"
@@ -7310,9 +7267,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/nightly-desktop-win64/mozilla-central",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/mozilla-central:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/mozilla-central:cron:*"],
     "description": "hook to manually trigger win64 nightlies",
     "lastModified": "2017-08-09T22:04:21.217Z",
     "created": "2017-08-09T22:04:05.963Z"
@@ -7325,9 +7280,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "hook-id:project-releng/nightly-fennec/mozilla-aurora",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/releases/mozilla-aurora:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/releases/mozilla-aurora:*"],
     "description": "Scopes for the Aurora hook for Fennec nightlies.",
     "lastModified": "2017-03-31T12:55:43.144Z",
     "created": "2017-01-24T18:47:18.407Z"
@@ -7678,9 +7631,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/nightly-fennec/mozilla-central",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/mozilla-central:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/mozilla-central:*"],
     "description": "Role for fennec nightlies on m-c",
     "lastModified": "2017-03-31T12:54:30.687Z",
     "created": "2017-01-17T21:48:20.983Z"
@@ -8029,9 +7980,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/nightly-fennec/oak",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/oak:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/oak:*"],
     "description": "",
     "lastModified": "2017-10-06T17:47:27.760Z",
     "created": "2017-10-06T17:47:27.760Z"
@@ -8449,10 +8398,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "hook-id:project-releng/pgo",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/mozilla-central:*",
-      "assume:repo:hg.mozilla.org/try:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/mozilla-central:*", "assume:repo:hg.mozilla.org/try:*"],
     "description": "Hook for running PGO builds on a schedule",
     "lastModified": "2016-10-27T23:10:04.429Z",
     "created": "2016-10-27T23:10:04.429Z"
@@ -8768,14 +8714,9 @@
     "created": "2017-05-24T10:01:38.423Z"
   },
   {
-    "expandedScopes": [
-      "assume:hook-id:project-shipit/dev-babadie",
-      "queue:create-task:aws-provisioner-v1/releng-task"
-    ],
+    "expandedScopes": ["assume:hook-id:project-shipit/dev-babadie", "queue:create-task:aws-provisioner-v1/releng-task"],
     "roleId": "hook-id:project-shipit/dev-babadie",
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/releng-task"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/releng-task"],
     "description": "Role to trigger hook remotely",
     "lastModified": "2017-04-18T15:42:09.797Z",
     "created": "2017-04-18T15:42:09.797Z"
@@ -8897,9 +8838,7 @@
       "queue:route:notify.email.bstack@mozilla.com.*"
     ],
     "roleId": "hook-id:taskcluster/azure-backup-bigtables",
-    "scopes": [
-      "assume:hook-id:taskcluster/azure-backup"
-    ],
+    "scopes": ["assume:hook-id:taskcluster/azure-backup"],
     "description": "Used to backup large tables less frequently.",
     "lastModified": "2017-03-14T20:32:31.145Z",
     "created": "2017-03-14T16:46:44.870Z"
@@ -9134,9 +9073,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "moz-tree:level:1",
-    "scopes": [
-      "assume:moz-tree:level:1:gecko"
-    ],
+    "scopes": ["assume:moz-tree:level:1:gecko"],
     "description": "Deprecated; see bug 1423801",
     "lastModified": "2017-12-21T21:04:46.554Z",
     "created": "2015-10-28T17:05:05.286Z"
@@ -9349,9 +9286,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "moz-tree:level:2",
-    "scopes": [
-      "assume:moz-tree:level:2:gecko"
-    ],
+    "scopes": ["assume:moz-tree:level:2:gecko"],
     "description": "Deprecated; see bug 1423801.",
     "lastModified": "2017-12-21T21:08:06.770Z",
     "created": "2015-10-28T17:06:37.667Z"
@@ -9661,9 +9596,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "moz-tree:level:3",
-    "scopes": [
-      "assume:moz-tree:level:3:gecko"
-    ],
+    "scopes": ["assume:moz-tree:level:3:gecko"],
     "description": "Deprecated; see bug 1423801.",
     "lastModified": "2017-12-21T21:12:20.608Z",
     "created": "2015-10-28T17:07:18.159Z"
@@ -11178,9 +11111,7 @@
       "secrets:set:project/ateam/*"
     ],
     "roleId": "mozilla-group:ateam",
-    "scopes": [
-      "assume:project-admin:ateam"
-    ],
+    "scopes": ["assume:project-admin:ateam"],
     "description": "",
     "lastModified": "2016-03-28T23:49:27.721Z",
     "created": "2016-03-08T15:03:47.936Z"
@@ -11595,9 +11526,7 @@
       "project:shipit:user"
     ],
     "roleId": "mozilla-group:shipit",
-    "scopes": [
-      "assume:project:shipit:user"
-    ],
+    "scopes": ["assume:project:shipit:user"],
     "description": "",
     "lastModified": "2016-10-14T12:55:44.164Z",
     "created": "2016-10-14T12:55:44.164Z"
@@ -11845,10 +11774,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "mozilla-group:team_relops",
-    "scopes": [
-      "assume:mozilla-group:releng",
-      "aws-provisioner:*"
-    ],
+    "scopes": ["assume:mozilla-group:releng", "aws-provisioner:*"],
     "description": "Scopes for releng ops...",
     "lastModified": "2015-12-09T14:52:50.094Z",
     "created": "2015-11-16T21:19:49.908Z"
@@ -12056,14 +11982,9 @@
     "created": "2016-10-28T17:26:05.801Z"
   },
   {
-    "expandedScopes": [
-      "assume:mozilla-group:vpn_tooltooleditor",
-      "docker-worker:relengapi-proxy:tooltool.upload.*"
-    ],
+    "expandedScopes": ["assume:mozilla-group:vpn_tooltooleditor", "docker-worker:relengapi-proxy:tooltool.upload.*"],
     "roleId": "mozilla-group:vpn_tooltooleditor",
-    "scopes": [
-      "docker-worker:relengapi-proxy:tooltool.upload.*"
-    ],
+    "scopes": ["docker-worker:relengapi-proxy:tooltool.upload.*"],
     "description": "",
     "lastModified": "2016-03-07T23:54:52.092Z",
     "created": "2016-03-07T23:54:52.091Z"
@@ -12108,9 +12029,7 @@
       "secrets:set:project/treeherder/*"
     ],
     "roleId": "mozilla-group:vpn_treeherder",
-    "scopes": [
-      "assume:project-admin:treeherder"
-    ],
+    "scopes": ["assume:project-admin:treeherder"],
     "description": "Treeherder admins",
     "lastModified": "2016-10-28T17:18:59.223Z",
     "created": "2016-10-28T17:18:59.223Z"
@@ -12123,9 +12042,7 @@
       "project:releng:treestatus/trees/update"
     ],
     "roleId": "mozilla-group:vpn_treestatus",
-    "scopes": [
-      "assume:project:releng:treestatus/sheriff"
-    ],
+    "scopes": ["assume:project:releng:treestatus/sheriff"],
     "description": "Created for `garbas` by `pmoore` in response to [bug 1336033](https://bugzilla.mozilla.org/show_bug.cgi?id=1336033).",
     "lastModified": "2017-02-02T12:24:12.399Z",
     "created": "2017-02-02T12:24:12.399Z"
@@ -12564,10 +12481,7 @@
       "worker:cache:dummy-cache-*"
     ],
     "roleId": "mozilla-user:*",
-    "scopes": [
-      "assume:project:taskcluster:tutorial",
-      "queue:route:notify.email.*"
-    ],
+    "scopes": ["assume:project:taskcluster:tutorial", "queue:route:notify.email.*"],
     "description": "",
     "lastModified": "2017-09-12T15:16:22.402Z",
     "created": "2016-03-12T18:05:33.237Z"
@@ -12879,10 +12793,7 @@
       "secrets:set:repo:github.com/mozilla-releng/services:branch:testing"
     ],
     "roleId": "mozilla-user:babadie@mozilla.com",
-    "scopes": [
-      "assume:project:releng:services/develop/shipit",
-      "assume:project:shipit:admin"
-    ],
+    "scopes": ["assume:project:releng:services/develop/shipit", "assume:project:shipit:admin"],
     "description": "",
     "lastModified": "2017-09-26T15:35:22.823Z",
     "created": "2017-06-02T16:50:39.931Z"
@@ -13007,9 +12918,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:bvandyk@mozilla.com",
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/win2012r2-mediatests"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/win2012r2-mediatests"],
     "description": "For bug 1296995, a playground is required for Bryce to do his work in. Created by pmoore.",
     "lastModified": "2016-08-25T10:32:00.421Z",
     "created": "2016-08-25T10:32:00.421Z"
@@ -13038,9 +12947,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:bwong@mozilla.com",
-    "scopes": [
-      "assume:repo:github.com/mozilla/balrog:*"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla/balrog:*"],
     "description": "",
     "lastModified": "2016-04-21T17:23:07.553Z",
     "created": "2016-04-21T17:23:07.553Z"
@@ -13059,9 +12966,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:cdawson@mozilla.com",
-    "scopes": [
-      "assume:project:releng:treestatus/sheriff"
-    ],
+    "scopes": ["assume:project:releng:treestatus/sheriff"],
     "description": "https://bugzil.la/1393578",
     "lastModified": "2017-08-25T17:49:13.349Z",
     "created": "2017-08-25T17:49:13.349Z"
@@ -13157,9 +13062,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:csheehan@mozilla.com",
-    "scopes": [
-      "assume:project:releng:services/develop/releng"
-    ],
+    "scopes": ["assume:project:releng:services/develop/releng"],
     "description": "",
     "lastModified": "2017-06-07T16:50:02.612Z",
     "created": "2017-06-07T16:50:02.611Z"
@@ -13181,9 +13084,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:ehenry@mozilla.com",
-    "scopes": [
-      "assume:project:shipit:admin"
-    ],
+    "scopes": ["assume:project:shipit:admin"],
     "description": "",
     "lastModified": "2016-12-19T16:22:28.349Z",
     "created": "2016-12-19T16:22:28.349Z"
@@ -13200,9 +13101,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:garndt@mozilla.com",
-    "scopes": [
-      "project:relops-hardware-controller:*"
-    ],
+    "scopes": ["project:relops-hardware-controller:*"],
     "description": "",
     "lastModified": "2017-12-07T17:17:52.065Z",
     "created": "2017-11-29T21:57:41.014Z"
@@ -13221,9 +13120,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:gbrown@mozilla.com",
-    "scopes": [
-      "assume:project:releng:gecko-win-test-troubleshooter"
-    ],
+    "scopes": ["assume:project:releng:gecko-win-test-troubleshooter"],
     "description": "Custom role for Geoff Brown, created by pmoore on 12 October 2016. Initial purpose is to provide scopes that allows Geoff to help out with Windows tests troubleshooting in gecko.",
     "lastModified": "2016-10-26T14:07:45.481Z",
     "created": "2016-10-12T16:46:55.062Z"
@@ -13343,9 +13240,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:istorozhko@mozilla.com",
-    "scopes": [
-      "assume:project:taskcluster:github"
-    ],
+    "scopes": ["assume:project:taskcluster:github"],
     "description": "",
     "lastModified": "2016-12-19T21:46:28.652Z",
     "created": "2016-12-19T21:46:28.652Z"
@@ -13361,8 +13256,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:jclaudius@mozilla.com",
-    "scopes": [
-    ],
+    "scopes": [],
     "description": "",
     "lastModified": "2016-06-15T16:20:20.976Z",
     "created": "2016-03-09T18:58:24.111Z"
@@ -13422,8 +13316,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:jhylands@mozilla.com",
-    "scopes": [
-    ],
+    "scopes": [],
     "description": "",
     "lastModified": "2016-03-28T23:49:54.625Z",
     "created": "2016-03-11T13:01:01.817Z"
@@ -13464,8 +13357,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:jlorenzo@mozilla.com",
-    "scopes": [
-    ],
+    "scopes": [],
     "description": "",
     "lastModified": "2016-03-28T23:50:01.566Z",
     "created": "2016-03-08T14:38:25.196Z"
@@ -13482,9 +13374,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:jlund@mozilla.com",
-    "scopes": [
-      "index:insert-task:gecko.v2.*"
-    ],
+    "scopes": ["index:insert-task:gecko.v2.*"],
     "description": "Authority to modify index to backfill, sometime necessary for making releases...",
     "lastModified": "2016-07-19T02:54:08.412Z",
     "created": "2016-07-19T02:54:08.412Z"
@@ -13503,9 +13393,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:jmaher@mozilla.com",
-    "scopes": [
-      "assume:project:releng:gecko-win-test-troubleshooter"
-    ],
+    "scopes": ["assume:project:releng:gecko-win-test-troubleshooter"],
     "description": "Custom role for Joel Maher, created by pmoore on 12 October 2016. Initial purpose is to provide scopes that allows Joel to help out with Windows tests troubleshooting in gecko.",
     "lastModified": "2016-10-26T14:07:56.925Z",
     "created": "2016-10-12T16:42:45.635Z"
@@ -13567,9 +13455,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:max@mxli.us",
-    "scopes": [
-      "hooks:trigger-hook:project-releng/nightly-fennec/oak"
-    ],
+    "scopes": ["hooks:trigger-hook:project-releng/nightly-fennec/oak"],
     "description": "",
     "lastModified": "2017-10-12T23:46:22.133Z",
     "created": "2017-10-12T23:46:22.133Z"
@@ -13654,9 +13540,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:mcote@mozilla.com",
-    "scopes": [
-      "assume:project:shipit:user"
-    ],
+    "scopes": ["assume:project:shipit:user"],
     "description": "",
     "lastModified": "2016-12-19T16:19:05.593Z",
     "created": "2016-12-19T16:19:05.593Z"
@@ -13721,9 +13605,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:mikokm@gmail.com",
-    "scopes": [
-      "queue:get-artifact:private/docker-worker/*"
-    ],
+    "scopes": ["queue:get-artifact:private/docker-worker/*"],
     "description": "Loaner access",
     "lastModified": "2017-04-06T12:57:32.353Z",
     "created": "2017-04-06T12:56:55.000Z"
@@ -13776,9 +13658,7 @@
       "secrets:set:project/socorro/*"
     ],
     "roleId": "mozilla-user:mkelly@mozilla.com",
-    "scopes": [
-      "assume:project-admin:socorro"
-    ],
+    "scopes": ["assume:project-admin:socorro"],
     "description": "",
     "lastModified": "2017-10-18T13:31:45.423Z",
     "created": "2017-10-18T13:16:24.296Z"
@@ -13795,9 +13675,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:mshal@mozilla.com",
-    "scopes": [
-      "index:insert-task:gecko.v2.*"
-    ],
+    "scopes": ["index:insert-task:gecko.v2.*"],
     "description": "mshal gets gecko.v2 scopes for index as he often backports fixes...",
     "lastModified": "2016-07-15T19:50:30.403Z",
     "created": "2016-07-15T19:50:30.403Z"
@@ -13841,9 +13719,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:nalexander@mozilla.com",
-    "scopes": [
-      "hooks:trigger-hook:project-releng/nightly-fennec/oak"
-    ],
+    "scopes": ["hooks:trigger-hook:project-releng/nightly-fennec/oak"],
     "description": "",
     "lastModified": "2017-10-12T23:47:07.446Z",
     "created": "2017-10-12T23:47:07.446Z"
@@ -13860,9 +13736,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:raliiev@mozilla.com",
-    "scopes": [
-      "index:insert-task:gecko.v2.*"
-    ],
+    "scopes": ["index:insert-task:gecko.v2.*"],
     "description": "Authority to modify index to backfill, sometime necessary for making releases...",
     "lastModified": "2016-07-19T02:55:47.393Z",
     "created": "2016-07-19T02:55:47.393Z"
@@ -13938,9 +13812,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:rkothari@mozilla.com",
-    "scopes": [
-      "assume:project:shipit:admin"
-    ],
+    "scopes": ["assume:project:shipit:admin"],
     "description": "",
     "lastModified": "2016-12-19T16:21:58.839Z",
     "created": "2016-12-19T16:21:58.839Z"
@@ -14026,9 +13898,7 @@
       "secrets:set:project/deepspeech/*"
     ],
     "roleId": "mozilla-user:rmorais@mozilla.com",
-    "scopes": [
-      "assume:project-admin:deepspeech"
-    ],
+    "scopes": ["assume:project-admin:deepspeech"],
     "description": "See [bug 1418008](https://bugzilla.mozilla.org/show_bug.cgi?id=1418008).\nAdded by pmoore@mozilla.com on 16 November 2017 as requested by alissy@mozilla.com (gerard-majax).",
     "lastModified": "2018-03-09T01:48:40.108Z",
     "created": "2017-11-16T18:10:29.342Z"
@@ -14073,9 +13943,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:sledru@mozilla.com",
-    "scopes": [
-      "assume:project:shipit:admin"
-    ],
+    "scopes": ["assume:project:shipit:admin"],
     "description": "",
     "lastModified": "2016-12-19T16:21:13.415Z",
     "created": "2016-12-19T16:21:13.415Z"
@@ -14175,9 +14043,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozilla-user:ttaubert@mozilla.com",
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/nss-win2012r2"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/nss-win2012r2"],
     "description": "Tim can directly create tasks for nss-win2012r2 worker type.",
     "lastModified": "2016-08-01T14:27:58.588Z",
     "created": "2016-05-31T15:55:47.367Z"
@@ -14230,9 +14096,7 @@
       "secrets:set:project/autophone/*"
     ],
     "roleId": "mozillians-group:autophone-admins",
-    "scopes": [
-      "assume:project-admin:autophone"
-    ],
+    "scopes": ["assume:project-admin:autophone"],
     "description": "",
     "lastModified": "2017-11-02T00:43:44.065Z",
     "created": "2017-11-02T00:43:44.065Z"
@@ -14285,9 +14149,7 @@
       "secrets:set:project/awfy/*"
     ],
     "roleId": "mozillians-group:awfy-admins",
-    "scopes": [
-      "assume:project-admin:awfy"
-    ],
+    "scopes": ["assume:project-admin:awfy"],
     "description": "",
     "lastModified": "2017-11-02T00:42:44.841Z",
     "created": "2017-11-02T00:42:44.841Z"
@@ -14329,9 +14191,7 @@
       "secrets:set:project/bmo/*"
     ],
     "roleId": "mozillians-group:bmo-ci",
-    "scopes": [
-      "assume:project-admin:bmo"
-    ],
+    "scopes": ["assume:project-admin:bmo"],
     "description": "owner: dkl\n\nSee [bug 1244844](https://bugzilla.mozilla.org/show_bug.cgi?id=1244844)",
     "lastModified": "2016-03-28T23:50:34.250Z",
     "created": "2016-03-17T17:36:33.490Z"
@@ -14344,9 +14204,7 @@
       "aws-provisioner:view-worker-type:garbage-*"
     ],
     "roleId": "mozillians-group:buddy-group",
-    "scopes": [
-      "assume:project:taskcluster:aws-provisioner-contributor"
-    ],
+    "scopes": ["assume:project:taskcluster:aws-provisioner-contributor"],
     "description": "TheBuddyGroup.com; the role is here to allow buddy-group members to hack on the AWS provisioner, including seeing secrets available in that system.",
     "lastModified": "2016-04-07T14:19:46.900Z",
     "created": "2016-04-07T14:16:19.151Z"
@@ -14388,9 +14246,7 @@
       "secrets:set:project/bugzilla/*"
     ],
     "roleId": "mozillians-group:bugzilla-ci",
-    "scopes": [
-      "assume:project-admin:bugzilla"
-    ],
+    "scopes": ["assume:project-admin:bugzilla"],
     "description": "owner: dkl\n\nSee [bug 1244844](https://bugzilla.mozilla.org/show_bug.cgi?id=1244844)",
     "lastModified": "2016-03-28T23:50:40.970Z",
     "created": "2016-03-17T17:37:12.646Z"
@@ -14471,10 +14327,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozillians-group:positron-admins",
-    "scopes": [
-      "assume:repo:github.com/mozilla/positron:*",
-      "queue:cancel-task:task-graph-scheduler/*"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla/positron:*", "queue:cancel-task:task-graph-scheduler/*"],
     "description": "Scopes for positron developers:\nhttps://mozillians.org/en-US/group/positron-admins/",
     "lastModified": "2016-09-20T17:37:32.047Z",
     "created": "2016-07-22T20:03:14.366Z"
@@ -14638,9 +14491,7 @@
       "worker:cache:dummy-cache-*"
     ],
     "roleId": "mozillians-group:taskcluster-contributors",
-    "scopes": [
-      "assume:project:taskcluster:contributor"
-    ],
+    "scopes": ["assume:project:taskcluster:contributor"],
     "description": "Dummy scopes for testing taskcluster components.\n\nEverybody who wants to hack or test taskcluster should apply for access to the mozillians group [taskcluster-contributors](https://mozillians.org/en-US/group/taskcluster-contributors/)",
     "lastModified": "2017-05-04T15:30:16.644Z",
     "created": "2016-04-25T18:29:00.579Z"
@@ -14655,9 +14506,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozillians-unvouched",
-    "scopes": [
-      "assume:project:taskcluster:tutorial"
-    ],
+    "scopes": ["assume:project:taskcluster:tutorial"],
     "description": "Users with un-vouched Mozillians profiles (which is to say, just about anyone with an email address and a few minutes' work) get this group.  It should only have the scopes required to run the tutorial, and nothing that might harm other users of Taskcluster.",
     "lastModified": "2016-03-12T20:59:38.887Z",
     "created": "2016-03-12T14:09:22.952Z"
@@ -14816,9 +14665,7 @@
       "worker:cache:dummy-cache-*"
     ],
     "roleId": "mozillians-user:*",
-    "scopes": [
-      "assume:project:taskcluster:tutorial"
-    ],
+    "scopes": ["assume:project:taskcluster:tutorial"],
     "description": "",
     "lastModified": "2017-05-04T15:24:18.870Z",
     "created": "2016-03-12T18:05:50.260Z"
@@ -14837,10 +14684,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozillians-user:anarute",
-    "scopes": [
-      "assume:project:taskcluster:aws-provisioner-contributor",
-      "aws-provisioner:manage-ami-set:*"
-    ],
+    "scopes": ["assume:project:taskcluster:aws-provisioner-contributor", "aws-provisioner:manage-ami-set:*"],
     "description": "",
     "lastModified": "2016-11-11T22:23:05.482Z",
     "created": "2016-04-01T16:05:21.782Z"
@@ -14856,11 +14700,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozillians-user:andreadelrio",
-    "scopes": [
-      "hooks:trigger-hook:taskcluster/tc-vcs-refresh",
-      "secrets:get:garbage/*",
-      "secrets:set:garbage/*"
-    ],
+    "scopes": ["hooks:trigger-hook:taskcluster/tc-vcs-refresh", "secrets:get:garbage/*", "secrets:set:garbage/*"],
     "description": "",
     "lastModified": "2016-08-17T20:51:35.798Z",
     "created": "2016-03-23T19:03:04.460Z"
@@ -14919,10 +14759,7 @@
       "secrets:set:project/shipit/*"
     ],
     "roleId": "mozillians-user:bastien.abadie",
-    "scopes": [
-      "assume:project-admin:shipit",
-      "assume:project:taskcluster:notify"
-    ],
+    "scopes": ["assume:project-admin:shipit", "assume:project:taskcluster:notify"],
     "description": "",
     "lastModified": "2017-03-22T16:51:39.625Z",
     "created": "2016-10-03T13:23:05.257Z"
@@ -14965,9 +14802,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozillians-user:dikshabhateja18",
-    "scopes": [
-      "assume:project:taskcluster:tc-stats-test-scopes"
-    ],
+    "scopes": ["assume:project:taskcluster:tc-stats-test-scopes"],
     "description": "",
     "lastModified": "2016-10-18T17:53:01.357Z",
     "created": "2016-10-18T17:53:01.357Z"
@@ -15080,9 +14915,7 @@
       "worker:cache:dummy-cache-*"
     ],
     "roleId": "mozillians-user:nikinath",
-    "scopes": [
-      "assume:mozillians-group:taskcluster-contributors"
-    ],
+    "scopes": ["assume:mozillians-group:taskcluster-contributors"],
     "description": "nikinath Outreachy applicant",
     "lastModified": "2017-05-21T22:24:42.550Z",
     "created": "2016-09-27T21:13:12.436Z"
@@ -15101,9 +14934,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "mozillians-user:tkiethanom",
-    "scopes": [
-      "assume:mozillians-group:buddy-group"
-    ],
+    "scopes": ["assume:mozillians-group:buddy-group"],
     "description": "Temporary fix because I forgot to put buddy-group in the taskcluster-login whitelist.  Can be deleted in a few days.",
     "lastModified": "2016-07-28T01:46:36.161Z",
     "created": "2016-07-28T01:46:36.161Z"
@@ -15591,10 +15422,7 @@
       "queue:scheduler-id:gecko-level-3"
     ],
     "roleId": "project:releng:nightly:level-3:jamun",
-    "scopes": [
-      "project:releng:balrog:server:dep",
-      "project:releng:signing:cert:release-signing"
-    ],
+    "scopes": ["project:releng:balrog:server:dep", "project:releng:signing:cert:release-signing"],
     "description": "bherasum: Temporarily grant jamun release-signing scopes for Dawn work.",
     "lastModified": "2017-10-11T13:33:05.031Z",
     "created": "2017-05-04T18:25:09.938Z"
@@ -15643,9 +15471,7 @@
       "queue:scheduler-id:gecko-level-3"
     ],
     "roleId": "project:releng:nightly:level-3:maple",
-    "scopes": [
-      "project:releng:signing:cert:release-signing"
-    ],
+    "scopes": ["project:releng:signing:cert:release-signing"],
     "description": "bhearsum: Temporarily grant release signing to maple for tcmigration work",
     "lastModified": "2017-12-05T20:45:53.457Z",
     "created": "2017-12-05T20:45:53.457Z"
@@ -16625,10 +16451,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "project:releng:services/develop/releng",
-    "scopes": [
-      "assume:repo:github.com/mozilla-releng/services:branch:staging",
-      "project:releng:services/releng*"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla-releng/services:branch:staging", "project:releng:services/releng*"],
     "description": "Role to give development permission to mozilla-releng/services releng family.",
     "lastModified": "2017-07-24T17:31:38.163Z",
     "created": "2017-06-07T16:24:16.662Z"
@@ -16748,23 +16571,15 @@
       "project:releng:treestatus/trees/update"
     ],
     "roleId": "project:releng:treestatus/sheriff",
-    "scopes": [
-      "project:releng:treestatus/recent_changes/revert",
-      "project:releng:treestatus/trees/update"
-    ],
+    "scopes": ["project:releng:treestatus/recent_changes/revert", "project:releng:treestatus/trees/update"],
     "description": "",
     "lastModified": "2017-02-02T12:25:52.126Z",
     "created": "2017-01-27T11:04:56.573Z"
   },
   {
-    "expandedScopes": [
-      "assume:project:releng:trigger-nightlies",
-      "hooks:trigger-hook:project-releng/nightly-*"
-    ],
+    "expandedScopes": ["assume:project:releng:trigger-nightlies", "hooks:trigger-hook:project-releng/nightly-*"],
     "roleId": "project:releng:trigger-nightlies",
-    "scopes": [
-      "hooks:trigger-hook:project-releng/nightly-*"
-    ],
+    "scopes": ["hooks:trigger-hook:project-releng/nightly-*"],
     "description": "Scopes required to trigger level-3 nightlies",
     "lastModified": "2017-08-22T14:45:51.955Z",
     "created": "2017-02-09T15:08:20.793Z"
@@ -16779,10 +16594,7 @@
       "project:shipit:user"
     ],
     "roleId": "project:shipit:admin",
-    "scopes": [
-      "assume:project:shipit:user",
-      "project:shipit:admin"
-    ],
+    "scopes": ["assume:project:shipit:user", "project:shipit:admin"],
     "description": "An admin user for shipit project (Release Management)",
     "lastModified": "2016-12-15T09:41:26.469Z",
     "created": "2016-12-15T09:41:26.469Z"
@@ -16795,11 +16607,7 @@
       "secrets:get:project/shipit/bot/*"
     ],
     "roleId": "project:shipit:bot",
-    "scopes": [
-      "project:shipit:analysis/manage",
-      "project:shipit:bot",
-      "secrets:get:project/shipit/bot/*"
-    ],
+    "scopes": ["project:shipit:analysis/manage", "project:shipit:bot", "secrets:get:project/shipit/bot/*"],
     "description": "A bot for the shipit project, feeding bug analysis.",
     "lastModified": "2017-01-11T15:49:45.374Z",
     "created": "2016-10-06T06:54:11.464Z"
@@ -16811,10 +16619,7 @@
       "secrets:get:project/shipit/static_analysis/bot/*"
     ],
     "roleId": "project:shipit:static_analysis/bot",
-    "scopes": [
-      "project:shipit:bot",
-      "secrets:get:project/shipit/static_analysis/bot/*"
-    ],
+    "scopes": ["project:shipit:bot", "secrets:get:project/shipit/static_analysis/bot/*"],
     "description": "Role for the bots account on mozilla-releng/services shipit_bot_sa",
     "lastModified": "2017-02-14T15:05:30.361Z",
     "created": "2017-02-14T09:46:07.266Z"
@@ -16827,11 +16632,7 @@
       "project:shipit:user"
     ],
     "roleId": "project:shipit:user",
-    "scopes": [
-      "project:shipit:analysis/use",
-      "project:shipit:bugzilla",
-      "project:shipit:user"
-    ],
+    "scopes": ["project:shipit:analysis/use", "project:shipit:bugzilla", "project:shipit:user"],
     "description": "A standard user for shipit project (Release Management)",
     "lastModified": "2016-10-06T06:53:00.649Z",
     "created": "2016-10-03T13:25:42.654Z"
@@ -16843,10 +16644,7 @@
       "aws-provisioner:view-worker-type:garbage-*"
     ],
     "roleId": "project:taskcluster:aws-provisioner-contributor",
-    "scopes": [
-      "aws-provisioner:manage-worker-type:garbage-*",
-      "aws-provisioner:view-worker-type:garbage-*"
-    ],
+    "scopes": ["aws-provisioner:manage-worker-type:garbage-*", "aws-provisioner:view-worker-type:garbage-*"],
     "description": "Contributors to AWS provisioner; these special scopes are required so such contributors can see the UI.  Usually contains\n\n * `aws-provisioner:manage-worker-type:garbage-*`\n\nbut temporarily disabled (on May 7) by dustin",
     "lastModified": "2016-07-29T03:52:26.263Z",
     "created": "2016-04-07T14:19:15.291Z"
@@ -17116,10 +16914,7 @@
       "auth:statsum:ec2-manager-staging"
     ],
     "roleId": "project:taskcluster:ec2-manager-staging",
-    "scopes": [
-      "auth:sentry:ec2-manager-staging",
-      "auth:statsum:ec2-manager-staging"
-    ],
+    "scopes": ["auth:sentry:ec2-manager-staging", "auth:statsum:ec2-manager-staging"],
     "description": "Staging role for ec2-manager",
     "lastModified": "2017-06-21T15:37:41.037Z",
     "created": "2017-06-21T15:37:41.037Z"
@@ -17256,9 +17051,7 @@
       "purge-cache:verifyprovisioner/verifyworker:verifycache"
     ],
     "roleId": "project:taskcluster:tc-purge-cache-test-scopes",
-    "scopes": [
-      "purge-cache:verifyprovisioner/verifyworker:verifycache"
-    ],
+    "scopes": ["purge-cache:verifyprovisioner/verifyworker:verifycache"],
     "description": "",
     "lastModified": "2016-10-24T14:38:28.572Z",
     "created": "2016-10-24T14:38:28.572Z"
@@ -18636,10 +18429,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:*",
-    "scopes": [
-      "secrets:get:garbage/*",
-      "secrets:set:garbage/*"
-    ],
+    "scopes": ["secrets:get:garbage/*", "secrets:set:garbage/*"],
     "description": "Scopes for any repository",
     "lastModified": "2017-05-31T16:30:41.555Z",
     "created": "2015-10-30T20:58:30.097Z"
@@ -19123,9 +18913,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/devtools-html/*",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "description": "Authorizing all repositories in this organization.",
     "lastModified": "2017-10-12T17:41:01.904Z",
     "created": "2017-10-12T17:41:01.904Z"
@@ -19227,9 +19015,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/glandium/*",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "description": "Authorizing all repositories in this organization.",
     "lastModified": "2017-10-12T17:41:31.275Z",
     "created": "2017-10-12T17:41:31.275Z"
@@ -19288,9 +19074,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/glandium/git-cinnabar:decision-task",
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/github-worker"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/github-worker"],
     "description": "Roles for the git-cinnabar decision-task",
     "lastModified": "2018-05-17T02:06:30.826Z",
     "created": "2017-08-15T01:14:09.364Z"
@@ -19341,9 +19125,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/imbstack/imbstack.com:branch:master",
-    "scopes": [
-      "secrets:get:repo:github.com/imbstack/imbstack.com"
-    ],
+    "scopes": ["secrets:get:repo:github.com/imbstack/imbstack.com"],
     "description": "",
     "lastModified": "2017-04-21T00:47:36.956Z",
     "created": "2017-04-21T00:47:36.956Z"
@@ -19409,9 +19191,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla/*",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "description": "Authorizing all repositories in this organization.",
     "lastModified": "2017-10-12T17:38:47.355Z",
     "created": "2017-10-12T17:38:47.355Z"
@@ -19481,9 +19261,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla/balrog:branch:dockerflow-endpoints",
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla/balrog:dockerhub"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla/balrog:dockerhub"],
     "description": "",
     "lastModified": "2016-03-10T15:09:23.368Z",
     "created": "2016-03-10T15:09:23.368Z"
@@ -19540,9 +19318,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla/balrog:pull-request",
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla/balrog:coveralls"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla/balrog:coveralls"],
     "description": "",
     "lastModified": "2017-07-20T15:58:28.212Z",
     "created": "2017-07-20T15:58:28.212Z"
@@ -19569,10 +19345,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla/balrog:release",
-    "scopes": [
-      "queue:route:index.project.balrog.*",
-      "secrets:get:repo:github.com/mozilla/balrog:dockerhub"
-    ],
+    "scopes": ["queue:route:index.project.balrog.*", "secrets:get:repo:github.com/mozilla/balrog:dockerhub"],
     "description": "",
     "lastModified": "2017-09-18T15:36:41.023Z",
     "created": "2017-09-18T15:36:41.023Z"
@@ -19629,9 +19402,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla/normandy:*",
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/gecko-1-b-linux"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/gecko-1-b-linux"],
     "description": "Allow normandy builds to share level-1 workerTypes with Gecko, per bug 1355894",
     "lastModified": "2017-04-13T16:51:17.921Z",
     "created": "2017-04-13T16:51:17.921Z"
@@ -19825,9 +19596,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla-mobile/*",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "description": "",
     "lastModified": "2017-10-19T15:05:22.072Z",
     "created": "2017-10-19T15:05:22.072Z"
@@ -19965,9 +19734,7 @@
       "secrets:set:repo:github.com/mozilla-releng/OpenCloudConfig:loan-t-win*"
     ],
     "roleId": "repo:github.com/mozilla-releng/*",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "description": "Authorizing all repositories in this organization.",
     "lastModified": "2017-10-12T17:41:54.575Z",
     "created": "2017-10-12T17:41:54.575Z"
@@ -20020,9 +19787,7 @@
       "secrets:set:repo:github.com/mozilla-releng/OpenCloudConfig:loan-t-win*"
     ],
     "roleId": "repo:github.com/mozilla-releng/OpenCloudConfig:branch:*",
-    "scopes": [
-      "queue:route:index.project.releng.opencloudconfig.v1.revision.*"
-    ],
+    "scopes": ["queue:route:index.project.releng.opencloudconfig.v1.revision.*"],
     "description": "Scopes for pull requests",
     "lastModified": "2016-08-18T13:22:09.821Z",
     "created": "2016-08-18T13:20:37.600Z"
@@ -20130,9 +19895,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla-releng/OpenCloudConfig:pull-request",
-    "scopes": [
-      "queue:route:index.project.releng.opencloudconfig.v1.revision.*"
-    ],
+    "scopes": ["queue:route:index.project.releng.opencloudconfig.v1.revision.*"],
     "description": "",
     "lastModified": "2017-01-12T14:40:32.250Z",
     "created": "2017-01-12T14:40:32.250Z"
@@ -20159,9 +19922,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla-releng/cot-gpg-keys:branch:master",
-    "scopes": [
-      "assume:repo:github.com/mozilla-releng/cot-gpg-keys:decision-task"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla-releng/cot-gpg-keys:decision-task"],
     "description": "",
     "lastModified": "2017-09-28T18:23:59.393Z",
     "created": "2017-09-28T18:23:59.393Z"
@@ -20217,9 +19978,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla-releng/funsize-balrogworker:branch:master",
-    "scopes": [
-      "secrets:get:repo:github.com/mozilla-releng/funsize-balrogworker:branch:master"
-    ],
+    "scopes": ["secrets:get:repo:github.com/mozilla-releng/funsize-balrogworker:branch:master"],
     "description": "Role added by pmoore for fkang on 2016-07-13. See irc conversation around [here](http://logs.glob.uno/?c=mozilla%23taskcluster&s=12+Jul+2016&e=12+Jul+2016#c124059) for context.\n\nScope `secrets:get:repo:github.com/mozilla-releng/funsize-balrogworker:branch:master` added based on advice in [our namespaces guide](https://docs.taskcluster.net/manual/devel/namespaces#secrets).",
     "lastModified": "2016-07-13T10:01:19.873Z",
     "created": "2016-07-13T09:59:40.936Z"
@@ -20285,11 +20044,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla-releng/services:*",
-    "scopes": [
-      "notify:email:*",
-      "notify:irc-channel:*",
-      "notify:irc-user:*"
-    ],
+    "scopes": ["notify:email:*", "notify:irc-channel:*", "notify:irc-user:*"],
     "description": "",
     "lastModified": "2017-06-06T14:31:03.332Z",
     "created": "2017-06-06T14:27:05.269Z"
@@ -20374,9 +20129,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla-releng/services:branch:production",
-    "scopes": [
-      "assume:hook-id:project-releng/services-production-*"
-    ],
+    "scopes": ["assume:hook-id:project-releng/services-production-*"],
     "description": "",
     "lastModified": "2018-06-27T14:04:12.923Z",
     "created": "2016-09-23T13:32:37.924Z"
@@ -20414,9 +20167,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/mozilla-releng/services:branch:staging",
-    "scopes": [
-      "assume:hook-id:project-releng/services-staging-*"
-    ],
+    "scopes": ["assume:hook-id:project-releng/services-staging-*"],
     "description": "",
     "lastModified": "2018-06-27T14:08:39.217Z",
     "created": "2016-09-23T13:33:00.991Z"
@@ -20528,9 +20279,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/ochameau/ff-dt:branch:master",
-    "scopes": [
-      "secrets:get:repo:github.com/ochameau/ff-dt:branch:master"
-    ],
+    "scopes": ["secrets:get:repo:github.com/ochameau/ff-dt:branch:master"],
     "description": "",
     "lastModified": "2017-03-02T14:03:22.316Z",
     "created": "2017-03-02T14:03:22.316Z"
@@ -20564,9 +20313,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/servo/*",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "description": "Authorizing all repositories in this organization.",
     "lastModified": "2017-10-12T17:40:35.738Z",
     "created": "2017-10-12T17:40:35.738Z"
@@ -20592,9 +20339,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/servo/servo:branch:master",
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/servo"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/servo"],
     "description": "",
     "lastModified": "2017-06-30T21:08:10.268Z",
     "created": "2017-06-30T21:08:10.268Z"
@@ -20620,9 +20365,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/servo/servo:pull-request",
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/servo"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/servo"],
     "description": "",
     "lastModified": "2017-06-30T21:08:50.053Z",
     "created": "2017-06-30T21:08:50.053Z"
@@ -20698,9 +20441,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/staktrace/*",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "description": "",
     "lastModified": "2017-10-12T20:06:07.005Z",
     "created": "2017-10-12T20:05:18.784Z"
@@ -20899,9 +20640,7 @@
       "worker:cache:dummy-cache-*"
     ],
     "roleId": "repo:github.com/taskcluster/*",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "description": "Authorizing all repositories in this organization.",
     "lastModified": "2017-10-12T17:39:09.793Z",
     "created": "2017-10-12T17:39:09.793Z"
@@ -20927,9 +20666,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/azure-blob-storage:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/azure-blob-storage/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/azure-blob-storage/"],
     "description": "",
     "lastModified": "2017-11-30T19:04:51.460Z",
     "created": "2017-11-30T19:04:51.460Z"
@@ -20955,9 +20692,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/azure-entities:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/azure-entities/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/azure-entities/"],
     "description": "",
     "lastModified": "2017-03-27T17:38:30.509Z",
     "created": "2017-03-27T17:38:09.367Z"
@@ -20983,9 +20718,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/cloud-mirror:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/cloud-mirror/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/cloud-mirror/"],
     "description": "",
     "lastModified": "2017-04-27T22:02:46.709Z",
     "created": "2017-04-27T22:02:46.709Z"
@@ -21011,9 +20744,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/cors-proxy:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/cors-proxy/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/cors-proxy/"],
     "description": "",
     "lastModified": "2017-03-20T16:18:10.152Z",
     "created": "2017-03-20T16:18:10.152Z"
@@ -21039,9 +20770,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/docker-exec-websocket-server:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/docker-exec-websocket-server/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/docker-exec-websocket-server/"],
     "description": "",
     "lastModified": "2017-03-27T18:00:26.973Z",
     "created": "2017-03-27T18:00:26.973Z"
@@ -21223,9 +20952,7 @@
       "worker:cache:dummy-cache-*"
     ],
     "roleId": "repo:github.com/taskcluster/docker-worker:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/docker-worker/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/docker-worker/"],
     "description": "",
     "lastModified": "2017-04-27T21:16:52.658Z",
     "created": "2017-04-27T21:16:52.658Z"
@@ -21382,9 +21109,7 @@
       "worker:cache:dummy-cache-*"
     ],
     "roleId": "repo:github.com/taskcluster/docker-worker:pull-request",
-    "scopes": [
-      "docker-worker:cache:docker-worker-garbage-caches-*"
-    ],
+    "scopes": ["docker-worker:cache:docker-worker-garbage-caches-*"],
     "description": "",
     "lastModified": "2017-07-31T22:37:59.811Z",
     "created": "2017-07-31T22:37:59.811Z"
@@ -21410,9 +21135,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/fast-azure-storage:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/fast-azure-storage/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/fast-azure-storage/"],
     "description": "",
     "lastModified": "2017-03-28T16:59:39.003Z",
     "created": "2017-03-28T16:59:39.003Z"
@@ -21551,9 +21274,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/generic-worker:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/generic-worker/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/generic-worker/"],
     "description": "",
     "lastModified": "2017-04-07T18:21:11.570Z",
     "created": "2017-04-07T18:21:11.570Z"
@@ -21579,9 +21300,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/go-schematypes:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/go-schematypes/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/go-schematypes/"],
     "description": "",
     "lastModified": "2017-03-30T17:50:53.333Z",
     "created": "2017-03-30T17:50:53.333Z"
@@ -21638,9 +21357,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/mozilla-taskcluster:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/mozilla-taskcluster/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/mozilla-taskcluster/"],
     "description": "",
     "lastModified": "2017-07-19T16:53:47.375Z",
     "created": "2017-07-19T16:53:47.375Z"
@@ -21666,9 +21383,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/pulse-publisher:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/pulse-publisher/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/pulse-publisher/"],
     "description": "",
     "lastModified": "2017-03-30T17:53:12.934Z",
     "created": "2017-03-30T17:53:12.934Z"
@@ -21694,9 +21409,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/statsum:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/statsum/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/statsum/"],
     "description": "",
     "lastModified": "2017-04-07T18:16:05.398Z",
     "created": "2017-04-07T18:16:05.398Z"
@@ -21722,9 +21435,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-cli:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-cli/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-cli/"],
     "description": "",
     "lastModified": "2017-04-07T20:54:38.523Z",
     "created": "2017-04-07T20:54:38.523Z"
@@ -21780,9 +21491,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-client:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-client/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-client/"],
     "description": "",
     "lastModified": "2017-03-30T16:53:12.004Z",
     "created": "2017-03-30T16:53:12.004Z"
@@ -21808,9 +21517,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-client-go:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-client-go/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-client-go/"],
     "description": "",
     "lastModified": "2017-04-07T21:19:56.961Z",
     "created": "2017-04-07T21:19:56.961Z"
@@ -21836,9 +21543,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-client-java:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-client-java/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-client-java/"],
     "description": "",
     "lastModified": "2017-04-07T21:17:37.064Z",
     "created": "2017-04-07T21:17:37.064Z"
@@ -21864,9 +21569,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-client-web:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-client-web/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-client-web/"],
     "description": "",
     "lastModified": "2017-09-09T18:14:56.542Z",
     "created": "2017-09-09T18:14:56.542Z"
@@ -21892,9 +21595,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-client.py:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-client.py/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-client.py/"],
     "description": "",
     "lastModified": "2017-04-26T14:46:41.828Z",
     "created": "2017-04-26T14:46:41.828Z"
@@ -21920,9 +21621,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-diagnostics:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-diagnostics/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-diagnostics/"],
     "description": "",
     "lastModified": "2017-03-27T20:47:54.633Z",
     "created": "2017-03-27T20:47:54.633Z"
@@ -21980,9 +21679,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-docs:pull-request",
-    "scopes": [
-      "auth:aws-s3:read-only:taskcluster-raw-docs/*"
-    ],
+    "scopes": ["auth:aws-s3:read-only:taskcluster-raw-docs/*"],
     "description": "",
     "lastModified": "2016-09-16T19:03:38.324Z",
     "created": "2016-09-16T19:03:38.324Z"
@@ -22008,9 +21705,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-github:*",
-    "scopes": [
-      "secrets:get:project/taskcluster/testing/taskcluster-github"
-    ],
+    "scopes": ["secrets:get:project/taskcluster/testing/taskcluster-github"],
     "description": "Make the testing secrets available to anything on this repo (since they are just azure jungle creds)",
     "lastModified": "2018-05-21T18:34:13.788Z",
     "created": "2016-09-08T18:08:13.923Z"
@@ -22036,9 +21731,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-github-testing:*",
-    "scopes": [
-      "github:create-comment:taskcluster/taskcluster-github-testing"
-    ],
+    "scopes": ["github:create-comment:taskcluster/taskcluster-github-testing"],
     "description": "",
     "lastModified": "2017-05-30T19:22:57.235Z",
     "created": "2017-05-30T19:22:57.235Z"
@@ -22064,9 +21757,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-api:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-api/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-api/"],
     "description": "",
     "lastModified": "2017-03-30T17:02:55.607Z",
     "created": "2017-03-30T16:53:47.669Z"
@@ -22092,9 +21783,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-app:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-app/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-app/"],
     "description": "",
     "lastModified": "2017-03-30T16:54:13.179Z",
     "created": "2017-03-30T16:54:13.179Z"
@@ -22121,9 +21810,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-docs:*",
-    "scopes": [
-      "auth:aws-s3:read-write:test-bucket-for-any-garbage/docs-testing/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:test-bucket-for-any-garbage/docs-testing/"],
     "description": "",
     "lastModified": "2017-03-14T21:31:17.907Z",
     "created": "2017-03-14T21:31:17.907Z"
@@ -22150,9 +21837,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-docs:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-docs/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-docs/"],
     "description": "",
     "lastModified": "2017-03-14T20:59:45.492Z",
     "created": "2017-03-14T20:59:45.492Z"
@@ -22178,9 +21863,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-iterate:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-iterate/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-iterate/"],
     "description": "",
     "lastModified": "2017-03-30T16:54:42.104Z",
     "created": "2017-03-30T16:54:42.104Z"
@@ -22206,9 +21889,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-loader:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-loader/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-loader/"],
     "description": "",
     "lastModified": "2017-03-22T21:10:22.638Z",
     "created": "2017-03-22T21:10:22.638Z"
@@ -22234,9 +21915,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-log:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-log/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-log/"],
     "description": "",
     "lastModified": "2017-03-22T21:17:34.314Z",
     "created": "2017-03-22T21:17:34.314Z"
@@ -22262,9 +21941,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-monitor:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-monitor/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-monitor/"],
     "description": "",
     "lastModified": "2017-03-22T20:42:24.180Z",
     "created": "2017-03-22T20:42:24.180Z"
@@ -22290,9 +21967,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-scopes:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-scopes/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-scopes/"],
     "description": "",
     "lastModified": "2017-03-22T20:47:57.086Z",
     "created": "2017-03-22T20:47:57.086Z"
@@ -22318,9 +21993,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-testing:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-testing/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-testing/"],
     "description": "",
     "lastModified": "2017-03-22T20:58:39.135Z",
     "created": "2017-03-22T20:58:39.135Z"
@@ -22346,9 +22019,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-validate:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-validate/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-validate/"],
     "description": "",
     "lastModified": "2017-03-17T20:06:39.904Z",
     "created": "2017-03-17T20:06:39.904Z"
@@ -22374,9 +22045,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-tools:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-tools/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-tools/"],
     "description": "",
     "lastModified": "2017-11-06T17:42:57.554Z",
     "created": "2017-11-06T17:42:57.554Z"
@@ -22486,9 +22155,7 @@
       "worker:cache:dummy-cache-*"
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-worker:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-worker/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-worker/"],
     "description": "permissions to upload docs",
     "lastModified": "2017-04-02T02:59:34.843Z",
     "created": "2017-04-02T02:54:29.273Z"
@@ -22514,9 +22181,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/typed-env-config:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/typed-env-config/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/typed-env-config/"],
     "description": "",
     "lastModified": "2017-03-22T21:22:25.772Z",
     "created": "2017-03-22T21:22:25.772Z"
@@ -22542,9 +22207,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/taskcluster/ws-shell:branch:master",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/ws-shell/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/ws-shell/"],
     "description": "",
     "lastModified": "2017-03-30T21:18:06.297Z",
     "created": "2017-03-30T21:18:06.297Z"
@@ -22584,9 +22247,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/testbhearsum/balrog:pull-request",
-    "scopes": [
-      "secrets:get:repo:github.com/testbhearsum/balrog:coveralls"
-    ],
+    "scopes": ["secrets:get:repo:github.com/testbhearsum/balrog:coveralls"],
     "description": "",
     "lastModified": "2017-09-13T18:58:38.335Z",
     "created": "2017-09-13T18:58:38.335Z"
@@ -22603,9 +22264,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:github.com/testbhearsum/balrog:release",
-    "scopes": [
-      "secrets:get:repo:github.com/testbhearsum/balrog:dockerhub"
-    ],
+    "scopes": ["secrets:get:repo:github.com/testbhearsum/balrog:dockerhub"],
     "description": "",
     "lastModified": "2017-09-13T17:50:48.228Z",
     "created": "2017-09-13T17:50:48.228Z"
@@ -22916,9 +22575,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/comm-central:*",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:branch:comm:level-3:comm-central"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:branch:comm:level-3:comm-central"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:38:49.843Z",
     "created": "2017-09-13T11:28:12.851Z"
@@ -23157,9 +22814,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/incubator/stylo:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-2:stylo"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-2:stylo"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:48.780Z",
     "created": "2016-08-26T17:49:27.387Z"
@@ -23344,9 +22999,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/incubator/stylo-try:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-1:stylo-try"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-1:stylo-try"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:38:47.123Z",
     "created": "2016-08-26T17:48:48.082Z"
@@ -23696,9 +23349,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/integration/autoland:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:autoland"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:autoland"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:50.681Z",
     "created": "2016-06-08T14:21:55.463Z"
@@ -24046,9 +23697,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/integration/autoland:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:autoland"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:autoland"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:51:59.004Z",
     "created": "2017-02-07T17:53:15.631Z"
@@ -24372,10 +24021,7 @@
       "worker:relengapi-proxy:tooltool.download.internal",
       "worker:relengapi-proxy:tooltool.download.public"
     ],
-    "scopes": [
-      "assume:moz-tree:level:3",
-      "queue:route:index.buildbot.revisions.*"
-    ],
+    "scopes": ["assume:moz-tree:level:3", "queue:route:index.buildbot.revisions.*"],
     "lastModified": "2017-02-03T15:17:46.969Z",
     "created": "2015-10-30T16:48:06.260Z"
   },
@@ -24698,8 +24344,7 @@
       "worker:relengapi-proxy:tooltool.download.internal",
       "worker:relengapi-proxy:tooltool.download.public"
     ],
-    "scopes": [
-    ],
+    "scopes": [],
     "lastModified": "2017-02-07T17:55:14.378Z",
     "created": "2017-02-07T17:55:14.378Z"
   },
@@ -25377,9 +25022,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/integration/fx-team:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:fx-team"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:fx-team"],
     "description": "*DO NOT EDIT*\n\nScopes for nighlty cron tasks triggered from pushes to https://hg.mozilla.org/integration/fx-team\n\nThis role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).",
     "lastModified": "2017-02-07T17:55:45.977Z",
     "created": "2017-02-07T17:55:45.977Z"
@@ -25729,9 +25372,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/integration/mozilla-inbound:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:mozilla-inbound"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:mozilla-inbound"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:39.945Z",
     "created": "2015-10-30T16:48:44.812Z"
@@ -26079,9 +25720,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/integration/mozilla-inbound:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:mozilla-inbound"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:mozilla-inbound"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:52:56.178Z",
     "created": "2017-02-07T17:55:06.328Z"
@@ -26431,9 +26070,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/mozilla-central:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:mozilla-central"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:mozilla-central"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:22.390Z",
     "created": "2015-10-30T17:23:39.921Z"
@@ -26781,9 +26418,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/mozilla-central:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:mozilla-central"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:mozilla-central"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:51:57.056Z",
     "created": "2017-02-07T17:55:08.452Z"
@@ -27266,9 +26901,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/alder:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-2:alder"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-2:alder"],
     "description": "*DO NOT EDIT*\n\nScopes for nighlty cron tasks triggered from pushes to https://hg.mozilla.org/projects/alder\n\nThis role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).",
     "lastModified": "2017-02-07T17:55:22.204Z",
     "created": "2017-02-07T17:55:22.204Z"
@@ -27507,9 +27140,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/ash:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-2:ash"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-2:ash"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:33.174Z",
     "created": "2016-03-10T17:58:14.620Z"
@@ -27857,9 +27488,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/birch:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:birch"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:birch"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:28.878Z",
     "created": "2017-03-03T01:22:02.850Z"
@@ -28205,9 +27834,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/birch:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:birch"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:birch"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:51:11.870Z",
     "created": "2017-03-03T01:22:04.070Z"
@@ -28435,9 +28062,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/cedar:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-2:cedar"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-2:cedar"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-15T17:51:38.884Z",
     "created": "2015-10-30T17:28:07.032Z"
@@ -28667,9 +28292,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/cypress:*",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:branch:comm:level-2:cypress"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:branch:comm:level-2:cypress"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-15T17:51:25.987Z",
     "created": "2015-10-30T17:28:30.493Z"
@@ -28909,9 +28532,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/elm:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-2:elm"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-2:elm"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:05.399Z",
     "created": "2016-05-06T20:58:10.133Z"
@@ -29149,9 +28770,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/elm:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-2:elm"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-2:elm"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:50:44.425Z",
     "created": "2017-02-07T17:55:30.861Z"
@@ -29634,9 +29253,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/fig:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-2:fig"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-2:fig"],
     "description": "*DO NOT EDIT*\n\nScopes for nighlty cron tasks triggered from pushes to https://hg.mozilla.org/projects/fig\n\nThis role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).",
     "lastModified": "2017-03-03T01:22:13.113Z",
     "created": "2017-03-03T01:22:13.113Z"
@@ -29864,9 +29481,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/graphics:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-2:graphics"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-2:graphics"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-15T17:51:00.526Z",
     "created": "2016-11-07T23:56:50.140Z"
@@ -30349,9 +29964,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/gum:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-2:gum"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-2:gum"],
     "description": "*DO NOT EDIT*\n\nScopes for nighlty cron tasks triggered from pushes to https://hg.mozilla.org/projects/gum\n\nThis role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).",
     "lastModified": "2017-03-03T01:22:21.383Z",
     "created": "2017-03-03T01:22:21.383Z"
@@ -30834,9 +30447,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/holly:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-2:holly"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-2:holly"],
     "description": "*DO NOT EDIT*\n\nScopes for nighlty cron tasks triggered from pushes to https://hg.mozilla.org/projects/holly\n\nThis role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).",
     "lastModified": "2017-04-24T21:10:37.978Z",
     "created": "2017-04-24T21:10:37.978Z"
@@ -31184,9 +30795,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/jamun:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:jamun"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:jamun"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:38:50.961Z",
     "created": "2016-03-10T18:00:48.975Z"
@@ -31532,9 +31141,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/jamun:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:jamun"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:jamun"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:50:52.517Z",
     "created": "2017-02-07T17:55:34.675Z"
@@ -31762,9 +31369,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/larch:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-2:larch"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-2:larch"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-15T17:52:53.662Z",
     "created": "2016-05-12T16:23:11.873Z"
@@ -32112,9 +31717,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/maple:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:maple"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:maple"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:09.572Z",
     "created": "2017-10-03T23:23:52.444Z"
@@ -32460,9 +32063,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/maple:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:maple"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:maple"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:50:25.146Z",
     "created": "2017-10-03T23:23:53.588Z"
@@ -32488,9 +32089,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:hg.mozilla.org/projects/nss:*",
-    "scopes": [
-      "assume:moz-tree:nss"
-    ],
+    "scopes": ["assume:moz-tree:nss"],
     "description": "",
     "lastModified": "2016-05-20T16:10:55.422Z",
     "created": "2016-05-20T16:10:55.422Z"
@@ -32518,9 +32117,7 @@
       "secrets:set:garbage/*"
     ],
     "roleId": "repo:hg.mozilla.org/projects/nss-try:*",
-    "scopes": [
-      "assume:moz-tree:nss-try"
-    ],
+    "scopes": ["assume:moz-tree:nss-try"],
     "description": "",
     "lastModified": "2016-07-01T17:07:40.250Z",
     "created": "2016-07-01T17:07:40.250Z"
@@ -32868,9 +32465,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/oak:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:oak"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:oak"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:18.525Z",
     "created": "2016-03-10T18:02:10.854Z"
@@ -33216,9 +32811,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/oak:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:oak"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:oak"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:50:45.394Z",
     "created": "2017-02-07T17:55:38.638Z"
@@ -33458,9 +33051,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/pine:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-2:pine"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-2:pine"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:35.015Z",
     "created": "2015-10-30T17:31:54.391Z"
@@ -33698,9 +33289,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/pine:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-2:pine"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-2:pine"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:51:49.080Z",
     "created": "2017-02-07T16:34:01.327Z"
@@ -34024,9 +33613,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/projects/ux:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:ux"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:ux"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-15T17:52:51.745Z",
     "created": "2017-09-13T11:30:28.161Z"
@@ -34339,9 +33926,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/releases/comm-beta:*",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:branch:comm:level-3:comm-beta"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:branch:comm:level-3:comm-beta"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:38:56.348Z",
     "created": "2017-09-13T11:28:18.906Z"
@@ -34643,9 +34228,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/releases/comm-esr52:*",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:branch:comm:level-3:comm-esr52"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:branch:comm:level-3:comm-esr52"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-15T17:50:22.503Z",
     "created": "2017-09-13T11:28:26.141Z"
@@ -34995,9 +34578,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-beta:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:mozilla-beta"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:mozilla-beta"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:38:45.547Z",
     "created": "2016-05-12T16:21:44.399Z"
@@ -35345,9 +34926,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-beta:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:mozilla-beta"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:mozilla-beta"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:51:54.376Z",
     "created": "2017-02-07T17:55:12.284Z"
@@ -35689,9 +35268,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-esr52:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:mozilla-esr52"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:mozilla-esr52"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:17.431Z",
     "created": "2017-02-23T21:45:20.668Z"
@@ -36041,9 +35618,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-release:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:mozilla-release"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:mozilla-release"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:25.523Z",
     "created": "2016-05-12T16:21:53.008Z"
@@ -36391,9 +35966,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-release:cron:nightly-*",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:mozilla-release"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:mozilla-release"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
     "lastModified": "2018-06-15T17:53:08.382Z",
     "created": "2017-04-10T21:51:37.298Z"
@@ -36578,9 +36151,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/try:*",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-1:try"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-1:try"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-25T22:39:16.182Z",
     "created": "2015-10-30T16:40:11.535Z"
@@ -36758,9 +36329,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/try-comm-central:*",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:branch:comm:level-1:try-comm-central"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:branch:comm:level-1:try-comm-central"],
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
     "lastModified": "2018-06-15T17:51:18.612Z",
     "created": "2017-09-13T11:30:31.301Z"
@@ -36923,11 +36492,7 @@
       "worker:relengapi-proxy:tooltool.download.public"
     ],
     "roleId": "repo:hg.mozilla.org/users/mozilla_hocat.ca/comm-taskcluster:*",
-    "scopes": [
-      "assume:moz-tree:level:1",
-      "assume:project:thunderbird:*",
-      "queue:route:notify.irc-user.tomprince.*"
-    ],
+    "scopes": ["assume:moz-tree:level:1", "assume:project:thunderbird:*", "queue:route:notify.irc-user.tomprince.*"],
     "description": "",
     "lastModified": "2017-07-26T18:16:14.289Z",
     "created": "2017-07-26T17:49:47.874Z"
@@ -36996,10 +36561,7 @@
       "secrets:get:garbage/*"
     ],
     "roleId": "worker-type:aws-provisioner-v1/ami-test",
-    "scopes": [
-      "secrets:get:garbage/*",
-      "assume:worker-id:*"
-    ],
+    "scopes": ["secrets:get:garbage/*", "assume:worker-id:*"],
     "description": "Bug 1234929",
     "lastModified": "2018-01-31T22:00:06.606Z",
     "created": "2016-01-20T20:33:22.230Z"
@@ -37019,9 +36581,7 @@
       "queue:worker-id:*"
     ],
     "roleId": "worker-type:aws-provisioner-v1/ami-test-win2012r2",
-    "scopes": [
-      "aws-provisioner:view-worker-type:ami-test-win2012r2"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:ami-test-win2012r2"],
     "description": "This role was auto-generated by pmoore on 28 October 2016 to allow generic worker to access its own config, if its worker type is updated. It queries the provisioner to get the latest worker type definition, to establish if a new deployment is required, by checking the deploymentId field, and seeing if that is different to its current deploymentId. If it is, it will shut down.",
     "lastModified": "2018-01-31T22:00:09.534Z",
     "created": "2016-10-28T15:36:22.195Z"
@@ -37075,11 +36635,7 @@
       "queue:worker-id:*"
     ],
     "roleId": "worker-type:aws-provisioner-v1/gecko*",
-    "scopes": [
-      "auth:sentry:docker-worker",
-      "auth:statsum:docker-worker",
-      "queue:create-artifact:*"
-    ],
+    "scopes": ["auth:sentry:docker-worker", "auth:statsum:docker-worker", "queue:create-artifact:*"],
     "description": "Needed for generic worker 5.0.0 - this role can be removed when generic worker 5.0.1 is in production!",
     "lastModified": "2016-08-25T15:17:51.822Z",
     "created": "2016-07-25T11:36:38.610Z"
@@ -37100,10 +36656,7 @@
       "queue:worker-id:*"
     ],
     "roleId": "worker-type:aws-provisioner-v1/nss-win2012r2",
-    "scopes": [
-      "aws-provisioner:view-worker-type:nss-win2012r2",
-      "queue:create-artifact:*"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:nss-win2012r2", "queue:create-artifact:*"],
     "description": "Needed by generic worker for NSS CI tasks.",
     "lastModified": "2018-01-31T22:04:23.097Z",
     "created": "2016-07-12T14:56:34.787Z"
@@ -37123,9 +36676,7 @@
       "queue:worker-id:*"
     ],
     "roleId": "worker-type:aws-provisioner-v1/nss-win2012r2-new",
-    "scopes": [
-      "aws-provisioner:view-worker-type:nss-win2012r2-new"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:nss-win2012r2-new"],
     "description": "Created by pmoore on 9 May 2017",
     "lastModified": "2018-01-31T22:04:24.467Z",
     "created": "2017-05-17T14:15:24.478Z"
@@ -37208,10 +36759,7 @@
       "queue:worker-id:*"
     ],
     "roleId": "worker-type:aws-provisioner-v1/win*",
-    "scopes": [
-      "aws-provisioner:view-worker-type:win<..>",
-      "queue:create-artifact:*"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:win<..>", "queue:create-artifact:*"],
     "description": "queue:create-artifact:* is needed by generic worker (perhaps because it uses, or used, the worker credentials to upload artifacts??)\n\nWindows workerTypes have `aws-provisioner:view-worker-type` to allow generic worker to access its own config, if its worker type is updated. It queries the provisioner to get the latest worker type definition, to establish if a new deployment is required, by checking the deploymentId field, and seeing if that is different to its current deploymentId. If it is, it will shut down.\n",
     "lastModified": "2018-01-31T21:52:23.320Z",
     "created": "2016-05-13T09:27:47.064Z"
@@ -37231,12 +36779,7 @@
       "queue:worker-id:*"
     ],
     "roleId": "worker-type:localprovisioner/*",
-    "scopes": [
-      "queue:claim-task",
-      "queue:create-artifact:*",
-      "queue:poll-task-urls",
-      "queue:resolve-task"
-    ],
+    "scopes": ["queue:claim-task", "queue:create-artifact:*", "queue:poll-task-urls", "queue:resolve-task"],
     "description": "",
     "lastModified": "2017-07-11T10:47:26.137Z",
     "created": "2016-05-17T20:07:52.138Z"
@@ -37254,11 +36797,7 @@
       "queue:worker-id:armstel/nss-packet-worker"
     ],
     "roleId": "worker-type:localprovisioner/nss-aarch64",
-    "scopes": [
-      "auth:sentry:docker-worker",
-      "auth:statsum:docker-worker",
-      "queue:worker-id:armstel/nss-packet-worker"
-    ],
+    "scopes": ["auth:sentry:docker-worker", "auth:statsum:docker-worker", "queue:worker-id:armstel/nss-packet-worker"],
     "description": "Created for NSS (fkiefer@mozilla.com) for docker packet.net workers for NSS tasks.\nCreated by pmoore on 11 July 2017.",
     "lastModified": "2018-01-31T22:06:21.093Z",
     "created": "2017-07-11T10:24:27.088Z"
@@ -37298,11 +36837,7 @@
       "queue:worker-id:*"
     ],
     "roleId": "worker-type:localprovisioner/tc-ci-macos-10-12",
-    "scopes": [
-      "assume:worker-id:*",
-      "auth:sentry:generic-worker",
-      "queue:worker-id:*"
-    ],
+    "scopes": ["assume:worker-id:*", "auth:sentry:generic-worker", "queue:worker-id:*"],
     "description": "Worker type for running internal taskcluster CI jobs on macOS 10.12. Created by pmoore on 26 July 2017 for generic-worker and taskcluster-worker CI. This is to replace currently used `provisionerId`: `pmoore-manual`, `workerType`: `mac-os-x`.",
     "lastModified": "2018-01-31T22:05:55.374Z",
     "created": "2017-07-26T15:31:13.360Z"
@@ -37478,9 +37013,7 @@
     ],
     "roleId": "mozillians-group:servo-tc-admins",
     "description": "",
-    "scopes": [
-      "assume:project-admin:servo"
-    ],
+    "scopes": ["assume:project-admin:servo"],
     "lastModified": "2018-04-20T18:29:08.434Z",
     "created": "2017-12-13T20:48:07.976Z"
   },
@@ -37845,9 +37378,7 @@
     ],
     "roleId": "project:servo:github-admin",
     "description": "Created by `jonasfj` this role assigns the `servo` project admin members access to modify roles for the `servo` github repo.",
-    "scopes": [
-      "assume:github-admin:servo/servo"
-    ],
+    "scopes": ["assume:github-admin:servo/servo"],
     "lastModified": "2017-12-13T21:30:52.010Z",
     "created": "2017-12-13T21:30:52.010Z"
   },
@@ -37858,9 +37389,7 @@
     ],
     "roleId": "project:releng:read-write-s3://tc-gp-private-1d-us-east-1/releng",
     "description": "Granting releng a prefix in the `tc-gp-private-1d-us-east-1` bucket.\n\nCreated by jonasfj on request of sfraser.",
-    "scopes": [
-      "auth:aws-s3:read-write:tc-gp-private-1d-us-east-1/releng/*"
-    ],
+    "scopes": ["auth:aws-s3:read-write:tc-gp-private-1d-us-east-1/releng/*"],
     "lastModified": "2017-12-14T17:32:37.483Z",
     "created": "2017-12-14T17:32:37.483Z"
   },
@@ -38739,10 +38268,7 @@
     ],
     "roleId": "moz-tree:level:2:comm",
     "description": "Scopes for level-2 TB repositories",
-    "scopes": [
-      "assume:moz-tree:level:1:comm",
-      "assume:project:taskcluster:comm:level-2-sccache-buckets"
-    ],
+    "scopes": ["assume:moz-tree:level:1:comm", "assume:project:taskcluster:comm:level-2-sccache-buckets"],
     "lastModified": "2017-12-21T21:27:55.883Z",
     "created": "2017-12-21T20:57:04.955Z"
   },
@@ -40490,9 +40016,7 @@
     ],
     "roleId": "project:taskcluster:level-2-sccache-buckets",
     "description": "Deprecated; see https://bugzilla.mozilla.org/show_bug.cgi?id=1423801",
-    "scopes": [
-      "assume:project:taskcluster:gecko:level-2-sccache-buckets"
-    ],
+    "scopes": ["assume:project:taskcluster:gecko:level-2-sccache-buckets"],
     "lastModified": "2017-12-21T21:58:47.212Z",
     "created": "2017-12-21T21:54:36.020Z"
   },
@@ -40507,9 +40031,7 @@
     ],
     "roleId": "project:taskcluster:level-3-sccache-buckets",
     "description": "Deprecated; see https://bugzilla.mozilla.org/show_bug.cgi?id=1423801",
-    "scopes": [
-      "assume:project:taskcluster:gecko:level-3-sccache-buckets"
-    ],
+    "scopes": ["assume:project:taskcluster:gecko:level-3-sccache-buckets"],
     "lastModified": "2017-12-21T21:58:55.164Z",
     "created": "2017-12-21T21:55:14.880Z"
   },
@@ -40524,9 +40046,7 @@
     ],
     "roleId": "project:taskcluster:level-1-sccache-buckets",
     "description": "Deprecated; see https://bugzilla.mozilla.org/show_bug.cgi?id=1423801",
-    "scopes": [
-      "assume:project:taskcluster:gecko:level-1-sccache-buckets"
-    ],
+    "scopes": ["assume:project:taskcluster:gecko:level-1-sccache-buckets"],
     "lastModified": "2017-12-21T21:59:03.813Z",
     "created": "2017-12-21T21:55:31.725Z"
   },
@@ -40568,9 +40088,7 @@
     ],
     "roleId": "mozilla-user:apereira@mozilla.com",
     "description": "",
-    "scopes": [
-      "assume:project:taskcluster:tc-hooks-tests"
-    ],
+    "scopes": ["assume:project:taskcluster:tc-hooks-tests"],
     "lastModified": "2017-12-27T15:25:23.058Z",
     "created": "2017-12-27T14:55:25.294Z"
   },
@@ -40619,9 +40137,7 @@
     ],
     "roleId": "project:releng:nightly:level-3:birch",
     "description": "bug 1426132: grant birch level 3 access for tcmigration testing",
-    "scopes": [
-      "project:releng:signing:cert:release-signing"
-    ],
+    "scopes": ["project:releng:signing:cert:release-signing"],
     "lastModified": "2018-01-03T15:45:08.504Z",
     "created": "2018-01-03T15:45:08.504Z"
   },
@@ -41655,9 +41171,7 @@
     ],
     "roleId": "hook-id:project-releng/nightly-desktop/maple",
     "description": "",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/maple:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/maple:*"],
     "lastModified": "2018-01-07T05:44:42.145Z",
     "created": "2018-01-07T05:44:42.145Z"
   },
@@ -42006,9 +41520,7 @@
     ],
     "roleId": "hook-id:project-releng/nightly-fennec/maple",
     "description": "",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/projects/maple:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/projects/maple:*"],
     "lastModified": "2018-01-07T05:48:29.119Z",
     "created": "2018-01-07T05:48:29.119Z"
   },
@@ -42500,10 +42012,7 @@
     ],
     "roleId": "project:releng:feature:taskcluster-docker-routes-v1:gecko:level-2:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all gecko projects with feature taskcluster-docker-routes-v1\nat level 2; the '*' matches the project name.",
-    "scopes": [
-      "index:insert-task:docker.images.v1.<..>.*",
-      "queue:route:index.docker.images.v1.<..>.*"
-    ],
+    "scopes": ["index:insert-task:docker.images.v1.<..>.*", "queue:route:index.docker.images.v1.<..>.*"],
     "lastModified": "2018-06-15T17:52:50.768Z",
     "created": "2018-01-31T20:50:05.143Z"
   },
@@ -42514,9 +42023,7 @@
     ],
     "roleId": "project:releng:feature:taskcluster-docker-routes-v2:gecko:level-2:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all gecko projects with feature taskcluster-docker-routes-v2\nat level 2; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.docker.images.v2.level-2.*"
-    ],
+    "scopes": ["queue:route:index.docker.images.v2.level-2.*"],
     "lastModified": "2018-06-15T17:51:22.054Z",
     "created": "2018-01-31T20:50:06.983Z"
   },
@@ -42549,9 +42056,7 @@
     ],
     "roleId": "project:releng:feature:is-trunk:gecko:level-2:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all gecko projects with feature is-trunk\nat level 2; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.gecko.v2.trunk.revision.*"
-    ],
+    "scopes": ["queue:route:index.gecko.v2.trunk.revision.*"],
     "lastModified": "2018-06-15T17:51:29.093Z",
     "created": "2018-01-31T20:50:10.876Z"
   },
@@ -42800,10 +42305,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:feature:taskcluster-docker-routes-v1:comm:level-2:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all comm projects with feature taskcluster-docker-routes-v1\nat level 2; the '*' matches the project name.",
-    "scopes": [
-      "index:insert-task:docker.images.v1.<..>.*",
-      "queue:route:index.docker.images.v1.<..>.*"
-    ],
+    "scopes": ["index:insert-task:docker.images.v1.<..>.*", "queue:route:index.docker.images.v1.<..>.*"],
     "lastModified": "2018-06-15T17:50:59.175Z",
     "created": "2018-01-31T20:50:15.218Z"
   },
@@ -42814,9 +42316,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:feature:taskcluster-docker-routes-v2:comm:level-2:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all comm projects with feature taskcluster-docker-routes-v2\nat level 2; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.docker.images.v2.level-2.*"
-    ],
+    "scopes": ["queue:route:index.docker.images.v2.level-2.*"],
     "lastModified": "2018-06-15T17:51:46.744Z",
     "created": "2018-01-31T20:50:16.808Z"
   },
@@ -42849,9 +42349,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:feature:is-trunk:comm:level-2:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all comm projects with feature is-trunk\nat level 2; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.comm.v2.trunk.revision.*"
-    ],
+    "scopes": ["queue:route:index.comm.v2.trunk.revision.*"],
     "lastModified": "2018-06-15T17:50:34.022Z",
     "created": "2018-01-31T20:50:20.139Z"
   },
@@ -43297,10 +42795,7 @@
     ],
     "roleId": "project:releng:feature:taskcluster-docker-routes-v1:gecko:level-3:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all gecko projects with feature taskcluster-docker-routes-v1\nat level 3; the '*' matches the project name.",
-    "scopes": [
-      "index:insert-task:docker.images.v1.<..>.*",
-      "queue:route:index.docker.images.v1.<..>.*"
-    ],
+    "scopes": ["index:insert-task:docker.images.v1.<..>.*", "queue:route:index.docker.images.v1.<..>.*"],
     "lastModified": "2018-06-15T17:52:46.696Z",
     "created": "2018-01-31T20:50:24.043Z"
   },
@@ -43311,9 +42806,7 @@
     ],
     "roleId": "project:releng:feature:taskcluster-docker-routes-v2:gecko:level-3:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all gecko projects with feature taskcluster-docker-routes-v2\nat level 3; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.docker.images.v2.level-3.*"
-    ],
+    "scopes": ["queue:route:index.docker.images.v2.level-3.*"],
     "lastModified": "2018-06-15T17:52:39.591Z",
     "created": "2018-01-31T20:50:25.681Z"
   },
@@ -43346,9 +42839,7 @@
     ],
     "roleId": "project:releng:feature:is-trunk:gecko:level-3:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all gecko projects with feature is-trunk\nat level 3; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.gecko.v2.trunk.revision.*"
-    ],
+    "scopes": ["queue:route:index.gecko.v2.trunk.revision.*"],
     "lastModified": "2018-06-15T17:53:10.316Z",
     "created": "2018-01-31T20:50:29.061Z"
   },
@@ -43682,10 +43173,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:feature:taskcluster-docker-routes-v1:comm:level-3:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all comm projects with feature taskcluster-docker-routes-v1\nat level 3; the '*' matches the project name.",
-    "scopes": [
-      "index:insert-task:docker.images.v1.<..>.*",
-      "queue:route:index.docker.images.v1.<..>.*"
-    ],
+    "scopes": ["index:insert-task:docker.images.v1.<..>.*", "queue:route:index.docker.images.v1.<..>.*"],
     "lastModified": "2018-06-15T17:52:40.724Z",
     "created": "2018-01-31T20:50:32.230Z"
   },
@@ -43696,9 +43184,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:feature:taskcluster-docker-routes-v2:comm:level-3:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all comm projects with feature taskcluster-docker-routes-v2\nat level 3; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.docker.images.v2.level-3.*"
-    ],
+    "scopes": ["queue:route:index.docker.images.v2.level-3.*"],
     "lastModified": "2018-06-15T17:50:42.218Z",
     "created": "2018-01-31T20:50:34.125Z"
   },
@@ -43731,9 +43217,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:feature:is-trunk:comm:level-3:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all comm projects with feature is-trunk\nat level 3; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.comm.v2.trunk.revision.*"
-    ],
+    "scopes": ["queue:route:index.comm.v2.trunk.revision.*"],
     "lastModified": "2018-06-15T17:51:31.098Z",
     "created": "2018-01-31T20:50:37.771Z"
   },
@@ -43946,10 +43430,7 @@
     ],
     "roleId": "project:releng:feature:taskcluster-docker-routes-v1:gecko:level-1:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all gecko projects with feature taskcluster-docker-routes-v1\nat level 1; the '*' matches the project name.",
-    "scopes": [
-      "index:insert-task:docker.images.v1.<..>.*",
-      "queue:route:index.docker.images.v1.<..>.*"
-    ],
+    "scopes": ["index:insert-task:docker.images.v1.<..>.*", "queue:route:index.docker.images.v1.<..>.*"],
     "lastModified": "2018-06-15T17:51:52.181Z",
     "created": "2018-01-31T20:50:41.302Z"
   },
@@ -43960,9 +43441,7 @@
     ],
     "roleId": "project:releng:feature:taskcluster-docker-routes-v2:gecko:level-1:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all gecko projects with feature taskcluster-docker-routes-v2\nat level 1; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.docker.images.v2.level-1.*"
-    ],
+    "scopes": ["queue:route:index.docker.images.v2.level-1.*"],
     "lastModified": "2018-06-15T17:52:54.700Z",
     "created": "2018-01-31T20:50:43.088Z"
   },
@@ -43995,9 +43474,7 @@
     ],
     "roleId": "project:releng:feature:is-trunk:gecko:level-1:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all gecko projects with feature is-trunk\nat level 1; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.gecko.v2.trunk.revision.*"
-    ],
+    "scopes": ["queue:route:index.gecko.v2.trunk.revision.*"],
     "lastModified": "2018-06-15T17:50:58.253Z",
     "created": "2018-01-31T20:50:46.421Z"
   },
@@ -44194,10 +43671,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:feature:taskcluster-docker-routes-v1:comm:level-1:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all comm projects with feature taskcluster-docker-routes-v1\nat level 1; the '*' matches the project name.",
-    "scopes": [
-      "index:insert-task:docker.images.v1.<..>.*",
-      "queue:route:index.docker.images.v1.<..>.*"
-    ],
+    "scopes": ["index:insert-task:docker.images.v1.<..>.*", "queue:route:index.docker.images.v1.<..>.*"],
     "lastModified": "2018-06-15T17:52:16.262Z",
     "created": "2018-01-31T20:50:50.005Z"
   },
@@ -44208,9 +43682,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:feature:taskcluster-docker-routes-v2:comm:level-1:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all comm projects with feature taskcluster-docker-routes-v2\nat level 1; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.docker.images.v2.level-1.*"
-    ],
+    "scopes": ["queue:route:index.docker.images.v2.level-1.*"],
     "lastModified": "2018-06-15T17:51:14.814Z",
     "created": "2018-01-31T20:50:51.480Z"
   },
@@ -44243,9 +43715,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:feature:is-trunk:comm:level-1:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with all comm projects with feature is-trunk\nat level 1; the '*' matches the project name.",
-    "scopes": [
-      "queue:route:index.comm.v2.trunk.revision.*"
-    ],
+    "scopes": ["queue:route:index.comm.v2.trunk.revision.*"],
     "lastModified": "2018-06-15T17:51:17.551Z",
     "created": "2018-01-31T20:50:54.751Z"
   },
@@ -44266,9 +43736,7 @@
     ],
     "roleId": "worker-type:aws-provisioner-v1/gecko-t-win*",
     "description": "Windows workerTypes have `aws-provisioner:view-worker-type` to allow generic worker to access its own config, if its worker type is updated. It queries the provisioner to get the latest worker type definition, to establish if a new deployment is required, by checking the deploymentId field, and seeing if that is different to its current deploymentId. If it is, it will shut down.",
-    "scopes": [
-      "aws-provisioner:view-worker-type:gecko-t-win<..>"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:gecko-t-win<..>"],
     "lastModified": "2018-01-31T21:43:45.349Z",
     "created": "2018-01-31T21:43:45.349Z"
   },
@@ -44288,9 +43756,7 @@
     ],
     "roleId": "worker-type:aws-provisioner-v1/loan-t-win*",
     "description": "Windows workerTypes have `aws-provisioner:view-worker-type` to allow generic worker to access its own config, if its worker type is updated. It queries the provisioner to get the latest worker type definition, to establish if a new deployment is required, by checking the deploymentId field, and seeing if that is different to its current deploymentId. If it is, it will shut down.",
-    "scopes": [
-      "aws-provisioner:view-worker-type:loan-t-win<..>"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:loan-t-win<..>"],
     "lastModified": "2018-01-31T21:45:04.802Z",
     "created": "2018-01-31T21:45:04.802Z"
   },
@@ -44311,9 +43777,7 @@
     ],
     "roleId": "worker-type:aws-provisioner-v1/gecko-3-b-win*",
     "description": "Windows workerTypes have `aws-provisioner:view-worker-type` to allow generic worker to access its own config, if its worker type is updated. It queries the provisioner to get the latest worker type definition, to establish if a new deployment is required, by checking the deploymentId field, and seeing if that is different to its current deploymentId. If it is, it will shut down.",
-    "scopes": [
-      "aws-provisioner:view-worker-type:gecko-3-b-win<..>"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:gecko-3-b-win<..>"],
     "lastModified": "2018-01-31T21:49:08.305Z",
     "created": "2018-01-31T21:49:08.305Z"
   },
@@ -44334,9 +43798,7 @@
     ],
     "roleId": "worker-type:aws-provisioner-v1/gecko-2-b-win*",
     "description": "Windows workerTypes have `aws-provisioner:view-worker-type` to allow generic worker to access its own config, if its worker type is updated. It queries the provisioner to get the latest worker type definition, to establish if a new deployment is required, by checking the deploymentId field, and seeing if that is different to its current deploymentId. If it is, it will shut down.",
-    "scopes": [
-      "aws-provisioner:view-worker-type:gecko-2-b-win<..>"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:gecko-2-b-win<..>"],
     "lastModified": "2018-01-31T21:49:11.563Z",
     "created": "2018-01-31T21:49:11.563Z"
   },
@@ -44357,9 +43819,7 @@
     ],
     "roleId": "worker-type:aws-provisioner-v1/gecko-1-b-win*",
     "description": "Windows workerTypes have `aws-provisioner:view-worker-type` to allow generic worker to access its own config, if its worker type is updated. It queries the provisioner to get the latest worker type definition, to establish if a new deployment is required, by checking the deploymentId field, and seeing if that is different to its current deploymentId. If it is, it will shut down.",
-    "scopes": [
-      "aws-provisioner:view-worker-type:gecko-1-b-win<..>"
-    ],
+    "scopes": ["aws-provisioner:view-worker-type:gecko-1-b-win<..>"],
     "lastModified": "2018-01-31T21:49:13.944Z",
     "created": "2018-01-31T21:49:13.944Z"
   },
@@ -44409,9 +43869,7 @@
     ],
     "roleId": "worker-type:*",
     "description": "An worker-type can claim work for its own queue",
-    "scopes": [
-      "queue:claim-work:<..>"
-    ],
+    "scopes": ["queue:claim-work:<..>"],
     "lastModified": "2018-01-31T22:10:51.302Z",
     "created": "2018-01-31T22:03:27.083Z"
   },
@@ -45499,9 +44957,7 @@
     ],
     "roleId": "login-identity:github/*",
     "description": "",
-    "scopes": [
-      "assume:project:taskcluster:tutorial"
-    ],
+    "scopes": ["assume:project:taskcluster:tutorial"],
     "lastModified": "2018-02-22T22:40:37.918Z",
     "created": "2018-02-22T22:40:37.918Z"
   },
@@ -45527,9 +44983,7 @@
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-hooks:*",
     "description": "Scopes for all tasks from this repo.  Note that pull requests have these scopes, too.",
-    "scopes": [
-      "secrets:get:project/taskcluster/testing/taskcluster-hooks"
-    ],
+    "scopes": ["secrets:get:project/taskcluster/testing/taskcluster-hooks"],
     "lastModified": "2018-05-01T23:29:02.626Z",
     "created": "2018-03-02T17:01:03.128Z"
   },
@@ -45546,9 +45000,7 @@
     ],
     "roleId": "repo:github.com/fiennyangeln/taskcluster-hooks:*",
     "description": "Scopes for all tasks from this repo. Note that pull requests have these scopes, too.\n",
-    "scopes": [
-      "secrets:get:repo:github.com/taskcluster/taskcluster-hooks"
-    ],
+    "scopes": ["secrets:get:repo:github.com/taskcluster/taskcluster-hooks"],
     "lastModified": "2018-03-02T17:02:14.413Z",
     "created": "2018-03-02T17:02:14.413Z"
   },
@@ -45590,9 +45042,7 @@
     ],
     "roleId": "everybody",
     "description": "Role assigned to everybody. It should only have the scopes required to run the tutorial, and nothing that might harm other users of Taskcluster.",
-    "scopes": [
-      "assume:project:taskcluster:tutorial"
-    ],
+    "scopes": ["assume:project:taskcluster:tutorial"],
     "lastModified": "2018-03-08T14:54:35.190Z",
     "created": "2018-03-08T14:54:35.190Z"
   },
@@ -45618,9 +45068,7 @@
     ],
     "roleId": "repo:github.com/glandium/git-cinnabar:pull-request",
     "description": "",
-    "scopes": [
-      "assume:repo:github.com/glandium/git-cinnabar:decision-task"
-    ],
+    "scopes": ["assume:repo:github.com/glandium/git-cinnabar:decision-task"],
     "lastModified": "2018-03-09T01:25:55.182Z",
     "created": "2018-03-09T01:25:55.182Z"
   },
@@ -45943,10 +45391,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|babadie",
     "description": "",
-    "scopes": [
-      "assume:project:releng:services/develop/shipit",
-      "assume:project:shipit:admin"
-    ],
+    "scopes": ["assume:project:releng:services/develop/shipit", "assume:project:shipit:admin"],
     "lastModified": "2018-03-09T13:49:30.400Z",
     "created": "2018-03-09T13:49:30.400Z"
   },
@@ -46072,9 +45517,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|bvandyk",
     "description": "For bug 1296995, a playground is required for Bryce to do his work in. Created by pmoore.",
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/win2012r2-mediatests"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/win2012r2-mediatests"],
     "lastModified": "2018-03-09T13:49:33.975Z",
     "created": "2018-03-09T13:49:33.975Z"
   },
@@ -46106,9 +45549,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|bwong",
     "description": "",
-    "scopes": [
-      "assume:repo:github.com/mozilla/balrog:*"
-    ],
+    "scopes": ["assume:repo:github.com/mozilla/balrog:*"],
     "lastModified": "2018-03-09T13:49:35.142Z",
     "created": "2018-03-09T13:49:35.142Z"
   },
@@ -46126,9 +45567,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|cdawson",
     "description": "https://bugzil.la/1393578",
-    "scopes": [
-      "assume:project:releng:treestatus/sheriff"
-    ],
+    "scopes": ["assume:project:releng:treestatus/sheriff"],
     "lastModified": "2018-03-09T13:49:36.188Z",
     "created": "2018-03-09T13:49:36.188Z"
   },
@@ -46226,9 +45665,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|csheehan",
     "description": "",
-    "scopes": [
-      "assume:project:releng:services/develop/releng"
-    ],
+    "scopes": ["assume:project:releng:services/develop/releng"],
     "lastModified": "2018-03-09T13:49:38.425Z",
     "created": "2018-03-09T13:49:38.425Z"
   },
@@ -46249,9 +45686,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|ehenry",
     "description": "",
-    "scopes": [
-      "assume:project:shipit:admin"
-    ],
+    "scopes": ["assume:project:shipit:admin"],
     "lastModified": "2018-03-09T13:49:39.484Z",
     "created": "2018-03-09T13:49:39.484Z"
   },
@@ -46267,9 +45702,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|garndt",
     "description": "",
-    "scopes": [
-      "project:relops-hardware-controller:*"
-    ],
+    "scopes": ["project:relops-hardware-controller:*"],
     "lastModified": "2018-03-09T13:49:40.812Z",
     "created": "2018-03-09T13:49:40.812Z"
   },
@@ -46411,9 +45844,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|istorozhko",
     "description": "",
-    "scopes": [
-      "assume:project:taskcluster:github"
-    ],
+    "scopes": ["assume:project:taskcluster:github"],
     "lastModified": "2018-03-09T13:49:45.074Z",
     "created": "2018-03-09T13:49:45.074Z"
   },
@@ -46428,8 +45859,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|jclaudius",
     "description": "",
-    "scopes": [
-    ],
+    "scopes": [],
     "lastModified": "2018-03-09T13:49:46.100Z",
     "created": "2018-03-09T13:49:46.100Z"
   },
@@ -46491,8 +45921,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|jhylands",
     "description": "",
-    "scopes": [
-    ],
+    "scopes": [],
     "lastModified": "2018-03-09T13:49:48.175Z",
     "created": "2018-03-09T13:49:48.175Z"
   },
@@ -46531,8 +45960,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|jlorenzo",
     "description": "",
-    "scopes": [
-    ],
+    "scopes": [],
     "lastModified": "2018-03-09T13:49:50.366Z",
     "created": "2018-03-09T13:49:50.366Z"
   },
@@ -46548,9 +45976,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|jlund",
     "description": "Authority to modify index to backfill, sometime necessary for making releases...",
-    "scopes": [
-      "index:insert-task:gecko.v2.*"
-    ],
+    "scopes": ["index:insert-task:gecko.v2.*"],
     "lastModified": "2018-03-09T13:49:51.663Z",
     "created": "2018-03-09T13:49:51.663Z"
   },
@@ -46568,9 +45994,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|jmaher",
     "description": "Custom role for Joel Maher, created by pmoore on 12 October 2016. Initial purpose is to provide scopes that allows Joel to help out with Windows tests troubleshooting in gecko.",
-    "scopes": [
-      "assume:project:releng:gecko-win-test-troubleshooter"
-    ],
+    "scopes": ["assume:project:releng:gecko-win-test-troubleshooter"],
     "lastModified": "2018-03-09T13:49:52.564Z",
     "created": "2018-03-09T13:49:52.564Z"
   },
@@ -46630,9 +46054,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|max@mxli.us",
     "description": "",
-    "scopes": [
-      "hooks:trigger-hook:project-releng/nightly-fennec/oak"
-    ],
+    "scopes": ["hooks:trigger-hook:project-releng/nightly-fennec/oak"],
     "lastModified": "2018-03-09T13:49:54.824Z",
     "created": "2018-03-09T13:49:54.824Z"
   },
@@ -46718,9 +46140,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|mcote",
     "description": "",
-    "scopes": [
-      "assume:project:shipit:user"
-    ],
+    "scopes": ["assume:project:shipit:user"],
     "lastModified": "2018-03-09T13:49:58.185Z",
     "created": "2018-03-09T13:49:58.185Z"
   },
@@ -46736,9 +46156,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|mikokm@gmail.com",
     "description": "Loaner access",
-    "scopes": [
-      "queue:get-artifact:private/docker-worker/*"
-    ],
+    "scopes": ["queue:get-artifact:private/docker-worker/*"],
     "lastModified": "2018-03-09T13:50:00.329Z",
     "created": "2018-03-09T13:50:00.329Z"
   },
@@ -46792,9 +46210,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|mkelly",
     "description": "",
-    "scopes": [
-      "assume:project-admin:socorro"
-    ],
+    "scopes": ["assume:project-admin:socorro"],
     "lastModified": "2018-03-09T13:50:01.457Z",
     "created": "2018-03-09T13:50:01.457Z"
   },
@@ -46810,9 +46226,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|mshal",
     "description": "mshal gets gecko.v2 scopes for index as he often backports fixes...",
-    "scopes": [
-      "index:insert-task:gecko.v2.*"
-    ],
+    "scopes": ["index:insert-task:gecko.v2.*"],
     "lastModified": "2018-03-09T13:50:02.595Z",
     "created": "2018-03-09T13:50:02.595Z"
   },
@@ -46854,9 +46268,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|nalexander",
     "description": "",
-    "scopes": [
-      "hooks:trigger-hook:project-releng/nightly-fennec/oak"
-    ],
+    "scopes": ["hooks:trigger-hook:project-releng/nightly-fennec/oak"],
     "lastModified": "2018-03-09T13:50:05.000Z",
     "created": "2018-03-09T13:50:05.000Z"
   },
@@ -46872,9 +46284,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|raliiev",
     "description": "Authority to modify index to backfill, sometime necessary for making releases...",
-    "scopes": [
-      "index:insert-task:gecko.v2.*"
-    ],
+    "scopes": ["index:insert-task:gecko.v2.*"],
     "lastModified": "2018-03-09T13:50:06.267Z",
     "created": "2018-03-09T13:50:06.267Z"
   },
@@ -46948,9 +46358,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|rkothari",
     "description": "",
-    "scopes": [
-      "assume:project:shipit:admin"
-    ],
+    "scopes": ["assume:project:shipit:admin"],
     "lastModified": "2018-03-09T13:50:12.102Z",
     "created": "2018-03-09T13:50:12.102Z"
   },
@@ -47039,9 +46447,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|rmorais",
     "description": "See [bug 1418008](https://bugzilla.mozilla.org/show_bug.cgi?id=1418008).\nAdded by pmoore@mozilla.com on 16 November 2017 as requested by alissy@mozilla.com (gerard-majax).",
-    "scopes": [
-      "assume:project-admin:deepspeech"
-    ],
+    "scopes": ["assume:project-admin:deepspeech"],
     "lastModified": "2018-03-09T13:50:13.133Z",
     "created": "2018-03-09T13:50:13.133Z"
   },
@@ -47084,9 +46490,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|sledru",
     "description": "",
-    "scopes": [
-      "assume:project:shipit:admin"
-    ],
+    "scopes": ["assume:project:shipit:admin"],
     "lastModified": "2018-03-09T13:50:15.623Z",
     "created": "2018-03-09T13:50:15.623Z"
   },
@@ -47186,9 +46590,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|ttaubert",
     "description": "Tim can directly create tasks for nss-win2012r2 worker type.",
-    "scopes": [
-      "queue:create-task:aws-provisioner-v1/nss-win2012r2"
-    ],
+    "scopes": ["queue:create-task:aws-provisioner-v1/nss-win2012r2"],
     "lastModified": "2018-03-09T13:50:19.170Z",
     "created": "2018-03-09T13:50:19.170Z"
   },
@@ -47231,9 +46633,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|apereira",
     "description": "",
-    "scopes": [
-      "assume:project:taskcluster:tc-hooks-tests"
-    ],
+    "scopes": ["assume:project:taskcluster:tc-hooks-tests"],
     "lastModified": "2018-03-09T13:50:21.610Z",
     "created": "2018-03-09T13:50:21.610Z"
   },
@@ -47258,9 +46658,7 @@
     ],
     "roleId": "repo:github.com/test/*",
     "description": "",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "lastModified": "2018-03-09T14:16:24.917Z",
     "created": "2018-03-09T14:16:24.917Z"
   },
@@ -47350,9 +46748,7 @@
     ],
     "roleId": "repo:github.com/mozilla-releng/services:branch:testing",
     "description": "",
-    "scopes": [
-      "assume:hook-id:project-releng/services-testing-*"
-    ],
+    "scopes": ["assume:hook-id:project-releng/services-testing-*"],
     "lastModified": "2018-06-27T14:10:16.363Z",
     "created": "2018-03-13T15:47:00.236Z"
   },
@@ -47378,9 +46774,7 @@
     ],
     "roleId": "repo:github.com/mozilla-mobile/android-components:release",
     "description": "Allowing tasks triggered by the \"release\" event to get access to the tokens needed to publish a new release.",
-    "scopes": [
-      "secrets:get:project/android-components/publish"
-    ],
+    "scopes": ["secrets:get:project/android-components/publish"],
     "lastModified": "2018-03-28T11:58:20.626Z",
     "created": "2018-03-28T11:58:20.626Z"
   },
@@ -47690,9 +47084,7 @@
     ],
     "roleId": "hook-id:project-releng/cron-task-comm-central",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `comm-central`",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/comm-central:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/comm-central:cron:*"],
     "lastModified": "2018-06-15T17:50:36.925Z",
     "created": "2018-03-28T20:07:31.377Z"
   },
@@ -48001,9 +47393,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/comm-central:cron:nightly-*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:nightly:level-3:comm-central"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:nightly:level-3:comm-central"],
     "lastModified": "2018-06-15T17:52:30.645Z",
     "created": "2018-04-10T16:08:10.574Z"
   },
@@ -48149,9 +47539,7 @@
     ],
     "roleId": "repo:github.com/mozilla-mobile/fenix:release",
     "description": "Release builds of Fenix.",
-    "scopes": [
-      "secrets:get:project/fenix/sentry"
-    ],
+    "scopes": ["secrets:get:project/fenix/sentry"],
     "lastModified": "2018-04-13T15:34:34.501Z",
     "created": "2018-04-13T15:34:34.501Z"
   },
@@ -48162,9 +47550,7 @@
     ],
     "roleId": "project:taskcluster:tests:taskcluster-secrets",
     "description": "",
-    "scopes": [
-      "auth:azure-table:read-write:jungle/SecretsTestTable"
-    ],
+    "scopes": ["auth:azure-table:read-write:jungle/SecretsTestTable"],
     "lastModified": "2018-04-17T19:06:42.036Z",
     "created": "2018-04-17T18:03:23.944Z"
   },
@@ -48190,9 +47576,7 @@
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-secrets:*",
     "description": "",
-    "scopes": [
-      "secrets:get:project/taskcluster/testing/taskcluster-secrets"
-    ],
+    "scopes": ["secrets:get:project/taskcluster/testing/taskcluster-secrets"],
     "lastModified": "2018-04-18T13:35:30.454Z",
     "created": "2018-04-18T13:35:30.454Z"
   },
@@ -48219,9 +47603,7 @@
     ],
     "roleId": "repo:github.com/mozmeao/*",
     "description": "",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "lastModified": "2018-04-19T17:28:35.286Z",
     "created": "2018-04-19T17:28:35.286Z"
   },
@@ -48283,9 +47665,7 @@
     ],
     "roleId": "mozillians-group:meao",
     "description": "A project scope for `pmac@mozilla.com` to play with.",
-    "scopes": [
-      "assume:project-admin:meao"
-    ],
+    "scopes": ["assume:project-admin:meao"],
     "lastModified": "2018-04-20T16:16:03.802Z",
     "created": "2018-04-20T16:16:03.802Z"
   },
@@ -48296,9 +47676,7 @@
     ],
     "roleId": "project:meao:grants/tc-worker-qemu-v1",
     "description": "This role _grants_ `queue:create-task:low:manual-packet/tc-worker-qemu-v1` to project `meao`, along with any other scopes they might need for playing with `tc-worker-qemu-v1`.",
-    "scopes": [
-      "queue:create-task:low:manual-packet/tc-worker-qemu-v1"
-    ],
+    "scopes": ["queue:create-task:low:manual-packet/tc-worker-qemu-v1"],
     "lastModified": "2018-04-20T16:19:37.103Z",
     "created": "2018-04-20T16:19:37.103Z"
   },
@@ -48636,9 +48014,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-esr60:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
-    "scopes": [
-      "assume:project:releng:branch:gecko:level-3:mozilla-esr60"
-    ],
+    "scopes": ["assume:project:releng:branch:gecko:level-3:mozilla-esr60"],
     "lastModified": "2018-06-25T22:38:54.725Z",
     "created": "2018-04-20T16:44:09.777Z"
   },
@@ -48974,9 +48350,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-esr60:cron:nightly-*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to nightly releases from this repository",
-    "scopes": [
-      "assume:project:releng:nightly:level-3:mozilla-esr60"
-    ],
+    "scopes": ["assume:project:releng:nightly:level-3:mozilla-esr60"],
     "lastModified": "2018-06-15T17:52:13.593Z",
     "created": "2018-04-20T16:44:13.016Z"
   },
@@ -49313,9 +48687,7 @@
     ],
     "roleId": "hook-id:project-releng/cron-task-releases-mozilla-esr60",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes associated with cron tasks for project `mozilla-esr60`",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/releases/mozilla-esr60:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/releases/mozilla-esr60:cron:*"],
     "lastModified": "2018-06-15T17:51:32.027Z",
     "created": "2018-04-20T16:44:24.307Z"
   },
@@ -49406,10 +48778,7 @@
     ],
     "roleId": "repo:github.com/mozmeao/basket:branch:master",
     "description": "Basket's master branch has access to these secrets.",
-    "scopes": [
-      "secrets:get:project/meao/dockerhub",
-      "secrets:get:project/meao/k8s"
-    ],
+    "scopes": ["secrets:get:project/meao/dockerhub", "secrets:get:project/meao/k8s"],
     "lastModified": "2018-04-20T20:23:34.813Z",
     "created": "2018-04-20T20:23:34.813Z"
   },
@@ -49436,10 +48805,7 @@
     ],
     "roleId": "repo:github.com/mozilla-mobile/firefox-tv:release",
     "description": "Allow release builds of firefox-tv to use secrets and tokens.",
-    "scopes": [
-      "secrets:get:project/firefox-tv/tokens",
-      "secrets:get:project/mobile/firefox-tv/tokens"
-    ],
+    "scopes": ["secrets:get:project/firefox-tv/tokens", "secrets:get:project/mobile/firefox-tv/tokens"],
     "lastModified": "2018-04-26T13:59:43.191Z",
     "created": "2018-04-23T17:09:17.755Z"
   },
@@ -49450,9 +48816,7 @@
     ],
     "roleId": "project:mobile:grants/focus-googleplay-upload",
     "description": "Requested in [bug 1456432](https://bugzilla.mozilla.org/show_bug.cgi?id=1456432).",
-    "scopes": [
-      "project:releng:googleplay:product:focus"
-    ],
+    "scopes": ["project:releng:googleplay:product:focus"],
     "lastModified": "2018-04-24T13:20:47.356Z",
     "created": "2018-04-24T13:20:47.356Z"
   },
@@ -49552,9 +48916,7 @@
     ],
     "roleId": "mozilla-group:mobile_releases",
     "description": "As requested in [bug 1456533](https://bugzilla.mozilla.org/show_bug.cgi?id=1456533).",
-    "scopes": [
-      "assume:project-admin:mobile"
-    ],
+    "scopes": ["assume:project-admin:mobile"],
     "lastModified": "2018-04-24T17:21:46.771Z",
     "created": "2018-04-24T16:49:49.132Z"
   },
@@ -49661,9 +49023,7 @@
     ],
     "roleId": "project:releng:push:gecko:level-2:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with pushes to all gecko projects at level 2;\nthe '*' matches the project name.",
-    "scopes": [
-      "in-tree:hook-action:project-gecko/in-tree-action-2-*"
-    ],
+    "scopes": ["in-tree:hook-action:project-gecko/in-tree-action-2-*"],
     "lastModified": "2018-06-15T17:51:39.903Z",
     "created": "2018-04-25T21:58:09.506Z"
   },
@@ -49674,9 +49034,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:push:comm:level-2:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with pushes to all comm projects at level 2;\nthe '*' matches the project name.",
-    "scopes": [
-      "in-tree:hook-action:project-comm/in-tree-action-2-*"
-    ],
+    "scopes": ["in-tree:hook-action:project-comm/in-tree-action-2-*"],
     "lastModified": "2018-06-15T17:52:47.785Z",
     "created": "2018-04-25T21:58:12.423Z"
   },
@@ -49687,9 +49045,7 @@
     ],
     "roleId": "project:releng:push:gecko:level-3:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with pushes to all gecko projects at level 3;\nthe '*' matches the project name.",
-    "scopes": [
-      "in-tree:hook-action:project-gecko/in-tree-action-3-*"
-    ],
+    "scopes": ["in-tree:hook-action:project-gecko/in-tree-action-3-*"],
     "lastModified": "2018-06-15T17:52:02.528Z",
     "created": "2018-04-25T21:58:14.769Z"
   },
@@ -49700,9 +49056,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:push:comm:level-3:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with pushes to all comm projects at level 3;\nthe '*' matches the project name.",
-    "scopes": [
-      "in-tree:hook-action:project-comm/in-tree-action-3-*"
-    ],
+    "scopes": ["in-tree:hook-action:project-comm/in-tree-action-3-*"],
     "lastModified": "2018-06-15T17:51:13.828Z",
     "created": "2018-04-25T21:58:17.022Z"
   },
@@ -49713,9 +49067,7 @@
     ],
     "roleId": "project:releng:push:gecko:level-1:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with pushes to all gecko projects at level 1;\nthe '*' matches the project name.",
-    "scopes": [
-      "in-tree:hook-action:project-gecko/in-tree-action-1-*"
-    ],
+    "scopes": ["in-tree:hook-action:project-gecko/in-tree-action-1-*"],
     "lastModified": "2018-06-15T17:52:31.547Z",
     "created": "2018-04-25T21:58:19.254Z"
   },
@@ -49726,9 +49078,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:push:comm:level-1:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes for tasks associated with pushes to all comm projects at level 1;\nthe '*' matches the project name.",
-    "scopes": [
-      "in-tree:hook-action:project-comm/in-tree-action-1-*"
-    ],
+    "scopes": ["in-tree:hook-action:project-comm/in-tree-action-1-*"],
     "lastModified": "2018-06-15T17:50:26.153Z",
     "created": "2018-04-25T21:58:21.910Z"
   },
@@ -49967,9 +49317,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/incubator/stylo:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:stylo"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:stylo"],
     "lastModified": "2018-06-15T17:50:29.293Z",
     "created": "2018-04-25T21:58:30.145Z"
   },
@@ -50306,9 +49654,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/integration/autoland:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:autoland"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:autoland"],
     "lastModified": "2018-06-15T17:52:04.560Z",
     "created": "2018-04-25T21:58:31.777Z"
   },
@@ -50643,9 +49989,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/jamun:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:jamun"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:jamun"],
     "lastModified": "2018-06-15T17:51:55.307Z",
     "created": "2018-04-25T21:58:33.579Z"
   },
@@ -50884,9 +50228,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/gum:branch:default",
     "description": "*DO NOT EDIT*\n\nScopes for tasks triggered from pushes to https://hg.mozilla.org/projects/gum\n\nThis role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:gum"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:gum"],
     "lastModified": "2018-04-25T21:58:35.232Z",
     "created": "2018-04-25T21:58:35.232Z"
   },
@@ -51125,9 +50467,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/fig:branch:default",
     "description": "*DO NOT EDIT*\n\nScopes for tasks triggered from pushes to https://hg.mozilla.org/projects/fig\n\nThis role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:fig"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:fig"],
     "lastModified": "2018-04-25T21:58:37.089Z",
     "created": "2018-04-25T21:58:37.089Z"
   },
@@ -51462,9 +50802,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/maple:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:maple"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:maple"],
     "lastModified": "2018-06-15T17:50:51.229Z",
     "created": "2018-04-25T21:58:38.592Z"
   },
@@ -51692,9 +51030,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/larch:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:larch"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:larch"],
     "lastModified": "2018-06-15T17:52:23.612Z",
     "created": "2018-04-25T21:58:40.103Z"
   },
@@ -51872,9 +51208,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/try-comm-central:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:push:comm:level-1:try-comm-central"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:push:comm:level-1:try-comm-central"],
     "lastModified": "2018-06-15T17:50:36.038Z",
     "created": "2018-04-25T21:58:56.919Z"
   },
@@ -52059,9 +51393,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/incubator/stylo-try:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-1:stylo-try"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-1:stylo-try"],
     "lastModified": "2018-06-15T17:52:41.568Z",
     "created": "2018-04-25T21:58:58.423Z"
   },
@@ -52246,9 +51578,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/try:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-1:try"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-1:try"],
     "lastModified": "2018-06-15T17:52:22.612Z",
     "created": "2018-04-25T21:58:59.833Z"
   },
@@ -52476,9 +51806,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/graphics:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:graphics"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:graphics"],
     "lastModified": "2018-06-15T17:51:57.957Z",
     "created": "2018-04-25T21:59:01.194Z"
   },
@@ -52717,9 +52045,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/elm:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:elm"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:elm"],
     "lastModified": "2018-06-15T17:51:12.818Z",
     "created": "2018-04-25T21:59:02.862Z"
   },
@@ -53043,9 +52369,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/ux:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:ux"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:ux"],
     "lastModified": "2018-06-15T17:50:48.646Z",
     "created": "2018-04-25T21:59:04.687Z"
   },
@@ -53275,9 +52599,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/cypress:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:push:comm:level-2:cypress"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:push:comm:level-2:cypress"],
     "lastModified": "2018-06-15T17:53:07.381Z",
     "created": "2018-04-25T21:59:06.360Z"
   },
@@ -53612,9 +52934,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/birch:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:birch"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:birch"],
     "lastModified": "2018-06-15T17:51:09.602Z",
     "created": "2018-04-25T21:59:07.767Z"
   },
@@ -53853,9 +53173,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/holly:branch:default",
     "description": "*DO NOT EDIT*\n\nScopes for tasks triggered from pushes to https://hg.mozilla.org/projects/holly\n\nThis role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:holly"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:holly"],
     "lastModified": "2018-04-25T21:59:09.353Z",
     "created": "2018-04-25T21:59:09.353Z"
   },
@@ -54083,9 +53401,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/cedar:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:cedar"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:cedar"],
     "lastModified": "2018-06-15T17:51:37.751Z",
     "created": "2018-04-25T21:59:11.060Z"
   },
@@ -54324,9 +53640,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/alder:branch:default",
     "description": "*DO NOT EDIT*\n\nScopes for tasks triggered from pushes to https://hg.mozilla.org/projects/alder\n\nThis role is configured automatically by [taskcluster-admin](https://github.com/taskcluster/taskcluster-admin).",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:alder"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:alder"],
     "lastModified": "2018-04-25T21:59:12.799Z",
     "created": "2018-04-25T21:59:12.799Z"
   },
@@ -54630,9 +53944,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/comm-central:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:push:comm:level-3:comm-central"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:push:comm:level-3:comm-central"],
     "lastModified": "2018-06-15T17:52:32.424Z",
     "created": "2018-04-25T21:59:14.830Z"
   },
@@ -54969,9 +54281,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/mozilla-central:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:mozilla-central"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:mozilla-central"],
     "lastModified": "2018-06-15T17:50:56.990Z",
     "created": "2018-04-25T21:59:16.554Z"
   },
@@ -55308,9 +54618,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/integration/mozilla-inbound:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:mozilla-inbound"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:mozilla-inbound"],
     "lastModified": "2018-06-15T17:52:00.675Z",
     "created": "2018-04-25T21:59:18.226Z"
   },
@@ -55623,9 +54931,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/releases/comm-beta:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:push:comm:level-3:comm-beta"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:push:comm:level-3:comm-beta"],
     "lastModified": "2018-06-15T17:52:20.655Z",
     "created": "2018-04-25T21:59:20.324Z"
   },
@@ -55960,9 +55266,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-beta:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:mozilla-beta"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:mozilla-beta"],
     "lastModified": "2018-06-15T17:52:29.781Z",
     "created": "2018-04-25T21:59:22.359Z"
   },
@@ -56201,9 +55505,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/pine:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:pine"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:pine"],
     "lastModified": "2018-06-15T17:53:01.412Z",
     "created": "2018-04-25T21:59:24.212Z"
   },
@@ -56538,9 +55840,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/oak:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:oak"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:oak"],
     "lastModified": "2018-06-15T17:51:19.702Z",
     "created": "2018-04-25T21:59:26.271Z"
   },
@@ -56842,9 +56142,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/releases/comm-esr52:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:push:comm:level-3:comm-esr52"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:push:comm:level-3:comm-esr52"],
     "lastModified": "2018-06-15T17:52:24.484Z",
     "created": "2018-04-25T21:59:28.296Z"
   },
@@ -57169,9 +56467,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-esr60:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:mozilla-esr60"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:mozilla-esr60"],
     "lastModified": "2018-06-15T17:51:03.693Z",
     "created": "2018-04-25T21:59:29.791Z"
   },
@@ -57513,9 +56809,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-esr52:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:mozilla-esr52"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:mozilla-esr52"],
     "lastModified": "2018-06-15T17:52:06.521Z",
     "created": "2018-04-25T21:59:31.426Z"
   },
@@ -57850,9 +57144,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/releases/mozilla-release:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-3:mozilla-release"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-3:mozilla-release"],
     "lastModified": "2018-06-15T17:52:25.357Z",
     "created": "2018-04-25T21:59:32.951Z"
   },
@@ -58091,9 +57383,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/projects/ash:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:releng:push:gecko:level-2:ash"
-    ],
+    "scopes": ["assume:project:releng:push:gecko:level-2:ash"],
     "lastModified": "2018-06-15T17:50:38.965Z",
     "created": "2018-04-25T21:59:34.901Z"
   },
@@ -58194,9 +57484,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|rbarker",
     "description": "",
-    "scopes": [
-      "assume:project-admin:firefoxreality"
-    ],
+    "scopes": ["assume:project-admin:firefoxreality"],
     "lastModified": "2018-04-26T16:13:53.006Z",
     "created": "2018-04-26T16:13:53.006Z"
   },
@@ -58754,9 +58042,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|tprince",
     "description": "",
-    "scopes": [
-      "assume:project-admin:comm"
-    ],
+    "scopes": ["assume:project-admin:comm"],
     "lastModified": "2018-04-27T22:21:06.941Z",
     "created": "2018-04-27T22:21:06.941Z"
   },
@@ -58808,9 +58094,7 @@
     ],
     "roleId": "repo:github.com/MozillaReality/*",
     "description": "",
-    "scopes": [
-      "assume:project:taskcluster:mozilla-github-repository"
-    ],
+    "scopes": ["assume:project:taskcluster:mozilla-github-repository"],
     "lastModified": "2018-04-28T00:17:37.433Z",
     "created": "2018-04-28T00:17:37.433Z"
   },
@@ -59332,9 +58616,7 @@
     ],
     "roleId": "mozilla-group:cloudservices_dev",
     "description": "https://bugzilla.mozilla.org/show_bug.cgi?id=1458965",
-    "scopes": [
-      "assume:project-admin:testpilot"
-    ],
+    "scopes": ["assume:project-admin:testpilot"],
     "lastModified": "2018-05-03T17:52:54.174Z",
     "created": "2018-05-03T17:52:54.174Z"
   },
@@ -59395,9 +58677,7 @@
     ],
     "roleId": "repo:github.com/mozilla/notes:*",
     "description": "Notes Env Vars",
-    "scopes": [
-      "secrets:get:project/testpilot/notes"
-    ],
+    "scopes": ["secrets:get:project/testpilot/notes"],
     "lastModified": "2018-05-03T20:02:42.532Z",
     "created": "2018-05-03T20:02:42.532Z"
   },
@@ -59423,9 +58703,7 @@
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-urls:branch:master",
     "description": "",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-urls/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-urls/"],
     "lastModified": "2018-05-04T23:54:01.684Z",
     "created": "2018-05-04T23:54:01.684Z"
   },
@@ -59735,22 +59013,15 @@
     ],
     "roleId": "hook-id:project-comm/releng/nightly/desktop/comm-central",
     "description": "Scopes for triggered nighties on comm-central",
-    "scopes": [
-      "assume:repo:hg.mozilla.org/comm-central:cron:*"
-    ],
+    "scopes": ["assume:repo:hg.mozilla.org/comm-central:cron:*"],
     "lastModified": "2018-05-06T06:21:41.180Z",
     "created": "2018-05-06T06:21:15.898Z"
   },
   {
-    "expandedScopes": [
-      "assume:project:comm:trigger-nightlies",
-      "hooks:trigger-hook:project-comm/releng/nightly/*"
-    ],
+    "expandedScopes": ["assume:project:comm:trigger-nightlies", "hooks:trigger-hook:project-comm/releng/nightly/*"],
     "roleId": "project:comm:trigger-nightlies",
     "description": "Scopes required to trigger comm-central nigthlies",
-    "scopes": [
-      "hooks:trigger-hook:project-comm/releng/nightly/*"
-    ],
+    "scopes": ["hooks:trigger-hook:project-comm/releng/nightly/*"],
     "lastModified": "2018-05-06T07:01:31.155Z",
     "created": "2018-05-06T07:01:31.155Z"
   },
@@ -59767,9 +59038,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|mozilla23456789",
     "description": "https://bugzilla.mozilla.org/show_bug.cgi?id=1459478",
-    "scopes": [
-      "assume:project:comm:trigger-nightlies"
-    ],
+    "scopes": ["assume:project:comm:trigger-nightlies"],
     "lastModified": "2018-05-18T12:11:32.260Z",
     "created": "2018-05-07T12:50:55.931Z"
   },
@@ -59864,9 +59133,7 @@
     ],
     "roleId": "mozilla-group:servo_ops",
     "description": "",
-    "scopes": [
-      "assume:project-admin:servo"
-    ],
+    "scopes": ["assume:project-admin:servo"],
     "lastModified": "2018-05-08T20:31:50.234Z",
     "created": "2018-05-08T20:31:50.234Z"
   },
@@ -59941,9 +59208,7 @@
     ],
     "roleId": "login-identity:mozilla-auth0/ad|Mozilla-LDAP|edunham",
     "description": "",
-    "scopes": [
-      "assume:project-admin:servo"
-    ],
+    "scopes": ["assume:project-admin:servo"],
     "lastModified": "2018-05-15T18:37:26.173Z",
     "created": "2018-05-15T18:37:26.173Z"
   },
@@ -60256,9 +59521,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/releases/comm-esr60:*",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:branch:comm:level-3:comm-esr60"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:branch:comm:level-3:comm-esr60"],
     "lastModified": "2018-06-25T22:39:13.835Z",
     "created": "2018-05-17T13:19:19.954Z"
   },
@@ -60571,9 +59834,7 @@
     ],
     "roleId": "repo:hg.mozilla.org/releases/comm-esr60:branch:default",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to pushes to this repository only (not actions or crontasks)",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:push:comm:level-3:comm-esr60"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:push:comm:level-3:comm-esr60"],
     "lastModified": "2018-06-15T17:52:45.786Z",
     "created": "2018-05-17T13:19:22.012Z"
   },
@@ -60599,9 +59860,7 @@
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-lib-azure:branch:master",
     "description": "",
-    "scopes": [
-      "auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-azure/"
-    ],
+    "scopes": ["auth:aws-s3:read-write:taskcluster-raw-docs/taskcluster-lib-azure/"],
     "lastModified": "2018-05-18T14:07:17.117Z",
     "created": "2018-05-18T14:07:17.117Z"
   },
@@ -60669,9 +59928,7 @@
     ],
     "roleId": "mozilla-group:web_platform_tests",
     "description": "",
-    "scopes": [
-      "assume:project-admin:wpt"
-    ],
+    "scopes": ["assume:project-admin:wpt"],
     "lastModified": "2018-05-18T14:16:19.896Z",
     "created": "2018-05-18T14:16:19.896Z"
   },
@@ -63671,9 +62928,7 @@
     ],
     "roleId": "project:gecko:in-tree-action-trigger:active_scm_level_1",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nPermission for people in the active_scm_level_1 group to trigger action hooks",
-    "scopes": [
-      "hooks:trigger-hook:project-gecko/in-tree-action-1-generic/*"
-    ],
+    "scopes": ["hooks:trigger-hook:project-gecko/in-tree-action-1-generic/*"],
     "lastModified": "2018-06-15T15:44:57.213Z",
     "created": "2018-06-01T15:17:11.115Z"
   },
@@ -63716,9 +62971,7 @@
     ],
     "roleId": "project:comm:in-tree-action-trigger:active_scm_level_1",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nPermission for people in the active_scm_level_1 group to trigger action hooks",
-    "scopes": [
-      "hooks:trigger-hook:project-comm/in-tree-action-1-generic/*"
-    ],
+    "scopes": ["hooks:trigger-hook:project-comm/in-tree-action-1-generic/*"],
     "lastModified": "2018-06-15T15:45:13.183Z",
     "created": "2018-06-01T15:17:19.797Z"
   },
@@ -63761,9 +63014,7 @@
     ],
     "roleId": "project:gecko:in-tree-action-trigger:taskcluster",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nPermission for people in the taskcluster group to trigger action hooks",
-    "scopes": [
-      "hooks:trigger-hook:project-gecko/in-tree-action-1-purge-caches/*"
-    ],
+    "scopes": ["hooks:trigger-hook:project-gecko/in-tree-action-1-purge-caches/*"],
     "lastModified": "2018-06-15T15:45:33.836Z",
     "created": "2018-06-01T15:17:24.355Z"
   },
@@ -63774,9 +63025,7 @@
     ],
     "roleId": "project:gecko:in-tree-action-trigger:vpn_sheriff",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nPermission for people in the vpn_sheriff group to trigger action hooks",
-    "scopes": [
-      "hooks:trigger-hook:project-gecko/in-tree-action-1-purge-caches/*"
-    ],
+    "scopes": ["hooks:trigger-hook:project-gecko/in-tree-action-1-purge-caches/*"],
     "lastModified": "2018-06-15T15:45:29.055Z",
     "created": "2018-06-01T15:17:25.397Z"
   },
@@ -63817,9 +63066,7 @@
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-pulse:*",
     "description": "Scopes for pushes to and pull requests against tc-pulse",
-    "scopes": [
-      "secrets:get:project/taskcluster/testing/taskcluster-pulse"
-    ],
+    "scopes": ["secrets:get:project/taskcluster/testing/taskcluster-pulse"],
     "lastModified": "2018-06-05T21:39:51.783Z",
     "created": "2018-06-05T21:37:17.146Z"
   },
@@ -63943,9 +63190,7 @@
     ],
     "roleId": "repo:github.com/mozilla/application-services:*",
     "description": "Routes to tag release artifacts.",
-    "scopes": [
-      "queue:route:index.project.fxaclient.builds.*"
-    ],
+    "scopes": ["queue:route:index.project.fxaclient.builds.*"],
     "lastModified": "2018-06-19T19:52:25.631Z",
     "created": "2018-06-19T19:52:25.631Z"
   },
@@ -63971,9 +63216,7 @@
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-queue:*",
     "description": "Scopes for pushes, pull-requests",
-    "scopes": [
-      "secrets:get:project/taskcluster/testing/taskcluster-queue"
-    ],
+    "scopes": ["secrets:get:project/taskcluster/testing/taskcluster-queue"],
     "lastModified": "2018-06-20T21:54:06.072Z",
     "created": "2018-06-20T21:54:06.072Z"
   },
@@ -64014,9 +63257,7 @@
     ],
     "roleId": "repo:github.com/taskcluster/taskcluster-index:*",
     "description": "Roles for all pushes, PRs, etc. to tc-index",
-    "scopes": [
-      "secrets:get:project/taskcluster/testing/taskcluster-index"
-    ],
+    "scopes": ["secrets:get:project/taskcluster/testing/taskcluster-index"],
     "lastModified": "2018-06-21T22:55:59.802Z",
     "created": "2018-06-21T22:55:59.802Z"
   },
@@ -65596,9 +64837,7 @@
     ],
     "roleId": "project:comm:thunderbird:comm:releng:branch:comm:level-3:comm-central",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
-    "scopes": [
-      "assume:project:comm:thunderbird:comm:releng:feature:is-trunk:comm:level-3:comm-central"
-    ],
+    "scopes": ["assume:project:comm:thunderbird:comm:releng:feature:is-trunk:comm:level-3:comm-central"],
     "lastModified": "2018-06-25T22:39:01.387Z",
     "created": "2018-06-25T22:39:01.387Z"
   },
@@ -67676,9 +66915,7 @@
     ],
     "roleId": "project:releng:branch:gecko:level-3:mozilla-esr60",
     "description": "*DO NOT EDIT* - This resource is configured automatically by [ci-admin](https://hg.mozilla.org/build/ci-admin).\n\nScopes that apply to everything occuring in this repository - push, cron, actions, etc.",
-    "scopes": [
-      "assume:project:releng:feature:taskcluster-docker-routes-v2:gecko:level-3:mozilla-esr60"
-    ],
+    "scopes": ["assume:project:releng:feature:taskcluster-docker-routes-v2:gecko:level-3:mozilla-esr60"],
     "lastModified": "2018-06-25T22:39:23.542Z",
     "created": "2018-06-25T22:39:23.542Z"
   },

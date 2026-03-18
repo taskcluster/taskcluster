@@ -12,10 +12,7 @@ export default class Scopes extends Component {
     return (
       <Switch>
         {routes(path).map(({ routes, ...routeProps }) => (
-          <RouteWithProps
-            key={routeProps.path || 'not-found'}
-            {...routeProps}
-          />
+          <RouteWithProps key={routeProps.path || 'not-found'} {...routeProps} />
         ))}
       </Switch>
     );

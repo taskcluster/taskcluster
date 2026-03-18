@@ -6,7 +6,7 @@ import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 import { syncStaticClients } from '../src/static-clients.js';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -28,7 +28,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   test('other clients can be created and removed', async () => {
     debug('test that we can create static clients');
     await syncStaticClients(helper.db, [
-      ...helper.cfg.app.staticClients, {
+      ...helper.cfg.app.staticClients,
+      {
         clientId: 'static/mystuff/foo',
         accessToken: 'test-secret-12345678910',
         description: 'Just testing, you should never see this in production!!!',
@@ -52,33 +53,44 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('adding scopes for a static/taskcluster client is an error', async () => {
-    await assert.rejects(() => syncStaticClients(helper.db, [
-      ...helper.cfg.app.staticClients
-        .filter(({ clientId }) => clientId !== 'static/taskcluster/queue'),
-      {
-        clientId: 'static/taskcluster/queue',
-        accessToken: 'test-secret-12345678910',
-        description: 'testing',
-        scopes: ['new-queue-scope'],
-      },
-    ]), /not allowed/);
+    await assert.rejects(
+      () =>
+        syncStaticClients(helper.db, [
+          ...helper.cfg.app.staticClients.filter(({ clientId }) => clientId !== 'static/taskcluster/queue'),
+          {
+            clientId: 'static/taskcluster/queue',
+            accessToken: 'test-secret-12345678910',
+            description: 'testing',
+            scopes: ['new-queue-scope'],
+          },
+        ]),
+      /not allowed/,
+    );
   });
 
   test('omitting a static/taskcluster client is an error', async () => {
-    await assert.rejects(() => syncStaticClients(helper.db,
-      helper.cfg.app.staticClients
-        .filter(({ clientId }) => clientId !== 'static/taskcluster/queue')),
-    /missing clients/);
+    await assert.rejects(
+      () =>
+        syncStaticClients(
+          helper.db,
+          helper.cfg.app.staticClients.filter(({ clientId }) => clientId !== 'static/taskcluster/queue'),
+        ),
+      /missing clients/,
+    );
   });
 
   test('adding extra static/taskcluster clients is an error', async () => {
-    await assert.rejects(() => syncStaticClients(helper.db, [
-      ...helper.cfg.app.staticClients,
-      {
-        clientId: 'static/taskcluster/newthing',
-        accessToken: 'test-secret-12345678910',
-        description: 'testing',
-      },
-    ]), /extra clients/);
+    await assert.rejects(
+      () =>
+        syncStaticClients(helper.db, [
+          ...helper.cfg.app.staticClients,
+          {
+            clientId: 'static/taskcluster/newthing',
+            accessToken: 'test-secret-12345678910',
+            description: 'testing',
+          },
+        ]),
+      /extra clients/,
+    );
   });
 });

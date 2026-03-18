@@ -8,13 +8,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import IconButton from '@material-ui/core/IconButton';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import {
-  Drawer,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-} from '@material-ui/core';
+import { Drawer, Typography, List, ListItem, ListItemText } from '@material-ui/core';
 import Button from '../Button';
 import TableCellItem from '../TableCellItem';
 import Link from '../../utils/Link';
@@ -30,7 +24,7 @@ import { provisioner } from '../../utils/prop-types';
 
 @withRouter
 @withAuth
-@withStyles(theme => ({
+@withStyles((theme) => ({
   infoButton: {
     marginLeft: -theme.spacing(2),
     marginRight: theme.spacing(1),
@@ -73,10 +67,8 @@ export default class ProvisionerDetailsTable extends Component {
     }
 
     return provisioners.sort((a, b) => {
-      const firstElement =
-        sortDirection === 'desc' ? b.node[sortBy] : a.node[sortBy];
-      const secondElement =
-        sortDirection === 'desc' ? a.node[sortBy] : b.node[sortBy];
+      const firstElement = sortDirection === 'desc' ? b.node[sortBy] : a.node[sortBy];
+      const secondElement = sortDirection === 'desc' ? a.node[sortBy] : b.node[sortBy];
 
       return sort(firstElement, secondElement);
     });
@@ -94,7 +86,7 @@ export default class ProvisionerDetailsTable extends Component {
     });
   };
 
-  handleDrawerOpen = provisioner => {
+  handleDrawerOpen = (provisioner) => {
     this.setState({
       drawerOpen: true,
       drawerProvisioner: provisioner,
@@ -107,29 +99,24 @@ export default class ProvisionerDetailsTable extends Component {
     });
   };
 
-  handleActionClick = selectedAction => {
+  handleActionClick = (selectedAction) => {
     this.setState({ dialogOpen: true, selectedAction });
   };
 
-  handleActionError = dialogError => {
+  handleActionError = (dialogError) => {
     this.setState({ dialogError, actionLoading: false });
   };
 
   // TODO: Action not working.
   handleActionSubmit = async () => {
     const { selectedAction, drawerProvisioner: provisioner } = this.state;
-    const url = selectedAction.url.replace(
-      '<provisionerId>',
-      provisioner.provisionerId
-    );
+    const url = selectedAction.url.replace('<provisionerId>', provisioner.provisionerId);
 
     this.setState({ actionLoading: true, dialogError: null });
 
     await fetch(url, {
       method: selectedAction.method,
-      Authorization: `Bearer ${btoa(
-        JSON.stringify(this.props.user.credentials)
-      )}`,
+      Authorization: `Bearer ${btoa(JSON.stringify(this.props.user.credentials))}`,
     });
 
     this.setState({ actionLoading: false, dialogError: null });
@@ -149,12 +136,14 @@ export default class ProvisionerDetailsTable extends Component {
           <IconButton
             className={classes.infoButton}
             name={provisioner.provisionerId}
-            onClick={() => this.handleDrawerOpen(provisioner)}>
+            onClick={() => this.handleDrawerOpen(provisioner)}
+          >
             <InformationVariantIcon size={iconSize} />
           </IconButton>
           <Link
             to={`/provisioners/${provisioner.provisionerId}`}
-            title={`Explore worker types for ${provisioner.provisionerId}`}>
+            title={`Explore worker types for ${provisioner.provisionerId}`}
+          >
             <TableCellItem button>
               {provisioner.provisionerId}
               <LinkIcon size={iconSize} />
@@ -187,23 +176,13 @@ export default class ProvisionerDetailsTable extends Component {
           <ListItem>
             <ListItemText
               primary="Description"
-              secondary={
-                drawerProvisioner?.description ? (
-                  <Markdown>{drawerProvisioner.description}</Markdown>
-                ) : (
-                  'n/a'
-                )
-              }
+              secondary={drawerProvisioner?.description ? <Markdown>{drawerProvisioner.description}</Markdown> : 'n/a'}
             />
           </ListItem>
           <ListItem>
             <ListItemText
               primary="Actions"
-              secondary={
-                drawerProvisioner?.actions.length
-                  ? this.renderActions()
-                  : 'n/a'
-              }
+              secondary={drawerProvisioner?.actions.length ? this.renderActions() : 'n/a'}
             />
           </ListItem>
         </List>
@@ -214,12 +193,10 @@ export default class ProvisionerDetailsTable extends Component {
   renderActions = () => {
     const { classes } = this.props;
     const { actionLoading, drawerProvisioner: provisioner } = this.state;
-    const { actions } = provisioner.actions.filter(
-      ({ context }) => context === ACTION_CONTEXT.PROVISIONER
-    );
+    const { actions } = provisioner.actions.filter(({ context }) => context === ACTION_CONTEXT.PROVISIONER);
 
     if (actions.length) {
-      return actions.map(action => (
+      return actions.map((action) => (
         <Button
           classes={{ root: classes.actionButton }}
           key={action.title}
@@ -233,7 +210,8 @@ export default class ProvisionerDetailsTable extends Component {
           onClick={() => this.handleActionClick(action)}
           disabled={actionLoading}
           size="small"
-          variant="contained">
+          variant="contained"
+        >
           {action.title}
         </Button>
       ));
@@ -244,9 +222,7 @@ export default class ProvisionerDetailsTable extends Component {
     const { provisioners } = this.props;
     const query = parse(this.props.location.search.slice(1));
     const { drawerOpen, dialogError, dialogOpen, selectedAction } = this.state;
-    const { sortBy, sortDirection } = query.sortBy
-      ? query
-      : { sortBy: null, sortDirection: null };
+    const { sortBy, sortDirection } = query.sortBy ? query : { sortBy: null, sortDirection: null };
     const headers = [
       { label: 'Provisioner', id: 'provisionerId', type: 'string' },
       { label: 'Last Active', id: 'lastDateActive', type: 'string' },
@@ -266,10 +242,7 @@ export default class ProvisionerDetailsTable extends Component {
           renderRow={this.renderTableRow}
           headers={headers}
         />
-        <Drawer
-          anchor="right"
-          open={drawerOpen}
-          onClose={this.handleDrawerClose}>
+        <Drawer anchor="right" open={drawerOpen} onClose={this.handleDrawerClose}>
           {this.renderDrawerContent()}
         </Drawer>
         {dialogOpen && (

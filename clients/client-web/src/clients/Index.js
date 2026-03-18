@@ -10,17 +10,130 @@ export default class Index extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
-    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
-    this.findTask.entry = {"args":["indexPath"],"category":"Index Service","method":"get","name":"findTask","output":true,"query":[],"route":"/task/<indexPath>","scopes":"index:find-task:<indexPath>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.findTasksAtIndex.entry = {"args":[],"category":"Index Service","input":true,"method":"post","name":"findTasksAtIndex","output":true,"query":["continuationToken","limit"],"route":"/tasks/indexes","scopes":{"AllOf":[{"each":"index:find-task:<indexPath>","for":"indexPath","in":"indexPaths"}]},"stability":"experimental","type":"function"}; // eslint-disable-line
-    this.listNamespaces.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listNamespaces","output":true,"query":["continuationToken","limit"],"route":"/namespaces/<namespace>","scopes":"index:list-namespaces:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.listTasks.entry = {"args":["namespace"],"category":"Index Service","method":"get","name":"listTasks","output":true,"query":["continuationToken","limit"],"route":"/tasks/<namespace>","scopes":"index:list-tasks:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.insertTask.entry = {"args":["namespace"],"category":"Index Service","input":true,"method":"put","name":"insertTask","output":true,"query":[],"route":"/task/<namespace>","scopes":"index:insert-task:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.deleteTask.entry = {"args":["namespace"],"category":"Index Service","method":"delete","name":"deleteTask","query":[],"route":"/task/<namespace>","scopes":"index:delete-task:<namespace>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.findArtifactFromTask.entry = {"args":["indexPath","name"],"category":"Index Service","method":"get","name":"findArtifactFromTask","query":[],"route":"/task/<indexPath>/artifacts/<name>","scopes":"queue:get-artifact:<name>","stability":"stable","type":"function"}; // eslint-disable-line
-    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.ping.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'ping',
+      query: [],
+      route: '/ping',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.lbheartbeat.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'lbheartbeat',
+      query: [],
+      route: '/__lbheartbeat__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.version.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'version',
+      query: [],
+      route: '/__version__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.findTask.entry = {
+      args: ['indexPath'],
+      category: 'Index Service',
+      method: 'get',
+      name: 'findTask',
+      output: true,
+      query: [],
+      route: '/task/<indexPath>',
+      scopes: 'index:find-task:<indexPath>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.findTasksAtIndex.entry = {
+      args: [],
+      category: 'Index Service',
+      input: true,
+      method: 'post',
+      name: 'findTasksAtIndex',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/tasks/indexes',
+      scopes: { AllOf: [{ each: 'index:find-task:<indexPath>', for: 'indexPath', in: 'indexPaths' }] },
+      stability: 'experimental',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listNamespaces.entry = {
+      args: ['namespace'],
+      category: 'Index Service',
+      method: 'get',
+      name: 'listNamespaces',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/namespaces/<namespace>',
+      scopes: 'index:list-namespaces:<namespace>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.listTasks.entry = {
+      args: ['namespace'],
+      category: 'Index Service',
+      method: 'get',
+      name: 'listTasks',
+      output: true,
+      query: ['continuationToken', 'limit'],
+      route: '/tasks/<namespace>',
+      scopes: 'index:list-tasks:<namespace>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.insertTask.entry = {
+      args: ['namespace'],
+      category: 'Index Service',
+      input: true,
+      method: 'put',
+      name: 'insertTask',
+      output: true,
+      query: [],
+      route: '/task/<namespace>',
+      scopes: 'index:insert-task:<namespace>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.deleteTask.entry = {
+      args: ['namespace'],
+      category: 'Index Service',
+      method: 'delete',
+      name: 'deleteTask',
+      query: [],
+      route: '/task/<namespace>',
+      scopes: 'index:delete-task:<namespace>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.findArtifactFromTask.entry = {
+      args: ['indexPath', 'name'],
+      category: 'Index Service',
+      method: 'get',
+      name: 'findArtifactFromTask',
+      query: [],
+      route: '/task/<indexPath>/artifacts/<name>',
+      scopes: 'queue:get-artifact:<name>',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
+    this.heartbeat.entry = {
+      args: [],
+      category: 'Monitoring',
+      method: 'get',
+      name: 'heartbeat',
+      query: [],
+      route: '/__heartbeat__',
+      stability: 'stable',
+      type: 'function',
+    }; // eslint-disable-line
   }
   /* eslint-disable max-len */
   // Respond without doing anything.

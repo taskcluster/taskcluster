@@ -7,11 +7,9 @@ import TextField from '@material-ui/core/TextField';
 import { alpha, withStyles } from '@material-ui/core/styles';
 import Markdown from '../Markdown';
 
-@withStyles(theme => {
+@withStyles((theme) => {
   const borderColor =
-    theme.palette.type === 'light'
-      ? alpha(theme.palette.common.black, 0.23)
-      : alpha(theme.palette.common.white, 0.23);
+    theme.palette.type === 'light' ? alpha(theme.palette.common.black, 0.23) : alpha(theme.palette.common.white, 0.23);
 
   return {
     tab: {
@@ -84,8 +82,7 @@ export default class MarkdownTextArea extends Component {
   constructor(props) {
     super(props);
 
-    this.isControlled =
-      'value' in props && props.value !== undefined && props.value !== null;
+    this.isControlled = 'value' in props && props.value !== undefined && props.value !== null;
   }
 
   state = {
@@ -93,7 +90,7 @@ export default class MarkdownTextArea extends Component {
     value: '',
   };
 
-  handleValueChange = event => {
+  handleValueChange = (event) => {
     const { onChange } = this.props;
 
     if (this.isControlled) {
@@ -108,14 +105,7 @@ export default class MarkdownTextArea extends Component {
   };
 
   render() {
-    const {
-      classes,
-      rows,
-      markdownProps,
-      onChange,
-      defaultTabIndex,
-      ...props
-    } = this.props;
+    const { classes, rows, markdownProps, onChange, defaultTabIndex, ...props } = this.props;
     const { tabIndex, value } = this.state;
     const isPreview = tabIndex === 1;
 
@@ -129,7 +119,8 @@ export default class MarkdownTextArea extends Component {
           style={isPreview ? { minHeight: rows * 20 } : null}
           className={classNames(classes.tabContent, {
             [classes.markdownContainer]: isPreview,
-          })}>
+          })}
+        >
           {!isPreview && (
             <TextField
               name="Write"
@@ -142,12 +133,7 @@ export default class MarkdownTextArea extends Component {
             />
           )}
           {isPreview && (
-            <Markdown
-              {...markdownProps}
-              className={classNames(
-                classes.markdown,
-                markdownProps?.className
-              )}>
+            <Markdown {...markdownProps} className={classNames(classes.markdown, markdownProps?.className)}>
               {props.value || value || 'Nothing to Preview'}
             </Markdown>
           )}

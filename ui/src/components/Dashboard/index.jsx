@@ -24,11 +24,7 @@ import PageTitle from '../PageTitle';
 import Helmet from '../Helmet';
 import UserMenu from '../UserMenu';
 import SidebarList from './SidebarList';
-import {
-  THEME,
-  DOCS_PATH_PREFIX,
-  CONTENT_MAX_WIDTH,
-} from '../../utils/constants';
+import { THEME, DOCS_PATH_PREFIX, CONTENT_MAX_WIDTH } from '../../utils/constants';
 import { withThemeToggler } from '../../utils/ToggleTheme';
 import Link from '../../utils/Link';
 import Logo from '../../images/brandLogo.png';
@@ -39,7 +35,7 @@ import SkipNavigation from '../SkipNavigation';
 @withRouter
 @withWidth()
 @withStyles(
-  theme => ({
+  (theme) => ({
     root: {
       flexGrow: 1,
       justifyContent: 'center',
@@ -161,7 +157,7 @@ import SkipNavigation from '../SkipNavigation';
       width: '100%',
     },
   }),
-  { withTheme: true }
+  { withTheme: true },
 )
 @withThemeToggler
 /**
@@ -266,12 +262,7 @@ export default class Dashboard extends Component {
     const logoWithApplicationName = (
       <Fragment>
         <div className={classes.toolbar}>
-          <img
-            className={classes.logoStyle}
-            height={30}
-            alt="logo"
-            src={Logo}
-          />
+          <img className={classes.logoStyle} height={30} alt="logo" src={Logo} />
           {window.env.DOCS_ONLY ? (
             <Typography variant="h6" noWrap className={classes.title}>
               {window.env.APPLICATION_NAME}
@@ -289,24 +280,15 @@ export default class Dashboard extends Component {
     const drawer = (
       <nav className={classes.nav}>
         <div id="sidebar-menu">
-          {window.env.DOCS_ONLY ? (
-            <Link to="/">{logoWithApplicationName}</Link>
-          ) : (
-            <div>{logoWithApplicationName}</div>
-          )}
+          {window.env.DOCS_ONLY ? <Link to="/">{logoWithApplicationName}</Link> : <div>{logoWithApplicationName}</div>}
           <Divider />
           <UserMenu />
           <Divider />
           {docs ? <DocsSidebarList /> : <SidebarList />}
         </div>
         {deploymentVersion && (
-          <Link
-            to={`${DOCS_PATH_PREFIX}/changelog?version=v${deploymentVersion}`}
-            title="See changelog">
-            <Typography
-              className={classes.deploymentVersion}
-              variant="caption"
-              noWrap>
+          <Link to={`${DOCS_PATH_PREFIX}/changelog?version=v${deploymentVersion}`} title="See changelog">
+            <Typography className={classes.deploymentVersion} variant="caption" noWrap>
               {deploymentVersion}
             </Typography>
           </Link>
@@ -326,7 +308,8 @@ export default class Dashboard extends Component {
             <AppBar
               className={classNames(classes.appBar, {
                 [classes.docsAppBar]: isDocs,
-              })}>
+              })}
+            >
               <Toolbar>
                 <SkipNavigation selector="main" />
                 {(!isDocs || (isDocs && isMobileView)) && (
@@ -335,7 +318,8 @@ export default class Dashboard extends Component {
                     aria-label="toggle drawer"
                     onClick={this.handleDrawerToggle}
                     id="toggle-drawer"
-                    className={classes.navIconHide}>
+                    className={classes.navIconHide}
+                  >
                     <MenuIcon className={classes.appIcon} />
                   </IconButton>
                 )}
@@ -344,9 +328,7 @@ export default class Dashboard extends Component {
                 </Typography>
                 {search}
                 <Tooltip placement="bottom" title="Toggle light/dark theme">
-                  <IconButton
-                    className={classes.leftAppBarButton}
-                    onClick={onToggleTheme}>
+                  <IconButton className={classes.leftAppBarButton} onClick={onToggleTheme}>
                     {theme.palette.type === 'dark' ? (
                       <LightBulbOn className={classes.appIcon} />
                     ) : (
@@ -392,7 +374,8 @@ export default class Dashboard extends Component {
                 paper: classNames(classes.drawerPaper, {
                   [classes.docsDrawerPaper]: isDocs,
                 }),
-              }}>
+              }}
+            >
               {drawer}
             </Drawer>
             <Drawer
@@ -405,11 +388,10 @@ export default class Dashboard extends Component {
               }}
               ModalProps={{
                 keepMounted: true,
-              }}>
+              }}
+            >
               <Fragment>
-                <IconButton
-                  onClick={this.handleHelpViewToggle}
-                  className={classes.helpCloseIcon}>
+                <IconButton onClick={this.handleHelpViewToggle} className={classes.helpCloseIcon}>
                   <CloseIcon />
                 </IconButton>
                 {helpView}
@@ -425,9 +407,10 @@ export default class Dashboard extends Component {
               [classes.docsContent]: isDocs && !disableAppbar,
               [classes.disableAppbar]: disableAppbar,
             },
-            className
+            className,
           )}
-          {...props}>
+          {...props}
+        >
           <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
             {children}
           </ErrorBoundary>

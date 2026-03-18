@@ -17,8 +17,7 @@ export class TaskCreator {
   constructor(options) {
     assert(options, 'options must be given');
     assert(options.rootUrl, 'Expected rootUrl');
-    assert(options.credentials instanceof Object,
-      'Expected credentials');
+    assert(options.credentials instanceof Object, 'Expected credentials');
 
     this.rootUrl = options.rootUrl;
     this.credentials = options.credentials;
@@ -54,29 +53,21 @@ export class TaskCreator {
   }
 
   async appendLastFire({ hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error }) {
-    await this.db.fns.create_last_fire(
-      hookGroupId,
-      hookId,
-      firedBy,
-      taskId,
-      taskCreateTime,
-      result,
-      error,
-    );
+    await this.db.fns.create_last_fire(hookGroupId, hookId, firedBy, taskId, taskCreateTime, result, error);
   }
 
   /**
-  * Fire the given hook, using the given payload (interpolating it into the task
-  * definition).  If options.taskId is set, it will be used as the taskId;
-  * otherwise a new taskId will be created.  If options.created is set, then
-  * it is used as the creation time for the task (to ensure idempotency).  If
-  * options.retry is false, then the call will not be automatically retried on
-  * 5xx errors.
-  *
-  * Returns a value matching `trigger-hook-response.yml`, or throws an
-  * exception if the task cannot be created.  Such an exception is also
-  * reported to the user via the LastFire table, so it is safe to ignore it.
-  */
+   * Fire the given hook, using the given payload (interpolating it into the task
+   * definition).  If options.taskId is set, it will be used as the taskId;
+   * otherwise a new taskId will be created.  If options.created is set, then
+   * it is used as the creation time for the task (to ensure idempotency).  If
+   * options.retry is false, then the call will not be automatically retried on
+   * 5xx errors.
+   *
+   * Returns a value matching `trigger-hook-response.yml`, or throws an
+   * exception if the task cannot be created.  Such an exception is also
+   * reported to the user via the LastFire table, so it is safe to ignore it.
+   */
   async fire(hook, context, options) {
     options = _.defaults({}, options, {
       taskId: taskcluster.slugid(),
@@ -124,8 +115,7 @@ export class TaskCreator {
       }
       this.monitor.count(`fire.${context.firedBy}.created`);
 
-      debug('firing hook %s/%s to create taskId: %s',
-        hook.hookGroupId, hook.hookId, options.taskId);
+      debug('firing hook %s/%s to create taskId: %s', hook.hookGroupId, hook.hookId, options.taskId);
       if (this.fakeCreate) {
         // for testing, just record that we *would* hvae called this..
         this.lastCreateTask = { taskId: options.taskId, task };
@@ -146,8 +136,8 @@ export class TaskCreator {
         } else {
           lfError = err.toString();
         }
-        if (lfError.length > 256 * 1024 / 2) {
-          lfError = lfError.substring(0, 256 * 1024 / 2);
+        if (lfError.length > (256 * 1024) / 2) {
+          lfError = lfError.substring(0, (256 * 1024) / 2);
         }
 
         lastFire.error = lfError;
@@ -162,7 +152,7 @@ export class TaskCreator {
       hookId: hook.hookId,
       firedBy: context.firedBy,
       taskId: options.taskId,
-      result: error ? 'failure' : (declined ? 'declined' : 'success'),
+      result: error ? 'failure' : declined ? 'declined' : 'success',
     });
 
     if (lastFire) {
@@ -196,7 +186,8 @@ export class MockTaskCreator extends TaskCreator {
       hookGroupId: hook.hookGroupId,
       hookId: hook.hookId,
       context,
-      options });
+      options,
+    });
     if (this.shouldNotProduceTask) {
       return;
     }

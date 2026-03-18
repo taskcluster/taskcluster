@@ -21,8 +21,7 @@ testing.withMonitor(helper);
 
 helper.secrets = new testing.Secrets({
   load: helper.load,
-  secrets: {
-  },
+  secrets: {},
 });
 
 helper.withDb = (mock, skipping) => {
@@ -35,7 +34,7 @@ helper.withDb = (mock, skipping) => {
  * helper.creator.shouldFail to make the TaskCreator fail.
  * Call this before withServer.
  */
-helper.withTaskCreator = function(_mock, skipping) {
+helper.withTaskCreator = function (_mock, skipping) {
   suiteSetup(async () => {
     if (skipping()) {
       return;
@@ -47,7 +46,7 @@ helper.withTaskCreator = function(_mock, skipping) {
     helper.load.inject('taskcreator', helper.creator);
   });
 
-  setup(function() {
+  setup(function () {
     helper.creator.fireCalls = [];
     helper.creator.shouldFail = false;
     helper.creator.shouldNotProduceTask = false;
@@ -68,7 +67,7 @@ helper.withPulse = (_mock, skipping) => {
 helper.withServer = (_mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -76,9 +75,12 @@ helper.withServer = (_mock, skipping) => {
     await helper.load('cfg');
 
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl },
+    );
 
     // Create client for working with API
     helper.Hooks = taskcluster.createClient(builder.reference());
@@ -103,11 +105,11 @@ helper.withServer = (_mock, skipping) => {
     webServer = await helper.load('server');
   });
 
-  setup(function() {
+  setup(function () {
     helper.scopes();
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (webServer) {
       await webServer.terminate();
       webServer = null;
@@ -116,11 +118,7 @@ helper.withServer = (_mock, skipping) => {
 };
 
 helper.resetTables = (_mock, _skipping) => {
-  setup('reset tables', async function() {
-    await testing.resetTables({ tableNames: [
-      'hooks',
-      'hooks_queues',
-      'hooks_last_fires',
-    ] });
+  setup('reset tables', async function () {
+    await testing.resetTables({ tableNames: ['hooks', 'hooks_queues', 'hooks_last_fires'] });
   });
 };

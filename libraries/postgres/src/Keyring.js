@@ -60,7 +60,7 @@ class Keyring {
    * @param {string} algo
    */
   currentCryptoKey(algo) {
-    assert(this.currentCrypto, "no current key is configured");
+    assert(this.currentCrypto, 'no current key is configured');
     const key = this.getCryptoKey(this.currentCrypto, algo);
     return { id: this.currentCrypto, key };
   }

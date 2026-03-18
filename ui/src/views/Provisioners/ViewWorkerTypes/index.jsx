@@ -14,7 +14,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import workerTypesQuery from './workerTypes.graphql';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   bar: {
     display: 'flex',
     alignItems: 'center',
@@ -31,7 +31,7 @@ import workerTypesQuery from './workerTypes.graphql';
   },
 }))
 @graphql(workerTypesQuery, {
-  skip: props => !props.match.params.provisionerId,
+  skip: (props) => !props.match.params.provisionerId,
   options: ({
     match: {
       params: { provisionerId },
@@ -71,12 +71,8 @@ export default class ViewWorkerTypes extends Component {
           return previousResult;
         }
 
-        return dotProp.set(previousResult, `workerTypes`, workerTypes =>
-          dotProp.set(
-            dotProp.set(workerTypes, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, `workerTypes`, (workerTypes) =>
+          dotProp.set(dotProp.set(workerTypes, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
@@ -119,14 +115,13 @@ export default class ViewWorkerTypes extends Component {
                   select
                   label="Provisioner ID"
                   value={provisionerId}
-                  onChange={this.handleProvisionerChange}>
+                  onChange={this.handleProvisionerChange}
+                >
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
                   {provisioners.edges.map(({ node }) => (
-                    <MenuItem
-                      key={node.provisionerId}
-                      value={node.provisionerId}>
+                    <MenuItem key={node.provisionerId} value={node.provisionerId}>
                       {node.provisionerId}
                     </MenuItem>
                   ))}

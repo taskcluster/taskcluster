@@ -27,7 +27,7 @@ const helper = {
   testPutUrlUpload,
 };
 
-suiteSetup(async function() {
+suiteSetup(async function () {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -36,9 +36,7 @@ testing.withMonitor(helper);
 
 // set up the testing secrets
 helper.secrets = new testing.Secrets({
-  secretName: [
-    'project/taskcluster/testing/taskcluster-object',
-  ],
+  secretName: ['project/taskcluster/testing/taskcluster-object'],
   secrets: {
     aws,
     google,
@@ -66,11 +64,9 @@ helper.withBackends = (_mock, skipping) => {
   const defaultBackends = {
     testBackend: { backendType: 'test' },
   };
-  const defaultBackendMap = [
-    { backendId: 'testBackend', when: 'all' },
-  ];
+  const defaultBackendMap = [{ backendId: 'testBackend', when: 'all' }];
 
-  suiteSetup('withBackends', async function() {
+  suiteSetup('withBackends', async function () {
     if (skipping()) {
       return;
     }
@@ -81,9 +77,7 @@ helper.withBackends = (_mock, skipping) => {
     BACKEND_TYPES.test = TestBackend;
 
     await load('cfg');
-    load.cfg('middleware', [
-      { middlewareType: 'test' },
-    ]);
+    load.cfg('middleware', [{ middlewareType: 'test' }]);
     load.cfg('backends', defaultBackends);
     load.cfg('backendMap', defaultBackendMap);
 
@@ -100,12 +94,12 @@ helper.withBackends = (_mock, skipping) => {
     };
   });
 
-  setup('withBackends', async function() {
+  setup('withBackends', async function () {
     // reset to default
     await helper.setBackendConfig();
   });
 
-  suiteTeardown('withBackends', async function() {
+  suiteTeardown('withBackends', async function () {
     if (skipping()) {
       return;
     }
@@ -118,7 +112,7 @@ helper.withBackends = (_mock, skipping) => {
 };
 
 helper.withMiddleware = (_mock, skipping, config) => {
-  suiteSetup('withMiddleware', async function() {
+  suiteSetup('withMiddleware', async function () {
     if (skipping()) {
       return;
     }
@@ -127,12 +121,10 @@ helper.withMiddleware = (_mock, skipping, config) => {
     MIDDLEWARE_TYPES.test = TestMiddleware;
 
     await load('cfg');
-    load.cfg('middleware', config || [
-      { middlewareType: 'test' },
-    ]);
+    load.cfg('middleware', config || [{ middlewareType: 'test' }]);
   });
 
-  suiteTeardown('withMiddleware', async function() {
+  suiteTeardown('withMiddleware', async function () {
     delete MIDDLEWARE_TYPES.test;
   });
 };
@@ -140,7 +132,7 @@ helper.withMiddleware = (_mock, skipping, config) => {
 helper.withServer = (_mock, skipping) => {
   let webServer;
 
-  suiteSetup('withServer', async function() {
+  suiteSetup('withServer', async function () {
     if (skipping()) {
       return;
     }
@@ -172,7 +164,7 @@ helper.withServer = (_mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (skipping()) {
       return;
     }
@@ -189,7 +181,7 @@ helper.withDb = (mock, skipping) => {
 };
 
 helper.resetTables = (_mock, _skipping) => {
-  setup('reset tables', async function() {
+  setup('reset tables', async function () {
     await testing.resetTables({
       tableNames: ['objects', 'object_hashes'],
     });
@@ -215,7 +207,7 @@ helper.assertSatisfiesSchema = async (data, id) => {
  */
 let objectCounter = 0;
 
-export const testObjectName = prefix =>
+export const testObjectName = (prefix) =>
   // Use `objectCounter` to ensure every test uses a different name, and
   // use all of the printable, problematic characters from
   // https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html

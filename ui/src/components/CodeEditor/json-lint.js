@@ -7,7 +7,7 @@ import 'codemirror/addon/lint/lint';
   so that it doesn't use window.jsonlint
   https://github.com/codemirror/CodeMirror/blob/master/addon/lint/json-lint.js
  */
-CodeMirror.registerHelper('lint', 'json', text => {
+CodeMirror.registerHelper('lint', 'json', (text) => {
   const found = [];
 
   parser.parseError = (str, hash) => {

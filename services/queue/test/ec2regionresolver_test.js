@@ -6,22 +6,22 @@ import EC2RegionResolver from '../src/ec2regionresolver.js';
 import { LEVELS } from '@taskcluster/lib-monitor';
 
 const __dirname = new URL('.', import.meta.url).pathname;
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   helper.withAmazonIPRanges(false, () => false);
 
   let monitor;
-  setup(async function() {
+  setup(async function () {
     monitor = await helper.load('monitor');
   });
 
-  const reqWithIp = ip => ({ headers: { 'x-client-ip': ip } });
+  const reqWithIp = (ip) => ({ headers: { 'x-client-ip': ip } });
 
-  test('newly-constructed state returns null', function() {
+  test('newly-constructed state returns null', function () {
     const res = new EC2RegionResolver(['us-west-1'], monitor);
     assert.equal(res.getRegion(reqWithIp('1.2.3.4')), null);
   });
 
-  test('loading ip ranges results in lookups for named regions', async function() {
+  test('loading ip ranges results in lookups for named regions', async function () {
     const res = new EC2RegionResolver(['us-west-1', 'us-west-2'], monitor);
     res.start();
     try {
@@ -34,7 +34,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('when loading ip ranges fails, it is retried', async function() {
+  test('when loading ip ranges fails, it is retried', async function () {
     nock.cleanAll();
 
     // fail once, then succeed
@@ -63,11 +63,14 @@ suite(testing.suiteName(), function() {
       nock.cleanAll();
     }
 
-    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'monitor.generic'), {
-      Logger: 'taskcluster.test',
-      Type: 'monitor.generic',
-      Fields: { message: 'Failed to download AWS IP ranges (retrying): Error: Internal Server Error' },
-      Severity: LEVELS.warning,
-    });
+    assert.deepEqual(
+      monitor.manager.messages.find(({ Type }) => Type === 'monitor.generic'),
+      {
+        Logger: 'taskcluster.test',
+        Type: 'monitor.generic',
+        Fields: { message: 'Failed to download AWS IP ranges (retrying): Error: Internal Server Error' },
+        Severity: LEVELS.warning,
+      },
+    );
   });
 });

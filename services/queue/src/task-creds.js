@@ -3,7 +3,7 @@ import taskcluster from '@taskcluster/client';
 /**
  * Creates temporary credentials for a task run.
  */
-const taskCredentials = function(taskId, runId, workerGroup, workerId, takenUntil, scopes, permaCreds) {
+const taskCredentials = function (taskId, runId, workerGroup, workerId, takenUntil, scopes, permaCreds) {
   const clientId = [
     'task-client',
     taskId,

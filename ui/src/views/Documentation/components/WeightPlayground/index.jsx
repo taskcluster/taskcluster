@@ -14,7 +14,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
 import computeWeightDistribution from './utils';
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(4),
@@ -28,10 +28,7 @@ const styles = theme => ({
     borderRadius: 5,
     minWidth: 80,
     '& .MuiLinearProgress-barColorPrimary': {
-      backgroundColor:
-        theme.palette.type === 'dark'
-          ? theme.palette.primary.light
-          : theme.palette.primary.dark,
+      backgroundColor: theme.palette.type === 'dark' ? theme.palette.primary.light : theme.palette.primary.dark,
     },
   },
   naText: {
@@ -55,16 +52,16 @@ function WeightPlayground({ classes }) {
     const parsed = parseFloat(value);
     const weight = Number.isNaN(parsed) || parsed < 0 ? 0 : Math.min(parsed, 1);
 
-    setConfigs(prev => prev.map(c => (c.id === id ? { ...c, weight } : c)));
+    setConfigs((prev) => prev.map((c) => (c.id === id ? { ...c, weight } : c)));
   };
 
   const handleAdd = () => {
     // eslint-disable-next-line no-plusplus
-    setConfigs(prev => [...prev, { id: nextId++, weight: 1.0 }]);
+    setConfigs((prev) => [...prev, { id: nextId++, weight: 1.0 }]);
   };
 
-  const handleRemove = id => {
-    setConfigs(prev => prev.filter(c => c.id !== id));
+  const handleRemove = (id) => {
+    setConfigs((prev) => prev.filter((c) => c.id !== id));
   };
 
   return (
@@ -94,35 +91,19 @@ function WeightPlayground({ classes }) {
                     className={classes.weightInput}
                     type="number"
                     value={config.weight}
-                    onChange={e =>
-                      handleWeightChange(config.id, e.target.value)
-                    }
+                    onChange={(e) => handleWeightChange(config.id, e.target.value)}
                     inputProps={{ min: 0, max: 1, step: 0.1 }}
                     size="small"
                     variant="outlined"
                   />
                 </TableCell>
                 <TableCell>
-                  {share !== null ? (
-                    `${share.toFixed(1)}%`
-                  ) : (
-                    <span className={classes.naText}>N/A</span>
-                  )}
+                  {share !== null ? `${share.toFixed(1)}%` : <span className={classes.naText}>N/A</span>}
                 </TableCell>
-                <TableCell>
-                  {workers !== null ? (
-                    workers
-                  ) : (
-                    <span className={classes.naText}>N/A</span>
-                  )}
-                </TableCell>
+                <TableCell>{workers !== null ? workers : <span className={classes.naText}>N/A</span>}</TableCell>
                 <TableCell>
                   {share !== null ? (
-                    <LinearProgress
-                      className={classes.progress}
-                      variant="determinate"
-                      value={share}
-                    />
+                    <LinearProgress className={classes.progress} variant="determinate" value={share} />
                   ) : (
                     <span className={classes.naText}>N/A</span>
                   )}
@@ -132,7 +113,8 @@ function WeightPlayground({ classes }) {
                     size="small"
                     onClick={() => handleRemove(config.id)}
                     disabled={configs.length === 1}
-                    aria-label="remove config">
+                    aria-label="remove config"
+                  >
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
@@ -146,7 +128,8 @@ function WeightPlayground({ classes }) {
         variant="outlined"
         size="small"
         onClick={handleAdd}
-        startIcon={<PlusIcon />}>
+        startIcon={<PlusIcon />}
+      >
         Add Config
       </Button>
     </div>

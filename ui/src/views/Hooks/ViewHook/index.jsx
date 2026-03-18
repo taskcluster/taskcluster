@@ -70,9 +70,7 @@ export default class ViewHook extends Component {
         awaitRefetchQueries: true,
       });
 
-      this.props.history.push(
-        `/hooks/${encodeURIComponent(hookGroupId)}/${hookId}`
-      );
+      this.props.history.push(`/hooks/${encodeURIComponent(hookGroupId)}/${hookId}`);
 
       this.setState({ error: null, actionLoading: false });
     } catch (error) {
@@ -148,7 +146,7 @@ export default class ViewHook extends Component {
     this.setState({ deleteDialogOpen: true });
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({ dialogError: error, actionLoading: false });
   };
 
@@ -181,7 +179,7 @@ export default class ViewHook extends Component {
       snackbar,
       exchangesDictionary,
     } = this.state;
-    const error = (data?.error) || err;
+    const error = data?.error || err;
     const hookLastFires = data?.hookLastFires?.edges
       ?.map(({ node }) => node)
       .sort((a, b) => new Date(b.taskCreateTime) - new Date(a.taskCreateTime));
@@ -224,9 +222,7 @@ export default class ViewHook extends Component {
                 onTriggerHook={this.handleTriggerHook}
                 onUpdateHook={this.handleUpdateHook}
                 onDeleteHook={this.handleDeleteHook}
-                onDialogActionDeleteComplete={
-                  this.handleActionDialogDeleteComplete
-                }
+                onDialogActionDeleteComplete={this.handleActionDialogDeleteComplete}
                 onDialogActionClose={this.handleActionDialogClose}
                 onDialogActionError={this.handleDialogActionError}
                 onDialogOpen={this.handleDialogOpen}

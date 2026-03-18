@@ -10,7 +10,7 @@ class MatrixBot {
     // we will override the methods and stick them all in trace messages
     // for structured logging instead since it also throws errors like normal
     const matrixLog = loglevel.getLogger('matrix');
-    matrixLog.methodFactory = (_methodName, level, _loggerName) => message => {
+    matrixLog.methodFactory = (_methodName, level, _loggerName) => (message) => {
       this._monitor.log.matrixSdkDebug({ level, message });
     };
     matrixLog.setLevel(matrixLog.getLevel()); // This makes the methodFactory stuff work
@@ -18,7 +18,7 @@ class MatrixBot {
 
   async start() {
     this._client.on('RoomMember.membership', async (_event, member) => {
-      if (member.membership === "invite" && member.userId === this._userId) {
+      if (member.membership === 'invite' && member.userId === this._userId) {
         await this._client.joinRoom(member.roomId);
       }
     });
@@ -26,7 +26,12 @@ class MatrixBot {
   }
 
   async sendMessage({ roomId, format, formattedBody, body, notice, msgtype }) {
-    await this._client.sendEvent(roomId, 'm.room.message', { formatted_body: formattedBody, body, msgtype, format }, '');
+    await this._client.sendEvent(
+      roomId,
+      'm.room.message',
+      { formatted_body: formattedBody, body, msgtype, format },
+      '',
+    );
   }
 }
 

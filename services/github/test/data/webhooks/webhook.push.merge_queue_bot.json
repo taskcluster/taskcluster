@@ -112,12 +112,7 @@
       "allow_forking": true,
       "is_template": false,
       "web_commit_signoff_required": false,
-      "topics": [
-        "firefox",
-        "fxa",
-        "push",
-        "sync"
-      ],
+      "topics": ["firefox", "fxa", "push", "sync"],
       "visibility": "public",
       "forks": 250,
       "open_issues": 20,
@@ -208,10 +203,7 @@
           "date": "2025-11-13T17:32:35Z",
           "username": "web-flow"
         },
-        "added": [
-          "components/ads-client/ARCHITECTURE.md",
-          "components/ads-client/src/ffi.rs"
-        ],
+        "added": ["components/ads-client/ARCHITECTURE.md", "components/ads-client/src/ffi.rs"],
         "removed": [],
         "modified": [
           "components/ads-client/src/client.rs",
@@ -244,10 +236,7 @@
         "date": "2025-11-13T17:32:35Z",
         "username": "web-flow"
       },
-      "added": [
-        "components/ads-client/ARCHITECTURE.md",
-        "components/ads-client/src/ffi.rs"
-      ],
+      "added": ["components/ads-client/ARCHITECTURE.md", "components/ads-client/src/ffi.rs"],
       "removed": [],
       "modified": [
         "components/ads-client/src/client.rs",

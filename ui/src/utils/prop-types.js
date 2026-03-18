@@ -1,15 +1,4 @@
-import {
-  arrayOf,
-  bool,
-  instanceOf,
-  array,
-  number,
-  object,
-  oneOf,
-  oneOfType,
-  shape,
-  string,
-} from 'prop-types';
+import { arrayOf, bool, instanceOf, array, number, object, oneOf, oneOfType, shape, string } from 'prop-types';
 import { DENYLIST_NOTIFICATION_TYPES } from './constants';
 
 export const user = shape({
@@ -79,14 +68,7 @@ export const run = shape({
 
 export const runs = arrayOf(run);
 
-export const taskState = oneOf([
-  'RUNNING',
-  'PENDING',
-  'UNSCHEDULED',
-  'COMPLETED',
-  'FAILED',
-  'EXCEPTION',
-]);
+export const taskState = oneOf(['RUNNING', 'PENDING', 'UNSCHEDULED', 'COMPLETED', 'FAILED', 'EXCEPTION']);
 
 export const status = shape({
   state: taskState,
@@ -112,16 +94,7 @@ export const taskMetadata = shape({
   source: string,
 });
 
-export const taskPriority = oneOf([
-  'HIGHEST',
-  'VERY_HIGH',
-  'HIGH',
-  'MEDIUM',
-  'LOW',
-  'VERY_LOW',
-  'LOWEST',
-  'NORMAL',
-]);
+export const taskPriority = oneOf(['HIGHEST', 'VERY_HIGH', 'HIGH', 'MEDIUM', 'LOW', 'VERY_LOW', 'LOWEST', 'NORMAL']);
 
 export const taskActions = shape({
   actions: arrayOf(object),
@@ -244,7 +217,7 @@ export const providersArray = arrayOf(
   shape({
     providerId: string,
     providerType: string,
-  })
+  }),
 );
 
 export const provisioner = shape({
@@ -319,7 +292,7 @@ export const hookWithLastFire = shape({
   bindings: arrayOf(
     shape({
       exchange: string,
-    })
+    }),
   ),
   lastFire: shape({
     taskId: string,
@@ -336,12 +309,10 @@ export const secret = shape({
 export const secrets = arrayOf(
   shape({
     name: string,
-  })
+  }),
 );
 
-export const notificationType = oneOf(
-  Object.values(DENYLIST_NOTIFICATION_TYPES)
-);
+export const notificationType = oneOf(Object.values(DENYLIST_NOTIFICATION_TYPES));
 
 export const notificationAddress = shape({
   notificationType,

@@ -22,7 +22,7 @@ import DatePicker from '../DatePicker';
 import SpeedDialAction from '../SpeedDialAction';
 import { secret } from '../../utils/prop-types';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   fab: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
@@ -106,22 +106,20 @@ export default class SecretForm extends Component {
 
   state = {
     secretName: this.props.isNewSecret ? '' : this.props.secret.name,
-    expires: this.props.isNewSecret
-      ? addYears(new Date(), 1000)
-      : this.props.secret.expires,
+    expires: this.props.isNewSecret ? addYears(new Date(), 1000) : this.props.secret.expires,
     editorValue: this.props.isNewSecret ? '' : dump(this.props.secret.secret),
     showSecret: this.props.isNewSecret,
   };
 
   handleDeleteSecret = () => this.props.onDeleteSecret(this.state.secretName);
 
-  handleEditorChange = editorValue => {
+  handleEditorChange = (editorValue) => {
     this.setState({
       editorValue,
     });
   };
 
-  handleExpirationChange = expires => {
+  handleExpirationChange = (expires) => {
     this.setState({
       expires,
     });
@@ -171,10 +169,7 @@ export default class SecretForm extends Component {
     } = this.props;
     const { secretName, editorValue, expires, showSecret } = this.state;
     const isSecretDirty =
-      isNewSecret ||
-      secretName !== secret.name ||
-      editorValue !== dump(secret.secret) ||
-      expires !== secret.expires;
+      isNewSecret || secretName !== secret.name || editorValue !== dump(secret.secret) || expires !== secret.expires;
 
     return (
       <Fragment>
@@ -211,18 +206,13 @@ export default class SecretForm extends Component {
                 <ListSubheader>Secret Value (in YAML)</ListSubheader>
                 {!isNewSecret && (
                   <FormControlLabel
-                    control={
-                      <Switch
-                        checked={showSecret}
-                        onChange={this.handleSecretToggle}
-                        value={showSecret}
-                      />
-                    }
+                    control={<Switch checked={showSecret} onChange={this.handleSecretToggle} value={showSecret} />}
                     label="Show Secret"
                   />
                 )}
               </div>
-            }>
+            }
+          >
             {showSecret && (
               <ListItem className={classes.editorListItem}>
                 <CodeEditor
@@ -245,7 +235,8 @@ export default class SecretForm extends Component {
             variant="round"
             className={classes.saveIcon}
             disabled={loading || !this.validSecret() || !isSecretDirty}
-            onClick={this.handleSaveSecret}>
+            onClick={this.handleSaveSecret}
+          >
             <ContentSaveIcon />
           </Button>
         ) : (
@@ -259,7 +250,8 @@ export default class SecretForm extends Component {
               variant="round"
               className={classes.saveIcon}
               disabled={loading || !this.validSecret() || !isSecretDirty}
-              onClick={this.handleSaveSecret}>
+              onClick={this.handleSaveSecret}
+            >
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
@@ -289,11 +281,7 @@ export default class SecretForm extends Component {
             onError={onDialogActionError}
             error={dialogError}
             title="Delete Secret?"
-            body={
-              <Typography variant="body2">
-                This will delete the secret {secretName}.
-              </Typography>
-            }
+            body={<Typography variant="body2">This will delete the secret {secretName}.</Typography>}
             confirmText="Delete Secret"
           />
         )}

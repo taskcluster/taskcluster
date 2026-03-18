@@ -38,15 +38,13 @@ class WorkerRemovedResolver {
   }
 
   async start() {
-    this.pq = await consume({
-      client: this.pulseClient,
-      bindings: [
-        this.workerManagerEvents.workerStopped(),
-        this.workerManagerEvents.workerRemoved(),
-      ],
-      queueName: 'queue/worker-removed-resolver',
-    },
-    this.monitor.timedHandler('worker-removed', this.handleWorkerRemoved.bind(this)),
+    this.pq = await consume(
+      {
+        client: this.pulseClient,
+        bindings: [this.workerManagerEvents.workerStopped(), this.workerManagerEvents.workerRemoved()],
+        queueName: 'queue/worker-removed-resolver',
+      },
+      this.monitor.timedHandler('worker-removed', this.handleWorkerRemoved.bind(this)),
     );
   }
 
@@ -60,9 +58,7 @@ class WorkerRemovedResolver {
   async handleWorkerRemoved(message) {
     const { workerPoolId, workerGroup, workerId, reason } = message.payload;
 
-    const claimedTasks = await this.db.fns.get_claimed_tasks_by_worker(
-      workerPoolId, workerGroup, workerId,
-    );
+    const claimedTasks = await this.db.fns.get_claimed_tasks_by_worker(workerPoolId, workerGroup, workerId);
 
     for (const { task_id: taskId, run_id: runId } of claimedTasks) {
       await this.resolveTask(taskId, runId, workerPoolId, workerGroup, workerId, reason);
@@ -77,9 +73,7 @@ class WorkerRemovedResolver {
     }
 
     // resolve as exception/worker-shutdown with retry
-    task.updateStatusWith(
-      await this.db.fns.resolve_task(taskId, runId, 'exception', 'worker-shutdown', 'retry'),
-    );
+    task.updateStatusWith(await this.db.fns.resolve_task(taskId, runId, 'exception', 'worker-shutdown', 'retry'));
 
     // we no longer need existing claimed queue message
     // because we just resolved the task, so remove it to
@@ -90,26 +84,36 @@ class WorkerRemovedResolver {
 
     // If run wasn't resolved to exception/worker-shutdown, it was already
     // resolved by the worker or another mechanism — nothing to do
-    if (!run ||
-        task.runs.length - 1 > runId + 1 ||
-        run.state !== 'exception' ||
-        run.reasonResolved !== 'worker-shutdown') {
+    if (
+      !run ||
+      task.runs.length - 1 > runId + 1 ||
+      run.state !== 'exception' ||
+      run.reasonResolved !== 'worker-shutdown'
+    ) {
       return;
     }
 
     this.monitor.log.taskResolvedByWorkerRemoved({
-      taskId, runId, workerPoolId, workerGroup, workerId, reason: removalReason || 'unknown',
+      taskId,
+      runId,
+      workerPoolId,
+      workerGroup,
+      workerId,
+      reason: removalReason || 'unknown',
     });
 
     const status = task.status();
 
-    await this.publisher.taskException({
-      status,
-      runId,
-      task: { tags: task.tags || {} },
-      workerGroup: run.workerGroup,
-      workerId: run.workerId,
-    }, task.routes);
+    await this.publisher.taskException(
+      {
+        status,
+        runId,
+        task: { tags: task.tags || {} },
+        workerGroup: run.workerGroup,
+        workerId: run.workerId,
+      },
+      task.routes,
+    );
     this.monitor.log.taskException({ taskId, runId });
 
     const metricLabels = splitTaskQueueId(task.taskQueueId);
@@ -120,23 +124,26 @@ class WorkerRemovedResolver {
 
     // If a retry run was created, publish pending message
     const newRun = task.runs[runId + 1];
-    if (newRun &&
-        task.runs.length - 1 === runId + 1 &&
-        newRun.state === 'pending' &&
-        newRun.reasonCreated === 'retry') {
+    if (
+      newRun &&
+      task.runs.length - 1 === runId + 1 &&
+      newRun.state === 'pending' &&
+      newRun.reasonCreated === 'retry'
+    ) {
       await Promise.all([
         this.queueService.putPendingMessage(task, runId + 1),
-        this.publisher.taskPending({
-          status,
-          runId: runId + 1,
-          task: { tags: task.tags || {} },
-        }, task.routes),
+        this.publisher.taskPending(
+          {
+            status,
+            runId: runId + 1,
+            task: { tags: task.tags || {} },
+          },
+          task.routes,
+        ),
       ]);
       this.monitor.log.taskPending({ taskId, runId: runId + 1 });
     } else {
-      await this.dependencyTracker.resolveTask(
-        taskId, task.taskGroupId, task.schedulerId, 'exception',
-      );
+      await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, task.schedulerId, 'exception');
     }
   }
 }

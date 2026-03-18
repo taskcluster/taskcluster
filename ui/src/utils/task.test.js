@@ -52,9 +52,7 @@ it('should return earliest task run start time', () => {
     },
   };
 
-  expect(taskRunEarliestStart(task)).toEqual(
-    new Date('2022-05-05T05:05:05.000').getTime()
-  );
+  expect(taskRunEarliestStart(task)).toEqual(new Date('2022-05-05T05:05:05.000').getTime());
 });
 
 it('should return latest task run resolve time', () => {
@@ -68,9 +66,7 @@ it('should return latest task run resolve time', () => {
     },
   };
 
-  expect(taskRunLatestResolve(task)).toEqual(
-    new Date('2022-05-05T05:05:35.000').getTime()
-  );
+  expect(taskRunLatestResolve(task)).toEqual(new Date('2022-05-05T05:05:35.000').getTime());
 });
 
 it('should filter tasks by state', () => {
@@ -78,20 +74,14 @@ it('should filter tasks by state', () => {
   expect(
     filterTasksByState(
       ['started'],
-      [
-        { node: { taskId: 1, status: { state: 'scheduled' } } },
-        { node: { taskId: 2, status: { state: 'started' } } },
-      ]
-    )
+      [{ node: { taskId: 1, status: { state: 'scheduled' } } }, { node: { taskId: 2, status: { state: 'started' } } }],
+    ),
   ).toEqual([{ node: { taskId: 2, status: { state: 'started' } } }]);
   expect(
     filterTasksByState(
       ['stopped'],
-      [
-        { node: { taskId: 1, status: { state: 'scheduled' } } },
-        { node: { taskId: 2, status: { state: 'started' } } },
-      ]
-    )
+      [{ node: { taskId: 1, status: { state: 'scheduled' } } }, { node: { taskId: 2, status: { state: 'started' } } }],
+    ),
   ).toEqual([]);
 });
 
@@ -101,13 +91,13 @@ it('should filter tasks by name', () => {
     filterTasksByName('gecko', [
       { node: { taskId: 1, metadata: { name: 'win11 docker test' } } },
       { node: { taskId: 2, metadata: { name: 'linux gecko test' } } },
-    ])
+    ]),
   ).toEqual([{ node: { taskId: 2, metadata: { name: 'linux gecko test' } } }]);
   expect(
     filterTasksByName('NO SUCH MATCH', [
       { node: { taskId: 1, metadata: { name: 'win11 docker test' } } },
       { node: { taskId: 2, metadata: { name: 'linux gecko test' } } },
-    ])
+    ]),
   ).toEqual([]);
 });
 
@@ -132,8 +122,8 @@ it('should filter tasks by state and name', () => {
         },
       ],
       ['started'],
-      'docker'
-    )
+      'docker',
+    ),
   ).toEqual([
     {
       node: {
@@ -162,8 +152,8 @@ it('should filter tasks by state and name', () => {
         },
       ],
       ['failed'],
-      'no such match'
-    )
+      'no such match',
+    ),
   ).toEqual([]);
 });
 
@@ -184,7 +174,7 @@ it('should map tasks to string', () => {
           status: { state: 'failed' },
         },
       },
-    ])
+    ]),
   ).toEqual(['t1-test1-started', 't2-test2-failed']);
 });
 
@@ -193,7 +183,7 @@ it('should map task durations to string', () => {
     taskDurationIds([
       { taskId: 't1', name: 'test1', state: 'started' },
       { taskId: 't2', name: 'test2', state: 'failed' },
-    ])
+    ]),
   ).toEqual(['t1-test1-started', 't2-test2-failed']);
 });
 
@@ -235,8 +225,8 @@ it('should filter tasks with duration', () => {
         },
       ],
       ['resolved'],
-      ''
-    )
+      '',
+    ),
   ).toEqual([
     {
       duration: 10000,
@@ -254,25 +244,12 @@ it('should sample tasks by duration', () => {
   const list1 = [{ duration: 1 }, { duration: 20 }, { duration: 50 }];
 
   expect(sampleTasks(list1, '', '', 3)).toEqual(list1);
-  expect(sampleTasks(list1, '', '', 2)).toEqual([
-    { duration: 1 },
-    { duration: 50 },
-  ]);
+  expect(sampleTasks(list1, '', '', 2)).toEqual([{ duration: 1 }, { duration: 50 }]);
   expect(sampleTasks(list1, '', '', 1)).toEqual([{ duration: 1 }]);
 
-  const list2 = [
-    { duration: 100 },
-    { duration: 2000 },
-    { duration: 2002 },
-    { duration: 2004 },
-    { duration: 5000 },
-  ];
+  const list2 = [{ duration: 100 }, { duration: 2000 }, { duration: 2002 }, { duration: 2004 }, { duration: 5000 }];
 
-  expect(sampleTasks(list2, '', '', 3)).toEqual([
-    { duration: 100 },
-    { duration: 2000 },
-    { duration: 5000 },
-  ]);
+  expect(sampleTasks(list2, '', '', 3)).toEqual([{ duration: 100 }, { duration: 2000 }, { duration: 5000 }]);
 });
 
 it('should calculate quantiles', () => {

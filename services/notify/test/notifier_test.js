@@ -1,9 +1,8 @@
-
 import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   if (!mock) {
     return;
   }
@@ -41,9 +40,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.equal(false, await notifier.email({ address, subject, content, link, replyTo, template }));
 
     // denied email
-    assert.equal(false, await notifier.email({
-      address: 'test+denied@taskcluster.net',
-      subject, content, link, replyTo, template }));
+    assert.equal(
+      false,
+      await notifier.email({
+        address: 'test+denied@taskcluster.net',
+        subject,
+        content,
+        link,
+        replyTo,
+        template,
+      }),
+    );
   });
 
   test('pulse', async () => {
@@ -61,9 +68,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.ok(await notifier.pulse({ routingKey, message }));
     assert.equal(false, await notifier.pulse({ routingKey, message }));
 
-    assert.equal(false, await notifier.pulse({
-      routingKey: 'test.denied.routing.key',
-      message }));
+    assert.equal(
+      false,
+      await notifier.pulse({
+        routingKey: 'test.denied.routing.key',
+        message,
+      }),
+    );
   });
 
   test('matrix', async () => {
@@ -77,9 +88,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.ok(await notifier.matrix({ roomId, body, formattedBody, msgtype }));
     assert.equal(false, await notifier.matrix({ roomId, body, formattedBody, msgtype }));
 
-    assert.equal(false, await notifier.matrix({
-      roomId: '!denied:mozilla.org',
-      body, formattedBody, msgtype }));
+    assert.equal(
+      false,
+      await notifier.matrix({
+        roomId: '!denied:mozilla.org',
+        body,
+        formattedBody,
+        msgtype,
+      }),
+    );
   });
 
   test('slack', async () => {
@@ -93,8 +110,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert.ok(await notifier.slack({ channelId, text, blocks, attachments }));
     assert.equal(false, await notifier.slack({ channelId, text, blocks, attachments }));
 
-    assert.equal(false, await notifier.slack({
-      channelId: 'denied-channel-id',
-      text, blocks, attachments }));
+    assert.equal(
+      false,
+      await notifier.slack({
+        channelId: 'denied-channel-id',
+        text,
+        blocks,
+        attachments,
+      }),
+    );
   });
 });

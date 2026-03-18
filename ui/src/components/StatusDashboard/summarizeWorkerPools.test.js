@@ -27,8 +27,7 @@ describe('summarizeWorkerPools', () => {
     expect(out[5].error).toEqual('wrong');
   });
 
-  const widgetByTitle = (widgets, title) =>
-    widgets.find(widget => widget.title === title);
+  const widgetByTitle = (widgets, title) => widgets.find((widget) => widget.title === title);
 
   it('should return counts for stats', () => {
     const out = summarizeWorkerPools(
@@ -52,7 +51,7 @@ describe('summarizeWorkerPools', () => {
           },
         },
       },
-      'stats'
+      'stats',
     );
 
     expect(out.length).toEqual(5);
@@ -87,7 +86,7 @@ describe('summarizeWorkerPools', () => {
           },
         },
       },
-      'provisioning'
+      'provisioning',
     );
 
     expect(out.length).toEqual(4);

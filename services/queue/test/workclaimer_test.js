@@ -70,14 +70,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       monitor,
       publisher,
       queueService: {
-        pollPendingQueue: (_taskQueueId) => () => [{
-          taskId,
-          runId: 0,
-          hintId: 'hint1',
-          release: async () => { },
-          remove: async () => { },
-        }],
-        putClaimMessage: () => { },
+        pollPendingQueue: (_taskQueueId) => () => [
+          {
+            taskId,
+            runId: 0,
+            hintId: 'hint1',
+            release: async () => {},
+            remove: async () => {},
+          },
+        ],
+        putClaimMessage: () => {},
       },
       claimTimeout: 1000,
       credentials: cfg.taskcluster.credentials,
@@ -86,11 +88,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     await helper.queue.createTask(taskId, taskDef(taskId));
     await helper.queue.scheduleTask(taskId);
 
-    const aborted = new Promise(resolve => setTimeout(resolve, 1000));
+    const aborted = new Promise((resolve) => setTimeout(resolve, 1000));
     const claims = await workClaimer.claim('taskQueue/Id', 'workerGroup', 'workerId', 1, aborted);
     assume(claims.length).equal(1);
     assume(claims[0].status.taskId).equal(taskId);
-    helper.assertPulseMessage('task-running', m => m.payload.task?.tags?.tag === 'value');
+    helper.assertPulseMessage('task-running', (m) => m.payload.task?.tags?.tag === 'value');
   });
 
   test('hint poller errors are recovered', async () => {
@@ -114,7 +116,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
           }
           return [];
         },
-        putClaimMessage: () => { },
+        putClaimMessage: () => {},
       },
       claimTimeout: 1000,
       credentials: cfg.taskcluster.credentials,
@@ -125,7 +127,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     const tryCall = async () => {
       try {
-        return await workClaimer.claim('taskQueue/Id', 'workerGroup', 'workerId', 3, new Promise(resolve => setTimeout(resolve, 1000)));
+        return await workClaimer.claim(
+          'taskQueue/Id',
+          'workerGroup',
+          'workerId',
+          3,
+          new Promise((resolve) => setTimeout(resolve, 1000)),
+        );
       } catch (_err) {
         return 0;
       }

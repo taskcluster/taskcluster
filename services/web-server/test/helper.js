@@ -20,7 +20,7 @@ const helper = {};
 export default helper;
 helper.load = stickyLoader(load);
 
-suiteSetup(async function() {
+suiteSetup(async function () {
   helper.load.inject('profile', 'test');
   helper.load.inject('process', 'test');
 });
@@ -30,7 +30,7 @@ withMonitor(helper);
 /** @param {string} errorCode */
 helper.expectMonitorError = async (errorCode) => {
   const monitor = await helper.load('monitor');
-  const errorMessage = monitor.manager.messages.find(msg => {
+  const errorMessage = monitor.manager.messages.find((msg) => {
     const Fields = msg.Fields;
     return (Fields?.code || Fields?.name) === errorCode;
   });
@@ -44,8 +44,7 @@ helper.rootUrl = libUrls.testRootUrl();
 
 // set up the testing secrets
 helper.secrets = new Secrets({
-  secrets: {
-  },
+  secrets: {},
   load: helper.load,
 });
 
@@ -80,7 +79,7 @@ helper.withMockedEventIterator = () => {
 };
 
 helper.withFakeAuth = (_mock, skipping) => {
-  suiteSetup('withFakeAuth', function() {
+  suiteSetup('withFakeAuth', function () {
     if (skipping()) {
       return;
     }
@@ -90,7 +89,7 @@ helper.withFakeAuth = (_mock, skipping) => {
 };
 
 helper.withFakeAuthFactory = (_mock, skipping) => {
-  suiteSetup('withFakeAuthFactory', function() {
+  suiteSetup('withFakeAuthFactory', function () {
     if (skipping()) {
       return;
     }
@@ -98,13 +97,13 @@ helper.withFakeAuthFactory = (_mock, skipping) => {
     helper.load.inject('authFactory', stubbedAuthFactory());
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(function () {
     helper.load.remove('authFactory');
   });
 };
 
 helper.withClients = (_mock, skipping) => {
-  suiteSetup('withClients', async function() {
+  suiteSetup('withClients', async function () {
     if (skipping()) {
       return;
     }
@@ -130,7 +129,7 @@ helper.withServer = (_mock, skipping) => {
     return agent;
   };
 
-  suiteSetup('withServer', async function() {
+  suiteSetup('withServer', async function () {
     if (skipping()) {
       return;
     }
@@ -139,7 +138,7 @@ helper.withServer = (_mock, skipping) => {
     webServer = await helper.load('httpServer');
     await new Promise((resolve, reject) => {
       webServer.once('error', reject);
-      webServer.listen(cfg.server.port, function() {
+      webServer.listen(cfg.server.port, function () {
         resolve();
       });
     });
@@ -150,12 +149,12 @@ helper.withServer = (_mock, skipping) => {
     helper.load.cfg('app.publicUrl', `http://127.0.0.1:${helper.serverPort}`);
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (skipping()) {
       return;
     }
     if (webServer) {
-      await new Promise(resolve => webServer.close(resolve));
+      await new Promise((resolve) => webServer.close(resolve));
       webServer = null;
     }
   });
@@ -163,27 +162,27 @@ helper.withServer = (_mock, skipping) => {
 
 helper.githubFixtures = {
   users: {
-    'octocat': 10,
-    'taskcluster': 20,
+    octocat: 10,
+    taskcluster: 20,
     'a/c': 30,
   },
   teams: {
-    'octocat': [
+    octocat: [
       { slug: 'team-1', organization: { login: 'taskcluster' } },
       { slug: 'team-2', organization: { login: 'neutrinojs' } },
     ],
-    'taskcluster': [
+    taskcluster: [
       { slug: 'team-3', organization: { login: 'taskcluster' } },
       { slug: 'team-1', organization: { login: 'neutrinojs' } },
     ],
     'a/c': [],
   },
   orgs: {
-    'octocat': [
+    octocat: [
       { role: 'admin', organization: { login: 'taskcluster' } },
       { role: 'member', organization: { login: 'neutrinojs' } },
     ],
-    'taskcluster': [
+    taskcluster: [
       { role: 'admin', organization: { login: 'taskcluster' } },
       { role: 'admin', organization: { login: 'neutrinojs' } },
     ],
@@ -191,32 +190,36 @@ helper.githubFixtures = {
   },
 };
 
-helper.makeTaskDefinition = (options = {}) => merge({
-  provisionerId: "no-provisioner-extended-extended",
-  workerType: "test-worker-extended-extended",
-  schedulerId: "my-scheduler-extended-extended",
-  taskGroupId: "dSlITZ4yQgmvxxAi4A8fHQ",
-  dependencies: [],
-  requires: 'ALL_COMPLETED',
-  routes: [],
-  priority: 'LOWEST',
-  retries: 5,
-  created: taskcluster.fromNowJSON(),
-  deadline: taskcluster.fromNowJSON('3 days'),
-  expires: taskcluster.fromNowJSON('3 days'),
-  scopes: [],
-  payload: {},
-  metadata: {
-    name: "Testing task",
-    description: "Task created during tests",
-    owner: "haali@mozilla.com",
-    source: "https://github.com/taskcluster/taskcluster",
-  },
-  tags: {
-    purpose: "taskcluster-testing",
-  },
-  extra: {},
-}, options);
+helper.makeTaskDefinition = (options = {}) =>
+  merge(
+    {
+      provisionerId: 'no-provisioner-extended-extended',
+      workerType: 'test-worker-extended-extended',
+      schedulerId: 'my-scheduler-extended-extended',
+      taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
+      dependencies: [],
+      requires: 'ALL_COMPLETED',
+      routes: [],
+      priority: 'LOWEST',
+      retries: 5,
+      created: taskcluster.fromNowJSON(),
+      deadline: taskcluster.fromNowJSON('3 days'),
+      expires: taskcluster.fromNowJSON('3 days'),
+      scopes: [],
+      payload: {},
+      metadata: {
+        name: 'Testing task',
+        description: 'Task created during tests',
+        owner: 'haali@mozilla.com',
+        source: 'https://github.com/taskcluster/taskcluster',
+      },
+      tags: {
+        purpose: 'taskcluster-testing',
+      },
+      extra: {},
+    },
+    options,
+  );
 
 helper.withGithubClient = () => {
   function githubClient() {
@@ -261,7 +264,7 @@ helper.withGithubClient = () => {
     };
   }
 
-  suiteSetup(function() {
+  suiteSetup(function () {
     this.stubbedGithuClient = {};
 
     Object.entries(githubClient()).forEach(([name, value]) => {
@@ -269,8 +272,8 @@ helper.withGithubClient = () => {
     });
   });
 
-  suiteTeardown(function() {
-    Object.values(this.stubbedGithuClient).map(stub => stub.restore());
+  suiteTeardown(function () {
+    Object.values(this.stubbedGithuClient).map((stub) => stub.restore());
   });
 };
 
@@ -331,13 +334,12 @@ helper.getWebsocketClient = (subscriptionClient) => {
 // If a subscription client is created for a test, it also needs to be closed.
 // Otherwise, the tests will just hang and timeout
 helper.createSubscriptionClient = async () => {
-
   const credentials = {
     clientId: 'testing',
     accessToken: 'testing',
   };
 
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     const subscriptionClient = new SubscriptionClient(
       `ws://localhost:${helper.serverPort}/subscription`,
       {
@@ -350,10 +352,10 @@ helper.createSubscriptionClient = async () => {
       },
       WebSocket,
     );
-    subscriptionClient.onConnected(function() {
+    subscriptionClient.onConnected(function () {
       resolve(subscriptionClient);
     });
-    subscriptionClient.onError(function(err) {
+    subscriptionClient.onError(function (err) {
       reject(err);
     });
   });
@@ -383,12 +385,13 @@ const stubbedAuth = () => {
 };
 
 const stubbedAuthFactory = () => {
-  return ({ credentials }) => new taskcluster.Auth({
-    rootUrl: helper.rootUrl,
-    fake: {
-      currentScopes: async () => ({ scopes: ['web:read-pulse'] }),
-    },
-  });
+  return ({ credentials }) =>
+    new taskcluster.Auth({
+      rootUrl: helper.rootUrl,
+      fake: {
+        currentScopes: async () => ({ scopes: ['web:read-pulse'] }),
+      },
+    });
 };
 
 const stubbedClients = () => {
@@ -417,7 +420,7 @@ const stubbedClients = () => {
         workerPoolId,
       });
     },
-    hasWorkerPool: workerPoolId => {
+    hasWorkerPool: (workerPoolId) => {
       return workerPools.has(workerPoolId);
     },
   };
@@ -463,11 +466,12 @@ const stubbedClients = () => {
     workerManager: new taskcluster.WorkerManager({
       ...options,
       fake: {
-        workerPool: async workerPoolId => workerPools.get(workerPoolId),
+        workerPool: async (workerPoolId) => workerPools.get(workerPoolId),
         listWorkerPools: async ({ limit = 1000 }) => ({ workerPools: [...workerPools.values()].slice(0, limit) }),
         listWorkerPoolsStats: async ({ limit = 1000 }) => ({
-          workerPoolsStats: [...workerPools.values()].slice(0, limit) }),
-        deleteWorkerPool: async workerPoolId => {
+          workerPoolsStats: [...workerPools.values()].slice(0, limit),
+        }),
+        deleteWorkerPool: async (workerPoolId) => {
           if (!workerPools.has(workerPoolId)) {
             throw new Error(`No such worker pool ${workerPoolId}`);
           }
@@ -492,9 +496,7 @@ const stubbedClients = () => {
         role: async (roleId) => {
           const role = roles.get(roleId);
 
-          return role
-            ? Promise.resolve(role)
-            : Promise.reject(new Error('role not found'));
+          return role ? Promise.resolve(role) : Promise.reject(new Error('role not found'));
         },
         createRole: async (roleId, role) => {
           const newRole = {
@@ -541,9 +543,9 @@ const stubbedClients = () => {
 
           return taskDef
             ? Promise.resolve({
-              taskId,
-              ...taskDef,
-            })
+                taskId,
+                ...taskDef,
+              })
             : Promise.reject(new Error('task not found'));
         },
         createTask: async (taskId, taskDef) => {
@@ -579,7 +581,7 @@ const stubbedClients = () => {
           return Promise.resolve(artifact);
         },
         listArtifacts: async (taskId, runId, _options) => {
-          const artifacts = ["1", "2", "3"].map(artifactSuffix => {
+          const artifacts = ['1', '2', '3'].map((artifactSuffix) => {
             return {
               taskId,
               runId,
@@ -589,7 +591,7 @@ const stubbedClients = () => {
           return Promise.resolve({ artifacts });
         },
         listLatestArtifacts: async (taskId, _options) => {
-          const artifacts = ["1", "2", "3"].map(artifactSuffix => {
+          const artifacts = ['1', '2', '3'].map((artifactSuffix) => {
             return {
               taskId,
               name: `artifact-${artifactSuffix}`,
@@ -604,13 +606,8 @@ const stubbedClients = () => {
 };
 
 helper.resetTables = (_mock, _skipping) => {
-  setup('reset tables', async function() {
-    await resetTables({ tableNames: [
-      'authorization_codes',
-      'access_tokens',
-      'sessions',
-      'github_access_tokens',
-    ] });
+  setup('reset tables', async function () {
+    await resetTables({ tableNames: ['authorization_codes', 'access_tokens', 'sessions', 'github_access_tokens'] });
   });
 };
 
@@ -618,10 +615,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const fixturesCache = new Map();
 helper.loadFixture = async (name) => {
   if (!fixturesCache.has(name)) {
-    fixturesCache.set(
-      name,
-      await fs.readFile(path.resolve(__dirname, 'fixtures', name), 'utf8'),
-    );
+    fixturesCache.set(name, await fs.readFile(path.resolve(__dirname, 'fixtures', name), 'utf8'));
   }
   return fixturesCache.get(name);
 };

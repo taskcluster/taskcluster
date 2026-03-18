@@ -14,7 +14,7 @@ import Link from '../../utils/Link';
 import StatsFetcher from '../../components/StatusDashboard/StatsFetcher';
 import username from '../../utils/username';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   buttonIcon: {
     marginRight: theme.spacing(2),
   },
@@ -40,32 +40,28 @@ export default class DashboardView extends Component {
           <Grid item xs={12} sm={6} lg={3}>
             <Link to="/tasks" className={classes.link}>
               <Button>
-                <HexagonIcon className={classes.buttonIcon} />I want to look at
-                a task.
+                <HexagonIcon className={classes.buttonIcon} />I want to look at a task.
               </Button>
             </Link>
           </Grid>
           <Grid item xs={12} sm={6} lg={3}>
             <Link to="/tasks/groups" className={classes.link}>
               <Button>
-                <HexagonMultipleIcon className={classes.buttonIcon} />I want to
-                look at a group of tasks.
+                <HexagonMultipleIcon className={classes.buttonIcon} />I want to look at a group of tasks.
               </Button>
             </Link>
           </Grid>
           <Grid item xs={12} sm={6} lg={3}>
             <Link to="/tasks/create" className={classes.link}>
               <Button>
-                <PlusCircleIcon className={classes.buttonIcon} />I want to
-                create a task or build.
+                <PlusCircleIcon className={classes.buttonIcon} />I want to create a task or build.
               </Button>
             </Link>
           </Grid>
           <Grid item xs={12} sm={6} lg={3}>
             <Link to={DOCS_PATH_PREFIX} className={classes.link}>
               <Button>
-                <LibraryIcon className={classes.buttonIcon} />I want to see
-                documentation.
+                <LibraryIcon className={classes.buttonIcon} />I want to see documentation.
               </Button>
             </Link>
           </Grid>

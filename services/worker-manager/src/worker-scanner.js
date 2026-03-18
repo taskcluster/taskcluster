@@ -1,4 +1,3 @@
-
 import Iterate from '@taskcluster/lib-iterate';
 import taskcluster from '@taskcluster/client';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
@@ -9,16 +8,7 @@ import { Worker, WorkerPool } from './data.js';
  * to accurately inform provisioning logic.
  */
 export class WorkerScanner {
-  constructor({
-    ownName,
-    WorkerPool,
-    providers,
-    monitor,
-    iterateConf = {},
-    db,
-    providersFilter = {},
-    estimator,
-  }) {
+  constructor({ ownName, WorkerPool, providers, monitor, iterateConf = {}, db, providersFilter = {}, estimator }) {
     this.WorkerPool = WorkerPool;
     this.providers = providers;
     this.monitor = monitor;
@@ -52,16 +42,23 @@ export class WorkerScanner {
   }
 
   async scan() {
-    await this.providers.forAll(p => p.scanPrepare());
+    await this.providers.forAll((p) => p.scanPrepare());
 
     this.monitor.info(`WorkerScanner providers filter: ${this.providersFilter.cond} ${this.providersFilter.value}`);
 
     // Phase 1: Check workers and collect termination candidates
     const poolCandidates = new Map();
 
-    const fetch =
-      async (size, offset) => await this.db.fns.get_non_stopped_workers_with_launch_config_scanner(
-        null, null, null, this.providersFilter.cond, this.providersFilter.value, size, offset);
+    const fetch = async (size, offset) =>
+      await this.db.fns.get_non_stopped_workers_with_launch_config_scanner(
+        null,
+        null,
+        null,
+        this.providersFilter.cond,
+        this.providersFilter.value,
+        size,
+        offset,
+      );
     for await (const row of paginatedIterator({ fetch, size: 500 })) {
       const worker = Worker.fromDb(row);
       const provider = this.providers.get(worker.providerId);
@@ -78,7 +75,8 @@ export class WorkerScanner {
         }
       } else {
         this.monitor.info(
-          `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`);
+          `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`,
+        );
       }
 
       // If the worker will be expired soon but it still exists,
@@ -86,7 +84,7 @@ export class WorkerScanner {
       // long-lived instances become orphaned from the provider. We don't update
       // this on every loop just to avoid the extra work when not needed
       if (worker.expires < taskcluster.fromNow('1 week')) {
-        await worker.update(this.db, worker => {
+        await worker.update(this.db, (worker) => {
           worker.expires = taskcluster.fromNow('8 days');
         });
       }
@@ -106,7 +104,7 @@ export class WorkerScanner {
       }
     }
 
-    await this.providers.forAll(p => p.scanCleanup());
+    await this.providers.forAll((p) => p.scanCleanup());
 
     // Phase 2: Compute termination decisions
     await this.#computeTerminationDecisions(poolCandidates);
@@ -121,9 +119,7 @@ export class WorkerScanner {
         }
 
         const allConfigs = await this.db.fns.get_worker_pool_launch_configs(poolId, null, null, null);
-        const archivedConfigIds = new Set(
-          allConfigs.filter(c => c.is_archived).map(c => c.launch_config_id),
-        );
+        const archivedConfigIds = new Set(allConfigs.filter((c) => c.is_archived).map((c) => c.launch_config_id));
 
         const targetCapacity = await this.estimator.targetCapacity({
           workerPoolId: poolId,
@@ -157,7 +153,7 @@ export class WorkerScanner {
             continue;
           }
 
-          await worker.update(this.db, w => {
+          await worker.update(this.db, (w) => {
             w.providerData = {
               ...w.providerData,
               shouldTerminate: { ...decision, decidedAt: now },
@@ -171,20 +167,20 @@ export class WorkerScanner {
   }
 
   /**
-    * Pure logic for determining worker lifecycle.
-    * Sorting logic: We want to keep the NEWEST workers when over capacity.
-    *
-    * @param {Worker[]} candidates - List of workers to evaluate.
-    * @param {Set<string>} archivedConfigIds - Set of archived config IDs.
-    * @param {number} desiredCapacity - Desired capacity of the pool.
-    * @returns {Map<Worker, { terminate: boolean, reason: string }>} Decisions for each worker.
-    */
+   * Pure logic for determining worker lifecycle.
+   * Sorting logic: We want to keep the NEWEST workers when over capacity.
+   *
+   * @param {Worker[]} candidates - List of workers to evaluate.
+   * @param {Set<string>} archivedConfigIds - Set of archived config IDs.
+   * @param {number} desiredCapacity - Desired capacity of the pool.
+   * @returns {Map<Worker, { terminate: boolean, reason: string }>} Decisions for each worker.
+   */
   #evaluatePolicies(candidates, archivedConfigIds, desiredCapacity) {
     const decisions = new Map();
 
     // Policy 1: Archived configs are non-negotiable terminations.
     // They don't even get to "compete" for the desiredCapacity.
-    candidates.forEach(worker => {
+    candidates.forEach((worker) => {
       if (worker.launchConfigId && archivedConfigIds.has(worker.launchConfigId)) {
         decisions.set(worker, { terminate: true, reason: 'launch config archived' });
       }
@@ -193,9 +189,7 @@ export class WorkerScanner {
     // Policy 2: Capacity Management
     // We sort by 'created' DESC (newest first) to ensure we fill our capacity
     // with the most recent (and presumably most stable/configured) workers.
-    const undecided = candidates
-      .filter(w => !decisions.has(w))
-      .sort((a, b) => b.created - a.created);
+    const undecided = candidates.filter((w) => !decisions.has(w)).sort((a, b) => b.created - a.created);
 
     let capacityToFill = desiredCapacity;
 

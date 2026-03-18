@@ -18,211 +18,216 @@ import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
 import './monitor.js';
 import { fileURLToPath } from 'node:url';
 
-const load = loader({
-  cfg: {
-    requires: ['profile'],
-    setup: ({ profile }) => config({
-      profile,
-      serviceName: 'github',
-    }),
-  },
-
-  monitor: {
-    requires: ['process', 'profile', 'cfg'],
-    setup: ({ process, profile, cfg }) => MonitorManager.setup({
-      serviceName: 'github',
-      processName: process,
-      verify: profile !== 'production',
-      ...cfg.monitoring,
-    }),
-  },
-
-  schemaset: {
-    requires: ['cfg'],
-    setup: ({ cfg }) => new SchemaSet({
-      serviceName: 'github',
-    }),
-  },
-
-  reference: {
-    requires: [],
-    setup: () => exchanges.reference(),
-  },
-
-  ajv: {
-    requires: [],
-    setup: () => {
-      const ajv = new Ajv.default();
-      addFormats(ajv);
-      return ajv;
+const load = loader(
+  {
+    cfg: {
+      requires: ['profile'],
+      setup: ({ profile }) =>
+        config({
+          profile,
+          serviceName: 'github',
+        }),
     },
-  },
 
-  generateReferences: {
-    requires: ['cfg', 'schemaset'],
-    setup: async ({ cfg, schemaset }) => libReferences.fromService({
-      schemaset,
-      references: [builder.reference(), exchanges.reference(), MonitorManager.reference('github'), MonitorManager.metricsReference('github')],
-    }).then(ref => ref.generateReferences()),
-  },
-
-  pulseClient: {
-    requires: ['cfg', 'monitor'],
-    setup: ({ cfg, monitor }) => {
-      return new Client({
-        namespace: 'taskcluster-github',
-        monitor: monitor.childMonitor('pulse-client'),
-        credentials: pulseCredentials(cfg.pulse),
-      });
+    monitor: {
+      requires: ['process', 'profile', 'cfg'],
+      setup: ({ process, profile, cfg }) =>
+        MonitorManager.setup({
+          serviceName: 'github',
+          processName: process,
+          verify: profile !== 'production',
+          ...cfg.monitoring,
+        }),
     },
-  },
 
-  publisher: {
-    requires: ['cfg', 'schemaset', 'pulseClient'],
-    setup: async ({ cfg, pulseClient, schemaset }) => await exchanges.publisher({
-      rootUrl: cfg.taskcluster.rootUrl,
-      schemaset,
-      client: pulseClient,
-    }),
-  },
+    schemaset: {
+      requires: ['cfg'],
+      setup: ({ cfg }) =>
+        new SchemaSet({
+          serviceName: 'github',
+        }),
+    },
 
-  github: {
-    requires: ['cfg', 'monitor'],
-    setup: ({ cfg, monitor }) => githubAuth({ cfg, monitor: monitor.childMonitor('octokit') }),
-  },
+    reference: {
+      requires: [],
+      setup: () => exchanges.reference(),
+    },
 
-  intree: {
-    requires: ['cfg', 'schemaset'],
-    setup: ({ cfg, schemaset }) => Intree.setup({ cfg, schemaset }),
-  },
+    ajv: {
+      requires: [],
+      setup: () => {
+        const ajv = new Ajv.default();
+        addFormats(ajv);
+        return ajv;
+      },
+    },
 
-  db: {
-    requires: ["cfg", "process", "monitor"],
-    setup: ({ cfg, process, monitor }) => tcdb.setup({
-      readDbUrl: cfg.postgres.readDbUrl,
-      writeDbUrl: cfg.postgres.writeDbUrl,
-      serviceName: 'github',
-      monitor: monitor.childMonitor('db'),
-      statementTimeout: process === 'server' ? 30000 : 0,
-    }),
-  },
+    generateReferences: {
+      requires: ['cfg', 'schemaset'],
+      setup: async ({ cfg, schemaset }) =>
+        libReferences
+          .fromService({
+            schemaset,
+            references: [
+              builder.reference(),
+              exchanges.reference(),
+              MonitorManager.reference('github'),
+              MonitorManager.metricsReference('github'),
+            ],
+          })
+          .then((ref) => ref.generateReferences()),
+    },
 
-  queueClient: {
-    requires: ['cfg'],
-    // This is a powerful Queue client without scopes to use throughout the handlers for things
-    // where taskcluster-github is acting of its own accord
-    // Where it is acting on behalf of a task, use this.queueClient.use({authorizedScopes: scopes}).blahblah
-    // (see handlers.createTasks for example)
-    setup: ({ cfg, monitor }) => new taskcluster.Queue({
-      rootUrl: cfg.taskcluster.rootUrl,
-      credentials: cfg.taskcluster.credentials,
-    }),
-  },
+    pulseClient: {
+      requires: ['cfg', 'monitor'],
+      setup: ({ cfg, monitor }) => {
+        return new Client({
+          namespace: 'taskcluster-github',
+          monitor: monitor.childMonitor('pulse-client'),
+          credentials: pulseCredentials(cfg.pulse),
+        });
+      },
+    },
 
-  api: {
-    requires: [
-      'cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv', 'queueClient', 'intree'],
-    setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient, intree }) => {
-      const api = builder.build({
-        rootUrl: cfg.taskcluster.rootUrl,
-        context: {
-          publisher,
-          cfg,
-          github,
-          db,
-          ajv,
-          monitor: monitor.childMonitor('api-context'),
-          queueClient,
-          intree,
+    publisher: {
+      requires: ['cfg', 'schemaset', 'pulseClient'],
+      setup: async ({ cfg, pulseClient, schemaset }) =>
+        await exchanges.publisher({
+          rootUrl: cfg.taskcluster.rootUrl,
           schemaset,
-        },
-        monitor: monitor.childMonitor('api'),
-        schemaset,
-      });
-
-      monitor.exposeMetrics('default');
-      return api;
+          client: pulseClient,
+        }),
     },
-  },
 
-  server: {
-    requires: ['cfg', 'api'],
-    setup: ({ cfg, api }) => App({
-      port: cfg.server.port,
-      env: cfg.server.env,
-      forceSSL: cfg.server.forceSSL,
-      trustProxy: cfg.server.trustProxy,
-      keepAliveTimeoutSeconds: cfg.server.keepAliveTimeoutSeconds,
-      apis: [api],
-    }),
-  },
+    github: {
+      requires: ['cfg', 'monitor'],
+      setup: ({ cfg, monitor }) => githubAuth({ cfg, monitor: monitor.childMonitor('octokit') }),
+    },
 
-  syncInstallations: {
-    requires: ['github', 'db', 'monitor'],
-    setup: ({ github, db, monitor }, ownName) => {
-      return monitor.oneShot(ownName, async () => {
-        const gh = await github.getAppGithub();
-        const installations = (await gh.apps.listInstallations({})).data;
-        await Promise.all(installations.map(i => {
-          return db.fns.upsert_github_integration(
-            i.account.login,
-            i.id,
+    intree: {
+      requires: ['cfg', 'schemaset'],
+      setup: ({ cfg, schemaset }) => Intree.setup({ cfg, schemaset }),
+    },
+
+    db: {
+      requires: ['cfg', 'process', 'monitor'],
+      setup: ({ cfg, process, monitor }) =>
+        tcdb.setup({
+          readDbUrl: cfg.postgres.readDbUrl,
+          writeDbUrl: cfg.postgres.writeDbUrl,
+          serviceName: 'github',
+          monitor: monitor.childMonitor('db'),
+          statementTimeout: process === 'server' ? 30000 : 0,
+        }),
+    },
+
+    queueClient: {
+      requires: ['cfg'],
+      // This is a powerful Queue client without scopes to use throughout the handlers for things
+      // where taskcluster-github is acting of its own accord
+      // Where it is acting on behalf of a task, use this.queueClient.use({authorizedScopes: scopes}).blahblah
+      // (see handlers.createTasks for example)
+      setup: ({ cfg, monitor }) =>
+        new taskcluster.Queue({
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+    },
+
+    api: {
+      requires: ['cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv', 'queueClient', 'intree'],
+      setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient, intree }) => {
+        const api = builder.build({
+          rootUrl: cfg.taskcluster.rootUrl,
+          context: {
+            publisher,
+            cfg,
+            github,
+            db,
+            ajv,
+            monitor: monitor.childMonitor('api-context'),
+            queueClient,
+            intree,
+            schemaset,
+          },
+          monitor: monitor.childMonitor('api'),
+          schemaset,
+        });
+
+        monitor.exposeMetrics('default');
+        return api;
+      },
+    },
+
+    server: {
+      requires: ['cfg', 'api'],
+      setup: ({ cfg, api }) =>
+        App({
+          port: cfg.server.port,
+          env: cfg.server.env,
+          forceSSL: cfg.server.forceSSL,
+          trustProxy: cfg.server.trustProxy,
+          keepAliveTimeoutSeconds: cfg.server.keepAliveTimeoutSeconds,
+          apis: [api],
+        }),
+    },
+
+    syncInstallations: {
+      requires: ['github', 'db', 'monitor'],
+      setup: ({ github, db, monitor }, ownName) => {
+        return monitor.oneShot(ownName, async () => {
+          const gh = await github.getAppGithub();
+          const installations = (await gh.apps.listInstallations({})).data;
+          await Promise.all(
+            installations.map((i) => {
+              return db.fns.upsert_github_integration(i.account.login, i.id);
+            }),
           );
-        }));
-      });
+        });
+      },
+    },
+
+    handlers: {
+      requires: [
+        'cfg',
+        'github',
+        'monitor',
+        'intree',
+        'schemaset',
+        'reference',
+        'pulseClient',
+        'publisher',
+        'db',
+        'queueClient',
+      ],
+      setup: async ({ cfg, github, monitor, intree, schemaset, reference, pulseClient, publisher, db, queueClient }) =>
+        new Handlers({
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.pulse,
+          monitor: monitor.childMonitor('handlers'),
+          intree,
+          reference,
+          jobQueueName: cfg.app.jobQueue,
+          deprecatedResultStatusQueueName: cfg.app.deprecatedResultStatusQueue,
+          deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
+          resultStatusQueueName: cfg.app.resultStatusQueue,
+          rerunQueueName: cfg.app.rerunQueue,
+          context: { cfg, github, schemaset, db, publisher },
+          pulseClient,
+          queueClient,
+        }),
+    },
+
+    worker: {
+      requires: ['handlers'],
+      setup: async ({ handlers }) => handlers.setup(),
     },
   },
-
-  handlers: {
-    requires: [
-      'cfg',
-      'github',
-      'monitor',
-      'intree',
-      'schemaset',
-      'reference',
-      'pulseClient',
-      'publisher',
-      'db',
-      'queueClient',
-    ],
-    setup: async ({
-      cfg,
-      github,
-      monitor,
-      intree,
-      schemaset,
-      reference,
-      pulseClient,
-      publisher,
-      db,
-      queueClient,
-    }) =>
-      new Handlers({
-        rootUrl: cfg.taskcluster.rootUrl,
-        credentials: cfg.pulse,
-        monitor: monitor.childMonitor('handlers'),
-        intree,
-        reference,
-        jobQueueName: cfg.app.jobQueue,
-        deprecatedResultStatusQueueName: cfg.app.deprecatedResultStatusQueue,
-        deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
-        resultStatusQueueName: cfg.app.resultStatusQueue,
-        rerunQueueName: cfg.app.rerunQueue,
-        context: { cfg, github, schemaset, db, publisher },
-        pulseClient,
-        queueClient,
-      }),
+  {
+    profile: process.env.NODE_ENV,
+    process: process.argv[2],
   },
-
-  worker: {
-    requires: ['handlers'],
-    setup: async ({ handlers }) => handlers.setup(),
-  },
-}, {
-  profile: process.env.NODE_ENV,
-  process: process.argv[2],
-});
+);
 
 // If this file is executed launch component from first argument
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

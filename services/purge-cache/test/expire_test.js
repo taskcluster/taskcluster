@@ -3,15 +3,15 @@ import taskcluster from '@taskcluster/client';
 import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
 
-  test('expire nothing', async function() {
+  test('expire nothing', async function () {
     const count = (await helper.db.fns.expire_cache_purges(new Date()))[0].expire_cache_purges;
     assume(count).to.equal(0);
   });
 
-  test('expire something', async function() {
+  test('expire something', async function () {
     const wpid = 'pid/wt';
     const times = [
       taskcluster.fromNow('-3 hours'),
@@ -27,9 +27,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assume(count).to.equal(1);
 
     const caches = await helper.db.fns.all_purge_requests_wpid(5, 0);
-    assume(
-      caches.find(cache => cache.worker_pool_id === wpid && cache.cache_name === 'a'),
-    ).to.equal(undefined);
-    assume(caches.find(cache => cache.worker_pool_id === wpid && cache.cache_name === 'b'));
+    assume(caches.find((cache) => cache.worker_pool_id === wpid && cache.cache_name === 'a')).to.equal(undefined);
+    assume(caches.find((cache) => cache.worker_pool_id === wpid && cache.cache_name === 'b'));
   });
 });

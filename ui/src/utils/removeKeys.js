@@ -9,10 +9,10 @@ const removeKeys = (obj, keys) => {
   let index;
 
   if (obj) {
-    Object.keys(obj).forEach(prop => {
+    Object.keys(obj).forEach((prop) => {
       // important check that this is objects own property
       // not from prototype prop inherited
-      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+      if (Object.hasOwn(obj, prop)) {
         switch (typeof obj[prop]) {
           case 'string':
             index = keys.indexOf(prop);

@@ -1,42 +1,43 @@
 import _ from 'lodash';
 
-export const sentryBuilder = builder => builder.declare({
-  method: 'get',
-  route: '/sentry/:project/dsn',
-  name: 'sentryDSN',
-  input: undefined,
-  output: 'sentry-dsn-response.yml',
-  stability: 'stable',
-  category: 'Sentry Credentials',
-  scopes: 'auth:sentry:<project>',
-  title: 'Get DSN for Sentry Project',
-  description: [
-    'Get temporary DSN (access credentials) for a sentry project.',
-    'The credentials returned can be used with any Sentry client for up to',
-    '24 hours, after which the credentials will be automatically disabled.',
-    '',
-    'If the project doesn\'t exist it will be created, and assigned to the',
-    'initial team configured for this component. Contact a Sentry admin',
-    'to have the project transferred to a team you have access to if needed',
-  ].join('\n'),
-}, async function(req, res) {
-  const project = req.params.project;
+export const sentryBuilder = (builder) =>
+  builder.declare(
+    {
+      method: 'get',
+      route: '/sentry/:project/dsn',
+      name: 'sentryDSN',
+      input: undefined,
+      output: 'sentry-dsn-response.yml',
+      stability: 'stable',
+      category: 'Sentry Credentials',
+      scopes: 'auth:sentry:<project>',
+      title: 'Get DSN for Sentry Project',
+      description: [
+        'Get temporary DSN (access credentials) for a sentry project.',
+        'The credentials returned can be used with any Sentry client for up to',
+        '24 hours, after which the credentials will be automatically disabled.',
+        '',
+        "If the project doesn't exist it will be created, and assigned to the",
+        'initial team configured for this component. Contact a Sentry admin',
+        'to have the project transferred to a team you have access to if needed',
+      ].join('\n'),
+    },
+    async function (req, res) {
+      const project = req.params.project;
 
-  // Check scopes
-  await req.authorize({ project });
+      // Check scopes
+      await req.authorize({ project });
 
-  const key = await this.sentryManager.projectDSN(project);
+      const key = await this.sentryManager.projectDSN(project);
 
-  if (!key) {
-    return res.reportError(
-      'ResourceNotFound',
-      'Sentry credentials not found',
-      {});
-  }
+      if (!key) {
+        return res.reportError('ResourceNotFound', 'Sentry credentials not found', {});
+      }
 
-  return res.reply({
-    project,
-    dsn: _.pick(key.dsn, ['secret', 'public']),
-    expires: key.expires.toJSON(),
-  });
-});
+      return res.reply({
+        project,
+        dsn: _.pick(key.dsn, ['secret', 'public']),
+        expires: key.expires.toJSON(),
+      });
+    },
+  );

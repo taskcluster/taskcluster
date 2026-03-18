@@ -1,10 +1,9 @@
-
 import { Link } from 'react-router-dom';
 import { string, node } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import resolve from 'resolve-pathname';
 
-const styles = theme => ({
+const styles = (theme) => ({
   link: {
     ...theme.mixins.link,
   },
@@ -13,12 +12,7 @@ const styles = theme => ({
 function Anchor({ classes, href, children, ...props }) {
   if (href.startsWith('http')) {
     return (
-      <a
-        className={classes.link}
-        href={href}
-        {...props}
-        target="_blank"
-        rel="noopener noreferrer">
+      <a className={classes.link} href={href} {...props} target="_blank" rel="noopener noreferrer">
         {children}
       </a>
     );

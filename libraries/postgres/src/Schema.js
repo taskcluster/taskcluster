@@ -35,7 +35,7 @@ export class Schema {
     /** @type {Array<Version>} */
     const versions = [];
 
-    dentries.forEach(dentry => {
+    dentries.forEach((dentry) => {
       if (dentry.startsWith('.')) {
         return;
       }
@@ -62,11 +62,11 @@ export class Schema {
 
     Schema._checkMethodUpdates(versions);
 
-    const access = Access.fromYamlFileContent(
-      yaml.load(fs.readFileSync(path.join(directory, 'access.yml'), 'utf8')));
+    const access = Access.fromYamlFileContent(yaml.load(fs.readFileSync(path.join(directory, 'access.yml'), 'utf8')));
     const tables = Relations.fromYamlFileContent(
       yaml.load(fs.readFileSync(path.join(directory, 'tables.yml'), 'utf8')),
-      'tables.yml');
+      'tables.yml',
+    );
 
     return new Schema(versions, access, tables);
   }
@@ -79,7 +79,7 @@ export class Schema {
   static fromSerializable(serializable) {
     assert.deepEqual(Object.keys(serializable).sort(), ['access', 'tables', 'versions']);
     return new Schema(
-      serializable.versions.map(s => Version.fromSerializable(s)),
+      serializable.versions.map((s) => Version.fromSerializable(s)),
       Access.fromSerializable(serializable.access),
       Relations.fromSerializable(serializable.tables),
     );
@@ -90,7 +90,7 @@ export class Schema {
    */
   asSerializable() {
     return {
-      versions: this.versions.map(v => v.asSerializable()),
+      versions: this.versions.map((v) => v.asSerializable()),
       access: this.access.asSerializable(),
       tables: this.tables.asSerializable(),
     };
@@ -138,21 +138,20 @@ export class Schema {
    * @param {{ atVersion?: number }} [options]
    */
   allMethods({ atVersion } = {}) {
-    const map = this.versions.reduce(
-      (acc, version) => {
-        if (atVersion !== undefined && version.version > atVersion) {
-          return acc;
-        }
-
-        Object.entries(version.methods).forEach(([name, method]) => {
-          if (method.deprecated) {
-            Object.assign(method, acc.get(name), { deprecated: true });
-          }
-          method.version = version.version;
-          acc.set(name, method);
-        });
+    const map = this.versions.reduce((acc, version) => {
+      if (atVersion !== undefined && version.version > atVersion) {
         return acc;
-      }, new Map());
+      }
+
+      Object.entries(version.methods).forEach(([name, method]) => {
+        if (method.deprecated) {
+          Object.assign(method, acc.get(name), { deprecated: true });
+        }
+        method.version = version.version;
+        acc.set(name, method);
+      });
+      return acc;
+    }, new Map());
 
     return [...map.values()];
   }

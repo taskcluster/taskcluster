@@ -30,14 +30,14 @@ import pulseMessagesQuery from './pulseMessages.graphql';
 import removeKeys from '../../utils/removeKeys';
 import exchangesList from '../../utils/exchangesList';
 
-const getBindingsFromProps = props => {
+const getBindingsFromProps = (props) => {
   const query = parse(props.location.search.slice(1));
 
   return query.bindings ? Object.values(query.bindings) : [];
 };
 
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   iconButton: {
     '& svg': {
       fill: theme.palette.text.primary,
@@ -144,7 +144,7 @@ export default class PulseMessages extends Component {
   handleDeleteBinding = ({ exchange, pattern }) => {
     this.handleStopListening();
     const bindings = this.state.bindings.filter(
-      binding => binding.exchange !== exchange || binding.pattern !== pattern
+      (binding) => binding.exchange !== exchange || binding.pattern !== pattern,
     );
 
     this.props.history.replace(`/pulse-messages?${stringify({ bindings })}`);
@@ -166,7 +166,7 @@ export default class PulseMessages extends Component {
           // into the existing list of comments
           this.addMessage(pulseMessages);
         },
-        error: error => {
+        error: (error) => {
           this.setState({ error, listening: false });
         },
       });
@@ -178,7 +178,7 @@ export default class PulseMessages extends Component {
     this.unsubscribe();
   };
 
-  handleMessageDrawerOpen = message => {
+  handleMessageDrawerOpen = (message) => {
     this.setState({ drawerOpen: true, drawerMessage: message });
   };
 
@@ -197,9 +197,7 @@ export default class PulseMessages extends Component {
   };
 
   addMessage(message) {
-    const messages = removeKeys(this.state.messages.concat(message), [
-      '__typename',
-    ]);
+    const messages = removeKeys(this.state.messages.concat(message), ['__typename']);
     const params = btoa(JSON.stringify(messages, null, 2));
 
     this.setState({
@@ -245,21 +243,18 @@ export default class PulseMessages extends Component {
         helpView={
           <HelpView description={description}>
             <Typography variant="body2" paragraph>
-              This tool lets you listen to Pulse messages from any exchange and
-              routing key. When messages are received you can inspect the
-              messages. This is useful for debugging and development when
-              consuming from undocumented exchanges. Notice that all exchanges
-              from {window.env.APPLICATION_NAME} are formally documented on{' '}
-              <a
-                href={urls.docs('/')}
-                target="_blank"
-                rel="noopener noreferrer">
+              This tool lets you listen to Pulse messages from any exchange and routing key. When messages are received
+              you can inspect the messages. This is useful for debugging and development when consuming from
+              undocumented exchanges. Notice that all exchanges from {window.env.APPLICATION_NAME} are formally
+              documented on{' '}
+              <a href={urls.docs('/')} target="_blank" rel="noopener noreferrer">
                 {urls.docs('/')}
               </a>
               .
             </Typography>
           </HelpView>
-        }>
+        }
+      >
         <Fragment>
           <ErrorPanel error={error} />
           <PulseBindings
@@ -281,13 +276,10 @@ export default class PulseMessages extends Component {
             <DataTable
               items={messages}
               noItemsMessage="No messages received."
-              renderRow={message => (
-                <TableRow
-                  key={`message-${message.routingKey}-${message.exchange}`}>
+              renderRow={(message) => (
+                <TableRow key={`message-${message.routingKey}-${message.exchange}`}>
                   <TableCell>
-                    <IconButton
-                      className={classes.infoButton}
-                      onClick={() => this.handleMessageDrawerOpen(message)}>
+                    <IconButton className={classes.infoButton} onClick={() => this.handleMessageDrawerOpen(message)}>
                       <InformationVariantIcon size={iconSize} />
                     </IconButton>
                     {message.exchange}
@@ -304,7 +296,8 @@ export default class PulseMessages extends Component {
               spanProps={{ className: classes.startStopIconSpan }}
               tooltipProps={{ title: 'Stop Listening' }}
               onClick={this.handleStopListening}
-              className={classes.stopIcon}>
+              className={classes.stopIcon}
+            >
               <StopIcon />
             </Button>
           ) : (
@@ -314,7 +307,8 @@ export default class PulseMessages extends Component {
               tooltipProps={{ title: 'Start Listening' }}
               onClick={this.handleStartListening}
               className={classes.playIcon}
-              disabled={!bindings.length}>
+              disabled={!bindings.length}
+            >
               <PlayIcon />
             </Button>
           )}
@@ -333,11 +327,10 @@ export default class PulseMessages extends Component {
             classes={{
               paper: classes.drawerPaper,
             }}
-            onClose={this.handleMessageDrawerClose}>
+            onClose={this.handleMessageDrawerClose}
+          >
             <Fragment>
-              <IconButton
-                onClick={this.handleMessageDrawerClose}
-                className={classes.drawerCloseIcon}>
+              <IconButton onClick={this.handleMessageDrawerClose} className={classes.drawerCloseIcon}>
                 <CloseIcon />
               </IconButton>
               <div className={classes.drawerContainer}>
@@ -346,30 +339,13 @@ export default class PulseMessages extends Component {
                 </Typography>
                 <List>
                   <ListItem>
-                    <ListItemText
-                      primary="Exchange"
-                      secondary={
-                        <code>{drawerMessage?.exchange}</code>
-                      }
-                    />
+                    <ListItemText primary="Exchange" secondary={<code>{drawerMessage?.exchange}</code>} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText
-                      primary="Routing Key"
-                      secondary={
-                        <code>{drawerMessage?.routingKey}</code>
-                      }
-                    />
+                    <ListItemText primary="Routing Key" secondary={<code>{drawerMessage?.routingKey}</code>} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText
-                      primary="Redelivered"
-                      secondary={
-                        drawerMessage?.redelivered
-                          ? 'True'
-                          : 'False'
-                      }
-                    />
+                    <ListItemText primary="Redelivered" secondary={drawerMessage?.redelivered ? 'True' : 'False'} />
                   </ListItem>
                   <ListItem>
                     <ListItemText
@@ -377,7 +353,7 @@ export default class PulseMessages extends Component {
                       secondary={
                         drawerMessage?.cc.length ? (
                           <List className={classes.ccContainer}>
-                            {drawerMessage.cc.map(route => (
+                            {drawerMessage.cc.map((route) => (
                               <ListItem key={route} className={classes.ccRoute}>
                                 <code>{route}</code>
                               </ListItem>
@@ -395,14 +371,7 @@ export default class PulseMessages extends Component {
                       secondaryTypographyProps={{
                         component: 'div',
                       }}
-                      secondary={
-                        drawerMessage && (
-                          <JsonDisplay
-                            syntax="json"
-                            objectContent={drawerMessage.payload}
-                          />
-                        )
-                      }
+                      secondary={drawerMessage && <JsonDisplay syntax="json" objectContent={drawerMessage.payload} />}
                     />
                   </ListItem>
                 </List>

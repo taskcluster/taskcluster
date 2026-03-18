@@ -10,7 +10,7 @@ import 'highlight.js/styles/atom-one-dark.css';
 const markdown = parser({ linkify: true });
 const markdownHtml = parser({ html: true, linkify: true });
 
-[markdown, markdownHtml].forEach(md => {
+[markdown, markdownHtml].forEach((md) => {
   md.use(highlighter);
   md.use(linkAttributes, {
     attrs: {
@@ -20,7 +20,7 @@ const markdownHtml = parser({ html: true, linkify: true });
   });
 });
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   root: {
     fontFamily: theme.typography.fontFamily,
     fontSize: '1em',
@@ -136,9 +136,7 @@ const markdownHtml = parser({ html: true, linkify: true });
     },
     '& td': {
       borderBottom: `1px solid ${theme.palette.divider}`,
-      padding: `${theme.spacing(1)}px ${2 * theme.spacing(1)}px ${theme.spacing(
-        1
-      )}px ${theme.spacing(1)}px`,
+      padding: `${theme.spacing(1)}px ${2 * theme.spacing(1)}px ${theme.spacing(1)}px ${theme.spacing(1)}px`,
       textAlign: 'left',
     },
     '& td:last-child': {
@@ -183,8 +181,7 @@ const markdownHtml = parser({ html: true, linkify: true });
       ...theme.mixins.link,
     },
     '& :not(pre) > code': {
-      backgroundColor:
-        theme.palette.type === 'dark' ? alpha('#fff', 0.1) : alpha('#000', 0.1),
+      backgroundColor: theme.palette.type === 'dark' ? alpha('#fff', 0.1) : alpha('#000', 0.1),
     },
   },
 }))

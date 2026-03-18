@@ -1,8 +1,8 @@
 query LastestArtifacts($taskId: ID!) {
   latestArtifacts(taskId: $taskId) {
-    edges{
-      node{
-        taskId,
+    edges {
+      node {
+        taskId
         name
       }
     }

@@ -5,15 +5,15 @@ import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 import loader from '../../src/loaders/tasks.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withClients(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  suite('tasks loaders', function() {
+  suite('tasks loaders', function () {
     // Make sure we still get tasks even if we end up loading some tasks that don't exist
-    test('load multiple tasks while gracefully handling errors', async function() {
+    test('load multiple tasks while gracefully handling errors', async function () {
       const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
 

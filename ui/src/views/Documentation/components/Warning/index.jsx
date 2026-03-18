@@ -1,10 +1,9 @@
-
 import { string } from 'prop-types';
 import { alpha, withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Markdown from '../../../../components/Markdown';
 
-const styles = withStyles(theme => ({
+const styles = withStyles((theme) => ({
   root: {
     borderLeft: `5px solid ${theme.palette.warning.dark}`,
     backgroundColor: alpha(theme.palette.warning.main, 0.2),

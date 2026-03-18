@@ -1,7 +1,7 @@
 import { Secrets, withMonitor } from '@taskcluster/lib-testing';
 import { MonitorManager } from '@taskcluster/lib-monitor';
 
-withMonitor({ }, { noLoader: true });
+withMonitor({}, { noLoader: true });
 
 export const monitor = MonitorManager.setup({
   serviceName: 'lib-pulse',
@@ -13,9 +13,7 @@ export const monitor = MonitorManager.setup({
 export const secrets = new Secrets({
   secretName: [],
   secrets: {
-    pulse: [
-      { env: 'PULSE_CONNECTION_STRING', name: 'connectionString' },
-    ],
+    pulse: [{ env: 'PULSE_CONNECTION_STRING', name: 'connectionString' }],
   },
 });
 

@@ -2,24 +2,24 @@ import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   helper.withDbForProcs({ serviceName: 'notify' });
 
-  setup('truncate denylisted_notifications', async function() {
-    await helper.withDbClient(async client => {
+  setup('truncate denylisted_notifications', async function () {
+    await helper.withDbClient(async (client) => {
       await client.query('truncate denylisted_notifications');
     });
   });
 
-  helper.dbTest('list denylisted notifications when there are none', async function(db) {
+  helper.dbTest('list denylisted notifications when there are none', async function (db) {
     const addresses = await db.fns.all_denylist_addresses(10, 0);
     assert.deepEqual(addresses, []);
   });
 
-  helper.dbTest('list denylisted notifications when there is one row', async function(db) {
+  helper.dbTest('list denylisted notifications when there is one row', async function (db) {
     const n1 = {
-      notificationType: "email",
-      notificationAddress: "pmoore@mozilla.com",
+      notificationType: 'email',
+      notificationAddress: 'pmoore@mozilla.com',
     };
     await db.fns.add_denylist_address(n1.notificationType, n1.notificationAddress);
     const addresses = await db.fns.all_denylist_addresses(10, 0);
@@ -28,10 +28,10 @@ suite(testing.suiteName(), function() {
     assert.equal(addresses[0].notification_address, n1.notificationAddress);
   });
 
-  helper.dbTest('add denylist address that already exists', async function(db) {
+  helper.dbTest('add denylist address that already exists', async function (db) {
     const n1 = {
-      notificationType: "email",
-      notificationAddress: "pmoore@mozilla.com",
+      notificationType: 'email',
+      notificationAddress: 'pmoore@mozilla.com',
     };
     await db.fns.add_denylist_address(n1.notificationType, n1.notificationAddress);
     await db.fns.add_denylist_address(n1.notificationType, n1.notificationAddress);
@@ -41,10 +41,10 @@ suite(testing.suiteName(), function() {
     assert.equal(addresses[0].notification_address, n1.notificationAddress);
   });
 
-  helper.dbTest('delete denylist address that already exists', async function(db) {
+  helper.dbTest('delete denylist address that already exists', async function (db) {
     const n1 = {
-      notificationType: "email",
-      notificationAddress: "pmoore@mozilla.com",
+      notificationType: 'email',
+      notificationAddress: 'pmoore@mozilla.com',
     };
     await db.fns.add_denylist_address(n1.notificationType, n1.notificationAddress);
     await db.fns.delete_denylist_address(n1.notificationType, n1.notificationAddress);
@@ -52,14 +52,14 @@ suite(testing.suiteName(), function() {
     assert.equal(addresses.length, 0);
   });
 
-  helper.dbTest("delete denylist address that doesn't already exist", async function(db) {
+  helper.dbTest("delete denylist address that doesn't already exist", async function (db) {
     const n1 = {
-      notificationType: "pulse",
-      notificationAddress: "routing.key",
+      notificationType: 'pulse',
+      notificationAddress: 'routing.key',
     };
     const n2 = {
-      notificationType: "email",
-      notificationAddress: "pmoore@mozilla.com",
+      notificationType: 'email',
+      notificationAddress: 'pmoore@mozilla.com',
     };
     await db.fns.add_denylist_address(n1.notificationType, n1.notificationAddress);
     await db.fns.delete_denylist_address(n2.notificationType, n2.notificationAddress);
@@ -69,14 +69,14 @@ suite(testing.suiteName(), function() {
     assert.equal(addresses[0].notification_address, n1.notificationAddress);
   });
 
-  helper.dbTest('test denylist address pagination', async function(db) {
+  helper.dbTest('test denylist address pagination', async function (db) {
     const n1 = {
-      notificationType: "pulse",
-      notificationAddress: "routing.key",
+      notificationType: 'pulse',
+      notificationAddress: 'routing.key',
     };
     const n2 = {
-      notificationType: "email",
-      notificationAddress: "pmoore@mozilla.com",
+      notificationType: 'email',
+      notificationAddress: 'pmoore@mozilla.com',
     };
     await db.fns.add_denylist_address(n1.notificationType, n1.notificationAddress);
     await db.fns.add_denylist_address(n2.notificationType, n2.notificationAddress);
@@ -89,14 +89,14 @@ suite(testing.suiteName(), function() {
     assert.equal(addresses[0].notification_address, n1.notificationAddress);
   });
 
-  helper.dbTest('test denylist existence check', async function(db) {
+  helper.dbTest('test denylist existence check', async function (db) {
     const n1 = {
-      notificationType: "pulse",
-      notificationAddress: "routing.key",
+      notificationType: 'pulse',
+      notificationAddress: 'routing.key',
     };
     const n2 = {
-      notificationType: "email",
-      notificationAddress: "pmoore@mozilla.com",
+      notificationType: 'email',
+      notificationAddress: 'pmoore@mozilla.com',
     };
     await db.fns.add_denylist_address(n1.notificationType, n1.notificationAddress);
     await db.fns.add_denylist_address(n2.notificationType, n2.notificationAddress);
@@ -105,18 +105,18 @@ suite(testing.suiteName(), function() {
     assert(!!exists[0].exists_denylist_address);
   });
 
-  helper.dbTest('test denylist nonexistence check', async function(db) {
+  helper.dbTest('test denylist nonexistence check', async function (db) {
     const n1 = {
-      notificationType: "pulse",
-      notificationAddress: "routing.key",
+      notificationType: 'pulse',
+      notificationAddress: 'routing.key',
     };
     const n2 = {
-      notificationType: "email",
-      notificationAddress: "pmoore@mozilla.com",
+      notificationType: 'email',
+      notificationAddress: 'pmoore@mozilla.com',
     };
     const n3 = {
-      notificationType: "irc-user",
-      notificationAddress: "pmoore",
+      notificationType: 'irc-user',
+      notificationAddress: 'pmoore',
     };
     await db.fns.add_denylist_address(n1.notificationType, n1.notificationAddress);
     await db.fns.add_denylist_address(n2.notificationType, n2.notificationAddress);

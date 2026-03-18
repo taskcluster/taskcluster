@@ -1,6 +1,6 @@
 import format from './format';
 
-export default hookGroups => {
+export default (hookGroups) => {
   let totalGroups = 0;
   let totalHooks = 0;
 

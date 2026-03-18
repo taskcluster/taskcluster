@@ -44,7 +44,7 @@ const DOTS_VARIANT_LIMIT = 5;
 @withRouter
 @withAuth
 @withStyles(
-  theme => ({
+  (theme) => ({
     headline: {
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
@@ -126,7 +126,7 @@ const DOTS_VARIANT_LIMIT = 5;
       width: 30,
     },
   }),
-  { withTheme: true }
+  { withTheme: true },
 )
 /**
  * Render a paginated card layout for the runs of a GraphQL task response.
@@ -177,8 +177,7 @@ export default class TaskRunsCard extends Component {
   getArtifactInfo = ({ name, contentType }) => {
     const { taskId, runId } = this.getCurrentRun();
     const { user } = this.props;
-    const isLogFile =
-      contentType.startsWith('text/plain') && name.endsWith('.log');
+    const isLogFile = contentType.startsWith('text/plain') && name.endsWith('.log');
     const icon = getIconFromMime(contentType);
     let handleArtifactClick;
     let url = getArtifactUrl({ user, taskId, runId, name });
@@ -194,7 +193,7 @@ export default class TaskRunsCard extends Component {
     } else {
       // refresh the artifact URL (with a fresh expiration time) on click and
       // navigate to it manually in a new window
-      handleArtifactClick = ev => {
+      handleArtifactClick = (ev) => {
         const url = getArtifactUrl({ user, taskId, runId, name });
 
         if (ev.altKey || ev.metaKey || ev.ctrlKey || ev.shiftKey) {
@@ -232,16 +231,12 @@ export default class TaskRunsCard extends Component {
     const { location, history } = this.props;
     const showArtifacts = location.hash === '#artifacts';
 
-    showArtifacts
-      ? history.replace(location.pathname)
-      : history.replace(`${location.pathname}#artifacts`);
+    showArtifacts ? history.replace(location.pathname) : history.replace(`${location.pathname}#artifacts`);
   };
 
-  getLiveLogArtifactFromRun = run => {
+  getLiveLogArtifactFromRun = (run) => {
     const { liveLogName = 'public/logs/live.log' } = this.props;
-    const artifact = run?.artifacts?.edges?.find(
-      ({ node: { name } }) => name === liveLogName
-    );
+    const artifact = run?.artifacts?.edges?.find(({ node: { name } }) => name === liveLogName);
 
     if (!artifact) {
       return;
@@ -284,33 +279,20 @@ export default class TaskRunsCard extends Component {
     const { classes } = this.props;
     const { isCopy } = this.state;
     const { name } = artifact;
-    const {
-      icon: Icon,
-      isLogFile,
-      url,
-      handleArtifactClick,
-    } = this.getArtifactInfo(artifact);
+    const { icon: Icon, isLogFile, url, handleArtifactClick } = this.getArtifactInfo(artifact);
     // Remove authentication parameter
-    const artifactUrl = new URL(
-      `${url.startsWith('http') ? '' : window.location.origin}${url}`
-    );
+    const artifactUrl = new URL(`${url.startsWith('http') ? '' : window.location.origin}${url}`);
 
     artifactUrl.searchParams.delete('bewit');
 
     return (
       <TableRow
         key={name}
-        className={classNames(
-          classes.listItemButton,
-          classes.artifactTableRow,
-          classes.pointer
-        )}
-        hover>
+        className={classNames(classes.listItemButton, classes.artifactTableRow, classes.pointer)}
+        hover
+      >
         <TableCell>
-          <Link
-            className={classes.artifactLink}
-            to={url}
-            onClick={handleArtifactClick}>
+          <Link className={classes.artifactLink} to={url} onClick={handleArtifactClick}>
             <div className={classes.iconDiv}>
               <Icon />
             </div>
@@ -329,7 +311,8 @@ export default class TaskRunsCard extends Component {
           <CopyToClipboard
             onCopy={() => this.onCopyClick(url)}
             title={`Artifact URL (${isCopy ? 'Copied!' : 'Copy'})`}
-            text={artifactUrl.toString()}>
+            text={artifactUrl.toString()}
+          >
             {isCopy[url] ? <CheckIcon /> : <ContentCopyIcon />}
           </CopyToClipboard>
         </TableCell>
@@ -350,9 +333,7 @@ export default class TaskRunsCard extends Component {
         onPageChange={onArtifactsPageChange}
         withoutTopPagination
         allowFilter
-        filterFunc={({ node: { name } }, filterValue) =>
-          String(name).includes(filterValue)
-        }
+        filterFunc={({ node: { name } }, filterValue) => String(name).includes(filterValue)}
         renderRow={({ node: artifact }) => this.renderArtifactRow({ artifact })}
       />
     );
@@ -364,11 +345,8 @@ export default class TaskRunsCard extends Component {
     const liveLogArtifact = this.getLiveLogArtifactFromRun(run);
     const artifactsCount = run?.artifacts?.edges?.length;
     const showArtifactsCollapse = artifactsCount > ARTIFACTS_SHOW_MAX;
-    const showArtifacts =
-      window.location.hash === '#artifacts' || !showArtifactsCollapse;
-    const liveLogInfo = liveLogArtifact
-      ? this.getArtifactInfo(liveLogArtifact)
-      : {};
+    const showArtifacts = window.location.hash === '#artifacts' || !showArtifactsCollapse;
+    const liveLogInfo = liveLogArtifact ? this.getArtifactInfo(liveLogArtifact) : {};
     const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
     return (
@@ -377,7 +355,8 @@ export default class TaskRunsCard extends Component {
           <CardContent
             classes={{
               root: classNames(classes.cardContent),
-            }}>
+            }}
+          >
             <MobileStepper
               variant={runs.length > DOTS_VARIANT_LIMIT ? 'progress' : 'dots'}
               position="static"
@@ -388,7 +367,8 @@ export default class TaskRunsCard extends Component {
                   className={classes.nextPageArrow}
                   size="small"
                   onClick={this.handleNext}
-                  disabled={run ? selectedRunId === runs.length - 1 : true}>
+                  disabled={run ? selectedRunId === runs.length - 1 : true}
+                >
                   Next
                   <ChevronRightIcon />
                 </Button>
@@ -398,7 +378,8 @@ export default class TaskRunsCard extends Component {
                   className={classes.previousPageArrow}
                   size="small"
                   onClick={this.handlePrevious}
-                  disabled={run ? selectedRunId === 0 : true}>
+                  disabled={run ? selectedRunId === 0 : true}
+                >
                   <ChevronLeftIcon />
                   Previous
                 </Button>
@@ -411,24 +392,16 @@ export default class TaskRunsCard extends Component {
               <Fragment>
                 <List>
                   <ListItem>
-                    <ListItemText
-                      primary="State"
-                      secondary={<StatusLabel state={run.state} />}
-                    />
+                    <ListItemText primary="State" secondary={<StatusLabel state={run.state} />} />
                   </ListItem>
                   {liveLogArtifact && (
-                    <Link
-                      to={liveLogInfo.url}
-                      onClick={liveLogInfo.handleArtifactClick}>
+                    <Link to={liveLogInfo.url} onClick={liveLogInfo.handleArtifactClick}>
                       <ListItem button className={classes.listItemButton}>
                         <ListItemText
                           primary={
                             <Fragment>
                               View Live Log{' '}
-                              <Label
-                                status="info"
-                                mini
-                                className={classes.liveLogLabel}>
+                              <Label status="info" mini className={classes.liveLogLabel}>
                                 LOG
                               </Label>
                             </Fragment>
@@ -439,24 +412,14 @@ export default class TaskRunsCard extends Component {
                       </ListItem>
                     </Link>
                   )}
-                  <ListItem
-                    button
-                    className={classes.listItemButton}
-                    onClick={this.handleToggleArtifacts}>
+                  <ListItem button className={classes.listItemButton} onClick={this.handleToggleArtifacts}>
                     <ListItemText primary={`Artifacts (${artifactsCount})`} />
-                    {showArtifactsCollapse && showArtifacts ? (
-                      <ChevronUpIcon />
-                    ) : null}
-                    {showArtifactsCollapse && !showArtifacts ? (
-                      <ChevronDownIcon />
-                    ) : null}
+                    {showArtifactsCollapse && showArtifacts ? <ChevronUpIcon /> : null}
+                    {showArtifactsCollapse && !showArtifacts ? <ChevronDownIcon /> : null}
                   </ListItem>
                   <Collapse in={showArtifacts} timeout="auto">
                     <List component="div" disablePadding>
-                      <ListItem
-                        className={classes.artifactsListItemContainer}
-                        component="div"
-                        disableGutters>
+                      <ListItem className={classes.artifactsListItemContainer} component="div" disableGutters>
                         {this.renderArtifactsTable()}
                         <Divider />
                       </ListItem>
@@ -466,14 +429,7 @@ export default class TaskRunsCard extends Component {
                     <ListItemText
                       primary="Reason Resolved"
                       secondary={
-                        run.reasonResolved ? (
-                          <StatusLabel
-                            variant="default"
-                            state={run.reasonResolved}
-                          />
-                        ) : (
-                          <em>n/a</em>
-                        )
+                        run.reasonResolved ? <StatusLabel variant="default" state={run.reasonResolved} /> : <em>n/a</em>
                       }
                     />
                   </ListItem>
@@ -487,61 +443,30 @@ export default class TaskRunsCard extends Component {
                     tooltipTitle={run.started}
                     textToCopy={run.started}
                     primary="Started"
-                    secondary={
-                      run.started ? (
-                        <DateDistance
-                          from={run.started}
-                          offset={run.scheduled}
-                        />
-                      ) : (
-                        <em>n/a</em>
-                      )
-                    }
+                    secondary={run.started ? <DateDistance from={run.started} offset={run.scheduled} /> : <em>n/a</em>}
                   />
                   <CopyToClipboardListItem
                     tooltipTitle={run.resolved}
                     textToCopy={run.resolved}
                     primary="Resolved"
-                    secondary={
-                      run.resolved ? (
-                        <DateDistance
-                          from={run.resolved}
-                          offset={run.started}
-                        />
-                      ) : (
-                        <em>n/a</em>
-                      )
-                    }
+                    secondary={run.resolved ? <DateDistance from={run.resolved} offset={run.started} /> : <em>n/a</em>}
                   />
                 </List>
                 <List component="div" disablePadding>
                   <ListItem>
                     <ListItemText
                       primary="Reason Created"
-                      secondary={
-                        <StatusLabel
-                          variant="default"
-                          state={run.reasonCreated}
-                        />
-                      }
+                      secondary={<StatusLabel variant="default" state={run.reasonCreated} />}
                     />
                   </ListItem>
                   <ListItem>
-                    <ListItemText
-                      primary="Worker Group"
-                      secondary={run.workerGroup || <em>n/a</em>}
-                    />
+                    <ListItemText primary="Worker Group" secondary={run.workerGroup || <em>n/a</em>} />
                   </ListItem>
                   <Link
-                    to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${run.workerGroup}/${run.workerId}`}>
-                    <ListItem
-                      title="View Worker"
-                      button
-                      className={classes.listItemButton}>
-                      <ListItemText
-                        primary="Worker ID"
-                        secondary={run.workerId}
-                      />
+                    to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${run.workerGroup}/${run.workerId}`}
+                  >
+                    <ListItem title="View Worker" button className={classes.listItemButton}>
+                      <ListItemText primary="Worker ID" secondary={run.workerId} />
                       <LinkIcon />
                     </ListItem>
                   </Link>
@@ -549,22 +474,13 @@ export default class TaskRunsCard extends Component {
                     tooltipTitle={run.takenUntil}
                     textToCopy={run.takenUntil}
                     primary="Taken Until"
-                    secondary={
-                      run.takenUntil ? (
-                        <DateDistance from={run.takenUntil} />
-                      ) : (
-                        <em>n/a</em>
-                      )
-                    }
+                    secondary={run.takenUntil ? <DateDistance from={run.takenUntil} /> : <em>n/a</em>}
                   />
                 </List>
               </Fragment>
             ) : (
               <div className={classes.boxVariant}>
-                <NoRunsIcon
-                  fill={theme.palette.text.primary}
-                  className={classes.boxVariantIcon}
-                />
+                <NoRunsIcon fill={theme.palette.text.primary} className={classes.boxVariantIcon} />
                 <Typography className={classes.boxVariantText} variant="h6">
                   No Runs
                 </Typography>

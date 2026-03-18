@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Spinner from '../Spinner';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   spinner: {
     marginTop: theme.spacing(3),
   },

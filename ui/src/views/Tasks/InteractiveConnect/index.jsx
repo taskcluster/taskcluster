@@ -32,19 +32,12 @@ import {
 
 let previousCursor;
 const NOTIFY_KEY = 'interactive-notify';
-const getInteractiveStatus = ({
-  shellArtifact = null,
-  taskStatusState = null,
-}) => {
+const getInteractiveStatus = ({ shellArtifact = null, taskStatusState = null }) => {
   if (!shellArtifact) {
     return INTERACTIVE_TASK_STATUS.WAITING;
   }
 
-  if (
-    [TASK_STATE.COMPLETED, TASK_STATE.FAILED, TASK_STATE.EXCEPTION].includes(
-      taskStatusState
-    )
-  ) {
+  if ([TASK_STATE.COMPLETED, TASK_STATE.FAILED, TASK_STATE.EXCEPTION].includes(taskStatusState)) {
     return INTERACTIVE_TASK_STATUS.RESOLVED;
   }
 
@@ -53,7 +46,7 @@ const getInteractiveStatus = ({
 
 @withAuth
 @graphql(taskQuery, {
-  options: props => ({
+  options: (props) => ({
     fetchPolicy: 'network-only',
     errorPolicy: 'all',
     pollInterval: INTERACTIVE_CONNECT_TASK_POLL_INTERVAL,
@@ -62,7 +55,7 @@ const getInteractiveStatus = ({
     },
   }),
 })
-@withStyles(theme => ({
+@withStyles((theme) => ({
   listItemButton: {
     ...theme.mixins.listItemButton,
   },
@@ -81,10 +74,7 @@ const getInteractiveStatus = ({
   },
 }))
 export default class InteractiveConnect extends Component {
-  static getDerivedStateFromProps(
-    props,
-    { shellArtifact, artifactsLoading, previousTaskId, sessionReady }
-  ) {
+  static getDerivedStateFromProps(props, { shellArtifact, artifactsLoading, previousTaskId, sessionReady }) {
     const {
       data: { task, error },
       match: {
@@ -124,9 +114,7 @@ export default class InteractiveConnect extends Component {
 
       return {
         ...interactives,
-        ...(artifactsLoading && !task.latestArtifacts.pageInfo.hasNextPage
-          ? { artifactsLoading: false }
-          : null),
+        ...(artifactsLoading && !task.latestArtifacts.pageInfo.hasNextPage ? { artifactsLoading: false } : null),
         previousTaskId: taskId,
         sessionReady:
           sessionReady ||
@@ -151,8 +139,7 @@ export default class InteractiveConnect extends Component {
     artifactsLoading: true,
     // eslint-disable-next-line react/no-unused-state
     previousTaskId: this.props.match.params.taskId,
-    notifyOnReady:
-      'Notification' in window && localStorage.getItem(NOTIFY_KEY) === 'true',
+    notifyOnReady: 'Notification' in window && localStorage.getItem(NOTIFY_KEY) === 'true',
     sessionReady: false,
   };
 
@@ -178,20 +165,13 @@ export default class InteractiveConnect extends Component {
     }
 
     // We're done fetching
-    if (
-      !task ||
-      !task.latestArtifacts ||
-      !task.latestArtifacts.pageInfo.hasNextPage
-    ) {
+    if (!task || !task.latestArtifacts || !task.latestArtifacts.pageInfo.hasNextPage) {
       previousCursor = INITIAL_CURSOR;
 
       return;
     }
 
-    if (
-      task.latestArtifacts &&
-      previousCursor === task.latestArtifacts.pageInfo.cursor
-    ) {
+    if (task.latestArtifacts && previousCursor === task.latestArtifacts.pageInfo.cursor) {
       fetchMore({
         variables: {
           taskId,
@@ -210,19 +190,12 @@ export default class InteractiveConnect extends Component {
               return previousResult;
             }
 
-            const result = dotProp.set(
-              previousResult,
-              'task.latestArtifacts',
-              latestArtifacts =>
-                dotProp.set(
-                  dotProp.set(
-                    latestArtifacts,
-                    'edges',
-                    previousResult.task.latestArtifacts.edges.concat(edges)
-                  ),
-                  'pageInfo',
-                  pageInfo
-                )
+            const result = dotProp.set(previousResult, 'task.latestArtifacts', (latestArtifacts) =>
+              dotProp.set(
+                dotProp.set(latestArtifacts, 'edges', previousResult.task.latestArtifacts.edges.concat(edges)),
+                'pageInfo',
+                pageInfo,
+              ),
             );
 
             return result;
@@ -275,8 +248,7 @@ export default class InteractiveConnect extends Component {
       taskStatusState: task?.status.state,
     });
     const isSessionReady = interactiveStatus === INTERACTIVE_TASK_STATUS.READY;
-    const isSessionResolved =
-      interactiveStatus === INTERACTIVE_TASK_STATUS.RESOLVED;
+    const isSessionResolved = interactiveStatus === INTERACTIVE_TASK_STATUS.RESOLVED;
 
     return (
       <Fragment>
@@ -302,32 +274,19 @@ export default class InteractiveConnect extends Component {
             <ListItemText primary="Name" secondary={task.metadata.name} />
           </ListItem>
           <ListItem>
-            <ListItemText
-              primary="Description"
-              secondary={<Markdown>{task.metadata.description}</Markdown>}
-            />
+            <ListItemText primary="Description" secondary={<Markdown>{task.metadata.description}</Markdown>} />
           </ListItem>
           <ListItem>
-            <ListItemText
-              primary="State"
-              secondary={<StatusLabel state={task.status.state} />}
-            />
+            <ListItemText primary="State" secondary={<StatusLabel state={task.status.state} />} />
           </ListItem>
           <ListItem>
-            <ListItemText
-              primary="Interactive Status"
-              secondary={<StatusLabel state={interactiveStatus} />}
-            />
+            <ListItemText primary="Interactive Status" secondary={<StatusLabel state={interactiveStatus} />} />
           </ListItem>
           <ListItem>
             <FormControlLabel
               control={
                 <Switch
-                  disabled={
-                    !('Notification' in window) ||
-                    Notification.permission === 'denied' ||
-                    isSessionReady
-                  }
+                  disabled={!('Notification' in window) || Notification.permission === 'denied' || isSessionReady}
                   checked={notifyOnReady}
                   onChange={this.handleNotificationChange}
                   color="secondary"
@@ -337,12 +296,7 @@ export default class InteractiveConnect extends Component {
             />
           </ListItem>
           <Link to={`/tasks/${taskId}`}>
-            <ListItem
-              button
-              className={classNames(
-                classes.listItemButton,
-                classes.viewTaskDetails
-              )}>
+            <ListItem button className={classNames(classes.listItemButton, classes.viewTaskDetails)}>
               <ListItemText primary="View task details" />
               <LinkIcon />
             </ListItem>
@@ -353,15 +307,11 @@ export default class InteractiveConnect extends Component {
             <Divider className={classes.divider} />
             <Typography variant="h5">Select a Session</Typography>
             <Typography variant="body2">
-              You have approximately <strong>5 minutes</strong> to connect,
-              after that the task will shutdown when all connections are closed.
+              You have approximately <strong>5 minutes</strong> to connect, after that the task will shutdown when all
+              connections are closed.
             </Typography>
             <List>
-              <ListItem
-                disabled={!user}
-                button
-                onClick={this.handleShellOpen}
-                className={classes.listItemButton}>
+              <ListItem disabled={!user} button onClick={this.handleShellOpen} className={classes.listItemButton}>
                 <ConsoleIcon className={classes.listItemLeftIcon} />
                 <ListItemText primary="Shell" />
                 <OpenInNewIcon />

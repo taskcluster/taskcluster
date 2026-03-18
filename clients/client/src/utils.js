@@ -10,7 +10,7 @@ import sluglib from 'slugid';
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  */
-export const fromNow = function(offset, reference) {
+export const fromNow = function (offset, reference) {
   if (reference === undefined) {
     reference = new Date();
   }
@@ -20,14 +20,14 @@ export const fromNow = function(offset, reference) {
   offset.days += 365 * offset.years;
 
   const retval = new Date(
-    reference.getTime()
-    //    + offset.years * 365 * 24 * 60 * 60 * 1000
-    //   + offset.month  * 30 * 24 * 60 * 60 * 1000
-    + offset.weeks * 7 * 24 * 60 * 60 * 1000
-    + offset.days * 24 * 60 * 60 * 1000
-    + offset.hours * 60 * 60 * 1000
-    + offset.minutes * 60 * 1000
-    + offset.seconds * 1000,
+    reference.getTime() +
+      //    + offset.years * 365 * 24 * 60 * 60 * 1000
+      //   + offset.month  * 30 * 24 * 60 * 60 * 1000
+      offset.weeks * 7 * 24 * 60 * 60 * 1000 +
+      offset.days * 24 * 60 * 60 * 1000 +
+      offset.hours * 60 * 60 * 1000 +
+      offset.minutes * 60 * 1000 +
+      offset.seconds * 1000,
   );
   return retval;
 };
@@ -45,7 +45,7 @@ export const fromNow = function(offset, reference) {
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  */
-export const fromNowJSON = function(offset, reference) {
+export const fromNowJSON = function (offset, reference) {
   return fromNow(offset, reference).toJSON();
 };
 

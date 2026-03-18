@@ -92,28 +92,12 @@ export default class DialogAction extends Component {
 
   render() {
     const { executing } = this.state;
-    const {
-      fullScreen,
-      title,
-      body,
-      confirmText,
-      classes,
-      onClose,
-      open,
-      error,
-      onSubmit,
-      onComplete,
-      ...props
-    } = this.props;
+    const { fullScreen, title, body, confirmText, classes, onClose, open, error, onSubmit, onComplete, ...props } =
+      this.props;
     const withoutBodyProps = !body ? { maxWidth: 'sm', fullWidth: true } : {};
 
     return (
-      <Dialog
-        open={open}
-        onClose={onClose}
-        fullScreen={fullScreen}
-        {...withoutBodyProps}
-        {...props}>
+      <Dialog open={open} onClose={onClose} fullScreen={fullScreen} {...withoutBodyProps} {...props}>
         <DialogTitle>{title}</DialogTitle>
         <DialogContent>
           {error && (
@@ -128,15 +112,10 @@ export default class DialogAction extends Component {
             Cancel
           </Button>
           <div className={classes.executingActionWrapper}>
-            <Button
-              disabled={executing}
-              onClick={this.handleSubmit}
-              color="secondary">
+            <Button disabled={executing} onClick={this.handleSubmit} color="secondary">
               {confirmText}
             </Button>
-            {executing && (
-              <CircularProgress size={24} className={classes.buttonProgress} />
-            )}
+            {executing && <CircularProgress size={24} className={classes.buttonProgress} />}
           </div>
         </DialogActions>
       </Dialog>

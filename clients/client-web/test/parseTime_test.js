@@ -1,8 +1,7 @@
 import { expect } from 'chai';
 import { parseTime } from '../src';
 
-describe('parseTime', function() {
-
+describe('parseTime', function () {
   it('should parse year', () => {
     expect(parseTime('1 yr').years).to.equal(1);
     expect(parseTime('1 year').years).to.equal(1);
@@ -149,5 +148,4 @@ describe('parseTime', function() {
     expect(parseTime('-2d3h').minutes).to.equal(0);
     expect(parseTime('-2d0h').hours).to.equal(0);
   });
-
 });

@@ -1,8 +1,7 @@
-
 import { withStyles } from '@material-ui/core/styles';
 import { THEME } from '../../../../utils/constants';
 
-const styles = theme => ({
+const styles = (theme) => ({
   pre: {
     width: '100%',
     fontSize: theme.typography.fontSize,

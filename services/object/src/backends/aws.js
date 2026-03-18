@@ -9,10 +9,7 @@ import {
   PutObjectTaggingCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import {
-  getEndpointFromInstructions,
-  toEndpointV1,
-} from '@aws-sdk/middleware-endpoint';
+import { getEndpointFromInstructions, toEndpointV1 } from '@aws-sdk/middleware-endpoint';
 import { reportError } from '@taskcluster/lib-api';
 import taskcluster from '@taskcluster/client';
 import path from 'node:path';
@@ -90,16 +87,18 @@ export class AwsBackend extends Backend {
 
     const contentDisposition = this.contentDisposition(contentType);
 
-    await this.s3.send(new PutObjectCommand({
-      Bucket: this.config.bucket,
-      Key: object.name,
-      ContentType: contentType,
-      // note that GCS's S3 emulation does not support this; see
-      // https://github.com/taskcluster/taskcluster/issues/4748
-      ...(this.isAws && contentDisposition ? { ContentDisposition: contentDisposition } : {}),
-      Body: bytes,
-      Tagging: this.objectTaggingHeader(object),
-    }));
+    await this.s3.send(
+      new PutObjectCommand({
+        Bucket: this.config.bucket,
+        Key: object.name,
+        ContentType: contentType,
+        // note that GCS's S3 emulation does not support this; see
+        // https://github.com/taskcluster/taskcluster/issues/4748
+        ...(this.isAws && contentDisposition ? { ContentDisposition: contentDisposition } : {}),
+        Body: bytes,
+        Tagging: this.objectTaggingHeader(object),
+      }),
+    );
 
     return { dataInline: true };
   }
@@ -117,11 +116,7 @@ export class AwsBackend extends Backend {
     });
     const url = await getSignedUrl(this.s3, command, {
       expiresIn: PUT_URL_EXPIRES_SECONDS + 10,
-      signableHeaders: new Set([
-        'content-type',
-        'content-length',
-        'content-disposition',
-      ]),
+      signableHeaders: new Set(['content-type', 'content-length', 'content-disposition']),
     });
 
     const headers = {
@@ -155,11 +150,13 @@ export class AwsBackend extends Backend {
       // URL (!!), so we also add the tag after-the-fact here, in case a poorly
       // behaved uploader fails to include the header.  This has the side-effect
       // of verifying that the object is present on S3 when finished.
-      await this.s3.send(new PutObjectTaggingCommand({
-        Bucket: this.config.bucket,
-        Key: object.name,
-        Tagging: this.objectTaggingArg(object),
-      }));
+      await this.s3.send(
+        new PutObjectTaggingCommand({
+          Bucket: this.config.bucket,
+          Key: object.name,
+          Tagging: this.objectTaggingArg(object),
+        }),
+      );
     }
   }
 
@@ -206,7 +203,7 @@ export class AwsBackend extends Backend {
         });
 
         const hashRes = await this.db.fns.get_object_hashes(object.name);
-        const hashes = Object.fromEntries(hashRes.map(row => ([row.algorithm, row.hash])));
+        const hashes = Object.fromEntries(hashRes.map((row) => [row.algorithm, row.hash]));
 
         return { method, url, expires: expires.toJSON(), hashes };
       }
@@ -224,13 +221,15 @@ export class AwsBackend extends Backend {
     // leaking storage.  Note that s3.deleteObject is idempotent in AWS, but not in Google,
     // and since we don't care about objects that couldn't be deleted, we swallow NoSuchKey errors.
     try {
-      await this.s3.send(new DeleteObjectCommand({
-        Bucket: this.config.bucket,
-        Key: object.name,
-      }));
+      await this.s3.send(
+        new DeleteObjectCommand({
+          Bucket: this.config.bucket,
+          Key: object.name,
+        }),
+      );
     } catch (error) {
       // Ignore NoSuchKey errors
-      if (error.Code !== "NoSuchKey") {
+      if (error.Code !== 'NoSuchKey') {
         throw error;
       }
     }
@@ -282,9 +281,11 @@ export const getBucketRegion = async ({ bucket, endpoint, ...options }) => {
   const s3 = new S3Client({
     ...options,
   });
-  const { LocationConstraint } = await s3.send(new GetBucketLocationCommand({
-    Bucket: bucket,
-  }));
+  const { LocationConstraint } = await s3.send(
+    new GetBucketLocationCommand({
+      Bucket: bucket,
+    }),
+  );
 
   // us-east-1 is represented by an empty LocationConstraint,
   // because it was invented before there were regions (c.f.

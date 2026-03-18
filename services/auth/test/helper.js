@@ -21,10 +21,8 @@ export const load = stickyLoader(mainLoad);
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suiteSetup(async function() {
-  process.env.GCP_ALLOWED_SERVICE_ACCOUNTS = JSON.stringify([
-    'invalid@mozilla.com',
-  ]);
+suiteSetup(async function () {
+  process.env.GCP_ALLOWED_SERVICE_ACCOUNTS = JSON.stringify(['invalid@mozilla.com']);
 
   load.inject('profile', 'test');
   load.inject('process', 'test');
@@ -41,10 +39,7 @@ withMonitor({ load });
 
 // set up the testing secrets
 helper.secrets = new Secrets({
-  secretName: [
-    'project/taskcluster/testing/taskcluster-auth',
-    'project/taskcluster/testing/azure',
-  ],
+  secretName: ['project/taskcluster/testing/taskcluster-auth', 'project/taskcluster/testing/azure'],
   secrets: {
     azure: [
       { env: 'AZURE_ACCOUNT', name: 'accountId' },
@@ -56,7 +51,12 @@ helper.secrets = new Secrets({
       { env: 'TEST_BUCKET', name: 'testBucket' },
     ],
     gcp: [
-      { env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS', cfg: 'gcpCredentials.allowedProjects', name: 'allowedProjects', mock: {} },
+      {
+        env: 'GCP_CREDENTIALS_ALLOWED_PROJECTS',
+        cfg: 'gcpCredentials.allowedProjects',
+        name: 'allowedProjects',
+        mock: {},
+      },
     ],
   },
   load,
@@ -68,7 +68,7 @@ helper.withCfg = (mock, skipping) => {
   if (skipping()) {
     return;
   }
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -80,11 +80,14 @@ helper.withCfg = (mock, skipping) => {
     const staticScopes = await helper.loadJson('../src/static-scopes.json');
 
     // override app.staticClients based on the static scopes
-    load.cfg('app.staticClients', staticScopes.map(({ clientId }) => ({
-      clientId,
-      accessToken: clientId === 'static/taskcluster/root' ? helper.rootAccessToken : 'must-be-at-least-22-characters',
-      description: 'testing',
-    })));
+    load.cfg(
+      'app.staticClients',
+      staticScopes.map(({ clientId }) => ({
+        clientId,
+        accessToken: clientId === 'static/taskcluster/root' ? helper.rootAccessToken : 'must-be-at-least-22-characters',
+        description: 'testing',
+      })),
+    );
 
     // override cfg.azureAccounts based on the azure secret, or mock it
     if (mock) {
@@ -95,7 +98,7 @@ helper.withCfg = (mock, skipping) => {
     }
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (skipping()) {
       return;
     }
@@ -113,7 +116,7 @@ helper.withDb = (mock, skipping) => {
  */
 helper.withSentry = (_mock, skipping) => {
   const sentryOrgs = {};
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -122,7 +125,7 @@ helper.withSentry = (_mock, skipping) => {
 
     const sentryClient = {
       organizations: {
-        projects: org => Object.values(sentryOrgs[org]),
+        projects: (org) => Object.values(sentryOrgs[org]),
       },
       teams: {
         createProject: (org, _team, info) => {
@@ -155,10 +158,13 @@ helper.withSentry = (_mock, skipping) => {
       },
     };
 
-    load.inject('sentryManager', makeSentryManager({
-      ...cfg.app.sentry,
-      sentryClient,
-    }));
+    load.inject(
+      'sentryManager',
+      makeSentryManager({
+        ...cfg.app.sentry,
+        sentryClient,
+      }),
+    );
   });
 };
 
@@ -173,19 +179,22 @@ const testServiceBuilder = new APIBuilder({
   apiVersion: 'v1',
 });
 
-testServiceBuilder.declare({
-  method: 'get',
-  route: '/resource',
-  name: 'resource',
-  scopes: 'myapi:resource',
-  title: 'Get Resource',
-  category: 'Auth Service',
-  description: '...',
-}, function(_req, res) {
-  res.status(200).json({
-    message: 'Hello World',
-  });
-});
+testServiceBuilder.declare(
+  {
+    method: 'get',
+    route: '/resource',
+    name: 'resource',
+    scopes: 'myapi:resource',
+    title: 'Get Resource',
+    category: 'Auth Service',
+    description: '...',
+  },
+  function (_req, res) {
+    res.status(200).json({
+      message: 'Hello World',
+    });
+  },
+);
 
 /**
  * Set up API servers.  Call this after withDb, so the server
@@ -199,7 +208,7 @@ testServiceBuilder.declare({
 helper.withServers = (_mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -239,7 +248,7 @@ helper.withServers = (_mock, skipping) => {
 
     const testServiceName = 'authtest';
     const testServiceApi = await testServiceBuilder.build({
-      monitor: (await load('monitor')),
+      monitor: await load('monitor'),
       rootUrl: rootUrl,
       schemaset: new SchemaSet({
         serviceName: testServiceName,
@@ -247,10 +256,7 @@ helper.withServers = (_mock, skipping) => {
     });
 
     // include this test API in the APIs served, alongside the normal auth service
-    load.inject('apis', [
-      await load('api'),
-      testServiceApi,
-    ]);
+    load.inject('apis', [await load('api'), testServiceApi]);
     webServer = await load('server');
   });
 
@@ -258,7 +264,7 @@ helper.withServers = (_mock, skipping) => {
     helper.setupScopes();
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (skipping()) {
       return;
     }
@@ -349,10 +355,7 @@ helper.withGcp = (mock, skipping) => {
         client_email: 'test_client@example.com',
       };
       const auth = { testCredentials: credentials };
-      const allowedServiceAccounts = [
-        credentials.client_email,
-        'invalid@mozilla.com',
-      ];
+      const allowedServiceAccounts = [credentials.client_email, 'invalid@mozilla.com'];
 
       load.inject('gcp', {
         auth,
@@ -381,12 +384,8 @@ helper.withGcp = (mock, skipping) => {
 };
 
 helper.resetTables = (_mock, _skipping) => {
-  setup('reset tables', async function() {
-    await libTesting.resetTables({ tableNames: [
-      'roles',
-      'clients',
-      'audit_history',
-    ] });
+  setup('reset tables', async function () {
+    await libTesting.resetTables({ tableNames: ['roles', 'clients', 'audit_history'] });
 
     // set up the static clients (which have already been overridden in withCfg)
     const cfg = await load('cfg');

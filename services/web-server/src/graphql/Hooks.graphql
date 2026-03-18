@@ -107,14 +107,14 @@ enum HookTaskState {
 }
 
 type HookLastFire {
-  hookGroupId: ID!,
-  hookId: ID!,
-  firedBy: HookFiredBy!,
-  taskId: String!,
-  taskCreateTime: DateTime!,
-  result: HookFireResult!,
-  taskState: HookTaskState!,
-  error: String!,
+  hookGroupId: ID!
+  hookId: ID!
+  firedBy: HookFiredBy!
+  taskId: String!
+  taskCreateTime: DateTime!
+  result: HookFireResult!
+  taskState: HookTaskState!
+  error: String!
 }
 
 type HookLastFireConnection implements Connection {

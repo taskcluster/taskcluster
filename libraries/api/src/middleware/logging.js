@@ -27,7 +27,7 @@ MonitorManager.register({
     public: 'True if the endpoint requires no scopes.',
     clientId: 'The clientId that made the request, if there was one.',
     expires: 'The expiration date of the credentials, if the header was authenticated.',
-    sourceIp: 'The API method caller\'s IP',
+    sourceIp: "The API method caller's IP",
     satisfyingScopes: `The set of scopes posessed by the caller that were
                        used to authorize this request, or [] if scopes were not required.
 
@@ -73,7 +73,7 @@ export const logRequest = ({ builder, entry }) => {
       // directly.
       const query = {};
       if (entry.query) {
-        Object.keys(entry.query).forEach(k => {
+        Object.keys(entry.query).forEach((k) => {
           query[k] = req.query[k];
         });
       }

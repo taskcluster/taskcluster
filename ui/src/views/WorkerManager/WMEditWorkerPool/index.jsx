@@ -21,7 +21,7 @@ import WorkersNavbar from '../../../components/WorkersNavbar';
   name: 'providersData',
 })
 @graphql(workerPoolQuery, {
-  skip: props => !props.match.params.workerPoolId || props.isNewWorkerPool,
+  skip: (props) => !props.match.params.workerPoolId || props.isNewWorkerPool,
   options: ({ match: { params } }) => ({
     fetchPolicy: 'network-only',
     variables: {
@@ -76,7 +76,7 @@ export default class WMEditWorkerPool extends Component {
     });
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({ dialogError: error });
   };
 
@@ -100,12 +100,8 @@ export default class WMEditWorkerPool extends Component {
     const { isNewWorkerPool, data, providersData, match } = this.props;
 
     // detect a ridiculous number of providers and let the user know
-    if (
-      providersData.WorkerManagerProviders?.pageInfo.hasNextPage
-    ) {
-      const err = new Error(
-        'This deployment has a lot of providers; not all can be displayed here.'
-      );
+    if (providersData.WorkerManagerProviders?.pageInfo.hasNextPage) {
+      const err = new Error('This deployment has a lot of providers; not all can be displayed here.');
 
       return <ErrorPanel fixed error={err} />;
     }
@@ -118,18 +114,14 @@ export default class WMEditWorkerPool extends Component {
       !providersData.WorkerManagerProviders ||
       providersData.loading ||
       (!isNewWorkerPool && (!data || !data.WorkerPool || data.loading));
-    const error =
-      (providersData?.error) || (data?.error);
+    const error = providersData?.error || data?.error;
     const workerPoolId = decodeURIComponent(match.params.workerPoolId ?? '');
 
     return (
       <Dashboard
         disableTitleFormatting
-        title={
-          isNewWorkerPool
-            ? 'Create Worker Pool'
-            : `Worker Pool "${workerPoolId}"`
-        }>
+        title={isNewWorkerPool ? 'Create Worker Pool' : `Worker Pool "${workerPoolId}"`}
+      >
         <Box
           marginBottom={2}
           sx={{
@@ -137,7 +129,8 @@ export default class WMEditWorkerPool extends Component {
             width: '100%',
             flexWrap: 'wrap',
             alignItems: 'center',
-          }}>
+          }}
+        >
           <div style={{ flexGrow: 1, marginRight: 8 }}>
             <Breadcrumbs style={{ flexGrow: 1, marginRight: 8 }}>
               <Link to="/worker-manager">
@@ -161,11 +154,7 @@ export default class WMEditWorkerPool extends Component {
         {loading && <Spinner loading />}
         {!loading &&
           (isNewWorkerPool ? (
-            <WMWorkerPoolEditor
-              saveRequest={this.createWorkerPoolRequest}
-              providers={providers}
-              isNewWorkerPool
-            />
+            <WMWorkerPoolEditor saveRequest={this.createWorkerPoolRequest} providers={providers} isNewWorkerPool />
           ) : (
             <WMWorkerPoolEditor
               workerPool={data.WorkerPool}

@@ -3,10 +3,10 @@ import References from '../src/index.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   let validate;
 
-  suiteSetup('setup Ajv', function() {
+  suiteSetup('setup Ajv', function () {
     let _ajv;
     const getAjv = async () => {
       if (!_ajv) {
@@ -28,7 +28,7 @@ suite(testing.suiteName(), function() {
           ajv
             .errorsText(ajv.errors, { separator: '%%/%%', dataVar: 'schema' })
             .split('%%/%%')
-            .forEach(err => problems.push(err));
+            .forEach((err) => problems.push(err));
         }
       } catch (err) {
         problems.push(err.toString());
@@ -43,40 +43,53 @@ suite(testing.suiteName(), function() {
     };
   });
 
-  suite('metadata-metaschema', function() {
+  suite('metadata-metaschema', function () {
     const $schema = 'https://tc-tests.example.com/schemas/common/metadata-metaschema.json#';
     const metadata = { name: 'sch', version: 1 };
 
-    test('metadata is required', async function() {
-      await validate({
-        $schema,
-      }, f => f.match(/schema must have required property 'metadata'/));
+    test('metadata is required', async function () {
+      await validate(
+        {
+          $schema,
+        },
+        (f) => f.match(/schema must have required property 'metadata'/),
+      );
     });
 
-    test('metadata.name is required', async function() {
-      await validate({
-        $schema,
-        metadata: { version: 0 },
-      }, f => f.match(/schema.metadata must have required property 'name'/));
+    test('metadata.name is required', async function () {
+      await validate(
+        {
+          $schema,
+          metadata: { version: 0 },
+        },
+        (f) => f.match(/schema.metadata must have required property 'name'/),
+      );
     });
 
-    test('metadata.version is required', async function() {
-      await validate({
-        $schema,
-        metadata: { name: 'foo' },
-      }, f => f.match(/schema.metadata must have required property 'version'/));
+    test('metadata.version is required', async function () {
+      await validate(
+        {
+          $schema,
+          metadata: { name: 'foo' },
+        },
+        (f) => f.match(/schema.metadata must have required property 'version'/),
+      );
     });
 
-    test('metadata.otherProperty is forbidden', async function() {
-      await validate({
-        $schema,
-        metadata: { name: 'foo', version: 0, otherProperty: 'foo' },
-      }, f => f.match(/schema.metadata must NOT have additional properties/));
+    test('metadata.otherProperty is forbidden', async function () {
+      await validate(
+        {
+          $schema,
+          metadata: { name: 'foo', version: 0, otherProperty: 'foo' },
+        },
+        (f) => f.match(/schema.metadata must NOT have additional properties/),
+      );
     });
 
-    test('fully specified schema is valid', async function() {
+    test('fully specified schema is valid', async function () {
       await validate({
-        $schema, metadata,
+        $schema,
+        metadata,
       });
     });
   });

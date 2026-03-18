@@ -22,7 +22,7 @@ import { date } from '../../utils/prop-types';
 import logo from '../../images/brandLogo.png';
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   header: {
     paddingLeft: 0,
   },
@@ -88,10 +88,7 @@ export default class AuthConsent extends Component {
             }
           />
           <Accordion elevation={2} defaultExpanded>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1a-content"
-              id="panel1a-header">
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
               <Typography variant="body2" className={classes.heading}>
                 Client Details
               </Typography>
@@ -155,7 +152,8 @@ export default class AuthConsent extends Component {
           color="secondary"
           spanProps={{
             className: classNames(classes.fab, classes.denySpanProps),
-          }}>
+          }}
+        >
           <CloseIcon color="secondary" />
         </Button>
         <Button
@@ -163,7 +161,8 @@ export default class AuthConsent extends Component {
           tooltipProps={{ title: 'Allow' }}
           classes={{ root: classes.allowIcon }}
           variant="round"
-          spanProps={{ className: classes.fab }}>
+          spanProps={{ className: classes.fab }}
+        >
           <CheckIcon />
         </Button>
       </form>

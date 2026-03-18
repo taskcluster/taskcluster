@@ -21,14 +21,14 @@ import taskNamespaceQuery from '../taskNamespace.graphql';
 const defaultEmpty = defaultTo('');
 
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   link: {
     ...theme.mixins.link,
   },
 }))
 @graphql(namespacesQuery, {
   name: 'namespacesData',
-  options: props => ({
+  options: (props) => ({
     variables: {
       namespace: defaultEmpty(props.match.params.namespace),
       namespaceConnection: {
@@ -39,7 +39,7 @@ const defaultEmpty = defaultTo('');
 })
 @graphql(taskNamespaceQuery, {
   name: 'taskNamespaceData',
-  options: props => ({
+  options: (props) => ({
     variables: {
       namespace: defaultEmpty(props.match.params.namespace),
       taskConnection: {
@@ -50,15 +50,11 @@ const defaultEmpty = defaultTo('');
 })
 export default class ListNamespaces extends Component {
   state = {
-    indexPathInput: this.props.match.params.namespace
-      ? this.props.match.params.namespace
-      : '',
+    indexPathInput: this.props.match.params.namespace ? this.props.match.params.namespace : '',
   };
 
   componentDidUpdate(prevProps) {
-    if (
-      prevProps.match.params.namespace !== this.props.match.params.namespace
-    ) {
+    if (prevProps.match.params.namespace !== this.props.match.params.namespace) {
       this.loadNamespace(this.props);
     }
   }
@@ -94,12 +90,8 @@ export default class ListNamespaces extends Component {
           return previousResult;
         }
 
-        return dotProp.set(previousResult, 'namespaces', namespaces =>
-          dotProp.set(
-            dotProp.set(namespaces, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, 'namespaces', (namespaces) =>
+          dotProp.set(dotProp.set(namespaces, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
@@ -130,18 +122,14 @@ export default class ListNamespaces extends Component {
           return previousResult;
         }
 
-        return dotProp.set(previousResult, 'taskNamespace', namespaces =>
-          dotProp.set(
-            dotProp.set(namespaces, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, 'taskNamespace', (namespaces) =>
+          dotProp.set(dotProp.set(namespaces, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
   };
 
-  handleIndexPathInputChange = e => {
+  handleIndexPathInputChange = (e) => {
     this.setState({ indexPathInput: e.target.value });
   };
 
@@ -152,24 +140,14 @@ export default class ListNamespaces extends Component {
   render() {
     const {
       classes,
-      namespacesData: {
-        namespaces,
-        loading: namespacesLoading,
-        error: namespacesError,
-      },
-      taskNamespaceData: {
-        taskNamespace,
-        loading: taskNamespaceLoading,
-        error: taskNamespaceError,
-      },
+      namespacesData: { namespaces, loading: namespacesLoading, error: namespacesError },
+      taskNamespaceData: { taskNamespace, loading: taskNamespaceLoading, error: taskNamespaceError },
       description,
       match: { params },
     } = this.props;
     const { indexPathInput } = this.state;
-    const hasIndexedTasks =
-      taskNamespace?.edges && taskNamespace.edges.length > 0;
-    const hasNamespaces =
-      namespaces?.edges && namespaces.edges.length > 0;
+    const hasIndexedTasks = taskNamespace?.edges && taskNamespace.edges.length > 0;
+    const hasNamespaces = namespaces?.edges && namespaces.edges.length > 0;
     const loading = namespacesLoading || taskNamespaceLoading;
     const indexPaths = indexPathInput.split('.');
     const isSinglePath = indexPaths.length === 1;
@@ -187,7 +165,8 @@ export default class ListNamespaces extends Component {
             onSubmit={this.handleIndexPathSearchSubmit}
             placeholder="Search path.to.index"
           />
-        }>
+        }
+      >
         <Fragment>
           {loading && <Spinner loading />}
           <ErrorPanel fixed error={namespacesError || taskNamespaceError} />
@@ -209,23 +188,16 @@ export default class ListNamespaces extends Component {
                 </Link>
                 {indexPaths.map((indexName, i) =>
                   indexPaths.length === i + 1 ? (
-                    <Typography
-                      key={indexName}
-                      variant="body2"
-                      color="textSecondary">
+                    <Typography key={indexName} variant="body2" color="textSecondary">
                       {indexName}
                     </Typography>
                   ) : (
-                    <Link
-                      key={indexName}
-                      to={`/tasks/index/${indexPaths
-                        .slice(0, i + 1)
-                        .join('.')}`}>
+                    <Link key={indexName} to={`/tasks/index/${indexPaths.slice(0, i + 1).join('.')}`}>
                       <Typography variant="body2" className={classes.link}>
                         {indexName}
                       </Typography>
                     </Link>
-                  )
+                  ),
                 )}
               </Breadcrumbs>
               <br />
@@ -234,27 +206,19 @@ export default class ListNamespaces extends Component {
           )}
           {!loading && !hasNamespaces && !hasIndexedTasks && isSinglePath && (
             <Typography>
-              {searchTerm
-                ? `No items for this page with search term ${searchTerm}.`
-                : 'No items for this page.'}
+              {searchTerm ? `No items for this page with search term ${searchTerm}.` : 'No items for this page.'}
             </Typography>
           )}
           {!loading && hasNamespaces && (
             <Fragment>
               <Typography variant="subtitle1">Namespaces</Typography>
-              <IndexNamespacesTable
-                onPageChange={this.handleNamespacesPageChange}
-                connection={namespaces}
-              />
+              <IndexNamespacesTable onPageChange={this.handleNamespacesPageChange} connection={namespaces} />
             </Fragment>
           )}
           {!loading && hasIndexedTasks && (
             <Fragment>
               <Typography variant="subtitle1">Indexed Tasks</Typography>
-              <IndexTaskNamespaceTable
-                onPageChange={this.handleTaskNamespacePageChange}
-                connection={taskNamespace}
-              />
+              <IndexTaskNamespaceTable onPageChange={this.handleTaskNamespacePageChange} connection={taskNamespace} />
             </Fragment>
           )}
         </Fragment>

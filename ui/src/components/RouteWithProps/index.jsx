@@ -9,15 +9,7 @@ import withPageTracker from '../../utils/withPageTracker';
 @withPageTracker
 export default class RouteWithProps extends Component {
   render() {
-    const {
-      component: Component,
-      path,
-      exact,
-      strict,
-      location,
-      sensitive,
-      ...props
-    } = this.props;
+    const { component: Component, path, exact, strict, location, sensitive, ...props } = this.props;
 
     return (
       <Route

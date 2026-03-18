@@ -1,24 +1,22 @@
 {
-    "$schema": "http://json-schema.org/draft-06/schema#",
-    "title": "test json schema",
-    "type": "object",
-    "properties": {
-        "optObj": {
-            "type": "object",
-            "default": {
-                "hello": "world"
-            }
-        },
-        "optArray": {
-            "type": "array",
-            "default": [
-                "my-default-value"
-            ]
-        },
-        "optEmpty": {
-            "type": "array",
-            "default": []
-        }
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "test json schema",
+  "type": "object",
+  "properties": {
+    "optObj": {
+      "type": "object",
+      "default": {
+        "hello": "world"
+      }
     },
-    "additionalProperties": false
+    "optArray": {
+      "type": "array",
+      "default": ["my-default-value"]
+    },
+    "optEmpty": {
+      "type": "array",
+      "default": []
+    }
+  },
+  "additionalProperties": false
 }

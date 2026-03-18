@@ -1,18 +1,18 @@
 {
-  "$schema":      "http://json-schema.org/draft-06/schema#",
-  "title":        "test json schema",
-  "type":         "object",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "test json schema",
+  "type": "object",
   "properties": {
     "value": {
-      "type":           "integer",
-      "minimum":        {"$const": "my-constant"},
-      "maximum":        {"$const": "my-constant"}
+      "type": "integer",
+      "minimum": { "$const": "my-constant" },
+      "maximum": { "$const": "my-constant" }
     },
     "optionalValue": {
-      "type":           "string",
-      "default":        "my-default-value"
+      "type": "string",
+      "default": "my-default-value"
     }
   },
-  "additionalProperties":   false,
+  "additionalProperties": false,
   "required": ["value"]
 }

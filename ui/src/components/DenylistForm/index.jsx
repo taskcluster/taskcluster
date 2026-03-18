@@ -15,7 +15,7 @@ import { DENYLIST_NOTIFICATION_TYPES } from '../../utils/constants';
 import titleCase from '../../utils/titleCase';
 import Button from '../Button';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   fab: {
     ...theme.mixins.fab,
   },
@@ -101,10 +101,7 @@ export default class DenylistForm extends Component {
   };
 
   static getDerivedStateFromProps({ isNewAddress, address }, state) {
-    if (
-      isNewAddress ||
-      (state.notificationAddress && state.prevAddress === address)
-    ) {
+    if (isNewAddress || (state.notificationAddress && state.prevAddress === address)) {
       return null;
     }
 
@@ -130,10 +127,7 @@ export default class DenylistForm extends Component {
   handleInputChange = ({ target: { name, value } }) => {
     const state = { [name]: value };
 
-    if (
-      name === 'notificationType' &&
-      value !== DENYLIST_NOTIFICATION_TYPES.EMAIL
-    ) {
+    if (name === 'notificationType' && value !== DENYLIST_NOTIFICATION_TYPES.EMAIL) {
       Object.assign(state, {
         validation: {
           address: {
@@ -201,8 +195,9 @@ export default class DenylistForm extends Component {
                 label="Type"
                 value={notificationType}
                 onChange={this.handleInputChange}
-                name="notificationType">
-                {Object.values(DENYLIST_NOTIFICATION_TYPES).map(type => (
+                name="notificationType"
+              >
+                {Object.values(DENYLIST_NOTIFICATION_TYPES).map((type) => (
                   <MenuItem key={type} value={type}>
                     {titleCase(type)}
                   </MenuItem>
@@ -227,16 +222,10 @@ export default class DenylistForm extends Component {
         {address && (
           <List>
             <ListItem>
-              <ListItemText
-                primary="Notification Type"
-                secondary={titleCase(notificationType)}
-              />
+              <ListItemText primary="Notification Type" secondary={titleCase(notificationType)} />
             </ListItem>
             <ListItem>
-              <ListItemText
-                primary="Notification Address"
-                secondary={notificationAddress}
-              />
+              <ListItemText primary="Notification Address" secondary={notificationAddress} />
             </ListItem>
           </List>
         )}
@@ -249,7 +238,8 @@ export default class DenylistForm extends Component {
             disabled={loading || !this.isFormValid()}
             variant="round"
             onClick={this.handleAddressAdd}
-            classes={{ root: classes.saveIcon }}>
+            classes={{ root: classes.saveIcon }}
+          >
             <ContentSaveIcon />
           </Button>
         ) : (
@@ -260,7 +250,8 @@ export default class DenylistForm extends Component {
             disabled={loading}
             variant="round"
             onClick={onDialogActionOpen}
-            classes={{ root: classes.deleteIcon }}>
+            classes={{ root: classes.deleteIcon }}
+          >
             <DeleteIcon />
           </Button>
         )}
@@ -273,11 +264,7 @@ export default class DenylistForm extends Component {
             onError={onDialogActionError}
             error={dialogError}
             title="Delete Address?"
-            body={
-              <Typography variant="body2">
-                This will delete {address.notificationAddress}.
-              </Typography>
-            }
+            body={<Typography variant="body2">This will delete {address.notificationAddress}.</Typography>}
             confirmText="Delete Address"
           />
         )}

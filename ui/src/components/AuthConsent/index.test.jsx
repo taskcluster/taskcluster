@@ -1,4 +1,3 @@
-
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import AuthConsent from './index';
@@ -19,7 +18,7 @@ it('should render AuthConsent page', () => {
           scopes: ['scopes'],
         }}
       />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
   expect(asFragment()).toMatchSnapshot();

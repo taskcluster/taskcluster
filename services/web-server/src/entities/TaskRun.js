@@ -6,9 +6,7 @@ export default class TaskRun {
     Object.assign(this, data);
 
     if (artifacts) {
-      this.artifacts = artifacts.map(
-        artifact => new Artifact(taskId, this.runId, artifact),
-      );
+      this.artifacts = artifacts.map((artifact) => new Artifact(taskId, this.runId, artifact));
     }
   }
 }

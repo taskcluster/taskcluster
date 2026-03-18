@@ -11,7 +11,8 @@ export default class Emoticon extends PureComponent {
         viewBox="0 0 24 24"
         version="1.1"
         xmlns="http://www.w3.org/2000/svg"
-        className={className}>
+        className={className}
+      >
         <title>Emoticon</title>
         <path
           fill={fill}

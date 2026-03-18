@@ -132,7 +132,7 @@ export class WorkerPool {
    */
   static async expire({ db }) {
     const rows = await db.fns.expire_worker_pools();
-    return rows.map(row => row.worker_pool_id);
+    return rows.map((row) => row.worker_pool_id);
   }
 
   /**
@@ -156,13 +156,13 @@ export class WorkerPool {
         this.lastModified,
         this.owner,
         this.emailOnError,
-        this.providerData);
+        this.providerData,
+      );
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
         throw err;
       }
-      const existing = WorkerPool.fromDbRows(
-        await db.fns.get_worker_pool_with_launch_configs(this.workerPoolId));
+      const existing = WorkerPool.fromDbRows(await db.fns.get_worker_pool_with_launch_configs(this.workerPoolId));
 
       if (!this.equals(existing)) {
         // new worker pool does not match, so this is a "real" conflict
@@ -202,14 +202,7 @@ export class WorkerPool {
    * @param {WorkerPool} other
    */
   equals(other) {
-    const fields = [
-      'workerPoolId',
-      'providerId',
-      'description',
-      'config',
-      'owner',
-      'emailOnError',
-    ];
+    const fields = ['workerPoolId', 'providerId', 'description', 'config', 'owner', 'emailOnError'];
     return _.isEqual(_.pick(other, fields), _.pick(this, fields));
   }
 }
@@ -377,7 +370,7 @@ export class WorkerPoolLaunchConfig {
   // remove launch configurations that no longer have workers associated with them
   static async expire({ db, monitor }) {
     const rows = await db.fns.expire_worker_pool_launch_configs();
-    return rows.map(row => row.launch_config_id);
+    return rows.map((row) => row.launch_config_id);
   }
 }
 
@@ -444,7 +437,7 @@ export class WorkerPoolError {
   // Expire worker pool errors reported before the specified time
   static async expire({ db, retentionDays }) {
     const cutOffTime = taskcluster.fromNow(`-${retentionDays || 1} days`);
-    return (await (db.fns.expire_worker_pool_errors(cutOffTime)))[0].expire_worker_pool_errors;
+    return (await db.fns.expire_worker_pool_errors(cutOffTime))[0].expire_worker_pool_errors;
   }
 
   // Call db.create_worker_pool_error with the content of this instance.  This
@@ -460,13 +453,15 @@ export class WorkerPoolError {
         this.title,
         this.description,
         this.extra,
-        this.launchConfigId);
+        this.launchConfigId,
+      );
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
         throw err;
       }
       const existing = WorkerPoolError.fromDbRows(
-        await db.fns.get_worker_pool_error_launch_config(this.errorId, this.workerPoolId));
+        await db.fns.get_worker_pool_error_launch_config(this.errorId, this.workerPoolId),
+      );
 
       if (!this.equals(existing)) {
         // new worker pool error does not match, so this is a "real" conflict
@@ -492,14 +487,7 @@ export class WorkerPoolError {
 
   // Compare "important" fields to another worker pool error (used to check idempotency)
   equals(other) {
-    const fields = [
-      'errorId',
-      'workerPoolId',
-      'kind',
-      'title',
-      'description',
-      'launchConfigId',
-    ];
+    const fields = ['errorId', 'workerPoolId', 'kind', 'title', 'description', 'launchConfigId'];
     return _.isEqual(_.pick(other, fields), _.pick(this, fields));
   }
 }
@@ -608,14 +596,7 @@ export class Worker {
 
   // Get a queue worker from the DB, or undefined if it does not exist.
   static async getQueueWorker(db, workerPoolId, workerGroup, workerId, expires) {
-    return Worker.fromDbRows(
-      await db.fns.get_queue_worker_with_wm_data(
-        workerPoolId,
-        workerGroup,
-        workerId,
-        expires,
-      ),
-    );
+    return Worker.fromDbRows(await db.fns.get_queue_worker_with_wm_data(workerPoolId, workerGroup, workerId, expires));
   }
 
   /**
@@ -666,20 +647,22 @@ export class Worker {
   // UNIQUE_VIOLATION when those checks fail.
   async create(db) {
     try {
-      const etag = (await db.fns.create_worker_with_lc(
-        this.workerPoolId,
-        this.workerGroup,
-        this.workerId,
-        this.providerId,
-        this.created,
-        this.expires,
-        this.state,
-        this.providerData,
-        this.capacity,
-        this.lastModified,
-        this.lastChecked,
-        this.launchConfigId,
-      ))[0].create_worker_with_lc;
+      const etag = (
+        await db.fns.create_worker_with_lc(
+          this.workerPoolId,
+          this.workerGroup,
+          this.workerId,
+          this.providerId,
+          this.created,
+          this.expires,
+          this.state,
+          this.providerData,
+          this.capacity,
+          this.lastModified,
+          this.lastChecked,
+          this.launchConfigId,
+        )
+      )[0].create_worker_with_lc;
 
       return new Worker({
         workerPoolId: this.workerPoolId,
@@ -846,7 +829,7 @@ export class Worker {
   updateInstanceFields(worker) {
     const queueFields = ['firstClaim', 'lastDateActive', 'quarantineUntil', 'recentTasks'];
 
-    Object.keys(worker).forEach(prop => {
+    Object.keys(worker).forEach((prop) => {
       // Skip undefined queue fields (preserve existing values)
       if (worker[prop] !== undefined || !queueFields.includes(prop)) {
         this[prop] = worker[prop];
@@ -872,14 +855,7 @@ export class Worker {
 
   // Compare "important" fields to another worker (used to check idempotency)
   equals(other) {
-    const fields = [
-      'workerPoolId',
-      'workerGroup',
-      'workerId',
-      'providerId',
-      'state',
-      'capacity',
-    ];
+    const fields = ['workerPoolId', 'workerGroup', 'workerId', 'providerId', 'state', 'capacity'];
     return _.isEqual(_.pick(other, fields), _.pick(this, fields));
   }
 }

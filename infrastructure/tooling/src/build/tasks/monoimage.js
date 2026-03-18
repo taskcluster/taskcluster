@@ -34,10 +34,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
   ensureTask(tasks, {
     title: 'Build Taskcluster Docker Image',
-    requires: [
-      'release-version',
-      'docker-flow-version',
-    ],
+    requires: ['release-version', 'docker-flow-version'],
     provides: [
       'monoimage-docker-image', // image tag
       'monoimage-image-on-registry', // true if the image is already on registry
@@ -56,8 +53,9 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
       utils.step({ title: 'Check for Existing Images' });
 
-      const imageLocal = (await dockerImages({ baseDir }))
-        .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
+      const imageLocal = (await dockerImages({ baseDir })).some(
+        (image) => image.RepoTags && image.RepoTags.indexOf(tag) !== -1,
+      );
 
       let imageOnRegistry;
       try {
@@ -73,8 +71,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       };
 
       if (imageOnRegistry && !cmdOptions.cache) {
-        throw new Error(
-          `Image ${tag} already exists on the registry, but --no-cache was given.`);
+        throw new Error(`Image ${tag} already exists on the registry, but --no-cache was given.`);
       }
 
       // bail out if we can, pulling the image if it's only available remotely
@@ -93,10 +90,14 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
         command.push('--no-cache');
       }
       command = command.concat([
-        '--progress', 'plain',
-        '--tag', tag,
-        '--build-arg', `DOCKER_FLOW_VERSION=${versionJson}`,
-        '.']);
+        '--progress',
+        'plain',
+        '--tag',
+        tag,
+        '--build-arg',
+        `DOCKER_FLOW_VERSION=${versionJson}`,
+        '.',
+      ]);
       await execCommand({
         command,
         dir: sourceDir,
@@ -111,22 +112,17 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
   ensureTask(tasks, {
     title: 'Build Taskcluster Devel Docker Image',
-    requires: [
-      'monoimage-docker-image',
-      'monoimage-image-on-registry',
-    ],
-    provides: [
-      'monoimage-devel-docker-image',
-      'monoimage-devel-image-on-registry',
-    ],
+    requires: ['monoimage-docker-image', 'monoimage-image-on-registry'],
+    provides: ['monoimage-devel-docker-image', 'monoimage-devel-image-on-registry'],
     locks: ['git'],
     run: async (requirements, utils) => {
       const tag = `${requirements['monoimage-docker-image']}-devel`;
 
       utils.step({ title: 'Check for Existing Images' });
 
-      const imageLocal = (await dockerImages({ baseDir }))
-        .some(image => image.RepoTags && image.RepoTags.indexOf(tag) !== -1);
+      const imageLocal = (await dockerImages({ baseDir })).some(
+        (image) => image.RepoTags && image.RepoTags.indexOf(tag) !== -1,
+      );
 
       let imageOnRegistry;
       try {
@@ -143,8 +139,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       };
 
       if (imageOnRegistry && !cmdOptions.cache) {
-        throw new Error(
-          `Image ${tag} already exists on the registry, but --no-cache was given.`);
+        throw new Error(`Image ${tag} already exists on the registry, but --no-cache was given.`);
       }
 
       // bail out if we can, pulling the image if it's only available remotely
@@ -161,13 +156,16 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       await rimraf(dockerDir);
       await mkdirp(dockerDir);
 
-      await writeRepoFile('temp/devel-image/Dockerfile', [
-        `FROM ${requirements['monoimage-docker-image']}`,
-        'USER root',
-        'RUN npm install --global nodemon',
-        'USER 1000',
-        'RUN yarn install && yarn cache clean --all',
-      ].join('\n'));
+      await writeRepoFile(
+        'temp/devel-image/Dockerfile',
+        [
+          `FROM ${requirements['monoimage-docker-image']}`,
+          'USER root',
+          'RUN npm install --global nodemon',
+          'USER 1000',
+          'RUN yarn install && yarn cache clean --all',
+        ].join('\n'),
+      );
 
       try {
         await execCommand({
@@ -187,16 +185,11 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
   ensureTask(tasks, {
     title: `Monoimage - Push Image`,
-    requires: [
-      `monoimage-docker-image`,
-      `monoimage-image-on-registry`,
-    ],
-    provides: [
-      `monoimage-push`,
-    ],
+    requires: [`monoimage-docker-image`, `monoimage-image-on-registry`],
+    provides: [`monoimage-push`],
     run: async (requirements, utils) => {
       const tag = requirements[`monoimage-docker-image`];
-      const provides = { "monoimage-push": tag };
+      const provides = { 'monoimage-push': tag };
 
       if (!cmdOptions.push) {
         return utils.skip({ provides });
@@ -228,16 +221,11 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
   ensureTask(tasks, {
     title: `Monoimage - Push Devel Image`,
-    requires: [
-      `monoimage-devel-docker-image`,
-      `monoimage-devel-image-on-registry`,
-    ],
-    provides: [
-      `monoimage-devel-push`,
-    ],
+    requires: [`monoimage-devel-docker-image`, `monoimage-devel-image-on-registry`],
+    provides: [`monoimage-devel-push`],
     run: async (requirements, utils) => {
       const tag = requirements[`monoimage-devel-docker-image`];
-      const provides = { "monoimage-devel-push": tag };
+      const provides = { 'monoimage-devel-push': tag };
 
       if (!cmdOptions.push) {
         return utils.skip(provides);
@@ -267,12 +255,8 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
   ensureTask(tasks, {
     title: `Monoimage - Complete`,
-    requires: [
-      `monoimage-push`,
-    ],
-    provides: [
-      `target-monoimage`,
-    ],
+    requires: [`monoimage-push`],
+    provides: [`target-monoimage`],
     run: async (requirements, _utils) => {
       return {
         'target-monoimage': `Monoimage docker image: ${requirements['monoimage-push']}`,
@@ -282,12 +266,8 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
   ensureTask(tasks, {
     title: `Monoimage Devel - Complete`,
-    requires: [
-      `monoimage-devel-push`,
-    ],
-    provides: [
-      `target-monoimage-devel`,
-    ],
+    requires: [`monoimage-devel-push`],
+    provides: [`target-monoimage-devel`],
     run: async (requirements, _utils) => {
       return {
         'target-monoimage-devel': `Monoimage devel docker image: ${requirements['monoimage-devel-push']}`,

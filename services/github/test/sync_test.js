@@ -5,7 +5,7 @@ import testing from '@taskcluster/lib-testing';
 /**
  * Tests of installation syncing
  */
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withFakeGithub(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -14,7 +14,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   let github;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -22,7 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     github = await helper.load('github');
   });
 
-  test('integration installation', async function() {
+  test('integration installation', async function () {
     let result = await helper.apiClient.repository('abc123', 'coolRepo');
     assert.deepEqual(result, { installed: false });
     github.createInstall(12345, 'abc123', ['coolRepo']);

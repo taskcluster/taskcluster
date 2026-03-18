@@ -1,4 +1,3 @@
-
 import { render } from '@testing-library/react';
 import { ApolloProvider } from 'react-apollo';
 import setupClient from 'apollo-client-mock';
@@ -18,7 +17,7 @@ it('should render Profile page', () => {
       <ApolloProvider client={createClient()}>
         <Profile />
       </ApolloProvider>
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
   expect(asFragment()).toMatchSnapshot();

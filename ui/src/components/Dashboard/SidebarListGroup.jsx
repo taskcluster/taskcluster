@@ -8,7 +8,7 @@ import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
 import SidebarListItem from './SidebarListItem';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   listGroup: {
     '& > a > li': {
       paddingLeft: theme.spacing(3),
@@ -30,7 +30,7 @@ export default class SidebarListGroup extends Component {
     open: false,
   };
 
-  handleClick = e => {
+  handleClick = (e) => {
     e.preventDefault();
     this.setState({ open: !this.state.open });
   };
@@ -46,7 +46,8 @@ export default class SidebarListGroup extends Component {
           onClick={this.handleClick}
           icon={icon}
           rightIcon={open ? <ChevronUpIcon /> : <ChevronDownIcon />}
-          {...props}>
+          {...props}
+        >
           {title}
         </SidebarListItem>
         <Collapse in={open} timeout="auto">

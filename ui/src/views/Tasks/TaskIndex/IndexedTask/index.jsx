@@ -15,14 +15,14 @@ import artifactsQuery from './artifacts.graphql';
 import indexedTaskQuery from './indexedTask.graphql';
 import Link from '../../../../utils/Link';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   link: {
     ...theme.mixins.link,
   },
 }))
 @graphql(indexedTaskQuery, {
   name: 'indexedTaskData',
-  options: props => ({
+  options: (props) => ({
     variables: {
       indexPath: `${props.match.params.namespace}.${props.match.params.namespaceTaskId}`,
     },
@@ -46,10 +46,7 @@ export default class IndexedTask extends Component {
   };
 
   componentDidUpdate(prevProps) {
-    if (
-      'indexedTask' in this.props.indexedTaskData &&
-      !('indexedTask' in prevProps.indexedTaskData)
-    ) {
+    if ('indexedTask' in this.props.indexedTaskData && !('indexedTask' in prevProps.indexedTaskData)) {
       this.props.latestArtifactsData.refetch({
         skip: false,
         taskId: this.props.indexedTaskData.indexedTask.taskId,
@@ -86,19 +83,14 @@ export default class IndexedTask extends Component {
           return previousResult;
         }
 
-        return dotProp.set(previousResult, 'latestArtifacts', artifacts =>
-          dotProp.set(
-            dotProp.set(artifacts, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, 'latestArtifacts', (artifacts) =>
+          dotProp.set(dotProp.set(artifacts, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
   };
 
-  handleIndexPathInputChange = e =>
-    this.setState({ indexPathInput: e.target.value });
+  handleIndexPathInputChange = (e) => this.setState({ indexPathInput: e.target.value });
 
   handleIndexPathSearchSubmit = () => {
     this.props.history.replace(`/tasks/index/${this.state.indexPathInput}`);
@@ -107,17 +99,8 @@ export default class IndexedTask extends Component {
   render() {
     const {
       classes,
-      latestArtifactsData: {
-        latestArtifacts,
-        task,
-        error: latestArtifactsError,
-        loading: latestArtifactsLoading,
-      },
-      indexedTaskData: {
-        indexedTask,
-        error: indexedTaskError,
-        loading: indexedTaskLoading,
-      },
+      latestArtifactsData: { latestArtifacts, task, error: latestArtifactsError, loading: latestArtifactsLoading },
+      indexedTaskData: { indexedTask, error: indexedTaskError, loading: indexedTaskLoading },
       description,
     } = this.props;
     const loading = latestArtifactsLoading || indexedTaskLoading;
@@ -135,11 +118,10 @@ export default class IndexedTask extends Component {
             onSubmit={this.handleIndexPathSearchSubmit}
             placeholder="Search path.to.index"
           />
-        }>
+        }
+      >
         {loading && <Spinner loading />}
-        {!loading && (
-          <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />
-        )}
+        {!loading && <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />}
         {latestArtifacts && indexedTask && task && (
           <Fragment>
             <Breadcrumbs>
@@ -150,21 +132,16 @@ export default class IndexedTask extends Component {
               </Link>
               {indexPaths.map((indexName, i) =>
                 indexPaths.length === i + 1 ? (
-                  <Typography
-                    key={indexName}
-                    variant="body2"
-                    color="textSecondary">
+                  <Typography key={indexName} variant="body2" color="textSecondary">
                     {indexName}
                   </Typography>
                 ) : (
-                  <Link
-                    key={indexName}
-                    to={`/tasks/index/${indexPaths.slice(0, i + 1).join('.')}`}>
+                  <Link key={indexName} to={`/tasks/index/${indexPaths.slice(0, i + 1).join('.')}`}>
                     <Typography variant="body2" className={classes.link}>
                       {indexName}
                     </Typography>
                   </Link>
-                )
+                ),
               )}
             </Breadcrumbs>
             <IndexedEntry

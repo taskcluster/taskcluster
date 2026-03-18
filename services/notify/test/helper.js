@@ -1,15 +1,7 @@
 import assert from 'node:assert';
 import path from 'node:path';
-import {
-  SESv2Client,
-  SendEmailCommand,
-} from '@aws-sdk/client-sesv2';
-import {
-  SNSClient,
-  CreateTopicCommand,
-  ListSubscriptionsByTopicCommand,
-  SubscribeCommand,
-} from '@aws-sdk/client-sns';
+import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
+import { SNSClient, CreateTopicCommand, ListSubscriptionsByTopicCommand, SubscribeCommand } from '@aws-sdk/client-sns';
 import {
   SQSClient,
   CreateQueueCommand,
@@ -41,7 +33,7 @@ const load = testing.stickyLoader(mainLoad);
 const helper = { load, rootUrl, suiteName };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async function () {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -50,9 +42,7 @@ testing.withMonitor(helper);
 
 // set up the testing secrets
 helper.secrets = new testing.Secrets({
-  secretName: [
-    'project/taskcluster/testing/taskcluster-notify',
-  ],
+  secretName: ['project/taskcluster/testing/taskcluster-notify'],
   secrets: {
     aws: [
       { env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId' },
@@ -66,14 +56,13 @@ helper.secrets = new testing.Secrets({
  * Define a fake denier that will deny anything with 'denied' in the address
  */
 helper.withDenier = (_mock, skipping) => {
-  suiteSetup('withDenier', async function() {
+  suiteSetup('withDenier', async function () {
     if (skipping()) {
       return;
     }
 
     load.inject('denier', {
-      isDenied: async (_notificationType, notificationAddress) =>
-        /denied/.test(notificationAddress),
+      isDenied: async (_notificationType, notificationAddress) => /denied/.test(notificationAddress),
     });
   });
 };
@@ -82,7 +71,7 @@ helper.withSES = (mock, skipping) => {
   let ses;
   let sqs;
 
-  suiteSetup('withSES', async function() {
+  suiteSetup('withSES', async function () {
     if (skipping()) {
       return;
     }
@@ -92,15 +81,13 @@ helper.withSES = (mock, skipping) => {
     if (mock) {
       ses = mockClient(SESv2Client);
       ses.emails = [];
-      ses
-        .on(SendEmailCommand)
-        .callsFake(async (c) => {
-          ses.emails.push({
-            delivery: { recipients: c.Destination.ToAddresses },
-            data: c.Content.Raw.Data.toString(),
-          });
-          return { MessageId: 'a-message' };
+      ses.on(SendEmailCommand).callsFake(async (c) => {
+        ses.emails.push({
+          delivery: { recipients: c.Destination.ToAddresses },
+          data: c.Content.Raw.Data.toString(),
         });
+        return { MessageId: 'a-message' };
+      });
       load.inject('ses', ses);
 
       helper.checkEmails = (check) => {
@@ -115,18 +102,24 @@ helper.withSES = (mock, skipping) => {
         },
         region: cfg.aws.region || 'us-east-1',
       });
-      const { QueueUrl: emailSQSQueue } = await sqs.send(new CreateQueueCommand({
-        QueueName: 'taskcluster-notify-test-emails',
-      }));
-      const { Attributes: emailAttr } = await sqs.send(new GetQueueAttributesCommand({
-        QueueUrl: emailSQSQueue,
-        AttributeNames: ['ApproximateNumberOfMessages', 'QueueArn'],
-      }));
+      const { QueueUrl: emailSQSQueue } = await sqs.send(
+        new CreateQueueCommand({
+          QueueName: 'taskcluster-notify-test-emails',
+        }),
+      );
+      const { Attributes: emailAttr } = await sqs.send(
+        new GetQueueAttributesCommand({
+          QueueUrl: emailSQSQueue,
+          AttributeNames: ['ApproximateNumberOfMessages', 'QueueArn'],
+        }),
+      );
       if (emailAttr.ApproximateNumberOfMessages !== '0') {
         debug(`Detected ${emailAttr.ApproximateNumberOfMessages} messages in email queue. Purging.`);
-        await sqs.send(new PurgeQueueCommand({
-          QueueUrl: emailSQSQueue,
-        }));
+        await sqs.send(
+          new PurgeQueueCommand({
+            QueueUrl: emailSQSQueue,
+          }),
+        );
       }
 
       // Send emails to sqs for testing
@@ -137,62 +130,74 @@ helper.withSES = (mock, skipping) => {
         },
         region: cfg.aws.region || 'us-east-1',
       });
-      const { TopicArn: snsArn } = await sns.send(new CreateTopicCommand({
-        Name: 'taskcluster-notify-test',
-      }));
-      const { Subscriptions: subscriptions } = await sns.send(new ListSubscriptionsByTopicCommand({
-        TopicArn: snsArn,
-      }));
-      const subscribed = subscriptions.some(subscription => subscription.Endpoint === emailAttr.QueueArn);
-      if (!subscribed) {
-        await sns.send(new SubscribeCommand({
-          Protocol: 'sqs',
+      const { TopicArn: snsArn } = await sns.send(
+        new CreateTopicCommand({
+          Name: 'taskcluster-notify-test',
+        }),
+      );
+      const { Subscriptions: subscriptions } = await sns.send(
+        new ListSubscriptionsByTopicCommand({
           TopicArn: snsArn,
-          Endpoint: emailAttr.QueueArn,
-        }));
+        }),
+      );
+      const subscribed = subscriptions.some((subscription) => subscription.Endpoint === emailAttr.QueueArn);
+      if (!subscribed) {
+        await sns.send(
+          new SubscribeCommand({
+            Protocol: 'sqs',
+            TopicArn: snsArn,
+            Endpoint: emailAttr.QueueArn,
+          }),
+        );
 
         // This policy allows the SNS topic subscription to send messages to
         // the SQS queue.  The AWS Console adds a policy automatically when you
         // click "subscribe", and this merely duplicates that policy.
         const Policy = {
-          Version: "2012-10-17",
+          Version: '2012-10-17',
           Statement: [
             {
-              Sid: "Sid1573761323466",
-              Effect: "Allow",
-              Principal: { AWS: "*" },
-              Action: "SQS:SendMessage",
+              Sid: 'Sid1573761323466',
+              Effect: 'Allow',
+              Principal: { AWS: '*' },
+              Action: 'SQS:SendMessage',
               Resource: emailAttr.QueueArn,
               Condition: {
                 ArnEquals: {
-                  "aws:SourceArn": snsArn,
+                  'aws:SourceArn': snsArn,
                 },
               },
             },
           ],
         };
-        await sqs.send(new SetQueueAttributesCommand({
-          QueueUrl: emailSQSQueue,
-          Attributes: {
-            Policy,
-          },
-        }));
+        await sqs.send(
+          new SetQueueAttributesCommand({
+            QueueUrl: emailSQSQueue,
+            Attributes: {
+              Policy,
+            },
+          }),
+        );
       }
 
       helper.checkEmails = async (check) => {
-        const resp = await sqs.send(new ReceiveMessageCommand({
-          QueueUrl: emailSQSQueue,
-          AttributeNames: ['ApproximateReceiveCount'],
-          MaxNumberOfMessages: 10,
-          VisibilityTimeout: 30,
-          WaitTimeSeconds: 20,
-        }));
+        const resp = await sqs.send(
+          new ReceiveMessageCommand({
+            QueueUrl: emailSQSQueue,
+            AttributeNames: ['ApproximateReceiveCount'],
+            MaxNumberOfMessages: 10,
+            VisibilityTimeout: 30,
+            WaitTimeSeconds: 20,
+          }),
+        );
         const messages = resp.Messages || [];
         for (const message of messages) {
-          await sqs.send(new DeleteMessageCommand({
-            QueueUrl: emailSQSQueue,
-            ReceiptHandle: message.ReceiptHandle,
-          }));
+          await sqs.send(
+            new DeleteMessageCommand({
+              QueueUrl: emailSQSQueue,
+              ReceiptHandle: message.ReceiptHandle,
+            }),
+          );
         }
         assert.equal(messages.length, 1);
         check(JSON.parse(JSON.parse(messages[0].Body).Message));
@@ -200,7 +205,7 @@ helper.withSES = (mock, skipping) => {
     }
   });
 
-  suiteTeardown('withSES', async function() {
+  suiteTeardown('withSES', async function () {
     if (skipping()) {
       return;
     }
@@ -231,7 +236,7 @@ const stubbedQueue = () => {
     },
   });
 
-  queue.addTask = function(taskId, task) {
+  queue.addTask = function (taskId, task) {
     tasks[taskId] = task;
   };
 
@@ -246,7 +251,7 @@ const stubbedQueue = () => {
  * The component is available at `helper.queue`.
  */
 helper.withFakeQueue = (_mock, skipping) => {
-  suiteSetup('withFakeQueue', function() {
+  suiteSetup('withFakeQueue', function () {
     if (skipping()) {
       return;
     }
@@ -256,16 +261,17 @@ helper.withFakeQueue = (_mock, skipping) => {
   });
 };
 
-const fakeMatrixSend = () => sinon.fake(roomId => {
-  if (roomId.includes('rejected')) {
-    const err = new Error('rejected this room');
-    err.errcode = 'M_FORBIDDEN';
-    throw err;
-  }
-});
+const fakeMatrixSend = () =>
+  sinon.fake((roomId) => {
+    if (roomId.includes('rejected')) {
+      const err = new Error('rejected this room');
+      err.errcode = 'M_FORBIDDEN';
+      throw err;
+    }
+  });
 
 helper.withFakeMatrix = (_mock, skipping) => {
-  suiteSetup('withFakeMatrix', function() {
+  suiteSetup('withFakeMatrix', function () {
     if (skipping()) {
       return;
     }
@@ -277,7 +283,7 @@ helper.withFakeMatrix = (_mock, skipping) => {
     load.inject('matrixClient', helper.matrixClient);
   });
 
-  setup(function() {
+  setup(function () {
     helper.matrixClient.sendEvent = fakeMatrixSend();
   });
 };
@@ -285,7 +291,7 @@ helper.withFakeMatrix = (_mock, skipping) => {
 helper.withFakeSlack = (_mock, skipping) => {
   const fakeSlackSend = () => sinon.fake(() => ({ ok: true }));
 
-  suiteSetup('withFakeSlack', async function() {
+  suiteSetup('withFakeSlack', async function () {
     if (skipping()) {
       return;
     }
@@ -299,7 +305,7 @@ helper.withFakeSlack = (_mock, skipping) => {
     load.inject('slackClient', helper.slackClient);
   });
 
-  setup(function() {
+  setup(function () {
     helper.slackClient.chat.postMessage = fakeSlackSend();
   });
 };
@@ -314,7 +320,7 @@ helper.withPulse = (_mock, skipping) => {
 helper.withServer = (_mock, skipping) => {
   let webServer;
 
-  suiteSetup('withServer', async function() {
+  suiteSetup('withServer', async function () {
     if (skipping()) {
       return;
     }
@@ -344,7 +350,7 @@ helper.withServer = (_mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (skipping()) {
       return;
     }
@@ -361,9 +367,7 @@ helper.withDb = (mock, skipping) => {
 };
 
 helper.resetTables = (_mock, _skipping) => {
-  setup('reset tables', async function() {
-    await testing.resetTables({ tableNames: [
-      'denylisted_notifications',
-    ] });
+  setup('reset tables', async function () {
+    await testing.resetTables({ tableNames: ['denylisted_notifications'] });
   });
 };

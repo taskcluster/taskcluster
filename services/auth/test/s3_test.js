@@ -1,17 +1,12 @@
 import assert from 'node:assert';
 import slugid from 'slugid';
-import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-  DeleteObjectCommand,
-} from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import helper from './helper.js';
 import debugFactory from 'debug';
 const debug = debugFactory('s3_test');
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function (mock, skipping) {
   if (mock) {
     return; // This is actually testing sts tokens and we are not going to mock those
   }
@@ -22,26 +17,24 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withServers(mock, skipping);
 
   let bucket;
-  setup(function() {
+  setup(function () {
     const secret = helper.secrets.get('aws');
     bucket = secret.testBucket;
-    helper.load.cfg('awsCredentials.allowedBuckets', [{
-      accessKeyId: secret.awsAccessKeyId,
-      secretAccessKey: secret.awsSecretAccessKey,
-      buckets: [secret.testBucket] }]);
+    helper.load.cfg('awsCredentials.allowedBuckets', [
+      {
+        accessKeyId: secret.awsAccessKeyId,
+        secretAccessKey: secret.awsSecretAccessKey,
+        buckets: [secret.testBucket],
+      },
+    ]);
   });
 
   test('awsS3Credentials read-write folder1/folder2/', async () => {
     const id = slugid.v4();
     const text = slugid.v4();
     debug('### auth.awsS3Credentials');
-    const result = await helper.apiClient.awsS3Credentials(
-      'read-write',
-      bucket,
-      'folder1/folder2/',
-    );
-    assert(new Date(result.expires).getTime() > Date.now(),
-      'Expected expires to be in the future');
+    const result = await helper.apiClient.awsS3Credentials('read-write', bucket, 'folder1/folder2/');
+    assert(new Date(result.expires).getTime() > Date.now(), 'Expected expires to be in the future');
 
     // Create aws credentials
     const s3 = new S3Client({
@@ -52,37 +45,38 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       followRegionRedirects: true,
     });
     debug('### s3.putObject');
-    await s3.send(new PutObjectCommand({
-      Bucket: bucket,
-      Key: `folder1/folder2/${id}`,
-      Body: text,
-    }));
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: `folder1/folder2/${id}`,
+        Body: text,
+      }),
+    );
 
     debug('### s3.getObject');
-    const res = await s3.send(new GetObjectCommand({
-      Bucket: bucket,
-      Key: `folder1/folder2/${id}`,
-    }));
-    assert(await res.Body.transformToString() === text, 'Got the wrong body!');
+    const res = await s3.send(
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: `folder1/folder2/${id}`,
+      }),
+    );
+    assert((await res.Body.transformToString()) === text, 'Got the wrong body!');
 
     debug('### s3.deleteObject');
-    await s3.send(new DeleteObjectCommand({
-      Bucket: bucket,
-      Key: `folder1/folder2/${id}`,
-    }));
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: `folder1/folder2/${id}`,
+      }),
+    );
   });
 
   test('awsS3Credentials read-write root', async () => {
     const id = slugid.v4();
     const text = slugid.v4();
     debug('### auth.awsS3Credentials');
-    const result = await helper.apiClient.awsS3Credentials(
-      'read-write',
-      bucket,
-      '',
-    );
-    assert(new Date(result.expires).getTime() > Date.now(),
-      'Expected expires to be in the future');
+    const result = await helper.apiClient.awsS3Credentials('read-write', bucket, '');
+    assert(new Date(result.expires).getTime() > Date.now(), 'Expected expires to be in the future');
 
     // Create aws credentials
     const s3 = new S3Client({
@@ -93,37 +87,37 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       followRegionRedirects: true,
     });
     debug('### s3.putObject');
-    await s3.send(new PutObjectCommand({
-      Bucket: bucket,
-      Key: id,
-      Body: text,
-    }));
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: id,
+        Body: text,
+      }),
+    );
 
     debug('### s3.getObject');
-    const res = await s3.send(new GetObjectCommand({
-      Bucket: bucket,
-      Key: id,
-    }));
-    assert(await res.Body.transformToString() === text,
-      'Got the wrong body!');
+    const res = await s3.send(
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: id,
+      }),
+    );
+    assert((await res.Body.transformToString()) === text, 'Got the wrong body!');
 
     debug('### s3.deleteObject');
-    await s3.send(new DeleteObjectCommand({
-      Bucket: bucket,
-      Key: id,
-    }));
+    await s3.send(
+      new DeleteObjectCommand({
+        Bucket: bucket,
+        Key: id,
+      }),
+    );
   });
 
   test('awsS3Credentials w. folder1/ access denied for folder2/', async () => {
     const id = slugid.v4();
     debug('### auth.awsS3Credentials');
-    const result = await helper.apiClient.awsS3Credentials(
-      'read-write',
-      bucket,
-      'folder1/',
-    );
-    assert(new Date(result.expires).getTime() > Date.now(),
-      'Expected expires to be in the future');
+    const result = await helper.apiClient.awsS3Credentials('read-write', bucket, 'folder1/');
+    assert(new Date(result.expires).getTime() > Date.now(), 'Expected expires to be in the future');
 
     // Create aws credentials
     const s3 = new S3Client({
@@ -135,11 +129,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     });
     debug('### s3.putObject');
     try {
-      await s3.send(new PutObjectCommand({
-        Bucket: bucket,
-        Key: `folder2/${id}`,
-        Body: 'Hello-World',
-      }));
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: `folder2/${id}`,
+          Body: 'Hello-World',
+        }),
+      );
       assert(false, 'Expected an error');
     } catch (err) {
       assert(err.Code === 'AccessDenied', 'Expected 403 access denied');
@@ -150,11 +146,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     const id = slugid.v4();
     const text = slugid.v4();
     debug('### auth.awsS3Credentials');
-    let result = await helper.apiClient.awsS3Credentials(
-      'read-write',
-      bucket,
-      'folder1/',
-    );
+    let result = await helper.apiClient.awsS3Credentials('read-write', bucket, 'folder1/');
     let s3 = new S3Client({
       credentials: {
         ...result.credentials,
@@ -163,18 +155,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       followRegionRedirects: true,
     });
     debug('### s3.putObject');
-    await s3.send(new PutObjectCommand({
-      Bucket: bucket,
-      Key: `folder1/${id}`,
-      Body: text,
-    }));
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: `folder1/${id}`,
+        Body: text,
+      }),
+    );
 
     debug('### auth.awsS3Credentials read-only');
-    result = await helper.apiClient.awsS3Credentials(
-      'read-only',
-      bucket,
-      'folder1/',
-    );
+    result = await helper.apiClient.awsS3Credentials('read-only', bucket, 'folder1/');
     s3 = new S3Client({
       credentials: {
         ...result.credentials,
@@ -183,19 +173,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       followRegionRedirects: true,
     });
     debug('### s3.getObject');
-    const res = await s3.send(new GetObjectCommand({
-      Bucket: bucket,
-      Key: `folder1/${id}`,
-    }));
-    assert(await res.Body.transformToString() === text,
-      'Got the wrong body!');
+    const res = await s3.send(
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: `folder1/${id}`,
+      }),
+    );
+    assert((await res.Body.transformToString()) === text, 'Got the wrong body!');
 
     try {
-      await s3.send(new PutObjectCommand({
-        Bucket: bucket,
-        Key: `folder1/${slugid.v4()}`,
-        Body: 'Hello-World',
-      }));
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: `folder1/${slugid.v4()}`,
+          Body: 'Hello-World',
+        }),
+      );
       assert(false, 'Expected an error');
     } catch (err) {
       assert(err.Code === 'AccessDenied', 'Expected 403 access denied');
@@ -206,12 +199,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     const id = slugid.v4();
     const text = slugid.v4();
     debug('### auth.awsS3Credentials w. format=iam-role-compat');
-    const result = await helper.apiClient.awsS3Credentials(
-      'read-write',
-      bucket,
-      '', {
-        format: 'iam-role-compat',
-      });
+    const result = await helper.apiClient.awsS3Credentials('read-write', bucket, '', {
+      format: 'iam-role-compat',
+    });
 
     const s3 = new S3Client({
       credentials: {
@@ -223,16 +213,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       followRegionRedirects: true,
     });
     debug('### s3.putObject');
-    await s3.send(new PutObjectCommand({
-      Bucket: bucket,
-      Key: `folder1/${id}`,
-      Body: text,
-    }));
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: `folder1/${id}`,
+        Body: text,
+      }),
+    );
   });
 
   test('awsS3Credentials with unknown bucket', async () => {
     await assert.rejects(
       () => helper.apiClient.awsS3Credentials('read-write', 'nosuchbucket', ''),
-      err => err.statusCode === 404);
+      (err) => err.statusCode === 404,
+    );
   });
 });

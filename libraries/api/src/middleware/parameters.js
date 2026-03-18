@@ -19,10 +19,11 @@ export const parameterValidator = ({ entry }) => {
   const { params = {} } = entry;
 
   // Validate parameters
-  Object.keys(params).forEach(param => {
-    assert(params[param] instanceof RegExp || params[param] instanceof Function,
-      'Pattern given for param: \'' + param + '\' must be a RegExp or ' +
-           'a function');
+  Object.keys(params).forEach((param) => {
+    assert(
+      params[param] instanceof RegExp || params[param] instanceof Function,
+      `Pattern given for param: '${param}' must be a RegExp or a function`,
+    );
   });
   return (req, res, next) => {
     /** @type {string[]} */
@@ -32,26 +33,25 @@ export const parameterValidator = ({ entry }) => {
       if (pattern instanceof RegExp) {
         if (!pattern.test(val)) {
           errors.push(
-            'URL parameter \'' + param + '\' given as \'' + val + '\' must match ' +
-            'regular expression: \'' + pattern.toString() + '\'',
+            "URL parameter '" +
+              param +
+              "' given as '" +
+              val +
+              "' must match " +
+              "regular expression: '" +
+              pattern.toString() +
+              "'",
           );
         }
       } else if (pattern instanceof Function) {
         const msg = pattern.call(req.tcContext, val);
         if (typeof msg === 'string') {
-          errors.push(
-            'URL parameter \'' + param + '\' given  as \'' + val + '\' is not ' +
-            'valid: ' + msg,
-          );
+          errors.push(`URL parameter '${param}' given  as '${val}' is not valid: ${msg}`);
         }
       }
     });
     if (errors.length > 0) {
-      return res.reportError(
-        'InvalidRequestArguments',
-        `Invalid URL patterns:\n${errors.join('\n')}`,
-        { errors },
-      );
+      return res.reportError('InvalidRequestArguments', `Invalid URL patterns:\n${errors.join('\n')}`, { errors });
     }
     return next();
   };

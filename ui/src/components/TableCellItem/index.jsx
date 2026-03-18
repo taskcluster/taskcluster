@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   root: {
     display: 'inline-block',
     verticalAlign: 'middle',
@@ -47,15 +47,13 @@ export default class TableCellItem extends Component {
     const { classes, children, className, dense, ...props } = this.props;
 
     return (
-      <List
-        component="div"
-        classes={{ root: classes.root }}
-        className={className}>
+      <List component="div" classes={{ root: classes.root }} className={className}>
         <ListItem
           component="span"
           classes={{ gutters: classes.listItem }}
           className={classes.listItemButton}
-          {...props}>
+          {...props}
+        >
           {children}
         </ListItem>
       </List>

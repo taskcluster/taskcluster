@@ -5,7 +5,7 @@ import taskcluster from '@taskcluster/client';
 import { LEVELS } from '@taskcluster/lib-monitor';
 import { Worker, WorkerPool } from '../src/data.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);
@@ -16,7 +16,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.resetTables(mock, skipping);
 
   let monitor;
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     monitor = await helper.load('monitor');
   });
 
@@ -26,36 +26,46 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const expires2 = taskcluster.fromNow('8 days');
 
   const testCase = async ({ workers = [], assertion, expectErrors }) => {
-    await Promise.all(workers.map(w => {
-      const worker = Worker.fromApi(w);
-      return worker.create(helper.db);
-    }));
+    await Promise.all(
+      workers.map((w) => {
+        const worker = Worker.fromApi(w);
+        return worker.create(helper.db);
+      }),
+    );
     await helper.initiateWorkerScanner();
-    await testing.poll(async () => {
-      if (!expectErrors) {
-        const error = monitor.manager.messages.find(({ Type }) => Type === 'monitor.error');
-        if (error) {
-          throw new Error(JSON.stringify(error, null, 2));
+    await testing.poll(
+      async () => {
+        if (!expectErrors) {
+          const error = monitor.manager.messages.find(({ Type }) => Type === 'monitor.error');
+          if (error) {
+            throw new Error(JSON.stringify(error, null, 2));
+          }
         }
-      }
-      workers.forEach(w => {
-        assert.deepEqual(monitor.manager.messages.find(
-          msg => msg.Type === 'scan-prepare' && msg.Logger.endsWith(w.providerId)), {
-          Logger: `taskcluster.test.provider.${w.providerId}`,
-          Type: 'scan-prepare',
-          Fields: {},
-          Severity: LEVELS.notice,
+        workers.forEach((w) => {
+          assert.deepEqual(
+            monitor.manager.messages.find((msg) => msg.Type === 'scan-prepare' && msg.Logger.endsWith(w.providerId)),
+            {
+              Logger: `taskcluster.test.provider.${w.providerId}`,
+              Type: 'scan-prepare',
+              Fields: {},
+              Severity: LEVELS.notice,
+            },
+          );
+          assert.deepEqual(
+            monitor.manager.messages.find((msg) => msg.Type === 'scan-cleanup' && msg.Logger.endsWith(w.providerId)),
+            {
+              Logger: `taskcluster.test.provider.${w.providerId}`,
+              Type: 'scan-cleanup',
+              Fields: {},
+              Severity: LEVELS.notice,
+            },
+          );
         });
-        assert.deepEqual(monitor.manager.messages.find(
-          msg => msg.Type === 'scan-cleanup' && msg.Logger.endsWith(w.providerId)), {
-          Logger: `taskcluster.test.provider.${w.providerId}`,
-          Type: 'scan-cleanup',
-          Fields: {},
-          Severity: LEVELS.notice,
-        });
-      });
-      await assertion();
-    }, 60, 1000);
+        await assertion();
+      },
+      60,
+      1000,
+    );
     await helper.terminateWorkerScanner();
 
     if (expectErrors) {
@@ -63,188 +73,193 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
   };
 
-  test('single worker', () => testCase({
-    workers: [
-      {
-        workerPoolId: 'ff/ee',
-        workerGroup: 'whatever',
-        workerId: 'testing-123',
-        providerId: 'testing1',
-        created: new Date(),
-        lastModified: new Date(),
-        lastChecked: new Date(),
-        expires: expires2,
-        capacity: 1,
-        state: Worker.states.REQUESTED,
-        providerData: {},
-      },
-    ],
-    assertion: async () => {
-      const worker = await Worker.get(helper.db, {
-        workerPoolId: 'ff/ee',
-        workerGroup: 'whatever',
-        workerId: 'testing-123',
-      });
-      assert(worker.providerData.checked);
-      // verify that expires wasn't updated
-      assert.notEqual(worker.providerexpires, expires2);
-    },
-  }));
-
-  test("multiple workers with same provider", () => testCase({
-    workers: [
-      {
-        workerPoolId: "ff/ee",
-        workerGroup: "whatever",
-        workerId: "testing-123",
-        providerId: "testing1",
-        created: new Date(),
-        lastModified: new Date(),
-        lastChecked: new Date(),
-        expires,
-        capacity: 1,
-        state: Worker.states.REQUESTED,
-        providerData: {},
-      },
-      {
-        workerPoolId: "ff/dd",
-        workerGroup: "whatever",
-        workerId: "testing-124",
-        providerId: "testing1",
-        created: new Date(),
-        lastModified: new Date(),
-        lastChecked: new Date(),
-        expires,
-        capacity: 1,
-        state: Worker.states.REQUESTED,
-        providerData: {},
-      },
-    ],
-    assertion: async () => {
-      const worker1 = await Worker.get(helper.db, {
-        workerPoolId: "ff/ee",
-        workerGroup: "whatever",
-        workerId: "testing-123",
-      });
-      assert(worker1.providerData.checked);
-      // expires should be updated because it is less than 7 days
-      assert(worker1.expires > expires);
-      const worker2 = await Worker.get(helper.db, {
-        workerPoolId: "ff/dd",
-        workerGroup: "whatever",
-        workerId: "testing-124",
-      });
-      assert(worker2.providerData.checked);
-      // expires should be updated because it is less than 7 days
-      assert(worker2.expires > expires);
-    },
-  }));
-
-  test('multiple nearly expired workers with different providers', () => testCase({
-    workers: [
-      {
-        workerPoolId: 'ff/ee',
-        workerGroup: 'whatever',
-        workerId: 'testing-123',
-        providerId: 'testing1',
-        created: new Date(),
-        lastModified: new Date(),
-        lastChecked: new Date(),
-        expires,
-        capacity: 1,
-        state: Worker.states.REQUESTED,
-        providerData: {},
-      },
-      {
-        workerPoolId: 'ff/dd',
-        workerGroup: 'whatever',
-        workerId: 'testing-124',
-        providerId: 'testing2',
-        created: new Date(),
-        lastModified: new Date(),
-        lastChecked: new Date(),
-        expires,
-        capacity: 1,
-        state: Worker.states.REQUESTED,
-        providerData: {},
-      },
-    ],
-    assertion: async () => {
-      const worker1 = await Worker.get(helper.db, {
-        workerPoolId: 'ff/ee',
-        workerGroup: 'whatever',
-        workerId: 'testing-123',
-      });
-      assert(worker1.providerData.checked);
-      // expires should be updated because it is less than 7 days
-      assert(worker1.expires > expires);
-      const worker2 = await Worker.get(helper.db, {
-        workerPoolId: 'ff/dd',
-        workerGroup: 'whatever',
-        workerId: 'testing-124',
-      });
-      assert(worker2.providerData.checked);
-      // expires should be updated because it is less than 7 days
-      assert(worker2.expires > expires);
-    },
-  }));
-
-  test('worker for previous provider is stopped', () => testCase({
-    workers: [
-      {
-        workerPoolId: 'ff/ee',
-        workerGroup: 'whatever',
-        workerId: 'testing-OLD',
-        providerId: 'testing1',
-        created: new Date(),
-        lastModified: new Date(),
-        lastChecked: new Date(),
-        expires: taskcluster.fromNow('1 hour'),
-        capacity: 1,
-        state: Worker.states.STOPPED,
-        providerData: {},
-      }, {
-        workerPoolId: 'ff/ee',
-        workerGroup: 'whatever',
-        workerId: 'testing-123',
-        providerId: 'testing2',
-        created: new Date(),
-        lastModified: new Date(),
-        lastChecked: new Date(),
-        expires: taskcluster.fromNow('1 hour'),
-        capacity: 1,
-        state: Worker.states.REQUESTED,
-        providerData: {},
-      },
-    ],
-    workerPools: [
-      {
-        workerPoolId: 'ff/ee',
-        existingCapacity: 1,
-        providerId: 'testing2',
-        previousProviderIds: ['testing1'],
-        description: '',
-        created: taskcluster.fromNow('-1 hour'),
-        lastModified: taskcluster.fromNow('-1 hour'),
-        config: {},
-        owner: 'foo@example.com',
-        emailOnError: false,
-        providerData: {
-          // make removeResources fail on the first try, to test error handling
-          failRemoveResources: 1,
+  test('single worker', () =>
+    testCase({
+      workers: [
+        {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-123',
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires: expires2,
+          capacity: 1,
+          state: Worker.states.REQUESTED,
+          providerData: {},
         },
+      ],
+      assertion: async () => {
+        const worker = await Worker.get(helper.db, {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-123',
+        });
+        assert(worker.providerData.checked);
+        // verify that expires wasn't updated
+        assert.notEqual(worker.providerexpires, expires2);
       },
-    ],
-    expectErrors: true,
-    assertion: async () => {
-      const worker = await Worker.get(helper.db, {
-        workerPoolId: 'ff/ee',
-        workerGroup: 'whatever',
-        workerId: 'testing-123',
-      });
-      assert(worker.providerData.checked);
-    },
-  }));
+    }));
+
+  test('multiple workers with same provider', () =>
+    testCase({
+      workers: [
+        {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-123',
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires,
+          capacity: 1,
+          state: Worker.states.REQUESTED,
+          providerData: {},
+        },
+        {
+          workerPoolId: 'ff/dd',
+          workerGroup: 'whatever',
+          workerId: 'testing-124',
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires,
+          capacity: 1,
+          state: Worker.states.REQUESTED,
+          providerData: {},
+        },
+      ],
+      assertion: async () => {
+        const worker1 = await Worker.get(helper.db, {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-123',
+        });
+        assert(worker1.providerData.checked);
+        // expires should be updated because it is less than 7 days
+        assert(worker1.expires > expires);
+        const worker2 = await Worker.get(helper.db, {
+          workerPoolId: 'ff/dd',
+          workerGroup: 'whatever',
+          workerId: 'testing-124',
+        });
+        assert(worker2.providerData.checked);
+        // expires should be updated because it is less than 7 days
+        assert(worker2.expires > expires);
+      },
+    }));
+
+  test('multiple nearly expired workers with different providers', () =>
+    testCase({
+      workers: [
+        {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-123',
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires,
+          capacity: 1,
+          state: Worker.states.REQUESTED,
+          providerData: {},
+        },
+        {
+          workerPoolId: 'ff/dd',
+          workerGroup: 'whatever',
+          workerId: 'testing-124',
+          providerId: 'testing2',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires,
+          capacity: 1,
+          state: Worker.states.REQUESTED,
+          providerData: {},
+        },
+      ],
+      assertion: async () => {
+        const worker1 = await Worker.get(helper.db, {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-123',
+        });
+        assert(worker1.providerData.checked);
+        // expires should be updated because it is less than 7 days
+        assert(worker1.expires > expires);
+        const worker2 = await Worker.get(helper.db, {
+          workerPoolId: 'ff/dd',
+          workerGroup: 'whatever',
+          workerId: 'testing-124',
+        });
+        assert(worker2.providerData.checked);
+        // expires should be updated because it is less than 7 days
+        assert(worker2.expires > expires);
+      },
+    }));
+
+  test('worker for previous provider is stopped', () =>
+    testCase({
+      workers: [
+        {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-OLD',
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+          state: Worker.states.STOPPED,
+          providerData: {},
+        },
+        {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-123',
+          providerId: 'testing2',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires: taskcluster.fromNow('1 hour'),
+          capacity: 1,
+          state: Worker.states.REQUESTED,
+          providerData: {},
+        },
+      ],
+      workerPools: [
+        {
+          workerPoolId: 'ff/ee',
+          existingCapacity: 1,
+          providerId: 'testing2',
+          previousProviderIds: ['testing1'],
+          description: '',
+          created: taskcluster.fromNow('-1 hour'),
+          lastModified: taskcluster.fromNow('-1 hour'),
+          config: {},
+          owner: 'foo@example.com',
+          emailOnError: false,
+          providerData: {
+            // make removeResources fail on the first try, to test error handling
+            failRemoveResources: 1,
+          },
+        },
+      ],
+      expectErrors: true,
+      assertion: async () => {
+        const worker = await Worker.get(helper.db, {
+          workerPoolId: 'ff/ee',
+          workerGroup: 'whatever',
+          workerId: 'testing-123',
+        });
+        assert(worker.providerData.checked);
+      },
+    }));
 
   test('default providers filter applied', async () => {
     const azureScanner = await helper.load('workerScannerAzure');
@@ -256,10 +271,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await scanner.terminate();
   });
 
-  suite('termination decisions', function() {
+  suite('termination decisions', function () {
     let scanner, providers, estimator;
 
-    suiteSetup(async function() {
+    suiteSetup(async function () {
       if (skipping()) {
         return;
       }
@@ -267,7 +282,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       estimator = await helper.load('estimator');
     });
 
-    setup(async function() {
+    setup(async function () {
       // Create a fresh scanner for each test (no iterate loop, just call scan() directly)
       scanner = new (await import('../src/worker-scanner.js')).WorkerScanner({
         ownName: 'test-scanner',
@@ -299,7 +314,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     const createLaunchConfig = async (launchConfigId, poolId, isArchived = false) => {
       await helper.db.fns.create_worker_pool_launch_config(
-        launchConfigId, poolId, isArchived, { config: 'test' }, new Date(), new Date());
+        launchConfigId,
+        poolId,
+        isArchived,
+        { config: 'test' },
+        new Date(),
+        new Date(),
+      );
     };
 
     const createWorker = async (opts) => {
@@ -307,7 +328,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return worker.create(helper.db);
     };
 
-    test('worker with archived launch config is marked for termination', async function() {
+    test('worker with archived launch config is marked for termination', async function () {
       const poolId = 'pp/archived';
       await createPool(poolId, { maxCapacity: 10 });
       await createLaunchConfig('lc-archived', poolId, true);
@@ -338,7 +359,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(worker.providerData.shouldTerminate.decidedAt);
     });
 
-    test('idle workers with minCapacity=0 and no pending tasks are terminated', async function() {
+    test('idle workers with minCapacity=0 and no pending tasks are terminated', async function () {
       const poolId = 'pp/overcap';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
       await createLaunchConfig('lc-active', poolId, false);
@@ -348,22 +369,40 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const now = new Date();
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-oldest',
-        providerId: 'testing1', created: new Date(now.getTime() - 3000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-active',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-oldest',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 3000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-active',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-middle',
-        providerId: 'testing1', created: new Date(now.getTime() - 2000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-active',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-middle',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-active',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-newest',
-        providerId: 'testing1', created: new Date(now.getTime() - 1000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-active',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-newest',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-active',
       });
 
       await scanner.scan();
@@ -377,7 +416,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(wNewest.providerData.shouldTerminate.terminate, true);
     });
 
-    test('all workers needed when pending tasks require them', async function() {
+    test('all workers needed when pending tasks require them', async function () {
       const poolId = 'pp/needed';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
       await createLaunchConfig('lc-needed', poolId, false);
@@ -387,22 +426,40 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const now = new Date();
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-oldest',
-        providerId: 'testing1', created: new Date(now.getTime() - 3000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-needed',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-oldest',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 3000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-needed',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-middle',
-        providerId: 'testing1', created: new Date(now.getTime() - 2000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-needed',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-middle',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-needed',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-newest',
-        providerId: 'testing1', created: new Date(now.getTime() - 1000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-needed',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-newest',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-needed',
       });
 
       await scanner.scan();
@@ -416,7 +473,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(wNewest.providerData.shouldTerminate.terminate, false);
     });
 
-    test('excess workers with maxCapacity=1 — oldest terminated', async function() {
+    test('excess workers with maxCapacity=1 — oldest terminated', async function () {
       const poolId = 'pp/excess';
       await createPool(poolId, { maxCapacity: 1, minCapacity: 0 });
       await createLaunchConfig('lc-active2', poolId, false);
@@ -426,16 +483,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const now = new Date();
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-old',
-        providerId: 'testing1', created: new Date(now.getTime() - 2000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-active2',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-old',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-active2',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-new',
-        providerId: 'testing1', created: new Date(now.getTime() - 1000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-active2',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-new',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-active2',
       });
 
       await scanner.scan();
@@ -449,7 +518,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(wNew.providerData.shouldTerminate.reason, 'needed');
     });
 
-    test('workers with claimed tasks and pending tasks are not terminated', async function() {
+    test('workers with claimed tasks and pending tasks are not terminated', async function () {
       const poolId = 'pp/claimed';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
       await createLaunchConfig('lc-claimed', poolId, false);
@@ -460,22 +529,40 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const now = new Date();
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w1',
-        providerId: 'testing1', created: new Date(now.getTime() - 3000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-claimed',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w1',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 3000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-claimed',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w2',
-        providerId: 'testing1', created: new Date(now.getTime() - 2000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-claimed',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w2',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-claimed',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w3',
-        providerId: 'testing1', created: new Date(now.getTime() - 1000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-claimed',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w3',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-claimed',
       });
 
       await scanner.scan();
@@ -489,7 +576,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(w3.providerData.shouldTerminate.terminate, false);
     });
 
-    test('workers at minCapacity are not marked even with no pending tasks', async function() {
+    test('workers at minCapacity are not marked even with no pending tasks', async function () {
       const poolId = 'pp/mincap';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 2 });
       await createLaunchConfig('lc-min', poolId, false);
@@ -499,16 +586,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const now = new Date();
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w1',
-        providerId: 'testing1', created: new Date(now.getTime() - 2000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-min',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w1',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-min',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w2',
-        providerId: 'testing1', created: new Date(now.getTime() - 1000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-min',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w2',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-min',
       });
 
       await scanner.scan();
@@ -520,7 +619,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(w2.providerData.shouldTerminate.terminate, false);
     });
 
-    test('decision is reversible when demand returns', async function() {
+    test('decision is reversible when demand returns', async function () {
       const poolId = 'pp/reverse';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
       await createLaunchConfig('lc-rev', poolId, false);
@@ -532,9 +631,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const now = new Date();
       // Pre-set shouldTerminate to simulate a previous scan marking w-old for termination
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-old',
-        providerId: 'testing1', created: new Date(now.getTime() - 2000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-old',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
         state: Worker.states.RUNNING,
         providerData: {
           shouldTerminate: { terminate: true, reason: 'over capacity', decidedAt: new Date().toISOString() },
@@ -542,10 +645,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         launchConfigId: 'lc-rev',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-new',
-        providerId: 'testing1', created: new Date(now.getTime() - 1000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-rev',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-new',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-rev',
       });
 
       await scanner.scan();
@@ -557,7 +666,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(w.providerData.shouldTerminate.reason, 'needed');
     });
 
-    test('reducing minCapacity marks workers for termination on next scan', async function() {
+    test('reducing minCapacity marks workers for termination on next scan', async function () {
       const poolId = 'pp/minchange';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 1 });
       await createLaunchConfig('lc-minchange', poolId, false);
@@ -566,10 +675,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       helper.queue.setClaimed(poolId, 0);
 
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w1',
-        providerId: 'testing1', created: new Date(),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-minchange',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w1',
+        providerId: 'testing1',
+        created: new Date(),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-minchange',
       });
 
       // First scan: minCapacity=1, worker is needed
@@ -582,7 +697,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // Simulate minCapacity being lowered to 0. WorkerPool has no update()
       // method and update_worker_pool_with_launch_configs archives launch
       // configs as a side-effect, so we update the config column directly.
-      await helper.withDbClient(async client => {
+      await helper.withDbClient(async (client) => {
         await client.query(
           `UPDATE worker_pools SET config = config || '{"minCapacity": 0}'::jsonb WHERE worker_pool_id = $1`,
           [poolId],
@@ -597,7 +712,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(w.providerData.shouldTerminate.reason, 'over capacity');
     });
 
-    test('static provider workers do not get shouldTerminate set', async function() {
+    test('static provider workers do not get shouldTerminate set', async function () {
       await createWorker({
         workerPoolId: 'pp/static',
         workerGroup: 'wg',
@@ -620,7 +735,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(worker.providerData.shouldTerminate, undefined);
     });
 
-    test('emits workersToTerminate metric with correct values and labels', async function() {
+    test('emits workersToTerminate metric with correct values and labels', async function () {
       const poolId = 'pp/metrics';
       await createPool(poolId, { maxCapacity: 1, minCapacity: 0 });
       await createLaunchConfig('lc-metric-active', poolId, false);
@@ -633,23 +748,41 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // Two RUNNING workers with active launch config on a pool with maxCapacity=1
       // and 1 pending task → one will be needed, one over_capacity
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-cap1',
-        providerId: 'testing1', created: new Date(now.getTime() - 3000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-metric-active',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-cap1',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 3000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-metric-active',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-cap2',
-        providerId: 'testing1', created: new Date(now.getTime() - 2000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-metric-active',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-cap2',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-metric-active',
       });
       // One worker with archived launch config → launch_config_archived
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-archived',
-        providerId: 'testing1', created: new Date(now.getTime() - 1000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-metric-archived',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-archived',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-metric-archived',
       });
 
       const metricCalls = [];
@@ -663,13 +796,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
         assert.strictEqual(metricCalls.length, 2, `expected 2 metric calls, got ${metricCalls.length}`);
 
-        const overCap = metricCalls.find(c => c.labels.reason === 'over_capacity');
+        const overCap = metricCalls.find((c) => c.labels.reason === 'over_capacity');
         assert.ok(overCap, 'should have over_capacity metric');
         assert.strictEqual(overCap.value, 1);
         assert.strictEqual(overCap.labels.workerPoolId, poolId);
         assert.strictEqual(overCap.labels.providerId, 'testing1');
 
-        const archived = metricCalls.find(c => c.labels.reason === 'launch_config_archived');
+        const archived = metricCalls.find((c) => c.labels.reason === 'launch_config_archived');
         assert.ok(archived, 'should have launch_config_archived metric');
         assert.strictEqual(archived.value, 1);
         assert.strictEqual(archived.labels.workerPoolId, poolId);
@@ -679,7 +812,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     });
 
-    test('integration: scanner decision is returned by API endpoint', async function() {
+    test('integration: scanner decision is returned by API endpoint', async function () {
       const poolId = 'pp/integ';
       await createPool(poolId, { maxCapacity: 1, minCapacity: 0 });
       await createLaunchConfig('lc-integ', poolId, false);
@@ -689,16 +822,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const now = new Date();
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-old',
-        providerId: 'testing1', created: new Date(now.getTime() - 2000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-integ',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-old',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 2000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-integ',
       });
       await createWorker({
-        workerPoolId: poolId, workerGroup: 'wg', workerId: 'w-new',
-        providerId: 'testing1', created: new Date(now.getTime() - 1000),
-        expires: taskcluster.fromNow('8 days'), capacity: 1,
-        state: Worker.states.RUNNING, providerData: {}, launchConfigId: 'lc-integ',
+        workerPoolId: poolId,
+        workerGroup: 'wg',
+        workerId: 'w-new',
+        providerId: 'testing1',
+        created: new Date(now.getTime() - 1000),
+        expires: taskcluster.fromNow('8 days'),
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        providerData: {},
+        launchConfigId: 'lc-integ',
       });
 
       // Run the scanner

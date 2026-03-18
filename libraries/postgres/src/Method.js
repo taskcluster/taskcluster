@@ -115,7 +115,11 @@ class Method {
       assert.equal(existing.mode, this.mode, `method ${name} changed mode in version ${version.version}`);
     }
     if (this.serviceName !== undefined) {
-      assert.equal(existing.serviceName, this.serviceName, `method ${name} changed serviceName in version ${version.version}`);
+      assert.equal(
+        existing.serviceName,
+        this.serviceName,
+        `method ${name} changed serviceName in version ${version.version}`,
+      );
     }
     if (this.args !== undefined) {
       assert.equal(existing.args, this.args, `method ${name} changed args in version ${version.version}`);

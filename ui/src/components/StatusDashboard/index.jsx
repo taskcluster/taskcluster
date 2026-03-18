@@ -29,32 +29,15 @@ export default class StatusDashboard extends Component {
   };
 
   render() {
-    const {
-      workerPools,
-      wmStats,
-      provisioners,
-      hookGroups,
-      clients,
-      roles,
-      secrets,
-    } = this.props;
-    const filterAvailable = items =>
-      items.filter(item => !item.loading && !item.error);
+    const { workerPools, wmStats, provisioners, hookGroups, clients, roles, secrets } = this.props;
+    const filterAvailable = (items) => items.filter((item) => !item.loading && !item.error);
     const widgets = {
-      'Worker Manager Provisioning': filterAvailable(
-        summarizeWorkerPools(workerPools, 'provisioning')
-      ),
+      'Worker Manager Provisioning': filterAvailable(summarizeWorkerPools(workerPools, 'provisioning')),
       'Worker Manager Errors': summarizeWorkerPoolsStats(wmStats),
-      'Worker Manager Stats': filterAvailable(
-        summarizeWorkerPools(workerPools, 'stats')
-      ),
-      'Worker Provisioners': filterAvailable(
-        summarizeProvisioners(provisioners)
-      ),
+      'Worker Manager Stats': filterAvailable(summarizeWorkerPools(workerPools, 'stats')),
+      'Worker Provisioners': filterAvailable(summarizeProvisioners(provisioners)),
       Hooks: filterAvailable(summarizeHooks(hookGroups)),
-      Authorization: filterAvailable(
-        summarizeAuthorization(clients, roles, secrets)
-      ),
+      Authorization: filterAvailable(summarizeAuthorization(clients, roles, secrets)),
     };
 
     return <StatusGroup widgets={widgets} />;

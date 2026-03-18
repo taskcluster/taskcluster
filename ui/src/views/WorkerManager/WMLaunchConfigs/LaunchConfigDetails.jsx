@@ -26,27 +26,19 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
         <CloseIcon />
       </IconButton>
       <div className={classes.metadataContainer}>
-        <Typography
-          variant="h5"
-          className={classes.headline}
-          title={launchConfig.launchConfigId}>
+        <Typography variant="h5" className={classes.headline} title={launchConfig.launchConfigId}>
           {launchConfig.launchConfigId}
         </Typography>
         <List>
           <ListItem>
-            <ListItemText
-              primary="Status"
-              secondary={launchConfig.isArchived ? 'Archived' : 'Active'}
-            />
+            <ListItemText primary="Status" secondary={launchConfig.isArchived ? 'Archived' : 'Active'} />
           </ListItem>
           <ListItem>
             <ListItemText
               primary="Created"
               secondary={
                 <Fragment>
-                  <Typography variant="body2">
-                    {launchConfig.created}
-                  </Typography>
+                  <Typography variant="body2">{launchConfig.created}</Typography>
                   <Typography variant="body1">
                     <DateDistance from={launchConfig.created} />
                   </Typography>
@@ -59,9 +51,7 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
               primary="Last Modified"
               secondary={
                 <Fragment>
-                  <Typography variant="body2">
-                    {launchConfig.lastModified}
-                  </Typography>
+                  <Typography variant="body2">{launchConfig.lastModified}</Typography>
                   <Typography variant="body1">
                     <DateDistance from={launchConfig.lastModified} />
                   </Typography>
@@ -70,10 +60,7 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
             />
           </ListItem>
           <ListItem>
-            <ListItemText
-              primary="Location"
-              secondary={launchConfig.location || 'N/A'}
-            />
+            <ListItemText primary="Location" secondary={launchConfig.location || 'N/A'} />
           </ListItem>
           <ListItem>
             <ListItemText
@@ -100,10 +87,7 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
           <ListItem>
             <ListItemText
               primary="Max Capacity"
-              secondary={
-                launchConfig.configuration?.workerManager?.maxCapacity ??
-                'Not set'
-              }
+              secondary={launchConfig.configuration?.workerManager?.maxCapacity ?? 'Not set'}
             />
           </ListItem>
           <ListItem>
@@ -121,18 +105,10 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
                   </TableHead>
                   <TableBody>
                     <TableRow>
-                      <TableCell>
-                        {launchConfig.workerStats.requestedCapacity}
-                      </TableCell>
-                      <TableCell>
-                        {launchConfig.workerStats.runningCapacity}
-                      </TableCell>
-                      <TableCell>
-                        {launchConfig.workerStats.stoppingCapacity}
-                      </TableCell>
-                      <TableCell>
-                        {launchConfig.workerStats.stoppedCapacity}
-                      </TableCell>
+                      <TableCell>{launchConfig.workerStats.requestedCapacity}</TableCell>
+                      <TableCell>{launchConfig.workerStats.runningCapacity}</TableCell>
+                      <TableCell>{launchConfig.workerStats.stoppingCapacity}</TableCell>
+                      <TableCell>{launchConfig.workerStats.stoppedCapacity}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -154,18 +130,10 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
                   </TableHead>
                   <TableBody>
                     <TableRow>
-                      <TableCell>
-                        {launchConfig.workerStats.requestedCount}
-                      </TableCell>
-                      <TableCell>
-                        {launchConfig.workerStats.runningCount}
-                      </TableCell>
-                      <TableCell>
-                        {launchConfig.workerStats.stoppingCount}
-                      </TableCell>
-                      <TableCell>
-                        {launchConfig.workerStats.stoppedCount}
-                      </TableCell>
+                      <TableCell>{launchConfig.workerStats.requestedCount}</TableCell>
+                      <TableCell>{launchConfig.workerStats.runningCount}</TableCell>
+                      <TableCell>{launchConfig.workerStats.stoppingCount}</TableCell>
+                      <TableCell>{launchConfig.workerStats.stoppedCount}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -174,10 +142,7 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
           </ListItem>
 
           <ListItem>
-            <ListItemText
-              primary="Total Errors"
-              secondary={launchConfig.totalErrors}
-            />
+            <ListItemText primary="Total Errors" secondary={launchConfig.totalErrors} />
           </ListItem>
           <ListItem>
             <ListItemText
@@ -185,12 +150,7 @@ const LaunchConfigDetails = ({ launchConfig, onClose, classes }) => {
               secondaryTypographyProps={{
                 component: 'div',
               }}
-              secondary={
-                <JsonDisplay
-                  syntax="yaml"
-                  objectContent={launchConfig.configuration}
-                />
-              }
+              secondary={<JsonDisplay syntax="yaml" objectContent={launchConfig.configuration} />}
             />
           </ListItem>
         </List>

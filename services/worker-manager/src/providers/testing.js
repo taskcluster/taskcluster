@@ -36,7 +36,7 @@ export class TestingProvider extends Provider {
   }
 
   async checkWorker({ worker }) {
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       worker.providerData.checked = true;
     });
   }
@@ -46,7 +46,7 @@ export class TestingProvider extends Provider {
   }
 
   async registerWorker({ worker, workerPool, workerIdentityProof }) {
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       worker.state = Worker.states.RUNNING;
     });
 
@@ -87,7 +87,7 @@ export class TestingProvider extends Provider {
       throw new ApiError('updating workers is not supported for testing provider');
     }
 
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       worker.capacity = input.capacity;
     });
 
@@ -99,7 +99,7 @@ export class TestingProvider extends Provider {
       throw new ApiError('removing workers is not supported for testing provider');
     }
 
-    await worker.update(this.db, worker => {
+    await worker.update(this.db, (worker) => {
       worker.state = Worker.states.STOPPED;
 
       return worker;

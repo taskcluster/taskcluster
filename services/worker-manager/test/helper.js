@@ -40,14 +40,14 @@ helper.withProviders = (_mock, _skipping) => {
   const fakeAzure = new FakeAzure();
   fakeAzure.forSuite();
 
-  const fakeGoogle = new FakeGoogle;
+  const fakeGoogle = new FakeGoogle();
   fakeGoogle.forSuite();
 };
 
 helper.withProvisioner = (_mock, skipping) => {
   let provisioner;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -70,7 +70,7 @@ helper.withProvisioner = (_mock, skipping) => {
     };
   });
 
-  teardown(function() {
+  teardown(function () {
     if (provisioner) {
       throw new Error('Must call terminateProvisioner if you have started it');
     }
@@ -80,7 +80,7 @@ helper.withProvisioner = (_mock, skipping) => {
 helper.withWorkerScanner = (_mock, skipping) => {
   let scanner;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -100,7 +100,7 @@ helper.withWorkerScanner = (_mock, skipping) => {
     };
   });
 
-  teardown(function() {
+  teardown(function () {
     if (scanner) {
       throw new Error('Must call terminateWorkerScanner if you have started it');
     }
@@ -115,7 +115,7 @@ helper.withWorkerScanner = (_mock, skipping) => {
  * The component is available at `helper.queue`.
  */
 helper.withFakeQueue = (_mock, skipping) => {
-  suiteSetup(function() {
+  suiteSetup(function () {
     if (skipping()) {
       return;
     }
@@ -135,7 +135,7 @@ helper.withFakeQueue = (_mock, skipping) => {
  * We consider any emailing to be test-failing at the moment
  */
 helper.withFakeNotify = (_mock, skipping) => {
-  suiteSetup(function() {
+  suiteSetup(function () {
     if (skipping()) {
       return;
     }
@@ -143,7 +143,7 @@ helper.withFakeNotify = (_mock, skipping) => {
     helper.notify = stubbedNotify();
     helper.load.inject('notify', helper.notify);
 
-    setup(async function() {
+    setup(async function () {
       helper.notify.emails.splice(0);
     });
   });
@@ -152,7 +152,7 @@ helper.withFakeNotify = (_mock, skipping) => {
 helper.withServer = (_mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -161,9 +161,12 @@ helper.withServer = (_mock, skipping) => {
 
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
 
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl },
+    );
 
     // Create client for working with API
     helper.WorkerManager = taskcluster.createClient(builder.reference());
@@ -183,7 +186,7 @@ helper.withServer = (_mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (webServer) {
       await webServer.terminate();
       webServer = null;
@@ -218,11 +221,11 @@ const stubbedQueue = () => {
     },
   });
 
-  queue.setPending = function(taskQueueId, pending) {
+  queue.setPending = function (taskQueueId, pending) {
     pendingCounts[taskQueueId] = pending;
   };
 
-  queue.setClaimed = function(taskQueueId, claimed) {
+  queue.setClaimed = function (taskQueueId, claimed) {
     claimedCounts[taskQueueId] = claimed;
   };
 
@@ -256,23 +259,21 @@ const stubbedNotify = () => {
  * Get all workers
  */
 helper.getWorkers = async () =>
-  Promise.all((await helper.db.fns.get_worker_manager_workers2(null, null, null, null, null, null, null)).map(
-    async r => {
+  Promise.all(
+    (await helper.db.fns.get_worker_manager_workers2(null, null, null, null, null, null, null)).map(async (r) => {
       const w = Worker.fromDb(r);
       return await Worker.get(helper.db, {
         workerPoolId: w.workerPoolId,
         workerGroup: w.workerGroup,
         workerId: w.workerId,
       });
-    }));
+    }),
+  );
 
 helper.resetTables = (_mock, _skipping) => {
-  setup('reset tables', async function() {
-    await testing.resetTables({ tableNames: [
-      'workers',
-      'worker_pools',
-      'worker_pool_errors',
-      'worker_pool_launch_configs',
-    ] });
+  setup('reset tables', async function () {
+    await testing.resetTables({
+      tableNames: ['workers', 'worker_pools', 'worker_pool_errors', 'worker_pool_launch_configs'],
+    });
   });
 };

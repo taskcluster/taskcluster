@@ -2,7 +2,7 @@ import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import { throttling } from '@octokit/plugin-throttling';
 import { retry } from '@octokit/plugin-retry';
-import Bottleneck from "bottleneck";
+import Bottleneck from 'bottleneck';
 import nodeFetch from 'node-fetch';
 
 const PluggedOctokit = Octokit.plugin(retry, throttling);
@@ -19,25 +19,28 @@ export const getCachedInstallationToken = async (gh, inst_id) => {
   let tokenData = tokenCache.get(inst_id);
   const timeMargin = 10 * 60 * 1000; // 10min before expiry
   if (tokenData) {
-    if (new Date(tokenData.expires_at).getTime() > Date.now()+ timeMargin) {
+    if (new Date(tokenData.expires_at).getTime() > Date.now() + timeMargin) {
       return tokenData;
     }
   }
 
-  tokenData = (await gh.apps.createInstallationAccessToken({
-    installation_id: inst_id,
-  })).data;
+  tokenData = (
+    await gh.apps.createInstallationAccessToken({
+      installation_id: inst_id,
+    })
+  ).data;
 
   tokenCache.set(inst_id, tokenData);
   return tokenData;
 };
 
-export const getPrivatePEM = cfg => {
+export const getPrivatePEM = (cfg) => {
   const keyRe = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/s;
   const privatePEM = cfg.github.credentials.privatePEM;
   if (!keyRe.test(privatePEM)) {
-    throw new Error(`Malformed GITHUB_PRIVATE_PEM: must match ${keyRe}; ` +
-      `got a value of length ${privatePEM.length}`);
+    throw new Error(
+      `Malformed GITHUB_PRIVATE_PEM: must match ${keyRe}; ` + `got a value of length ${privatePEM.length}`,
+    );
   }
 
   // sometimes it's easier to provide this config value with embedded backslash-n characters
@@ -54,17 +57,15 @@ export default async ({ cfg, monitor }) => {
       fetch: nodeFetch,
     },
     log: {
-      debug: message => monitor.debug(message),
-      info: message => monitor.info(message),
-      warn: message => monitor.warning(message),
-      error: message => monitor.err(message),
+      debug: (message) => monitor.debug(message),
+      info: (message) => monitor.info(message),
+      warn: (message) => monitor.warning(message),
+      error: (message) => monitor.err(message),
     },
     throttle: {
       write: new Bottleneck.Group({ minTime: 50 }),
       onRateLimit: (retryAfter, options, octokit, retryCount) => {
-        octokit.log.warn(
-          `Request quota exhausted for request ${options.method} ${options.url}`,
-        );
+        octokit.log.warn(`Request quota exhausted for request ${options.method} ${options.url}`);
 
         if (retryCount < 3) {
           octokit.log.info(`Retrying after ${retryAfter} seconds!`);
@@ -72,9 +73,7 @@ export default async ({ cfg, monitor }) => {
         }
       },
       onSecondaryRateLimit: (_retryAfter, options, octokit) => {
-        octokit.log.warn(
-          `SecondaryRateLimit detected for request ${options.method} ${options.url}`,
-        );
+        octokit.log.warn(`SecondaryRateLimit detected for request ${options.method} ${options.url}`);
       },
     },
     retry: {

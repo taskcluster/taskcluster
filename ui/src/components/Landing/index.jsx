@@ -8,7 +8,7 @@ import Helmet from '../Helmet';
 import reportError from '../../utils/reportError';
 import ErrorPanel from '../ErrorPanel';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   root: {
     flexGrow: 1,
     minHeight: '100vh',

@@ -6,18 +6,13 @@ export const AuthContext = createContext({
   unauthorize: Function.prototype,
 });
 
-export const withAuth = UnauthedComponent =>
+export const withAuth = (UnauthedComponent) =>
   class AuthorizableComponent extends Component {
     render() {
       return (
         <AuthContext.Consumer>
           {({ user, authorize, unauthorize }) => (
-            <UnauthedComponent
-              {...this.props}
-              user={user}
-              onAuthorize={authorize}
-              onUnauthorize={unauthorize}
-            />
+            <UnauthedComponent {...this.props} user={user} onAuthorize={authorize} onUnauthorize={unauthorize} />
           )}
         </AuthContext.Consumer>
       );

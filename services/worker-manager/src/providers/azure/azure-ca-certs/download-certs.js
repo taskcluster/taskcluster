@@ -44,7 +44,10 @@ certificates.forEach(({ filename, url }) => {
       throw new Error(`Failed to create PEM file ${filename}`);
     }
 
-    const expiryDate = execSync(`openssl x509 -noout -enddate -in "${filename}"`).toString().trim().replace('notAfter=', '');
+    const expiryDate = execSync(`openssl x509 -noout -enddate -in "${filename}"`)
+      .toString()
+      .trim()
+      .replace('notAfter=', '');
     console.log(`Certificate ${filename} expires on ${expiryDate}`);
     output.push({ filename, url, expiryDate });
 
@@ -61,7 +64,7 @@ let certificatesTable = '<!-- CERTIFICATES -->\n';
 certificatesTable += '| Certificate Filename | Expiration Date |\n';
 certificatesTable += '|----------------------|-----------------|\n';
 
-output.forEach(cert => {
+output.forEach((cert) => {
   certificatesTable += `| [${cert.filename}](${cert.url}) | ${cert.expiryDate} |\n`;
 });
 

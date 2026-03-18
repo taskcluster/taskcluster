@@ -1,11 +1,10 @@
-
 import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   helper.withDbForVersion();
 
   const expires = new Date();
@@ -13,16 +12,19 @@ suite(testing.suiteName(), function() {
     version: THIS_VERSION,
     onlineMigration: false,
     onlineDowngrade: false,
-    createData: async client => {
-      await client.query(`
+    createData: async (client) => {
+      await client.query(
+        `
         insert into objects (name, project_id, backend_id, data, expires)
-        values ('public/foo', 'p', 'b', '{}', $1)`, [expires]);
+        values ('public/foo', 'p', 'b', '{}', $1)`,
+        [expires],
+      );
     },
-    startCheck: async _client => {
+    startCheck: async (_client) => {
       await helper.assertNoTableColumn('objects', 'upload_id');
       await helper.assertNoTableColumn('objects', 'upload_expires');
     },
-    concurrentCheck: async client => {
+    concurrentCheck: async (client) => {
       const { rows } = await client.query('select * from objects');
       assert.equal(rows.length, 1);
       assert.equal(rows[0].name, 'public/foo');
@@ -31,7 +33,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].data, {});
       assert.equal(rows[0].expires.toJSON(), expires.toJSON());
     },
-    finishedCheck: async _client => {
+    finishedCheck: async (_client) => {
       await helper.assertTableColumn('objects', 'upload_id');
       await helper.assertTableColumn('objects', 'upload_expires');
     },

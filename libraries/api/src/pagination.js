@@ -15,8 +15,8 @@ import { ErrorReply } from './error-reply.js';
  * @returns {Promise<PaginateResultsResponse>} Paginated results.
  */
 export const paginateResults = async ({ query, fetch, indexColumns, maxLimit = 1000 }) => {
-  assert(query, "req.query must be provided");
-  assert(fetch, "fetch function must be provided");
+  assert(query, 'req.query must be provided');
+  assert(fetch, 'fetch function must be provided');
 
   const { continuationToken, limit } = query;
   const pageSize = Math.min(parseInt(limit || String(maxLimit), 10), maxLimit);
@@ -85,7 +85,7 @@ const decodeAfter = (indexColumns, token) => {
   }
 
   // default to the "start at the beginning" value
-  return Object.fromEntries(indexColumns.map(col => [`after_${col}_in`, null]));
+  return Object.fromEntries(indexColumns.map((col) => [`after_${col}_in`, null]));
 };
 
 /**
@@ -96,7 +96,7 @@ const decodeAfter = (indexColumns, token) => {
 const encodeAfter = (indexColumns, row) => {
   // a base64-encoded JSON array, just to discourage users from treating
   // continuation tokens as an open query API
-  const data = indexColumns.map(col => row[col]);
+  const data = indexColumns.map((col) => row[col]);
   return Buffer.from(JSON.stringify(data)).toString('base64');
 };
 
@@ -106,7 +106,7 @@ const encodeAfter = (indexColumns, row) => {
  * @returns {number} The decoded offset value
  * @throws {ErrorReply} If token is invalid
  */
-const decodeOffset = token => {
+const decodeOffset = (token) => {
   let decodedToken;
 
   if (!token) {
@@ -137,7 +137,7 @@ const decodeOffset = token => {
  * @param {number} pageOffset - The page offset to encode
  * @returns {string|null} The encoded continuation token, or null if no offset
  */
-const encodeOffset = pageOffset => {
+const encodeOffset = (pageOffset) => {
   if (!pageOffset) {
     return null;
   }

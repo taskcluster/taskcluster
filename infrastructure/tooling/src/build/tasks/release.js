@@ -20,9 +20,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Get ChangeLog',
     requires: ['release-version'],
-    provides: [
-      'changelog-text',
-    ],
+    provides: ['changelog-text'],
     run: async (requirements, _utils) => {
       if (cmdOptions.staging) {
         return {
@@ -47,10 +45,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
-    requires: [
-      'release-version',
-      'docker-flow-version',
-    ],
+    requires: ['release-version', 'docker-flow-version'],
     provides: [
       'websocktunnel-docker-image', // image tag
     ],
@@ -68,8 +63,10 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       const contextDir = path.join(baseDir, 'websocktunnel-build');
       await execCommand({
         command: [
-          'go', 'build',
-          '-o', path.join(contextDir, 'websocktunnel'),
+          'go',
+          'build',
+          '-o',
+          path.join(contextDir, 'websocktunnel'),
           './tools/websocktunnel/cmd/websocktunnel',
         ],
         dir: REPO_ROOT,
@@ -80,25 +77,20 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       utils.step({ title: 'Building Docker Image' });
 
-      fs.writeFileSync(
-        path.join(contextDir, 'version.json'),
-        requirements['docker-flow-version']);
+      fs.writeFileSync(path.join(contextDir, 'version.json'), requirements['docker-flow-version']);
 
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
-      fs.writeFileSync(dockerfile, [
-        'FROM scratch',
-        'COPY websocktunnel /websocktunnel',
-        'COPY version.json /app/version.json',
-        'ENTRYPOINT ["/websocktunnel"]',
-      ].join('\n'));
-      const command = [
-        'docker', 'build',
-        '--no-cache',
-        '--progress', 'plain',
-        '--tag', tag,
-        contextDir,
-      ];
+      fs.writeFileSync(
+        dockerfile,
+        [
+          'FROM scratch',
+          'COPY websocktunnel /websocktunnel',
+          'COPY version.json /app/version.json',
+          'ENTRYPOINT ["/websocktunnel"]',
+        ].join('\n'),
+      );
+      const command = ['docker', 'build', '--no-cache', '--progress', 'plain', '--tag', tag, contextDir];
       await execCommand({
         command,
         dir: REPO_ROOT,
@@ -153,9 +145,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'generic-worker-image',
       'livelog-artifacts',
     ],
-    provides: [
-      'github-release',
-    ],
+    provides: ['github-release'],
     run: async (requirements, utils) => {
       const octokit = new Octokit({ auth: `token ${credentials.ghToken}` });
       const artifactsDir = requirements['clean-artifacts-dir'];
@@ -177,7 +167,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         .concat(requirements['worker-runner-artifacts'])
         .concat(requirements['livelog-artifacts'])
         .concat(requirements['taskcluster-proxy-artifacts'])
-        .map(name => ({ name, contentType: 'application/octet-stream' }));
+        .map((name) => ({ name, contentType: 'application/octet-stream' }));
       for (const { name, contentType } of files) {
         utils.status({ message: `Upload Release asset ${name}` });
         const data = await readFile(path.join(artifactsDir, name));
@@ -200,7 +190,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
             if (!retries) {
               throw err;
             }
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             utils.status({ message: `Upload release asset ${name} - retrying after error` });
             continue;
           }
@@ -219,9 +209,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     requires: [
       'github-release', // to make sure the release finishes first..
     ],
-    provides: [
-      `publish-clients/client`,
-    ],
+    provides: [`publish-clients/client`],
     run: async (_requirements, utils) => {
       if (cmdOptions.staging || !cmdOptions.push) {
         return utils.skip();
@@ -231,7 +219,8 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         dir: path.join(REPO_ROOT, 'clients/client'),
         apiToken: credentials.npmToken,
         logfile: path.join(logsDir, `publish-clients-client.log`),
-        utils });
+        utils,
+      });
     },
   });
 
@@ -240,9 +229,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     requires: [
       'github-release', // to make sure the release finishes first..
     ],
-    provides: [
-      `publish-clients/client-web`,
-    ],
+    provides: [`publish-clients/client-web`],
     run: async (_requirements, utils) => {
       const dir = path.join(REPO_ROOT, 'clients/client-web');
 
@@ -261,7 +248,8 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         dir,
         apiToken: credentials.npmToken,
         logfile: path.join(logsDir, `publish-clients-client-web.log`),
-        utils });
+        utils,
+      });
     },
   });
 
@@ -270,9 +258,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     requires: [
       'github-release', // to make sure the release finishes first..
     ],
-    provides: [
-      `publish-clients/client-py`,
-    ],
+    provides: [`publish-clients/client-py`],
     run: async (_requirements, utils) => {
       if (cmdOptions.staging || !cmdOptions.push) {
         return utils.skip();
@@ -283,7 +269,8 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         username: credentials.pypiUsername,
         password: credentials.pypiPassword,
         logfile: path.join(logsDir, 'publish-client-py.log'),
-        utils });
+        utils,
+      });
     },
   });
 
@@ -292,9 +279,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     requires: [
       'github-release', // to make sure the release finishes first..
     ],
-    provides: [
-      `publish-clients/client-rust`,
-    ],
+    provides: [`publish-clients/client-rust`],
     run: async (_requirements, utils) => {
       // upload each of the individual crates, in dependency order; note that
       // integration-tests does not get published!
@@ -304,7 +289,8 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
           token: credentials.cratesioToken,
           push: cmdOptions.push && !cmdOptions.staging,
           logfile: path.join(logsDir, `publish-client-${dir}-rust.log`),
-          utils });
+          utils,
+        });
       }
     },
   });
@@ -320,9 +306,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       'publish-clients/client-py',
       'publish-clients/client-rust',
     ],
-    provides: [
-      'target-publish',
-    ],
+    provides: ['target-publish'],
     run: async (requirements, _utils) => {
       return {
         'target-publish': [

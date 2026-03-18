@@ -14,7 +14,7 @@ import username from '../../utils/username';
 
 @withAuth
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   avatar: {
     backgroundColor: theme.palette.secondary.main,
   },
@@ -40,14 +40,7 @@ import username from '../../utils/username';
 }))
 export default class UserMenuList extends Component {
   render() {
-    const {
-      classes,
-      user,
-      signInDialogOpen,
-      onSignInDialogOpen,
-      onSignInDialogClose,
-      onMenuClick,
-    } = this.props;
+    const { classes, user, signInDialogOpen, onSignInDialogOpen, onSignInDialogClose, onMenuClick } = this.props;
     const avatarSrc = getPictureFromUser(user);
 
     if (!user) {
@@ -59,7 +52,8 @@ export default class UserMenuList extends Component {
               aria-haspopup="true"
               aria-controls="user-menu"
               aria-label="user menu"
-              onClick={onSignInDialogOpen}>
+              onClick={onSignInDialogOpen}
+            >
               <ListItemIcon className={classes.icon}>
                 <AccountCircleIcon />
               </ListItemIcon>
@@ -88,7 +82,8 @@ export default class UserMenuList extends Component {
             aria-haspopup="true"
             aria-controls="user-menu"
             aria-label="user menu"
-            onClick={onMenuClick}>
+            onClick={onMenuClick}
+          >
             {avatarSrc ? (
               <Avatar alt={profileName} src={avatarSrc} />
             ) : (

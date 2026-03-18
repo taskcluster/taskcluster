@@ -9,8 +9,6 @@ export default class Artifacts {
       this.runId = runId;
     }
 
-    this.items = artifacts.map(
-      artifact => new Artifact(taskId, artifact, runId),
-    );
+    this.items = artifacts.map((artifact) => new Artifact(taskId, artifact, runId));
   }
 }

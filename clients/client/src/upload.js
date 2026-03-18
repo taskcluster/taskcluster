@@ -24,11 +24,11 @@ const putUrl = async ({ streamFactory, contentLength, uploadMethod, retryCfg }) 
   });
 };
 
-const readFullStream = stream => {
+const readFullStream = (stream) => {
   const chunks = [];
   return new Promise((accept, reject) => {
-    stream.on('data', chunk => chunks.push(chunk));
-    stream.on('error', err => reject(err));
+    stream.on('data', (chunk) => chunks.push(chunk));
+    stream.on('error', (err) => reject(err));
     stream.on('end', () => accept(Buffer.concat(chunks)));
   });
 };
@@ -90,7 +90,7 @@ export const upload = async ({
   } else if (res.uploadMethod.putUrl) {
     await putUrl({ streamFactory: hashStreamFactory, contentLength, uploadMethod: res.uploadMethod, retryCfg });
   } else {
-    throw new Error("Could not negotiate an upload method");
+    throw new Error('Could not negotiate an upload method');
   }
 
   const hashes = hashStream.hashes(contentLength);

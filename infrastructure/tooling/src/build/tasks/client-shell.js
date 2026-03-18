@@ -8,13 +8,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: ['client-shell-artifacts'],
     run: async (requirements, utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
-      const goreleaserCmd = [
-        'go',
-        'tool',
-        'goreleaser',
-        'release',
-        '--clean',
-      ];
+      const goreleaserCmd = ['go', 'tool', 'goreleaser', 'release', '--clean'];
 
       if (cmdOptions.staging || !cmdOptions.push) {
         // --snapshot will generate an unversioned snapshot release,
@@ -45,15 +39,15 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         utils,
       });
 
-      const osarch = 'linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64 freebsd/amd64 freebsd/arm64';
-      const artifacts = osarch.split(' ')
-        .map(osarch => {
-          const [os, arch] = osarch.split('/');
-          if (os === 'windows') {
-            return `taskcluster-${os}-${arch}.zip`;
-          }
-          return `taskcluster-${os}-${arch}.tar.gz`;
-        });
+      const osarch =
+        'linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64 freebsd/amd64 freebsd/arm64';
+      const artifacts = osarch.split(' ').map((osarch) => {
+        const [os, arch] = osarch.split('/');
+        if (os === 'windows') {
+          return `taskcluster-${os}-${arch}.zip`;
+        }
+        return `taskcluster-${os}-${arch}.tar.gz`;
+      });
 
       return {
         'client-shell-artifacts': artifacts,
@@ -63,18 +57,14 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Clients Complete',
-    requires: [
-      'client-shell-artifacts',
-    ],
-    provides: [
-      'target-client-shell',
-    ],
+    requires: ['client-shell-artifacts'],
+    provides: ['target-client-shell'],
     run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {
         'target-client-shell': [
           'Client-Shell artifacts:',
-          ...requirements['client-shell-artifacts'].map(a => ` - ${artifactsDir}/${a}`),
+          ...requirements['client-shell-artifacts'].map((a) => ` - ${artifactsDir}/${a}`),
         ].join('\n'),
       };
     },

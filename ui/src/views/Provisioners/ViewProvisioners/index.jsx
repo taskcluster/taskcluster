@@ -16,14 +16,10 @@ export default class ViewProvisioners extends Component {
     } = this.props;
 
     return (
-      <Dashboard
-        title="Workers"
-        helpView={<HelpView description={description} />}>
+      <Dashboard title="Workers" helpView={<HelpView description={description} />}>
         {loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
-        {provisioners && (
-          <ProvisionerDetailsTable provisioners={provisioners.edges} />
-        )}
+        {provisioners && <ProvisionerDetailsTable provisioners={provisioners.edges} />}
       </Dashboard>
     );
   }

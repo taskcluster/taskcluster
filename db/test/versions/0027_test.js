@@ -1,17 +1,16 @@
-
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
 // Since we don't migrate data from previous version, no need for tests for
 // validating data migration.
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   helper.withDbForVersion();
 
-  test('github_access_tokens table created / removed on upgrade and downgrade', async function() {
+  test('github_access_tokens table created / removed on upgrade and downgrade', async function () {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 

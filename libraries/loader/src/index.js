@@ -18,11 +18,11 @@ function validateComponent(def, name) {
   }
   // If requires is defined, then we check that it's an array of strings
   if (def.requires) {
-    if (!(def.requires instanceof Array)) {
+    if (!Array.isArray(def.requires)) {
       throw new Error(`${e} if present, requires must be array`);
     }
     // Check that all entries in def.requires are strings
-    if (!def.requires.every(entry => typeof entry === 'string')) {
+    if (!def.requires.every((entry) => typeof entry === 'string')) {
       throw new Error(`${e} all items in requires must be strings`);
     }
   }
@@ -34,15 +34,17 @@ function validateComponent(def, name) {
  */
 function loader(componentDirectory, virtualComponents = {}) {
   assert(typeof componentDirectory === 'object');
-  if (virtualComponents instanceof Array) {
+  if (Array.isArray(virtualComponents)) {
     virtualComponents = virtualComponents.reduce((acc, k) => {
       acc[k] = null;
       return acc;
     }, {});
   }
   const virtualKeys = Object.keys(virtualComponents);
-  assert(Object.keys(componentDirectory).every(k => !virtualKeys.includes(k)),
-    'virtual keys must not have definitions in the loader');
+  assert(
+    Object.keys(componentDirectory).every((k) => !virtualKeys.includes(k)),
+    'virtual keys must not have definitions in the loader',
+  );
   componentDirectory = Object.assign({}, componentDirectory);
 
   // Check for undefined components
@@ -65,7 +67,7 @@ function loader(componentDirectory, virtualComponents = {}) {
   }
   tsort.sort();
 
-  const load = function(target, options = {}) {
+  const load = function (target, options = {}) {
     options = Object.assign({}, options);
 
     if (typeof target !== 'string') {
@@ -100,7 +102,7 @@ function loader(componentDirectory, virtualComponents = {}) {
         // Initialize component, this won't cause an infinite loop because
         // we've already check that the componentDirectory is a DAG
         const requires = def.requires || [];
-        return loaded[target] = Promise.all(requires.map(recursiveLoad)).then(deps => {
+        return (loaded[target] = Promise.all(requires.map(recursiveLoad)).then((deps) => {
           const ctx = {};
           for (let i = 0; i < deps.length; i++) {
             ctx[def.requires[i]] = deps[i];
@@ -111,19 +113,19 @@ function loader(componentDirectory, virtualComponents = {}) {
             } catch (err) {
               reject(err);
             }
-          }).catch(function(err) {
+          }).catch(function (err) {
             debug(`error while loading component '${target}': ${err}`);
             throw err;
           });
-        });
+        }));
       }
       return loaded[target];
     }
     return recursiveLoad(target);
   };
 
-  load.crashOnError = function(target) {
-    load(target).catch(err => {
+  load.crashOnError = function (target) {
+    load(target).catch((err) => {
       console.log(err.stack);
       process.exit(1);
     });

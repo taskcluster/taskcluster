@@ -9,16 +9,14 @@ import notificationsQuery from './denylist.graphql';
 import { VIEW_DENYLIST_PAGE_SIZE } from '../../../utils/constants';
 
 @graphql(notificationsQuery, {
-  options: props => ({
+  options: (props) => ({
     fetchPolicy: 'network-only',
     variables: {
       notificationsConnection: {
         limit: VIEW_DENYLIST_PAGE_SIZE,
       },
       filter: {
-        ...(props.searchTerm
-          ? { notificationAddress: { $regex: props.searchTerm } }
-          : null),
+        ...(props.searchTerm ? { notificationAddress: { $regex: props.searchTerm } } : null),
       },
     },
   }),
@@ -47,23 +45,14 @@ export default class Denylist extends PureComponent {
           previousCursor,
         },
         filter: {
-          ...(searchTerm
-            ? { notificationAddress: { $regex: searchTerm } }
-            : null),
+          ...(searchTerm ? { notificationAddress: { $regex: searchTerm } } : null),
         },
       },
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.listDenylistAddresses;
 
-        return dotProp.set(
-          previousResult,
-          'listDenylistAddresses',
-          listDenylistAddresses =>
-            dotProp.set(
-              dotProp.set(listDenylistAddresses, 'edges', edges),
-              'pageInfo',
-              pageInfo
-            )
+        return dotProp.set(previousResult, 'listDenylistAddresses', (listDenylistAddresses) =>
+          dotProp.set(dotProp.set(listDenylistAddresses, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
@@ -79,10 +68,7 @@ export default class Denylist extends PureComponent {
         {loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
         {listDenylistAddresses && (
-          <DenylistTable
-            onPageChange={this.handlePageChange}
-            notificationsConnection={listDenylistAddresses}
-          />
+          <DenylistTable onPageChange={this.handlePageChange} notificationsConnection={listDenylistAddresses} />
         )}
       </Fragment>
     );

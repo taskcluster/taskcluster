@@ -19,28 +19,28 @@ input PageConnection {
 
 # Every new edge implementation needs to declare its Node type here :(
 union Node =
-  Artifact |
-  Task |
-  Provisioner |
-  WorkerType |
-  Worker |
-  WorkerCompact |
-  WMWorker |
-  Namespace |
-  IndexedTask |
-  CachePurge |
-  SecretListItem |
-  Client |
-  RoleCompact |
-  NotificationAddress |
-  WorkerManagerWorkerPoolSummary |
-  WorkerManagerProvider |
-  WorkerManagerError |
-  HookLastFire |
-  PendingTask |
-  ClaimedTask |
-  WorkerPoolLaunchConfig |
-  WorkerPoolLaunchConfigStats
+  | Artifact
+  | Task
+  | Provisioner
+  | WorkerType
+  | Worker
+  | WorkerCompact
+  | WMWorker
+  | Namespace
+  | IndexedTask
+  | CachePurge
+  | SecretListItem
+  | Client
+  | RoleCompact
+  | NotificationAddress
+  | WorkerManagerWorkerPoolSummary
+  | WorkerManagerProvider
+  | WorkerManagerError
+  | HookLastFire
+  | PendingTask
+  | ClaimedTask
+  | WorkerPoolLaunchConfig
+  | WorkerPoolLaunchConfigStats
 
 interface Edge {
   cursor: String

@@ -24,21 +24,21 @@ import path from 'node:path';
  *   basePath:      path.join(__dirname, 'validate')  // basePath test cases
  * }
  */
-const schemas = function(options) {
+const schemas = function (options) {
   // Validate options
   assert(options.schemasetOptions, 'Options must be given for validator');
-  assert(options.cases instanceof Array, 'Array of cases must be given');
+  assert(Array.isArray(options.cases), 'Array of cases must be given');
   assert(options.serviceName);
 
   let validate;
-  setup(async function() {
+  setup(async function () {
     const schemaset = new SchemaSet(options.schemasetOptions);
     validate = await schemaset.validator(libUrls.testRootUrl());
   });
 
   // Create test cases
-  options.cases.forEach(function(testCase) {
-    test(testCase.path, function() {
+  options.cases.forEach(function (testCase) {
+    test(testCase.path, function () {
       // Load test data
       let filePath = testCase.path;
       // Prefix with basePath if a basePath is given
@@ -59,11 +59,9 @@ const schemas = function(options) {
         if (error !== null) {
           debug('Errors: %j', error);
         }
-        assert(error === null,
-          `Schema doesn\'t match test for ${testCase.path}: ${error}`);
+        assert(error === null, `Schema doesn\'t match test for ${testCase.path}: ${error}`);
       } else {
-        assert(error !== null,
-          `Schema matches unexpectedly test for ${testCase.path}`);
+        assert(error !== null, `Schema matches unexpectedly test for ${testCase.path}`);
       }
     });
   });

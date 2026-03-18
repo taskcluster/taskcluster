@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Paper, Typography } from '@material-ui/core';
 
-const getLength = value => String(value).length;
+const getLength = (value) => String(value).length;
 const MiniSvgGraph = ({ data, width = 130, height = 72 }) => {
   const [path, setPath] = useState('');
   const [max, setMax] = useState(0);
@@ -35,20 +35,10 @@ const MiniSvgGraph = ({ data, width = 130, height = 72 }) => {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <text
-        x={width + 18}
-        y={height - 5}
-        fill="#ff8877"
-        fontSize="10px"
-        textAnchor="end">
+      <text x={width + 18} y={height - 5} fill="#ff8877" fontSize="10px" textAnchor="end">
         {min}
       </text>
-      <text
-        x={width + 18}
-        y={8}
-        fill="#ff8877"
-        fontSize="10px"
-        textAnchor="end">
+      <text x={width + 18} y={8} fill="#ff8877" fontSize="10px" textAnchor="end">
         {max}
       </text>
     </svg>
@@ -90,18 +80,13 @@ export const StatusItem = ({
         )}
       </Typography>
       <abbr title={error}>
-        {type === 'graph' && (
-          <MiniSvgGraph
-            data={value}
-            className={classValue}
-            height={graphHeight}
-          />
-        )}
+        {type === 'graph' && <MiniSvgGraph data={value} className={classValue} height={graphHeight} />}
         {(!type || type !== 'graph') && (
           <Typography
             className={classValue}
             style={altColor ? { color: '#51e9f1' } : {}}
-            variant={getLength(value) < 10 ? valueVariantMax : valueVariantMin}>
+            variant={getLength(value) < 10 ? valueVariantMax : valueVariantMin}
+          >
             {value}
           </Typography>
         )}

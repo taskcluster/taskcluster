@@ -16,7 +16,7 @@ const load = testing.stickyLoader(loadMain);
 const helper = { load, rootUrl, suiteName };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async function () {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -40,7 +40,7 @@ helper.withServer = (_mock, skipping) => {
   let webServer;
   const cachePurgeCache = {};
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -72,11 +72,11 @@ helper.withServer = (_mock, skipping) => {
     webServer = await load('server');
   });
 
-  setup(function() {
-    Object.keys(cachePurgeCache).forEach(k => delete cachePurgeCache[k]);
+  setup(function () {
+    Object.keys(cachePurgeCache).forEach((k) => delete cachePurgeCache[k]);
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (skipping()) {
       return;
     }

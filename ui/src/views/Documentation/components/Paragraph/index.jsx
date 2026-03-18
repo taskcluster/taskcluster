@@ -1,8 +1,7 @@
-
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 
-const styles = theme => ({
+const styles = (theme) => ({
   text: {
     marginBottom: theme.spacing(2),
   },

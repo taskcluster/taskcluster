@@ -49,7 +49,8 @@ export class References {
     return new References({
       rootUrl: undefined,
       references,
-      schemas });
+      schemas,
+    });
   }
 
   /**
@@ -94,7 +95,7 @@ export class References {
       });
     }
 
-    const referenceFilename = content => {
+    const referenceFilename = (content) => {
       const serviceName = content.serviceName;
       const apiVersion = content.apiVersion || 'v1';
       // try to find the schema, but make up a name if this fails (it will get caught
@@ -106,7 +107,7 @@ export class References {
 
     return new References({
       schemas,
-      references: references.map(content => ({ content, filename: referenceFilename(content) })),
+      references: references.map((content) => ({ content, filename: referenceFilename(content) })),
     });
   }
 
@@ -213,8 +214,7 @@ export class References {
     }
 
     if (!this._schemasById) {
-      this._schemasById = this.schemas.reduce(
-        (schemas, { content }) => schemas.set(content.$id, content), new Map());
+      this._schemasById = this.schemas.reduce((schemas, { content }) => schemas.set(content.$id, content), new Map());
     }
 
     return this._schemasById.get($id);
@@ -229,7 +229,7 @@ export class References {
     }
 
     const rootUrlPrefix = new RegExp(`^${regexEscape(this.rootUrl)}`);
-    const withoutRootUrl = uri => uri.replace(rootUrlPrefix, '');
+    const withoutRootUrl = (uri) => uri.replace(rootUrlPrefix, '');
 
     return new References({
       rootUrl: undefined,
@@ -253,7 +253,7 @@ export class References {
       return this.asAbstract().asAbsolute(rootUrl);
     }
 
-    const withRootUrl = uri => uri[0] === '/' ? rootUrl + uri : uri;
+    const withRootUrl = (uri) => (uri[0] === '/' ? rootUrl + uri : uri);
 
     return new References({
       rootUrl,
@@ -263,23 +263,21 @@ export class References {
 
   _withRewrittenUrls(rewrite) {
     return {
-      references:
-        this.references.map(({ content, filename }) => ({
-          content: {
-            ...content,
-            $schema: content.$schema && rewrite(content.$schema),
-          },
-          filename,
-        })),
-      schemas:
-        this.schemas.map(({ content, filename }) => ({
-          content: {
-            ...content,
-            $schema: content.$schema && rewrite(content.$schema),
-            $id: content.$id && rewrite(content.$id),
-          },
-          filename,
-        })),
+      references: this.references.map(({ content, filename }) => ({
+        content: {
+          ...content,
+          $schema: content.$schema && rewrite(content.$schema),
+        },
+        filename,
+      })),
+      schemas: this.schemas.map(({ content, filename }) => ({
+        content: {
+          ...content,
+          $schema: content.$schema && rewrite(content.$schema),
+          $id: content.$id && rewrite(content.$id),
+        },
+        filename,
+      })),
     };
   }
 }

@@ -2,7 +2,7 @@ import { Component } from 'react';
 
 // Ask the user for confirmation to leave the page.
 // This is useful to use when a page has a form.
-export default WrappedComponent =>
+export default (WrappedComponent) =>
   class withAlertOnClose extends Component {
     componentDidMount = () => {
       // A generic string not under the control of the web page
@@ -15,7 +15,7 @@ export default WrappedComponent =>
       window.removeEventListener('beforeunload', this.keepOnPage);
     };
 
-    keepOnPage = e => {
+    keepOnPage = (e) => {
       e.preventDefault();
       e.returnValue = true;
     };

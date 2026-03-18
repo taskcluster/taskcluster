@@ -8,11 +8,7 @@ const builder = new APIBuilder({
   ].join('\n'),
   serviceName: 'notify',
   apiVersion: 'v1',
-  context: [
-    'notifier',
-    'denier',
-    'db',
-  ],
+  context: ['notifier', 'denier', 'db'],
   errorCodes: {
     DenylistedAddress: 400,
   },
@@ -20,234 +16,255 @@ const builder = new APIBuilder({
 
 export default builder;
 
-builder.declare({
-  method: 'post',
-  route: '/email',
-  name: 'email',
-  scopes: 'notify:email:<address>',
-  input: 'email-request.yml',
-  title: 'Send an Email',
-  category: 'Notifications',
-  description: [
-    'Send an email to `address`. The content is markdown and will be rendered',
-    'to HTML, but both the HTML and raw markdown text will be sent in the',
-    'email. If a link is included, it will be rendered to a nice button in the',
-    'HTML version of the email',
-    '',
-    'In case when duplicate message has been detected and no email was sent,',
-    'this endpoint will return 204 status code.',
-  ].join('\n'),
-}, async function(req, res) {
-  await req.authorize(req.body);
+builder.declare(
+  {
+    method: 'post',
+    route: '/email',
+    name: 'email',
+    scopes: 'notify:email:<address>',
+    input: 'email-request.yml',
+    title: 'Send an Email',
+    category: 'Notifications',
+    description: [
+      'Send an email to `address`. The content is markdown and will be rendered',
+      'to HTML, but both the HTML and raw markdown text will be sent in the',
+      'email. If a link is included, it will be rendered to a nice button in the',
+      'HTML version of the email',
+      '',
+      'In case when duplicate message has been detected and no email was sent,',
+      'this endpoint will return 204 status code.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    await req.authorize(req.body);
 
-  if (await this.denier.isDenied('email', req.body.address)) {
-    return res.reportError('DenylistedAddress', `Email ${req.body.address} is denylisted`, {});
-  }
-
-  const result = await this.notifier.email(req.body);
-  res.sendStatus(result ? 200 : 204);
-});
-
-builder.declare({
-  method: 'post',
-  route: '/pulse',
-  name: 'pulse',
-  scopes: 'notify:pulse:<routingKey>',
-  category: 'Notifications',
-  input: 'pulse-request.yml',
-  title: 'Publish a Pulse Message',
-  description: [
-    'Publish a message on pulse with the given `routingKey`.',
-    '',
-    'Endpoint will return 204 when duplicate message has been detected',
-  ].join('\n'),
-}, async function(req, res) {
-  await req.authorize({ routingKey: req.body.routingKey });
-
-  if (await this.denier.isDenied('pulse', req.body.routingKey)) {
-    return res.reportError('DenylistedAddress', `Pulse routing key pattern ${req.body.routingKey} is denylisted`, {});
-  }
-
-  const result = await this.notifier.pulse(req.body);
-  res.sendStatus(result ? 200 : 204);
-});
-
-builder.declare({
-  method: 'post',
-  route: '/matrix',
-  name: 'matrix',
-  scopes: 'notify:matrix-room:<roomId>',
-  input: 'matrix-request.yml',
-  title: 'Post Matrix Message',
-  category: 'Notifications',
-  description: [
-    'Post a message to a room in Matrix. Optionally includes formatted message.',
-    '',
-    'The `roomId` in the scopes is a fully formed `roomId` with leading `!` such',
-    'as `!foo:bar.com`.',
-    '',
-    'Note that the matrix client used by taskcluster must be invited to a room before',
-    'it can post there!',
-    '',
-    'In case when duplicate message has been detected and no message was sent,',
-    'this endpoint will return 204 status code.',
-  ].join('\n'),
-}, async function(req, res) {
-  await req.authorize({
-    roomId: req.body.roomId,
-  });
-
-  if (await this.denier.isDenied('matrix-room', req.body.roomId)) {
-    return res.reportError('DenylistedAddress', `Matrix room ${req.body.roomId} is denylisted`, {});
-  }
-
-  try {
-    const result = await this.notifier.matrix(req.body);
-    res.sendStatus(result ? 200 : 204);
-  } catch (err) {
-    // This just means that we haven't been invited to the room yet
-    if (err.errcode === 'M_FORBIDDEN') {
-      res.reportError('InputError', `The taskcluster matrix client must be invited to ${req.body.roomId}`, {});
+    if (await this.denier.isDenied('email', req.body.address)) {
+      return res.reportError('DenylistedAddress', `Email ${req.body.address} is denylisted`, {});
     }
-    throw err;
-  }
-});
 
-builder.declare({
-  method: 'post',
-  route: '/slack',
-  name: 'slack',
-  scopes: 'notify:slack-channel:<channelId>',
-  input: 'slack-request.yml',
-  title: 'Post Slack Message',
-  category: 'Notifications',
-  description: [
-    'Post a message to a Slack channel.',
-    '',
-    'The `channelId` in the scopes is a Slack channel ID, starting with a capital C.',
-    '',
-    'The Slack app can post into public channels by default but will need to be added',
-    'to private channels before it can post messages there.',
-    '',
-    'In case when duplicate message has been detected and no message was sent,',
-    'this endpoint will return 204 status code.',
-  ].join('\n'),
-}, async function(req, res) {
-  await req.authorize({
-    channelId: req.body.channelId,
-  });
+    const result = await this.notifier.email(req.body);
+    res.sendStatus(result ? 200 : 204);
+  },
+);
 
-  if (await this.denier.isDenied('slack-channel', req.body.channelId)) {
-    return res.reportError('DenylistedAddress', `Slack channel ${req.body.channelId} is denylisted`, {});
-  }
+builder.declare(
+  {
+    method: 'post',
+    route: '/pulse',
+    name: 'pulse',
+    scopes: 'notify:pulse:<routingKey>',
+    category: 'Notifications',
+    input: 'pulse-request.yml',
+    title: 'Publish a Pulse Message',
+    description: [
+      'Publish a message on pulse with the given `routingKey`.',
+      '',
+      'Endpoint will return 204 when duplicate message has been detected',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    await req.authorize({ routingKey: req.body.routingKey });
 
-  const result = await this.notifier.slack(req.body);
-  res.sendStatus(result ? 200 : 204);
-});
+    if (await this.denier.isDenied('pulse', req.body.routingKey)) {
+      return res.reportError('DenylistedAddress', `Pulse routing key pattern ${req.body.routingKey} is denylisted`, {});
+    }
 
-builder.declare({
-  method: 'post',
-  route: '/denylist/add',
-  name: 'addDenylistAddress',
-  scopes: 'notify:manage-denylist',
-  input: 'notification-address.yml',
-  title: 'Denylist Given Address',
-  category: 'Denylist',
-  description: [
-    'Add the given address to the notification denylist. Addresses in the denylist will be ignored',
-    'by the notification service.',
-  ].join('\n'),
-}, async function(req, res) {
-  // The address to denylist
-  const address = {
-    notificationType: req.body.notificationType,
-    notificationAddress: req.body.notificationAddress,
-  };
+    const result = await this.notifier.pulse(req.body);
+    res.sendStatus(result ? 200 : 204);
+  },
+);
 
-  await req.authorize(req.body);
-  await this.db.fns.add_denylist_address(address.notificationType, address.notificationAddress);
-  res.sendStatus(200);
-});
+builder.declare(
+  {
+    method: 'post',
+    route: '/matrix',
+    name: 'matrix',
+    scopes: 'notify:matrix-room:<roomId>',
+    input: 'matrix-request.yml',
+    title: 'Post Matrix Message',
+    category: 'Notifications',
+    description: [
+      'Post a message to a room in Matrix. Optionally includes formatted message.',
+      '',
+      'The `roomId` in the scopes is a fully formed `roomId` with leading `!` such',
+      'as `!foo:bar.com`.',
+      '',
+      'Note that the matrix client used by taskcluster must be invited to a room before',
+      'it can post there!',
+      '',
+      'In case when duplicate message has been detected and no message was sent,',
+      'this endpoint will return 204 status code.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    await req.authorize({
+      roomId: req.body.roomId,
+    });
 
-builder.declare({
-  method: 'delete',
-  route: '/denylist/delete',
-  name: 'deleteDenylistAddress',
-  scopes: 'notify:manage-denylist',
-  input: 'notification-address.yml',
-  category: 'Denylist',
-  title: 'Delete Denylisted Address',
-  description: [
-    'Delete the specified address from the notification denylist.',
-  ].join('\n'),
-}, async function(req, res) {
-  // The address to remove from the denylist
-  const address = {
-    notificationType: req.body.notificationType,
-    notificationAddress: req.body.notificationAddress,
-  };
+    if (await this.denier.isDenied('matrix-room', req.body.roomId)) {
+      return res.reportError('DenylistedAddress', `Matrix room ${req.body.roomId} is denylisted`, {});
+    }
 
-  await req.authorize(req.body);
-  await this.db.fns.delete_denylist_address(address.notificationType, address.notificationAddress);
-  res.sendStatus(200);
-});
+    try {
+      const result = await this.notifier.matrix(req.body);
+      res.sendStatus(result ? 200 : 204);
+    } catch (err) {
+      // This just means that we haven't been invited to the room yet
+      if (err.errcode === 'M_FORBIDDEN') {
+        res.reportError('InputError', `The taskcluster matrix client must be invited to ${req.body.roomId}`, {});
+      }
+      throw err;
+    }
+  },
+);
 
-builder.declare({
-  method: 'get',
-  route: '/denylist/list',
-  name: 'listDenylist',
-  scopes: 'notify:manage-denylist',
-  output: 'notification-address-list.yml',
-  title: 'List Denylisted Notifications',
-  category: 'Denylist',
-  query: paginateResults.query,
-  description: [
-    'Lists all the denylisted addresses.',
-    '',
-    'By default this end-point will try to return up to 1000 addresses in one',
-    'request. But it **may return less**, even if more tasks are available.',
-    'It may also return a `continuationToken` even though there are no more',
-    'results. However, you can only be sure to have seen all results if you',
-    'keep calling `list` with the last `continuationToken` until you',
-    'get a result without a `continuationToken`.',
-    '',
-    'If you are not interested in listing all the members at once, you may',
-    'use the query-string option `limit` to return fewer.',
-  ].join('\n'),
-}, async function(req, res) {
+builder.declare(
+  {
+    method: 'post',
+    route: '/slack',
+    name: 'slack',
+    scopes: 'notify:slack-channel:<channelId>',
+    input: 'slack-request.yml',
+    title: 'Post Slack Message',
+    category: 'Notifications',
+    description: [
+      'Post a message to a Slack channel.',
+      '',
+      'The `channelId` in the scopes is a Slack channel ID, starting with a capital C.',
+      '',
+      'The Slack app can post into public channels by default but will need to be added',
+      'to private channels before it can post messages there.',
+      '',
+      'In case when duplicate message has been detected and no message was sent,',
+      'this endpoint will return 204 status code.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    await req.authorize({
+      channelId: req.body.channelId,
+    });
 
-  await req.authorize(req.body);
-  const { continuationToken, rows } = await paginateResults({
-    query: req.query,
-    fetch: (size, offset) => this.db.fns.all_denylist_addresses(size, offset),
-  });
+    if (await this.denier.isDenied('slack-channel', req.body.channelId)) {
+      return res.reportError('DenylistedAddress', `Slack channel ${req.body.channelId} is denylisted`, {});
+    }
 
-  return res.reply({
-    addresses: rows.map(address => {
-      return {
-        notificationType: address.notification_type,
-        notificationAddress: address.notification_address,
-      };
-    }),
-    continuationToken: continuationToken || undefined,
-  });
-});
+    const result = await this.notifier.slack(req.body);
+    res.sendStatus(result ? 200 : 204);
+  },
+);
 
-builder.declare({
-  method: 'get',
-  route: '/__heartbeat__',
-  name: 'heartbeat',
-  scopes: null,
-  category: 'Monitoring',
-  stability: 'stable',
-  title: 'Heartbeat',
-  description: [
-    'Respond with a service heartbeat.',
-    '',
-    'This endpoint is used to check on backing services this service',
-    'depends on.',
-  ].join('\n'),
-}, function(_req, res) {
-  // TODO: add implementation
-  res.reply({});
-});
+builder.declare(
+  {
+    method: 'post',
+    route: '/denylist/add',
+    name: 'addDenylistAddress',
+    scopes: 'notify:manage-denylist',
+    input: 'notification-address.yml',
+    title: 'Denylist Given Address',
+    category: 'Denylist',
+    description: [
+      'Add the given address to the notification denylist. Addresses in the denylist will be ignored',
+      'by the notification service.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    // The address to denylist
+    const address = {
+      notificationType: req.body.notificationType,
+      notificationAddress: req.body.notificationAddress,
+    };
+
+    await req.authorize(req.body);
+    await this.db.fns.add_denylist_address(address.notificationType, address.notificationAddress);
+    res.sendStatus(200);
+  },
+);
+
+builder.declare(
+  {
+    method: 'delete',
+    route: '/denylist/delete',
+    name: 'deleteDenylistAddress',
+    scopes: 'notify:manage-denylist',
+    input: 'notification-address.yml',
+    category: 'Denylist',
+    title: 'Delete Denylisted Address',
+    description: ['Delete the specified address from the notification denylist.'].join('\n'),
+  },
+  async function (req, res) {
+    // The address to remove from the denylist
+    const address = {
+      notificationType: req.body.notificationType,
+      notificationAddress: req.body.notificationAddress,
+    };
+
+    await req.authorize(req.body);
+    await this.db.fns.delete_denylist_address(address.notificationType, address.notificationAddress);
+    res.sendStatus(200);
+  },
+);
+
+builder.declare(
+  {
+    method: 'get',
+    route: '/denylist/list',
+    name: 'listDenylist',
+    scopes: 'notify:manage-denylist',
+    output: 'notification-address-list.yml',
+    title: 'List Denylisted Notifications',
+    category: 'Denylist',
+    query: paginateResults.query,
+    description: [
+      'Lists all the denylisted addresses.',
+      '',
+      'By default this end-point will try to return up to 1000 addresses in one',
+      'request. But it **may return less**, even if more tasks are available.',
+      'It may also return a `continuationToken` even though there are no more',
+      'results. However, you can only be sure to have seen all results if you',
+      'keep calling `list` with the last `continuationToken` until you',
+      'get a result without a `continuationToken`.',
+      '',
+      'If you are not interested in listing all the members at once, you may',
+      'use the query-string option `limit` to return fewer.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    await req.authorize(req.body);
+    const { continuationToken, rows } = await paginateResults({
+      query: req.query,
+      fetch: (size, offset) => this.db.fns.all_denylist_addresses(size, offset),
+    });
+
+    return res.reply({
+      addresses: rows.map((address) => {
+        return {
+          notificationType: address.notification_type,
+          notificationAddress: address.notification_address,
+        };
+      }),
+      continuationToken: continuationToken || undefined,
+    });
+  },
+);
+
+builder.declare(
+  {
+    method: 'get',
+    route: '/__heartbeat__',
+    name: 'heartbeat',
+    scopes: null,
+    category: 'Monitoring',
+    stability: 'stable',
+    title: 'Heartbeat',
+    description: [
+      'Respond with a service heartbeat.',
+      '',
+      'This endpoint is used to check on backing services this service',
+      'depends on.',
+    ].join('\n'),
+  },
+  function (_req, res) {
+    // TODO: add implementation
+    res.reply({});
+  },
+);

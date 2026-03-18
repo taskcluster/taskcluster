@@ -9,7 +9,7 @@ import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { LEVELS } from '@taskcluster/lib-monitor';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -40,7 +40,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   let monitor;
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     monitor = await helper.load('monitor');
   });
 
@@ -48,7 +48,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const metrics = await monitor.manager._prometheus.metricsJson();
     const metric = metrics.find(({ name }) => name === metricName);
     assert(metric, `${metricName} metric should exist`);
-    const labelEntry = metric.values.find(v => v.labels[labelName] === labelValue);
+    const labelEntry = metric.values.find((v) => v.labels[labelName] === labelValue);
     assert(labelEntry, `${metricName} should have ${labelName}=${labelValue} label`);
     assert(labelEntry.value >= 1, `${metricName} counter should be incremented for ${labelValue}`);
   };
@@ -70,30 +70,35 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Reporting task completed');
     helper.scopes(`queue:resolve-task:${taskId}/0`);
     await helper.queue.reportCompleted(taskId, 0);
-    helper.assertPulseMessage('task-completed', m => (
-      m.payload.status.runs[0].state === 'completed' &&
-      _.isEqual(m.payload.task.tags, taskDef.tags)));
+    helper.assertPulseMessage(
+      'task-completed',
+      (m) => m.payload.status.runs[0].state === 'completed' && _.isEqual(m.payload.task.tags, taskDef.tags),
+    );
     helper.clearPulseMessages();
 
-    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-completed'), {
-      Logger: 'taskcluster.test.api',
-      Type: 'task-completed',
-      Fields: { taskId, runId: 0, v: 1 },
-      Severity: LEVELS.notice,
-    });
+    assert.deepEqual(
+      monitor.manager.messages.find(({ Type }) => Type === 'task-completed'),
+      {
+        Logger: 'taskcluster.test.api',
+        Type: 'task-completed',
+        Fields: { taskId, runId: 0, v: 1 },
+        Severity: LEVELS.notice,
+      },
+    );
 
     debug('### Reporting task completed (again)');
     await helper.queue.reportCompleted(taskId, 0);
     // idempotent, but sends the message again..
-    helper.assertPulseMessage('task-completed', m => (
-      m.payload.status.runs[0].state === 'completed' &&
-      _.isEqual(m.payload.task.tags, taskDef.tags)));
+    helper.assertPulseMessage(
+      'task-completed',
+      (m) => m.payload.status.runs[0].state === 'completed' && _.isEqual(m.payload.task.tags, taskDef.tags),
+    );
     helper.clearPulseMessages();
 
     debug('### Reporting task completed (using temp creds)');
     const queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.credentials });
     await queue.reportCompleted(taskId, 0);
-    helper.assertPulseMessage('task-completed', m => m.payload.status.runs[0].state === 'completed');
+    helper.assertPulseMessage('task-completed', (m) => m.payload.status.runs[0].state === 'completed');
     helper.clearPulseMessages();
   });
 
@@ -114,31 +119,36 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Reporting task failed');
     helper.scopes(`queue:resolve-task:${taskId}/0`);
     await helper.queue.reportFailed(taskId, 0);
-    helper.assertPulseMessage('task-failed', m => (
-      m.payload.status.runs[0].state === 'failed' &&
-      _.isEqual(m.payload.task.tags, taskDef.tags)));
+    helper.assertPulseMessage(
+      'task-failed',
+      (m) => m.payload.status.runs[0].state === 'failed' && _.isEqual(m.payload.task.tags, taskDef.tags),
+    );
     helper.clearPulseMessages();
 
-    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-failed'), {
-      Logger: 'taskcluster.test.api',
-      Type: 'task-failed',
-      Fields: { taskId, runId: 0, v: 1 },
-      Severity: LEVELS.notice,
-    });
+    assert.deepEqual(
+      monitor.manager.messages.find(({ Type }) => Type === 'task-failed'),
+      {
+        Logger: 'taskcluster.test.api',
+        Type: 'task-failed',
+        Fields: { taskId, runId: 0, v: 1 },
+        Severity: LEVELS.notice,
+      },
+    );
 
     await checkMetricExists('queue_failed_tasks', 'reasonResolved', 'failed');
 
     debug('### Reporting task failed (again)');
     await helper.queue.reportFailed(taskId, 0);
-    helper.assertPulseMessage('task-failed', m => (
-      m.payload.status.runs[0].state === 'failed' &&
-      _.isEqual(m.payload.task.tags, taskDef.tags)));
+    helper.assertPulseMessage(
+      'task-failed',
+      (m) => m.payload.status.runs[0].state === 'failed' && _.isEqual(m.payload.task.tags, taskDef.tags),
+    );
     helper.clearPulseMessages();
 
     debug('### Reporting task failed (using temp creds)');
     const queue = new helper.Queue({ rootUrl: helper.rootUrl, credentials: r1.credentials });
     await queue.reportFailed(taskId, 0);
-    helper.assertPulseMessage('task-failed', m => m.payload.status.runs[0].state === 'failed');
+    helper.assertPulseMessage('task-failed', (m) => m.payload.status.runs[0].state === 'failed');
     helper.clearPulseMessages();
   });
 
@@ -156,25 +166,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     debug('### Reporting task exception');
-    helper.scopes(
-      `queue:resolve-task:${taskId}/0`,
-      `queue:status:${taskId}`,
-    );
+    helper.scopes(`queue:resolve-task:${taskId}/0`, `queue:status:${taskId}`);
     await helper.queue.reportException(taskId, 0, {
       reason: 'malformed-payload',
     });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'malformed-payload' &&
-      _.isEqual(m.payload.task.tags, taskDef.tags)));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) =>
+        m.payload.status.runs[0].state === 'exception' &&
+        m.payload.status.runs[0].reasonResolved === 'malformed-payload' &&
+        _.isEqual(m.payload.task.tags, taskDef.tags),
+    );
     helper.clearPulseMessages();
 
-    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-exception'), {
-      Logger: 'taskcluster.test.api',
-      Type: 'task-exception',
-      Fields: { taskId, runId: 0, v: 1 },
-      Severity: LEVELS.notice,
-    });
+    assert.deepEqual(
+      monitor.manager.messages.find(({ Type }) => Type === 'task-exception'),
+      {
+        Logger: 'taskcluster.test.api',
+        Type: 'task-exception',
+        Fields: { taskId, runId: 0, v: 1 },
+        Severity: LEVELS.notice,
+      },
+    );
 
     await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'malformed-payload');
 
@@ -182,10 +195,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.reportException(taskId, 0, {
       reason: 'malformed-payload',
     });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'malformed-payload' &&
-      _.isEqual(m.payload.task.tags, taskDef.tags)));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) =>
+        m.payload.status.runs[0].state === 'exception' &&
+        m.payload.status.runs[0].reasonResolved === 'malformed-payload' &&
+        _.isEqual(m.payload.task.tags, taskDef.tags),
+    );
     helper.clearPulseMessages();
 
     debug('### Check status of task');
@@ -198,9 +214,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await queue.reportException(taskId, 0, {
       reason: 'malformed-payload',
     });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'malformed-payload'));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) =>
+        m.payload.status.runs[0].state === 'exception' &&
+        m.payload.status.runs[0].reasonResolved === 'malformed-payload',
+    );
   });
 
   test('reportException (resource-unavailable) is idempotent', async () => {
@@ -217,16 +236,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     debug('### Reporting task exception');
-    helper.scopes(
-      `queue:resolve-task:${taskId}/0`,
-      `queue:status:${taskId}`,
-    );
+    helper.scopes(`queue:resolve-task:${taskId}/0`, `queue:status:${taskId}`);
     await helper.queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
     });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'resource-unavailable'));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) =>
+        m.payload.status.runs[0].state === 'exception' &&
+        m.payload.status.runs[0].reasonResolved === 'resource-unavailable',
+    );
     helper.clearPulseMessages();
 
     await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'resource-unavailable');
@@ -235,9 +254,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
     });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'resource-unavailable'));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) =>
+        m.payload.status.runs[0].state === 'exception' &&
+        m.payload.status.runs[0].reasonResolved === 'resource-unavailable',
+    );
     helper.clearPulseMessages();
 
     debug('### Check status of task');
@@ -250,9 +272,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
     });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'resource-unavailable'));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) =>
+        m.payload.status.runs[0].state === 'exception' &&
+        m.payload.status.runs[0].reasonResolved === 'resource-unavailable',
+    );
     helper.clearPulseMessages();
   });
 
@@ -270,16 +295,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     debug('### Reporting task exception');
-    helper.scopes(
-      `queue:resolve-task:${taskId}/0`,
-      `queue:status:${taskId}`,
-    );
+    helper.scopes(`queue:resolve-task:${taskId}/0`, `queue:status:${taskId}`);
     await helper.queue.reportException(taskId, 0, {
       reason: 'internal-error',
     });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'internal-error'));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) =>
+        m.payload.status.runs[0].state === 'exception' && m.payload.status.runs[0].reasonResolved === 'internal-error',
+    );
     helper.clearPulseMessages();
 
     await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'internal-error');
@@ -288,9 +312,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.reportException(taskId, 0, {
       reason: 'internal-error',
     });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'internal-error'));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) =>
+        m.payload.status.runs[0].state === 'exception' && m.payload.status.runs[0].reasonResolved === 'internal-error',
+    );
     helper.clearPulseMessages();
 
     debug('### Check status of task');
@@ -303,13 +329,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await queue.reportException(taskId, 0, {
       reason: 'internal-error',
     });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'internal-error'));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) =>
+        m.payload.status.runs[0].state === 'exception' && m.payload.status.runs[0].reasonResolved === 'internal-error',
+    );
     helper.clearPulseMessages();
   });
 
-  test('reportException can\'t overwrite reason', async () => {
+  test("reportException can't overwrite reason", async () => {
     const taskId = slugid.v4();
 
     debug('### Creating task');
@@ -333,15 +361,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(s1.runs[0].reasonResolved).equals('malformed-payload');
 
     debug('### Reporting task exception (internal-error)');
-    await helper.queue.reportException(taskId, 0, {
-      reason: 'internal-error',
-    }).then(() => {
-      assert(false, 'Expected error');
-    }, err => {
-      if (err.statusCode !== 409) {
-        throw err;
-      }
-    });
+    await helper.queue
+      .reportException(taskId, 0, {
+        reason: 'internal-error',
+      })
+      .then(
+        () => {
+          assert(false, 'Expected error');
+        },
+        (err) => {
+          if (err.statusCode !== 409) {
+            throw err;
+          }
+        },
+      );
 
     debug('### Check status of task (again)');
     const { status: s2 } = helper.checkDates(await helper.queue.status(taskId));
@@ -378,9 +411,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assume(r1.status.runs[1].reasonCreated).equals('retry');
 
     helper.assertPulseMessage('task-exception');
-    helper.assertPulseMessage('task-pending', m => (
-      _.isEqual(m.payload.status, r1.status) &&
-      m.payload.runId === 1));
+    helper.assertPulseMessage('task-pending', (m) => _.isEqual(m.payload.status, r1.status) && m.payload.runId === 1);
     helper.clearPulseMessages();
 
     await helper.queue.reportException(taskId, 0, {
@@ -401,11 +432,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.reportException(taskId, 1, {
       reason: 'worker-shutdown',
     });
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[0].state === 'exception' &&
-      m.payload.status.runs[0].reasonResolved === 'worker-shutdown' &&
-      m.payload.status.runs[1].state === 'exception' &&
-      m.payload.status.runs[1].reasonResolved === 'worker-shutdown'));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) =>
+        m.payload.status.runs[0].state === 'exception' &&
+        m.payload.status.runs[0].reasonResolved === 'worker-shutdown' &&
+        m.payload.status.runs[1].state === 'exception' &&
+        m.payload.status.runs[1].reasonResolved === 'worker-shutdown',
+    );
   });
 
   test('reportCompleted with bad scopes', async () => {
@@ -422,16 +456,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     debug('### Reporting task completed');
-    helper.scopes(
-      'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+    helper.scopes('assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended');
+    await helper.queue.reportCompleted(taskId, 0).then(
+      function () {
+        throw new Error('Expected authentication error');
+      },
+      function (err) {
+        if (err.code !== 'InsufficientScopes') {
+          throw err;
+        }
+      },
     );
-    await helper.queue.reportCompleted(taskId, 0).then(function() {
-      throw new Error('Expected authentication error');
-    }, function(err) {
-      if (err.code !== 'InsufficientScopes') {
-        throw err;
-      }
-    });
   });
 
   test('reportCompleted with a pending task', async () => {
@@ -443,7 +478,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Reporting task completed');
     await assert.rejects(
       () => helper.queue.reportCompleted(taskId, 0),
-      err => err.statusCode === 409);
+      (err) => err.statusCode === 409,
+    );
   });
 
   test('reportException (intermittent-task) is idempotent', async () => {
@@ -474,11 +510,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.queue.reportException(taskId, 0, {
       reason: 'intermittent-task',
     });
-    helper.assertPulseMessage('task-pending', m => (
-      _.isEqual(m.payload.status, r1.status) &&
-      m.payload.runId === 1 &&
-      m.payload.status.runs[0].reasonResolved === 'intermittent-task' &&
-      m.payload.status.runs[1].reasonCreated === 'task-retry'));
+    helper.assertPulseMessage(
+      'task-pending',
+      (m) =>
+        _.isEqual(m.payload.status, r1.status) &&
+        m.payload.runId === 1 &&
+        m.payload.status.runs[0].reasonResolved === 'intermittent-task' &&
+        m.payload.status.runs[1].reasonCreated === 'task-retry',
+    );
     helper.clearPulseMessages();
 
     helper.scopes();
@@ -493,8 +532,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       reason: 'intermittent-task',
     });
 
-    helper.assertPulseMessage('task-exception', m => (
-      m.payload.status.runs[1].state === 'exception' &&
-      m.payload.status.runs.length === 2));
+    helper.assertPulseMessage(
+      'task-exception',
+      (m) => m.payload.status.runs[1].state === 'exception' && m.payload.status.runs.length === 2,
+    );
   });
 });

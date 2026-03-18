@@ -4,7 +4,7 @@ import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withServer(mock, skipping);
 
@@ -57,12 +57,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     }
     assert(!statusCode, 'did not get expected error');
-    res && Object.keys(res).forEach(key => {
-      assert.deepEqual(gotRes[key], res[key]);
-    });
+    res &&
+      Object.keys(res).forEach((key) => {
+        assert.deepEqual(gotRes[key], res[key]);
+      });
   };
 
-  test('set allowed key (twice)', async function() {
+  test('set allowed key (twice)', async function () {
     await makeApiCall({
       clientName: 'captain-write',
       apiCall: 'set',
@@ -81,7 +82,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('set disallowed key', async function() {
+  test('set disallowed key', async function () {
     await makeApiCall({
       clientName: 'captain-write',
       apiCall: 'set',
@@ -91,7 +92,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('get with only "set" scope fails to read', async function() {
+  test('get with only "set" scope fails to read', async function () {
     const client = await helper.client('captain-write');
     await client.set(SECRET_NAME, testValueFoo);
     await makeApiCall({
@@ -102,7 +103,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('get with read-only scopes reads the secret', async function() {
+  test('get with read-only scopes reads the secret', async function () {
     const client = await helper.client('captain-write');
     await client.set(SECRET_NAME, testValueFoo);
     await makeApiCall({
@@ -113,7 +114,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('get with read-only scopes reads an updated secret after set', async function() {
+  test('get with read-only scopes reads an updated secret after set', async function () {
     const client = await helper.client('captain-write');
     await client.set(SECRET_NAME, testValueFoo);
     await client.set(SECRET_NAME, testValueBar);
@@ -125,7 +126,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('remove with read-only scopes fails', async function() {
+  test('remove with read-only scopes fails', async function () {
     const client = await helper.client('captain-write');
     await client.set(SECRET_NAME, testValueBar);
     await makeApiCall({
@@ -136,7 +137,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('remove with write-only scopes succeeds', async function() {
+  test('remove with write-only scopes succeeds', async function () {
     const client = await helper.client('captain-write');
     await client.set(SECRET_NAME, testValueBar);
     await makeApiCall({
@@ -149,7 +150,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(result, undefined);
   });
 
-  test('getting a missing secret is a 404', async function() {
+  test('getting a missing secret is a 404', async function () {
     await makeApiCall({
       clientName: 'captain-read',
       apiCall: 'get',
@@ -159,7 +160,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('deleting a missing secret "succeeds"', function() {
+  test('deleting a missing secret "succeeds"', function () {
     return makeApiCall({
       clientName: 'captain-write',
       apiCall: 'remove',
@@ -168,7 +169,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('reading an expired secret is a 410', async function() {
+  test('reading an expired secret is a 410', async function () {
     const client = await helper.client('captain-write');
     await client.set(SECRET_NAME, testValueExpired);
     await makeApiCall({
@@ -262,6 +263,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     await assert.rejects(
       () => client.list(),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 });

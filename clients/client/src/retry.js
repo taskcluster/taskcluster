@@ -15,7 +15,7 @@ export default async ({ retries, delayFactor, randomizationFactor, maxDelay }, f
 
     let retriableError = null;
 
-    const rv = await func(err => retriableError = err, attempt);
+    const rv = await func((err) => (retriableError = err), attempt);
     if (!retriableError) {
       // success!
       return rv;
@@ -34,6 +34,6 @@ export default async ({ retries, delayFactor, randomizationFactor, maxDelay }, f
     // Always limit with a maximum delay
     delay = Math.min(delay, maxDelay);
     // Sleep before looping again
-    await new Promise(accept => setTimeout(accept, delay));
+    await new Promise((accept) => setTimeout(accept, delay));
   }
 };

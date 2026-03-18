@@ -16,11 +16,11 @@ const __dirname = new URL('.', import.meta.url).pathname;
  * , where description will be amended with a section explaining that this
  * client is static and can't be modified at runtime.
  */
-export const syncStaticClients = async function(db, clients = []) {
+export const syncStaticClients = async function (db, clients = []) {
   const staticScopes = JSON.parse(await fs.readFile(path.join(__dirname, 'static-scopes.json'), 'utf8'));
 
   // Validate input for sanity (we hardly need perfect validation here...)
-  assert(clients instanceof Array, 'Expected clients to be am array');
+  assert(Array.isArray(clients), 'Expected clients to be am array');
   for (const client of clients) {
     assert(typeof client.clientId === 'string', 'expected clientId to be a string');
     assert(typeof client.accessToken === 'string', 'expected accessToken to be a string');
@@ -30,19 +30,19 @@ export const syncStaticClients = async function(db, clients = []) {
     if (client.clientId.startsWith('static/taskcluster')) {
       assert(!client.scopes, 'scopes are not allowed in configuration for static/taskcluster clients');
     } else {
-      assert(client.scopes instanceof Array, 'expected scopes to be an array of strings');
+      assert(Array.isArray(client.scopes), 'expected scopes to be an array of strings');
       assert(typeof client.description === 'string', 'expected description to be a string');
-      assert(client.scopes.every(s => typeof s === 'string'), 'scopes must be strings');
+      assert(
+        client.scopes.every((s) => typeof s === 'string'),
+        'scopes must be strings',
+      );
     }
   }
 
   // check that we have all of the expected static/taskcluster clients, and no more.  The staticClients
   // are generated from `services/*/scopes.yml` for all of the other services.
-  const seenTCClients = clients
-    .map(({ clientId }) => clientId)
-    .filter(c => c.startsWith('static/taskcluster/'));
-  const expectedTCClients = staticScopes
-    .map(({ clientId }) => clientId);
+  const seenTCClients = clients.map(({ clientId }) => clientId).filter((c) => c.startsWith('static/taskcluster/'));
+  const expectedTCClients = staticScopes.map(({ clientId }) => clientId);
   const extraTCClients = _.difference(seenTCClients, expectedTCClients);
   const missingTCClients = _.difference(expectedTCClients, seenTCClients);
 
@@ -58,7 +58,7 @@ export const syncStaticClients = async function(db, clients = []) {
   }
 
   // put the configured scopes into place
-  clients = clients.map(client => {
+  clients = clients.map((client) => {
     if (client.clientId.startsWith('static/taskcluster/')) {
       const { scopes } = _.find(staticScopes, { clientId: client.clientId });
       return { ...client, description: 'Internal client', scopes };
@@ -83,7 +83,7 @@ export const syncStaticClients = async function(db, clients = []) {
 
   for (const row of rows) {
     // Find target we should modify the client match
-    const target = clients.find(c => c.clientId === row.client_id);
+    const target = clients.find((c) => c.clientId === row.client_id);
     // If client doesn't exist we delete it
     if (!target) {
       await db.fns.delete_client(row.client_id);
@@ -116,7 +116,7 @@ export const syncStaticClients = async function(db, clients = []) {
   }
 
   // Find clients that we haven't seen yet
-  const newClients = clients.filter(c => !done.includes(c.clientId));
+  const newClients = clients.filter((c) => !done.includes(c.clientId));
 
   // Create new clients
   for (const target of newClients) {

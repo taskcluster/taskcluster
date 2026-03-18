@@ -1,4 +1,3 @@
-
 import { render } from '@testing-library/react';
 import Button from './index';
 import { AuthContext } from '../../utils/Auth';
@@ -9,7 +8,7 @@ it('should render Button', () => {
       <Button className="className" id="id" onClick={jest.fn()}>
         Icon
       </Button>
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
   );
 
   expect(asFragment()).toMatchSnapshot();

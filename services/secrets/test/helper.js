@@ -8,7 +8,7 @@ export const load = testing.stickyLoader(loadMain);
 const helper = { load };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async function () {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -17,8 +17,7 @@ testing.withMonitor(helper);
 
 // set up the testing secrets
 helper.secrets = new testing.Secrets({
-  secrets: {
-  },
+  secrets: {},
   load,
 });
 
@@ -34,7 +33,7 @@ const testClients = {
   'captain-read': ['secrets:get:captain:*'],
   'captain-read-write': ['secrets:set:captain:*', 'secrets:get:captain:*', 'secrets:list-secrets'],
   'captain-read-limited': ['secrets:get:captain:limited/*'],
-  'none': [],
+  none: [],
 };
 
 /**
@@ -47,7 +46,7 @@ const testClients = {
 helper.withServer = (_mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -60,7 +59,7 @@ helper.withServer = (_mock, skipping) => {
     load.cfg('taskcluster.rootUrl', rootUrl);
     testing.fakeauth.start(testClients, { rootUrl });
 
-    helper.client = async clientId => {
+    helper.client = async (clientId) => {
       const SecretsClient = taskcluster.createClient(builder.reference());
 
       return new SecretsClient({
@@ -73,7 +72,7 @@ helper.withServer = (_mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (skipping()) {
       return;
     }

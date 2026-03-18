@@ -24,30 +24,21 @@ export default class MetricsReference extends Component {
       throw new Error(`Reference document version ${version} not supported`);
     }
 
-    const serviceMetrics = ref.metrics.filter(m =>
-      m.name.startsWith(serviceName.replace('-', '_'))
-    );
-    const genericMetrics = ref.metrics.filter(
-      m => !m.name.startsWith(serviceName.replace('-', '_'))
-    );
+    const serviceMetrics = ref.metrics.filter((m) => m.name.startsWith(serviceName.replace('-', '_')));
+    const genericMetrics = ref.metrics.filter((m) => !m.name.startsWith(serviceName.replace('-', '_')));
 
     return (
       <div>
         {ref.title && <HeaderWithAnchor>{ref.title}</HeaderWithAnchor>}
-        {ref.description && (
-          <MDX components={components}>{ref.description}</MDX>
-        )}
+        {ref.description && <MDX components={components}>{ref.description}</MDX>}
         <Typography variant="body2">
-          For more information on how to use metrics, see{' '}
-          <Anchor href="/docs/manual/design/metrics">Metrics</Anchor> in the
-          manual. <br /> Note: deployments could prefix all metrics.
+          For more information on how to use metrics, see <Anchor href="/docs/manual/design/metrics">Metrics</Anchor> in
+          the manual. <br /> Note: deployments could prefix all metrics.
         </Typography>
         {serviceMetrics && serviceMetrics.length > 0 && (
           <Fragment>
-            <HeaderWithAnchor type="h3">
-              {`${titleCase(serviceName.replace('-', ' '))} Metrics`}
-            </HeaderWithAnchor>
-            {serviceMetrics.map(entry => (
+            <HeaderWithAnchor type="h3">{`${titleCase(serviceName.replace('-', ' '))} Metrics`}</HeaderWithAnchor>
+            {serviceMetrics.map((entry) => (
               <Entry
                 key={entry.name}
                 type="metric"
@@ -61,7 +52,7 @@ export default class MetricsReference extends Component {
         {genericMetrics && genericMetrics.length > 0 && (
           <Fragment>
             <HeaderWithAnchor type="h3">Generic Metrics</HeaderWithAnchor>
-            {genericMetrics.map(entry => (
+            {genericMetrics.map((entry) => (
               <Entry
                 key={entry.name}
                 type="metric"

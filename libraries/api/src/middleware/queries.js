@@ -32,24 +32,18 @@ export const queryValidator = ({ entry }) => {
       if (pattern instanceof RegExp) {
         if (!pattern.test(value)) {
           delete req.query[key];
-          errors.push('Query-string parameter: ' + key + '="' + value +
-                      '" does not match expression: ' + pattern.toString());
+          errors.push(`Query-string parameter: ${key}="${value}" does not match expression: ${pattern.toString()}`);
         }
       } else {
         const msg = pattern.call(req.tcContext, value);
         if (typeof msg === 'string') {
           delete req.query[key];
-          errors.push('Query-string parameter: ' + key + '="' + value +
-                      '" is not valid, error: ' + msg);
+          errors.push(`Query-string parameter: ${key}="${value}" is not valid, error: ${msg}`);
         }
       }
     });
     if (errors.length > 0) {
-      return res.reportError(
-        'InvalidRequestArguments',
-        errors.join('\n'),
-        { errors },
-      );
+      return res.reportError('InvalidRequestArguments', errors.join('\n'), { errors });
     }
     return next();
   };

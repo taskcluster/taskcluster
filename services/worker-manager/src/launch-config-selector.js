@@ -85,9 +85,8 @@ export class WeightedRandomConfig {
 
       const lc = cfg.launchConfig;
       configs.push(lc);
-      const selectedCapacity = lc.configuration.workerManager?.capacityPerInstance
-        ?? lc?.configuration.capacityPerInstance
-        ?? 1;
+      const selectedCapacity =
+        lc.configuration.workerManager?.capacityPerInstance ?? lc?.configuration.capacityPerInstance ?? 1;
       toSpawn -= selectedCapacity;
       cfg.remainingCapacity -= selectedCapacity;
 
@@ -170,8 +169,8 @@ export class LaunchConfigSelector {
       const MIN_WEIGHT = 0.01;
       for (const cfg of configsWithWeights) {
         if (cfg.remainingCapacity > 0 && cfg.weight <= 0) {
-          const otherViableConfigs = configsWithWeights.filter(c =>
-            c !== cfg && c.remainingCapacity > 0 && c.weight > 0,
+          const otherViableConfigs = configsWithWeights.filter(
+            (c) => c !== cfg && c.remainingCapacity > 0 && c.weight > 0,
           );
 
           if (otherViableConfigs.length === 0) {
@@ -186,11 +185,14 @@ export class LaunchConfigSelector {
 
     this.monitor.log.launchConfigSelectorsDebug({
       workerPoolId: workerPool.workerPoolId,
-      weights: Object.fromEntries(configsWithWeights.map(
-        ({ launchConfig, weight }) => [launchConfig.launchConfigId, weight]),
+      weights: Object.fromEntries(
+        configsWithWeights.map(({ launchConfig, weight }) => [launchConfig.launchConfigId, weight]),
       ),
-      remainingCapacity: Object.fromEntries(configsWithWeights.map(
-        ({ launchConfig, remainingCapacity }) => [launchConfig.launchConfigId, remainingCapacity]),
+      remainingCapacity: Object.fromEntries(
+        configsWithWeights.map(({ launchConfig, remainingCapacity }) => [
+          launchConfig.launchConfigId,
+          remainingCapacity,
+        ]),
       ),
     });
 
@@ -202,10 +204,7 @@ export class LaunchConfigSelector {
    * @returns {Promise<WorkerPoolLaunchConfig[]>}
    */
   async #loadLaunchConfigs(workerPool) {
-    const launchConfigs = await WorkerPoolLaunchConfig.load(
-      this.db,
-      workerPool.workerPoolId,
-    );
+    const launchConfigs = await WorkerPoolLaunchConfig.load(this.db, workerPool.workerPoolId);
 
     if (launchConfigs.length === 0) {
       this.monitor.debug(`No launch configs found for worker pool ${workerPool.workerPoolId}`);

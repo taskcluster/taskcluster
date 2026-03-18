@@ -76,7 +76,9 @@ class QueueLock {
     let autoRelease;
     let alreadyReleased = false;
 
-    const promise = new Promise((resolve) => { resolver = resolve; });
+    const promise = new Promise((resolve) => {
+      resolver = resolve;
+    });
     const release = () => {
       if (alreadyReleased) {
         return;

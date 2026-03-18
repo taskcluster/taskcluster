@@ -2,7 +2,7 @@
  * A utility to avoid using try catch.
  * Nesting code is not pretty.
  * */
-export default async promise => {
+export default async (promise) => {
   try {
     const result = await promise;
 

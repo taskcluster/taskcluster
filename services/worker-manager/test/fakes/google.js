@@ -18,10 +18,9 @@ const PROJECT = 'testy';
  * the instance returned from the constructor is available at `fake.oauth2`.
  */
 export class FakeGoogle extends FakeCloud {
-
   _patch() {
     this.sinon.stub(google, 'auth');
-    google.auth.fromJSON = creds => {
+    google.auth.fromJSON = (creds) => {
       assert.equal(creds.client_id, 'fake-creds');
       return { fake: true };
     };
@@ -29,27 +28,21 @@ export class FakeGoogle extends FakeCloud {
     // OAuth2 must be a constructor, so we have to use `function` here, but
     // we want to refer to the FakeGoogle instance.
     const self = this;
-    google.auth.OAuth2 = function() {
+    google.auth.OAuth2 = function () {
       return self.oauth2;
     };
 
     this.sinon.stub(google, 'compute').callsFake(({ version, auth }) => {
       assert.equal(version, 'v1');
       assert(auth.fake);
-      assert.deepEqual(auth.scopes, [
-        'https://www.googleapis.com/auth/compute',
-        'https://www.googleapis.com/auth/iam',
-      ]);
+      assert.deepEqual(auth.scopes, ['https://www.googleapis.com/auth/compute', 'https://www.googleapis.com/auth/iam']);
       return this.compute;
     });
 
     this.sinon.stub(gcpIam, 'iam').callsFake(({ version, auth }) => {
       assert.equal(version, 'v1');
       assert(auth.fake);
-      assert.deepEqual(auth.scopes, [
-        'https://www.googleapis.com/auth/compute',
-        'https://www.googleapis.com/auth/iam',
-      ]);
+      assert.deepEqual(auth.scopes, ['https://www.googleapis.com/auth/compute', 'https://www.googleapis.com/auth/iam']);
       return this.iam;
     });
 

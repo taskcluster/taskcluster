@@ -35,7 +35,7 @@ export default class ViewSecret extends Component {
     },
   };
 
-  handleDeleteSecret = name => {
+  handleDeleteSecret = (name) => {
     this.setState({ dialogError: null, loading: true });
 
     return this.props.client.mutate({
@@ -44,7 +44,7 @@ export default class ViewSecret extends Component {
     });
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({ dialogError: error, loading: false });
   };
 
@@ -111,16 +111,10 @@ export default class ViewSecret extends Component {
     const { description, isNewSecret, data } = this.props;
 
     return (
-      <Dashboard
-        title="Secrets"
-        helpView={<HelpView description={description} />}>
+      <Dashboard title="Secrets" helpView={<HelpView description={description} />}>
         <ErrorPanel fixed error={error} />
         {isNewSecret ? (
-          <SecretForm
-            loading={loading}
-            isNewSecret
-            onSaveSecret={this.handleSaveSecret}
-          />
+          <SecretForm loading={loading} isNewSecret onSaveSecret={this.handleSaveSecret} />
         ) : (
           <Fragment>
             {data.loading && <Spinner loading />}

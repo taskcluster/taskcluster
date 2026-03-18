@@ -22,7 +22,9 @@ import { scopeCompare, mergeScopeSets, normalizeScopeSet } from 'taskcluster-lib
  * nodes by returning null from node.next().
  */
 class BaseNode {
-  next() { new new Error('Node.next() not implemented'); }
+  next() {
+    new new Error('Node.next() not implemented')();
+  }
 }
 
 /**
@@ -61,8 +63,12 @@ class MergeNode extends BaseNode {
   next() {
     // If either A or B is null (we just return the other one)
     // Note: that we've already called node.next() on both of these.
-    if (!this.A) { return this.B; }
-    if (!this.B) { return this.A; }
+    if (!this.A) {
+      return this.B;
+    }
+    if (!this.B) {
+      return this.A;
+    }
 
     // Get values for easy reference
     const a = this.A.value;
@@ -110,10 +116,7 @@ const buildMergeTree = (scopeSets, i = 0, j = scopeSets.length - 1) => {
   }
   // Find mid-point and split the list in two, this creates a balanced binary tree
   const m = i + Math.floor((j - i) / 2);
-  return new MergeNode(
-    buildMergeTree(scopeSets, i, m),
-    buildMergeTree(scopeSets, m + 1, j),
-  );
+  return new MergeNode(buildMergeTree(scopeSets, i, m), buildMergeTree(scopeSets, m + 1, j));
 };
 
 /** A builder pattern of merging normalized scope-sets */
@@ -157,7 +160,8 @@ class ScopeSetBuilder {
     // Take scopes from tree until it's empty, ie. tree.next() returns null
     // Notice: that we must call tree.next() before we read the first value.
     const result = [];
-    while (tree = tree.next()) { // eslint-disable-line no-cond-assign
+    while ((tree = tree.next())) {
+      // eslint-disable-line no-cond-assign
       result.push(tree.value);
     }
     return result;

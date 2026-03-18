@@ -6,13 +6,7 @@ import storage from 'localforage';
 import merge from 'deepmerge';
 import { load, dump } from 'js-yaml';
 import { bool } from 'prop-types';
-import {
-  toDate,
-  parseISO,
-  differenceInMilliseconds,
-  addMilliseconds,
-  addHours,
-} from 'date-fns';
+import { toDate, parseISO, differenceInMilliseconds, addMilliseconds, addHours } from 'date-fns';
 import { withStyles } from '@material-ui/core/styles';
 import Switch from '@material-ui/core/Switch';
 import Typography from '@material-ui/core/Typography';
@@ -49,14 +43,10 @@ import Button from '../../../components/Button';
 import db from '../../../utils/db';
 import validateTaskPayloadSchemas from '../../../utils/validateTaskPayloadSchemas';
 
-const tutorialWorkerPoolId =
-  window.env.SITE_SPECIFIC.tutorial_worker_pool_id ||
-  'proj-getting-started/tutorial';
-const tutorialWorkerSchema =
-  window.env.SITE_SPECIFIC.tutorial_worker_schema || 'docker-worker';
-const defaultTask = schema => {
-  const schemaDefinition =
-    TASK_PAYLOAD_SCHEMAS[schema] || TASK_PAYLOAD_SCHEMAS['docker-worker'];
+const tutorialWorkerPoolId = window.env.SITE_SPECIFIC.tutorial_worker_pool_id || 'proj-getting-started/tutorial';
+const tutorialWorkerSchema = window.env.SITE_SPECIFIC.tutorial_worker_schema || 'docker-worker';
+const defaultTask = (schema) => {
+  const schemaDefinition = TASK_PAYLOAD_SCHEMAS[schema] || TASK_PAYLOAD_SCHEMAS['docker-worker'];
 
   return {
     taskQueueId: tutorialWorkerPoolId,
@@ -74,7 +64,7 @@ const defaultTask = schema => {
 };
 
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   createIcon: {
     ...theme.mixins.successIcon,
   },
@@ -113,11 +103,7 @@ export default class CreateTask extends Component {
 
   async getRecentTaskDefinitions() {
     try {
-      return await db.taskDefinitions
-        .orderBy('created')
-        .limit(5)
-        .reverse()
-        .toArray();
+      return await db.taskDefinitions.orderBy('created').limit(5).reverse().toArray();
     } catch (_) {
       return [];
     }
@@ -229,9 +215,7 @@ export default class CreateTask extends Component {
       interactive: checked ? '1' : undefined,
     };
 
-    this.props.history.replace(
-      `/tasks/create${stringify(query, { addQueryPrefix: true })}`
-    );
+    this.props.history.replace(`/tasks/create${stringify(query, { addQueryPrefix: true })}`);
   };
 
   handleResetEditor = () =>
@@ -241,13 +225,13 @@ export default class CreateTask extends Component {
       invalid: false,
     });
 
-  handleRecentTaskDefinitionClick = task => {
+  handleRecentTaskDefinitionClick = (task) => {
     this.setState({
       task: this.parameterizeTask(task),
     });
   };
 
-  handleTaskChange = value => {
+  handleTaskChange = (value) => {
     try {
       load(value);
       this.setState({ invalid: false, task: value });
@@ -256,7 +240,7 @@ export default class CreateTask extends Component {
     }
   };
 
-  handlePayloadSchemaChange = event => {
+  handlePayloadSchemaChange = (event) => {
     this.setState({ payloadSchema: event.target.value });
   };
 
@@ -264,11 +248,7 @@ export default class CreateTask extends Component {
     const { payloadSchema, task } = this.state;
     const schema = TASK_PAYLOAD_SCHEMAS[payloadSchema];
     const input = load(task);
-    const errors = await validateTaskPayloadSchemas(
-      input,
-      schema?.type,
-      schema?.schema
-    );
+    const errors = await validateTaskPayloadSchemas(input, schema?.type, schema?.schema);
 
     this.setState({
       validationErrors: errors.length ? errors.join('\n') : null,
@@ -284,7 +264,7 @@ export default class CreateTask extends Component {
   parameterizeTask(task) {
     const offset = differenceInMilliseconds(new Date(), parseISO(task.created));
     // Increment all timestamps in the task by offset
-    const iter = obj => {
+    const iter = (obj) => {
       if (!obj) {
         return obj;
       }
@@ -293,15 +273,10 @@ export default class CreateTask extends Component {
         case 'object':
           return Array.isArray(obj)
             ? obj.map(iter)
-            : Object.entries(obj).reduce(
-                (o, [key, value]) => ({ ...o, [key]: iter(value) }),
-                {}
-              );
+            : Object.entries(obj).reduce((o, [key, value]) => ({ ...o, [key]: iter(value) }), {});
 
         case 'string':
-          return ISO_8601_REGEX.test(obj)
-            ? toDate(addMilliseconds(parseISO(obj), offset)).toISOString()
-            : obj;
+          return ISO_8601_REGEX.test(obj) ? toDate(addMilliseconds(parseISO(obj), offset)).toISOString() : obj;
 
         default:
           return obj;
@@ -343,25 +318,19 @@ export default class CreateTask extends Component {
           <HelpView description={description}>
             <Typography variant="body2">
               For details on what you can write, refer to the{' '}
-              <a
-                href={urls.docs('/')}
-                target="_blank"
-                rel="noopener noreferrer">
+              <a href={urls.docs('/')} target="_blank" rel="noopener noreferrer">
                 documentation
               </a>
               . When you submit a task here, you will be taken to{' '}
-              {interactive
-                ? 'connect to the interactive task'
-                : 'inspect the created task'}
-              . Your task will be saved so you can come back and experiment with
-              variations.
+              {interactive ? 'connect to the interactive task' : 'inspect the created task'}. Your task will be saved so
+              you can come back and experiment with variations.
               <SiteSpecific>
-                If you are just getting started, `%tutorial_worker_pool_id%` is
-                a good choice for `taskQueueId`.
+                If you are just getting started, `%tutorial_worker_pool_id%` is a good choice for `taskQueueId`.
               </SiteSpecific>
             </Typography>
           </HelpView>
-        }>
+        }
+      >
         <Fragment>
           {error ? (
             <ErrorPanel fixed error={error} />
@@ -371,13 +340,7 @@ export default class CreateTask extends Component {
               <Box style={{ display: 'flex', marginBottom: 10 }}>
                 <FormControlLabel
                   style={{ flexBasis: 0, flexGrow: 1 }}
-                  control={
-                    <Switch
-                      checked={interactive}
-                      onChange={this.handleInteractiveChange}
-                      color="secondary"
-                    />
-                  }
+                  control={<Switch checked={interactive} onChange={this.handleInteractiveChange} color="secondary" />}
                   label="Interactive"
                 />
                 <FormControlLabel
@@ -389,60 +352,37 @@ export default class CreateTask extends Component {
                       id="payload-schema"
                       value={payloadSchema}
                       defaultChecked
-                      onChange={this.handlePayloadSchemaChange}>
-                      {Object.entries(TASK_PAYLOAD_SCHEMAS).map(
-                        ([key, schema]) => (
-                          <MenuItem key={key} value={key}>
-                            {schema.label}
-                          </MenuItem>
-                        )
-                      )}
+                      onChange={this.handlePayloadSchemaChange}
+                    >
+                      {Object.entries(TASK_PAYLOAD_SCHEMAS).map(([key, schema]) => (
+                        <MenuItem key={key} value={key}>
+                          {schema.label}
+                        </MenuItem>
+                      ))}
                     </TextField>
                   }
                 />
-                <Button
-                  style={{ alignSelf: 'flex-end' }}
-                  size="small"
-                  onClick={this.handleLint}>
+                <Button style={{ alignSelf: 'flex-end' }} size="small" onClick={this.handleLint}>
                   Validate schema
                 </Button>
               </Box>
-              {validationErrors && (
-                <MuiErrorPanel
-                  className={classes.validationErrors}
-                  error={validationErrors}
-                />
-              )}
-              <CodeEditor
-                mode="yaml"
-                lint
-                value={task || ''}
-                onChange={this.handleTaskChange}
-              />
+              {validationErrors && <MuiErrorPanel className={classes.validationErrors} error={validationErrors} />}
+              <CodeEditor mode="yaml" lint value={task || ''} onChange={this.handleTaskChange} />
               <br />
               {Boolean(recentTaskDefinitions.length) && (
-                <List
-                  dense
-                  subheader={
-                    <ListSubheader component="div">
-                      Recent Task Definitions
-                    </ListSubheader>
-                  }>
-                  {this.state.recentTaskDefinitions.map(task => (
+                <List dense subheader={<ListSubheader component="div">Recent Task Definitions</ListSubheader>}>
+                  {this.state.recentTaskDefinitions.map((task) => (
                     <ListItem
                       className={classes.listItemButton}
                       button
                       onClick={() => {
                         this.handleRecentTaskDefinitionClick(task);
                       }}
-                      key={task.metadata.name}>
+                      key={task.metadata.name}
+                    >
                       <ListItemText
                         disableTypography
-                        primary={
-                          <Typography variant="body2">
-                            {task.metadata.name}
-                          </Typography>
-                        }
+                        primary={<Typography variant="body2">{task.metadata.name}</Typography>}
                       />
                       <LinkIcon />
                     </ListItem>
@@ -456,7 +396,8 @@ export default class CreateTask extends Component {
                 disabled={!task || invalid || loading}
                 variant="round"
                 className={classes.createIcon}
-                onClick={this.handleCreateTask}>
+                onClick={this.handleCreateTask}
+              >
                 <ContentSaveIcon />
               </Button>
               <SpeedDial>

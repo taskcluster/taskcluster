@@ -10,9 +10,9 @@ export default (error, errorInfo) => {
     return;
   }
 
-  withScope(scope => {
+  withScope((scope) => {
     if (errorInfo) {
-      Object.keys(errorInfo).forEach(key => {
+      Object.keys(errorInfo).forEach((key) => {
         scope.setExtra(key, errorInfo[key]);
       });
     }

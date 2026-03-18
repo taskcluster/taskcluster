@@ -110,15 +110,11 @@ export default class Github {
     const loginMiddleware = login(cfg.app.publicUrl);
 
     if (!strategyCfg.clientId || !strategyCfg.clientSecret) {
-      throw new Error(
-        'Unable to use "github" login strategy without GitHub client ID or secret',
-      );
+      throw new Error('Unable to use "github" login strategy without GitHub client ID or secret');
     }
 
     if (!credentials || !credentials.clientId || !credentials.accessToken) {
-      throw new Error(
-        'Unable to use "github" login strategy without taskcluster clientId and accessToken',
-      );
+      throw new Error('Unable to use "github" login strategy without taskcluster clientId and accessToken');
     }
 
     const callback = '/login/github/callback';
@@ -166,11 +162,6 @@ export default class Github {
       ),
     );
     app.get('/login/github', applySecurityHeaders, passport.authenticate('github'));
-    app.get(
-      callback,
-      applySecurityHeaders,
-      passport.authenticate('github'),
-      loginMiddleware,
-    );
+    app.get(callback, applySecurityHeaders, passport.authenticate('github'), loginMiddleware);
   }
 }

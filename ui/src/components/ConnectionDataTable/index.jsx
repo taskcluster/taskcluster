@@ -1,14 +1,5 @@
 import { Component, Fragment } from 'react';
-import {
-  array,
-  arrayOf,
-  func,
-  number,
-  shape,
-  string,
-  oneOf,
-  bool,
-} from 'prop-types';
+import { array, arrayOf, func, number, shape, string, oneOf, bool } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -25,7 +16,7 @@ import { WindowScroller, AutoSizer, List } from 'react-virtualized';
 import Spinner from '../Spinner';
 import { pageInfo } from '../../utils/prop-types';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   loading: {
     textAlign: 'right',
   },
@@ -168,10 +159,7 @@ export default class ConnectionDataTable extends Component {
   pages = new Map();
 
   componentDidUpdate(prevProps) {
-    if (
-      !this.props.connection.pageInfo.previousCursor &&
-      prevProps.connection.pageInfo.previousCursor
-    ) {
+    if (!this.props.connection.pageInfo.previousCursor && prevProps.connection.pageInfo.previousCursor) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ page: 0 });
     }
@@ -192,7 +180,7 @@ export default class ConnectionDataTable extends Component {
     };
   }
 
-  handleHeaderClick = header => {
+  handleHeaderClick = (header) => {
     const { onHeaderClick } = this.props;
 
     if (onHeaderClick) {
@@ -210,12 +198,9 @@ export default class ConnectionDataTable extends Component {
 
     const newPage = nextPage > page ? page + 1 : page - 1;
     const { pageInfo } = this.pages.get(connection.pageInfo.cursor);
-    const cursor =
-      nextPage > page ? pageInfo.nextCursor : pageInfo.previousCursor;
+    const cursor = nextPage > page ? pageInfo.nextCursor : pageInfo.previousCursor;
     const previousCursor =
-      nextPage > page
-        ? pageInfo.cursor
-        : this.pages.get(pageInfo.previousCursor).pageInfo.previousCursor;
+      nextPage > page ? pageInfo.cursor : this.pages.get(pageInfo.previousCursor).pageInfo.previousCursor;
 
     this.setState({ loading: true, page: newPage }, async () => {
       await onPageChange({ cursor, previousCursor });
@@ -223,7 +208,7 @@ export default class ConnectionDataTable extends Component {
     });
   };
 
-  handleFilterValueChange = e => {
+  handleFilterValueChange = (e) => {
     this.setState({ filterValue: e.target.value });
   };
 
@@ -231,10 +216,7 @@ export default class ConnectionDataTable extends Component {
     const { classes, connection, pageSize } = this.props;
     const { loading, page } = this.state;
 
-    if (
-      !connection?.pageInfo?.hasNextPage &&
-      !connection?.pageInfo?.hasPreviousPage
-    ) {
+    if (!connection?.pageInfo?.hasNextPage && !connection?.pageInfo?.hasPreviousPage) {
       // no pagination needed
       return null;
     }
@@ -286,13 +268,10 @@ export default class ConnectionDataTable extends Component {
       rowHeight,
     } = this.props;
     const { count } = this.getPaginationMetadata();
-    const colSpan = columnsSize || (headers?.length) || 1;
+    const colSpan = columnsSize || headers?.length || 1;
     const { filterValue } = this.state;
     const { edges } = connection;
-    const rows =
-      allowFilter && filterFunc
-        ? edges.filter(row => filterFunc(row, filterValue))
-        : edges;
+    const rows = allowFilter && filterFunc ? edges.filter((row) => filterFunc(row, filterValue)) : edges;
     const showFilter = allowFilter && edges.length > 10;
     const renderRows = () => {
       if (lazyRender) {
@@ -310,9 +289,7 @@ export default class ConnectionDataTable extends Component {
                     scrollTop={scrollTop}
                     rowCount={rows.length}
                     rowHeight={rowHeight}
-                    rowRenderer={({ index, style, key }) =>
-                      renderRow(rows[index], style, key)
-                    }
+                    rowRenderer={({ index, style, key }) => renderRow(rows[index], style, key)}
                   />
                 )}
               </AutoSizer>
@@ -355,15 +332,17 @@ export default class ConnectionDataTable extends Component {
                     head: classNames({
                       [classes.thWithTopPagination]: !withoutTopPagination,
                     }),
-                  }}>
-                  {headers.map(header => (
+                  }}
+                >
+                  {headers.map((header) => (
                     <TableCell key={`table-header-${header}`}>
                       <TableSortLabel
                         className={classes.sortHeader}
                         id={header}
                         active={header === sortByHeader}
                         direction={sortDirection || 'desc'}
-                        onClick={() => this.handleHeaderClick(header)}>
+                        onClick={() => this.handleHeaderClick(header)}
+                      >
                         {header}
                       </TableSortLabel>
                     </TableCell>
@@ -377,8 +356,7 @@ export default class ConnectionDataTable extends Component {
                   <TableCell colSpan={colSpan}>
                     <em>
                       {searchTerm || filterValue
-                        ? `No items for this page with search term ${searchTerm ||
-                            filterValue}.`
+                        ? `No items for this page with search term ${searchTerm || filterValue}.`
                         : noItemsMessage}
                     </em>
                   </TableCell>

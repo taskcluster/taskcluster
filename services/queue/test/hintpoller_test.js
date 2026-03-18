@@ -3,7 +3,7 @@ import HintPoller from '../src/hintpoller.js';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(_mock, _skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (_mock, _skipping) {
   test('calls pollPendingQueue', async () => {
     const monitor = await helper.load('monitor');
 
@@ -16,11 +16,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(_mock, _skipping) {
     const hintPoller = new HintPoller('taskQueue/Id', {
       monitor,
       pollPendingQueue,
-      onError: err => console.error(err),
+      onError: (err) => console.error(err),
       onDestroy: () => {},
     });
 
-    const aborted = new Promise(resolve => setTimeout(resolve, 100));
+    const aborted = new Promise((resolve) => setTimeout(resolve, 100));
     const hints = await hintPoller.requestClaim(1, aborted);
 
     assume(hints).deep.equals([1]);
@@ -41,11 +41,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(_mock, _skipping) {
     const hintPoller = new HintPoller('taskQueue/Id', {
       monitor,
       pollPendingQueue,
-      onError: err => console.error(err),
-      onDestroy: () => destroyCalled = true,
+      onError: (err) => console.error(err),
+      onDestroy: () => (destroyCalled = true),
     });
 
-    const aborted = new Promise(resolve => setTimeout(resolve, 1000));
+    const aborted = new Promise((resolve) => setTimeout(resolve, 1000));
 
     hintPoller.destroy();
     try {
@@ -70,11 +70,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(_mock, _skipping) {
     const hintPoller = new HintPoller('taskQueue/Id', {
       monitor,
       pollPendingQueue,
-      onError: err => console.error(err),
+      onError: (err) => console.error(err),
       onDestroy: () => {},
     });
 
-    const aborted = new Promise(resolve => setTimeout(resolve, 100));
+    const aborted = new Promise((resolve) => setTimeout(resolve, 100));
     const hints1 = await hintPoller.requestClaim(1, aborted);
     const hints2 = await hintPoller.requestClaim(1, aborted);
 
@@ -90,24 +90,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(_mock, _skipping) {
     let released = false;
     const pollPendingQueue = async (count) => {
       pollCalls += 1;
-      return [{
-        count,
-        // first hint will be claimed
-      }, {
-        count,
-        // second hint will be released
-        release: () => released = true,
-      }];
+      return [
+        {
+          count,
+          // first hint will be claimed
+        },
+        {
+          count,
+          // second hint will be released
+          release: () => (released = true),
+        },
+      ];
     };
 
     const hintPoller = new HintPoller('taskQueue/Id', {
       monitor,
       pollPendingQueue,
-      onError: err => console.error(err),
+      onError: (err) => console.error(err),
       onDestroy: () => {},
     });
 
-    const aborted = new Promise(resolve => setTimeout(resolve, 100));
+    const aborted = new Promise((resolve) => setTimeout(resolve, 100));
     // we request 1 but pollPendingQueue returns 2
     // so second one would be released back
     await hintPoller.requestClaim(1, aborted);

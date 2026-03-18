@@ -6,20 +6,20 @@ import path from 'node:path';
 const { range } = _;
 const __filename = new URL('', import.meta.url).pathname;
 
-suite(path.basename(__filename), function() {
-  suite('dollarQuote', function() {
-    test('simple string', function() {
+suite(path.basename(__filename), function () {
+  suite('dollarQuote', function () {
+    test('simple string', function () {
       assert.equal(dollarQuote('abcd'), '$$abcd$$');
     });
 
-    test('string containing $$', function() {
+    test('string containing $$', function () {
       assert.equal(dollarQuote('pre $$abcd$$ post'), '$x$pre $$abcd$$ post$x$');
     });
   });
 
-  suite('paginatedIterator', function() {
-    suite('offset/limit', function() {
-      test('iterate in a few batches', async function() {
+  suite('paginatedIterator', function () {
+    suite('offset/limit', function () {
+      test('iterate in a few batches', async function () {
         const calls = [];
         const fetch = async (size, offset) => {
           calls.push([size, offset]);
@@ -32,10 +32,15 @@ suite(path.basename(__filename), function() {
         }
 
         assert.deepEqual(got, range(1000));
-        assert.deepEqual(calls, range(0, 1000, 13).map(i => [13, i]).concat([[13, 1000]]));
+        assert.deepEqual(
+          calls,
+          range(0, 1000, 13)
+            .map((i) => [13, i])
+            .concat([[13, 1000]]),
+        );
       });
 
-      test('batch size smaller than requested', async function() {
+      test('batch size smaller than requested', async function () {
         const fetch = async (_size, offset) => {
           return range(1000).slice(offset, offset + 10);
         };
@@ -48,7 +53,7 @@ suite(path.basename(__filename), function() {
         assert.deepEqual(got, range(1000));
       });
 
-      test('fetch fails', async function() {
+      test('fetch fails', async function () {
         const fetch = async (_size, offset) => {
           if (offset > 300) {
             throw new Error('oh noes');
@@ -65,9 +70,9 @@ suite(path.basename(__filename), function() {
       });
     });
 
-    suite('index-based', function() {
+    suite('index-based', function () {
       const indexColumns = ['a', 'b'];
-      const data = (A, B) => range(0, A).flatMap(a => range(0, B).map(b => ({ a, b })));
+      const data = (A, B) => range(0, A).flatMap((a) => range(0, B).map((b) => ({ a, b })));
       let calls;
       const fetcher = (A, B, maxSize) => {
         return async (size, after) => {
@@ -75,15 +80,15 @@ suite(path.basename(__filename), function() {
           if (maxSize) {
             size = Math.min(size, maxSize);
           }
-          const filtered = data(A, B)
-            .filter(({ a, b }) =>
-              after.after_a_in === null ||
-              a > after.after_a_in || (a === after.after_a_in && b > after.after_b_in));
+          const filtered = data(A, B).filter(
+            ({ a, b }) =>
+              after.after_a_in === null || a > after.after_a_in || (a === after.after_a_in && b > after.after_b_in),
+          );
           return filtered.slice(0, size);
         };
       };
 
-      test('iterate in a few batches', async function() {
+      test('iterate in a few batches', async function () {
         calls = [];
         const got = [];
         for await (const v of paginatedIterator({
@@ -117,7 +122,7 @@ suite(path.basename(__filename), function() {
         ]);
       });
 
-      test('batch size smaller than requested', async function() {
+      test('batch size smaller than requested', async function () {
         const got = [];
         for await (const v of paginatedIterator({
           indexColumns,
@@ -130,11 +135,13 @@ suite(path.basename(__filename), function() {
         assert.deepEqual(got, data(20, 12));
       });
 
-      test('fetch fails', async function() {
+      test('fetch fails', async function () {
         assert.rejects(async () => {
           for await (const _ of paginatedIterator({
             indexColumns,
-            fetch: async () => { throw new Error('uhoh'); },
+            fetch: async () => {
+              throw new Error('uhoh');
+            },
           })) {
             assert(false); // never gets here..
           }

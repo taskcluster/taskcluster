@@ -14,7 +14,7 @@ import isLoggedInQuery from './isLoggedIn.graphql';
 import { AUTH_STARTED } from '../utils/constants';
 
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   '@global': {
     [[
       'input:-webkit-autofill',
@@ -22,8 +22,7 @@ import { AUTH_STARTED } from '../utils/constants';
       'input:-webkit-autofill:focus',
       'input:-webkit-autofill:active',
     ].join(',')]: {
-      transition:
-        'background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s',
+      transition: 'background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s',
       transitionDelay: 'background-color 5000s, color 5000s',
     },
     '.mdi-icon': {
@@ -81,16 +80,10 @@ export default class Main extends Component {
     });
     const thirdPartyLogin = isThirdPartyLogin();
     const isOneLoginStrategy =
-      window.env.UI_LOGIN_STRATEGY_NAMES &&
-      window.env.UI_LOGIN_STRATEGY_NAMES.split(' ').length === 1;
+      window.env.UI_LOGIN_STRATEGY_NAMES && window.env.UI_LOGIN_STRATEGY_NAMES.split(' ').length === 1;
     const THIRD_PARTY_DID_AUTO_LOGIN_KEY = 'third-party-did-auto-login';
 
-    if (
-      !user &&
-      thirdPartyLogin &&
-      isOneLoginStrategy &&
-      !sessionStorage.getItem(THIRD_PARTY_DID_AUTO_LOGIN_KEY)
-    ) {
+    if (!user && thirdPartyLogin && isOneLoginStrategy && !sessionStorage.getItem(THIRD_PARTY_DID_AUTO_LOGIN_KEY)) {
       sessionStorage.setItem(THIRD_PARTY_DID_AUTO_LOGIN_KEY, 'true');
       localStorage.setItem(AUTH_STARTED, window.env.UI_LOGIN_STRATEGY_NAMES);
       window.open(`/login/${window.env.UI_LOGIN_STRATEGY_NAMES}`);
@@ -98,12 +91,7 @@ export default class Main extends Component {
       return;
     }
 
-    if (
-      user &&
-      user.identityProviderId !== 'manual' &&
-      data &&
-      data.isLoggedIn === false
-    ) {
+    if (user && user.identityProviderId !== 'manual' && data && data.isLoggedIn === false) {
       onUnauthorize();
 
       return;

@@ -4,15 +4,10 @@ import { Paper, Grid, withStyles } from '@material-ui/core';
 import { taskState, pageInfo, task } from '../../utils/prop-types';
 import { THEME } from '../../utils/constants';
 import Link from '../../utils/Link';
-import {
-  formatTime,
-  sampleTasks,
-  quantile,
-  filterTasksWithDuration,
-} from '../../utils/task';
+import { formatTime, sampleTasks, quantile, filterTasksWithDuration } from '../../utils/task';
 import { clearAllCaches } from '../../utils/memoize';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   container: {
     marginBottom: theme.spacing(2),
     padding: theme.spacing(1),
@@ -121,7 +116,7 @@ export default class TaskGroupStats extends Component {
   }
 
   setSelectedTask(task) {
-    this.setState(state => ({
+    this.setState((state) => ({
       selectedTask: state.selectedTask?.taskId === task?.taskId ? null : task,
     }));
   }
@@ -131,7 +126,7 @@ export default class TaskGroupStats extends Component {
   }
 
   toggleGraphAll() {
-    this.setState(state => ({ graphAll: !state.graphAll }));
+    this.setState((state) => ({ graphAll: !state.graphAll }));
   }
 
   render() {
@@ -139,23 +134,18 @@ export default class TaskGroupStats extends Component {
     const { activeTask, selectedTask, graphAll } = this.state;
     const maxTasksInGraph = 200;
     const tasks = filterTasksWithDuration(taskGroup?.edges, filter, searchTerm);
-    const starts = Math.min(...tasks.map(t => t.minStart));
-    const resolves = Math.max(...tasks.map(t => t.maxResolve));
-    const durations = tasks.map(t => t.duration);
+    const starts = Math.min(...tasks.map((t) => t.minStart));
+    const resolves = Math.max(...tasks.map((t) => t.maxResolve));
+    const durations = tasks.map((t) => t.duration);
     const minDuration = durations?.[0] || 0;
     const maxDuration = durations?.[durations.length - 1] || 0;
     const padding = 2;
     const height = 30;
     const barWidth = 2;
     const maxInSample = Math.min(maxTasksInGraph, tasks.length);
-    const sampledTasks = sampleTasks(
-      tasks,
-      filter,
-      searchTerm,
-      graphAll ? +Infinity : maxTasksInGraph
-    );
+    const sampledTasks = sampleTasks(tasks, filter, searchTerm, graphAll ? +Infinity : maxTasksInGraph);
     const width = (Math.max(25, sampledTasks.length) + 1) * barWidth;
-    const relativeHeight = d => Math.max(1, (height * d) / maxDuration);
+    const relativeHeight = (d) => Math.max(1, (height * d) / maxDuration);
     const median = quantile(durations, 0.5);
     const q75 = quantile(durations, 0.75);
     const q99 = quantile(durations, 0.99);
@@ -184,10 +174,8 @@ export default class TaskGroupStats extends Component {
           <Grid item xs={12} sm={3} className={classes.legend}>
             {resolves && starts && (
               <div>
-                <abbr title="Time from first task to start till last task to finish">
-                  First to last
-                </abbr>
-                : <strong>{formatTime(resolves - starts)}</strong>
+                <abbr title="Time from first task to start till last task to finish">First to last</abbr>:{' '}
+                <strong>{formatTime(resolves - starts)}</strong>
               </div>
             )}
             <div>
@@ -218,9 +206,7 @@ export default class TaskGroupStats extends Component {
             )}
             {!activeTask && selectedTask && (
               <div className={classes.popover}>
-                <Link
-                  title={selectedTask.name}
-                  to={`/tasks/${selectedTask.taskId}`}>
+                <Link title={selectedTask.name} to={`/tasks/${selectedTask.taskId}`}>
                   <strong>{formatTime(selectedTask.duration)}</strong>
                   {selectedTask.name}
                 </Link>
@@ -228,14 +214,8 @@ export default class TaskGroupStats extends Component {
             )}
             {tasks.length > maxTasksInGraph && (
               // biome-ignore lint/a11y/useSemanticElements: intentional Material UI pattern
-              <div
-                className={classes.sampleSwitch}
-                role="button"
-                tabIndex={0}
-                onClick={() => this.toggleGraphAll()}>
-                {graphAll
-                  ? `Show sample (${maxInSample})`
-                  : `Show all (${tasks.length})`}
+              <div className={classes.sampleSwitch} role="button" tabIndex={0} onClick={() => this.toggleGraphAll()}>
+                {graphAll ? `Show sample (${maxInSample})` : `Show all (${tasks.length})`}
               </div>
             )}
             <svg
@@ -243,28 +223,20 @@ export default class TaskGroupStats extends Component {
               xmlns="http://www.w3.org/2000/svg"
               preserveAspectRatio="none"
               width="100%"
-              viewBox={`0 0 ${width + padding} ${height + padding * 2}`}>
+              viewBox={`0 0 ${width + padding} ${height + padding * 2}`}
+            >
               <title>Task statistics chart</title>
               <desc>TaskGroup run times</desc>
               {sampledTasks.map((task, index) => (
                 <g
                   key={task.taskId}
-                  className={`${classes.bar} ${
-                    selectedTask?.taskId === task.taskId
-                      ? classes.activeBar
-                      : ''
-                  }`}
+                  className={`${classes.bar} ${selectedTask?.taskId === task.taskId ? classes.activeBar : ''}`}
                   transform={`translate(${index * barWidth + padding / 2}, 0)`}
                   onMouseEnter={() => this.setActiveTask(task)}
                   onMouseLeave={() => this.setActiveTask(null)}
-                  onClick={() => this.setSelectedTask(task)}>
-                  <rect
-                    width={barWidth - 0.1}
-                    height={height + padding / 2}
-                    y={0}
-                    x="0"
-                    fill="#ffffff11"
-                  />
+                  onClick={() => this.setSelectedTask(task)}
+                >
+                  <rect width={barWidth - 0.1} height={height + padding / 2} y={0} x="0" fill="#ffffff11" />
                   <rect
                     width={barWidth - 0.1}
                     height={relativeHeight(task.duration)}

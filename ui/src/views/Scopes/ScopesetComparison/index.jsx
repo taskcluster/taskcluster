@@ -15,7 +15,7 @@ const getScopesetDiff = (scopesA, scopesB) => {
   const scopesUnion = scopeUnion(scopesA, scopesB);
   const scopesetDiff = [];
 
-  scopesUnion.forEach(scope => {
+  scopesUnion.forEach((scope) => {
     const s1 = scopeIntersection([scope], scopesA);
     const s2 = scopeIntersection([scope], scopesB);
 
@@ -25,7 +25,7 @@ const getScopesetDiff = (scopesA, scopesB) => {
   return scopesetDiff;
 };
 
-const getCellColors = scopesetDiff => {
+const getCellColors = (scopesetDiff) => {
   const cellColors = [];
 
   scopesetDiff.forEach(([s1, s2]) => {
@@ -43,7 +43,7 @@ const getCellColors = scopesetDiff => {
   return cellColors;
 };
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   actionButton: {
     ...theme.mixins.fab,
   },
@@ -91,11 +91,11 @@ export default class ScopesetComparison extends Component {
     }
   }
 
-  handleScopesAChange = scopeTextA => {
+  handleScopesAChange = (scopeTextA) => {
     this.setState({ scopeTextA });
   };
 
-  handleScopesBChange = scopeTextB => {
+  handleScopesBChange = (scopeTextB) => {
     this.setState({ scopeTextB });
   };
 
@@ -158,22 +158,16 @@ export default class ScopesetComparison extends Component {
                 <Grid key={scopes} container>
                   <Grid item xs={6} className={classes[cellColors[index][0]]}>
                     {scopes[0].length > 0 &&
-                      scopes[0].map(scope => (
-                        <Typography
-                          key={scope}
-                          variant="body2"
-                          className={classes.cellGrid}>
+                      scopes[0].map((scope) => (
+                        <Typography key={scope} variant="body2" className={classes.cellGrid}>
                           {scope}
                         </Typography>
                       ))}
                   </Grid>
                   <Grid item xs={6} className={classes[cellColors[index][1]]}>
                     {scopes[1].length > 0 &&
-                      scopes[1].map(scope => (
-                        <Typography
-                          key={scope}
-                          variant="body2"
-                          className={classes.cellGrid}>
+                      scopes[1].map((scope) => (
+                        <Typography key={scope} variant="body2" className={classes.cellGrid}>
                           {scope}
                         </Typography>
                       ))}
@@ -187,7 +181,8 @@ export default class ScopesetComparison extends Component {
             tooltipProps={{ title: 'Compare Scopes' }}
             color="secondary"
             variant="round"
-            onClick={this.handleCompareScopesClick}>
+            onClick={this.handleCompareScopesClick}
+          >
             <ScaleBalanceIcon />
           </Button>
         </Fragment>

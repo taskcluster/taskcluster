@@ -33,7 +33,7 @@ const THIRTY_ONE_DAYS = 31 * 24 * 60 * 60 * 1000;
  *
  * Returns an object on the form: {clientId, accessToken, certificate}
  */
-export const createTemporaryCredentials = opts => {
+export const createTemporaryCredentials = (opts) => {
   if (!opts) {
     throw new Error('Missing required options');
   }
@@ -82,7 +82,7 @@ export const createTemporaryCredentials = opts => {
     throw new Error('options.scopes must be an array');
   }
 
-  options.scopes.forEach(scope => {
+  options.scopes.forEach((scope) => {
     if (typeof scope !== 'string') {
       throw new Error('options.scopes must be an array of strings');
     }
@@ -181,7 +181,7 @@ export const credentialInformation = async (credentials, rootUrl) => {
 
   const anonymousClient = new Auth({ rootUrl });
   const credentialsClient = new Auth({ credentials, rootUrl });
-  const clientLookup = anonymousClient.client(issuer).then(client => {
+  const clientLookup = anonymousClient.client(issuer).then((client) => {
     const expires = new Date(client.expires);
 
     if (!result.expiry || result.expiry > expires) {
@@ -192,7 +192,7 @@ export const credentialInformation = async (credentials, rootUrl) => {
       result.active = false;
     }
   });
-  const scopeLookup = credentialsClient.currentScopes().then(response => {
+  const scopeLookup = credentialsClient.currentScopes().then((response) => {
     result.scopes = response.scopes;
   });
 

@@ -20,7 +20,7 @@ import deleteSecretQuery from './deleteSecret.graphql';
 
 @withApollo
 @graphql(secretsQuery, {
-  options: props => {
+  options: (props) => {
     const { search } = qs.parse(props.location.search.slice(1));
 
     return {
@@ -29,14 +29,12 @@ import deleteSecretQuery from './deleteSecret.graphql';
         secretsConnection: {
           limit: VIEW_SECRETS_PAGE_SIZE,
         },
-        filter: search
-          ? { name: { $regex: escapeStringRegexp(search), $options: 'i' } }
-          : null,
+        filter: search ? { name: { $regex: escapeStringRegexp(search), $options: 'i' } } : null,
       },
     };
   },
 })
-@withStyles(theme => ({
+@withStyles((theme) => ({
   plusIconSpan: {
     ...theme.mixins.fab,
   },
@@ -48,7 +46,7 @@ export default class ViewSecrets extends Component {
     dialogError: null,
   };
 
-  handleSecretSearchSubmit = async secretSearch => {
+  handleSecretSearchSubmit = async (secretSearch) => {
     const {
       data: { refetch },
     } = this.props;
@@ -57,9 +55,7 @@ export default class ViewSecrets extends Component {
       secretsConnection: {
         limit: VIEW_SECRETS_PAGE_SIZE,
       },
-      filter: secretSearch
-        ? { name: { $regex: escapeStringRegexp(secretSearch), $options: 'i' } }
-        : null,
+      filter: secretSearch ? { name: { $regex: escapeStringRegexp(secretSearch), $options: 'i' } } : null,
     });
 
     const query = qs.parse(window.location.search.slice(1));
@@ -103,12 +99,8 @@ export default class ViewSecrets extends Component {
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.secrets;
 
-        return dotProp.set(previousResult, 'secrets', secrets =>
-          dotProp.set(
-            dotProp.set(secrets, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, 'secrets', (secrets) =>
+          dotProp.set(dotProp.set(secrets, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
@@ -125,7 +117,7 @@ export default class ViewSecrets extends Component {
     });
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({ dialogError: error });
   };
 
@@ -143,7 +135,7 @@ export default class ViewSecrets extends Component {
     });
   };
 
-  handleDialogActionOpen = secretName => {
+  handleDialogActionOpen = (secretName) => {
     this.setState({ dialogOpen: true, deleteSecretName: secretName });
   };
 
@@ -168,7 +160,8 @@ export default class ViewSecrets extends Component {
             onSubmit={this.handleSecretSearchSubmit}
             placeholder="Secret contains"
           />
-        }>
+        }
+      >
         <Fragment>
           {loading && <Spinner loading />}
           <ErrorPanel fixed error={error} />
@@ -189,7 +182,8 @@ export default class ViewSecrets extends Component {
             }}
             onClick={this.handleCreate}
             variant="round"
-            color="secondary">
+            color="secondary"
+          >
             <PlusIcon />
           </Button>
           {dialogOpen && (
@@ -201,11 +195,7 @@ export default class ViewSecrets extends Component {
               onError={this.handleDialogActionError}
               error={dialogError}
               title="Delete Secret?"
-              body={
-                <Typography variant="body2">
-                  This will delete the secret {deleteSecretName}.
-                </Typography>
-              }
+              body={<Typography variant="body2">This will delete the secret {deleteSecretName}.</Typography>}
               confirmText="Delete Secret"
             />
           )}

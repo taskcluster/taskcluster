@@ -51,11 +51,8 @@ const ping = {
   stability: 'stable',
   title: 'Ping Server',
   category: 'Monitoring',
-  description: [
-    'Respond without doing anything.',
-    'This endpoint is used to check that the service is up.',
-  ].join('\n'),
-  handler: function(_req, res) {
+  description: ['Respond without doing anything.', 'This endpoint is used to check that the service is up.'].join('\n'),
+  handler: function (_req, res) {
     res.status(200).json({
       alive: true,
       uptime: process.uptime(),
@@ -76,11 +73,8 @@ const lbHeartbeat = {
   stability: 'stable',
   title: 'Load Balancer Heartbeat',
   category: 'Monitoring',
-  description: [
-    'Respond without doing anything.',
-    'This endpoint is used to check that the service is up.',
-  ].join('\n'),
-  handler: function(_req, res) {
+  description: ['Respond without doing anything.', 'This endpoint is used to check that the service is up.'].join('\n'),
+  handler: function (_req, res) {
     res.json({});
   },
 };
@@ -101,7 +95,7 @@ const version = {
     'Respond with the JSON version object.',
     'https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md',
   ].join('\n'),
-  handler: async function(_req, res) {
+  handler: async function (_req, res) {
     res.json(await loadVersion());
   },
 };
@@ -120,7 +114,7 @@ export class APIBuilder {
     assert(!options.schemaPrefix, 'schemaPrefix is no longer allowed!');
     assert(!options.version, 'version is now apiVersion');
     /** @satisfies {Array<keyof APIBuilderOptions<TContext>>} */
-    (['title', 'description', 'serviceName', 'apiVersion']).forEach(function(key) {
+    (['title', 'description', 'serviceName', 'apiVersion']).forEach(function (key) {
       assert(options[key], `Option \'${key}\' must be provided`);
     });
     assert(/^[a-z][a-z0-9_-]*$/.test(options.serviceName), `api serviceName "${options.serviceName}" is not valid`);
@@ -207,7 +201,7 @@ export class APIBuilder {
    */
   declare(options, handler) {
     /** @satisfies {Array<keyof APIEntryOptions<TContext>>} */
-    (['name', 'method', 'route', 'title', 'description', 'category']).forEach(function(key) {
+    (['name', 'method', 'route', 'title', 'description', 'category']).forEach(function (key) {
       assert(options[key], `Option \'${key}\' must be provided`);
     });
     // unlike other options above, scopes is allowed to be null, but not undefined...
@@ -216,9 +210,10 @@ export class APIBuilder {
     if (!options.stability) {
       options.stability = stability.experimental;
     }
-    assert(STABILITY_LEVELS.indexOf(options.stability) !== -1,
-      'options.stability must be a valid stability-level, ' +
-           'see base.API.stability for valid options');
+    assert(
+      STABILITY_LEVELS.indexOf(options.stability) !== -1,
+      'options.stability must be a valid stability-level, ' + 'see base.API.stability for valid options',
+    );
     options.params = { ...this.params, ...(options.params || {}) };
     options.query = options.query || {};
     Object.entries(options.query).forEach(([key, value]) => {
@@ -226,8 +221,10 @@ export class APIBuilder {
         throw new Error(`query.${key} must be a RegExp or a function!`);
       }
     });
-    assert(!options.deferAuth,
-      'deferAuth is deprecated! https://github.com/taskcluster/taskcluster-lib-api#request-handlers');
+    assert(
+      !options.deferAuth,
+      'deferAuth is deprecated! https://github.com/taskcluster/taskcluster-lib-api#request-handlers',
+    );
     if (options.scopes && !ScopeExpressionTemplate.validate(options.scopes)) {
       throw new Error(`Invalid scope expression template: ${JSON.stringify(options.scopes, null, 2)}`);
     }
@@ -235,10 +232,10 @@ export class APIBuilder {
     assert(!(options.method === 'get' && options.input), "Can't have an `input` with method: 'get'");
 
     options.handler = handler;
-    if (this.entries.filter(entry => entry.route === options.route && entry.method === options.method).length > 0) {
+    if (this.entries.filter((entry) => entry.route === options.route && entry.method === options.method).length > 0) {
       throw new Error('Identical route and method declaration.');
     }
-    if (this.entries.some(entry => entry.name === options.name)) {
+    if (this.entries.some((entry) => entry.name === options.name)) {
       throw new Error('This function has already been declared.');
     }
     // make options.input and options.output relative to the service schemas
@@ -281,29 +278,31 @@ export class APIBuilder {
       description: this.description,
       serviceName: this.serviceName,
       apiVersion: this.apiVersion,
-      entries: this.entries.filter(entry => !entry.noPublish).map(entry => {
-        const [route, params] = cleanRouteAndParams(entry.route);
+      entries: this.entries
+        .filter((entry) => !entry.noPublish)
+        .map((entry) => {
+          const [route, params] = cleanRouteAndParams(entry.route);
 
-        /** @type {Record<string, any>} */
-        const retval = {
-          type: 'function',
-          method: entry.method,
-          route: route,
-          query: Object.keys(entry.query || {}),
-          args: params,
-          name: entry.name,
-          stability: entry.stability,
-          title: entry.title,
-          input: entry.input,
-          output: entry.output,
-          description: entry.description,
-          category: entry.category,
-        };
-        if (entry.scopes) {
-          retval.scopes = entry.scopes;
-        }
-        return retval;
-      }),
+          /** @type {Record<string, any>} */
+          const retval = {
+            type: 'function',
+            method: entry.method,
+            route: route,
+            query: Object.keys(entry.query || {}),
+            args: params,
+            name: entry.name,
+            stability: entry.stability,
+            title: entry.title,
+            input: entry.input,
+            output: entry.output,
+            description: entry.description,
+            category: entry.category,
+          };
+          if (entry.scopes) {
+            retval.scopes = entry.scopes;
+          }
+          return retval;
+        }),
     };
 
     return reference;

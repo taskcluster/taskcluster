@@ -12,12 +12,13 @@ const testcases = [
     // indicates that results are not dependent on indirect scope grants
     hasIndirctResults: false, // defaults to true
     results: {
-      'a': ['A'],
-      'b': ['B', 'C'],
-      'c': [],
+      a: ['A'],
+      b: ['B', 'C'],
+      c: [],
       '*': ['A', 'B', 'C'],
     },
-  }, {
+  },
+  {
     title: 'parameterized direct',
     rules: [
       { pattern: 'a', scopes: ['A'] },
@@ -28,40 +29,40 @@ const testcases = [
     ],
     hasIndirctResults: false,
     results: {
-      'a': ['A'],
-      'b': ['B', 'C'],
-      'c': ['C'],
-      'cccc': ['C'],
-      'cX': ['C'],
+      a: ['A'],
+      b: ['B', 'C'],
+      c: ['C'],
+      cccc: ['C'],
+      cX: ['C'],
       'c*': ['C'],
-      'dX': ['DX'],
-      'dXYZ': ['DXYZ'],
+      dX: ['DX'],
+      dXYZ: ['DXYZ'],
       'd*': ['D*'],
       'dXY*': ['DXY*'],
-      'eX': ['EXF'],
-      'eXYZ': ['EXYZF'],
+      eX: ['EXF'],
+      eXYZ: ['EXYZF'],
       'e*': ['E*'],
       'eXY*': ['EXY*'],
-      'q': [],
+      q: [],
       '*': ['A', 'B', 'C', 'D*', 'E*'],
     },
-  }, {
+  },
+  {
     title: 'star',
-    rules: [
-      { pattern: 'a*a', scopes: ['A'] },
-    ],
+    rules: [{ pattern: 'a*a', scopes: ['A'] }],
     hasIndirctResults: false,
     results: {
-      'a': [],
+      a: [],
       'a*': ['A'],
       'a*a': ['A'],
       'a*a*': ['A'],
       'a*aa*': [],
-      'b': [],
+      b: [],
       '': [],
       '*': ['A'],
     },
-  }, {
+  },
+  {
     title: 'parameterized indirect',
     rules: [
       { pattern: 'a:*', scopes: ['q<..>'] },
@@ -77,26 +78,27 @@ const testcases = [
       { pattern: 'q*', scopes: ['Q'] },
     ],
     results: {
-      'a': ['b', 'cc', 'dYY', 'eZZZ', 'fZZZg', 'eX*', 'fX*'],
-      'aa': [],
+      a: ['b', 'cc', 'dYY', 'eZZZ', 'fZZZg', 'eX*', 'fX*'],
+      aa: [],
       'a:a': ['qa', 'Q'],
       'a:aa': ['qaa', 'Q'],
-      'z': [],
+      z: [],
       'eU*': ['fU*'],
       'e*': ['f*', 'h*', 'hello', 'hello2', 'H'],
-      'e123': ['f123g'],
-      'eU': ['fUg'],
-      'hej': ['hello', 'H'],
-      'hej2': ['hello2', 'H'],
-      'hh': ['H'],
-      'efy': ['ffyg', 'hygj*', 'H'],
+      e123: ['f123g'],
+      eU: ['fUg'],
+      hej: ['hello', 'H'],
+      hej2: ['hello2', 'H'],
+      hh: ['H'],
+      efy: ['ffyg', 'hygj*', 'H'],
       'ef*': ['ff*', 'h*', 'H'],
-      'ffe': ['hej*', 'hello', 'hello2', 'H'],
+      ffe: ['hej*', 'hello', 'hello2', 'H'],
       'f*': ['h*', 'H'],
-      'ff': ['hj*', 'H'],
+      ff: ['hj*', 'H'],
       '*': ['q*', 'b', 'cc', 'eX*', 'dYY', 'eZZZ', 'f*', 'h*', 'H', 'Q'],
     },
-  }, {
+  },
+  {
     title: 'pattern hierarchy',
     rules: [
       { pattern: 'a*', scopes: ['A'] },
@@ -107,18 +109,19 @@ const testcases = [
     ],
     hasIndirctResults: false,
     results: {
-      'a': ['A'],
-      'aa': ['A', 'AA'],
-      'aaa': ['A', 'AA', 'AAA'],
-      'aaaa': ['A', 'AA', 'AAA'],
+      a: ['A'],
+      aa: ['A', 'AA'],
+      aaa: ['A', 'AA', 'AAA'],
+      aaaa: ['A', 'AA', 'AAA'],
       'aa*': ['A', 'AA', 'AAA'],
-      'ab': ['A', 'AB'],
-      'abc': ['A', 'AB', 'ABC'],
-      'abcd': ['A', 'AB', 'ABC'],
+      ab: ['A', 'AB'],
+      abc: ['A', 'AB', 'ABC'],
+      abcd: ['A', 'AB', 'ABC'],
       'ab*': ['A', 'AB', 'ABC'],
       'a*': ['A', 'AA', 'AAA', 'AB', 'ABC'],
     },
-  }, {
+  },
+  {
     title: 'prefix-parameterized hierarchy',
     rules: [
       { pattern: 'a*', scopes: ['A<..>'] },
@@ -129,18 +132,19 @@ const testcases = [
     ],
     hasIndirctResults: false,
     results: {
-      'a': ['A'],
-      'aa': ['Aa', 'AA'],
-      'aaa': ['Aaa', 'AAa', 'AAA'],
-      'aaaa': ['Aaaa', 'AAaa', 'AAAa'],
+      a: ['A'],
+      aa: ['Aa', 'AA'],
+      aaa: ['Aaa', 'AAa', 'AAA'],
+      aaaa: ['Aaaa', 'AAaa', 'AAAa'],
       'aa*': ['Aa*', 'AA*'],
-      'ab': ['Ab', 'AB'],
-      'abc': ['Abc', 'ABc', 'ABC'],
-      'abcd': ['Abcd', 'ABcd', 'ABCd'],
+      ab: ['Ab', 'AB'],
+      abc: ['Abc', 'ABc', 'ABC'],
+      abcd: ['Abcd', 'ABcd', 'ABCd'],
       'ab*': ['Ab*', 'AB*'],
       'a*': ['A*'],
     },
-  }, {
+  },
+  {
     title: 'parameterized hierarchy',
     rules: [
       { pattern: 'a*', scopes: ['A<..>X'] },
@@ -151,18 +155,19 @@ const testcases = [
     ],
     hasIndirctResults: false,
     results: {
-      'a': ['AX'],
-      'aa': ['AaX', 'AAX'],
-      'aaa': ['AaaX', 'AAaX', 'AAAX'],
-      'aaaa': ['AaaaX', 'AAaaX', 'AAAaX'],
+      a: ['AX'],
+      aa: ['AaX', 'AAX'],
+      aaa: ['AaaX', 'AAaX', 'AAAX'],
+      aaaa: ['AaaaX', 'AAaaX', 'AAAaX'],
       'aa*': ['Aa*', 'AA*'],
-      'ab': ['AbX', 'ABX'],
-      'abc': ['AbcX', 'ABcX', 'ABCX'],
-      'abcd': ['AbcdX', 'ABcdX', 'ABCdX'],
+      ab: ['AbX', 'ABX'],
+      abc: ['AbcX', 'ABcX', 'ABCX'],
+      abcd: ['AbcdX', 'ABcdX', 'ABCdX'],
       'ab*': ['Ab*', 'AB*'],
       'a*': ['A*'],
     },
-  }, {
+  },
+  {
     title: 'parameterized kleene hierarchy',
     rules: [
       { pattern: 'a*', scopes: ['A<..>*'] },
@@ -173,18 +178,19 @@ const testcases = [
     ],
     hasIndirctResults: false,
     results: {
-      'a': ['A*'],
-      'aa': ['Aa*', 'AA*'],
-      'aaa': ['Aaa*', 'AAa*', 'AAA*'],
-      'aaaa': ['Aaaa*', 'AAaa*', 'AAAa*'],
+      a: ['A*'],
+      aa: ['Aa*', 'AA*'],
+      aaa: ['Aaa*', 'AAa*', 'AAA*'],
+      aaaa: ['Aaaa*', 'AAaa*', 'AAAa*'],
       'aa*': ['Aa*', 'AA*'],
-      'ab': ['Ab*', 'AB*'],
-      'abc': ['Abc*', 'ABc*', 'ABC*'],
-      'abcd': ['Abcd*', 'ABcd*', 'ABCd*'],
+      ab: ['Ab*', 'AB*'],
+      abc: ['Abc*', 'ABc*', 'ABC*'],
+      abcd: ['Abcd*', 'ABcd*', 'ABCd*'],
       'ab*': ['Ab*', 'AB*'],
       'a*': ['A*'],
     },
-  }, {
+  },
+  {
     title: 'parameterized suffixed kleene hierarchy',
     rules: [
       { pattern: 'a*', scopes: ['A<..>X*'] },
@@ -195,18 +201,19 @@ const testcases = [
     ],
     hasIndirctResults: false,
     results: {
-      'a': ['AX*'],
-      'aa': ['AaX*', 'AAX*'],
-      'aaa': ['AaaX*', 'AAaX*', 'AAAX*'],
-      'aaaa': ['AaaaX*', 'AAaaX*', 'AAAaX*'],
+      a: ['AX*'],
+      aa: ['AaX*', 'AAX*'],
+      aaa: ['AaaX*', 'AAaX*', 'AAAX*'],
+      aaaa: ['AaaaX*', 'AAaaX*', 'AAAaX*'],
       'aa*': ['Aa*', 'AA*'],
-      'ab': ['AbX*', 'ABX*'],
-      'abc': ['AbcX*', 'ABcX*', 'ABCX*'],
-      'abcd': ['AbcdX*', 'ABcdX*', 'ABCdX*'],
+      ab: ['AbX*', 'ABX*'],
+      abc: ['AbcX*', 'ABcX*', 'ABCX*'],
+      abcd: ['AbcdX*', 'ABcdX*', 'ABCdX*'],
       'ab*': ['Ab*', 'AB*'],
       'a*': ['A*'],
     },
-  }, {
+  },
+  {
     title: 'acylic parameterized rules',
     rules: [
       { pattern: 'a', scopes: ['START'] },
@@ -218,12 +225,13 @@ const testcases = [
       { pattern: 'ddXC', scopes: ['hello-world', 'you-made-it'] },
     ],
     results: {
-      'a': ['START'],
-      'aaaX': ['bbXBB', 'cccbXBB*', 'ddcbXBB*', 'C', 'eeecbXBB*'],
-      'ccX': ['ddXC', 'eeeXCD*', 'hello-world', 'you-made-it'],
-      'ddd': ['eeedD*'],
+      a: ['START'],
+      aaaX: ['bbXBB', 'cccbXBB*', 'ddcbXBB*', 'C', 'eeecbXBB*'],
+      ccX: ['ddXC', 'eeeXCD*', 'hello-world', 'you-made-it'],
+      ddd: ['eeedD*'],
     },
-  }, {
+  },
+  {
     title: 'acylic parameterized matching pattern',
     rules: [
       { pattern: 'a*', scopes: ['bb<..>BB'] },
@@ -232,19 +240,21 @@ const testcases = [
       { pattern: 'ddcbXBB', scopes: ['C'] },
     ],
     results: {
-      'aX': ['bbXBB', 'ccbXBB*', 'ddcbXBB*', 'C'],
+      aX: ['bbXBB', 'ccbXBB*', 'ddcbXBB*', 'C'],
     },
-  }, {
+  },
+  {
     title: 'no rules',
     rules: [],
     hasIndirctResults: false,
     results: {
       '': [],
-      'a': [],
+      a: [],
       '*': [],
       'abc*': [],
     },
-  }, {
+  },
+  {
     title: 'simple rules',
     rules: [
       { pattern: 'a', scopes: ['A1', 'A2'] },
@@ -253,13 +263,14 @@ const testcases = [
     results: {
       '': [],
       '*': ['A1', 'A2', 'B1', 'B2'],
-      'a': ['A1', 'A2'],
+      a: ['A1', 'A2'],
       'a*': ['A1', 'A2'],
-      'b': ['B1', 'B2'],
+      b: ['B1', 'B2'],
       'b*': ['B1', 'B2'],
-      'ab': [],
+      ab: [],
     },
-  }, {
+  },
+  {
     title: 'simple rules in a DAG',
     rules: [
       { pattern: 'a', scopes: ['c'] },
@@ -268,14 +279,15 @@ const testcases = [
     ],
     results: {
       '': [],
-      'c': ['D'],
-      'a': ['c', 'D'],
-      'b': ['c', 'D'],
+      c: ['D'],
+      a: ['c', 'D'],
+      b: ['c', 'D'],
       '*': ['c', 'D'],
       'a*': ['c', 'D'],
       'b*': ['c', 'D'],
     },
-  }, {
+  },
+  {
     title: 'prefix matching rules in a DAG',
     rules: [
       { pattern: 'a*', scopes: ['c'] },
@@ -284,14 +296,15 @@ const testcases = [
     ],
     results: {
       '': [],
-      'c': ['D'],
-      'a': ['c', 'D'],
-      'b': ['c', 'D'],
+      c: ['D'],
+      a: ['c', 'D'],
+      b: ['c', 'D'],
       '*': ['c', 'D'],
       'a*': ['c', 'D'],
       'b*': ['c', 'D'],
     },
-  }, {
+  },
+  {
     title: 'parameterized rule variations',
     rules: [
       { pattern: 'A*', scopes: ['b', 'c*', 'd<..>', 'e<..>*', 'f<..>g', 'h<..>i*'] },
@@ -300,17 +313,17 @@ const testcases = [
     ],
     results: {
       '': [],
-      'A': ['b', 'c*', 'd', 'e*', 'fg', 'hi*'],
-      'AX': ['b', 'c*', 'dX', 'eX*', 'fXg', 'hXi*'],
-      'AXyX': ['b', 'c*', 'dXyX', 'eXyX*', 'fXyXg', 'hXyXi*'],
+      A: ['b', 'c*', 'd', 'e*', 'fg', 'hi*'],
+      AX: ['b', 'c*', 'dX', 'eX*', 'fXg', 'hXi*'],
+      AXyX: ['b', 'c*', 'dXyX', 'eXyX*', 'fXyXg', 'hXyXi*'],
       'AX*X': ['b', 'c*', 'dX*X', 'eX*X*', 'fX*Xg', 'hX*Xi*'],
       'AZZ*': ['b', 'c*', 'dZZ*', 'eZZ*', 'fZZ*', 'hZZ*'],
       'AZZ***': ['b', 'c*', 'dZZ***', 'eZZ***', 'fZZ***', 'hZZ***'],
       'A*': ['b', 'c*', 'd*', 'e*', 'f*', 'h*'],
       'A*X': ['b', 'c*', 'd*X', 'e*X*', 'f*Xg', 'h*Xi*'],
-      'BC': ['b', 'c*', 'd', 'e*', 'fg', 'hi*'],
-      'BCX': ['b', 'c*', 'dX', 'eX*', 'fXg', 'hXi*'],
-      'BCXyX': ['b', 'c*', 'dXyX', 'eXyX*', 'fXyXg', 'hXyXi*'],
+      BC: ['b', 'c*', 'd', 'e*', 'fg', 'hi*'],
+      BCX: ['b', 'c*', 'dX', 'eX*', 'fXg', 'hXi*'],
+      BCXyX: ['b', 'c*', 'dXyX', 'eXyX*', 'fXyXg', 'hXyXi*'],
       'BCX*X': ['b', 'c*', 'dX*X', 'eX*X*', 'fX*Xg', 'hX*Xi*'],
       'BCZZ*': ['b', 'c*', 'dZZ*', 'eZZ*', 'fZZ*', 'hZZ*'],
       'BCZZ***': ['b', 'c*', 'dZZ***', 'eZZ***', 'fZZ***', 'hZZ***'],
@@ -325,7 +338,8 @@ const testcases = [
       'B*C*': ['b', 'c*', 'd*', 'e*', 'f*', 'h*'],
       'B*C*X': ['b', 'c*', 'd*X', 'e*X*', 'f*Xg', 'h*Xi*'],
     },
-  }, {
+  },
+  {
     title: 'parameterized role DAG',
     rules: `
       a*    ->    c<..>A
@@ -337,7 +351,8 @@ const testcases = [
       abc   =>    cbcA ebcA
       bXYX  =>    cXYXB* eXYXB*
     `,
-  }, {
+  },
+  {
     title: 'chain of rules',
     rules: `
       a     ->    b
@@ -365,7 +380,8 @@ const testcases = [
       n*    =>    1* GOAL
       ???   =>
     `,
-  }, {
+  },
+  {
     title: 'hierarchy of chained rules',
     rules: `
       a     ->    A
@@ -380,7 +396,8 @@ const testcases = [
       aaaa  =>    AAA_ AA_ A_
       aaa   =>    A_ AA_ AAA_ AAA
     `,
-  }, {
+  },
+  {
     title: 'chain of star-rules',
     rules: `
       a     ->    b
@@ -408,7 +425,8 @@ const testcases = [
       n*    =>    1* GOAL
       ???   =>    // nothing
     `,
-  }, {
+  },
+  {
     title: 'chain of parameterized rules',
     rules: `
       aa*   ->    b<..>C
@@ -425,7 +443,8 @@ const testcases = [
       aa*   =>    b* cYY d**/YY/
       *     =>    b* cYY d**/*
     `,
-  }, {
+  },
+  {
     title: 'parameterized rules matches simple rule',
     rules: `
       aa*   ->    b<..>C
@@ -441,7 +460,8 @@ const testcases = [
       aa*   =>    b* cYY
       *     =>    b* cYY
     `,
-  }, {
+  },
+  {
     title: 'kleene in parameterization',
     rules: `
       a*    ->    A<..>B*
@@ -451,7 +471,8 @@ const testcases = [
       a*    =>    A*
       *     =>    A*
     `,
-  }, {
+  },
+  {
     title: 'example of namespacing with roles',
     rules: `
       ns:*        -> index:user.<..>.* notify:irc:<..>
@@ -461,7 +482,8 @@ const testcases = [
       ns:*        => index:user.* notify:irc:*
       ns:evil*    => index:user.evil* notify:irc:evil*
     `,
-  }, {
+  },
+  {
     title: 'match exact though parameterized role',
     rules: `
       a*        ->    A<..>B*
@@ -481,16 +503,23 @@ const testcases = [
     `,
   },
 ].map(({ title, rules, hasIndirctResults, results }) => {
-  const parse = (input, op) => input
-    .split('\n') // split on new lines
-    .map(l => l.split('//')[0]) // remove anything following '//' for comments
-    .map(l => l.trim()) // trim whitespace from lines
-    .filter(l => l !== '') // filter empty lines
-    .map(l => { // for each line split on operator
-      assume(l).includes(op, `expected an operator in: '${title}'`);
-      const [A, B] = l.split(op);
-      return [A.trim(), B.split(' ').map(s => s.trim()).filter(s => !!s)];
-    });
+  const parse = (input, op) =>
+    input
+      .split('\n') // split on new lines
+      .map((l) => l.split('//')[0]) // remove anything following '//' for comments
+      .map((l) => l.trim()) // trim whitespace from lines
+      .filter((l) => l !== '') // filter empty lines
+      .map((l) => {
+        // for each line split on operator
+        assume(l).includes(op, `expected an operator in: '${title}'`);
+        const [A, B] = l.split(op);
+        return [
+          A.trim(),
+          B.split(' ')
+            .map((s) => s.trim())
+            .filter((s) => !!s),
+        ];
+      });
   if (typeof rules === 'string') {
     rules = parse(rules, '->').map(([pattern, scopes]) => ({ pattern, scopes }));
   }

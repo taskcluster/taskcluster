@@ -1,8 +1,8 @@
 query Artifacts($taskId: ID!, $runId: Int!) {
   artifacts(taskId: $taskId, runId: $runId) {
-    edges{
-      node{
-        taskId,
+    edges {
+      node {
+        taskId
         name
       }
     }

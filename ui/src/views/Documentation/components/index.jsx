@@ -1,4 +1,3 @@
-
 import Anchor from './Anchor';
 import Blockquote from './Blockquote';
 import HeaderWithAnchor from './HeaderWithAnchor';
@@ -10,19 +9,21 @@ import InlineCode from './InlineCode';
 import Pre from './Pre';
 
 // eslint-disable-next-line react/display-name
-const heading = variant => ({ children, id, ...props }) => (
-  <HeaderWithAnchor type={variant} id={id} {...props}>
-    {children}
-  </HeaderWithAnchor>
-);
-const a = props => <Anchor {...props} />;
-const p = props => <Paragraph {...props} />;
-const table = props => <Table {...props} />;
-const blockquote = props => <Blockquote {...props} />;
-const li = props => <ListItem {...props} />;
-const inlineCode = props => <InlineCode {...props} />;
-const pre = props => <Pre {...props} />;
-const ul = props => <List {...props} />;
+const heading =
+  (variant) =>
+  ({ children, id, ...props }) => (
+    <HeaderWithAnchor type={variant} id={id} {...props}>
+      {children}
+    </HeaderWithAnchor>
+  );
+const a = (props) => <Anchor {...props} />;
+const p = (props) => <Paragraph {...props} />;
+const table = (props) => <Table {...props} />;
+const blockquote = (props) => <Blockquote {...props} />;
+const li = (props) => <ListItem {...props} />;
+const inlineCode = (props) => <InlineCode {...props} />;
+const pre = (props) => <Pre {...props} />;
+const ul = (props) => <List {...props} />;
 
 // Returns a mapping between the HTML element and the desired component
 export default {

@@ -4,14 +4,7 @@ import { withRouter } from 'react-router-dom';
 import dotProp from 'dot-prop-immutable';
 import Tab from '@material-ui/core/Tab/Tab';
 import Tabs from '@material-ui/core/Tabs/Tabs';
-import {
-  TableCell,
-  TableRow,
-  Tooltip,
-  Typography,
-  Box,
-  Button,
-} from '@material-ui/core';
+import { TableCell, TableRow, Tooltip, Typography, Box, Button } from '@material-ui/core';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
@@ -33,7 +26,7 @@ const stateToLabel = {
   stopped: 'error',
   standalone: 'info',
 };
-const getFilterStateFromQuery = query => {
+const getFilterStateFromQuery = (query) => {
   const q = new URLSearchParams(query);
 
   if (q.get('state') === 'all') {
@@ -43,7 +36,7 @@ const getFilterStateFromQuery = query => {
   return q.get('state');
 };
 
-const getLaunchConfigIdFromQuery = query => {
+const getLaunchConfigIdFromQuery = (query) => {
   const q = new URLSearchParams(query);
 
   return q.get('launchConfigId');
@@ -51,7 +44,7 @@ const getLaunchConfigIdFromQuery = query => {
 
 @withRouter
 @graphql(workersQuery, {
-  options: props => ({
+  options: (props) => ({
     variables: {
       workerPoolId: decodeURIComponent(props.match.params.workerPoolId),
       state: getFilterStateFromQuery(props.location.search),
@@ -115,34 +108,17 @@ export default class WMViewWorkers extends Component {
           return previousResult;
         }
 
-        return dotProp.set(
-          previousResult,
-          'WorkerManagerWorkers',
-          WorkerManagerWorkers =>
-            dotProp.set(
-              dotProp.set(WorkerManagerWorkers, 'edges', edges),
-              'pageInfo',
-              pageInfo
-            )
+        return dotProp.set(previousResult, 'WorkerManagerWorkers', (WorkerManagerWorkers) =>
+          dotProp.set(dotProp.set(WorkerManagerWorkers, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
   };
 
   renderRow({
-    node: {
-      workerPoolId,
-      workerGroup,
-      workerId,
-      created,
-      expires,
-      state,
-      lastModified,
-      lastChecked,
-      launchConfigId,
-    },
+    node: { workerPoolId, workerGroup, workerId, created, expires, state, lastModified, lastChecked, launchConfigId },
   }) {
-    const dateItem = date => (
+    const dateItem = (date) => (
       <Tooltip placement="top" title={date}>
         <TableCellItem>
           <DateDistance from={date} />
@@ -155,8 +131,7 @@ export default class WMViewWorkers extends Component {
       <TableRow key={workerId}>
         <TableCell>{workerGroup}</TableCell>
         <TableCell>
-          <Link
-            to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
+          <Link to={`/provisioners/${provisionerId}/worker-types/${workerType}/workers/${workerGroup}/${workerId}`}>
             <TableCellItem button>
               {workerId}
               <LinkIcon size={16} />
@@ -174,10 +149,9 @@ export default class WMViewWorkers extends Component {
           {launchConfigId && (
             <Link
               to={`/worker-manager/${encodeURIComponent(
-                workerPoolId
-              )}/launch-configs?launchConfigId=${encodeURIComponent(
-                launchConfigId
-              )}&includeArchived=true`}>
+                workerPoolId,
+              )}/launch-configs?launchConfigId=${encodeURIComponent(launchConfigId)}&includeArchived=true`}
+            >
               <TableCellItem button>
                 {launchConfigId}
                 <LinkIcon size={16} />
@@ -217,27 +191,23 @@ export default class WMViewWorkers extends Component {
             flexWrap: 'wrap',
             alignItems: 'center',
             width: '100%',
-          }}>
+          }}
+        >
           <div style={{ flexGrow: 1, marginRight: 8 }}>
             <Breadcrumbs>
               <Link to="/worker-manager">
                 <Typography variant="body2">Worker Manager</Typography>
               </Link>
               <Link to={`/worker-manager/${params.workerPoolId}`}>
-                <Typography variant="body2">
-                  {decodeURIComponent(params.workerPoolId)}
-                </Typography>
+                <Typography variant="body2">{decodeURIComponent(params.workerPoolId)}</Typography>
               </Link>
-              <WorkersNavbar
-                workerPoolId={decodeURIComponent(params.workerPoolId)}
-                hasWorkerPool
-              />
+              <WorkersNavbar workerPoolId={decodeURIComponent(params.workerPoolId)} hasWorkerPool />
             </Breadcrumbs>
           </div>
         </Box>
 
         <Tabs value={currentTab} onChange={this.handleTabChange}>
-          {this.tabs.map(tab => (
+          {this.tabs.map((tab) => (
             <Tab label={tab.toUpperCase()} key={tab} />
           ))}
         </Tabs>
@@ -252,7 +222,8 @@ export default class WMViewWorkers extends Component {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                }}>
+                }}
+              >
                 <Typography variant="subtitle1" style={{ padding: 12 }}>
                   Showing workers for Launch Config ID: &quot;
                   {decodeURIComponent(launchConfigId)}&quot;
@@ -260,10 +231,9 @@ export default class WMViewWorkers extends Component {
                 <Button
                   variant="outlined"
                   component={Link}
-                  to={`/worker-manager/${encodeURIComponent(
-                    params.workerPoolId
-                  )}/workers?state=${state || ''}`}
-                  style={{ marginLeft: 8 }}>
+                  to={`/worker-manager/${encodeURIComponent(params.workerPoolId)}/workers?state=${state || ''}`}
+                  style={{ marginLeft: 8 }}
+                >
                   Show all workers
                 </Button>
               </Box>

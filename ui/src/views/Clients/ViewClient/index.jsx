@@ -50,7 +50,7 @@ import SignInDialog from '../../../components/SignInDialog';
     fetchPolicy: 'network-only',
   },
 })
-@withStyles(theme => ({
+@withStyles((theme) => ({
   listItemButton: {
     padding: 0,
     '&:last-child': {
@@ -88,9 +88,7 @@ export default class ViewClient extends Component {
     error: null,
     dialogError: null,
     dialogOpen: false,
-    accessToken: this.props.location.state
-      ? this.props.location.state.accessToken
-      : null,
+    accessToken: this.props.location.state ? this.props.location.state.accessToken : null,
     snackbar: {
       message: '',
       variant: 'success',
@@ -98,15 +96,15 @@ export default class ViewClient extends Component {
     },
   };
 
-  getClientFormKey = memoize(initialClient => JSON.stringify(initialClient), {
-    serializer: initialClient => {
+  getClientFormKey = memoize((initialClient) => JSON.stringify(initialClient), {
+    serializer: (initialClient) => {
       // expires changes on every render so it's best to keep
       // it out of the caching key
       return JSON.stringify(omit(['expires'], initialClient));
     },
   });
 
-  handleDeleteClient = async clientId => {
+  handleDeleteClient = async (clientId) => {
     this.setState({ dialogError: null, loading: true });
 
     return this.props.client.mutate({
@@ -115,7 +113,7 @@ export default class ViewClient extends Component {
     });
   };
 
-  handleDialogActionError = error => {
+  handleDialogActionError = (error) => {
     this.setState({ dialogError: error, loading: false });
   };
 
@@ -123,7 +121,7 @@ export default class ViewClient extends Component {
     this.props.history.push(`/auth/clients`);
   };
 
-  handleDisableClient = async clientId => {
+  handleDisableClient = async (clientId) => {
     this.setState({ error: null, loading: true });
 
     try {
@@ -139,7 +137,7 @@ export default class ViewClient extends Component {
     }
   };
 
-  handleEnableClient = async clientId => {
+  handleEnableClient = async (clientId) => {
     this.setState({ error: null, loading: true });
 
     try {
@@ -155,7 +153,7 @@ export default class ViewClient extends Component {
     }
   };
 
-  handleResetAccessToken = async clientId => {
+  handleResetAccessToken = async (clientId) => {
     const {
       clientData: { refetch },
       client,
@@ -190,8 +188,7 @@ export default class ViewClient extends Component {
   // This tool is not intended for other uses
   // than setting up credentials via `taskcluster signin`,
   // which uses this URL format.
-  isAllowedCallback = callbackUrl =>
-    /^https?:\/\/localhost(:[0-9]+)?(\/|$)/.test(callbackUrl);
+  isAllowedCallback = (callbackUrl) => /^https?:\/\/localhost(:[0-9]+)?(\/|$)/.test(callbackUrl);
 
   handleSaveClient = async (client, clientId) => {
     const { isNewClient } = this.props;
@@ -226,7 +223,7 @@ export default class ViewClient extends Component {
       // CLI login
       if (callbackUrl) {
         window.location.replace(
-          `${callbackUrl}?clientId=${clientId}&accessToken=${result.data.createClient.accessToken}`
+          `${callbackUrl}?clientId=${clientId}&accessToken=${result.data.createClient.accessToken}`,
         );
 
         return;
@@ -274,50 +271,26 @@ export default class ViewClient extends Component {
   };
 
   render() {
-    const {
-      error,
-      loading,
-      accessToken,
-      snackbar,
-      dialogError,
-      dialogOpen,
-    } = this.state;
-    const {
-      isNewClient,
-      clientData,
-      currentScopesData,
-      classes,
-      location,
-      user,
-    } = this.props;
+    const { error, loading, accessToken, snackbar, dialogError, dialogOpen } = this.state;
+    const { isNewClient, clientData, currentScopesData, classes, location, user } = this.props;
     const query = parse(location.search.slice(1));
     const initialClient = {
       description: query.description,
       clientId: query.client_id,
-      expires: query.expires
-        ? fromNow(query.expires)
-        : addYears(new Date(), 1000),
+      expires: query.expires ? fromNow(query.expires) : addYears(new Date(), 1000),
       deleteOnExpiration: true,
       scopes: typeof query.scope === 'string' ? [query.scope] : query.scope,
       expandedScopes: null,
       disabled: false,
     };
     const isCliLogin = Boolean(query.callback_url);
-    const isClientDisabled =
-      clientData?.client?.disabled;
+    const isClientDisabled = clientData?.client?.disabled;
 
     // CLI login
-    if (
-      isCliLogin &&
-      user &&
-      currentScopesData?.currentScopes
-    ) {
+    if (isCliLogin && user && currentScopesData?.currentScopes) {
       Object.assign(initialClient, {
         clientId: `${user.credentials.clientId}/${query.name}`,
-        scopes: scopeIntersection(
-          initialClient.scopes,
-          currentScopesData.currentScopes
-        ),
+        scopes: scopeIntersection(initialClient.scopes, currentScopesData.currentScopes),
       });
     }
 
@@ -375,19 +348,11 @@ export default class ViewClient extends Component {
               </Fragment>
             ) : (
               <Fragment>
-                {((clientData?.loading) ||
-                  (currentScopesData?.loading)) && (
-                  <Spinner loading />
-                )}
+                {(clientData?.loading || currentScopesData?.loading) && <Spinner loading />}
                 <ErrorPanel
                   fixed
                   warning={isClientDisabled}
-                  error={
-                    (isClientDisabled && 'Disabled') ||
-                    error ||
-                    (clientData?.error) ||
-                    (currentScopesData?.error)
-                  }
+                  error={(isClientDisabled && 'Disabled') || error || clientData?.error || currentScopesData?.error}
                 />
                 {clientData?.client && (
                   <ClientForm

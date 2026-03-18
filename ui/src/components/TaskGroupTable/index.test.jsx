@@ -1,10 +1,9 @@
-
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import TaskGroupTable from './index';
 
 jest.mock('@material-ui/core/styles', () => ({
-  withStyles: () => Component => {
+  withStyles: () => (Component) => {
     function StyledComponent(props) {
       return <Component {...props} classes={{}} />;
     }
@@ -18,26 +17,24 @@ let capturedItemKey = null;
 let capturedItemData = null;
 
 jest.mock('react-window', () => ({
-  FixedSizeList: jest.fn(
-    ({ children: Children, itemData, itemKey, itemCount }) => {
-      capturedItemKey = itemKey;
-      capturedItemData = itemData;
+  FixedSizeList: jest.fn(({ children: Children, itemData, itemKey, itemCount }) => {
+    capturedItemKey = itemKey;
+    capturedItemData = itemData;
 
-      const items = [];
+    const items = [];
 
-      for (let i = 0; i < Math.min(3, itemCount); i += 1) {
-        const key = itemKey ? itemKey(i, itemData) : i;
+    for (let i = 0; i < Math.min(3, itemCount); i += 1) {
+      const key = itemKey ? itemKey(i, itemData) : i;
 
-        items.push(
-          <div key={key} data-testid={`item-${i}`} data-item-key={key}>
-            <Children data={itemData} index={i} style={{}} />
-          </div>
-        );
-      }
-
-      return <div data-testid="virtual-list">{items}</div>;
+      items.push(
+        <div key={key} data-testid={`item-${i}`} data-item-key={key}>
+          <Children data={itemData} index={i} style={{}} />
+        </div>,
+      );
     }
-  ),
+
+    return <div data-testid="virtual-list">{items}</div>;
+  }),
 }));
 
 jest.mock('react-virtualized', () => ({
@@ -63,25 +60,15 @@ describe('TaskGroupTable', () => {
 
   const mockTasks = [
     createMockTask('task-1', 'A-Task', 'running', '2025-01-01T00:00:00Z', null),
-    createMockTask(
-      'task-2',
-      'B-Task',
-      'completed',
-      '2025-01-01T00:00:00Z',
-      '2025-01-01T00:05:00Z'
-    ),
+    createMockTask('task-2', 'B-Task', 'completed', '2025-01-01T00:00:00Z', '2025-01-01T00:05:00Z'),
     createMockTask('task-3', 'C-Task', 'running', '2025-01-01T00:00:00Z', null),
   ];
 
   it('should use taskId as itemKey for proper component lifecycle on filter change', () => {
     render(
       <MemoryRouter>
-        <TaskGroupTable
-          taskGroupConnection={{ edges: mockTasks, pageInfo: {} }}
-          filter=""
-          searchTerm=""
-        />
-      </MemoryRouter>
+        <TaskGroupTable taskGroupConnection={{ edges: mockTasks, pageInfo: {} }} filter="" searchTerm="" />
+      </MemoryRouter>,
     );
 
     expect(capturedItemKey).toBeDefined();
@@ -95,12 +82,8 @@ describe('TaskGroupTable', () => {
   it('should return different keys when filtering changes item order', () => {
     const { rerender } = render(
       <MemoryRouter>
-        <TaskGroupTable
-          taskGroupConnection={{ edges: mockTasks, pageInfo: {} }}
-          filter=""
-          searchTerm=""
-        />
-      </MemoryRouter>
+        <TaskGroupTable taskGroupConnection={{ edges: mockTasks, pageInfo: {} }} filter="" searchTerm="" />
+      </MemoryRouter>,
     );
     const keyAtIndex0BeforeFilter = capturedItemKey(0, capturedItemData);
 
@@ -108,12 +91,8 @@ describe('TaskGroupTable', () => {
 
     rerender(
       <MemoryRouter>
-        <TaskGroupTable
-          taskGroupConnection={{ edges: mockTasks, pageInfo: {} }}
-          filter="running"
-          searchTerm=""
-        />
-      </MemoryRouter>
+        <TaskGroupTable taskGroupConnection={{ edges: mockTasks, pageInfo: {} }} filter="running" searchTerm="" />
+      </MemoryRouter>,
     );
 
     const keyAtIndex0AfterFilter = capturedItemKey(0, capturedItemData);

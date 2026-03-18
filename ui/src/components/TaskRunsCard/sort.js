@@ -1,4 +1,4 @@
-export const getPriority = a => {
+export const getPriority = (a) => {
   if (a?.node?.name?.includes('live.log')) {
     return 1;
   }
@@ -10,9 +10,9 @@ export const getPriority = a => {
   return a?.node?.name?.startsWith('public/') ? 3 : 4;
 };
 
-export const sortArtifacts = artifacts => {
+export const sortArtifacts = (artifacts) => {
   return artifacts
-    .map(a => ({ ...a, priority: getPriority(a) }))
+    .map((a) => ({ ...a, priority: getPriority(a) }))
     .sort((a, b) => {
       if (a.priority === b.priority) {
         return a.node?.name?.localeCompare(b.node?.name);

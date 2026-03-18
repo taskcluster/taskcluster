@@ -17,7 +17,18 @@ export default class GithubEvents extends Client {
   // in the routing-key along with event specific metadata in the payload.
   /* eslint-enable max-len */
   pullRequest(pattern) {
-    const entry = {"exchange":"pull-request","name":"pullRequest","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"organization","required":true},{"multipleWords":false,"name":"repository","required":true},{"multipleWords":false,"name":"action","required":true}],"schema":"v1/github-pull-request-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {
+      exchange: 'pull-request',
+      name: 'pullRequest',
+      routingKey: [
+        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
+        { multipleWords: false, name: 'organization', required: true },
+        { multipleWords: false, name: 'repository', required: true },
+        { multipleWords: false, name: 'action', required: true },
+      ],
+      schema: 'v1/github-pull-request-message.json#',
+      type: 'topic-exchange',
+    }; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -27,7 +38,17 @@ export default class GithubEvents extends Client {
   // in the routing-key along with event specific metadata in the payload.
   /* eslint-enable max-len */
   push(pattern) {
-    const entry = {"exchange":"push","name":"push","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"organization","required":true},{"multipleWords":false,"name":"repository","required":true}],"schema":"v1/github-push-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {
+      exchange: 'push',
+      name: 'push',
+      routingKey: [
+        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
+        { multipleWords: false, name: 'organization', required: true },
+        { multipleWords: false, name: 'repository', required: true },
+      ],
+      schema: 'v1/github-push-message.json#',
+      type: 'topic-exchange',
+    }; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -37,7 +58,17 @@ export default class GithubEvents extends Client {
   // in the routing-key along with event specific metadata in the payload.
   /* eslint-enable max-len */
   release(pattern) {
-    const entry = {"exchange":"release","name":"release","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"organization","required":true},{"multipleWords":false,"name":"repository","required":true}],"schema":"v1/github-release-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {
+      exchange: 'release',
+      name: 'release',
+      routingKey: [
+        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
+        { multipleWords: false, name: 'organization', required: true },
+        { multipleWords: false, name: 'repository', required: true },
+      ],
+      schema: 'v1/github-release-message.json#',
+      type: 'topic-exchange',
+    }; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -48,7 +79,17 @@ export default class GithubEvents extends Client {
   // in the routing-key along with event specific metadata in the payload.
   /* eslint-enable max-len */
   rerun(pattern) {
-    const entry = {"exchange":"rerun","name":"rerun","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"organization","required":true},{"multipleWords":false,"name":"repository","required":true}],"schema":"v1/github-rerun-message.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {
+      exchange: 'rerun',
+      name: 'rerun',
+      routingKey: [
+        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
+        { multipleWords: false, name: 'organization', required: true },
+        { multipleWords: false, name: 'repository', required: true },
+      ],
+      schema: 'v1/github-rerun-message.json#',
+      type: 'topic-exchange',
+    }; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }
@@ -61,7 +102,17 @@ export default class GithubEvents extends Client {
   // use the statuses routes to bind the handler that creates the initial status.
   /* eslint-enable max-len */
   taskGroupCreationRequested(pattern) {
-    const entry = {"exchange":"task-group-creation-requested","name":"taskGroupCreationRequested","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"organization","required":true},{"multipleWords":false,"name":"repository","required":true}],"schema":"v1/task-group-creation-requested.json#","type":"topic-exchange"}; // eslint-disable-line
+    const entry = {
+      exchange: 'task-group-creation-requested',
+      name: 'taskGroupCreationRequested',
+      routingKey: [
+        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
+        { multipleWords: false, name: 'organization', required: true },
+        { multipleWords: false, name: 'repository', required: true },
+      ],
+      schema: 'v1/task-group-creation-requested.json#',
+      type: 'topic-exchange',
+    }; // eslint-disable-line
 
     return this.normalizePattern(entry, pattern);
   }

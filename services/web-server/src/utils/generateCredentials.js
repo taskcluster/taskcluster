@@ -20,7 +20,10 @@ export default async ({ cfg, strategy, identity, monitor }) => {
   }
 
   // Create and return temporary credentials, limiting expires to a max of 15 minutes
-  const { credentials: issuer, temporaryCredentials: { startOffset } } = cfg.taskcluster;
+  const {
+    credentials: issuer,
+    temporaryCredentials: { startOffset },
+  } = cfg.taskcluster;
   const { credentials: userCredentials, expires } = user.createCredentials({
     // issuer
     credentials: issuer,

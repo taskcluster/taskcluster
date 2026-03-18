@@ -40,11 +40,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       const contextDir = path.join(baseDir, 'taskcluster-proxy-build');
       await execCommand({
-        command: [
-          'go', 'build',
-          '-o', path.join(contextDir, 'taskcluster-proxy'),
-          './tools/taskcluster-proxy',
-        ],
+        command: ['go', 'build', '-o', path.join(contextDir, 'taskcluster-proxy'), './tools/taskcluster-proxy'],
         dir: REPO_ROOT,
         logfile: path.join(logsDir, 'taskcluster-proxy-build.log'),
         utils,
@@ -53,31 +49,26 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       utils.step({ title: 'Building Docker Image' });
 
-      fs.writeFileSync(
-        path.join(contextDir, 'version.json'),
-        requirements['docker-flow-version']);
+      fs.writeFileSync(path.join(contextDir, 'version.json'), requirements['docker-flow-version']);
 
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
-      fs.writeFileSync(dockerfile, [
-        // get the latest ca-certificates from Alpine
-        'FROM alpine:3 AS certs',
-        'RUN apk add --no-cache ca-certificates',
-        // start over in an empty image and just copy the certs in
-        'FROM scratch',
-        'EXPOSE 80',
-        'COPY version.json /app/version.json',
-        'COPY taskcluster-proxy /taskcluster-proxy',
-        'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
-        'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
-      ].join('\n'));
-      const command = [
-        'docker', 'build',
-        '--no-cache',
-        '--progress', 'plain',
-        '--tag', tag,
-        contextDir,
-      ];
+      fs.writeFileSync(
+        dockerfile,
+        [
+          // get the latest ca-certificates from Alpine
+          'FROM alpine:3 AS certs',
+          'RUN apk add --no-cache ca-certificates',
+          // start over in an empty image and just copy the certs in
+          'FROM scratch',
+          'EXPOSE 80',
+          'COPY version.json /app/version.json',
+          'COPY taskcluster-proxy /taskcluster-proxy',
+          'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
+          'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
+        ].join('\n'),
+      );
+      const command = ['docker', 'build', '--no-cache', '--progress', 'plain', '--tag', tag, contextDir];
       await execCommand({
         command,
         dir: REPO_ROOT,
@@ -114,20 +105,14 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Taskcluster-Proxy Complete',
-    requires: [
-      'clean-artifacts-dir',
-      'taskcluster-proxy-artifacts',
-      'taskcluster-proxy-docker-image',
-    ],
-    provides: [
-      'target-taskcluster-proxy',
-    ],
+    requires: ['clean-artifacts-dir', 'taskcluster-proxy-artifacts', 'taskcluster-proxy-docker-image'],
+    provides: ['target-taskcluster-proxy'],
     run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {
         'target-taskcluster-proxy': [
           'Taskcluster-Proxy artifacts:',
-          ...requirements['taskcluster-proxy-artifacts'].map(a => ` - ${artifactsDir}/${a}`),
+          ...requirements['taskcluster-proxy-artifacts'].map((a) => ` - ${artifactsDir}/${a}`),
           `Taskcluster-Proxy docker image: ${requirements['taskcluster-proxy-docker-image']}`,
         ].join('\n'),
       };

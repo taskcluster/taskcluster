@@ -14,7 +14,7 @@ import Anchor from '../components/Anchor';
 import contributorsJson from '../../../../../.all-contributorsrc';
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   cardActionArea: {
     height: '100%',
     textAlign: 'center',
@@ -50,21 +50,16 @@ export default class People extends Component {
         className={classNames({
           [classes.gutterTop]: gutterTop,
           [classes.gutterBottom]: gutterBottom,
-        })}>
-        {contributors.filter(filter || (() => true)).map(contrib => (
+        })}
+      >
+        {contributors.filter(filter || (() => true)).map((contrib) => (
           <Grid key={contrib.login} item xs={4} sm={3}>
             <Anchor href={contrib.profile || '#'}>
               <Card>
                 <CardActionArea className={classes.cardActionArea}>
                   <CardContent>
-                    <Avatar
-                      alt="avatar"
-                      src={contrib.avatar_url}
-                      className={classes.avatar}
-                    />
-                    <Typography variant="body2">
-                      {contrib.name || contrib.login}
-                    </Typography>
+                    <Avatar alt="avatar" src={contrib.avatar_url} className={classes.avatar} />
+                    <Typography variant="body2">{contrib.name || contrib.login}</Typography>
                   </CardContent>
                 </CardActionArea>
               </Card>

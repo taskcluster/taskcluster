@@ -13,7 +13,7 @@ import { pageInfo, cachePurge } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.cacheName, b.node.cacheName)),
-  map(({ node: { cacheName } }) => cacheName)
+  map(({ node: { cacheName } }) => cacheName),
 );
 
 /**
@@ -45,42 +45,29 @@ export default class CachePurgesTable extends Component {
     (cachePurgesConnection, sortBy, sortDirection, searchTerm) => {
       const sortByProperty = sortBy ? camelCase(sortBy) : '';
       const filteredCache = searchTerm
-        ? cachePurgesConnection.edges.filter(({ node }) =>
-            node.cacheName.includes(searchTerm)
-          )
+        ? cachePurgesConnection.edges.filter(({ node }) => node.cacheName.includes(searchTerm))
         : cachePurgesConnection.edges;
 
       return {
         ...cachePurgesConnection,
         edges: [...filteredCache].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
+          const firstElement = sortDirection === 'desc' ? b.node[sortByProperty] : a.node[sortByProperty];
+          const secondElement = sortDirection === 'desc' ? a.node[sortByProperty] : b.node[sortByProperty];
 
           return sort(firstElement, secondElement);
         }),
       };
     },
     {
-      serializer: ([
-        cachePurgesConnection,
-        sortBy,
-        sortDirection,
-        searchTerm,
-      ]) => {
+      serializer: ([cachePurgesConnection, sortBy, sortDirection, searchTerm]) => {
         const ids = sorted(cachePurgesConnection.edges);
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = (sortBy) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
@@ -94,7 +81,7 @@ export default class CachePurgesTable extends Component {
       cachePurgesConnection,
       sortBy,
       sortDirection,
-      searchTerm
+      searchTerm,
     );
 
     return (
@@ -108,9 +95,7 @@ export default class CachePurgesTable extends Component {
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
         headers={['Provisioner ID', 'Worker Type', 'Cache Name', 'Before']}
-        renderRow={({
-          node: { provisionerId, workerType, cacheName, before },
-        }) => (
+        renderRow={({ node: { provisionerId, workerType, cacheName, before } }) => (
           <TableRow key={cacheName}>
             <TableCell>{provisionerId}</TableCell>
             <TableCell>{workerType}</TableCell>

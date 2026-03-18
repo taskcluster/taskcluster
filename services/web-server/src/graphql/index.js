@@ -10,7 +10,7 @@ const graphqls = [
   loadGraphql('Root.graphql'),
 ];
 
-fs.readdirSync(__dirname).forEach(file => {
+fs.readdirSync(__dirname).forEach((file) => {
   if (file === 'Root.graphql' || !file.endsWith('.graphql')) {
     return;
   }

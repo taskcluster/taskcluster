@@ -27,13 +27,13 @@ import {
 
 const __filename = new URL('', import.meta.url).pathname;
 
-helper.dbSuite(path.basename(__filename), function() {
+helper.dbSuite(path.basename(__filename), function () {
   let db;
 
   const showProgress = debug('showProgress');
 
-  const createUsers = async db => {
-    await db._withClient('admin', async client => {
+  const createUsers = async (db) => {
+    await db._withClient('admin', async (client) => {
       const usernames = ['test_service1', 'test_service2', 'badrole'];
 
       // create users (same as roles) so the grants will succeed
@@ -51,8 +51,8 @@ helper.dbSuite(path.basename(__filename), function() {
     await resetRoles(db);
   };
 
-  const resetRoles = async db => {
-    await db._withClient('admin', async client => {
+  const resetRoles = async (db) => {
+    await db._withClient('admin', async (client) => {
       // drop attributes and group membership for all test_* users
       const res = await client.query(`
         select *
@@ -66,12 +66,12 @@ helper.dbSuite(path.basename(__filename), function() {
     });
   };
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     db = new Database({ urlsByMode: { admin: helper.dbUrl } });
     await resetRoles(db);
   });
 
-  teardown(async function() {
+  teardown(async function () {
     if (db) {
       try {
         await db.close();
@@ -81,18 +81,18 @@ helper.dbSuite(path.basename(__filename), function() {
     }
   });
 
-  suite('runMigration', function() {
-    suiteSetup(async function() {
+  suite('runMigration', function () {
+    suiteSetup(async function () {
       db = new Database({ urlsByMode: { admin: helper.dbUrl } });
       await createUsers(db);
     });
 
-    setup(function() {
-      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
+    setup(function () {
+      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, admin: helper.dbUrl } });
     });
 
-    test('runs upgrade script with multiple statements and $db_user_prefix$', async function() {
-      await db._withClient('admin', async client => {
+    test('runs upgrade script with multiple statements and $db_user_prefix$', async function () {
+      await db._withClient('admin', async (client) => {
         await runMigration({
           client,
           version: {
@@ -110,7 +110,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       assert.equal(await db.currentVersion(), 1);
-      await db._withClient(READ, async client => {
+      await db._withClient(READ, async (client) => {
         let res = await client.query('select * from foo');
         assert.deepEqual(res.rows, [{ bar: 1 }]);
         res = await client.query('select * from foo2');
@@ -118,9 +118,9 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    test('failure does not modify version', async function() {
+    test('failure does not modify version', async function () {
       try {
-        await db._withClient('admin', async client => {
+        await db._withClient('admin', async (client) => {
           await runMigration({
             client,
             version: {
@@ -134,7 +134,6 @@ helper.dbSuite(path.basename(__filename), function() {
             usernamePrefix: 'test',
           });
         });
-
       } catch (err) {
         assert.equal(err.code, UNDEFINED_COLUMN);
         assert.equal(await db.currentVersion(), 0);
@@ -143,21 +142,23 @@ helper.dbSuite(path.basename(__filename), function() {
       throw new Error('runMigration did not fail');
     });
 
-    test('allows deprecated methods without failing', async function() {
-      await db._withClient('admin', async client => {
+    test('allows deprecated methods without failing', async function () {
+      await db._withClient('admin', async (client) => {
         await runMigration({
           client,
           version: {
             version: 1,
-            methods: { foo_bar: {
-              name: 'foo_bar',
-              description: 'whatever',
-              mode: 'read',
-              serviceName: 'baz',
-              args: 'foo integer',
-              returns: 'table (bar integer)',
-              body: 'begin end',
-            } },
+            methods: {
+              foo_bar: {
+                name: 'foo_bar',
+                description: 'whatever',
+                mode: 'read',
+                serviceName: 'baz',
+                args: 'foo integer',
+                returns: 'table (bar integer)',
+                body: 'begin end',
+              },
+            },
           },
           showProgress,
           usernamePrefix: 'test',
@@ -165,7 +166,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       assert.equal(await db.currentVersion(), 1);
-      await db._withClient('admin', async client => {
+      await db._withClient('admin', async (client) => {
         await runMigration({
           client,
           version: {
@@ -186,16 +187,16 @@ helper.dbSuite(path.basename(__filename), function() {
     });
   });
 
-  suite('runOnlineMigration/runOnlineDowngrade', function() {
-    suiteSetup(async function() {
+  suite('runOnlineMigration/runOnlineDowngrade', function () {
+    suiteSetup(async function () {
       db = new Database({ urlsByMode: { admin: helper.dbUrl } });
       await createUsers(db);
     });
 
-    setup(async function() {
+    setup(async function () {
       runOnlineBatches.resetHooks();
-      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
-      await db._withClient('admin', async client => {
+      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, admin: helper.dbUrl } });
+      await db._withClient('admin', async (client) => {
         await client.query('create table tcversion (version int primary key)');
         await client.query('insert into tcversion (version) values (1)');
         for (const v of [0, 1, 2, 3]) {
@@ -211,8 +212,8 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    teardown(async function() {
-      await db._withClient('admin', async client => {
+    teardown(async function () {
+      await db._withClient('admin', async (client) => {
         await ignorePgErrors(client.query('drop table online_test'), UNDEFINED_TABLE);
       });
     });
@@ -222,7 +223,8 @@ helper.dbSuite(path.basename(__filename), function() {
         `create or replace function ${name}(batch_size_in integer, state_in jsonb)
         returns table (count integer, state jsonb)
         as ${dollarQuote(body)}
-        language plpgsql`);
+        language plpgsql`,
+      );
     };
 
     const mkIsCompleteFn = async ({ client, name, body }) => {
@@ -230,18 +232,19 @@ helper.dbSuite(path.basename(__filename), function() {
         `create or replace function ${name}()
         returns boolean
         as ${dollarQuote(body)}
-        language plpgsql`);
+        language plpgsql`,
+      );
     };
 
-    test('does nothing when there is no batch function', async function() {
-      await db._withClient('admin', async client => {
+    test('does nothing when there is no batch function', async function () {
+      await db._withClient('admin', async (client) => {
         await runOnlineMigration({ client, showProgress, version: { version: 1 } });
       });
       // just doesn't throw anything..
     });
 
-    test('does nothing when the online migration is already complete', async function() {
-      await db._withClient('admin', async client => {
+    test('does nothing when the online migration is already complete', async function () {
+      await db._withClient('admin', async (client) => {
         await mkBatchFn({
           client,
           name: 'online_migration_v1_batch',
@@ -261,8 +264,8 @@ helper.dbSuite(path.basename(__filename), function() {
       // just doesn't throw anything..
     });
 
-    test('runs a real migration', async function() {
-      await db._withClient('admin', async client => {
+    test('runs a real migration', async function () {
+      await db._withClient('admin', async (client) => {
         await client.query(`
           create table online_test as
           select
@@ -313,7 +316,7 @@ helper.dbSuite(path.basename(__filename), function() {
         await runOnlineMigration({ client, showProgress, version: { version: 1 } });
 
         // check that it migrated correctly..
-        await db._withClient('admin', async client => {
+        await db._withClient('admin', async (client) => {
           const res = await client.query(`
             select * from online_test
             where negative != -positive
@@ -323,69 +326,84 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    test('batch function that just does one item per iteration', testing.runWithFakeTime(async function() {
-      let itemsComplete = 0;
-      runOnlineBatches.setHook('runBatch', async (_batchSize, state) => {
-        if (itemsComplete >= 1000) {
-          return { state, count: 0 };
-        }
-        itemsComplete += 1;
-        await testing.sleep(100);
-        return { state, count: 1 };
-      });
-      runOnlineBatches.setHook('isComplete', async () => itemsComplete >= 1000);
+    test(
+      'batch function that just does one item per iteration',
+      testing.runWithFakeTime(
+        async function () {
+          let itemsComplete = 0;
+          runOnlineBatches.setHook('runBatch', async (_batchSize, state) => {
+            if (itemsComplete >= 1000) {
+              return { state, count: 0 };
+            }
+            itemsComplete += 1;
+            await testing.sleep(100);
+            return { state, count: 1 };
+          });
+          runOnlineBatches.setHook('isComplete', async () => itemsComplete >= 1000);
 
-      await runOnlineMigration({ showProgress, version: { version: 1 } });
+          await runOnlineMigration({ showProgress, version: { version: 1 } });
 
-      assert.equal(itemsComplete, 1000);
-    }, { maxTime: Infinity }));
+          assert.equal(itemsComplete, 1000);
+        },
+        { maxTime: Infinity },
+      ),
+    );
 
-    test('batch function that returns 0 items early', testing.runWithFakeTime(async function() {
-      let itemsComplete = 0;
-      let isCompleteCalls = 0;
-      runOnlineBatches.setHook('runBatch', async (_batchSize, state) => {
-        state.counter = (state.counter || 0) + 1;
-        if (state.counter === 100 || itemsComplete >= 1000) {
-          // this will trigger an isComplete call, and if not complete, starts over with
-          // a fresh state
-          return { state, count: 0 };
-        }
-        itemsComplete += 1;
-        await testing.sleep(100);
-        return { state, count: 1 };
-      });
-      runOnlineBatches.setHook('isComplete', async () => {
-        isCompleteCalls++;
-        return (itemsComplete >= 1000);
-      });
+    test(
+      'batch function that returns 0 items early',
+      testing.runWithFakeTime(
+        async function () {
+          let itemsComplete = 0;
+          let isCompleteCalls = 0;
+          runOnlineBatches.setHook('runBatch', async (_batchSize, state) => {
+            state.counter = (state.counter || 0) + 1;
+            if (state.counter === 100 || itemsComplete >= 1000) {
+              // this will trigger an isComplete call, and if not complete, starts over with
+              // a fresh state
+              return { state, count: 0 };
+            }
+            itemsComplete += 1;
+            await testing.sleep(100);
+            return { state, count: 1 };
+          });
+          runOnlineBatches.setHook('isComplete', async () => {
+            isCompleteCalls++;
+            return itemsComplete >= 1000;
+          });
 
-      await runOnlineMigration({ showProgress, version: { version: 1 } });
+          await runOnlineMigration({ showProgress, version: { version: 1 } });
 
-      assert.equal(itemsComplete, 1000);
-      assert.equal(isCompleteCalls, 12);
-    }, { maxTime: Infinity }));
+          assert.equal(itemsComplete, 1000);
+          assert.equal(isCompleteCalls, 12);
+        },
+        { maxTime: Infinity },
+      ),
+    );
 
-    test('(downgrade) batch function that just does more items than requested per iteration', testing.runWithFakeTime(async function() {
-      let itemsComplete = 0;
-      runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
-        if (itemsComplete >= 1000) {
-          return { state, count: 0 };
-        }
-        batchSize = Math.max(batchSize + 2, 1000 - itemsComplete);
-        itemsComplete += batchSize;
-        await testing.sleep(batchSize * 10); // one item takes 10ms (fake time)
-        return { state, count: batchSize };
-      });
-      runOnlineBatches.setHook('isComplete', async () => itemsComplete >= 1000);
+    test(
+      '(downgrade) batch function that just does more items than requested per iteration',
+      testing.runWithFakeTime(async function () {
+        let itemsComplete = 0;
+        runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
+          if (itemsComplete >= 1000) {
+            return { state, count: 0 };
+          }
+          batchSize = Math.max(batchSize + 2, 1000 - itemsComplete);
+          itemsComplete += batchSize;
+          await testing.sleep(batchSize * 10); // one item takes 10ms (fake time)
+          return { state, count: batchSize };
+        });
+        runOnlineBatches.setHook('isComplete', async () => itemsComplete >= 1000);
 
-      await runOnlineDowngrade({ showProgress, version: { version: 1 } });
+        await runOnlineDowngrade({ showProgress, version: { version: 1 } });
 
-      assert.equal(itemsComplete, 1000);
-    }));
+        assert.equal(itemsComplete, 1000);
+      }),
+    );
   });
 
-  suite('runDowngrade', function() {
-    suiteSetup(async function() {
+  suite('runDowngrade', function () {
+    suiteSetup(async function () {
       db = new Database({ urlsByMode: { admin: helper.dbUrl } });
       await createUsers(db);
     });
@@ -455,10 +473,10 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(res.rows[0].test, v);
     };
 
-    setup(async function() {
-      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
+    setup(async function () {
+      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, admin: helper.dbUrl } });
       for (const version of [schema.getVersion(1), schema.getVersion(2), schema.getVersion(3)]) {
-        await db._withClient('admin', async client => {
+        await db._withClient('admin', async (client) => {
           await runMigration({
             client,
             version,
@@ -466,12 +484,11 @@ helper.dbSuite(path.basename(__filename), function() {
             usernamePrefix: 'test',
           });
         });
-
       }
     });
 
-    test('runs downgrade script with multiple statements and $db_user_prefix$', async function() {
-      await db._withClient('admin', async client => {
+    test('runs downgrade script with multiple statements and $db_user_prefix$', async function () {
+      await db._withClient('admin', async (client) => {
         await runDowngrade({
           client,
           schema,
@@ -483,42 +500,47 @@ helper.dbSuite(path.basename(__filename), function() {
       });
 
       assert.equal(await db.currentVersion(), 2);
-      await db._withClient('admin', async client => {
-        await assert.rejects(async () => {
-          await client.query('select * from foo2');
-        }, err => err.code === UNDEFINED_TABLE);
+      await db._withClient('admin', async (client) => {
+        await assert.rejects(
+          async () => {
+            await client.query('select * from foo2');
+          },
+          (err) => err.code === UNDEFINED_TABLE,
+        );
         // method is now the v1 method
         await testMethod(client, 1);
       });
     });
 
-    test('failure does not modify version', async function() {
-      await db._withClient('admin', async client => {
+    test('failure does not modify version', async function () {
+      await db._withClient('admin', async (client) => {
         await assert.rejects(
-          async () => runDowngrade({
-            client,
-            schema,
-            fromVersion: {
-              ...schema.getVersion(3),
-              downgradeScript: `begin
+          async () =>
+            runDowngrade({
+              client,
+              schema,
+              fromVersion: {
+                ...schema.getVersion(3),
+                downgradeScript: `begin
                 drop table NOSUCHTABLE;
               end`,
-            },
-            toVersion: schema.getVersion(2),
-            showProgress,
-            usernamePrefix: 'test',
-          }),
-          err => err.code === UNDEFINED_TABLE);
+              },
+              toVersion: schema.getVersion(2),
+              showProgress,
+              usernamePrefix: 'test',
+            }),
+          (err) => err.code === UNDEFINED_TABLE,
+        );
       });
       assert.equal(await db.currentVersion(), 3);
-      await db._withClient('admin', async client => {
+      await db._withClient('admin', async (client) => {
         // method is still the v3 method
         await testMethod(client, 3);
       });
     });
 
-    test('allows deprecated methods without failing', async function() {
-      await db._withClient('admin', async client => {
+    test('allows deprecated methods without failing', async function () {
+      await db._withClient('admin', async (client) => {
         await runMigration({
           client,
           version: schema.getVersion(4),
@@ -527,7 +549,7 @@ helper.dbSuite(path.basename(__filename), function() {
         });
       });
 
-      await db._withClient('admin', async client => {
+      await db._withClient('admin', async (client) => {
         await runDowngrade({
           client,
           schema,

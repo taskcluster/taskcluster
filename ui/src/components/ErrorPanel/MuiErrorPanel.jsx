@@ -13,7 +13,7 @@ import ErrorBox from './ErrorBox';
 import Markdown from '../Markdown';
 
 @withStyles(
-  theme => {
+  (theme) => {
     const { warning } = theme.palette;
 
     return {
@@ -61,7 +61,7 @@ import Markdown from '../Markdown';
       },
     };
   },
-  { withTheme: true }
+  { withTheme: true },
 )
 /**
  * Render an error in a panel. Will be expandable display stack traces
@@ -97,15 +97,7 @@ export default class ErrorPanel extends Component {
   };
 
   render() {
-    const {
-      theme,
-      classes,
-      className,
-      disableStackTrace,
-      error,
-      warning,
-      onClose,
-    } = this.props;
+    const { theme, classes, className, disableStackTrace, error, warning, onClose } = this.props;
     const showStack = !disableStackTrace && error instanceof Error;
     const markdown = (
       <Markdown
@@ -113,13 +105,12 @@ export default class ErrorPanel extends Component {
           [classes.errorText]: !warning,
           [classes.warningText]: warning,
           [classes.pad]: !showStack,
-        })}>
+        })}
+      >
         {typeof error === 'string' ? error : error.message}
       </Markdown>
     );
-    const iconColor = warning
-      ? theme.palette.warning.contrastText
-      : theme.palette.error.contrastText;
+    const iconColor = warning ? theme.palette.warning.contrastText : theme.palette.error.contrastText;
 
     if (!showStack) {
       return (
@@ -131,8 +122,9 @@ export default class ErrorPanel extends Component {
               [classes.error]: !warning,
               [classes.warning]: warning,
             },
-            className
-          )}>
+            className,
+          )}
+        >
           {markdown}
           {onClose && (
             <IconButton onClick={onClose}>
@@ -151,12 +143,14 @@ export default class ErrorPanel extends Component {
             [classes.error]: !warning,
             [classes.warning]: warning,
           },
-          className
+          className,
         )}
-        disabled={!showStack}>
+        disabled={!showStack}
+      >
         <ExpansionPanelSummary
           classes={{ disabled: classes.disabled }}
-          expandIcon={<ChevronDownIcon color={iconColor} />}>
+          expandIcon={<ChevronDownIcon color={iconColor} />}
+        >
           {markdown}
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>

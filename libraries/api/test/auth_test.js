@@ -13,7 +13,7 @@ const debug = debugFactory('auth_test');
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   // Reference for test api server
   let _apiServer = null;
   let nockScope = null;
@@ -33,15 +33,18 @@ suite(testing.suiteName(), function() {
   // Create a mock authentication server
   setup(async () => {
     const rootUrl = 'http://localhost:4321/';
-    nockScope = testing.fakeauth.start({
-      'test-client': ['service:magic'],
-      admin: ['*'],
-      nobody: ['another-irrelevant-scope'],
-      param: ['service:myfolder/resource'],
-      param2: ['service:myfolder/resource', 'service:myfolder/other-resource'],
-    }, { rootUrl });
+    nockScope = testing.fakeauth.start(
+      {
+        'test-client': ['service:magic'],
+        admin: ['*'],
+        nobody: ['another-irrelevant-scope'],
+        param: ['service:myfolder/resource'],
+        param2: ['service:myfolder/resource', 'service:myfolder/other-resource'],
+      },
+      { rootUrl },
+    );
 
-    nockScope.on('request', req => {
+    nockScope.on('request', (req) => {
       authenticated = true;
       traceId = req.headers['x-taskcluster-trace-id'];
     });
@@ -81,17 +84,20 @@ suite(testing.suiteName(), function() {
 
   const testEndpoint = ({ method, route, name, scopes = null, handler, handlerBuilder, tests }) => {
     const sideEffects = {};
-    builder.declare({
-      method,
-      route,
-      name,
-      category: 'API Library',
-      title: 'placeholder',
-      description: 'placeholder',
-      scopes,
-    }, handler || handlerBuilder(sideEffects));
+    builder.declare(
+      {
+        method,
+        route,
+        name,
+        category: 'API Library',
+        title: 'placeholder',
+        description: 'placeholder',
+        scopes,
+      },
+      handler || handlerBuilder(sideEffects),
+    );
     const buildUrl = (params = {}) => {
-      const path = route.replace(/:[a-zA-Z][a-zA-Z0-9]+/g, match => {
+      const path = route.replace(/:[a-zA-Z][a-zA-Z0-9]+/g, (match) => {
         const result = params[match.replace(/^:/, '')];
         if (!result) {
           throw new Error('Bad test, must specifiy all route params!');
@@ -100,7 +106,7 @@ suite(testing.suiteName(), function() {
       });
       return `http://localhost:23526/api/test/v1${path}`;
     };
-    const buildHawk = id => ({
+    const buildHawk = (id) => ({
       id,
       key: 'not-used-by-fakeauth',
       algorithm: 'sha256',
@@ -190,30 +196,45 @@ suite(testing.suiteName(), function() {
       {
         label: 'static-scope with authorizedScopes',
         id: 'admin',
-        tester: (auth, url) => requestWithHawk(url, auth,
-          Buffer.from(JSON.stringify({
-            authorizedScopes: ['service:magic'],
-          })).toString('base64'),
-        ),
+        tester: (auth, url) =>
+          requestWithHawk(
+            url,
+            auth,
+            Buffer.from(
+              JSON.stringify({
+                authorizedScopes: ['service:magic'],
+              }),
+            ).toString('base64'),
+          ),
       },
       {
         label: 'static-scope with authorizedScopes (star)',
         id: 'admin',
-        tester: (auth, url) => requestWithHawk(url, auth,
-          Buffer.from(JSON.stringify({
-            authorizedScopes: ['service:ma*'],
-          })).toString('base64'),
-        ),
+        tester: (auth, url) =>
+          requestWithHawk(
+            url,
+            auth,
+            Buffer.from(
+              JSON.stringify({
+                authorizedScopes: ['service:ma*'],
+              }),
+            ).toString('base64'),
+          ),
       },
       {
         label: 'static-scope with authorizedScopes (too strict)',
         id: 'admin',
         desiredStatus: 403,
-        tester: (auth, url) => requestWithHawk(url, auth,
-          Buffer.from(JSON.stringify({
-            authorizedScopes: ['some-irrelevant-scope'],
-          })).toString('base64'),
-        ),
+        tester: (auth, url) =>
+          requestWithHawk(
+            url,
+            auth,
+            Buffer.from(
+              JSON.stringify({
+                authorizedScopes: ['some-irrelevant-scope'],
+              }),
+            ).toString('base64'),
+          ),
       },
     ],
   });
@@ -234,8 +255,8 @@ suite(testing.suiteName(), function() {
       {
         label: 'request scopes from caller',
         id: 'test-client',
-        tester: (auth, url) => requestWithHawk(url, auth)
-          .then(function(res) {
+        tester: (auth, url) =>
+          requestWithHawk(url, auth).then(function (res) {
             assert(res.ok, 'Request failed');
             assert(res.body.scopes.length === 1, 'wrong number of scopes');
             assert(res.body.scopes[0] === 'service:magic', 'failed scopes');
@@ -265,7 +286,7 @@ suite(testing.suiteName(), function() {
         tester: (auth, url) => requestWithHawk(url, auth),
       },
       {
-        label: 'can\'t cheat parameterized scopes',
+        label: "can't cheat parameterized scopes",
         id: 'nobody',
         desiredStatus: 403,
         tester: (auth, url) => requestWithHawk(url, auth),
@@ -409,8 +430,8 @@ suite(testing.suiteName(), function() {
       {
         label: 'client has sufficient scopes',
         id: 'admin',
-        tester: (auth, url) => requestWithHawk(url, auth)
-          .then(function(res) {
+        tester: (auth, url) =>
+          requestWithHawk(url, auth).then(function (res) {
             assert(res.body.clientId === 'admin');
             return res;
           }),
@@ -458,65 +479,59 @@ suite(testing.suiteName(), function() {
       {
         label: 'With dynamic authentication',
         id: 'admin',
-        tester: (auth, url) => requestWithHawk(url, auth)
-          .send({
-            scopes: [
-              'got-all/folder/t',
-              'got-all/hello/*',
-              'got-all/',
-              'got-all/*',
-              'got-only/this',
-            ],
+        tester: (auth, url) =>
+          requestWithHawk(url, auth).send({
+            scopes: ['got-all/folder/t', 'got-all/hello/*', 'got-all/', 'got-all/*', 'got-only/this'],
           }),
       },
       {
         label: 'With dynamic authentication (authorizedScopes)',
         id: 'admin',
-        tester: (auth, url) => requestWithHawk(url, auth,
-          Buffer.from(JSON.stringify({
-            authorizedScopes: ['got-all/*', 'got-only/this'],
-          })).toString('base64'))
-          .send({
-            scopes: [
-              'got-all/folder/t',
-              'got-all/hello/*',
-              'got-all/',
-              'got-all/*',
-              'got-only/this',
-            ],
+        tester: (auth, url) =>
+          requestWithHawk(
+            url,
+            auth,
+            Buffer.from(
+              JSON.stringify({
+                authorizedScopes: ['got-all/*', 'got-only/this'],
+              }),
+            ).toString('base64'),
+          ).send({
+            scopes: ['got-all/folder/t', 'got-all/hello/*', 'got-all/', 'got-all/*', 'got-only/this'],
           }),
       },
       {
         label: 'With dynamic authentication (miss scoped)',
         desiredStatus: 403,
         id: 'admin',
-        tester: (auth, url) => requestWithHawk(url, auth,
-          Buffer.from(JSON.stringify({
-            authorizedScopes: ['got-all/*', 'got-only/this'],
-          })).toString('base64'))
-          .send({
-            scopes: [
-              'got-all/folder/t',
-              'got-all/hello/*',
-              'got-all/',
-              'got-all/*',
-              'got-only/this',
-              'got-*',
-            ],
+        tester: (auth, url) =>
+          requestWithHawk(
+            url,
+            auth,
+            Buffer.from(
+              JSON.stringify({
+                authorizedScopes: ['got-all/*', 'got-only/this'],
+              }),
+            ).toString('base64'),
+          ).send({
+            scopes: ['got-all/folder/t', 'got-all/hello/*', 'got-all/', 'got-all/*', 'got-only/this', 'got-*'],
           }),
       },
       {
         label: 'With dynamic authentication (miss scoped again)',
         desiredStatus: 403,
         id: 'admin',
-        tester: (auth, url) => requestWithHawk(url, auth,
-          Buffer.from(JSON.stringify({
-            authorizedScopes: ['got-only/this'],
-          })).toString('base64'))
-          .send({
-            scopes: [
-              'got-only/this*',
-            ],
+        tester: (auth, url) =>
+          requestWithHawk(
+            url,
+            auth,
+            Buffer.from(
+              JSON.stringify({
+                authorizedScopes: ['got-only/this'],
+              }),
+            ).toString('base64'),
+          ).send({
+            scopes: ['got-only/this*'],
           }),
       },
     ],
@@ -526,11 +541,13 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-expression-auth/:provisionerId/:workerType',
     name: 'testExpAuthWorker',
-    scopes: { AllOf: [
-      'queue:create-task:<provisionerId>/<workerType>',
-      { for: 'route', in: 'routes', each: 'queue:route:<route>' },
-      { for: 'scope', in: 'scopes', each: '<scope>' },
-    ] },
+    scopes: {
+      AllOf: [
+        'queue:create-task:<provisionerId>/<workerType>',
+        { for: 'route', in: 'routes', each: 'queue:route:<route>' },
+        { for: 'scope', in: 'scopes', each: '<scope>' },
+      ],
+    },
     handler: async (req, res) => {
       await req.authorize({
         provisionerId: req.params.provisionerId,
@@ -545,8 +562,8 @@ suite(testing.suiteName(), function() {
         label: 'extra scope expresesions',
         id: 'admin',
         params: { provisionerId: 'test-provisioner', workerType: 'test-worker' },
-        tester: (auth, url) => requestWithHawk(url, auth)
-          .send({
+        tester: (auth, url) =>
+          requestWithHawk(url, auth).send({
             routes: ['routeA', 'routeB'],
             scopes: ['scope1', 'scope2'],
           }),
@@ -558,9 +575,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-expression-if-then-2',
     name: 'testIfThen',
-    scopes: { if: 'private', then: { AllOf: [
-      'some:scope:nobody:has',
-    ] } },
+    scopes: { if: 'private', then: { AllOf: ['some:scope:nobody:has'] } },
     handler: async (req, res) => {
       await req.authorize({
         private: !req.body.public,
@@ -572,21 +587,24 @@ suite(testing.suiteName(), function() {
         label: 'scope expression if/then (success)',
         shouldCallAuth: false,
         id: 'admin',
-        tester: (auth, url) => requestWithHawk(url, auth,
-          Buffer.from(JSON.stringify({
-            authorizedScopes: ['nothing:useful'],
-          })).toString('base64'))
-          .send({
+        tester: (auth, url) =>
+          requestWithHawk(
+            url,
+            auth,
+            Buffer.from(
+              JSON.stringify({
+                authorizedScopes: ['nothing:useful'],
+              }),
+            ).toString('base64'),
+          ).send({
             public: true,
           }),
       },
       {
         label: 'scope expression if/then (success with no client)',
         shouldCallAuth: false,
-        tester: (_auth, url) => request
-          .get(url)
-          .set('x-taskcluster-trace-id', 'foo/bar')
-          .send({
+        tester: (_auth, url) =>
+          request.get(url).set('x-taskcluster-trace-id', 'foo/bar').send({
             public: true,
           }),
       },
@@ -594,11 +612,16 @@ suite(testing.suiteName(), function() {
         label: 'scope expression if/then (failure)',
         desiredStatus: 403,
         id: 'admin',
-        tester: (auth, url) => requestWithHawk(url, auth,
-          Buffer.from(JSON.stringify({
-            authorizedScopes: ['nothing:useful'],
-          })).toString('base64'))
-          .send({
+        tester: (auth, url) =>
+          requestWithHawk(
+            url,
+            auth,
+            Buffer.from(
+              JSON.stringify({
+                authorizedScopes: ['nothing:useful'],
+              }),
+            ).toString('base64'),
+          ).send({
             public: false,
           }),
       },
@@ -606,10 +629,8 @@ suite(testing.suiteName(), function() {
         label: 'scope expression if/then (failure with no client)',
         shouldCallAuth: false,
         desiredStatus: 403,
-        tester: (_auth, url) => request
-          .get(url)
-          .set('x-taskcluster-trace-id', 'foo/bar')
-          .send({
+        tester: (_auth, url) =>
+          request.get(url).set('x-taskcluster-trace-id', 'foo/bar').send({
             public: false,
           }),
       },
@@ -620,10 +641,7 @@ suite(testing.suiteName(), function() {
     method: 'get',
     route: '/test-expression-if-then-forget',
     name: 'testIfThenForget',
-    scopes: { AnyOf: [
-      'some:scope:nobody:has',
-      { if: 'public', then: { AllOf: [] } },
-    ] },
+    scopes: { AnyOf: ['some:scope:nobody:has', { if: 'public', then: { AllOf: [] } }] },
     handler: async (_req, res) => {
       return res.reply({});
     },
@@ -652,14 +670,17 @@ suite(testing.suiteName(), function() {
         shouldCallAuth: false,
         desiredStatus: 500,
         id: 'admin',
-        tester: (auth, url) => requestWithHawk(url, auth,
-          Buffer.from(JSON.stringify({
-            authorizedScopes: ['got-only/this'],
-          })).toString('base64'))
-          .send({
-            scopes: [
-              'got-only/this*',
-            ],
+        tester: (auth, url) =>
+          requestWithHawk(
+            url,
+            auth,
+            Buffer.from(
+              JSON.stringify({
+                authorizedScopes: ['got-only/this'],
+              }),
+            ).toString('base64'),
+          ).send({
+            scopes: ['got-only/this*'],
           }),
       },
     ],
@@ -680,14 +701,17 @@ suite(testing.suiteName(), function() {
         id: 'admin',
         shouldCallAuth: false,
         desiredStatus: 500,
-        tester: (auth, url) => requestWithHawk(url, auth,
-          Buffer.from(JSON.stringify({
-            authorizedScopes: ['got-only/this'],
-          })).toString('base64'))
-          .send({
-            scopes: [
-              'got-only/this*',
-            ],
+        tester: (auth, url) =>
+          requestWithHawk(
+            url,
+            auth,
+            Buffer.from(
+              JSON.stringify({
+                authorizedScopes: ['got-only/this'],
+              }),
+            ).toString('base64'),
+          ).send({
+            scopes: ['got-only/this*'],
           }),
       },
     ],
@@ -698,7 +722,7 @@ suite(testing.suiteName(), function() {
     route: '/test-bad-auth-side-effects',
     name: 'testBadAuth',
     scopes: 'something<foo>',
-    handlerBuilder: sideEffects => async (req, res) => {
+    handlerBuilder: (sideEffects) => async (req, res) => {
       await req.authorize({ foo: 'bar' });
       sideEffects['got-here'] = true;
       return res.reply({});

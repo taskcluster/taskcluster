@@ -5,10 +5,7 @@ import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils/inde
 export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   ensureTask(tasks, {
     title: 'Build Websocktunnel Docker Image',
-    requires: [
-      'release-version',
-      'docker-flow-version',
-    ],
+    requires: ['release-version', 'docker-flow-version'],
     provides: [
       'websocktunnel-docker-image', // image tag
     ],
@@ -26,8 +23,10 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
       const contextDir = path.join(baseDir, 'websocktunnel-build');
       await execCommand({
         command: [
-          'go', 'build',
-          '-o', path.join(contextDir, 'websocktunnel'),
+          'go',
+          'build',
+          '-o',
+          path.join(contextDir, 'websocktunnel'),
           './tools/websocktunnel/cmd/websocktunnel',
         ],
         dir: REPO_ROOT,
@@ -38,25 +37,20 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       utils.step({ title: 'Building Docker Image' });
 
-      fs.writeFileSync(
-        path.join(contextDir, 'version.json'),
-        requirements['docker-flow-version']);
+      fs.writeFileSync(path.join(contextDir, 'version.json'), requirements['docker-flow-version']);
 
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
-      fs.writeFileSync(dockerfile, [
-        'FROM scratch',
-        'COPY websocktunnel /websocktunnel',
-        'COPY version.json /app/version.json',
-        'ENTRYPOINT ["/websocktunnel"]',
-      ].join('\n'));
-      const command = [
-        'docker', 'build',
-        '--no-cache',
-        '--progress', 'plain',
-        '--tag', tag,
-        contextDir,
-      ];
+      fs.writeFileSync(
+        dockerfile,
+        [
+          'FROM scratch',
+          'COPY websocktunnel /websocktunnel',
+          'COPY version.json /app/version.json',
+          'ENTRYPOINT ["/websocktunnel"]',
+        ].join('\n'),
+      );
+      const command = ['docker', 'build', '--no-cache', '--progress', 'plain', '--tag', tag, contextDir];
       await execCommand({
         command,
         dir: REPO_ROOT,
@@ -93,12 +87,8 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Websocktunnel Complete',
-    requires: [
-      'websocktunnel-docker-image',
-    ],
-    provides: [
-      'target-websocktunnel',
-    ],
+    requires: ['websocktunnel-docker-image'],
+    provides: ['target-websocktunnel'],
     run: async (requirements, _utils) => {
       return {
         'target-websocktunnel': `Websocktunnel docker image: ${requirements['websocktunnel-docker-image']}`,

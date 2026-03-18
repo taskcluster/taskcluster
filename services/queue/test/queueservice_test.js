@@ -7,7 +7,7 @@ const debug = debugFactory('test:queueservice');
 import testing from '@taskcluster/lib-testing';
 import helper from './helper.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   let queueService;
 
@@ -42,7 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(function () {
     if (skipping()) {
       return;
     }
@@ -60,54 +60,69 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const taskId = slugid.v4();
     const taskGroupId = slugid.v4();
     const schedulerId = slugid.v4();
-    const deadline = new Date(Date.now()+ 1 * 1000);
+    const deadline = new Date(Date.now() + 1 * 1000);
     debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
     // Put message
     await queueService.putDeadlineMessage(taskId, taskGroupId, schedulerId, deadline);
 
     // Poll for message
-    return testing.poll(async () => {
-      const messages = await queueService.pollDeadlineQueue();
-      debug('Received messages: %j', messages);
+    return testing.poll(
+      async () => {
+        const messages = await queueService.pollDeadlineQueue();
+        debug('Received messages: %j', messages);
 
-      // delete all the messages
-      await Promise.all(messages.map((message) => {
-        return message.remove();
-      }));
+        // delete all the messages
+        await Promise.all(
+          messages.map((message) => {
+            return message.remove();
+          }),
+        );
 
-      // Check if we got the message
-      const foundTaskId = messages.some((message) => {
-        return message.taskId === taskId && message.taskGroupId === taskGroupId &&
-               message.schedulerId === schedulerId && message.deadline.getTime() === deadline.getTime();
-      });
-      assert(foundTaskId, 'Expected to see taskId at some point');
-    }, 100, 250);
+        // Check if we got the message
+        const foundTaskId = messages.some((message) => {
+          return (
+            message.taskId === taskId &&
+            message.taskGroupId === taskGroupId &&
+            message.schedulerId === schedulerId &&
+            message.deadline.getTime() === deadline.getTime()
+          );
+        });
+        assert(foundTaskId, 'Expected to see taskId at some point');
+      },
+      100,
+      250,
+    );
   });
 
   test('putClaimMessage, pollClaimQueue', async () => {
     const taskId = slugid.v4();
-    const takenUntil = new Date(Date.now()+ 2 * 1000);
+    const takenUntil = new Date(Date.now() + 2 * 1000);
     debug('Putting message with taskId: %s', taskId);
     // Put message
     await queueService.putClaimMessage(taskId, 0, takenUntil, 'tq/id', 'wg', 'wi');
 
     // Poll for message
-    return testing.poll(async () => {
-      const messages = await queueService.pollClaimQueue();
-      debug('Received messages: %j', messages);
+    return testing.poll(
+      async () => {
+        const messages = await queueService.pollClaimQueue();
+        debug('Received messages: %j', messages);
 
-      // delete all the messages
-      await Promise.all(messages.map((message) => {
-        return message.remove();
-      }));
+        // delete all the messages
+        await Promise.all(
+          messages.map((message) => {
+            return message.remove();
+          }),
+        );
 
-      // Check if we got the message
-      const foundTaskId = messages.some((message) => {
-        return message.taskId === taskId &&
-               message.takenUntil.getTime() === takenUntil.getTime();
-      });
-      assert(foundTaskId, 'Expected to see taskId at some point');
-    }, 100, 250);
+        // Check if we got the message
+        const foundTaskId = messages.some((message) => {
+          return message.taskId === taskId && message.takenUntil.getTime() === takenUntil.getTime();
+        });
+        assert(foundTaskId, 'Expected to see taskId at some point');
+      },
+      100,
+      250,
+    );
   });
 
   test('putResolvedMessage, pollResolvedQueue', async () => {
@@ -117,13 +132,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     debug('Putting message with taskId: %s, taskGroupId: %s', taskId, taskGroupId);
 
     // when task is resolved, existing claim and pending message should be removed
-    const futureDate = new Date(Date.now()+ 24 * 60 * 1000);
+    const futureDate = new Date(Date.now() + 24 * 60 * 1000);
     await queueService.putClaimMessage(taskId, 0, futureDate, 'tq/id', 'wg', 'wi');
     await queueService.putDeadlineMessage(taskId, taskGroupId, schedulerId, futureDate);
     await queueService.putPendingMessage({ taskId, taskGroupId, deadline: futureDate, taskQueueId: 't/q' }, 0);
 
     // messages are fetched directly because queueservice. pollXX() methods return by visibility
-    await helper.withDbClient(async client => {
+    await helper.withDbClient(async (client) => {
       const { rows: claimMessages } = await client.query('select * from queue_claimed_tasks');
       const { rows: deadlineMessages } = await client.query('select * from queue_task_deadlines');
       const { rows: pendingMessages } = await client.query('select * from queue_pending_tasks');
@@ -135,7 +150,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     // Put message
     await queueService.putResolvedMessage(taskId, taskGroupId, schedulerId, 'completed');
 
-    await helper.withDbClient(async client => {
+    await helper.withDbClient(async (client) => {
       const { rows: claimMessages } = await client.query('select * from queue_claimed_tasks');
       const { rows: deadlineMessages } = await client.query('select * from queue_task_deadlines');
       const { rows: pendingMessages } = await client.query('select * from queue_pending_tasks');
@@ -145,22 +160,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     // Poll for message
-    return testing.poll(async () => {
-      const messages = await queueService.pollResolvedQueue();
-      debug('Received messages: %j', messages);
+    return testing.poll(
+      async () => {
+        const messages = await queueService.pollResolvedQueue();
+        debug('Received messages: %j', messages);
 
-      // delete all the messages
-      await Promise.all(messages.map((message) => {
-        return message.remove();
-      }));
+        // delete all the messages
+        await Promise.all(
+          messages.map((message) => {
+            return message.remove();
+          }),
+        );
 
-      // Check if we got the message
-      const foundTaskId = messages.some((message) => {
-        return message.taskId === taskId && message.taskGroupId === taskGroupId &&
-               message.schedulerId === schedulerId && message.resolution === 'completed';
-      });
-      assert(foundTaskId, 'Expected to see taskId at some point');
-    }, 100, 250);
+        // Check if we got the message
+        const foundTaskId = messages.some((message) => {
+          return (
+            message.taskId === taskId &&
+            message.taskGroupId === taskGroupId &&
+            message.schedulerId === schedulerId &&
+            message.resolution === 'completed'
+          );
+        });
+        assert(foundTaskId, 'Expected to see taskId at some point');
+      },
+      100,
+      250,
+    );
   });
 
   // not supported for mock QueueService
@@ -171,7 +196,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       taskId: taskId,
       taskQueueId: `${provisionerId}/${workerType}`,
       priority: 'lowest',
-      deadline: new Date(Date.now()+ 5 * 60 * 1000),
+      deadline: new Date(Date.now() + 5 * 60 * 1000),
     };
 
     // Put message into pending queue
@@ -182,13 +207,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const poll = await queueService.pollPendingQueue(`${provisionerId}/${workerType}`);
 
     // Poll for the message
-    let message = await testing.poll(async () => {
-      const messages = await poll(1);
-      if (messages.length === 1) {
-        return messages[0];
-      }
-      throw new Error('Expected message');
-    }, 100, 250);
+    let message = await testing.poll(
+      async () => {
+        const messages = await poll(1);
+        if (messages.length === 1) {
+          return messages[0];
+        }
+        throw new Error('Expected message');
+      },
+      100,
+      250,
+    );
 
     // Check message
     assert(message.taskId === taskId);
@@ -198,13 +227,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await message.release();
 
     // Poll message again
-    message = await testing.poll(async () => {
-      const messages = await poll(1);
-      if (messages.length === 1) {
-        return messages[0];
-      }
-      throw new Error('Expected message to return');
-    }, 100, 250);
+    message = await testing.poll(
+      async () => {
+        const messages = await poll(1);
+        if (messages.length === 1) {
+          return messages[0];
+        }
+        throw new Error('Expected message to return');
+      },
+      100,
+      250,
+    );
 
     // Check message
     assert(message.taskId === taskId);
@@ -216,9 +249,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('countPendingTasks', async () => {
-    const count = await queueService.countPendingTasks(
-      `${provisionerId}/${workerType}`,
-    );
+    const count = await queueService.countPendingTasks(`${provisionerId}/${workerType}`);
     debug('pending message count: %j', count);
     assert(typeof count === 'number', 'Expected count as number!');
   });

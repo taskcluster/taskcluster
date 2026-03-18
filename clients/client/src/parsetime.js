@@ -1,26 +1,29 @@
 // Regular expression matching:
 // A years B months C days D hours E minutes F seconds
-const timeExp = new RegExp([
-  '^(\\s*(-|\\+))?',
-  '(\\s*(\\d+)\\s*y((ears?)|r)?)?',
-  '(\\s*(\\d+)\\s*mo(nths?)?)?',
-  '(\\s*(\\d+)\\s*w((eeks?)|k)?)?',
-  '(\\s*(\\d+)\\s*d(ays?)?)?',
-  '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
-  '(\\s*(\\d+)\\s*m(in(utes?)?)?)?',
-  '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
-  '\\s*$',
-].join(''), 'i');
+const timeExp = new RegExp(
+  [
+    '^(\\s*(-|\\+))?',
+    '(\\s*(\\d+)\\s*y((ears?)|r)?)?',
+    '(\\s*(\\d+)\\s*mo(nths?)?)?',
+    '(\\s*(\\d+)\\s*w((eeks?)|k)?)?',
+    '(\\s*(\\d+)\\s*d(ays?)?)?',
+    '(\\s*(\\d+)\\s*h((ours?)|r)?)?',
+    '(\\s*(\\d+)\\s*m(in(utes?)?)?)?',
+    '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
+    '\\s*$',
+  ].join(''),
+  'i',
+);
 
 /** Parse time string */
-const parseTime = function(str) {
+const parseTime = function (str) {
   // Parse the string
   const match = timeExp.exec(str || '');
   if (!match) {
     throw new Error(`String: \'${str}\' isn\'t a time expression`);
   }
   // Negate if needed
-  const neg = match[2] === '-' ? - 1 : 1;
+  const neg = match[2] === '-' ? -1 : 1;
   // Return parsed values
   return {
     years: parseInt(match[4] || 0, 10) * neg,

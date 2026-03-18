@@ -1,4 +1,3 @@
-
 import { render, waitFor, act } from '@testing-library/react';
 import { ApolloProvider } from 'react-apollo';
 import setupClient from 'apollo-client-mock';
@@ -28,7 +27,7 @@ describe('ViewTask page', () => {
           <ApolloProvider client={createClient()}>
             <ViewTask match={{ params: {} }} task={{ taskId: 'taskId' }} />
           </ApolloProvider>
-        </MemoryRouter>
+        </MemoryRouter>,
       );
 
       await waitFor(() => {});

@@ -16,11 +16,11 @@ import ConnectionDataTable from '../ConnectionDataTable';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.notificationAddress, b.node.notificationAddress)),
-  map(({ node: { notificationAddress } }) => notificationAddress)
+  map(({ node: { notificationAddress } }) => notificationAddress),
 );
 const tableHeaders = ['Address', 'Type'];
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   tableCell: {
     textDecoration: 'none',
   },
@@ -56,7 +56,7 @@ export default class DenylistTable extends Component {
     sortDirection: 'asc',
   };
 
-  propertyFromColName = colName => {
+  propertyFromColName = (colName) => {
     // property correspiinding to the column name
     switch (colName) {
       case 'Address':
@@ -79,14 +79,8 @@ export default class DenylistTable extends Component {
       return {
         ...notificationsConnection,
         edges: [...notificationsConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
+          const firstElement = sortDirection === 'desc' ? b.node[sortByProperty] : a.node[sortByProperty];
+          const secondElement = sortDirection === 'desc' ? a.node[sortByProperty] : b.node[sortByProperty];
 
           return sort(firstElement, secondElement);
         }),
@@ -98,20 +92,20 @@ export default class DenylistTable extends Component {
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = (sortBy) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
     this.setState({ sortBy, sortDirection });
   };
 
-  prettify = str =>
+  prettify = (str) =>
     titleCase(str)
       .split(' ')
-      .map(word => {
+      .map((word) => {
         const pretty = word === 'Irc' ? word.toUpperCase() : word;
 
         return pretty;
@@ -125,7 +119,7 @@ export default class DenylistTable extends Component {
     const sortedNotificationsConnection = this.createSortedNotifications(
       notificationsConnection,
       sortBy,
-      sortDirection
+      sortDirection,
     );
 
     return (
@@ -142,23 +136,16 @@ export default class DenylistTable extends Component {
             <TableCell>
               <Link
                 className={classes.tableCell}
-                to={`/notify/denylist/${encodeURIComponent(
-                  node.notificationAddress
-                )}`}>
-                <div
-                  className={classNames(
-                    classes.listItemCell,
-                    classes.listLinkCell
-                  )}>
+                to={`/notify/denylist/${encodeURIComponent(node.notificationAddress)}`}
+              >
+                <div className={classNames(classes.listItemCell, classes.listLinkCell)}>
                   {node.notificationAddress}
                   <LinkIcon size={iconSize} />
                 </div>
               </Link>
             </TableCell>
             <TableCell>
-              <div className={classes.listItemCell}>
-                {this.prettify(node.notificationType)}
-              </div>
+              <div className={classes.listItemCell}>{this.prettify(node.notificationType)}</div>
             </TableCell>
           </TableRow>
         )}

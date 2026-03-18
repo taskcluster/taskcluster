@@ -16,11 +16,7 @@ import { memoize } from '../../utils/memoize';
 import StatusLabel from '../StatusLabel';
 import Link from '../../utils/Link';
 import sort from '../../utils/sort';
-import {
-  filterTasks,
-  taskLastRun,
-  taskRunDurationInMs,
-} from '../../utils/task';
+import { filterTasks, taskLastRun, taskRunDurationInMs } from '../../utils/task';
 import { pageInfo, task, taskState } from '../../utils/prop-types';
 import TimeDiff from '../Duration';
 import DateDistance from '../DateDistance';
@@ -34,8 +30,8 @@ const sorted = pipe(
         status: { state },
         taskId,
       },
-    }) => `${taskId}-${name}-${state}`
-  )
+    }) => `${taskId}-${name}-${state}`,
+  ),
 );
 const valueFromNode = (node, sortBy) => {
   const lastRun = taskLastRun(node);
@@ -56,22 +52,14 @@ const ItemRenderer = ({ data, index, style }) => {
   const run = taskLastRun(taskGroup);
 
   return (
-    <TableRow
-      style={style}
-      className={classes.tableRow}
-      component="div"
-      role="row">
+    <TableRow style={style} className={classes.tableRow} component="div" role="row">
       <TableCell
         size="small"
-        className={
-          showTimings ? classes.tableFirstShortCell : classes.tableFirstCell
-        }
+        className={showTimings ? classes.tableFirstShortCell : classes.tableFirstCell}
         component="div"
-        role="cell">
-        <Link
-          title={taskGroup.metadata.name}
-          className={classes.listItemCell}
-          to={`/tasks/${taskGroup.taskId}`}>
+        role="cell"
+      >
+        <Link title={taskGroup.metadata.name} className={classes.listItemCell} to={`/tasks/${taskGroup.taskId}`}>
           <Typography variant="body2" className={classes.taskGroupName}>
             {taskGroup.metadata.name}
           </Typography>
@@ -81,41 +69,19 @@ const ItemRenderer = ({ data, index, style }) => {
         </Link>
       </TableCell>
       {showTimings && (
-        <TableCell
-          size="small"
-          className={classes.tableTimeCell}
-          component="div"
-          role="cell">
-          <abbr title={run?.from}>
-            {run?.from ? <DateDistance from={run.from} /> : 'n/a'}
-          </abbr>
+        <TableCell size="small" className={classes.tableTimeCell} component="div" role="cell">
+          <abbr title={run?.from}>{run?.from ? <DateDistance from={run.from} /> : 'n/a'}</abbr>
         </TableCell>
       )}
       {showTimings && (
-        <TableCell
-          size="small"
-          className={classes.tableTimeCell}
-          component="div"
-          role="cell">
-          <abbr title={run?.to}>
-            {run?.to ? <DateDistance from={run.to} /> : 'n/a'}
-          </abbr>
+        <TableCell size="small" className={classes.tableTimeCell} component="div" role="cell">
+          <abbr title={run?.to}>{run?.to ? <DateDistance from={run.to} /> : 'n/a'}</abbr>
         </TableCell>
       )}
-      <TableCell
-        size="small"
-        className={classes.tableSecondCell}
-        component="div"
-        role="cell">
-        <span>
-          {run ? <TimeDiff from={run.from} offset={run.to} /> : 'n/a'}
-        </span>
+      <TableCell size="small" className={classes.tableSecondCell} component="div" role="cell">
+        <span>{run ? <TimeDiff from={run.from} offset={run.to} /> : 'n/a'}</span>
       </TableCell>
-      <TableCell
-        size="small"
-        className={classes.tableThirdCell}
-        component="div"
-        role="cell">
+      <TableCell size="small" className={classes.tableThirdCell} component="div" role="cell">
         <span>
           <StatusLabel state={taskGroup.status.state} />
         </span>
@@ -126,7 +92,7 @@ const ItemRenderer = ({ data, index, style }) => {
 
 const ItemRendererMemo = React.memo(ItemRenderer);
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   listItemCell: {
     display: 'flex',
     width: '100%',
@@ -270,14 +236,8 @@ export default class TaskGroupTable extends Component {
       }
 
       return filteredTasks.sort((a, b) => {
-        const firstElement =
-          sortDirection === 'desc'
-            ? valueFromNode(b.node, sortBy)
-            : valueFromNode(a.node, sortBy);
-        const secondElement =
-          sortDirection === 'desc'
-            ? valueFromNode(a.node, sortBy)
-            : valueFromNode(b.node, sortBy);
+        const firstElement = sortDirection === 'desc' ? valueFromNode(b.node, sortBy) : valueFromNode(a.node, sortBy);
+        const secondElement = sortDirection === 'desc' ? valueFromNode(a.node, sortBy) : valueFromNode(b.node, sortBy);
 
         return sort(firstElement, secondElement);
       });
@@ -285,10 +245,8 @@ export default class TaskGroupTable extends Component {
     {
       maxSize: 2,
       serializer: ([tasks, sortBy, sortDirection, filter, searchTerm]) =>
-        `${
-          tasks ? sorted(tasks) : ''
-        }-${sortBy}-${sortDirection}-${filter}-${searchTerm}`,
-    }
+        `${tasks ? sorted(tasks) : ''}-${sortBy}-${sortDirection}-${filter}-${searchTerm}`,
+    },
   );
 
   handleHeaderClick = ({ target }) => {
@@ -305,7 +263,7 @@ export default class TaskGroupTable extends Component {
     }
   };
 
-  handleListRef = component => {
+  handleListRef = (component) => {
     this.list = component;
   };
 
@@ -319,7 +277,7 @@ export default class TaskGroupTable extends Component {
       sortBy,
       sortDirection,
       filter,
-      searchTerm ? searchTerm.toLowerCase() : ''
+      searchTerm ? searchTerm.toLowerCase() : '',
     );
     const itemCount = items.length;
 
@@ -327,89 +285,71 @@ export default class TaskGroupTable extends Component {
       // biome-ignore lint/a11y/useSemanticElements: intentional Material UI pattern
       <div role="table">
         <Table className={classes.table} component="div">
-          <TableHead
-            className={classes.tableHead}
-            component="div"
-            role="rowgroup">
-            <TableRow
-              className={classes.tableHeadRow}
-              component="div"
-              role="row">
+          <TableHead className={classes.tableHead} component="div" role="rowgroup">
+            <TableRow className={classes.tableHeadRow} component="div" role="row">
               <TableCell
                 size="small"
                 className={classNames(
-                  showTimings
-                    ? classes.tableFirstShortCell
-                    : classes.tableFirstCell,
-                  classes.tableHeadCell
+                  showTimings ? classes.tableFirstShortCell : classes.tableFirstCell,
+                  classes.tableHeadCell,
                 )}
                 component="div"
-                role="columnheader">
+                role="columnheader"
+              >
                 <TableSortLabel
                   id="Name"
                   active={sortBy === 'Name'}
                   direction={sortDirection || 'desc'}
-                  onClick={this.handleHeaderClick}>
+                  onClick={this.handleHeaderClick}
+                >
                   Name
                 </TableSortLabel>
               </TableCell>
               {showTimings && (
-                <TableCell
-                  size="small"
-                  component="div"
-                  role="columnheader"
-                  className={classes.tableTimingHeadCell}>
+                <TableCell size="small" component="div" role="columnheader" className={classes.tableTimingHeadCell}>
                   <TableSortLabel
                     className={classes.tableHeadCell}
                     id="Started"
                     active={sortBy === 'Started'}
                     direction={sortDirection || 'desc'}
-                    onClick={this.handleHeaderClick}>
+                    onClick={this.handleHeaderClick}
+                  >
                     Started
                   </TableSortLabel>
                 </TableCell>
               )}
               {showTimings && (
-                <TableCell
-                  size="small"
-                  component="div"
-                  role="columnheader"
-                  className={classes.tableTimingHeadCell}>
+                <TableCell size="small" component="div" role="columnheader" className={classes.tableTimingHeadCell}>
                   <TableSortLabel
                     className={classes.tableHeadCell}
                     id="Resolved"
                     active={sortBy === 'Resolved'}
                     direction={sortDirection || 'desc'}
-                    onClick={this.handleHeaderClick}>
+                    onClick={this.handleHeaderClick}
+                  >
                     Resolved
                   </TableSortLabel>
                 </TableCell>
               )}
-              <TableCell
-                size="small"
-                component="div"
-                role="columnheader"
-                className={classes.tableSecondHeadCell}>
+              <TableCell size="small" component="div" role="columnheader" className={classes.tableSecondHeadCell}>
                 <TableSortLabel
                   className={classes.tableHeadCell}
                   id="Duration"
                   active={sortBy === 'Duration'}
                   direction={sortDirection || 'desc'}
-                  onClick={this.handleHeaderClick}>
+                  onClick={this.handleHeaderClick}
+                >
                   Duration
                 </TableSortLabel>
               </TableCell>
-              <TableCell
-                size="small"
-                component="div"
-                role="columnheader"
-                className={classes.tableThirdHeadCell}>
+              <TableCell size="small" component="div" role="columnheader" className={classes.tableThirdHeadCell}>
                 <TableSortLabel
                   className={classes.tableHeadCell}
                   id="Status"
                   active={sortBy === 'Status'}
                   direction={sortDirection || 'desc'}
-                  onClick={this.handleHeaderClick}>
+                  onClick={this.handleHeaderClick}
+                >
                   Status
                 </TableSortLabel>
               </TableCell>
@@ -418,9 +358,7 @@ export default class TaskGroupTable extends Component {
         </Table>
         {itemCount ? (
           <Fragment>
-            <WindowScroller onScroll={this.handleScroll}>
-              {() => null}
-            </WindowScroller>
+            <WindowScroller onScroll={this.handleScroll}>{() => null}</WindowScroller>
             <List
               ref={this.handleListRef}
               height={window.innerHeight}
@@ -429,7 +367,8 @@ export default class TaskGroupTable extends Component {
               className={classes.windowScrollerOverride}
               overscanCount={50}
               itemData={{ iconSize, items, showTimings, classes }}
-              itemKey={(index, data) => data.items[index]?.node.taskId}>
+              itemKey={(index, data) => data.items[index]?.node.taskId}
+            >
               {ItemRendererMemo}
             </List>
           </Fragment>

@@ -15,7 +15,7 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import scopesQuery from '../scopes.graphql';
 
 @graphql(scopesQuery)
-@withStyles(theme => ({
+@withStyles((theme) => ({
   icon: {
     marginRight: theme.spacing(1),
   },
@@ -45,18 +45,14 @@ export default class ViewScope extends Component {
           return previousResult;
         }
 
-        return dotProp.set(previousResult, 'clients', clients =>
-          dotProp.set(
-            dotProp.set(clients, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, 'clients', (clients) =>
+          dotProp.set(dotProp.set(clients, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
   };
 
-  handleSearchSubmit = searchTerm => {
+  handleSearchSubmit = (searchTerm) => {
     const { location, history } = this.props;
     const query = parse(location.search.slice(1));
 
@@ -105,29 +101,18 @@ export default class ViewScope extends Component {
         title={`Scope ${selectedScope}`}
         disableTitleFormatting
         search={
-          <Search
-            onSubmit={this.handleSearchSubmit}
-            placeholder="Role/Client contains"
-            defaultValue={searchTerm}
-          />
-        }>
+          <Search onSubmit={this.handleSearchSubmit} placeholder="Role/Client contains" defaultValue={searchTerm} />
+        }
+      >
         <Fragment>
-          <Tabs
-            className={classes.tabs}
-            variant="fullWidth"
-            value={currentTabIndex}
-            onChange={this.handleTabChange}>
+          <Tabs className={classes.tabs} variant="fullWidth" value={currentTabIndex} onChange={this.handleTabChange}>
             <Tab label="Roles" />
             <Tab label="Clients" />
           </Tabs>
           {loading && <Spinner loading />}
           <ErrorPanel fixed error={error} />
           {roles && currentTabIndex === 0 && (
-            <RoleScopesTable
-              roles={roles}
-              searchTerm={searchTerm}
-              selectedScope={selectedScope}
-            />
+            <RoleScopesTable roles={roles} searchTerm={searchTerm} selectedScope={selectedScope} />
           )}
           {clients && currentTabIndex === 1 && (
             <ClientScopesTable

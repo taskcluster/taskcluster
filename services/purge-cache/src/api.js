@@ -36,147 +36,162 @@ const builder = new APIBuilder({
 export default builder;
 
 /** Define tasks */
-builder.declare({
-  method: 'post',
-  route: '/purge-cache/:workerPoolId(*)',
-  name: 'purgeCache',
-  scopes: 'purge-cache:<workerPoolId>:<cacheName>',
-  input: 'purge-cache-request.yml',
-  title: 'Purge Worker Cache',
-  category: 'Purge-Cache Service',
-  stability: APIBuilder.stability.stable,
-  params: {
-    workerPoolId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
+builder.declare(
+  {
+    method: 'post',
+    route: '/purge-cache/:workerPoolId(*)',
+    name: 'purgeCache',
+    scopes: 'purge-cache:<workerPoolId>:<cacheName>',
+    input: 'purge-cache-request.yml',
+    title: 'Purge Worker Cache',
+    category: 'Purge-Cache Service',
+    stability: APIBuilder.stability.stable,
+    params: {
+      workerPoolId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
+    },
+    description: [
+      'Publish a request to purge caches named `cacheName` with',
+      'on `workerPoolId` workers.',
+      '',
+      'If such a request already exists, its `before` timestamp is updated to',
+      'the current time.',
+    ].join('\n'),
   },
-  description: [
-    'Publish a request to purge caches named `cacheName` with',
-    'on `workerPoolId` workers.',
-    '',
-    'If such a request already exists, its `before` timestamp is updated to',
-    'the current time.',
-  ].join('\n'),
-}, async function(req, res) {
-  const { workerPoolId } = req.params;
-  const { cacheName } = req.body;
+  async function (req, res) {
+    const { workerPoolId } = req.params;
+    const { cacheName } = req.body;
 
-  debug(`Processing request for ${workerPoolId}/${cacheName}.`);
+    debug(`Processing request for ${workerPoolId}/${cacheName}.`);
 
-  await req.authorize({ workerPoolId, cacheName });
-  await this.db.fns.purge_cache_wpid(workerPoolId, cacheName, new Date(), taskcluster.fromNow('1 day'));
-  // Return 204
-  res.reply();
-});
-
-builder.declare({
-  method: 'get',
-  route: '/purge-cache/list',
-  query: paginateResults.query,
-  name: 'allPurgeRequests',
-  scopes: 'purge-cache:all-purge-requests',
-  output: 'all-purge-cache-request-list.yml',
-  title: 'All Open Purge Requests',
-  stability: APIBuilder.stability.stable,
-  category: 'Purge-Cache Service',
-  description: [
-    'View all active purge requests.',
-    '',
-    'This is useful mostly for administors to view',
-    'the set of open purge requests. It should not',
-    'be used by workers. They should use the purgeRequests',
-    'endpoint that is specific to their workerType and',
-    'provisionerId.',
-  ].join('\n'),
-}, async function(req, res) {
-  // openRequests
-  const { continuationToken, rows } = await paginateResults({
-    query: req.query,
-    fetch: (size, offset) => this.db.fns.all_purge_requests_wpid(size, offset),
-  });
-  return res.reply({
-    continuationToken: continuationToken,
-    requests: _.map(rows, entry => {
-      const { provisionerId, workerType } = splitWorkerPoolId(entry.worker_pool_id);
-      return {
-        provisionerId,
-        workerType,
-        cacheName: entry.cache_name,
-        before: entry.before.toJSON(),
-      };
-    }),
-  });
-});
-
-builder.declare({
-  method: 'get',
-  route: '/purge-cache/:workerPoolId(*)',
-  query: {
-    since: dt => Date.parse(dt) ? null : 'Invalid Date',
+    await req.authorize({ workerPoolId, cacheName });
+    await this.db.fns.purge_cache_wpid(workerPoolId, cacheName, new Date(), taskcluster.fromNow('1 day'));
+    // Return 204
+    res.reply();
   },
-  name: 'purgeRequests',
-  scopes: 'purge-cache:purge-requests::<workerPoolId>',
-  output: 'purge-cache-request-list.yml',
-  title: 'Open Purge Requests for a worker pool',
-  stability: APIBuilder.stability.stable,
-  category: 'Purge-Cache Service',
-  params: {
-    workerPoolId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
+);
+
+builder.declare(
+  {
+    method: 'get',
+    route: '/purge-cache/list',
+    query: paginateResults.query,
+    name: 'allPurgeRequests',
+    scopes: 'purge-cache:all-purge-requests',
+    output: 'all-purge-cache-request-list.yml',
+    title: 'All Open Purge Requests',
+    stability: APIBuilder.stability.stable,
+    category: 'Purge-Cache Service',
+    description: [
+      'View all active purge requests.',
+      '',
+      'This is useful mostly for administors to view',
+      'the set of open purge requests. It should not',
+      'be used by workers. They should use the purgeRequests',
+      'endpoint that is specific to their workerType and',
+      'provisionerId.',
+    ].join('\n'),
   },
-  description: [
-    'List the caches for this `workerPoolId` that should to be',
-    'purged if they are from before the time given in the response.',
-    '',
-    'This is intended to be used by workers to determine which caches to purge.',
-  ].join('\n'),
-}, async function(req, res) {
-
-  const { workerPoolId } = req.params;
-  const since = new Date(req.query.since || 0);
-
-  // Cache the azure query for cacheTime seconds.  Note that if a second request
-  // for this task queue comes in while the first DB query is still running, this
-  // will start another query.  This is slightly wasteful, but worthwhile for the
-  // simpler implementation (see https://bugzilla.mozilla.org/show_bug.cgi?id=1599564
-  // for an example of issues with a complex implementation)
-  let cacheCache = this.cachePurgeCache[workerPoolId];
-  if (!cacheCache || Date.now() - cacheCache.touched > this.cfg.app.cacheTime * 1000) {
-    cacheCache = this.cachePurgeCache[workerPoolId] = {
-      reqs: await this.db.fns.purge_requests_wpid(workerPoolId),
-      touched: Date.now(),
-    };
-  }
-
-  const { reqs: openRequests } = cacheCache;
-  return res.reply({
-    requests: _.reduce(openRequests, (l, entry) => {
-      const { provisionerId, workerType } = splitWorkerPoolId(entry.worker_pool_id);
-      if (entry.before >= since) {
-        l.push({
+  async function (req, res) {
+    // openRequests
+    const { continuationToken, rows } = await paginateResults({
+      query: req.query,
+      fetch: (size, offset) => this.db.fns.all_purge_requests_wpid(size, offset),
+    });
+    return res.reply({
+      continuationToken: continuationToken,
+      requests: _.map(rows, (entry) => {
+        const { provisionerId, workerType } = splitWorkerPoolId(entry.worker_pool_id);
+        return {
           provisionerId,
           workerType,
           cacheName: entry.cache_name,
           before: entry.before.toJSON(),
-        });
-      }
-      return l;
-    }, []),
-  });
-});
+        };
+      }),
+    });
+  },
+);
 
-builder.declare({
-  method: 'get',
-  route: '/__heartbeat__',
-  name: 'heartbeat',
-  scopes: null,
-  category: 'Monitoring',
-  stability: 'stable',
-  title: 'Heartbeat',
-  description: [
-    'Respond with a service heartbeat.',
-    '',
-    'This endpoint is used to check on backing services this service',
-    'depends on.',
-  ].join('\n'),
-}, function(_req, res) {
-  // TODO: add implementation
-  res.reply({});
-});
+builder.declare(
+  {
+    method: 'get',
+    route: '/purge-cache/:workerPoolId(*)',
+    query: {
+      since: (dt) => (Date.parse(dt) ? null : 'Invalid Date'),
+    },
+    name: 'purgeRequests',
+    scopes: 'purge-cache:purge-requests::<workerPoolId>',
+    output: 'purge-cache-request-list.yml',
+    title: 'Open Purge Requests for a worker pool',
+    stability: APIBuilder.stability.stable,
+    category: 'Purge-Cache Service',
+    params: {
+      workerPoolId: /^[A-Za-z0-9_-]{1,38}\/[A-Za-z0-9_-]{1,38}$/,
+    },
+    description: [
+      'List the caches for this `workerPoolId` that should to be',
+      'purged if they are from before the time given in the response.',
+      '',
+      'This is intended to be used by workers to determine which caches to purge.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const { workerPoolId } = req.params;
+    const since = new Date(req.query.since || 0);
+
+    // Cache the azure query for cacheTime seconds.  Note that if a second request
+    // for this task queue comes in while the first DB query is still running, this
+    // will start another query.  This is slightly wasteful, but worthwhile for the
+    // simpler implementation (see https://bugzilla.mozilla.org/show_bug.cgi?id=1599564
+    // for an example of issues with a complex implementation)
+    let cacheCache = this.cachePurgeCache[workerPoolId];
+    if (!cacheCache || Date.now() - cacheCache.touched > this.cfg.app.cacheTime * 1000) {
+      cacheCache = this.cachePurgeCache[workerPoolId] = {
+        reqs: await this.db.fns.purge_requests_wpid(workerPoolId),
+        touched: Date.now(),
+      };
+    }
+
+    const { reqs: openRequests } = cacheCache;
+    return res.reply({
+      requests: _.reduce(
+        openRequests,
+        (l, entry) => {
+          const { provisionerId, workerType } = splitWorkerPoolId(entry.worker_pool_id);
+          if (entry.before >= since) {
+            l.push({
+              provisionerId,
+              workerType,
+              cacheName: entry.cache_name,
+              before: entry.before.toJSON(),
+            });
+          }
+          return l;
+        },
+        [],
+      ),
+    });
+  },
+);
+
+builder.declare(
+  {
+    method: 'get',
+    route: '/__heartbeat__',
+    name: 'heartbeat',
+    scopes: null,
+    category: 'Monitoring',
+    stability: 'stable',
+    title: 'Heartbeat',
+    description: [
+      'Respond with a service heartbeat.',
+      '',
+      'This endpoint is used to check on backing services this service',
+      'depends on.',
+    ].join('\n'),
+  },
+  function (_req, res) {
+    // TODO: add implementation
+    res.reply({});
+  },
+);

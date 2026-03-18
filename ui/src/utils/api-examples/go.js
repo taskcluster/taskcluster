@@ -2,13 +2,7 @@
  * Generate Go client library examples for API endpoints
  */
 
-import {
-  PLACEHOLDERS,
-  getPlaceholderValue,
-  requiresAuth,
-  capitalize,
-  formatPayloadJson,
-} from './helpers';
+import { PLACEHOLDERS, getPlaceholderValue, requiresAuth, capitalize, formatPayloadJson } from './helpers';
 
 /**
  * Convert hyphenated service name to valid Go identifier
@@ -22,13 +16,7 @@ function formatGoIdentifier(name) {
 
   const parts = name.split('-');
 
-  return (
-    parts[0] +
-    parts
-      .slice(1)
-      .map(capitalize)
-      .join('')
-  );
+  return parts[0] + parts.slice(1).map(capitalize).join('');
 }
 
 /**
@@ -41,17 +29,11 @@ function formatGoIdentifier(name) {
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} Go code example
  */
-export default function generateGoExample(
-  serviceName,
-  _apiVersion,
-  entry,
-  version = '93',
-  payloadExample = null
-) {
+export default function generateGoExample(serviceName, _apiVersion, entry, version = '93', payloadExample = null) {
   const methodName = capitalize(entry.name);
   const varName = formatGoIdentifier(serviceName);
   const packageName = `tc${serviceName.toLowerCase().replace(/-/g, '')}`;
-  const params = entry.args.map(arg => `"${getPlaceholderValue(arg)}"`);
+  const params = entry.args.map((arg) => `"${getPlaceholderValue(arg)}"`);
   // Build imports
   const imports = ['fmt', 'log'];
 
@@ -63,7 +45,7 @@ export default function generateGoExample(
     imports.push('encoding/json');
   }
 
-  const importStatements = imports.map(imp => `	"${imp}"`).join('\n');
+  const importStatements = imports.map((imp) => `	"${imp}"`).join('\n');
   // Build client initialization
   let clientInit;
 

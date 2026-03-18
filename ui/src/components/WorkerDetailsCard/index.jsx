@@ -1,15 +1,6 @@
 import { Component, Fragment } from 'react';
 import { format, parseISO } from 'date-fns';
-import {
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-  Grid,
-  TableRow,
-  TableCell,
-  Tooltip,
-} from '@material-ui/core';
+import { List, ListItem, ListItemText, Typography, Grid, TableRow, TableCell, Tooltip } from '@material-ui/core';
 import DateDistance from '../DateDistance';
 import Label from '../Label';
 import StatusLabel from '../StatusLabel';
@@ -30,14 +21,8 @@ export default class WorkerDetailsCard extends Component {
     worker: null,
   };
 
-  renderQuarantineRow = ({
-    clientId,
-    updatedAt,
-    quarantineUntil,
-    quarantineInfo,
-  }) => (
-    <TableRow
-      key={`${clientId}-${updatedAt}-${quarantineUntil}-${quarantineInfo}`}>
+  renderQuarantineRow = ({ clientId, updatedAt, quarantineUntil, quarantineInfo }) => (
+    <TableRow key={`${clientId}-${updatedAt}-${quarantineUntil}-${quarantineInfo}`}>
       <TableCell>{clientId}</TableCell>
       <TableCell>
         <Tooltip title={updatedAt} placement="top">
@@ -48,9 +33,7 @@ export default class WorkerDetailsCard extends Component {
       </TableCell>
       <TableCell>
         <Tooltip title={quarantineUntil} placement="top">
-          <TableCellItem>
-            {format(parseISO(quarantineUntil), 'yyyy/MM/dd')}
-          </TableCellItem>
+          <TableCellItem>{format(parseISO(quarantineUntil), 'yyyy/MM/dd')}</TableCellItem>
         </Tooltip>
       </TableCell>
       <TableCell>
@@ -76,9 +59,7 @@ export default class WorkerDetailsCard extends Component {
       },
     } = this.props;
     const sortedQuarantineDetails = quarantineDetails
-      ? [...quarantineDetails].sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        )
+      ? [...quarantineDetails].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
       : [];
 
     return (
@@ -89,31 +70,19 @@ export default class WorkerDetailsCard extends Component {
               <ListItem>
                 <ListItemText
                   primary="Last Active"
-                  secondary={
-                    lastDateActive ? (
-                      <DateDistance from={lastDateActive} />
-                    ) : (
-                      'n/a'
-                    )
-                  }
+                  secondary={lastDateActive ? <DateDistance from={lastDateActive} /> : 'n/a'}
                 />
               </ListItem>
               <ListItem>
                 <ListItemText
                   primary="First Claim"
-                  secondary={
-                    firstClaim ? <DateDistance from={firstClaim} /> : 'n/a'
-                  }
+                  secondary={firstClaim ? <DateDistance from={firstClaim} /> : 'n/a'}
                 />
               </ListItem>
               <ListItem>
                 <ListItemText
                   primary="Quarantine Until"
-                  secondary={
-                    quarantineUntil
-                      ? format(parseISO(quarantineUntil), 'yyyy/MM/dd')
-                      : 'n/a'
-                  }
+                  secondary={quarantineUntil ? format(parseISO(quarantineUntil), 'yyyy/MM/dd') : 'n/a'}
                 />
               </ListItem>
               {sortedQuarantineDetails?.length > 0 && (
@@ -140,13 +109,7 @@ export default class WorkerDetailsCard extends Component {
               <ListItem>
                 <ListItemText
                   primary="Worker State"
-                  secondary={
-                    state ? (
-                      <StatusLabel state={state.toUpperCase()} />
-                    ) : (
-                      <em>n/a</em>
-                    )
-                  }
+                  secondary={state ? <StatusLabel state={state.toUpperCase()} /> : <em>n/a</em>}
                 />
               </ListItem>
               {state === 'stopping' && (
@@ -161,26 +124,17 @@ export default class WorkerDetailsCard extends Component {
               {/* worker-manager view specific info */}
               {created && (
                 <ListItem>
-                  <ListItemText
-                    primary="Worker created"
-                    secondary={<DateDistance from={created} />}
-                  />
+                  <ListItemText primary="Worker created" secondary={<DateDistance from={created} />} />
                 </ListItem>
               )}
               {expires && (
                 <ListItem>
-                  <ListItemText
-                    primary="Worker expires"
-                    secondary={<DateDistance from={expires} />}
-                  />
+                  <ListItemText primary="Worker expires" secondary={<DateDistance from={expires} />} />
                 </ListItem>
               )}
               {lastModified && (
                 <ListItem>
-                  <ListItemText
-                    primary="Worker last modified"
-                    secondary={<DateDistance from={lastModified} />}
-                  />
+                  <ListItemText primary="Worker last modified" secondary={<DateDistance from={lastModified} />} />
                 </ListItem>
               )}
               {lastChecked && (

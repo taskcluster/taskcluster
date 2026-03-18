@@ -21,9 +21,7 @@
         "launchConfig": {
           "ImageId": "ami-blabla",
           "KeyName": "somekey",
-          "SecurityGroupIds": [
-            "sg-yadayada"
-          ],
+          "SecurityGroupIds": ["sg-yadayada"],
           "InstanceType": "m5.xlarge"
         },
         "region": "us-west-2",
@@ -35,9 +33,7 @@
         "launchConfig": {
           "ImageId": "ami-yadayada",
           "KeyName": "anotherkey",
-          "SecurityGroupIds": [
-            "sg-blahblahblah"
-          ],
+          "SecurityGroupIds": ["sg-blahblahblah"],
           "InstanceType": "m5.xlarge"
         },
         "region": "us-east-1",

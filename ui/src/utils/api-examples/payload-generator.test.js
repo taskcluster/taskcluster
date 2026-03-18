@@ -207,10 +207,7 @@ describe('generatePayloadExample', () => {
         },
         required: ['owner'],
       };
-      const result = generatePayloadExample(taskSchema, [
-        { content: personSchema },
-        { content: taskSchema },
-      ]);
+      const result = generatePayloadExample(taskSchema, [{ content: personSchema }, { content: taskSchema }]);
 
       expect(result).toHaveProperty('owner');
       expect(result.owner).toHaveProperty('name');
@@ -239,10 +236,7 @@ describe('generatePayloadExample', () => {
         },
         required: ['metadata'],
       };
-      const result = generatePayloadExample(taskSchema, [
-        { content: definitionsSchema },
-        { content: taskSchema },
-      ]);
+      const result = generatePayloadExample(taskSchema, [{ content: definitionsSchema }, { content: taskSchema }]);
 
       expect(result).toHaveProperty('metadata');
       expect(result.metadata).toHaveProperty('title');

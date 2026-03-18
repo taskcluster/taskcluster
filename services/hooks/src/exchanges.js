@@ -27,9 +27,10 @@ const buildCommonRoutingKey = (_options) => {
   return [
     {
       name: 'reserved',
-      summary: 'Space reserved for future routing-key entries, you ' +
-                        'should always match this entry with `#`. As ' +
-                        'automatically done by our tooling, if not specified.',
+      summary:
+        'Space reserved for future routing-key entries, you ' +
+        'should always match this entry with `#`. As ' +
+        'automatically done by our tooling, if not specified.',
       multipleWords: true,
       maxSize: 10,
     },
@@ -37,21 +38,21 @@ const buildCommonRoutingKey = (_options) => {
 };
 
 /** Build an AMQP compatible message from a message */
-const commonMessageBuilder = function(message) {
+const commonMessageBuilder = function (message) {
   return message;
 };
 
 /** Build a routingKey from message */
 /** Empty now, might be useful in the future */
 /** when this comment should be removed */
-const commonRoutingKeyBuilder = function(_message, _routing) {
+const commonRoutingKeyBuilder = function (_message, _routing) {
   return '';
 };
 
 /** Build list of routing keys to CC */
 /** Empty now, might be useful in the future */
 /** when this comment should be removed */
-const commonCCBuilder = function(_message, _routes) {
+const commonCCBuilder = function (_message, _routes) {
   return [];
 };
 

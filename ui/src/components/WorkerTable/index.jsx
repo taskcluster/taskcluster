@@ -16,7 +16,7 @@ import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   dateListItem: {
     marginLeft: -theme.spacing(1),
     padding: theme.spacing(1),
@@ -60,11 +60,9 @@ export default class WorkerTable extends Component {
             // Sometimes a run expires so we try to get at least the taskId
             ...(recentTask.taskId ? { taskId: recentTask.taskId } : null),
             ...recentTask.run,
-            ...(worker.latestTasks[index]
-              ? worker.latestTasks[index].metadata
-              : null),
+            ...(worker.latestTasks[index] ? worker.latestTasks[index].metadata : null),
           }),
-        []
+        [],
       );
 
       if (!sortBy) {
@@ -80,10 +78,10 @@ export default class WorkerTable extends Component {
     },
     {
       serializer: ({ sortBy, sortDirection }) => `${sortBy}-${sortDirection}`,
-    }
+    },
   );
 
-  handleHeaderClick = header => {
+  handleHeaderClick = (header) => {
     const query = parse(this.props.location.search.slice(1));
     const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = query.sortBy === header.id ? toggled : 'desc';
@@ -101,19 +99,14 @@ export default class WorkerTable extends Component {
     if (query.sortBy) return;
 
     this.props.history.replace({
-      search: stringify(
-        { sortBy: 'started', sortDirection: 'desc' },
-        { addQueryPrefix: true }
-      ),
+      search: stringify({ sortBy: 'started', sortDirection: 'desc' }, { addQueryPrefix: true }),
     });
   }
 
   render() {
     const { classes, worker } = this.props;
     const query = parse(this.props.location.search.slice(1));
-    const { sortBy, sortDirection } = query.sortBy
-      ? query
-      : { sortBy: 'started', sortDirection: 'desc' };
+    const { sortBy, sortDirection } = query.sortBy ? query : { sortBy: 'started', sortDirection: 'desc' };
     const iconSize = 16;
     const items = this.getTableData({ sortBy, sortDirection, worker });
     const headers = [
@@ -144,11 +137,9 @@ export default class WorkerTable extends Component {
     return (
       <DataTable
         items={items}
-        renderRow={task => (
+        renderRow={(task) => (
           <TableRow key={`recent-task-${task.taskId}`}>
-            <TableCell>
-              {task.state ? <StatusLabel state={task.state} /> : <em>n/a</em>}
-            </TableCell>
+            <TableCell>{task.state ? <StatusLabel state={task.state} /> : <em>n/a</em>}</TableCell>
             <TableCell>
               {task.name ? (
                 <Link to={`/tasks/${task.taskId}/runs/${task.runId}`}>

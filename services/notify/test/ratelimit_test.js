@@ -4,10 +4,10 @@ import MockDate from 'mockdate';
 import RateLimit from '../src/ratelimit.js';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   let rateLimit;
 
-  setup(async function() {
+  setup(async function () {
     rateLimit = new RateLimit({
       count: 5,
       time: 10,
@@ -17,7 +17,7 @@ suite(testing.suiteName(), function() {
     MockDate.set('1/1/2000');
   });
 
-  teardown(function() {
+  teardown(function () {
     MockDate.reset();
   });
 
@@ -27,11 +27,11 @@ suite(testing.suiteName(), function() {
     MockDate.set(newTime);
   };
 
-  test('does not rate-limit a single send', function() {
+  test('does not rate-limit a single send', function () {
     assert(rateLimit.remaining('foo@taskcluster.net') >= 0);
   });
 
-  test('does rate-limit sends at higher than 5 per 10 seconds', function() {
+  test('does rate-limit sends at higher than 5 per 10 seconds', function () {
     // send at 1 per second..
     const limited = _.range(10).map(() => {
       timeFlies(1);
@@ -42,12 +42,20 @@ suite(testing.suiteName(), function() {
       return remaining;
     });
     assert.deepEqual(limited, [
-      5, 4, 3, 2, 1, // five not limited
-      0, 0, 0, 0, 0, // remainder limited
+      5,
+      4,
+      3,
+      2,
+      1, // five not limited
+      0,
+      0,
+      0,
+      0,
+      0, // remainder limited
     ]);
   });
 
-  test('lifts the rate limit maxMessageTime after a message is sent', function() {
+  test('lifts the rate limit maxMessageTime after a message is sent', function () {
     // send 3 all at once
     _.range(3).forEach(() => {
       rateLimit.markEvent('foo@taskcluster.net');
@@ -66,7 +74,7 @@ suite(testing.suiteName(), function() {
     assert.equal(rateLimit.remaining('foo@taskcluster.net'), 5);
   });
 
-  test('purgeAllOldTimes purges things', function() {
+  test('purgeAllOldTimes purges things', function () {
     _.range(20).forEach(() => {
       rateLimit.markEvent('foo@taskcluster.net');
       rateLimit.markEvent('bar@taskcluster.net');

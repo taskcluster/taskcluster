@@ -11,9 +11,7 @@ export const tasks = [];
 tasks.push({
   title: `Fetch version endpoint for deployment`,
   requires: [],
-  provides: [
-    `deployment-version`,
-  ],
+  provides: [`deployment-version`],
   run: async (_requirements, _utils) => {
     const dunderVersion = `${process.env.TASKCLUSTER_ROOT_URL}/__version__`;
     const resp = await got(dunderVersion, { throwHttpErrors: true });
@@ -27,13 +25,11 @@ tasks.push({
   },
 });
 
-SERVICES.forEach(name => {
+SERVICES.forEach((name) => {
   tasks.push({
     title: `Ping health endpoint for ${name}`,
     requires: ['deployment-version'],
-    provides: [
-      `ping-${name}`,
-    ],
+    provides: [`ping-${name}`],
     run: async (_requirements, utils) => {
       const procs = await readRepoYAML(path.join('services', name, 'procs.yml'));
 
@@ -64,11 +60,7 @@ SERVICES.forEach(name => {
 
 tasks.push({
   title: `API ping endpoints succeed (--target ping)`,
-  requires: [
-    ...SERVICES.map(name => `ping-${name}`),
-  ],
-  provides: [
-    `target-ping`,
-  ],
+  requires: [...SERVICES.map((name) => `ping-${name}`)],
+  provides: [`target-ping`],
   run: async (_requirements, _utils) => {},
 });

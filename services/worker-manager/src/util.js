@@ -10,7 +10,7 @@ import taskcluster from '@taskcluster/client';
  *
  * These two functions serve to split and join workerPoolIds.
  */
-export const splitWorkerPoolId = workerPoolId => {
+export const splitWorkerPoolId = (workerPoolId) => {
   const split = workerPoolId.split('/');
   assert.equal(split.length, 2, `invalid workerPoolId ${workerPoolId}`);
   return { provisionerId: split[0], workerType: split[1] };

@@ -14,12 +14,16 @@ class Iterate extends events.EventEmitter {
     events.EventEmitter.call(this);
 
     // Set default values
-    opts = Object.assign({}, {
-      watchdogTime: 0,
-      maxFailures: 0,
-      maxIterations: 0,
-      minIterationTime: 0,
-    }, opts);
+    opts = Object.assign(
+      {},
+      {
+        watchdogTime: 0,
+        maxFailures: 0,
+        maxIterations: 0,
+        minIterationTime: 0,
+      },
+      opts,
+    );
 
     if (!opts.name) {
       throw new Error('Must provide a name to iterate');
@@ -101,17 +105,14 @@ class Iterate extends events.EventEmitter {
 
     try {
       watchdog.start();
-      await Promise.race([
-        timeoutRejector,
-        Promise.resolve(this.handler(watchdog)),
-      ]);
+      await Promise.race([timeoutRejector, Promise.resolve(this.handler(watchdog))]);
     } finally {
       // stop the timers regardless of success or failure
       clearTimeout(maxIterationTimeTimer);
       watchdog.stop();
     }
 
-    const duration = Date.now()- start;
+    const duration = Date.now() - start;
     if (this.minIterationTime > 0 && duration < this.minIterationTime) {
       throw new Error('Handler duration was less than minIterationTime');
     }
@@ -141,11 +142,14 @@ class Iterate extends events.EventEmitter {
 
       this.emit(iterError ? 'iteration-failure' : 'iteration-success');
 
-      this.monitor.log.periodic({
-        name: this.name,
-        duration,
-        status: iterError ? 'exception' : 'success',
-      }, { level: iterError ? 'err' : 'notice' });
+      this.monitor.log.periodic(
+        {
+          name: this.name,
+          duration,
+          status: iterError ? 'exception' : 'success',
+        },
+        { level: iterError ? 'err' : 'notice' },
+      );
 
       if (iterError) {
         this.monitor.reportError(iterError, 'warning', {
@@ -174,11 +178,11 @@ class Iterate extends events.EventEmitter {
 
       if (this.waitTime > 0) {
         debug('waiting for next iteration or stop');
-        const stopPromise = new Promise(resolve => {
+        const stopPromise = new Promise((resolve) => {
           this.onStopCall = resolve;
         });
         let waitTimeTimeout;
-        const waitTimePromise = new Promise(resolve => {
+        const waitTimePromise = new Promise((resolve) => {
           waitTimeTimeout = setTimeout(resolve, this.waitTime);
         });
         await Promise.race([stopPromise, waitTimePromise]);
@@ -196,16 +200,16 @@ class Iterate extends events.EventEmitter {
 
   start() {
     debug('starting');
-    this.stoppedPromise = new Promise(resolve => {
+    this.stoppedPromise = new Promise((resolve) => {
       this.on('stopped', resolve);
     });
     this.keepGoing = true;
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.once('started', resolve);
       // start iteration; any failures here are a programming error in this
       // library and so should be considered fatal
-      this.iterate().catch(err => this.emit('error', err));
+      this.iterate().catch((err) => this.emit('error', err));
     });
   }
 

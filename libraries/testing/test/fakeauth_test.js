@@ -15,7 +15,7 @@ import testing from '@taskcluster/lib-testing';
 const __dirname = new URL('.', import.meta.url).pathname;
 
 let monitor;
-suiteSetup(function() {
+suiteSetup(function () {
   monitor = MonitorManager.setup({
     serviceName: 'whatever',
     fake: true,
@@ -31,32 +31,35 @@ const builder = new APIBuilder({
   apiVersion: 'v1',
 });
 
-builder.declare({
-  method: 'get',
-  route: '/test',
-  name: 'test',
-  scopes: 'test.scope',
-  title: 'Test function',
-  description: 'for testing',
-  category: 'Testing library',
-}, async function(req, res) {
-  try {
-    await req.authorize();
-    return res.reply({ hasTestScope: true });
-  } catch (err) {
-    if (err.code !== 'InsufficientScopes') {
-      throw err;
+builder.declare(
+  {
+    method: 'get',
+    route: '/test',
+    name: 'test',
+    scopes: 'test.scope',
+    title: 'Test function',
+    description: 'for testing',
+    category: 'Testing library',
+  },
+  async function (req, res) {
+    try {
+      await req.authorize();
+      return res.reply({ hasTestScope: true });
+    } catch (err) {
+      if (err.code !== 'InsufficientScopes') {
+        throw err;
+      }
+      return res.reply({ hasTestScope: false });
     }
-    return res.reply({ hasTestScope: false });
-  }
-});
+  },
+);
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   const rootUrl = 'http://localhost:1208';
   const fakeauth = testing.fakeauth;
   let server;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     const schemaset = new SchemaSet({
       rootUrl,
       serviceName: 'lib-testing',
@@ -85,11 +88,11 @@ suite(testing.suiteName(), function() {
     server.setTimeout(500);
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(function () {
     return server.terminate();
   });
 
-  teardown(function() {
+  teardown(function () {
     fakeauth.stop();
   });
 
@@ -116,49 +119,49 @@ suite(testing.suiteName(), function() {
       request
         .get(reqUrl)
         .set('Authorization', header)
-        .then(function(res) {
+        .then(function (res) {
           debug(res.body);
           return res;
         }),
-      request
-        .get(bewitUrl)
-        .then(function(res) {
-          debug(res.body);
-          return res;
-        }),
+      request.get(bewitUrl).then(function (res) {
+        debug(res.body);
+        return res;
+      }),
     ]);
   };
 
-  test('using a rawClientId', function() {
+  test('using a rawClientId', function () {
     fakeauth.start({ client1: ['test.scope'] }, { rootUrl });
-    return callApi('client1').then(function(responses) {
+    return callApi('client1').then(function (responses) {
       for (const res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
     });
   });
 
-  test('using an unconfigured rawClientId', function() {
+  test('using an unconfigured rawClientId', function () {
     fakeauth.start({ client1: ['test.scope'] }, { rootUrl });
     return callApi('unconfiguredClient')
-      .then(() => {assert(false, 'should have failed');})
-      .catch(function(err) {
+      .then(() => {
+        assert(false, 'should have failed');
+      })
+      .catch(function (err) {
         assert.equal(err.status, 401, 'wrong error code returned');
       });
   });
 
-  test('using authorizedScopes', function() {
+  test('using authorizedScopes', function () {
     fakeauth.start({ client1: ['some.other.scope'] }, { rootUrl });
     return callApi('client1', {
       authorizedScopes: ['test.scope'],
-    }).then(function(responses) {
+    }).then(function (responses) {
       for (const res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
     });
   });
 
-  test('using temp creds', function() {
+  test('using temp creds', function () {
     fakeauth.start({ client1: ['some.other.scope'] }, { rootUrl });
     const tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test.scope'],
@@ -170,7 +173,7 @@ suite(testing.suiteName(), function() {
     });
     return callApi('client1', {
       certificate: JSON.parse(tempCreds.certificate),
-    }).then(function(responses) {
+    }).then(function (responses) {
       for (const res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }

@@ -1,5 +1,5 @@
 query Namespaces($namespace: String!, $namespaceConnection: PageConnection) {
-  namespaces(namespace:$namespace, connection: $namespaceConnection) {
+  namespaces(namespace: $namespace, connection: $namespaceConnection) {
     pageInfo {
       hasNextPage
       hasPreviousPage

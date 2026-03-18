@@ -21,13 +21,14 @@ const poll = async (doPoll, iterations, delay) => {
     try {
       return await doPoll();
     } catch (err) {
-      errors.push({ err, when: Date.now()- start });
+      errors.push({ err, when: Date.now() - start });
 
       // Re-throw unless we're out of iterations
       if (iterations !== undefined && iterations <= 0) {
         const err = new Error(
           'Polling iterations exceeded.  Errors ignored during polling:\n' +
-          errors.map(({ err, when }) => `${when}ms from start: ${err}`.trim()).join('\n---\n'));
+            errors.map(({ err, when }) => `${when}ms from start: ${err}`.trim()).join('\n---\n'),
+        );
         throw err;
       }
       iterations--;

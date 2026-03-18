@@ -4,10 +4,9 @@ import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import { UNDEFINED_COLUMN } from '@taskcluster/lib-postgres';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
-suite(testing.suiteName(), function() {
-
+suite(testing.suiteName(), function () {
   // A helper to make it easier to create tasks with dummy values within queries
   const makeFieldsForCreation = (opts) => {
     const pp = opts.provisionerId || `'pp'`;
@@ -29,7 +28,7 @@ suite(testing.suiteName(), function() {
     version: THIS_VERSION,
     onlineMigration: false,
     onlineDowngrade: true,
-    createData: async client => {
+    createData: async (client) => {
       // create the data including a task_queue_id that must be the
       // combined identifier of provisioner_id/worker_type.
       // this is a safe assumption as tested for the previous version.
@@ -63,24 +62,34 @@ suite(testing.suiteName(), function() {
         select ${makeFieldsForCreation({ taskId: `'tid-' || gen.i`, workerType: `'wt-' || gen.i`, withDefaults: true })}
         from gen`);
     },
-    startCheck: async client => {
+    startCheck: async (client) => {
       const res = await client.query('select task_id, task_queue_id from tasks');
       const nextTaskId = res.rows.length + 1;
       assert(nextTaskId > 99, 'data was not created properly');
       const tids = res.rows.map(({ task_id }) => task_id).sort();
-      assert.deepEqual(tids, _.range(1, nextTaskId).map(i => `tid-${i}`).sort());
+      assert.deepEqual(
+        tids,
+        _.range(1, nextTaskId)
+          .map((i) => `tid-${i}`)
+          .sort(),
+      );
       const tqids = res.rows.map(({ task_queue_id }) => task_queue_id).sort();
-      assert.deepEqual(tqids, _.range(1, nextTaskId).map(i => `pp/wt-${i}`).sort());
+      assert.deepEqual(
+        tqids,
+        _.range(1, nextTaskId)
+          .map((i) => `pp/wt-${i}`)
+          .sort(),
+      );
 
       // check the schema (migration to this version should start with all three columns present)
       await helper.assertTableColumn('tasks', 'provisioner_id');
       await helper.assertTableColumn('tasks', 'worker_type');
       await helper.assertTableColumn('tasks', 'task_queue_id');
     },
-    concurrentCheck: async client => {
+    concurrentCheck: async (client) => {
       // get number of rows to infer next task id
       const countRes = await client.query('select count(*) from tasks');
-      const nextTaskId = parseInt(countRes.rows[0].count) + 1;
+      const nextTaskId = parseInt(countRes.rows[0].count, 10) + 1;
 
       // check that get_task function works with items that may not yet have
       // provisioner_id and worker_type during a downgrade
@@ -97,8 +106,10 @@ suite(testing.suiteName(), function() {
       if (res && res.rows.length > 0) {
         res = await client.query(`
           select task_id, provisioner_id, worker_type from get_task('${res.rows[0].task_id}')`);
-        assert(res.rows[0].provisioner_id && res.rows[0].worker_type,
-          'get_task returned a task without provisioner_id or worker_type');
+        assert(
+          res.rows[0].provisioner_id && res.rows[0].worker_type,
+          'get_task returned a task without provisioner_id or worker_type',
+        );
       }
 
       // check that get_task_by_task_groups works during upgrade, downgrade
@@ -108,7 +119,12 @@ suite(testing.suiteName(), function() {
       const pps = res.rows.map(({ provisioner_id }) => provisioner_id);
       assert.deepEqual(new Set(pps), new Set(['pp']));
       const wts = res.rows.map(({ worker_type }) => worker_type).sort();
-      assert.deepEqual(wts, _.range(1, nextTaskId).map(i => `wt-${i}`).sort());
+      assert.deepEqual(
+        wts,
+        _.range(1, nextTaskId)
+          .map((i) => `wt-${i}`)
+          .sort(),
+      );
 
       // check that create_task works as expected
       const taskOpts = {
@@ -127,15 +143,23 @@ suite(testing.suiteName(), function() {
         provisioner_id: 'pp',
         worker_type: `wt-${nextTaskId}`,
       };
-      assert.deepEqual(taskRes.rows[0], expectedTask,
-        'the last task created with create_task could not be retrieved with get_task');
+      assert.deepEqual(
+        taskRes.rows[0],
+        expectedTask,
+        'the last task created with create_task could not be retrieved with get_task',
+      );
     },
-    finishedCheck: async client => {
+    finishedCheck: async (client) => {
       // check that task_queue_id values are still as expected at the end
       const res = await client.query('select task_queue_id from tasks');
       const nextTaskId = res.rows.length + 1;
       const tqids = res.rows.map(({ task_queue_id }) => task_queue_id).sort();
-      assert.deepEqual(tqids, _.range(1, nextTaskId).map(i => `pp/wt-${i}`).sort());
+      assert.deepEqual(
+        tqids,
+        _.range(1, nextTaskId)
+          .map((i) => `pp/wt-${i}`)
+          .sort(),
+      );
 
       // check the schema
       // we expect provisioner_id and worker_type to have been dropped

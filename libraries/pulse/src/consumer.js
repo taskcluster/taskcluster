@@ -6,7 +6,7 @@ import slugid from 'slugid';
 /**
  * Recognize some "expected", ignorable errors due to normal network failures.
  */
-const isExpectedError = err => {
+const isExpectedError = (err) => {
   // IllegalOperationError happens when we are draining a broken channel; ignore
   if (err instanceof amqplib.IllegalOperationError) {
     return true;
@@ -74,7 +74,7 @@ export class PulseConsumer {
    */
   async _start() {
     // first make sure the queue is bound
-    await this.client.withChannel(channel => this._createAndBindQueue(channel));
+    await this.client.withChannel((channel) => this._createAndBindQueue(channel));
 
     // then set up to call _handleConnection on all connections
     this.stopHandlingConnections = this.client.onConnected(this._handleConnection);
@@ -126,7 +126,7 @@ export class PulseConsumer {
     // if messages are being processed, arrange to continue when they
     // are all handled
     if (this.processingMessages > 0) {
-      await new Promise(resolved => {
+      await new Promise((resolved) => {
         this.idleCallback = resolved;
       });
     }
@@ -148,7 +148,8 @@ export class PulseConsumer {
       'queue',
       // for ephemeral queues, generate a new queueName on every connection,
       // as autodelete is not an immediate operation
-      this.ephemeral ? slugid.nice() : this.queueName);
+      this.ephemeral ? slugid.nice() : this.queueName,
+    );
     await channel.assertQueue(queueName, {
       exclusive: this.ephemeral,
       durable: true,
@@ -270,12 +271,11 @@ export class PulseConsumer {
     };
 
     // Find CC'ed routes
-    if (msg.properties?.headers &&
-        msg.properties.headers.CC instanceof Array) {
-      message.routes = msg.properties.headers.CC.filter(function(route) {
+    if (msg.properties?.headers && Array.isArray(msg.properties.headers.CC)) {
+      message.routes = msg.properties.headers.CC.filter(function (route) {
         // Only return the CC'ed routes that starts with "route."
         return /^route\.(.*)$/.test(route);
-      }).map(function(route) {
+      }).map(function (route) {
         // Remove the "route."
         return /^route\.(.*)$/.exec(route)[1];
       });
@@ -283,7 +283,7 @@ export class PulseConsumer {
 
     // Find routing key reference for this exchange, if any is available to us
     let routingKeyReference = null;
-    this.bindings.forEach(binding => {
+    this.bindings.forEach((binding) => {
       if (binding.exchange === message.exchange && binding.routingKeyReference) {
         routingKeyReference = binding.routingKeyReference;
       }
@@ -313,7 +313,7 @@ export class PulseConsumer {
           routing[ref.name] = keys.pop();
         }
         // Check that we only have one multiWord routing key
-        assert(i === j, 'i != j really shouldn\'t be the case');
+        assert(i === j, "i != j really shouldn't be the case");
         routing[routingKeyReference[i].name] = keys.join('.');
       }
 

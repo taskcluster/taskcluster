@@ -25,7 +25,7 @@ import Search from '../../../components/Search';
     },
   }),
 })
-@withStyles(theme => ({
+@withStyles((theme) => ({
   plusIconSpan: {
     ...theme.mixins.fab,
   },
@@ -56,18 +56,14 @@ export default class ViewCachePurges extends Component {
           return previousResult;
         }
 
-        return dotProp.set(previousResult, 'cachePurges', cachePurges =>
-          dotProp.set(
-            dotProp.set(cachePurges, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
+        return dotProp.set(previousResult, 'cachePurges', (cachePurges) =>
+          dotProp.set(dotProp.set(cachePurges, 'edges', edges), 'pageInfo', pageInfo),
         );
       },
     });
   };
 
-  handlePurgeCacheSubmit = cacheSearch => {
+  handlePurgeCacheSubmit = (cacheSearch) => {
     const query = parse(window.location.search.slice(1));
 
     this.props.history.push({
@@ -92,11 +88,9 @@ export default class ViewCachePurges extends Component {
         helpView={
           <HelpView description={description}>
             <Typography variant="body2">
-              All currently active cache purges are displayed below. 24 hours
-              after creation, requests expire and are no longer displayed here.
-              The <strong>before</strong> column is the time at which any caches
-              that match the previous three classifiers are considered invalid.
-              Any caches created after that time are fine.
+              All currently active cache purges are displayed below. 24 hours after creation, requests expire and are no
+              longer displayed here. The <strong>before</strong> column is the time at which any caches that match the
+              previous three classifiers are considered invalid. Any caches created after that time are fine.
             </Typography>
           </HelpView>
         }
@@ -108,7 +102,8 @@ export default class ViewCachePurges extends Component {
             onSubmit={this.handlePurgeCacheSubmit}
             placeholder="Cache Name contains"
           />
-        }>
+        }
+      >
         <Fragment>
           {!cachePurges && loading && <Spinner loading />}
           <ErrorPanel fixed error={error} />
@@ -128,7 +123,8 @@ export default class ViewCachePurges extends Component {
             }}
             onClick={this.handleCreate}
             variant="round"
-            color="secondary">
+            color="secondary"
+          >
             <PlusIcon />
           </Button>
         </Fragment>

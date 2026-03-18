@@ -1,10 +1,6 @@
 #import "../../../fragments/artifacts.graphql"
 
-query PageArtifacts(
-  $taskId: ID!,
-  $runId: Int!,
-  $artifactsConnection: PageConnection!
-) {
+query PageArtifacts($taskId: ID!, $runId: Int!, $artifactsConnection: PageConnection!) {
   artifacts(taskId: $taskId, runId: $runId, connection: $artifactsConnection) {
     ...Artifacts
   }

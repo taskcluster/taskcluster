@@ -17,19 +17,12 @@ export default class Shell extends Component {
         ...props,
         [key]: decodeURIComponent(search.get(key)),
       }),
-      {}
+      {},
     );
 
     return (
-      <Dashboard
-        disableAppbar
-        className={this.props.classes.main}
-        title="Shell">
-        <ShellConsole
-          url={props.socketUrl}
-          taskId={props.taskId}
-          version={props.v}
-        />
+      <Dashboard disableAppbar className={this.props.classes.main} title="Shell">
+        <ShellConsole url={props.socketUrl} taskId={props.taskId} version={props.v} />
       </Dashboard>
     );
   }

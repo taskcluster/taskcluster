@@ -13,7 +13,16 @@ import {
 import QueueLock from '../queue-lock.js';
 import { markdownLog, markdownAnchor, extractLog } from '../utils.js';
 import { requestArtifact } from './requestArtifact.js';
-import { taskUI, makeDebug, taskLogUI, GithubCheck, getTimeDifference, taskGroupUI, buildUrl, buildLogUrl } from './utils.js';
+import {
+  taskUI,
+  makeDebug,
+  taskLogUI,
+  GithubCheck,
+  getTimeDifference,
+  taskGroupUI,
+  buildUrl,
+  buildLogUrl,
+} from './utils.js';
 
 /**
  * Tracking events order to prevent older events from overwriting newer updates
@@ -52,7 +61,10 @@ export async function statusHandler(message) {
   const releaseLock = await qLock.acquire(taskId);
 
   let debug = makeDebug(this.monitor, { taskGroupId, taskId });
-  debug(`Handling state change for task ${taskId} in group ${taskGroupId}, reason=${reasonResolved || state || 'taskDefined'}`, { exchange: message.exchange });
+  debug(
+    `Handling state change for task ${taskId} in group ${taskGroupId}, reason=${reasonResolved || state || 'taskDefined'}`,
+    { exchange: message.exchange },
+  );
 
   // check if it was the last try
   let conclusion = CONCLUSIONS[reasonResolved || state];
@@ -64,7 +76,9 @@ export async function statusHandler(message) {
 
   const [build] = await this.context.db.fns.get_github_build_pr(taskGroupId);
   if (!build) {
-    debug(`No github build is associated with task group ${taskGroupId}. Most likely this was triggered by periodic cron hook, which doesn't require github event / check suite.`);
+    debug(
+      `No github build is associated with task group ${taskGroupId}. Most likely this was triggered by periodic cron hook, which doesn't require github event / check suite.`,
+    );
     releaseLock();
     return false;
   }
@@ -84,7 +98,8 @@ export async function statusHandler(message) {
   let outputTitle = '';
 
   if (checkRunStatus === CHECK_RUN_STATES.COMPLETED && conclusion === undefined) {
-    this.monitor.reportError(new Error(`Unknown reasonResolved or state in ${message.exchange}!
+    this.monitor.reportError(
+      new Error(`Unknown reasonResolved or state in ${message.exchange}!
       Resolution reason received: ${reasonResolved}. State received: ${state}. Add these to the handlers map.
       TaskId: ${taskId}, taskGroupId: ${taskGroupId}`),
     );
@@ -102,14 +117,15 @@ export async function statusHandler(message) {
     `Attempting to update status of the checkrun for ${organization}/${repository}@${sha} (${checkRunStatus}:${conclusion})`,
   );
 
-  const createExceptionComment = async (errorMessage) => this.createExceptionComment({
-    debug,
-    instGithub,
-    organization,
-    repository,
-    sha,
-    error: new Error(errorMessage),
-  });
+  const createExceptionComment = async (errorMessage) =>
+    this.createExceptionComment({
+      debug,
+      instGithub,
+      organization,
+      repository,
+      sha,
+      error: new Error(errorMessage),
+    });
 
   try {
     const taskDefinition = await this.queueClient.task(taskId);
@@ -132,7 +148,7 @@ export async function statusHandler(message) {
     const textArtifactName = extraCheckRun?.textArtifactName || CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME;
     const annotationsArtifactName = extraCheckRun?.annotationsArtifactName || CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME;
 
-    const [ liveLogText, customCheckRunText, customCheckRunAnnotationsText ] = await Promise.all([
+    const [liveLogText, customCheckRunText, customCheckRunAnnotationsText] = await Promise.all([
       fetchArtifact(LIVE_BACKING_LOG_ARTIFACT_NAME),
       fetchArtifact(textArtifactName),
       fetchArtifact(annotationsArtifactName),
@@ -175,11 +191,7 @@ export async function statusHandler(message) {
 
     const CHECK_RUN_TEXT_OUTPUT = markdownAnchor(
       CHECKRUN_TEXT,
-      taskUI(
-        this.context.cfg.taskcluster.rootUrl,
-        taskGroupId,
-        taskId,
-      ),
+      taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
     );
     const CHECK_LOGS_TEXT_OUTPUT = markdownAnchor(
       CHECKLOGS_TEXT,
@@ -194,10 +206,7 @@ export async function statusHandler(message) {
     );
     const CHECK_TASK_GROUP_TEXT_OUTPUT = markdownAnchor(
       CHECK_TASK_GROUP_TEXT,
-      taskGroupUI(
-        this.context.cfg.taskcluster.rootUrl,
-        taskGroupId,
-      ),
+      taskGroupUI(this.context.cfg.taskcluster.rootUrl, taskGroupId),
     );
 
     output.addText(`${CHECK_RUN_TEXT_OUTPUT} | ${CHECK_LOGS_TEXT_OUTPUT} | ${CHECK_TASK_GROUP_TEXT_OUTPUT}`);
@@ -205,11 +214,11 @@ export async function statusHandler(message) {
     if (runs.length > 0) {
       const taskExecutionTime = getTimeDifference(runs[runId]?.started, runs[runId]?.resolved);
       output.addText(`### Task Status`);
-      output.addText(`Started: ${runs[runId]?.started ?? "n/a"}`);
-      output.addText(`Resolved: ${runs[runId]?.resolved ?? "n/a"}`);
-      output.addText(`Task Execution Time: ${taskExecutionTime ?? "n/a"}`);
-      output.addText(`Task Status: **${runs[runId]?.state ?? "n/a"}**`);
-      output.addText(`Reason Resolved: **${runs[runId]?.reasonResolved ?? "n/a"}**`);
+      output.addText(`Started: ${runs[runId]?.started ?? 'n/a'}`);
+      output.addText(`Resolved: ${runs[runId]?.resolved ?? 'n/a'}`);
+      output.addText(`Task Execution Time: ${taskExecutionTime ?? 'n/a'}`);
+      output.addText(`Task Status: **${runs[runId]?.state ?? 'n/a'}**`);
+      output.addText(`Reason Resolved: **${runs[runId]?.reasonResolved ?? 'n/a'}**`);
       output.addText(`TaskId: **${taskId}**`);
       output.addText(`RunId: **${runId}**`);
     }
@@ -221,8 +230,7 @@ export async function statusHandler(message) {
         output.addText(`### Artifacts`);
       }
 
-      artifactList.artifacts.forEach(element => {
-
+      artifactList.artifacts.forEach((element) => {
         let artifactUrl;
 
         if (element.name === 'public/logs/live_backing.log' || element.name === 'public/logs/live.log') {
@@ -231,10 +239,7 @@ export async function statusHandler(message) {
           artifactUrl = buildUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         }
 
-        const ARTIFACT_LINK = markdownAnchor(
-          element.name,
-          artifactUrl,
-        );
+        const ARTIFACT_LINK = markdownAnchor(element.name, artifactUrl);
         output.addText(`\\- ${ARTIFACT_LINK}`);
       });
     } catch (e) {
@@ -255,7 +260,9 @@ export async function statusHandler(message) {
 
     if (checkRun && !isRerun) {
       githubCheck.check_run_id = checkRun.check_run_id;
-      debug(`Updating check run ${checkRun.check_run_id} for task ${taskId}`, { payload: JSON.stringify(githubCheck.getUpdatePayload()) });
+      debug(`Updating check run ${checkRun.check_run_id} for task ${taskId}`, {
+        payload: JSON.stringify(githubCheck.getUpdatePayload()),
+      });
       await instGithub.checks.update(githubCheck.getUpdatePayload());
     } else {
       if (isRerun) {

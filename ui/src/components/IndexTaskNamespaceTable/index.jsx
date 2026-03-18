@@ -14,7 +14,7 @@ import { pageInfo, indexedTask } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.namespace, b.node.namespace)),
-  map(({ node: { namespace } }) => namespace)
+  map(({ node: { namespace } }) => namespace),
 );
 
 /**
@@ -45,14 +45,8 @@ export default class IndexTaskNamespaceTable extends Component {
       return {
         ...connection,
         edges: [...connection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? this.valueFromNode(b.node)
-              : this.valueFromNode(a.node);
-          const secondElement =
-            sortDirection === 'desc'
-              ? this.valueFromNode(a.node)
-              : this.valueFromNode(b.node);
+          const firstElement = sortDirection === 'desc' ? this.valueFromNode(b.node) : this.valueFromNode(a.node);
+          const secondElement = sortDirection === 'desc' ? this.valueFromNode(a.node) : this.valueFromNode(b.node);
 
           return sort(firstElement, secondElement);
         }),
@@ -64,17 +58,17 @@ export default class IndexTaskNamespaceTable extends Component {
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = (sortBy) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
     this.setState({ sortBy, sortDirection });
   };
 
-  taskFromNamespace = namespace => namespace.split('.').slice(-1)[0];
+  taskFromNamespace = (namespace) => namespace.split('.').slice(-1)[0];
 
   valueFromNode(node) {
     const mapping = {
@@ -87,11 +81,7 @@ export default class IndexTaskNamespaceTable extends Component {
   render() {
     const { onPageChange, connection } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedTaskConnection = this.createSortedTaskNamespaceConnection(
-      connection,
-      sortBy,
-      sortDirection
-    );
+    const sortedTaskConnection = this.createSortedTaskNamespaceConnection(connection, sortBy, sortDirection);
     const iconSize = 16;
 
     return (
@@ -108,11 +98,9 @@ export default class IndexTaskNamespaceTable extends Component {
             <TableCell>
               <Link
                 to={`/tasks/index/${encodeURIComponent(
-                  namespace
-                    .split('.')
-                    .slice(0, -1)
-                    .join('.')
-                )}/${this.taskFromNamespace(namespace)}`}>
+                  namespace.split('.').slice(0, -1).join('.'),
+                )}/${this.taskFromNamespace(namespace)}`}
+              >
                 <TableCellItem button>
                   {this.taskFromNamespace(namespace)}
                   <LinkIcon size={iconSize} />
@@ -122,11 +110,9 @@ export default class IndexTaskNamespaceTable extends Component {
             <TableCell size="medium">
               <Link
                 to={`/tasks/index/${encodeURIComponent(
-                  namespace
-                    .split('.')
-                    .slice(0, -1)
-                    .join('.')
-                )}/${this.taskFromNamespace(namespace)}/task-group`}>
+                  namespace.split('.').slice(0, -1).join('.'),
+                )}/${this.taskFromNamespace(namespace)}/task-group`}
+              >
                 <TableCellItem button>
                   Task Group
                   <LinkIcon size={iconSize} />

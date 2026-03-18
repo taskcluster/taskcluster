@@ -5,7 +5,7 @@ import { StaticProvider } from '../src/providers/static.js';
 import testing from '@taskcluster/lib-testing';
 import { WorkerPool, Worker } from '../src/data.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);
@@ -50,7 +50,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     emailOnError: false,
   };
 
-  setup(async function() {
+  setup(async function () {
     provider = new StaticProvider({
       providerId,
       db: helper.db,
@@ -72,7 +72,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await provider.setup();
   });
 
-  test('updateWorker updates expires, capacity, secret', async function() {
+  test('updateWorker updates expires, capacity, secret', async function () {
     let worker = Worker.fromApi(defaultWorker);
     await worker.create(helper.db);
 
@@ -91,56 +91,60 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(worker.capacity, 7);
 
     const rows = await helper.db.fns.get_worker_3(workerPoolId, workerGroup, workerId);
-    assert.deepEqual(rows.map(r => [r.worker_id, r.provider_data]), [
-      ['abc123', { staticSecret: 'new-secret' }],
-    ]);
+    assert.deepEqual(
+      rows.map((r) => [r.worker_id, r.provider_data]),
+      [['abc123', { staticSecret: 'new-secret' }]],
+    );
   });
 
-  test('removeWorker marks the worker as stopped', async function() {
+  test('removeWorker marks the worker as stopped', async function () {
     const worker = Worker.fromApi(defaultWorker);
     await worker.create(helper.db);
 
     await provider.removeWorker({ worker, reason: 'uhoh' });
 
     const rows = await helper.db.fns.get_worker_3(workerPoolId, workerGroup, workerId);
-    assert.deepEqual(rows.map(({ worker_id, state }) => ([worker_id, state])), [
-      ['abc123', 'stopped'],
-    ]);
+    assert.deepEqual(
+      rows.map(({ worker_id, state }) => [worker_id, state]),
+      [['abc123', 'stopped']],
+    );
   });
 
-  suite('registerWorker', function() {
+  suite('registerWorker', function () {
     // create a test worker pool directly in the DB
-    const createWorker = overrides => {
-      const worker = Worker.fromApi(
-        { ...defaultWorker, ...overrides });
+    const createWorker = (overrides) => {
+      const worker = Worker.fromApi({ ...defaultWorker, ...overrides });
       return worker.create(helper.db);
     };
 
-    test('no token', async function() {
+    test('no token', async function () {
       const worker = await createWorker({ state: 'running' });
       const workerIdentityProof = {};
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /missing staticSecret/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /missing staticSecret/,
+      );
     });
 
-    test('not running', async function() {
+    test('not running', async function () {
       const worker = await createWorker({ state: 'stopped' });
       const workerIdentityProof = { staticSecret: 'good' };
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /worker is not running/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /worker is not running/,
+      );
     });
 
-    test('invalid token', async function() {
+    test('invalid token', async function () {
       const worker = await createWorker({ state: 'running' });
       const workerIdentityProof = { staticSecret: 'invalid' };
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /bad staticSecret/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /bad staticSecret/,
+      );
     });
 
-    test('successful registration', async function() {
+    test('successful registration', async function () {
       const pool = WorkerPool.fromApi({
         ...defaultWorkerPool,
         workerPoolId: 'pool/config',
@@ -149,7 +153,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             reregistrationTimeout: 3600,
           },
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
         },
       });
@@ -165,8 +169,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const res = await provider.registerWorker({ workerPool: pool, worker, workerIdentityProof });
       const expectedExpires = new Date(Date.now() + 3600 * 1000);
       // allow +- 10 seconds since time passes while the test executes
-      assert(Math.abs(res.expires - expectedExpires) < 10000,
-        `${res.expires}, ${expectedExpires}, diff = ${res.expires - expectedExpires} ms`);
+      assert(
+        Math.abs(res.expires - expectedExpires) < 10000,
+        `${res.expires}, ${expectedExpires}, diff = ${res.expires - expectedExpires} ms`,
+      );
       assert.equal(res.workerConfig.someKey, 'someValue');
     });
   });

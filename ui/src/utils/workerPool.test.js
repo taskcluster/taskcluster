@@ -1,8 +1,4 @@
-import {
-  joinWorkerPoolId,
-  splitWorkerPoolId,
-  isWorkerPoolIdSecondHalfValid,
-} from './workerPool';
+import { joinWorkerPoolId, splitWorkerPoolId, isWorkerPoolIdSecondHalfValid } from './workerPool';
 
 it('should joinWorkerPoolId', () => {
   expect(joinWorkerPoolId('a', 'b')).toEqual('a/b');

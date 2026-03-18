@@ -17,7 +17,7 @@ const variantIcon = {
   info: InformationIcon,
 };
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   success: {
     backgroundColor: theme.palette.success.dark,
     color: theme.palette.success.contrastText,
@@ -89,14 +89,7 @@ export default class Snackbar extends Component {
   };
 
   render() {
-    const {
-      classes,
-      onClose,
-      variant,
-      message,
-      snackbarContentProps,
-      ...props
-    } = this.props;
+    const { classes, onClose, variant, message, snackbarContentProps, ...props } = this.props;
     const Icon = variantIcon[variant];
 
     return (

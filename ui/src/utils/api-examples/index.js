@@ -53,13 +53,7 @@ function getSchemaContent(schemaId) {
  * @param {string} version - Taskcluster version (e.g., '93')
  * @returns {string|null} Code example or null if not found
  */
-function generateSingleExample(
-  language,
-  serviceName,
-  apiVersion,
-  entry,
-  version = DEFAULT_VERSION
-) {
+function generateSingleExample(language, serviceName, apiVersion, entry, version = DEFAULT_VERSION) {
   // Generate payload example if entry has input schema
   let payloadExample = null;
 
@@ -74,40 +68,14 @@ function generateSingleExample(
   }
 
   const generators = {
-    curl: () =>
-      generateCurlExample(serviceName, apiVersion, entry, payloadExample),
-    go: () =>
-      generateGoExample(
-        serviceName,
-        apiVersion,
-        entry,
-        version,
-        payloadExample
-      ),
-    python: () =>
-      generatePythonExample(
-        serviceName,
-        apiVersion,
-        entry,
-        false,
-        payloadExample
-      ),
-    pythonAsync: () =>
-      generatePythonExample(
-        serviceName,
-        apiVersion,
-        entry,
-        true,
-        payloadExample
-      ),
-    node: () =>
-      generateNodeExample(serviceName, apiVersion, entry, payloadExample),
-    web: () =>
-      generateWebExample(serviceName, apiVersion, entry, payloadExample),
-    rust: () =>
-      generateRustExample(serviceName, apiVersion, entry, payloadExample),
-    shell: () =>
-      generateShellExample(serviceName, apiVersion, entry, payloadExample),
+    curl: () => generateCurlExample(serviceName, apiVersion, entry, payloadExample),
+    go: () => generateGoExample(serviceName, apiVersion, entry, version, payloadExample),
+    python: () => generatePythonExample(serviceName, apiVersion, entry, false, payloadExample),
+    pythonAsync: () => generatePythonExample(serviceName, apiVersion, entry, true, payloadExample),
+    node: () => generateNodeExample(serviceName, apiVersion, entry, payloadExample),
+    web: () => generateWebExample(serviceName, apiVersion, entry, payloadExample),
+    rust: () => generateRustExample(serviceName, apiVersion, entry, payloadExample),
+    shell: () => generateShellExample(serviceName, apiVersion, entry, payloadExample),
   };
   const generator = generators[language];
 
@@ -128,13 +96,7 @@ function generateSingleExample(
  * @param {string} [version] - Optional Taskcluster version
  * @returns {object|string|null} Examples object or string or null
  */
-export default function generateExamples(
-  serviceName,
-  apiVersion,
-  entry,
-  language = null,
-  version = DEFAULT_VERSION
-) {
+export default function generateExamples(serviceName, apiVersion, entry, language = null, version = DEFAULT_VERSION) {
   // Only generate examples for function entries (not exchanges, logs, etc.)
   if (entry.type !== 'function') {
     return null;
@@ -142,61 +104,19 @@ export default function generateExamples(
 
   // If a specific language is requested, generate only that one (lazy loading)
   if (language) {
-    return generateSingleExample(
-      language,
-      serviceName,
-      apiVersion,
-      entry,
-      version
-    );
+    return generateSingleExample(language, serviceName, apiVersion, entry, version);
   }
 
   // Generate all examples
   const examples = {
-    curl: generateSingleExample(
-      'curl',
-      serviceName,
-      apiVersion,
-      entry,
-      version
-    ),
+    curl: generateSingleExample('curl', serviceName, apiVersion, entry, version),
     go: generateSingleExample('go', serviceName, apiVersion, entry, version),
-    python: generateSingleExample(
-      'python',
-      serviceName,
-      apiVersion,
-      entry,
-      version
-    ),
-    pythonAsync: generateSingleExample(
-      'pythonAsync',
-      serviceName,
-      apiVersion,
-      entry,
-      version
-    ),
-    node: generateSingleExample(
-      'node',
-      serviceName,
-      apiVersion,
-      entry,
-      version
-    ),
+    python: generateSingleExample('python', serviceName, apiVersion, entry, version),
+    pythonAsync: generateSingleExample('pythonAsync', serviceName, apiVersion, entry, version),
+    node: generateSingleExample('node', serviceName, apiVersion, entry, version),
     web: generateSingleExample('web', serviceName, apiVersion, entry, version),
-    rust: generateSingleExample(
-      'rust',
-      serviceName,
-      apiVersion,
-      entry,
-      version
-    ),
-    shell: generateSingleExample(
-      'shell',
-      serviceName,
-      apiVersion,
-      entry,
-      version
-    ),
+    rust: generateSingleExample('rust', serviceName, apiVersion, entry, version),
+    shell: generateSingleExample('shell', serviceName, apiVersion, entry, version),
   };
 
   return examples;

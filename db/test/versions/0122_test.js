@@ -3,12 +3,12 @@ import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   helper.withDbForVersion();
 
-  test('pagination returns tasks in stable order', async function() {
+  test('pagination returns tasks in stable order', async function () {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
 
@@ -21,10 +21,24 @@ suite(testing.suiteName(), function() {
     const taskIds = ['zzz-task', 'aaa-task', 'mmm-task', 'bbb-task', 'yyy-task'];
     for (const taskId of taskIds) {
       await db.fns.create_task_projid(
-        taskId, 'prov/wt', 'sched', 'proj', 'group-1',
-        JSON.stringify([]), 'all-completed', JSON.stringify([]),
-        'high', 5, created, deadline, expires,
-        JSON.stringify([]), {}, {}, JSON.stringify([]), {},
+        taskId,
+        'prov/wt',
+        'sched',
+        'proj',
+        'group-1',
+        JSON.stringify([]),
+        'all-completed',
+        JSON.stringify([]),
+        'high',
+        5,
+        created,
+        deadline,
+        expires,
+        JSON.stringify([]),
+        {},
+        {},
+        JSON.stringify([]),
+        {},
       );
     }
 
@@ -32,7 +46,7 @@ suite(testing.suiteName(), function() {
     const allTaskIds = [];
     for (let offset = 0; offset < taskIds.length; offset += 2) {
       const page = await db.fns.get_tasks_by_task_group_projid('group-1', 2, offset);
-      allTaskIds.push(...page.map(r => r.task_id));
+      allTaskIds.push(...page.map((r) => r.task_id));
     }
 
     // All tasks should be returned exactly once, in sorted order

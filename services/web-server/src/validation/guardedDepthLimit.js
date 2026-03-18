@@ -51,10 +51,7 @@ function hasFragmentCycle(document) {
   const fragmentGraph = new Map();
   visit(document, {
     FragmentDefinition(node) {
-      fragmentGraph.set(
-        node.name.value,
-        collectReferencedFragments(node.selectionSet),
-      );
+      fragmentGraph.set(node.name.value, collectReferencedFragments(node.selectionSet));
     },
   });
 

@@ -29,14 +29,11 @@ import { pageInfo } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.workerType, b.node.workerType)),
-  map(
-    ({ node: { provisionerId, workerType } }) =>
-      `${provisionerId}.${workerType}`
-  )
+  map(({ node: { provisionerId, workerType } }) => `${provisionerId}.${workerType}`),
 );
 
 @withRouter
-@withStyles(theme => ({
+@withStyles((theme) => ({
   infoButton: {
     marginLeft: -theme.spacing(2),
     marginRight: theme.spacing(1),
@@ -82,14 +79,8 @@ export default class WorkerTypesTable extends Component {
       return {
         ...workerTypesConnection,
         edges: [...workerTypesConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
+          const firstElement = sortDirection === 'desc' ? b.node[sortByProperty] : a.node[sortByProperty];
+          const secondElement = sortDirection === 'desc' ? a.node[sortByProperty] : b.node[sortByProperty];
 
           return sort(firstElement, secondElement);
         }),
@@ -101,7 +92,7 @@ export default class WorkerTypesTable extends Component {
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
-    }
+    },
   );
 
   handleDrawerClose = () => {
@@ -113,19 +104,17 @@ export default class WorkerTypesTable extends Component {
 
   handleDrawerOpen = ({ currentTarget: { name } }) =>
     memoize(
-      name =>
+      (name) =>
         this.setState({
           drawerOpen: true,
-          drawerWorkerType: this.workerTypes.edges.find(
-            ({ node }) => node.workerType === name
-          ).node,
+          drawerWorkerType: this.workerTypes.edges.find(({ node }) => node.workerType === name).node,
         }),
       {
-        serializer: name => name,
-      }
+        serializer: (name) => name,
+      },
     )(name);
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = (sortBy) => {
     const query = parse(this.props.location.search.slice(1));
     const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = query.sortBy === sortBy ? toggled : 'desc';
@@ -141,21 +130,10 @@ export default class WorkerTypesTable extends Component {
     const query = parse(this.props.location.search.slice(1));
     const { onPageChange, classes, workerTypesConnection } = this.props;
     const { drawerOpen, drawerWorkerType } = this.state;
-    const { sortBy, sortDirection } = query.sortBy
-      ? query
-      : { sortBy: null, sortDirection: null };
+    const { sortBy, sortDirection } = query.sortBy ? query : { sortBy: null, sortDirection: null };
 
-    this.workerTypes = this.createSortedWorkerTypesConnection(
-      workerTypesConnection,
-      sortBy,
-      sortDirection
-    );
-    const headers = [
-      'Worker Type',
-      'Stability',
-      'Last Date Active',
-      'Pending Tasks',
-    ];
+    this.workerTypes = this.createSortedWorkerTypesConnection(workerTypesConnection, sortBy, sortDirection);
+    const headers = ['Worker Type', 'Stability', 'Last Date Active', 'Pending Tasks'];
     const iconSize = 16;
 
     if (this.workerTypes.edges.length) {
@@ -181,14 +159,10 @@ export default class WorkerTypesTable extends Component {
           renderRow={({ node: workerType }) => (
             <TableRow key={workerType.workerType}>
               <TableCell>
-                <IconButton
-                  className={classes.infoButton}
-                  name={workerType.workerType}
-                  onClick={this.handleDrawerOpen}>
+                <IconButton className={classes.infoButton} name={workerType.workerType} onClick={this.handleDrawerOpen}>
                   <InformationVariantIcon size={iconSize} />
                 </IconButton>
-                <Link
-                  to={`/provisioners/${workerType.provisionerId}/worker-types/${workerType.workerType}`}>
+                <Link to={`/provisioners/${workerType.provisionerId}/worker-types/${workerType.workerType}`}>
                   <TableCellItem button>
                     {workerType.workerType}
                     <LinkIcon size={iconSize} />
@@ -204,19 +178,12 @@ export default class WorkerTypesTable extends Component {
                 text={<DateDistance from={workerType.lastDateActive} />}
               />
               <TableCell>{workerType.pendingTasks}</TableCell>
-              {'runningCapacity' in workerType && (
-                <TableCell>{workerType.runningCapacity}</TableCell>
-              )}
-              {'pendingCapacity' in workerType && (
-                <TableCell>{workerType.pendingCapacity}</TableCell>
-              )}
+              {'runningCapacity' in workerType && <TableCell>{workerType.runningCapacity}</TableCell>}
+              {'pendingCapacity' in workerType && <TableCell>{workerType.pendingCapacity}</TableCell>}
             </TableRow>
           )}
         />
-        <Drawer
-          anchor="right"
-          open={drawerOpen}
-          onClose={this.handleDrawerClose}>
+        <Drawer anchor="right" open={drawerOpen} onClose={this.handleDrawerClose}>
           <div className={classes.metadataContainer}>
             <Typography variant="h5" className={classes.headline}>
               {drawerWorkerType?.workerType}
@@ -226,11 +193,7 @@ export default class WorkerTypesTable extends Component {
                 <ListItemText
                   primary="Description"
                   secondary={
-                    drawerWorkerType?.description ? (
-                      <Markdown>{drawerWorkerType.description}</Markdown>
-                    ) : (
-                      'n/a'
-                    )
+                    drawerWorkerType?.description ? <Markdown>{drawerWorkerType.description}</Markdown> : 'n/a'
                   }
                 />
               </ListItem>

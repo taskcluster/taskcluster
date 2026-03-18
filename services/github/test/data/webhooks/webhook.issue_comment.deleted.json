@@ -1,15 +1,15 @@
 {
   "headers": {
-  "Accept": "*/*",
-  "Content-Type": "application/json",
-  "User-Agent": "GitHub-Hookshot/bd63eb1",
-  "X-GitHub-Delivery": "e0da8b22-272e-11ef-9a0c-dbbd138f1105",
-  "X-GitHub-Event": "issue_comment",
-  "X-GitHub-Hook-ID": "374211047",
-  "X-GitHub-Hook-Installation-Target-ID": "209625",
-  "X-GitHub-Hook-Installation-Target-Type": "integration",
-  "X-Hub-Signature": "sha1=a842bda2d86a02fd94160af54f66b6576a6f5a19",
-  "X-Hub-Signature-256": "sha256=24b20ca2397d8ae1fc59caaa2282cc8c7358955436502788d6c9a4644f5d8859"
+    "Accept": "*/*",
+    "Content-Type": "application/json",
+    "User-Agent": "GitHub-Hookshot/bd63eb1",
+    "X-GitHub-Delivery": "e0da8b22-272e-11ef-9a0c-dbbd138f1105",
+    "X-GitHub-Event": "issue_comment",
+    "X-GitHub-Hook-ID": "374211047",
+    "X-GitHub-Hook-Installation-Target-ID": "209625",
+    "X-GitHub-Hook-Installation-Target-Type": "integration",
+    "X-Hub-Signature": "sha1=a842bda2d86a02fd94160af54f66b6576a6f5a19",
+    "X-Hub-Signature-256": "sha256=24b20ca2397d8ae1fc59caaa2282cc8c7358955436502788d6c9a4644f5d8859"
   },
   "body": {
     "action": "deleted",

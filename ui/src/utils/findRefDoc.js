@@ -7,9 +7,7 @@ import references from '../../../generated/references.json';
 export default ({ type, serviceName, apiVersion }) => {
   // first, find the schema for this reference type
   const schemaEntry = references.find(
-    ({ content }) =>
-      content.$schema === '/schemas/common/metadata-metaschema.json#' &&
-      content.metadata.name === type
+    ({ content }) => content.$schema === '/schemas/common/metadata-metaschema.json#' && content.metadata.name === type,
   );
 
   if (!schemaEntry) {
@@ -23,13 +21,12 @@ export default ({ type, serviceName, apiVersion }) => {
     ({ content }) =>
       content.$schema === schemaId &&
       content.serviceName === serviceName &&
-      (!apiVersion || content.apiVersion === apiVersion)
+      (!apiVersion || content.apiVersion === apiVersion),
   );
 
   if (!refEntry) {
     throw new Error(
-      `No reference document found of type ${type} for service ${serviceName} ${apiVersion ||
-        '(no version)'}`
+      `No reference document found of type ${type} for service ${serviceName} ${apiVersion || '(no version)'}`,
     );
   }
 

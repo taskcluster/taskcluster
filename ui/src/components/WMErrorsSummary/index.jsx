@@ -5,13 +5,7 @@ import summarizeWorkerPoolsStats from '../StatusDashboard/summarizeWorkerPoolsSt
 import StatusGroup from '../StatusDashboard/StatusGroup';
 import Button from '../Button';
 
-const MiniTable = ({
-  data,
-  title,
-  onStatClick,
-  selectedKey,
-  pageSize = 15,
-}) => (
+const MiniTable = ({ data, title, onStatClick, selectedKey, pageSize = 15 }) => (
   <div>
     <table aria-label={title} style={{ width: '100%' }}>
       <thead>
@@ -33,12 +27,11 @@ const MiniTable = ({
               style={{
                 backgroundColor: selectedKey === key ? '#55555533' : '',
               }}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
               <td>
                 {onStatClick ? (
-                  <Button
-                    style={{ padding: 0 }}
-                    onClick={() => onStatClick(key)}>
+                  <Button style={{ padding: 0 }} onClick={() => onStatClick(key)}>
                     {key}
                   </Button>
                 ) : (
@@ -80,16 +73,10 @@ export default class WorkerManagerErrorsSummary extends Component {
             <StatusGroup widgets={errorWidgets} tiny />
             <Grid container spacing={2} style={{ marginBottom: 20 }}>
               <Grid item xs={12} md={4}>
-                <MiniTable
-                  data={WorkerManagerErrorsStats?.totals?.title}
-                  title="Errors by title"
-                />
+                <MiniTable data={WorkerManagerErrorsStats?.totals?.title} title="Errors by title" />
               </Grid>
               <Grid item xs={12} md={4}>
-                <MiniTable
-                  data={WorkerManagerErrorsStats?.totals?.code}
-                  title="Errors by error code"
-                />
+                <MiniTable data={WorkerManagerErrorsStats?.totals?.code} title="Errors by error code" />
               </Grid>
               {includeLaunchConfig && (
                 <Grid item xs={12} md={4}>

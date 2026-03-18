@@ -4,9 +4,7 @@ const BATCH_SIZE = 20;
 const expireObject = async ({ object, monitor, db, backends }) => {
   const backend = backends.get(object.backend_id);
   if (!backend) {
-    monitor.reportError(
-      new Error(`object has unknown backend_id ${object.backend_id}`),
-      { name: object.name });
+    monitor.reportError(new Error(`object has unknown backend_id ${object.backend_id}`), { name: object.name });
     return;
   }
 
@@ -40,7 +38,7 @@ const expireObjects = async ({ monitor, db, backends }) => {
     }
     startAt = res[res.length - 1].name;
 
-    await Promise.all(res.map(object => expireObject({ object, monitor, db, backends })));
+    await Promise.all(res.map((object) => expireObject({ object, monitor, db, backends })));
   }
 };
 

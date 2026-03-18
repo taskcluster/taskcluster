@@ -2,7 +2,7 @@ import { PureComponent } from 'react';
 import { string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   // Not all images sit nicely on a dark theme (e..g, images with dark text)
   imageWrapper: {
     textAlign: 'center',

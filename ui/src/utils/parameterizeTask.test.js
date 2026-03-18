@@ -21,10 +21,8 @@ it('should enhance task', () => {
 
   expect(enhancedTask).toHaveProperty('retries', 0);
   expect(enhancedTask).toHaveProperty('deadline');
-  expect(Date.now()- new Date(enhancedTask.deadline).getTime()
-  ).toBeLessThan(12 * 60 * 60 * 1000);
-  expect(Date.now()- new Date(enhancedTask.created).getTime()
-  ).toBeLessThan(1000);
+  expect(Date.now() - new Date(enhancedTask.deadline).getTime()).toBeLessThan(12 * 60 * 60 * 1000);
+  expect(Date.now() - new Date(enhancedTask.created).getTime()).toBeLessThan(1000);
   expect(enhancedTask).toHaveProperty('scopes', ['scope1', 'scope2:subscope3']);
   expect(enhancedTask).toHaveProperty('payload');
   expect(enhancedTask.payload).toEqual({

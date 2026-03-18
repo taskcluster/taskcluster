@@ -7,7 +7,6 @@ import { decryptToken } from './decryptToken.js';
 import { ErrorReply } from '@taskcluster/lib-api';
 
 export default ({ cfg, server, schema, context, path, authFactory }) => {
-
   const timeoutMap = new WeakMap();
 
   SubscriptionServer.create(
@@ -16,7 +15,6 @@ export default ({ cfg, server, schema, context, path, authFactory }) => {
       execute,
       subscribe,
       async onConnect(params, socket) {
-
         const disconnectTimeout = setTimeout(() => {
           if (socket && socket.readyState !== socket.CLOSING && socket.readyState !== socket.CLOSED) {
             socket.close();
@@ -27,7 +25,6 @@ export default ({ cfg, server, schema, context, path, authFactory }) => {
         return new Promise((resolve, reject) => {
           credentials()(socket.upgradeReq, {}, async () => {
             try {
-
               const credentials = params?.Authorization ? decryptToken(params.Authorization) : null;
 
               const authClient = authFactory({ credentials });
@@ -36,8 +33,7 @@ export default ({ cfg, server, schema, context, path, authFactory }) => {
               const satisfyingScopes = scopeUtils.scopesSatisfying(scopes.scopes, { AllOf: ['web:read-pulse'] });
 
               if (!satisfyingScopes) {
-
-                const message = ([
+                const message = [
                   `Error: InsufficientScopes`,
                   '',
                   `Client ID ${credentials?.clientId ?? 'anonymous'} does not have sufficient scopes and is missing the following scopes:`,
@@ -45,15 +41,17 @@ export default ({ cfg, server, schema, context, path, authFactory }) => {
                   '```',
                   'web:read-pulse',
                   '```',
-                ]).join('\n');
+                ].join('\n');
 
-                return reject(new ErrorReply({
-                  code: 'InsufficientScopes',
-                  message: message,
-                  details: {
-                    required: ['web:read-pulse'],
-                  },
-                }));
+                return reject(
+                  new ErrorReply({
+                    code: 'InsufficientScopes',
+                    message: message,
+                    details: {
+                      required: ['web:read-pulse'],
+                    },
+                  }),
+                );
               }
 
               resolve();
@@ -64,7 +62,6 @@ export default ({ cfg, server, schema, context, path, authFactory }) => {
         });
       },
       onDisconnect(socket) {
-
         const timeout = timeoutMap.get(socket);
         clearTimeout(timeout);
         timeoutMap.delete(socket);
@@ -76,7 +73,7 @@ export default ({ cfg, server, schema, context, path, authFactory }) => {
         // See https://github.com/apollographql/subscriptions-transport-ws/issues/182
         return {
           ...connection,
-          formatResponse: value => ({
+          formatResponse: (value) => ({
             ...value,
             errors: value.errors?.map(formatError),
           }),

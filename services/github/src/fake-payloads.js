@@ -973,12 +973,19 @@ const mapping = {
   'github-issue-comment': issueComment,
 };
 
-export const getEventPayload = function getEventPayload(type, action, organization, repository, branch, overrides = {}) {
+export const getEventPayload = function getEventPayload(
+  type,
+  action,
+  organization,
+  repository,
+  branch,
+  overrides = {},
+) {
   const event = JSON.parse(
     mapping[type]
       .replaceAll('$ORGANIZATION', organization)
       .replaceAll('$REPOSITORY', repository)
-      .replaceAll('$BRANCH', encodeURI(branch))
+      .replaceAll('$BRANCH', encodeURI(branch)),
   );
 
   return { ...event, action, ...overrides };

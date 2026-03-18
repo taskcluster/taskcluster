@@ -7,7 +7,7 @@ import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import HelpView from '../../../components/HelpView';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   plusIconSpan: {
     ...theme.mixins.fab,
   },
@@ -17,7 +17,7 @@ export default class ViewDenylist extends PureComponent {
     searchTerm: '',
   };
 
-  handleSearchSubmit = searchTerm => {
+  handleSearchSubmit = (searchTerm) => {
     this.setState({ searchTerm });
   };
 
@@ -33,19 +33,16 @@ export default class ViewDenylist extends PureComponent {
       <Dashboard
         title="Denylist Addresses"
         helpView={<HelpView description={description} />}
-        search={
-          <Search
-            onSubmit={this.handleSearchSubmit}
-            placeholder="Address contains"
-          />
-        }>
+        search={<Search onSubmit={this.handleSearchSubmit} placeholder="Address contains" />}
+      >
         <Denylist searchTerm={searchTerm} />
         <Button
           spanProps={{ className: classes.plusIconSpan }}
           tooltipProps={{ title: 'Add Address' }}
           onClick={this.handleAddressAdd}
           variant="round"
-          color="secondary">
+          color="secondary"
+        >
           <PlusIcon />
         </Button>
       </Dashboard>

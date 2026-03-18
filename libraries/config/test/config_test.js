@@ -5,14 +5,11 @@ import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
-
+suite(testing.suiteName(), function () {
   test('load yaml', () => {
     const cfg = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test.yml'), required: true }],
     });
 
     assume(cfg).deep.equals({
@@ -23,9 +20,7 @@ suite(testing.suiteName(), function() {
   test('load profile', () => {
     const cfg = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test-profile.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test-profile.yml'), required: true }],
       profile: 'danish',
     });
     assume(cfg).deep.equals({
@@ -36,9 +31,7 @@ suite(testing.suiteName(), function() {
   test('load profile (default)', () => {
     const cfg = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test-profile.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test-profile.yml'), required: true }],
     });
 
     assume(cfg).deep.equals({
@@ -49,9 +42,7 @@ suite(testing.suiteName(), function() {
   test('load !env', () => {
     const cfg = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test-env.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test-env.yml'), required: true }],
       env: {
         ENV_VARIABLE: 'env-var-value',
         ENV_NUMBER: '32.4',
@@ -81,9 +72,7 @@ suite(testing.suiteName(), function() {
     assume(() => {
       config({
         serviceName: 'test',
-        files: [
-          { path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false },
-        ],
+        files: [{ path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false }],
       });
     }).throws(/Must load at least one configuration/);
   });
@@ -168,9 +157,7 @@ suite(testing.suiteName(), function() {
   test('load !env listing', () => {
     const vars = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test-env.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test-env.yml'), required: true }],
       env: {}, // Notice they do not need to be in the env to do this
       getEnvVars: true,
     });
@@ -192,9 +179,7 @@ suite(testing.suiteName(), function() {
   test('load !env listing with secrets', () => {
     const vars = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test-env-secrets.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test-env-secrets.yml'), required: true }],
       env: {}, // Notice they do not need to be in the env to do this
       getEnvVars: true,
     });

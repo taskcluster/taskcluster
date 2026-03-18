@@ -5,7 +5,7 @@ const fetchExchanges = async (service, version) => {
   const res = await fetch(urls.exchangeReference(service, version));
   const data = await res.json();
 
-  data.entries?.forEach(entry => {
+  data.entries?.forEach((entry) => {
     exchanges.push(`${data.exchangePrefix}${entry.exchange}`);
   });
 

@@ -1,5 +1,5 @@
-mutation CreateHook($hookGroupId: ID!, $hookId: ID!, $payload: HookInput!){
-  createHook(hookGroupId: $hookGroupId, hookId: $hookId, payload: $payload){
+mutation CreateHook($hookGroupId: ID!, $hookId: ID!, $payload: HookInput!) {
+  createHook(hookGroupId: $hookGroupId, hookId: $hookId, payload: $payload) {
     hookId
   }
 }

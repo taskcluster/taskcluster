@@ -5,12 +5,7 @@ import { readRepoYAML, writeRepoYAML } from '../utils/index.js';
 import inquirer from 'inquirer';
 import commonPrompts from './common.js';
 
-import {
-  rabbitPrompts,
-  rabbitResources,
-  rabbitAdminPasswordPrompt,
-  rabbitEnsureResources,
-} from './rabbit.js';
+import { rabbitPrompts, rabbitResources, rabbitAdminPasswordPrompt, rabbitEnsureResources } from './rabbit.js';
 
 import { azureResources } from './azure.js';
 import { postgresPrompts, postgresResources, postgresEnsureDb } from './postgres.js';
@@ -74,10 +69,10 @@ export const dbUpgrade = async (options) => {
   const meta = userConfig.meta || {};
 
   const { dbVersion } = options;
-  const toVersion = dbVersion ? parseInt(dbVersion) : undefined;
+  const toVersion = dbVersion ? parseInt(dbVersion, 10) : undefined;
 
   const { adminDbUrl, usernamePrefix } = dbParams(meta);
-  const showProgress = message => {
+  const showProgress = (message) => {
     console.log(chalk.green(message));
   };
 
@@ -89,13 +84,13 @@ export const dbDowngrade = async (options) => {
   const meta = userConfig.meta || {};
 
   const { dbVersion } = options;
-  const toVersion = parseInt(dbVersion);
-  if (!dbVersion.match(/^[0-9]+$/) || isNaN(toVersion)) {
+  const toVersion = parseInt(dbVersion, 10);
+  if (!dbVersion.match(/^[0-9]+$/) || Number.isNaN(toVersion)) {
     throw new Error('Missing or invalid --db-version');
   }
 
   const { adminDbUrl, usernamePrefix } = dbParams(meta);
-  const showProgress = message => {
+  const showProgress = (message) => {
     console.log(chalk.green(message));
   };
 
@@ -135,6 +130,13 @@ export const delete_ = async (_options) => {
 };
 
 export default {
-  init, apply, verify, templates,
-  ensureDb, ensureRabbit, delete_, dbUpgrade, dbDowngrade,
+  init,
+  apply,
+  verify,
+  templates,
+  ensureDb,
+  ensureRabbit,
+  delete_,
+  dbUpgrade,
+  dbDowngrade,
 };

@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import Emoticon from './Emoticon';
 
 @withStyles(
-  theme => ({
+  (theme) => ({
     root: {
       textAlign: 'center',
     },
@@ -29,7 +29,7 @@ import Emoticon from './Emoticon';
       fill: theme.palette.primary.main,
     },
   }),
-  { withTheme: true }
+  { withTheme: true },
 )
 export default class NotFound extends Component {
   static propTypes = {

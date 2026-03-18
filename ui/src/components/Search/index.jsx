@@ -6,7 +6,7 @@ import FormControl from '@material-ui/core/FormControl';
 import MagnifyIcon from 'mdi-react/MagnifyIcon';
 import { THEME } from '../../utils/constants';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   root: {
     background: alpha(THEME.PRIMARY_DARK, 0.5),
     borderRadius: 2,
@@ -103,15 +103,14 @@ export default class Search extends PureComponent {
   constructor(props) {
     super(props);
 
-    this.isControlled =
-      'value' in props && props.value !== undefined && props.value !== null;
+    this.isControlled = 'value' in props && props.value !== undefined && props.value !== null;
   }
 
   state = {
     value: '',
   };
 
-  handleInputChange = e => {
+  handleInputChange = (e) => {
     const { onChange } = this.props;
 
     if (this.isControlled) {
@@ -121,29 +120,18 @@ export default class Search extends PureComponent {
     this.setState({ value: e.target.value });
   };
 
-  handleInputSubmit = e => {
+  handleInputSubmit = (e) => {
     e.preventDefault();
 
     this.props.onSubmit(this.state.value.trim());
   };
 
   render() {
-    const {
-      classes,
-      onSubmit,
-      onChange,
-      spellCheck,
-      className,
-      formProps,
-      ...props
-    } = this.props;
+    const { classes, onSubmit, onChange, spellCheck, className, formProps, ...props } = this.props;
     const { value } = this.state;
 
     return (
-      <form
-        onSubmit={this.handleInputSubmit}
-        {...formProps}
-        className={classNames(classes.root, formProps.className)}>
+      <form onSubmit={this.handleInputSubmit} {...formProps} className={classNames(classes.root, formProps.className)}>
         <FormControl className={classes.formControl}>
           <div className={classes.search}>
             <MagnifyIcon />

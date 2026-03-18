@@ -4,7 +4,7 @@ import { ErrorReply } from '../error-reply.js';
 export let isProduction = process.env.NODE_ENV === 'production';
 // needed for testing
 /** @param {boolean} value */
-export const setIsProduction = value => isProduction = value;
+export const setIsProduction = (value) => (isProduction = value);
 
 /**
  * Create parameter validation middle-ware instance, given a mapping from
@@ -25,7 +25,6 @@ export const setIsProduction = value => isProduction = value;
 export const expressError = ({ errorCodes, entry }) => {
   const { name: method, cleanPayload } = entry;
   return (err, req, res, _next) => {
-
     if (res.headersSent) {
       req.tcContext.monitor.reportError(new Error('API method implementation called res.send twice'));
       // nothing more we can do here, since we have already sent the HTTP response
@@ -55,10 +54,9 @@ export const expressError = ({ errorCodes, entry }) => {
           details.error = err.toString();
         }
       }
-      const message = 'Internal Server Error, incidentId {{incidentId}}.' +
-        (isProduction ?
-          '' :
-          ' Error (not shown in production):\n```\n{{error}}\n```');
+      const message =
+        'Internal Server Error, incidentId {{incidentId}}.' +
+        (isProduction ? '' : ' Error (not shown in production):\n```\n{{error}}\n```');
 
       err = new ErrorReply({ code: 'InternalServerError', message, details });
     }
@@ -74,8 +72,7 @@ export const expressError = ({ errorCodes, entry }) => {
     }
 
     if (status === undefined || typeof message !== 'string') {
-      const newMessage = 'Internal error, unknown error code: ' + code + '\n' +
-        (message || 'Missing message!');
+      const newMessage = `Internal error, unknown error code: ${code}\n${message || 'Missing message!'}`;
       code = 'InternalServerError';
       status = 500;
       /** @type {Error & Record<string, any>} */
@@ -91,22 +88,24 @@ export const expressError = ({ errorCodes, entry }) => {
       method,
       params: req.params,
       payload,
-      time: (new Date()).toJSON(),
+      time: new Date().toJSON(),
     };
 
-    message = message.replace(/{{([a-zA-Z0-9_-]+)}}/g, (text, key) => {
-      let value = key in details ? details[key] : text;
-      if (typeof value !== 'string') {
-        value = JSON.stringify(value, null, 2);
-      }
-      return value;
-    }) + [
-      '\n\n---\n',
-      `* method:     ${method}`,
-      `* errorCode:  ${code}`,
-      `* statusCode: ${status}`,
-      `* time:       ${requestInfo.time}`,
-    ].join('\n');
+    message =
+      message.replace(/{{([a-zA-Z0-9_-]+)}}/g, (text, key) => {
+        let value = key in details ? details[key] : text;
+        if (typeof value !== 'string') {
+          value = JSON.stringify(value, null, 2);
+        }
+        return value;
+      }) +
+      [
+        '\n\n---\n',
+        `* method:     ${method}`,
+        `* errorCode:  ${code}`,
+        `* statusCode: ${status}`,
+        `* time:       ${requestInfo.time}`,
+      ].join('\n');
 
     res.status(errorCodes[code]).json({ code, message, requestInfo });
   };

@@ -24,7 +24,7 @@ import { taskState } from '../../utils/prop-types';
 import { TASK_STATE, THEME } from '../../utils/constants';
 import Helmet from '../Helmet';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   statusButton: {
     display: 'flex',
     flexGrow: 1,
@@ -124,7 +124,7 @@ export default class TaskGroupProgress extends Component {
     taskGroupLoaded: true,
   };
 
-  getStatusIcon = status => {
+  getStatusIcon = (status) => {
     if (this.props.filter === status) {
       return PlaylistRemoveIcon;
     }
@@ -161,14 +161,7 @@ export default class TaskGroupProgress extends Component {
   };
 
   getTaskGroupState = () => {
-    const {
-      completed,
-      exception,
-      failed,
-      pending,
-      running,
-      unscheduled,
-    } = this.props.statusCount;
+    const { completed, exception, failed, pending, running, unscheduled } = this.props.statusCount;
     const allTasks = sum([completed, exception, pending, running, unscheduled]);
     const unfinishedTasks = sum([pending, running, unscheduled]);
 
@@ -195,7 +188,7 @@ export default class TaskGroupProgress extends Component {
     return (
       <Grid container spacing={2}>
         <Helmet state={taskGroupState} />
-        {Object.keys(TASK_STATE).map(status => {
+        {Object.keys(TASK_STATE).map((status) => {
           const Icon = this.getStatusIcon(status);
           const count = statusCount[status.toLowerCase()];
 
@@ -206,32 +199,22 @@ export default class TaskGroupProgress extends Component {
               name={status}
               variant="contained"
               onClick={onStatusClick}
-              className={classNames(
-                classes[`${status.toLowerCase()}Button`],
-                classes.statusButton,
-                {
-                  [classes.noTasksButton]: count === 0,
-                }
-              )}>
+              className={classNames(classes[`${status.toLowerCase()}Button`], classes.statusButton, {
+                [classes.noTasksButton]: count === 0,
+              })}
+            >
               <div>
                 <Icon color="white" className={classes.statusIcon} size={32} />
-                {!taskGroupLoaded && !showDots && (
-                  <Spinner size={12} className={classes.spinner} />
-                )}
+                {!taskGroupLoaded && !showDots && <Spinner size={12} className={classes.spinner} />}
               </div>
               <div>
-                <Typography
-                  align="right"
-                  className={classes.statusButtonTypography}
-                  variant="h4">
+                <Typography align="right" className={classes.statusButtonTypography} variant="h4">
                   {showDots ? '...' : count}
                 </Typography>
                 <Typography
-                  className={classNames(
-                    classes.statusTitle,
-                    classes.statusButtonTypography
-                  )}
-                  variant="caption">
+                  className={classNames(classes.statusTitle, classes.statusButtonTypography)}
+                  variant="caption"
+                >
                   {titleCase(status)}
                 </Typography>
               </div>

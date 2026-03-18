@@ -11,7 +11,7 @@ const assert = require('node:assert');
  *
  * These two functions serve to split and join workerPoolIds.
  */
-const splitWorkerPoolId = workerPoolId => {
+const splitWorkerPoolId = (workerPoolId) => {
   const split = workerPoolId.split('/');
 
   assert.strictEqual(split.length, 2, `invalid workerPoolId ${workerPoolId}`);
@@ -31,5 +31,4 @@ const joinWorkerPoolId = (provisionerId, workerType) => {
 
 exports.joinWorkerPoolId = joinWorkerPoolId;
 
-exports.isWorkerPoolIdSecondHalfValid = workerType =>
-  /^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/.test(workerType);
+exports.isWorkerPoolIdSecondHalfValid = (workerType) => /^[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/.test(workerType);

@@ -39,12 +39,14 @@ class HintPoller {
       this.requests.push(request);
 
       // Remove request if aborted
-      aborted.then(() => {
-        // Remove request from requests, but modifying the requests array
-        _.pull(this.requests, request);
-        // Resolve request empty array
-        request.resolve([]);
-      }).catch(reject);
+      aborted
+        .then(() => {
+          // Remove request from requests, but modifying the requests array
+          _.pull(this.requests, request);
+          // Resolve request empty array
+          request.resolve([]);
+        })
+        .catch(reject);
 
       // Start polling
       this.start();
@@ -54,16 +56,18 @@ class HintPoller {
   start() {
     if (!this.started) {
       this.started = true;
-      this.poll().catch(err => {
-        this.started = false;
-        // Resolve everything as failed
-        const requests = this.requests;
-        this.requests = [];
-        this.destroy();
-        requests.map(r => r.reject(err));
-      }).catch(err => {
-        process.nextTick(() => this.onError(err));
-      });
+      this.poll()
+        .catch((err) => {
+          this.started = false;
+          // Resolve everything as failed
+          const requests = this.requests;
+          this.requests = [];
+          this.destroy();
+          requests.map((r) => r.reject(err));
+        })
+        .catch((err) => {
+          process.nextTick(() => this.onError(err));
+        });
     }
   }
 
@@ -81,8 +85,11 @@ class HintPoller {
       // hints from the queue we continue to claim from this queue
       let limit, hints;
       let i = 10; // count iterations a limit to 10, before we start over
-      while ((limit = _.sumBy(this.requests, 'count')) > 0 &&
-          (hints = await this.pollPendingQueue(limit)).length > 0 && i-- > 0) {
+      while (
+        (limit = _.sumBy(this.requests, 'count')) > 0 &&
+        (hints = await this.pollPendingQueue(limit)).length > 0 &&
+        i-- > 0
+      ) {
         // Count hints claimed
         claimed += hints.length;
 
@@ -93,7 +100,7 @@ class HintPoller {
         }
 
         // Release remaining hints (this shouldn't happen often!)
-        await Promise.all(hints.map(hint => hint.release()));
+        await Promise.all(hints.map((hint) => hint.release()));
         released += hints.length;
       }
 
@@ -101,7 +108,7 @@ class HintPoller {
       let slept = false;
       if (claimed === 0) {
         slept = true;
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
       this.monitor.log.hintPoller({
         claimed,
@@ -118,8 +125,7 @@ class HintPoller {
     // Remove entry from parent
     this.destroyed = true;
     this.onDestroy();
-    assert(_.sumBy(this.requests, 'count') === 0,
-      'destroying while we have pending requests is not allowed');
+    assert(_.sumBy(this.requests, 'count') === 0, 'destroying while we have pending requests is not allowed');
   }
 }
 

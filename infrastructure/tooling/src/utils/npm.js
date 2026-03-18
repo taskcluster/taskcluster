@@ -20,7 +20,7 @@ export const npmPublish = async ({ dir, apiToken, logfile, utils }) => {
   const npmrc = path.join(dir, '.npmrc');
 
   if (!apiToken) {
-    throw new Error("No NPM apiToken provided");
+    throw new Error('No NPM apiToken provided');
   }
 
   try {
@@ -28,11 +28,13 @@ export const npmPublish = async ({ dir, apiToken, logfile, utils }) => {
 
     // it's not really clear which registry npm uses, so we
     // just add the token to both of them..
-    fs.writeFileSync(npmrc,
+    fs.writeFileSync(
+      npmrc,
       `//registry.yarnpkg.com/:_authToken=${apiToken}\n` +
-      `//registry.npmjs.org/:_authToken=${apiToken}\n` +
-      // set unsafe-perm since we run as root when publishing
-      'unsafe-perm=true\n');
+        `//registry.npmjs.org/:_authToken=${apiToken}\n` +
+        // set unsafe-perm since we run as root when publishing
+        'unsafe-perm=true\n',
+    );
 
     await execCommand({
       dir,

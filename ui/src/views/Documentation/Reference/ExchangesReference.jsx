@@ -28,19 +28,16 @@ export default class ExchangesReference extends Component {
       throw new Error(`Reference document version ${version} not supported`);
     }
 
-    const topicExchangeEntries =
-      ref.entries?.filter(({ type }) => type === 'topic-exchange');
+    const topicExchangeEntries = ref.entries?.filter(({ type }) => type === 'topic-exchange');
 
     return (
       <div>
         {ref.title && <HeaderWithAnchor>{ref.title}</HeaderWithAnchor>}
-        {ref.description && (
-          <MDX components={components}>{ref.description}</MDX>
-        )}
+        {ref.description && <MDX components={components}>{ref.description}</MDX>}
         {topicExchangeEntries && Boolean(topicExchangeEntries.length) && (
           <Fragment>
             <HeaderWithAnchor type="h3">Exchanges</HeaderWithAnchor>
-            {topicExchangeEntries.map(entry => (
+            {topicExchangeEntries.map((entry) => (
               <Entry
                 key={entry.name}
                 type="topic-exchange"

@@ -12,27 +12,25 @@ export default (workerPools, metrics) => {
   const providers = new Set();
 
   if (!workerPools.error && !workerPools.loading) {
-    (workerPools?.data?.WorkerManagerWorkerPoolSummaries?.edges || []).forEach(
-      ({ node }) => {
-        if (!node) {
-          return;
-        }
-
-        providers.add(node.providerId);
-        totalPools += 1;
-
-        if (node.currentCapacity > 0) {
-          poolsWithWorkers += 1;
-        }
-
-        pendingTasks += node.pendingTasks;
-        runningCount += node.runningCount;
-        requestedCapacity += node.requestedCapacity;
-        runningCapacity += node.runningCapacity;
-        stoppedCount += node.stoppedCount;
-        stoppingCapacity += node.stoppingCapacity;
+    (workerPools?.data?.WorkerManagerWorkerPoolSummaries?.edges || []).forEach(({ node }) => {
+      if (!node) {
+        return;
       }
-    );
+
+      providers.add(node.providerId);
+      totalPools += 1;
+
+      if (node.currentCapacity > 0) {
+        poolsWithWorkers += 1;
+      }
+
+      pendingTasks += node.pendingTasks;
+      runningCount += node.runningCount;
+      requestedCapacity += node.requestedCapacity;
+      runningCapacity += node.runningCapacity;
+      stoppedCount += node.stoppedCount;
+      stoppingCapacity += node.stoppingCapacity;
+    });
   }
 
   const link = '/worker-manager';
@@ -114,5 +112,5 @@ export default (workerPools, metrics) => {
       altColor: true,
       metrics: 'provisioning',
     },
-  ].filter(item => !metrics || item.metrics === metrics);
+  ].filter((item) => !metrics || item.metrics === metrics);
 };

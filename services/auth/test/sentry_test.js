@@ -3,11 +3,11 @@ import taskcluster from '@taskcluster/client';
 import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function (mock, skipping) {
   if (!mock) {
     return; // We don't test this with real credentials for now!
   }
-  suite('regular SentryManager with fake client', function() {
+  suite('regular SentryManager with fake client', function () {
     helper.withCfg(mock, skipping);
     helper.withDb(mock, skipping);
     helper.withSentry(mock, skipping);
@@ -26,7 +26,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       // This tests that we don't just purge all keys, but only the ones expired.
       const farInThePast = taskcluster.fromNow('- 100 years');
       let expired = await sentryManager.purgeExpiredKeys(farInThePast);
-      assert(expired === 0, 'Didn\'t expect any keys to expire!');
+      assert(expired === 0, "Didn't expect any keys to expire!");
 
       // There should be keys expired, when we expire 7 days into the future
       // we should at least see the key from the test case above be expired
@@ -36,8 +36,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     });
   });
 
-  suite('NullSentryManager', function() {
-    suiteSetup('zero out sentry config', function() {
+  suite('NullSentryManager', function () {
+    suiteSetup('zero out sentry config', function () {
       helper.load.cfg('app.sentry', {});
     });
     helper.withDb(mock, skipping);
@@ -50,10 +50,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     test('sentryDSN api method', async () => {
       await assert.rejects(
         () => helper.apiClient.sentryDSN('playground'),
-        err => err.statusCode === 404);
+        (err) => err.statusCode === 404,
+      );
     });
 
-    test('purgeExpiredKeys', async function() {
+    test('purgeExpiredKeys', async function () {
       const sm = await helper.load('sentryManager');
       assert.strictEqual(await sm.purgeExpiredKeys(), 0);
     });

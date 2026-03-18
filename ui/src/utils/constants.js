@@ -137,13 +137,7 @@ export const MIMETYPE_ICONS = [
 export const ACTIONS_JSON_KNOWN_KINDS = ['task', 'hook'];
 // Before doing a mutation on a task, be sure to
 // remove parent fields added by the GraphQL gateway.
-export const TASK_ADDED_FIELDS = [
-  'taskId',
-  'decisionTask',
-  'status',
-  'latestArtifacts',
-  'taskActions',
-];
+export const TASK_ADDED_FIELDS = ['taskId', 'decisionTask', 'status', 'latestArtifacts', 'taskActions'];
 export const ACTION_CONTEXT = {
   PROVISIONER: 'PROVISIONER',
   WORKER_TYPE: 'WORKER_TYPE',
@@ -298,11 +292,7 @@ export const NULL_WORKER_POOL = {
 };
 export const UI_SCHEDULER_ID = 'taskcluster-ui';
 
-const payloadCommand = [
-  '/bin/bash',
-  '-c',
-  'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done',
-];
+const payloadCommand = ['/bin/bash', '-c', 'for ((i=1;i<=60;i++)); do echo $i; sleep 1; done'];
 
 export const TASK_PAYLOAD_SCHEMAS = {
   'docker-worker': {

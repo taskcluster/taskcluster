@@ -1,26 +1,26 @@
 query WorkerPool($workerPoolId: String!) {
-    WorkerPool(workerPoolId: $workerPoolId) {
-        workerPoolId,
-        description,
-        owner,
-        emailOnError,
-        providerId,
-        config,
-        currentCapacity,
-        requestedCount,
-        runningCount,
-        stoppingCount,
-        stoppedCount,
-        requestedCapacity,
-        runningCapacity,
-        stoppingCapacity,
-        stoppedCapacity,
-        pendingTasks
-    }
+  WorkerPool(workerPoolId: $workerPoolId) {
+    workerPoolId
+    description
+    owner
+    emailOnError
+    providerId
+    config
+    currentCapacity
+    requestedCount
+    runningCount
+    stoppingCount
+    stoppedCount
+    requestedCapacity
+    runningCapacity
+    stoppingCapacity
+    stoppedCapacity
+    pendingTasks
+  }
 
-    WorkerManagerErrorsStats(workerPoolId: $workerPoolId) {
-        totals {
-            total
-        }
+  WorkerManagerErrorsStats(workerPoolId: $workerPoolId) {
+    totals {
+      total
     }
+  }
 }

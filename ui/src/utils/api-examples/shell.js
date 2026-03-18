@@ -2,13 +2,7 @@
  * Generate taskcluster-cli (shell client) examples for API endpoints
  */
 
-import {
-  PLACEHOLDERS,
-  getPlaceholderValue,
-  requiresAuth,
-  camelCase,
-  formatPayloadJson,
-} from './helpers';
+import { PLACEHOLDERS, getPlaceholderValue, requiresAuth, camelCase, formatPayloadJson } from './helpers';
 
 /**
  * Generate a taskcluster-cli example for an API endpoint
@@ -19,12 +13,7 @@ import {
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} taskcluster-cli command example
  */
-export default function generateShellExample(
-  serviceName,
-  _apiVersion,
-  entry,
-  payloadExample = null
-) {
+export default function generateShellExample(serviceName, _apiVersion, entry, payloadExample = null) {
   const methodName = camelCase(entry.name);
   // Build header comment
   const header = requiresAuth(entry)
@@ -41,7 +30,7 @@ export default function generateShellExample(
   let command = `taskcluster api ${serviceName} ${methodName}`;
 
   // Add path parameters
-  entry.args.forEach(arg => {
+  entry.args.forEach((arg) => {
     const placeholder = getPlaceholderValue(arg);
 
     command += ` --${arg} "${placeholder}"`;
@@ -49,7 +38,7 @@ export default function generateShellExample(
 
   // Add query parameters if present
   if (entry.query && entry.query.length > 0) {
-    entry.query.forEach(q => {
+    entry.query.forEach((q) => {
       command += ` \\\n  --${q} "<${q}>"`;
     });
   }

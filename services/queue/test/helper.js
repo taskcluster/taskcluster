@@ -24,7 +24,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
 
 const helper = { load };
 
-suiteSetup(async function() {
+suiteSetup(async function () {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -33,19 +33,24 @@ testing.withMonitor(helper, { withPrometheus: true });
 
 // set up the testing secrets
 export const secrets = new testing.Secrets({
-  secretName: [
-    'project/taskcluster/testing/taskcluster-queue',
-  ],
+  secretName: ['project/taskcluster/testing/taskcluster-queue'],
   secrets: {
     aws: [
       { env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId', name: 'accessKeyId' },
       { env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey', name: 'secretAccessKey' },
-      { env: 'PUBLIC_ARTIFACT_BUCKET', cfg: 'app.publicArtifactBucket', name: 'publicArtifactBucket',
-        mock: 'fake-public' },
-      { env: 'PRIVATE_ARTIFACT_BUCKET', cfg: 'app.privateArtifactBucket', name: 'privateArtifactBucket',
-        mock: 'fake-private' },
-      { env: 'ARTIFACT_REGION', cfg: 'aws.region', name: 'artifactRegion',
-        mock: 'us-central-7' },
+      {
+        env: 'PUBLIC_ARTIFACT_BUCKET',
+        cfg: 'app.publicArtifactBucket',
+        name: 'publicArtifactBucket',
+        mock: 'fake-public',
+      },
+      {
+        env: 'PRIVATE_ARTIFACT_BUCKET',
+        cfg: 'app.privateArtifactBucket',
+        name: 'privateArtifactBucket',
+        mock: 'fake-private',
+      },
+      { env: 'ARTIFACT_REGION', cfg: 'aws.region', name: 'artifactRegion', mock: 'us-central-7' },
     ],
   },
   load,
@@ -57,7 +62,7 @@ helper.rootUrl = 'http://localhost:60401';
  * Set up to use aws-sdk-client-mock for S3 operations when mocking.
  */
 export const withS3 = (mock, skipping) => {
-  suiteSetup('setup withS3', async function() {
+  suiteSetup('setup withS3', async function () {
     if (skipping()) {
       return;
     }
@@ -79,18 +84,18 @@ export const withS3 = (mock, skipping) => {
         })
         .on(ListObjectsCommand)
         .callsFake(async ({ Bucket, Prefix }) => {
-          const Contents = artifacts.filter(a => a.Bucket === Bucket && a.Key.startsWith(Prefix));
+          const Contents = artifacts.filter((a) => a.Bucket === Bucket && a.Key.startsWith(Prefix));
           return { Contents };
         })
         .on(DeleteObjectCommand)
         .callsFake(async ({ Key }) => {
-          artifacts = artifacts.filter(a => a.Key !== Key);
+          artifacts = artifacts.filter((a) => a.Key !== Key);
           return {};
         })
         .on(DeleteObjectsCommand)
         .callsFake(async ({ Delete }) => {
           for (const { Key } of Delete.Objects) {
-            artifacts = artifacts.filter(a => a.Key !== Key);
+            artifacts = artifacts.filter((a) => a.Key !== Key);
           }
           return {};
         })
@@ -116,7 +121,7 @@ helper.withS3 = withS3;
  * - DeleteObjects not supported
  */
 export const withGCS = (mock, skipping) => {
-  suiteSetup('setup withGCS', async function() {
+  suiteSetup('setup withGCS', async function () {
     if (skipping()) {
       return;
     }
@@ -138,12 +143,12 @@ export const withGCS = (mock, skipping) => {
         })
         .on(ListObjectsCommand)
         .callsFake(async ({ Bucket, Prefix }) => {
-          const Contents = artifacts.filter(a => a.Bucket === Bucket && a.Key.startsWith(Prefix));
+          const Contents = artifacts.filter((a) => a.Bucket === Bucket && a.Key.startsWith(Prefix));
           return { Contents };
         })
         .on(GetObjectCommand)
         .callsFake(async ({ Bucket, Key }) => {
-          const artifact = artifacts.find(a => a.Bucket === Bucket && a.Key === Key);
+          const artifact = artifacts.find((a) => a.Bucket === Bucket && a.Key === Key);
           if (!artifact) {
             throw new Error('NoSuchKey');
           }
@@ -160,11 +165,11 @@ export const withGCS = (mock, skipping) => {
         .rejects(new Error('InvalidArgument'))
         .on(DeleteObjectCommand)
         .callsFake(async ({ Key }) => {
-          const artifact = artifacts.find(a => a.Key === Key);
+          const artifact = artifacts.find((a) => a.Key === Key);
           if (!artifact) {
             throw new Error('NoSuchKey');
           }
-          artifacts = artifacts.filter(a => a.Key !== Key);
+          artifacts = artifacts.filter((a) => a.Key !== Key);
           return {};
         });
 
@@ -183,7 +188,7 @@ helper.withGCS = withGCS;
 export const withAmazonIPRanges = (_mock, skipping) => {
   let interceptor;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -194,7 +199,7 @@ export const withAmazonIPRanges = (_mock, skipping) => {
       .replyWithFile(200, `${__dirname}/fake-ip-ranges.json`, { 'Content-Type': 'application/json' });
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (interceptor) {
       nock.removeInterceptor(interceptor);
       interceptor = undefined;
@@ -213,8 +218,8 @@ helper.withDb = withDb;
  */
 export const withObjectService = (_mock, _skipping) => {
   let objects = new Map();
-  suiteSetup(async function() {
-    const err404 = message => {
+  suiteSetup(async function () {
+    const err404 = (message) => {
       const err = new Error(message);
       err.statusCode = 404;
       return err;
@@ -266,7 +271,7 @@ export const withObjectService = (_mock, _skipping) => {
     load.inject('objectService', helper.objectService);
   });
 
-  setup(function() {
+  setup(function () {
     objects = new Map();
   });
 };
@@ -282,7 +287,7 @@ helper.withObjectService = withObjectService;
 export const withServer = (_mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
@@ -292,14 +297,16 @@ export const withServer = (_mock, skipping) => {
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
     load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl },
+    );
 
     // the workClaimer needs to use `test-client` too, so feed it the right
     // input..
-    load.cfg('taskcluster.credentials',
-      { clientId: 'test-client', accessToken: 'ignored' });
+    load.cfg('taskcluster.credentials', { clientId: 'test-client', accessToken: 'ignored' });
     await load('workClaimer');
 
     helper.Queue = taskcluster.createClient(builder.reference());
@@ -326,7 +333,7 @@ export const withServer = (_mock, skipping) => {
     webServer = await helper.load('server');
   });
 
-  setup(async function() {
+  setup(async function () {
     if (skipping()) {
       return;
     }
@@ -334,7 +341,7 @@ export const withServer = (_mock, skipping) => {
     helper.scopes();
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async function () {
     if (skipping()) {
       return;
     }
@@ -361,12 +368,12 @@ helper.withPulse = withPulse;
 export const withPollingServices = (_mock, skipping) => {
   let svc;
 
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       return;
     }
 
-    helper.startPollingService = async service => {
+    helper.startPollingService = async (service) => {
       svc = await helper.load(service);
       // remove it right away, as it is started on load
       helper.load.remove(service);
@@ -383,13 +390,13 @@ export const withPollingServices = (_mock, skipping) => {
     };
   });
 
-  teardown(async function() {
+  teardown(async function () {
     if (svc) {
       throw new Error('Must call stopPollingService if you have started a service');
     }
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(function () {
     helper.startPollingService = null;
   });
 };
@@ -399,7 +406,7 @@ helper.withPollingServices = withPollingServices;
  * Run various expiration loader components
  */
 
-helper.runExpiration = async component => {
+helper.runExpiration = async (component) => {
   helper.load.save();
   try {
     return await helper.load(component);
@@ -411,7 +418,7 @@ helper.runExpiration = async component => {
 /**
  * Make a random task queue ID
  */
-export const makeTaskQueueId = prefix => `${prefix}/test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
+export const makeTaskQueueId = (prefix) => `${prefix}/test-${slugid.v4().replace(/[_-]/g, '').toLowerCase()}-a`;
 helper.makeTaskQueueId = makeTaskQueueId;
 
 /**
@@ -426,28 +433,23 @@ export const checkDates = ({ status }) => {
     }
   };
 
-  chk(status.deadline, "status.deadline");
-  chk(status.expires, "status.expires");
+  chk(status.deadline, 'status.deadline');
+  chk(status.expires, 'status.expires');
   for (const run of status.runs) {
-    chk(run.takenUntil, "run.takenUntil");
-    chk(run.scheduled, "run.scheduled");
-    chk(run.started, "run.started");
-    chk(run.resolved, "run.resolved");
+    chk(run.takenUntil, 'run.takenUntil');
+    chk(run.scheduled, 'run.scheduled');
+    chk(run.started, 'run.started');
+    chk(run.resolved, 'run.resolved');
   }
   return { status };
 };
 helper.checkDates = checkDates;
 
 export const resetTables = (_mock, _skipping) => {
-  setup('reset tables', async function() {
-    await testing.resetTables({ tableNames: [
-      'tasks',
-      'task_groups',
-      'task_dependencies',
-      'queue_pending_tasks',
-      'queue_workers',
-      'task_queues',
-    ] });
+  setup('reset tables', async function () {
+    await testing.resetTables({
+      tableNames: ['tasks', 'task_groups', 'task_dependencies', 'queue_pending_tasks', 'queue_workers', 'task_queues'],
+    });
   });
 };
 helper.resetTables = resetTables;

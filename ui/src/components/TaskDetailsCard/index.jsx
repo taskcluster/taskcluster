@@ -29,7 +29,7 @@ import splitTaskQueueId from '../../utils/splitTaskQueueId';
 import Link from '../../utils/Link';
 import { getTaskDefinitions, getTaskStatuses } from '../../utils/queueTask';
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   headline: {
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
@@ -128,10 +128,7 @@ export default class TaskDetailsCard extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (
-      prevProps.task.taskId !== this.props.task.taskId ||
-      prevProps.user !== this.props.user
-    ) {
+    if (prevProps.task.taskId !== this.props.task.taskId || prevProps.user !== this.props.user) {
       this.fetchDependentTasks();
     }
   }
@@ -151,9 +148,9 @@ export default class TaskDetailsCard extends Component {
         user,
       });
       // merge back everything into { taskId, status, metadata }
-      const dependentTasks = task.dependencies.map(taskId => {
-        const definition = definitions.find(d => d.taskId === taskId);
-        const status = statuses.find(s => s.taskId === taskId);
+      const dependentTasks = task.dependencies.map((taskId) => {
+        const definition = definitions.find((d) => d.taskId === taskId);
+        const status = statuses.find((s) => s.taskId === taskId);
 
         return {
           taskId,
@@ -181,16 +178,14 @@ export default class TaskDetailsCard extends Component {
           <CardContent
             classes={{
               root: classNames(classes.cardContent),
-            }}>
+            }}
+          >
             <Typography variant="h5" className={classes.headline}>
               Task Details
             </Typography>
             <List>
               <ListItem>
-                <ListItemText
-                  primary="State"
-                  secondary={<StatusLabel state={task.status.state} />}
-                />
+                <ListItemText primary="State" secondary={<StatusLabel state={task.status.state} />} />
               </ListItem>
               <CopyToClipboardListItem
                 tooltipTitle={task.taskId}
@@ -204,23 +199,13 @@ export default class TaskDetailsCard extends Component {
                 primary="Created"
                 secondary={<DateDistance from={task.created} />}
               />
-              <Link
-                to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
-                <ListItem
-                  title="View Workers"
-                  button
-                  className={classes.listItemButton}>
-                  <ListItemText
-                    primary="Task Queue ID"
-                    secondary={task.taskQueueId}
-                  />
+              <Link to={`/provisioners/${provisionerId}/worker-types/${workerType}`}>
+                <ListItem title="View Workers" button className={classes.listItemButton}>
+                  <ListItemText primary="Task Queue ID" secondary={task.taskQueueId} />
                   <LinkIcon />
                 </ListItem>
               </Link>
-              <ListItem
-                button
-                className={classes.listItemButton}
-                onClick={this.handleTogglePayload}>
+              <ListItem button className={classes.listItemButton} onClick={this.handleTogglePayload}>
                 <ListItemText primary="Payload" />
                 {showPayload ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ListItem>
@@ -229,20 +214,12 @@ export default class TaskDetailsCard extends Component {
                   <ListItem>
                     <ListItemText
                       disableTypography
-                      primary={
-                        <JsonDisplay
-                          wrapperClassName={classes.payload}
-                          syntax="yaml"
-                          objectContent={payload}
-                        />
-                      }
+                      primary={<JsonDisplay wrapperClassName={classes.payload} syntax="yaml" objectContent={payload} />}
                     />
                   </ListItem>
                 </List>
               </Collapse>
-              <Link
-                className={classes.listItemButton}
-                to={`/tasks/${task.taskId}/definition`}>
+              <Link className={classes.listItemButton} to={`/tasks/${task.taskId}/definition`}>
                 <ListItem button className={classes.listItemButton}>
                   <ListItemText primary="Full Task Definition" />
                 </ListItem>
@@ -254,7 +231,8 @@ export default class TaskDetailsCard extends Component {
                 component="a"
                 href={task.metadata.source}
                 target="_blank"
-                rel="noopener noreferrer">
+                rel="noopener noreferrer"
+              >
                 <ListItemText
                   className={classes.sourceHeadlineText}
                   classes={{ secondary: classes.sourceHeadline }}
@@ -265,18 +243,13 @@ export default class TaskDetailsCard extends Component {
                 {isExternal ? <OpenInNewIcon /> : <LinkIcon />}
               </ListItem>
               <ListItem>
-                <ListItemText
-                  primary="Retries Left"
-                  secondary={`${task.status.retriesLeft} of ${task.retries}`}
-                />
+                <ListItemText primary="Retries Left" secondary={`${task.status.retriesLeft} of ${task.retries}`} />
               </ListItem>
               <CopyToClipboardListItem
                 tooltipTitle={task.deadline}
                 textToCopy={task.deadline}
                 primary="Deadline"
-                secondary={
-                  <DateDistance from={task.deadline} offset={task.created} />
-                }
+                secondary={<DateDistance from={task.deadline} offset={task.created} />}
               />
               <CopyToClipboardListItem
                 tooltipTitle={task.expires}
@@ -324,17 +297,12 @@ export default class TaskDetailsCard extends Component {
                   {loading && <LinearProgress />}
                   {!loading && dependentTasks && (
                     <List disablePadding className={classes.dependenciesList}>
-                      {dependentTasks.map(dep => (
+                      {dependentTasks.map((dep) => (
                         // note that the task might not exist, if it has
                         // expired
                         <Link key={dep.taskId} to={`/tasks/${dep.taskId}`}>
-                          <ListItem
-                            button
-                            className={classes.listItemButton}
-                            title="View Task">
-                            <StatusLabel
-                              state={dep.status?.state || 'EXPIRED'}
-                            />
+                          <ListItem button className={classes.listItemButton} title="View Task">
+                            <StatusLabel state={dep.status?.state || 'EXPIRED'} />
                             <ListItemText
                               primaryTypographyProps={{ variant: 'body2' }}
                               className={classes.listItemText}
@@ -349,10 +317,7 @@ export default class TaskDetailsCard extends Component {
                 </Fragment>
               ) : (
                 <ListItem>
-                  <ListItemText
-                    primary="Dependencies"
-                    secondary={<em>n/a</em>}
-                  />
+                  <ListItemText primary="Dependencies" secondary={<em>n/a</em>} />
                 </ListItem>
               )}
               {dependents?.edges?.length ? (
@@ -372,9 +337,7 @@ export default class TaskDetailsCard extends Component {
                     onPageChange={onDependentsPageChange}
                     allowFilter
                     filterFunc={({ node }, filterValue) =>
-                      String(node?.metadata?.name)
-                        .toLowerCase()
-                        .includes(filterValue.toLowerCase())
+                      String(node?.metadata?.name).toLowerCase().includes(filterValue.toLowerCase())
                     }
                     renderRow={({
                       node: {
@@ -385,24 +348,14 @@ export default class TaskDetailsCard extends Component {
                     }) => (
                       <TableRow
                         hover
-                        className={classNames(
-                          classes.listItemButton,
-                          classes.dependentsTableRow
-                        )}
-                        key={taskId}>
+                        className={classNames(classes.listItemButton, classes.dependentsTableRow)}
+                        key={taskId}
+                      >
                         <TableCell title="View Task">
-                          <Link
-                            className={classes.dependentsLink}
-                            to={`/tasks/${encodeURIComponent(taskId)}`}>
-                            <div
-                              className={
-                                classes.dependentsStatusAndNameContainer
-                              }>
+                          <Link className={classes.dependentsLink} to={`/tasks/${encodeURIComponent(taskId)}`}>
+                            <div className={classes.dependentsStatusAndNameContainer}>
                               <div>
-                                <StatusLabel
-                                  className={classes.dependentsStatus}
-                                  state={state}
-                                />
+                                <StatusLabel className={classes.dependentsStatus} state={state} />
                               </div>
                               <div className={classes.dependentsName}>
                                 <Typography variant="body2" noWrap>
@@ -411,9 +364,7 @@ export default class TaskDetailsCard extends Component {
                               </div>
                             </div>
                             <div>
-                              <LinkIcon
-                                className={classes.dependentsLinkIcon}
-                              />
+                              <LinkIcon className={classes.dependentsLinkIcon} />
                             </div>
                           </Link>
                         </TableCell>
@@ -430,10 +381,7 @@ export default class TaskDetailsCard extends Component {
                 <ListItemText primary="Project ID" secondary={task.projectId} />
               </ListItem>
               <ListItem>
-                <ListItemText
-                  primary="Scheduler ID"
-                  secondary={task.schedulerId}
-                />
+                <ListItemText primary="Scheduler ID" secondary={task.schedulerId} />
               </ListItem>
               <ListItem>
                 <ListItemText
@@ -442,12 +390,9 @@ export default class TaskDetailsCard extends Component {
                   secondary={
                     task.scopes.length ? (
                       <ul className={classes.unorderedList}>
-                        {task.scopes.map(scope => (
+                        {task.scopes.map((scope) => (
                           <li key={scope}>
-                            <Typography
-                              variant="body2"
-                              component="span"
-                              color="textSecondary">
+                            <Typography variant="body2" component="span" color="textSecondary">
                               {scope}
                             </Typography>
                           </li>
@@ -466,12 +411,9 @@ export default class TaskDetailsCard extends Component {
                   secondary={
                     task.routes.length ? (
                       <ul className={classes.unorderedList}>
-                        {task.routes.map(route => (
+                        {task.routes.map((route) => (
                           <li key={route}>
-                            <Typography
-                              variant="body2"
-                              component="span"
-                              color="textSecondary">
+                            <Typography variant="body2" component="span" color="textSecondary">
                               {route}
                             </Typography>
                           </li>
@@ -488,9 +430,7 @@ export default class TaskDetailsCard extends Component {
                   <ListItemText
                     disableTypography
                     primary={<Typography variant="subtitle1">Extra</Typography>}
-                    secondary={
-                      <JsonDisplay syntax="yaml" objectContent={task.extra} />
-                    }
+                    secondary={<JsonDisplay syntax="yaml" objectContent={task.extra} />}
                   />
                 </ListItem>
               )}

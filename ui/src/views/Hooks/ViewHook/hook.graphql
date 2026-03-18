@@ -32,7 +32,7 @@ query Hook($hookGroupId: ID!, $hookId: ID!, $hookConnection: PageConnection) {
     }
     triggerSchema
     task
-  },
+  }
   hookLastFires(hookGroupId: $hookGroupId, hookId: $hookId, connection: $hookConnection) {
     pageInfo {
       hasNextPage

@@ -29,10 +29,9 @@ export const parseBody = ({ inputLimit }) => {
               throw new Error('Must be an object or array');
             }
           } catch (err) {
-            return res.reportError(
-              'MalformedPayload', 'Failed to parse JSON: {{errMsg}}', {
-                errMsg: (err instanceof Error) ? err.message : String(err),
-              });
+            return res.reportError('MalformedPayload', 'Failed to parse JSON: {{errMsg}}', {
+              errMsg: err instanceof Error ? err.message : String(err),
+            });
           }
         } else {
           req.text = '';

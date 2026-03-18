@@ -1,6 +1,6 @@
 // with index.d.ts Typescript only checks this file, so we need to export all once again
 export * from '../src/index.js';
-import { APIBuilder, } from '../src/index.js';
+import { APIBuilder } from '../src/index.js';
 
 export type StabilityLevel = 'deprecated' | 'experimental' | 'stable';
 
@@ -24,7 +24,7 @@ export interface APIRequest extends Request {
   // auth middleware
   scopes: () => Promise<string[]>;
   clientId: () => Promise<string>;
-  expires: () => Promise<Date|undefined>;
+  expires: () => Promise<Date | undefined>;
   /** @throws Error */
   satisfies: () => never;
   /** @throws ErrorReply */
@@ -44,7 +44,7 @@ export type APIRequestHandler<TContext extends Record<string, any>> = (
   this: Pick<TContext, keyof TContext>,
   req: APIRequest,
   res: APIResponse,
-  next: import('express').NextFunction
+  next: import('express').NextFunction,
 ) => void | Promise<void>;
 
 export type APIRequestErrrorHandler<TContext extends Record<string, any>> = (
@@ -52,17 +52,20 @@ export type APIRequestErrrorHandler<TContext extends Record<string, any>> = (
   err: Error & Record<string, any>,
   req: APIRequest,
   res: APIResponse,
-  next: import('express').NextFunction
+  next: import('express').NextFunction,
 ) => void | Promise<void>;
 
-export type ScopesExpression = string | {
-  AllOf?: string[] | ScopesExpression[];
-  AnyOf?: string[] | ScopesExpression[];
-} | {
-  for: string;
-  in: string;
-  each: string;
-};
+export type ScopesExpression =
+  | string
+  | {
+      AllOf?: string[] | ScopesExpression[];
+      AnyOf?: string[] | ScopesExpression[];
+    }
+  | {
+      for: string;
+      in: string;
+      each: string;
+    };
 
 export interface APIEntryOptions<TContext extends Record<string, any>> {
   /** HTTP method */
@@ -127,12 +130,14 @@ export interface SignatureValidatorOptions {
 }
 
 export type SignatureValidatorResult =
-  { status: 'no-auth', scheme: 'none', expires: Date, scopes: string[] }
-  | { status: 'auth-failed'; message: string, computedHash?: string }
-  | { status: 'auth-success', clientId: string, scheme: string, expires: Date, scopes: string[], hash?: string };
+  | { status: 'no-auth'; scheme: 'none'; expires: Date; scopes: string[] }
+  | { status: 'auth-failed'; message: string; computedHash?: string }
+  | { status: 'auth-success'; clientId: string; scheme: string; expires: Date; scopes: string[]; hash?: string };
 
-export type SignatureValidator = (options: SignatureValidatorOptions, extra?: Record<string, any>)
-  => Promise<SignatureValidatorResult>;
+export type SignatureValidator = (
+  options: SignatureValidatorOptions,
+  extra?: Record<string, any>,
+) => Promise<SignatureValidatorResult>;
 
 export interface APIOptions<TContext extends Record<string, any>> {
   // Required properties
@@ -146,7 +151,7 @@ export interface APIOptions<TContext extends Record<string, any>> {
   // Optional properties (with defaults provided in constructor)
   inputLimit: string;
   allowedCORSOrigin?: string;
-  signatureValidator: SignatureValidator
+  signatureValidator: SignatureValidator;
   referenceBucket?: string;
   serviceName?: string;
   apiVersion?: string;

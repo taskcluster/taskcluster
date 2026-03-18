@@ -1,35 +1,25 @@
 import lazy from '../../utils/lazy';
 
-const WorkerManagerViewWorkerPools = lazy(() =>
-  import(
-    /* webpackChunkName: 'WorkerManager.WMViewWorkerPools' */ './WMViewWorkerPools'
-  )
+const WorkerManagerViewWorkerPools = lazy(
+  () => import(/* webpackChunkName: 'WorkerManager.WMViewWorkerPools' */ './WMViewWorkerPools'),
 );
-const WorkerManagerViewWorkers = lazy(() =>
-  import(
-    /* webpackChunkName: 'WorkerManager.WMViewWorkers' */ './WMViewWorkers'
-  )
+const WorkerManagerViewWorkers = lazy(
+  () => import(/* webpackChunkName: 'WorkerManager.WMViewWorkers' */ './WMViewWorkers'),
 );
-const WorkerManagerViewErrors = lazy(() =>
-  import(/* webpackChunkName: 'WorkerManager.WMViewErrors' */ './WMViewErrors')
+const WorkerManagerViewErrors = lazy(
+  () => import(/* webpackChunkName: 'WorkerManager.WMViewErrors' */ './WMViewErrors'),
 );
-const WorkerManagerViewErrorCenter = lazy(() =>
-  import(
-    /* webpackChunkName: 'WorkerManager.WMViewErrorCenter' */ './WMViewErrorCenter'
-  )
+const WorkerManagerViewErrorCenter = lazy(
+  () => import(/* webpackChunkName: 'WorkerManager.WMViewErrorCenter' */ './WMViewErrorCenter'),
 );
-const WMWorkerPoolEditor = lazy(() =>
-  import(
-    /* webpackChunkName: 'WorkerManager.WMEditWorkerPool' */ './WMEditWorkerPool'
-  )
+const WMWorkerPoolEditor = lazy(
+  () => import(/* webpackChunkName: 'WorkerManager.WMEditWorkerPool' */ './WMEditWorkerPool'),
 );
-const WMWorkerPoolLaunchConfigs = lazy(() =>
-  import(
-    /* webpackChunkName: 'WorkerManager.WMLaunchConfigs' */ './WMLaunchConfigs'
-  )
+const WMWorkerPoolLaunchConfigs = lazy(
+  () => import(/* webpackChunkName: 'WorkerManager.WMLaunchConfigs' */ './WMLaunchConfigs'),
 );
 
-export default path => [
+export default (path) => [
   {
     component: WMWorkerPoolEditor,
     isNewWorkerPool: true,
@@ -64,7 +54,6 @@ export default path => [
   {
     component: WorkerManagerViewWorkerPools,
     path,
-    description:
-      'Manage worker pools known to the Worker Manager and check on the status of the nodes.',
+    description: 'Manage worker pools known to the Worker Manager and check on the status of the nodes.',
   },
 ];

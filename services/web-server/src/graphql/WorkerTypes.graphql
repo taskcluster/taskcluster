@@ -14,16 +14,16 @@ type WorkerType {
   actions: [ProvisionerAction]!
   # Note: This field will trigger an additional request.
   workers(
-    provisionerId: String = provisionerId,
-    workerType: String = workerType,
-    connection: PageConnection,
+    provisionerId: String = provisionerId
+    workerType: String = workerType
+    connection: PageConnection
     filter: JSON
   ): WorkersCompactConnection
   # Note: This field will trigger an additional request.
   worker(
-    provisionerId: String = provisionerId,
-    workerType: String = workerType,
-    workerGroup: String!,
+    provisionerId: String = provisionerId
+    workerType: String = workerType
+    workerGroup: String!
     workerId: ID!
   ): Worker
   # Note: This field will trigger an additional request.
@@ -42,6 +42,6 @@ type WorkerTypesConnection implements Connection {
 
 extend type Query {
   workerType(provisionerId: String!, workerType: String!): WorkerType
-  pendingTasks(provisionerId: String!, workerType: String!): Int!  # count of pending tasks
+  pendingTasks(provisionerId: String!, workerType: String!): Int! # count of pending tasks
   workerTypes(provisionerId: String!, connection: PageConnection, filter: JSON): WorkerTypesConnection
 }

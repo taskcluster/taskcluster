@@ -37,12 +37,12 @@ const baseCmd = [
   'git config advice.detachedHead false',
   'git checkout ${head_rev}',
 ];
-const getMatchCondition = events => {
+const getMatchCondition = (events) => {
   const condition = [];
   const prActions = [];
   const commentActions = [];
 
-  events.forEach(event => {
+  events.forEach((event) => {
     if (event.startsWith('pull_request.')) {
       prActions.push(event.split('.')[1]);
     } else if (event === 'push') {
@@ -55,35 +55,21 @@ const getMatchCondition = events => {
   });
 
   if (prActions.length > 0) {
-    condition.push(
-      `(tasks_for == "github-pull-request" ` +
-        `&& event["action"] in ${JSON.stringify(prActions.sort())})`
-    );
+    condition.push(`(tasks_for == "github-pull-request" && event["action"] in ${JSON.stringify(prActions.sort())})`);
   }
 
   if (commentActions.length > 0) {
     condition.push(
-      `(tasks_for == "github-issue-comment" ` +
-        `&& event["action"] in ${JSON.stringify(commentActions.sort())})`
+      `(tasks_for == "github-issue-comment" && event["action"] in ${JSON.stringify(commentActions.sort())})`,
     );
   }
 
   return condition.length > 0 ? condition.join(' || ') : 'false';
 };
 
-const getTaskDefinition = state => {
-  const {
-    access,
-    allowComments,
-    commands,
-    condition,
-    image,
-    taskName,
-    taskDescription,
-  } = state;
-  const taskQueueId =
-    siteSpecificVariable('tutorial_worker_pool_id') ||
-    'proj-getting-started/tutorial';
+const getTaskDefinition = (state) => {
+  const { access, allowComments, commands, condition, image, taskName, taskDescription } = state;
+  const taskQueueId = siteSpecificVariable('tutorial_worker_pool_id') || 'proj-getting-started/tutorial';
 
   return dump({
     version: 1,
@@ -131,24 +117,10 @@ const getTaskDefinition = state => {
 };
 
 const commandForLanguage = {
-  node: [
-    '/bin/bash',
-    '--login',
-    '-c',
-    baseCmd.concat(['npm install .', 'npm test']).join(' && '),
-  ],
-  python: [
-    '/bin/bash',
-    '--login',
-    '-c',
-    baseCmd.concat(['pip install tox', 'tox']).join(' && '),
-  ],
+  node: ['/bin/bash', '--login', '-c', baseCmd.concat(['npm install .', 'npm test']).join(' && ')],
+  python: ['/bin/bash', '--login', '-c', baseCmd.concat(['pip install tox', 'tox']).join(' && ')],
   rust: ['/bin/bash', '-c', baseCmd.concat(['cargo test']).join(' && ')],
-  go: [
-    '/bin/bash',
-    '-c',
-    baseCmd.concat(['go install', 'go test ./...']).join(' && '),
-  ],
+  go: ['/bin/bash', '-c', baseCmd.concat(['go install', 'go test ./...']).join(' && ')],
 };
 const imageForLanguage = {
   node: 'node:latest',
@@ -158,7 +130,7 @@ const imageForLanguage = {
 };
 
 @withApollo
-@withStyles(theme => ({
+@withStyles((theme) => ({
   separator: {
     padding: theme.spacing(2),
     paddingBottom: 0,
@@ -212,11 +184,7 @@ const imageForLanguage = {
   },
 }))
 export default class QuickStart extends Component {
-  initialEvents = new Set([
-    'pull_request.opened',
-    'pull_request.reopened',
-    'pull_request.synchronize',
-  ]);
+  initialEvents = new Set(['pull_request.opened', 'pull_request.reopened', 'pull_request.synchronize']);
 
   initialState = {
     events: this.initialEvents,
@@ -250,7 +218,7 @@ export default class QuickStart extends Component {
     });
   }, 1000);
 
-  handleEditorChange = editorValue => {
+  handleEditorChange = (editorValue) => {
     this.setState({
       editorValue,
     });
@@ -274,8 +242,7 @@ export default class QuickStart extends Component {
     // Note: this should be called after `events` has been modified
     // in the above line
     const condition = getMatchCondition(events);
-    const allowComments =
-      events.has('issue_comment.created') || events.has('issue_comment.edited');
+    const allowComments = events.has('issue_comment.created') || events.has('issue_comment.edited');
 
     this.setState({
       events,
@@ -293,10 +260,7 @@ export default class QuickStart extends Component {
     this.setState({
       language,
       image: imageForLanguage[language],
-      commands:
-        this.state.commandSelection === 'standard'
-          ? commandForLanguage[language]
-          : [],
+      commands: this.state.commandSelection === 'standard' ? commandForLanguage[language] : [],
       editorValue: null,
     });
   };
@@ -330,28 +294,13 @@ export default class QuickStart extends Component {
   renderEditor() {
     const newYaml = getTaskDefinition(this.state);
 
-    return (
-      <CodeEditor
-        onChange={this.handleEditorChange}
-        mode="yaml"
-        value={this.state.editorValue || newYaml}
-      />
-    );
+    return <CodeEditor onChange={this.handleEditorChange} mode="yaml" value={this.state.editorValue || newYaml} />;
   }
 
   render() {
     const { classes } = this.props;
-    const {
-      repo,
-      owner,
-      taskName,
-      taskDescription,
-      events,
-      language,
-      installedState,
-      commandSelection,
-      access,
-    } = this.state;
+    const { repo, owner, taskName, taskDescription, events, language, installedState, commandSelection, access } =
+      this.state;
 
     return (
       <Dashboard
@@ -360,60 +309,54 @@ export default class QuickStart extends Component {
         helpView={
           <HelpView
             description="Create a configuration file and
-                plug the CI into your repository.">
+                plug the CI into your repository."
+          >
             <Fragment>
               <Typography variant="body2" paragraph>
-                This tool lets you easily generate a simple generic{' '}
-                <code>.taskcluster.yml</code> file, which should live in the
-                root of your repository. It defines tasks that you want{' '}
-                {window.env.APPLICATION_NAME} to run for you. The tasks will run
-                when certain GitHub events happen. You will choose the events
-                you are interested in while creating the file.
+                This tool lets you easily generate a simple generic <code>.taskcluster.yml</code> file, which should
+                live in the root of your repository. It defines tasks that you want {window.env.APPLICATION_NAME} to run
+                for you. The tasks will run when certain GitHub events happen. You will choose the events you are
+                interested in while creating the file.
               </Typography>
               <Typography variant="body2" paragraph>
-                For independent developers and organization owners: How to set
-                up your repository with {window.env.APPLICATION_NAME}
+                For independent developers and organization owners: How to set up your repository with{' '}
+                {window.env.APPLICATION_NAME}
               </Typography>
               <ul>
                 <li>
                   <Typography paragraph>
-                    Fill out the form below. All changes in the form will
-                    instantly show up in the code field.
+                    Fill out the form below. All changes in the form will instantly show up in the code field.
                   </Typography>
                 </li>
                 <li>
                   <Typography paragraph>
-                    When you are done editing, copy the contents of the code
-                    field and paste it into a file named{' '}
-                    <code>.taskcluster.yml</code> in the root of your
-                    repository.
+                    When you are done editing, copy the contents of the code field and paste it into a file named{' '}
+                    <code>.taskcluster.yml</code> in the root of your repository.
                   </Typography>
                 </li>
                 <li>
                   <SiteSpecific>
-                    Make sure to install the [GitHub app](%github_app_url%) on
-                    your repo. If you do not have permission, you may need to
-                    ask the repository or organization owners to do so.
+                    Make sure to install the [GitHub app](%github_app_url%) on your repo. If you do not have permission,
+                    you may need to ask the repository or organization owners to do so.
                   </SiteSpecific>
                 </li>
               </ul>
               <Typography variant="body2" paragraph>
-                Optionally, after you create your file, you can edit it here or
-                in you favorite editor to add more functionality. Please refer
-                to the{' '}
+                Optionally, after you create your file, you can edit it here or in you favorite editor to add more
+                functionality. Please refer to the{' '}
                 <a
-                  href={urls.docs(
-                    'reference/integrations/github/taskcluster-yml-v1'
-                  )}
+                  href={urls.docs('reference/integrations/github/taskcluster-yml-v1')}
                   target="_blank"
-                  rel="noopener noreferrer">
+                  rel="noopener noreferrer"
+                >
                   full documentation on our configuration files
                 </a>
                 .
               </Typography>
             </Fragment>
           </HelpView>
-        }>
+        }
+      >
         <Fragment>
           <div className={classes.orgRepoStatus}>
             <div className={classes.orgRepoTextFields}>
@@ -428,21 +371,11 @@ export default class QuickStart extends Component {
               <Typography className={classes.separator} variant="h5">
                 /
               </Typography>
-              <TextField
-                label="Repo Name"
-                name="repo"
-                fullWidth
-                onChange={this.handleOrgRepoChange}
-                value={repo}
-              />
+              <TextField label="Repo Name" name="repo" fullWidth onChange={this.handleOrgRepoChange} value={repo} />
             </div>
             <div className={classes.iconContainer}>
-              {(installedState === 'success' && (
-                <CheckIcon className={classes.checkIcon} />
-              )) ||
-                (installedState === 'error' && (
-                  <AlertCircleOutlineIcon className={classes.errorIcon} />
-                )) ||
+              {(installedState === 'success' && <CheckIcon className={classes.checkIcon} />) ||
+                (installedState === 'error' && <AlertCircleOutlineIcon className={classes.errorIcon} />) ||
                 (installedState === 'loading' && <Spinner size={24} />)}
             </div>
           </div>
@@ -452,16 +385,11 @@ export default class QuickStart extends Component {
               <ErrorPanel
                 warning
                 className={classes.errorPanels}
-                error={
-                  new Error(
-                    'The integration has not been set up for this repository.'
-                  )
-                }
+                error={new Error('The integration has not been set up for this repository.')}
               />
               <SiteSpecific>
-                To use Taskcluster on this repository, add [this
-                app](%github_app_url%). If you do not have permission, you may
-                need to ask the repository or organization owners to do so.
+                To use Taskcluster on this repository, add [this app](%github_app_url%). If you do not have permission,
+                you may need to ask the repository or organization owners to do so.
               </SiteSpecific>
             </Fragment>
           )}
@@ -470,13 +398,7 @@ export default class QuickStart extends Component {
           </Typography>
           <List>
             <ListItem>
-              <TextField
-                label="Name"
-                name="taskName"
-                onChange={this.handleInputChange}
-                fullWidth
-                value={taskName}
-              />
+              <TextField label="Name" name="taskName" onChange={this.handleInputChange} fullWidth value={taskName} />
             </ListItem>
             <ListItem className={classes.descriptionTextField}>
               <TextField
@@ -540,11 +462,7 @@ export default class QuickStart extends Component {
                     />
                     <FormControlLabel
                       control={
-                        <Checkbox
-                          checked={events.has('push')}
-                          onChange={this.handleEventsSelection}
-                          value="push"
-                        />
+                        <Checkbox checked={events.has('push')} onChange={this.handleEventsSelection} value="push" />
                       }
                       label="Push"
                     />
@@ -594,7 +512,8 @@ export default class QuickStart extends Component {
                 value={access}
                 name="access"
                 onChange={this.handleInputChange}
-                margin="normal">
+                margin="normal"
+              >
                 <MenuItem value="public">Public</MenuItem>
                 <MenuItem value="collaborators">Collaborators</MenuItem>
               </TextField>
@@ -608,7 +527,8 @@ export default class QuickStart extends Component {
                 value={language}
                 name="language"
                 onChange={this.handleLanguageChange}
-                margin="normal">
+                margin="normal"
+              >
                 <MenuItem value="node">Node.js</MenuItem>
                 <MenuItem value="python">Python</MenuItem>
                 <MenuItem value="rust">Rust</MenuItem>
@@ -622,33 +542,27 @@ export default class QuickStart extends Component {
                 label="Commands"
                 value={commandSelection}
                 onChange={this.handleCommandsChange}
-                margin="normal">
-                <MenuItem value="standard">
-                  Clone repo and run my tests
-                </MenuItem>
+                margin="normal"
+              >
+                <MenuItem value="standard">Clone repo and run my tests</MenuItem>
                 <MenuItem value="custom">I will define them myself</MenuItem>
               </TextField>
             </ListItem>
             <ListItem>
               <ListItemText
                 disableTypography
-                primary={
-                  <Typography variant="subtitle1">
-                    Your .taskcluster.yml
-                  </Typography>
-                }
+                primary={<Typography variant="subtitle1">Your .taskcluster.yml</Typography>}
               />
             </ListItem>
-            <ListItem className={classes.editorListItem}>
-              {this.renderEditor()}
-            </ListItem>
+            <ListItem className={classes.editorListItem}>{this.renderEditor()}</ListItem>
           </List>
           <Button
             spanProps={{ className: classes.resetButtonSpan }}
             tooltipProps={{ title: 'Reset Form & File' }}
             variant="round"
             onClick={this.handleReset}
-            color="secondary">
+            color="secondary"
+          >
             <RestartIcon />
           </Button>
         </Fragment>

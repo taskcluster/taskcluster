@@ -2,12 +2,7 @@
  * Generate curl command examples for API endpoints
  */
 
-import {
-  PLACEHOLDERS,
-  getPlaceholderValue,
-  requiresAuth,
-  formatPayloadJson,
-} from './helpers';
+import { PLACEHOLDERS, getPlaceholderValue, requiresAuth, formatPayloadJson } from './helpers';
 
 /**
  * Generate a curl example for an API endpoint
@@ -18,18 +13,13 @@ import {
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} curl command example
  */
-export default function generateCurlExample(
-  serviceName,
-  apiVersion,
-  entry,
-  payloadExample = null
-) {
+export default function generateCurlExample(serviceName, apiVersion, entry, payloadExample = null) {
   const { method, route, args, query, input } = entry;
   // Build the URL
   let url = `${PLACEHOLDERS.rootUrl}/api/${serviceName}/${apiVersion}${route}`;
 
   // Replace path parameters
-  args.forEach(arg => {
+  args.forEach((arg) => {
     const placeholder = getPlaceholderValue(arg);
 
     url = url.replace(`<${arg}>`, placeholder);
@@ -37,7 +27,7 @@ export default function generateCurlExample(
 
   // Add query parameters if present
   if (query && query.length > 0) {
-    const queryParams = query.map(q => `${q}=<${q}>`).join('&');
+    const queryParams = query.map((q) => `${q}=<${q}>`).join('&');
 
     url += `?${queryParams}`;
   }

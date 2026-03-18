@@ -10,11 +10,9 @@ import { ReactGhLikeDiff } from 'react-gh-like-diff';
 import 'react-gh-like-diff/dist/css/diff2html.min.css';
 import { THEME } from '../../utils/constants';
 
-const styles = withStyles(theme => {
+const styles = withStyles((theme) => {
   const borderColor =
-    theme.palette.type === 'light'
-      ? alpha(theme.palette.common.black, 0.23)
-      : alpha(theme.palette.common.white, 0.23);
+    theme.palette.type === 'light' ? alpha(theme.palette.common.black, 0.23) : alpha(theme.palette.common.white, 0.23);
 
   return {
     '@global': {
@@ -98,34 +96,14 @@ const styles = withStyles(theme => {
  * Refer to the MarkdownTextArea component
  */
 function DiffTextArea(props) {
-  const {
-    classes,
-    onChange,
-    rows,
-    initialValue,
-    sort,
-    defaultTabIndex,
-    ...rest
-  } = props;
+  const { classes, onChange, rows, initialValue, sort, defaultTabIndex, ...rest } = props;
   const [tabIndex, setTabIndex] = useState(defaultTabIndex);
   const [value, setValue] = useState(props.value);
   const isViewDiff = tabIndex === 1;
-  const isControlled =
-    'value' in props && props.value !== undefined && props.value !== null;
-  const isSorted =
-    'sort' in props && props.sort !== undefined && props.sort !== null;
-  const pastValue = isSorted
-    ? initialValue
-        .split('\n')
-        .sort()
-        .join('\n')
-    : initialValue;
-  const currentValue = isSorted
-    ? value
-        .split('\n')
-        .sort()
-        .join('\n')
-    : value;
+  const isControlled = 'value' in props && props.value !== undefined && props.value !== null;
+  const isSorted = 'sort' in props && props.sort !== undefined && props.sort !== null;
+  const pastValue = isSorted ? initialValue.split('\n').sort().join('\n') : initialValue;
+  const currentValue = isSorted ? value.split('\n').sort().join('\n') : value;
   const isNotEqualText = pastValue !== currentValue;
 
   function handleValueChange(event) {
@@ -152,7 +130,8 @@ function DiffTextArea(props) {
         style={isViewDiff ? { minHeight: rows * 20 } : null}
         className={classNames(classes.tabContent, {
           [classes.diffContainer]: isViewDiff,
-        })}>
+        })}
+      >
         {!isViewDiff && (
           <TextField
             color="secondary"
@@ -164,12 +143,8 @@ function DiffTextArea(props) {
             value={value}
           />
         )}
-        {isViewDiff && isNotEqualText && (
-          <ReactGhLikeDiff past={pastValue} current={currentValue} />
-        )}
-        {isViewDiff && !isNotEqualText && (
-          <Typography>Nothing has changed yet</Typography>
-        )}
+        {isViewDiff && isNotEqualText && <ReactGhLikeDiff past={pastValue} current={currentValue} />}
+        {isViewDiff && !isNotEqualText && <Typography>Nothing has changed yet</Typography>}
       </div>
     </div>
   );

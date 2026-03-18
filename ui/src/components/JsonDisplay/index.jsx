@@ -6,44 +6,27 @@ import Code from '../Code';
 import 'highlight.js/styles/atom-one-dark.css';
 import CopyToClipboardListItem from '../CopyToClipboardListItem';
 
-const JsonDisplay = props => {
+const JsonDisplay = (props) => {
   const YamlJsonSwitch = ({ handleChange, value }) => (
     <Typography component="div">
       <Grid component="label" container alignItems="center" spacing={1}>
         <Grid item>YAML</Grid>
         <Grid item>
-          <Switch
-            checked={value === 'json'}
-            onChange={handleChange}
-            name="yaml_json_switch"
-          />
+          <Switch checked={value === 'json'} onChange={handleChange} name="yaml_json_switch" />
         </Grid>
         <Grid item>JSON</Grid>
       </Grid>
     </Typography>
   );
   const [language, setLanguage] = useState(props.syntax);
-  const toText =
-    language === 'yaml'
-      ? obj => dump(obj)
-      : obj => JSON.stringify(obj, null, 2);
+  const toText = language === 'yaml' ? (obj) => dump(obj) : (obj) => JSON.stringify(obj, null, 2);
 
   return (
     <React.Fragment>
       <Grid container>
-        <YamlJsonSwitch
-          value={language}
-          handleChange={() =>
-            setLanguage(language === 'yaml' ? 'json' : 'yaml')
-          }
-        />
+        <YamlJsonSwitch value={language} handleChange={() => setLanguage(language === 'yaml' ? 'json' : 'yaml')} />
         <Grid item>
-          <CopyToClipboardListItem
-            tooltipTitle=""
-            textToCopy={toText(props.objectContent)}
-            primary=""
-            secondary=""
-          />
+          <CopyToClipboardListItem tooltipTitle="" textToCopy={toText(props.objectContent)} primary="" secondary="" />
         </Grid>
       </Grid>
       <Code language={language} className={props.wrapperClassName}>

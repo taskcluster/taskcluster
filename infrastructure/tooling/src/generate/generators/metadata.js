@@ -1,4 +1,3 @@
-
 import path from 'node:path';
 import config from '@taskcluster/lib-config';
 import { listServices, readRepoYAML } from '../../utils/index.js';
@@ -7,7 +6,7 @@ const SERVICES = listServices();
 
 export const tasks = [];
 
-SERVICES.forEach(name => {
+SERVICES.forEach((name) => {
   tasks.push({
     title: `Fetch service metadata for ${name}`,
     requires: [],
@@ -22,7 +21,7 @@ SERVICES.forEach(name => {
 
       const procs = await readRepoYAML(path.join('services', name, 'procs.yml'));
 
-      const readOrNull = async path => {
+      const readOrNull = async (path) => {
         try {
           return await readRepoYAML(path);
         } catch (err) {

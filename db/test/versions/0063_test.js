@@ -2,16 +2,16 @@ import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 import { strict as assert } from 'node:assert';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), function () {
   helper.withDbForVersion();
 
   const taskId = 'WuonSu7CQDeZ0hh-cR_6Ag';
 
   helper.dbVersionTest({
     version: THIS_VERSION,
-    createData: async client => {
+    createData: async (client) => {
       // create the data including a task_queue_id that must be the
       // combined identifier of provisioner_id/worker_type.
       // this is a safe assumption as tested for the previous version.
@@ -62,18 +62,27 @@ suite(testing.suiteName(), function() {
           'p/w'
         )`);
     },
-    startCheck: async client => {
+    startCheck: async (client) => {
       const res = await client.query('select task_id from tasks');
-      assert.deepEqual(res.rows.map(row => row.task_id), [taskId]);
+      assert.deepEqual(
+        res.rows.map((row) => row.task_id),
+        [taskId],
+      );
       await helper.assertNoTableColumn('tasks', 'project_id');
     },
-    concurrentCheck: async client => {
+    concurrentCheck: async (client) => {
       const res = await client.query('select task_id from tasks');
-      assert.deepEqual(res.rows.map(row => row.task_id), [taskId]);
+      assert.deepEqual(
+        res.rows.map((row) => row.task_id),
+        [taskId],
+      );
     },
-    finishedCheck: async client => {
+    finishedCheck: async (client) => {
       const res = await client.query('select task_id, project_id from tasks');
-      assert.deepEqual(res.rows.map(row => [row.task_id, row.project_id]), [[taskId, null]]);
+      assert.deepEqual(
+        res.rows.map((row) => [row.task_id, row.project_id]),
+        [[taskId, null]],
+      );
       await helper.assertTableColumn('tasks', 'project_id');
     },
   });

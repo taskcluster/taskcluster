@@ -22,9 +22,7 @@ const Link = React.forwardRef(({ nav, to, skipPrefetch, ...props }, ref) => {
 
     if (!isPathAbsolute) {
       const matchingRoutes = matchRoutes(path, Link.routes);
-      const components = matchingRoutes.map(({ component }) =>
-        component.preload()
-      );
+      const components = matchingRoutes.map(({ component }) => component.preload());
 
       Promise.all(components).catch(() => {
         shouldReload = true;
@@ -77,14 +75,7 @@ const Link = React.forwardRef(({ nav, to, skipPrefetch, ...props }, ref) => {
   }
 
   return (
-    <Component
-      ref={ref}
-      to={to}
-      {...props}
-      onFocus={handleFocus}
-      onMouseOver={handleMouseOver}
-      onClick={handleClick}
-    />
+    <Component ref={ref} to={to} {...props} onFocus={handleFocus} onMouseOver={handleMouseOver} onClick={handleClick} />
   );
 });
 
@@ -107,7 +98,7 @@ Link.defaultProps = {
 };
 
 // App calls this on load; it avoids an import cycle by importing App/routes
-Link.setRoutes = routes => {
+Link.setRoutes = (routes) => {
   Link.routes = routes;
 };
 

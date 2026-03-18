@@ -20,7 +20,7 @@
  * bar
  * baz
  */
-export const cleanupDescription = desc => {
+export const cleanupDescription = (desc) => {
   desc = desc.trim();
   const spl = desc.split('\n');
 
@@ -31,7 +31,7 @@ export const cleanupDescription = desc => {
   const match = /^\s+/.exec(spl[1]); // The first line has already been trimmed
   if (match) {
     const remove = match[0].length;
-    const fixed = spl.slice(1).map(l => l.slice(remove));
+    const fixed = spl.slice(1).map((l) => l.slice(remove));
     return [spl[0], ...fixed].join('\n');
   }
 

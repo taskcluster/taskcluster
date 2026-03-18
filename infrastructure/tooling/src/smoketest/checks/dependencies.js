@@ -1,21 +1,14 @@
 import taskcluster from '@taskcluster/client';
 
 export const scopeExpression = {
-  AllOf: [
-    'queue:create-task:highest:built-in/succeed',
-    'queue:scheduler-id:smoketest',
-  ],
+  AllOf: ['queue:create-task:highest:built-in/succeed', 'queue:scheduler-id:smoketest'],
 };
 
 export const tasks = [];
 tasks.push({
   title: 'Check dependencies',
-  requires: [
-    'ping-queue',
-  ],
-  provides: [
-    'target-dependencies',
-  ],
+  requires: ['ping-queue'],
+  provides: ['target-dependencies'],
   run: async (_requirements, utils) => {
     const taskCount = 3;
     const taskIds = [];
@@ -24,7 +17,7 @@ tasks.push({
       const task = {
         provisionerId: 'built-in',
         workerType: 'succeed',
-        created: (new Date()).toJSON(),
+        created: new Date().toJSON(),
         schedulerId: 'smoketest',
         deadline: taskcluster.fromNowJSON('2 minutes'),
         metadata: {
@@ -41,7 +34,7 @@ tasks.push({
       utils.status({ message: `Created task ${taskIds[i]}` });
     }
     const pollStartTime = new Date();
-    while (Date.now()- pollStartTime < 1200000) {
+    while (Date.now() - pollStartTime < 1200000) {
       const statuses = [];
       let message = 'Task execution status:';
       for (let i = 0; i < taskCount; i++) {
@@ -58,7 +51,6 @@ tasks.push({
                 throw new Error(`Task ${taskIds[i]} scheduled before completion of task ${taskIds[i - 1]}`);
               }
             }
-
           }
         }
         statuses.push(taskStatus);
@@ -66,11 +58,11 @@ tasks.push({
       utils.status({ message: message });
       if (statuses[statuses.length - 1].status.state === 'completed') {
         return {
-          "target-dependencies": statuses[statuses.length - 1].status.state,
+          'target-dependencies': statuses[statuses.length - 1].status.state,
         };
       }
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
     throw new Error('Deadline exceeded');
   },

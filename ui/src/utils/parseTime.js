@@ -12,7 +12,7 @@ const timeExpression = new RegExp(
     '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
     '\\s*$',
   ].join(''),
-  'i'
+  'i',
 );
 
 export default (str = '') => {

@@ -36,14 +36,8 @@ export default class Spinner extends PureComponent {
 
   render() {
     const { color, loading, classes, className, ...props } = this.props;
-    const progress = (
-      <CircularProgress color={color} className={className} {...props} />
-    );
+    const progress = <CircularProgress color={color} className={className} {...props} />;
 
-    return loading ? (
-      <div className={classNames(classes.center, className)}>{progress}</div>
-    ) : (
-      progress
-    );
+    return loading ? <div className={classNames(classes.center, className)}>{progress}</div> : progress;
   }
 }

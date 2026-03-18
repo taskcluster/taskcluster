@@ -5,11 +5,7 @@ export default {
     DEPRECATED: 'deprecated',
   },
   WorkerType: {
-    workers(
-      { provisionerId, workerType },
-      { connection, filter },
-      { loaders },
-    ) {
+    workers({ provisionerId, workerType }, { connection, filter }, { loaders }) {
       return loaders.workers.load({
         provisionerId,
         workerType,
@@ -17,11 +13,7 @@ export default {
         filter,
       });
     },
-    worker(
-      { provisionerId, workerType },
-      { workerGroup, workerId },
-      { loaders },
-    ) {
+    worker({ provisionerId, workerType }, { workerGroup, workerId }, { loaders }) {
       return loaders.worker.load({
         provisionerId,
         workerType,

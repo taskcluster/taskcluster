@@ -15,11 +15,11 @@ import { pageInfo, secrets } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.name, b.node.name)),
-  map(({ node: { name } }) => name)
+  map(({ node: { name } }) => name),
 );
 const iconSize = 16;
 
-@withStyles(theme => ({
+@withStyles((theme) => ({
   secretContainer: {
     width: '100%',
     display: 'flex',
@@ -67,14 +67,8 @@ export default class SecretsTable extends Component {
       return {
         ...secretsConnection,
         edges: [...secretsConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? this.valueFromNode(b.node)
-              : this.valueFromNode(a.node);
-          const secondElement =
-            sortDirection === 'desc'
-              ? this.valueFromNode(a.node)
-              : this.valueFromNode(b.node);
+          const firstElement = sortDirection === 'desc' ? this.valueFromNode(b.node) : this.valueFromNode(a.node);
+          const secondElement = sortDirection === 'desc' ? this.valueFromNode(a.node) : this.valueFromNode(b.node);
 
           return sort(firstElement, secondElement);
         }),
@@ -86,10 +80,10 @@ export default class SecretsTable extends Component {
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
-    }
+    },
   );
 
-  handleHeaderClick = sortBy => {
+  handleHeaderClick = (sortBy) => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
     const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
@@ -105,19 +99,9 @@ export default class SecretsTable extends Component {
   }
 
   render() {
-    const {
-      onPageChange,
-      classes,
-      secretsConnection,
-      searchTerm,
-      onDialogActionOpen,
-    } = this.props;
+    const { onPageChange, classes, secretsConnection, searchTerm, onDialogActionOpen } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedSecretsConnection = this.createSortedSecretsConnection(
-      secretsConnection,
-      sortBy,
-      sortDirection
-    );
+    const sortedSecretsConnection = this.createSortedSecretsConnection(secretsConnection, sortBy, sortDirection);
 
     return (
       <ConnectionDataTable
@@ -129,24 +113,21 @@ export default class SecretsTable extends Component {
         onHeaderClick={this.handleHeaderClick}
         onPageChange={onPageChange}
         allowFilter
-        filterFunc={({ node: { name } }, filterValue) =>
-          String(name).includes(filterValue)
-        }
+        filterFunc={({ node: { name } }, filterValue) => String(name).includes(filterValue)}
         headers={['Secret ID']}
         lazyRender
         renderRow={({ node: { name } }, style, key) => (
           <TableRow key={key || name} style={style} hover>
             <TableCell className={classes.secretContainer}>
-              <Link
-                className={classes.nameLink}
-                to={`/secrets/${encodeURIComponent(name)}`}>
+              <Link className={classes.nameLink} to={`/secrets/${encodeURIComponent(name)}`}>
                 {name}
               </Link>
               <Button
                 requiresAuth
                 tooltipProps={{ title: 'Delete Secret' }}
                 size="small"
-                onClick={() => onDialogActionOpen(name)}>
+                onClick={() => onDialogActionOpen(name)}
+              >
                 <DeleteIcon size={iconSize} />
               </Button>
             </TableCell>

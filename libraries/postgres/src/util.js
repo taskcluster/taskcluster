@@ -12,7 +12,7 @@ export const ignorePgErrors = async (promise, ...codes) => {
   }
 };
 
-export const dollarQuote = str => {
+export const dollarQuote = (str) => {
   let i = '';
   while (true) {
     const quote = `$${i}$`;
@@ -59,13 +59,11 @@ export const annotateError = (query, err) => {
       line++;
     }
     if (line < queryLines.length) {
-      const caret = `${" ".repeat(position)}^`;
+      const caret = `${' '.repeat(position)}^`;
       queryLines.splice(line + 1, 0, caret);
     }
 
-    err.message = [msgLines[0]]
-      .concat(queryLines)
-      .concat(msgLines.slice(1)).join('\n');
+    err.message = [msgLines[0]].concat(queryLines).concat(msgLines.slice(1)).join('\n');
   }
 
   // show hints or details from this error in the debug log, to help
@@ -95,12 +93,12 @@ export const paginatedIterator = ({ fetch, indexColumns, size = 1000 }) => {
       let getRows;
       if (indexColumns) {
         // index-based pagination
-        let after = Object.fromEntries(indexColumns.map(col => [`after_${col}_in`, null]));
+        let after = Object.fromEntries(indexColumns.map((col) => [`after_${col}_in`, null]));
         getRows = async () => {
           rows = await fetch(size, after);
           if (rows.length > 0) {
             const lastRow = rows[rows.length - 1];
-            after = Object.fromEntries(indexColumns.map(col => [`after_${col}_in`, lastRow[col]]));
+            after = Object.fromEntries(indexColumns.map((col) => [`after_${col}_in`, lastRow[col]]));
           } else {
             after = null; // getRows shouldn't be called after this!
           }
@@ -184,7 +182,7 @@ export class ETA {
     }
 
     const rate = this.rate();
-    if (isNaN(rate) || !rate) {
+    if (Number.isNaN(rate) || !rate) {
       return undefined;
     }
 

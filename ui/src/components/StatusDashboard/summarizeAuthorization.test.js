@@ -18,7 +18,7 @@ describe('summarizeAuthorization', () => {
         error: new Error('wrong'),
       },
       {},
-      {}
+      {},
     );
 
     expect(out.length).toEqual(4);
@@ -32,10 +32,7 @@ describe('summarizeAuthorization', () => {
       {
         data: {
           clients: {
-            edges: [
-              { node: { lastDateUsed: new Date('2000-01-01') } },
-              { node: { lastDateUsed: new Date() } },
-            ],
+            edges: [{ node: { lastDateUsed: new Date('2000-01-01') } }, { node: { lastDateUsed: new Date() } }],
           },
         },
       },
@@ -52,7 +49,7 @@ describe('summarizeAuthorization', () => {
             edges: ['s1', 's2'],
           },
         },
-      }
+      },
     );
 
     expect(out.length).toEqual(4);

@@ -1,4 +1,3 @@
-
 import { MonitorManager } from '@taskcluster/lib-monitor';
 import Keyring from '../src/Keyring.js';
 import { CryptoKey } from '../src/Keyring.js';
@@ -12,10 +11,7 @@ import Database from '../src/Database.js';
 export * from '../src/Database.js';
 
 export default Database;
-export {
-  Database,
-  Schema,
-}
+export { Database, Schema };
 
 export type DbAccessMode = 'read' | 'write' | 'admin';
 

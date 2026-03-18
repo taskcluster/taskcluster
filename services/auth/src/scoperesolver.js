@@ -31,8 +31,7 @@ class ScopeResolver extends events.EventEmitter {
     });
     this._maxLastUsedDelay = options.maxLastUsedDelay;
     assert(options.monitor, 'expected an instance of @taskcluster/lib-monitor');
-    assert(/^ *-/.test(options.maxLastUsedDelay),
-      'maxLastUsedDelay must be negative');
+    assert(/^ *-/.test(options.maxLastUsedDelay), 'maxLastUsedDelay must be negative');
 
     this._monitor = options.monitor;
     this.db = options.db;
@@ -91,7 +90,7 @@ class ScopeResolver extends events.EventEmitter {
 
     // Set this.reload() to run repeatedly
     this._reloadIntervalHandle = setInterval(() => {
-      this.reload().catch(err => this.emit('error', err));
+      this.reload().catch((err) => this.emit('error', err));
     }, options.cacheExpiry);
   }
 
@@ -117,26 +116,18 @@ class ScopeResolver extends events.EventEmitter {
     this._clientPq = await consume({
       client: pulseClient,
       ephemeral: true,
-      bindings: [
-        authEvents.clientCreated(),
-        authEvents.clientUpdated(),
-        authEvents.clientDeleted(),
-      ],
+      bindings: [authEvents.clientCreated(), authEvents.clientUpdated(), authEvents.clientDeleted()],
       onConnected: () => this.reload(),
-      handleMessage: m => this.reloadClient(m.payload.clientId),
+      handleMessage: (m) => this.reloadClient(m.payload.clientId),
     });
     this._rolePq = await consume({
       client: pulseClient,
       ephemeral: true,
-      bindings: [
-        authEvents.roleCreated(),
-        authEvents.roleUpdated(),
-        authEvents.roleDeleted(),
-      ],
+      bindings: [authEvents.roleCreated(), authEvents.roleUpdated(), authEvents.roleDeleted()],
       // no need for both _clientPq and _rolePq to call this.reload()
       // for the same reconnection..
       onConnected: () => {},
-      handleMessage: _m => this.reloadRoles(),
+      handleMessage: (_m) => this.reloadRoles(),
     });
   }
 
@@ -146,14 +137,14 @@ class ScopeResolver extends events.EventEmitter {
    * functions are executed in serial.
    */
   _syncReload(reloader) {
-    return this._reloadDone = this._reloadDone.catch(() => {}).then(reloader);
+    return (this._reloadDone = this._reloadDone.catch(() => {}).then(reloader));
   }
 
   reloadClient(clientId) {
     return this._syncReload(async () => {
       const [client] = await this.db.fns.get_client(clientId);
       // Always remove it
-      this._clients = this._clients.filter(c => c.clientId !== clientId);
+      this._clients = this._clients.filter((c) => c.clientId !== clientId);
       // If a client was loaded, add it back
       if (client) {
         // For reasoning on structure, see reload()
@@ -269,7 +260,7 @@ class ScopeResolver extends events.EventEmitter {
     return (inputs) => {
       inputs = ScopeSetBuilder.normalizeScopeSet(inputs);
       // Reduce input to the set of scopes starting with 'assume:'
-      const queue = inputs.filter(s => ASSUME_PREFIX.test(s));
+      const queue = inputs.filter((s) => ASSUME_PREFIX.test(s));
 
       // Check if we have an expansion of queue in LRU cache, if there is no
       // such expansion we'll continue and compute one.
@@ -350,8 +341,8 @@ class ScopeResolver extends events.EventEmitter {
     // Filter out any duplicate scopes (so we only have unique strings)
     scopes = _.uniq(scopes);
     // Filter out scopes that are covered by some other scope
-    return scopes.filter(scope => {
-      return scopes.every(other => {
+    return scopes.filter((scope) => {
+      return scopes.every((other) => {
         // If `scope` is `other`, then we can't filter it! It has to be
         // strictly greater than (otherwise scopes would filter themselves)
         if (other === scope) {

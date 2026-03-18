@@ -15,7 +15,7 @@ import { getArtifactUrl } from '../../../utils/getArtifactUrl';
 import { withAuth } from '../../../utils/Auth';
 
 @withAuth
-@withStyles(theme => ({
+@withStyles((theme) => ({
   fab: {
     ...theme.mixins.fab,
     ...theme.mixins.actionButton,
@@ -30,7 +30,7 @@ import { withAuth } from '../../../utils/Auth';
   },
 }))
 @graphql(taskQuery, {
-  options: props => ({
+  options: (props) => ({
     fetchPolicy: 'network-only',
     errorPolicy: 'all',
     variables: {
@@ -40,9 +40,7 @@ import { withAuth } from '../../../utils/Auth';
 })
 export default class TaskLog extends Component {
   getCurrentRun() {
-    return (
-      this.props.data.task?.status.runs[this.props.match.params.runId]
-    );
+    return this.props.data.task?.status.runs[this.props.match.params.runId];
   }
 
   getLogUrl() {
@@ -90,9 +88,7 @@ export default class TaskLog extends Component {
     const run = this.getCurrentRun();
 
     if (!url) {
-      return (
-        <ErrorPanel error={new Error('Could not determine log artifact URL')} />
-      );
+      return <ErrorPanel error={new Error('Could not determine log artifact URL')} />;
     }
 
     return (
@@ -100,25 +96,21 @@ export default class TaskLog extends Component {
         title={task ? `Log "${task.metadata.name}"` : 'Log'}
         disableTitleFormatting
         disablePadding
-        search={
-          <Search
-            placeholder="Search Task ID"
-            onSubmit={this.handleTaskSearchSubmit}
-          />
-        }>
+        search={<Search placeholder="Search Task ID" onSubmit={this.handleTaskSearchSubmit} />}
+      >
         <Helmet state={run?.state} />
         <Log
           url={url}
           stream={stream}
           actions={
             <Fragment>
-              <Link
-                to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}>
+              <Link to={`/tasks/${match.params.taskId}/runs/${match.params.runId}`}>
                 <Button
                   spanProps={{ className: classes.fab }}
                   tooltipProps={{ title: 'View Task' }}
                   variant="round"
-                  color="secondary">
+                  color="secondary"
+                >
                   <ArrowLeftIcon />
                 </Button>
               </Link>
@@ -127,7 +119,8 @@ export default class TaskLog extends Component {
                 spanProps={{ className: classes.rawLog }}
                 tooltipProps={{ title: 'Raw Log' }}
                 variant="round"
-                color="secondary">
+                color="secondary"
+              >
                 <OpenInNewIcon size={20} />
               </Button>
             </Fragment>
@@ -137,7 +130,7 @@ export default class TaskLog extends Component {
     );
   }
 
-  handleTaskSearchSubmit = taskId => {
+  handleTaskSearchSubmit = (taskId) => {
     this.props.history.push(`/tasks/${taskId}`);
   };
 }

@@ -106,7 +106,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     for (const [currentId, def] of Object.entries(expectedTasks)) {
       assert.deepStrictEqual(tasks[currentId], def);
     }
-
   });
 
   test('tasks is correct for a single task', async () => {
@@ -125,7 +124,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     await assert.rejects(
       () => helper.queue.tasks({ taskIds: [taskId] }),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 
   test('task(taskId) requires scopes', async () => {
@@ -133,7 +133,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     await assert.rejects(
       () => helper.queue.task(taskId),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
   });
 
   test('statuses is correct for multiple tasks', async () => {
@@ -181,7 +182,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     await assert.rejects(
       () => helper.queue.statuses({ taskIds: [taskId] }),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
 
     helper.scopes(`queue:status:${taskId}`);
     await helper.queue.statuses({ taskIds: [taskId] }); // doesn't fail..
@@ -192,10 +194,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     await assert.rejects(
       () => helper.queue.status(taskId),
-      err => err.code === 'InsufficientScopes');
+      (err) => err.code === 'InsufficientScopes',
+    );
 
     helper.scopes(`queue:status:${taskId}`);
     await helper.queue.status(taskId); // doesn't fail..
   });
-
 });

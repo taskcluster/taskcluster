@@ -27,8 +27,7 @@ class WorkerMetricsCollector {
     assert(options.queueService, 'options.queueService required!');
     assert(options.monitor, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
-    assert(typeof options.pollingDelay === 'number',
-      'Expected pollingDelay to be a number');
+    assert(typeof options.pollingDelay === 'number', 'Expected pollingDelay to be a number');
 
     this.db = options.db;
     this.queueService = options.queueService;
@@ -105,7 +104,8 @@ class WorkerMetricsCollector {
       this.monitor.metric.runningWorkers(stats.claimed_count, labels);
       this.monitor.metric.idleWorkers(
         Math.max(0, stats.worker_count - stats.quarantined_count - stats.claimed_count),
-        labels);
+        labels,
+      );
     }
 
     this.monitor.debug(`Collected metrics for ${Object.keys(tqStats).length} task queues`);

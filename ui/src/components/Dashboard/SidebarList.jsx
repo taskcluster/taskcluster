@@ -39,11 +39,7 @@ export default class SidebarList extends Component {
           Task Index
         </SidebarListItem>
 
-        <SidebarListGroup
-          skipPrefetch
-          to="/auth"
-          title="Authorization"
-          icon={<AccountKeyIcon />}>
+        <SidebarListGroup skipPrefetch to="/auth" title="Authorization" icon={<AccountKeyIcon />}>
           <SidebarListItem to="/auth/clients" icon={<AccountMultipleIcon />}>
             Clients
           </SidebarListItem>
@@ -53,14 +49,10 @@ export default class SidebarList extends Component {
           <SidebarListItem to="/auth/scopes" icon={<AccountSettingsIcon />}>
             Scopes
           </SidebarListItem>
-          <SidebarListItem
-            to="/auth/scopes/compare"
-            icon={<ScaleBalanceIcon />}>
+          <SidebarListItem to="/auth/scopes/compare" icon={<ScaleBalanceIcon />}>
             Compare Scopes
           </SidebarListItem>
-          <SidebarListItem
-            to="/auth/scopes/expansions"
-            icon={<ArrowExpandVerticalIcon />}>
+          <SidebarListItem to="/auth/scopes/expansions" icon={<ArrowExpandVerticalIcon />}>
             Expand Scopes
           </SidebarListItem>
         </SidebarListGroup>
@@ -69,9 +61,7 @@ export default class SidebarList extends Component {
           Worker Manager
         </SidebarListItem>
 
-        <SidebarListItem
-          to="/worker-manager/errors"
-          icon={<MessageAlertIcon />}>
+        <SidebarListItem to="/worker-manager/errors" icon={<MessageAlertIcon />}>
           Provisioning Errors
         </SidebarListItem>
 

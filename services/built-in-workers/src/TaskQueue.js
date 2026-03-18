@@ -22,7 +22,7 @@ class TaskQueue {
     });
     if (result.tasks.length === 0) {
       this.monitor.debug('no tasks');
-      return ;
+      return;
     }
     const { credentials, task, status, runId } = result.tasks[0];
     this.monitor.debug(`claimed task: ${status.taskId}`);

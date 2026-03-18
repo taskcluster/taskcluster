@@ -23,7 +23,7 @@ const TMPL_DIR = path.join(CHART_DIR, 'templates');
 
 const CLUSTER_DEFAULTS = {
   level: () => 'notice',
-  taskcluster_client_id: cfg => `static/taskcluster/${cfg.name}`,
+  taskcluster_client_id: (cfg) => `static/taskcluster/${cfg.name}`,
 };
 
 // Defaults for things for which the type-based default (configToExample) is
@@ -33,10 +33,7 @@ const DEFAULT_OVERRIDES = {
 };
 
 // Things like port that we always set ourselves
-const NON_CONFIGURABLE = [
-  'port',
-  'node_env',
-];
+const NON_CONFIGURABLE = ['port', 'node_env'];
 
 // Shared across an entire deployment
 const SHARED_CONFIG = {
@@ -123,7 +120,8 @@ const metricsSelectorLabels = (_projectName) => ({
 // json-e can't create a "naked" string for go templates to use to render an integer.
 // we have to do some post-processing to use "advanced" go template features
 const postJsoneProcessing = (rendered, replacements, context) => {
-  let result = yaml.dump(rendered, { lineWidth: -1 })
+  let result = yaml
+    .dump(rendered, { lineWidth: -1 })
     .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, _p1) => replacements[match]);
 
   // Add conditional replicas configuration
@@ -157,7 +155,8 @@ const postProcessHorizontalPodAutoscaler = (rendered, context) => {
 ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 {{- end }}
 `;
-  result = result.replace("- MEMORY_UTILIZATION",
+  result = result.replace(
+    '- MEMORY_UTILIZATION',
     `{{- if .Values.${context.configName}.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
@@ -170,7 +169,8 @@ ${yaml.dump(rendered, { lineWidth: -1 }).trim()}
 
   // some values need to stay integers after json'e string substitutions
   // we unwrap minReplicas, maxReplicas, averageUtilization
-  result = result.replace(/^(\s*minReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
+  result = result
+    .replace(/^(\s*minReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
     .replace(/^(\s*maxReplicas:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3')
     .replace(/^(\s*averageUtilization:\s*)'(\{\{[^']+\}\})'(\s*)$/m, '$1$2$3');
 
@@ -193,8 +193,14 @@ const renderTemplates = async (name, vars, procs, templates) => {
     const rendered = jsone(templates[resource], {
       projectName: `taskcluster-${name}`,
       labels: labels(`taskcluster-${name}`, 'secrets'),
-      secrets: vars.filter(v => v.secret).map(processVar).filter(x => x !== null),
-      configValues: vars.filter(v => !v.secret).map(processVar).filter(x => x !== null),
+      secrets: vars
+        .filter((v) => v.secret)
+        .map(processVar)
+        .filter((x) => x !== null),
+      configValues: vars
+        .filter((v) => !v.secret)
+        .map(processVar)
+        .filter((x) => x !== null),
     });
 
     const file = `taskcluster-${name}-${resource}.yaml`;
@@ -219,7 +225,8 @@ const renderTemplates = async (name, vars, procs, templates) => {
     };
     const replacements = {
       REPLICA_CONFIG_STRING: `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`,
-      IMAGE_PULL_SECRETS_STRING: '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
+      IMAGE_PULL_SECRETS_STRING:
+        '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
     };
 
     switch (conf.type) {
@@ -259,7 +266,8 @@ const renderTemplates = async (name, vars, procs, templates) => {
         context.deadlineSeconds = conf.deadline;
         break;
       }
-      default: continue; // We don't do anything with build/heroku-only
+      default:
+        continue; // We don't do anything with build/heroku-only
     }
     const rendered = jsone(templates[tmpl], context);
     const processed = postJsoneProcessing(rendered, replacements, context);
@@ -277,7 +285,6 @@ tasks.push({
   requires: [],
   provides: ['k8s-templates'],
   run: async (_requirements, _utils) => {
-
     const templateFiles = glob.sync('infrastructure/tooling/templates/k8s/*.yaml', { cwd: REPO_ROOT });
     const templates = {};
     for (const f of templateFiles) {
@@ -299,7 +306,7 @@ tasks.push({
   },
 });
 
-SERVICES.forEach(name => {
+SERVICES.forEach((name) => {
   tasks.push({
     title: `Generate helm templates for ${name}`,
     requires: [`configs-${name}`, `procslist-${name}`, 'k8s-templates', 'k8s-templates-dir'],
@@ -331,9 +338,7 @@ const extras = {
       web: {
         type: 'web',
         readinessPath: '/',
-        paths: [
-          '/*',
-        ],
+        paths: ['/*'],
       },
     },
   },
@@ -343,10 +348,7 @@ const extras = {
       web: {
         type: 'web',
         readinessPath: '/references/',
-        paths: [
-          '/references/*',
-          '/schemas/*',
-        ],
+        paths: ['/references/*', '/schemas/*'],
       },
     },
   },
@@ -367,7 +369,7 @@ Object.entries(extras).forEach(([name, { procs, vars }]) => {
 
 tasks.push({
   title: `Generate ingress`,
-  requires: ['k8s-templates', 'ingresses-ui', 'ingresses-references', ...SERVICES.map(name => `ingresses-${name}`)],
+  requires: ['k8s-templates', 'ingresses-ui', 'ingresses-references', ...SERVICES.map((name) => `ingresses-${name}`)],
   provides: [],
   run: async (requirements, _utils) => {
     const ingresses = [];
@@ -416,26 +418,22 @@ tasks.push({
 tasks.push({
   title: `Generate values.yaml and values.schema.yaml`,
   requires: [
-    ...SERVICES.map(name => `configs-${name}`),
-    ...SERVICES.map(name => `procslist-${name}`),
+    ...SERVICES.map((name) => `configs-${name}`),
+    ...SERVICES.map((name) => `procslist-${name}`),
     'static-clients',
   ],
-  provides: [
-    'config-values-schema',
-    'config-values',
-    'target-k8s',
-  ],
+  provides: ['config-values-schema', 'config-values', 'target-k8s'],
   run: async (requirements, _utils) => {
     const schema = {
-      '$schema': 'http://json-schema.org/draft-06/schema#',
-      '$id': '/schemas/common/values.schema.json#',
+      $schema: 'http://json-schema.org/draft-06/schema#',
+      $id: '/schemas/common/values.schema.json#',
       type: 'object',
       title: 'Taskcluster Configuration Values',
       properties: {
         rootUrl: {
           type: 'string',
           format: 'uri',
-          description: 'The url pointing to your deployment\'s ingress.',
+          description: "The url pointing to your deployment's ingress.",
         },
         applicationName: {
           type: 'string',
@@ -467,7 +465,8 @@ tasks.push({
         },
         skipResourceTypes: {
           type: 'array',
-          description: 'A list of kubernetes resource types to skip creating.  Useful when some resources are being managed externally.',
+          description:
+            'A list of kubernetes resource types to skip creating.  Useful when some resources are being managed externally.',
           items: {
             type: 'string',
             enum: ['configmap', 'secret', 'ingress', 'serviceaccount', 'podmonitoring'],
@@ -486,7 +485,8 @@ tasks.push({
         },
         trustProxy: {
           type: 'boolean',
-          description: 'If true, only the external ingress needs to use ssl. connections to services are allowed however.',
+          description:
+            'If true, only the external ingress needs to use ssl. connections to services are allowed however.',
         },
         nodeEnv: {
           type: 'string',
@@ -531,7 +531,8 @@ tasks.push({
         },
         ingressTlsSecretName: {
           type: 'string',
-          description: 'Name of the secret where cert is stored, i.e. "dev-cert". This can be provisioned manually or automatically, by using cert-manager',
+          description:
+            'Name of the secret where cert is stored, i.e. "dev-cert". This can be provisioned manually or automatically, by using cert-manager',
         },
         certManagerClusterIssuerName: {
           type: 'string',
@@ -593,7 +594,16 @@ tasks.push({
           },
         },
       },
-      required: ['rootUrl', 'dockerImage', 'pulseHostname', 'pulseVhost', 'forceSSL', 'trustProxy', 'nodeEnv', 'useKubernetesDnsServiceDiscovery'],
+      required: [
+        'rootUrl',
+        'dockerImage',
+        'pulseHostname',
+        'pulseVhost',
+        'forceSSL',
+        'trustProxy',
+        'nodeEnv',
+        'useKubernetesDnsServiceDiscovery',
+      ],
       additionalProperties: false,
     };
 
@@ -633,17 +643,19 @@ tasks.push({
       prometheus: {},
     };
 
-    let configs = SERVICES.map(name => ({
+    let configs = SERVICES.map((name) => ({
       name,
       vars: requirements[`configs-${name}`],
       procs: requirements[`procslist-${name}`],
     }));
-    configs = configs.concat(Object.entries(extras).map(([name, cfg]) => ({
-      name,
-      ...cfg,
-    })));
+    configs = configs.concat(
+      Object.entries(extras).map(([name, cfg]) => ({
+        name,
+        ...cfg,
+      })),
+    );
 
-    configs.forEach(cfg => {
+    configs.forEach((cfg) => {
       const confName = cfg.name.replace(/-/g, '_');
       exampleConfig[confName] = {};
       valuesYAML[confName] = {
@@ -719,7 +731,7 @@ tasks.push({
       // Some services actually duplicate their config env vars in multiple places
       // so we de-dupe first. We use the variable name for this. If they've asked
       // for the same variable twice with different types then this is not our fault
-      _.uniqBy(cfg.vars, 'var').forEach(v => {
+      _.uniqBy(cfg.vars, 'var').forEach((v) => {
         const varName = v.var.toLowerCase();
         if (NON_CONFIGURABLE.includes(varName) || Object.keys(SHARED_CONFIG).includes(varName)) {
           return;
@@ -800,8 +812,10 @@ tasks.push({
     });
 
     // omit scopes and add a placeholder accessToken to each client
-    exampleConfig.auth.static_clients = requirements['static-clients']
-      .map(({ scopes, ...c }) => ({ ...c, accessToken: '...' }));
+    exampleConfig.auth.static_clients = requirements['static-clients'].map(({ scopes, ...c }) => ({
+      ...c,
+      accessToken: '...',
+    }));
 
     await writeRepoJSON(path.join(CHART_DIR, 'values.schema.json'), schema);
     await writeRepoYAML(path.join(CHART_DIR, 'values.yaml'), valuesYAML); // helm requires this to be "yaml"

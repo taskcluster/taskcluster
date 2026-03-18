@@ -8,10 +8,7 @@ declare module '@taskcluster/lib-loader' {
    *                        returned by those components' `setup(...)`.
    * @typeParam TReturn    - the type returned by this component’s `setup`.
    */
-  export interface ComponentDefinition<
-    TRequires extends Record<string, any> = Record<string, any>,
-    TReturn = any
-  > {
+  export interface ComponentDefinition<TRequires extends Record<string, any> = Record<string, any>, TReturn = any> {
     /**
      * The names of components this component depends on. When `setup` is called,
      * the `ctx` argument will have the same keys as `requires`, each referencing
@@ -69,6 +66,6 @@ declare module '@taskcluster/lib-loader' {
    */
   export default function loader(
     componentDirectory: Record<string, ComponentDefinition<any, any>>,
-    virtualComponents?: Record<string, any> | string[]
+    virtualComponents?: Record<string, any> | string[],
   ): Loader;
 }
