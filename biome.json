@@ -68,7 +68,7 @@
         "useConst": "error",
         "useNodejsImportProtocol": "error",
         "useTemplate": "error",
-        "useExponentiationOperator": "off",
+        "useExponentiationOperator": "error",
         "noDescendingSpecificity": "off"
       },
 
@@ -92,16 +92,16 @@
         "noImportantStyles": "off",
         "noBannedTypes": "off",
         "noArguments": "off",
-        "useRegexLiterals": "off",
+        "useRegexLiterals": "error",
         "noUselessUndefinedInitialization": "off",
         "noCommaOperator": "off",
-        "noUselessTernary": "off",
-        "noUselessConstructor": "off",
-        "useIndexOf": "off",
+        "noUselessTernary": "error",
+        "noUselessConstructor": "error",
+        "useIndexOf": "error",
         "noUselessThisAlias": "off",
-        "noUselessContinue": "off",
+        "noUselessContinue": "error",
         "noStaticOnlyClass": "off",
-        "useFlatMap": "off"
+        "useFlatMap": "error"
       }
     }
   },

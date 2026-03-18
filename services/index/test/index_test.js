@@ -282,7 +282,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       debug('listNamespaces entries match the namespace regex');
       assert.equal(
         new RegExp(`${myns}.my-task`).test(obj.namespace) &&
-        new RegExp('my-task').test(obj.name),
+        /my-task/.test(obj.name),
         true, 'Expect namespace to match regex');
       continuationToken = result.continuationToken;
       i ++;

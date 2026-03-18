@@ -60,7 +60,7 @@ const PRIORITY_LEVELS = [
 const SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 const GENERIC_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}$/;
 const RUN_ID_PATTERN = /^[1-9]*[0-9]+$/;
-const TASK_QUEUE_ID_PATTERN = new RegExp('^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$');
+const TASK_QUEUE_ID_PATTERN = /^[a-zA-Z0-9-_]{1,38}\/[a-z]([-a-z0-9]{0,36}[a-z0-9])?$/;
 
 /**
  * API end-point for version v1/

@@ -28,7 +28,7 @@ suite(testing.suiteName(), function() {
           };
         } else if (err.code === 403 || err.code >= 500) {
           return {
-            backoff: _backoffDelay * Math.pow(2, tries),
+            backoff: _backoffDelay * 2 ** tries,
             reason: 'errors',
             level: 'warning',
           };

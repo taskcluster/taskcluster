@@ -58,9 +58,7 @@ export default class TaskLog extends Component {
     // extract the artifact name.
     if (rawName.startsWith('https%3A')) {
       const maybeArtifactUrl = decodeURIComponent(rawName);
-      const match = new RegExp(
-        '.*/api/queue/v1/task/[^/]{22}/runs/\\d+/artifacts/([^?]+)'
-      ).exec(maybeArtifactUrl);
+      const match = /.*\/api\/queue\/v1\/task\/[^\/]{22}\/runs\/\d+\/artifacts\/([^?]+)/.exec(maybeArtifactUrl);
 
       if (match) {
         // eslint-disable-next-line prefer-destructuring

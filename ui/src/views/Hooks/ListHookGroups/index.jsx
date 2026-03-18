@@ -61,7 +61,7 @@ export default class ListHookGroups extends Component {
       data: { loading, error, hookGroups },
     } = this.props;
     const { search } = parse(window.location.search.slice(1));
-    const hookGroupIds = hookGroups?.map(group => group?.hookGroupId).flat();
+    const hookGroupIds = hookGroups?.flatMap(group => group?.hookGroupId);
 
     return (
       <Dashboard

@@ -12,9 +12,6 @@ import slugid from 'slugid';
  * that allow access to fakes for those interfaces.
  */
 export class FakeAzure extends FakeCloud {
-  constructor() {
-    super();
-  }
 
   _patch() {
     this.sinon.stub(azureApi, 'AzureServiceClient').callsFake((creds) => {

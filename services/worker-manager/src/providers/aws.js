@@ -65,7 +65,7 @@ export class AwsProvider extends Provider {
       providerId: this.providerId,
       errorHandler: ({ err, tries }) => {
         if (err.code === 'RequestLimitExceeded') {
-          return { backoff: this.providerConfig._backoffDelay * Math.pow(2, tries), reason: 'RequestLimitExceeded', level: 'warning' };
+          return { backoff: this.providerConfig._backoffDelay * 2 ** tries, reason: 'RequestLimitExceeded', level: 'warning' };
         }
         throw err;
       },

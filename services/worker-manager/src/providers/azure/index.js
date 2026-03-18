@@ -147,7 +147,7 @@ export class AzureProvider extends Provider {
         if (err.statusCode === 429) { // too many requests
           return { backoff: _backoffDelay * 50, reason: 'rateLimit', level: 'notice' };
         } else if (err.statusCode >= 500) { // For 500s, let's take a shorter backoff
-          return { backoff: _backoffDelay * Math.pow(2, tries), reason: 'errors', level: 'warning' };
+          return { backoff: _backoffDelay * 2 ** tries, reason: 'errors', level: 'warning' };
         }
         // If we don't want to do anything special here, just throw and let the
         // calling code figure out what to do

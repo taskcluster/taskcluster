@@ -167,7 +167,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         tag_name: `v${requirements['release-version']}`,
         name: `v${requirements['release-version']}`,
         body: await requirements['changelog-text'],
-        draft: cmdOptions.staging ? true : false,
+        draft: !!cmdOptions.staging,
         prerelease: false,
       });
       const { upload_url } = release.data;

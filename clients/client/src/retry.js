@@ -27,7 +27,7 @@ export default async ({ retries, delayFactor, randomizationFactor, maxDelay }, f
 
     // Sleep for 2 * delayFactor on the first attempt, and 2x as long
     // each time thereafter
-    let delay = Math.pow(2, attempt) * delayFactor;
+    let delay = 2 ** attempt * delayFactor;
     // Apply randomization factor
     const rf = randomizationFactor;
     delay *= Math.random() * 2 * rf + 1 - rf;

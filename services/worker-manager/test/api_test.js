@@ -2206,7 +2206,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       // worker is not yet visible to the queue so this method will fail
       await assert.rejects(() =>
         helper.workerManager.getWorker(provisionerId, workerType, workerGroup, workerId),
-      new RegExp(`Worker with workerId.+not found`),
+      /Worker with workerId.+not found/,
       );
 
       await makeQueueVisible(workerPoolId, workerGroup, workerId);
@@ -2267,7 +2267,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       // worker is not yet visible to the queue so this method will fail
       await assert.rejects(() =>
         helper.workerManager.getWorker(provisionerId, workerType, workerGroup2, workerId2),
-      new RegExp(`Worker with workerId.+not found`),
+      /Worker with workerId.+not found/,
       );
 
       await makeQueueVisible(workerPoolId2, workerGroup2, workerId2);
