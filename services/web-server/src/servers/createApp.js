@@ -1,5 +1,5 @@
 import bodyParser from 'body-parser';
-import path from 'path';
+import path from 'node:path';
 import bodyParserGraphql from 'body-parser-graphql';
 import session from 'express-session';
 import compression from 'compression';

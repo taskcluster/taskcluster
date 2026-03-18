@@ -1,9 +1,9 @@
 import { Client, consume, connectionStringCredentials } from '../src/index.js';
 import amqplib from 'amqplib';
 import assume from 'assume';
-import fs from 'fs';
+import fs from 'node:fs';
 import debugModule from 'debug';
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import { suiteName } from '@taskcluster/lib-testing';
 

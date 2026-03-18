@@ -1,13 +1,13 @@
 import _ from 'lodash';
 import request from 'superagent';
 import hawk from 'hawk';
-import assert from 'assert';
+import assert from 'node:assert';
 import SchemaSet from '@taskcluster/lib-validate';
 import { App } from '@taskcluster/lib-app';
 import { APIBuilder } from '../src/index.js';
 import { monitor } from './helper.js';
 import testing from '@taskcluster/lib-testing';
-import path from 'path';
+import path from 'node:path';
 import debugFactory from 'debug';
 const debug = debugFactory('auth_test');
 
@@ -80,7 +80,7 @@ suite(testing.suiteName(), function() {
   });
 
   const testEndpoint = ({ method, route, name, scopes = null, handler, handlerBuilder, tests }) => {
-    let sideEffects = {};
+    const sideEffects = {};
     builder.declare({
       method,
       route,
@@ -109,7 +109,7 @@ suite(testing.suiteName(), function() {
       const url = buildUrl(params);
       const auth = buildHawk(id);
       test(label, async () => {
-        for (let key of Object.keys(sideEffects)) {
+        for (const key of Object.keys(sideEffects)) {
           delete sideEffects[key];
         }
         try {

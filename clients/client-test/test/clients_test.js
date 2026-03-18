@@ -1,6 +1,6 @@
 // This file is auto-generated, don't edit
 import taskcluster from '@taskcluster/client';
-import assert from 'assert';
+import assert from 'node:assert';
 
 test('Main clients exposed', function () {
   assert.equal(taskcluster.Auth instanceof Function, true);

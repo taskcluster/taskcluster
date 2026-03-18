@@ -8,11 +8,11 @@ import { MonitorManager } from '@taskcluster/lib-monitor';
 import { App } from '@taskcluster/lib-app';
 import libReferences from '@taskcluster/lib-references';
 import config from '@taskcluster/lib-config';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
-let debug = Debug('secrets:server');
+const debug = Debug('secrets:server');
 
-let load = loader({
+const load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({ profile }) => config({

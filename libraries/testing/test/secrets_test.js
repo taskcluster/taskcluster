@@ -1,6 +1,6 @@
 import { Secrets, stickyLoader, suiteName } from '../src/index.js';
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import nock from 'nock';
 
 suite(suiteName(), function() {
@@ -155,7 +155,7 @@ suite(suiteName(), function() {
       },
       load: sticky,
     });
-    let testsRun = [];
+    const testsRun = [];
 
     secrets.mockSuite('outer', ['sec'], function(mock) {
       test('inner', () => {
@@ -176,7 +176,7 @@ suite(suiteName(), function() {
       },
       load: sticky,
     });
-    let testsRun = [];
+    const testsRun = [];
 
     suiteSetup(function() {
       sticky.inject('cfg', { sec: 'here' });

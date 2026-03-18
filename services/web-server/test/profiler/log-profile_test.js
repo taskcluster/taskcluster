@@ -1,5 +1,5 @@
-import assert from 'assert';
-import { Readable } from 'stream';
+import assert from 'node:assert';
+import { Readable } from 'node:stream';
 import { StreamingProfileBuilder, lineIterator } from '../../src/profiler/log-profile.js';
 
 const mockTask = {

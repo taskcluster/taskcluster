@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import load from '../src/main.js';
 import taskcluster from '@taskcluster/client';
 import { Secrets, stickyLoader, withMonitor, withPulse, withDb, resetTables } from '@taskcluster/lib-testing';
@@ -13,8 +13,8 @@ import WebSocket from 'ws';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core/index.js';
 import got from 'got';
-import path from 'path';
-import fs from 'fs/promises';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 
 const helper = {};
 export default helper;
@@ -58,7 +58,7 @@ helper.withPulse = (helper, skipping) => {
 };
 
 helper.withMockedEventIterator = () => {
-  let PulseEngineCopy = Object.assign({}, PulseEngine);
+  const PulseEngineCopy = Object.assign({}, PulseEngine);
 
   PulseEngineCopy.NextAsyncIterator = null;
   helper.setNextAsyncIterator = (asyncIterator) => {
@@ -479,14 +479,14 @@ const stubbedClients = () => {
       ...options,
       fake: {
         listRoles: async () => {
-          let allRoles = [];
-          for (let roleId of roles.keys()) {
+          const allRoles = [];
+          for (const roleId of roles.keys()) {
             allRoles.push(roles.get(roleId));
           }
           return Promise.resolve(allRoles);
         },
         listRoleIds: async () => {
-          let roleIds = Array.from(roles.keys());
+          const roleIds = Array.from(roles.keys());
           return Promise.resolve({ roleIds });
         },
         role: async (roleId) => {

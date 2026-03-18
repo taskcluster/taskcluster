@@ -21,7 +21,7 @@ tasks.push({
     const auth = new taskcluster.Auth(taskcluster.fromEnvVars());
     const randomId = taskcluster.slugid();
 
-    let clientId = `project/taskcluster/smoketest/${randomId}`;
+    const clientId = `project/taskcluster/smoketest/${randomId}`;
     const payload = {
       "deleteOnExpiration": true,
       "expires": taskcluster.fromNowJSON('1 hour'),

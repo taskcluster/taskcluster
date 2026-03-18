@@ -1,5 +1,5 @@
 import taskcluster from '@taskcluster/client';
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import { StaticProvider } from '../src/providers/static.js';
 import testing from '@taskcluster/lib-testing';
@@ -14,8 +14,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   let provider;
   let workerPool;
-  let providerId = 'stat';
-  let workerPoolId = 'foo/bar';
+  const providerId = 'stat';
+  const workerPoolId = 'foo/bar';
   const workerGroup = providerId;
   const workerId = 'abc123';
   const defaultWorker = {

@@ -1,5 +1,5 @@
 import errorStackParser from 'error-stack-parser';
-import path from 'path';
+import path from 'node:path';
 
 // Restore TASKCLUSTER_* env vars after this test suite runs, to the values they
 // had when it began.
@@ -9,7 +9,7 @@ export const withRestoredEnvVars = () => {
   let values;
   suiteSetup('save TASKCLUSTER_* env vars', function() {
     values = {};
-    for (let v of vars) {
+    for (const v of vars) {
       if (process.env[v]) {
         values[v] = process.env[v];
       }
@@ -17,7 +17,7 @@ export const withRestoredEnvVars = () => {
   });
 
   suiteTeardown('restore TASKCLUSTER_* env vars', function() {
-    for (let v of vars) {
+    for (const v of vars) {
       if (values[v]) {
         process.env[v] = values[v];
       } else {

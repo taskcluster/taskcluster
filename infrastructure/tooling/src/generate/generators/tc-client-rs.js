@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { writeRepoFile, REPO_ROOT } from '../../utils/index.js';
 import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
@@ -97,7 +97,7 @@ pub fn ${t.name}_signed_url(${define_args(with_ttl(with_self(t.args)))}) -> Resu
 const generateServiceClient = (className, reference) => {
   const methods = [];
 
-  for (let entry of reference.entries) {
+  for (const entry of reference.entries) {
     if (entry.type !== 'function') {
       continue;
     }
@@ -184,7 +184,7 @@ const generateServiceClient = (className, reference) => {
     }
 
     if (entry.description) {
-      let ds = entry.description.trim().split('\n');
+      const ds = entry.description.trim().split('\n');
       if (entry.title) {
         ds.unshift('');
         ds.unshift(entry.title);
@@ -230,7 +230,7 @@ const generateModFile = apis => {
   const mods = [];
   const uses = [];
 
-  for (let [className, { referenceKind }] of Object.entries(apis)) {
+  for (const [className, { referenceKind }] of Object.entries(apis)) {
     if (referenceKind !== 'api') {
       continue;
     }
@@ -257,7 +257,7 @@ export const tasks = [{
     utils.status({ message: 'mod.rs' });
     await writeRsFile(path.join(moduleDir, 'mod.rs'), generateModFile(apis));
 
-    for (let [className, { reference, referenceKind }] of Object.entries(apis)) {
+    for (const [className, { reference, referenceKind }] of Object.entries(apis)) {
       if (referenceKind !== 'api') {
         continue;
       }

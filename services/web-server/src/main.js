@@ -1,7 +1,7 @@
 import '../../prelude.js';
 import debugFactory from 'debug';
 const debug = debugFactory('app:main');
-import assert from 'assert';
+import assert from 'node:assert';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@as-integrations/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
@@ -14,7 +14,7 @@ import config from '@taskcluster/lib-config';
 import libReferences from '@taskcluster/lib-references';
 import SchemaSet from '@taskcluster/lib-validate';
 import builder from './api.js';
-import { createServer } from 'http';
+import { createServer } from 'node:http';
 import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
 import taskcluster from '@taskcluster/client';
 import tcdb from '@taskcluster/db';
@@ -30,7 +30,7 @@ import typeDefs from './graphql/index.js';
 import PulseEngine from './PulseEngine/index.js';
 import scanner from './login/scanner.js';
 import './monitor.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 import githubStrategy from './login/strategies/github.js';
 import mozillaAuth0Strategy from './login/strategies/mozilla-auth0.js';

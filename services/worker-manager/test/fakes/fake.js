@@ -1,9 +1,9 @@
 import sinon from 'sinon';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import fs from 'fs';
+import fs from 'node:fs';
 import yaml from 'js-yaml';
-import path from 'path';
+import path from 'node:path';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const schemaPath = new URL('../../../../node_modules/ajv/lib/refs/json-schema-draft-06.json', import.meta.url).pathname;
@@ -88,7 +88,7 @@ export class FakeCloud {
     if (this.ajv.validate(schemaFile, value)) {
       return;
     }
-    for (let error of this.ajv.errors) {
+    for (const error of this.ajv.errors) {
       if (error.params['additionalProperty']) {
         error.message += ': ' + JSON.stringify(error.params['additionalProperty']);
       }

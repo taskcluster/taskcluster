@@ -2,11 +2,11 @@ import helper from './helper.js';
 import ScopeResolver from '../src/scoperesolver.js';
 import exchanges from '../src/exchanges.js';
 import { scopeCompare } from 'taskcluster-lib-scopes';
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
-import { hrtime } from 'process';
+import { hrtime } from 'node:process';
 
 helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function (mock, skipping) {
   let scopeResolver;
@@ -18,7 +18,7 @@ helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function (mock
   setup('mock scoperesolver reloading', async function () {
     reloads = [];
 
-    let monitor = await helper.load('monitor');
+    const monitor = await helper.load('monitor');
     scopeResolver = new ScopeResolver({ monitor, disableCache: true });
 
     scopeResolver.reload = () => reloads.push('all');
@@ -390,7 +390,7 @@ suite(testing.suiteName(), () => {
           }
         }
         // Estimate iterations to measure and run them
-        let iterations = Math.ceil(TIMEING_TIME / mean);
+        const iterations = Math.ceil(TIMEING_TIME / mean);
         const start = hrtime.bigint();
         for (let i = 0; i < iterations; i++) {
           result = fn();
@@ -416,7 +416,7 @@ suite(testing.suiteName(), () => {
 
     const testResolver = (title, { roles, scopes, expected }) => {
       test(title, function() {
-        let resolver = time('setup', () => scopeResolver.buildResolver(roles));
+        const resolver = time('setup', () => scopeResolver.buildResolver(roles));
         time('execute', () => resolver(scopes));
         if (expected) {
           expected.sort(scopeCompare);

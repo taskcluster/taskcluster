@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
@@ -20,9 +20,9 @@ suite(testing.suiteName(), function() {
     helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 
-    let testAuth = (name, { config, requiredScopes, clientScopes, errorCode }) => {
+    const testAuth = (name, { config, requiredScopes, clientScopes, errorCode }) => {
       test(name, async () => {
-        let auth = new helper.AuthClient(config);
+        const auth = new helper.AuthClient(config);
         await auth.testAuthenticate({ requiredScopes, clientScopes }).then(() => {
           assert(!errorCode, 'Request was successful, but expected an error ' +
                              'with code: ' + errorCode);
@@ -107,9 +107,9 @@ suite(testing.suiteName(), function() {
     helper.withServers(mock, skipping);
     helper.resetTables(mock, skipping);
 
-    let testAuthGet = (name, { config, errorCode }) => {
+    const testAuthGet = (name, { config, errorCode }) => {
       test(name, async () => {
-        let auth = new helper.AuthClient(config);
+        const auth = new helper.AuthClient(config);
         await auth.testAuthenticateGet().then(() => {
           assert(!errorCode, 'Request was successful, but expected an error ' +
                              'with code: ' + errorCode);

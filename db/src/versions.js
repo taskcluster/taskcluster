@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import child_process from 'child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import child_process from 'node:child_process';
 import yaml from 'js-yaml';
 
 const dbDir = new URL('..', import.meta.url).pathname;
@@ -79,7 +79,7 @@ export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
     renames.push([fromTestFile, fromTestFile.replace(fromVersion, toVersion)]);
   }
 
-  for (let [s, d] of renames) {
+  for (const [s, d] of renames) {
     console.log(`${s} -> ${d}`);
     if (options.runGit) {
       await run(['git', 'mv', s, d]);

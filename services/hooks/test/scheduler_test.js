@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import assume from 'assume';
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
@@ -55,7 +55,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await new Promise(accept => { setTimeout(accept, 5); });
 
     // verify it polled
-    let newCallCount = callCount;
+    const newCallCount = callCount;
     assume(1).lessThan(newCallCount);
     assume(newCallCount).lessThan(7);
 
@@ -143,12 +143,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('creates a new task and updates nextTaskId, lastFire, nextScheduledDate', async () => {
-      let oldTaskId = hook.nextTaskId;
-      let oldScheduledDate = hook.nextScheduledDate;
+      const oldTaskId = hook.nextTaskId;
+      const oldScheduledDate = hook.nextScheduledDate;
 
       await scheduler.handleHook(hook);
 
-      let updatedHook = hookUtils.fromDbRows(await helper.db.fns.get_hook('tests', 'test'));
+      const updatedHook = hookUtils.fromDbRows(await helper.db.fns.get_hook('tests', 'test'));
 
       assume(helper.creator.fireCalls).deep.equals([{
         hookGroupId: 'tests',
@@ -165,8 +165,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('on error, sends an email and updates nextTaskId, lastFire, nextScheduledDate', async () => {
-      let oldTaskId = hook.nextTaskId;
-      let oldScheduledDate = hook.nextScheduledDate;
+      const oldTaskId = hook.nextTaskId;
+      const oldScheduledDate = hook.nextScheduledDate;
 
       helper.creator.shouldFail = {
         statusCode: 499,
@@ -179,7 +179,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assume(emailSent).is.equal(true);
 
-      let updatedHook = hookUtils.fromDbRows(await helper.db.fns.get_hook('tests', 'test'));
+      const updatedHook = hookUtils.fromDbRows(await helper.db.fns.get_hook('tests', 'test'));
 
       assume(helper.db.decrypt({ value: updatedHook.nextTaskId }).toString('utf8')).is.not.equal(oldTaskId);
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
@@ -207,8 +207,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     test('on 500 error, no email and nothing changes', async () => {
-      let oldTaskId = helper.db.decrypt({ value: hook.nextTaskId }).toString('utf8');
-      let oldScheduledDate = hook.nextScheduledDate;
+      const oldTaskId = helper.db.decrypt({ value: hook.nextTaskId }).toString('utf8');
+      const oldScheduledDate = hook.nextScheduledDate;
 
       helper.creator.shouldFail = {
         statusCode: 500,
@@ -222,7 +222,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // no email sent for a 500
       assume(emailSent).is.equal(false);
 
-      let updatedHook = hookUtils.fromDbRows(await helper.db.fns.get_hook('tests', 'test'));
+      const updatedHook = hookUtils.fromDbRows(await helper.db.fns.get_hook('tests', 'test'));
 
       // nothing got updated..
       assume(helper.db.decrypt({ value: updatedHook.nextTaskId }).toString('utf8')).is.equal(oldTaskId);
@@ -235,8 +235,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const notify = await helper.load('notify');
       assume(notify.fakeCalls.email.length).greaterThan(0);
-      let lastEmail = notify.fakeCalls.email[0].payload;
-      let email = scheduler.createEmail(hook, 'error explanation', 'error explanation');
+      const lastEmail = notify.fakeCalls.email[0].payload;
+      const email = scheduler.createEmail(hook, 'error explanation', 'error explanation');
       assume(lastEmail.address).is.equal(email.address);
       assume(lastEmail.subject).is.equal(email.subject);
       assume(lastEmail.content).exists();

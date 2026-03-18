@@ -1,6 +1,6 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import helper from './helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import { LEVELS } from '@taskcluster/lib-monitor';
 
@@ -28,8 +28,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   function statusTest(testName, jsonFile, statusCode, installationId = 5808, check = () => {}) {
     test(testName, async function() {
       const filename = './test/data/webhooks/' + jsonFile;
-      let request = JSON.parse(fs.readFileSync(filename));
-      let response = await helper.jsonHttpRequest(filename);
+      const request = JSON.parse(fs.readFileSync(filename));
+      const response = await helper.jsonHttpRequest(filename);
       assert.equal(response.statusCode, statusCode);
       response.connection?.destroy();
       if (statusCode < 300) {

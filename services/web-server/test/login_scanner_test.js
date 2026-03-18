@@ -1,5 +1,5 @@
 import taskcluster from '@taskcluster/client';
-import assert from 'assert';
+import assert from 'node:assert';
 import scan from '../src/login/scanner.js';
 import testing from '@taskcluster/lib-testing';
 import libUrls from 'taskcluster-lib-urls';

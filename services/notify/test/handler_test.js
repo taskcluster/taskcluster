@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
@@ -17,7 +17,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   const deadline = new Date();
   deadline.setMinutes(deadline.getMinutes() + 25);
 
-  let makeTask = function(routes) {
+  const makeTask = function(routes) {
     return {
       provisionerId: 'dummy-test-provisioner',
       workerType: 'dummy-test-worker-type',
@@ -41,7 +41,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     };
   };
 
-  let baseStatus = {
+  const baseStatus = {
     taskId: 'DKPZPsvvQEiw67Pb3rkdNg',
     provisionerId: 'test-provisioner',
     workerType: 'gecko-t-win7-32-gpu',

@@ -1,7 +1,7 @@
 import Debug from 'debug';
 import sinon from 'sinon';
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 
 class FakeGithub {
   constructor(installation_id) {
@@ -22,7 +22,7 @@ class FakeGithub {
     this._commits = {};
 
     const throwError = code => {
-      let err = new Error();
+      const err = new Error();
       err.status = code;
       err.code = code;
       throw err;
@@ -105,7 +105,7 @@ class FakeGithub {
         }
       },
       'users.getByUsername': async ({ username }) => {
-        let user = _.find(this._github_users, { username });
+        const user = _.find(this._github_users, { username });
         if (user) {
           return { data: user };
         } else {
@@ -199,7 +199,7 @@ class FakeGithub {
 
     const debug = Debug('FakeGithub');
     _.forEach(stubs, (implementation, name) => {
-      let atoms = name.split(/\./);
+      const atoms = name.split(/\./);
       let obj = this; // eslint-disable-line consistent-this
       while (atoms.length > 1) {
         const atom = atoms.shift();
@@ -325,7 +325,7 @@ class FakeGithubAuth {
 
   // For testing purposes, insert a new install
   createInstall(installation_id, owner, repos) {
-    let installation = new FakeGithub(installation_id);
+    const installation = new FakeGithub(installation_id);
     installation._installedOn = owner;
     installation.setRepositories(...repos);
     this.installations[installation_id] = installation;

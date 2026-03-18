@@ -65,8 +65,8 @@
       "style": {
         "useCollapsedElseIf": "off",
         "useBlockStatements": "off",
-        "useConst": "off",
-        "useNodejsImportProtocol": "off",
+        "useConst": "error",
+        "useNodejsImportProtocol": "error",
         "useTemplate": "off",
         "useExponentiationOperator": "off",
         "noDescendingSpecificity": "off"

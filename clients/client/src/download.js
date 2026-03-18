@@ -78,7 +78,7 @@ const getUrl = async ({ object, name, resp, streamFactory, retryCfg }) => {
 // "acceptable" hash algorithm.  Throws an exception on verification failure.
 const verifyHashes = (observedHashes, expectedHashes) => {
   let someValidAcceptableHash = false;
-  for (let algo of Object.keys(expectedHashes)) {
+  for (const algo of Object.keys(expectedHashes)) {
     const computed = observedHashes[algo];
     if (!computed) {
       // ignore unknown hash algorithms
@@ -120,7 +120,7 @@ export const downloadArtifact = async ({
 }) => {
   const retryCfg = makeRetryCfg({ retries, delayFactor, randomizationFactor, maxDelay });
 
-  let artifact = await (runId === undefined ? queue.latestArtifact(taskId, name) : queue.artifact(taskId, runId, name));
+  const artifact = await (runId === undefined ? queue.latestArtifact(taskId, name) : queue.artifact(taskId, runId, name));
 
   switch (artifact.storageType) {
     case "reference":

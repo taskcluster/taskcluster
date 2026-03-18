@@ -62,7 +62,7 @@ export class WorkerScanner {
     const fetch =
       async (size, offset) => await this.db.fns.get_non_stopped_workers_with_launch_config_scanner(
         null, null, null, this.providersFilter.cond, this.providersFilter.value, size, offset);
-    for await (let row of paginatedIterator({ fetch, size: 500 })) {
+    for await (const row of paginatedIterator({ fetch, size: 500 })) {
       const worker = Worker.fromDb(row);
       const provider = this.providers.get(worker.providerId);
       if (provider) {

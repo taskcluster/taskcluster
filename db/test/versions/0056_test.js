@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 

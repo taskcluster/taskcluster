@@ -1,5 +1,5 @@
 import { Backend } from './base.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import {
   S3Client,
   GetBucketLocationCommand,
@@ -15,7 +15,7 @@ import {
 } from '@aws-sdk/middleware-endpoint';
 import { reportError } from '@taskcluster/lib-api';
 import taskcluster from '@taskcluster/client';
-import path from 'path';
+import path from 'node:path';
 import qs from 'qs';
 import { parse as parseContentType } from 'content-type';
 
@@ -25,7 +25,7 @@ export class AwsBackend extends Backend {
   constructor(options) {
     super(options);
 
-    for (let prop of ['accessKeyId', 'secretAccessKey', 'bucket', 'signGetUrls']) {
+    for (const prop of ['accessKeyId', 'secretAccessKey', 'bucket', 'signGetUrls']) {
       assert(prop in options.config, `backend ${options.backendId} is missing ${prop}`);
     }
 

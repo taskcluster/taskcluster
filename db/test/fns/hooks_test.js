@@ -2,7 +2,7 @@ import _ from 'lodash';
 import tc from '@taskcluster/client';
 const { fromNow } = tc;
 import slug from 'slugid';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
@@ -474,7 +474,7 @@ suite(testing.suiteName(), function() {
         }
       }
 
-      let rows = await db.fns.get_hooks('foo', null, 10, 0);
+      const rows = await db.fns.get_hooks('foo', null, 10, 0);
       assert.equal(rows.length, 5);
       assert.equal(rows.filter(r => r.hook_group_id === 'foo').length, 5);
     });
@@ -490,7 +490,7 @@ suite(testing.suiteName(), function() {
         }
       }
 
-      let rows = await db.fns.get_hooks(null, now, 10, 0);
+      const rows = await db.fns.get_hooks(null, now, 10, 0);
       assert.equal(rows.length, 5);
       rows.forEach(r => {
         assert(r.next_scheduled_date < now);
@@ -509,7 +509,7 @@ suite(testing.suiteName(), function() {
         }
       }
 
-      let rows = await db.fns.get_hooks('foo', now, 10, 0);
+      const rows = await db.fns.get_hooks('foo', now, 10, 0);
       assert.equal(rows.length, 1);
       rows.forEach(r => {
         assert(r.next_scheduled_date < now);
@@ -538,7 +538,7 @@ suite(testing.suiteName(), function() {
       await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/2', next_scheduled_date: fromNow('1 day') });
       await create_hook(db, { hook_group_id: 'baz', hook_id: 'hook-id/3', next_scheduled_date: fromNow('1 day') });
 
-      let rows = await db.fns.get_hook_groups();
+      const rows = await db.fns.get_hook_groups();
       assert.equal(rows.length, 2);
       assert.equal(rows[0].hook_group_id, 'baz');
       assert.equal(rows[1].hook_group_id, 'foo');

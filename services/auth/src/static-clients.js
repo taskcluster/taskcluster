@@ -1,8 +1,8 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import taskcluster from '@taskcluster/client';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -81,7 +81,7 @@ export const syncStaticClients = async function(db, clients = []) {
   const done = []; // list of clientIds we've already synchronized
   const rows = await db.fns.get_clients('static/', null, null);
 
-  for (let row of rows) {
+  for (const row of rows) {
     // Find target we should modify the client match
     const target = clients.find(c => c.clientId === row.client_id);
     // If client doesn't exist we delete it
@@ -119,7 +119,7 @@ export const syncStaticClients = async function(db, clients = []) {
   const newClients = clients.filter(c => !done.includes(c.clientId));
 
   // Create new clients
-  for (let target of newClients) {
+  for (const target of newClients) {
     try {
       await db.fns.create_client(
         target.clientId,

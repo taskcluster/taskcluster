@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { writeRepoFile, REPO_ROOT, execCommand } from '../../utils/index.js';
 import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
@@ -71,14 +71,14 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
   }
 
   lines.push('    classOptions = {');
-  for (let opt of ['exchangePrefix']) {
+  for (const opt of ['exchangePrefix']) {
     if (reference[opt]) {
       lines.push(`        "${opt}": "${reference[opt]}",`);
     }
   }
   lines.push('    }');
 
-  for (let opt of ['serviceName', 'apiVersion']) {
+  for (const opt of ['serviceName', 'apiVersion']) {
     if (reference[opt]) {
       lines.push(`    ${opt} = ${repr(reference[opt])}`);
     }
@@ -86,7 +86,7 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
   lines.push('');
 
   const funcinfo = {};
-  for (let entry of reference.entries) {
+  for (const entry of reference.entries) {
     if (entry.type === 'function') {
       const funcRef = {
         args: entry.args,
@@ -150,7 +150,7 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
         }
 
         ds += '\n\nThis exchange takes the following keys:';
-        for (let key of entry.routingKey) {
+        for (const key of entry.routingKey) {
           ds += `\n\n * ${key.name}: ${key.summary}${key.required ? ' (required)' : ''}`;
         }
       }
@@ -158,13 +158,13 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
       lines.push(`    def ${entry.name}(self, *args, **kwargs):`);
       lines.push(cleanDocstring(ds, 8));
       lines.push(`        ref = {`);
-      for (let [refK, refV] of Object.entries(exRef).sort()) {
+      for (const [refK, refV] of Object.entries(exRef).sort()) {
         if (refK === 'routingKey') {
           lines.push('            \'routingKey\': [');
-          for (let routingKey of refV) {
+          for (const routingKey of refV) {
             lines.push('                {');
-            for (let routingK of ['constant', 'multipleWords', 'name']) {
-              let routingV = routingKey[routingK];
+            for (const routingK of ['constant', 'multipleWords', 'name']) {
+              const routingV = routingKey[routingK];
               if (routingV !== undefined) {
                 lines.push(`                    '${routingK}': ${repr(routingV)},`);
               }
@@ -183,9 +183,9 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
   }
 
   lines.push('    funcinfo = {');
-  for (let [funcname, ref] of Object.entries(funcinfo).sort()) {
+  for (const [funcname, ref] of Object.entries(funcinfo).sort()) {
     lines.push(`        "${funcname}": {`);
-    for (let [keyname, keyvalue] of Object.entries(ref).sort()) {
+    for (const [keyname, keyvalue] of Object.entries(ref).sort()) {
       lines.push(`            '${keyname}': ${repr(keyvalue)},`);
     }
     lines.push('        },');
@@ -226,7 +226,7 @@ export const tasks = [{
 
     const clientImporter = [];
 
-    for (let [className, { reference }] of Object.entries(apis)) {
+    for (const [className, { reference }] of Object.entries(apis)) {
       const moduleName = className.toLowerCase();
 
       utils.status({ message: `${className}` });

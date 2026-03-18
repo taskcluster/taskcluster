@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import { paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
@@ -74,10 +74,10 @@ export const taskUtils = {
     assert(db,
       'db must be set');
 
-    let [namespace, name] = splitNamespace(fullNamespace);
+    const [namespace, name] = splitNamespace(fullNamespace);
 
     // Find expiration time and parse as date object
-    let expires = new Date(input.expires);
+    const expires = new Date(input.expires);
 
     // Attempt to load indexed task
     let task = taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
@@ -146,7 +146,7 @@ export const taskUtils = {
     } = {},
   ) {
     const fetchResults = async (continuation) => {
-      let q = query;
+      const q = query;
 
       if (continuation) {
         q.continuationToken = continuation;
@@ -173,11 +173,11 @@ export const taskUtils = {
 
   async findTasksAtIndexes(db, { indexes }, { query } = {}) {
     assert(_.isArray(indexes), 'indexes must be an Array');
-    for (let index of indexes) {
+    for (const index of indexes) {
       assert(_.isString(index), 'index must be a String');
     }
     const fetchResults = async (continuation) => {
-      let q = query;
+      const q = query;
 
       if (continuation) {
         q.continuationToken = continuation;
@@ -246,7 +246,7 @@ export const namespaceUtils = {
     } = {},
   ) {
     const fetchResults = async (continuation) => {
-      let q = query;
+      const q = query;
 
       if (continuation) {
         q.continuationToken = continuation;
@@ -290,8 +290,8 @@ export const namespaceUtils = {
       namespace = namespace.split('.');
     }
     // Find parent and folder name
-    let name = namespace.pop() || '';
-    let parent = namespace.join('.');
+    const name = namespace.pop() || '';
+    const parent = namespace.join('.');
 
     // Load namespace, to check if it exists and if we should update expires
     const folder = taskUtils.fromDbRows(await db.fns.get_index_namespace(parent, name));

@@ -1,11 +1,11 @@
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-validate');
 import _ from 'lodash';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import walk from 'walk';
 import yaml from 'js-yaml';
-import assert from 'assert';
+import assert from 'node:assert';
 import libUrls from 'taskcluster-lib-urls';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
@@ -49,7 +49,7 @@ class SchemaSet {
     let walkErr;
     walk.walkSync(path.resolve(this.cfg.folder), { listeners: { file: (root, stats) => {
       try {
-        let name = path.relative(this.cfg.folder, path.join(root, stats.name));
+        const name = path.relative(this.cfg.folder, path.join(root, stats.name));
 
         let json = null;
         const data = fs.readFileSync(path.join(this.cfg.folder, name), 'utf-8');

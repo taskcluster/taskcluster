@@ -1,8 +1,8 @@
 import slugid from 'slugid';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import pg from 'pg';
 import { makePgUrl } from './util.js';
-import URL from 'url';
+import URL from 'node:url';
 
 export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
   prompts.push({
@@ -57,7 +57,7 @@ export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
 };
 
 export const postgresResources = async ({ userConfig, answer, configTmpl }) => {
-  let servicesNeedingUrls = [];
+  const servicesNeedingUrls = [];
   for (const [name, cfg] of Object.entries(configTmpl)) {
     // only examine services in configTmpl..
     if (!cfg.read_db_url) {
@@ -124,7 +124,7 @@ export const postgresResources = async ({ userConfig, answer, configTmpl }) => {
   await client.connect();
 
   try {
-    for (let serviceName of servicesNeedingUrls) {
+    for (const serviceName of servicesNeedingUrls) {
       const username = `${dbAdminUsername}_${serviceName}`;
       const password = `${slugid.v4()}${slugid.v4()}`;
       const url = makePgUrl({

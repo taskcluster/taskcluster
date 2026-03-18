@@ -6,11 +6,11 @@
  * GRAPHQL_ENDPOINT=http://localhost:3050/graphql yarn run create:fragment-matcher
  *
  */
-const fs = require('fs');
-const assert = require('assert');
-const http = require('http');
-const https = require('https');
-const { URL } = require('url');
+const fs = require('node:fs');
+const assert = require('node:assert');
+const http = require('node:http');
+const https = require('node:https');
+const { URL } = require('node:url');
 
 const endpoint =
   typeof window !== 'undefined'

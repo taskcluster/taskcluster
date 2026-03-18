@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
 import debugFactory from 'debug';
@@ -68,7 +68,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // user sent to /login/oauth/authorize with query arg
 
-      let [err, res] = await tryCatch(agent.get(url('/login/oauth/authorize' +
+      const [err, res] = await tryCatch(agent.get(url('/login/oauth/authorize' +
         '?response_type=token' +
         `&client_id=test-token` +
         `&redirect_uri=bad` +
@@ -89,7 +89,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // user sent to /login/oauth/authorize with query arg
 
-      let [err, res] = await tryCatch(agent.get(url('/login/oauth/authorize' +
+      const [err, res] = await tryCatch(agent.get(url('/login/oauth/authorize' +
         '?response_type=token' +
         `&client_id=qwerty` +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
@@ -112,7 +112,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // Required parameters are outlined in https://tools.ietf.org/html/rfc6749#section-4.1.1
       const requiredParameters = ['response_type', 'client_id'];
 
-      for (let parameter of requiredParameters) {
+      for (const parameter of requiredParameters) {
         const params = new URLSearchParams({
           response_type: 'token',
           client_id: registeredClientId,
@@ -228,7 +228,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // user sent to /login/oauth/authorize with query arg
 
-      let res = await agent.get(url('/login/oauth/authorize' +
+      const res = await agent.get(url('/login/oauth/authorize' +
         '?response_type=code' +
         `&client_id=${registeredClientId}` +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
@@ -238,7 +238,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         .redirects(0)
         .ok(res => res.status === 302);
 
-      let query = getQuery(res.header.location);
+      const query = getQuery(res.header.location);
 
       const formData = new URLSearchParams({
         transaction_id: 'bad-transaction-id',
@@ -313,7 +313,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         .redirects(0)
         .ok(res => res.status === 302);
 
-      let query = getQuery(res.header.location);
+      const query = getQuery(res.header.location);
 
       // user calls /login/oauth/token
 
@@ -337,7 +337,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // user sent to /login/oauth/authorize with query args
 
-      let res = await agent.get(url('/login/oauth/authorize' +
+      const res = await agent.get(url('/login/oauth/authorize' +
         '?response_type=code' +
         `&client_id=${registeredClientId}` +
         '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
@@ -346,7 +346,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         .redirects(0)
         .ok(res => res.status === 302);
 
-      let query = getQuery(res.header.location);
+      const query = getQuery(res.header.location);
 
       assert(query.get('code').length > 1);
     });

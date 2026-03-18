@@ -82,7 +82,7 @@ class Handler {
   }
 
   async onMessage(message) {
-    let { status } = message.payload;
+    const { status } = message.payload;
 
     // If task was canceled, we don't send a notification since this was a deliberate user action
     if (status.state === 'exception') {
@@ -92,17 +92,17 @@ class Handler {
     }
 
     // Load task definition
-    let taskId = status.taskId;
-    let task = await this.queue.task(taskId);
-    let href = libUrls.ui(this.rootUrl, `tasks/${taskId}`);
-    let groupHref = libUrls.ui(this.rootUrl, `tasks/groups/${task.taskGroupId}/tasks`);
-    let runCount = status.runs.length;
+    const taskId = status.taskId;
+    const task = await this.queue.task(taskId);
+    const href = libUrls.ui(this.rootUrl, `tasks/${taskId}`);
+    const groupHref = libUrls.ui(this.rootUrl, `tasks/groups/${task.taskGroupId}/tasks`);
+    const runCount = status.runs.length;
 
     await Promise.allSettled(message.routes.map(async entry => {
-      let route = entry.split('.');
+      const route = entry.split('.');
 
       // convert from on- syntax to state. e.g. on-exception -> exception
-      let decider = _.join(_.slice(route[route.length - 1], 3), '');
+      const decider = _.join(_.slice(route[route.length - 1], 3), '');
       if (!this.shouldNotifyOnDecider(decider, status.state)) {
         return;
       }
@@ -111,9 +111,9 @@ class Handler {
         case 'matrix-room': {
           const roomId = route.slice(2, route.length - 1).join('.');
           let body = `'${task.metadata.name}' resolved as '${status.state}': ${href}`;
-          let msgtype = _.get(task, 'extra.notify.matrixMsgtype') || 'm.notice';
+          const msgtype = _.get(task, 'extra.notify.matrixMsgtype') || 'm.notice';
           let formattedBody = undefined;
-          let format = _.get(task, 'extra.notify.matrixFormat');
+          const format = _.get(task, 'extra.notify.matrixFormat');
           if (_.has(task, 'extra.notify.matrixBody')) {
             body = this.renderMessage(task.extra.notify.matrixBody, { task, status, taskId, rootUrl: this.rootUrl });
           }
@@ -210,7 +210,7 @@ Task [\`${taskId}\`](${href}) in task-group [\`${task.taskGroupId}\`](${groupHre
           let subject = `Task ${status.state}: ${task.metadata.name} - ${taskId}`;
           let template = 'simple';
           if (_.has(task, 'extra.notify.email')) {
-            let extra = task.extra.notify.email;
+            const extra = task.extra.notify.email;
             content = extra.content ? this.renderMessage(extra.content, { task, status, taskId, rootUrl: this.rootUrl })
               : content;
             subject = extra.subject ? this.renderMessage(extra.subject, { task, status, taskId, rootUrl: this.rootUrl })

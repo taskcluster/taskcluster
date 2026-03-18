@@ -1,7 +1,7 @@
 import debugFactory from 'debug';
 const debug = debugFactory('test');
 import helper from './helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import sinon from 'sinon';
 import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
@@ -9,8 +9,8 @@ import taskcluster from '@taskcluster/client';
 import { LEVELS } from '@taskcluster/lib-monitor';
 import { CHECKLOGS_TEXT, CHECKRUN_TEXT, CHECK_TASK_GROUP_TEXT } from '../src/constants.js';
 import utils from '../src/utils.js';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const dataDir = new URL('./data', import.meta.url).pathname;
 const loadJson = filename => JSON.parse(fs.readFileSync(path.join(dataDir, filename), 'utf8'));
@@ -363,7 +363,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         },
       });
       assert(instGithub.issues.createComment.calledOnce);
-      let args = instGithub.issues.createComment.args;
+      const args = instGithub.issues.createComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].issue_number, 1);
@@ -553,8 +553,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       const [eventBase, eventAction] = eventType.split('.');
 
-      let body = {};
-      let details = {
+      const body = {};
+      const details = {
         'event.type': eventType,
         'event.base.repo.branch': branch,
         'event.head.repo.branch': branch,
@@ -644,7 +644,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
       assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
-      let args = github.inst(INST_ID).repos.createCommitComment.args;
+      const args = github.inst(INST_ID).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
@@ -673,9 +673,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await simulateJobMessage({ user: 'TaskclusterRobot' });
 
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-      let args = handlers.createTasks.firstCall.args[0];
-      let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      const args = handlers.createTasks.firstCall.args[0];
+      const taskGroupId = args.tasks[0].task.taskGroupId;
+      const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -704,9 +704,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
 
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-      let args = handlers.createTasks.firstCall.args[0];
-      let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      const args = handlers.createTasks.firstCall.args[0];
+      const taskGroupId = args.tasks[0].task.taskGroupId;
+      const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -733,7 +733,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid pull_request (user is not a collaborator, policy is public) creates a taskGroup', async function() {
-      let tcyaml = { ...validYamlV1Json };
+      const tcyaml = { ...validYamlV1Json };
       tcyaml['policy'] = { 'pullRequests': 'public' };
 
       github.inst(INST_ID).setTaskclusterYml({
@@ -752,11 +752,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
 
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-      let args = handlers.createTasks.firstCall.args[0];
+      const args = handlers.createTasks.firstCall.args[0];
       assert.ok(args.scopes.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'));
 
-      let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      const taskGroupId = args.tasks[0].task.taskGroupId;
+      const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -764,7 +764,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     });
 
     test('valid pull_request (user is not a collaborator, policy is public_restricted) creates a taskGroup', async function() {
-      let tcyaml = { ...validYamlV1Json };
+      const tcyaml = { ...validYamlV1Json };
       tcyaml['policy'] = { 'pullRequests': 'public_restricted' };
 
       github.inst(INST_ID).setTaskclusterYml({
@@ -783,11 +783,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
 
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-      let args = handlers.createTasks.firstCall.args[0];
+      const args = handlers.createTasks.firstCall.args[0];
       assert.ok(args.scopes.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request-untrusted'));
 
-      let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      const taskGroupId = args.tasks[0].task.taskGroupId;
+      const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -804,9 +804,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await simulateJobMessage({ user: 'TaskclusterCollaborator', eventType: 'push' });
 
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-      let args = handlers.createTasks.firstCall.args[0];
-      let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      const args = handlers.createTasks.firstCall.args[0];
+      const taskGroupId = args.tasks[0].task.taskGroupId;
+      const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -828,9 +828,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       );
 
       assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-      let args = handlers.createTasks.firstCall.args[0];
-      let taskGroupId = args.tasks[0].task.taskGroupId;
-      let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+      const args = handlers.createTasks.firstCall.args[0];
+      const taskGroupId = args.tasks[0].task.taskGroupId;
+      const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
       assert.equal(build.organization, 'TaskclusterRobot');
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
@@ -848,7 +848,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
       assert(github.inst(INST_ID).repos.createCommitStatus.callCount === 0, 'Status was unexpectedly updated!');
       assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
-      let args = github.inst(INST_ID).repos.createCommitComment.args;
+      const args = github.inst(INST_ID).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
@@ -866,7 +866,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
       assert(github.inst(INST_ID).repos.createCommitStatus.callCount === 0, 'Status was unexpectedly updated!');
       assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
-      let args = github.inst(INST_ID).repos.createCommitComment.args;
+      const args = github.inst(INST_ID).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
@@ -884,7 +884,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await simulateJobMessage({ user: 'goodBuddy' });
 
       assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
-      let args = github.inst(INST_ID).repos.createCommitComment.args;
+      const args = github.inst(INST_ID).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
@@ -973,9 +973,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         await simulateIssueCommentMessage({ user: 'lotas' });
 
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-        let args = handlers.createTasks.firstCall.args[0];
-        let taskGroupId = args.tasks[0].task.taskGroupId;
-        let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+        const args = handlers.createTasks.firstCall.args[0];
+        const taskGroupId = args.tasks[0].task.taskGroupId;
+        const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
         assert.equal(build.organization, 'taskcluster');
         assert.equal(build.repository, 'tc-dev-integration-test');
         assert.equal(build.sha, COMMIT_SHA);
@@ -1004,7 +1004,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
         assert(handlers.createTasks.notCalled);
         assert(instGithub.issues.createComment.calledOnce);
-        let args = instGithub.issues.createComment.args;
+        const args = instGithub.issues.createComment.args;
         assert.equal(args[0][0].owner, 'taskcluster');
         assert.equal(args[0][0].repo, 'tc-dev-integration-test');
         assert.equal(args[0][0].issue_number, 15);
@@ -1022,7 +1022,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
         assert(handlers.createTasks.notCalled);
         assert(instGithub.issues.createComment.calledOnce);
-        let args = instGithub.issues.createComment.args;
+        const args = instGithub.issues.createComment.args;
         assert.equal(args[0][0].owner, 'taskcluster');
         assert.equal(args[0][0].repo, 'tc-dev-integration-test');
         assert.equal(args[0][0].issue_number, 15);
@@ -1048,9 +1048,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         await simulateJobMessage({ user: 'goodBuddy', branch: 'development', head: 'development', base: 'development' });
 
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-        let args = handlers.createTasks.firstCall.args[0];
-        let taskGroupId = args.tasks[0].task.taskGroupId;
-        let [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
+        const args = handlers.createTasks.firstCall.args[0];
+        const taskGroupId = args.tasks[0].task.taskGroupId;
+        const [build] = await helper.db.fns.get_github_build_pr(taskGroupId);
         assert.equal(build.organization, 'TaskclusterRobot');
         assert.equal(build.repository, 'hooks-testing');
         assert.equal(build.sha, 'development');
@@ -1080,8 +1080,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         });
         await simulateJobMessage({ user: 'TaskclusterRobot' });
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-        let args = handlers.createTasks.secondCall.args[0];
-        let taskGroupId = args.tasks[0].task.taskGroupId;
+        const args = handlers.createTasks.secondCall.args[0];
+        const taskGroupId = args.tasks[0].task.taskGroupId;
 
         assert(handlers.cancelPreviousTaskGroups.calledOnce);
         const cancelCallArgs = handlers.cancelPreviousTaskGroups.firstCall.args[0];
@@ -1125,8 +1125,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
 
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-        let args = handlers.createTasks.firstCall.args[0];
-        let taskGroupId = args.tasks[0].task.taskGroupId;
+        const args = handlers.createTasks.firstCall.args[0];
+        const taskGroupId = args.tasks[0].task.taskGroupId;
 
         assert(handlers.cancelPreviousTaskGroups.calledOnce);
 
@@ -1138,8 +1138,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
         await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.synchronize', pullNumber: 1001 });
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
-        let args2 = handlers.createTasks.secondCall.args[0];
-        let taskGroupId2 = args2.tasks[0].task.taskGroupId;
+        const args2 = handlers.createTasks.secondCall.args[0];
+        const taskGroupId2 = args2.tasks[0].task.taskGroupId;
 
         assert(handlers.cancelPreviousTaskGroups.calledTwice);
         const cancelCallArgs2 = handlers.cancelPreviousTaskGroups.secondCall.args[0];
@@ -1182,7 +1182,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
             assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
           } else {
             assert(github.inst(INST_ID).issues.createComment.calledOnce);
-            let args = github.inst(INST_ID).issues.createComment.args;
+            const args = github.inst(INST_ID).issues.createComment.args;
             assert.equal(args[0][0].owner, 'TaskclusterRobot');
             assert.equal(args[0][0].repo, 'hooks-testing');
             assert.equal(args[0][0].issue_number, '36');
@@ -1320,18 +1320,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     async function assertStatusUpdate(state) {
       assert(github.inst(9988).repos.createCommitStatus.calledOnce, 'createCommitStatus was not called');
-      let args = github.inst(9988).repos.createCommitStatus.firstCall.args[0];
+      const args = github.inst(9988).repos.createCommitStatus.firstCall.args[0];
       assert.equal(args.owner, 'TaskclusterRobot');
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.sha, COMMIT_SHA);
       assert.equal(args.state, state);
       assert(args.target_url.startsWith(URL_PREFIX));
-      let taskGroupId = args.target_url.replace(URL_PREFIX, '').trim();
+      const taskGroupId = args.target_url.replace(URL_PREFIX, '').trim();
       assert.equal(taskGroupId, TASKGROUPID);
     }
 
     async function assertBuildState(state) {
-      let [build] = await helper.db.fns.get_github_build_pr(TASKGROUPID);
+      const [build] = await helper.db.fns.get_github_build_pr(TASKGROUPID);
       assert.equal(build.state, state);
     }
 
@@ -1468,7 +1468,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     async function assertChecksUpdate(state) {
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
-      let args = github.inst(9988).checks.update.firstCall.args[0];
+      const args = github.inst(9988).checks.update.firstCall.args[0];
       assert.equal(args.owner, 'TaskclusterRobot');
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.check_run_id, '22222');
@@ -1485,7 +1485,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           assert.equal(args.sha, COMMIT_SHA);
           debug('Created task group: ' + args.target_url);
           assert(args.target_url.startsWith(URL_PREFIX));
-          let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+          const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
           assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
         }
@@ -1563,7 +1563,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       // For intermittent tasks with no retries left, we expect 'failure' conclusion
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
-      let args = github.inst(9988).checks.update.firstCall.args[0];
+      const args = github.inst(9988).checks.update.firstCall.args[0];
       assert.equal(args.owner, 'TaskclusterRobot');
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.check_run_id, '22222');
@@ -1623,7 +1623,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
-      let [args] = github.inst(9988).checks.update.firstCall.args;
+      const [args] = github.inst(9988).checks.update.firstCall.args;
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
@@ -1656,7 +1656,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
-      let [args] = github.inst(9988).checks.update.firstCall.args;
+      const [args] = github.inst(9988).checks.update.firstCall.args;
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
@@ -1689,7 +1689,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
-      let [args] = github.inst(9988).checks.update.firstCall.args;
+      const [args] = github.inst(9988).checks.update.firstCall.args;
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
@@ -1729,7 +1729,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
       assert(github.inst(9988).repos.createCommitComment.notCalled, 'createCommitComment should not be called'); // not expecting 404 to be reported
-      let [args] = github.inst(9988).checks.update.firstCall.args;
+      const [args] = github.inst(9988).checks.update.firstCall.args;
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
@@ -1784,7 +1784,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
-      let [args] = github.inst(9988).checks.update.firstCall.args;
+      const [args] = github.inst(9988).checks.update.firstCall.args;
       assert.deepStrictEqual(args.output.annotations, JSON.parse(CUSTOM_CHECKRUN_ANNOTATIONS));
       sinon.restore();
     });
@@ -1809,7 +1809,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         reasonResolved: 'completed',
         state: 'completed',
       });
-      let args = github.inst(9988).repos.createCommitComment.args;
+      const args = github.inst(9988).repos.createCommitComment.args;
       assert.equal(args[0][0].owner, 'TaskclusterRobot');
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
@@ -1876,7 +1876,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
-      let [args] = github.inst(9988).checks.update.firstCall.args;
+      const [args] = github.inst(9988).checks.update.firstCall.args;
       /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
@@ -1909,7 +1909,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     async function assertCheckRunStatus(status, conclusion) {
       assert(github.inst(9988).checks.create.called === false, 'checks.create should not be called');
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
-      let args = github.inst(9988).checks.update.firstCall.args[0];
+      const args = github.inst(9988).checks.update.firstCall.args[0];
       assert.equal(args.owner, 'TaskclusterRobot');
       assert.equal(args.repo, 'hooks-testing');
       assert.equal(args.check_run_id, '22222');
@@ -1921,7 +1921,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(github.inst(9988).checks.update.called === false, 'checks.update should not be called');
       assert(github.inst(9988).checks.create.called, 'checks.create was not called');
 
-      let args = github.inst(9988).checks.create.firstCall.args[0];
+      const args = github.inst(9988).checks.create.firstCall.args[0];
       assert.equal(args.owner, 'TaskclusterRobot');
       assert.equal(args.repo, 'hooks-testing');
     }
@@ -2007,7 +2007,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           assert.equal(args.sha, COMMIT_SHA);
           debug('Created task group: ' + args.target_url);
           assert(args.target_url.startsWith(URL_PREFIX));
-          let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+          const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
           assert.equal(/Taskcluster-Test \((.*)\)/.exec(args.context)[1], 'push');
         }
@@ -2049,7 +2049,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           assert.equal(args.sha, COMMIT_SHA);
           debug('Created task group: ' + args.target_url);
           assert(args.target_url.startsWith(URL_PREFIX));
-          let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+          const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
           assert.equal(/Taskcluster \((.*)\)/.exec(args.context)[1], 'push');
         }
@@ -2102,7 +2102,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           assert.equal(args.sha, COMMIT_SHA);
           debug('Created task group: ' + args.target_url);
           assert(args.target_url.startsWith(URL_PREFIX));
-          let taskGroupId = args.target_url.substr(URL_PREFIX.length);
+          const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
           assert.equal(/Taskcluster-Test \((.*)\)/.exec(args.context)[1], 'push');
         }

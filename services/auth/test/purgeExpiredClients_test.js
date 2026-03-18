@@ -25,7 +25,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   };
 
   const assertClientPresent = async () => {
-    let client = await helper.apiClient.client(CLIENT_ID);
+    const client = await helper.apiClient.client(CLIENT_ID);
     assume(client.clientId).to.equal(CLIENT_ID);
   };
 

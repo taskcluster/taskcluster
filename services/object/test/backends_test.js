@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from './helper/index.js';
 import testing from '@taskcluster/lib-testing';
 import { Backends } from '../src/backends/index.js';

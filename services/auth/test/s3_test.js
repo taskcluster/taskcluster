@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 import {
   S3Client,
@@ -32,10 +32,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('awsS3Credentials read-write folder1/folder2/', async () => {
-    let id = slugid.v4();
-    let text = slugid.v4();
+    const id = slugid.v4();
+    const text = slugid.v4();
     debug('### auth.awsS3Credentials');
-    let result = await helper.apiClient.awsS3Credentials(
+    const result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
       'folder1/folder2/',
@@ -44,7 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       'Expected expires to be in the future');
 
     // Create aws credentials
-    let s3 = new S3Client({
+    const s3 = new S3Client({
       credentials: {
         ...result.credentials,
       },
@@ -59,7 +59,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     }));
 
     debug('### s3.getObject');
-    let res = await s3.send(new GetObjectCommand({
+    const res = await s3.send(new GetObjectCommand({
       Bucket: bucket,
       Key: 'folder1/folder2/' + id,
     }));
@@ -73,10 +73,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('awsS3Credentials read-write root', async () => {
-    let id = slugid.v4();
-    let text = slugid.v4();
+    const id = slugid.v4();
+    const text = slugid.v4();
     debug('### auth.awsS3Credentials');
-    let result = await helper.apiClient.awsS3Credentials(
+    const result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
       '',
@@ -85,7 +85,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       'Expected expires to be in the future');
 
     // Create aws credentials
-    let s3 = new S3Client({
+    const s3 = new S3Client({
       credentials: {
         ...result.credentials,
       },
@@ -100,7 +100,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     }));
 
     debug('### s3.getObject');
-    let res = await s3.send(new GetObjectCommand({
+    const res = await s3.send(new GetObjectCommand({
       Bucket: bucket,
       Key: id,
     }));
@@ -115,9 +115,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('awsS3Credentials w. folder1/ access denied for folder2/', async () => {
-    let id = slugid.v4();
+    const id = slugid.v4();
     debug('### auth.awsS3Credentials');
-    let result = await helper.apiClient.awsS3Credentials(
+    const result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
       'folder1/',
@@ -126,7 +126,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       'Expected expires to be in the future');
 
     // Create aws credentials
-    let s3 = new S3Client({
+    const s3 = new S3Client({
       credentials: {
         ...result.credentials,
       },
@@ -147,8 +147,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('awsS3Credentials read-only folder1/ + (403 on write)', async () => {
-    let id = slugid.v4();
-    let text = slugid.v4();
+    const id = slugid.v4();
+    const text = slugid.v4();
     debug('### auth.awsS3Credentials');
     let result = await helper.apiClient.awsS3Credentials(
       'read-write',
@@ -183,7 +183,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       followRegionRedirects: true,
     });
     debug('### s3.getObject');
-    let res = await s3.send(new GetObjectCommand({
+    const res = await s3.send(new GetObjectCommand({
       Bucket: bucket,
       Key: 'folder1/' + id,
     }));
@@ -203,17 +203,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('awsS3Credentials format=iam-role-compat', async () => {
-    let id = slugid.v4();
-    let text = slugid.v4();
+    const id = slugid.v4();
+    const text = slugid.v4();
     debug('### auth.awsS3Credentials w. format=iam-role-compat');
-    let result = await helper.apiClient.awsS3Credentials(
+    const result = await helper.apiClient.awsS3Credentials(
       'read-write',
       bucket,
       '', {
         format: 'iam-role-compat',
       });
 
-    let s3 = new S3Client({
+    const s3 = new S3Client({
       credentials: {
         accessKeyId: result.AccessKeyId,
         secretAccessKey: result.SecretAccessKey,

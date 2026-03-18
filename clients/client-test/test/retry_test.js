@@ -1,5 +1,5 @@
 import taskcluster from '@taskcluster/client';
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import { APIBuilder } from '@taskcluster/lib-api';
 import { App } from '@taskcluster/lib-app';
@@ -12,7 +12,7 @@ suite(testing.suiteName(), function() {
   let proxier;
 
   // Construct API
-  let builder = new APIBuilder({
+  const builder = new APIBuilder({
     title: 'Retry API',
     description: 'API that sometimes works by retrying things',
     serviceName: 'retrytest',
@@ -180,7 +180,7 @@ suite(testing.suiteName(), function() {
 
   test('Can succeed after 3 attempts (record stats)', async function() {
     getOccasionalInternalErrorCount = 0;
-    let server2 = new Server({
+    const server2 = new Server({
       credentials: {
         clientId: 'test-client',
         accessToken: 'test-token',
@@ -194,7 +194,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('Can set retries = 0', function() {
-    let server2 = new Server({
+    const server2 = new Server({
       credentials: {
         clientId: 'test-client',
         accessToken: 'test-token',
@@ -212,7 +212,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('Can set retries = 1', function() {
-    let server2 = new Server({
+    const server2 = new Server({
       credentials: {
         clientId: 'test-client',
         accessToken: 'test-token',

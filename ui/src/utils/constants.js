@@ -17,7 +17,7 @@ import FileMusicIcon from 'mdi-react/FileMusicIcon';
 import FileIcon from 'mdi-react/FileIcon';
 import ListStatusIcon from 'mdi-react/FormatListChecksIcon';
 import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
-import { join } from 'path';
+import { join } from 'node:path';
 
 // eslint-disable-next-line import/prefer-default-export
 export const ARTIFACTS_SHOW_MAX = 10;

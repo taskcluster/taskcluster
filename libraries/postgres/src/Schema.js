@@ -1,7 +1,7 @@
-import fs from 'fs';
-import { strict as assert } from 'assert';
+import fs from 'node:fs';
+import { strict as assert } from 'node:assert';
 import yaml from 'js-yaml';
-import path from 'path';
+import path from 'node:path';
 import Version from './Version.js';
 import Access from './Access.js';
 import Relations from './Relations.js';
@@ -33,7 +33,7 @@ export class Schema {
   static fromDbDirectory(directory) {
     const dentries = fs.readdirSync(path.join(directory, 'versions'));
     /** @type {Array<Version>} */
-    let versions = [];
+    const versions = [];
 
     dentries.forEach(dentry => {
       if (dentry.startsWith('.')) {
@@ -101,8 +101,8 @@ export class Schema {
     // verify that no method declarations incorrectly try to change fixed attributes
     // of those methods
     const methods = new Map();
-    for (let version of versions) {
-      for (let [name, method] of Object.entries(version.methods)) {
+    for (const version of versions) {
+      for (const [name, method] of Object.entries(version.methods)) {
         if (methods.has(name)) {
           const existing = methods.get(name);
           method.checkUpdateFrom(name, existing, version);

@@ -1,9 +1,9 @@
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import Docker from 'dockerode';
 import Observable from 'zen-observable';
-import { PassThrough, Transform } from 'stream';
+import { PassThrough, Transform } from 'node:stream';
 import taskcluster from '@taskcluster/client';
 import { REPO_ROOT } from './repo.js';
 import got from 'got';
@@ -169,7 +169,7 @@ export const dockerPull = async ({ baseDir, image, utils }) => {
     (resolve, reject) => docker.pull(image, (err, stream) => err ? reject(err) : resolve(stream)));
 
   await utils.waitFor(new Observable(observer => {
-    let downloading = {}, extracting = {}, totals = {};
+    const downloading = {}, extracting = {}, totals = {};
     docker.modem.followProgress(dockerStream,
       err => err ? observer.error(err) : observer.complete(),
       update => {

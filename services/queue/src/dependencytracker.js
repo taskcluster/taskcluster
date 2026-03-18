@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { Task } from './data.js';
 
 /**
@@ -44,7 +44,7 @@ class DependencyTracker {
 
     // Load all task dependencies to see if they have been resolved.
     // We will also check for missing and expiring dependencies.
-    let expiring = []; // Dependencies that expire before deadline
+    const expiring = []; // Dependencies that expire before deadline
     let anySatisfied = false; // Track if any dependencies were satisfied
 
     // Load all dependencies (tasks can have aup to max-task-dependencies)
@@ -61,7 +61,7 @@ class DependencyTracker {
         }
 
         // Check if requiredTask is satisfied
-        let state = requiredTask.state();
+        const state = requiredTask.state();
         if (state === 'completed' || task.requires === 'all-resolved' &&
             (state === 'exception' || state === 'failed')) {
           await this.db.fns.satisfy_task_dependency(task.taskId, requiredTask.taskId);
@@ -176,7 +176,7 @@ class DependencyTracker {
     while (true) {
       const deps = await this.db.fns.get_dependent_tasks(taskId, null, tasksAfter, 100, null);
 
-      for (let dep of deps) {
+      for (const dep of deps) {
         tasksAfter = dep.dependent_task_id;
 
         if (resolution !== 'completed') {
@@ -270,7 +270,7 @@ class DependencyTracker {
     }
 
     // Construct status structure
-    let status = task.status();
+    const status = task.status();
 
     // Put message into pending queue, and publish message to pulse,
     // if the initial run is pending

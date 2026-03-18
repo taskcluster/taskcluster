@@ -1,5 +1,5 @@
-import path from 'path';
-import fs from 'fs/promises';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 
 const directoryExists = async (directory) => {
   try {
@@ -51,7 +51,7 @@ const loadSchemas = async (serviceDirectory, schemas) => {
     const filename = queue.shift();
     if ((await fs.lstat(filename)).isDirectory()) {
       const dentries = await fs.readdir(filename);
-      for (let dentry of dentries) {
+      for (const dentry of dentries) {
         queue.push(path.join(filename, dentry));
       }
     } else {

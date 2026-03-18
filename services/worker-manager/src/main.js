@@ -17,9 +17,9 @@ import { WorkerScanner } from './worker-scanner.js';
 import { WorkerPool, WorkerPoolError, Worker, WorkerPoolLaunchConfig } from './data.js';
 import { LaunchConfigSelector } from './launch-config-selector.js';
 import './monitor.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
-let load = loader({
+const load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({ profile }) => config({
@@ -55,7 +55,7 @@ let load = loader({
     setup: ({ cfg, monitor, db }, ownName) => {
       return monitor.childMonitor('expireWorkerPools').oneShot(ownName, async () => {
         const expired = await WorkerPool.expire({ db, monitor });
-        for (let workerPoolId of expired) {
+        for (const workerPoolId of expired) {
           monitor.info(`deleted expired worker pool ${workerPoolId}`);
         }
       });
@@ -67,7 +67,7 @@ let load = loader({
     setup: ({ cfg, monitor, db }, ownName) => {
       return monitor.childMonitor('expireLaunchConfigs').oneShot(ownName, async () => {
         const expired = await WorkerPoolLaunchConfig.expire({ db, monitor });
-        for (let launchConfigId of expired) {
+        for (const launchConfigId of expired) {
           monitor.info(`deleted expired worker pool launch config ${launchConfigId}`);
         }
       });

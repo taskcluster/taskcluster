@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import TopoSort from 'topo-sort';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-loader');
@@ -7,7 +7,7 @@ const debug = debugFactory('@taskcluster/lib-loader');
  * Validate component definition
  */
 function validateComponent(def, name) {
-  let e = 'Invalid component definition: ' + name;
+  const e = 'Invalid component definition: ' + name;
   // Check that it's an object
   if (typeof def !== 'object' && def !== null && def !== undefined) {
     throw new Error(e + ' must be an object, null or undefined');
@@ -48,7 +48,7 @@ function loader(componentDirectory, virtualComponents = {}) {
   // Check for undefined components
   Object.entries(componentDirectory).forEach(([name, def]) => {
     validateComponent(def, name);
-    for (let dep of def.requires || []) {
+    for (const dep of def.requires || []) {
       if (!(dep in componentDirectory) && !(dep in virtualComponents)) {
         throw new Error('Cannot require undefined component: ' + dep);
       }
@@ -56,16 +56,16 @@ function loader(componentDirectory, virtualComponents = {}) {
   });
 
   // Do topological sort to check for cycles
-  let tsort = new TopoSort();
+  const tsort = new TopoSort();
   Object.entries(componentDirectory).forEach(([name, def]) => {
     tsort.add(name, def.requires || []);
   });
-  for (let name of Object.keys(virtualComponents)) {
+  for (const name of Object.keys(virtualComponents)) {
     tsort.add(name, []);
   }
   tsort.sort();
 
-  let load = function(target, options = {}) {
+  const load = function(target, options = {}) {
     options = Object.assign({}, options);
 
     if (typeof target !== 'string') {
@@ -89,19 +89,19 @@ function loader(componentDirectory, virtualComponents = {}) {
     }
 
     // Keep state of loaded components, make the virtual ones immediately loaded
-    let loaded = {};
+    const loaded = {};
     Object.entries(options).forEach(([key, comp]) => {
       loaded[key] = Promise.resolve(comp);
     });
     // Load a component
     function recursiveLoad(target) {
       if (!loaded[target]) {
-        let def = componentDirectory[target];
+        const def = componentDirectory[target];
         // Initialize component, this won't cause an infinite loop because
         // we've already check that the componentDirectory is a DAG
-        let requires = def.requires || [];
+        const requires = def.requires || [];
         return loaded[target] = Promise.all(requires.map(recursiveLoad)).then(deps => {
-          let ctx = {};
+          const ctx = {};
           for (let i = 0; i < deps.length; i++) {
             ctx[def.requires[i]] = deps[i];
           }

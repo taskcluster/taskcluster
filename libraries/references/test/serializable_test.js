@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import References from '../src/index.js';
 import { makeSerializable } from '../src/serializable.js';
 import { getCommonSchemas } from '../src/common-schemas.js';
@@ -9,7 +9,7 @@ suite(testing.suiteName(), function() {
   const rootUrl = libUrls.testRootUrl();
 
   const assert_file = (serializable, filename, content) => {
-    for (let file of serializable) {
+    for (const file of serializable) {
       if (file.filename !== filename) {
         continue;
       }

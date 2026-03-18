@@ -1,8 +1,8 @@
 import slug from 'slugid';
 import tc from '@taskcluster/client';
 const { fromNow } = tc;
-import crypto from 'crypto';
-import { strict as assert } from 'assert';
+import crypto from 'node:crypto';
+import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
@@ -21,7 +21,7 @@ suite(testing.suiteName(), function() {
 
   suite(`${testing.suiteName()} - github_access_tokens`, function() {
     helper.dbTest('add github access token that already exists', async function(db) {
-      let n1 = {
+      const n1 = {
         userId: "benjaminrabbit",
         encryptedAccessToken: db.encrypt({ value: Buffer.from("carrots", 'utf8') }),
       };
@@ -33,8 +33,8 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('update existing github access token', async function(db) {
-      for (let accessToken of ["carrots", "sprouts"]) {
-        let n1 = {
+      for (const accessToken of ["carrots", "sprouts"]) {
+        const n1 = {
           userId: "benjaminrabbit",
           encryptedAccessToken: db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),
         };
@@ -61,7 +61,7 @@ suite(testing.suiteName(), function() {
   suite(`${testing.suiteName()} - sessions`, function() {
     helper.dbTest('add session data', async function(db) {
       const sessionId = 'sEssI0n#Id';
-      let sessionData1 = {
+      const sessionData1 = {
         hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
@@ -84,7 +84,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('add session data can overwrite', async function(db) {
       const sessionId = 'sEssI0n#Id';
-      let sessionData1 = {
+      const sessionData1 = {
         hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
@@ -92,7 +92,7 @@ suite(testing.suiteName(), function() {
         },
         expires: new Date(),
       };
-      let sessionData2 = {
+      const sessionData2 = {
         ...sessionData1,
         data: {
           foo: "bar",
@@ -119,7 +119,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get session data does not throw when not found', async function(db) {
       const sessionId = 'sEssI0n#Id';
-      let sessionData1 = {
+      const sessionData1 = {
         hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
@@ -133,7 +133,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('remove session data', async function(db) {
       const sessionId = 'sEssI0n#Id';
-      let sessionData1 = {
+      const sessionData1 = {
         hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
@@ -160,7 +160,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('touch a session', async function(db) {
       const sessionId = 'sEssI0n#Id';
-      let sessionData1 = {
+      const sessionData1 = {
         hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {

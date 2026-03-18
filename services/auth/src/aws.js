@@ -64,9 +64,9 @@ export const awsBuilder = builder => builder.declare({
     'iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials).',
   ].join('\n'),
 }, async function(req, res) {
-  let level = req.params.level;
-  let bucket = req.params.bucket;
-  let prefix = req.params.prefix;
+  const level = req.params.level;
+  const bucket = req.params.bucket;
+  const prefix = req.params.prefix;
 
   // Validate that a proper value was given for level
   if (level !== 'read-write' && level !== 'read-only') {
@@ -107,7 +107,7 @@ export const awsBuilder = builder => builder.declare({
   }
 
   // Decide actions to be allowed on S3 objects
-  let objectActions = [
+  const objectActions = [
     's3:GetObject',
   ];
   if (level === 'read-write') {
@@ -118,7 +118,7 @@ export const awsBuilder = builder => builder.declare({
   }
 
   // For details on the policy see: http://amzn.to/1ETStaL
-  let iamReq = await sts.send(new GetFederationTokenCommand({
+  const iamReq = await sts.send(new GetFederationTokenCommand({
     // this must correspond to the federated-user/.. ARN in the policy
     Name: 'TemporaryS3ReadWriteCredentials',
     Policy: JSON.stringify({

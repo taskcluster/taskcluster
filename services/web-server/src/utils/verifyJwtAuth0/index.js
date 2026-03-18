@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
 import jwksClient from './jwksClient.js';
 

@@ -11,9 +11,9 @@ import {
   UNDEFINED_FUNCTION,
 } from '../src/index.js';
 
-import path from 'path';
-import { strict as assert } from 'assert';
-import fs from 'fs';
+import path from 'node:path';
+import { strict as assert } from 'node:assert';
+import fs from 'node:fs';
 
 const monitor = helper.monitor;
 const __dirnname = new URL('.', import.meta.url).pathname;

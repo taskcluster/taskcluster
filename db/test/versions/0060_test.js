@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import helper from '../helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import { UNDEFINED_COLUMN } from '@taskcluster/lib-postgres';
 

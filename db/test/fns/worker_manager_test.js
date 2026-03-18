@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import slug from 'slugid';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import tc from '@taskcluster/client';
@@ -533,7 +533,7 @@ suite(testing.suiteName(), function () {
         });
       }
 
-      let rows = await db.fns.get_worker_manager_workers2(null, null, null, null, null, null, null);
+      const rows = await db.fns.get_worker_manager_workers2(null, null, null, null, null, null, null);
       assert.equal(rows.length, 2);
 
       for (let i = 0; i < rows.length; i++) {
@@ -559,7 +559,7 @@ suite(testing.suiteName(), function () {
       let i = 0;
       // we are randomly ordering the ids to make sure rows are actually coming back ordered accordingly
       const randomOrderIds = [4, 6, 5, 3, 2, 7, 0, 1];
-      for (let state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
+      for (const state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
         await create_worker(db, {
           worker_pool_id: `wp/${randomOrderIds[i]}`,
           worker_group: `group${randomOrderIds[i]}`,
@@ -579,7 +579,7 @@ suite(testing.suiteName(), function () {
 
       i = 0;
       const nonStoppedIds = [0, 2, 4, 5, 6, 7];
-      for (let row of rows) {
+      for (const row of rows) {
         assert.equal(row.worker_pool_id, `wp/${nonStoppedIds[i]}`);
         assert.equal(row.worker_group, `group${nonStoppedIds[i]}`);
         assert.equal(row.worker_id, `id${nonStoppedIds[i]}`);
@@ -603,7 +603,7 @@ suite(testing.suiteName(), function () {
       let i = 0;
       // we are randomly ordering the ids to make sure rows are actually coming back ordered accordingly
       const randomOrderIds = [4, 6, 5, 3, 2, 7, 0, 1];
-      for (let state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
+      for (const state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
         await create_worker(db, {
           worker_pool_id: `wp/${randomOrderIds[i]}`,
           worker_group: `group${randomOrderIds[i]}`,
@@ -641,7 +641,7 @@ suite(testing.suiteName(), function () {
 
       i = 0;
       const nonStoppedIds = [0, 2, 4, 5, 6, 7];
-      for (let row of rows) {
+      for (const row of rows) {
         assert.equal(row.worker_pool_id, `wp/${nonStoppedIds[i]}`);
         assert.equal(row.worker_group, `group${nonStoppedIds[i]}`);
         assert.equal(row.worker_id, `id${nonStoppedIds[i]}`);
@@ -666,7 +666,7 @@ suite(testing.suiteName(), function () {
       let i = 0;
       // we are randomly ordering the ids to make sure rows are actually coming back ordered accordingly
       const randomOrderIds = [4, 6, 5, 3, 2, 7, 0, 1];
-      for (let state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
+      for (const state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
         await create_worker(db, {
           worker_pool_id: `wp/${randomOrderIds[i]}`,
           worker_group: `group${randomOrderIds[i]}`,
@@ -706,7 +706,7 @@ suite(testing.suiteName(), function () {
 
       i = 0;
       const nonStoppedIds = [0, 2, 4, 5, 6, 7];
-      for (let row of rows) {
+      for (const row of rows) {
         assert.equal(row.worker_pool_id, `wp/${nonStoppedIds[i]}`);
         assert.equal(row.worker_group, `group${nonStoppedIds[i]}`);
         assert.equal(row.worker_id, `id${nonStoppedIds[i]}`);

@@ -1,5 +1,5 @@
-import path from 'path';
-import os from 'os';
+import path from 'node:path';
+import os from 'node:os';
 import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
 import taskcluster from '@taskcluster/client';
@@ -70,7 +70,7 @@ class Base {
     }
 
     // print messges from any of the targets
-    for (let t of target) {
+    for (const t of target) {
       if (context[t]) {
         console.log(context[t]);
       }
@@ -162,7 +162,7 @@ class Publish extends Base {
       const secrets = new taskcluster.Secrets({ rootUrl: process.env.TASKCLUSTER_PROXY_URL });
       const { secret } = await secrets.get(secretName);
 
-      for (let [name, value] of Object.entries(secret)) {
+      for (const [name, value] of Object.entries(secret)) {
         console.log(`..found value for ${name}`);
         process.env[name] = value;
       }

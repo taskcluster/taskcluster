@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import Debug from 'debug';
 import pg from 'pg';
 const { Pool } = pg;
@@ -130,7 +130,7 @@ helper.withDbForVersion = function() {
       await pool.end();
     }
     pool = null;
-    for (let db of Object.values(dbs)) {
+    for (const db of Object.values(dbs)) {
       await db.close();
     }
     dbs = {};

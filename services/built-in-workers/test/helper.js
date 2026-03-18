@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import { default as _load } from '../src/main.js';
 import { stickyLoader } from '@taskcluster/lib-testing';

@@ -10,11 +10,11 @@ const nextDate = function(schedule, reference) {
 
   let next;
   schedule.forEach((pattern) => {
-    let interval = parser.parse(pattern, {
+    const interval = parser.parse(pattern, {
       currentDate: reference,
       utc: true,
     });
-    let n = new Date(interval.next().toString());
+    const n = new Date(interval.next().toString());
     if (typeof next === 'undefined' || n < next) {
       next = n;
     }

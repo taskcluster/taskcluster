@@ -1,9 +1,9 @@
 import { Netmask } from 'netmask';
 import requestIp from 'request-ip';
 import request from 'superagent';
-import assert from 'assert';
-import fs from 'fs';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 // Static URL from which ip-ranges from AWS services can be fetched
@@ -72,7 +72,7 @@ class EC2RegionResolver {
    * Load IP ranges from the local file in this directory
    */
   async _loadIpRanges() {
-    let body = JSON.parse(fs.readFileSync(LOCAL_IP_RANGES));
+    const body = JSON.parse(fs.readFileSync(LOCAL_IP_RANGES));
     this._setIpRanges(body);
   }
 
@@ -81,7 +81,7 @@ class EC2RegionResolver {
    */
   async _fetchIpRanges() {
     // Get IP ranges from AWS
-    let { body } = await request.get(AWS_IP_RANGES_URL);
+    const { body } = await request.get(AWS_IP_RANGES_URL);
     this._setIpRanges(body);
   }
 
@@ -101,12 +101,12 @@ class EC2RegionResolver {
 
   /** Get region that request originates from, or null if none */
   getRegion(req) {
-    let ip = requestIp.getClientIp(req);
+    const ip = requestIp.getClientIp(req);
     // discard ipv6 addresses
     if (!/^(:?\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
       return null;
     }
-    for (let { range, region } of this.ipRanges) {
+    for (const { range, region } of this.ipRanges) {
       if (range.contains(ip)) {
         return region;
       }

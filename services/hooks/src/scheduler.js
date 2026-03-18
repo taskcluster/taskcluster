@@ -1,5 +1,5 @@
-import assert from 'assert';
-import events from 'events';
+import assert from 'node:assert';
+import events from 'node:events';
 import debugFactory from 'debug';
 const debug = debugFactory('hooks:scheduler');
 import taskcluster from '@taskcluster/client';
@@ -116,7 +116,7 @@ class Scheduler extends events.EventEmitter {
       }
 
       try {
-        let oldTaskId = hook.nextTaskId;
+        const oldTaskId = hook.nextTaskId;
         // only modify if another scheduler isn't racing with us
         if (hook.nextTaskId === oldTaskId) {
           hook = hookUtils.fromDbRows(
@@ -157,7 +157,7 @@ class Scheduler extends events.EventEmitter {
         errJson = `(error formatting JSON: ${e})`;
       }
 
-      let email = this.createEmail(hook, err, errJson);
+      const email = this.createEmail(hook, err, errJson);
       await this.notify.email(email);
     } catch (err) {
       if (err.code === 'DenylistedAddress') {

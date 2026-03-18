@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils/index.js';
 
 export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
@@ -50,7 +50,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'COPY version.json /app/version.json',
         'ENTRYPOINT ["/websocktunnel"]',
       ].join('\n'));
-      let command = [
+      const command = [
         'docker', 'build',
         '--no-cache',
         '--progress', 'plain',

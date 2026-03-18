@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import assume from 'assume';
 import debugFactory from 'debug';
 const debug = debugFactory('test:api:createhook');

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import slug from 'slugid';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import tc from '@taskcluster/client';
@@ -107,7 +107,7 @@ suite(testing.suiteName(), function() {
         expires: oneDay,
       });
 
-      let rows = await db.fns.get_index_namespaces(null, null, null, null);
+      const rows = await db.fns.get_index_namespaces(null, null, null, null);
       assert.equal(rows.length, 1);
       assert.equal(rows[0].parent, 'parent/2');
       assert.equal(rows[0].name, 'name/2');
@@ -295,7 +295,7 @@ suite(testing.suiteName(), function() {
         expires: oneDay,
       });
 
-      let rows = await db.fns.get_indexed_tasks(null, null, null, null);
+      const rows = await db.fns.get_indexed_tasks(null, null, null, null);
       assert.equal(rows.length, 1);
       assert.equal(rows[0].namespace, 'namespace/2');
       assert.equal(rows[0].name, 'name/2');

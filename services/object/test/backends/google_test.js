@@ -1,5 +1,5 @@
 import helper from '../helper/index.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -10,8 +10,8 @@ import {
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 import { AwsBackend } from '../../src/backends/aws.js';
-import { promisify } from 'util';
-import zlib from 'zlib';
+import { promisify } from 'node:util';
+import zlib from 'node:zlib';
 import { toEndpointV1 } from '@aws-sdk/middleware-endpoint';
 
 const gzip = promisify(zlib.gzip);
@@ -116,7 +116,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       Prefix: prefix,
     }));
     if (objects.Contents?.length > 0) {
-      for (let obj of objects.Contents) {
+      for (const obj of objects.Contents) {
         await s3.send(new DeleteObjectCommand({
           Bucket: secret.testBucket,
           Key: obj.Key,

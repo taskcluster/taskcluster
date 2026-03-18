@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { gitLsFiles, readRepoFile, writeRepoFile } from '../../utils/index.js';
 
 export const tasks = [{
@@ -23,7 +23,7 @@ export const tasks = [{
 
     // read each README and extract titles where available
     const firstLine = /^# (.*)\n/;
-    for (let readme of readmes) {
+    for (const readme of readmes) {
       readme.content = await readRepoFile(path.join(readme.dir, 'README.md'));
       const match = firstLine.exec(readme.content);
       if (match) {
@@ -33,9 +33,9 @@ export const tasks = [{
 
     // organize readmes into a hierarchy
     readmes.sort((a, b) => b.dir.length - a.dir.length);
-    for (let readme of [...readmes]) {
+    for (const readme of [...readmes]) {
       const remainder = [];
-      for (let child of readmes) {
+      for (const child of readmes) {
         if (child.dir.length > readme.dir.length &&
           (readme.dir === '' || child.dir.startsWith(`${readme.dir}/`))) {
           readme.children.push(child);
@@ -48,7 +48,7 @@ export const tasks = [{
 
     // generate the lines of a table of contents for a particular README
     const tocLines = (lines, indent, dir, children) => {
-      for (let child of children.sort(({ dir: a }, { dir: b }) => a < b ? -1 : a > b ? 1 : 0)) {
+      for (const child of children.sort(({ dir: a }, { dir: b }) => a < b ? -1 : a > b ? 1 : 0)) {
         const relative = path.relative(dir, child.dir);
         const title = child.title || relative;
         lines.push(`${indent}* [${title}](${relative}#readme)`);
@@ -70,12 +70,12 @@ export const tasks = [{
         }
       }
 
-      for (let child of children) {
+      for (const child of children) {
         await rewrite(child);
       }
     };
 
-    for (let readme of readmes) {
+    for (const readme of readmes) {
       await rewrite(readme);
     }
   },

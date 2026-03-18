@@ -1,5 +1,5 @@
-import util from 'util';
-import { exec } from 'child_process';
+import util from 'node:util';
+import { exec } from 'node:child_process';
 const execPromise = util.promisify(exec);
 import _ from 'lodash';
 

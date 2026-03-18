@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import QueueService from './queueservice.js';
 import Iterate from '@taskcluster/lib-iterate';
 import { Task } from './data.js';
@@ -63,7 +63,7 @@ class ClaimResolver {
       monitor: this.monitor,
       maxIterationTime: 600 * 1000,
       handler: async () => {
-        let loops = [];
+        const loops = [];
         for (let i = 0; i < this.parallelism; i++) {
           loops.push(this.poll());
         }
@@ -89,7 +89,7 @@ class ClaimResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    let messages = await this.queueService.pollClaimQueue();
+    const messages = await this.queueService.pollClaimQueue();
     let failed = 0;
 
     await Promise.all(messages.map(async (message) => {
@@ -132,7 +132,7 @@ class ClaimResolver {
     // before reaching remove() below.  In either case, we will publish
     // messages about it, in keeping with the at-least-once semantics of
     // TC's messages.
-    let run = task.runs[runId];
+    const run = task.runs[runId];
 
     // If run isn't resolved to exception with 'claim-expired', we had
     // concurrency and we're done.
@@ -143,7 +143,7 @@ class ClaimResolver {
       return remove();
     }
 
-    let status = task.status();
+    const status = task.status();
 
     // Publish message about task exception
     await this.publisher.taskException({
@@ -163,7 +163,7 @@ class ClaimResolver {
 
     // If a newRun was created and it is a retry with state pending then we
     // better publish messages about it
-    let newRun = task.runs[runId + 1];
+    const newRun = task.runs[runId + 1];
     if (newRun &&
         task.runs.length - 1 === runId + 1 &&
         newRun.state === 'pending' &&

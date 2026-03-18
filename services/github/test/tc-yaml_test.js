@@ -157,7 +157,7 @@ suite(testing.suiteName(), function() {
           tasks: [{}],
         };
 
-        let payload = {
+        const payload = {
           tasks_for: 'github-pull-request-untrusted',
           organization: 'org',
           repository: 'repo',
@@ -199,7 +199,7 @@ suite(testing.suiteName(), function() {
           tasks: [{}],
         };
 
-        let payload = {
+        const payload = {
           tasks_for: 'github-pull-request',
           organization: 'org',
           repository: 'repo',

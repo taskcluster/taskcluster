@@ -1,7 +1,7 @@
 import { Octokit } from '@octokit/rest';
-import fs from 'fs';
-import util from 'util';
-import path from 'path';
+import fs from 'node:fs';
+import util from 'node:util';
+import path from 'node:path';
 
 import {
   ensureTask,
@@ -92,7 +92,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'COPY version.json /app/version.json',
         'ENTRYPOINT ["/websocktunnel"]',
       ].join('\n'));
-      let command = [
+      const command = [
         'docker', 'build',
         '--no-cache',
         '--progress', 'plain',
@@ -178,7 +178,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         .concat(requirements['livelog-artifacts'])
         .concat(requirements['taskcluster-proxy-artifacts'])
         .map(name => ({ name, contentType: 'application/octet-stream' }));
-      for (let { name, contentType } of files) {
+      for (const { name, contentType } of files) {
         utils.status({ message: `Upload Release asset ${name}` });
         const data = await readFile(path.join(artifactsDir, name));
 

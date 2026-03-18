@@ -1,5 +1,5 @@
 import express from 'express';
-import assert from 'assert';
+import assert from 'node:assert';
 import libUrls from 'taskcluster-lib-urls';
 import taskcluster from '@taskcluster/client';
 import { buildReportErrorMethod } from './middleware/errors.js';

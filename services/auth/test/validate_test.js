@@ -1,5 +1,5 @@
-import path from 'path';
-import { URL } from 'url';
+import path from 'node:path';
+import { URL } from 'node:url';
 import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;

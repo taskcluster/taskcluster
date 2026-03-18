@@ -1,7 +1,7 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import mkdirp from 'mkdirp';
-import child_process from 'child_process';
+import child_process from 'node:child_process';
 import Observable from 'zen-observable';
 import taskcluster from '@taskcluster/client';
 import { REPO_ROOT } from './repo.js';

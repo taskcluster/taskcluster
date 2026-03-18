@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import pulse from '@taskcluster/lib-pulse';
 import pSynchronize from 'p-synchronize';
 import _ from 'lodash';
@@ -41,7 +41,7 @@ class HookListeners {
     assert(this.listeners === null, 'Cannot setup twice');
 
     const client = this.client;
-    let consumer = await pulse.consume({
+    const consumer = await pulse.consume({
       client,
       bindings: [{
         exchange: 'exchange/taskcluster-hooks/v1/hook-created',
@@ -132,7 +132,7 @@ class HookListeners {
       return newBindings;
     }
 
-    let intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
+    const intersection = _.intersectionWith(oldBindings, newBindings, _.isEqual);
     const delBindings = _.differenceWith(oldBindings, intersection, _.isEqual);
     const addBindings = _.differenceWith(newBindings, intersection, _.isEqual);
     if (!addBindings.length && !delBindings.length) {
@@ -144,7 +144,7 @@ class HookListeners {
     // do any special error handling here.
     if (delBindings.length > 0) {
       await this.client.withChannel(async channel => {
-        for (let { exchange, routingKeyPattern } of delBindings) {
+        for (const { exchange, routingKeyPattern } of delBindings) {
           await channel.unbindQueue(fullQueueName, exchange, routingKeyPattern);
           result = result.filter(
             ({ exchange: e, routingKeyPattern: r }) => e !== exchange || r !== routingKeyPattern);
@@ -155,7 +155,7 @@ class HookListeners {
     // We performe each of the bind operations in a distinct channel, as a failure of the operation
     // will invalidate the channel.  Failures are handled by simply not marking the binding
     // as complete and leaving if for the next reconciliation to try again.
-    for (let { exchange, routingKeyPattern } of addBindings) {
+    for (const { exchange, routingKeyPattern } of addBindings) {
       try {
         await this.client.withChannel(channel =>
           channel.bindQueue(fullQueueName, exchange, routingKeyPattern));
@@ -204,7 +204,7 @@ class HookListeners {
 
     const hooks = (await this.db.fns.get_hooks(null, null, null, null)).map(hookUtils.fromDb);
 
-    for (let hook of hooks) {
+    for (const hook of hooks) {
       if (hook.bindings.length === 0) {
         continue;
       }
@@ -254,7 +254,7 @@ class HookListeners {
     }
 
     // Delete the queues now left in the queues list.
-    for (let queue of queues) {
+    for (const queue of queues) {
       if (this.listeners[queue.queueName]) {
         await this.removeListener(queue.queueName);
       }

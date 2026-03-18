@@ -12,9 +12,9 @@ import {
   UNDEFINED_FUNCTION,
 } from '../src/index.js';
 
-import path from 'path';
+import path from 'node:path';
 import testing from '@taskcluster/lib-testing';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import { dollarQuote } from '../src/util.js';
 
 import {
@@ -198,8 +198,8 @@ helper.dbSuite(path.basename(__filename), function() {
       await db._withClient('admin', async client => {
         await client.query('create table tcversion (version int primary key)');
         await client.query('insert into tcversion (version) values (1)');
-        for (let v of [0, 1, 2, 3]) {
-          for (let fn of [
+        for (const v of [0, 1, 2, 3]) {
+          for (const fn of [
             `online_migration_v${v}_batch`,
             `online_migration_v${v}_is_complete`,
             `online_downgrade_v${v}_batch`,
@@ -457,7 +457,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     setup(async function() {
       db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
-      for (let version of [schema.getVersion(1), schema.getVersion(2), schema.getVersion(3)]) {
+      for (const version of [schema.getVersion(1), schema.getVersion(2), schema.getVersion(3)]) {
         await db._withClient('admin', async client => {
           await runMigration({
             client,

@@ -11,7 +11,7 @@ import {
   REPO_ROOT,
 } from '../../utils/index.js';
 
-import path from 'path';
+import path from 'node:path';
 import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
 
@@ -87,7 +87,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
       utils.step({ title: `Building Docker Image ${tag}` });
 
-      let versionJson = requirements['docker-flow-version'];
+      const versionJson = requirements['docker-flow-version'];
       let command = ['docker', 'build'];
       if (!cmdOptions.cache) {
         command.push('--no-cache');

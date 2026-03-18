@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import glob from 'glob';
 import { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } from '../../utils/index.js';
 import { rimraf } from 'rimraf';
@@ -112,7 +112,7 @@ tasks.push({
     const gwDocsDir = path.join('ui', 'docs', 'reference', 'workers', 'generic-worker');
 
     // begin by deleting all *-payload--schema.mdx files
-    for (let file of glob.sync(`${gwDocsDir}/*-payload.mdx`, { cwd: REPO_ROOT })) {
+    for (const file of glob.sync(`${gwDocsDir}/*-payload.mdx`, { cwd: REPO_ROOT })) {
       await rimraf(path.join(REPO_ROOT, file));
     }
 
@@ -122,7 +122,7 @@ tasks.push({
       filename_base: path.basename(content.$id, '.json#').replace('_', '-') + '-payload',
     }));
 
-    for (let { $id, title, filename_base } of schemaFiles) {
+    for (const { $id, title, filename_base } of schemaFiles) {
       await writeRepoFile(path.join(gwDocsDir, filename_base + '.mdx'), schemaMdx(title, $id));
     }
 

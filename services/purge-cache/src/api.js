@@ -57,7 +57,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   const { workerPoolId } = req.params;
-  let { cacheName } = req.body;
+  const { cacheName } = req.body;
 
   debug(`Processing request for ${workerPoolId}/${cacheName}.`);
 
@@ -130,7 +130,7 @@ builder.declare({
 }, async function(req, res) {
 
   const { workerPoolId } = req.params;
-  let since = new Date(req.query.since || 0);
+  const since = new Date(req.query.since || 0);
 
   // Cache the azure query for cacheTime seconds.  Note that if a second request
   // for this task queue comes in while the first DB query is still running, this
@@ -145,7 +145,7 @@ builder.declare({
     };
   }
 
-  let { reqs: openRequests } = cacheCache;
+  const { reqs: openRequests } = cacheCache;
   return res.reply({
     requests: _.reduce(openRequests, (l, entry) => {
       const { provisionerId, workerType } = splitWorkerPoolId(entry.worker_pool_id);

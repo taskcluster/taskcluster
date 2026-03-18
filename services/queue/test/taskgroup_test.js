@@ -1,6 +1,6 @@
 import debugFactory from 'debug';
 const debug = debugFactory('test:taskGroup');
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 import _ from 'lodash';
 import taskcluster from '@taskcluster/client';
@@ -34,8 +34,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   test('Create two tasks with same taskGroupId', async () => {
-    let taskIdA = slugid.v4();
-    let taskGroupId = slugid.v4();
+    const taskIdA = slugid.v4();
+    const taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
     const r1 = await helper.queue.createTask(taskIdA, _.defaults({ taskGroupId }, taskDef));
@@ -45,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdA);
 
     debug('### Creating taskB');
-    let taskIdB = slugid.v4();
+    const taskIdB = slugid.v4();
     await helper.queue.createTask(taskIdB, _.defaults({ taskGroupId }, taskDef));
     helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
     helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
@@ -87,9 +87,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('schedulerId is fixed per taskGroupId', async () => {
-    let taskIdA = slugid.v4();
-    let taskIdB = slugid.v4();
-    let taskGroupId = slugid.v4();
+    const taskIdA = slugid.v4();
+    const taskIdB = slugid.v4();
+    const taskGroupId = slugid.v4();
 
     helper.scopes(
       'queue:create-task:highest:no-provisioner-extended-extended/test-worker-extended-extended',
@@ -115,10 +115,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
-  let members = (result) => result.tasks.map(t => t.status.taskId);
+  const members = (result) => result.tasks.map(t => t.status.taskId);
   test('list task-group', async () => {
-    let taskIdA = slugid.v4();
-    let taskGroupId = slugid.v4();
+    const taskIdA = slugid.v4();
+    const taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
     await helper.queue.createTask(taskIdA, _.defaults({
@@ -126,7 +126,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     }, taskDef));
 
     debug('### Creating taskB');
-    let taskIdB = slugid.v4();
+    const taskIdB = slugid.v4();
     await helper.queue.createTask(taskIdB, _.defaults({
       taskGroupId,
     }, taskDef));
@@ -134,7 +134,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(`queue:list-task-group:${taskGroupId}`);
 
     debug('### listing');
-    let result = await helper.queue.listTaskGroup(taskGroupId);
+    const result = await helper.queue.listTaskGroup(taskGroupId);
     assert(!result.continuationToken);
     assert(_.includes(members(result), taskIdA));
     assert(_.includes(members(result), taskIdB));
@@ -149,9 +149,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('list task-group (limit and continuationToken)', async () => {
-    let taskIdA = slugid.v4();
-    let taskIdB = slugid.v4();
-    let taskGroupId = slugid.v4();
+    const taskIdA = slugid.v4();
+    const taskIdB = slugid.v4();
+    const taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
     await helper.queue.createTask(taskIdA, _.defaults({
@@ -184,7 +184,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('list task-group -- doesn\'t exist', async () => {
-    let taskGroupId = slugid.v4();
+    const taskGroupId = slugid.v4();
     await helper.queue.listTaskGroup(taskGroupId).then(
       () => assert(false, 'Expected and error'),
       err => assert(err.code === 'ResourceNotFound', 'err != ResourceNotFound'),
@@ -192,9 +192,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('task-group expiration', async () => {
-    let taskIdA = slugid.v4();
-    let taskIdB = slugid.v4();
-    let taskGroupId = slugid.v4();
+    const taskIdA = slugid.v4();
+    const taskIdB = slugid.v4();
+    const taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
     await helper.queue.createTask(taskIdA, _.defaults({
@@ -215,9 +215,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   });
 
   test('task-group expiration (doesn\'t drop table)', async () => {
-    let taskIdA = slugid.v4();
-    let taskIdB = slugid.v4();
-    let taskGroupId = slugid.v4();
+    const taskIdA = slugid.v4();
+    const taskIdB = slugid.v4();
+    const taskGroupId = slugid.v4();
 
     debug('### Creating taskA');
     await helper.queue.createTask(taskIdA, _.defaults({
@@ -239,15 +239,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   suite('get task group', function () {
     test('get task-group -- doesn\'t exist', async () => {
-      let taskGroupId = slugid.v4();
+      const taskGroupId = slugid.v4();
       await helper.queue.getTaskGroup(taskGroupId).then(
         () => assert(false, 'Expected and error'),
         err => assert(err.code === 'ResourceNotFound', 'err != ResourceNotFound'),
       );
     });
     test('get existing task-group', async () => {
-      let taskGroupId = slugid.v4();
-      let taskIdA = slugid.v4();
+      const taskGroupId = slugid.v4();
+      const taskIdA = slugid.v4();
 
       debug('### Creating taskA');
       await helper.queue.createTask(taskIdA, _.defaults({
@@ -266,8 +266,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assert(typeof res2.sealed !== 'undefined');
     });
     test('checks permissions', async () => {
-      let taskIdA = slugid.v4();
-      let taskGroupId = slugid.v4();
+      const taskIdA = slugid.v4();
+      const taskGroupId = slugid.v4();
 
       debug('### Creating taskA');
       await helper.queue.createTask(taskIdA, _.defaults({
@@ -285,7 +285,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   suite('task group sealing', function () {
     test('sealing empty task group', async () => {
-      let taskGroupId = slugid.v4();
+      const taskGroupId = slugid.v4();
       await helper.queue.sealTaskGroup(taskGroupId).then(() => {
         assert(false, 'expected an error');
       }, err => {
@@ -294,9 +294,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     test('sealing task group', async () => {
-      let taskIdA = slugid.v4();
-      let taskIdB = slugid.v4();
-      let taskGroupId = slugid.v4();
+      const taskIdA = slugid.v4();
+      const taskIdB = slugid.v4();
+      const taskGroupId = slugid.v4();
 
       debug('### Creating taskA');
       await helper.queue.createTask(taskIdA, _.defaults({
@@ -318,8 +318,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
 
     test('sealing permissions', async () => {
-      let taskIdA = slugid.v4();
-      let taskGroupId = slugid.v4();
+      const taskIdA = slugid.v4();
+      const taskGroupId = slugid.v4();
 
       debug('### Creating taskA');
       await helper.queue.createTask(taskIdA, _.defaults({

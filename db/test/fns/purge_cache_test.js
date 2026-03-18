@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import tc from '@taskcluster/client';
 const { fromNow } = tc;
@@ -122,7 +122,7 @@ suite(testing.suiteName(), function() {
       );
     }
 
-    let entries = await db.fns.purge_requests_wpid("prov-3/wt-3");
+    const entries = await db.fns.purge_requests_wpid("prov-3/wt-3");
     assert.equal(entries.length, 3);
     compare(entries, samples);
   });

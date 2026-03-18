@@ -1,9 +1,9 @@
 import request from 'superagent';
-import assert from 'assert';
+import assert from 'node:assert';
 import { APIBuilder } from '../src/index.js';
 import helper, { monitor, monitorManager } from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
-import path from 'path';
+import path from 'node:path';
 import SchemaSet from '@taskcluster/lib-validate';
 import testing from '@taskcluster/lib-testing';
 

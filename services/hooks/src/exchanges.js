@@ -1,7 +1,7 @@
 import { Exchanges } from '@taskcluster/lib-pulse';
 
 /** Declaration of exchanges used by hooks  */
-let exchanges = new Exchanges({
+const exchanges = new Exchanges({
   title: 'Exchanges to manage hooks',
   projectName: 'taskcluster-hooks',
   serviceName: 'hooks',
@@ -23,7 +23,7 @@ let exchanges = new Exchanges({
 export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-let buildCommonRoutingKey = (options) => {
+const buildCommonRoutingKey = (options) => {
   return [
     {
       name: 'reserved',
@@ -37,21 +37,21 @@ let buildCommonRoutingKey = (options) => {
 };
 
 /** Build an AMQP compatible message from a message */
-let commonMessageBuilder = function(message) {
+const commonMessageBuilder = function(message) {
   return message;
 };
 
 /** Build a routingKey from message */
 /** Empty now, might be useful in the future */
 /** when this comment should be removed */
-let commonRoutingKeyBuilder = function(message, routing) {
+const commonRoutingKeyBuilder = function(message, routing) {
   return '';
 };
 
 /** Build list of routing keys to CC */
 /** Empty now, might be useful in the future */
 /** when this comment should be removed */
-let commonCCBuilder = function(message, routes) {
+const commonCCBuilder = function(message, routes) {
   return [];
 };
 

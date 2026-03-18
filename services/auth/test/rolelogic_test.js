@@ -32,28 +32,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
    * Due to the nature of these test we can't expect them to work if two
    * instances of these test cases runs at the same time.
    */
-  let test = (title, t) => {
+  const test = (title, t) => {
     mocha.test(title, async function() {
       // Some of these tests can be a bit slow, especially without in-memory entities
       this.timeout(10 * 60 * 1000);
 
       // Ensure all roles and clients from the test are deleted
-      for (let c of t.clients) {
+      for (const c of t.clients) {
         await helper.apiClient.deleteClient(c.clientId);
       }
-      for (let r of t.roles) {
+      for (const r of t.roles) {
         await helper.apiClient.deleteRole(r.roleId);
       }
 
       // Create all roles and clients
-      for (let c of t.clients) {
+      for (const c of t.clients) {
         await helper.apiClient.createClient(c.clientId, {
           description: 'client for test case: ' + title,
           expires: taskcluster.fromNowJSON('2 hours'),
           scopes: c.scopes,
         });
       }
-      for (let r of t.roles) {
+      for (const r of t.roles) {
         await helper.apiClient.createRole(r.roleId, {
           description: 'role for test case: ' + title,
           scopes: r.scopes,
@@ -63,9 +63,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       // Run tests for all clients
       let err = '';
       await Promise.all(t.clients.map(async (c) => {
-        let client = await helper.apiClient.client(c.clientId);
-        let missing = _.difference(c.includes, client.expandedScopes);
-        let forbidden = _.intersection(c.exludes, client.expandedScopes);
+        const client = await helper.apiClient.client(c.clientId);
+        const missing = _.difference(c.includes, client.expandedScopes);
+        const forbidden = _.intersection(c.exludes, client.expandedScopes);
         if (missing.length !== 0 || forbidden.length !== 0) {
           err += 'Test failed: ' + JSON.stringify(t, null, 2) + '\n';
           err += 'Client: ' + JSON.stringify(client, null, 2) + '\n';
@@ -82,10 +82,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       }));
 
       // delete all roles and clients from the tests
-      for (let c of t.clients) {
+      for (const c of t.clients) {
         await helper.apiClient.deleteClient(c.clientId);
       }
-      for (let r of t.roles) {
+      for (const r of t.roles) {
         await helper.apiClient.deleteRole(r.roleId);
       }
 

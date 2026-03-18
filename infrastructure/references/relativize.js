@@ -1,6 +1,6 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import References from '@taskcluster/lib-references';
 
 export const build = async (input, output, rootUrl) => {

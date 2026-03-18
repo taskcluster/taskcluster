@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import request from 'superagent';
 import passport from 'passport';
 import Auth0Strategy from 'passport-auth0';

@@ -1,8 +1,8 @@
 import WatchDog from './watchdog.js';
 import debugFactory from 'debug';
 const debug = debugFactory('iterate');
-import events from 'events';
-import { hrtime } from 'process';
+import events from 'node:events';
+import { hrtime } from 'node:process';
 
 /**
  * The Iterate Class.  See README.md for explanation of constructor

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
@@ -22,12 +22,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('header auth (root creds)', async () => {
-    let result = await helper.testClient.resource();
+    const result = await helper.testClient.resource();
     assert(result.message === 'Hello World');
   });
 
   test('header auth (new client)', async () => {
-    let myClient2 = new helper.TestClient({
+    const myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: rootCredentials,
     });
@@ -35,15 +35,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('bewit auth (root creds)', async () => {
-    let signedUrl = helper.testClient.buildSignedUrl(
+    const signedUrl = helper.testClient.buildSignedUrl(
       helper.testClient.resource,
     );
-    let res = await request.get(signedUrl);
+    const res = await request.get(signedUrl);
     assert(res.body.message === 'Hello World');
   });
 
   test('header auth (no creds)', async () => {
-    let myClient2 = new helper.TestClient({ rootUrl: helper.rootUrl, credentials: {} });
+    const myClient2 = new helper.TestClient({ rootUrl: helper.rootUrl, credentials: {} });
     await myClient2.resource().then(() => {
       assert(false, 'expected an error!');
     }, err => {
@@ -52,7 +52,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('header auth (wrong creds)', async () => {
-    let myClient2 = new helper.TestClient({
+    const myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: {
         clientId: 'wrong',
@@ -67,7 +67,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('header auth (wrong accessToken)', async () => {
-    let myClient2 = new helper.TestClient({
+    const myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: {
         clientId: 'static/taskcluster/root',
@@ -82,7 +82,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('header auth (temp creds)', async () => {
-    let myClient2 = new helper.TestClient({
+    const myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
         expiry: taskcluster.fromNow('10 min'),
@@ -90,12 +90,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         credentials: rootCredentials,
       }),
     });
-    let result = await myClient2.resource();
+    const result = await myClient2.resource();
     assert(result.message === 'Hello World');
   });
 
   test('header auth (temp creds - wrong scope)', async () => {
-    let myClient2 = new helper.TestClient({
+    const myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
         expiry: taskcluster.fromNow('10 min'),
@@ -111,7 +111,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('header auth (temp creds + authorizedScopes)', async () => {
-    let myClient2 = new helper.TestClient({
+    const myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
         expiry: taskcluster.fromNow('10 min'),
@@ -120,12 +120,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       }),
       authorizedScopes: ['myapi:resource'],
     });
-    let result = await myClient2.resource();
+    const result = await myClient2.resource();
     assert(result.message === 'Hello World');
   });
 
   test('header auth (temp creds + invalid authorizedScopes)', async () => {
-    let myClient2 = new helper.TestClient({
+    const myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
         expiry: taskcluster.fromNow('10 min'),
@@ -142,7 +142,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('header auth (temp creds + overstep authorizedScopes)', async () => {
-    let myClient2 = new helper.TestClient({
+    const myClient2 = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: taskcluster.createTemporaryCredentials({
         expiry: taskcluster.fromNow('10 min'),
@@ -159,15 +159,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('auth with non-root user', async () => {
-    let clientId = slugid.v4();
-    let result = await helper.apiClient.createClient(clientId, {
+    const clientId = slugid.v4();
+    const result = await helper.apiClient.createClient(clientId, {
       expires: new Date(3000, 1, 1), // far out in the future
       description: 'Client used by automatic tests, file a bug and delete if' +
                     ' you ever see this client!',
       scopes: ['myapi:*'],
     });
 
-    let myClient = new helper.TestClient({
+    const myClient = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: {
         clientId: result.clientId,
@@ -178,15 +178,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   test('auth with non-root user (expired)', async () => {
-    let clientId = slugid.v4();
-    let result = await helper.apiClient.createClient(clientId, {
+    const clientId = slugid.v4();
+    const result = await helper.apiClient.createClient(clientId, {
       expires: new Date(1998, 1, 1), // far back in the past
       description: 'Client used by automatic tests, file a bug and delete if' +
                     ' you ever see this client!',
       scopes: ['myapi:*'],
     });
 
-    let myClient = new helper.TestClient({
+    const myClient = new helper.TestClient({
       rootUrl: helper.rootUrl,
       credentials: {
         clientId: result.clientId,

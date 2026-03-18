@@ -56,20 +56,20 @@ suite(testing.suiteName(), function() {
   test(`tables created on upgrade`, async function () {
     await helper.upgradeTo(1);
 
-    for (let azureTableName of azureTableNames) {
+    for (const azureTableName of azureTableNames) {
       await helper.assertNoTable(postgresTableName(azureTableName));
     }
 
     await helper.upgradeTo(2);
 
-    for (let azureTableName of azureTableNames) {
+    for (const azureTableName of azureTableNames) {
       await helper.assertTable(postgresTableName(azureTableName));
     }
   });
 
   test(`tables dropped on downgrade`, async function () {
     await helper.downgradeTo(1);
-    for (let azureTableName of azureTableNames) {
+    for (const azureTableName of azureTableNames) {
       await helper.assertNoTable(postgresTableName(azureTableName));
     }
   });

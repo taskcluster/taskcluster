@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 /**
  * Split a workerPoolId into its deprecated provisionerId/workerPool components.

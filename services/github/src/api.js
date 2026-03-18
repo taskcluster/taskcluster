@@ -2,7 +2,7 @@ import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import yaml from 'js-yaml';
-import path from 'path';
+import path from 'node:path';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const assetsPath = path.join(__dirname, '/../assets/');
@@ -53,13 +53,13 @@ function getPullRequestDetails(eventData) {
 
 // See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push
 function getPushDetails(eventData) {
-  let ref = eventData.ref;
+  const ref = eventData.ref;
   // parsing the ref refs/heads/<branch-name> is the most reliable way
   // to get a branch name
   // However, tags are identified the ref refs/tags/<tag-name>
-  let refName = ref.split('/').slice(2).join('/');
-  let isTagEvent = ref.split('/')[1] === 'tags';
-  let details = {
+  const refName = ref.split('/').slice(2).join('/');
+  const isTagEvent = ref.split('/')[1] === 'tags';
+  const details = {
     'event.base.ref': ref,
     'event.base.repo.name': eventData.repository.name,
     'event.base.repo.url': eventData.repository.clone_url,
@@ -132,7 +132,7 @@ function getIssueCommentDetails(eventData) {
 ***/
 async function installationAuthenticate(owner, db, github) {
   // Look up the installation ID in Azure. If no such owner in the table, no error thrown
-  let [ownerInfo] = await db.fns.get_github_integration(owner);
+  const [ownerInfo] = await db.fns.get_github_integration(owner);
   if (ownerInfo) {
     return await github.getInstallationGithub(ownerInfo.installation_id);
   } else {
@@ -191,7 +191,7 @@ async function findTCChecks(github, owner, repo, branch, configuration) {
 
 /** API end-point for version v1/
  */
-let builder = new APIBuilder({
+const builder = new APIBuilder({
   title: 'GitHub Service',
   description: [
     'The github service is responsible for creating tasks in response',
@@ -230,7 +230,7 @@ builder.declare({
     'release, check run or pull request.',
   ].join('\n'),
 }, async function(req, res) {
-  let eventId = req.headers['x-github-delivery'];
+  const eventId = req.headers['x-github-delivery'];
 
   const debugMonitor = this.monitor.childMonitor({ eventId });
 
@@ -241,22 +241,22 @@ builder.declare({
     return res.status(status).send(message);
   }
 
-  let eventType = req.headers['x-github-event'];
+  const eventType = req.headers['x-github-event'];
   if (!eventType) {
     return resolve(res, 400, 'Missing X-GitHub-Event');
   }
 
-  let body = req.body;
+  const body = req.body;
   if (!body) {
     return resolve(res, 400, 'Request missing a body');
   }
   const installationId = body.installation && body.installation.id;
 
-  let webhookSecrets = this.cfg.webhook.secret;
+  const webhookSecrets = this.cfg.webhook.secret;
   // sha256 version is recommended by github but if it's missing we fallback to sha1
   // sha256 can be missing in some older Github Enterprise versions
   // checkGithubSignature function will handle both cases
-  let xHubSignature = req.headers['x-hub-signature-256'] || req.headers['x-hub-signature'];
+  const xHubSignature = req.headers['x-hub-signature-256'] || req.headers['x-hub-signature'];
 
   if (xHubSignature && !webhookSecrets) {
     return resolve(res, 400, 'Server is not setup to handle secrets');
@@ -279,7 +279,7 @@ builder.declare({
     }
   }
 
-  let msg = {};
+  const msg = {};
   let publisherKey = '';
 
   this.monitor.log.webhookReceived({ eventId, eventType, installationId });
@@ -482,7 +482,7 @@ builder.declare({
       {});
   }
 
-  let { continuationToken, rows: builds } = await paginateResults({
+  const { continuationToken, rows: builds } = await paginateResults({
     query: req.query,
     fetch: (size, offset) => this.db.fns.get_github_builds_pr(
       size,
@@ -616,10 +616,10 @@ builder.declare({
   route: '/repository/:owner/:repo/:branch/badge.svg',
 }, async function(req, res) {
   // Extract owner, repo and branch from request into variables
-  let { owner, repo, branch } = req.params;
+  const { owner, repo, branch } = req.params;
 
   // This has nothing to do with user input, so we should be safe
-  let fileConfig = {
+  const fileConfig = {
     root: assetsPath,
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -628,7 +628,7 @@ builder.declare({
     },
   };
 
-  let instGithub = await installationAuthenticate(owner, this.db, this.github);
+  const instGithub = await installationAuthenticate(owner, this.db, this.github);
 
   if (!instGithub) {
     fileConfig.headers['X-Taskcluster-Status'] = 'nogithub';
@@ -638,7 +638,7 @@ builder.declare({
   try {
     let state;
 
-    let status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
+    const status = await findTCStatus(instGithub, owner, repo, branch, this.cfg);
     if (status) {
       state = status.state;
     }
@@ -706,9 +706,9 @@ builder.declare({
   output: 'repository.yml',
 }, async function(req, res) {
   // Extract owner and repo from request into variables
-  let { owner, repo } = req.params;
+  const { owner, repo } = req.params;
 
-  let instGithub = await installationAuthenticate(owner, this.db, this.github);
+  const instGithub = await installationAuthenticate(owner, this.db, this.github);
 
   if (!instGithub) {
     return res.reply({ installed: false });
@@ -717,7 +717,7 @@ builder.declare({
   try {
     for await (const response of instGithub.paginate.iterator(
       instGithub.apps.listReposAccessibleToInstallation, {})) {
-      let installed = response.data.map(repo => repo.name).indexOf(repo);
+      const installed = response.data.map(repo => repo.name).indexOf(repo);
       if (installed !== -1) {
         return res.reply({ installed: true });
       }
@@ -749,9 +749,9 @@ builder.declare({
   route: '/repository/:owner/:repo/:branch/latest',
 }, async function(req, res) {
   // Extract owner, repo and branch from request into variables
-  let { owner, repo, branch } = req.params;
+  const { owner, repo, branch } = req.params;
 
-  let instGithub = await installationAuthenticate(owner, this.db, this.github);
+  const instGithub = await installationAuthenticate(owner, this.db, this.github);
 
   // Get task group ID
   if (instGithub) {
@@ -770,7 +770,7 @@ builder.declare({
       if (checkRuns.length > 0) {
         // Sort the array of runs from smallest to largest id, this should yield
         // the Decision task.
-        let run = checkRuns.sort((a, b) => a.id - b.id)[0];
+        const run = checkRuns.sort((a, b) => a.id - b.id)[0];
         return res.redirect(run.html_url);
       }
     } catch (e) {
@@ -803,11 +803,11 @@ builder.declare({
   scopes: 'github:create-status:<owner>/<repo>',
 }, async function(req, res) {
   // Extract owner, repo and sha from request into variables
-  let { owner, repo, sha } = req.params;
+  const { owner, repo, sha } = req.params;
   // Extract other attributes from POST attributes
-  let { state, target_url, description, context } = req.body;
+  const { state, target_url, description, context } = req.body;
 
-  let instGithub = await installationAuthenticate(owner, this.db, this.github);
+  const instGithub = await installationAuthenticate(owner, this.db, this.github);
 
   if (instGithub) {
     try {
@@ -856,11 +856,11 @@ builder.declare({
   scopes: 'github:create-comment:<owner>/<repo>',
 }, async function(req, res) {
   // Extract owner, repo and number from request into variables
-  let { owner, repo, number } = req.params;
+  const { owner, repo, number } = req.params;
   // Extract body from POST attributes
-  let { body } = req.body;
+  const { body } = req.body;
 
-  let instGithub = await installationAuthenticate(owner, this.db, this.github);
+  const instGithub = await installationAuthenticate(owner, this.db, this.github);
 
   if (instGithub) {
     try {
@@ -905,7 +905,7 @@ builder.declare({
   output: 'render-taskcluster-yml-output.yml',
   scopes: null,
 }, async function(req, res) {
-  let {
+  const {
     body,
     organization = 'taskcluster',
     repository = 'testing',

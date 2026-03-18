@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import libUrls from 'taskcluster-lib-urls';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-pulse.publisher');
@@ -122,7 +122,7 @@ export class Entry {
     let firstMultiWordKey = null;
 
     assert(Array.isArray(this.routingKey), 'routingKey must be an Array');
-    for (let key of this.routingKey) {
+    for (const key of this.routingKey) {
       // Check that the key name is unique
       assert(keyNames.indexOf(key.name) === -1,
         `Routing key entry named ${key.name} already exists`);
@@ -289,7 +289,7 @@ export class PulsePublisher {
   async _declareMethods() {
     const validator = await this.schemaset.validator(this.rootUrl);
 
-    for (let entry of this.exchanges.entries) {
+    for (const entry of this.exchanges.entries) {
       const exchange = this.exchanges.exchangePrefix + entry.exchange;
 
       this[entry.name] = async (...args) => {
@@ -399,7 +399,7 @@ export class PulsePublisher {
    */
   _validateMessage(rootUrl, serviceName, validator, entry, message) {
     const schema = libUrls.schema(rootUrl, serviceName, entry.schema);
-    let err = validator(message, schema);
+    const err = validator(message, schema);
     if (err) {
       debug('Failed to validate message: %j against schema: %s, error: %j',
         message, entry.schema, err);

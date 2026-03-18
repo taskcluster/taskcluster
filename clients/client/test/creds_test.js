@@ -1,5 +1,5 @@
 import taskcluster from '../src/index.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import request from 'superagent';
 import _ from 'lodash';
 import testing from './helper.js';
@@ -10,7 +10,7 @@ suite(testing.suiteName(), function() {
   // This suite exercises the credential-handling functionality of the client
   // against a the auth service's testAuthenticate endpoint.
 
-  let client = function(options) {
+  const client = function(options) {
     options = _.defaults({}, options || {}, {
       credentials: {},
       rootUrl: process.env['TASKCLUSTER_ROOT_URL'] || 'https://community-tc.services.mozilla.com/',
@@ -22,7 +22,7 @@ suite(testing.suiteName(), function() {
     return new taskcluster.Auth(options);
   };
 
-  let expectError = (promise, code) => {
+  const expectError = (promise, code) => {
     return promise.then(() => {
       assert(false, 'Expected error code: ' + code + ', but got a response');
     }, err => {
@@ -80,7 +80,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('unnamed temporary credentials', async () => {
-    let credentials = taskcluster.createTemporaryCredentials({
+    const credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:specific'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -99,7 +99,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('unnamed temporary credentials, insufficient', async () => {
-    let credentials = taskcluster.createTemporaryCredentials({
+    const credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:something-else'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -114,7 +114,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('unnamed temporary credentials, bad authentication', async () => {
-    let credentials = taskcluster.createTemporaryCredentials({
+    const credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:specific'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -129,7 +129,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('named temporary credentials', async () => {
-    let credentials = taskcluster.createTemporaryCredentials({
+    const credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:specific'],
       clientId: 'my-temp-cred',
       expiry: taskcluster.fromNow('1 hour'),
@@ -151,7 +151,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('temporary credentials, authorizedScopes', async () => {
-    let credentials = taskcluster.createTemporaryCredentials({
+    const credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:subcategory:*'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -173,7 +173,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('temporary credentials, authorizedScopes, insufficient', async () => {
-    let credentials = taskcluster.createTemporaryCredentials({
+    const credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:subcategory:*'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -191,7 +191,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('temporary credentials, authorizedScopes, bad authentication', async () => {
-    let credentials = taskcluster.createTemporaryCredentials({
+    const credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:subcategory:*'],
       expiry: taskcluster.fromNow('1 hour'),
       credentials: {
@@ -209,7 +209,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('named temporary credentials, authorizedScopes', async () => {
-    let credentials = taskcluster.createTemporaryCredentials({
+    const credentials = taskcluster.createTemporaryCredentials({
       scopes: ['scopes:*'],
       clientId: 'my-temp-cred',
       expiry: taskcluster.fromNow('1 hour'),
@@ -233,46 +233,46 @@ suite(testing.suiteName(), function() {
       });
   });
 
-  let getJson = async function(url) {
-    let res = await request.get(url);
+  const getJson = async function(url) {
+    const res = await request.get(url);
     return res.body;
   };
 
   test('buildSignedUrl', async () => {
-    let cl = client();
-    let url = cl.buildSignedUrl(cl.testAuthenticateGet);
+    const cl = client();
+    const url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert((await request.get(url)).ok);
   });
 
   test('buildSignedUrl authorizedScopes', async () => {
-    let cl = client({
+    const cl = client({
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',
       },
       authorizedScopes: ['test:authenticate-get', 'test:foo'],
     });
-    let url = cl.buildSignedUrl(cl.testAuthenticateGet);
+    const url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert.deepEqual((await getJson(url)).scopes,
       ['assume:anonymous', 'test:authenticate-get', 'test:foo']);
   });
 
   test('buildSignedUrl authorizedScopes (unauthorized)', async () => {
-    let cl = client({
+    const cl = client({
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',
       },
       authorizedScopes: ['test:get'], // no test:authenticate-get
     });
-    let url = cl.buildSignedUrl(cl.testAuthenticateGet);
+    const url = cl.buildSignedUrl(cl.testAuthenticateGet);
     await request.get(url).then(() => assert(false), err => {
       assert(err.response.statusCode === 403);
     });
   });
 
   test('buildSignedUrl with temporary credentials', async () => {
-    let tempCreds = taskcluster.createTemporaryCredentials({
+    const tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:authenticate-get', 'test:bar'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
@@ -280,16 +280,16 @@ suite(testing.suiteName(), function() {
         accessToken: 'no-secret',
       },
     });
-    let cl = client({
+    const cl = client({
       credentials: tempCreds,
     });
-    let url = cl.buildSignedUrl(cl.testAuthenticateGet);
+    const url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert.deepEqual((await getJson(url)).scopes,
       ['assume:anonymous', 'test:authenticate-get', 'test:bar']);
   });
 
   test('buildSignedUrl with temporary credentials and expiration', async () => {
-    let tempCreds = taskcluster.createTemporaryCredentials({
+    const tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:authenticate-get'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
@@ -297,17 +297,17 @@ suite(testing.suiteName(), function() {
         accessToken: 'no-secret',
       },
     });
-    let cl = client({
+    const cl = client({
       credentials: tempCreds,
     });
-    let url = cl.buildSignedUrl(cl.testAuthenticateGet, {
+    const url = cl.buildSignedUrl(cl.testAuthenticateGet, {
       expiration: 600,
     });
     assert((await request.get(url)).ok);
   });
 
   test('buildSignedUrl with temporary credentials (expired)', async () => {
-    let tempCreds = taskcluster.createTemporaryCredentials({
+    const tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:query', 'test:authenticate-get'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
@@ -315,10 +315,10 @@ suite(testing.suiteName(), function() {
         accessToken: 'no-secret',
       },
     });
-    let cl = client({
+    const cl = client({
       credentials: tempCreds,
     });
-    let url = cl.buildSignedUrl(cl.testAuthenticateGet, {
+    const url = cl.buildSignedUrl(cl.testAuthenticateGet, {
       expiration: -600, // This seems to work, not sure how long it will work...
     });
     await request.get(url).then(() => assert(false), err => {
@@ -327,7 +327,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('buildSignedUrl, temp creds + authedScopes ', async () => {
-    let tempCreds = taskcluster.createTemporaryCredentials({
+    const tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:auth*'],
       expiry: new Date(new Date().getTime() + 60 * 1000),
       credentials: {
@@ -335,11 +335,11 @@ suite(testing.suiteName(), function() {
         accessToken: 'no-secret',
       },
     });
-    let cl = client({
+    const cl = client({
       credentials: tempCreds,
       authorizedScopes: ['test:authenticate-get'],
     });
-    let url = cl.buildSignedUrl(cl.testAuthenticateGet);
+    const url = cl.buildSignedUrl(cl.testAuthenticateGet);
     assert.deepEqual((await getJson(url)).scopes, ['assume:anonymous', 'test:authenticate-get']);
   });
 
@@ -365,7 +365,7 @@ suite(testing.suiteName(), function() {
     });
 
     test('fromEnvVar credentials', async () => {
-      let client = new taskcluster.Auth(taskcluster.fromEnvVars());
+      const client = new taskcluster.Auth(taskcluster.fromEnvVars());
       assert.deepEqual(
         await client.testAuthenticate({
           clientScopes: [],

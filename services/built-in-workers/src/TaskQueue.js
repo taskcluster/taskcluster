@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 class TaskQueue {
   constructor(cfg, queue, monitor, type) {
@@ -15,7 +15,7 @@ class TaskQueue {
   }
 
   async claimTask() {
-    let result = await this.queue.claimWork(`built-in/${this.builtinType}`, {
+    const result = await this.queue.claimWork(`built-in/${this.builtinType}`, {
       tasks: 1,
       workerGroup: 'built-in',
       workerId: this.builtinType,
@@ -38,7 +38,7 @@ class TaskQueue {
       }
     } else {
       this.monitor.debug(`task ${status.taskId} has non-empty payload`);
-      let payload = {
+      const payload = {
         reason: 'malformed-payload',
       };
       return await queue.reportException(status.taskId, runId, payload);

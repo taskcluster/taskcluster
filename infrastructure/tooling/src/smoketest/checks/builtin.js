@@ -23,7 +23,7 @@ export const tasks = [];
       'target-built-in/' + taskType,
     ],
     run: async (requirements, utils) => {
-      let task = {
+      const task = {
         provisionerId: 'built-in',
         workerType: taskType,
         created: (new Date()).toJSON(),
@@ -37,13 +37,13 @@ export const tasks = [];
         },
         payload: {},
       };
-      let taskId = taskcluster.slugid();
+      const taskId = taskcluster.slugid();
       utils.status({ message: 'built-in/' + taskType + ' taskId: ' + taskId });
-      let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
+      const queue = new taskcluster.Queue(taskcluster.fromEnvVars());
       await queue.createTask(taskId, task);
-      let pollForStatusStart = new Date();
+      const pollForStatusStart = new Date();
       while ((new Date() - pollForStatusStart) < 120000) {
-        let status = await queue.status(taskId);
+        const status = await queue.status(taskId);
         if (status.status.state === 'pending' || status.status.state === 'running') {
           utils.status({
             message: 'Polling built-in/' + taskType + ' task. Current status: ' + status.status.state,

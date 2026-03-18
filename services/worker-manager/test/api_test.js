@@ -1,11 +1,11 @@
 import taskcluster from '@taskcluster/client';
 import slug from 'slugid';
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import { WorkerPool, Worker } from '../src/data.js';
 import testing from '@taskcluster/lib-testing';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
@@ -59,7 +59,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   };
 
   const capturePulseMessages = () => {
-    let messages = [];
+    const messages = [];
     helper.onPulsePublish((exchange, routingKey, data) => {
       messages.push({
         exchange,
@@ -97,8 +97,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   test('list providers pagination', async function () {
     let pages = 0;
-    let providerIds = [];
-    let query = { limit: 1 };
+    const providerIds = [];
+    const query = { limit: 1 };
     while (true) {
       const res = await helper.workerManager.listProviders(query);
       pages += 1;
@@ -207,7 +207,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       owner: 'example@example.com',
       emailOnError: false,
     };
-    let messages = capturePulseMessages();
+    const messages = capturePulseMessages();
     const created = await helper.workerManager.createWorkerPool(workerPoolId, input);
     assert(created.config.launchConfigs[0].workerManager.launchConfigId);
     assert.equal(messages.length, 2);
@@ -245,7 +245,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   });
 
   test('update worker pool', async function () {
-    let messages = capturePulseMessages();
+    const messages = capturePulseMessages();
     const input = {
       providerId: 'testing1',
       description: 'bar',
@@ -280,7 +280,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   });
 
   test('update worker pool - launch config events emitted', async function () {
-    let messages = capturePulseMessages();
+    const messages = capturePulseMessages();
     const input = {
       providerId: 'aws',
       description: 'bar',
@@ -633,7 +633,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       owner: 'example@example.com',
       emailOnError: false,
     });
-    let messages = capturePulseMessages();
+    const messages = capturePulseMessages();
     await helper.workerManager.deleteWorkerPool(workerPoolId);
     assert.equal(messages.length, 3);
     assert.equal(messages[0].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-updated');
@@ -762,7 +762,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       emailOnError: false,
     };
     await helper.workerManager.createWorkerPool(workerPoolId, input);
-    let data = await helper.workerManager.listWorkerPools();
+    const data = await helper.workerManager.listWorkerPools();
 
     data.workerPools.forEach(wp => {
       workerPoolCompare(workerPoolId, input, wp);
@@ -778,9 +778,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       emailOnError: false,
     };
 
-    let input = [];
+    const input = [];
 
-    for (let i of [0, 1, 2]) {
+    for (const i of [0, 1, 2]) {
       const workerPoolId = `${sampleWorkerPoolId}-${i}`;
       const description = `pool ${i}`;
       input[i] = { workerPoolId, description, ...sampleInput };
@@ -822,7 +822,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   });
 
   test('get worker pools - no worker pools in db', async function () {
-    let data = await helper.workerManager.listWorkerPools();
+    const data = await helper.workerManager.listWorkerPools();
 
     assert.deepStrictEqual(data.workerPools, [], 'Should return an empty array of worker pools');
   });
@@ -854,7 +854,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     await createWorker(input);
 
-    let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+    const data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
     data.workers.forEach(worker => {
       assert(!('secret' in worker));
     });
@@ -916,7 +916,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       return i;
     });
 
-    let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+    const data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
     data.workers.forEach(worker => {
       assert(!('secret' in worker));
     });
@@ -925,7 +925,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   });
 
   test('get workers for a given worker pool with filters', async function () {
-    let input = [
+    const input = [
       {
         workerPoolId,
         providerId: 'google',
@@ -962,18 +962,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     await createWorker(input[0]);
     await createWorker(input[1]);
 
-    let byState = await helper.workerManager.listWorkersForWorkerPool(workerPoolId, { state: Worker.states.STOPPED });
+    const byState = await helper.workerManager.listWorkersForWorkerPool(workerPoolId, { state: Worker.states.STOPPED });
     assert.equal(byState.workers.length, 1);
     assert.equal(byState.workers[0].workerId, input[1].workerId);
 
-    let byLc = await helper.workerManager.listWorkersForWorkerPool(workerPoolId, { launchConfigId: 'lc-w1' });
+    const byLc = await helper.workerManager.listWorkersForWorkerPool(workerPoolId, { launchConfigId: 'lc-w1' });
     assert.equal(byLc.workers.length, 1);
     assert.equal(byLc.workers[0].workerId, input[0].workerId);
   });
 
   test('get workers for a given worker pool - no workers', async function () {
     await createWorkerPool();
-    let data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
+    const data = await helper.workerManager.listWorkersForWorkerPool(workerPoolId);
     data.workers.forEach(worker => {
       assert(!('secret' in worker));
     });
@@ -1010,7 +1010,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       return i;
     });
 
-    let data = await helper.workerManager.listWorkersForWorkerGroup(workerPoolId, 'wg-a');
+    const data = await helper.workerManager.listWorkersForWorkerGroup(workerPoolId, 'wg-a');
 
     data.workers.forEach(worker => {
       assert(!('secret' in worker));
@@ -1083,7 +1083,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       owner: 'example@example.com',
       emailOnError: false,
     });
-    let data = await helper.workerManager.listWorkerPoolsStats();
+    const data = await helper.workerManager.listWorkerPoolsStats();
 
     assert.equal(data.workerPoolsStats.length, 1);
     assert.equal(data.workerPoolsStats[0].workerPoolId, workerPoolId);
@@ -1150,7 +1150,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         providerId: 'static',
       });
 
-      let staticSecret = `${taskcluster.slugid()}${taskcluster.slugid()}`;
+      const staticSecret = `${taskcluster.slugid()}${taskcluster.slugid()}`;
       const expires = taskcluster.fromNow('1 hour');
       await helper.workerManager.createWorker(workerPoolId, workerGroup, workerId, {
         expires,
@@ -1292,7 +1292,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       extra: { amISure: true },
     });
 
-    let data = await helper.workerManager.listWorkerPoolErrors(workerPoolId);
+    const data = await helper.workerManager.listWorkerPoolErrors(workerPoolId);
 
     assert.equal(data.workerPoolErrors.length, 1);
 
@@ -1318,7 +1318,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
     assert.equal(messages.length, 1);
     assert.equal(messages[0].exchange, 'exchange/taskcluster-worker-manager/v1/worker-pool-error');
     assert.equal(messages[0].routingKey, 'primary.testing1.foobar.baz.wg.wi._._');
-    let { errorId, ...msgData } = messages[0].data;
+    const { errorId, ...msgData } = messages[0].data;
     assert(new Date(msgData.timestamp) > beforeTime.getTime() - 1);
 
     msgData.timestamp = 'xx';
@@ -1370,7 +1370,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   });
 
   test('get worker pool errors - no errors in db', async function () {
-    let data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
+    const data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
 
     assert.deepStrictEqual(data.workerPoolErrors, [], 'Should return an empty array of worker pool errors');
   });
@@ -1398,7 +1398,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       },
     });
 
-    let data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
+    const data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
 
     assert.equal(data.workerPoolErrors.length, 1);
 
@@ -1458,11 +1458,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       extra: {},
     });
 
-    let byId = await helper.workerManager.listWorkerPoolErrors('foobar/baz', { errorId: res1.errorId });
+    const byId = await helper.workerManager.listWorkerPoolErrors('foobar/baz', { errorId: res1.errorId });
     assert.ok(byId.workerPoolErrors);
     assert.equal(byId.workerPoolErrors.length, 1);
 
-    let byLc = await helper.workerManager.listWorkerPoolErrors('foobar/baz', { launchConfigId: 'lcid' });
+    const byLc = await helper.workerManager.listWorkerPoolErrors('foobar/baz', { launchConfigId: 'lcid' });
     assert.ok(byLc.workerPoolErrors);
     assert.equal(byLc.workerPoolErrors.length, 1);
 
@@ -1504,7 +1504,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       extra: {},
     });
 
-    let data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
+    const data = await helper.workerManager.listWorkerPoolErrors('foobar/baz');
 
     assert.strictEqual(data.workerPoolErrors.length, 2);
 
@@ -1582,7 +1582,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       extra: {},
     });
 
-    let data = await helper.workerManager.workerPoolErrorStats();
+    const data = await helper.workerManager.workerPoolErrorStats();
     assert.equal(data.workerPoolId, '');
 
     assert(data.totals !== undefined);
@@ -1647,7 +1647,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       extra: {},
     });
 
-    let data = await helper.workerManager.workerPoolErrorStats({ workerPoolId: workerPoolId1 });
+    const data = await helper.workerManager.workerPoolErrorStats({ workerPoolId: workerPoolId1 });
     assert.equal(data.workerPoolId, workerPoolId1);
 
     assert(data.totals !== undefined);

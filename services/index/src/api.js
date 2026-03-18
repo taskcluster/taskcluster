@@ -9,7 +9,7 @@ import helpers from './helpers.js';
  *   queue:             // taskcluster.Queue instance w. "queue:get-artifact:*"
  * }
  */
-let builder = new APIBuilder({
+const builder = new APIBuilder({
   title: 'Index Service',
   description: [
     'The index service is responsible for indexing tasks. The service ensures that',
@@ -53,8 +53,8 @@ builder.declare({
   indexPath = indexPath.split('.');
 
   // Find name and namespace
-  let name = indexPath.pop() || '';
-  let namespace = indexPath.join('.');
+  const name = indexPath.pop() || '';
+  const namespace = indexPath.join('.');
 
   // Load indexed task
   const task = helpers.taskUtils.fromDbRows(await this.db.fns.get_indexed_task(namespace, name));
@@ -127,7 +127,7 @@ builder.declare({
     'object.',
   ].join('\n'),
 }, async function(req, res) {
-  let namespace = req.params.namespace || '';
+  const namespace = req.params.namespace || '';
 
   await req.authorize({ namespace });
 
@@ -166,7 +166,7 @@ builder.declare({
     'object.',
   ].join('\n'),
 }, async function(req, res) {
-  let namespace = req.params.namespace || '';
+  const namespace = req.params.namespace || '';
   await req.authorize({
     namespace,
   });
@@ -273,8 +273,8 @@ builder.declare({
     'about indexing successfully completed tasks automatically using custom routes.',
   ].join('\n'),
 }, async function(req, res) {
-  let input = req.body;
-  let namespace = req.params.namespace || '';
+  const input = req.body;
+  const namespace = req.params.namespace || '';
 
   // Authenticate request by providing parameters
   await req.authorize({ namespace });
@@ -309,7 +309,7 @@ builder.declare({
 }, async function(req, res) {
   await req.authorize({ namespace: req.params.namespace || '' });
 
-  let [namespace, name] = helpers.splitNamespace(req.params.namespace || '');
+  const [namespace, name] = helpers.splitNamespace(req.params.namespace || '');
   await this.db.fns.delete_indexed_task({
     namespace_in: namespace,
     name_in: name,
@@ -344,16 +344,16 @@ builder.declare({
     'If no task exists for the given index path, this API end-point responds with 404.',
   ].join('\n'),
 }, async function(req, res) {
-  let that = this;
+  const that = this;
   let indexPath = req.params.indexPath || '';
-  let artifactName = req.params.name;
+  const artifactName = req.params.name;
 
   // Get indexPath and ensure that we have a least one dot
   indexPath = indexPath.split('.');
 
   // Find name and namespace
-  let name = indexPath.pop() || '';
-  let namespace = indexPath.join('.');
+  const name = indexPath.pop() || '';
+  const namespace = indexPath.join('.');
 
   // Load indexed task
   const task = helpers.taskUtils.fromDbRows(await this.db.fns.get_indexed_task(namespace, name));

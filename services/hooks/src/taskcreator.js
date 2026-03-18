@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
 const debug = debugFactory('hooks:taskcreator');
@@ -28,7 +28,7 @@ export class TaskCreator {
 
   taskForHook(hook, context, options) {
     const now = options.created;
-    let task = jsone(hook.task, _.defaults({}, { now, taskId: options.taskId }, context));
+    const task = jsone(hook.task, _.defaults({}, { now, taskId: options.taskId }, context));
     if (!task) {
       return;
     }
@@ -187,7 +187,7 @@ export class MockTaskCreator extends TaskCreator {
 
   async fire(hook, context, options) {
     if (this.shouldFail) {
-      let err = new Error();
+      const err = new Error();
       Object.assign(err, this.shouldFail);
       throw err;
     }

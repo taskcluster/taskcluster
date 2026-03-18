@@ -1,5 +1,5 @@
-import http from 'http';
-import fs from 'fs';
+import http from 'node:http';
+import fs from 'node:fs';
 import _ from 'lodash';
 import sinon from 'sinon';
 import builder from '../src/api.js';
@@ -33,19 +33,19 @@ helper.secrets = new testing.Secrets({
 // Build an http request from a json file with fields describing
 // headers and a body
 helper.jsonHttpRequest = function(jsonFile, options) {
-  let defaultOptions = {
+  const defaultOptions = {
     hostname: 'localhost',
     port: 60415,
     path: '/api/github/v1/github',
     method: 'POST',
   };
   options = _.defaultsDeep(options, defaultOptions);
-  let jsonData = JSON.parse(fs.readFileSync(jsonFile));
+  const jsonData = JSON.parse(fs.readFileSync(jsonFile));
   options.headers = jsonData.headers;
 
   return new Promise(function(accept, reject) {
     try {
-      let req = http.request(options, accept);
+      const req = http.request(options, accept);
       req.write(JSON.stringify(jsonData.body));
       req.end();
     } catch (e) {
@@ -76,7 +76,7 @@ helper.withFakeGithub = (mock, skipping) => {
   });
 
   setup(async function() {
-    let fakeGithub = await load('github');
+    const fakeGithub = await load('github');
     fakeGithub.resetStubs();
   });
 };

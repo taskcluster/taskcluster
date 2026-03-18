@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
@@ -13,11 +13,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   helper.resetTables(mock, skipping);
 
   // Dummy address for denylist tests
-  let dummyAddress1 = {
+  const dummyAddress1 = {
     notificationType: "email",
     notificationAddress: "name1@name.com",
   };
-  let dummyAddress2 = {
+  const dummyAddress2 = {
     notificationType: "matrix-room",
     notificationAddress: "username",
   };
@@ -212,11 +212,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       dummyAddress1.notificationType,
       dummyAddress1.notificationAddress,
     );
-    let existsTable = await helper.db.fns.exists_denylist_address(
+    const existsTable = await helper.db.fns.exists_denylist_address(
       dummyAddress1.notificationType,
       dummyAddress1.notificationAddress,
     );
-    let exists = existsTable[0]["exists_denylist_address"];
+    const exists = existsTable[0]["exists_denylist_address"];
 
     assert(exists);
 
@@ -239,7 +239,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(items.length, 1);
 
     // Only dummyAddress2 should be left in the table
-    let item = items[0];
+    const item = items[0];
     assert.equal(item["notification_address"], dummyAddress2["notificationAddress"]);
     assert.equal(item["notification_type"], dummyAddress2["notificationType"]);
 
@@ -258,7 +258,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // check the result of listDenylist()
     addressList = await helper.apiClient.listDenylist();
-    let expectedResult = [dummyAddress1, dummyAddress2].sort();
+    const expectedResult = [dummyAddress1, dummyAddress2].sort();
     assert.deepEqual(addressList.addresses.sort(), expectedResult);
   });
 });

@@ -1,6 +1,6 @@
 import glob from 'glob';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils/index.js';
 
 export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
@@ -71,7 +71,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
         'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
       ].join('\n'));
-      let command = [
+      const command = [
         'docker', 'build',
         '--no-cache',
         '--progress', 'plain',

@@ -1,6 +1,6 @@
 import Schema from '../src/Schema.js';
-import path from 'path';
-import { strict as assert } from 'assert';
+import path from 'node:path';
+import { strict as assert } from 'node:assert';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const __filename = new URL('', import.meta.url).pathname;

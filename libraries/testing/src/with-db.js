@@ -1,10 +1,10 @@
-import path from 'path';
-import assert from 'assert';
+import path from 'node:path';
+import assert from 'node:assert';
 import pg from 'pg';
 const { Client } = pg;
 import { Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE } from '@taskcluster/lib-postgres';
 import tcdb from '@taskcluster/db';
-import { URL } from 'url';
+import { URL } from 'node:url';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const testDbUrl = process.env.TEST_DB_URL;
@@ -28,7 +28,7 @@ export const resetDb = async () => {
     const schema = Schema.fromDbDirectory(path.join(__dirname, '../../../db'));
 
     // and reset/create a user for each one..
-    for (let serviceName of schema.access.serviceNames()) {
+    for (const serviceName of schema.access.serviceNames()) {
       const serviceUsername = `test_${serviceName.replace(/-/g, '_')}`;
       await ignorePgErrors(client.query(`drop owned by ${serviceUsername}`), UNDEFINED_OBJECT);
       await ignorePgErrors(client.query(`drop user ${serviceUsername}`), UNDEFINED_OBJECT);

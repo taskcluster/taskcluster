@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import { Logger } from './logger.js';
 import TimeKeeper from './timekeeper.js';
-import { hrtime } from 'process';
+import { hrtime } from 'node:process';
 
 /**
 * @typedef {object} MonitorOptions
@@ -356,7 +356,7 @@ class Monitor {
         assert(!providedFields.includes('v'), '"v" is a reserved field for logging messages.');
         requiredFields.forEach(f => assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`));
       }
-      let lv = level === 'any' ? overrides.level : level;
+      const lv = level === 'any' ? overrides.level : level;
       this._log[lv](type, { v: version, ...fields });
     };
   }

@@ -1,5 +1,5 @@
 import semver from 'semver';
-import path from 'path';
+import path from 'node:path';
 import { ChangeLog } from '../changelog/index.js';
 
 import {
@@ -122,7 +122,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
     run: async (requirements, utils) => {
       const changed = [];
 
-      for (let file of await gitLsFiles({ patterns: ['**/package.json', 'package.json'] })) {
+      for (const file of await gitLsFiles({ patterns: ['**/package.json', 'package.json'] })) {
         utils.status({ message: `Update ${file}` });
         await modifyRepoJSON(file, contents => {
           contents.version = requirements['release-version'];
@@ -224,7 +224,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
         'workers/generic-worker/**.sh',
         'workers/generic-worker/**.cmd',
       ];
-      for (let file of await gitLsFiles({ patterns: goFiles })) {
+      for (const file of await gitLsFiles({ patterns: goFiles })) {
         await modifyRepoFile(file, contents =>
           contents.replace(/(github.com\/taskcluster\/taskcluster\/v)\d+/g, `$1${major}`));
         changed.push(file);
@@ -365,7 +365,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
           oldCL.slice(breakpoint));
       changed.push('CHANGELOG.md');
 
-      for (let filename of requirements['changelog'].filenames()) {
+      for (const filename of requirements['changelog'].filenames()) {
         await removeRepoFile(filename);
         changed.push(filename);
       }

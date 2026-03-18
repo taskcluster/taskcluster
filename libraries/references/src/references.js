@@ -3,7 +3,7 @@ import { makeSerializable, fromSerializable } from './serializable.js';
 import { writeUriStructured, readUriStructured } from './uri-structured.js';
 import { getCommonSchemas } from './common-schemas.js';
 import Ajv from 'ajv';
-import fs from 'fs';
+import fs from 'node:fs';
 import addFormats from 'ajv-formats';
 import regexEscape from 'regex-escape';
 import { validate } from './validate.js';
@@ -185,7 +185,7 @@ export class References {
 
       // identify metaschemas, so we can all addMetaSchema for them
       const metaSchemas = new Set(this.schemas.map(({ content }) => content.$schema));
-      for (let { content } of this.schemas) {
+      for (const { content } of this.schemas) {
         // try to be resilient to bad schemas, as validation should be able to give
         // better error messages about schema problems.
         if (!content.$id) {

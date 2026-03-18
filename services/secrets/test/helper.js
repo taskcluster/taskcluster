@@ -29,7 +29,7 @@ helper.withDb = (mock, skipping) => {
 // Some clients for the tests, with differents scopes.  These are turned
 // into temporary credentials based on the main test credentials, so
 // the clientIds listed here are purely internal to the tests.
-let testClients = {
+const testClients = {
   'captain-write': ['secrets:set:captain:*'],
   'captain-read': ['secrets:get:captain:*'],
   'captain-read-write': ['secrets:set:captain:*', 'secrets:get:captain:*', 'secrets:list-secrets'],

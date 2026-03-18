@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import yaml from 'js-yaml';
 
 /*
@@ -23,7 +23,7 @@ const createType = (env, vars, basename, typeName, deserialize) => {
           });
           return undefined;
         }
-        let value = env[data];
+        const value = env[data];
         if (value === undefined || value === '') {
           return undefined;
         }
@@ -61,7 +61,7 @@ export default (env, vars) => yaml.JSON_SCHEMA.extend(_.flatten([
   }),
   createType(env, vars, '!env:list', 'list', val => {
     return (val.match(/'[^']*'|"[^"]*"|[^ \t]+/g) || []).map(entry =>{
-      let n = entry.length;
+      const n = entry.length;
       if (entry[0] === '\'' && entry[n - 1] === '\'' ||
           entry[0] === '"' && entry[n - 1] === '"') {
         return entry.substring(1, n - 1);

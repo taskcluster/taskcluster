@@ -21,7 +21,7 @@ import slack from '@slack/web-api';
 import SlackBot from './slack.js';
 import tcdb from '@taskcluster/db';
 import './monitor.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 // Create component loader
 const load = loader({
@@ -148,7 +148,7 @@ const load = loader({
   matrix: {
     requires: ['cfg', 'matrixClient', 'monitor'],
     setup: async ({ cfg, matrixClient, monitor }) => {
-      let client = new MatrixBot({
+      const client = new MatrixBot({
         ...cfg.matrix,
         matrixClient,
         monitor: monitor.childMonitor('matrix'),
@@ -175,7 +175,7 @@ const load = loader({
         return null;
       }
 
-      let bot = new SlackBot({
+      const bot = new SlackBot({
         slackClient,
         monitor: monitor.childMonitor('slack'),
       });
@@ -200,7 +200,7 @@ const load = loader({
   handler: {
     requires: ['profile', 'cfg', 'monitor', 'notifier', 'pulseClient', 'queue', 'queueEvents'],
     setup: async ({ cfg, monitor, notifier, pulseClient, queue, queueEvents }) => {
-      let handler = new Handler({
+      const handler = new Handler({
         rootUrl: cfg.taskcluster.rootUrl,
         notifier,
         monitor: monitor.childMonitor('handler'),

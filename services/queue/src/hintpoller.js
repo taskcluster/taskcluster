@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 
 /**
@@ -35,7 +35,7 @@ class HintPoller {
     assert(!this.destroyed, 'requestClaim() called after destroy()');
     return new Promise((resolve, reject) => {
       // Make a request for count tasks
-      let request = { resolve, reject, count };
+      const request = { resolve, reject, count };
       this.requests.push(request);
 
       // Remove request if aborted
@@ -57,7 +57,7 @@ class HintPoller {
       this.poll().catch(err => {
         this.started = false;
         // Resolve everything as failed
-        let requests = this.requests;
+        const requests = this.requests;
         this.requests = [];
         this.destroy();
         requests.map(r => r.reject(err));
@@ -88,7 +88,7 @@ class HintPoller {
 
         // While we have hints and requests for hints we resolve requests
         while (hints.length > 0 && this.requests.length > 0) {
-          let { resolve, count } = this.requests.shift();
+          const { resolve, count } = this.requests.shift();
           resolve(hints.splice(0, count));
         }
 

@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 
@@ -17,7 +17,7 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('list denylisted notifications when there is one row', async function(db) {
-    let n1 = {
+    const n1 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
     };
@@ -29,7 +29,7 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('add denylist address that already exists', async function(db) {
-    let n1 = {
+    const n1 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
     };
@@ -42,7 +42,7 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('delete denylist address that already exists', async function(db) {
-    let n1 = {
+    const n1 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
     };
@@ -53,11 +53,11 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest("delete denylist address that doesn't already exist", async function(db) {
-    let n1 = {
+    const n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
     };
-    let n2 = {
+    const n2 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
     };
@@ -70,11 +70,11 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('test denylist address pagination', async function(db) {
-    let n1 = {
+    const n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
     };
-    let n2 = {
+    const n2 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
     };
@@ -90,11 +90,11 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('test denylist existence check', async function(db) {
-    let n1 = {
+    const n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
     };
-    let n2 = {
+    const n2 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
     };
@@ -106,15 +106,15 @@ suite(testing.suiteName(), function() {
   });
 
   helper.dbTest('test denylist nonexistence check', async function(db) {
-    let n1 = {
+    const n1 = {
       notificationType: "pulse",
       notificationAddress: "routing.key",
     };
-    let n2 = {
+    const n2 = {
       notificationType: "email",
       notificationAddress: "pmoore@mozilla.com",
     };
-    let n3 = {
+    const n3 = {
       notificationType: "irc-user",
       notificationAddress: "pmoore",
     };

@@ -1,5 +1,5 @@
 import taskcluster from '@taskcluster/client';
-import assert from 'assert';
+import assert from 'node:assert';
 
 export const scopeExpression = {
   AllOf: [
@@ -19,9 +19,9 @@ tasks.push({
     'target-secrets',
   ],
   run: async () => {
-    let secrets = new taskcluster.Secrets(taskcluster.fromEnvVars());
-    let secretName = taskcluster.slugid();
-    let secretPrefix = `project/taskcluster/smoketest/${secretName}`;
+    const secrets = new taskcluster.Secrets(taskcluster.fromEnvVars());
+    const secretName = taskcluster.slugid();
+    const secretPrefix = `project/taskcluster/smoketest/${secretName}`;
     const payload = {
       "expires": taskcluster.fromNowJSON('2 minutes'),
       "secret": {

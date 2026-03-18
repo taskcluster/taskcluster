@@ -1,6 +1,6 @@
 import debugFactory from 'debug';
 const debug = debugFactory('test:schedule');
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
 import helper from './helper.js';

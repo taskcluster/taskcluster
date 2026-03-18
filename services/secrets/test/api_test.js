@@ -1,5 +1,5 @@
 import helper from './helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
@@ -32,7 +32,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
    * errMessage - if statusCode is set, error messages should begin with this
    */
   const makeApiCall = async ({ clientName, apiCall, name, args, res, statusCode, errMessage }) => {
-    let client = await helper.client(clientName);
+    const client = await helper.client(clientName);
     let gotRes = undefined;
     try {
       if (args) {
@@ -181,9 +181,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('Expire secrets', async () => {
-    let client = await helper.client('captain-read-write');
-    let expireKey = 'captain:' + slugid.v4();
-    let saveKey = 'captain:' + slugid.v4();
+    const client = await helper.client('captain-read-write');
+    const expireKey = 'captain:' + slugid.v4();
+    const saveKey = 'captain:' + slugid.v4();
 
     helper.load.save();
 
@@ -205,7 +205,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await helper.load('expire');
 
-      let { secret } = await client.get(saveKey);
+      const { secret } = await client.get(saveKey);
       assert.deepEqual(secret, {
         message: 'keep this secret!!',
         list: ['hello', 'world'],
@@ -234,7 +234,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // delete any secrets we can see
     let list = await client.list();
-    for (let secret of list.secrets) {
+    for (const secret of list.secrets) {
       await client.remove(secret);
     }
 

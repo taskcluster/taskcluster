@@ -1,6 +1,6 @@
-import assert from 'assert';
-import path from 'path';
-import fs from 'fs/promises';
+import assert from 'node:assert';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
@@ -48,7 +48,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   function pulseTest(params) {
     test(params.testName, async function() {
       // Trigger a pull-request message
-      let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
+      const res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
       res.connection?.destroy();
 
       const webhook = await loadWebhookJson(params.jsonFile);

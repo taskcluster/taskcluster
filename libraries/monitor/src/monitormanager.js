@@ -1,8 +1,8 @@
-import assert from 'assert';
-import fs from 'fs';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 import _ from 'lodash';
-import stream from 'stream';
+import stream from 'node:stream';
 import { LEVELS } from './logger.js';
 import Monitor from './monitor.js';
 import chalk from 'chalk';

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-testing:FakeAuth');
 import nock from 'nock';
@@ -22,17 +22,17 @@ export const start = function(clients, { rootUrl } = {}) {
       let ext = null;
       let clientId = null;
       if (body.authorization) {
-        let authorization = hawk.utils.parseAuthorizationHeader(body.authorization);
+        const authorization = hawk.utils.parseAuthorizationHeader(body.authorization);
         clientId = authorization.id;
         scopes = clients[clientId];
         ext = authorization.ext;
       } else if (/^\/.*[\?&]bewit\=/.test(body.resource)) {
         // The following is a hacky reproduction of the bewit logic in
         // https://github.com/hueniverse/hawk/blob/0833f99ba64558525995a7e21d4093da1f3e15fa/lib/server.js#L366-L383
-        let bewitString = URL.parse(body.resource, rootUrl)?.searchParams?.get('bewit');
+        const bewitString = URL.parse(body.resource, rootUrl)?.searchParams?.get('bewit');
         if (bewitString) {
-          let bewit = Buffer.from(bewitString, 'base64').toString('utf-8');
-          let bewitParts = bewit.split('\\');
+          const bewit = Buffer.from(bewitString, 'base64').toString('utf-8');
+          const bewitParts = bewit.split('\\');
           clientId = bewitParts[0];
           if (!(clientId in clients)) {
             debug(`rejecting access to ${body.resource} by ${clientId}`);
@@ -75,7 +75,7 @@ export const start = function(clients, { rootUrl } = {}) {
           ' by ' + clientId +
           ' with scopes ' + scopes.join(', ') +
           ' from ' + from);
-      let expires = taskcluster.fromNow('2 minutes');
+      const expires = taskcluster.fromNow('2 minutes');
       return { status: 'auth-success', scheme: 'hawk', scopes, clientId, expires };
     });
 };

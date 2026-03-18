@@ -1,6 +1,6 @@
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import slug from 'slugid';
-import assert from 'assert';
+import assert from 'node:assert';
 import { ApiError, Provider } from './providers/provider.js';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { WorkerPool, WorkerPoolError, Worker, WorkerPoolStats } from './data.js';
@@ -24,7 +24,7 @@ export const AUDIT_ENTRY_TYPE = Object.freeze({
  *  publisher: import('@taskcluster/lib-pulse').PulsePublisher; // TODO add generic type
  * }>}
  */
-let builder = new APIBuilder({
+const builder = new APIBuilder({
   title: 'Worker Manager Service',
   description: [
     'This service manages workers, including provisioning for dynamic worker pools.',
@@ -801,7 +801,7 @@ declareWithTrailingColon({
   res.reply(worker.serializable({ removeQueueData: true }));
 });
 
-let cleanCreatePayload = payload => {
+const cleanCreatePayload = payload => {
   if (payload.providerInfo && payload.providerInfo.staticSecret) {
     payload.providerInfo.staticSecret = '(OMITTED)';
   }
@@ -1071,7 +1071,7 @@ builder.declare({
   });
 });
 
-let cleanPayload = payload => {
+const cleanPayload = payload => {
   payload = '(OMITTED)';
   return payload;
 };
@@ -1319,7 +1319,7 @@ builder.declare({
 
   const result = {
     workers: workers.map(worker => {
-      let entry = {
+      const entry = {
         workerGroup: worker.workerGroup,
         workerId: worker.workerId,
         firstClaim: worker.firstClaim?.toJSON(),

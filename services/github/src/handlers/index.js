@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import stringify from 'fast-json-stable-stringify';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import taskcluster from '@taskcluster/client';
 import yaml from 'js-yaml';
-import assert from 'assert';
+import assert from 'node:assert';
 import { consume } from '@taskcluster/lib-pulse';
 import { deprecatedStatusHandler } from './deprecatedStatus.js';
 import { taskGroupCreationHandler } from './taskGroupCreation.js';

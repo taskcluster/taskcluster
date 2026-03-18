@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { Backend } from './base.js';
 import { reportError } from '@taskcluster/lib-api';
 

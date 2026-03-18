@@ -1,5 +1,5 @@
-import assert from 'assert';
-import path from 'path';
+import assert from 'node:assert';
+import path from 'node:path';
 import {
   SESv2Client,
   SendEmailCommand,
@@ -130,7 +130,7 @@ helper.withSES = (mock, skipping) => {
       }
 
       // Send emails to sqs for testing
-      let sns = new SNSClient({
+      const sns = new SNSClient({
         credentials: {
           accessKeyId: cfg.aws.accessKeyId,
           secretAccessKey: cfg.aws.secretAccessKey,
@@ -188,7 +188,7 @@ helper.withSES = (mock, skipping) => {
           WaitTimeSeconds: 20,
         }));
         const messages = resp.Messages || [];
-        for (let message of messages) {
+        for (const message of messages) {
           await sqs.send(new DeleteMessageCommand({
             QueueUrl: emailSQSQueue,
             ReceiptHandle: message.ReceiptHandle,

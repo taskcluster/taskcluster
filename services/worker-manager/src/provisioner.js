@@ -1,4 +1,4 @@
-import process from 'process';
+import process from 'node:process';
 import Iterate from '@taskcluster/lib-iterate';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
 import { WorkerPool, Worker, WorkerPoolStats } from './data.js';
@@ -106,7 +106,7 @@ export class Provisioner {
       );
 
     const stats = new WorkerPoolStats(workerPoolId);
-    for await (let row of paginatedIterator({ fetch })) {
+    for await (const row of paginatedIterator({ fetch })) {
       const worker = Worker.fromDb(row);
       // track the providerIds seen for each worker pool, so they can be removed
       // from the list of previous provider IDs
@@ -117,7 +117,7 @@ export class Provisioner {
     // add information about errors in the past 60 minutes
     const lastHour = fromNow('-1 hour');
     const errorsByLc = await this.db.fns.get_worker_pool_error_launch_configs(workerPoolId, lastHour);
-    for (let row of errorsByLc) {
+    for (const row of errorsByLc) {
       stats.totalErrors += row.count;
       stats.errorsByLaunchConfig.set(row.launch_config_id, row.count);
     }

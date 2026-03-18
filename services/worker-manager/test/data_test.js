@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import _ from 'lodash';
 import testing from '@taskcluster/lib-testing';

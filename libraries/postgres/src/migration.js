@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import { dollarQuote, ETA } from './util.js';
 import { UNDEFINED_FUNCTION } from './constants.js';
 
@@ -77,7 +77,7 @@ export const runMigration = async ({ client, version, showProgress, usernamePref
     }
 
     showProgress('..defining methods');
-    for (let method of Object.values(version.methods)) {
+    for (const method of Object.values(version.methods)) {
       if (method.deprecated && !method.args && !method.returns && !method.body) {
         continue; // This allows just deprecating without changing a method
       }
@@ -102,7 +102,7 @@ export const runDowngrade = async ({ client, schema, fromVersion, toVersion, sho
     // either find the most recent definition of each function,
     // or drop the function if it was not defined before fromVersion
     showProgress('..redefining methods');
-    for (let [methodName, { args }] of Object.entries(fromVersion.methods)) {
+    for (const [methodName, { args }] of Object.entries(fromVersion.methods)) {
       let foundMethod = false;
       for (let ver = toVersion.version; ver > 0; ver--) {
         const version = schema.getVersion(ver);

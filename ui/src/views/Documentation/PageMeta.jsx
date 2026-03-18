@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { join } from 'path';
+import { join } from 'node:path';
 import { func } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';

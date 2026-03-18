@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import forge from 'node-forge';
 import slugid from 'slugid';
@@ -57,7 +57,7 @@ export function generateAdmin() {
 
 export function workerConfigWithSecrets(cfg) {
   assert(_.has(cfg, 'osProfile'));
-  let newCfg = _.cloneDeep(cfg);
+  const newCfg = _.cloneDeep(cfg);
   const { adminUsername, adminPassword } = generateAdmin();
   newCfg.osProfile.adminUsername = adminUsername;
   newCfg.osProfile.adminPassword = adminPassword;

@@ -85,12 +85,12 @@ const generateS3Url = async function({ artifact, skipCDN, req }) {
   let url;
 
   // First, let's figure out which region the request is coming from
-  let region = this.regionResolver.getRegion(req);
-  let prefix = artifact.details.prefix;
-  let bucket = artifact.details.bucket;
+  const region = this.regionResolver.getRegion(req);
+  const prefix = artifact.details.prefix;
+  const bucket = artifact.details.bucket;
 
   if (this.signPublicArtifactUrls || bucket === this.privateBucket.bucket) {
-    let bucketObject = (bucket === this.privateBucket.bucket) ?
+    const bucketObject = (bucket === this.privateBucket.bucket) ?
       this.privateBucket : this.publicBucket;
     url = await bucketObject.createSignedGetUrl(prefix, {
       expires: 30 * 60,
@@ -169,19 +169,19 @@ export const loadArtifactsRoutes = (builder) => {
       'artifacts can be set to expire a few days later.',
     ].join('\n'),
   }, async function(req, res) {
-    let taskId = req.params.taskId;
-    let runId = parseInt(req.params.runId, 10);
-    let name = req.params.name;
-    let input = req.body;
-    let storageType = input.storageType;
-    let contentType = input.contentType || 'application/binary';
-    let contentLength = input.contentLength ?? null;
+    const taskId = req.params.taskId;
+    const runId = parseInt(req.params.runId, 10);
+    const name = req.params.name;
+    const input = req.body;
+    const storageType = input.storageType;
+    const contentType = input.contentType || 'application/binary';
+    const contentLength = input.contentLength ?? null;
 
     // Find expiration date
-    let expires = new Date(input.expires);
+    const expires = new Date(input.expires);
 
     // Validate expires it is in the future
-    let past = new Date();
+    const past = new Date();
     past.setMinutes(past.getMinutes() - 15);
     if (expires.getTime() < past.getTime()) {
       return res.reportError('InputError',
@@ -190,7 +190,7 @@ export const loadArtifactsRoutes = (builder) => {
     }
 
     // Load Task entity
-    let task = await Task.get(this.db, taskId);
+    const task = await Task.get(this.db, taskId);
 
     // Handle cases where the task doesn't exist
     if (!task) {
@@ -200,7 +200,7 @@ export const loadArtifactsRoutes = (builder) => {
     }
 
     // Check presence of the run
-    let run = task.runs[runId];
+    const run = task.runs[runId];
     if (!run) {
       return res.reportError('InputError',
         'Run not found',
@@ -266,8 +266,8 @@ export const loadArtifactsRoutes = (builder) => {
     // NOTE: isPublic is a relic from before RFC#165.  If signPublicArtifactUrls is set,
     // then this value has no effect.  With the advent of the Object service, this relic
     // will disappear.
-    let isPublic = /^public\//.test(name);
-    let details = {};
+    const isPublic = /^public\//.test(name);
+    const details = {};
     let present = false;
     let uploadId, objectName;
     switch (storageType) {
@@ -344,7 +344,7 @@ export const loadArtifactsRoutes = (builder) => {
       // Load original Artifact entity
       const original = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact_2(taskId, runId, name));
 
-      let ok = createArtifactCallsCompatible(original, { storageType, contentType, expires, details });
+      const ok = createArtifactCallsCompatible(original, { storageType, contentType, expires, details });
 
       if (!ok) {
         return res.reportError('RequestConflict',
@@ -414,7 +414,7 @@ export const loadArtifactsRoutes = (builder) => {
 
       case 's3': {
       // Reply with signed S3 URL
-        let expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
+        const expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
         let bucket = null;
         if (artifact.details.bucket === this.publicBucket.bucket) {
           bucket = this.publicBucket;
@@ -423,7 +423,7 @@ export const loadArtifactsRoutes = (builder) => {
           bucket = this.privateBucket;
         }
         // Create put URL
-        let putUrl = await bucket.createPutUrl(
+        const putUrl = await bucket.createPutUrl(
           artifact.details.prefix, {
             contentType: artifact.contentType,
             expires: 45 * 60 + 10, // Add 10 sec for clock drift
@@ -552,7 +552,7 @@ export const loadArtifactsRoutes = (builder) => {
    * names is used internally for tracking artifact names that have already been seen
    * when traversing links.
    */
-  let replyWithArtifactDownload = async function({ taskId, runId, name, req, res, names }) {
+  const replyWithArtifactDownload = async function({ taskId, runId, name, req, res, names }) {
     const artifact = await getArtifactFollowingLinks.call(this, { taskId, runId, name, req, res });
 
     const { storageType } = artifact;
@@ -596,7 +596,7 @@ export const loadArtifactsRoutes = (builder) => {
     if (storageType === 's3') {
       // We have a header to skip the CDN (cloudfront) for those requests
       // which require it
-      let skipCDNHeader = (req.headers['x-taskcluster-skip-cdn'] || '').toLowerCase();
+      const skipCDNHeader = (req.headers['x-taskcluster-skip-cdn'] || '').toLowerCase();
 
       let skipCDN = false;
       if (skipCDNHeader === 'true' || skipCDNHeader === '1') {
@@ -633,7 +633,7 @@ export const loadArtifactsRoutes = (builder) => {
     }
 
     // We should never arrive here
-    let err = new Error('Unknown artifact storageType: ' + storageType);
+    const err = new Error('Unknown artifact storageType: ' + storageType);
     err.artifact = artifactUtils.serialize(artifact);
     this.monitor.reportError(err);
   };
@@ -701,9 +701,9 @@ export const loadArtifactsRoutes = (builder) => {
       '* x-taskcluster-artifact-storage-type: the storage type.  Example: s3',
     ].join('\n'),
   }, async function(req, res) {
-    let taskId = req.params.taskId;
-    let runId = parseInt(req.params.runId, 10);
-    let name = req.params.name;
+    const taskId = req.params.taskId;
+    const runId = parseInt(req.params.runId, 10);
+    const name = req.params.name;
 
     return replyWithArtifactDownload.call(this, { taskId, runId, name, req, res, names: [name] });
   });
@@ -775,13 +775,13 @@ export const loadArtifactsRoutes = (builder) => {
       'the latest run. Otherwise, just use the most convenient API end-point.',
     ].join('\n'),
   }, async function(req, res) {
-    let taskId = req.params.taskId;
-    let name = req.params.name;
+    const taskId = req.params.taskId;
+    const name = req.params.name;
 
     // check permisison before possibly returning a 404 for the task or run
     await req.authorize({ names: [name] });
 
-    let runId = await getLatestRunId.call(this, { taskId, res });
+    const runId = await getLatestRunId.call(this, { taskId, res });
 
     return replyWithArtifactDownload.call(this, { taskId, runId, name, req, res, names: [name] });
   });
@@ -799,7 +799,7 @@ export const loadArtifactsRoutes = (builder) => {
       }),
     });
 
-    let result = {
+    const result = {
       artifacts: artifacts.rows.map(r => artifactUtils.serialize(artifactUtils.fromDb(r))),
     };
     if (artifacts.continuationToken) {
@@ -832,9 +832,9 @@ export const loadArtifactsRoutes = (builder) => {
       'you may limit this with the query-string parameter `limit`.',
     ].join('\n'),
   }, async function(req, res) {
-    let taskId = req.params.taskId;
-    let runId = parseInt(req.params.runId, 10);
-    let latestRunId = await getLatestRunId.call(this, { taskId, res });
+    const taskId = req.params.taskId;
+    const runId = parseInt(req.params.runId, 10);
+    const latestRunId = await getLatestRunId.call(this, { taskId, res });
 
     // Check that we have the run
     if (runId < 0 || runId > latestRunId) {
@@ -872,8 +872,8 @@ export const loadArtifactsRoutes = (builder) => {
       'you may limit this with the query-string parameter `limit`.',
     ].join('\n'),
   }, async function(req, res) {
-    let taskId = req.params.taskId;
-    let runId = await getLatestRunId.call(this, { taskId, res });
+    const taskId = req.params.taskId;
+    const runId = await getLatestRunId.call(this, { taskId, res });
 
     return await replyWithArtifactsList.call(this, { query: req.query, taskId, runId, res });
   });
@@ -990,7 +990,7 @@ export const loadArtifactsRoutes = (builder) => {
 
       default: {
         // (note: links should have been evaluated already)
-        let err = new Error('Unknown artifact storageType: ' + storageType);
+        const err = new Error('Unknown artifact storageType: ' + storageType);
         err.artifact = artifactUtils.serialize(artifact);
         this.monitor.reportError(err);
       }

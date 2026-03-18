@@ -1,8 +1,8 @@
 import taskcluster from '../src/index.js';
 import nock from 'nock';
 import { Readable, Writable } from 'node:stream';
-import crypto from 'crypto';
-import { strict as assert } from 'assert';
+import crypto from 'node:crypto';
+import { strict as assert } from 'node:assert';
 import testing from './helper.js';
 
 class WritableStream extends Writable {
@@ -73,7 +73,7 @@ suite(testing.suiteName(), function() {
     });
 
     let stream;
-    let contentType = await taskcluster.download({
+    const contentType = await taskcluster.download({
       name,
       object,
       streamFactory: async () => {

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { getCommonSchemas } from '../src/common-schemas.js';
 import libUrls from 'taskcluster-lib-urls';
 import _ from 'lodash';

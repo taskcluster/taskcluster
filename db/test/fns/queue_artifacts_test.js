@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import slugid from 'slugid';
@@ -296,7 +296,7 @@ suite(testing.suiteName(), function() {
       'RH2ugTjiS1qfb-3XnkcswA',
       'XEqGQJ6_STyLMDTU1-F2Jw',
     ];
-    for (let taskId of taskIds) {
+    for (const taskId of taskIds) {
       for (let runId = 0; runId < 3; runId++) {
         for (let name = 0; name < 5; name++) {
           name = `name/${name}`;
@@ -322,7 +322,7 @@ suite(testing.suiteName(), function() {
     const fetchInPages = ({ page_size_in, perTaskId }) => {
       return async () => {
         let allRows = [];
-        for (let task_id_in of perTaskId ? taskIds : [null]) {
+        for (const task_id_in of perTaskId ? taskIds : [null]) {
           let lastRow = null;
           while (true) {
             const rows = await db.fns.get_queue_artifacts_paginated_2({
@@ -373,12 +373,12 @@ suite(testing.suiteName(), function() {
       fetchInPages({ page_size_in: 10 }),
     ];
 
-    for (let fetch of fetches) {
-      let rows = await fetch();
+    for (const fetch of fetches) {
+      const rows = await fetch();
       assert.deepEqual(
         rows.map(({ task_id, run_id, name }) => ([task_id, run_id, name])),
         expected);
-      for (let row of rows) {
+      for (const row of rows) {
         assert.equal(row.storage_type, 'storage-type');
         assert.equal(row.content_type, 'content-type');
         assert.deepEqual(row.details, {});
@@ -456,7 +456,7 @@ suite(testing.suiteName(), function() {
       );
     }
 
-    let rows = await db.fns.get_queue_artifacts_paginated_2({
+    const rows = await db.fns.get_queue_artifacts_paginated_2({
       task_id_in: null,
       run_id_in: null,
       expires_in: today,

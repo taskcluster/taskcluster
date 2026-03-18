@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import builder from '../src/api.js';
 import taskcluster from '@taskcluster/client';
 import loadMain from '../src/main.js';
@@ -38,7 +38,7 @@ helper.withDb = (mock, skipping) => {
  */
 helper.withServer = (mock, skipping) => {
   let webServer;
-  let cachePurgeCache = {};
+  const cachePurgeCache = {};
 
   suiteSetup(async function() {
     if (skipping()) {

@@ -1,5 +1,5 @@
 import fastMemoize from 'fast-memoize';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 const MAX_SIZE = 10;
 const MAX_KEY_LENGTH = 200;

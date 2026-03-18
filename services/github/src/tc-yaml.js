@@ -43,7 +43,7 @@ class VersionZero extends TcYaml {
         `assume:repo:github.com/${ payload.organization }/${ payload.repository }:pull-request`,
       ];
     } else if (payload.details['event.type'] === 'push') {
-      let prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:branch:`;
+      const prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:branch:`;
       config.scopes = [
         prefix + payload.details['event.base.repo.branch'],
       ];
@@ -52,7 +52,7 @@ class VersionZero extends TcYaml {
         `assume:repo:github.com/${ payload.organization }/${ payload.repository }:release:published`,
       ];
     } else if (payload.details['event.type'] === 'tag') {
-      let prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:tag:`;
+      const prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:tag:`;
       config.scopes = [
         prefix + payload.details['event.head.tag'],
       ];
@@ -63,7 +63,7 @@ class VersionZero extends TcYaml {
 
     // each task can optionally decide if it wants github specific environment
     // variables added to it
-    let stringify = x => x ? `${x}` : x;
+    const stringify = x => x ? `${x}` : x;
     config.tasks = config.tasks.map((task) => {
       if (task.task.extra.github.env) {
         task.task.payload.env = _.merge(
@@ -123,11 +123,11 @@ class VersionZero extends TcYaml {
         return false;
       }
 
-      let event = payload.details['event.type'];
-      let events = task.task.extra.github.events;
-      let branch = payload.details['event.base.repo.branch'];
-      let includeBranches = task.task.extra.github.branches;
-      let excludeBranches = task.task.extra.github.excludeBranches;
+      const event = payload.details['event.type'];
+      const events = task.task.extra.github.events;
+      const branch = payload.details['event.base.repo.branch'];
+      const includeBranches = task.task.extra.github.branches;
+      const excludeBranches = task.task.extra.github.excludeBranches;
 
       if (includeBranches && excludeBranches) {
         throw new Error('Cannot specify both `branches` and `excludeBranches` in the same task!');
@@ -155,7 +155,7 @@ class VersionZero extends TcYaml {
     // Add common taskGroupId and schedulerId. taskGroupId is always the taskId of the first
     // task in taskcluster.
     if (config.tasks && config.tasks.length > 0) {
-      let taskGroupId = config.tasks[0].taskId;
+      const taskGroupId = config.tasks[0].taskId;
       config.tasks = config.tasks.map((task) => {
         return {
           taskId: task.taskId,
@@ -190,12 +190,12 @@ class VersionOne extends TcYaml {
       ];
     } else if (payload.tasks_for === GITHUB_TASKS_FOR.PUSH) {
       if (payload.body.ref.split('/')[1] === 'tags') {
-        let prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:tag:`;
+        const prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:tag:`;
         config.scopes = [
           prefix + payload.details['event.head.tag'],
         ];
       } else {
-        let prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:branch:`;
+        const prefix = `assume:repo:github.com/${ payload.organization }/${ payload.repository }:branch:`;
         config.scopes = [
           prefix + payload.details['event.base.repo.branch'],
         ];
@@ -217,9 +217,9 @@ class VersionOne extends TcYaml {
   substituteParameters(config, cfg, payload) {
     branchTest(payload.branch);
 
-    let slugids = {};
-    let as_slugid = (label) => {
-      let rv = slugids[label];
+    const slugids = {};
+    const as_slugid = (label) => {
+      const rv = slugids[label];
       if (rv) {
         return rv;
       } else {
@@ -254,7 +254,7 @@ class VersionOne extends TcYaml {
       let defaultTaskGroupId;
 
       if (config.tasks.length === 1) {
-        let soleTask = config.tasks[0];
+        const soleTask = config.tasks[0];
         if (soleTask.taskId && soleTask.taskGroupId) {
           // Nothing to do. Everything is already defined.
         } else if (soleTask.taskId) {
@@ -271,7 +271,7 @@ class VersionOne extends TcYaml {
       }
 
       const taskMap = {};
-      let tsort = new TopoSort();
+      const tsort = new TopoSort();
 
       // process tasks and set up topological sorting
       config.tasks.forEach(task => {

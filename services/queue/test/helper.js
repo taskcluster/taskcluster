@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
 import builder from '../src/api.js';
@@ -17,7 +17,7 @@ import {
 import { mockClient } from 'aws-sdk-client-mock';
 import nock from 'nock';
 import testing from '@taskcluster/lib-testing';
-import { globalAgent } from 'http';
+import { globalAgent } from 'node:http';
 
 export const load = testing.stickyLoader(loadMain);
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -89,7 +89,7 @@ export const withS3 = (mock, skipping) => {
         })
         .on(DeleteObjectsCommand)
         .callsFake(async ({ Delete }) => {
-          for (let { Key } of Delete.Objects) {
+          for (const { Key } of Delete.Objects) {
             artifacts = artifacts.filter(a => a.Key !== Key);
           }
           return {};
@@ -428,7 +428,7 @@ export const checkDates = ({ status }) => {
 
   chk(status.deadline, "status.deadline");
   chk(status.expires, "status.expires");
-  for (let run of status.runs) {
+  for (const run of status.runs) {
     chk(run.takenUntil, "run.takenUntil");
     chk(run.scheduled, "run.scheduled");
     chk(run.started, "run.started");

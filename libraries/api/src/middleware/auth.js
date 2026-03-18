@@ -1,7 +1,7 @@
 import hawk from 'hawk';
-import assert from 'assert';
+import assert from 'node:assert';
 import scopes from 'taskcluster-lib-scopes';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { cleanRouteAndParams } from '../utils.js';
 import ScopeExpressionTemplate from '../expressions.js';
 import { ErrorReply } from '../error-reply.js';

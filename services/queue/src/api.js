@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import taskcluster from '@taskcluster/client';
@@ -88,7 +88,7 @@ const TASK_QUEUE_ID_PATTERN = new RegExp('^[a-zA-Z0-9-_]{1,38}/[a-z]([-a-z0-9]{0
  *  taskMaxDependencies: object; // todo
  * }>}
  */
-let builder = new APIBuilder({
+const builder = new APIBuilder({
   title: 'Queue Service',
   description: [
     'The queue service is responsible for accepting tasks and tracking their state',
@@ -213,7 +213,7 @@ builder.declare({
   }
 
   // Create task definition
-  let definition = await task.definition();
+  const definition = await task.definition();
 
   return res.reply(definition);
 });
@@ -309,7 +309,7 @@ builder.declare({
     'Get task status structure from `taskId`',
   ].join('\n'),
 }, async function(req, res) {
-  let task = await Task.get(this.db, req.params.taskId);
+  const task = await Task.get(this.db, req.params.taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -360,10 +360,10 @@ builder.declare({
     'you can call the `getTaskGroup` method.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskGroupId = req.params.taskGroupId;
+  const taskGroupId = req.params.taskGroupId;
 
   // Find taskGroup and list of members
-  let [
+  const [
     taskGroups,
     { continuationToken, rows },
   ] = await Promise.all([
@@ -386,7 +386,7 @@ builder.declare({
   const taskGroup = TaskGroup.fromDbRows(taskGroups);
 
   // Build result
-  let result = {
+  const result = {
     taskGroupId,
     schedulerId: taskGroup.schedulerId,
     expires: taskGroup.expires.toJSON(),
@@ -409,16 +409,16 @@ builder.declare({
 
 const cancelSingleTask = async (task, ctx) => {
   // Get the last run, there should always be one
-  let run = _.last(task.runs);
+  const run = _.last(task.runs);
   if (!run) {
-    let err = new Error('There should exist a run after cancelSingleTask!');
+    const err = new Error('There should exist a run after cancelSingleTask!');
     err.taskId = task.taskId;
     err.status = task.status();
     ctx.monitor.reportError(err);
   }
 
   // Construct status object
-  let status = task.status();
+  const status = task.status();
 
   // If the last run was canceled, resolve dependencies and publish message
   if (run && run.state === 'exception' && run.reasonResolved === 'canceled') {
@@ -631,10 +631,10 @@ builder.declare({
     'use the query-string option `limit` to return fewer.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId = req.params.taskId;
+  const taskId = req.params.taskId;
 
   // Find task and list dependents
-  let [
+  const [
     task,
     { continuationToken, rows },
   ] = await Promise.all([
@@ -655,10 +655,10 @@ builder.declare({
   }
 
   // Load tasks
-  let tasks = await Promise.all(rows.map(row => Task.get(this.db, row.dependent_task_id)));
+  const tasks = await Promise.all(rows.map(row => Task.get(this.db, row.dependent_task_id)));
 
   // Build result
-  let result = {
+  const result = {
     taskId,
     tasks: await Promise.all(tasks.map(async (task) => {
       return {
@@ -697,15 +697,15 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
 };
 
 /** Construct default values and validate dates */
-let patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
+const patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
   // Set taskGroupId to taskId if not provided
   if (!taskDef.taskGroupId) {
     taskDef.taskGroupId = taskId;
   }
 
   // Ensure: created < now < deadline (with drift up to 15 min)
-  let created = new Date(taskDef.created);
-  let deadline = new Date(taskDef.deadline);
+  const created = new Date(taskDef.created);
+  const deadline = new Date(taskDef.deadline);
   if (created.getTime() < new Date().getTime() - 15 * 60 * 1000) {
     return {
       code: 'InputError',
@@ -735,7 +735,7 @@ let patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
     };
   }
 
-  let msToDeadline = deadline.getTime() - new Date().getTime();
+  const msToDeadline = deadline.getTime() - new Date().getTime();
   // Validate that deadline is less than maxTaskDeadlineDays from now, allow 15 min drift
   if (msToDeadline > maxTaskDeadlineDays * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
@@ -747,7 +747,7 @@ let patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
 
   // Set expires, if not defined
   if (!taskDef.expires) {
-    let expires = new Date(taskDef.deadline);
+    const expires = new Date(taskDef.deadline);
     expires.setFullYear(expires.getFullYear() + 1);
     taskDef.expires = expires.toJSON();
   }
@@ -776,10 +776,10 @@ let patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
 };
 
 /** Ensure the taskGroup exists and that membership is declared */
-let ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
-  let taskGroupId = taskDef.taskGroupId;
-  let schedulerId = taskDef.schedulerId;
-  let expires = new Date(taskDef.expires);
+const ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
+  const taskGroupId = taskDef.taskGroupId;
+  const schedulerId = taskDef.schedulerId;
+  const expires = new Date(taskDef.expires);
 
   try {
     await ctx.db.fns.ensure_task_group(taskGroupId, schedulerId, expires);
@@ -863,8 +863,8 @@ builder.declare({
     'for this `taskGroupId`.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId = req.params.taskId;
-  let taskDef = req.body;
+  const taskId = req.params.taskId;
+  const taskDef = req.body;
 
   // During the transition to the taskQueueId identifier, we have to
   // accept all possible incoming definitions that may contain either
@@ -904,7 +904,7 @@ builder.declare({
   await authorizeTaskCreation(req, taskId, taskDef);
 
   // Patch default values and validate timestamps
-  let detail = patchAndValidateTaskDef(taskId, taskDef, this.maxTaskDeadlineDays);
+  const detail = patchAndValidateTaskDef(taskId, taskDef, this.maxTaskDeadlineDays);
   if (detail) {
     return res.reportError(detail.code, detail.message, detail.details);
   }
@@ -926,13 +926,13 @@ builder.declare({
     new Date(taskDef.deadline),
   );
 
-  let task = Task.fromApi(taskId, taskDef);
+  const task = Task.fromApi(taskId, taskDef);
   useOnlyTaskQueueId(task);
 
   // Fetch the status of the task before creation, so that `taskDefined` messages
   // have a default status. This can't be run after create, since create is
   // idempotent and does a DB fetch.
-  let initialStatus = task.status();
+  const initialStatus = task.status();
 
   try {
     await task.create(this.db);
@@ -953,7 +953,7 @@ builder.declare({
       await this.db.fns.schedule_task(taskId, 'scheduled'));
   } else {
     // Track dependencies, adds a pending run if ready to run
-    let err = await this.dependencyTracker.trackDependencies(task);
+    const err = await this.dependencyTracker.trackDependencies(task);
     // If we get an error here the task will be left in state = 'unscheduled',
     // any attempt to use the same taskId will fail. And eventually the task
     // will be resolved deadline-expired. But since createTask never returned
@@ -964,8 +964,8 @@ builder.declare({
   }
 
   // Construct task status, as we'll return this many times
-  let status = task.status();
-  let taskPulseContents = {
+  const status = task.status();
+  const taskPulseContents = {
     tags: task.tags,
   };
 
@@ -984,7 +984,7 @@ builder.declare({
   const runId = 0;
 
   // Same as above but for tasks with no dependencies, scheduling the first run.
-  let runZeroState = (task.runs[runId] || { state: 'unscheduled' }).state;
+  const runZeroState = (task.runs[runId] || { state: 'unscheduled' }).state;
   if (runZeroState === 'pending') {
     await Promise.all([
       // Put message into the task pending queue
@@ -1035,8 +1035,8 @@ builder.declare({
     'To reschedule a task previously resolved, use `rerunTask`.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId = req.params.taskId;
-  let task = await Task.get(this.db, taskId);
+  const taskId = req.params.taskId;
+  const task = await Task.get(this.db, taskId);
 
   // If task entity doesn't exists, we return ResourceNotFound
   if (!task) {
@@ -1055,7 +1055,7 @@ builder.declare({
   });
 
   // Attempt to schedule task
-  let status = await this.dependencyTracker.scheduleTask(task);
+  const status = await this.dependencyTracker.scheduleTask(task);
 
   // If null it must because deadline is exceeded
   if (status === null) {
@@ -1105,8 +1105,8 @@ builder.declare({
     'is `pending` or `running`, it will just return the current task status.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId = req.params.taskId;
-  let task = await Task.get(this.db, taskId);
+  const taskId = req.params.taskId;
+  const task = await Task.get(this.db, taskId);
 
   // Report ResourceNotFound, if task entity doesn't exist
   if (!task) {
@@ -1140,7 +1140,7 @@ builder.declare({
   task.updateStatusWith(
     await this.db.fns.rerun_task(taskId));
 
-  let state = task.state();
+  const state = task.state();
 
   // If not running or pending, and we couldn't create more runs then we have
   // a conflict
@@ -1156,9 +1156,9 @@ builder.declare({
 
   // Put message in pending queue, and publish message to pulse,
   // if the initial run is pending
-  let status = task.status();
+  const status = task.status();
   if (state === 'pending') {
-    let runId = task.runs.length - 1;
+    const runId = task.runs.length - 1;
     await Promise.all([
       this.queueService.putPendingMessage(task, runId),
       this.publisher.taskPending({
@@ -1206,7 +1206,7 @@ builder.declare({
     'return the current task status.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId = req.params.taskId;
+  const taskId = req.params.taskId;
   let task = await Task.get(this.db, taskId);
 
   // Report ResourceNotFound, if task entity doesn't exist
@@ -1274,7 +1274,7 @@ builder.declare({
 }, async function (req, res) {
   const { taskId } = req.params;
   const { newPriority } = req.body;
-  let task = await Task.get(this.db, taskId);
+  const task = await Task.get(this.db, taskId);
 
   if (!task) {
     return res.reportError('ResourceNotFound',
@@ -1393,10 +1393,10 @@ builder.declare({
 
 // Hack to get promises that resolve after 20s without creating a setTimeout
 // for each, instead we create a new promise every 2s and reuse that.
-let _lastTime = 0;
+const _lastTime = 0;
 let _sleeping = null;
-let sleep20Seconds = () => {
-  let time = Date.now();
+const sleep20Seconds = () => {
+  const time = Date.now();
   if (!_sleeping || time - _lastTime > 2000) {
     _sleeping = new Promise(accept => setTimeout(accept, 20 * 1000));
   }
@@ -1428,10 +1428,10 @@ builder.declare({
     'simple implementation of "long polling".',
   ].join('\n'),
 }, async function(req, res) {
-  let taskQueueId = req.params.taskQueueId;
-  let workerGroup = req.body.workerGroup;
-  let workerId = req.body.workerId;
-  let count = req.body.tasks;
+  const taskQueueId = req.params.taskQueueId;
+  const workerGroup = req.body.workerGroup;
+  const workerId = req.body.workerId;
+  const count = req.body.tasks;
 
   await req.authorize({
     workerGroup,
@@ -1455,12 +1455,12 @@ builder.declare({
   }
 
   // Allow request to abort their claim request, if the connection closes
-  let aborted = new Promise(accept => {
+  const aborted = new Promise(accept => {
     sleep20Seconds().then(accept);
     res.once('close', accept);
   });
 
-  let [result] = await Promise.all([
+  const [result] = await Promise.all([
     this.workClaimer.claim(
       taskQueueId, workerGroup, workerId, count, aborted,
     ),
@@ -1502,13 +1502,13 @@ builder.declare({
     'claim a task - never documented',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId = req.params.taskId;
-  let runId = parseInt(req.params.runId, 10);
+  const taskId = req.params.taskId;
+  const runId = parseInt(req.params.runId, 10);
 
-  let workerGroup = req.body.workerGroup;
-  let workerId = req.body.workerId;
+  const workerGroup = req.body.workerGroup;
+  const workerId = req.body.workerId;
 
-  let task = await Task.get(this.db, taskId);
+  const task = await Task.get(this.db, taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -1549,7 +1549,7 @@ builder.declare({
   }
 
   // Claim task
-  let [result] = await Promise.all([
+  const [result] = await Promise.all([
     this.workClaimer.claimTask(
       taskId, runId, workerGroup, workerId, task,
     ),
@@ -1618,10 +1618,10 @@ builder.declare({
     'need to resolve the run or upload artifacts.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId = req.params.taskId;
-  let runId = parseInt(req.params.runId, 10);
+  const taskId = req.params.taskId;
+  const runId = parseInt(req.params.runId, 10);
 
-  let task = await Task.get(this.db, taskId);
+  const task = await Task.get(this.db, taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -1665,7 +1665,7 @@ builder.declare({
   }
 
   // Set takenUntil to now + claimTimeout
-  let takenUntil = new Date();
+  const takenUntil = new Date();
   takenUntil.setSeconds(takenUntil.getSeconds() + this.claimTimeout);
 
   // Put claim-expiration message in queue, if not already done, before
@@ -1691,7 +1691,7 @@ builder.declare({
     );
   }
 
-  let credentials = taskCreds(
+  const credentials = taskCreds(
     taskId,
     runId,
     run.workerGroup,
@@ -1723,11 +1723,11 @@ builder.declare({
  * Resolve a run of a task as `target` ('completed' or 'failed').
  * This function assumes the same context as the API.
  */
-let resolveTask = async function(req, res, taskId, runId, target) {
+const resolveTask = async function(req, res, taskId, runId, target) {
   assert(target === 'completed' ||
          target === 'failed', 'Expected a valid target');
 
-  let task = await Task.get(this.db, taskId);
+  const task = await Task.get(this.db, taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -1795,8 +1795,8 @@ let resolveTask = async function(req, res, taskId, runId, target) {
   );
 
   // Construct status object
-  let status = task.status();
-  let taskPulseContents = {
+  const status = task.status();
+  const taskPulseContents = {
     tags: task.tags,
   };
 
@@ -1845,11 +1845,11 @@ builder.declare({
     'Report a task completed, resolving the run as `completed`.',
   ].join('\n'),
 }, function(req, res) {
-  let taskId = req.params.taskId;
-  let runId = parseInt(req.params.runId, 10);
+  const taskId = req.params.taskId;
+  const runId = parseInt(req.params.runId, 10);
   // Backwards compatibility with very old workers, should be dropped in the
   // future
-  let target = req.body.success === false ? 'failed' : 'completed';
+  const target = req.body.success === false ? 'failed' : 'completed';
 
   return resolveTask.call(this, req, res, taskId, runId, target);
 });
@@ -1875,8 +1875,8 @@ builder.declare({
     'exception, which should be reported with `reportException`.',
   ].join('\n'),
 }, function(req, res) {
-  let taskId = req.params.taskId;
-  let runId = parseInt(req.params.runId, 10);
+  const taskId = req.params.taskId;
+  const runId = parseInt(req.params.runId, 10);
 
   return resolveTask.call(this, req, res, taskId, runId, 'failed');
 });
@@ -1908,11 +1908,11 @@ builder.declare({
     'is temporarily unavailable worker should report task _failed_.',
   ].join('\n'),
 }, async function(req, res) {
-  let taskId = req.params.taskId;
-  let runId = parseInt(req.params.runId, 10);
-  let reason = req.body.reason;
+  const taskId = req.params.taskId;
+  const runId = parseInt(req.params.runId, 10);
+  const reason = req.body.reason;
 
-  let task = await Task.get(this.db, taskId);
+  const task = await Task.get(this.db, taskId);
 
   // Handle cases where the task doesn't exist
   if (!task) {
@@ -1969,8 +1969,8 @@ builder.declare({
     );
   }
 
-  let status = task.status();
-  let taskPulseContents = {
+  const status = task.status();
+  const taskPulseContents = {
     tags: task.tags,
   };
 
@@ -1993,7 +1993,7 @@ builder.declare({
   // If a newRun was created and it is a retry with state pending then we
   // better publish messages about it. If we're not retrying the task, the task
   // is resolved as it has no more runs.
-  let newRun = task.runs[runId + 1];
+  const newRun = task.runs[runId + 1];
   if (newRun &&
       task.runs.length - 1 === runId + 1 &&
       newRun.state === 'pending' &&
@@ -2171,7 +2171,7 @@ builder.declare({
   const { provisionerId, workerType } = splitTaskQueueId(taskQueueId);
 
   // Get number of pending message
-  let count = await this.queueService.countPendingTasks(taskQueueId);
+  const count = await this.queueService.countPendingTasks(taskQueueId);
 
   // Reply to call with count `pendingTasks`
   return res.reply({
@@ -2566,7 +2566,7 @@ builder.declare({
       // so that quarantined workers remain visible even after expiration
       return (worker.expires >= now || worker.quarantineUntil >= now) && quarantineFilter;
     }).map(worker => {
-      let entry = {
+      const entry = {
         workerGroup: worker.workerGroup,
         workerId: worker.workerId,
         firstClaim: worker.firstClaim.toJSON(),

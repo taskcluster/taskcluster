@@ -1,7 +1,7 @@
-import fs from 'fs';
-import { promisify } from 'util';
-import child_process from 'child_process';
-import { Transform } from 'stream';
+import fs from 'node:fs';
+import { promisify } from 'node:util';
+import child_process from 'node:child_process';
+import { Transform } from 'node:stream';
 
 const execCommandNative = promisify(child_process.exec);
 

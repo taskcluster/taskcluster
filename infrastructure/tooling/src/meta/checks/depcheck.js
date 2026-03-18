@@ -1,4 +1,4 @@
-import { Worker, isMainThread, parentPort } from 'worker_threads';
+import { Worker, isMainThread, parentPort } from 'node:worker_threads';
 import _ from 'lodash';
 import { gitLsFiles, readRepoFile } from '../../utils/index.js';
 import * as acorn from 'acorn-loose';
@@ -73,14 +73,14 @@ if (isMainThread) {
         if (node.source.type !== 'Literal') {
           return;
         }
-        let packageName = node.source.value;
+        const packageName = node.source.value;
         return checkImport(file, section, packageName, deps, used);
       },
       ImportDeclaration(node) {
         if (node.source.type !== 'Literal') {
           return;
         }
-        let packageName = node.source.value;
+        const packageName = node.source.value;
         return checkImport(file, section, packageName, deps, used);
       },
       CallExpression(node) {
@@ -93,7 +93,7 @@ if (isMainThread) {
           return;
         }
 
-        let packageName = node.arguments[0].value;
+        const packageName = node.arguments[0].value;
         return checkImport(file, section, packageName, deps, used);
       },
     });

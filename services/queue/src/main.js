@@ -25,7 +25,7 @@ import tcdb from '@taskcluster/db';
 import pulse from '@taskcluster/lib-pulse';
 import QuickLRU from 'quick-lru';
 import { artifactUtils } from './utils.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 // default claim timeout to 20 minutes (in seconds)
 const DEFAULT_CLAIM_TIMEOUT = 1200;
@@ -47,7 +47,7 @@ const DEFAULT_MAX_TASK_DEPENDENCIES = 10000;
 import './monitor.js';
 
 // Create component loader
-let load = loader({
+const load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({ profile }) => config({
@@ -98,7 +98,7 @@ let load = loader({
   publicArtifactBucket: {
     requires: ['cfg', 'monitor'],
     setup: async ({ cfg, monitor }) => {
-      let bucket = new Bucket({
+      const bucket = new Bucket({
         bucket: cfg.app.publicArtifactBucket,
         awsOptions: cfg.aws,
         bucketCDN: cfg.app.publicArtifactBucketCDN,
@@ -111,7 +111,7 @@ let load = loader({
   privateArtifactBucket: {
     requires: ['cfg', 'monitor'],
     setup: async ({ cfg, monitor }) => {
-      let bucket = new Bucket({
+      const bucket = new Bucket({
         bucket: cfg.app.privateArtifactBucket,
         awsOptions: cfg.aws,
         monitor: monitor.childMonitor('private-bucket'),
@@ -197,7 +197,7 @@ let load = loader({
   regionResolver: {
     requires: ['cfg', 'monitor'],
     setup: async ({ cfg, monitor }) => {
-      let regionResolver = new EC2RegionResolver([cfg.aws.region], monitor);
+      const regionResolver = new EC2RegionResolver([cfg.aws.region], monitor);
       regionResolver.start();
       return regionResolver;
     },
@@ -277,7 +277,7 @@ let load = loader({
     setup: async ({
       cfg, db, queueService, publisher, dependencyTracker, monitor,
     }, ownName) => {
-      let resolver = new ClaimResolver({
+      const resolver = new ClaimResolver({
         ownName,
         db, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.claimResolver.pollingDelay,
@@ -301,7 +301,7 @@ let load = loader({
       db, queueService, publisher, dependencyTracker,
       monitor, pulseClient, workerManagerEvents,
     }) => {
-      let resolver = new WorkerRemovedResolver({
+      const resolver = new WorkerRemovedResolver({
         db, queueService, publisher, dependencyTracker,
         pulseClient, workerManagerEvents,
         monitor: monitor.childMonitor('worker-removed-resolver'),
@@ -321,7 +321,7 @@ let load = loader({
     setup: async ({
       cfg, db, queueService, publisher, dependencyTracker, monitor,
     }, ownName) => {
-      let resolver = new DeadlineResolver({
+      const resolver = new DeadlineResolver({
         ownName,
         db, queueService, publisher, dependencyTracker,
         pollingDelay: cfg.app.deadlineResolver.pollingDelay,
@@ -339,7 +339,7 @@ let load = loader({
   'dependency-resolver': {
     requires: ['cfg', 'queueService', 'dependencyTracker', 'monitor'],
     setup: async ({ cfg, queueService, dependencyTracker, monitor }, ownName) => {
-      let resolver = new DependencyResolver({
+      const resolver = new DependencyResolver({
         ownName,
         queueService, dependencyTracker,
         pollingDelay: cfg.app.dependencyResolver.pollingDelay,

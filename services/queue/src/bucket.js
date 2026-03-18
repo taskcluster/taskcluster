@@ -10,10 +10,10 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getEndpointFromInstructions } from '@aws-sdk/middleware-endpoint';
 import _ from 'lodash';
-import path from 'path';
+import path from 'node:path';
 import debugFactory from 'debug';
 const debug = debugFactory('app:bucket');
-import assert from 'assert';
+import assert from 'node:assert';
 
 /**
  * Create S3 bucket wrapper.
@@ -32,7 +32,7 @@ import assert from 'assert';
  *   monitor:            // base.monitor instance
  * }
  */
-let Bucket = function(options) {
+const Bucket = function(options) {
   assert(options, 'options must be given');
   assert(options.bucket, 'bucket must be specified');
   assert(options.awsOptions, 'awsOptions must be specified');
@@ -168,7 +168,7 @@ Bucket.prototype.deleteObjects = function(prefixes, quiet = false) {
 
 /** Setup CORS policy, so it can opened from a browser, when authenticated */
 Bucket.prototype.setupCORSIfNecessary = async function() {
-  let rules = [
+  const rules = [
     {
       AllowedOrigins: ['*'],
       AllowedMethods: ['GET', 'PUT', 'HEAD', 'POST', 'DELETE'],
@@ -184,7 +184,7 @@ Bucket.prototype.setupCORSIfNecessary = async function() {
   }
   try {
     // Fetch CORS to see if they as expected already
-    let req = await this.s3.send(new GetBucketCorsCommand({
+    const req = await this.s3.send(new GetBucketCorsCommand({
       Bucket: this.bucket,
     }));
     if (_.isEqual(req.CORSRules, rules)) {

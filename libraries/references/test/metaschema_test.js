@@ -21,7 +21,7 @@ suite(testing.suiteName(), function() {
 
     validate = async (content, failureCheck) => {
       const problems = [];
-      let ajv = await getAjv();
+      const ajv = await getAjv();
       try {
         ajv.validateSchema(content);
         if (ajv.errors) {

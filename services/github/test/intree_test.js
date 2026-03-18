@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import assert from 'assert';
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert';
 import _ from 'lodash';
 import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
@@ -36,7 +36,7 @@ suite(testing.suiteName(), function() {
    * after a pull request
    **/
   function buildMessage(params) {
-    let defaultMessage = {
+    const defaultMessage = {
       organization: 'testorg',
       repository: 'testrepo',
       details: {
@@ -71,7 +71,7 @@ suite(testing.suiteName(), function() {
    * expected:    {}, keys=>values expected to exist in the compiled config
    * shouldError: if you want intree to throw an exception, set this to true
    **/
-  let buildConfigTest = function(testName, configPath, params, expected, count = -1, shouldError = false) {
+  const buildConfigTest = function(testName, configPath, params, expected, count = -1, shouldError = false) {
     test(testName, async function() {
       params.config = yaml.load(fs.readFileSync(configPath));
       params.schema = {
@@ -93,7 +93,7 @@ suite(testing.suiteName(), function() {
       if (count > 0) {
         assert.equal(config.tasks.length, count);
       }
-      for (let key of Object.keys(expected)) {
+      for (const key of Object.keys(expected)) {
         if ('key' === 'scopes') {
           expected[key].sort();
         }
@@ -102,7 +102,7 @@ suite(testing.suiteName(), function() {
     });
   };
 
-  let configPath = 'test/data/configs/';
+  const configPath = 'test/data/configs/';
 
   buildConfigTest(
     'Single Task Config, v0',

@@ -1,10 +1,10 @@
 import _ from 'lodash';
-import path from 'path';
+import path from 'node:path';
 import yaml from 'js-yaml';
-import fs from 'fs';
+import fs from 'node:fs';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-config');
-import assert from 'assert';
+import assert from 'node:assert';
 import buildSchema from './schema.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -66,7 +66,7 @@ const config = ({
 
     // Add profile to list of configurations, if it is given
     if (profile && data[profile]) {
-      let prof = data[profile];
+      const prof = data[profile];
       assert(typeof prof === 'object', 'profile must be an object');
       cfgs.unshift(prof);
     }

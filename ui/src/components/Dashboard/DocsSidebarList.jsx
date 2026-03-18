@@ -10,7 +10,7 @@ import Divider from '@material-ui/core/Divider';
 import Collapse from '@material-ui/core/Collapse';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
-import { join } from 'path';
+import { join } from 'node:path';
 import { DOCS_MENU_ITEMS, DOCS_PATH_PREFIX } from '../../utils/constants';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
 import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';

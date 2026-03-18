@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import PulseIterator from '../src/PulseEngine/PulseIterator.js';
 import testing from '@taskcluster/lib-testing';
 
@@ -44,7 +44,7 @@ suite(testing.suiteName(), function() {
 
       // now see that those appear in the output
       const received = [];
-      for await (let msg of pi) {
+      for await (const msg of pi) {
         received.push(msg);
         if (received.length === 3) {
           break;
@@ -63,7 +63,7 @@ suite(testing.suiteName(), function() {
       // start waiting for output before messages arrive..
       const result = [];
       const finished = (async () => {
-        for await (let msg of pi) {
+        for await (const msg of pi) {
           result.push(msg);
           if (result.length === 3) {
             break;

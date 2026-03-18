@@ -1,5 +1,5 @@
-import { Transform } from 'stream';
-import { createHash } from 'crypto';
+import { Transform } from 'node:stream';
+import { createHash } from 'node:crypto';
 
 // The subset of hashes supported by HashStream which are "accepted" as per the
 // object service's schemas.

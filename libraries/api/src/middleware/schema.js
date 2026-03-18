@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import url from 'url';
+import url from 'node:url';
 import libUrls from 'taskcluster-lib-urls';
 import typeis from 'type-is';
 import Debug from 'debug';

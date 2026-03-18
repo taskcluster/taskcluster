@@ -1,7 +1,7 @@
-import path from 'path';
-import { fork } from 'child_process';
+import path from 'node:path';
+import { fork } from 'node:child_process';
 import mockFs from 'mock-fs';
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import MonitorManager from '../src/monitormanager.js';
 
@@ -9,7 +9,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), function() {
   let monitorManager, monitor;
-  let errorBucket = [];
+  const errorBucket = [];
 
   suiteSetup(function() {
     monitor = MonitorManager.setup({

@@ -1,4 +1,4 @@
-import { join } from 'path';
+import { join } from 'node:path';
 import { DOCS_PATH_PREFIX } from '../utils/constants';
 import lazy from '../utils/lazy';
 

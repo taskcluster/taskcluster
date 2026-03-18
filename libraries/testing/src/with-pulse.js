@@ -1,6 +1,6 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { QlobberTrue } from 'qlobber';
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
 import debug from 'debug';
 
 export default ({ helper, skipping, namespace }) => {
@@ -55,8 +55,8 @@ export default ({ helper, skipping, namespace }) => {
       // Find consumers that match this message.  NOTE: we do this matching here and not
       // in tc-lib-pulse because qlobber is a devDependency and is not available in
       // production code.
-      for (let cons of client.consumers) {
-        for (let binding of cons.bindings) {
+      for (const cons of client.consumers) {
+        for (const binding of cons.bindings) {
           if (binding.exchange === exchange) {
             // use Qlobber in a really inefficient manner to match the routing key
             const q = new QlobberTrue();

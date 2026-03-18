@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import { modifyRoles } from '../src/data.js';
 import slugid from 'slugid';
@@ -13,7 +13,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
   helper.withPulse(mock, skipping);
   helper.withServers(mock, skipping);
 
-  let sorted = (arr) => {
+  const sorted = (arr) => {
     arr.sort();
     return arr;
   };
@@ -25,7 +25,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     if (skipping()) {
       this.skip();
     }
-    let client = await helper.apiClient.createClient(clientId, {
+    const client = await helper.apiClient.createClient(clientId, {
       expires: taskcluster.fromNowJSON('1 day'),
       description: 'test client...',
       scopes: ['assume:thing-id:' + clientId],
@@ -34,7 +34,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
   });
 
   test('createRole (normal)', async () => {
-    let role = await helper.apiClient.createRole('thing-id:' + clientId, {
+    const role = await helper.apiClient.createRole('thing-id:' + clientId, {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
@@ -47,7 +47,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     assume(role.expandedScopes).contains('auth:create-role:*');
 
     // Check that it's idempotent
-    let role2 = await helper.apiClient.createRole('thing-id:' + clientId, {
+    const role2 = await helper.apiClient.createRole('thing-id:' + clientId, {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
@@ -55,20 +55,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
 
     helper.assertPulseMessage('role-created', m => m.payload.roleId === `thing-id:${clientId}`);
 
-    let client = await helper.apiClient.client(clientId);
+    const client = await helper.apiClient.client(clientId);
     assume(client.expandedScopes.sort()).deep.equals(
       role.expandedScopes.sort(),
     );
   });
 
   test('createRole (prefix)', async () => {
-    let auth = new helper.AuthClient({
+    const auth = new helper.AuthClient({
       rootUrl: helper.rootUrl,
       credentials: { clientId, accessToken },
     });
 
-    let roleId = 'thing-id:' + clientId.slice(0, 11) + '*';
-    let role = await auth.createRole(roleId, {
+    const roleId = 'thing-id:' + clientId.slice(0, 11) + '*';
+    const role = await auth.createRole(roleId, {
       description: 'test prefix role',
       scopes: ['dummy-scope-2'],
     });
@@ -82,7 +82,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     // expandedScopes should always include itself
     assume(role.expandedScopes).contains('assume:' + roleId);
 
-    let client = await helper.apiClient.client(clientId);
+    const client = await helper.apiClient.client(clientId);
     assume(client.expandedScopes).contains('dummy-scope-1');
     assume(client.expandedScopes).contains('auth:create-role:*');
     assume(client.expandedScopes).contains('dummy-scope-2');
@@ -90,8 +90,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
 
   test('createRole (encodeURIComponent)', async () => {
     // Ensure that encodeURIComponent in client library works...
-    let roleId = clientId + '/test ?test=1';
-    let role = await helper.apiClient.createRole(roleId, {
+    const roleId = clientId + '/test ?test=1';
+    const role = await helper.apiClient.createRole(roleId, {
       description: 'test role for werid roleId',
       scopes: ['dummy-scope-2'],
     });
@@ -100,7 +100,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
   });
 
   test('createRole introducing a cycle', async () => {
-    let role = await helper.apiClient.createRole('test*', {
+    const role = await helper.apiClient.createRole('test*', {
       description: 'test*',
       scopes: ['assume:other<..>x'],
     });
@@ -212,7 +212,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
   });
 
   test('getRole', async () => {
-    let role = await helper.apiClient.role('thing-id:' + clientId);
+    const role = await helper.apiClient.role('thing-id:' + clientId);
     assume(role.expandedScopes.sort()).deep.equals([
       'assume:thing-id:' + clientId,
       'dummy-scope-1',
@@ -229,7 +229,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
   });
 
   test('listRoles', async () => {
-    let roles = await helper.apiClient.listRoles();
+    const roles = await helper.apiClient.listRoles();
     assert(roles.some(role => role.roleId === `thing-id:${clientId}`));
   });
 
@@ -250,14 +250,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
     for (let i = 0;i < 3;i++) {
-      let tempRoleId = `${clientId}${i}`;
+      const tempRoleId = `${clientId}${i}`;
       await helper.apiClient.createRole(tempRoleId, {
         description: 'test role',
         scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
       });
     }
 
-    let result = await helper.apiClient.listRoleIds();
+    const result = await helper.apiClient.listRoleIds();
 
     assert(result.roleIds.some(roleId => roleId === `thing-id:${clientId}`));
     assert(result.roleIds.length === 4);
@@ -274,12 +274,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     let roleIds = [];
     let allRoleIds = {};
     let count = 0;
-    let query = { limit: 1 };
+    const query = { limit: 1 };
 
     allRoleIds = await helper.apiClient.listRoleIds();
 
     while (true) {
-      let result = await helper.apiClient.listRoleIds(query);
+      const result = await helper.apiClient.listRoleIds(query);
       assume(result.roleIds.length).to.be.lessThan(2);
       query.continuationToken = result.continuationToken;
       roleIds = roleIds.concat(result.roleIds);
@@ -317,14 +317,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
     for (let i = 0;i < 3;i++) {
-      let tempRoleId = `${clientId}${i}`;
+      const tempRoleId = `${clientId}${i}`;
       await helper.apiClient.createRole(tempRoleId, {
         description: 'test role',
         scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
       });
     }
 
-    let result = await helper.apiClient.listRoles2();
+    const result = await helper.apiClient.listRoles2();
 
     assert(result.roles.some(role => role.roleId === `thing-id:${clientId}`));
     assert(result.roles.some(role => role.description === 'test role'));
@@ -336,12 +336,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     let roles = [];
     let allRoles = {};
     let count = 0;
-    let query = { limit: 1 };
+    const query = { limit: 1 };
 
     allRoles = await helper.apiClient.listRoles2();
 
     while (true) {
-      let result = await helper.apiClient.listRoles2(query);
+      const result = await helper.apiClient.listRoles2(query);
       assume(result.roles.length).to.be.lessThan(2);
       query.continuationToken = result.continuationToken;
       roles = roles.concat(result.roles);
@@ -385,11 +385,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
       scopes: ['dummy-scope-2'],
     });
 
-    let r1 = await helper.apiClient.role(`thing-id:${clientId}`);
+    const r1 = await helper.apiClient.role(`thing-id:${clientId}`);
 
     await testing.sleep(100);
 
-    let r2 = await helper.apiClient.updateRole(`thing-id:${clientId}`, {
+    const r2 = await helper.apiClient.updateRole(`thing-id:${clientId}`, {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3'],
     });
@@ -399,7 +399,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     );
     helper.assertPulseMessage('role-updated', m => m.payload.roleId === `thing-id:${clientId}`);
 
-    let role = await helper.apiClient.role(`thing-id:${clientId}`);
+    const role = await helper.apiClient.role(`thing-id:${clientId}`);
     assume(role.expandedScopes.sort()).deep.equals([
       `assume:thing-id:${clientId}`,
       'dummy-scope-1',
@@ -428,7 +428,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
   test('deleteRole', async () => {
     await helper.apiClient.deleteRole('thing-id:' + clientId);
     await helper.apiClient.deleteRole('thing-id:' + clientId);
-    let roleId = 'thing-id:' + clientId.slice(0, 11) + '*';
+    const roleId = 'thing-id:' + clientId.slice(0, 11) + '*';
     await helper.apiClient.deleteRole(roleId);
 
     await helper.apiClient.role('thing-id:' + clientId).then(() => {
@@ -477,8 +477,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
   });
 
   suite('updateRole', function() {
-    let roleId = `thing-id:${clientId}`;
-    let roleId2 = `sub-thing:${clientId}`;
+    const roleId = `thing-id:${clientId}`;
+    const roleId2 = `sub-thing:${clientId}`;
     let auth;
 
     suiteSetup(async function() {

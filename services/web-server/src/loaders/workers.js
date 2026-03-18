@@ -25,7 +25,7 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
       isQuarantined,
       workerState,
     }) => {
-      let opts = { ...options };
+      const opts = { ...options };
       if (typeof isQuarantined === 'boolean') {
         opts.quarantined = isQuarantined;
       }

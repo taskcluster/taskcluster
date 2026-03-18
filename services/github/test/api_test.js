@@ -1,5 +1,5 @@
 import helper from './helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import got from 'got';
 import testing from '@taskcluster/lib-testing';
@@ -270,7 +270,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('all builds', async function() {
-    let builds = await helper.apiClient.builds();
+    const builds = await helper.apiClient.builds();
     assert.equal(builds.builds.length, 4);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
@@ -287,14 +287,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('org builds', async function() {
-    let builds = await helper.apiClient.builds({ organization: 'abc123' });
+    const builds = await helper.apiClient.builds({ organization: 'abc123' });
     assert.equal(builds.builds.length, 3);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
   });
 
   test('repo builds', async function() {
-    let builds = await helper.apiClient.builds({ organization: 'abc123', repository: 'xyz' });
+    const builds = await helper.apiClient.builds({ organization: 'abc123', repository: 'xyz' });
     assert.equal(builds.builds.length, 2);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
@@ -302,7 +302,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('sha builds', async function() {
-    let builds = await helper.apiClient.builds({
+    const builds = await helper.apiClient.builds({
       organization: 'abc123',
       repository: 'xyz',
       sha: 'y650871208002a13ba35cf232c0e30d2c3d64783',
@@ -315,7 +315,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('pull request builds', async function() {
-    let builds = await helper.apiClient.builds({
+    const builds = await helper.apiClient.builds({
       organization: 'abc123',
       repository: 'xyz',
       pullRequest: 2,
@@ -355,7 +355,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }, /Error: No cancellable builds found/);
     });
     test('cancel running builds for repo', async function() {
-      let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz');
+      const builds = await helper.apiClient.cancelBuilds('abc123', 'xyz');
       assert.equal(builds.builds.length, 2);
       builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
       assert.equal(builds.builds[0].organization, 'abc123');
@@ -363,7 +363,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(builds.builds[0].state, 'cancelled');
     });
     test('cancel running builds for PR', async function() {
-      let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz', { pullRequest: 2 });
+      const builds = await helper.apiClient.cancelBuilds('abc123', 'xyz', { pullRequest: 2 });
       assert.equal(builds.builds.length, 1);
       builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
       assert.equal(builds.builds[0].organization, 'abc123');
@@ -371,7 +371,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(builds.builds[0].state, 'cancelled');
     });
     test('cannot cancel twice same builds', async function() {
-      let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz', { pullRequest: 2 });
+      const builds = await helper.apiClient.cancelBuilds('abc123', 'xyz', { pullRequest: 2 });
       assert.equal(builds.builds.length, 1);
       await assert.rejects(async () => {
         await helper.apiClient.cancelBuilds('no-such-org', 'no-repo');
@@ -428,7 +428,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('build badges - status:failure', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'coolRepo', 'master'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'coolRepo', 'master'));
       assert.equal(res.headers['x-taskcluster-status'], 'failure');
       assert.equal(res.headers['content-length'], 5572);
     });
@@ -436,7 +436,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('build badges - status:failure (checks API)', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'failure'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'failure'));
       assert.equal(res.headers['x-taskcluster-status'], 'failure');
       assert.equal(res.headers['content-length'], 5572);
     });
@@ -444,12 +444,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('build badges - status:failure (combined status and checks)', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'combined'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'combined'));
       assert.equal(res.headers['x-taskcluster-status'], 'failure');
       assert.equal(res.headers['content-length'], 5572);
     });
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'combined2'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'combined2'));
       assert.equal(res.headers['x-taskcluster-status'], 'failure');
       assert.equal(res.headers['content-length'], 5572);
     });
@@ -457,7 +457,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('build badges - status: success', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'awesomeRepo', 'master'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'awesomeRepo', 'master'));
       assert.equal(res.headers['x-taskcluster-status'], 'success');
       assert.equal(res.headers['content-length'], 8030);
     });
@@ -465,7 +465,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('build badges - status: success (checks API)', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'success'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'success'));
       assert.equal(res.headers['x-taskcluster-status'], 'success');
       assert.equal(res.headers['content-length'], 8030);
     });
@@ -473,7 +473,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('build badges - status: pending (checks API)', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'pending'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'pending'));
       assert.equal(res.headers['x-taskcluster-status'], 'pending');
       assert.equal(res.headers['content-length'], 7182);
     });
@@ -481,7 +481,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('build badges - error', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'errorRepo', 'master'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'errorRepo', 'master'));
       assert.equal(res.headers['x-taskcluster-status'], 'error');
       assert.equal(res.headers['content-length'], 5106);
     });
@@ -489,7 +489,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('build badges - no such status', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'unknownRepo', 'master'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'unknownRepo', 'master'));
       assert.equal(res.headers['x-taskcluster-status'], 'newrepo');
       assert.equal(res.headers['content-length'], 6998);
     });
@@ -497,7 +497,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('build badges - new repo (no info yet)', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'nonTCGHRepo', 'master'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'nonTCGHRepo', 'master'));
       assert.equal(res.headers['x-taskcluster-status'], 'newrepo');
       assert.equal(res.headers['content-length'], 6998);
     });
@@ -505,42 +505,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('build badges - checks conclusion - timed out', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'timedout'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'timedout'));
       assert.equal(res.headers['x-taskcluster-status'], 'timed_out');
       assert.equal(res.headers['content-length'], 7159);
     });
   });
   test('build badges - checks conclusion - action required', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'actionRequired'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'actionRequired'));
       assert.equal(res.headers['x-taskcluster-status'], 'action_required');
       assert.equal(res.headers['content-length'], 10864);
     });
   });
   test('build badges - checks conclusion - skipped', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'skipped'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'skipped'));
       assert.equal(res.headers['x-taskcluster-status'], 'skipped');
       assert.equal(res.headers['content-length'], 7248);
     });
   });
   test('build badges - checks conclusion - stale', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'stale'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'stale'));
       assert.equal(res.headers['x-taskcluster-status'], 'stale');
       assert.equal(res.headers['content-length'], 5509);
     });
   });
   test('build badges - checks conclusion - neutral', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'neutral'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'neutral'));
       assert.equal(res.headers['x-taskcluster-status'], 'neutral');
       assert.equal(res.headers['content-length'], 5775);
     });
   });
   test('build badges - checks conclusion - cancelled', async function() {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'cancelled'));
+      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'cancelled'));
       assert.equal(res.headers['x-taskcluster-status'], 'cancelled');
       assert.equal(res.headers['content-length'], 7836);
     });
@@ -621,7 +621,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       state: 'error',
     });
 
-    let status = github.inst(9090).listCommitStatusesForRef({
+    const status = github.inst(9090).listCommitStatusesForRef({
       owner: 'abc123',
       repo: 'awesomeRepo',
       ref: 'master',
@@ -640,7 +640,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       context: 'customContext',
     });
 
-    let status = github.inst(9090).listCommitStatusesForRef({
+    const status = github.inst(9090).listCommitStatusesForRef({
       owner: 'abc123',
       repo: 'awesomeRepo',
       ref: 'master',
@@ -670,7 +670,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       body: 'Task failed here',
     });
 
-    let comment = github.inst(9090).getComments({
+    const comment = github.inst(9090).getComments({
       owner: 'abc123',
       repo: 'awesomeRepo',
       number: 1,

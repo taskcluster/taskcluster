@@ -1,15 +1,15 @@
 import _ from 'lodash';
 import makeDebug from 'debug';
 const debug = makeDebug('app:queue');
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where
  * everything happens in a matter of milliseconds. */
-let secondsTo = (target, relativeTo = new Date()) => {
-  let delta = Math.ceil((target.getTime() - relativeTo.getTime()) / 1000);
+const secondsTo = (target, relativeTo = new Date()) => {
+  const delta = Math.ceil((target.getTime() - relativeTo.getTime()) / 1000);
   return Math.max(delta, 1);
 };
 
@@ -204,7 +204,7 @@ export class QueueService {
     assert(deadline instanceof Date, 'deadline must be a date');
     assert(isFinite(deadline), 'deadline must be a valid date');
 
-    let delay = Math.floor(this.deadlineDelay / 1000);
+    const delay = Math.floor(this.deadlineDelay / 1000);
     debug('Put deadline message to be visible in %s seconds',
       secondsTo(deadline) + delay);
 
@@ -279,7 +279,7 @@ export class QueueService {
     assert(task.deadline instanceof Date, 'Expected task.deadline');
 
     // // Find the time to deadline
-    let timeToDeadline = secondsTo(task.deadline);
+    const timeToDeadline = secondsTo(task.deadline);
     // If deadline is reached, we don't care to publish a message about the task
     // being pending.
     if (timeToDeadline === 1) {

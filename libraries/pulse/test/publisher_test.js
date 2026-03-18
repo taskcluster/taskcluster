@@ -1,8 +1,8 @@
 import { Client, Exchanges, connectionStringCredentials } from '../src/index.js';
-import path from 'path';
+import path from 'node:path';
 import amqplib from 'amqplib';
 import assume from 'assume';
-import assert from 'assert';
+import assert from 'node:assert';
 import SchemaSet from '@taskcluster/lib-validate';
 import libUrls from 'taskcluster-lib-urls';
 import helper from './helper.js';

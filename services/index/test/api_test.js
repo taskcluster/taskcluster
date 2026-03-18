@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import debugFactory from 'debug';
 const debug = debugFactory('index:test:api_test');
 import helper from './helper.js';
@@ -515,7 +515,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       expires: taskcluster.fromNowJSON('24 hours'),
     });
 
-    let result = await helper.index.findTask('some.testing.name.space');
+    const result = await helper.index.findTask('some.testing.name.space');
     assert(result.taskId === taskId, 'Wrong taskId');
 
     await helper.index.deleteTask('some.testing.name.space');
@@ -525,7 +525,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       err => err.code === 'ResourceNotFound');
 
     // parent namespace still exists
-    let listRes = await helper.index.listNamespaces('some.testing');
+    const listRes = await helper.index.listNamespaces('some.testing');
     assert.deepEqual(listRes.namespaces.map(({ name }) => name), ['name']);
   });
 });

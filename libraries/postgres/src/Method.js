@@ -1,5 +1,5 @@
-import { strict as assert } from 'assert';
-import path from 'path';
+import { strict as assert } from 'node:assert';
+import path from 'node:path';
 import { loadSql } from './util.js';
 
 /**
@@ -96,7 +96,7 @@ class Method {
       assert(this.returns, `method ${name} in ${filename} is missing returns (use void?)`);
       assert(this.body, `method ${name} in ${filename} is missing body`);
     }
-    for (let k of Object.keys(content)) {
+    for (const k of Object.keys(content)) {
       if (!['description', 'mode', 'serviceName', 'args', 'returns', 'body', 'deprecated'].includes(k)) {
         throw new Error(`unexpected properties for method ${name} in ${filename}`);
       }

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import assume from 'assume';
 import taskcluster from '@taskcluster/client';
 import sinon from 'sinon';
@@ -16,7 +16,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const hookId = 'h';
 
   const makeHookEntities = async (...hooks) => {
-    for (let { hookId, bindings } of hooks) {
+    for (const { hookId, bindings } of hooks) {
       await helper.db.fns.create_hook(
         hookGroupId,
         hookId,
@@ -39,7 +39,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   };
 
   const makeQueueEntities = async (...queues) => {
-    for (let { hookId, bindings } of queues) {
+    for (const { hookId, bindings } of queues) {
       const queueName = `${hookGroupId}/${hookId}`;
       await helper.db.fns.create_hooks_queue(hookGroupId, hookId, queueName, JSON.stringify(bindings));
     }
@@ -53,7 +53,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const rows = await helper.db.fns.get_hooks_queues(null, null);
     const q = rows.map(queueUtils.fromDb);
 
-    for (let queue of q) {
+    for (const queue of q) {
       got[`${hookGroupId}/${queue.hookId}`] = queue.bindings;
     }
 

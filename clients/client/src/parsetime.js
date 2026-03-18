@@ -1,6 +1,6 @@
 // Regular expression matching:
 // A years B months C days D hours E minutes F seconds
-let timeExp = new RegExp([
+const timeExp = new RegExp([
   '^(\\s*(-|\\+))?',
   '(\\s*(\\d+)\\s*y((ears?)|r)?)?',
   '(\\s*(\\d+)\\s*mo(nths?)?)?',
@@ -13,14 +13,14 @@ let timeExp = new RegExp([
 ].join(''), 'i');
 
 /** Parse time string */
-let parseTime = function(str) {
+const parseTime = function(str) {
   // Parse the string
-  let match = timeExp.exec(str || '');
+  const match = timeExp.exec(str || '');
   if (!match) {
     throw new Error('String: \'' + str + '\' isn\'t a time expression');
   }
   // Negate if needed
-  let neg = match[2] === '-' ? - 1 : 1;
+  const neg = match[2] === '-' ? - 1 : 1;
   // Return parsed values
   return {
     years: parseInt(match[4] || 0, 10) * neg,

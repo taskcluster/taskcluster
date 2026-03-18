@@ -1,5 +1,5 @@
-import assert from 'assert';
-import fs from 'fs';
+import assert from 'node:assert';
+import fs from 'node:fs';
 import { getCommonSchemas } from '../src/common-schemas.js';
 import { makeSerializable } from '../src/serializable.js';
 import mockFs from 'mock-fs';

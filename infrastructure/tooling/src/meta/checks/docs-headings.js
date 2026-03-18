@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import _ from 'lodash';
 import glob from 'glob';
 import { REPO_ROOT } from '../../utils/index.js';
@@ -15,7 +15,7 @@ export const tasks = [{
     let errors = "";
     let countErrors = 0;
 
-    for (let filename of markdowns) {
+    for (const filename of markdowns) {
       const data = fs.readFileSync(filename, 'utf8');
       let md = data.toString();
 

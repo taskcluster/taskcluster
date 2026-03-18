@@ -19,7 +19,7 @@ export const fromNow = function(offset, reference) {
   offset.days += 30 * offset.months;
   offset.days += 365 * offset.years;
 
-  let retval = new Date(
+  const retval = new Date(
     reference.getTime()
     //    + offset.years * 365 * 24 * 60 * 60 * 1000
     //   + offset.month  * 30 * 24 * 60 * 60 * 1000

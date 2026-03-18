@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { rimraf } from 'rimraf';
 import { REPO_ROOT, modifyRepoFile, execCommand } from '../../utils/index.js';
 

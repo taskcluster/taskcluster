@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('node:assert');
 
 /**
  * We consider a "workerPoolId" to be a string

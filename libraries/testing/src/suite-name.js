@@ -1,5 +1,5 @@
 import errorStackParser from 'error-stack-parser';
-import path from 'path';
+import path from 'node:path';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

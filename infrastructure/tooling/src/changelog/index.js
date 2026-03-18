@@ -15,7 +15,7 @@ import {
 } from '../utils/index.js';
 
 import taskcluster from '@taskcluster/client';
-import path from 'path';
+import path from 'node:path';
 import openEditor from 'open-editor';
 import { Octokit } from '@octokit/rest';
 
@@ -139,7 +139,7 @@ export class ChangeLog {
    */
   level() {
     let minor = false;
-    for (let { level } of this.snippets) {
+    for (const { level } of this.snippets) {
       if (level === 'major') {
         return 'major';
       }
@@ -344,7 +344,7 @@ export const add = async (options) => {
     reference = '';
   } else {
     const { ref } = await gitCurrentBranch({ dir: REPO_ROOT });
-    let m = ref.match(/(bug|issue)-?([0-9]+)/);
+    const m = ref.match(/(bug|issue)-?([0-9]+)/);
     if (m) {
       reference = `reference: ${m[1]} ${m[2]}\n`;
       name = `${m[1]}-${m[2]}`;

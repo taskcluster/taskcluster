@@ -1,5 +1,5 @@
 import slugid from 'slugid';
-import assert from 'assert';
+import assert from 'node:assert';
 import Bucket from '../src/bucket.js';
 import debugFactory from 'debug';
 const debug = debugFactory('test:bucket_test');

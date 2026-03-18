@@ -1,6 +1,6 @@
 import slugid from 'slugid';
-import assert from 'assert';
-import crypto from 'crypto';
+import assert from 'node:assert';
+import crypto from 'node:crypto';
 import QueueService from '../src/queueservice.js';
 import debugFactory from 'debug';
 const debug = debugFactory('test:queueservice');
@@ -179,11 +179,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await queueService.putPendingMessage(task, runId);
 
     // Get poll functions for queues
-    let poll = await queueService.pollPendingQueue(`${provisionerId}/${workerType}`);
+    const poll = await queueService.pollPendingQueue(`${provisionerId}/${workerType}`);
 
     // Poll for the message
     let message = await testing.poll(async () => {
-      let messages = await poll(1);
+      const messages = await poll(1);
       if (messages.length === 1) {
         return messages[0];
       }
@@ -199,7 +199,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // Poll message again
     message = await testing.poll(async () => {
-      let messages = await poll(1);
+      const messages = await poll(1);
       if (messages.length === 1) {
         return messages[0];
       }

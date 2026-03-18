@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { dollarQuote, paginatedIterator } from '../src/util.js';
-import assert from 'assert';
-import path from 'path';
+import assert from 'node:assert';
+import path from 'node:path';
 
 const { range } = _;
 const __filename = new URL('', import.meta.url).pathname;
@@ -27,7 +27,7 @@ suite(path.basename(__filename), function() {
         };
 
         const got = [];
-        for await (let v of paginatedIterator({ fetch, size: 13 })) {
+        for await (const v of paginatedIterator({ fetch, size: 13 })) {
           got.push(v);
         }
 
@@ -41,7 +41,7 @@ suite(path.basename(__filename), function() {
         };
 
         const got = [];
-        for await (let v of paginatedIterator({ fetch, size: 100 })) {
+        for await (const v of paginatedIterator({ fetch, size: 100 })) {
           got.push(v);
         }
 
@@ -58,7 +58,7 @@ suite(path.basename(__filename), function() {
 
         assert.rejects(async () => {
           const got = [];
-          for await (let v of paginatedIterator({ fetch, size: 100 })) {
+          for await (const v of paginatedIterator({ fetch, size: 100 })) {
             got.push(v);
           }
         }, /oh noes/);
@@ -86,7 +86,7 @@ suite(path.basename(__filename), function() {
       test('iterate in a few batches', async function() {
         calls = [];
         const got = [];
-        for await (let v of paginatedIterator({
+        for await (const v of paginatedIterator({
           indexColumns,
           fetch: fetcher(20, 11),
           size: 13,
@@ -119,7 +119,7 @@ suite(path.basename(__filename), function() {
 
       test('batch size smaller than requested', async function() {
         const got = [];
-        for await (let v of paginatedIterator({
+        for await (const v of paginatedIterator({
           indexColumns,
           fetch: fetcher(20, 12, 15),
           size: 130,
@@ -132,7 +132,7 @@ suite(path.basename(__filename), function() {
 
       test('fetch fails', async function() {
         assert.rejects(async () => {
-          for await (let _ of paginatedIterator({
+          for await (const _ of paginatedIterator({
             indexColumns,
             fetch: async () => { throw new Error('uhoh'); },
           })) {

@@ -1,8 +1,8 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import builder from '../src/api.js';
 import taskcluster from '@taskcluster/client';
 import loadMain from '../src/main.js';
-import { globalAgent } from 'http';
+import { globalAgent } from 'node:http';
 import { satisfiesExpression } from 'taskcluster-lib-scopes';
 
 import testing from '@taskcluster/lib-testing';

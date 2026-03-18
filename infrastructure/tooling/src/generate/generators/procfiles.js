@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { listServices, readRepoYAML } from '../../utils/index.js';
 
 const SERVICES = listServices();
@@ -11,7 +11,7 @@ tasks.push({
   provides: SERVICES.map(name => `procs-${name}`),
   run: async (requirements, utils) => {
     const provides = {};
-    for (let name of SERVICES) {
+    for (const name of SERVICES) {
       provides[`procs-${name}`] = await readRepoYAML(path.join('services', name, 'procs.yml'));
     }
 

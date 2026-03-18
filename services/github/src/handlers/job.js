@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import stringify from 'fast-json-stable-stringify';
 import libUrls from 'taskcluster-lib-urls';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
@@ -14,18 +14,18 @@ export async function jobHandler(message) {
   const { eventId, installationId } = message.payload;
   let debug = makeDebug(this.monitor, { eventId, installationId });
 
-  let context = this.context;
+  const context = this.context;
 
   // Authenticating as installation.
-  let instGithub = await context.github.getInstallationGithub(installationId);
+  const instGithub = await context.github.getInstallationGithub(installationId);
 
   // We must attempt to convert the sanitized fields back to normal here.
   // Further discussion of how to deal with this cleanly is in
   // https://github.com/taskcluster/taskcluster-github/issues/52
   message.payload.organization = message.payload.organization.replace(/%/g, '.');
   message.payload.repository = message.payload.repository.replace(/%/g, '.');
-  let organization = message.payload.organization;
-  let repository = message.payload.repository;
+  const organization = message.payload.organization;
+  const repository = message.payload.repository;
   let sha = message.payload.details['event.head.sha'];
   debug = debug.refine({ owner: organization, repo: repository, sha });
   let pullNumber = message.payload.details['event.pullNumber'] || message.payload.body.number;
@@ -36,7 +36,7 @@ export async function jobHandler(message) {
     // only releases and issue_comment lack event.head.sha
     if (message.payload.details['event.type'] === 'release') {
       debug('Trying to get release commit info in job handler...');
-      let commitInfo = await instGithub.repos.getCommit({
+      const commitInfo = await instGithub.repos.getCommit({
         headers: { accept: 'application/vnd.github.3.sha' },
         owner: organization,
         repo: repository,
@@ -68,7 +68,7 @@ export async function jobHandler(message) {
     }
   }
 
-  let defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
+  const defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
     .data
     .default_branch;
 
@@ -167,7 +167,7 @@ export async function jobHandler(message) {
   if (message.payload.details['event.type'].startsWith('issue_comment')) {
     debug(`Checking comment permission for ${organization}/${repository}@${sha}...`);
 
-    let defaultBranchYml = await this.getYml({ instGithub, owner: organization, repo: repository, ref: defaultBranch });
+    const defaultBranchYml = await this.getYml({ instGithub, owner: organization, repo: repository, ref: defaultBranch });
     if (!defaultBranchYml) {
       debug(`${organization}/${repository} has no '.taskcluster.yml' at ${defaultBranch}. Skipping.`);
       return;
@@ -219,7 +219,7 @@ export async function jobHandler(message) {
     message.payload.body.taskcluster_comment = message.payload.details.taskcluster_comment;
   }
 
-  let groupState = 'pending';
+  const groupState = 'pending';
   let taskGroupId = 'nonexistent';
   let graphConfig;
 
@@ -277,7 +277,7 @@ export async function jobHandler(message) {
   };
   try {
     debug(`Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) in github_builds table`);
-    let now = new Date();
+    const now = new Date();
     await context.db.fns.create_github_build_pr(
       organization,
       repository,

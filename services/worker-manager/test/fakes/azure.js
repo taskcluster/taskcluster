@@ -1,5 +1,5 @@
 import { FakeCloud } from './fake.js';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 
 import azureApi from '../../src/providers/azure/azure-api.js';
 
@@ -254,7 +254,7 @@ export class VMResourceManager extends ResourceManager {
   // Subclass Overrides
 
   _requestToResource(request) {
-    let dataDisks = [];
+    const dataDisks = [];
     for (let i = 0; i < request.parameters.storageProfile.dataDisks.length; i++) {
       dataDisks.push({ name: slugid.nice() });
     }
