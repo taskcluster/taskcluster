@@ -194,6 +194,63 @@ func (suite *FakeServerSuite) TestGroupCommand() {
 	suite.Equal("my-test\n", buf.String())
 }
 
+type EmptyRunsSuite struct {
+	suite.Suite
+	testServer *httptest.Server
+}
+
+func (suite *EmptyRunsSuite) SetupSuite() {
+	handler := http.NewServeMux()
+	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/status", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = io.WriteString(w, `{"status": {"state": "unscheduled", "runs": []}}`)
+	})
+	suite.testServer = httptest.NewServer(handler)
+	config.SetRootURL(suite.testServer.URL)
+}
+
+func (suite *EmptyRunsSuite) TearDownSuite() {
+	suite.testServer.Close()
+	config.SetRootURL("")
+}
+
+func TestEmptyRunsSuite(t *testing.T) {
+	suite.Run(t, new(EmptyRunsSuite))
+}
+
+func (suite *EmptyRunsSuite) TestStatusEmptyRuns() {
+	_, cmd := setUpCommand()
+	cmd.Flags().IntP("run", "r", -1, "Specifies which run to consider.")
+	cmd.Flags().BoolP("all-runs", "a", false, "Check all runs of the task.")
+
+	err := runStatus(&tcclient.Credentials{}, []string{fakeTaskID}, cmd.OutOrStdout(), cmd.Flags())
+	suite.EqualError(err, "task has no runs")
+}
+
+func (suite *EmptyRunsSuite) TestArtifactsEmptyRuns() {
+	_, cmd := setUpCommand()
+	cmd.Flags().IntP("run", "r", -1, "Specifies which run to consider.")
+
+	err := runArtifacts(&tcclient.Credentials{}, []string{fakeTaskID}, cmd.OutOrStdout(), cmd.Flags())
+	suite.EqualError(err, "task has no runs")
+}
+
+func (suite *FakeServerSuite) TestStatusOutOfRangeRun() {
+	_, cmd := setUpCommand()
+	cmd.Flags().IntP("run", "r", 1, "Specifies which run to consider.")
+	cmd.Flags().BoolP("all-runs", "a", false, "Check all runs of the task.")
+
+	err := runStatus(&tcclient.Credentials{}, []string{fakeTaskID}, cmd.OutOrStdout(), cmd.Flags())
+	suite.EqualError(err, "there is no run #1")
+}
+
+func (suite *FakeServerSuite) TestArtifactsOutOfRangeRun() {
+	_, cmd := setUpCommand()
+	cmd.Flags().IntP("run", "r", 1, "Specifies which run to consider.")
+
+	err := runArtifacts(&tcclient.Credentials{}, []string{fakeTaskID}, cmd.OutOrStdout(), cmd.Flags())
+	suite.EqualError(err, "there is no run #1")
+}
+
 func (suite *FakeServerSuite) TestStatusCommand() {
 	// set up to run a command and capture output
 	buf, cmd := setUpCommand()
