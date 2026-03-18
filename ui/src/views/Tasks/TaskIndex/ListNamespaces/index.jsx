@@ -167,9 +167,9 @@ export default class ListNamespaces extends Component {
     } = this.props;
     const { indexPathInput } = this.state;
     const hasIndexedTasks =
-      taskNamespace && taskNamespace.edges && taskNamespace.edges.length > 0;
+      taskNamespace?.edges && taskNamespace.edges.length > 0;
     const hasNamespaces =
-      namespaces && namespaces.edges && namespaces.edges.length > 0;
+      namespaces?.edges && namespaces.edges.length > 0;
     const loading = namespacesLoading || taskNamespaceLoading;
     const indexPaths = indexPathInput.split('.');
     const isSinglePath = indexPaths.length === 1;

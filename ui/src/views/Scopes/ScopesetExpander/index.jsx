@@ -99,9 +99,7 @@ export default class ScopesetExpander extends Component {
                         <Spinner />
                       </ListItem>
                     )}
-                    {data &&
-                      data.expandScopes &&
-                      data.expandScopes.map(scope => (
+                    {data?.expandScopes?.map(scope => (
                         <Link key={scope} to={scopeLink(scope)}>
                           <ListItem button className={classes.listItemButton}>
                             <code>{scope}</code>

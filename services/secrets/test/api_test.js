@@ -48,7 +48,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           assert(e.body.message.startsWith(errMessage));
         }
         // if there's a payload, the secret should be obscured
-        if (e.body.requestInfo && e.body.requestInfo.payload.secret) {
+        if (e.body.requestInfo?.payload.secret) {
           assert.equal(e.body.requestInfo.payload.secret, '(OMITTED)');
         }
         return;

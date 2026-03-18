@@ -802,7 +802,7 @@ declareWithTrailingColon({
 });
 
 const cleanCreatePayload = payload => {
-  if (payload.providerInfo && payload.providerInfo.staticSecret) {
+  if (payload.providerInfo?.staticSecret) {
     payload.providerInfo.staticSecret = '(OMITTED)';
   }
   return payload;

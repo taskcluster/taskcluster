@@ -63,7 +63,7 @@ class FakeGithub {
       },
       'repos.createCommitComment': () => {},
       'repos.getCommit': async ({ owner, repo, ref, headers }) => {
-        assert.equal(headers && headers.accept, 'application/vnd.github.3.sha');
+        assert.equal(headers?.accept, 'application/vnd.github.3.sha');
         assert(ref.startsWith('refs/'), 'repos.getCommit requires a full ref path');
         const key = `${owner}/${repo}@${ref}`;
         if (!this._commits[key]) {
@@ -76,7 +76,7 @@ class FakeGithub {
       },
       'repos.checkCollaborator': async ({ owner, repo, username }) => {
         const key = `${owner}/${repo}`;
-        if (this._repo_collaborators[key] && this._repo_collaborators[key].has(username)) {
+        if (this._repo_collaborators[key]?.has(username)) {
           return {};
         } else {
           throwError(404);
@@ -124,7 +124,7 @@ class FakeGithub {
       'repos.listCommitStatusesForRef': async ({ owner, repo, ref }) => {
         const key = `${owner}/${repo}@${ref}`;
         const info = this._statuses[key];
-        if (info && info.errorStatus) {
+        if (info?.errorStatus) {
           throwError(info.errorStatus);
         }
         if (info) {

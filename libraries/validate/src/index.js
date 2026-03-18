@@ -28,7 +28,7 @@ class SchemaSet {
     const defaultFolder = path.join(REPO_ROOT, 'services', options.serviceName, 'schemas');
     this.cfg = _.defaults(options, {
       folder: defaultFolder,
-      constants: path.join(options && options.folder || defaultFolder, 'constants.yml'),
+      constants: path.join(options?.folder || defaultFolder, 'constants.yml'),
     });
 
     if (_.isString(this.cfg.constants)) {

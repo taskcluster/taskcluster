@@ -78,7 +78,7 @@ export default ({ cfg, server, schema, context, path, authFactory }) => {
           ...connection,
           formatResponse: value => ({
             ...value,
-            errors: value.errors && value.errors.map(formatError),
+            errors: value.errors?.map(formatError),
           }),
           context: await context({ connection }),
         };

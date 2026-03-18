@@ -48,7 +48,7 @@ export default class ApiReference extends Component {
     }
 
     const functionEntries =
-      ref.entries && ref.entries.filter(({ type }) => type === 'function');
+      ref.entries?.filter(({ type }) => type === 'function');
     const groupedEntries = Array.from(
       this.groupBy(functionEntries, entry => entry.category)
     );

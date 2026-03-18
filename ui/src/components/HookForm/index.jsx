@@ -294,8 +294,7 @@ export default class HookForm extends Component {
       hook: { hookId, hookGroupId },
     } = this.state;
 
-    onCreateHook &&
-      onCreateHook({
+    onCreateHook?.({
         hookId,
         hookGroupId,
         payload: this.getHookDefinition(),
@@ -411,8 +410,7 @@ export default class HookForm extends Component {
       hook: { hookId, hookGroupId },
     } = this.state;
 
-    onUpdateHook &&
-      onUpdateHook({
+    onUpdateHook?.({
         hookId,
         hookGroupId,
         payload: this.getHookDefinition(),
@@ -942,17 +940,16 @@ export default class HookForm extends Component {
           onClose={this.handleDrawerClose}>
           <div className={classes.metadataContainer}>
             <Typography variant="h6" className={classes.headline}>
-              {drawerData && drawerData.taskId}
+              {drawerData?.taskId}
             </Typography>
             <List>
               <ListItem>
                 <ListItemText
                   primary={
-                    drawerData &&
-                    drawerData.error && (
+                    drawerData?.error && (
                       <ErrorPanel
                         className={classes.errorPanel}
-                        error={drawerData && drawerData.error}
+                        error={drawerData?.error}
                         onClose={null}
                       />
                     )

@@ -150,7 +150,7 @@ export default class Documentation extends Component {
         docs
         disableTitleFormatting
         title={
-          pageInfo && pageInfo.data.title
+          pageInfo?.data.title
             ? pageInfo.data.title
             : 'Documentation'
         }

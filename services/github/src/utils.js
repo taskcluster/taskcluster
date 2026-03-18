@@ -64,7 +64,7 @@ export const ciSkipRegexp = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
  * @returns boolean
  */
 export const shouldSkipCommit = ({ commits, head_commit = {} }) => {
-  let last_commit = head_commit && head_commit.message ? head_commit : false;
+  let last_commit = head_commit?.message ? head_commit : false;
 
   if (!last_commit && Array.isArray(commits) && commits.length > 0) {
     last_commit = commits[commits.length - 1];

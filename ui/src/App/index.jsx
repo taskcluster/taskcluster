@@ -101,7 +101,7 @@ export default class App extends Component {
       connectionParams: async () => {
         const user = await this.authController.getUser();
 
-        if (user && user.credentials) {
+        if (user?.credentials) {
           return {
             Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
           };
@@ -259,7 +259,7 @@ export default class App extends Component {
                     error={error}
                     subscriptionError={subscriptionError}
                     key={
-                      auth.user && auth.user.credentials
+                      auth.user?.credentials
                         ? auth.user.credentials.clientId
                         : ''
                     }

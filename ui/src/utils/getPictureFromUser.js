@@ -14,7 +14,7 @@ export default user => {
 
     // http://www.passportjs.org/docs/profile/
     case 'github': {
-      return user.profile.photos && user.profile.photos.length
+      return user.profile.photos?.length
         ? user.profile.photos[0].value
         : null;
     }

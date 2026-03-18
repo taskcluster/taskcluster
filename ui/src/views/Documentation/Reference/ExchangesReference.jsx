@@ -29,8 +29,7 @@ export default class ExchangesReference extends Component {
     }
 
     const topicExchangeEntries =
-      ref.entries &&
-      ref.entries.filter(({ type }) => type === 'topic-exchange');
+      ref.entries?.filter(({ type }) => type === 'topic-exchange');
 
     return (
       <div>

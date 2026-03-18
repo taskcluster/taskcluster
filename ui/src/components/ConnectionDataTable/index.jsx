@@ -286,7 +286,7 @@ export default class ConnectionDataTable extends Component {
       rowHeight,
     } = this.props;
     const { count } = this.getPaginationMetadata();
-    const colSpan = columnsSize || (headers && headers.length) || 1;
+    const colSpan = columnsSize || (headers?.length) || 1;
     const { filterValue } = this.state;
     const { edges } = connection;
     const rows =

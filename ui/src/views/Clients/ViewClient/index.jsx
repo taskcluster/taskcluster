@@ -304,14 +304,13 @@ export default class ViewClient extends Component {
     };
     const isCliLogin = Boolean(query.callback_url);
     const isClientDisabled =
-      clientData && clientData.client && clientData.client.disabled;
+      clientData?.client?.disabled;
 
     // CLI login
     if (
       isCliLogin &&
       user &&
-      currentScopesData &&
-      currentScopesData.currentScopes
+      currentScopesData?.currentScopes
     ) {
       Object.assign(initialClient, {
         clientId: `${user.credentials.clientId}/${query.name}`,
@@ -322,7 +321,7 @@ export default class ViewClient extends Component {
       });
     }
 
-    if (location.state && location.state.accessToken) {
+    if (location.state?.accessToken) {
       const state = { ...location.state };
 
       delete state.accessToken;
@@ -376,8 +375,8 @@ export default class ViewClient extends Component {
               </Fragment>
             ) : (
               <Fragment>
-                {((clientData && clientData.loading) ||
-                  (currentScopesData && currentScopesData.loading)) && (
+                {((clientData?.loading) ||
+                  (currentScopesData?.loading)) && (
                   <Spinner loading />
                 )}
                 <ErrorPanel
@@ -386,11 +385,11 @@ export default class ViewClient extends Component {
                   error={
                     (isClientDisabled && 'Disabled') ||
                     error ||
-                    (clientData && clientData.error) ||
-                    (currentScopesData && currentScopesData.error)
+                    (clientData?.error) ||
+                    (currentScopesData?.error)
                   }
                 />
-                {clientData && clientData.client && (
+                {clientData?.client && (
                   <ClientForm
                     dialogError={dialogError}
                     loading={loading}

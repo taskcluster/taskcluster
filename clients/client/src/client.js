@@ -130,8 +130,7 @@ export const makeRequest = async function(client, method, url, payload, query) {
   }
 
   // Authenticate, if credentials are provided
-  if (client._options.credentials &&
-      client._options.credentials.clientId &&
+  if (client._options.credentials?.clientId &&
       client._options.credentials.accessToken) {
     // Create hawk authentication header
     const header = hawk.client.header(url, method.toUpperCase(), {
@@ -197,10 +196,10 @@ export const createClient = function(reference, name) {
 
   // Client class constructor
   const Client = function(options) {
-    if (options && options.baseUrl) {
+    if (options?.baseUrl) {
       throw new Error('baseUrl has been deprecated!');
     }
-    if (options && options.exchangePrefix) {
+    if (options?.exchangePrefix) {
       throw new Error('exchangePrefix has been deprecated!');
     }
     let serviceName = reference.serviceName;
@@ -262,8 +261,7 @@ export const createClient = function(reference, name) {
 
     // Build ext for hawk requests
     this._extData = undefined;
-    if (this._options.credentials &&
-        this._options.credentials.clientId &&
+    if (this._options.credentials?.clientId &&
         this._options.credentials.accessToken) {
       const ext = {};
 

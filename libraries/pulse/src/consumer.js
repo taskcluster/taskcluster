@@ -270,7 +270,7 @@ export class PulseConsumer {
     };
 
     // Find CC'ed routes
-    if (msg.properties && msg.properties.headers &&
+    if (msg.properties?.headers &&
         msg.properties.headers.CC instanceof Array) {
       message.routes = msg.properties.headers.CC.filter(function(route) {
         // Only return the CC'ed routes that starts with "route."

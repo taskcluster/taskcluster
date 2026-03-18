@@ -168,7 +168,7 @@ function resolveRef(ref, currentSchemaId, allSchemas, visitedRefs = new Set()) {
     );
 
     // If resolved schema has a $ref, resolve it recursively
-    if (resolved && resolved.$ref) {
+    if (resolved?.$ref) {
       return resolveRef(
         resolved.$ref,
         currentSchemaId,
@@ -182,7 +182,7 @@ function resolveRef(ref, currentSchemaId, allSchemas, visitedRefs = new Set()) {
 
   // External reference - find schema by filename in $id
   targetSchema = allSchemas.find(
-    s => s.content && s.content.$id && s.content.$id.endsWith(fileRef)
+    s => s.content?.$id?.endsWith(fileRef)
   );
 
   if (!targetSchema) {
@@ -197,7 +197,7 @@ function resolveRef(ref, currentSchemaId, allSchemas, visitedRefs = new Set()) {
 
   // If resolved schema has a $ref, resolve it recursively with the new
   // schema context
-  if (resolved && resolved.$ref) {
+  if (resolved?.$ref) {
     return resolveRef(
       resolved.$ref,
       targetSchema.content.$id,

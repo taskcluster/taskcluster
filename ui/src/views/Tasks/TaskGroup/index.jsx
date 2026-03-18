@@ -172,7 +172,7 @@ export default class TaskGroup extends Component {
       unscheduled: 0,
     };
 
-    if (taskGroup && taskGroup.edges) {
+    if (taskGroup?.edges) {
       taskGroup.edges.forEach(({ node }) => {
         const { state } = node.status;
 
@@ -214,7 +214,7 @@ export default class TaskGroup extends Component {
     // Make sure data is not from another task group which
     // can happen when a user searches for a different task group
     const isFromSameTaskGroupId =
-      taskGroup && taskGroup.edges[0]
+      taskGroup?.edges[0]
         ? taskGroup.edges[0].node.taskGroupId === taskGroupId
         : true;
     const statusCount =
@@ -903,7 +903,7 @@ export default class TaskGroup extends Component {
     // Make sure data is not from another task group which
     // can happen when a user searches for a different task group
     const isFromSameTaskGroupId =
-      taskGroup && taskGroup.edges[0]
+      taskGroup?.edges[0]
         ? taskGroup.edges[0].node.taskGroupId === taskGroupId
         : true;
     const notificationsCount = Object.values(notifyPreferences).filter(Boolean)
@@ -1033,8 +1033,7 @@ export default class TaskGroup extends Component {
               tooltipTitle="Open in Profiler"
               onClick={this.handleOpenProfiler}
             />
-            {groupActions &&
-              groupActions.map(action => (
+            {groupActions?.map(action => (
                 <SpeedDialAction
                   requiresAuth
                   tooltipOpen

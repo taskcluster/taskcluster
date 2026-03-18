@@ -132,7 +132,7 @@ export default class InteractiveConnect extends Component {
           sessionReady ||
           getInteractiveStatus({
             shellArtifact: interactives.shellArtifact,
-            taskStatusState: task && task.status.state,
+            taskStatusState: task?.status.state,
           }) === INTERACTIVE_TASK_STATUS.READY,
       };
     }
@@ -272,7 +272,7 @@ export default class InteractiveConnect extends Component {
     const { shellArtifact, notifyOnReady } = this.state;
     const interactiveStatus = getInteractiveStatus({
       shellArtifact,
-      taskStatusState: task && task.status.state,
+      taskStatusState: task?.status.state,
     });
     const isSessionReady = interactiveStatus === INTERACTIVE_TASK_STATUS.READY;
     const isSessionResolved =

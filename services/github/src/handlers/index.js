@@ -370,7 +370,7 @@ class Handlers {
       debug(`exception comment on ${organization}/${repository}#${pullNumber} found to be duplicate. skipping`);
       return;
     }
-    let errorBody = error.body && error.body.error || error.message;
+    let errorBody = error.body?.error || error.message;
     // Let's prettify any objects
     if (typeof errorBody === 'object') {
       errorBody = stringify(errorBody, null, 4);

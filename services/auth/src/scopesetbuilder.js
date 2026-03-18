@@ -90,10 +90,10 @@ class MergeNode extends BaseNode {
     // they are null or we have value that doesn't start with said prefix.
     if (this.value.endsWith('*')) {
       const prefix = this.value.slice(0, -1);
-      while (this.A && this.A.value.startsWith(prefix)) {
+      while (this.A?.value.startsWith(prefix)) {
         this.A = this.A.next();
       }
-      while (this.B && this.B.value.startsWith(prefix)) {
+      while (this.B?.value.startsWith(prefix)) {
         this.B = this.B.next();
       }
     }

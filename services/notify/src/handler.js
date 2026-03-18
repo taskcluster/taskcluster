@@ -86,7 +86,7 @@ class Handler {
 
     // If task was canceled, we don't send a notification since this was a deliberate user action
     if (status.state === 'exception') {
-      if (this.ignoreTaskReasonResolved.includes((_.last(status.runs) || {}).reasonResolved)) {
+      if (this.ignoreTaskReasonResolved.includes(_.last(status.runs)?.reasonResolved)) {
         return null;
       }
     }

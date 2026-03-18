@@ -189,7 +189,7 @@ export default class DocsSidebarList extends Component {
     const href = removeReadmeFromPath(join(DOCS_PATH_PREFIX, node.path));
     const isLinkActive = removeReadmeFromPath(location.pathname) === href;
 
-    if (node.children && node.children.length) {
+    if (node.children?.length) {
       const [nodes, inlineNodes] = node.children.reduce(
         (acc, curr) => {
           if (curr.data.inline) {

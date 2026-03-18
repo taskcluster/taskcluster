@@ -349,7 +349,7 @@ export default class PulseMessages extends Component {
                     <ListItemText
                       primary="Exchange"
                       secondary={
-                        <code>{drawerMessage && drawerMessage.exchange}</code>
+                        <code>{drawerMessage?.exchange}</code>
                       }
                     />
                   </ListItem>
@@ -357,7 +357,7 @@ export default class PulseMessages extends Component {
                     <ListItemText
                       primary="Routing Key"
                       secondary={
-                        <code>{drawerMessage && drawerMessage.routingKey}</code>
+                        <code>{drawerMessage?.routingKey}</code>
                       }
                     />
                   </ListItem>
@@ -365,7 +365,7 @@ export default class PulseMessages extends Component {
                     <ListItemText
                       primary="Redelivered"
                       secondary={
-                        drawerMessage && drawerMessage.redelivered
+                        drawerMessage?.redelivered
                           ? 'True'
                           : 'False'
                       }
@@ -375,7 +375,7 @@ export default class PulseMessages extends Component {
                     <ListItemText
                       primary="CC Routes"
                       secondary={
-                        drawerMessage && drawerMessage.cc.length ? (
+                        drawerMessage?.cc.length ? (
                           <List className={classes.ccContainer}>
                             {drawerMessage.cc.map(route => (
                               <ListItem key={route} className={classes.ccRoute}>

@@ -88,7 +88,7 @@
         "useArrowFunction": "off",
         "useLiteralKeys": "error",
         "useDateNow": "error",
-        "useOptionalChain": "off",
+        "useOptionalChain": "error",
         "noImportantStyles": "off",
         "noBannedTypes": "off",
         "noArguments": "off",

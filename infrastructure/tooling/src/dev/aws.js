@@ -168,7 +168,7 @@ export default async ({ userConfig, answer, configTmpl }) => {
             "Resource": "*",
             "Condition": {
               "StringEquals": {
-                "ses:FromAddress": `${(answer.notify || {}).email_source_address || userConfig.notify.email_source_address}`,
+                "ses:FromAddress": `${answer.notify?.email_source_address || userConfig.notify.email_source_address}`,
               },
             },
           },

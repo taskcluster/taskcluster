@@ -55,7 +55,7 @@ export const start = function(clients, { rootUrl } = {}) {
         ext = {};
       }
 
-      if (ext.certificate && ext.certificate.issuer) {
+      if (ext.certificate?.issuer) {
         clientId = ext.certificate.issuer;
       }
 
@@ -67,7 +67,7 @@ export const start = function(clients, { rootUrl } = {}) {
       if (ext.authorizedScopes) {
         scopes = ext.authorizedScopes;
         from = 'ext.authorizedScopes';
-      } else if (ext.certificate && ext.certificate.scopes) {
+      } else if (ext.certificate?.scopes) {
         scopes = ext.certificate.scopes;
         from = 'ext.certificate.scopes';
       }

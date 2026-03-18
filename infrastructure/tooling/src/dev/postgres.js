@@ -16,7 +16,7 @@ export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
     when: () => !userConfig.meta?.dbPrivateIp,
     type: 'input',
     name: 'meta.dbPrivateIp',
-    default: previous => (previous.meta || {}).dbPublicIp || (userConfig.meta || {}).dbPublicIp,
+    default: previous => previous.meta?.dbPublicIp || userConfig.meta?.dbPublicIp,
     message: 'What is the private IP of your Postgres server? (used for access from services, use the public IP if you have not set up private IP access)',
   });
 
@@ -24,7 +24,7 @@ export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
     when: () => !userConfig.meta?.dbName,
     type: 'input',
     name: 'meta.dbName',
-    default: previous => (previous.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix,
+    default: previous => previous.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix,
     message: 'What is the name of the Postgres database on the given server?',
     validate: dbName => {
       if (!/^[a-z0-9]+$/.test(dbName)) {
@@ -38,7 +38,7 @@ export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
     when: () => !userConfig.meta?.dbAdminUsername,
     type: 'input',
     name: 'meta.dbAdminUsername',
-    default: previous => (previous.meta || {}).deploymentPrefix || (userConfig.meta || {}).deploymentPrefix,
+    default: previous => previous.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix,
     message: 'What is the username of the admin Postgres user (and also prefix for per-service usernames)?',
     validate: dbAdminUsername => {
       if (!/^[a-z0-9]+$/.test(dbAdminUsername)) {

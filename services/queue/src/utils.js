@@ -90,7 +90,7 @@ export const artifactUtils = {
         if (entries.length) {
           try {
             const response = await bucket.deleteObjects(entries.map(entry => entry.details.prefix), true);
-            if (response.Errors && response.Errors.length) {
+            if (response.Errors?.length) {
               errors.push(response.Errors.map(obj => ({
                 code: obj.Code,
                 message: obj.Message,

@@ -9,5 +9,5 @@ import { CLIENT_ID_PATTERN } from '../utils/constants.js';
 export default (clientId) => {
   const patternMatch = CLIENT_ID_PATTERN.exec(clientId);
 
-  return patternMatch && patternMatch[1];
+  return patternMatch?.[1];
 };

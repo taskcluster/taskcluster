@@ -181,7 +181,7 @@ export default class ViewHook extends Component {
       snackbar,
       exchangesDictionary,
     } = this.state;
-    const error = (data && data.error) || err;
+    const error = (data?.error) || err;
     const hookLastFires = data?.hookLastFires?.edges
       ?.map(({ node }) => node)
       .sort((a, b) => new Date(b.taskCreateTime) - new Date(a.taskCreateTime));

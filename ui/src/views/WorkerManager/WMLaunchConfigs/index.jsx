@@ -457,7 +457,7 @@ export default class WMLaunchConfigs extends Component {
     const { data, match, location, classes } = this.props;
     const { sortBy, sortDirection, selectedLaunchConfig } = this.state;
     const loading = !data || !data.WorkerPoolLaunchConfigs || data.loading;
-    const error = data && data.error;
+    const error = data?.error;
     const workerPoolId = decodeURIComponent(match.params.workerPoolId ?? '');
     const errorsStats = data?.WorkerManagerErrorsStats?.totals ?? {};
     const workerPoolStats = data?.WorkerPoolStats;

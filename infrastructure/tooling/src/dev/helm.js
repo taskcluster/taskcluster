@@ -25,7 +25,7 @@ const actions = [
         throw new Error('Must have configured dev-config.yml to deploy.');
       }
 
-      if (config.auth && config.auth.static_clients) {
+      if (config.auth?.static_clients) {
         if (config.auth.static_clients.some(({ clientId, scopes }) => clientId.startsWith('static/taskcluster/') && scopes)) {
           throw new Error('`static/taskcluster/..` clients in auth.static_clients in `dev-config.yml` should not contain scopes');
         }

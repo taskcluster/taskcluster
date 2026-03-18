@@ -147,7 +147,7 @@ export class Providers {
    */
   get(providerId) {
     const p = this._providers[providerId];
-    if (p && p.setupFailed) {
+    if (p?.setupFailed) {
       // If setup failed, we do not return the provider, but just an empty object.  This
       // avoids mistakes where the caller does not check for failed setup.
       // @ts-ignore

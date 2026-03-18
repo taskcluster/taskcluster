@@ -28,7 +28,7 @@ export default task =>
       scopes: task.scopes.filter(scope => !/^docker-worker:cache:/.test(scope)),
       payload: merge(omit(['artifacts', 'cache'], task.payload || {}), {
         maxRunTime: Math.max(
-          task.payload && task.payload.maxRunTime,
+          task.payload?.maxRunTime,
           3 * 60 * 60
         ),
         features: {

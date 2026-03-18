@@ -250,7 +250,7 @@ builder.declare({
   if (!body) {
     return resolve(res, 400, 'Request missing a body');
   }
-  const installationId = body.installation && body.installation.id;
+  const installationId = body.installation?.id;
 
   const webhookSecrets = this.cfg.webhook.secret;
   // sha256 version is recommended by github but if it's missing we fallback to sha1
