@@ -319,7 +319,7 @@ export const loadArtifactsRoutes = (builder) => {
         break;
 
       default:
-        throw new Error('Unknown storageType: ' + storageType);
+        throw new Error(`Unknown storageType: ${storageType}`);
     }
 
     let artifact;
@@ -443,7 +443,7 @@ export const loadArtifactsRoutes = (builder) => {
         return res.reply({ storageType });
 
       default:
-        throw new Error('Unknown storageType: ' + artifact.storageType);
+        throw new Error(`Unknown storageType: ${artifact.storageType}`);
     }
   });
 
@@ -633,7 +633,7 @@ export const loadArtifactsRoutes = (builder) => {
     }
 
     // We should never arrive here
-    const err = new Error('Unknown artifact storageType: ' + storageType);
+    const err = new Error(`Unknown artifact storageType: ${storageType}`);
     err.artifact = artifactUtils.serialize(artifact);
     this.monitor.reportError(err);
   };
@@ -990,7 +990,7 @@ export const loadArtifactsRoutes = (builder) => {
 
       default: {
         // (note: links should have been evaluated already)
-        const err = new Error('Unknown artifact storageType: ' + storageType);
+        const err = new Error(`Unknown artifact storageType: ${storageType}`);
         err.artifact = artifactUtils.serialize(artifact);
         this.monitor.reportError(err);
       }

@@ -30,14 +30,14 @@ function sanitizeGitHubField(field) {
 // See https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pullrequestevent
 function getPullRequestDetails(eventData) {
   return {
-    'event.base.ref': 'refs/heads/' + eventData.pull_request.base.ref,
+    'event.base.ref': `refs/heads/${eventData.pull_request.base.ref}`,
     'event.base.repo.branch': eventData.pull_request.base.ref,
     'event.base.repo.name': eventData.pull_request.base.repo.name,
     'event.base.repo.url': eventData.pull_request.base.repo.clone_url,
     'event.base.sha': eventData.pull_request.base.sha,
     'event.base.user.login': eventData.pull_request.base.user.login,
 
-    'event.head.ref': 'refs/heads/' + eventData.pull_request.head.ref,
+    'event.head.ref': `refs/heads/${eventData.pull_request.head.ref}`,
     'event.head.repo.branch': eventData.pull_request.head.ref,
     'event.head.repo.name': eventData.pull_request.head.repo.name,
     'event.head.repo.url': eventData.pull_request.head.repo.clone_url,
@@ -47,7 +47,7 @@ function getPullRequestDetails(eventData) {
 
     'event.pullNumber': eventData.number,
     'event.title': eventData.pull_request.title,
-    'event.type': 'pull_request.' + eventData.action,
+    'event.type': `pull_request.${eventData.action}`,
   };
 }
 
@@ -403,7 +403,7 @@ builder.declare({
         break;
 
       default:
-        return resolve(res, 200, 'No publisher available for X-GitHub-Event: ' + eventType);
+        return resolve(res, 200, `No publisher available for X-GitHub-Event: ${eventType}`);
     }
   } catch (e) {
     e.webhookPayload = body;
@@ -416,7 +416,7 @@ builder.declare({
 
   // Not all webhook payloads include an e-mail for the user who triggered an event
   const headUser = msg.details['event.head.user.login'].toString();
-  const defaultEmail = msg.details['event.head.user.login'].replace(/\[bot\]$/, '') + '@users.noreply.github.com';
+  const defaultEmail = `${msg.details['event.head.user.login'].replace(/\[bot\]$/, '')}@users.noreply.github.com`;
   let resolvedEmail = defaultEmail;
 
   try {
@@ -676,7 +676,7 @@ builder.declare({
     if (state) {
       // If we got a status, send a corresponding image.
       fileConfig.headers['X-Taskcluster-Status'] = state;
-      return res.sendFile(state + '.svg', fileConfig);
+      return res.sendFile(`${state}.svg`, fileConfig);
     } else {
       // otherwise, it's a commit without a TC status, which probably means a new repo
       fileConfig.headers['X-Taskcluster-Status'] = 'newrepo';

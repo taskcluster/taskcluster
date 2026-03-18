@@ -222,16 +222,16 @@ const renderTemplates = async (name, vars, procs, templates) => {
       IMAGE_PULL_SECRETS_STRING: '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
     };
 
-    switch (conf['type']) {
+    switch (conf.type) {
       case 'web': {
         tmpl = 'deployment';
-        context['needsService'] = true;
-        context['wrapReplicas'] = true;
-        const rendered = jsone(templates['service'], context);
+        context.needsService = true;
+        context.wrapReplicas = true;
+        const rendered = jsone(templates.service, context);
         const file = `taskcluster-${name}-service-${proc}.yaml`;
         ingresses.push({
           projectName: `taskcluster-${name}`,
-          paths: conf['paths'] || [`/api/${name}/*`], // TODO: This version of config is only for gcp ingress :(
+          paths: conf.paths || [`/api/${name}/*`], // TODO: This version of config is only for gcp ingress :(
         });
         await writeRepoYAML(path.join(TMPL_DIR, file), rendered);
         const hpaContext = {
@@ -241,7 +241,7 @@ const renderTemplates = async (name, vars, procs, templates) => {
           maxReplicas: `{{ .Values.${context.configName}.autoscaling.maxReplicas }}`,
           targetCPUUtilizationPercentage: `{{ .Values.${context.configName}.autoscaling.targetCPUUtilizationPercentage }}`,
         };
-        const hpaRendered = jsone(templates['hpa'], hpaContext);
+        const hpaRendered = jsone(templates.hpa, hpaContext);
         const hpaFilename = `taskcluster-${name}-hpa-${proc}.yaml`;
         await writeRepoFile(path.join(TMPL_DIR, hpaFilename), postProcessHorizontalPodAutoscaler(hpaRendered, context));
         break;
@@ -255,8 +255,8 @@ const renderTemplates = async (name, vars, procs, templates) => {
       }
       case 'cron': {
         tmpl = 'cron';
-        context['schedule'] = conf.schedule;
-        context['deadlineSeconds'] = conf.deadline;
+        context.schedule = conf.schedule;
+        context.deadlineSeconds = conf.deadline;
         break;
       }
       default: continue; // We don't do anything with build/heroku-only
@@ -384,7 +384,7 @@ tasks.push({
       }
     }
     const templates = requirements['k8s-templates'];
-    const rendered = jsone(templates['ingress'], {
+    const rendered = jsone(templates.ingress, {
       ingresses,
       labels: labels(`taskcluster-ingress`, 'ingress'),
     });
@@ -401,7 +401,7 @@ tasks.push({
     const templates = requirements['k8s-templates'];
 
     // podmonitoring for prometheus metrics
-    const podmon = jsone(templates['podmonitoring'], {
+    const podmon = jsone(templates.podmonitoring, {
       projectName: 'taskcluster-monitoring',
       labels: labels('taskcluster-monitoring', 'podmonitoring'),
       selectorLabels: metricsSelectorLabels('taskcluster-monitoring'),

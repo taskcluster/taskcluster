@@ -92,7 +92,7 @@ export async function deprecatedStatusHandler(message) {
       sha: build.sha,
       state,
       target_url,
-      description: 'TaskGroup: ' + state,
+      description: `TaskGroup: ${state}`,
       context: `${this.context.cfg.app.statusContext} (${build.event_type.split('.')[0]})`,
     });
   } catch (e) {

@@ -54,7 +54,7 @@ suite(testing.suiteName(), function() {
   });
 
   const tryUploadAndDownload = async data => {
-    const name = "taskcluster/test/client/" + taskcluster.slugid();
+    const name = `taskcluster/test/client/${taskcluster.slugid()}`;
     const expires = taskcluster.fromNow('1 hour');
 
     await taskcluster.upload({
@@ -96,7 +96,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('download of a nonexistent file fails', async function() {
-    const name = "taskcluster/test/client/" + taskcluster.slugid();
+    const name = `taskcluster/test/client/${taskcluster.slugid()}`;
     await assert.rejects(
       () => taskcluster.download({ name, object }),
       err => err.statusCode === 404);
@@ -362,7 +362,7 @@ suite(testing.suiteName(), function() {
     });
 
     const createObject = async () => {
-      const name = "taskcluster/test/client/" + taskcluster.slugid();
+      const name = `taskcluster/test/client/${taskcluster.slugid()}`;
       const expires = taskcluster.fromNow('1 hour');
       const data = 'hello, world';
 

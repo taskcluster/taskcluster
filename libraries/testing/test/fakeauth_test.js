@@ -105,13 +105,13 @@ suite(testing.suiteName(), function() {
       },
     };
     if (extContent) {
-      content['ext'] = Buffer.from(JSON.stringify(extContent)).toString('base64');
+      content.ext = Buffer.from(JSON.stringify(extContent)).toString('base64');
     }
 
     const { header } = hawk.client.header(reqUrl, 'GET', content);
 
     const bewit = hawk.uri.getBewit(reqUrl, content);
-    const bewitUrl = reqUrl + '?bewit=' + bewit;
+    const bewitUrl = `${reqUrl}?bewit=${bewit}`;
     return Promise.all([
       request
         .get(reqUrl)

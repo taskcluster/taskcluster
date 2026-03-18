@@ -48,7 +48,7 @@ export default class API {
     // validate context
     this.builder.context?.forEach((property) => {
       assert(resolvedOptions.context[property] !== undefined,
-        'Context must have declared property: \'' + property + '\'');
+        `Context must have declared property: \'${property}\'`);
     });
 
     Object.keys(resolvedOptions.context).forEach(property => {

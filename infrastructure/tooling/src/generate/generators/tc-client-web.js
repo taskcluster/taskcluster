@@ -12,7 +12,7 @@ export const tasks = [{
   requires: ['apis'],
   provides: ['target-taskcluster-client-web'],
   run: async (requirements, utils) => {
-    const apis = requirements['apis'];
+    const apis = requirements.apis;
 
     // clean up the clients directory to eliminate any "leftovers"
     await rimraf(path.join(REPO_ROOT, 'clients/client-web/src/clients'));

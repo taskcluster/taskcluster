@@ -83,18 +83,18 @@ class DependencyTracker {
       let msg = '';
       if (missing.length > 0) {
         msg += '`task.dependencies` references non-existing tasks: \n';
-        msg += missing.map(taskId => {
-          return ' * ' + taskId;
-        }).join('\n') + '\n';
+        msg += `${missing.map(taskId => {
+          return ` * ${taskId}`;
+        }).join('\n')}\n`;
         msg += 'All taskIds in `task.dependencies` **must** exist\n';
         msg += 'before the task is created.\n';
       }
       if (expiring.length > 0) {
         msg += '`task.dependencies` references tasks that expires\n';
         msg += 'before `task.deadline` this is not allowed, see tasks: \n';
-        msg += expiring.map(taskId => {
-          return ' * ' + taskId + ',';
-        }).join('\n') + '\n';
+        msg += `${expiring.map(taskId => {
+          return ` * ${taskId},`;
+        }).join('\n')}\n`;
         msg += 'All taskIds in `task.dependencies` **must** have\n';
         msg += '`task.expires` greater than the `deadline` for this task.\n';
       }

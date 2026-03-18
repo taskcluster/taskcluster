@@ -121,7 +121,7 @@ export class APIBuilder {
     assert(!options.version, 'version is now apiVersion');
     /** @satisfies {Array<keyof APIBuilderOptions<TContext>>} */
     (['title', 'description', 'serviceName', 'apiVersion']).forEach(function(key) {
-      assert(options[key], 'Option \'' + key + '\' must be provided');
+      assert(options[key], `Option \'${key}\' must be provided`);
     });
     assert(/^[a-z][a-z0-9_-]*$/.test(options.serviceName), `api serviceName "${options.serviceName}" is not valid`);
     assert(/^v[0-9]+$/.test(options.apiVersion), `apiVersion "${options.apiVersion}" is not valid`);
@@ -138,7 +138,7 @@ export class APIBuilder {
     };
     // @ts-ignore - we know that options.errorCodes is defined
     Object.entries(options.errorCodes).forEach(([key, value]) => {
-      assert(/[A-Z][A-Za-z0-9]*/.test(key), 'Invalid error code: ' + key);
+      assert(/[A-Z][A-Za-z0-9]*/.test(key), `Invalid error code: ${key}`);
       assert(typeof value === 'number', 'Expected HTTP status code to be int');
     });
     /** @type {string} */
@@ -208,7 +208,7 @@ export class APIBuilder {
   declare(options, handler) {
     /** @satisfies {Array<keyof APIEntryOptions<TContext>>} */
     (['name', 'method', 'route', 'title', 'description', 'category']).forEach(function(key) {
-      assert(options[key], 'Option \'' + key + '\' must be provided');
+      assert(options[key], `Option \'${key}\' must be provided`);
     });
     // unlike other options above, scopes is allowed to be null, but not undefined...
     assert.notStrictEqual(options.scopes, undefined);
@@ -223,7 +223,7 @@ export class APIBuilder {
     options.query = options.query || {};
     Object.entries(options.query).forEach(([key, value]) => {
       if (!(value instanceof RegExp || value instanceof Function)) {
-        throw new Error('query.' + key + ' must be a RegExp or a function!');
+        throw new Error(`query.${key} must be a RegExp or a function!`);
       }
     });
     assert(!options.deferAuth,

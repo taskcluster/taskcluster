@@ -48,7 +48,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   function pulseTest(params) {
     test(params.testName, async function() {
       // Trigger a pull-request message
-      const res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
+      const res = await helper.jsonHttpRequest(`./test/data/webhooks/${params.jsonFile}`);
       res.connection?.destroy();
 
       const webhook = await loadWebhookJson(params.jsonFile);

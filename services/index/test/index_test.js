@@ -59,7 +59,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const task = makeTask();
     helper.queue.addTask(taskId, task);
 
-    debug('### Send fake message, taskid ' + taskId);
+    debug(`### Send fake message, taskid ${taskId}`);
     const message = {
       exchange: 'exchange/taskcluster-queue/v1/task-completed',
       routingKey: 'route.index.abc',
@@ -162,27 +162,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const myns = slugid.v4();
     const taskId = slugid.v4();
     const taskId2 = slugid.v4();
-    await helper.index.insertTask(myns + '.my-task', {
+    await helper.index.insertTask(`${myns}.my-task`, {
       taskId: taskId,
       rank: 41,
       data: { hello: 'world' },
       expires: expiry.toJSON(),
     });
     try {
-      await helper.index.findTask(myns + '.my-task');
+      await helper.index.findTask(`${myns}.my-task`);
     } catch (err) {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
     }
 
     expiry.setDate(expiry.getDate() + 1);
-    await helper.index.insertTask(myns + '.my-task2', {
+    await helper.index.insertTask(`${myns}.my-task2`, {
       taskId: taskId2,
       rank: 42,
       data: { hello: 'world two' },
       expires: expiry.toJSON(),
     });
-    const result = await helper.index.findTask(myns + '.my-task2');
+    const result = await helper.index.findTask(`${myns}.my-task2`);
     assert(result.taskId === taskId2, 'Wrong taskId');
 
     // Set now to one day in the past
@@ -191,7 +191,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await helper.db.fns.expire_indexed_tasks();
 
     try {
-      await helper.index.findTask(myns + '.my-task');
+      await helper.index.findTask(`${myns}.my-task`);
     } catch (err) {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
@@ -208,7 +208,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const taskId = slugid.v4();
     const taskId2 = slugid.v4();
 
-    await helper.index.insertTask(myns + '.one-ns.my-task', {
+    await helper.index.insertTask(`${myns}.one-ns.my-task`, {
       taskId: taskId,
       rank: 41,
       data: { hello: 'world' },
@@ -216,18 +216,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
 
     try {
-      await helper.index.findTask(myns + '.one-ns.my-task');
+      await helper.index.findTask(`${myns}.one-ns.my-task`);
     } catch (err) {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
     }
-    await helper.index.insertTask(myns + '.another-ns.my-task', {
+    await helper.index.insertTask(`${myns}.another-ns.my-task`, {
       taskId: taskId2,
       rank: 42,
       data: { hello: 'world two' },
       expires: expiry.toJSON(),
     });
-    let result = await helper.index.findTask(myns + '.another-ns.my-task');
+    let result = await helper.index.findTask(`${myns}.another-ns.my-task`);
     assert(result.taskId === taskId2, 'Wrong taskId');
     // Set now to one day in the past
     const now = new Date();
@@ -250,13 +250,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const res = [];
     for (let i = 1; i <= 10; i++) {
       const taskId = slugid.nice();
-      await helper.index.insertTask(myns + '.my-task' + _.toString(i) + '.new' + _.toString(i), {
+      await helper.index.insertTask(`${myns}.my-task${_.toString(i)}.new${_.toString(i)}`, {
         taskId: taskId,
         rank: i,
-        data: { hello: 'world ' + _.toString(i) },
+        data: { hello: `world ${_.toString(i)}` },
         expires: expiry.toJSON(),
       });
-      const result = await helper.index.findTask(myns + '.my-task' + _.toString(i) + '.new' + _.toString(i));
+      const result = await helper.index.findTask(`${myns}.my-task${_.toString(i)}.new${_.toString(i)}`);
       res.push(result);
       assert(result.taskId === taskId, 'Wrong taskId');
     }
@@ -281,7 +281,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const obj = result.namespaces[0];
       debug('listNamespaces entries match the namespace regex');
       assert.equal(
-        new RegExp(myns + '.my-task').test(obj.namespace) &&
+        new RegExp(`${myns}.my-task`).test(obj.namespace) &&
         new RegExp('my-task').test(obj.name),
         true, 'Expect namespace to match regex');
       continuationToken = result.continuationToken;

@@ -191,7 +191,7 @@ export const withAmazonIPRanges = (mock, skipping) => {
     interceptor = nock('https://ip-ranges.amazonaws.com')
       .persist()
       .get('/ip-ranges.json')
-      .replyWithFile(200, __dirname + '/fake-ip-ranges.json', { 'Content-Type': 'application/json' });
+      .replyWithFile(200, `${__dirname}/fake-ip-ranges.json`, { 'Content-Type': 'application/json' });
   });
 
   suiteTeardown(async function() {
@@ -314,11 +314,11 @@ export const withServer = (mock, skipping) => {
       };
       // if called as scopes('none'), don't pass credentials at all
       if (scopes && scopes[0] !== 'none') {
-        options['credentials'] = {
+        options.credentials = {
           clientId: 'test-client',
           accessToken: 'none',
         };
-        options['authorizedScopes'] = scopes.length > 0 ? scopes : undefined;
+        options.authorizedScopes = scopes.length > 0 ? scopes : undefined;
       }
       helper.queue = new helper.Queue(options);
     };

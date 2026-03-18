@@ -48,14 +48,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       // Create all roles and clients
       for (const c of t.clients) {
         await helper.apiClient.createClient(c.clientId, {
-          description: 'client for test case: ' + title,
+          description: `client for test case: ${title}`,
           expires: taskcluster.fromNowJSON('2 hours'),
           scopes: c.scopes,
         });
       }
       for (const r of t.roles) {
         await helper.apiClient.createRole(r.roleId, {
-          description: 'role for test case: ' + title,
+          description: `role for test case: ${title}`,
           scopes: r.scopes,
         });
       }
@@ -67,14 +67,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         const missing = _.difference(c.includes, client.expandedScopes);
         const forbidden = _.intersection(c.exludes, client.expandedScopes);
         if (missing.length !== 0 || forbidden.length !== 0) {
-          err += 'Test failed: ' + JSON.stringify(t, null, 2) + '\n';
-          err += 'Client: ' + JSON.stringify(client, null, 2) + '\n';
+          err += `Test failed: ${JSON.stringify(t, null, 2)}\n`;
+          err += `Client: ${JSON.stringify(client, null, 2)}\n`;
         }
         if (missing.length !== 0) {
-          err += 'Missing: ' + JSON.stringify(missing) + '\n';
+          err += `Missing: ${JSON.stringify(missing)}\n`;
         }
         if (forbidden.length !== 0) {
-          err += 'Forbidden: ' + JSON.stringify(forbidden) + '\n';
+          err += `Forbidden: ${JSON.stringify(forbidden)}\n`;
         }
         if (missing.length !== 0 || forbidden.length !== 0) {
           err += '\n\n';
@@ -382,19 +382,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   });
 
   const N = 50;
-  test('indirect roles works (with ' + N + ' roles)', {
+  test(`indirect roles works (with ${N} roles)`, {
     roles: [
       {
         roleId: 'big-test-client',
         scopes: ['assume:test-role-0'],
       }, {
-        roleId: 'test-role-' + N,
+        roleId: `test-role-${N}`,
         scopes: ['special-scope'],
       },
     ].concat(_.range(N).map(i => {
       return {
-        roleId: 'test-role-' + i,
-        scopes: ['assume:test-role-' + (i + 1)],
+        roleId: `test-role-${i}`,
+        scopes: [`assume:test-role-${i + 1}`],
       };
     })),
     clients: [
@@ -405,7 +405,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         ],
         includes: [
           'special-scope',
-        ].concat(_.range(N + 1).map(i => 'assume:test-role-' + i)),
+        ].concat(_.range(N + 1).map(i => `assume:test-role-${i}`)),
         excludes: ['*'],
       },
     ],
@@ -413,19 +413,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
   const M = 5; // depth
   const K = 25; // multiplier
-  test('test with depth = ' + M + ' x ' + K, {
+  test(`test with depth = ${M} x ${K}`, {
     roles: _.flatten([
       _.flatten(_.range(K).map(k => {
         return _.flatten(_.range(M).map(m => {
           return {
-            roleId: 'k-' + k + '-' + m,
-            scopes: ['assume:k-' + k + '-' + (m + 1)],
+            roleId: `k-${k}-${m}`,
+            scopes: [`assume:k-${k}-${m + 1}`],
           };
         }));
       })),
       _.range(K).map(k => {
         return {
-          roleId: 'k-' + k + '-' + M,
+          roleId: `k-${k}-${M}`,
           scopes: ['special-scope'],
         };
       }),
@@ -436,7 +436,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         scopes: ['assume:k-2-0'],
         includes: [
           'special-scope',
-        ].concat(_.range(M + 1).map(i => 'assume:k-2-' + i)),
+        ].concat(_.range(M + 1).map(i => `assume:k-2-${i}`)),
         excludes: ['*'],
       },
     ],

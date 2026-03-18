@@ -29,7 +29,7 @@ suite(testing.suiteName(), function() {
       await db.fns.add_github_access_token(n1.userId, n1.encryptedAccessToken);
       const encryptedAccessTokenAsTable = await db.fns.load_github_access_token(n1.userId);
       assert.equal(encryptedAccessTokenAsTable.length, 1);
-      assert.deepEqual(encryptedAccessTokenAsTable[0]["encrypted_access_token"], n1.encryptedAccessToken);
+      assert.deepEqual(encryptedAccessTokenAsTable[0].encrypted_access_token, n1.encryptedAccessToken);
     });
 
     helper.dbTest('update existing github access token', async function(db) {
@@ -41,7 +41,7 @@ suite(testing.suiteName(), function() {
         await db.fns.add_github_access_token(n1.userId, n1.encryptedAccessToken);
         const encryptedAccessTokenAsTable = await db.fns.load_github_access_token(n1.userId);
         assert.equal(encryptedAccessTokenAsTable.length, 1);
-        assert.deepEqual(encryptedAccessTokenAsTable[0]["encrypted_access_token"], n1.encryptedAccessToken);
+        assert.deepEqual(encryptedAccessTokenAsTable[0].encrypted_access_token, n1.encryptedAccessToken);
       }
     });
 
@@ -78,8 +78,8 @@ suite(testing.suiteName(), function() {
       const sessionAsTable = await db.fns.session_load(sessionData1.hashedSessionId);
       assert.equal(sessionAsTable.length, 1);
       assert(typeof sessionAsTable[0].encrypted_session_id === 'object');
-      assert.deepEqual(sessionAsTable[0]["data"], sessionData1.data);
-      assert.deepEqual(sessionAsTable[0]["expires"], sessionData1.expires);
+      assert.deepEqual(sessionAsTable[0].data, sessionData1.data);
+      assert.deepEqual(sessionAsTable[0].expires, sessionData1.expires);
     });
 
     helper.dbTest('add session data can overwrite', async function(db) {
@@ -113,8 +113,8 @@ suite(testing.suiteName(), function() {
       const sessionAsTable = await db.fns.session_load(sessionData1.hashedSessionId);
       assert.equal(sessionAsTable.length, 1);
       assert(typeof sessionAsTable[0].encrypted_session_id === 'object');
-      assert.deepEqual(sessionAsTable[0]["data"], sessionData2.data);
-      assert.deepEqual(sessionAsTable[0]["expires"], sessionData2.expires);
+      assert.deepEqual(sessionAsTable[0].data, sessionData2.data);
+      assert.deepEqual(sessionAsTable[0].expires, sessionData2.expires);
     });
 
     helper.dbTest('get session data does not throw when not found', async function(db) {
@@ -150,8 +150,8 @@ suite(testing.suiteName(), function() {
       let sessionAsTable = await db.fns.session_load(sessionData1.hashedSessionId);
       assert.equal(sessionAsTable.length, 1);
       assert(typeof sessionAsTable[0].encrypted_session_id === 'object');
-      assert.deepEqual(sessionAsTable[0]["data"], sessionData1.data);
-      assert.deepEqual(sessionAsTable[0]["expires"], sessionData1.expires);
+      assert.deepEqual(sessionAsTable[0].data, sessionData1.data);
+      assert.deepEqual(sessionAsTable[0].expires, sessionData1.expires);
 
       await db.fns.session_remove(sessionData1.hashedSessionId);
       sessionAsTable = await db.fns.session_load(sessionData1.hashedSessionId);
@@ -177,15 +177,15 @@ suite(testing.suiteName(), function() {
       let sessionAsTable = await db.fns.session_load(sessionData1.hashedSessionId);
       assert.equal(sessionAsTable.length, 1);
       assert(typeof sessionAsTable[0].encrypted_session_id === 'object');
-      assert.deepEqual(sessionAsTable[0]["data"], sessionData1.data);
-      assert.deepEqual(sessionAsTable[0]["expires"], sessionData1.expires);
+      assert.deepEqual(sessionAsTable[0].data, sessionData1.data);
+      assert.deepEqual(sessionAsTable[0].expires, sessionData1.expires);
 
       await db.fns.session_touch(sessionData1.hashedSessionId, { bar: 'baz' }, new Date(2));
       sessionAsTable = await db.fns.session_load(sessionData1.hashedSessionId);
       assert.equal(sessionAsTable.length, 1);
       assert(typeof sessionAsTable[0].encrypted_session_id === 'object');
-      assert.deepEqual(sessionAsTable[0]["data"], { bar: 'baz' });
-      assert.deepEqual(sessionAsTable[0]["expires"], new Date(2));
+      assert.deepEqual(sessionAsTable[0].data, { bar: 'baz' });
+      assert.deepEqual(sessionAsTable[0].expires, new Date(2));
     });
 
     helper.dbTest('touch throws a P0002 when no such row', async function(db) {

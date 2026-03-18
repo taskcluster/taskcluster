@@ -273,9 +273,9 @@ suite(testing.suiteName(), function() {
 
   const expectError = (promise, code) => {
     return promise.then(() => {
-      assert(false, 'Expected error code: ' + code + ', but got a response');
+      assert(false, `Expected error code: ${code}, but got a response`);
     }, err => {
-      assert(err.code === code, 'Expected error with code: ' + code + ' but got ' + err.code);
+      assert(err.code === code, `Expected error with code: ${code} but got ${err.code}`);
     });
   };
 
@@ -699,7 +699,7 @@ suite(testing.suiteName(), function() {
         rootUrl: 'https://tc.example.com',
       });
       await assert.rejects(
-        taskcluster.makeRequest(client, 'GET', 'https://127.0.0.1:' + server.address().port),
+        taskcluster.makeRequest(client, 'GET', `https://127.0.0.1:${server.address().port}`),
         err => err.code === 'ECONNABORTED');
     } finally {
       await new Promise(resolve => server.close(resolve));

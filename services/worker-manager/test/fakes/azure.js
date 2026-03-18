@@ -59,17 +59,17 @@ export class FakeAzure extends FakeCloud {
     };
 
     this.computeClient = {
-      virtualMachines: this._managers['vm'],
-      disks: this._managers['disk'],
+      virtualMachines: this._managers.vm,
+      disks: this._managers.disk,
     };
     this.networkClient = {
-      networkInterfaces: this._managers['nic'],
-      publicIPAddresses: this._managers['ip'],
+      networkInterfaces: this._managers.nic,
+      publicIPAddresses: this._managers.ip,
     };
     this.resourcesClient = {
-      resourceGroups: this._managers['resourceGroup'],
+      resourceGroups: this._managers.resourceGroup,
     };
-    this.deploymentsClient = this._managers['deployment'];
+    this.deploymentsClient = this._managers.deployment;
 
     this.restClient = new FakeRestClient(this);
   }

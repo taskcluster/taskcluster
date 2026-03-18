@@ -21,27 +21,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     const myns = slugid.v4();
     const taskId = slugid.v4();
     const taskId2 = slugid.v4();
-    await helper.index.insertTask(myns + '.my-task', {
+    await helper.index.insertTask(`${myns}.my-task`, {
       taskId: taskId,
       rank: 41,
       data: { hello: 'world' },
       expires: taskcluster.fromNow('25 minutes'),
     });
-    let result = await helper.index.findTask(myns + '.my-task');
+    let result = await helper.index.findTask(`${myns}.my-task`);
     assert(result.taskId === taskId, 'Wrong taskId');
 
-    await helper.index.insertTask(myns + '.my-task', {
+    await helper.index.insertTask(`${myns}.my-task`, {
       taskId: taskId2,
       rank: 42,
       data: { hello: 'world - again' },
       expires: taskcluster.fromNow('25 minutes'),
     });
-    result = await helper.index.findTask(myns + '.my-task');
+    result = await helper.index.findTask(`${myns}.my-task`);
     assert(result.taskId === taskId2, 'Wrong taskId');
   });
 
   test('find (non-existing)', async function() {
-    const ns = slugid.v4() + '.' + slugid.v4();
+    const ns = `${slugid.v4()}.${slugid.v4()}`;
     try {
       await helper.index.findTask(ns);
     } catch (err) {
@@ -52,14 +52,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('delete (non-existing)', async function() {
-    const ns = slugid.v4() + '.' + slugid.v4();
+    const ns = `${slugid.v4()}.${slugid.v4()}`;
     await helper.index.deleteTask(ns);
   });
 
   test('find (no scopes)', async function() {
     const myns = slugid.v4();
     const taskId = slugid.v4();
-    await helper.index.insertTask(myns + '.my-task', {
+    await helper.index.insertTask(`${myns}.my-task`, {
       taskId: taskId,
       rank: 41,
       data: { hello: 'world' },
@@ -67,12 +67,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
     helper.scopes('none');
     await assert.rejects(
-      () => helper.index.findTask(myns + '.my-task'),
+      () => helper.index.findTask(`${myns}.my-task`),
       err => err.code === 'InsufficientScopes');
   });
 
   test('delete (no scopes)', async function() {
-    const ns = slugid.v4() + '.' + slugid.v4();
+    const ns = `${slugid.v4()}.${slugid.v4()}`;
     helper.scopes('none');
     await assert.rejects(
       () => helper.index.deleteTask(ns),
@@ -204,7 +204,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       expired.setDate(expired.getDate() - 1);
       const new_expires = expired.toJSON();
 
-      await helper.index.insertTask(myns + '.my-task', {
+      await helper.index.insertTask(`${myns}.my-task`, {
         taskId: taskId,
         rank: 41,
         data: { hello: 'world' },
@@ -212,7 +212,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       try {
-        await helper.index.findTask(myns + '.my-task');
+        await helper.index.findTask(`${myns}.my-task`);
       } catch (err) {
         assert(err.statusCode === 404, 'Should have returned 404');
         return;
@@ -232,7 +232,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const expired = date.toJSON();
 
       // shouldn't be matched: lower rank than the next
-      await helper.index.insertTask(myns + '.my-task', {
+      await helper.index.insertTask(`${myns}.my-task`, {
         taskId: slugid.v4(),
         rank: 40,
         data: { hello: 'world' },
@@ -240,7 +240,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       // should be matched
-      const task1 = await helper.index.insertTask(myns + '.my-task', {
+      const task1 = await helper.index.insertTask(`${myns}.my-task`, {
         taskId: slugid.v4(),
         rank: 41,
         data: { hello: 'world' },
@@ -248,7 +248,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       // shouldn't be matched because of its name
-      await helper.index.insertTask(myns + '.my-task2', {
+      await helper.index.insertTask(`${myns}.my-task2`, {
         taskId: slugid.v4(),
         rank: 42,
         data: { hello: 'world' },
@@ -256,7 +256,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       // shouldn't be matched because it's expired
-      await helper.index.insertTask(myns + '.my-task3', {
+      await helper.index.insertTask(`${myns}.my-task3`, {
         taskId: slugid.v4(),
         rank: 44,
         data: { hello: 'world' },
@@ -264,7 +264,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       // Should be matched
-      const task3 = await helper.index.insertTask(myns + '.my-task3', {
+      const task3 = await helper.index.insertTask(`${myns}.my-task3`, {
         taskId: slugid.v4(),
         rank: 43,
         data: { hello: 'world' },
@@ -272,14 +272,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       let results = await helper.index.findTasksAtIndex({
-        indexes: [myns + '.my-task', myns + '.my-task3'],
+        indexes: [`${myns}.my-task`, `${myns}.my-task3`],
       });
 
       assert.deepEqual(results, { tasks: [task1, task3] });
 
       // Continuation tokens are returned if the limit is exceeded
       results = await helper.index.findTasksAtIndex({
-        indexes: [myns + '.my-task', myns + '.my-task3'],
+        indexes: [`${myns}.my-task`, `${myns}.my-task3`],
       }, { limit: 1 });
 
       assert.deepEqual(results.tasks, [task1]);
@@ -294,7 +294,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // Different input indexes: empty response
       results = await helper.index.findTasksAtIndex({
-        indexes: [myns + '.my-task3', myns + '.whatever'],
+        indexes: [`${myns}.my-task3`, `${myns}.whatever`],
       }, { limit: 1, continuationToken });
 
       assert.deepEqual(results, { tasks: [] });
@@ -302,7 +302,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // You need to re-send the same input indexes along with the token
       // for it to work
       results = await helper.index.findTasksAtIndex({
-        indexes: [myns + '.my-task', myns + '.my-task3'],
+        indexes: [`${myns}.my-task`, `${myns}.my-task3`],
       }, { limit: 1, continuationToken });
 
       assert.deepEqual(results, { tasks: [task3] });

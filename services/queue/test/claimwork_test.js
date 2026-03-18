@@ -42,7 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   test('claimWork from empty queue', async function() {
     helper.scopes(
-      'queue:claim-work:' + taskQueueId,
+      `queue:claim-work:${taskQueueId}`,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
 
@@ -59,7 +59,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('claimWork requires scopes', async () => {
     // wrong taskQueueId scope
     helper.scopes(
-      'queue:claim-work:' + helper.makeTaskQueueId('wrong-provisioner'),
+      `queue:claim-work:${helper.makeTaskQueueId('wrong-provisioner')}`,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
     await helper.queue.claimWork(taskQueueId, {
@@ -72,7 +72,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // wrong workerId scope
     helper.scopes(
-      'queue:claim-work:' + taskQueueId,
+      `queue:claim-work:${taskQueueId}`,
       'queue:worker-id:my-worker-group/other-worker',
     );
     await helper.queue.claimWork(taskQueueId, {
@@ -99,10 +99,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
     helper.scopes(
-      'queue:claim-work:' + taskQueueId,
+      `queue:claim-work:${taskQueueId}`,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
-      'queue:get-task:' + taskId,
-      'queue:status:' + taskId,
+      `queue:get-task:${taskId}`,
+      `queue:status:${taskId}`,
     );
     const before = new Date();
     const r1 = await helper.queue.claimWork(taskQueueId, {
@@ -161,10 +161,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Claim task');
     // Reduce scopes available to test minimum set of scopes required
     helper.scopes(
-      'queue:claim-work:' + taskQueueId,
+      `queue:claim-work:${taskQueueId}`,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
-      'queue:get-task:' + taskId,
-      'queue:status:' + taskId,
+      `queue:get-task:${taskId}`,
+      `queue:status:${taskId}`,
     );
     const before = new Date();
     const r1 = await helper.queue.claimWork(taskQueueId, {

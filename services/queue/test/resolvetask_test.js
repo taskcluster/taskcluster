@@ -158,7 +158,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Reporting task exception');
     helper.scopes(
       `queue:resolve-task:${taskId}/0`,
-      'queue:status:' + taskId,
+      `queue:status:${taskId}`,
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'malformed-payload',
@@ -219,7 +219,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Reporting task exception');
     helper.scopes(
       `queue:resolve-task:${taskId}/0`,
-      'queue:status:' + taskId,
+      `queue:status:${taskId}`,
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'resource-unavailable',
@@ -272,7 +272,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Reporting task exception');
     helper.scopes(
       `queue:resolve-task:${taskId}/0`,
-      'queue:status:' + taskId,
+      `queue:status:${taskId}`,
     );
     await helper.queue.reportException(taskId, 0, {
       reason: 'internal-error',

@@ -316,7 +316,7 @@ class Database {
    */
   static async _checkPermissions({ db, schema, usernamePrefix }) {
     await db._withClient('admin', async (client) => {
-      const usernamePattern = usernamePrefix.replace('_', '\\_') + '\\_%';
+      const usernamePattern = `${usernamePrefix.replace('_', '\\_')}\\_%`;
       // determine current permissions in the form ["username: priv on table"].
       // This includes information from the column_privileges table as if it
       // was granting access to the entire table. We never use column
@@ -485,7 +485,7 @@ class Database {
     await this._withClient('admin', async client => {
       for (const ext of EXTENSIONS) {
         try {
-          await client.query('create extension ' + ext);
+          await client.query(`create extension ${ext}`);
         } catch (err) {
           // ignore errors from the extension already being installed
           if (err.code !== DUPLICATE_OBJECT) {
@@ -790,10 +790,10 @@ class Database {
   decrypt({ value }) {
     const key = this.keyring.getCryptoKey(value.kid, 'aes-256');
 
-    const n = value['__bufchunks_val'];
+    const n = value.__bufchunks_val;
     const chunks = [];
     for (let i = 0; i < n; i++) {
-      chunks[i] = Buffer.from(value['__buf' + i + '_val'], 'base64');
+      chunks[i] = Buffer.from(value[`__buf${i}_val`], 'base64');
     }
     const buffer = Buffer.concat(chunks);
 

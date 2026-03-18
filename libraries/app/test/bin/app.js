@@ -24,7 +24,7 @@ const launch = function() {
   // Respond request count in process for /request-count
   app.get('/request-count', function(req, res) {
     global_state += 1;
-    res.status(200).send('Count: ' + global_state);
+    res.status(200).send(`Count: ${global_state}`);
   });
 
   // Kill process in crash case for testing

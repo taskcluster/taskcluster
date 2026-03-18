@@ -89,8 +89,8 @@ export class FakeCloud {
       return;
     }
     for (const error of this.ajv.errors) {
-      if (error.params['additionalProperty']) {
-        error.message += ': ' + JSON.stringify(error.params['additionalProperty']);
+      if (error.params.additionalProperty) {
+        error.message += `: ${JSON.stringify(error.params.additionalProperty)}`;
       }
     }
     throw new Error([

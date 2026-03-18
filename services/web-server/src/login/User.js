@@ -34,7 +34,7 @@ export default class User {
   }
 
   scopes() {
-    const scopes = this.roles.map(role => 'assume:' + role);
+    const scopes = this.roles.map(role => `assume:${role}`);
     // the `login-identity:*` role defines what each user gets access to.
     scopes.push(`assume:login-identity:${this.identity}`);
 

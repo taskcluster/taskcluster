@@ -39,7 +39,7 @@ export const taskUtils = {
   // Create a serializable representation of this indexed task suitable for response
   // from an API method.
   serialize(task) {
-    let ns = task.namespace + '.' + task.name;
+    let ns = `${task.namespace}.${task.name}`;
     // Remove separate if there is no need
     if (task.namespace.length === 0 || task.name.length === 0) {
       ns = task.namespace + task.name;
@@ -220,7 +220,7 @@ export const namespaceUtils = {
   // Create a serializable representation of this namespace suitable for response
   // from an API method.
   serialize(indexNamespace) {
-    let ns = indexNamespace.parent + '.' + indexNamespace.name;
+    let ns = `${indexNamespace.parent}.${indexNamespace.name}`;
     // Remove separate if there is no need
     if (indexNamespace.parent.length === 0 || indexNamespace.name.length === 0) {
       ns = indexNamespace.parent + indexNamespace.name;

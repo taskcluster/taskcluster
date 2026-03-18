@@ -98,7 +98,7 @@ export const makeRequest = async function(client, method, url, payload, query) {
   if (query) {
     query = querystring.stringify(query);
     if (query.length > 0) {
-      url += '?' + query;
+      url += `?${query}`;
     }
   }
 
@@ -142,7 +142,7 @@ export const makeRequest = async function(client, method, url, payload, query) {
       },
       ext: client._extData,
     });
-    options.headers['Authorization'] = header.header;
+    options.headers.Authorization = header.header;
   }
 
   // Send payload if defined
@@ -479,7 +479,7 @@ export const createClient = function(reference, name) {
           }
           // If number convert to string
           if (typeof value === 'number') {
-            return '' + value;
+            return `${value}`;
           }
           // Validate string and return
           if (typeof value === 'string') {
@@ -524,7 +524,7 @@ export const createClient = function(reference, name) {
     const optKeys = entry.query || [];
     const supportsOpts = optKeys.length !== 0;
 
-    debug('build url for: ' + entry.name);
+    debug(`build url for: ${entry.name}`);
     // Validate number of arguments
     const N = entry.args.length;
     if (args.length !== N && (!supportsOpts || args.length !== N + 1)) {
@@ -559,7 +559,7 @@ export const createClient = function(reference, name) {
 
       query = querystring.stringify(query);
       if (query.length > 0) {
-        query = '?' + query;
+        query = `?${query}`;
       }
     }
 
@@ -638,9 +638,9 @@ export const createClient = function(reference, name) {
     // Add bewit to requestUrl
     const urlParts = url.parse(requestUrl);
     if (urlParts.search) {
-      urlParts.search += '&bewit=' + bewit;
+      urlParts.search += `&bewit=${bewit}`;
     } else {
-      urlParts.search = '?bewit=' + bewit;
+      urlParts.search = `?bewit=${bewit}`;
     }
 
     // Return formatted URL
@@ -783,14 +783,14 @@ export const createTemporaryCredentials = function(options) {
 
   // Construct signature
   const sig = crypto.createHmac('sha256', options.credentials.accessToken);
-  sig.update('version:' + cert.version + '\n');
+  sig.update(`version:${cert.version}\n`);
   if (isNamed) {
-    sig.update('clientId:' + options.clientId + '\n');
-    sig.update('issuer:' + options.credentials.clientId + '\n');
+    sig.update(`clientId:${options.clientId}\n`);
+    sig.update(`issuer:${options.credentials.clientId}\n`);
   }
-  sig.update('seed:' + cert.seed + '\n');
-  sig.update('start:' + cert.start + '\n');
-  sig.update('expiry:' + cert.expiry + '\n');
+  sig.update(`seed:${cert.seed}\n`);
+  sig.update(`start:${cert.start}\n`);
+  sig.update(`expiry:${cert.expiry}\n`);
   sig.update('scopes:\n');
   sig.update(cert.scopes.join('\n'));
   cert.signature = sig.digest('base64');

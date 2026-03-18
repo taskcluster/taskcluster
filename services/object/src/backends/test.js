@@ -50,7 +50,7 @@ export class TestBackend extends Backend {
         assert.equal(params, true);
         return {
           method,
-          url: 'data:;base64,' + this.data.get(object.name).toString('base64'),
+          url: `data:;base64,${this.data.get(object.name).toString('base64')}`,
         };
       }
 
@@ -70,6 +70,6 @@ export class TestBackend extends Backend {
   }
 }
 
-export const toDataUrl = data => 'data:;base64,' + data.toString('base64');
+export const toDataUrl = data => `data:;base64,${data.toString('base64')}`;
 
 export default { TestBackend, toDataUrl };

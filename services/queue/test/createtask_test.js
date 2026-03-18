@@ -65,7 +65,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       'queue:scheduler-id:my-scheduler-extended-extended',
       'queue:create-task:project:my/project/id',
       'queue:route:*',
-      'queue:status:' + taskId,
+      `queue:status:${taskId}`,
     );
 
     debug('### Create task');
@@ -111,7 +111,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       'queue:scheduler-id:my-scheduler-extended-extended',
       'queue:create-task:project:none',
       'queue:route:*',
-      'queue:status:' + taskId,
+      `queue:status:${taskId}`,
     );
 
     debug('### Create task');
@@ -318,7 +318,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:create-task:project:none',
       'queue:scheduler-id:-',
-      'queue:status:' + taskId,
+      `queue:status:${taskId}`,
     );
 
     debug('### Creating task');
@@ -342,7 +342,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
         'queue:create-task:project:none',
         'queue:scheduler-id:-',
-        'queue:status:' + taskId,
+        `queue:status:${taskId}`,
       );
 
       debug('### Creating task');

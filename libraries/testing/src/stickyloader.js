@@ -40,7 +40,7 @@ const stickyLoader = load => {
   // edit the cfg component in-place, at the given dotted path
   sticky.cfg = (path, value) => {
     assert('cfg' in overwrites, 'cannot call `load.cfg` until the `cfg` component is loaded');
-    _.set(overwrites['cfg'], path, value);
+    _.set(overwrites.cfg, path, value);
   };
 
   // inject a dependency

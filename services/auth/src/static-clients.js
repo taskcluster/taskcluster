@@ -49,10 +49,10 @@ export const syncStaticClients = async function(db, clients = []) {
   if (extraTCClients.length > 0 || missingTCClients.length > 0) {
     let msg = 'Incorrect `static/taskcluster` static clients in STATIC_CLIENTS';
     if (extraTCClients.length > 0) {
-      msg = msg + `; extra clients ${JSON.stringify(extraTCClients)}`;
+      msg = `${msg}; extra clients ${JSON.stringify(extraTCClients)}`;
     }
     if (missingTCClients.length > 0) {
-      msg = msg + `; missing clients ${JSON.stringify(missingTCClients)}`;
+      msg = `${msg}; missing clients ${JSON.stringify(missingTCClients)}`;
     }
     throw new Error(msg);
   }

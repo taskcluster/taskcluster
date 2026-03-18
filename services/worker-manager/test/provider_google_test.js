@@ -170,7 +170,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(parameters.project, project);
       assert.equal(parameters.zone, defaultLaunchConfig.zone);
       assert.deepEqual(parameters.requestBody.labels, {
-        'created-by': 'taskcluster-wm-' + providerId,
+        'created-by': `taskcluster-wm-${providerId}`,
         'managed-by': 'taskcluster',
         'worker-pool-id': workerPoolId.replace('/', '-'),
         'owner': 'whatever-example-com',
@@ -245,7 +245,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }, async workers => {
       const parameters = fake.compute.instances.insertCalls[0];
       assert.deepEqual(parameters.requestBody.labels, {
-        'created-by': 'taskcluster-wm-' + providerId,
+        'created-by': `taskcluster-wm-${providerId}`,
         'managed-by': 'taskcluster',
         'worker-pool-id': workerPoolId.replace('/', '-'),
         'owner': 'whatever-example-com',
@@ -275,7 +275,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           type: 'PERSISTENT',
           initializeParams: {
             labels: {
-              'created-by': 'taskcluster-wm-' + providerId,
+              'created-by': `taskcluster-wm-${providerId}`,
               'managed-by': 'taskcluster',
               'worker-pool-id': workerPoolId.replace('/', '-'),
               'owner': 'whatever-example-com',
@@ -331,7 +331,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           type: 'PERSISTENT',
           initializeParams: {
             labels: {
-              'created-by': 'taskcluster-wm-' + providerId,
+              'created-by': `taskcluster-wm-${providerId}`,
               'managed-by': 'taskcluster',
               'worker-pool-id': workerPoolId.replace('/', '-'),
               'owner': 'whatever-example-com',

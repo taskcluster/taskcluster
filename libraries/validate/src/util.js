@@ -20,7 +20,7 @@ export function renderConstants(schema, constants) {
     // Check that there's a constant for the key
     const constant = constants[key];
     if (constant === undefined) {
-      throw new Error('Warning! Undefined constant: ' + key);
+      throw new Error(`Warning! Undefined constant: ${key}`);
     }
 
     // Clone constant

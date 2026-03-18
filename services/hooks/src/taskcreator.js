@@ -102,7 +102,7 @@ export class TaskCreator {
 
       // create a queue instance with its authorized scopes limited to those
       // assigned to the hook.
-      const role = 'assume:hook-id:' + hook.hookGroupId + '/' + hook.hookId;
+      const role = `assume:hook-id:${hook.hookGroupId}/${hook.hookId}`;
       const queue = new taskcluster.Queue({
         rootUrl: this.rootUrl,
         credentials: this.credentials,

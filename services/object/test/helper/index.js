@@ -78,7 +78,7 @@ helper.withBackends = (mock, skipping) => {
     load.save();
 
     // add the 'test' backend type only for testing
-    BACKEND_TYPES['test'] = TestBackend;
+    BACKEND_TYPES.test = TestBackend;
 
     await load('cfg');
     load.cfg('middleware', [
@@ -111,7 +111,7 @@ helper.withBackends = (mock, skipping) => {
     }
 
     load.restore();
-    delete BACKEND_TYPES['test'];
+    delete BACKEND_TYPES.test;
     delete helper.setBackendConfig;
     _backends = null;
   });
@@ -124,7 +124,7 @@ helper.withMiddleware = (mock, skipping, config) => {
     }
 
     // add the 'test' middleware type only for testing
-    MIDDLEWARE_TYPES['test'] = TestMiddleware;
+    MIDDLEWARE_TYPES.test = TestMiddleware;
 
     await load('cfg');
     load.cfg('middleware', config || [
@@ -133,7 +133,7 @@ helper.withMiddleware = (mock, skipping, config) => {
   });
 
   suiteTeardown('withMiddleware', async function() {
-    delete MIDDLEWARE_TYPES['test'];
+    delete MIDDLEWARE_TYPES.test;
   });
 };
 
@@ -206,7 +206,7 @@ helper.assertSatisfiesSchema = async (data, id) => {
 
   const validator_error = validator(data, id);
   if (validator_error) {
-    assert(false, "validation error:\n" + validator_error);
+    assert(false, `validation error:\n${validator_error}`);
   }
 };
 

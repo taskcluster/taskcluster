@@ -63,7 +63,7 @@ const createServer = function() {
         debug('Error getting connections', err);
         return;
       }
-      debug('Connections open: ' + count);
+      debug(`Connections open: ${count}`);
     });
     server.terminate()
       .then(() => {
@@ -96,7 +96,7 @@ const createServer = function() {
       return new Promise((accept, reject) => {
         server.close(accept);
       }).then(() => {
-        debug('Server terminated on port ' + this.get('port'));
+        debug(`Server terminated on port ${this.get('port')}`);
       });
     };
 
@@ -105,7 +105,7 @@ const createServer = function() {
 
     // Listen
     server.listen(this.get('port'), () => {
-      debug('Server listening on port ' + this.get('port'));
+      debug(`Server listening on port ${this.get('port')}`);
       accept(server);
     });
 

@@ -54,21 +54,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     debug('### s3.putObject');
     await s3.send(new PutObjectCommand({
       Bucket: bucket,
-      Key: 'folder1/folder2/' + id,
+      Key: `folder1/folder2/${id}`,
       Body: text,
     }));
 
     debug('### s3.getObject');
     const res = await s3.send(new GetObjectCommand({
       Bucket: bucket,
-      Key: 'folder1/folder2/' + id,
+      Key: `folder1/folder2/${id}`,
     }));
     assert(await res.Body.transformToString() === text, 'Got the wrong body!');
 
     debug('### s3.deleteObject');
     await s3.send(new DeleteObjectCommand({
       Bucket: bucket,
-      Key: 'folder1/folder2/' + id,
+      Key: `folder1/folder2/${id}`,
     }));
   });
 
@@ -137,7 +137,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     try {
       await s3.send(new PutObjectCommand({
         Bucket: bucket,
-        Key: 'folder2/' + id,
+        Key: `folder2/${id}`,
         Body: 'Hello-World',
       }));
       assert(false, 'Expected an error');
@@ -165,7 +165,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     debug('### s3.putObject');
     await s3.send(new PutObjectCommand({
       Bucket: bucket,
-      Key: 'folder1/' + id,
+      Key: `folder1/${id}`,
       Body: text,
     }));
 
@@ -185,7 +185,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     debug('### s3.getObject');
     const res = await s3.send(new GetObjectCommand({
       Bucket: bucket,
-      Key: 'folder1/' + id,
+      Key: `folder1/${id}`,
     }));
     assert(await res.Body.transformToString() === text,
       'Got the wrong body!');
@@ -193,7 +193,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     try {
       await s3.send(new PutObjectCommand({
         Bucket: bucket,
-        Key: 'folder1/' + slugid.v4(),
+        Key: `folder1/${slugid.v4()}`,
         Body: 'Hello-World',
       }));
       assert(false, 'Expected an error');
@@ -225,7 +225,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     debug('### s3.putObject');
     await s3.send(new PutObjectCommand({
       Bucket: bucket,
-      Key: 'folder1/' + id,
+      Key: `folder1/${id}`,
       Body: text,
     }));
   });

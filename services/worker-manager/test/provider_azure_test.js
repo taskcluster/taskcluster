@@ -373,13 +373,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(providerData.location, 'westus');
       assert.equal(providerData.resourceGroupName, 'rgrp');
       assert.equal(providerData.workerConfig, undefined);
-      assert.equal(providerData.tags['created-by'], 'taskcluster-wm-' + providerId);
+      assert.equal(providerData.tags['created-by'], `taskcluster-wm-${providerId}`);
       assert.equal(providerData.tags['managed-by'], 'taskcluster');
       assert.equal(providerData.tags['provider-id'], providerId);
       assert.equal(providerData.tags['worker-group'], 'westus');
       assert.equal(providerData.tags['worker-pool-id'], workerPoolId);
       assert.equal(providerData.tags['root-url'], helper.rootUrl);
-      assert.equal(providerData.tags['owner'], 'whatever@example.com');
+      assert.equal(providerData.tags.owner, 'whatever@example.com');
 
       const customData = JSON.parse(Buffer.from(providerData.vm.config.osProfile.customData, 'base64'));
       assert.equal(customData.workerPoolId, workerPoolId);
@@ -395,7 +395,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const worker = await provisionWorkerPool({
         tags: { mytag: 'myvalue' },
       });
-      assert.equal(worker.providerData.tags['mytag'], 'myvalue');
+      assert.equal(worker.providerData.tags.mytag, 'myvalue');
       helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
     });
 
@@ -415,7 +415,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const worker = await provisionWorkerPool({
         tags: { 'created-by': 'me!' },
       });
-      assert.equal(worker.providerData.tags['created-by'], 'taskcluster-wm-' + providerId);
+      assert.equal(worker.providerData.tags['created-by'], `taskcluster-wm-${providerId}`);
       helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
     });
 
@@ -1117,13 +1117,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           primary: true,
         },
       ]);
-      assert.equal(vmParams.tags['created-by'], 'taskcluster-wm-' + providerId);
+      assert.equal(vmParams.tags['created-by'], `taskcluster-wm-${providerId}`);
       assert.equal(vmParams.tags['managed-by'], 'taskcluster');
       assert.equal(vmParams.tags['provider-id'], providerId);
       assert.equal(vmParams.tags['worker-group'], 'westus');
       assert.equal(vmParams.tags['worker-pool-id'], workerPoolId);
       assert.equal(vmParams.tags['root-url'], helper.rootUrl);
-      assert.equal(vmParams.tags['owner'], 'whatever@example.com');
+      assert.equal(vmParams.tags.owner, 'whatever@example.com');
 
       debug('sixth call');
       await provider.provisionResources({ worker, monitor });

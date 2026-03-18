@@ -106,7 +106,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Single Task Config, v0',
-    configPath + 'taskcluster.single.v0.yml',
+    `${configPath}taskcluster.single.v0.yml`,
     {
       payload: buildMessage(),
     },
@@ -117,7 +117,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event, Single Task Config, v0',
-    configPath + 'taskcluster.single.v0.yml',
+    `${configPath}taskcluster.single.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push' } }),
     },
@@ -133,7 +133,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event (Push Task + Pull Task + Release Task), v0',
-    configPath + 'taskcluster.push_pull_release.v0.yml',
+    `${configPath}taskcluster.push_pull_release.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push' } }),
     },
@@ -150,7 +150,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Pull Event (Push Task + Pull Task + Release Task), v0',
-    configPath + 'taskcluster.push_pull_release.v0.yml',
+    `${configPath}taskcluster.push_pull_release.v0.yml`,
     {
       payload: buildMessage(),
     },
@@ -167,7 +167,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (on branch), v0',
-    configPath + 'taskcluster.branchlimited.v0.yml',
+    `${configPath}taskcluster.branchlimited.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push', 'event.base.repo.branch': 'master' } }),
     },
@@ -184,7 +184,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (off branch), v0',
-    configPath + 'taskcluster.branchlimited.v0.yml',
+    `${configPath}taskcluster.branchlimited.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push', 'event.base.repo.branch': 'foobar' } }),
     },
@@ -194,7 +194,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Excluded (on branch), v0',
-    configPath + 'taskcluster.exclude.yml',
+    `${configPath}taskcluster.exclude.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push', 'event.base.repo.branch': 'foobar' } }),
     },
@@ -204,7 +204,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Pull Request Event, Single Task Config, Branch Excluded (on branch), v0',
-    configPath + 'taskcluster.pull_with_exclude.yml',
+    `${configPath}taskcluster.pull_with_exclude.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'pull_request.opened', 'event.base.repo.branch': 'master' } }),
     },
@@ -214,7 +214,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Exclude and Include errors, v0',
-    configPath + 'taskcluster.exclude-error.yml',
+    `${configPath}taskcluster.exclude-error.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push', 'event.base.repo.branch': 'master' } }),
     },
@@ -225,7 +225,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Star Pull Config, v0',
-    configPath + 'taskcluster.star.yml',
+    `${configPath}taskcluster.star.yml`,
     {
       payload: buildMessage(),
     },
@@ -236,7 +236,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Release Event, Single Task Config, v0',
-    configPath + 'taskcluster.release_single.v0.yml',
+    `${configPath}taskcluster.release_single.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'release' } }),
     },
@@ -252,7 +252,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Release Event (Push Task + Pull Task + Release Task), v0',
-    configPath + 'taskcluster.push_pull_release.v0.yml',
+    `${configPath}taskcluster.push_pull_release.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'release' } }),
     },
@@ -268,7 +268,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'No extra or extra.github generates an empty config, v0',
-    configPath + 'taskcluster.non-github.v0.yml',
+    `${configPath}taskcluster.non-github.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'release' } }),
     },
@@ -277,7 +277,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Unicode branch names are not allowed, v0',
-    configPath + 'taskcluster.single.v0.yml',
+    `${configPath}taskcluster.single.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.base.repo.branch': '🌱', 'event.type': 'push' } }),
     },
@@ -287,7 +287,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Tag Event, Single Task Config, v0',
-    configPath + 'taskcluster.tag_single.v0.yml',
+    `${configPath}taskcluster.tag_single.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'tag', 'event.head.tag': 'v1.0.2' } }),
     },
@@ -303,7 +303,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Tag Event, Single Task Config, Branch Limited (off branch), v0',
-    configPath + 'taskcluster.tag.branchlimited.v0.yml',
+    `${configPath}taskcluster.tag.branchlimited.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'tag', 'event.head.tag': 'v1.0.2' } }),
     },
@@ -319,7 +319,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event, Single Task Config, v1',
-    configPath + 'taskcluster.single.v1.yml',
+    `${configPath}taskcluster.single.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
@@ -341,7 +341,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event with a task dependency not in the set of generated tasks (#4502)',
-    configPath + 'taskcluster.external-dep.v1.yml',
+    `${configPath}taskcluster.external-dep.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
@@ -354,7 +354,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event, Single Task Config, v1',
-    configPath + 'taskcluster.single.v1.yml',
+    `${configPath}taskcluster.single.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
@@ -375,7 +375,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event (Push Task + Pull Task + Release Task), v1',
-    configPath + 'taskcluster.push_pull_release.v1.yml',
+    `${configPath}taskcluster.push_pull_release.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
@@ -396,7 +396,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Pull Event (Push Task + Pull Task + Release Task), v1',
-    configPath + 'taskcluster.push_pull_release.v1.yml',
+    `${configPath}taskcluster.push_pull_release.v1.yml`,
     {
       payload: buildMessage({
         body: webhookPullRequestJson.body,
@@ -416,7 +416,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (on branch), v1',
-    configPath + 'taskcluster.branchlimited.v1.yml',
+    `${configPath}taskcluster.branchlimited.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push', 'event.base.repo.branch': 'master' },
@@ -437,7 +437,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (off branch), v1',
-    configPath + 'taskcluster.branchlimited.v1.yml',
+    `${configPath}taskcluster.branchlimited.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push', 'event.base.repo.branch': 'foobar' },
@@ -452,7 +452,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Release Event, Single Task Config, v1',
-    configPath + 'taskcluster.release_single.v1.yml',
+    `${configPath}taskcluster.release_single.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'release' },
@@ -473,7 +473,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Release Event (Push Task + Pull Task + Release Task), v1',
-    configPath + 'taskcluster.push_pull_release.v1.yml',
+    `${configPath}taskcluster.push_pull_release.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'release' },
@@ -494,7 +494,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Unicode branch names are not allowed, v1',
-    configPath + 'taskcluster.single.v1.yml',
+    `${configPath}taskcluster.single.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.base.repo.branch': '🌱', 'event.type': 'push' },
@@ -509,7 +509,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Tag Event, Single Task Config, v1',
-    configPath + 'taskcluster.tag_single.v1.yml',
+    `${configPath}taskcluster.tag_single.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'tag', 'event.head.tag': 'v1.0.2' },
@@ -529,7 +529,7 @@ suite(testing.suiteName(), function() {
 
   buildConfigTest(
     'Tasks must end up topologically sorted, v1',
-    configPath + 'taskcluster.dependencies.v1.yml',
+    `${configPath}taskcluster.dependencies.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'tag', 'event.head.tag': 'v1.0.2' },

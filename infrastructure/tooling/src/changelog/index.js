@@ -83,7 +83,7 @@ export class ChangeLog {
 
     this.snippets = await Promise.all(snippetFiles.map(async filename => {
       // include a trailing newline in case the file lacks one
-      const snippetContent = (await readRepoFile(filename)).trimEnd() + '\n';
+      const snippetContent = `${(await readRepoFile(filename)).trimEnd()}\n`;
       const [headerYaml, body] = snippetContent.split('\n---\n', 2);
 
       let { level, audience, reference, ...extra } = yaml.load(headerYaml);
@@ -204,7 +204,7 @@ export class ChangeLog {
         const snippets = categorizedSnippets[audience]
           .map(({ level, reference, body }) => (
             '▶ ' + levelLabels[level] +
-            (reference ? ' ' + reference : '') + '\n' +
+            (reference ? ` ${reference}` : '') + '\n' +
             body.trim()
           ))
           .join('\n\n');

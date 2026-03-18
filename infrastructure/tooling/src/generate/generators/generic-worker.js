@@ -119,11 +119,11 @@ tasks.push({
     const schemaFiles = requirements['generic-worker-schemas'].map(({ filename, content }) => ({
       $id: content.$id,
       title: content.title,
-      filename_base: path.basename(content.$id, '.json#').replace('_', '-') + '-payload',
+      filename_base: `${path.basename(content.$id, '.json#').replace('_', '-')}-payload`,
     }));
 
     for (const { $id, title, filename_base } of schemaFiles) {
-      await writeRepoFile(path.join(gwDocsDir, filename_base + '.mdx'), schemaMdx(title, $id));
+      await writeRepoFile(path.join(gwDocsDir, `${filename_base}.mdx`), schemaMdx(title, $id));
     }
 
     const links = schemaFiles

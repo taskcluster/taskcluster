@@ -120,11 +120,11 @@ export const withServer = (mock, skipping) => {
       };
       // if called as scopes('none'), don't pass credentials at all
       if (scopes && scopes[0] !== 'none') {
-        options['credentials'] = {
+        options.credentials = {
           clientId: 'test-client',
           accessToken: 'none',
         };
-        options['authorizedScopes'] = scopes.length > 0 ? scopes : undefined;
+        options.authorizedScopes = scopes.length > 0 ? scopes : undefined;
       }
       helper.index = new helper.Index(options);
     };

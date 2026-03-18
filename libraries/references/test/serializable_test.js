@@ -65,10 +65,10 @@ suite(testing.suiteName(), function() {
     const references = await getReferences();
     const serializable = makeSerializable({ references: references.asAbsolute(rootUrl) });
     assert_file(serializable, 'references/manifest.json', {
-      $schema: rootUrl + '/schemas/common/manifest-v3.json#',
+      $schema: `${rootUrl}/schemas/common/manifest-v3.json#`,
       references: [
-        rootUrl + '/references/test/v1/api.json',
-        rootUrl + '/references/test2/v2/exchanges.json',
+        `${rootUrl}/references/test/v1/api.json`,
+        `${rootUrl}/references/test2/v2/exchanges.json`,
       ],
     });
   });
@@ -86,8 +86,8 @@ suite(testing.suiteName(), function() {
     const references = await getReferences();
     const serializable = makeSerializable({ references: references.asAbsolute(rootUrl) });
     assert_file(serializable, 'schemas/common/api-reference-v0.json', content => {
-      assert.equal(content.$schema, rootUrl + '/schemas/common/metadata-metaschema.json#');
-      assert.equal(content.$id, rootUrl + '/schemas/common/api-reference-v0.json#');
+      assert.equal(content.$schema, `${rootUrl}/schemas/common/metadata-metaschema.json#`);
+      assert.equal(content.$id, `${rootUrl}/schemas/common/api-reference-v0.json#`);
     });
   });
 

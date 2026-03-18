@@ -113,7 +113,7 @@ class SentryManager {
       const expires = taskcluster.fromNow('48 hours');
       const k = await this._sentry.projects.createKey(
         this._organization, project, {
-          name: this._keyPrefix + ` managed (expires-at:${expires.toJSON()})`,
+          name: `${this._keyPrefix} managed (expires-at:${expires.toJSON()})`,
         });
       key = {
         id: k.id,

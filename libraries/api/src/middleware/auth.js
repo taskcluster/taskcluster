@@ -235,7 +235,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
         if (result.status === 'auth-success') {
           return result.clientId || 'unknown-clientId';
         }
-        return 'auth-failed:' + result.status;
+        return `auth-failed:${result.status}`;
       };
 
       req.expires = async () => {
@@ -290,7 +290,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
 
           const gotCreds = result.status === 'auth-success';
           const message = (gotCreds ? [
-            'Client ID ' + clientId + ' does not have sufficient scopes and is missing the following scopes:',
+            `Client ID ${clientId} does not have sufficient scopes and is missing the following scopes:`,
             '',
             '```',
             '{{unsatisfied}}',

@@ -13,7 +13,7 @@ suite(testing.suiteName(), function() {
   const client = function(options) {
     options = _.defaults({}, options || {}, {
       credentials: {},
-      rootUrl: process.env['TASKCLUSTER_ROOT_URL'] || 'https://community-tc.services.mozilla.com/',
+      rootUrl: process.env.TASKCLUSTER_ROOT_URL || 'https://community-tc.services.mozilla.com/',
     });
     options.credentials = _.defaults({}, options.credentials, {
       clientId: 'tester',
@@ -24,9 +24,9 @@ suite(testing.suiteName(), function() {
 
   const expectError = (promise, code) => {
     return promise.then(() => {
-      assert(false, 'Expected error code: ' + code + ', but got a response');
+      assert(false, `Expected error code: ${code}, but got a response`);
     }, err => {
-      assert(err.code === code, 'Expected error with code: ' + code + ' but got ' + err.code);
+      assert(err.code === code, `Expected error with code: ${code} but got ${err.code}`);
     });
   };
 

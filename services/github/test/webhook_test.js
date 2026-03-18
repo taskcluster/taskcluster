@@ -27,7 +27,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   // Check the status code returned from a request containing some test data
   function statusTest(testName, jsonFile, statusCode, installationId = 5808, check = () => {}) {
     test(testName, async function() {
-      const filename = './test/data/webhooks/' + jsonFile;
+      const filename = `./test/data/webhooks/${jsonFile}`;
       const request = JSON.parse(fs.readFileSync(filename));
       const response = await helper.jsonHttpRequest(filename);
       assert.equal(response.statusCode, statusCode);
@@ -142,7 +142,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ];
 
     for (const { file, eventType } of validEvents) {
-      const response = await helper.jsonHttpRequest('./test/data/webhooks/' + file);
+      const response = await helper.jsonHttpRequest(`./test/data/webhooks/${file}`);
       // Should pass validation (200 or 204 status)
       assert.ok(response.statusCode < 400,
         `${eventType} event should pass validation, got ${response.statusCode}`);
@@ -160,7 +160,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ];
 
     for (const { file, reason } of invalidEvents) {
-      const response = await helper.jsonHttpRequest('./test/data/webhooks/' + file);
+      const response = await helper.jsonHttpRequest(`./test/data/webhooks/${file}`);
       assert.equal(response.statusCode, 400,
         `Should reject payload with ${reason}`);
       response.connection?.destroy();
@@ -179,7 +179,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ];
 
     for (const file of validPayloads) {
-      const filename = './test/data/webhooks/' + file;
+      const filename = `./test/data/webhooks/${file}`;
       const payload = JSON.parse(fs.readFileSync(filename));
 
       // Verify sender field exists in all payloads
@@ -210,7 +210,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ];
 
     for (const { file, commonFields, specificFields } of testCases) {
-      const filename = './test/data/webhooks/' + file;
+      const filename = `./test/data/webhooks/${file}`;
       const payload = JSON.parse(fs.readFileSync(filename));
 
       // Verify common fields
@@ -236,7 +236,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ];
 
     for (const { file, hasAction, hasPushFields } of eventTypes) {
-      const filename = './test/data/webhooks/' + file;
+      const filename = `./test/data/webhooks/${file}`;
       const payload = JSON.parse(fs.readFileSync(filename));
 
       if (hasAction) {

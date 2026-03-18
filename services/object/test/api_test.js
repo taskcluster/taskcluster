@@ -504,7 +504,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       assert.deepEqual(res, {
         method: 'simple',
-        url: 'data:;base64,' + data.toString('base64'),
+        url: `data:;base64,${data.toString('base64')}`,
       });
     });
 

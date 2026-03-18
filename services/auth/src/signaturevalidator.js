@@ -130,7 +130,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
 
     // Check clientId validity
     if (issuingClientId !== credentialName) {
-      const createScope = 'auth:create-client:' + credentialName;
+      const createScope = `auth:create-client:${credentialName}`;
       if (!utils.satisfiesExpression(issuingScopes, createScope)) {
         throw new Error('ext.certificate issuer `' + issuingClientId +
                         '` doesn\'t have `' + createScope + '` for supplied clientId.');
@@ -151,12 +151,12 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
     let sigContent = [];
     sigContent.push('version:' + '1');
     if (cert.issuer) {
-      sigContent.push('clientId:' + credentialName);
-      sigContent.push('issuer:' + cert.issuer);
+      sigContent.push(`clientId:${credentialName}`);
+      sigContent.push(`issuer:${cert.issuer}`);
     }
-    sigContent.push('seed:' + cert.seed);
-    sigContent.push('start:' + cert.start);
-    sigContent.push('expiry:' + cert.expiry);
+    sigContent.push(`seed:${cert.seed}`);
+    sigContent.push(`start:${cert.start}`);
+    sigContent.push(`expiry:${cert.expiry}`);
     sigContent.push('scopes:');
     sigContent = sigContent.concat(cert.scopes);
     const signature = crypto.createHmac('sha256', accessToken)
@@ -430,7 +430,7 @@ const createSignatureValidator = function(options) {
       if (err.isBoom && !err.isServer) {
         message = err.output.payload.error;
         if (err.output.payload.message) {
-          message += ': ' + err.output.payload.message;
+          message += `: ${err.output.payload.message}`;
         }
       }
       result = {

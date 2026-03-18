@@ -44,7 +44,7 @@ suite(testing.suiteName(), function() {
 
     nock('https://ip-ranges.amazonaws.com')
       .get('/ip-ranges.json')
-      .replyWithFile(200, __dirname + '/fake-ip-ranges.json', { 'Content-Type': 'application/json' });
+      .replyWithFile(200, `${__dirname}/fake-ip-ranges.json`, { 'Content-Type': 'application/json' });
 
     const res = new EC2RegionResolver(['us-west-1', 'us-west-2'], monitor);
     res.start();

@@ -19,9 +19,9 @@ const taskCredentials = function(taskId, runId, workerGroup, workerId, takenUnti
     start: new Date(),
     expiry: takenUntil,
     scopes: [
-      'queue:reclaim-task:' + taskId + '/' + runId,
-      'queue:resolve-task:' + taskId + '/' + runId,
-      'queue:create-artifact:' + taskId + '/' + runId,
+      `queue:reclaim-task:${taskId}/${runId}`,
+      `queue:resolve-task:${taskId}/${runId}`,
+      `queue:create-artifact:${taskId}/${runId}`,
     ].concat(scopes),
     credentials: permaCreds,
   });

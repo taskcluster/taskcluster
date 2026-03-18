@@ -216,7 +216,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       dummyAddress1.notificationType,
       dummyAddress1.notificationAddress,
     );
-    const exists = existsTable[0]["exists_denylist_address"];
+    const exists = existsTable[0].exists_denylist_address;
 
     assert(exists);
 
@@ -240,8 +240,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // Only dummyAddress2 should be left in the table
     const item = items[0];
-    assert.equal(item["notification_address"], dummyAddress2["notificationAddress"]);
-    assert.equal(item["notification_type"], dummyAddress2["notificationType"]);
+    assert.equal(item.notification_address, dummyAddress2.notificationAddress);
+    assert.equal(item.notification_type, dummyAddress2.notificationType);
 
     // Removing non-existant addresses should not throw an exception
     await helper.apiClient.deleteDenylistAddress(dummyAddress1);

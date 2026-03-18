@@ -305,13 +305,13 @@ class ScopeResolver extends events.EventEmitter {
   async loadClient(clientId) {
     let client = this._clientCache[clientId];
     if (!client) {
-      throw new Error('Client with clientId \'' + clientId + '\' not found');
+      throw new Error(`Client with clientId \'${clientId}\' not found`);
     }
     if (client.disabled) {
-      throw new Error('Client with clientId \'' + clientId + '\' is disabled');
+      throw new Error(`Client with clientId \'${clientId}\' is disabled`);
     }
     if (client.expires < new Date()) {
-      throw new Error('Client with clientId: \'' + clientId + '\' has expired');
+      throw new Error(`Client with clientId: \'${clientId}\' has expired`);
     }
 
     if (client.updateLastUsed) {

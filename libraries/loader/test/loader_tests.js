@@ -366,7 +366,7 @@ suite('component loader', () => {
     }],
   ];
   for (const x of badDef) {
-    test('should fail on a ' + x[0], () => {
+    test(`should fail on a ${x[0]}`, () => {
       try {
         subject({ a: x[1] });
         throw new Error();

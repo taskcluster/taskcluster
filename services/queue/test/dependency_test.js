@@ -555,8 +555,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     const taskIdA = slugid.v4();
     // Ensure taskIdB < taskIdC lexicographically so B is processed first.
     // The bug only happened if the all-completed task was processed first
-    const taskIdB = 'A' + slugid.v4().slice(1);
-    const taskIdC = 'B' + slugid.v4().slice(1);
+    const taskIdB = `A${slugid.v4().slice(1)}`;
+    const taskIdC = `B${slugid.v4().slice(1)}`;
 
     const taskA = taskDef();
     const taskB = _.defaults({

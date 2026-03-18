@@ -106,7 +106,7 @@ export default class Github {
 
   useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
-    const strategyCfg = cfg.login.strategies['github'];
+    const strategyCfg = cfg.login.strategies.github;
     const loginMiddleware = login(cfg.app.publicUrl);
 
     if (!strategyCfg.clientId || !strategyCfg.clientSecret) {

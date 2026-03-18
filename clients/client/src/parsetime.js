@@ -17,7 +17,7 @@ const parseTime = function(str) {
   // Parse the string
   const match = timeExp.exec(str || '');
   if (!match) {
-    throw new Error('String: \'' + str + '\' isn\'t a time expression');
+    throw new Error(`String: \'${str}\' isn\'t a time expression`);
   }
   // Negate if needed
   const neg = match[2] === '-' ? - 1 : 1;

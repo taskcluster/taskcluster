@@ -44,7 +44,7 @@ tasks.push({
     });
 
     utils.status({ message: '.nvmrc' });
-    await writeRepoFile('.nvmrc', nodeVersion + '\n');
+    await writeRepoFile('.nvmrc', `${nodeVersion}\n`);
 
     utils.status({ message: 'dev-docs/development-process.md' });
     await modifyRepoFile('dev-docs/development-process.md',

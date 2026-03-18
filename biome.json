@@ -67,7 +67,7 @@
         "useBlockStatements": "off",
         "useConst": "error",
         "useNodejsImportProtocol": "error",
-        "useTemplate": "off",
+        "useTemplate": "error",
         "useExponentiationOperator": "off",
         "noDescendingSpecificity": "off"
       },
@@ -86,7 +86,7 @@
         "noExcessiveCognitiveComplexity": "off",
         "noUselessEscapeInRegex": "off",
         "useArrowFunction": "off",
-        "useLiteralKeys": "off",
+        "useLiteralKeys": "error",
         "useDateNow": "off",
         "useOptionalChain": "off",
         "noImportantStyles": "off",

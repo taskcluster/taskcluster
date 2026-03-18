@@ -175,7 +175,7 @@ suite(testing.suiteName(), () => {
     const mapP = (p) => p.split('').map(mapChar).join('');
     // Helper method to apply mapP while respecting kleene
     const mapPWithKleene = (p) => p.endsWith('*')
-      ? mapP(p.slice(0, -1)) + '*'
+      ? `${mapP(p.slice(0, -1))}*`
       : mapP(p);
 
     //console.log(JSON.stringify(rules, null, 2));

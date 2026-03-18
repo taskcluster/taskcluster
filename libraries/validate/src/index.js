@@ -69,7 +69,7 @@ class SchemaSet {
 
         if (schema.id || schema.$id) {
           debug('Schema incorrectly attempts to set own id: %s', name);
-          throw new Error('Schema ' + path.join(root, name) + ' attempts to set own id!');
+          throw new Error(`Schema ${path.join(root, name)} attempts to set own id!`);
         }
 
         this._schemas[jsonName] = schema;
@@ -90,7 +90,7 @@ class SchemaSet {
   _schemaWithIds(rootUrl) {
     return _.mapValues(this._schemas, (schema, jsonName) => {
       const newSchema = _.clone(schema);
-      newSchema.$id = libUrls.schema(rootUrl, this.cfg.serviceName, jsonName + '#');
+      newSchema.$id = libUrls.schema(rootUrl, this.cfg.serviceName, `${jsonName}#`);
       // rewrite a relative `/schemas/<service>/<path>..` URI to point to a full URL
       const match = /^\/schemas\/([^\/]*)\/(.*)$/.exec(newSchema.$schema);
       if (match) {
@@ -136,8 +136,8 @@ class SchemaSet {
       ajv.validate(id, obj);
       if (ajv.errors) {
         _.forEach(ajv.errors, function(error) {
-          if (error.params['additionalProperty']) {
-            error.message += ': ' + JSON.stringify(error.params['additionalProperty']);
+          if (error.params.additionalProperty) {
+            error.message += `: ${JSON.stringify(error.params.additionalProperty)}`;
           }
         });
         return [

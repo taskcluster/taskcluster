@@ -25,7 +25,7 @@ class TimeKeeper {
    */
   measure(force = false, extra = {}) {
     if (!force && this.submitted) {
-      throw new Error('Cannot submit measurement twice for ' + this.monitor.prefix + ' ' + this.name);
+      throw new Error(`Cannot submit measurement twice for ${this.monitor.prefix} ${this.name}`);
     }
     this.submitted = true;
     const end = hrtime.bigint();

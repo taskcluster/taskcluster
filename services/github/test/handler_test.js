@@ -566,7 +566,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         'event.head.user.id': 190790,
       };
       if (eventBase === 'pull_request') {
-        body['pull_request'] = {
+        body.pull_request = {
           user: {
             login: opener || user || 'octocat',
           },
@@ -588,8 +588,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         // This should be solved in a more reliable fashion.
         delete details['event.head.sha'];
         delete details['event.head.ref'];
-        delete body['pull_request'];
-        body['release'] = {
+        delete body.pull_request;
+        body.release = {
           target_commitish: 'refs/tags/v1.2.3',
         };
         details['event.version'] = 'v1.2.3';
@@ -598,7 +598,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         delete details['event.head.repo.branch'];
         delete details['event.base.repo.branch'];
       } else if (eventBase === 'push') {
-        body['ref'] = branch;
+        body.ref = branch;
       }
 
       debug(`publishing ${JSON.stringify({ user, head, base, eventType })}`);
@@ -734,7 +734,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     test('valid pull_request (user is not a collaborator, policy is public) creates a taskGroup', async function() {
       const tcyaml = { ...validYamlV1Json };
-      tcyaml['policy'] = { 'pullRequests': 'public' };
+      tcyaml.policy = { 'pullRequests': 'public' };
 
       github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
@@ -765,7 +765,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
     test('valid pull_request (user is not a collaborator, policy is public_restricted) creates a taskGroup', async function() {
       const tcyaml = { ...validYamlV1Json };
-      tcyaml['policy'] = { 'pullRequests': 'public_restricted' };
+      tcyaml.policy = { 'pullRequests': 'public_restricted' };
 
       github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
@@ -1060,7 +1060,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       test('should respect .taskcluster.yml autoCancelPreviousChecks config', async function () {
         const tcYaml = validYamlV1Json;
-        tcYaml['autoCancelPreviousChecks'] = false;
+        tcYaml.autoCancelPreviousChecks = false;
         github.inst(INST_ID).setTaskclusterYml({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
@@ -1071,7 +1071,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
         assert(handlers.cancelPreviousTaskGroups.notCalled);
 
-        tcYaml['autoCancelPreviousChecks'] = true;
+        tcYaml.autoCancelPreviousChecks = true;
         github.inst(INST_ID).setTaskclusterYml({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
@@ -1110,7 +1110,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       });
       test('should cancel task groups for same pull request number', async function () {
         const tcYaml = validYamlV1Json;
-        tcYaml['autoCancelPreviousChecks'] = true;
+        tcYaml.autoCancelPreviousChecks = true;
         github.inst(INST_ID).setRepoCollaborator({
           owner: 'TaskclusterRobot',
           repo: 'hooks-testing',
@@ -1483,7 +1483,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, COMMIT_SHA);
-          debug('Created task group: ' + args.target_url);
+          debug(`Created task group: ${args.target_url}`);
           assert(args.target_url.startsWith(URL_PREFIX));
           const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
@@ -2005,7 +2005,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, COMMIT_SHA);
-          debug('Created task group: ' + args.target_url);
+          debug(`Created task group: ${args.target_url}`);
           assert(args.target_url.startsWith(URL_PREFIX));
           const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
@@ -2047,7 +2047,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, COMMIT_SHA);
-          debug('Created task group: ' + args.target_url);
+          debug(`Created task group: ${args.target_url}`);
           assert(args.target_url.startsWith(URL_PREFIX));
           const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
@@ -2100,7 +2100,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
           assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, COMMIT_SHA);
-          debug('Created task group: ' + args.target_url);
+          debug(`Created task group: ${args.target_url}`);
           assert(args.target_url.startsWith(URL_PREFIX));
           const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);

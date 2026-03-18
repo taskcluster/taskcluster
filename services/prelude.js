@@ -13,7 +13,7 @@ if (process.env.NEW_RELIC && process.env.NEW_RELIC !== '') {
   for (const [variable, value] of Object.entries(JSON.parse(process.env.NEW_RELIC))) {
     process.env[variable] = value;
   }
-  delete process.env['NEW_RELIC'];
+  delete process.env.NEW_RELIC;
   import('newrelic');
 }
 

@@ -145,8 +145,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     assume(client2.expandedScopes).contains('scope1');
     assume(client2.expandedScopes).contains('myapi:*');
     // we don't use assume:client-id anymore (bug 1220686)
-    assume(client2.scopes).not.contains('assume:client-id:' + CLIENT_ID);
-    assume(client2.expandedScopes).not.contains('assume:client-id:' + CLIENT_ID);
+    assume(client2.scopes).not.contains(`assume:client-id:${CLIENT_ID}`);
+    assume(client2.expandedScopes).not.contains(`assume:client-id:${CLIENT_ID}`);
 
     helper.assertPulseMessage('client-created', m => m.payload.clientId === CLIENT_ID);
   });
@@ -546,11 +546,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     });
 
     test('prefix filtering', async () => {
-      assume(gotSuffixes(await helper.apiClient.listClients({ prefix: CLIENT_ID + '/bb' })))
+      assume(gotSuffixes(await helper.apiClient.listClients({ prefix: `${CLIENT_ID}/bb` })))
         .to.deeply.equal(['/bb', '/bb/1', '/bb/2', '/bb/3', '/bb/4', '/bb/5']);
-      assume(gotSuffixes(await helper.apiClient.listClients({ prefix: CLIENT_ID + '/bb/' })))
+      assume(gotSuffixes(await helper.apiClient.listClients({ prefix: `${CLIENT_ID}/bb/` })))
         .to.deeply.equal(['/bb/1', '/bb/2', '/bb/3', '/bb/4', '/bb/5']);
-      assume(gotSuffixes(await helper.apiClient.listClients({ prefix: CLIENT_ID + '/c' })))
+      assume(gotSuffixes(await helper.apiClient.listClients({ prefix: `${CLIENT_ID}/c` })))
         .to.deeply.equal([]);
     });
 
@@ -576,7 +576,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       let clients = [];
       const query = {
         limit: 1,
-        prefix: CLIENT_ID + '/b',
+        prefix: `${CLIENT_ID}/b`,
       };
 
       // add a few more clients, to keep it interesting
