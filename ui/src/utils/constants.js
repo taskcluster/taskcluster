@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { join } from 'path';
 import { alpha } from '@material-ui/core/styles';
 import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
 import ArchiveIcon from 'mdi-react/ArchiveIcon';

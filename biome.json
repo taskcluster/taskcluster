@@ -144,7 +144,8 @@
           },
           "style": {
             "useCollapsedElseIf": "off",
-            "useBlockStatements": "off"
+            "useBlockStatements": "off",
+            "useNodejsImportProtocol": "off"
           },
           "a11y": {
             "useValidAnchor": "error",

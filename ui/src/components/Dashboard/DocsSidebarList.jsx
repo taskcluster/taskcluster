@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { join } from 'path';
 import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';

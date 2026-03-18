@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { join } from 'path';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 import { func } from 'prop-types';
