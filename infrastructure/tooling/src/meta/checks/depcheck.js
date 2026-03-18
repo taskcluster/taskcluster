@@ -57,7 +57,7 @@ if (isMainThread) {
       packageName = packageName.split('/').slice(0, 2).join('/');
     }
 
-    if (builtinModules.includes(packageName)) {
+    if (packageName.startsWith('node:') || builtinModules.includes(packageName)) {
       return;
     }
 
