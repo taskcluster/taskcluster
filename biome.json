@@ -87,7 +87,7 @@
         "noUselessEscapeInRegex": "off",
         "useArrowFunction": "off",
         "useLiteralKeys": "error",
-        "useDateNow": "off",
+        "useDateNow": "error",
         "useOptionalChain": "off",
         "noImportantStyles": "off",
         "noBannedTypes": "off",

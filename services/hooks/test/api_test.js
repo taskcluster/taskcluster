@@ -72,7 +72,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const invalidHookDef = _.defaults({
     schedule: ['0 0 3 0 * *'],
   }, hookWithTriggerSchema);
-  const unique = new Date().getTime().toString();
+  const unique = Date.now().toString();
   const hookWithBindings = _.defaults({
     bindings: [{ exchange: `exchange/test/${unique}`, routingKeyPattern: 'amongst.rockets.wizards' }],
   }, hookWithHookIds);

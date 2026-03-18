@@ -19,7 +19,7 @@ export const getCachedInstallationToken = async (gh, inst_id) => {
   let tokenData = tokenCache.get(inst_id);
   const timeMargin = 10 * 60 * 1000; // 10min before expiry
   if (tokenData) {
-    if (new Date(tokenData.expires_at).getTime() > new Date().getTime() + timeMargin) {
+    if (new Date(tokenData.expires_at).getTime() > Date.now()+ timeMargin) {
       return tokenData;
     }
   }

@@ -25,7 +25,7 @@ describe('fromNow', function() {
 
   it('should generate with year+month format', () => {
     const day = 24 * 60 * 60 * 1000;
-    const date1 = new Date(new Date().getTime() + 2 * 365 * day + 55 * 30 * day);
+    const date1 = new Date(Date.now()+ 2 * 365 * day + 55 * 30 * day);
     const date2 = fromNow('2 years 55mo');
 
     // Allow for 10ms margin
@@ -34,7 +34,7 @@ describe('fromNow', function() {
   });
 
   it('should generate with month format', () => {
-    const date1 = new Date(new Date().getTime() + 240 * 30 * 24 * 60 * 60 * 1000);
+    const date1 = new Date(Date.now()+ 240 * 30 * 24 * 60 * 60 * 1000);
     const date2 = fromNow('240 months');
 
     // Allow for 10ms margin
@@ -43,7 +43,7 @@ describe('fromNow', function() {
   });
 
   it('should generate with -month format', () => {
-    const date1 = new Date(new Date().getTime() - 240 * 30 * 24 * 60 * 60 * 1000);
+    const date1 = new Date(Date.now()- 240 * 30 * 24 * 60 * 60 * 1000);
     const date2 = fromNow('-240 months');
 
     // Allow for 10ms margin

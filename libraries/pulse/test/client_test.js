@@ -13,7 +13,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
   let connectionString, credentials;
 
   // use a unique name for each test run, just to ensure nothing interferes
-  const unique = new Date().getTime().toString();
+  const unique = Date.now().toString();
   const exchangeName = `exchanges/test/${unique}`;
   const queueName = `queues/test/${unique}`;
   const routingKey = 'greetings';

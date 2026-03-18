@@ -2253,8 +2253,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const workerIdentityProof = { document: azureSignatures[0].document };
           const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
           // allow +- 10 seconds since time passes while the test executes
-          assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
-          assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now()+ 10000 > 96 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now()- 10000 < 96 * 3600 * 1000, res.expires);
           assert.equal(res.workerConfig.someKey, 'someValue');
         });
 
@@ -2277,8 +2277,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const workerIdentityProof = { document: azureSignatures[0].document };
           const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
           // allow +- 10 seconds since time passes while the test executes
-          assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
-          assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now()+ 10000 > 10 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now()- 10000 < 10 * 3600 * 1000, res.expires);
           assert.equal(res.workerConfig.someKey, 'someValue');
           helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
           helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === worker.launchConfigId);
@@ -2302,8 +2302,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
           // allow +- 10 seconds since time passes while the test executes
-          assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
-          assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now()+ 10000 > 96 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now()- 10000 < 96 * 3600 * 1000, res.expires);
           assert.equal(res.workerConfig.someKey, 'someValue');
 
           const log0 = monitor.manager.messages[0];

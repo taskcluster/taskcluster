@@ -15,13 +15,13 @@ const poll = async (doPoll, iterations, delay) => {
   delay = delay || 250;
   iterations = iterations === undefined ? 20 : iterations;
   const errors = [];
-  const start = +new Date();
+  const start = Date.now();
 
   while (true) {
     try {
       return await doPoll();
     } catch (err) {
-      errors.push({ err, when: new Date() - start });
+      errors.push({ err, when: Date.now()- start });
 
       // Re-throw unless we're out of iterations
       if (iterations !== undefined && iterations <= 0) {

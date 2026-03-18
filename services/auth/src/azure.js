@@ -125,7 +125,7 @@ export const azureBuilder = builder => {
     if (level === 'read-write') {
       // only try to create if we haven't done so in this process recently
       const key = `${account}/${tableName}`;
-      if (!tableLastCreated[key] || new Date() - tableLastCreated[key] > 6 * 3600 * 1000) {
+      if (!tableLastCreated[key] || Date.now()- tableLastCreated[key] > 6 * 3600 * 1000) {
         try {
           await table.createTable(tableName);
         } catch (err) {
@@ -248,7 +248,7 @@ export const azureBuilder = builder => {
     // Create container ignore error, if it already exists
     if (level === 'read-write') {
       const key = `${account}/${container}`;
-      if (!containerLastCreated[key] || new Date() - containerLastCreated[key] > 6 * 3600 * 1000) {
+      if (!containerLastCreated[key] || Date.now()- containerLastCreated[key] > 6 * 3600 * 1000) {
         try {
           await blob.createContainer(container);
         } catch (err) {

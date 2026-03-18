@@ -116,7 +116,7 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
     }
 
     // Check start and expiry
-    const now = new Date().getTime();
+    const now = Date.now();
     if (cert.start > now + 5 * 60 * 1000) {
       throw new Error('ext.certificate.start > now');
     }

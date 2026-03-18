@@ -187,7 +187,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
 
   suite('PulsePublisher', function() {
     // use a unique name for each test run, just to ensure nothing interferes
-    const unique = `test-${new Date().getTime()}`;
+    const unique = `test-${Date.now()}`;
     let client, conn, chan, exchanges, schemaset, publisher, messages;
 
     suiteSetup(async function() {

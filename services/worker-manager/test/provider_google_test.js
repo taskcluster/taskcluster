@@ -214,7 +214,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const worker = workers[0];
       // Check that this is setting times correctly to within a second or so to allow for some time
       // for the provisioning loop
-      assert(worker.providerData.terminateAfter - new Date() - (6000 * 1000) < 5000);
+      assert(worker.providerData.terminateAfter - Date.now()- (6000 * 1000) < 5000);
     });
 
     provisionTest('queueInactivityTimeout', {
@@ -813,8 +813,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const workerIdentityProof = { token: 'good' };
       const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
       // allow +- 10 seconds since time passes while the test executes
-      assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
-      assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+      assert(res.expires - Date.now()+ 10000 > 96 * 3600 * 1000, res.expires);
+      assert(res.expires - Date.now()- 10000 < 96 * 3600 * 1000, res.expires);
       assert.equal(res.workerConfig.someKey, 'someValue');
       helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
     });
@@ -833,8 +833,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const workerIdentityProof = { token: 'good' };
       const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
       // allow +- 10 seconds since time passes while the test executes
-      assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
-      assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
+      assert(res.expires - Date.now()+ 10000 > 10 * 3600 * 1000, res.expires);
+      assert(res.expires - Date.now()- 10000 < 10 * 3600 * 1000, res.expires);
       assert.equal(res.workerConfig.someKey, 'someValue');
       helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
       helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === worker.launchConfigId);

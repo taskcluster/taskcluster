@@ -170,7 +170,7 @@ suite(testing.suiteName(), function() {
 
     test('fromNow(2 years 55 months)', function() {
       const day = 24 * 60 * 60 * 1000;
-      const d1 = new Date(new Date().getTime() + 2 * 365 * day + 55 * 30 * day);
+      const d1 = new Date(Date.now()+ 2 * 365 * day + 55 * 30 * day);
       const d2 = taskcluster.fromNow('2 years 55mo');
 
       // Allow for 10ms margin
@@ -178,7 +178,7 @@ suite(testing.suiteName(), function() {
     });
 
     test('fromNow(240 months)', function() {
-      const d1 = new Date(new Date().getTime() + 240 * 30 * 24 * 60 * 60 * 1000);
+      const d1 = new Date(Date.now()+ 240 * 30 * 24 * 60 * 60 * 1000);
       const d2 = taskcluster.fromNow('240 months');
 
       // Allow for 10ms margin
@@ -186,7 +186,7 @@ suite(testing.suiteName(), function() {
     });
 
     test('fromNow(-240 months)', function() {
-      const d1 = new Date(new Date().getTime() - 240 * 30 * 24 * 60 * 60 * 1000);
+      const d1 = new Date(Date.now()- 240 * 30 * 24 * 60 * 60 * 1000);
       const d2 = taskcluster.fromNow('-240 months');
 
       // Allow for 10ms margin

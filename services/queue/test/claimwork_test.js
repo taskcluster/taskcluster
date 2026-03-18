@@ -53,7 +53,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       tasks: 2,
     });
     assert(result.tasks.length === 0, 'Did not expect any claims');
-    assert(new Date() - started >= 20 * 1000, 'Expected 20s sleep');
+    assert(Date.now()- started >= 20 * 1000, 'Expected 20s sleep');
   });
 
   test('claimWork requires scopes', async () => {

@@ -318,7 +318,7 @@ export default class WorkersTable extends Component {
               )}
               <TableCell>
                 {quarantineUntil &&
-                parseISO(quarantineUntil).getTime() > new Date().getTime() ? (
+                parseISO(quarantineUntil).getTime() > Date.now()? (
                   formatDistanceStrict(new Date(), parseISO(quarantineUntil), {
                     unit: 'day',
                   })

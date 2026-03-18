@@ -41,7 +41,7 @@ tasks.push({
       utils.status({ message: `Created task ${taskIds[i]}` });
     }
     const pollStartTime = new Date();
-    while (new Date() - pollStartTime < 1200000) {
+    while (Date.now()- pollStartTime < 1200000) {
       const statuses = [];
       let message = 'Task execution status:';
       for (let i = 0; i < taskCount; i++) {

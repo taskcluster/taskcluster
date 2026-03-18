@@ -435,8 +435,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       const resp = await provider.registerWorker({ worker: runningWorker, workerPool, workerIdentityProof });
-      assert(resp.expires - new Date() + 10000 > 96 * 3600 * 1000);
-      assert(resp.expires - new Date() - 10000 < 96 * 3600 * 1000);
+      assert(resp.expires - Date.now()+ 10000 > 96 * 3600 * 1000);
+      assert(resp.expires - Date.now()- 10000 < 96 * 3600 * 1000);
       assert.equal(resp.workerConfig.someConfig, 'someConfigValue');
       helper.assertPulseMessage('worker-running', m => m.payload.workerId === runningWorker.workerId);
       helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === runningWorker.launchConfigId);
@@ -469,8 +469,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       const resp = await provider.registerWorker({ worker: runningWorker, workerPool, workerIdentityProof });
-      assert(resp.expires - new Date() + 10000 > 10 * 3600 * 1000);
-      assert(resp.expires - new Date() - 10000 < 10 * 3600 * 1000);
+      assert(resp.expires - Date.now()+ 10000 > 10 * 3600 * 1000);
+      assert(resp.expires - Date.now()- 10000 < 10 * 3600 * 1000);
       assert.equal(resp.workerConfig.someKey, 'someValue');
       helper.assertPulseMessage('worker-running', m => m.payload.workerId === runningWorker.workerId);
       helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === runningWorker.launchConfigId);

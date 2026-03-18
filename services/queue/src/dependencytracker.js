@@ -257,7 +257,7 @@ class DependencyTracker {
     }
 
     // Don't attempt to schedule tasks past their deadline
-    if (task.deadline.getTime() < new Date().getTime()) {
+    if (task.deadline.getTime() < Date.now()) {
       return null;
     }
 

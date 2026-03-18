@@ -1977,8 +1977,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         secret: firstResponse.secret,
       });
 
-      assert(new Date(secondResponse.expires) - new Date() > reregistrationTimeout - 250);
-      assert(new Date(secondResponse.expires) - new Date() < reregistrationTimeout + 250);
+      assert(new Date(secondResponse.expires) - Date.now()> reregistrationTimeout - 250);
+      assert(new Date(secondResponse.expires) - Date.now()< reregistrationTimeout + 250);
       assert.equal(firstResponse.credentials.clientId, secondResponse.credentials.clientId);
       assert.notStrictEqual(firstResponse.secret, secondResponse.secret);
 
@@ -1996,8 +1996,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         secret: secondResponse.secret,
       });
 
-      assert(new Date(thirdResponse.expires) - new Date() > reregistrationTimeout - 250);
-      assert(new Date(thirdResponse.expires) - new Date() < reregistrationTimeout + 250);
+      assert(new Date(thirdResponse.expires) - Date.now()> reregistrationTimeout - 250);
+      assert(new Date(thirdResponse.expires) - Date.now()< reregistrationTimeout + 250);
       assert.equal(secondResponse.credentials.clientId, thirdResponse.credentials.clientId);
       assert.notStrictEqual(secondResponse.secret, thirdResponse.secret);
 

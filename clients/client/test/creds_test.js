@@ -274,7 +274,7 @@ suite(testing.suiteName(), function() {
   test('buildSignedUrl with temporary credentials', async () => {
     const tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:authenticate-get', 'test:bar'],
-      expiry: new Date(new Date().getTime() + 60 * 1000),
+      expiry: new Date(Date.now()+ 60 * 1000),
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',
@@ -291,7 +291,7 @@ suite(testing.suiteName(), function() {
   test('buildSignedUrl with temporary credentials and expiration', async () => {
     const tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:authenticate-get'],
-      expiry: new Date(new Date().getTime() + 60 * 1000),
+      expiry: new Date(Date.now()+ 60 * 1000),
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',
@@ -309,7 +309,7 @@ suite(testing.suiteName(), function() {
   test('buildSignedUrl with temporary credentials (expired)', async () => {
     const tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:query', 'test:authenticate-get'],
-      expiry: new Date(new Date().getTime() + 60 * 1000),
+      expiry: new Date(Date.now()+ 60 * 1000),
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',
@@ -329,7 +329,7 @@ suite(testing.suiteName(), function() {
   test('buildSignedUrl, temp creds + authedScopes ', async () => {
     const tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test:auth*'],
-      expiry: new Date(new Date().getTime() + 60 * 1000),
+      expiry: new Date(Date.now()+ 60 * 1000),
       credentials: {
         clientId: 'tester',
         accessToken: 'no-secret',

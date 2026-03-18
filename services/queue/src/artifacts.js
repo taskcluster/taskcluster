@@ -414,7 +414,7 @@ export const loadArtifactsRoutes = (builder) => {
 
       case 's3': {
       // Reply with signed S3 URL
-        const expiry = new Date(new Date().getTime() + 45 * 60 * 1000);
+        const expiry = new Date(Date.now()+ 45 * 60 * 1000);
         let bucket = null;
         if (artifact.details.bucket === this.publicBucket.bucket) {
           bucket = this.publicBucket;

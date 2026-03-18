@@ -706,14 +706,14 @@ const patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
   // Ensure: created < now < deadline (with drift up to 15 min)
   const created = new Date(taskDef.created);
   const deadline = new Date(taskDef.deadline);
-  if (created.getTime() < new Date().getTime() - 15 * 60 * 1000) {
+  if (created.getTime() < Date.now()- 15 * 60 * 1000) {
     return {
       code: 'InputError',
       message: '`created` cannot be in the past (max 15min drift)',
       details: { created: taskDef.created },
     };
   }
-  if (created.getTime() > new Date().getTime() + 15 * 60 * 1000) {
+  if (created.getTime() > Date.now()+ 15 * 60 * 1000) {
     return {
       code: 'InputError',
       message: '`created` cannot be in the future (max 15min drift)',
@@ -727,7 +727,7 @@ const patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
       details: { created: taskDef.created, deadline: taskDef.deadline },
     };
   }
-  if (deadline.getTime() < new Date().getTime()) {
+  if (deadline.getTime() < Date.now()) {
     return {
       code: 'InputError',
       message: '`deadline` cannot be in the past',
@@ -735,7 +735,7 @@ const patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
     };
   }
 
-  const msToDeadline = deadline.getTime() - new Date().getTime();
+  const msToDeadline = deadline.getTime() - Date.now();
   // Validate that deadline is less than maxTaskDeadlineDays from now, allow 15 min drift
   if (msToDeadline > maxTaskDeadlineDays * 24 * 60 * 60 * 1000 + 15 * 60 * 1000) {
     return {
@@ -1126,7 +1126,7 @@ builder.declare({
   });
 
   // Validate deadline
-  if (task.deadline.getTime() < new Date().getTime()) {
+  if (task.deadline.getTime() < Date.now()) {
     return res.reportError(
       'RequestConflict',
       'Task `{{taskId}}` can\'t be rescheduled past its deadline of ' +
@@ -1226,7 +1226,7 @@ builder.declare({
   });
 
   // Validate deadline
-  if (task.deadline.getTime() < new Date().getTime()) {
+  if (task.deadline.getTime() < Date.now()) {
     return res.reportError(
       'RequestConflict',
       'Task `{{taskId}}` can\'t be canceled past its deadline of ' +
@@ -1444,7 +1444,7 @@ builder.declare({
   // Don't claim tasks when worker is quarantined (but do record the worker
   // being seen, and be sure to wait the 20 seconds so as not to cause a
   // tight loop of claimWork calls from the worker
-  if (worker && worker.quarantineUntil.getTime() > new Date().getTime()) {
+  if (worker && worker.quarantineUntil.getTime() > Date.now()) {
     await Promise.all([
       this.workerInfo.seen(taskQueueId, workerGroup, workerId),
       sleep20Seconds(),
@@ -1544,7 +1544,7 @@ builder.declare({
   const worker = await Worker.get(this.db, task.taskQueueId, workerGroup, workerId, new Date());
 
   // Don't record task when worker is quarantined
-  if (worker && worker.quarantineUntil.getTime() > new Date().getTime()) {
+  if (worker && worker.quarantineUntil.getTime() > Date.now()) {
     return res.reply({});
   }
 

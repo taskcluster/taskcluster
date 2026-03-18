@@ -42,7 +42,7 @@ export default class MozillaAuth0 {
       access_token: accessToken,
       expires_in: expiresIn,
     } = JSON.parse(res.text);
-    const expires = new Date().getTime() + (expiresIn * 1000);
+    const expires = Date.now()+ (expiresIn * 1000);
 
     if (!accessToken) {
       throw new Error('did not receive a token from Auth0 /oauth/token endpoint');
@@ -53,7 +53,7 @@ export default class MozillaAuth0 {
 
   get isTokenExpired() {
     const offset = 10 * 60 * 1000; // expire a bit earlier to be safe
-    return this._personApiExp - offset < new Date().getTime();
+    return this._personApiExp - offset < Date.now();
   }
 
   async getPersonApi() {
