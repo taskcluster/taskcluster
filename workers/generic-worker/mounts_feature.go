@@ -474,13 +474,13 @@ func garbageCollection() error {
 		if _, exists := directoryCaches[cache.Key]; exists {
 			evictErr := cache.Evict(nil)
 			if evictErr != nil {
-				rw.Unlock()
 				deleteCacheRWLock(cache.Key)
+				rw.Unlock()
 				return evictErr
 			}
 		}
-		rw.Unlock()
 		deleteCacheRWLock(cache.Key)
+		rw.Unlock()
 
 		currentFreeSpace, err = freeDiskSpaceBytes(config.TasksDir)
 		if err != nil {
@@ -545,7 +545,10 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 				cacheRWLock := getCacheRWLock(cache.CacheName)
 				cacheRWLock.Lock()
 				cacheMutex.Lock()
-				err.add(Failure(directoryCaches[cache.CacheName].Evict(taskMount)))
+				// Re-check entry still exists — concurrent GC or purge may have evicted it.
+				if entry, exists := directoryCaches[cache.CacheName]; exists {
+					err.add(Failure(entry.Evict(taskMount)))
+				}
 				cacheMutex.Unlock()
 				deleteCacheRWLock(cache.CacheName)
 				cacheRWLock.Unlock()
@@ -1372,14 +1375,14 @@ func (taskMount *TaskMount) purgeCaches() error {
 					if cache.Created.Add(-5 * time.Minute).Before(time.Time(request.Before)) {
 						err := cache.Evict(taskMount)
 						if err != nil {
-							rw.Unlock()
 							deleteCacheRWLock(request.CacheName)
+							rw.Unlock()
 							panic(err)
 						}
 					}
 				}
-				rw.Unlock()
 				deleteCacheRWLock(request.CacheName)
+				rw.Unlock()
 			}
 		}
 	}
