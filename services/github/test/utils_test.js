@@ -291,7 +291,7 @@ suite(testing.suiteName(), function() {
       assert.equal(250, tailLog(payload).split('\n').length);
       assert.equal(25, tailLog(payload, 25).split('\n').length);
 
-      const payloadLong = Array.from({ length: 10 }).map(line => 'line'.repeat(1000)).join('\n');
+      const payloadLong = Array.from({ length: 10 }).map(_line => 'line'.repeat(1000)).join('\n');
       assert.equal(1, tailLog(payloadLong, 10, 20).split('\n').length);
       assert.equal('line', tailLog(payloadLong, 10, 4));
     });
@@ -303,7 +303,7 @@ suite(testing.suiteName(), function() {
       assert.equal(100, extractLog(payload, 20, 200).split('\n').length);
       assert.equal(100, extractLog(payload).split('\n').length);
 
-      const payloadLong = Array.from({ length: 500 }).map(line => 'line'.repeat(10)).join('\n');
+      const payloadLong = Array.from({ length: 500 }).map(_line => 'line'.repeat(10)).join('\n');
       assert.equal(223, extractLog(payloadLong, 20, 200).split('\n').length);
     });
   });

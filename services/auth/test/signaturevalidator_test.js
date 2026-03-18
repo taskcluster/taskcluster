@@ -62,7 +62,7 @@ suite(testing.suiteName(), function() {
   const makeTest = function(name, input, expected) {
     test(name, async function() {
       // defer creation of input until the test runs, if necessary
-      if (typeof input == 'function') {
+      if (typeof input === 'function') {
         input = input();
       }
 

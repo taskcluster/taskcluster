@@ -18,7 +18,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     helper.load.inject('notify', new taskcluster.Notify({
       rootUrl: helper.rootUrl,
       fake: {
-        email: email => null,
+        email: _email => null,
       },
     }));
   });

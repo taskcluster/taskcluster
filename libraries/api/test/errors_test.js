@@ -41,7 +41,7 @@ suite(testing.suiteName(), function() {
 
   test('InputError response', async function() {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputerror');
-    return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
+    return request.get(url).then(_res => assert(false, 'should have failed!')).catch(res => {
       if (!res.status) {
         throw res;
       }
@@ -76,7 +76,7 @@ suite(testing.suiteName(), function() {
 
   test('TooManyFoos response', async function() {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/toomanyfoos');
-    return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
+    return request.get(url).then(_res => assert(false, 'should have failed!')).catch(res => {
       assert(res.status === 472);
       const response = JSON.parse(res.response.text);
       response.message = response.message.replace(response.requestInfo.time, '<nowish>');
@@ -122,7 +122,7 @@ suite(testing.suiteName(), function() {
 
   test('ISE response', async function() {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/ISE');
-    return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
+    return request.get(url).then(_res => assert(false, 'should have failed!')).catch(res => {
       assert(res.status === 500);
       const response = JSON.parse(res.response.text);
       assert(response.code === 'InternalServerError');
@@ -156,7 +156,7 @@ suite(testing.suiteName(), function() {
   test('InputValidationError response', async function() {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputvalidationerror');
     return request.post(url).send({ invalid: 'yep', secret: 's3kr!t' })
-      .then(res => assert(false, 'should have failed!'))
+      .then(_res => assert(false, 'should have failed!'))
       .catch(res => {
         assert.equal(res.status, 400);
         const response = JSON.parse(res.response.text);

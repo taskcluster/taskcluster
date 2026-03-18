@@ -185,7 +185,7 @@ suite(testing.suiteName(), function() {
     return request
       .post(url)
       .send({ value: 11 })
-      .then(res => assert(false, 'should have failed!'))
+      .then(_res => assert(false, 'should have failed!'))
       .catch(function(err) {
         assert(err.status === 400, 'Request wasn\'t rejected');
       });
@@ -207,7 +207,7 @@ suite(testing.suiteName(), function() {
     const url = u('/test-invalid-output');
     return request
       .get(url)
-      .then(res => assert(false, 'should have failed!'))
+      .then(_res => assert(false, 'should have failed!'))
       .catch(function(err) {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
@@ -268,7 +268,7 @@ suite(testing.suiteName(), function() {
       .post(url)
       .send(JSON.stringify({ value: 5 }))
       .set('content-type', 'text/x-json')
-      .then(res => assert(false, 'should have failed!'))
+      .then(_res => assert(false, 'should have failed!'))
       .catch(function(err) {
         assert(err.status === 400, 'Request wasn\'t rejected');
       });

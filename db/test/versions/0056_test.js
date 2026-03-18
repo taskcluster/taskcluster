@@ -18,7 +18,7 @@ suite(testing.suiteName(), function() {
         insert into objects (name, project_id, backend_id, data, expires)
         values ('public/foo', 'p', 'b', '{}', $1)`, [expires]);
     },
-    startCheck: async client => {
+    startCheck: async _client => {
       await helper.assertNoTableColumn('objects', 'upload_id');
       await helper.assertNoTableColumn('objects', 'upload_expires');
     },
@@ -31,7 +31,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].data, {});
       assert.equal(rows[0].expires.toJSON(), expires.toJSON());
     },
-    finishedCheck: async client => {
+    finishedCheck: async _client => {
       await helper.assertTableColumn('objects', 'upload_id');
       await helper.assertTableColumn('objects', 'upload_expires');
     },

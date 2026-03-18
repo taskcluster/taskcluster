@@ -363,7 +363,7 @@ export class Connection extends events.EventEmitter {
         }
       });
 
-      amqp.on('close', err => {
+      amqp.on('close', _err => {
         if (this.state === 'connected') {
           this.monitor.log.pulseDisconnected({ error: 'connection closed unexpectedly' });
           this.failed();
@@ -402,7 +402,7 @@ export class Connection extends events.EventEmitter {
     setTimeout(() => {
       if (this.amqp) {
         // ignore errors in close
-        this.amqp.close().catch(err => {});
+        this.amqp.close().catch(_err => {});
       }
       this.amqp = null;
       this.state = 'finished';

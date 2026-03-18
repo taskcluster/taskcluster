@@ -570,7 +570,7 @@ class Database {
       //
       // So Pool will handle those errors properly, and we must only register an
       // handler so that Node does not complain of an unhandled error event.
-      pool.on('error', client => {});
+      pool.on('error', _client => {});
       pool.on('connect', async client => {
         if (statementTimeout) {
           // For web API servers, we want to abort queries that take too long, sa

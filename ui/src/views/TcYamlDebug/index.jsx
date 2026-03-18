@@ -82,7 +82,7 @@ const isValidYamlUrl = url => {
     return (
       allowedHosts.includes(parsed.hostname) && urlRe.test(parsed.pathname)
     );
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 };
@@ -354,7 +354,7 @@ export default class TcYamlDebug extends Component {
       this.setState({
         parsed: true,
       });
-    } catch (e) {
+    } catch (_e) {
       this.setState({
         parsed: true,
       });

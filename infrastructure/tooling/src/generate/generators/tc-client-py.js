@@ -46,6 +46,7 @@ const cleanDocstring = (docstring, indent) => {
     .join('\n');
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: code generator with inherent branching
 const generateStaticClient = async (className, reference, filename, genAsync) => {
   const baseModule = genAsync ? '...aio.asyncclient' : '..client';
   const baseClass = genAsync ? 'AsyncBaseClient' : 'BaseClient';

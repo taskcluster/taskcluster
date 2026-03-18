@@ -117,7 +117,8 @@ export class AwsProvider extends Provider {
     let toSpawnCounter = toSpawn;
     for await (const lc of shuffledConfigs) {
       const config = lc.configuration;
-      if (toSpawnCounter <= 0) break; // eslint-disable-line
+      if (toSpawnCounter <= 0) { break; // eslint-disable-line
+}
       // Make sure we don't get "The same resource type may not be specified
       // more than once in tag specifications" errors
       const TagSpecifications = config.launchConfig.TagSpecifications || [];

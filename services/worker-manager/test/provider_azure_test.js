@@ -2140,7 +2140,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const intermediateCert = getIntermediateCert();
 
           // Download is not a binary certificate
-          provider.downloadBinaryResponse = async url =>
+          provider.downloadBinaryResponse = async _url =>
             '<html><body><h1>Apache2 Default Page</h1></body></html>';
 
           await assert.rejects(() =>

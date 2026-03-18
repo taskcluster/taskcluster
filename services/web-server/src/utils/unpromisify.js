@@ -6,7 +6,7 @@
  */
 export default (fn, { returnsArray } = {}) => {
   // eslint-disable-next-line no-unused-vars
-  const call = (self, args) => {
+  const _call = (self, args) => {
     const done = args.pop();
     Promise.resolve(fn.apply(self, args)).then(
       returnsArray ? res => done.call(null, null, ...res) : res => done.call(null, null, res),

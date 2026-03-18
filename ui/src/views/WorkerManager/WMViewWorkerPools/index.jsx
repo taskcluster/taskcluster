@@ -62,7 +62,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
         errorStats: data.WorkerManagerErrorsStats,
         errorStatsLoading: false,
       });
-    } catch (error) {
+    } catch (_error) {
       this.setState({ errorStatsLoading: false });
     }
   };

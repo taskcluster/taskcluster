@@ -147,7 +147,7 @@ export default class SecretForm extends Component {
       load(editorValue);
 
       return secretName && expires && editorValue;
-    } catch (err) {
+    } catch (_err) {
       return false;
     }
   };

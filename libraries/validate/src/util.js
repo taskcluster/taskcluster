@@ -13,7 +13,7 @@ export function renderConstants(schema, constants) {
 
     // Check if there is a key and only one key
     const key = val.$const;
-    if (key === undefined || typeof key != 'string' || _.keys(val).length !== 1) {
+    if (key === undefined || typeof key !== 'string' || _.keys(val).length !== 1) {
       return undefined;
     }
 

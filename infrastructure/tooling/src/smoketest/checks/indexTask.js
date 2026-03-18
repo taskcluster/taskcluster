@@ -52,7 +52,7 @@ tasks.push({
           await index.findTask(taskIndex);
           return;
         }
-        catch (err) {
+        catch (_err) {
           utils.status({
             message: 'waiting for the task to be indexed',
           });

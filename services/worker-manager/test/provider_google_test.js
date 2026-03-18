@@ -300,7 +300,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         }],
       },
       expectedWorkers: 1,
-    }, async workers => {
+    }, async _workers => {
       const parameters = fake.compute.instances.insertCalls[0];
       assert.deepEqual(parameters.requestBody.disks, [
         {
@@ -352,7 +352,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         }],
       },
       expectedWorkers: 1,
-    }, async workers => {
+    }, async _workers => {
       const parameters = fake.compute.instances.insertCalls[0];
       assert.equal(parameters.requestBody.testProperty, 'foo');
     });
@@ -366,7 +366,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         }],
       },
       expectedWorkers: 1,
-    }, async workers => {
+    }, async _workers => {
       const parameters = fake.compute.instances.insertCalls[0];
       assert.equal(parameters.requestBody.scheduling.testProperty, 'foo');
     });
@@ -384,7 +384,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         }],
       },
       expectedWorkers: 1,
-    }, async workers => {
+    }, async _workers => {
       const parameters = fake.compute.instances.insertCalls[0];
       assert.equal(parameters.requestBody.metadata.items.length, 2);
       const meta = parameters.requestBody.metadata.items[0];
@@ -403,7 +403,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         }],
       },
       expectedWorkers: 1,
-    }, async workers => {
+    }, async _workers => {
       const parameters = fake.compute.instances.insertCalls[0];
       assert.equal(parameters.requestBody.metadata.items.length, 1);
       const meta = parameters.requestBody.metadata.items[0];

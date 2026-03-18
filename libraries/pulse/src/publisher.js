@@ -156,7 +156,7 @@ export class Entry {
       }
 
       // Check that we have a maxSize
-      assert(typeof key.maxSize == 'number' && key.maxSize > 0,
+      assert(typeof key.maxSize === 'number' && key.maxSize > 0,
         `routingKey declaration ${key.name} must have maxSize > 0`);
 
       // Check size left in routingKey space

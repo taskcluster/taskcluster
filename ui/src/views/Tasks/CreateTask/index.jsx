@@ -157,7 +157,7 @@ export default class CreateTask extends Component {
       const task = await storage.getItem(TASKS_CREATE_STORAGE_KEY);
 
       return task || defaultTask(payloadSchema);
-    } catch (err) {
+    } catch (_err) {
       return defaultTask(payloadSchema);
     }
   }
@@ -251,7 +251,7 @@ export default class CreateTask extends Component {
     try {
       load(value);
       this.setState({ invalid: false, task: value });
-    } catch (err) {
+    } catch (_err) {
       this.setState({ invalid: true, task: value });
     }
   };

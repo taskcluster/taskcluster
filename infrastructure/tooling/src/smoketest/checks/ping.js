@@ -21,7 +21,7 @@ tasks.push({
     try {
       const body = JSON.parse(resp.body);
       return { 'deployment-version': body.version };
-    } catch (err) {
+    } catch (_err) {
       throw new Error('__version__ did not return valid JSON');
     }
   },

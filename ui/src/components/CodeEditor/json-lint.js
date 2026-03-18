@@ -22,7 +22,7 @@ CodeMirror.registerHelper('lint', 'json', text => {
 
   try {
     parser.parse(text);
-  } catch (e) {
+  } catch (_e) {
     // Do nothing
   }
 

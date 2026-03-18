@@ -3,9 +3,9 @@ import { gitLsFiles } from '../utils/index.js';
 
 // Ignore packages while we slowly whittle away the requirements
 const IGNORE = {
-  'clients/client/yarn.lock': pkg => false,
-  'clients/client-web/yarn.lock': pkg => false,
-  'yarn.lock': pkg => false,
+  'clients/client/yarn.lock': _pkg => false,
+  'clients/client-web/yarn.lock': _pkg => false,
+  'yarn.lock': _pkg => false,
   'ui/yarn.lock': pkg => [
     'acorn',
     'array-includes',

@@ -18,7 +18,7 @@
       "recommended": true,
 
       "correctness": {
-        "noUnusedVariables": "off",
+        "noUnusedVariables": "warn",
         "noSwitchDeclarations": "error",
         "noUnreachable": "error",
         "noConstantCondition": "off",
@@ -40,8 +40,8 @@
       },
 
       "suspicious": {
-        "noDoubleEquals": "off",
-        "noVar": "off",
+        "noDoubleEquals": "error",
+        "noVar": "error",
         "noConsole": "off",
         "noMisleadingCharacterClass": "off",
         "noUselessEscapeInString": "off",
@@ -63,8 +63,8 @@
       },
 
       "style": {
-        "useCollapsedElseIf": "off",
-        "useBlockStatements": "off",
+        "useCollapsedElseIf": "error",
+        "useBlockStatements": "error",
         "useConst": "error",
         "useNodejsImportProtocol": "error",
         "useTemplate": "error",
@@ -83,7 +83,12 @@
       },
 
       "complexity": {
-        "noExcessiveCognitiveComplexity": "off",
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 60
+          }
+        },
         "noUselessEscapeInRegex": "off",
         "useArrowFunction": "off",
         "useLiteralKeys": "error",

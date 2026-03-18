@@ -83,6 +83,7 @@ const forAllRefs = (content, cb) => {
   }
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: validation logic with inherent branching
 export const validate = (references) => {
   const problems = [];
 

@@ -38,7 +38,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, _skipping) {
     }],
     messageBuilder: msg => msg,
     routingKeyBuilder: msg => msg,
-    CCBuilder: msg => [],
+    CCBuilder: _msg => [],
   };
 
   const declarationConstant = {
@@ -56,7 +56,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, _skipping) {
     }],
     messageBuilder: msg => msg,
     routingKeyBuilder: msg => msg,
-    CCBuilder: msg => [],
+    CCBuilder: _msg => [],
   };
 
   const monitor = helper.monitor;

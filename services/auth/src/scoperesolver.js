@@ -136,7 +136,7 @@ class ScopeResolver extends events.EventEmitter {
       // no need for both _clientPq and _rolePq to call this.reload()
       // for the same reconnection..
       onConnected: () => {},
-      handleMessage: m => this.reloadRoles(),
+      handleMessage: _m => this.reloadRoles(),
     });
   }
 

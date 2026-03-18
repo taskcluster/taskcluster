@@ -59,8 +59,8 @@ suite(testing.suiteName(), function() {
     const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
     await request.get(u('/single-param/Hello')),
     await request.get(u('/single-param/Goodbye')),
-    await request.get(u('/slash-param/Slash')).catch(err => {}),
-    await request.get(u('/another-param/Another')).catch(err => {}),
+    await request.get(u('/slash-param/Slash')).catch(_err => {}),
+    await request.get(u('/another-param/Another')).catch(_err => {}),
     assert.equal(monitorManager.messages.length, 4);
     monitorManager.messages.forEach(event => {
       assert.equal(event.Type, 'monitor.apiMethod');

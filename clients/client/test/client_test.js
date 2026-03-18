@@ -357,7 +357,7 @@ suite(testing.suiteName(), function() {
       test('GET with missing parameter, but query options', async () => {
         try {
           await client.paramQuery({ option: 42 });
-        } catch (err) {
+        } catch (_err) {
           return;
         }
         assert(false, 'Expected an error');
@@ -521,7 +521,7 @@ suite(testing.suiteName(), function() {
           test('BuildUrl with missing parameter', async () => {
             try {
               cl.buildUrl(client.param2, 'te/st');
-            } catch (err) {
+            } catch (_err) {
               return;
             }
             assert(false);
@@ -530,7 +530,7 @@ suite(testing.suiteName(), function() {
           test('BuildSignedUrl with missing parameter', async () => {
             try {
               cl.buildSignedUrl(client.param2, 'te/st');
-            } catch (err) {
+            } catch (_err) {
               return;
             }
             assert(false);
@@ -559,7 +559,7 @@ suite(testing.suiteName(), function() {
           test('BuildUrl with query-string (wrong key)', async () => {
             try {
               cl.buildUrl(client.query, { wrongKey: 2 });
-            } catch (err) {
+            } catch (_err) {
               return;
             }
             assert(false);
@@ -568,7 +568,7 @@ suite(testing.suiteName(), function() {
           test('BuildSignedUrl with query-string (wrong key)', async () => {
             try {
               cl.buildSignedUrl(client.query, { wrongKey: 2 });
-            } catch (err) {
+            } catch (_err) {
               return;
             }
             assert(false);
@@ -609,7 +609,7 @@ suite(testing.suiteName(), function() {
           test('BuildUrl with missing parameter, but query options', async () => {
             try {
               cl.buildUrl(client.paramQuery, { option: 2 });
-            } catch (err) {
+            } catch (_err) {
               return;
             }
             assert(false);
@@ -618,7 +618,7 @@ suite(testing.suiteName(), function() {
           test('BuildUrl with missing parameter, but query options', async () => {
             try {
               cl.buildUrl(client.paramQuery, { option: 2 });
-            } catch (err) {
+            } catch (_err) {
               return;
             }
             assert(false);
@@ -627,7 +627,7 @@ suite(testing.suiteName(), function() {
           test('BuildUrl for missing method', async () => {
             try {
               cl.buildUrl('test');
-            } catch (err) {
+            } catch (_err) {
               return;
             }
             assert(false);
@@ -636,7 +636,7 @@ suite(testing.suiteName(), function() {
           test('buildSignedUrl for missing method', async () => {
             try {
               cl.buildSignedUrl('test');
-            } catch (err) {
+            } catch (_err) {
               return;
             }
             assert(false);

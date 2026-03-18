@@ -86,7 +86,7 @@ class Secrets {
       try {
         const res = await client.get(secretName);
         Object.assign(secrets, res.secret);
-      } catch (err) {
+      } catch (_err) {
         debug(`Error fetching secret ${secretName}; ignoring`);
       }
     }

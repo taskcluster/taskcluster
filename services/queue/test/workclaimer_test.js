@@ -126,7 +126,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     const tryCall = async () => {
       try {
         return await workClaimer.claim('taskQueue/Id', 'workerGroup', 'workerId', 3, new Promise(resolve => setTimeout(resolve, 1000)));
-      } catch (err) {
+      } catch (_err) {
         return 0;
       }
     };

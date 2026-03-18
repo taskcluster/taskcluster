@@ -673,7 +673,7 @@ export default function generatePayloadExample(schema, allSchemas = []) {
       schema.$id,
       new Set()
     );
-  } catch (error) {
+  } catch (_error) {
     // Error generating payload example
     return null;
   }

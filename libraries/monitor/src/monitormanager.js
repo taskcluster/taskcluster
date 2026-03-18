@@ -227,7 +227,7 @@ export class MonitorManager {
       const taskclusterVersionFile = path.join(REPO_ROOT, 'version.json');
       try {
         manager.taskclusterVersion = JSON.parse(fs.readFileSync(taskclusterVersionFile).toString()).version;
-      } catch (err) {
+      } catch (_err) {
         // Do nothing, will just be undefined
       }
     }

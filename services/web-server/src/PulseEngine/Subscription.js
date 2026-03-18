@@ -130,7 +130,7 @@ export default class Subscription {
       // try to delete the queue, just to be safe, but if it doesn't work, oh well..
       try {
         await this.channel.deleteQueue(queueName);
-      } catch (err) {
+      } catch (_err) {
         // ignored
       }
 
@@ -138,7 +138,7 @@ export default class Subscription {
       // exists), but if it doesn't work, oh well..
       try {
         await this.channel.close();
-      } catch (err) {
+      } catch (_err) {
         // ignored
       }
 

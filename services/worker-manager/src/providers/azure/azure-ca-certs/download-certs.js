@@ -23,7 +23,7 @@ certificates.forEach(({ filename, url }) => {
     try {
       const fileContent = fs.readFileSync(tempFilename, 'utf8');
       isPEM = fileContent.includes('-----BEGIN CERTIFICATE-----');
-    } catch (e) {
+    } catch (_e) {
       isPEM = false;
     }
 
@@ -34,7 +34,7 @@ certificates.forEach(({ filename, url }) => {
       console.log(`Converting ${tempFilename} from DER to PEM format`);
       try {
         execSync(`openssl x509 -inform DER -in "${tempFilename}" -out "${filename}"`);
-      } catch (e) {
+      } catch (_e) {
         console.log(`DER conversion failed, trying auto-detection with openssl`);
         execSync(`openssl x509 -in "${tempFilename}" -out "${filename}"`);
       }

@@ -98,7 +98,7 @@ suite(testing.suiteName(), function() {
       return creator.lastCreateTask.task;
     };
 
-    const assertNoTask = async taskId => {
+    const assertNoTask = async _taskId => {
       assert(!creator.lastCreateTask);
     };
 

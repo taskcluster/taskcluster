@@ -106,7 +106,7 @@ suite('component loader', () => {
           },
         },
       });
-    } catch (e) {
+    } catch (_e) {
       return; // Ignore expected error
     }
     assert(false, 'Expected an error');

@@ -19,7 +19,7 @@ export default ({ userConfig, prompts, configTmpl }) => {
       let url;
       try {
         url = new URL(rootUrl);
-      } catch (err) {
+      } catch (_err) {
         return `${rootUrl} is not a valid URL`;
       }
       if (url.protocol !== 'https:') {

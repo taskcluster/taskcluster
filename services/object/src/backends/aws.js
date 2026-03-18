@@ -84,7 +84,7 @@ export class AwsBackend extends Backend {
     let bytes;
     try {
       bytes = Buffer.from(objectData, 'base64');
-    } catch (err) {
+    } catch (_err) {
       return reportError('InputError', 'Invalid base64 objectData', {});
     }
 

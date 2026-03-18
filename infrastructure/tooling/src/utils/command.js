@@ -114,7 +114,7 @@ export const checkExecutableExists = async (executable) => {
   try {
     await execCommandNative(`${command} ${executable}`);
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 };

@@ -61,7 +61,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     })).deleteClient(CLIENT_ID).then(() => {
       assert(false, 'Expected an error');
       helper.assertNoPulseMessage();
-    }, err => {
+    }, _err => {
     });
   });
 
@@ -73,7 +73,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     })).deleteClient(CLIENT_ID).then(() => {
       assert(false, 'Expected an error');
       helper.assertNoPulseMessage();
-    }, err => {
+    }, _err => {
       // Expected error
     });
   });
@@ -387,7 +387,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
     await helper.apiClient.client(CLIENT_ID).then(() => {
       assert(false, 'Expected an error');
-    }, err => {
+    }, _err => {
       // Expected error
     });
   });

@@ -399,7 +399,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('high')).then(() => {
       assert(false, 'Expected 400 error!');
-    }, err => {
+    }, _err => {
       debug('Got error as expected');
     });
   });

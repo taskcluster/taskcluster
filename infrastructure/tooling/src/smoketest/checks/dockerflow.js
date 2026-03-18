@@ -109,7 +109,7 @@ SERVICES.forEach((name) => {
           try {
             JSON.parse(resp.body);
             checked = true;
-          } catch (err) {
+          } catch (_err) {
             throw new Error("__version__ did not return valid JSON");
           }
         }
