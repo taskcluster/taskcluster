@@ -58,8 +58,18 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 	l.Pid = l.command.Process.Pid
 	log.Printf("Started taskcluster proxy process (PID %v)", l.Pid)
 	// Just to be safe, let's make sure the port is actually active before returning.
-	err = waitForPortToBeActive(ipAddress, httpPort)
-	return l, err
+	if err = waitForPortToBeActive(ipAddress, httpPort); err != nil {
+		killErr := l.command.Process.Kill()
+		if killErr != nil {
+			log.Printf("Failed to kill taskcluster-proxy process (PID %v) after readiness timeout: %v", l.Pid, killErr)
+		} else {
+			// Wait for the process to be reaped to avoid zombies
+			_, _ = l.command.Process.Wait()
+			log.Printf("Killed taskcluster-proxy process (PID %v) after readiness timeout", l.Pid)
+		}
+		return nil, err
+	}
+	return l, nil
 }
 
 func (l *TaskclusterProxy) Terminate() error {
