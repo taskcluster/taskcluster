@@ -439,9 +439,58 @@ func garbageCollection() error {
 	// during Evict() calls from runGarbageCollection()
 	cacheMutex.Lock()
 	defer cacheMutex.Unlock()
-	r := fileCaches.SortedResources()
-	r = append(r, directoryCaches.SortedResources()...)
-	return runGarbageCollection(r)
+
+	// File caches don't use per-cache RW locks, evict normally.
+	fileResources := fileCaches.SortedResources()
+	err := runGarbageCollection(fileResources)
+	if err != nil {
+		return err
+	}
+
+	// Directory caches need per-cache write lock during eviction to
+	// prevent concurrent tasks from copying a directory being deleted.
+	currentFreeSpace, err := freeDiskSpaceBytes(config.TasksDir)
+	if err != nil {
+		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
+	}
+	if currentFreeSpace >= requiredSpaceBytes() {
+		return nil
+	}
+
+	dirResources := directoryCaches.SortedResources()
+	for _, res := range dirResources {
+		cache := res.(*Cache)
+		// Release cacheMutex, acquire per-cache write lock, re-acquire cacheMutex.
+		// This matches the lock ordering used elsewhere (cacheRWLock before cacheMutex).
+		cacheMutex.Unlock()
+		rw := getCacheRWLock(cache.Key)
+		rw.Lock()
+		cacheMutex.Lock()
+		// Re-check entry still exists after re-acquiring cacheMutex.
+		if _, exists := directoryCaches[cache.Key]; exists {
+			evictErr := cache.Evict(nil)
+			if evictErr != nil {
+				rw.Unlock()
+				deleteCacheRWLock(cache.Key)
+				return evictErr
+			}
+		}
+		rw.Unlock()
+		deleteCacheRWLock(cache.Key)
+
+		currentFreeSpace, err = freeDiskSpaceBytes(config.TasksDir)
+		if err != nil {
+			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
+		}
+		if currentFreeSpace >= requiredSpaceBytes() {
+			return nil
+		}
+	}
+
+	if currentFreeSpace < requiredSpaceBytes() {
+		return fmt.Errorf("not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredSpaceBytes(), currentFreeSpace)
+	}
+	return nil
 }
 
 // called when a task starts
@@ -1284,10 +1333,25 @@ func (taskMount *TaskMount) purgeCaches() error {
 	for _, request := range purgeRequests.Requests {
 		if cache, exists := directoryCaches[request.CacheName]; exists {
 			if cache.Created.Add(-5 * time.Minute).Before(time.Time(request.Before)) {
-				err := cache.Evict(taskMount)
-				if err != nil {
-					panic(err)
+				// Release cacheMutex, acquire per-cache write lock, re-acquire cacheMutex.
+				// This matches the lock ordering used elsewhere (cacheRWLock before cacheMutex).
+				cacheMutex.Unlock()
+				rw := getCacheRWLock(request.CacheName)
+				rw.Lock()
+				cacheMutex.Lock()
+				// Re-check after re-acquiring cacheMutex
+				if cache, exists = directoryCaches[request.CacheName]; exists {
+					if cache.Created.Add(-5 * time.Minute).Before(time.Time(request.Before)) {
+						err := cache.Evict(taskMount)
+						if err != nil {
+							rw.Unlock()
+							deleteCacheRWLock(request.CacheName)
+							panic(err)
+						}
+					}
 				}
+				rw.Unlock()
+				deleteCacheRWLock(request.CacheName)
 			}
 		}
 	}
