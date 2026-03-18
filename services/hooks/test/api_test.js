@@ -422,6 +422,67 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
+  suite('searchHooks', function() {
+    subSkip();
+
+    test('without scopes', async function() {
+      const client = new helper.Hooks({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.searchHooks({ q: 'test' }),
+        err => err.code === 'InsufficientScopes');
+    });
+
+    test('returns empty array when no hooks match', async () => {
+      await helper.hooks.createHook('grp1', 'hook1', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'zzznomatch' });
+      assume(r.hooks).eql([]);
+    });
+
+    test('matches by hookGroupId substring (case-insensitive)', async () => {
+      await helper.hooks.createHook('project-releng', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('taskcluster', 'hook2', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'PROJECT' });
+      assume(r.hooks.length).eql(1);
+      assume(r.hooks[0].hookGroupId).eql('project-releng');
+    });
+
+    test('matches by hookId substring (case-insensitive)', async () => {
+      await helper.hooks.createHook('group-a', 'translations-daily', hookWithTriggerSchema);
+      await helper.hooks.createHook('group-b', 'build-daily', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'Translations' });
+      assume(r.hooks.length).eql(1);
+      assume(r.hooks[0].hookId).eql('translations-daily');
+    });
+
+    test('returns hooks across multiple groups', async () => {
+      await helper.hooks.createHook('grp-a', 'foo', hookWithTriggerSchema);
+      await helper.hooks.createHook('grp-b', 'foo', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'foo' });
+      assume(r.hooks.length).eql(2);
+    });
+
+    test('returns all hooks when q is empty', async () => {
+      await helper.hooks.createHook('grp1', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('grp2', 'hook2', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: '' });
+      assume(r.hooks.length).eql(2);
+    });
+
+    test('returned hooks have full definition fields', async () => {
+      await helper.hooks.createHook('grp1', 'hook1', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'hook1' });
+      assume(r.hooks.length).eql(1);
+      const h = r.hooks[0];
+      assume(h).has.property('hookGroupId');
+      assume(h).has.property('hookId');
+      assume(h).has.property('metadata');
+      assume(h).has.property('task');
+      assume(h).has.property('bindings');
+      assume(h).has.property('schedule');
+      assume(h).has.property('triggerSchema');
+    });
+  });
+
   suite('listHooks', function() {
     subSkip();
 

@@ -158,6 +158,43 @@ impl Hooks {
         (path, query)
     }
 
+    /// Search for hooks
+    ///
+    /// Search for hooks by a query string that matches hook group ID or hook ID
+    /// (case-insensitive substring match). Returns at most 1000 results.
+    ///
+    /// This endpoint requires the `hooks:list-hooks:` scope.
+    pub async fn searchHooks(&self, q: Option<&str>) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::searchHooks_details(q);
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the searchHooks endpoint
+    pub fn searchHooks_url(&self, q: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::searchHooks_details(q);
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the searchHooks endpoint
+    pub fn searchHooks_signed_url(&self, q: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::searchHooks_details(q);
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for searchHooks
+    fn searchHooks_details<'a>(q: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "hooks/search";
+        let mut query = None;
+        if let Some(q) = q {
+            query.get_or_insert_with(Vec::new).push(("q", q));
+        }
+
+        (path, query)
+    }
+
     /// List hooks in a given group
     ///
     /// This endpoint will return a list of all the hook definitions within a

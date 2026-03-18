@@ -7929,6 +7929,21 @@
         }
       },
       "version": 122
+    },
+    {
+      "description": "Add search_hooks function for cross-group hook search",
+      "methods": {
+        "search_hooks": {
+          "args": "search_term_in text, page_size_in integer, page_offset_in integer",
+          "body": "begin\n  return query\n  select\n    hooks.hook_group_id,\n    hooks.hook_id,\n    hooks.metadata,\n    hooks.task,\n    hooks.bindings,\n    hooks.schedule,\n    hooks.encrypted_trigger_token,\n    hooks.encrypted_next_task_id,\n    hooks.next_scheduled_date,\n    hooks.trigger_schema\n  from hooks\n  where (\n    search_term_in is null\n    or search_term_in = ''\n    or hooks.hook_group_id ilike '%' || search_term_in || '%'\n    or hooks.hook_id ilike '%' || search_term_in || '%'\n  )\n  order by hooks.hook_group_id, hooks.hook_id\n  limit page_size_in\n  offset page_offset_in;\nend",
+          "deprecated": false,
+          "description": "Search hooks across all groups, returning full hook rows where\nhook_group_id or hook_id contains the search term (case-insensitive\nsubstring match). Returns at most page_size_in rows starting at\npage_offset_in.",
+          "mode": "read",
+          "returns": "table(hook_group_id text, hook_id text, metadata jsonb, task jsonb, bindings jsonb, schedule jsonb, encrypted_trigger_token jsonb, encrypted_next_task_id jsonb, next_scheduled_date timestamptz, trigger_schema jsonb)",
+          "serviceName": "hooks"
+        }
+      },
+      "version": 123
     }
   ]
 }

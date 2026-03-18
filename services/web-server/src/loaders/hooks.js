@@ -17,6 +17,20 @@ export default ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, req
       }),
     ),
   );
+
+  const hookSearch = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ query }) => {
+        try {
+          const { hooks: results } = await hooks.searchHooks({ q: query });
+
+          return results;
+        } catch (err) {
+          return err;
+        }
+      }),
+    ),
+  );
   const hooksForGroup = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ hookGroupId, filter }) => {
@@ -81,5 +95,6 @@ export default ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, req
     hook,
     hookStatus,
     hookLastFires,
+    hookSearch,
   };
 };

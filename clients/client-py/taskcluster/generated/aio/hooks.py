@@ -70,6 +70,20 @@ class Hooks(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["listHookGroups"], *args, **kwargs)
 
+    async def searchHooks(self, *args, **kwargs):
+        """
+        Search for hooks
+
+        Search for hooks by a query string that matches hook group ID or hook ID
+        (case-insensitive substring match). Returns at most 1000 results.
+
+        This endpoint requires the `hooks:list-hooks:` scope.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["searchHooks"], *args, **kwargs)
+
     async def listHooks(self, *args, **kwargs):
         """
         List hooks in a given group
@@ -333,6 +347,15 @@ class Hooks(AsyncBaseClient):
             "name": "resetTriggerToken",
             "output": "v1/trigger-token-response.json#",
             "route": "/hooks/<hookGroupId>/<hookId>/token",
+            "stability": "stable",
+        },
+        "searchHooks": {
+            "args": [],
+            "method": "get",
+            "name": "searchHooks",
+            "output": "v1/search-hooks-response.json#",
+            "query": ["q"],
+            "route": "/hooks/search",
             "stability": "stable",
         },
         "triggerHook": {

@@ -7797,6 +7797,30 @@
   },
   {
     "content": {
+      "$id": "/schemas/hooks/v1/search-hooks-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "List of hooks matching a search query across all hook groups.\n",
+      "properties": {
+        "hooks": {
+          "items": {
+            "$ref": "hook-definition.json#"
+          },
+          "title": "Hooks",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "title": "Hook search results",
+      "type": "object"
+    },
+    "filename": "schemas/hooks/v1/search-hooks-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/hooks/v1/schedule.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "description": "A list of cron-style definitions to represent a set of moments in (UTC) time.\nIf several patterns are specified, a given moment in time represented by\nmore than one pattern is considered only to be counted once, in other words\nit is allowed for the cron patterns to overlap; duplicates are redundant.\n",
@@ -25392,6 +25416,23 @@
           "scopes": "hooks:list-hooks:",
           "stability": "stable",
           "title": "List hook groups",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Hooks",
+          "description": "Search for hooks by a query string that matches hook group ID or hook ID\n(case-insensitive substring match). Returns at most 1000 results.\n\nThis endpoint requires the `hooks:list-hooks:` scope.",
+          "method": "get",
+          "name": "searchHooks",
+          "output": "v1/search-hooks-response.json#",
+          "query": [
+            "q"
+          ],
+          "route": "/hooks/search",
+          "scopes": "hooks:list-hooks:",
+          "stability": "stable",
+          "title": "Search for hooks",
           "type": "function"
         },
         {

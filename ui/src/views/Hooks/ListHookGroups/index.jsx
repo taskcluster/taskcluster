@@ -11,13 +11,29 @@ import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
 import HookGroupsTable from '../../../components/HookGroupsTable';
+import HooksListTable from '../../../components/HooksListTable';
 import hookGroupsQuery from './hookGroups.graphql';
+import searchHooksQuery from './searchHooks.graphql';
 
 @withApollo
 @graphql(hookGroupsQuery, {
-  options: {
+  skip: ownProps => !!parse(ownProps.location.search.slice(1)).search,
+  options: () => ({
     fetchPolicy: 'network-only',
+  }),
+  name: 'hookGroupsData',
+})
+@graphql(searchHooksQuery, {
+  skip: ownProps => !parse(ownProps.location.search.slice(1)).search,
+  options: ownProps => {
+    const { search } = parse(ownProps.location.search.slice(1));
+
+    return {
+      fetchPolicy: 'network-only',
+      variables: { query: search },
+    };
   },
+  name: 'searchData',
 })
 @withStyles(theme => ({
   actionButton: {
@@ -55,12 +71,46 @@ export default class ListHookGroups extends Component {
   };
 
   render() {
-    const {
-      classes,
-      description,
-      data: { loading, error, hookGroups },
-    } = this.props;
+    const { classes, description } = this.props;
     const { search } = parse(window.location.search.slice(1));
+
+    if (search) {
+      const { loading, error, searchHooks } = this.props.searchData || {};
+
+      return (
+        <Dashboard
+          title="Hooks Groups"
+          helpView={<HelpView description={description} />}
+          search={
+            <Search
+              placeholder="Hook group or hook ID contains"
+              defaultValue={search}
+              onSubmit={this.handleHookSearchSubmit}
+            />
+          }>
+          {!searchHooks && loading && <Spinner loading />}
+          <ErrorPanel fixed error={error} />
+          {!loading &&
+            (searchHooks?.length ? (
+              <HooksListTable hooks={searchHooks} classes={classes} />
+            ) : (
+              <Typography variant="subtitle1">
+                No hooks match your search
+              </Typography>
+            ))}
+          <Button
+            spanProps={{ className: classes.actionButton }}
+            tooltipProps={{ title: 'Create Hook' }}
+            color="secondary"
+            variant="round"
+            onClick={this.handleCreateHook}>
+            <PlusIcon />
+          </Button>
+        </Dashboard>
+      );
+    }
+
+    const { loading, error, hookGroups } = this.props.hookGroupsData || {};
     const hookGroupIds = hookGroups?.map(group => group?.hookGroupId).flat();
 
     return (
@@ -69,7 +119,7 @@ export default class ListHookGroups extends Component {
         helpView={<HelpView description={description} />}
         search={
           <Search
-            placeholder="Hook group contains"
+            placeholder="Hook group or hook ID contains"
             defaultValue={search}
             onSubmit={this.handleHookSearchSubmit}
           />
@@ -78,11 +128,7 @@ export default class ListHookGroups extends Component {
         <ErrorPanel fixed error={error} />
         {!loading &&
           (hookGroupIds?.length ? (
-            <HookGroupsTable
-              searchTerm={search}
-              hookGroups={hookGroupIds}
-              classes={classes}
-            />
+            <HookGroupsTable hookGroups={hookGroupIds} classes={classes} />
           ) : (
             <Typography variant="subtitle1">
               No hook groups are defined

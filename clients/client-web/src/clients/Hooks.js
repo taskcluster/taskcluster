@@ -14,6 +14,7 @@ export default class Hooks extends Client {
     this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
     this.listHookGroups.entry = {"args":[],"category":"Hooks","method":"get","name":"listHookGroups","output":true,"query":[],"route":"/hooks","scopes":"hooks:list-hooks:","stability":"stable","type":"function"}; // eslint-disable-line
+    this.searchHooks.entry = {"args":[],"category":"Hooks","method":"get","name":"searchHooks","output":true,"query":["q"],"route":"/hooks/search","scopes":"hooks:list-hooks:","stability":"stable","type":"function"}; // eslint-disable-line
     this.listHooks.entry = {"args":["hookGroupId"],"category":"Hooks","method":"get","name":"listHooks","output":true,"query":[],"route":"/hooks/<hookGroupId>","scopes":"hooks:list-hooks:<hookGroupId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.hook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"get","name":"hook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>","scopes":"hooks:get:<hookGroupId>:<hookId>","stability":"stable","type":"function"}; // eslint-disable-line
     this.getHookStatus.entry = {"args":["hookGroupId","hookId"],"category":"Hook Status","method":"get","name":"getHookStatus","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/status","scopes":"hooks:status:<hookGroupId>/<hookId>","stability":"deprecated","type":"function"}; // eslint-disable-line
@@ -61,6 +62,16 @@ export default class Hooks extends Client {
     this.validate(this.listHookGroups.entry, args);
 
     return this.request(this.listHookGroups.entry, args);
+  }
+  /* eslint-disable max-len */
+  // Search for hooks by a query string that matches hook group ID or hook ID
+  // (case-insensitive substring match). Returns at most 1000 results.
+  // This endpoint requires the `hooks:list-hooks:` scope.
+  /* eslint-enable max-len */
+  searchHooks(...args) {
+    this.validate(this.searchHooks.entry, args);
+
+    return this.request(this.searchHooks.entry, args);
   }
   /* eslint-disable max-len */
   // This endpoint will return a list of all the hook definitions within a

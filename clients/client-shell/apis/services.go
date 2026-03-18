@@ -695,6 +695,19 @@ var services = map[string]definitions.Service{
 				Input:       "",
 			},
 			definitions.Entry{
+				Name:        "searchHooks",
+				Title:       "Search for hooks",
+				Description: "Search for hooks by a query string that matches hook group ID or hook ID\n(case-insensitive substring match). Returns at most 1000 results.\n\nThis endpoint requires the `hooks:list-hooks:` scope.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/hooks/search",
+				Args:        []string{},
+				Query: []string{
+					"q",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "listHooks",
 				Title:       "List hooks in a given group",
 				Description: "This endpoint will return a list of all the hook definitions within a\ngiven hook group.",
