@@ -24,6 +24,7 @@ import (
 	"github.com/taskcluster/taskcluster/v98/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v98/internal/scopes"
 	"github.com/taskcluster/taskcluster/v98/workers/generic-worker/fileutil"
+	"golang.org/x/sync/singleflight"
 )
 
 var (
@@ -50,6 +51,9 @@ var (
 	// (exclusive with reads and other writes).
 	cacheRWMu    sync.Mutex
 	cacheRWLocks = map[string]*sync.RWMutex{}
+
+	// fileCacheDownloads deduplicates concurrent downloads for the same cache key.
+	fileCacheDownloads singleflight.Group
 )
 
 type (
@@ -881,21 +885,45 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 	} else {
 		cacheMutex.Unlock()
 	}
-	file, sha256, err = fsContent.Download(taskMount)
-	if err != nil {
+
+	type downloadResult struct {
+		file   string
+		sha256 string
+	}
+	val, dlErr, _ := fileCacheDownloads.Do(cacheKey, func() (any, error) {
+		// Re-check cache: another goroutine may have completed the download
+		// while we were waiting for the singleflight lock.
+		cacheMutex.RLock()
+		if entry, ok := fileCaches[cacheKey]; ok {
+			cacheMutex.RUnlock()
+			return downloadResult{file: entry.Location, sha256: entry.SHA256}, nil
+		}
+		cacheMutex.RUnlock()
+
+		f, s, err := fsContent.Download(taskMount)
+		if err != nil {
+			return nil, err
+		}
+		cacheMutex.Lock()
+		fileCaches[cacheKey] = &Cache{
+			Location: f,
+			Hits:     1,
+			Created:  time.Now(),
+			Owner:    fileCaches,
+			Key:      cacheKey,
+			SHA256:   s,
+		}
+		cacheMutex.Unlock()
+		return downloadResult{file: f, sha256: s}, nil
+	})
+	if dlErr != nil {
+		err = dlErr
 		taskMount.Errorf("Could not fetch from %v into file %v due to %v", fsContent, file, err)
 		return
 	}
-	cacheMutex.Lock()
-	fileCaches[cacheKey] = &Cache{
-		Location: file,
-		Hits:     1,
-		Created:  time.Now(),
-		Owner:    fileCaches,
-		Key:      cacheKey,
-		SHA256:   sha256,
-	}
-	cacheMutex.Unlock()
+	dl := val.(downloadResult)
+	file = dl.file
+	sha256 = dl.sha256
 	if requiredSHA256 == "" {
 		taskMount.Warnf("Download %v of %v has SHA256 %v but task payload does not declare a required value, so content authenticity cannot be verified", file, fsContent, sha256)
 		return
