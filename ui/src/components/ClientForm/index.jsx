@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { oneOfType, object, string, func, bool } from 'prop-types';
 import { parse } from 'qs';
 import { addYears } from 'date-fns';

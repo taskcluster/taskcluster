@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import { Fragment, Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import ArrowRightIcon from 'mdi-react/ArrowRightIcon';

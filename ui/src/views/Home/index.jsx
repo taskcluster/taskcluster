@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import Dashboard from '../../components/Dashboard';
 import Homepage from '../../components/Homepage';
 

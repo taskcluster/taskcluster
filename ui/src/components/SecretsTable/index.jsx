@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { func, shape, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';

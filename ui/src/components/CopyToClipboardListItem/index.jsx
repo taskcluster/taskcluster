@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { node, string, object } from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { makeStyles } from '@material-ui/core/styles';

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { func, array } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';

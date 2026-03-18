@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import { PureComponent } from 'react';
 import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';

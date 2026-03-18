@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { oneOfType, object, string, func, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';

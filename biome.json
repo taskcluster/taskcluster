@@ -23,7 +23,7 @@
         "noUnreachable": "error",
         "noConstantCondition": "off",
         "noUnusedFunctionParameters": "off",
-        "noUnusedImports": "off",
+        "noUnusedImports": "error",
         "useParseIntRadix": "off",
         "noConstructorReturn": "off",
         "useYield": "off",

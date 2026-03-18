@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
 import { parse, stringify } from 'qs';
 import { withApollo } from 'react-apollo';

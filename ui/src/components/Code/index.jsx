@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { string } from 'prop-types';
 import { getLanguage, highlight } from 'highlight.js';
 import classNames from 'classnames';

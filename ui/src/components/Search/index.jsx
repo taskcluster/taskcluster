@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import { PureComponent } from 'react';
 import { object, func, string, bool } from 'prop-types';
 import classNames from 'classnames';
 import { alpha, withStyles } from '@material-ui/core/styles';

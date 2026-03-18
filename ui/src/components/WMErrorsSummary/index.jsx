@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { bool, func, object, string } from 'prop-types';
 import { Grid } from '@material-ui/core';
 import summarizeWorkerPoolsStats from '../StatusDashboard/summarizeWorkerPoolsStats';

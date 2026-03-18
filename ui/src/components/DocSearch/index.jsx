@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { oneOf, string, arrayOf, shape } from 'prop-types';
 import { alpha, withStyles } from '@material-ui/core/styles';

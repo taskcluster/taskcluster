@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { BrowserRouter, Switch } from 'react-router-dom';
 import { withApollo } from 'react-apollo';
 import { object, arrayOf } from 'prop-types';

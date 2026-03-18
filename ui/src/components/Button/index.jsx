@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import ReactGA from 'react-ga';
 import MuiButton from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import catchLinks from 'catch-links';
 import { MDXProvider } from '@mdx-js/react';

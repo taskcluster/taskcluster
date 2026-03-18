@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { arrayOf } from 'prop-types';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withRouter } from 'react-router-dom';

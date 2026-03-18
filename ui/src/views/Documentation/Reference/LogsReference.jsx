@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import MDX from '@mdx-js/runtime';

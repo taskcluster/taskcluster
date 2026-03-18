@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from 'react';
+import { PureComponent, Fragment } from 'react';
 import { node, string, object, oneOfType } from 'prop-types';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';

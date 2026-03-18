@@ -1,7 +1,6 @@
 import util from 'node:util';
 import { exec } from 'node:child_process';
 const execPromise = util.promisify(exec);
-import _ from 'lodash';
 
 export const tasks = [];
 tasks.push({

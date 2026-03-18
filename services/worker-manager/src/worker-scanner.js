@@ -1,4 +1,4 @@
-import _ from 'lodash';
+
 import Iterate from '@taskcluster/lib-iterate';
 import taskcluster from '@taskcluster/client';
 import { paginatedIterator } from '@taskcluster/lib-postgres';

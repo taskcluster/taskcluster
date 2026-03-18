@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import classNames from 'classnames';
 import { arrayOf, node, oneOfType } from 'prop-types';
 import { withRouter } from 'react-router-dom';

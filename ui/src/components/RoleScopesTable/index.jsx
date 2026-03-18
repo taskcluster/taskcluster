@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import { Fragment, Component } from 'react';
 import { arrayOf, string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { pipe, map, sort as rSort } from 'ramda';

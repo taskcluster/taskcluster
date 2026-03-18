@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import classNames from 'classnames';
 import { arrayOf, func, shape, object } from 'prop-types';
 import deepSortObject from 'deep-sort-object';

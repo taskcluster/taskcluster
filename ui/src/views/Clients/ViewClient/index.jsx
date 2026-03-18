@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { parse } from 'qs';
 import { omit } from 'ramda';

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { string } from 'prop-types';
 import { hterm, lib } from 'hterm-umdjs';

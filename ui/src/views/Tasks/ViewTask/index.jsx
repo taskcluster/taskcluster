@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import { omit, pathOr, mergeRight } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';

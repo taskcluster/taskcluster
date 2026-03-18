@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 
 // Ask the user for confirmation to leave the page.
 // This is useful to use when a page has a form.

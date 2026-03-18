@@ -1,4 +1,4 @@
-import React, { Component, cloneElement } from 'react';
+import { Component, cloneElement } from 'react';
 import { node, string } from 'prop-types';
 import classNames from 'classnames';
 import { withRouter } from 'react-router-dom';

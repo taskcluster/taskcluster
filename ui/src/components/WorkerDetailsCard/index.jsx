@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { format, parseISO } from 'date-fns';
 import {
   List,

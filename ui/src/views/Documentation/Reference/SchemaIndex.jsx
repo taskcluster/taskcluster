@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { filter, map, pipe, sort as rSort } from 'ramda';
 import sort from '../../../utils/sort';
 import Entry from './Entry';

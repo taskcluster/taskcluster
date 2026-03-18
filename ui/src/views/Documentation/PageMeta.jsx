@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { join } from 'node:path';
 import { func } from 'prop-types';
 import classNames from 'classnames';

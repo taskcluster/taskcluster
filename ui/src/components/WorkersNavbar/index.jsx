@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { string, bool } from 'prop-types';
 import { Chip } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';

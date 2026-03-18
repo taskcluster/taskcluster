@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { object } from 'prop-types';
 import summarizeWorkerPools from './summarizeWorkerPools';
 import summarizeWorkerPoolsStats from './summarizeWorkerPoolsStats';

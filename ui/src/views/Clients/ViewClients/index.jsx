@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from 'react';
+import { PureComponent, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { parse, stringify } from 'qs';
 import { withStyles } from '@material-ui/core/styles';

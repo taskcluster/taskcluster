@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import classNames from 'classnames';
 import { object } from 'prop-types';
 import { withApollo } from 'react-apollo';

@@ -1,6 +1,6 @@
 // with index.d.ts Typescript only checks this file, so we need to export all once again
 export * from '../src/index.js';
-import { APIBuilder, ErrorReply } from '../src/index.js';
+import { APIBuilder, } from '../src/index.js';
 
 export type StabilityLevel = 'deprecated' | 'experimental' | 'stable';
 

@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from 'react';
+import { PureComponent, Fragment } from 'react';
 import { string } from 'prop-types';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';

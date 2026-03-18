@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import dotProp from 'dot-prop-immutable';
 import { withApollo, graphql } from 'react-apollo';
 import TableRow from '@material-ui/core/TableRow';

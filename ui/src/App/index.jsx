@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { arrayOf } from 'prop-types';
 import storage from 'localforage';
 import { ApolloProvider } from 'react-apollo';

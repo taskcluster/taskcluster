@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { format, parseISO, addYears, isAfter } from 'date-fns';
 import Typography from '@material-ui/core/Typography';

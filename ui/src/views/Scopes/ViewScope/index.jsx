@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import { parse, stringify } from 'qs';
 import dotProp from 'dot-prop-immutable';

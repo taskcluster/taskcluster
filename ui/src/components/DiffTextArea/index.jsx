@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import classNames from 'classnames';
 import { bool, string, func, number } from 'prop-types';
 import Tab from '@material-ui/core/Tab';

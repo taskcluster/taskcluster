@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { object, string, func } from 'prop-types';
 import { Controlled } from 'react-codemirror2';
 import classNames from 'classnames';

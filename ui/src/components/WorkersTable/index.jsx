@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { func, string } from 'prop-types';
 import { parse, stringify } from 'qs';
 import { withRouter } from 'react-router-dom';

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import classNames from 'classnames';
 import { oneOf, bool, string } from 'prop-types';
 import purple from '@material-ui/core/colors/purple';

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import classNames from 'classnames';
 import { object, string, func, number } from 'prop-types';
 import Tab from '@material-ui/core/Tab';

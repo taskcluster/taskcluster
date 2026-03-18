@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Redirect } from 'react-router-dom';
 import { graphql } from 'react-apollo';
 import Spinner from '../../../../components/Spinner';

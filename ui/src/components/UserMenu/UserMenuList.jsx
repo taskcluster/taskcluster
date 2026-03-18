@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import Avatar from '@material-ui/core/Avatar';
 import List from '@material-ui/core/List';

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';

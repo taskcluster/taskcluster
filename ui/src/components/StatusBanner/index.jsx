@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { string } from 'prop-types';
 import storage from 'localforage';
 import { addDays, isBefore } from 'date-fns';

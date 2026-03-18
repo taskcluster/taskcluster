@@ -1,8 +1,7 @@
-import { Pool, PoolClient } from 'pg';
+
 import { MonitorManager } from '@taskcluster/lib-monitor';
 import Keyring from '../src/Keyring.js';
 import { CryptoKey } from '../src/Keyring.js';
-import type { DbFunctions, DeprecatedDbFunctions } from './fns.d.ts';
 
 export { paginatedIterator } from '../src/util.js';
 

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
 import { formatDistanceStrict } from 'date-fns';

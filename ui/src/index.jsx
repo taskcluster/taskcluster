@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { render } from 'react-dom';
 import App from './App';
 import routes from './App/routes';

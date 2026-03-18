@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import PlusIcon from 'mdi-react/PlusIcon';
 import escapeStringRegexp from 'escape-string-regexp';

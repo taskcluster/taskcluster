@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import List from '@material-ui/core/List';
 import FeatureSearchIcon from 'mdi-react/FeatureSearchIcon';
 import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';

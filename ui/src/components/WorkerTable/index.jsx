@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { parse, stringify } from 'qs';
 import TableCell from '@material-ui/core/TableCell';

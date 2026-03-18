@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import { Fragment, Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';

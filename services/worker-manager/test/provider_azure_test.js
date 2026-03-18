@@ -1,4 +1,4 @@
-import _ from 'lodash';
+
 import taskcluster from '@taskcluster/client';
 import sinon from 'sinon';
 import assert from 'node:assert';

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { withAuth } from '../../utils/Auth';
 import lazy from '../../utils/lazy';
 

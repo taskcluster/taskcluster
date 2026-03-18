@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { bool, func, shape, number, string } from 'prop-types';
 import { sum } from 'ramda';
 import { titleCase } from 'title-case';

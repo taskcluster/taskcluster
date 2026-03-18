@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { withApollo } from 'react-apollo';
 import { bool, func } from 'prop-types';
 import Avatar from '@material-ui/core/Avatar';

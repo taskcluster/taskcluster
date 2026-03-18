@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import { camelCase } from 'camel-case';

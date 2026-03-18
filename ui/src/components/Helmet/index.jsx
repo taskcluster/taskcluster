@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { string } from 'prop-types';
 import { Helmet as ReactHelmet } from 'react-helmet';
 import { taskState } from '../../utils/prop-types';

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { equals } from 'ramda';
 import { scopeUnion, scopeIntersection } from 'taskcluster-lib-scopes';

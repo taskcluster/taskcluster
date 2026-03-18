@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { element, string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { shape, arrayOf, string } from 'prop-types';
 import { Paper, Grid, withStyles } from '@material-ui/core';
 import { taskState, pageInfo, task } from '../../utils/prop-types';

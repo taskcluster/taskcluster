@@ -1,4 +1,4 @@
-import React, { Suspense, Component } from 'react';
+import { Suspense, Component } from 'react';
 import { Route } from 'react-router-dom';
 import withPageTracker from '../../utils/withPageTracker';
 

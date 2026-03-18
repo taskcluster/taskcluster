@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { func, shape, arrayOf } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import TableCell from '@material-ui/core/TableCell';

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { node, object } from 'prop-types';
 import classNames from 'classnames';
 import { omit } from 'ramda';

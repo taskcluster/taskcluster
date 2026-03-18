@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 import { bool } from 'prop-types';
 import { Link } from 'react-router-dom';
 import { withApollo } from 'react-apollo';

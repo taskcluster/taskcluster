@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { shape, func, arrayOf, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import { camelCase } from 'camel-case';

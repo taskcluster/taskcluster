@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import ReactGA from 'react-ga';
 
 let currentPage;

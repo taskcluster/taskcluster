@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from 'react-apollo';
 import StatusDashboard from '.';
 import clientsQuery from './clients.graphql';

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import Spinner from '../../../components/Spinner';

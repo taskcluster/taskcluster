@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { withStyles } from '@material-ui/core/styles';
 import MuiSpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import { string, bool } from 'prop-types';

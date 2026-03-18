@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import { PureComponent } from 'react';
 import { string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
