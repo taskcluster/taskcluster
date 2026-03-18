@@ -109,11 +109,8 @@ export default class AuthController {
           credentials,
         })
       );
-    } catch (e) {
+    } catch (_e) {
       this.setUser(null);
-
-      /* eslint-disable no-console */
-      console.error('Could not renew login:', e);
     }
   }
 

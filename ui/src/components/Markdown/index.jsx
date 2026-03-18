@@ -207,6 +207,7 @@ export default class Markdown extends Component {
     return (
       <span
         className={classNames(classes.root, className)}
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: intentional for markdown rendering
         dangerouslySetInnerHTML={{
           __html: md.render(children),
         }}

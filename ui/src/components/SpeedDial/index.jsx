@@ -35,12 +35,12 @@ function SpeedDial(props) {
       resetTimeout();
       setOpen(false);
     };
-  }, []);
+  }, [resetTimeout]);
 
   useEffect(() => {
     resetTimeout();
     setOpen(false);
-  }, [location.pathname]);
+  }, [resetTimeout]);
 
   function handleClose(evt) {
     if (evt.type === 'click') {

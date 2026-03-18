@@ -2,7 +2,7 @@ import { curry, pipe, map, dropRepeatsWith } from 'ramda';
 import { memoize } from './memoize';
 
 export const taskLastRun = task => {
-  const sorted = [...task?.status?.runs].sort((a, b) => b.runId - a.runId);
+  const sorted = [...(task?.status?.runs || [])].sort((a, b) => b.runId - a.runId);
 
   if (sorted.length === 0 || !sorted[0].started) {
     return null;
@@ -28,7 +28,7 @@ export const taskRunDurationInMs = run => {
 };
 
 export const taskRunEarliestStart = task => {
-  const started = [...task?.status?.runs]
+  const started = [...(task?.status?.runs || [])]
     .map(run => run.started)
     .filter(item => item)
     .sort((a, b) => a.started - b.started);
@@ -37,7 +37,7 @@ export const taskRunEarliestStart = task => {
 };
 
 export const taskRunLatestResolve = task => {
-  const resolved = [...task?.status?.runs]
+  const resolved = [...(task?.status?.runs || [])]
     .map(run => run.resolved && new Date(run.resolved).getTime())
     .filter(item => item)
     .sort((a, b) => b - a);

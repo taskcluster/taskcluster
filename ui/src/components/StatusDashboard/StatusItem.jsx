@@ -26,6 +26,7 @@ const MiniSvgGraph = ({ data, width = 130, height = 72 }) => {
 
   return (
     <svg width={width + 18} height={height}>
+      <title>Status indicator</title>
       <polyline
         points={path}
         fill="none"
@@ -71,7 +72,7 @@ export const StatusItem = ({
   useEffect(() => {
     setStyles({ backgroundColor: '#A459D1' });
     setTimeout(() => setStyles({}), 2000);
-  }, [value]);
+  }, []);
 
   const graphHeight = tiny ? 54 : 72;
   const titleVariant = tiny ? 'h6' : 'h5';

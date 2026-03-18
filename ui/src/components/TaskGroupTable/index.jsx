@@ -324,6 +324,7 @@ export default class TaskGroupTable extends Component {
     const itemCount = items.length;
 
     return (
+      // biome-ignore lint/a11y/useSemanticElements: intentional Material UI pattern
       <div role="table">
         <Table className={classes.table} component="div">
           <TableHead

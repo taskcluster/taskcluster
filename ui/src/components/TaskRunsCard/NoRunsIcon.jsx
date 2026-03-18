@@ -24,6 +24,7 @@ export default class NoRunsIcon extends PureComponent {
         version="1.1"
         xmlns="http://www.w3.org/2000/svg"
         className={className}>
+        <title>No runs</title>
         <path
           fill={fill}
           opacity="0.05"

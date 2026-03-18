@@ -110,8 +110,6 @@ export default class ErrorPanel extends Component {
       // Log extensions for all errors received
       errors.forEach(err => {
         if (err?.extensions) {
-          // eslint-disable-next-line no-console
-          console.log('Error from web-server:', err.extensions);
         }
       });
 

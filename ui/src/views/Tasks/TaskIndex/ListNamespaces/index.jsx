@@ -217,6 +217,7 @@ export default class ListNamespaces extends Component {
                     </Typography>
                   ) : (
                     <Link
+                      key={indexName}
                       to={`/tasks/index/${indexPaths
                         .slice(0, i + 1)
                         .join('.')}`}>

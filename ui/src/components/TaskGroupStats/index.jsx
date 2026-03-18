@@ -227,6 +227,7 @@ export default class TaskGroupStats extends Component {
               </div>
             )}
             {tasks.length > maxTasksInGraph && (
+              // biome-ignore lint/a11y/useSemanticElements: intentional Material UI pattern
               <div
                 className={classes.sampleSwitch}
                 role="button"
@@ -243,6 +244,7 @@ export default class TaskGroupStats extends Component {
               preserveAspectRatio="none"
               width="100%"
               viewBox={`0 0 ${width + padding} ${height + padding * 2}`}>
+              <title>Task statistics chart</title>
               <desc>TaskGroup run times</desc>
               {sampledTasks.map((task, index) => (
                 <g

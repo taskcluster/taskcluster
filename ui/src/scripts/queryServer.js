@@ -67,20 +67,14 @@ const req = executor.request(options, res => {
       `${JSON.stringify(response.data)}\n`,
       err => {
         if (err) {
-          // eslint-disable-next-line no-console
-          console.error('Error writing fragmentTypes file', err);
         } else {
-          // eslint-disable-next-line no-console
-          console.log('Fragment types successfully extracted!');
         }
       }
     );
   });
 });
 
-req.on('error', error => {
-  // eslint-disable-next-line no-console
-  console.error(error);
+req.on('error', _error => {
 });
 req.write(data);
 req.end();

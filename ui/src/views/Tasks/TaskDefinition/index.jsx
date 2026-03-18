@@ -32,7 +32,7 @@ export default class TaskDefinition extends Component {
       match,
       data: { task, error, loading },
     } = this.props;
-    const { taskId } = match?.params;
+    const { taskId } = match?.params || {};
     const { rawDefinition } = task || {};
 
     if (error) {

@@ -23,10 +23,10 @@ export default class Image extends PureComponent {
     // when viewing the page with the dark theme
     /* eslint-disable jsx-a11y/alt-text */
     return startsWithHttp ? (
-      <img src={src} {...props} />
+      <img alt="" src={src} {...props} />
     ) : (
       <div className={classes.imageWrapper}>
-        <img src={src} {...props} />
+        <img alt="" src={src} {...props} />
       </div>
     );
   }

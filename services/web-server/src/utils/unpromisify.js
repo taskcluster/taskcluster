@@ -16,5 +16,6 @@ export default (fn, { returnsArray } = {}) => {
   // preserve arity by generating code..
   const args = [...new Array(fn.length + 1)].map((_, i) => `arg${i}`);
   // eslint-disable-next-line no-eval
+  // biome-ignore lint/security/noGlobalEval: intentional eval for callback wrapping
   return eval(`const x = function (${args}) { return call(this, [...arguments]); }; x`);
 };

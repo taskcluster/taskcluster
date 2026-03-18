@@ -30,13 +30,13 @@
         "noUnsafeFinally": "off",
         "noUnknownTypeSelector": "off",
         "noUnknownProperty": "off",
-        "noUnsafeOptionalChaining": "off",
-        "useJsxKeyInIterable": "off"
+        "noUnsafeOptionalChaining": "error",
+        "useJsxKeyInIterable": "error"
       },
 
       "security": {
-        "noGlobalEval": "off",
-        "noDangerouslySetInnerHtml": "off"
+        "noGlobalEval": "error",
+        "noDangerouslySetInnerHtml": "error"
       },
 
       "suspicious": {
@@ -59,7 +59,7 @@
         "noControlCharactersInRegex": "off",
         "noConfusingVoidType": "off",
         "useIterableCallbackReturn": "off",
-        "noDuplicateFields": "off"
+        "noDuplicateFields": "error"
       },
 
       "style": {
@@ -73,9 +73,9 @@
       },
 
       "a11y": {
-        "noSvgWithoutTitle": "off",
-        "useSemanticElements": "off",
-        "useAltText": "off"
+        "noSvgWithoutTitle": "error",
+        "useSemanticElements": "error",
+        "useAltText": "error"
       },
 
       "performance": {
@@ -116,18 +116,19 @@
       "linter": {
         "rules": {
           "correctness": {
-            "useHookAtTopLevel": "off",
-            "useExhaustiveDependencies": "off"
+            "useHookAtTopLevel": "error",
+            "useExhaustiveDependencies": "warn"
           },
           "suspicious": {
-            "noConsole": "off"
+            "noConsole": "error",
+            "noVar": "off"
           },
           "style": {
             "useCollapsedElseIf": "off",
             "useBlockStatements": "off"
           },
           "a11y": {
-            "useValidAnchor": "off",
+            "useValidAnchor": "error",
             "noStaticElementInteractions": "off",
             "useKeyWithClickEvents": "off"
           },
