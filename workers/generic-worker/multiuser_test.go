@@ -66,10 +66,10 @@ func TestTaskUserCredentialsEnvVarIsWrittenAsCurrentUser(t *testing.T) {
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 }
 
-// TestPrivilegedGenericWorkerBinaryFailsWorkerAndTask tests that when the generic-worker binary
-// is not accessible to task users (e.g., in a secured directory), the worker exits
-// with INTERNAL_ERROR and the task is reported as exception/internal-error.
-func TestPrivilegedGenericWorkerBinaryFailsWorkerAndTask(t *testing.T) {
+// TestPrivilegedGenericWorkerBinaryFailsTask tests that when the generic-worker binary
+// is not accessible to task users (e.g., in a secured directory), the task is
+// reported as exception/internal-error but the worker continues normally.
+func TestPrivilegedGenericWorkerBinaryFailsTask(t *testing.T) {
 	setup(t)
 
 	goPath, err := host.Output("go", "env", "GOPATH")
@@ -107,7 +107,7 @@ func TestPrivilegedGenericWorkerBinaryFailsWorkerAndTask(t *testing.T) {
 	}()
 
 	// Submit a task - it should fail with internal-error because the binary isn't accessible
-	// and the worker should exit with INTERNAL_ERROR (not TASKS_COMPLETE)
+	// but the worker should continue normally (not crash with INTERNAL_ERROR)
 	payload := GenericWorkerPayload{
 		Command:    helloGoodbye(),
 		MaxRunTime: 180,
@@ -118,8 +118,9 @@ func TestPrivilegedGenericWorkerBinaryFailsWorkerAndTask(t *testing.T) {
 	taskID := scheduleTask(t, td, payload)
 	t.Logf("Scheduled task %s", taskID)
 
-	// Worker should exit with INTERNAL_ERROR because binary validation fails
-	execute(t, INTERNAL_ERROR)
+	// Worker continues normally — the failed task is reported as exception
+	// but does not kill the worker
+	execute(t, TASKS_COMPLETE)
 
 	// Verify the task was reported as exception/internal-error
 	queue := serviceFactory.Queue(config.Credentials(), config.RootURL)

@@ -616,8 +616,8 @@ mainLoop:
 				if err != nil {
 					log.Printf("ERROR getting platform data for %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
-					taskManager.WaitForAll()
-					return INTERNAL_ERROR
+					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID}
+					continue
 				}
 				task.pd = pd
 
@@ -625,8 +625,11 @@ mainLoop:
 				if err != nil {
 					log.Printf("Invalid generic-worker binary for task %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
-					taskManager.WaitForAll()
-					return INTERNAL_ERROR
+					if releaseErr := pd.ReleaseResources(); releaseErr != nil {
+						log.Printf("ERROR releasing platform resources for task %s: %v", task.TaskID, releaseErr)
+					}
+					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID}
+					continue
 				}
 
 				// Allocate ports for this task
@@ -634,8 +637,11 @@ mainLoop:
 				if err != nil {
 					log.Printf("ERROR allocating ports for task %s: %v", task.TaskID, err)
 					_ = task.StatusManager.ReportException(internalError)
-					taskManager.WaitForAll()
-					return INTERNAL_ERROR
+					if releaseErr := pd.ReleaseResources(); releaseErr != nil {
+						log.Printf("ERROR releasing platform resources for task %s: %v", task.TaskID, releaseErr)
+					}
+					taskCompleteChan <- taskCompletionResult{taskID: task.TaskID}
+					continue
 				}
 				task.AllocatedPorts = allocatedPorts
 				log.Printf("Task %s allocated ports: LiveLog(PUT/GET)=%d/%d, Interactive=%d, TaskclusterProxy=%d",
