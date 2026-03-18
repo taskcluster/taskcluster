@@ -411,7 +411,7 @@ suite(testing.suiteName(), () => {
         return result;
       };
     } else {
-      time = (step, fn) => fn();
+      time = (_step, fn) => fn();
     }
 
     const testResolver = (title, { roles, scopes, expected }) => {

@@ -26,7 +26,7 @@ export class Backend {
    *
    * Implementations may use @taskcluster/lib-api's `reportError` method.
    */
-  async createUpload(object, proposedUploadMethods) {
+  async createUpload(_object, _proposedUploadMethods) {
     return {};
   }
 
@@ -39,7 +39,7 @@ export class Backend {
    * downloaded.  But, implementations may use @taskcluster/lib-api's
    * `reportError` method to report errors.
    */
-  async finishUpload(object) {
+  async finishUpload(_object) {
     return;
   }
 
@@ -49,7 +49,7 @@ export class Backend {
    *
    * Subclasses should override this.
    */
-  async availableDownloadMethods(object) {
+  async availableDownloadMethods(_object) {
     return [];
   }
 
@@ -63,7 +63,7 @@ export class Backend {
    *
    * Subclasses should override this.
    */
-  async startDownload(object, method, params) {
+  async startDownload(_object, _method, _params) {
     throw new Error('startDownload is not implemented for this backend');
   }
 
@@ -75,7 +75,7 @@ export class Backend {
    * return false, prepared to be called again for the same object at a later
    * time (such as by the next object-expiration crontask run).
    */
-  async expireObject(object) {
+  async expireObject(_object) {
     throw new Error('expiration is not implemented for this backend');
   }
 }

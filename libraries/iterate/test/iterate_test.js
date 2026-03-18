@@ -207,7 +207,7 @@ suite(testing.suiteName(), () => {
       maxFailures: 1,
       handler: async watchdog => {
         watchdog.stop();
-        return new Promise((res, rej) => {
+        return new Promise((res, _rej) => {
           setTimeout(() => {
             return res();
           }, 5000);

@@ -776,7 +776,7 @@ const patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
 };
 
 /** Ensure the taskGroup exists and that membership is declared */
-const ensureTaskGroup = async (ctx, taskId, taskDef, res) => {
+const ensureTaskGroup = async (ctx, _taskId, taskDef, res) => {
   const taskGroupId = taskDef.taskGroupId;
   const schedulerId = taskDef.schedulerId;
   const expires = new Date(taskDef.expires);

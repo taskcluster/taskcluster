@@ -35,7 +35,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reportError('InputError', 'Testing Error', { dee: 'tails' });
   });
 
@@ -116,7 +116,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     description: 'Place we can call to test something',
     scopes: null,
-  }, function(req, res) {
+  }, function(_req, _res) {
     throw new Error('uhoh');
   });
 
@@ -150,7 +150,7 @@ suite(testing.suiteName(), function() {
       return payload;
     },
     scopes: null,
-  }, function(req, res) {
+  }, function(_req, _res) {
   });
 
   test('InputValidationError response', async function() {

@@ -329,7 +329,7 @@ export const generateDbTypes = async (schema) => {
       output.push(` ): Promise<${returnType}>;`);
       output.push(` (params: {`);
       if (args.length > 0) {
-        args.forEach((arg, i) => {
+        args.forEach((arg, _i) => {
           const isOptional = isArgOptional(arg.name, method.body);
           const argType = `${arg.type}${isOptional ? ' | null' : ''}`;
           output.push(`  ${arg.name}${isOptional ? '?' : ''}: ${argType};`);

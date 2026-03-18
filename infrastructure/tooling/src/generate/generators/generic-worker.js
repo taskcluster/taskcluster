@@ -10,7 +10,7 @@ tasks.push({
   title: 'Generate Generic-Worker',
   requires: ['references-json', 'target-go-version'],
   provides: ['target-generic-worker'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, utils) => {
     await execCommand({
       dir: path.join(REPO_ROOT, 'workers', 'generic-worker'),
       command: ['go', 'generate', './...'],
@@ -25,7 +25,7 @@ tasks.push({
   provides: [
     'generic-worker-schemas',
   ],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     const schemaFiles = glob.sync('workers/generic-worker/schemas/*.yml', { cwd: REPO_ROOT });
     return {
       'generic-worker-schemas': await Promise.all(schemaFiles.map(async filename => {
@@ -50,7 +50,7 @@ tasks.push({
   title: 'Update generic-worker README',
   requires: ['target-generic-worker'],
   provides: ['generic-worker-readme'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, utils) => {
     const binary = path.join(tempDir, 'generic-worker');
     // we have to build this binary, rather than just using `go run`, because otherwise `go run` spews
     // its own output into stdout
@@ -108,7 +108,7 @@ tasks.push({
   title: 'Update generic-worker payload formats',
   requires: ['generic-worker-schemas'],
   provides: ['target-gw-docs'],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const gwDocsDir = path.join('ui', 'docs', 'reference', 'workers', 'generic-worker');
 
     // begin by deleting all *-payload--schema.mdx files

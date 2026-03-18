@@ -10,7 +10,7 @@ export default {
     EXCEPTION: 'exception',
   },
   TaskStatus: {
-    task(parent, args, { loaders }) {
+    task(parent, _args, { loaders }) {
       return loaders.task.load(parent.taskId);
     },
     runs(parent, args) {
@@ -18,7 +18,7 @@ export default {
     },
   },
   Query: {
-    status(parent, { taskId }, { loaders }) {
+    status(_parent, { taskId }, { loaders }) {
       return loaders.status.load(taskId);
     },
   },

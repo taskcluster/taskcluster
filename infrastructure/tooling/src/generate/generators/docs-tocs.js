@@ -105,7 +105,7 @@ function makeToc({ files, rootPath }) {
       item.path
         .replace(rootPath, '')
         .split('/')
-        .forEach((name, idx) => {
+        .forEach((name, _idx) => {
           path.push(name);
 
           let child = ptr.children.find(child => child.name === name);
@@ -154,7 +154,7 @@ export const tasks = [{
   title: 'Docs TOCs',
   requires: ['target-gw-docs', 'target-worker-runner'],
   provides: ['docs-toc'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     const filesWithExtensions = await mdParseDir(DOCS_DIR, { dirnames: true, filter: '**\/*.mdx' });
     // strip .md and .mdx extensions from those filenames..
     const files = Object.assign({},

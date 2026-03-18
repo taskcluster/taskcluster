@@ -122,7 +122,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: [
       'target-taskcluster-proxy',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {
         'target-taskcluster-proxy': [

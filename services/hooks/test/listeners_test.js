@@ -215,7 +215,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       hookListeners.deleteQueue = sinon.fake(
         async queueName => createdQueues.delete(queueName));
       hookListeners.syncBindings = sinon.fake(
-        async (queueName, newBindings, oldBindings) => {
+        async (queueName, newBindings, _oldBindings) => {
           createdQueues.set(queueName, newBindings);
           return newBindings;
         });

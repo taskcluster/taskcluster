@@ -6,7 +6,7 @@ export const tasks = [{
   title: 'DB Schema',
   requires: [],
   provides: ['db-schema-serializable'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     const schema = tcdb.schema({ useDbDirectory: true });
 
     const serializable = schema.asSerializable();

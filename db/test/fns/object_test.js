@@ -16,7 +16,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.dbTest('create_object same object twice should not raise exception', async function(db, isFake) {
+  helper.dbTest('create_object same object twice should not raise exception', async function(db, _isFake) {
     const expires = fromNow('1 year');
     await db.deprecatedFns.create_object('foo', 'projectId', 'backendId', {}, expires);
     await db.deprecatedFns.create_object('foo', 'projectId', 'backendId', {}, expires);
@@ -32,7 +32,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.dbTest('create_object with conflict should P0004', async function(db, isFake) {
+  helper.dbTest('create_object with conflict should P0004', async function(db, _isFake) {
     const expires = fromNow('1 year');
     await db.deprecatedFns.create_object('foo', 'projectId', 'backendId', {}, expires);
     await assert.rejects(
@@ -50,7 +50,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.dbTest('create_object', async function(db, isFake) {
+  helper.dbTest('create_object', async function(db, _isFake) {
     const expires = fromNow('1 year');
     await db.deprecatedFns.create_object('foo', 'projectId', 'backendId', {}, expires);
 
@@ -65,7 +65,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.dbTest('create_object_for_upload', async function(db, isFake) {
+  helper.dbTest('create_object_for_upload', async function(db, _isFake) {
     const expires = fromNow('1 year');
     const uploadExpires = fromNow('1 day');
     const uploadId = taskcluster.slugid();
@@ -84,7 +84,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.dbTest('create_object_for_upload is idempotent', async function(db, isFake) {
+  helper.dbTest('create_object_for_upload is idempotent', async function(db, _isFake) {
     const expires = fromNow('1 year');
     const uploadExpires = fromNow('1 day');
     const uploadId = taskcluster.slugid();
@@ -92,7 +92,7 @@ suite(testing.suiteName(), function() {
     await db.fns.create_object_for_upload('foo', 'projectId', 'backendId', uploadId, uploadExpires, {}, expires);
   });
 
-  helper.dbTest('create_object_for_upload fails if called again with new uploadId', async function(db, isFake) {
+  helper.dbTest('create_object_for_upload fails if called again with new uploadId', async function(db, _isFake) {
     const expires = fromNow('1 year');
     const uploadExpires = fromNow('1 day');
     let uploadId = taskcluster.slugid();
@@ -104,7 +104,7 @@ suite(testing.suiteName(), function() {
       err => err.code === UNIQUE_VIOLATION);
   });
 
-  helper.dbTest('create_object_for_upload fails if two objects use the same uploadId', async function(db, isFake) {
+  helper.dbTest('create_object_for_upload fails if two objects use the same uploadId', async function(db, _isFake) {
     const expires = fromNow('1 year');
     const uploadExpires = fromNow('1 day');
     const uploadId = taskcluster.slugid();
@@ -115,7 +115,7 @@ suite(testing.suiteName(), function() {
       err => err.code === UNIQUE_VIOLATION);
   });
 
-  helper.dbTest('object_upload_complete', async function(db, isFake) {
+  helper.dbTest('object_upload_complete', async function(db, _isFake) {
     const expires = fromNow('1 year');
     const uploadExpires = fromNow('1 day');
     const uploadId = taskcluster.slugid();

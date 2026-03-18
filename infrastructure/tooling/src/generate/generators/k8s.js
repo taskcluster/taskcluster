@@ -114,7 +114,7 @@ const labels = (projectName, component) => ({
   'app.kubernetes.io/component': `${projectName}-${component.toLowerCase()}`,
   'app.kubernetes.io/part-of': 'taskcluster',
 });
-const metricsSelectorLabels = (projectName) => ({
+const metricsSelectorLabels = (_projectName) => ({
   'app.kubernetes.io/part-of': 'taskcluster',
   'app.kubernetes.io/instance': '{{ .Release.Name }}',
   'prometheus.io/scrape': 'true',
@@ -124,7 +124,7 @@ const metricsSelectorLabels = (projectName) => ({
 // we have to do some post-processing to use "advanced" go template features
 const postJsoneProcessing = (rendered, replacements, context) => {
   let result = yaml.dump(rendered, { lineWidth: -1 })
-    .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, p1) => replacements[match]);
+    .replaceAll(new RegExp(`(${Object.keys(replacements).join('|')})`, 'g'), (match, _p1) => replacements[match]);
 
   // Add conditional replicas configuration
   if (context.wrapReplicas) {
@@ -276,7 +276,7 @@ tasks.push({
   title: `Load k8s templates`,
   requires: [],
   provides: ['k8s-templates'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
 
     const templateFiles = glob.sync('infrastructure/tooling/templates/k8s/*.yaml', { cwd: REPO_ROOT });
     const templates = {};
@@ -293,7 +293,7 @@ tasks.push({
   title: `Clear k8s/templates directory`,
   requires: [],
   provides: ['k8s-templates-dir'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     await rimraf(TMPL_DIR);
     await mkdirp(TMPL_DIR);
   },
@@ -304,7 +304,7 @@ SERVICES.forEach(name => {
     title: `Generate helm templates for ${name}`,
     requires: [`configs-${name}`, `procslist-${name}`, 'k8s-templates', 'k8s-templates-dir'],
     provides: [`ingresses-${name}`],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const procs = requirements[`procslist-${name}`];
       const templates = requirements['k8s-templates'];
       const vars = requirements[`configs-${name}`];
@@ -356,7 +356,7 @@ Object.entries(extras).forEach(([name, { procs, vars }]) => {
     title: `Generate helm templates for ${name}`,
     requires: ['k8s-templates'],
     provides: [`ingresses-${name}`],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const templates = requirements['k8s-templates'];
       return {
         [`ingresses-${name}`]: await renderTemplates(name, vars, procs, templates),
@@ -369,7 +369,7 @@ tasks.push({
   title: `Generate ingress`,
   requires: ['k8s-templates', 'ingresses-ui', 'ingresses-references', ...SERVICES.map(name => `ingresses-${name}`)],
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const ingresses = [];
     for (const [name, req] of Object.entries(requirements)) {
       if (name.startsWith('ingresses-')) {
@@ -397,7 +397,7 @@ tasks.push({
   title: `Generate pod monitoring`,
   requires: ['k8s-templates'],
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const templates = requirements['k8s-templates'];
 
     // podmonitoring for prometheus metrics
@@ -425,7 +425,7 @@ tasks.push({
     'config-values',
     'target-k8s',
   ],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const schema = {
       '$schema': 'http://json-schema.org/draft-06/schema#',
       '$id': '/schemas/common/values.schema.json#',

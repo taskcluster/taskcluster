@@ -11,7 +11,7 @@ export const tasks = [{
     'entrypoint-script',
   ],
   locks: [],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     const procs = {};
     const packageJson = JSON.parse(await readRepoFile('package.json'));
 

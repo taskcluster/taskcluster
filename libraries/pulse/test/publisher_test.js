@@ -10,7 +10,7 @@ import { suiteName, poll } from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
+helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, _skipping) {
   if (mock) {
     return; // Only test with real creds
   }

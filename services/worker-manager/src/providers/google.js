@@ -483,7 +483,7 @@ export class GoogleProvider extends Provider {
       total: Provider.calcSeenTotal(this.seen),
     });
     this.cloudApi?.logAndResetMetrics();
-    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, seen]) => {
+    await Promise.all(Object.entries(this.seen).map(async ([workerPoolId, _seen]) => {
       const workerPool = await WorkerPool.get(this.db, workerPoolId);
       if (!workerPool) {
         return; // In this case, the workertype has been deleted so we can just move on

@@ -38,7 +38,7 @@ suite(testing.suiteName(), function () {
       [{ workerId: 'mac-m1', workerIdentityProof: { secret: 'noway' } }, { workerId: 'mac-m1', workerIdentityProof: '*' }],
       [{ inner: { workerIdentityProof: 'noway' } }, { inner: { workerIdentityProof: 'noway' } }],
     ];
-    testPairs.forEach((pair, i) => test(`sanitizeRegisterWorkerPayload: ${JSON.stringify(pair[1])}`, () => {
+    testPairs.forEach((pair, _i) => test(`sanitizeRegisterWorkerPayload: ${JSON.stringify(pair[1])}`, () => {
       assert.deepEqual(util.sanitizeRegisterWorkerPayload(pair[0]), pair[1]);
     }));
   });

@@ -178,7 +178,7 @@ tasks.push({
     'target-docker-compose.prod.yml',
     'target-env-files',
   ],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const currentRelease = await readRepoYAML(path.join('infrastructure', 'tooling', 'current-release.yml'));
     const [, currentVersion] = currentRelease.image.split(':');
 
@@ -240,7 +240,7 @@ tasks.push({
         ? { ports: opts.ports || servicePorts(name) } : {}),
     });
 
-    const serviceDefinitionProd = (name, profiles = null) => ({
+    const serviceDefinitionProd = (_name, profiles = null) => ({
       environment: {
         NODE_ENV: 'production',
       },
@@ -578,7 +578,7 @@ tasks.push({
   title: `Generate nginx.conf`,
   requires: [],
   provides: ['target-nginx.conf'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     const extraDirectives = `proxy_hide_header Content-Security-Policy;
       proxy_set_header Host taskcluster;
 
@@ -675,7 +675,7 @@ tasks.push({
   title: `Generate prometheus.yml`,
   requires: [...SERVICES.map(name => `procslist-${name}`)],
   provides: ['target-prometheus.yml'],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const targets = [];
 
     SERVICES.forEach(name => {

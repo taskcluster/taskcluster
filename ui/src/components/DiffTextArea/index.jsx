@@ -138,7 +138,7 @@ function DiffTextArea(props) {
     setValue(event.target.value);
   }
 
-  function handleTabChange(event, value) {
+  function handleTabChange(_event, value) {
     setTabIndex(value);
   }
 

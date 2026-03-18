@@ -22,7 +22,7 @@ import {
  */
 export default function generatePythonExample(
   serviceName,
-  apiVersion,
+  _apiVersion,
   entry,
   isAsync,
   payloadExample = null

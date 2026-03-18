@@ -65,14 +65,14 @@ helper.secrets = new testing.Secrets({
 /**
  * Define a fake denier that will deny anything with 'denied' in the address
  */
-helper.withDenier = (mock, skipping) => {
+helper.withDenier = (_mock, skipping) => {
   suiteSetup('withDenier', async function() {
     if (skipping()) {
       return;
     }
 
     load.inject('denier', {
-      isDenied: async (notificationType, notificationAddress) =>
+      isDenied: async (_notificationType, notificationAddress) =>
         /denied/.test(notificationAddress),
     });
   });
@@ -245,7 +245,7 @@ const stubbedQueue = () => {
  *
  * The component is available at `helper.queue`.
  */
-helper.withFakeQueue = (mock, skipping) => {
+helper.withFakeQueue = (_mock, skipping) => {
   suiteSetup('withFakeQueue', function() {
     if (skipping()) {
       return;
@@ -264,7 +264,7 @@ const fakeMatrixSend = () => sinon.fake(roomId => {
   }
 });
 
-helper.withFakeMatrix = (mock, skipping) => {
+helper.withFakeMatrix = (_mock, skipping) => {
   suiteSetup('withFakeMatrix', function() {
     if (skipping()) {
       return;
@@ -282,7 +282,7 @@ helper.withFakeMatrix = (mock, skipping) => {
   });
 };
 
-helper.withFakeSlack = (mock, skipping) => {
+helper.withFakeSlack = (_mock, skipping) => {
   const fakeSlackSend = () => sinon.fake(() => ({ ok: true }));
 
   suiteSetup('withFakeSlack', async function() {
@@ -304,14 +304,14 @@ helper.withFakeSlack = (mock, skipping) => {
   });
 };
 
-helper.withPulse = (mock, skipping) => {
+helper.withPulse = (_mock, skipping) => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-notify' });
 };
 
 /**
  * Set up an API server.
  */
-helper.withServer = (mock, skipping) => {
+helper.withServer = (_mock, skipping) => {
   let webServer;
 
   suiteSetup('withServer', async function() {
@@ -360,7 +360,7 @@ helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'notify');
 };
 
-helper.resetTables = (mock, skipping) => {
+helper.resetTables = (_mock, _skipping) => {
   setup('reset tables', async function() {
     await testing.resetTables({ tableNames: [
       'denylisted_notifications',

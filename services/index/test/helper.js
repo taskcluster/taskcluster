@@ -34,7 +34,7 @@ export const withDb = (mock, skipping) => {
 };
 helper.withDb = withDb;
 
-export const withPulse = (mock, skipping) => {
+export const withPulse = (_mock, skipping) => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-index' });
 };
 helper.withPulse = withPulse;
@@ -46,7 +46,7 @@ helper.withPulse = withPulse;
  *
  * The component is available at `helper.queue`.
  */
-export const withFakeQueue = (mock, skipping) => {
+export const withFakeQueue = (_mock, skipping) => {
   suiteSetup(function() {
     if (skipping()) {
       return;
@@ -64,7 +64,7 @@ helper.setAnonymousScopes = (scopes) => {
   anonymousScopes = scopes;
 };
 
-export const withFakeAnonymousScopeCache = (mock, skipping) => {
+export const withFakeAnonymousScopeCache = (_mock, skipping) => {
   suiteSetup(function() {
     if (skipping()) {
       return;
@@ -91,7 +91,7 @@ helper.withFakeAnonymousScopeCache = withFakeAnonymousScopeCache;
  * This also sets up helper.scopes to set the scopes for helper.queue, the
  * API client object, and stores a client class a helper.Index.
  */
-export const withServer = (mock, skipping) => {
+export const withServer = (_mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
@@ -192,7 +192,7 @@ const stubbedQueue = () => {
   return queue;
 };
 
-export const resetTables = (mock, skipping) => {
+export const resetTables = (_mock, _skipping) => {
   setup('reset tables', async function() {
     await testing.resetTables({ tableNames: [
       'indexed_tasks',

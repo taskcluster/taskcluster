@@ -573,7 +573,7 @@ helper.dbSuite(path.basename(__filename), function() {
     });
 
     test('decrypt multi-chunk from lib-entities', async function() {
-      const content = new Array(50000).fill(0).map((v, i) => String.fromCharCode(i % 65535)).join('');
+      const content = new Array(50000).fill(0).map((_v, i) => String.fromCharCode(i % 65535)).join('');
 
       // generated with:
       //  const entity = Entity.types.EncryptedText('val');

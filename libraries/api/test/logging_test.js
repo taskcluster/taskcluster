@@ -36,7 +36,7 @@ suite(testing.suiteName(), function() {
         { AllOf: ['bb', 'dd'] },
       ],
     },
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reply({});
   });
 
@@ -48,7 +48,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     description: 'Place we can call to test something',
     scopes: null,
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reply({});
   });
 
@@ -79,7 +79,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     description: 'Place we can call to test something',
     scopes: 'XXXX',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reply({});
   });
 
@@ -94,7 +94,7 @@ suite(testing.suiteName(), function() {
     title: 'Bewit having endpoint',
     description: 'Place we can call to test something',
     scopes: null,
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reply({});
   });
 

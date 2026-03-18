@@ -7,7 +7,7 @@ const DATA_INLINE_MAX_SIZE = 8192;
 
 const putUrl = async ({ streamFactory, contentLength, uploadMethod, retryCfg }) => {
   const { url, headers } = uploadMethod.putUrl;
-  await retry(retryCfg, async (retriableError, attempt) => {
+  await retry(retryCfg, async (retriableError, _attempt) => {
     try {
       await got.put(url, {
         headers,

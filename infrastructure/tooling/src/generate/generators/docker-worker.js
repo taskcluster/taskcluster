@@ -6,7 +6,7 @@ export const tasks = [{
   provides: [
     'docker-worker-schemas',
   ],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     const schemaFile = 'workers/docker-worker/schemas/v1/payload.yml';
     const content = await readRepoYAML(schemaFile);
 

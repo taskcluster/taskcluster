@@ -24,10 +24,10 @@ export default {
     },
   },
   Query: {
-    provisioner(parent, { provisionerId }, { loaders }) {
+    provisioner(_parent, { provisionerId }, { loaders }) {
       return loaders.provisioner.load(provisionerId);
     },
-    provisioners(parent, { connection, filter }, { loaders }) {
+    provisioners(_parent, { connection, filter }, { loaders }) {
       return loaders.provisioners.load({ connection, filter });
     },
   },

@@ -25,7 +25,7 @@ suite(testing.suiteName(), function() {
       const fakeApi = {
         express(app) {
           const router = express.Router();
-          router.get('/test', function(req, res) {
+          router.get('/test', function(_req, res) {
             res.status(200).send('Okay this works');
           });
           router.get('/req-id', function(req, res) {

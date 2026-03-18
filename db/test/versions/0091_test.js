@@ -37,7 +37,7 @@ suite(testing.suiteName(), function () {
     ]);
   };
 
-  const assertRecordsExistInNewTables = async (db, dt1, dt2) => {
+  const assertRecordsExistInNewTables = async (db, _dt1, dt2) => {
     const visibleIn = taskcluster.fromNow('1 minute');
 
     const [pending, claimed, resolved, deadlines] = await Promise.all([

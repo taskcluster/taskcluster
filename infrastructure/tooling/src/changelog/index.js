@@ -385,7 +385,7 @@ export const add = async (options) => {
   }
 };
 
-export const show = async (options) => {
+export const show = async (_options) => {
   const cl = new ChangeLog({ skipUpdates: true });
   await cl.load();
   console.log(`${chalk.bold.cyan('Level:')}        ${cl.level()}`);

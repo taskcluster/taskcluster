@@ -11,7 +11,7 @@ export const tasks = [{
     'db-versions-readme',
     'db-fns-readme',
   ],
-  run: async (requirements, utils) => {
+  run: async (_requirements, utils) => {
     utils.status({ message: 'gathering READMEs' });
     let readmes = (await gitLsFiles())
       .filter(file => file.endsWith('README.md'))

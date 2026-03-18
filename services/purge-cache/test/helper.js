@@ -36,7 +36,7 @@ helper.withDb = (mock, skipping) => {
 /**
  * Set up an API server.
  */
-helper.withServer = (mock, skipping) => {
+helper.withServer = (_mock, skipping) => {
   let webServer;
   const cachePurgeCache = {};
 

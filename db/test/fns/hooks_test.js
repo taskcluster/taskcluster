@@ -114,7 +114,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_last_fires_with_task_state full, pagination', async function(db) {
       await helper.withDbClient(async client => {
-        const createTask = async (db, options = {}) => {
+        const createTask = async (_db, options = {}) => {
           const taskId = options.taskId || slug.nice();
           await client.query(
             'select create_task_projid($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18);',
@@ -336,7 +336,7 @@ suite(testing.suiteName(), function() {
       );
     });
 
-    helper.dbTest('update_hook, change to a single field', async function(db, isFake) {
+    helper.dbTest('update_hook, change to a single field', async function(db, _isFake) {
       await create_hook(db);
       const bindings = [{ exchange: 'exchange', routingKeyPattern: 'routingKeyPattern' }];
       await db.fns.update_hook(
@@ -365,7 +365,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].trigger_schema, {});
     });
 
-    helper.dbTest('update_hook, change an encrypted field', async function(db, isFake) {
+    helper.dbTest('update_hook, change an encrypted field', async function(db, _isFake) {
       await create_hook(db);
       const nextTaskId = slug.v4();
       await db.fns.update_hook(
@@ -394,7 +394,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].trigger_schema, {});
     });
 
-    helper.dbTest('update_hook, no changes', async function(db, isFake) {
+    helper.dbTest('update_hook, no changes', async function(db, _isFake) {
       await create_hook(db);
       const updated = await db.fns.update_hook(
         'hook/group/id',
@@ -425,7 +425,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].trigger_schema, {});
     });
 
-    helper.dbTest('update_hook, throws when row does not exist', async function(db, isFake) {
+    helper.dbTest('update_hook, throws when row does not exist', async function(db, _isFake) {
       await assert.rejects(
         async () => {
           await db.fns.update_hook(

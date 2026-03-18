@@ -521,7 +521,7 @@ suite(testing.suiteName(), () => {
   });
 
   /** Walk all paths in a trie, calling visit(path, node) for all nodes in the trie */
-  const walk = (trie, visit = (path, node) => {}, prefix = '') => {
+  const walk = (trie, visit = (_path, _node) => {}, prefix = '') => {
     visit(prefix, trie);
     for (const [character, child] of trie.children) {
       walk(child, visit, prefix + character);

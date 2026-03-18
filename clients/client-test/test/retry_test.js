@@ -28,7 +28,7 @@ suite(testing.suiteName(), function() {
     scopes: 'test:internal-error',
     category: 'Taskcluster Client',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     getInternalErrorCount += 1;
     res
       .status(500)
@@ -46,7 +46,7 @@ suite(testing.suiteName(), function() {
     category: 'Taskcluster Client',
     scopes: 'test:internal-error',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     getOccasionalInternalErrorCount += 1;
     if (getOccasionalInternalErrorCount > 3) {
       res
@@ -72,7 +72,7 @@ suite(testing.suiteName(), function() {
     category: 'Taskcluster Client',
     scopes: 'test:internal-error',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     getUserErrorCount += 1;
     res
       .status(409)
@@ -90,7 +90,7 @@ suite(testing.suiteName(), function() {
     scopes: 'test:internal-error',
     category: 'Taskcluster Client',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(req, _res) {
     getConnectionErrorCount += 1;
     // Close underlying connection
     req.connection.end();

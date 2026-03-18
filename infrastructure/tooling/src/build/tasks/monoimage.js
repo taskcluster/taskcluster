@@ -273,7 +273,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
     provides: [
       `target-monoimage`,
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       return {
         'target-monoimage': `Monoimage docker image: ${requirements['monoimage-push']}`,
       };
@@ -288,7 +288,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
     provides: [
       `target-monoimage-devel`,
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       return {
         'target-monoimage-devel': `Monoimage devel docker image: ${requirements['monoimage-devel-push']}`,
       };

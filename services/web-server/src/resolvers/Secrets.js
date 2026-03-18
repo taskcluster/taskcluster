@@ -1,24 +1,24 @@
 export default {
   Query: {
-    secrets(parent, { connection, filter }, { loaders }) {
+    secrets(_parent, { connection, filter }, { loaders }) {
       return loaders.secrets.load({ connection, filter });
     },
-    secret(parent, { name }, { loaders }) {
+    secret(_parent, { name }, { loaders }) {
       return loaders.secret.load(name);
     },
   },
   Mutation: {
-    async createSecret(parent, { name, secret }, { clients }) {
+    async createSecret(_parent, { name, secret }, { clients }) {
       await clients.secrets.set(name, secret);
 
       return secret;
     },
-    async updateSecret(parent, { name, secret }, { clients }) {
+    async updateSecret(_parent, { name, secret }, { clients }) {
       await clients.secrets.set(name, secret);
 
       return secret;
     },
-    async deleteSecret(parent, { name }, { clients }) {
+    async deleteSecret(_parent, { name }, { clients }) {
       await clients.secrets.remove(name);
 
       return name;

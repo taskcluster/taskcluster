@@ -14,8 +14,8 @@ const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 
 /** ZeroCache is an LRU cache instance that contains nothing for caching is disabled */
 const ZeroCache = {
-  get: (k) => null,
-  set: (k, v) => null,
+  get: (_k) => null,
+  set: (_k, _v) => null,
 };
 
 class ScopeResolver extends events.EventEmitter {

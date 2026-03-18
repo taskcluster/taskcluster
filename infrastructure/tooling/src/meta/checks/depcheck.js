@@ -19,7 +19,7 @@ if (isMainThread) {
     title: 'Dependencies are used and installed',
     requires: [],
     provides: [],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       return new Promise((resolve, reject) => {
         const worker = new Worker(__filename, {});
         worker.on('message', function ({ err, message }) {

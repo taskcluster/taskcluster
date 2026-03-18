@@ -156,11 +156,11 @@ class SentryManager {
 }
 
 class NullSentryManager {
-  async projectDSN(project) {
+  async projectDSN(_project) {
     return null;
   }
 
-  async purgeExpiredKeys(now) {
+  async purgeExpiredKeys(_now) {
     return 0;
   }
 }

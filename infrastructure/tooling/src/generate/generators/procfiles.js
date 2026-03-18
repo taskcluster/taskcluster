@@ -9,7 +9,7 @@ tasks.push({
   title: `Read procs.yml for all services`,
   requires: [],
   provides: SERVICES.map(name => `procs-${name}`),
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     const provides = {};
     for (const name of SERVICES) {
       provides[`procs-${name}`] = await readRepoYAML(path.join('services', name, 'procs.yml'));

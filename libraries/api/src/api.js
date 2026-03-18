@@ -133,7 +133,7 @@ export default class API {
  * @returns {import('express').RequestHandler}}
  */
 const cacheHeaders = () => {
-  return (req, res, next) => {
+  return (_req, res, next) => {
     res.header('Cache-Control', 'no-store no-cache must-revalidate');
     next();
   };
@@ -146,7 +146,7 @@ const cacheHeaders = () => {
  * @returns {import('express').RequestHandler}
  */
 const corsHeaders = allowedCORSOrigin => {
-  return (req, res, next) => {
+  return (_req, res, next) => {
     res.header('Access-Control-Allow-Origin', allowedCORSOrigin);
     res.header('Access-Control-Max-Age', '900');
     res.header('Access-Control-Allow-Methods', [

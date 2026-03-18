@@ -21,7 +21,7 @@ import {
  */
 export default function generateNodeExample(
   serviceName,
-  apiVersion,
+  _apiVersion,
   entry,
   payloadExample = null
 ) {

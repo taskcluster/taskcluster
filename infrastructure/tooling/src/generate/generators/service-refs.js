@@ -27,7 +27,7 @@ SERVICES.forEach(name => {
     title: `Generate References for ${name} `,
     requires: [],
     provides: [`refs-${name}`],
-    run: async (requirements, utils) => {
+    run: async (_requirements, _utils) => {
       const svcDir = path.join(genDir, name);
 
       await mkdirp(genDir);
@@ -58,7 +58,7 @@ tasks.push({
     'target-references',
     'references-json',
   ],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     await mkdirp(genDir);
 
     // combine all of the references, using a map to eliminate duplicate files

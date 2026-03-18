@@ -58,7 +58,7 @@ helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'github');
 };
 
-helper.withPulse = (mock, skipping) => {
+helper.withPulse = (_mock, skipping) => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-github' });
 };
 
@@ -66,7 +66,7 @@ helper.withPulse = (mock, skipping) => {
  * Set the `github` loader component to a fake version.
  * This is reset before each test.  Call this before withServer.
  */
-helper.withFakeGithub = (mock, skipping) => {
+helper.withFakeGithub = (_mock, _skipping) => {
   suiteSetup(function() {
     load.inject('github', fakeGithubAuth());
   });
@@ -84,7 +84,7 @@ helper.withFakeGithub = (mock, skipping) => {
 /**
  * Set the `queueClient` loader component to a fake version.
  */
-helper.withFakeQueue = (mock, skipping) => {
+helper.withFakeQueue = (_mock, _skipping) => {
   const fakeQueueClient = () => new taskcluster.Queue({
     rootUrl: 'https://tc.example.com',
     fake: {
@@ -109,7 +109,7 @@ helper.withFakeQueue = (mock, skipping) => {
  *
  * This also sets up helper.apiClient as a client of the service API.
  */
-helper.withServer = (mock, skipping) => {
+helper.withServer = (_mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
@@ -149,7 +149,7 @@ helper.withServer = (mock, skipping) => {
   });
 };
 
-helper.resetTables = (mock, skipping) => {
+helper.resetTables = (_mock, _skipping) => {
   setup('reset tables', async function() {
     await testing.resetTables({ tableNames: [
       'github_builds',

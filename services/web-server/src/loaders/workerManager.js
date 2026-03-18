@@ -2,7 +2,7 @@ import DataLoader from 'dataloader';
 import sift from '../utils/sift.js';
 import ConnectionLoader from '../ConnectionLoader.js';
 
-export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ workerManager }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const WorkerManagerWorkerPoolSummaries = new ConnectionLoader(
     async ({ filter, options }) => {
       const [pools, stats] = await Promise.all([

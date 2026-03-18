@@ -152,7 +152,7 @@ export default (cfg, db, strategies, auth, monitor) => {
    * are validated, the application issues a Taskcluster token on behalf of the user who
    * authorized the code.
    */
-  server.exchange(oauth2orize.exchange.code(unpromisify(async (client, code, redirectURI) => {
+  server.exchange(oauth2orize.exchange.code(unpromisify(async (_client, code, redirectURI) => {
     const [entry] = await db.fns.get_authorization_code(code);
 
     if (!entry) {
@@ -191,7 +191,7 @@ export default (cfg, db, strategies, auth, monitor) => {
   const authorization = [
     ensureLoggedIn(),
     (req, res, done) => {
-      server.authorization(unpromisify(async (clientID, redirectURI, scope) => {
+      server.authorization(unpromisify(async (clientID, redirectURI, _scope) => {
         const client = findRegisteredClient(clientID);
 
         if (!client) {

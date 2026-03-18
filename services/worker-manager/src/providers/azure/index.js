@@ -1689,7 +1689,7 @@ export class AzureProvider extends Provider {
 
     this.cloudApi?.logAndResetMetrics();
 
-    await Promise.all(Object.entries(this.errors).filter(([workerPoolId, errors]) => errors.length > 0).map(
+    await Promise.all(Object.entries(this.errors).filter(([_workerPoolId, errors]) => errors.length > 0).map(
       async ([workerPoolId, errors]) => {
         const workerPool = await WorkerPool.get(this.db, workerPoolId);
 

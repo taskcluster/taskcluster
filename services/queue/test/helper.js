@@ -180,7 +180,7 @@ helper.withGCS = withGCS;
  *
  * Note that this file is *always* mocked, regardless of any secrets.
  */
-export const withAmazonIPRanges = (mock, skipping) => {
+export const withAmazonIPRanges = (_mock, skipping) => {
   let interceptor;
 
   suiteSetup(async function() {
@@ -211,7 +211,7 @@ helper.withDb = withDb;
 /**
  * Set up a fake object service that supports uploads and downlods.
  */
-export const withObjectService = (mock, skipping) => {
+export const withObjectService = (_mock, _skipping) => {
   let objects = new Map();
   suiteSetup(async function() {
     const err404 = message => {
@@ -279,7 +279,7 @@ helper.withObjectService = withObjectService;
  * This also sets up helper.scopes to set the scopes for helper.queue, the
  * API client object, and stores a client class a helper.Queue.
  */
-export const withServer = (mock, skipping) => {
+export const withServer = (_mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
@@ -347,7 +347,7 @@ export const withServer = (mock, skipping) => {
 };
 helper.withServer = withServer;
 
-export const withPulse = (mock, skipping) => {
+export const withPulse = (_mock, skipping) => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-queue' });
 };
 helper.withPulse = withPulse;
@@ -358,7 +358,7 @@ helper.withPulse = withPulse;
  * helper.startPollingService will start the service.  Note that the
  * caller must stop the service *before* returning.
  */
-export const withPollingServices = (mock, skipping) => {
+export const withPollingServices = (_mock, skipping) => {
   let svc;
 
   suiteSetup(async function() {
@@ -438,7 +438,7 @@ export const checkDates = ({ status }) => {
 };
 helper.checkDates = checkDates;
 
-export const resetTables = (mock, skipping) => {
+export const resetTables = (_mock, _skipping) => {
   setup('reset tables', async function() {
     await testing.resetTables({ tableNames: [
       'tasks',

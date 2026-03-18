@@ -29,11 +29,11 @@ helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'worker_manager');
 };
 
-helper.withPulse = (mock, skipping) => {
+helper.withPulse = (_mock, skipping) => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-worker-manager' });
 };
 
-helper.withProviders = (mock, skipping) => {
+helper.withProviders = (_mock, _skipping) => {
   const fakeEC2 = new FakeEC2();
   fakeEC2.forSuite();
 
@@ -44,7 +44,7 @@ helper.withProviders = (mock, skipping) => {
   fakeGoogle.forSuite();
 };
 
-helper.withProvisioner = (mock, skipping) => {
+helper.withProvisioner = (_mock, skipping) => {
   let provisioner;
 
   suiteSetup(async function() {
@@ -77,7 +77,7 @@ helper.withProvisioner = (mock, skipping) => {
   });
 };
 
-helper.withWorkerScanner = (mock, skipping) => {
+helper.withWorkerScanner = (_mock, skipping) => {
   let scanner;
 
   suiteSetup(async function() {
@@ -114,7 +114,7 @@ helper.withWorkerScanner = (mock, skipping) => {
  *
  * The component is available at `helper.queue`.
  */
-helper.withFakeQueue = (mock, skipping) => {
+helper.withFakeQueue = (_mock, skipping) => {
   suiteSetup(function() {
     if (skipping()) {
       return;
@@ -134,7 +134,7 @@ helper.withFakeQueue = (mock, skipping) => {
  *
  * We consider any emailing to be test-failing at the moment
  */
-helper.withFakeNotify = (mock, skipping) => {
+helper.withFakeNotify = (_mock, skipping) => {
   suiteSetup(function() {
     if (skipping()) {
       return;
@@ -149,7 +149,7 @@ helper.withFakeNotify = (mock, skipping) => {
   });
 };
 
-helper.withServer = (mock, skipping) => {
+helper.withServer = (_mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {
@@ -266,7 +266,7 @@ helper.getWorkers = async () =>
       });
     }));
 
-helper.resetTables = (mock, skipping) => {
+helper.resetTables = (_mock, _skipping) => {
   setup('reset tables', async function() {
     await testing.resetTables({ tableNames: [
       'workers',

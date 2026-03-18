@@ -3,7 +3,7 @@ import WebServerError from '../utils/WebServerError.js';
 import regenerateSession from '../utils/regenerateSession.js';
 import generateCredentials from '../utils/generateCredentials.js';
 
-export default (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default (_clients, _isAuthed, _rootUrl, monitor, strategies, req, cfg, _requestId) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
       queries.map(async () => {

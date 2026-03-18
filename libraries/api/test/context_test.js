@@ -40,7 +40,7 @@ suite(testing.suiteName(), function() {
       title: 'Test End-Point',
       category: 'API Library',
       description: 'Place we can call to test something',
-    }, function(req, res) {
+    }, function(_req, res) {
       res.status(200).json({ myProp: this.myProp });
     });
 
@@ -190,7 +190,7 @@ suite(testing.suiteName(), function() {
       title: 'Test End-Point',
       category: 'API Library',
       description: 'Place we can call to test something',
-    }, function(req, res) {
+    }, function(_req, res) {
       res.status(200).json(this.foo());
     });
 

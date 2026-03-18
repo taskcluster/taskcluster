@@ -47,7 +47,7 @@ suite(testing.suiteName(), () => {
     });
     assert.equal(success.length, 1); // done
 
-    success((err, sum) => {
+    success((err, _sum) => {
       if (!err || !err.toString().match(/uhoh/)) {
         return done(new Error('expected an error'));
       }

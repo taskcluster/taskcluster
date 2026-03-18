@@ -55,7 +55,7 @@ const ping = {
     'Respond without doing anything.',
     'This endpoint is used to check that the service is up.',
   ].join('\n'),
-  handler: function(req, res) {
+  handler: function(_req, res) {
     res.status(200).json({
       alive: true,
       uptime: process.uptime(),

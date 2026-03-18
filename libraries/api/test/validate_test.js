@@ -37,7 +37,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.status(200).send('Hello World');
   });
 
@@ -51,7 +51,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reply({ value: 4 });
   });
 
@@ -65,7 +65,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reply({ value: 12 });
   });
 
@@ -80,7 +80,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.status(200).send('Hello World');
   });
 
@@ -95,7 +95,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     title: 'Test End-Point',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reply({ value: 12 });
   });
 
@@ -109,7 +109,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reply({ value: 'Hello World' });
   });
 
@@ -122,7 +122,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reply();
   });
 
@@ -135,7 +135,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.reply();
   });
 
@@ -148,7 +148,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     title: 'Test End-Point',
     description: 'place to call to trigger a double send',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.status(400).json({ error: 'yep' });
     res.status(200).reply({ value: 1 });
   });
@@ -162,7 +162,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     title: 'Test End-Point',
     description: 'place to call to trigger a double send',
-  }, function(req, res) {
+  }, function(_req, res) {
     res.status(400).reply({ value: 1 });
     res.reportError('InputError', 'uhoh', {});
   });
@@ -289,7 +289,7 @@ suite(testing.suiteName(), function() {
     const url = u('/test-res-reply-post');
     return request
       .post(url)
-      .then(function(res) {
+      .then(function(_res) {
         assert(false, 'Request validation failed');
       }).catch(function(err) {
         assert.equal(err.status, 500);
@@ -317,7 +317,7 @@ suite(testing.suiteName(), function() {
       category: 'API Library',
       title: 'Test End-Point',
       description: '..',
-    }, function(req, res) {});
+    }, function(_req, _res) {});
 
     const schemaset = new SchemaSet({
       serviceName: 'test',

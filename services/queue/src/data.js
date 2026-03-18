@@ -271,7 +271,7 @@ export class Provisioner {
   // Get a provisioner from the DB, or undefined
   // This is emulated using the task_queues table as there is no
   // longer a queue_provisioners table.
-  static async get(db, provisionerId, expires) {
+  static async get(db, provisionerId, _expires) {
     const allTaskQueues = await TaskQueue.getAllTaskQueues(db, new Date());
     const taskQueuesForProvisioner = allTaskQueues.filter(
       tq => (provisionerId === splitTaskQueueId(tq.taskQueueId).provisionerId),

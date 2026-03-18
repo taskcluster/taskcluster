@@ -43,7 +43,7 @@ function formatGoIdentifier(name) {
  */
 export default function generateGoExample(
   serviceName,
-  apiVersion,
+  _apiVersion,
   entry,
   version = '93',
   payloadExample = null

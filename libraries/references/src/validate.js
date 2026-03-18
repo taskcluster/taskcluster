@@ -287,7 +287,7 @@ export const validate = (references) => {
       seen.add(schemaDoc);
       const schema = references.getSchema(schemaId, { skipValidation: true });
 
-      forAllRefs(schema, (ref, path) => {
+      forAllRefs(schema, (ref, _path) => {
         const refId = new URL(ref, schemaId).toString();
         recurse(refId);
       });

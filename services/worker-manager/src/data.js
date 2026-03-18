@@ -855,7 +855,7 @@ export class Worker {
 
     this._properties = {
       ...worker,
-      ..._.pickBy(_.pick(this, queueFields), (v, k) => worker[k] === undefined),
+      ..._.pickBy(_.pick(this, queueFields), (_v, k) => worker[k] === undefined),
     };
   }
 

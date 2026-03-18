@@ -115,7 +115,7 @@ export default class App extends Component {
    * context.noAuthorizationHeader; the latter can be set on
    * a request as an argument to `client.query({..})`.
    */
-  authLink = setContext(async (request, { noAuthorizationHeader, headers }) => {
+  authLink = setContext(async (_request, { noAuthorizationHeader, headers }) => {
     if (noAuthorizationHeader) {
       return {};
     }

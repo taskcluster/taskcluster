@@ -1,7 +1,7 @@
 import DataLoader from 'dataloader';
 import sift from '../utils/sift.js';
 
-export default ({ auth }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ auth }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const currentScopes = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ filter }) => {

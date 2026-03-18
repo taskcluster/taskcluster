@@ -15,7 +15,7 @@ class WritableStream extends Writable {
     return this.contents;
   }
 
-  write(chunk, encoding, callback) {
+  write(chunk, _encoding, callback) {
     if (!this.contents) {
       this.contents = chunk;
     } else {

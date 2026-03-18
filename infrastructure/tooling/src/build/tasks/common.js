@@ -11,7 +11,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     title: 'Clean release-artifacts',
     requires: [],
     provides: ['clean-artifacts-dir'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, _utils) => {
       await rimraf(artifactsDir);
       await mkdirp(artifactsDir);
       return { 'clean-artifacts-dir': artifactsDir };

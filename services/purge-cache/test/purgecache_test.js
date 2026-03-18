@@ -98,7 +98,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   test('purgeRequest caching', async function() {
-    sinon.stub(helper.db.fns, 'purge_requests_wpid').callsFake(async (query) => []);
+    sinon.stub(helper.db.fns, 'purge_requests_wpid').callsFake(async (_query) => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await helper.apiClient.purgeRequests('pp/wt', { since });
@@ -119,7 +119,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     sinon.stub(helper.db.fns, 'purge_requests_wpid')
       .onFirstCall().throws(new Error('uhoh'))
-      .onSecondCall().callsFake(async (query) => []);
+      .onSecondCall().callsFake(async (_query) => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await assert.rejects(() => client.purgeRequests('pp/wt', { since }));

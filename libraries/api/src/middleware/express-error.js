@@ -24,7 +24,7 @@ export const setIsProduction = value => isProduction = value;
  */
 export const expressError = ({ errorCodes, entry }) => {
   const { name: method, cleanPayload } = entry;
-  return (err, req, res, next) => {
+  return (err, req, res, _next) => {
 
     if (res.headersSent) {
       req.tcContext.monitor.reportError(new Error('API method implementation called res.send twice'));

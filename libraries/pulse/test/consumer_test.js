@@ -7,7 +7,7 @@ import assert from 'node:assert';
 import helper from './helper.js';
 import { suiteName } from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
+helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, _skipping) {
   if (mock) {
     return; // Only test with real creds
   }
@@ -56,7 +56,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
 
     // wait until the pq stops
     const waitUntilStopped = pq => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve, _reject) => {
         pq._stoppedCallback = resolve;
       });
     };

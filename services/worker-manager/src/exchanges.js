@@ -70,7 +70,7 @@ const commonMessageBuilder = function(message) {
   return message;
 };
 
-const commonRoutingKeyBuilder = function(message, routing) {
+const commonRoutingKeyBuilder = function(message, _routing) {
   const mapping = {
     workerGroup: message.workerGroup,
     providerId: message.providerId,

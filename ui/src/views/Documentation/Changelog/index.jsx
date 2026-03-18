@@ -153,7 +153,7 @@ export default class Changelog extends Component {
     }
   );
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(_prevProps, prevState) {
     if (FILTERS.map(key => prevState[key] !== this.state[key]).some(a => a)) {
       this.updateUrl();
     }
@@ -198,7 +198,7 @@ export default class Changelog extends Component {
             <Autocomplete
               options={this.versions}
               getOptionLabel={option => option.label}
-              onInputChange={(event, value) => this.setState({ [key]: value })}
+              onInputChange={(_event, value) => this.setState({ [key]: value })}
               defaultValue={{ label: this.state[key], value: this.state[key] }}
               renderInput={params => (
                 <TextField {...params} label={label} fullWidth />
@@ -218,7 +218,7 @@ export default class Changelog extends Component {
           <Autocomplete
             options={this.audiences}
             getOptionLabel={option => option.label}
-            onInputChange={(event, value) => this.setState({ audience: value })}
+            onInputChange={(_event, value) => this.setState({ audience: value })}
             defaultValue={{
               label: this.state.audience,
               value: this.state.audience,

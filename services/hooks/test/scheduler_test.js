@@ -173,7 +173,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       let emailSent = false;
-      scheduler.sendFailureEmail = async (hook, err) => { emailSent = true; };
+      scheduler.sendFailureEmail = async (_hook, _err) => { emailSent = true; };
 
       await scheduler.handleHook(hook);
 
@@ -191,7 +191,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       let emailSent = false;
-      scheduler.sendFailureEmail = async (hook, err) => { emailSent = true; throw new Error('uhoh'); };
+      scheduler.sendFailureEmail = async (_hook, _err) => { emailSent = true; throw new Error('uhoh'); };
 
       await scheduler.handleHook(hook);
 
@@ -215,7 +215,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       let emailSent = false;
-      scheduler.sendFailureEmail = async (hook, err) => { emailSent = true; };
+      scheduler.sendFailureEmail = async (_hook, _err) => { emailSent = true; };
 
       await scheduler.handleHook(hook);
 

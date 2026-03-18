@@ -104,7 +104,7 @@ const extractParams = (compiledTemplate) => {
   const ctmpl = compiledTemplate;
   if (ctmpl instanceof Array) {
     return ctmpl
-      .filter((value, i) => i % 2 === 1)
+      .filter((_value, i) => i % 2 === 1)
       .map(p => ({ [p]: 'string' }))
       .reduce(mergeParams, {});
   }
@@ -205,7 +205,7 @@ export default class ScopeExpressionTemplate {
     this.template = template;
     this._compiledTemplate = compileTemplate(template);
     this._paramTypes = Object.entries(extractParams(this._compiledTemplate));
-    this.params = this._paramTypes.map(([p, T]) => p);
+    this.params = this._paramTypes.map(([p, _T]) => p);
   }
 
   /** Render this scope expression template into a scope expression given params */

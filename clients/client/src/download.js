@@ -13,7 +13,7 @@ const makeRetryCfg = ({ retries, delayFactor, randomizationFactor, maxDelay }) =
 });
 
 const s3 = async ({ url, streamFactory, retryCfg }) => {
-  return await retry(retryCfg, async (retriableError, attempt) => {
+  return await retry(retryCfg, async (retriableError, _attempt) => {
     let contentType = 'application/binary';
     try {
       const src = got.stream(url, { retry: { limit: 0 } });
@@ -38,7 +38,7 @@ const getUrl = async ({ object, name, resp, streamFactory, retryCfg }) => {
   let hashStream;
   let contentType = 'application/binary';
 
-  await retry(retryCfg, async (retriableError, attempt) => {
+  await retry(retryCfg, async (retriableError, _attempt) => {
     // renew the download URL if necessary (note that we assume the object-sevice
     // credentials are good for long enough)
     if (responseUsed && new Date(resp.expires) < new Date()) {

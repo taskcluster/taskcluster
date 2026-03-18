@@ -96,7 +96,7 @@ export const filterTasksWithDuration = memoize(
 
 // displaying thousands of tasks in graph degrades usability and performance
 export const sampleTasks = memoize(
-  (tasks, filter, searchTerm, maxTasks) => {
+  (tasks, _filter, _searchTerm, maxTasks) => {
     let sampled = tasks;
     let precision = 10;
     const compareDelta = (a, b) =>

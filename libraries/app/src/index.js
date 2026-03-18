@@ -41,7 +41,7 @@ let listenersAdded = false;
  */
 const createServer = function() {
   // 404 Error handler
-  this.use((req, res, next) => {
+  this.use((_req, res, _next) => {
     res.setHeader('Content-Type', 'application/json');
     res.status(404).json({ error: 'Not found' });
   });
@@ -93,7 +93,7 @@ const createServer = function() {
         res.on('finish', () => req.socket.destroy());
       });
 
-      return new Promise((accept, reject) => {
+      return new Promise((accept, _reject) => {
         server.close(accept);
       }).then(() => {
         debug(`Server terminated on port ${this.get('port')}`);
@@ -194,7 +194,7 @@ export const App = async (options) => {
 
   // keep cheap security vuln scanners happy..
   app.disable('x-powered-by');
-  app.use((req, res, next) => {
+  app.use((_req, res, next) => {
     res.setHeader('x-content-type-options', 'nosniff');
     next();
   });
@@ -203,7 +203,7 @@ export const App = async (options) => {
   app.use(traceMiddleware);
 
   if (options.robotsTxt) {
-    app.use('/robots.txt', (req, res) => {
+    app.use('/robots.txt', (_req, res) => {
       res.header('Content-Type', 'text/plain');
       res.send('User-Agent: *\nDisallow: /\n');
     });
@@ -211,12 +211,12 @@ export const App = async (options) => {
 
   try {
     const taskclusterVersion = await loadVersion();
-    app.use('/__version__', (req, res) => {
+    app.use('/__version__', (_req, res) => {
       res.header('Content-Type', 'application/json');
       res.send(taskclusterVersion);
     });
   } catch (err) {
-    app.use('/__version__', (req, res) => {
+    app.use('/__version__', (_req, res) => {
       res.header('Content-Type', 'application/json');
       res.status(500).send({ error: 'Not found' });
     });
@@ -224,12 +224,12 @@ export const App = async (options) => {
 
   // TODO: heartbeat endpoint should verify all dependent taskcluster services
   // captured in https://github.com/taskcluster/taskcluster/issues/4597
-  app.use('/__heartbeat__', (req, res) => {
+  app.use('/__heartbeat__', (_req, res) => {
     res.header('Content-Type', 'application/json');
     res.status(200).send({});
   });
 
-  app.use('/__lbheartbeat__', (req, res) => {
+  app.use('/__lbheartbeat__', (_req, res) => {
     res.header('Content-Type', 'application/json');
     res.status(200).send({});
   });

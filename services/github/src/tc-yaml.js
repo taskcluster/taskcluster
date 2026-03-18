@@ -104,7 +104,7 @@ class VersionZero extends TcYaml {
       'taskcluster.docker.workerType': cfg.intree.workerType || 'unknown',
     }));
   }
-  compileTasks(config, cfg, payload, now) {
+  compileTasks(config, cfg, payload, _now) {
     config.tasks = config.tasks.map((task) => {
       task.routes = task.routes || [];
       task.routes = Array.from(new Set([

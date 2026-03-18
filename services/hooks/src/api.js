@@ -48,7 +48,7 @@ builder.declare({
   description: [
     'This endpoint will return a list of all hook groups with at least one hook.',
   ].join('\n'),
-}, async function(req, res) {
+}, async function(_req, res) {
   const hookGroups = await this.db.fns.get_hook_groups();
   const groups = hookGroups.map(row => row.hook_group_id);
   return res.reply({ groups });

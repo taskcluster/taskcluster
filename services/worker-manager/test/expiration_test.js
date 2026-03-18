@@ -67,7 +67,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   suite('expireLaunchConfigs', function () {
-    const getWPLCs = async (workerPoolId, providerId) => {
+    const getWPLCs = async (workerPoolId, _providerId) => {
       return helper.db.fns.get_worker_pool_launch_configs(workerPoolId, null, null, null);
     };
 
@@ -177,7 +177,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await e.create(helper.db);
     };
 
-    const checkWPE = async (workerPoolId = 'pp/wt', errorId = eid) => {
+    const checkWPE = async (_workerPoolId = 'pp/wt', _errorId = eid) => {
       return await helper.db.fns.get_worker_pool_errors_for_worker_pool2(eid, 'pp/wt', null, null, null);
     };
 

@@ -783,7 +783,7 @@ builder.declare({
     '',
     'To get paginated results, use `listRoles2`.',
   ].join('\n'),
-}, async function(req, res) {
+}, async function(_req, res) {
   // Load all roles
   const roles = await this.db.fns.get_roles();
   res.reply(roles.map(r => roleToJson(r, this)));

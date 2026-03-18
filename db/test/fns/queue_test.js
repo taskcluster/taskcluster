@@ -55,19 +55,19 @@ suite(testing.suiteName(), function() {
     return rows;
   };
 
-  const setTaskRuns = async (db, runs) => {
+  const setTaskRuns = async (_db, runs) => {
     await helper.withDbClient(async client => {
       await client.query('update tasks set runs = $2 where task_id = $1', [taskId, JSON.stringify(runs)]);
     });
   };
 
-  const setTaskTakenUntil = async (db, taken_until) => {
+  const setTaskTakenUntil = async (_db, taken_until) => {
     await helper.withDbClient(async client => {
       await client.query('update tasks set taken_until = $2 where task_id = $1', [taskId, taken_until]);
     });
   };
 
-  const setTaskRetriesLeft = async (db, retries_left) => {
+  const setTaskRetriesLeft = async (_db, retries_left) => {
     await helper.withDbClient(async client => {
       await client.query('update tasks set retries_left = $2 where task_id = $1', [taskId, retries_left]);
     });
@@ -1496,12 +1496,12 @@ suite(testing.suiteName(), function() {
           } else if (sat === true) {
             assert.deepEqual(
               rows.map(row => row.dependent_task_id).sort(),
-              deps.filter((d, i) => i & 1).sort(),
+              deps.filter((_d, i) => i & 1).sort(),
               'sat = true');
           } else if (sat === false) {
             assert.deepEqual(
               rows.map(row => row.dependent_task_id).sort(),
-              deps.filter((d, i) => !(i & 1)).sort(),
+              deps.filter((_d, i) => !(i & 1)).sort(),
               'sat = false');
           }
         }
@@ -1532,12 +1532,12 @@ suite(testing.suiteName(), function() {
           } else if (sat === true) {
             assert.deepEqual(
               rows.map(row => row.dependent_task_id).sort(),
-              deps.filter((d, i) => i & 1).sort(),
+              deps.filter((_d, i) => i & 1).sort(),
               'sat = true');
           } else if (sat === false) {
             assert.deepEqual(
               rows.map(row => row.dependent_task_id).sort(),
-              deps.filter((d, i) => !(i & 1)).sort(),
+              deps.filter((_d, i) => !(i & 1)).sort(),
               'sat = false');
           }
         }

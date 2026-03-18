@@ -26,14 +26,14 @@ export class Middleware {
    *
    * Subclasses may override this method; the default does nothing.
    */
-  async startDownloadRequest(req, res, object, method, params) {
+  async startDownloadRequest(_req, _res, _object, _method, _params) {
     return true;
   }
 
   /**
    * Similar to startDownloadRequest, but for the simple-download API.
    */
-  async downloadRequest(req, res, object) {
+  async downloadRequest(_req, _res, _object) {
     return true;
   }
 }

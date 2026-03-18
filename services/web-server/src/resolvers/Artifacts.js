@@ -7,16 +7,16 @@ export default {
     ERROR: 'error',
   },
   Query: {
-    artifacts(parent, { taskId, runId, connection, filter }, { loaders }) {
+    artifacts(_parent, { taskId, runId, connection, filter }, { loaders }) {
       return loaders.artifacts.load({ taskId, runId, connection, filter });
     },
-    latestArtifacts(parent, { taskId, connection, filter }, { loaders }) {
+    latestArtifacts(_parent, { taskId, connection, filter }, { loaders }) {
       return loaders.latestArtifacts.load({ taskId, connection, filter });
     },
   },
   Subscription: {
     artifactsCreated: {
-      subscribe(parent, { taskGroupId }, { clients, pulseEngine }) {
+      subscribe(_parent, { taskGroupId }, { clients, pulseEngine }) {
         const routingKey = { taskGroupId };
         const binding = clients.queueEvents.artifactCreated(routingKey);
 

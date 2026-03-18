@@ -69,7 +69,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: [
       'target-client-shell',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {
         'target-client-shell': [

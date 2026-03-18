@@ -35,7 +35,7 @@ export function renderConstants(schema, constants) {
  * isn't foolproof: it will allow {$ref: '../../otherservice/v1/someschema.json'}.
  * But this is enough to dissuade users from inter-service linking.
  */
-export const checkRefs = (schema, serviceName) => {
+export const checkRefs = (schema, _serviceName) => {
   const check = val => {
     if (_.isObject(val)) {
       if (typeof val.$ref === 'string' && _.keys(val).length === 1) {

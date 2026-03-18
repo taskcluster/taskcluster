@@ -401,7 +401,7 @@ class Monitor {
     await this._exit(1);
   }
 
-  async _unhandledRejectionHandler(reason, p) {
+  async _unhandledRejectionHandler(reason, _p) {
     this.reportError(reason);
     if (!this.bailOnUnhandledRejection) {
       return;
@@ -421,7 +421,7 @@ class Monitor {
    * OS-level usage statistics like CPU and Memory
    * on a minute-by-minute basis.
    */
-  _resources(procName, interval) {
+  _resources(_procName, interval) {
     if (this._resourceInterval) {
       clearInterval(this._resourceInterval);
     }

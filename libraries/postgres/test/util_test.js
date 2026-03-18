@@ -36,7 +36,7 @@ suite(path.basename(__filename), function() {
       });
 
       test('batch size smaller than requested', async function() {
-        const fetch = async (size, offset) => {
+        const fetch = async (_size, offset) => {
           return range(1000).slice(offset, offset + 10);
         };
 
@@ -49,7 +49,7 @@ suite(path.basename(__filename), function() {
       });
 
       test('fetch fails', async function() {
-        const fetch = async (size, offset) => {
+        const fetch = async (_size, offset) => {
           if (offset > 300) {
             throw new Error('oh noes');
           }

@@ -59,7 +59,7 @@ export class AwsBackend extends Backend {
 
     if (this.isAws) {
       this.tags = this.config.tags || {};
-      if (Object.entries(this.tags).some(([k, v]) => typeof v !== 'string')) {
+      if (Object.entries(this.tags).some(([_k, v]) => typeof v !== 'string')) {
         throw new Error(`backend ${this.backendId} has invalid 'tags' configuration`);
       }
     } else if (this.config.tags) {
@@ -163,11 +163,11 @@ export class AwsBackend extends Backend {
     }
   }
 
-  async availableDownloadMethods(object) {
+  async availableDownloadMethods(_object) {
     return ['simple', 'getUrl'];
   }
 
-  async startDownload(object, method, params) {
+  async startDownload(object, method, _params) {
     switch (method) {
       case 'simple': {
         let downloadUrl;

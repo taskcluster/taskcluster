@@ -101,7 +101,7 @@ export const getTasks = async () => {
       tasks.push({
         title: `Minify ${file}`,
         provides: [`minify-${file}`],
-        run: async (requirements, utils) => {
+        run: async (_requirements, _utils) => {
           minify(file, { ignore: IGNORE[file] });
         },
       });

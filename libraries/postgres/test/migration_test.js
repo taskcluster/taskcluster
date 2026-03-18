@@ -325,7 +325,7 @@ helper.dbSuite(path.basename(__filename), function() {
 
     test('batch function that just does one item per iteration', testing.runWithFakeTime(async function() {
       let itemsComplete = 0;
-      runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
+      runOnlineBatches.setHook('runBatch', async (_batchSize, state) => {
         if (itemsComplete >= 1000) {
           return { state, count: 0 };
         }
@@ -343,7 +343,7 @@ helper.dbSuite(path.basename(__filename), function() {
     test('batch function that returns 0 items early', testing.runWithFakeTime(async function() {
       let itemsComplete = 0;
       let isCompleteCalls = 0;
-      runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
+      runOnlineBatches.setHook('runBatch', async (_batchSize, state) => {
         state.counter = (state.counter || 0) + 1;
         if (state.counter === 100 || itemsComplete >= 1000) {
           // this will trigger an isComplete call, and if not complete, starts over with

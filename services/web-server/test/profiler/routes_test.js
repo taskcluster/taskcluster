@@ -281,7 +281,7 @@ suite('profiler/routes', function() {
         queue: {
           task: async () => completedTask.task,
           status: async () => ({ status: completedTask.status }),
-          buildUrl: (method, taskId, name) =>
+          buildUrl: (_method, taskId, name) =>
             `https://queue.test/task/${taskId}/artifacts/${name}`,
         },
       }));
@@ -337,7 +337,7 @@ suite('profiler/routes', function() {
         queue: {
           task: async () => completedTask.task,
           status: async () => ({ status: completedTask.status }),
-          buildUrl: (method, taskId, name) =>
+          buildUrl: (_method, taskId, name) =>
             `https://queue.test/task/${taskId}/artifacts/${name}`,
         },
       }));

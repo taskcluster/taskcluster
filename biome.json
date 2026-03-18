@@ -22,7 +22,7 @@
         "noSwitchDeclarations": "error",
         "noUnreachable": "error",
         "noConstantCondition": "off",
-        "noUnusedFunctionParameters": "off",
+        "noUnusedFunctionParameters": "warn",
         "noUnusedImports": "error",
         "useParseIntRadix": "off",
         "noConstructorReturn": "off",

@@ -276,7 +276,7 @@ export class MonitorManager {
     } else if (fake || debug) {
       manager.messages = [];
       manager.destination = new stream.Writable({
-        write: (chunk, encoding, next) => {
+        write: (chunk, _encoding, next) => {
           manager._handleMessage(JSON.parse(chunk));
           next();
         },

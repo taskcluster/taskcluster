@@ -21,7 +21,7 @@ suite(testing.suiteName(), function() {
       category: 'API Library',
       title: 'Test',
       description: 'Test',
-    }, function(req, res) {});
+    }, function(_req, _res) {});
   });
 
   test('string scope works', function() {
@@ -33,7 +33,7 @@ suite(testing.suiteName(), function() {
       category: 'API Library',
       title: 'Test',
       description: 'Test',
-    }, function(req, res) {});
+    }, function(_req, _res) {});
   });
 
   test('array of string scope rejected', function() {
@@ -46,7 +46,7 @@ suite(testing.suiteName(), function() {
         category: 'API Library',
         title: 'Test',
         description: 'Test',
-      }, function(req, res) {});
+      }, function(_req, _res) {});
     }, /Invalid scope expression/);
   });
 
@@ -60,7 +60,7 @@ suite(testing.suiteName(), function() {
         category: 'API Library',
         title: 'Test',
         description: 'Test',
-      }, function(req, res) {});
+      }, function(_req, _res) {});
     }, /Invalid scope expression/);
   });
 
@@ -73,7 +73,7 @@ suite(testing.suiteName(), function() {
       category: 'API Library',
       title: 'Test',
       description: 'Test',
-    }, function(req, res) {});
+    }, function(_req, _res) {});
   });
 
   test('scope expression with looping template not rejected', function() {
@@ -85,6 +85,6 @@ suite(testing.suiteName(), function() {
       category: 'API Library',
       title: 'Test',
       description: 'Test',
-    }, function(req, res) {});
+    }, function(_req, _res) {});
   });
 });

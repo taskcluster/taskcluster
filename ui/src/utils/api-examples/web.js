@@ -21,7 +21,7 @@ import {
  */
 export default function generateWebExample(
   serviceName,
-  apiVersion,
+  _apiVersion,
   entry,
   payloadExample = null
 ) {

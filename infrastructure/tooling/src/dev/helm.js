@@ -19,7 +19,7 @@ const actions = [
     title: 'Check dev-config.yml',
     requires: [],
     provides: ['dev-config'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, _utils) => {
       const config = await readRepoYAML('dev-config.yml');
       if (!config.meta?.deploymentPrefix) {
         throw new Error('Must have configured dev-config.yml to deploy.');
@@ -40,7 +40,7 @@ const actions = [
     title: 'Helm version detection',
     requires: [],
     provides: ['helm-version'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       const res = await execCommand({
         command: ['helm', 'version'],
         dir: REPO_ROOT,
@@ -127,7 +127,7 @@ const actions = [
     title: `Dump kubernetes templates to ${dumpFileLocation}`,
     requires: ['target-templates'],
     provides: ['target-dump-templates'],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       await writeRepoFile(dumpFileLocation, requirements['target-templates']);
       return { 'target-dump-templates': dumpFileLocation };
     },
@@ -150,7 +150,7 @@ const actions = [
     title: 'Delete Your Deployment',
     requires: ['namespace-switch'],
     provides: ['target-delete'],
-    run: async (requirements, utils) => ({
+    run: async (_requirements, utils) => ({
       'target-delete': await execCommand({
         command: ['kubectl', 'delete', resourceTypes.join(','), '-l', 'app.kubernetes.io/part-of=taskcluster'],
         dir: REPO_ROOT,

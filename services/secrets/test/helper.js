@@ -44,7 +44,7 @@ const testClients = {
  * This also sets up helper.client as an API client generator, using the
  * "captain" clients.
  */
-helper.withServer = (mock, skipping) => {
+helper.withServer = (_mock, skipping) => {
   let webServer;
 
   suiteSetup(async function() {

@@ -59,7 +59,7 @@ export const execCommand = async ({
   }
 
   const stream = new Transform({
-    transform: (chunk, encoding, callback) => {
+    transform: (chunk, _encoding, callback) => {
       if (keepAllOutput) {
         output += chunk.toString();
       } else {

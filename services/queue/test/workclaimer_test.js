@@ -70,7 +70,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       monitor,
       publisher,
       queueService: {
-        pollPendingQueue: (taskQueueId) => () => [{
+        pollPendingQueue: (_taskQueueId) => () => [{
           taskId,
           runId: 0,
           hintId: 'hint1',
@@ -107,7 +107,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       monitor,
       publisher,
       queueService: {
-        pollPendingQueue: (taskQueueId) => () => {
+        pollPendingQueue: (_taskQueueId) => () => {
           calls++;
           if (calls < 3) {
             throw new Error('error');

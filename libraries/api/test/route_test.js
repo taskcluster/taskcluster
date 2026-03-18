@@ -390,7 +390,7 @@ suite(testing.suiteName(), function() {
       title: 'Test',
       category: 'API Library',
       description: 'Test',
-    }, function(req, res) {});
+    }, function(_req, _res) {});
 
     assert.throws(function() {
       builder.declare({
@@ -401,7 +401,7 @@ suite(testing.suiteName(), function() {
         title: 'Test',
         category: 'API Library',
         description: 'Test',
-      }, function(req, res) {});
+      }, function(_req, _res) {});
     }, /Identical route and method/);
   });
 

@@ -63,7 +63,7 @@ class RateLimit {
    * keys with no events in the window.
    */
   purgeAllOldTimes() {
-    this.times = _.pickBy(this.times, (times, key) => {
+    this.times = _.pickBy(this.times, (times, _key) => {
       this.purgeOldTimes(times);
       return times.length > 0;
     });

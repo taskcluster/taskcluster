@@ -28,7 +28,7 @@ SERVICES.forEach(name => {
       `procs-${name}`,
     ],
     provides: [`monitoring-hints-${name}`],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const res = [];
       Object.entries(requirements[`procs-${name}`]).forEach(([proc, ext]) => {
         if (ext.type === 'cron') {
@@ -48,7 +48,7 @@ tasks.push({
   title: `Generate Monitoring Suggestions`,
   requires: SERVICES.map(name => `monitoring-hints-${name}`),
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     let res = [['Service', 'Name', 'Logger', 'Deadline (seconds)', 'Schedule']];
     SERVICES.forEach(name => {
       res = res.concat(requirements[`monitoring-hints-${name}`]);
@@ -66,7 +66,7 @@ tasks.push({
   title: `Generate Metrics Table`,
   requires: SERVICES.map(name => `procs-${name}`),
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const res = [['Service', 'Name', 'Type', 'Reference']];
     SERVICES.forEach(name => {
       const procs = requirements[`procs-${name}`];

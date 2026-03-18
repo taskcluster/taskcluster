@@ -65,7 +65,7 @@ helper.withMockedEventIterator = () => {
     PulseEngineCopy.NextAsyncIterator = asyncIterator;
   };
 
-  PulseEngineCopy.eventIterator = (eventName, subscriptions) => {
+  PulseEngineCopy.eventIterator = (_eventName, _subscriptions) => {
     if (!PulseEngineCopy.NextAsyncIterator) {
       throw new Error(`No async iterator to return. Set one up with SetNextAsyncIterator`);
     }
@@ -79,7 +79,7 @@ helper.withMockedEventIterator = () => {
   });
 };
 
-helper.withFakeAuth = (mock, skipping) => {
+helper.withFakeAuth = (_mock, skipping) => {
   suiteSetup('withFakeAuth', function() {
     if (skipping()) {
       return;
@@ -89,7 +89,7 @@ helper.withFakeAuth = (mock, skipping) => {
   });
 };
 
-helper.withFakeAuthFactory = (mock, skipping) => {
+helper.withFakeAuthFactory = (_mock, skipping) => {
   suiteSetup('withFakeAuthFactory', function() {
     if (skipping()) {
       return;
@@ -103,7 +103,7 @@ helper.withFakeAuthFactory = (mock, skipping) => {
   });
 };
 
-helper.withClients = (mock, skipping) => {
+helper.withClients = (_mock, skipping) => {
   suiteSetup('withClients', async function() {
     if (skipping()) {
       return;
@@ -120,7 +120,7 @@ helper.withClients = (mock, skipping) => {
   });
 };
 
-helper.withServer = (mock, skipping) => {
+helper.withServer = (_mock, skipping) => {
   let webServer;
 
   // return a signed-in Superagent agent
@@ -440,7 +440,7 @@ const stubbedClients = () => {
             hookId,
           });
         },
-        listLastFires: async (hookGroupId, hookId, filter) => {
+        listLastFires: async (hookGroupId, hookId, _filter) => {
           const taskStates = ['unscheduled', 'pending', 'running', 'completed', 'failed', 'exception', 'unknown'];
           const fireResults = ['success', 'error', 'no-fire'];
           const lastFires = taskStates.map((taskState, i) => ({
@@ -578,7 +578,7 @@ const stubbedClients = () => {
           };
           return Promise.resolve(artifact);
         },
-        listArtifacts: async (taskId, runId, options) => {
+        listArtifacts: async (taskId, runId, _options) => {
           const artifacts = ["1", "2", "3"].map(artifactSuffix => {
             return {
               taskId,
@@ -588,7 +588,7 @@ const stubbedClients = () => {
           });
           return Promise.resolve({ artifacts });
         },
-        listLatestArtifacts: async (taskId, options) => {
+        listLatestArtifacts: async (taskId, _options) => {
           const artifacts = ["1", "2", "3"].map(artifactSuffix => {
             return {
               taskId,
@@ -597,13 +597,13 @@ const stubbedClients = () => {
           });
           return Promise.resolve({ artifacts });
         },
-        pendingTasks: async (taskQueueId) => 0,
+        pendingTasks: async (_taskQueueId) => 0,
       },
     }),
   });
 };
 
-helper.resetTables = (mock, skipping) => {
+helper.resetTables = (_mock, _skipping) => {
   setup('reset tables', async function() {
     await resetTables({ tableNames: [
       'authorization_codes',

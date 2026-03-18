@@ -196,7 +196,7 @@ export default class MozillaAuth0 {
         // accessToken is the token to call Auth0 API (not needed in most cases)
         // extraParams.id_token has the JSON Web Token
         // profile has all the information from the user
-        async (accessToken, refreshToken, extraParams, profile, done) => {
+        async (_accessToken, _refreshToken, extraParams, profile, done) => {
           const [userErr, user] = await tryCatch(this.getUser({ userId: profile.user_id }));
 
           if (userErr) {

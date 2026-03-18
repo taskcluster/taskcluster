@@ -23,7 +23,7 @@ const exchanges = new Exchanges({
 export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-const buildCommonRoutingKey = (options) => {
+const buildCommonRoutingKey = (_options) => {
   return [
     {
       name: 'reserved',
@@ -44,14 +44,14 @@ const commonMessageBuilder = function(message) {
 /** Build a routingKey from message */
 /** Empty now, might be useful in the future */
 /** when this comment should be removed */
-const commonRoutingKeyBuilder = function(message, routing) {
+const commonRoutingKeyBuilder = function(_message, _routing) {
   return '';
 };
 
 /** Build list of routing keys to CC */
 /** Empty now, might be useful in the future */
 /** when this comment should be removed */
-const commonCCBuilder = function(message, routes) {
+const commonCCBuilder = function(_message, _routes) {
   return [];
 };
 

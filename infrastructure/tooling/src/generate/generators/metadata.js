@@ -12,7 +12,7 @@ SERVICES.forEach(name => {
     title: `Fetch service metadata for ${name}`,
     requires: [],
     provides: [`configs-${name}`, `procslist-${name}`, `scopes-${name}`],
-    run: async (requirements, utils) => {
+    run: async (_requirements, _utils) => {
       const envVars = config({
         serviceName: name,
         // only list config.yml, to avoid grabbing information from user-config.yml

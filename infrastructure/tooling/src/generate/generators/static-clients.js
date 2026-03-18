@@ -12,7 +12,7 @@ tasks.push({
     ...SERVICES.map(name => `scopes-${name}`),
   ],
   provides: ['static-clients'],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const staticClients = [];
     SERVICES.forEach(name => {
       // auth defines scopes, so it doesn't need any of its own.
@@ -41,7 +41,7 @@ tasks.push({
   title: 'Configure static client scopes',
   requires: ['static-clients'],
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const staticClients = requirements['static-clients'];
     const staticScopes = staticClients.map(({ clientId, scopes }) => ({ clientId, scopes }));
 

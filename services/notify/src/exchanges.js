@@ -45,14 +45,14 @@ const commonMessageBuilder = function(message) {
 };
 
 /** Build a message from message */
-const commonRoutingKeyBuilder = function(message, routing) {
+const commonRoutingKeyBuilder = function(_message, routing) {
   return {
     topic: routing[0],
   };
 };
 
 /** Build list of routing keys to CC */
-const commonCCBuilder = function(message, routes) {
+const commonCCBuilder = function(_message, routes) {
   assert(routes instanceof Array, 'Routes must be an array');
   return routes.map(route => `route.${route}`);
 };

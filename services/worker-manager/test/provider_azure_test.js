@@ -2058,8 +2058,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const intermediateCert = getIntermediateCert();
 
           // Disable downloads
-          provider.downloadBinaryResponse = (url) => {
-            return new Promise((resolve, reject) => {
+          provider.downloadBinaryResponse = (_url) => {
+            return new Promise((_resolve, reject) => {
               reject(Error('Mocked downloadBinaryResponse'));
             });
           };

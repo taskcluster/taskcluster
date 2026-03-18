@@ -22,7 +22,7 @@ const exchanges = new Exchanges({
 export default exchanges;
 
 /** Build routing key construct for `exchanges.declare` */
-const buildRoutingKey = (options) => {
+const buildRoutingKey = (_options) => {
   return [
     {
       name: 'reserved',

@@ -1,13 +1,13 @@
 export default {
   LatestTask: {
-    async run(parent, args, { loaders }) {
+    async run(parent, _args, { loaders }) {
       const status = await loaders.status.load(parent.taskId);
 
       return status.runs[parent.runId];
     },
   },
   Worker: {
-    latestTasks(parent, args, { loaders }) {
+    latestTasks(parent, _args, { loaders }) {
       return Promise.all(parent.recentTasks.map(async ({ taskId }) => {
         try {
           return await loaders.task.load(taskId);
@@ -19,7 +19,7 @@ export default {
   },
   Query: {
     worker(
-      parent,
+      _parent,
       { provisionerId, workerType, workerGroup, workerId },
       { loaders },
     ) {
@@ -31,7 +31,7 @@ export default {
       });
     },
     workers(
-      parent,
+      _parent,
       {
         provisionerId,
         workerType,
@@ -54,7 +54,7 @@ export default {
   },
   Mutation: {
     quarantineWorker(
-      parent,
+      _parent,
       { provisionerId, workerType, workerGroup, workerId, payload },
       { clients },
     ) {

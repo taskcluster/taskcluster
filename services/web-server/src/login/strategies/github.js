@@ -64,7 +64,7 @@ export default class Github {
     return user;
   }
 
-  async addRoles(username, userId, user) {
+  async addRoles(_username, userId, user) {
     const [token] = await this.db.fns.load_github_access_token(String(userId));
 
     if (!token) {
@@ -131,7 +131,7 @@ export default class Github {
           callbackURL: `${cfg.app.publicUrl}${callback}`,
           scope: 'repo',
         },
-        async (accessToken, refreshToken, profile, next) => {
+        async (accessToken, _refreshToken, profile, next) => {
           await this.db.fns.add_github_access_token(
             profile.id,
             this.db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),

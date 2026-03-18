@@ -13,7 +13,7 @@ SERVICES.forEach((name) => {
     title: `__lbheartbeat__ endpoint for ${name}`,
     requires: [],
     provides: [`lbheartbeat-${name}`],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       const procs = await readRepoYAML(
         path.join("services", name, "procs.yml"),
       );
@@ -51,7 +51,7 @@ SERVICES.forEach((name) => {
     title: `__heartbeat__ endpoint for ${name}`,
     requires: [],
     provides: [`heartbeat-${name}`],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       const procs = await readRepoYAML(
         path.join("services", name, "procs.yml"),
       );
@@ -89,7 +89,7 @@ SERVICES.forEach((name) => {
     title: `__version__ endpoint for ${name}`,
     requires: [],
     provides: [`version-${name}`],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       const procs = await readRepoYAML(
         path.join("services", name, "procs.yml"),
       );
@@ -134,5 +134,5 @@ tasks.push({
     ]),
   ],
   provides: [`target-dockerflow`],
-  run: async (requirements, utils) => {},
+  run: async (_requirements, _utils) => {},
 });
