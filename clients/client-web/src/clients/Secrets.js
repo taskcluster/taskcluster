@@ -10,150 +10,65 @@ export default class Secrets extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'ping',
-      query: [],
-      route: '/ping',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.lbheartbeat.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'lbheartbeat',
-      query: [],
-      route: '/__lbheartbeat__',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.version.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'version',
-      query: [],
-      route: '/__version__',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.set.entry = {
-      args: ['name'],
-      category: 'Secrets Service',
-      input: true,
-      method: 'put',
-      name: 'set',
-      query: [],
-      route: '/secret/<name>',
-      scopes: 'secrets:set:<name>',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.remove.entry = {
-      args: ['name'],
-      category: 'Secrets Service',
-      method: 'delete',
-      name: 'remove',
-      query: [],
-      route: '/secret/<name>',
-      scopes: 'secrets:set:<name>',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.get.entry = {
-      args: ['name'],
-      category: 'Secrets Service',
-      method: 'get',
-      name: 'get',
-      output: true,
-      query: [],
-      route: '/secret/<name>',
-      scopes: 'secrets:get:<name>',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.list.entry = {
-      args: [],
-      category: 'Secrets Service',
-      method: 'get',
-      name: 'list',
-      output: true,
-      query: ['continuationToken', 'limit'],
-      route: '/secrets',
-      scopes: 'secrets:list-secrets',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.heartbeat.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'heartbeat',
-      query: [],
-      route: '/__heartbeat__',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.set.entry = {"args":["name"],"category":"Secrets Service","input":true,"method":"put","name":"set","query":[],"route":"/secret/<name>","scopes":"secrets:set:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.remove.entry = {"args":["name"],"category":"Secrets Service","method":"delete","name":"remove","query":[],"route":"/secret/<name>","scopes":"secrets:set:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.get.entry = {"args":["name"],"category":"Secrets Service","method":"get","name":"get","output":true,"query":[],"route":"/secret/<name>","scopes":"secrets:get:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.list.entry = {"args":[],"category":"Secrets Service","method":"get","name":"list","output":true,"query":["continuationToken","limit"],"route":"/secrets","scopes":"secrets:list-secrets","stability":"stable","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
-  /* eslint-disable max-len */
+
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
   ping(...args) {
     this.validate(this.ping.entry, args);
 
     return this.request(this.ping.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
   lbheartbeat(...args) {
     this.validate(this.lbheartbeat.entry, args);
 
     return this.request(this.lbheartbeat.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Respond with the JSON version object.
   // https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
-  /* eslint-enable max-len */
   version(...args) {
     this.validate(this.version.entry, args);
 
     return this.request(this.version.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Set the secret associated with some key.  If the secret already exists, it is
   // updated instead.
-  /* eslint-enable max-len */
   set(...args) {
     this.validate(this.set.entry, args);
 
     return this.request(this.set.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Delete the secret associated with some key. It will succeed whether or not the secret exists
-  /* eslint-enable max-len */
   remove(...args) {
     this.validate(this.remove.entry, args);
 
     return this.request(this.remove.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Read the secret associated with some key.  If the secret has recently
   // expired, the response code 410 is returned.  If the caller lacks the
   // scope necessary to get the secret, the call will fail with a 403 code
   // regardless of whether the secret exists.
-  /* eslint-enable max-len */
   get(...args) {
     this.validate(this.get.entry, args);
 
     return this.request(this.get.entry, args);
   }
-  /* eslint-disable max-len */
+
   // List the names of all secrets.
   // By default this end-point will try to return up to 1000 secret names in one
   // request. But it **may return less**, even if more tasks are available.
@@ -163,17 +78,15 @@ export default class Secrets extends Client {
   // get a result without a `continuationToken`.
   // If you are not interested in listing all the members at once, you may
   // use the query-string option `limit` to return fewer.
-  /* eslint-enable max-len */
   list(...args) {
     this.validate(this.list.entry, args);
 
     return this.request(this.list.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Respond with a service heartbeat.
   // This endpoint is used to check on backing services this service
   // depends on.
-  /* eslint-enable max-len */
   heartbeat(...args) {
     this.validate(this.heartbeat.entry, args);
 

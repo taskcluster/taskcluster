@@ -6,7 +6,9 @@
       "**", "!**/node_modules/**", "!services/web-server/build/**",
       "!clients/client-rust/**", "!clients/client-web/build/**",
       "!clients/client-py/**", "!ui/test/e2e/**", "!.yarn/**",
-      "!workers/generic-worker/**", "!clients/client/src/apis.js", "!**/*.css"
+      "!workers/generic-worker/**", "!clients/client/src/apis.js",
+      "!clients/client-web/src/clients/**", "!clients/client-test/test/clients_test.js",
+      "!**/*.css"
     ],
     "maxSize": 5242880
   },

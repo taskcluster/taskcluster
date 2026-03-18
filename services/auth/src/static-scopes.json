@@ -1,7 +1,10 @@
 [
   {
     "clientId": "static/taskcluster/built-in-workers",
-    "scopes": ["queue:claim-work:built-in/*", "queue:worker-id:built-in/*"]
+    "scopes": [
+      "queue:claim-work:built-in/*",
+      "queue:worker-id:built-in/*"
+    ]
   },
   {
     "clientId": "static/taskcluster/github",
@@ -19,31 +22,45 @@
   },
   {
     "clientId": "static/taskcluster/hooks",
-    "scopes": ["assume:hook-id:*", "notify:email:*", "queue:create-task:*"]
+    "scopes": [
+      "assume:hook-id:*",
+      "notify:email:*",
+      "queue:create-task:*"
+    ]
   },
   {
     "clientId": "static/taskcluster/index",
-    "scopes": ["queue:get-artifact:*", "queue:get-task:*"]
+    "scopes": [
+      "queue:get-artifact:*",
+      "queue:get-task:*"
+    ]
   },
   {
     "clientId": "static/taskcluster/notify",
-    "scopes": ["queue:get-task:*"]
+    "scopes": [
+      "queue:get-task:*"
+    ]
   },
   {
     "clientId": "static/taskcluster/object",
-    "scopes": []
+    "scopes": [
+    ]
   },
   {
     "clientId": "static/taskcluster/purge-cache",
-    "scopes": []
+    "scopes": [
+    ]
   },
   {
     "clientId": "static/taskcluster/queue",
-    "scopes": ["*"]
+    "scopes": [
+      "*"
+    ]
   },
   {
     "clientId": "static/taskcluster/secrets",
-    "scopes": []
+    "scopes": [
+    ]
   },
   {
     "clientId": "static/taskcluster/web-server",
@@ -88,6 +105,8 @@
   },
   {
     "clientId": "static/taskcluster/root",
-    "scopes": ["*"]
+    "scopes": [
+      "*"
+    ]
   }
 ]

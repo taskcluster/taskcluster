@@ -11,109 +11,48 @@ export default class GithubEvents extends Client {
       ...options,
     });
   }
-  /* eslint-disable max-len */
+
   // When a GitHub pull request event is posted it will be broadcast on this
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
-  /* eslint-enable max-len */
   pullRequest(pattern) {
-    const entry = {
-      exchange: 'pull-request',
-      name: 'pullRequest',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'organization', required: true },
-        { multipleWords: false, name: 'repository', required: true },
-        { multipleWords: false, name: 'action', required: true },
-      ],
-      schema: 'v1/github-pull-request-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"pull-request","name":"pullRequest","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"organization","required":true},{"multipleWords":false,"name":"repository","required":true},{"multipleWords":false,"name":"action","required":true}],"schema":"v1/github-pull-request-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // When a GitHub push event is posted it will be broadcast on this
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
-  /* eslint-enable max-len */
   push(pattern) {
-    const entry = {
-      exchange: 'push',
-      name: 'push',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'organization', required: true },
-        { multipleWords: false, name: 'repository', required: true },
-      ],
-      schema: 'v1/github-push-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"push","name":"push","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"organization","required":true},{"multipleWords":false,"name":"repository","required":true}],"schema":"v1/github-push-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // When a GitHub release event is posted it will be broadcast on this
   // exchange with the designated `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
-  /* eslint-enable max-len */
   release(pattern) {
-    const entry = {
-      exchange: 'release',
-      name: 'release',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'organization', required: true },
-        { multipleWords: false, name: 'repository', required: true },
-      ],
-      schema: 'v1/github-release-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"release","name":"release","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"organization","required":true},{"multipleWords":false,"name":"repository","required":true}],"schema":"v1/github-release-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // When a GitHub check_run event with action="rerequested" is posted
   // it will be broadcast on this exchange with the designated
   // `organization` and `repository`
   // in the routing-key along with event specific metadata in the payload.
-  /* eslint-enable max-len */
   rerun(pattern) {
-    const entry = {
-      exchange: 'rerun',
-      name: 'rerun',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'organization', required: true },
-        { multipleWords: false, name: 'repository', required: true },
-      ],
-      schema: 'v1/github-rerun-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"rerun","name":"rerun","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"organization","required":true},{"multipleWords":false,"name":"repository","required":true}],"schema":"v1/github-rerun-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // supposed to signal that taskCreate API has been called for every task in the task group
   // for this particular repo and this particular organization
   // currently used for creating initial status indicators in GitHub UI using Statuses API.
   // This particular exchange can also be bound to RabbitMQ queues by custom routes - for that,
   // Pass in the array of routes as a second argument to the publish method. Currently, we do
   // use the statuses routes to bind the handler that creates the initial status.
-  /* eslint-enable max-len */
   taskGroupCreationRequested(pattern) {
-    const entry = {
-      exchange: 'task-group-creation-requested',
-      name: 'taskGroupCreationRequested',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'organization', required: true },
-        { multipleWords: false, name: 'repository', required: true },
-      ],
-      schema: 'v1/task-group-creation-requested.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"task-group-creation-requested","name":"taskGroupCreationRequested","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"organization","required":true},{"multipleWords":false,"name":"repository","required":true}],"schema":"v1/task-group-creation-requested.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
 }

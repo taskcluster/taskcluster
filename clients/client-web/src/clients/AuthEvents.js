@@ -11,88 +11,40 @@ export default class AuthEvents extends Client {
       ...options,
     });
   }
-  /* eslint-disable max-len */
+
   // Message that a new client has been created.
-  /* eslint-enable max-len */
   clientCreated(pattern) {
-    const entry = {
-      exchange: 'client-created',
-      name: 'clientCreated',
-      routingKey: [{ multipleWords: true, name: 'reserved', required: false }],
-      schema: 'v1/client-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"client-created","name":"clientCreated","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/client-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // Message that a new client has been updated.
-  /* eslint-enable max-len */
   clientUpdated(pattern) {
-    const entry = {
-      exchange: 'client-updated',
-      name: 'clientUpdated',
-      routingKey: [{ multipleWords: true, name: 'reserved', required: false }],
-      schema: 'v1/client-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"client-updated","name":"clientUpdated","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/client-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // Message that a new client has been deleted.
-  /* eslint-enable max-len */
   clientDeleted(pattern) {
-    const entry = {
-      exchange: 'client-deleted',
-      name: 'clientDeleted',
-      routingKey: [{ multipleWords: true, name: 'reserved', required: false }],
-      schema: 'v1/client-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"client-deleted","name":"clientDeleted","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/client-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // Message that a new role has been created.
-  /* eslint-enable max-len */
   roleCreated(pattern) {
-    const entry = {
-      exchange: 'role-created',
-      name: 'roleCreated',
-      routingKey: [{ multipleWords: true, name: 'reserved', required: false }],
-      schema: 'v1/role-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"role-created","name":"roleCreated","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/role-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // Message that a new role has been updated.
-  /* eslint-enable max-len */
   roleUpdated(pattern) {
-    const entry = {
-      exchange: 'role-updated',
-      name: 'roleUpdated',
-      routingKey: [{ multipleWords: true, name: 'reserved', required: false }],
-      schema: 'v1/role-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"role-updated","name":"roleUpdated","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/role-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
-  // Message that a new role has been deleted.
-  /* eslint-enable max-len */
-  roleDeleted(pattern) {
-    const entry = {
-      exchange: 'role-deleted',
-      name: 'roleDeleted',
-      routingKey: [{ multipleWords: true, name: 'reserved', required: false }],
-      schema: 'v1/role-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
 
+  // Message that a new role has been deleted.
+  roleDeleted(pattern) {
+    const entry = {"exchange":"role-deleted","name":"roleDeleted","routingKey":[{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/role-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
 }

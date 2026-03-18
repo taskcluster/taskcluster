@@ -10,181 +10,63 @@ export default class Notify extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'ping',
-      query: [],
-      route: '/ping',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.lbheartbeat.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'lbheartbeat',
-      query: [],
-      route: '/__lbheartbeat__',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.version.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'version',
-      query: [],
-      route: '/__version__',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.email.entry = {
-      args: [],
-      category: 'Notifications',
-      input: true,
-      method: 'post',
-      name: 'email',
-      query: [],
-      route: '/email',
-      scopes: 'notify:email:<address>',
-      stability: 'experimental',
-      type: 'function',
-    }; // eslint-disable-line
-    this.pulse.entry = {
-      args: [],
-      category: 'Notifications',
-      input: true,
-      method: 'post',
-      name: 'pulse',
-      query: [],
-      route: '/pulse',
-      scopes: 'notify:pulse:<routingKey>',
-      stability: 'experimental',
-      type: 'function',
-    }; // eslint-disable-line
-    this.matrix.entry = {
-      args: [],
-      category: 'Notifications',
-      input: true,
-      method: 'post',
-      name: 'matrix',
-      query: [],
-      route: '/matrix',
-      scopes: 'notify:matrix-room:<roomId>',
-      stability: 'experimental',
-      type: 'function',
-    }; // eslint-disable-line
-    this.slack.entry = {
-      args: [],
-      category: 'Notifications',
-      input: true,
-      method: 'post',
-      name: 'slack',
-      query: [],
-      route: '/slack',
-      scopes: 'notify:slack-channel:<channelId>',
-      stability: 'experimental',
-      type: 'function',
-    }; // eslint-disable-line
-    this.addDenylistAddress.entry = {
-      args: [],
-      category: 'Denylist',
-      input: true,
-      method: 'post',
-      name: 'addDenylistAddress',
-      query: [],
-      route: '/denylist/add',
-      scopes: 'notify:manage-denylist',
-      stability: 'experimental',
-      type: 'function',
-    }; // eslint-disable-line
-    this.deleteDenylistAddress.entry = {
-      args: [],
-      category: 'Denylist',
-      input: true,
-      method: 'delete',
-      name: 'deleteDenylistAddress',
-      query: [],
-      route: '/denylist/delete',
-      scopes: 'notify:manage-denylist',
-      stability: 'experimental',
-      type: 'function',
-    }; // eslint-disable-line
-    this.listDenylist.entry = {
-      args: [],
-      category: 'Denylist',
-      method: 'get',
-      name: 'listDenylist',
-      output: true,
-      query: ['continuationToken', 'limit'],
-      route: '/denylist/list',
-      scopes: 'notify:manage-denylist',
-      stability: 'experimental',
-      type: 'function',
-    }; // eslint-disable-line
-    this.heartbeat.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'heartbeat',
-      query: [],
-      route: '/__heartbeat__',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.email.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"email","query":[],"route":"/email","scopes":"notify:email:<address>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.pulse.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"pulse","query":[],"route":"/pulse","scopes":"notify:pulse:<routingKey>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.matrix.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"matrix","query":[],"route":"/matrix","scopes":"notify:matrix-room:<roomId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.slack.entry = {"args":[],"category":"Notifications","input":true,"method":"post","name":"slack","query":[],"route":"/slack","scopes":"notify:slack-channel:<channelId>","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.addDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"post","name":"addDenylistAddress","query":[],"route":"/denylist/add","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.deleteDenylistAddress.entry = {"args":[],"category":"Denylist","input":true,"method":"delete","name":"deleteDenylistAddress","query":[],"route":"/denylist/delete","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.listDenylist.entry = {"args":[],"category":"Denylist","method":"get","name":"listDenylist","output":true,"query":["continuationToken","limit"],"route":"/denylist/list","scopes":"notify:manage-denylist","stability":"experimental","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
-  /* eslint-disable max-len */
+
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
   ping(...args) {
     this.validate(this.ping.entry, args);
 
     return this.request(this.ping.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
   lbheartbeat(...args) {
     this.validate(this.lbheartbeat.entry, args);
 
     return this.request(this.lbheartbeat.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Respond with the JSON version object.
   // https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
-  /* eslint-enable max-len */
   version(...args) {
     this.validate(this.version.entry, args);
 
     return this.request(this.version.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Send an email to `address`. The content is markdown and will be rendered
   // to HTML, but both the HTML and raw markdown text will be sent in the
   // email. If a link is included, it will be rendered to a nice button in the
   // HTML version of the email
   // In case when duplicate message has been detected and no email was sent,
   // this endpoint will return 204 status code.
-  /* eslint-enable max-len */
   email(...args) {
     this.validate(this.email.entry, args);
 
     return this.request(this.email.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Publish a message on pulse with the given `routingKey`.
   // Endpoint will return 204 when duplicate message has been detected
-  /* eslint-enable max-len */
   pulse(...args) {
     this.validate(this.pulse.entry, args);
 
     return this.request(this.pulse.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Post a message to a room in Matrix. Optionally includes formatted message.
   // The `roomId` in the scopes is a fully formed `roomId` with leading `!` such
   // as `!foo:bar.com`.
@@ -192,43 +74,39 @@ export default class Notify extends Client {
   // it can post there!
   // In case when duplicate message has been detected and no message was sent,
   // this endpoint will return 204 status code.
-  /* eslint-enable max-len */
   matrix(...args) {
     this.validate(this.matrix.entry, args);
 
     return this.request(this.matrix.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Post a message to a Slack channel.
   // The `channelId` in the scopes is a Slack channel ID, starting with a capital C.
   // The Slack app can post into public channels by default but will need to be added
   // to private channels before it can post messages there.
   // In case when duplicate message has been detected and no message was sent,
   // this endpoint will return 204 status code.
-  /* eslint-enable max-len */
   slack(...args) {
     this.validate(this.slack.entry, args);
 
     return this.request(this.slack.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Add the given address to the notification denylist. Addresses in the denylist will be ignored
   // by the notification service.
-  /* eslint-enable max-len */
   addDenylistAddress(...args) {
     this.validate(this.addDenylistAddress.entry, args);
 
     return this.request(this.addDenylistAddress.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Delete the specified address from the notification denylist.
-  /* eslint-enable max-len */
   deleteDenylistAddress(...args) {
     this.validate(this.deleteDenylistAddress.entry, args);
 
     return this.request(this.deleteDenylistAddress.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Lists all the denylisted addresses.
   // By default this end-point will try to return up to 1000 addresses in one
   // request. But it **may return less**, even if more tasks are available.
@@ -238,17 +116,15 @@ export default class Notify extends Client {
   // get a result without a `continuationToken`.
   // If you are not interested in listing all the members at once, you may
   // use the query-string option `limit` to return fewer.
-  /* eslint-enable max-len */
   listDenylist(...args) {
     this.validate(this.listDenylist.entry, args);
 
     return this.request(this.listDenylist.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Respond with a service heartbeat.
   // This endpoint is used to check on backing services this service
   // depends on.
-  /* eslint-enable max-len */
   heartbeat(...args) {
     this.validate(this.heartbeat.entry, args);
 

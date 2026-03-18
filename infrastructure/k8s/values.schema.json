@@ -48,7 +48,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -125,7 +130,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "purgeExpiredClients": {
@@ -138,7 +146,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -157,11 +168,19 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["web", "purgeExpiredClients", "purgeAuditHistory"],
+          "required": [
+            "web",
+            "purgeExpiredClients",
+            "purgeAuditHistory"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         },
@@ -213,7 +232,14 @@
           "type": "string"
         }
       },
-      "required": ["procs", "static_clients", "read_db_url", "write_db_url", "pulse_username", "pulse_password"],
+      "required": [
+        "procs",
+        "static_clients",
+        "read_db_url",
+        "write_db_url",
+        "pulse_username",
+        "pulse_password"
+      ],
       "title": "Configuration options for auth",
       "type": "object"
     },
@@ -255,7 +281,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -285,11 +316,17 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["server"],
+          "required": [
+            "server"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         },
@@ -300,7 +337,11 @@
           "type": "string"
         }
       },
-      "required": ["procs", "taskcluster_client_id", "taskcluster_access_token"],
+      "required": [
+        "procs",
+        "taskcluster_client_id",
+        "taskcluster_access_token"
+      ],
       "title": "Configuration options for built-in-workers",
       "type": "object"
     },
@@ -321,7 +362,9 @@
           "type": "string"
         }
       },
-      "required": ["reporter"],
+      "required": [
+        "reporter"
+      ],
       "type": "object"
     },
     "forceSSL": {
@@ -366,7 +409,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -402,7 +450,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -421,7 +472,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "worker": {
@@ -440,11 +495,19 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["web", "worker", "sync"],
+          "required": [
+            "web",
+            "worker",
+            "sync"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         },
@@ -530,7 +593,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -574,7 +642,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "listeners": {
@@ -593,7 +664,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "scheduler": {
@@ -612,7 +687,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -631,11 +710,20 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["web", "scheduler", "listeners", "expires"],
+          "required": [
+            "web",
+            "scheduler",
+            "listeners",
+            "expires"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         },
@@ -712,7 +800,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -739,7 +832,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "handlers": {
@@ -758,7 +854,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -777,11 +877,19 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["web", "handlers", "expire"],
+          "required": [
+            "web",
+            "handlers",
+            "expire"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         },
@@ -889,7 +997,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -954,7 +1067,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -973,11 +1090,18 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["web", "handler"],
+          "required": [
+            "web",
+            "handler"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         },
@@ -1059,7 +1183,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -1130,7 +1259,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -1149,11 +1281,18 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["web", "expire"],
+          "required": [
+            "web",
+            "expire"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         },
@@ -1170,7 +1309,13 @@
           "type": "string"
         }
       },
-      "required": ["procs", "taskcluster_client_id", "taskcluster_access_token", "read_db_url", "write_db_url"],
+      "required": [
+        "procs",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "read_db_url",
+        "write_db_url"
+      ],
       "title": "Configuration options for object",
       "type": "object"
     },
@@ -1272,7 +1417,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -1299,7 +1449,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -1318,11 +1471,18 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["web", "expireCachePurges"],
+          "required": [
+            "web",
+            "expireCachePurges"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         },
@@ -1339,7 +1499,13 @@
           "type": "string"
         }
       },
-      "required": ["procs", "read_db_url", "write_db_url", "taskcluster_client_id", "taskcluster_access_token"],
+      "required": [
+        "procs",
+        "read_db_url",
+        "write_db_url",
+        "taskcluster_client_id",
+        "taskcluster_access_token"
+      ],
       "title": "Configuration options for purge-cache",
       "type": "object"
     },
@@ -1384,7 +1550,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -1444,7 +1615,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "deadlineResolver": {
@@ -1463,7 +1638,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "dependencyResolver": {
@@ -1482,7 +1661,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "expireArtifacts": {
@@ -1495,7 +1678,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "expireQueueMessages": {
@@ -1508,7 +1694,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "expireTask": {
@@ -1521,7 +1710,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "expireTaskDependency": {
@@ -1534,7 +1726,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "expireTaskGroups": {
@@ -1547,7 +1742,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "expireWorkerInfo": {
@@ -1560,7 +1758,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -1579,7 +1780,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "workerMetrics": {
@@ -1598,7 +1803,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "workerRemovedResolver": {
@@ -1617,7 +1826,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
@@ -1733,7 +1946,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -1760,16 +1978,24 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["web"],
+          "required": [
+            "web"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         }
       },
-      "required": ["procs"],
+      "required": [
+        "procs"
+      ],
       "title": "Configuration options for references",
       "type": "object"
     },
@@ -1816,7 +2042,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -1857,7 +2088,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -1876,11 +2110,18 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["web", "expire"],
+          "required": [
+            "web",
+            "expire"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         },
@@ -1897,14 +2138,26 @@
           "type": "string"
         }
       },
-      "required": ["procs", "taskcluster_client_id", "taskcluster_access_token", "read_db_url", "write_db_url"],
+      "required": [
+        "procs",
+        "taskcluster_client_id",
+        "taskcluster_access_token",
+        "read_db_url",
+        "write_db_url"
+      ],
       "title": "Configuration options for secrets",
       "type": "object"
     },
     "skipResourceTypes": {
       "description": "A list of kubernetes resource types to skip creating.  Useful when some resources are being managed externally.",
       "items": {
-        "enum": ["configmap", "secret", "ingress", "serviceaccount", "podmonitoring"],
+        "enum": [
+          "configmap",
+          "secret",
+          "ingress",
+          "serviceaccount",
+          "podmonitoring"
+        ],
         "type": "string"
       },
       "type": "array"
@@ -1951,7 +2204,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -1987,11 +2245,17 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
-          "required": ["web"],
+          "required": [
+            "web"
+          ],
           "title": "Process settings for this service",
           "type": "object"
         },
@@ -2010,7 +2274,12 @@
           "type": "string"
         }
       },
-      "required": ["procs", "graphql_subscription_endpoint", "graphql_endpoint", "ui_login_strategy_names"],
+      "required": [
+        "procs",
+        "graphql_subscription_endpoint",
+        "graphql_endpoint",
+        "ui_login_strategy_names"
+      ],
       "title": "Configuration options for ui",
       "type": "object"
     },
@@ -2059,7 +2328,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -2100,7 +2374,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "cleanup_expire_auth_codes": {
@@ -2113,7 +2390,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "cleanup_session_storage": {
@@ -2126,7 +2406,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "scanner": {
@@ -2139,7 +2422,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -2158,7 +2444,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },
@@ -2274,7 +2564,12 @@
               "type": "integer"
             }
           },
-          "required": ["enabled", "minReplicas", "maxReplicas", "targetCPUUtilizationPercentage"],
+          "required": [
+            "enabled",
+            "minReplicas",
+            "maxReplicas",
+            "targetCPUUtilizationPercentage"
+          ],
           "title": "Autoscaling configuration for this service",
           "type": "object"
         },
@@ -2312,7 +2607,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "expire_launch_configs": {
@@ -2325,7 +2623,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "expire_worker_pools": {
@@ -2338,7 +2639,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "expire_workers": {
@@ -2351,7 +2655,10 @@
                   "type": "string"
                 }
               },
-              "required": ["memory", "cpu"],
+              "required": [
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "provisioner": {
@@ -2370,7 +2677,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "web": {
@@ -2389,7 +2700,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "workerscanner": {
@@ -2408,7 +2723,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             },
             "workerscanner_azure": {
@@ -2427,7 +2746,11 @@
                   "type": "integer"
                 }
               },
-              "required": ["replicas", "memory", "cpu"],
+              "required": [
+                "replicas",
+                "memory",
+                "cpu"
+              ],
               "type": "object"
             }
           },

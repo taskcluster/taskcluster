@@ -10,136 +10,41 @@ export default class Object extends Client {
       exchangePrefix: '',
       ...options,
     });
-    this.ping.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'ping',
-      query: [],
-      route: '/ping',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.lbheartbeat.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'lbheartbeat',
-      query: [],
-      route: '/__lbheartbeat__',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.version.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'version',
-      query: [],
-      route: '/__version__',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.createUpload.entry = {
-      args: ['name'],
-      category: 'Upload',
-      input: true,
-      method: 'put',
-      name: 'createUpload',
-      output: true,
-      query: [],
-      route: '/upload/<name>',
-      scopes: 'object:upload:<projectId>:<name>',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.finishUpload.entry = {
-      args: ['name'],
-      category: 'Upload',
-      input: true,
-      method: 'post',
-      name: 'finishUpload',
-      query: [],
-      route: '/finish-upload/<name>',
-      scopes: 'object:upload:<projectId>:<name>',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.startDownload.entry = {
-      args: ['name'],
-      category: 'Download',
-      input: true,
-      method: 'put',
-      name: 'startDownload',
-      output: true,
-      query: [],
-      route: '/start-download/<name>',
-      scopes: 'object:download:<name>',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.object.entry = {
-      args: ['name'],
-      category: 'Objects',
-      method: 'get',
-      name: 'object',
-      output: true,
-      query: [],
-      route: '/metadata/<name>',
-      scopes: 'object:download:<name>',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.download.entry = {
-      args: ['name'],
-      category: 'Download',
-      method: 'get',
-      name: 'download',
-      query: [],
-      route: '/download/<name>',
-      scopes: 'object:download:<name>',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
-    this.heartbeat.entry = {
-      args: [],
-      category: 'Monitoring',
-      method: 'get',
-      name: 'heartbeat',
-      query: [],
-      route: '/__heartbeat__',
-      stability: 'stable',
-      type: 'function',
-    }; // eslint-disable-line
+    this.ping.entry = {"args":[],"category":"Monitoring","method":"get","name":"ping","query":[],"route":"/ping","stability":"stable","type":"function"}; // eslint-disable-line
+    this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"}; // eslint-disable-line
+    this.createUpload.entry = {"args":["name"],"category":"Upload","input":true,"method":"put","name":"createUpload","output":true,"query":[],"route":"/upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.finishUpload.entry = {"args":["name"],"category":"Upload","input":true,"method":"post","name":"finishUpload","query":[],"route":"/finish-upload/<name>","scopes":"object:upload:<projectId>:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.startDownload.entry = {"args":["name"],"category":"Download","input":true,"method":"put","name":"startDownload","output":true,"query":[],"route":"/start-download/<name>","scopes":"object:download:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.object.entry = {"args":["name"],"category":"Objects","method":"get","name":"object","output":true,"query":[],"route":"/metadata/<name>","scopes":"object:download:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.download.entry = {"args":["name"],"category":"Download","method":"get","name":"download","query":[],"route":"/download/<name>","scopes":"object:download:<name>","stability":"stable","type":"function"}; // eslint-disable-line
+    this.heartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"heartbeat","query":[],"route":"/__heartbeat__","stability":"stable","type":"function"}; // eslint-disable-line
   }
-  /* eslint-disable max-len */
+
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
   ping(...args) {
     this.validate(this.ping.entry, args);
 
     return this.request(this.ping.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Respond without doing anything.
   // This endpoint is used to check that the service is up.
-  /* eslint-enable max-len */
   lbheartbeat(...args) {
     this.validate(this.lbheartbeat.entry, args);
 
     return this.request(this.lbheartbeat.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Respond with the JSON version object.
   // https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
-  /* eslint-enable max-len */
   version(...args) {
     this.validate(this.version.entry, args);
 
     return this.request(this.version.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Create a new object by initiating upload of its data.
   // This endpoint implements negotiation of upload methods.  It can be called
   // multiple times if necessary, either to propose new upload methods or to
@@ -155,13 +60,12 @@ export default class Object extends Client {
   // in" the `expiration`, `projectId`, and `uploadId` properties and any
   // supplied hashes.
   // Unfinished uploads expire after 1 day.
-  /* eslint-enable max-len */
   createUpload(...args) {
     this.validate(this.createUpload.entry, args);
 
     return this.request(this.createUpload.entry, args);
   }
-  /* eslint-disable max-len */
+
   // This endpoint marks an upload as complete.  This indicates that all data has been
   // transmitted to the backend.  After this call, no further calls to `uploadObject` are
   // allowed, and downloads of the object may begin.  This method is idempotent, but will
@@ -171,33 +75,30 @@ export default class Object extends Client {
   // download an object with no hashes.  The utility methods included with the
   // client libraries always include hashes as of version 44.0.0.
   // Note that, once `finishUpload` is complete, the object is considered immutable.
-  /* eslint-enable max-len */
   finishUpload(...args) {
     this.validate(this.finishUpload.entry, args);
 
     return this.request(this.finishUpload.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Start the process of downloading an object's data.  Call this endpoint with a list of acceptable
   // download methods, and the server will select a method and return the corresponding payload.
   // Returns a 406 error if none of the given download methods are available.
   // See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.
-  /* eslint-enable max-len */
   startDownload(...args) {
     this.validate(this.startDownload.entry, args);
 
     return this.request(this.startDownload.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Get the metadata for the named object.  This metadata is not sufficient to
   // get the object's content; for that use `startDownload`.
-  /* eslint-enable max-len */
   object(...args) {
     this.validate(this.object.entry, args);
 
     return this.request(this.object.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Get the data in an object directly.  This method does not return a JSON body, but
   // redirects to a location that will serve the object content directly.
   // URLs for this endpoint, perhaps with attached authentication (`?bewit=..`),
@@ -208,17 +109,15 @@ export default class Object extends Client {
   // Situations where such functionality is required should ues the
   // `startDownload` API endpoint.
   // See [Simple Downloads](https://docs.taskcluster.net/docs/reference/platform/object/simple-downloads) for more detail.
-  /* eslint-enable max-len */
   download(...args) {
     this.validate(this.download.entry, args);
 
     return this.request(this.download.entry, args);
   }
-  /* eslint-disable max-len */
+
   // Respond with a service heartbeat.
   // This endpoint is used to check on backing services this service
   // depends on.
-  /* eslint-enable max-len */
   heartbeat(...args) {
     this.validate(this.heartbeat.entry, args);
 

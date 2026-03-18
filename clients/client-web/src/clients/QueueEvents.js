@@ -11,92 +11,35 @@ export default class QueueEvents extends Client {
       ...options,
     });
   }
-  /* eslint-disable max-len */
+
   // When a task is created or just defined a message is posted to this
   // exchange.
   // This message exchange is mainly useful when tasks are created with dependencies
   // on incomplete tasks, as this does not make the task
   // `pending`. Thus, no `taskPending` message is published.
-  /* eslint-enable max-len */
   taskDefined(pattern) {
-    const entry = {
-      exchange: 'task-defined',
-      name: 'taskDefined',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskId', required: true },
-        { multipleWords: false, name: 'runId', required: false },
-        { multipleWords: false, name: 'workerGroup', required: false },
-        { multipleWords: false, name: 'workerId', required: false },
-        { multipleWords: false, name: 'provisionerId', required: true },
-        { multipleWords: false, name: 'workerType', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/task-defined-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"task-defined","name":"taskDefined","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-defined-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // When a task becomes `pending` a message is posted to this exchange.
   // This is useful for workers who doesn't want to constantly poll the queue
   // for new tasks. The queue will also be authority for task states and
   // claims. But using this exchange workers should be able to distribute work
   // efficiently and they would be able to reduce their polling interval
   // significantly without affecting general responsiveness.
-  /* eslint-enable max-len */
   taskPending(pattern) {
-    const entry = {
-      exchange: 'task-pending',
-      name: 'taskPending',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskId', required: true },
-        { multipleWords: false, name: 'runId', required: true },
-        { multipleWords: false, name: 'workerGroup', required: false },
-        { multipleWords: false, name: 'workerId', required: false },
-        { multipleWords: false, name: 'provisionerId', required: true },
-        { multipleWords: false, name: 'workerType', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/task-pending-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"task-pending","name":"taskPending","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":true},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-pending-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // Whenever a task is claimed by a worker, a run is started on the worker,
   // and a message is posted on this exchange.
-  /* eslint-enable max-len */
   taskRunning(pattern) {
-    const entry = {
-      exchange: 'task-running',
-      name: 'taskRunning',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskId', required: true },
-        { multipleWords: false, name: 'runId', required: true },
-        { multipleWords: false, name: 'workerGroup', required: true },
-        { multipleWords: false, name: 'workerId', required: true },
-        { multipleWords: false, name: 'provisionerId', required: true },
-        { multipleWords: false, name: 'workerType', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/task-running-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"task-running","name":"taskRunning","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-running-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // Whenever the `createArtifact` end-point is called, the queue will create
   // a record of the artifact and post a message on this exchange. All of this
   // happens before the queue returns a signed URL for the caller to upload
@@ -115,200 +58,66 @@ export default class QueueEvents extends Client {
   // successfully.
   // *NOTE*: this message is currently only sent for reference and error
   // artifacts.  This will be remedied in a future version of Taskcluster.
-  /* eslint-enable max-len */
   artifactCreated(pattern) {
-    const entry = {
-      exchange: 'artifact-created',
-      name: 'artifactCreated',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskId', required: true },
-        { multipleWords: false, name: 'runId', required: true },
-        { multipleWords: false, name: 'workerGroup', required: true },
-        { multipleWords: false, name: 'workerId', required: true },
-        { multipleWords: false, name: 'provisionerId', required: true },
-        { multipleWords: false, name: 'workerType', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/artifact-created-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"artifact-created","name":"artifactCreated","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/artifact-created-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // When a task is successfully completed by a worker a message is posted
   // this exchange.
   // This message is routed using the `runId`, `workerGroup` and `workerId`
   // that completed the task. But information about additional runs is also
   // available from the task status structure.
-  /* eslint-enable max-len */
   taskCompleted(pattern) {
-    const entry = {
-      exchange: 'task-completed',
-      name: 'taskCompleted',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskId', required: true },
-        { multipleWords: false, name: 'runId', required: true },
-        { multipleWords: false, name: 'workerGroup', required: true },
-        { multipleWords: false, name: 'workerId', required: true },
-        { multipleWords: false, name: 'provisionerId', required: true },
-        { multipleWords: false, name: 'workerType', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/task-completed-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"task-completed","name":"taskCompleted","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":true},{"multipleWords":false,"name":"workerGroup","required":true},{"multipleWords":false,"name":"workerId","required":true},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-completed-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // When a task ran, but failed to complete successfully a message is posted
   // to this exchange. This is same as worker ran task-specific code, but the
   // task specific code exited non-zero.
-  /* eslint-enable max-len */
   taskFailed(pattern) {
-    const entry = {
-      exchange: 'task-failed',
-      name: 'taskFailed',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskId', required: true },
-        { multipleWords: false, name: 'runId', required: false },
-        { multipleWords: false, name: 'workerGroup', required: false },
-        { multipleWords: false, name: 'workerId', required: false },
-        { multipleWords: false, name: 'provisionerId', required: true },
-        { multipleWords: false, name: 'workerType', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/task-failed-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"task-failed","name":"taskFailed","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-failed-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // Whenever Taskcluster fails to run a message is posted to this exchange.
   // This happens if the task isn't completed before its `deadlìne`,
   // all retries failed (i.e. workers stopped responding), the task was
   // canceled by another entity, or the task carried a malformed payload.
   // The specific _reason_ is evident from that task status structure, refer
   // to the `reasonResolved` property for the last run.
-  /* eslint-enable max-len */
   taskException(pattern) {
-    const entry = {
-      exchange: 'task-exception',
-      name: 'taskException',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskId', required: true },
-        { multipleWords: false, name: 'runId', required: false },
-        { multipleWords: false, name: 'workerGroup', required: false },
-        { multipleWords: false, name: 'workerId', required: false },
-        { multipleWords: false, name: 'provisionerId', required: true },
-        { multipleWords: false, name: 'workerType', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/task-exception-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"task-exception","name":"taskException","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-exception-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // A message is published on task-group-resolved whenever all submitted
   // tasks (whether scheduled or unscheduled) for a given task group have
   // been resolved, regardless of whether they resolved as successful or
   // not. A task group may be resolved multiple times, since new tasks may
   // be submitted against an already resolved task group.
-  /* eslint-enable max-len */
   taskGroupResolved(pattern) {
-    const entry = {
-      exchange: 'task-group-resolved',
-      name: 'taskGroupResolved',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/task-group-changed-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"task-group-resolved","name":"taskGroupResolved","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-group-changed-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // A message is published on task-group-sealed whenever task group is sealed.
   // This task group will no longer allow creation of new tasks.
-  /* eslint-enable max-len */
   taskGroupSealed(pattern) {
-    const entry = {
-      exchange: 'task-group-sealed',
-      name: 'taskGroupSealed',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/task-group-changed-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"task-group-sealed","name":"taskGroupSealed","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-group-changed-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
+
   // A message published when task priority was updated via `changeTaskPriority` API call.
-  /* eslint-enable max-len */
   taskPriorityChanged(pattern) {
-    const entry = {
-      exchange: 'task-priority-changed',
-      name: 'taskPriorityChanged',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskId', required: true },
-        { multipleWords: false, name: 'runId', required: false },
-        { multipleWords: false, name: 'workerGroup', required: false },
-        { multipleWords: false, name: 'workerId', required: false },
-        { multipleWords: false, name: 'provisionerId', required: true },
-        { multipleWords: false, name: 'workerType', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/task-priority-changed-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"task-priority-changed","name":"taskPriorityChanged","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskId","required":true},{"multipleWords":false,"name":"runId","required":false},{"multipleWords":false,"name":"workerGroup","required":false},{"multipleWords":false,"name":"workerId","required":false},{"multipleWords":false,"name":"provisionerId","required":true},{"multipleWords":false,"name":"workerType","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-priority-changed-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
-  /* eslint-disable max-len */
-  // A message published when task group priority was changed via `changeTaskGroupPriority` API call.
-  /* eslint-enable max-len */
-  taskGroupPriorityChanged(pattern) {
-    const entry = {
-      exchange: 'task-group-priority-changed',
-      name: 'taskGroupPriorityChanged',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: false, name: 'taskGroupId', required: true },
-        { multipleWords: false, name: 'schedulerId', required: true },
-        { multipleWords: true, name: 'reserved', required: false },
-      ],
-      schema: 'v1/task-group-priority-changed-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
 
+  // A message published when task group priority was changed via `changeTaskGroupPriority` API call.
+  taskGroupPriorityChanged(pattern) {
+    const entry = {"exchange":"task-group-priority-changed","name":"taskGroupPriorityChanged","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":false,"name":"taskGroupId","required":true},{"multipleWords":false,"name":"schedulerId","required":true},{"multipleWords":true,"name":"reserved","required":false}],"schema":"v1/task-group-priority-changed-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
 }

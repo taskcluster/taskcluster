@@ -11,26 +11,15 @@ export default class NotifyEvents extends Client {
       ...options,
     });
   }
-  /* eslint-disable max-len */
+
   // An arbitrary message that a taskcluster user
   // can trigger if they like.
   // The standard one that is published by us watching
   // for the completion of tasks is just the task status
   // data that we pull from the queue `status()` endpoint
   // when we notice a task is complete.
-  /* eslint-enable max-len */
   notify(pattern) {
-    const entry = {
-      exchange: 'notification',
-      name: 'notify',
-      routingKey: [
-        { constant: 'primary', multipleWords: false, name: 'routingKeyKind', required: true },
-        { multipleWords: true, name: 'topic', required: true },
-      ],
-      schema: 'v1/notification-message.json#',
-      type: 'topic-exchange',
-    }; // eslint-disable-line
-
+    const entry = {"exchange":"notification","name":"notify","routingKey":[{"constant":"primary","multipleWords":false,"name":"routingKeyKind","required":true},{"multipleWords":true,"name":"topic","required":true}],"schema":"v1/notification-message.json#","type":"topic-exchange"};
     return this.normalizePattern(entry, pattern);
   }
 }
