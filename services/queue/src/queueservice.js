@@ -68,7 +68,7 @@ export class QueueService {
     assert(workerId, 'workerId must be given');
     assert(typeof runId === 'number', 'runId must be a number');
     assert(takenUntil instanceof Date, 'takenUntil must be a date');
-    assert(Number.isFinite(takenUntil), 'takenUntil must be a valid date');
+    assert(Number.isFinite(takenUntil.getTime()), 'takenUntil must be a valid date');
 
     await this.db.fns.queue_claimed_task_put(taskId, runId, takenUntil.toJSON(), taskQueueId, workerGroup, workerId);
   }
@@ -175,7 +175,7 @@ export class QueueService {
     assert(taskGroupId, 'taskGroupId must be given');
     assert(schedulerId, 'schedulerId must be given');
     assert(deadline instanceof Date, 'deadline must be a date');
-    assert(Number.isFinite(deadline), 'deadline must be a valid date');
+    assert(Number.isFinite(deadline.getTime()), 'deadline must be a valid date');
 
     const delay = Math.floor(this.deadlineDelay / 1000);
     debug('Put deadline message to be visible in %s seconds', secondsTo(deadline) + delay);
