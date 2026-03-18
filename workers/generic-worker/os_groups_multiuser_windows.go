@@ -7,11 +7,13 @@ import (
 )
 
 func addUserToGroup(user, group string) error {
-	return host.Run("powershell", "-Command", "Add-LocalGroupMember -Group '"+group+"' -Member '"+user+"'")
+	return host.Run("powershell", "-Command",
+		"Add-LocalGroupMember -Group '"+host.EscapePowerShellSingleQuote(group)+"' -Member '"+host.EscapePowerShellSingleQuote(user)+"'")
 }
 
 func removeUserFromGroup(user, group string) error {
-	return host.Run("powershell", "-Command", "Remove-LocalGroupMember -Group '"+group+"' -Member '"+user+"'")
+	return host.Run("powershell", "-Command",
+		"Remove-LocalGroupMember -Group '"+host.EscapePowerShellSingleQuote(group)+"' -Member '"+host.EscapePowerShellSingleQuote(user)+"'")
 }
 
 func (osGroups *OSGroups) refreshTaskCommands() (err *CommandExecutionError) {
