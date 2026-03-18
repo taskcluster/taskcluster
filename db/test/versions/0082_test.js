@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
-import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import slugid from 'slugid';
+import helper from '../helper.js';
 
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 

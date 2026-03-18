@@ -1,9 +1,9 @@
 import assert from 'node:assert';
-import path from 'node:path';
 import fs from 'node:fs/promises';
-import helper from './helper.js';
-import libUrls from 'taskcluster-lib-urls';
+import path from 'node:path';
 import testing from '@taskcluster/lib-testing';
+import libUrls from 'taskcluster-lib-urls';
+import helper from './helper.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const loadWebhookJson = async (filename) => {

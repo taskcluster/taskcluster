@@ -1,14 +1,15 @@
+import assert from 'node:assert';
+import path from 'node:path';
+import { App } from '@taskcluster/lib-app';
+import testing from '@taskcluster/lib-testing';
+import SchemaSet from '@taskcluster/lib-validate';
+import debugFactory from 'debug';
+import hawk from 'hawk';
 import _ from 'lodash';
 import request from 'superagent';
-import hawk from 'hawk';
-import assert from 'node:assert';
-import SchemaSet from '@taskcluster/lib-validate';
-import { App } from '@taskcluster/lib-app';
 import { APIBuilder } from '../src/index.js';
 import { monitor } from './helper.js';
-import testing from '@taskcluster/lib-testing';
-import path from 'node:path';
-import debugFactory from 'debug';
+
 const debug = debugFactory('auth_test');
 
 const __dirname = new URL('.', import.meta.url).pathname;

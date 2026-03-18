@@ -1,15 +1,17 @@
 import debugFactory from 'debug';
+
 const debug = debugFactory('@taskcluster/lib-validate');
-import _ from 'lodash';
+
+import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import walk from 'walk';
-import yaml from 'js-yaml';
-import assert from 'node:assert';
-import libUrls from 'taskcluster-lib-urls';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { renderConstants, checkRefs } from './util.js';
+import yaml from 'js-yaml';
+import _ from 'lodash';
+import libUrls from 'taskcluster-lib-urls';
+import walk from 'walk';
+import { checkRefs, renderConstants } from './util.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

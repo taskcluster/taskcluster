@@ -1,11 +1,11 @@
-import { Component, Fragment } from 'react';
-import { string } from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import MDX from '@mdx-js/runtime';
-import Entry from './Entry';
+import { string } from 'prop-types';
+import { Component, Fragment } from 'react';
+import { withRouter } from 'react-router-dom';
+import findRefDoc from '../../../utils/findRefDoc';
 import components from '../components';
 import HeaderWithAnchor from '../components/HeaderWithAnchor';
-import findRefDoc from '../../../utils/findRefDoc';
+import Entry from './Entry';
 
 @withRouter
 export default class ExchangesReference extends Component {

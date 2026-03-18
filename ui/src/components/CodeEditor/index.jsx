@@ -1,8 +1,8 @@
-import { Component } from 'react';
-import { object, string, func } from 'prop-types';
-import { Controlled } from 'react-codemirror2';
-import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
+import { func, object, string } from 'prop-types';
+import { Component } from 'react';
+import { Controlled } from 'react-codemirror2';
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/yaml/yaml';
 import 'codemirror/mode/javascript/javascript';

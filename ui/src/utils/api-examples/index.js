@@ -8,11 +8,11 @@
 import generateCurlExample from './curl';
 import generateGoExample from './go';
 import generateNodeExample from './node';
+import generatePayloadExample from './payload-generator';
 import generatePythonExample from './python';
-import generateWebExample from './web';
 import generateRustExample from './rust';
 import generateShellExample from './shell';
-import generatePayloadExample from './payload-generator';
+import generateWebExample from './web';
 
 // Default version - should match the current Taskcluster version
 const DEFAULT_VERSION = '93';

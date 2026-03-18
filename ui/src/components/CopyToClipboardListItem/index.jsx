@@ -1,10 +1,10 @@
-import { node, string, object } from 'prop-types';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { makeStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
+import { makeStyles } from '@material-ui/core/styles';
 import CheckIcon from 'mdi-react/CheckIcon';
+import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
+import { node, object, string } from 'prop-types';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import useCopyToClipboard from '../../utils/useCopyToClipboard';
 
 const useStyles = makeStyles((theme) => ({

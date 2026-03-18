@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import classNames from 'classnames';
-import { bool, string, func, number } from 'prop-types';
+import { alpha, withStyles } from '@material-ui/core/styles';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import { alpha, withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
+import { bool, func, number, string } from 'prop-types';
+import { useState } from 'react';
 import { ReactGhLikeDiff } from 'react-gh-like-diff';
 import 'react-gh-like-diff/dist/css/diff2html.min.css';
 import { THEME } from '../../utils/constants';

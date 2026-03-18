@@ -1,30 +1,30 @@
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import { addYears, format, isAfter, parseISO } from 'date-fns';
+import DeleteIcon from 'mdi-react/DeleteIcon';
+import HammerIcon from 'mdi-react/HammerIcon';
+import HomeLockIcon from 'mdi-react/HomeLockIcon';
+import HomeLockOpenIcon from 'mdi-react/HomeLockOpenIcon';
 import { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import { format, parseISO, addYears, isAfter } from 'date-fns';
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
-import HomeLockIcon from 'mdi-react/HomeLockIcon';
-import HammerIcon from 'mdi-react/HammerIcon';
-import HomeLockOpenIcon from 'mdi-react/HomeLockOpenIcon';
-import DeleteIcon from 'mdi-react/DeleteIcon';
-import Spinner from '../../../components/Spinner';
-import TextField from '../../../components/TextField';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import Dashboard from '../../../components/Dashboard';
-import WorkerDetailsCard from '../../../components/WorkerDetailsCard';
 import DialogAction from '../../../components/DialogAction';
+import ErrorPanel from '../../../components/ErrorPanel';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
+import Spinner from '../../../components/Spinner';
+import TextField from '../../../components/TextField';
+import WorkerDetailsCard from '../../../components/WorkerDetailsCard';
 import WorkerTable from '../../../components/WorkerTable';
-import Breadcrumbs from '../../../components/Breadcrumbs';
-import Link from '../../../utils/Link';
-import { NULL_PROVIDER } from '../../../utils/constants';
 import { withAuth } from '../../../utils/Auth';
 import { removeWorker } from '../../../utils/client';
+import { NULL_PROVIDER } from '../../../utils/constants';
+import Link from '../../../utils/Link';
 import { terminateDisabled } from '../../../utils/terminate';
-import ErrorPanel from '../../../components/ErrorPanel';
-import workerQuery from './worker.graphql';
-import quarantineWorkerQuery from './quarantineWorker.graphql';
 import { joinWorkerPoolId } from '../../../utils/workerPool';
+import quarantineWorkerQuery from './quarantineWorker.graphql';
+import workerQuery from './worker.graphql';
 
 @withApollo
 @withAuth

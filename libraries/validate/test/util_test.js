@@ -1,6 +1,6 @@
 import assert from 'node:assert';
-import { checkRefs } from '../src/util.js';
 import testing from '@taskcluster/lib-testing';
+import { checkRefs } from '../src/util.js';
 
 suite(testing.suiteName(), function () {
   suite('checkRefs', function () {

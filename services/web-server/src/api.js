@@ -1,7 +1,7 @@
-import { APIBuilder } from '@taskcluster/lib-api';
-import { getProfile } from './profiler/profile.js';
 import zlib from 'node:zlib';
-import { StreamingProfileBuilder, lineIterator } from './profiler/log-profile.js';
+import { APIBuilder } from '@taskcluster/lib-api';
+import { lineIterator, StreamingProfileBuilder } from './profiler/log-profile.js';
+import { getProfile } from './profiler/profile.js';
 
 const MAX_TASKS = 20000;
 const MAX_PAGES = 200;

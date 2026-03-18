@@ -1,7 +1,7 @@
-import taskcluster from '../src/index.js';
 import assert from 'node:assert';
-import request from 'superagent';
 import _ from 'lodash';
+import request from 'superagent';
+import taskcluster from '../src/index.js';
 import testing from './helper.js';
 
 suite(testing.suiteName(), function () {

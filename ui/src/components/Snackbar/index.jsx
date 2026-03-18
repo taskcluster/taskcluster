@@ -1,14 +1,14 @@
-import { Component } from 'react';
-import { func, object, string, oneOf } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import MuiSnackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
-import CheckCircleIcon from 'mdi-react/CheckCircleIcon';
-import WarningIcon from 'mdi-react/WarningIcon';
+import { withStyles } from '@material-ui/core/styles';
 import AlertCircleIcon from 'mdi-react/AlertCircleIcon';
-import InformationIcon from 'mdi-react/InformationIcon';
+import CheckCircleIcon from 'mdi-react/CheckCircleIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
+import InformationIcon from 'mdi-react/InformationIcon';
+import WarningIcon from 'mdi-react/WarningIcon';
+import { func, object, oneOf, string } from 'prop-types';
+import { Component } from 'react';
 
 const variantIcon = {
   success: CheckCircleIcon,

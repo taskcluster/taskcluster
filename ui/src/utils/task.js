@@ -1,4 +1,4 @@
-import { curry, pipe, map, dropRepeatsWith } from 'ramda';
+import { curry, dropRepeatsWith, map, pipe } from 'ramda';
 import { memoize } from './memoize';
 
 export const taskLastRun = (task) => {

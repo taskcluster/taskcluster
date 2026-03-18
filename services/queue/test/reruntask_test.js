@@ -1,10 +1,12 @@
 import debugFactory from 'debug';
+
 const debug = debugFactory('test:rerun');
+
 import assert from 'node:assert';
-import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
-import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
+import slugid from 'slugid';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   helper.withDb(mock, skipping);

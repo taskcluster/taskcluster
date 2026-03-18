@@ -1,9 +1,9 @@
-import taskcluster from '@taskcluster/client';
 import assert from 'node:assert';
-import helper from './helper.js';
-import { StaticProvider } from '../src/providers/static.js';
+import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
-import { WorkerPool, Worker } from '../src/data.js';
+import { Worker, WorkerPool } from '../src/data.js';
+import { StaticProvider } from '../src/providers/static.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

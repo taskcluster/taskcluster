@@ -1,11 +1,13 @@
-import stringify from 'json-stable-stringify';
 import path from 'node:path';
+import stringify from 'json-stable-stringify';
 import lodash from 'lodash';
+
 const { omit } = lodash;
+
 import { compile } from 'ejs';
-import { REPO_ROOT, readRepoFile, writeRepoFile, modifyRepoFile } from '../../utils/index.js';
-import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
+import { rimraf } from 'rimraf';
+import { modifyRepoFile, REPO_ROOT, readRepoFile, writeRepoFile } from '../../utils/index.js';
 
 export const tasks = [
   {

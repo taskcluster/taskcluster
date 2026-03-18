@@ -1,12 +1,12 @@
-import { Component } from 'react';
-import { withRouter } from 'react-router-dom';
-import { string } from 'prop-types';
-import SchemaViewer from 'material-ui-json-schema-viewer';
 import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import jsonSchemaDraft07 from 'ajv/lib/refs/json-schema-draft-07.json';
-import Spinner from '../Spinner';
-import ErrorPanel from '../ErrorPanel';
+import SchemaViewer from 'material-ui-json-schema-viewer';
+import { string } from 'prop-types';
+import { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import references from '../../../../generated/references.json';
+import ErrorPanel from '../ErrorPanel';
+import Spinner from '../Spinner';
 
 // Local copies of the json-schemas schemas, since TC schemas $refer to these
 const EXTERNAL_SCHEMAS = [jsonSchemaDraft06, jsonSchemaDraft07].reduce(

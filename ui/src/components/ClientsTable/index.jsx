@@ -1,20 +1,20 @@
-import { Component } from 'react';
-import { shape, func, arrayOf, string } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
-import { camelCase } from 'camel-case';
-import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
+import { camelCase } from 'camel-case';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { arrayOf, func, shape, string } from 'prop-types';
+import { map, pipe, sort as rSort } from 'ramda';
+import { Component } from 'react';
+import { VIEW_CLIENTS_PAGE_SIZE } from '../../utils/constants';
+import Link from '../../utils/Link';
 import { memoize } from '../../utils/memoize';
-import TableCellItem from '../TableCellItem';
+import { client, pageInfo } from '../../utils/prop-types';
+import sort from '../../utils/sort';
 import Button from '../Button';
 import ConnectionDataTable from '../ConnectionDataTable';
 import DateDistance from '../DateDistance';
-import { VIEW_CLIENTS_PAGE_SIZE } from '../../utils/constants';
-import { pageInfo, client } from '../../utils/prop-types';
-import sort from '../../utils/sort';
-import Link from '../../utils/Link';
+import TableCellItem from '../TableCellItem';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),

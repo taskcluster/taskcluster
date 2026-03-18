@@ -1,9 +1,9 @@
-import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
-import slug from 'slugid';
 import assert from 'node:assert';
-import { ApiError, Provider } from './providers/provider.js';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
-import { WorkerPool, WorkerPoolError, Worker, WorkerPoolStats } from './data.js';
+import slug from 'slugid';
+import { Worker, WorkerPool, WorkerPoolError, WorkerPoolStats } from './data.js';
+import { ApiError, Provider } from './providers/provider.js';
 import { createCredentials, joinWorkerPoolId, sanitizeRegisterWorkerPayload } from './util.js';
 
 export const AUDIT_ENTRY_TYPE = Object.freeze({

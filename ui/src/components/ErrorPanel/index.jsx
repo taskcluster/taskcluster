@@ -1,9 +1,9 @@
-import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
-import { bool, oneOfType, string, object } from 'prop-types';
-import MuiErrorPanel from './MuiErrorPanel';
+import { bool, object, oneOfType, string } from 'prop-types';
+import { Component } from 'react';
 import { CONTENT_MAX_WIDTH } from '../../utils/constants';
+import MuiErrorPanel from './MuiErrorPanel';
 
 @withStyles((theme) => ({
   error: {

@@ -1,9 +1,9 @@
-import { PureComponent } from 'react';
-import { object, func, string, bool } from 'prop-types';
-import classNames from 'classnames';
-import { alpha, withStyles } from '@material-ui/core/styles';
 import FormControl from '@material-ui/core/FormControl';
+import { alpha, withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
 import MagnifyIcon from 'mdi-react/MagnifyIcon';
+import { bool, func, object, string } from 'prop-types';
+import { PureComponent } from 'react';
 import { THEME } from '../../utils/constants';
 
 @withStyles((theme) => ({

@@ -1,19 +1,19 @@
-import { Fragment, Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
-import classNames from 'classnames';
+import { join } from 'node:path';
+import Collapse from '@material-ui/core/Collapse';
+import Divider from '@material-ui/core/Divider';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import Divider from '@material-ui/core/Divider';
-import Collapse from '@material-ui/core/Collapse';
+import classNames from 'classnames';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
-import { join } from 'node:path';
+import { Component, Fragment } from 'react';
+import { Link, withRouter } from 'react-router-dom';
+import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
 import { DOCS_MENU_ITEMS, DOCS_PATH_PREFIX } from '../../utils/constants';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
-import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
 
 const getDocsSectionFromPathname = (pathname) => {
   if (!pathname) {

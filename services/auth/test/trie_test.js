@@ -1,9 +1,9 @@
+import testing from '@taskcluster/lib-testing';
 import assume from 'assume';
 import _ from 'lodash';
 import ScopeSetBuilder from '../src/scopesetbuilder.js';
 import * as trie from '../src/trie.js';
 import trietestcases from './trietestcases.js';
-import testing from '@taskcluster/lib-testing';
 
 // This test suite was designed to test every conceivable combination of
 // inputs to the trie implementation, in an effort to suss out any hidden bugs

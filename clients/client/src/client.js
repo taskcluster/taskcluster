@@ -2,19 +2,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import debugFactory from 'debug';
 import got, { TimeoutError } from 'got';
 
-import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/client');
-import _ from 'lodash';
+
 import assert from 'node:assert';
-import hawk from 'hawk';
-import url from 'node:url';
 import crypto from 'node:crypto';
-import slugid from 'slugid';
 import http from 'node:http';
 import https from 'node:https';
 import querystring from 'node:querystring';
+import url from 'node:url';
+import hawk from 'hawk';
+import _ from 'lodash';
+import slugid from 'slugid';
 import tcUrl from 'taskcluster-lib-urls';
 import retry from './retry.js';
 

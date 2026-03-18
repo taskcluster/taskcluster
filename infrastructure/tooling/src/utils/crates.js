@@ -1,11 +1,11 @@
+import child_process from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import mkdirp from 'mkdirp';
-import child_process from 'node:child_process';
-import Observable from 'zen-observable';
 import taskcluster from '@taskcluster/client';
-import { REPO_ROOT } from './repo.js';
+import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
+import Observable from 'zen-observable';
+import { REPO_ROOT } from './repo.js';
 
 /**
  * Set up Cargo credentials and call `cargo publish`

@@ -1,5 +1,5 @@
-import path from 'node:path';
 import { strict as assert } from 'node:assert';
+import path from 'node:path';
 import Method from './Method.js';
 import { loadSql } from './util.js';
 

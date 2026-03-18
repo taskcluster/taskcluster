@@ -1,22 +1,22 @@
-import { Component, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import PlusIcon from 'mdi-react/PlusIcon';
+import dotProp from 'dot-prop-immutable';
 import escapeStringRegexp from 'escape-string-regexp';
+import PlusIcon from 'mdi-react/PlusIcon';
 import qs from 'qs';
-import Spinner from '../../../components/Spinner';
+import { Component, Fragment } from 'react';
+import { graphql, withApollo } from 'react-apollo';
+import Button from '../../../components/Button';
 import Dashboard from '../../../components/Dashboard';
+import DialogAction from '../../../components/DialogAction';
+import ErrorPanel from '../../../components/ErrorPanel';
+import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import SecretsTable from '../../../components/SecretsTable';
-import HelpView from '../../../components/HelpView';
-import Button from '../../../components/Button';
+import Spinner from '../../../components/Spinner';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../../utils/constants';
-import ErrorPanel from '../../../components/ErrorPanel';
-import DialogAction from '../../../components/DialogAction';
-import secretsQuery from './secrets.graphql';
 import deleteSecretQuery from './deleteSecret.graphql';
+import secretsQuery from './secrets.graphql';
 
 @withApollo
 @graphql(secretsQuery, {

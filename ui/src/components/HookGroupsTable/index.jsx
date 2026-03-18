@@ -1,12 +1,12 @@
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
+import { any, arrayOf, string } from 'prop-types';
+import { isEmpty } from 'ramda';
 import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import { isEmpty } from 'ramda';
-import { any, arrayOf, string } from 'prop-types';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import DataTable from '../DataTable';
 import Link from '../../utils/Link';
 import sort from '../../utils/sort';
+import DataTable from '../DataTable';
 
 @withRouter
 export default class HookGroupsTable extends Component {

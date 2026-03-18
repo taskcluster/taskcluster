@@ -1,11 +1,11 @@
-import { Component, Fragment } from 'react';
+import { Grid, List, ListItem, ListItemText, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
 import { format, parseISO } from 'date-fns';
-import { List, ListItem, ListItemText, Typography, Grid, TableRow, TableCell, Tooltip } from '@material-ui/core';
+import { Component, Fragment } from 'react';
+import { worker } from '../../utils/prop-types';
+import DataTable from '../DataTable';
 import DateDistance from '../DateDistance';
 import Label from '../Label';
 import StatusLabel from '../StatusLabel';
-import { worker } from '../../utils/prop-types';
-import DataTable from '../DataTable';
 import TableCellItem from '../TableCellItem';
 
 /**

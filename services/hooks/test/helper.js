@@ -1,11 +1,9 @@
 import { globalAgent } from 'node:http';
 import taskcluster from '@taskcluster/client';
-import taskcreator from '../src/taskcreator.js';
-
 import testing from '@taskcluster/lib-testing';
-
 import builder from '../src/api.js';
 import loadMain from '../src/main.js';
+import taskcreator from '../src/taskcreator.js';
 
 const load = testing.stickyLoader(loadMain);
 

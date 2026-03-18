@@ -1,9 +1,11 @@
-import slugid from 'slugid';
 import assert from 'node:assert';
 import crypto from 'node:crypto';
-import QueueService from '../src/queueservice.js';
 import debugFactory from 'debug';
+import slugid from 'slugid';
+import QueueService from '../src/queueservice.js';
+
 const debug = debugFactory('test:queueservice');
+
 import testing from '@taskcluster/lib-testing';
 import helper from './helper.js';
 

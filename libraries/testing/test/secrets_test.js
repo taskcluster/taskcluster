@@ -1,7 +1,7 @@
-import { Secrets, stickyLoader, suiteName } from '../src/index.js';
-import _ from 'lodash';
 import assert from 'node:assert';
+import _ from 'lodash';
 import nock from 'nock';
+import { Secrets, stickyLoader, suiteName } from '../src/index.js';
 
 suite(suiteName(), function () {
   let oldTaskId;

@@ -1,8 +1,8 @@
 import assert from 'node:assert';
-import request from 'superagent';
-import nock from 'nock';
-import MonitorManager from '../src/monitormanager.js';
 import testing from '@taskcluster/lib-testing';
+import nock from 'nock';
+import request from 'superagent';
+import MonitorManager from '../src/monitormanager.js';
 
 // Register metrics once to be used across all tests
 MonitorManager.registerMetric('testingServiceTestCounter', {

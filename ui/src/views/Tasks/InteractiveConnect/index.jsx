@@ -1,34 +1,34 @@
-import { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
-import classNames from 'classnames';
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
+import Divider from '@material-ui/core/Divider';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import classNames from 'classnames';
+import dotProp from 'dot-prop-immutable';
 import ConsoleIcon from 'mdi-react/ConsoleIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
-import Spinner from '../../../components/Spinner';
+import { Component, Fragment } from 'react';
+import { graphql } from 'react-apollo';
 import Dashboard from '../../../components/Dashboard';
-import Markdown from '../../../components/Markdown';
-import StatusLabel from '../../../components/StatusLabel';
 import ErrorPanel from '../../../components/ErrorPanel';
+import Markdown from '../../../components/Markdown';
+import Spinner from '../../../components/Spinner';
+import StatusLabel from '../../../components/StatusLabel';
 import { withAuth } from '../../../utils/Auth';
-import notify from '../../../utils/notify';
-import Link from '../../../utils/Link';
-import { getLatestArtifactUrl } from '../../../utils/getArtifactUrl';
-import taskQuery from './task.graphql';
 import {
   INITIAL_CURSOR,
+  INTERACTIVE_CONNECT_TASK_POLL_INTERVAL,
   INTERACTIVE_TASK_STATUS,
   TASK_STATE,
-  INTERACTIVE_CONNECT_TASK_POLL_INTERVAL,
 } from '../../../utils/constants';
+import { getLatestArtifactUrl } from '../../../utils/getArtifactUrl';
+import Link from '../../../utils/Link';
+import notify from '../../../utils/notify';
+import taskQuery from './task.graphql';
 
 let previousCursor;
 const NOTIFY_KEY = 'interactive-notify';

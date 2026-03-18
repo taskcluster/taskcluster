@@ -1,8 +1,8 @@
-import taskcluster from '@taskcluster/client';
 import assert from 'node:assert';
-import scan from '../src/login/scanner.js';
+import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
 import libUrls from 'taskcluster-lib-urls';
+import scan from '../src/login/scanner.js';
 import User from '../src/login/User.js';
 
 suite(testing.suiteName(), () => {

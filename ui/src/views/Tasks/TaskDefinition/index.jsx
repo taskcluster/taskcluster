@@ -1,12 +1,12 @@
+import { withStyles } from '@material-ui/core/styles';
 import { Component } from 'react';
 import { graphql } from 'react-apollo';
-import { withStyles } from '@material-ui/core/styles';
-import Spinner from '../../../components/Spinner';
-import JsonDisplay from '../../../components/JsonDisplay';
 import Dashboard from '../../../components/Dashboard';
-import taskQuery from './task.graphql';
 import ErrorPanel from '../../../components/ErrorPanel';
+import JsonDisplay from '../../../components/JsonDisplay';
+import Spinner from '../../../components/Spinner';
 import { withAuth } from '../../../utils/Auth';
+import taskQuery from './task.graphql';
 
 @withAuth
 @withStyles((theme) => ({

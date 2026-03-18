@@ -1,6 +1,7 @@
-import taskcluster from '@taskcluster/client';
 import assert from 'node:assert';
+import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
+
 const debug = debugFactory('workerinfo');
 
 class WorkerInfo {

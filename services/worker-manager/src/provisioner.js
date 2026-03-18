@@ -1,10 +1,10 @@
 import process from 'node:process';
+import { fromNow } from '@taskcluster/client';
 import Iterate from '@taskcluster/lib-iterate';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
-import { WorkerPool, Worker, WorkerPoolStats } from './data.js';
+import { Worker, WorkerPool, WorkerPoolStats } from './data.js';
 import { ApiError } from './providers/provider.js';
 import { measureTime } from './util.js';
-import { fromNow } from '@taskcluster/client';
 
 /**
  * Run all provisioning logic

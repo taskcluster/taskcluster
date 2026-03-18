@@ -1,20 +1,24 @@
-import bodyParser from 'body-parser';
 import path from 'node:path';
+import bodyParser from 'body-parser';
 import bodyParserGraphql from 'body-parser-graphql';
-import session from 'express-session';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
+import session from 'express-session';
 import graphqlPlayground from 'graphql-playground-middleware-express';
+
 const playground = graphqlPlayground.default;
-import passport from 'passport';
+
 import MemoryStoreFactory from 'memorystore';
+import passport from 'passport';
+
 const MemoryStore = MemoryStoreFactory(session);
-import credentials from './credentials.js';
-import oauth2AccessToken from './oauth2AccessToken.js';
-import oauth2 from './oauth2.js';
-import PostgresSessionStore from '../login/PostgresSessionStore.js';
+
 import { traceMiddleware } from '@taskcluster/lib-app';
+import PostgresSessionStore from '../login/PostgresSessionStore.js';
+import credentials from './credentials.js';
+import oauth2 from './oauth2.js';
+import oauth2AccessToken from './oauth2AccessToken.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

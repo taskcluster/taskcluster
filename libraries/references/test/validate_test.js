@@ -1,10 +1,10 @@
 import assert from 'node:assert';
-import { getCommonSchemas } from '../src/common-schemas.js';
-import libUrls from 'taskcluster-lib-urls';
+import testing from '@taskcluster/lib-testing';
 import _ from 'lodash';
+import libUrls from 'taskcluster-lib-urls';
+import { getCommonSchemas } from '../src/common-schemas.js';
 import References from '../src/index.js';
 import { validate } from '../src/validate.js';
-import testing from '@taskcluster/lib-testing';
 
 const { omit, merge } = _;
 

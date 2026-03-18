@@ -1,23 +1,23 @@
+import { join } from 'node:path';
 import { alpha } from '@material-ui/core/styles';
-import GestureTapIcon from 'mdi-react/GestureTapIcon';
-import OneTwoThreeIcon from 'mdi-react/OneTwoThreeIcon';
-import BookOpenVariantIcon from 'mdi-react/BookOpenVariantIcon';
-import BookOpenOutlineIcon from 'mdi-react/BookOpenOutlineIcon';
-import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
-import FileDocumentIcon from 'mdi-react/FileDocumentIcon';
-import FilePdfIcon from 'mdi-react/FilePdfIcon';
+import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
 import ArchiveIcon from 'mdi-react/ArchiveIcon';
-import FileWordIcon from 'mdi-react/FileWordIcon';
-import FileExcelIcon from 'mdi-react/FileExcelIcon';
-import FilePowerpointIcon from 'mdi-react/FilePowerpointIcon';
+import BookOpenOutlineIcon from 'mdi-react/BookOpenOutlineIcon';
+import BookOpenVariantIcon from 'mdi-react/BookOpenVariantIcon';
 import FileCodeIcon from 'mdi-react/FileCodeIcon';
-import FileVideoIcon from 'mdi-react/FileVideoIcon';
+import FileDocumentIcon from 'mdi-react/FileDocumentIcon';
+import FileExcelIcon from 'mdi-react/FileExcelIcon';
+import FileIcon from 'mdi-react/FileIcon';
 import FileImageIcon from 'mdi-react/FileImageIcon';
 import FileMusicIcon from 'mdi-react/FileMusicIcon';
-import FileIcon from 'mdi-react/FileIcon';
+import FilePdfIcon from 'mdi-react/FilePdfIcon';
+import FilePowerpointIcon from 'mdi-react/FilePowerpointIcon';
+import FileVideoIcon from 'mdi-react/FileVideoIcon';
+import FileWordIcon from 'mdi-react/FileWordIcon';
 import ListStatusIcon from 'mdi-react/FormatListChecksIcon';
-import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
-import { join } from 'node:path';
+import GestureTapIcon from 'mdi-react/GestureTapIcon';
+import OneTwoThreeIcon from 'mdi-react/OneTwoThreeIcon';
+import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 
 // eslint-disable-next-line import/prefer-default-export
 export const ARTIFACTS_SHOW_MAX = 10;

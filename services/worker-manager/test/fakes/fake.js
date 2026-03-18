@@ -1,9 +1,9 @@
-import sinon from 'sinon';
+import fs from 'node:fs';
+import path from 'node:path';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import fs from 'node:fs';
 import yaml from 'js-yaml';
-import path from 'node:path';
+import sinon from 'sinon';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const schemaPath = new URL('../../../../node_modules/ajv/lib/refs/json-schema-draft-06.json', import.meta.url).pathname;

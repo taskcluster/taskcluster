@@ -1,7 +1,7 @@
 import path from 'node:path';
-import { writeRepoFile, REPO_ROOT, execCommand } from '../../utils/index.js';
 import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
+import { execCommand, REPO_ROOT, writeRepoFile } from '../../utils/index.js';
 
 const HEADER = `\
 #####################################################

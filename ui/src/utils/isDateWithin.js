@@ -1,4 +1,4 @@
-import { parseISO, differenceInMinutes } from 'date-fns';
+import { differenceInMinutes, parseISO } from 'date-fns';
 
 /*
  * If date is within the specified time interval in minutes.

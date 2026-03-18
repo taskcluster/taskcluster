@@ -1,8 +1,8 @@
+import testing from '@taskcluster/lib-testing';
 import assume from 'assume';
 import _ from 'lodash';
 import { mergeScopeSets, scopeCompare } from 'taskcluster-lib-scopes';
 import ScopeSetBuilder from '../src/scopesetbuilder.js';
-import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), () => {
   test('scopes()', () => {

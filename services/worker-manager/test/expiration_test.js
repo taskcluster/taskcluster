@@ -1,8 +1,8 @@
 import assert from 'node:assert';
-import helper from './helper.js';
-import testing from '@taskcluster/lib-testing';
-import { WorkerPool, WorkerPoolError, Worker } from '../src/data.js';
 import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
+import { Worker, WorkerPool, WorkerPoolError } from '../src/data.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

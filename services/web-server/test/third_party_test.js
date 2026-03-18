@@ -2,11 +2,13 @@ import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
 import debugFactory from 'debug';
+
 const debug = debugFactory('third_party_test');
-import request from 'superagent';
+
 import moment from 'moment';
-import helper from './helper.js';
+import request from 'superagent';
 import tryCatch from '../src/utils/tryCatch.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

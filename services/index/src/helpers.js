@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import _ from 'lodash';
 import { paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import _ from 'lodash';
 import { satisfiesExpression } from 'taskcluster-lib-scopes';
 
 /** Regular expression for valid namespaces */

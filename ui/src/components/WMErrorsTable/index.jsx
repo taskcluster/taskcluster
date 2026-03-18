@@ -1,28 +1,28 @@
-import { Component, Fragment } from 'react';
-import { isEmpty, map, pipe, sort as rSort } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import { camelCase } from 'camel-case';
-import { shape, arrayOf, string, func } from 'prop-types';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from 'mdi-react/CloseIcon';
-import TableRow from '@material-ui/core/TableRow';
 import Drawer from '@material-ui/core/Drawer';
-import TableCell from '@material-ui/core/TableCell';
+import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
-import ListItemText from '@material-ui/core/ListItemText';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import { withStyles } from '@material-ui/core/styles';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
+import { camelCase } from 'camel-case';
+import CloseIcon from 'mdi-react/CloseIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { memoize } from '../../utils/memoize';
-import JsonDisplay from '../JsonDisplay';
-import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
-import ConnectionDataTable from '../ConnectionDataTable';
+import { arrayOf, func, shape, string } from 'prop-types';
+import { isEmpty, map, pipe, sort as rSort } from 'ramda';
+import { Component, Fragment } from 'react';
 import { VIEW_WORKER_POOL_ERRORS_PAGE_SIZE } from '../../utils/constants';
-import TableCellItem from '../TableCellItem';
-import DateDistance from '../DateDistance';
-import sort from '../../utils/sort';
-import { pageInfo, WMError } from '../../utils/prop-types';
 import Link from '../../utils/Link';
+import { memoize } from '../../utils/memoize';
+import { pageInfo, WMError } from '../../utils/prop-types';
+import sort from '../../utils/sort';
+import ConnectionDataTable from '../ConnectionDataTable';
+import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
+import DateDistance from '../DateDistance';
+import JsonDisplay from '../JsonDisplay';
+import TableCellItem from '../TableCellItem';
 
 @withStyles((theme) => ({
   errorDescription: {

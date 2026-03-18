@@ -1,7 +1,7 @@
-import { Component } from 'react';
-import { string } from 'prop-types';
-import storage from 'localforage';
 import { addDays, isBefore } from 'date-fns';
+import storage from 'localforage';
+import { string } from 'prop-types';
+import { Component } from 'react';
 import Snackbar from '../Snackbar';
 
 const BANNER_KEY = 'hide-taskcluster-ui-banner';

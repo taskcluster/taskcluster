@@ -1,10 +1,11 @@
-import util from 'node:util';
-import path from 'node:path';
-import mkdirp from 'mkdirp';
-import References from '@taskcluster/lib-references';
 import { execFile } from 'node:child_process';
+import path from 'node:path';
+import util from 'node:util';
+import References from '@taskcluster/lib-references';
+import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
-import { REPO_ROOT, writeRepoJSON, listServices } from '../../utils/index.js';
+import { listServices, REPO_ROOT, writeRepoJSON } from '../../utils/index.js';
+
 const exec = util.promisify(execFile);
 
 /**

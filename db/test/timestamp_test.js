@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
-import testing from '@taskcluster/lib-testing';
 import tcdb from '@taskcluster/db';
+import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function () {
   const schema = tcdb.schema({ useDbDirectory: true });

@@ -2,7 +2,7 @@
  * Generate Node.js client library examples for API endpoints
  */
 
-import { PLACEHOLDERS, getPlaceholderValue, requiresAuth, capitalize, formatPayloadJson } from './helpers';
+import { capitalize, formatPayloadJson, getPlaceholderValue, PLACEHOLDERS, requiresAuth } from './helpers';
 
 /**
  * Generate a Node.js example for an API endpoint

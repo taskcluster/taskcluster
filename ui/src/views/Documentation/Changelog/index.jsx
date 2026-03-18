@@ -1,16 +1,16 @@
-import { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import { withRouter } from 'react-router-dom';
-import { titleCase } from 'title-case';
+import { Chip, FormControlLabel } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
+import Switch from '@material-ui/core/Switch';
+import { withStyles } from '@material-ui/core/styles';
 import Autocomplete from '@material-ui/lab/Autocomplete/Autocomplete';
 import { compareVersions, validate } from 'compare-versions';
-import Switch from '@material-ui/core/Switch';
-import { Chip, FormControlLabel } from '@material-ui/core';
-import { memoize } from '../../../utils/memoize';
-import Markdown from '../../../components/Markdown';
+import { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import { titleCase } from 'title-case';
 import ChangelogMd from '../../../../../CHANGELOG.md';
+import Markdown from '../../../components/Markdown';
 import TextField from '../../../components/TextField';
+import { memoize } from '../../../utils/memoize';
 
 const parseMarkdownIntoSections = (markdown) => {
   const lines = markdown.split('\n');

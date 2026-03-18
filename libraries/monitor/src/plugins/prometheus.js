@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import http from 'node:http';
-import { Counter, Gauge, Histogram, Summary, Registry as PromClientRegistry, Pushgateway } from 'prom-client';
+import { Counter, Gauge, Histogram, Registry as PromClientRegistry, Pushgateway, Summary } from 'prom-client';
 
 /**
  * @typedef {object} ServerOptions

@@ -1,47 +1,47 @@
-import { Component, Fragment } from 'react';
-import { Redirect } from 'react-router-dom';
-import { parse, stringify } from 'qs';
-import { withApollo } from 'react-apollo';
-import storage from 'localforage';
-import merge from 'deepmerge';
-import { load, dump } from 'js-yaml';
-import { bool } from 'prop-types';
-import { toDate, parseISO, differenceInMilliseconds, addMilliseconds, addHours } from 'date-fns';
-import { withStyles } from '@material-ui/core/styles';
-import Switch from '@material-ui/core/Switch';
-import Typography from '@material-ui/core/Typography';
+import { Box } from '@material-ui/core';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import TextField from '@material-ui/core/TextField';
-import MenuItem from '@material-ui/core/MenuItem';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
-import LinkIcon from 'mdi-react/LinkIcon';
-import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
-import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
+import MenuItem from '@material-ui/core/MenuItem';
+import Switch from '@material-ui/core/Switch';
+import { withStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
+import { addHours, addMilliseconds, differenceInMilliseconds, parseISO, toDate } from 'date-fns';
+import merge from 'deepmerge';
+import { dump, load } from 'js-yaml';
+import storage from 'localforage';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
-import { Box } from '@material-ui/core';
+import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
+import LinkIcon from 'mdi-react/LinkIcon';
+import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
+import { bool } from 'prop-types';
+import { parse, stringify } from 'qs';
+import { Component, Fragment } from 'react';
+import { withApollo } from 'react-apollo';
+import { Redirect } from 'react-router-dom';
+import Button from '../../../components/Button';
 import CodeEditor from '../../../components/CodeEditor';
-import SpeedDial from '../../../components/SpeedDial';
-import SiteSpecific from '../../../components/SiteSpecific';
-import SpeedDialAction from '../../../components/SpeedDialAction';
-import HelpView from '../../../components/HelpView';
-import MuiErrorPanel from '../../../components/ErrorPanel/MuiErrorPanel';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
-import { nice } from '../../../utils/slugid';
+import MuiErrorPanel from '../../../components/ErrorPanel/MuiErrorPanel';
+import HelpView from '../../../components/HelpView';
+import SiteSpecific from '../../../components/SiteSpecific';
+import SpeedDial from '../../../components/SpeedDial';
+import SpeedDialAction from '../../../components/SpeedDialAction';
 import {
-  TASKS_CREATE_STORAGE_KEY,
-  UI_SCHEDULER_ID,
   ISO_8601_REGEX,
   TASK_PAYLOAD_SCHEMAS,
+  TASKS_CREATE_STORAGE_KEY,
+  UI_SCHEDULER_ID,
 } from '../../../utils/constants';
-import urls from '../../../utils/urls';
-import createTaskQuery from '../createTask.graphql';
-import Button from '../../../components/Button';
 import db from '../../../utils/db';
+import { nice } from '../../../utils/slugid';
+import urls from '../../../utils/urls';
 import validateTaskPayloadSchemas from '../../../utils/validateTaskPayloadSchemas';
+import createTaskQuery from '../createTask.graphql';
 
 const tutorialWorkerPoolId = window.env.SITE_SPECIFIC.tutorial_worker_pool_id || 'proj-getting-started/tutorial';
 const tutorialWorkerSchema = window.env.SITE_SPECIFIC.tutorial_worker_schema || 'docker-worker';

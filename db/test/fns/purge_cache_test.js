@@ -1,7 +1,9 @@
 import { strict as assert } from 'node:assert';
-import testing from '@taskcluster/lib-testing';
 import tc from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
+
 const { fromNow } = tc;
+
 import helper from '../helper.js';
 
 suite(testing.suiteName(), function () {

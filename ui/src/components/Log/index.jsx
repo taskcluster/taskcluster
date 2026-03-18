@@ -1,16 +1,16 @@
-import { Component, Fragment } from 'react';
-import { arrayOf, bool, node, object, oneOfType, string } from 'prop-types';
-import classNames from 'classnames';
-import { withRouter } from 'react-router-dom';
-import { LazyLog, ScrollFollow } from 'react-lazylog';
-import storage from 'localforage';
-import { omit } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
+import storage from 'localforage';
 import ArrowDownBoldCircleOutlineIcon from 'mdi-react/ArrowDownBoldCircleOutlineIcon';
+import { arrayOf, bool, node, object, oneOfType, string } from 'prop-types';
+import { omit } from 'ramda';
+import { Component, Fragment } from 'react';
+import { LazyLog, ScrollFollow } from 'react-lazylog';
+import { withRouter } from 'react-router-dom';
+import { THEME } from '../../utils/constants';
+import Button from '../Button';
 import GoToLineButton from './GoToLineButton';
 import Loading from './Loading';
-import Button from '../Button';
-import { THEME } from '../../utils/constants';
 
 const LINE_NUMBER_MATCH = /L(\d+)-?(\d+)?/;
 const FOLLOW_STORAGE_KEY = 'follow-log';

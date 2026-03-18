@@ -1,5 +1,5 @@
 import { Schema } from '@taskcluster/lib-postgres';
-import { getDbReleases, generateDbTypes, readRepoJSON } from '../../utils/index.js';
+import { generateDbTypes, getDbReleases, readRepoJSON } from '../../utils/index.js';
 
 export const tasks = [
   {

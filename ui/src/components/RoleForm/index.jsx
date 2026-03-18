@@ -1,25 +1,25 @@
-import { Component, Fragment } from 'react';
-import { oneOfType, object, string, func, bool } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import classNames from 'classnames';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import classNames from 'classnames';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
-import TextField from '../TextField';
-import MarkdownTextArea from '../MarkdownTextArea';
+import { bool, func, object, oneOfType, string } from 'prop-types';
+import { Component, Fragment } from 'react';
+import Link from '../../utils/Link';
+import { role } from '../../utils/prop-types';
+import scopeLink from '../../utils/scopeLink';
+import splitLines from '../../utils/splitLines';
 import Button from '../Button';
+import DialogAction from '../DialogAction';
 import DiffTextArea from '../DiffTextArea';
+import MarkdownTextArea from '../MarkdownTextArea';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
-import DialogAction from '../DialogAction';
-import { role } from '../../utils/prop-types';
-import Link from '../../utils/Link';
-import splitLines from '../../utils/splitLines';
-import scopeLink from '../../utils/scopeLink';
+import TextField from '../TextField';
 
 @withStyles((theme) => ({
   fab: {

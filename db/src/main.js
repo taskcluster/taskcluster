@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import { upgrade, downgrade } from './upgrade.js';
-import { renumberVersions, newVersion } from './versions.js';
+import { downgrade, upgrade } from './upgrade.js';
+import { newVersion, renumberVersions } from './versions.js';
 
 const main = async () => {
   const adminDbUrl = process.env.ADMIN_DB_URL;

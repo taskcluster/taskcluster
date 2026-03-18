@@ -1,20 +1,20 @@
+import { Typography } from '@material-ui/core';
 import { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import { Typography } from '@material-ui/core';
-import Spinner from '../../../components/Spinner';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import Dashboard from '../../../components/Dashboard';
-import HookForm from '../../../components/HookForm';
 import ErrorPanel from '../../../components/ErrorPanel';
+import HookForm from '../../../components/HookForm';
 import Snackbar from '../../../components/Snackbar';
-import hookQuery from './hook.graphql';
+import Spinner from '../../../components/Spinner';
+import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
+import exchangesList from '../../../utils/exchangesList';
+import Link from '../../../utils/Link';
 import createHookQuery from './createHook.graphql';
 import deleteHookQuery from './deleteHook.graphql';
-import updateHookQuery from './updateHook.graphql';
+import hookQuery from './hook.graphql';
 import triggerHookQuery from './triggerHook.graphql';
-import exchangesList from '../../../utils/exchangesList';
-import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
-import Breadcrumbs from '../../../components/Breadcrumbs';
-import Link from '../../../utils/Link';
+import updateHookQuery from './updateHook.graphql';
 
 @withApollo
 @graphql(hookQuery, {

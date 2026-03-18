@@ -1,10 +1,10 @@
-import _ from 'lodash';
+import taskcluster from '@taskcluster/client';
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
-import { artifactUtils } from './utils.js';
-import { Task } from './data.js';
+import _ from 'lodash';
 import slugid from 'slugid';
-import taskcluster from '@taskcluster/client';
+import { Task } from './data.js';
+import { artifactUtils } from './utils.js';
 
 // map from storage type to whether it needs a finishArtifact call
 const STORAGE_TYPE_NEEDS_FINISH = {

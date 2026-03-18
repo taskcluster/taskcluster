@@ -1,21 +1,20 @@
-import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
-import libUrls from 'taskcluster-lib-urls';
-import yaml from 'js-yaml';
 import path from 'node:path';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
+import yaml from 'js-yaml';
+import libUrls from 'taskcluster-lib-urls';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const assetsPath = path.join(__dirname, '/../assets/');
 
-import { EVENT_TYPES, CHECK_RUN_ACTIONS, PUBLISHERS, GITHUB_TASKS_FOR, GITHUB_BUILD_STATES } from './constants.js';
-
+import { CHECK_RUN_ACTIONS, EVENT_TYPES, GITHUB_BUILD_STATES, GITHUB_TASKS_FOR, PUBLISHERS } from './constants.js';
+import { getEventPayload } from './fake-payloads.js';
 import {
+  checkGithubSignature,
+  getTaskclusterCommand,
+  shouldSkipComment,
   shouldSkipCommit,
   shouldSkipPullRequest,
-  checkGithubSignature,
-  shouldSkipComment,
-  getTaskclusterCommand,
 } from './utils.js';
-import { getEventPayload } from './fake-payloads.js';
 
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)

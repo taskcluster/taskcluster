@@ -1,6 +1,6 @@
-import taskcluster from '../src/index.js';
 import assert from 'node:assert';
 import nock from 'nock';
+import taskcluster from '../src/index.js';
 import testing from './helper.js';
 
 suite(testing.suiteName(), function () {

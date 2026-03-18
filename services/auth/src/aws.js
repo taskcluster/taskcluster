@@ -1,4 +1,4 @@
-import { STSClient, GetFederationTokenCommand } from '@aws-sdk/client-sts';
+import { GetFederationTokenCommand, STSClient } from '@aws-sdk/client-sts';
 import _ from 'lodash';
 
 export const awsBuilder = (builder) =>

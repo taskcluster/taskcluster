@@ -1,10 +1,10 @@
 import { strict as assert } from 'node:assert';
-import testing from '@taskcluster/lib-testing';
-import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
-import slugid from 'slugid';
-import _ from 'lodash';
-import helper from '../helper.js';
 import taskcluster from '@taskcluster/client';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import testing from '@taskcluster/lib-testing';
+import _ from 'lodash';
+import slugid from 'slugid';
+import helper from '../helper.js';
 
 suite(testing.suiteName(), function () {
   helper.withDbForProcs({ serviceName: 'queue' });

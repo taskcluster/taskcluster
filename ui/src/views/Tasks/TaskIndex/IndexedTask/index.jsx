@@ -1,19 +1,19 @@
-import { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import Spinner from '../../../../components/Spinner';
-import Dashboard from '../../../../components/Dashboard';
-import HelpView from '../../../../components/HelpView';
-import Search from '../../../../components/Search';
-import IndexedEntry from '../../../../components/IndexedEntry';
-import { ARTIFACTS_PAGE_SIZE } from '../../../../utils/constants';
-import ErrorPanel from '../../../../components/ErrorPanel';
+import dotProp from 'dot-prop-immutable';
+import { Component, Fragment } from 'react';
+import { graphql } from 'react-apollo';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import Dashboard from '../../../../components/Dashboard';
+import ErrorPanel from '../../../../components/ErrorPanel';
+import HelpView from '../../../../components/HelpView';
+import IndexedEntry from '../../../../components/IndexedEntry';
+import Search from '../../../../components/Search';
+import Spinner from '../../../../components/Spinner';
+import { ARTIFACTS_PAGE_SIZE } from '../../../../utils/constants';
+import Link from '../../../../utils/Link';
 import artifactsQuery from './artifacts.graphql';
 import indexedTaskQuery from './indexedTask.graphql';
-import Link from '../../../../utils/Link';
 
 @withStyles((theme) => ({
   link: {

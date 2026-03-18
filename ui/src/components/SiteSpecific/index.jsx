@@ -1,8 +1,8 @@
-import { arrayOf, string } from 'prop-types';
-import { alpha, withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import Markdown from '../Markdown';
+import { alpha, withStyles } from '@material-ui/core/styles';
+import { arrayOf, string } from 'prop-types';
 import { siteSpecificVariables } from '../../utils/siteSpecific';
+import Markdown from '../Markdown';
 
 const styles = withStyles((theme) => ({
   root: {

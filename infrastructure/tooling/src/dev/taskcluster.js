@@ -1,5 +1,5 @@
-import slugid from 'slugid';
 import _ from 'lodash';
+import slugid from 'slugid';
 
 export default async ({ userConfig, answer, configTmpl }) => {
   function setDefault(path, val) {

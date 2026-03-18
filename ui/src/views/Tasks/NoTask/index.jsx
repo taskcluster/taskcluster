@@ -1,10 +1,10 @@
-import { Component } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListSubheader from '@material-ui/core/ListSubheader';
-import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import LinkIcon from 'mdi-react/LinkIcon';
+import { Component } from 'react';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';

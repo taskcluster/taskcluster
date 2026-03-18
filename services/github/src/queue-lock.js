@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import debugFactory from 'debug';
+
 const debug = debugFactory('queue-lock');
 
 /**

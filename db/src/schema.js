@@ -1,7 +1,7 @@
-import path from 'node:path';
 import fs from 'node:fs';
-import { Schema } from '@taskcluster/lib-postgres';
+import path from 'node:path';
 import { URL } from 'node:url';
+import { Schema } from '@taskcluster/lib-postgres';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

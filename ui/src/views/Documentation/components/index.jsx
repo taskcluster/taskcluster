@@ -1,12 +1,12 @@
 import Anchor from './Anchor';
 import Blockquote from './Blockquote';
 import HeaderWithAnchor from './HeaderWithAnchor';
-import Paragraph from './Paragraph';
-import Table from './Table';
-import ListItem from './ListItem';
-import List from './List';
 import InlineCode from './InlineCode';
+import List from './List';
+import ListItem from './ListItem';
+import Paragraph from './Paragraph';
 import Pre from './Pre';
+import Table from './Table';
 
 // eslint-disable-next-line react/display-name
 const heading =

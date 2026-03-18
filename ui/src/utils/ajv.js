@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
 import metaSchema from 'ajv/lib/refs/json-schema-draft-06.json';
+import addFormats from 'ajv-formats';
 import urls from './urls';
 
 const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });

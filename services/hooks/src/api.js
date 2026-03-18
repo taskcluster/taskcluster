@@ -1,11 +1,11 @@
-import { CronExpressionParser as parser } from 'cron-parser';
 import taskcluster from '@taskcluster/client';
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
-import nextDate from '../src/nextdate.js';
-import _ from 'lodash';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
+import { CronExpressionParser as parser } from 'cron-parser';
+import _ from 'lodash';
+import nextDate from '../src/nextdate.js';
 import { hookUtils } from './utils.js';
 
 export const AUDIT_ENTRY_TYPE = Object.freeze({

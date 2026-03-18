@@ -1,9 +1,10 @@
-import _ from 'lodash';
 import debugFactory from 'debug';
+import _ from 'lodash';
+
 const debug = debugFactory('purge-cache');
-import { APIBuilder } from '@taskcluster/lib-api';
+
 import taskcluster from '@taskcluster/client';
-import { paginateResults } from '@taskcluster/lib-api';
+import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import { splitWorkerPoolId } from './util.js';
 
 // Common patterns URL parameters

@@ -1,14 +1,14 @@
 import assert from 'node:assert';
+import taskcluster from '@taskcluster/client';
 import passport from 'passport';
 import { Strategy } from 'passport-github';
-import taskcluster from '@taskcluster/client';
-import User from '../User.js';
-import login from '../../utils/login.js';
-import WebServerError from '../../utils/WebServerError.js';
-import tryCatch from '../../utils/tryCatch.js';
-import { encode, decode } from '../../utils/codec.js';
-import GithubClient from '../clients/GithubClient.js';
+import { decode, encode } from '../../utils/codec.js';
 import { applySecurityHeaders } from '../../utils/headers.js';
+import login from '../../utils/login.js';
+import tryCatch from '../../utils/tryCatch.js';
+import WebServerError from '../../utils/WebServerError.js';
+import GithubClient from '../clients/GithubClient.js';
+import User from '../User.js';
 
 export default class Github {
   constructor({ name, cfg, monitor, db }) {

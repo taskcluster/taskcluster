@@ -1,10 +1,10 @@
 import assert from 'node:assert';
-import assume from 'assume';
 import taskcluster from '@taskcluster/client';
-import sinon from 'sinon';
-import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import sinon from 'sinon';
 import { queueUtils } from '../src/utils.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

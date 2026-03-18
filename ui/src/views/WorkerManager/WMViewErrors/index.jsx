@@ -1,18 +1,18 @@
+import { Box, Button, Typography } from '@material-ui/core';
+import dotProp from 'dot-prop-immutable';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
-import { Typography, Box, Button } from '@material-ui/core';
-import Spinner from '../../../components/Spinner';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
-import { VIEW_WORKER_POOL_ERRORS_PAGE_SIZE } from '../../../utils/constants';
-import WorkerManagerErrorsTable from '../../../components/WMErrorsTable';
-import errorsQuery from './errors.graphql';
 import Search from '../../../components/Search';
+import Spinner from '../../../components/Spinner';
 import WorkerManagerErrorsSummary from '../../../components/WMErrorsSummary';
-import Breadcrumbs from '../../../components/Breadcrumbs';
-import Link from '../../../utils/Link';
+import WorkerManagerErrorsTable from '../../../components/WMErrorsTable';
 import WorkersNavbar from '../../../components/WorkersNavbar';
+import { VIEW_WORKER_POOL_ERRORS_PAGE_SIZE } from '../../../utils/constants';
+import Link from '../../../utils/Link';
+import errorsQuery from './errors.graphql';
 
 const getLaunchConfigIdFromQuery = (location) => {
   const searchParams = new URLSearchParams(location.search ?? '');

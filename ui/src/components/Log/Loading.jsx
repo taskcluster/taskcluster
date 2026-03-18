@@ -1,5 +1,5 @@
-import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
+import { Component } from 'react';
 import Spinner from '../Spinner';
 
 @withStyles((theme) => ({

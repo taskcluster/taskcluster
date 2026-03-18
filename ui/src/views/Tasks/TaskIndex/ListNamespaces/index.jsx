@@ -1,22 +1,22 @@
-import { Redirect } from 'react-router-dom';
-import { Component, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
-import { defaultTo } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import Spinner from '../../../../components/Spinner';
+import dotProp from 'dot-prop-immutable';
+import { defaultTo } from 'ramda';
+import { Component, Fragment } from 'react';
+import { graphql, withApollo } from 'react-apollo';
+import { Redirect } from 'react-router-dom';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 import Dashboard from '../../../../components/Dashboard';
+import ErrorPanel from '../../../../components/ErrorPanel';
 import HelpView from '../../../../components/HelpView';
-import Search from '../../../../components/Search';
 import IndexNamespacesTable from '../../../../components/IndexNamespacesTable';
 import IndexTaskNamespaceTable from '../../../../components/IndexTaskNamespaceTable';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
-import ErrorPanel from '../../../../components/ErrorPanel';
+import Search from '../../../../components/Search';
+import Spinner from '../../../../components/Spinner';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../../../utils/constants';
 import Link from '../../../../utils/Link';
-import namespacesQuery from './namespaces.graphql';
 import taskNamespaceQuery from '../taskNamespace.graphql';
+import namespacesQuery from './namespaces.graphql';
 
 const defaultEmpty = defaultTo('');
 

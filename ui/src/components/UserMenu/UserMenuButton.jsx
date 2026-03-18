@@ -1,15 +1,15 @@
-import { Component, Fragment } from 'react';
+import Avatar from '@material-ui/core/Avatar';
+import IconButton from '@material-ui/core/IconButton';
+import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
 import { object } from 'prop-types';
+import { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
-import Avatar from '@material-ui/core/Avatar';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import Button from '../Button';
-import SignInDialog from '../SignInDialog';
 import { withAuth } from '../../utils/Auth';
 import getPictureFromUser from '../../utils/getPictureFromUser';
 import username from '../../utils/username';
+import Button from '../Button';
+import SignInDialog from '../SignInDialog';
 
 @withAuth
 @withApollo

@@ -1,15 +1,17 @@
 import debugFactory from 'debug';
+
 const debug = debugFactory('test:artifacts');
+
 import assert from 'node:assert';
-import slugid from 'slugid';
-import _ from 'lodash';
-import request from 'superagent';
 import taskcluster from '@taskcluster/client';
-import { Netmask } from 'netmask';
-import { createArtifactCallsCompatible } from '../src/artifacts.js';
-import assume from 'assume';
-import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import _ from 'lodash';
+import { Netmask } from 'netmask';
+import slugid from 'slugid';
+import request from 'superagent';
+import { createArtifactCallsCompatible } from '../src/artifacts.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   if (mock) {

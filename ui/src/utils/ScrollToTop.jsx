@@ -1,5 +1,5 @@
+import { node, string } from 'prop-types';
 import { Component } from 'react';
-import { string, node } from 'prop-types';
 
 /** Scroll the window to the top when `scrollKey` changes. */
 export default class ScrollToTop extends Component {

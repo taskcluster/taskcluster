@@ -1,4 +1,4 @@
-import { getArtifactUrl, getLatestArtifactUrl, findArtifactFromTaskUrl } from './getArtifactUrl';
+import { findArtifactFromTaskUrl, getArtifactUrl, getLatestArtifactUrl } from './getArtifactUrl';
 
 describe('getArtifactUrl', () => {
   let originalEnv;

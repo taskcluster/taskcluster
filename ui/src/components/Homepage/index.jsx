@@ -1,9 +1,9 @@
-import { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
 import Hidden from '@material-ui/core/Hidden';
+import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import AccountCircleIcon from 'mdi-react/AccountCircleIcon';
+import { Component } from 'react';
 import Button from '../Button';
 import Landing from '../Landing';
 import SignInDialog from '../SignInDialog';

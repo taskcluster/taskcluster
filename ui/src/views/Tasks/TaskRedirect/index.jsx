@@ -1,10 +1,10 @@
-import { Component, Fragment } from 'react';
-import { Redirect } from 'react-router-dom';
-import { graphql } from 'react-apollo';
 import cloneDeep from 'lodash.clonedeep';
-import Spinner from '../../../components/Spinner';
+import { Component, Fragment } from 'react';
+import { graphql } from 'react-apollo';
+import { Redirect } from 'react-router-dom';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
+import Spinner from '../../../components/Spinner';
 import parameterizeTask from '../../../utils/parameterizeTask';
 import removeKeys from '../../../utils/removeKeys';
 import taskQuery from './task.graphql';

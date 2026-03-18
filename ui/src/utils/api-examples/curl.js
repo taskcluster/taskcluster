@@ -2,7 +2,7 @@
  * Generate curl command examples for API endpoints
  */
 
-import { PLACEHOLDERS, getPlaceholderValue, requiresAuth, formatPayloadJson } from './helpers';
+import { formatPayloadJson, getPlaceholderValue, PLACEHOLDERS, requiresAuth } from './helpers';
 
 /**
  * Generate a curl example for an API endpoint

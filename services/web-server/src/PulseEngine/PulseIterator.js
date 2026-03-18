@@ -1,5 +1,5 @@
-import { $$asyncIterator } from 'iterall';
 import { List } from 'immutable';
+import { $$asyncIterator } from 'iterall';
 
 export default class PulseIterator {
   /**

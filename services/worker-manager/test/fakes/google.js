@@ -1,8 +1,8 @@
-import { FakeCloud } from './fake.js';
 import { strict as assert } from 'node:assert';
-import slugid from 'slugid';
 import google from '@googleapis/compute';
 import gcpIam from '@googleapis/iam';
+import slugid from 'slugid';
+import { FakeCloud } from './fake.js';
 
 const WORKER_SERVICE_ACCOUNT_ID = '12345';
 const PROJECT = 'testy';

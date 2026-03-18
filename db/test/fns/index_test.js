@@ -1,9 +1,10 @@
+import { strict as assert } from 'node:assert';
+import tc from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
 import _ from 'lodash';
 import slug from 'slugid';
-import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
-import testing from '@taskcluster/lib-testing';
-import tc from '@taskcluster/client';
+
 const { fromNow } = tc;
 
 suite(testing.suiteName(), function () {

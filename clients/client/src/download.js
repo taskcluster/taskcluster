@@ -1,8 +1,8 @@
-import got, { HTTPError } from 'got';
 import { pipeline } from 'node:stream/promises';
-import retry from './retry.js';
-import { HashStream, ACCEPTABLE_HASHES } from './hashstream.js';
+import got, { HTTPError } from 'got';
 import { clients } from './client.js';
+import { ACCEPTABLE_HASHES, HashStream } from './hashstream.js';
+import retry from './retry.js';
 
 // apply default retry config
 const makeRetryCfg = ({ retries, delayFactor, randomizationFactor, maxDelay }) => ({

@@ -1,14 +1,16 @@
+import debugFactory from 'debug';
 import express from 'express';
 import _ from 'lodash';
-import debugFactory from 'debug';
+
 const debug = debugFactory('base:app');
+
 import assert from 'node:assert';
 import http from 'node:http';
+import { loadVersion } from '@taskcluster/lib-api';
+import csp from 'content-security-policy';
 import sslify from 'express-sslify';
 import hsts from 'hsts';
-import csp from 'content-security-policy';
 import { v4 } from 'uuid';
-import { loadVersion } from '@taskcluster/lib-api';
 
 /**
  * Attach trace headers to requests. This is exported

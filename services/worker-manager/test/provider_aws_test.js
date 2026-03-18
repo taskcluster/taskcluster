@@ -1,14 +1,14 @@
-import { ApiError } from '../src/providers/provider.js';
-import _ from 'lodash';
 import assert from 'node:assert';
-import helper from './helper.js';
-import { AwsProvider } from '../src/providers/aws.js';
-import testing from '@taskcluster/lib-testing';
 import fs from 'node:fs';
 import path from 'node:path';
 import taskcluster from '@taskcluster/client';
-import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
+import testing from '@taskcluster/lib-testing';
+import _ from 'lodash';
+import { Worker, WorkerPool, WorkerPoolStats } from '../src/data.js';
+import { AwsProvider } from '../src/providers/aws.js';
+import { ApiError } from '../src/providers/provider.js';
 import { FakeEC2 } from './fakes/index.js';
+import helper from './helper.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

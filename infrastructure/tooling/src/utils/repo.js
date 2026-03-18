@@ -1,11 +1,12 @@
-import { promisify } from 'node:util';
-import path from 'node:path';
+import { execFile } from 'node:child_process';
 import fs from 'node:fs';
+import path from 'node:path';
+import { promisify } from 'node:util';
 import glob from 'glob';
 import yaml from 'js-yaml';
 import stringify from 'json-stable-stringify';
-import { execFile } from 'node:child_process';
 import pSynchronize from 'p-synchronize';
+
 const exec = promisify(execFile);
 
 const readFile = promisify(fs.readFile);

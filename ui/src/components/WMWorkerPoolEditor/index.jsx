@@ -1,49 +1,49 @@
-import { Component, Fragment } from 'react';
-import { withRouter } from 'react-router-dom';
-import { oneOfType, object, string, func, bool } from 'prop-types';
 import {
   ButtonBase,
-  Switch,
-  withStyles,
-  Paper,
-  FormGroup,
   FormControlLabel,
-  MenuItem,
-  Typography,
-  ListItemText,
-  ListItem,
-  ListSubheader,
+  FormGroup,
   List,
+  ListItem,
+  ListItemText,
+  ListSubheader,
+  MenuItem,
+  Paper,
+  Switch,
+  Typography,
+  withStyles,
 } from '@material-ui/core';
-import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
-import RunIcon from 'mdi-react/RunIcon';
-import TimerSandIcon from 'mdi-react/TimerSandIcon';
-import CloseIcon from 'mdi-react/CloseIcon';
 import green from '@material-ui/core/colors/green';
 import purple from '@material-ui/core/colors/purple';
 import red from '@material-ui/core/colors/red';
-import { titleCase } from 'title-case';
 import classNames from 'classnames';
-import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
+import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
+import CloseIcon from 'mdi-react/CloseIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import CodeEditor from '../CodeEditor';
-import TextField from '../TextField';
-import MarkdownTextArea from '../MarkdownTextArea';
-import DialogAction from '../DialogAction';
-import Button from '../Button';
+import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
+import RunIcon from 'mdi-react/RunIcon';
+import TimerSandIcon from 'mdi-react/TimerSandIcon';
+import { bool, func, object, oneOfType, string } from 'prop-types';
+import { Component, Fragment } from 'react';
+import { withRouter } from 'react-router-dom';
+import { titleCase } from 'title-case';
+import { NULL_WORKER_POOL, PROVIDER_DEFAULT_CONFIGS, THEME } from '../../utils/constants';
+import formatError from '../../utils/formatError';
 import isWorkerTypeNameValid from '../../utils/isWorkerTypeNameValid';
 import {
-  WorkerManagerWorkerPoolSummary,
-  WorkerManagerWorkerPoolErrorStats,
   providersArray,
+  WorkerManagerWorkerPoolErrorStats,
+  WorkerManagerWorkerPoolSummary,
 } from '../../utils/prop-types';
+import { isWorkerPoolIdSecondHalfValid, joinWorkerPoolId, splitWorkerPoolId } from '../../utils/workerPool';
+import Button from '../Button';
+import CodeEditor from '../CodeEditor';
+import DialogAction from '../DialogAction';
 import ErrorPanel from '../ErrorPanel';
-import { joinWorkerPoolId, splitWorkerPoolId, isWorkerPoolIdSecondHalfValid } from '../../utils/workerPool';
-import formatError from '../../utils/formatError';
-import { NULL_WORKER_POOL, PROVIDER_DEFAULT_CONFIGS, THEME } from '../../utils/constants';
-import SpeedDialAction from '../SpeedDialAction';
+import MarkdownTextArea from '../MarkdownTextArea';
 import SpeedDial from '../SpeedDial';
+import SpeedDialAction from '../SpeedDialAction';
+import TextField from '../TextField';
 
 @withRouter
 @withStyles((theme) => ({

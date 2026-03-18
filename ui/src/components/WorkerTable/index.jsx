@@ -1,19 +1,19 @@
-import { Component } from 'react';
-import { withRouter } from 'react-router-dom';
-import { parse, stringify } from 'qs';
+import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { withStyles } from '@material-ui/core/styles';
+import { parse, stringify } from 'qs';
+import { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import Link from '../../utils/Link';
 import { memoize } from '../../utils/memoize';
-import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
-import TableCellItem from '../TableCellItem';
-import DateDistance from '../DateDistance';
-import DataTable from '../DataTable';
-import StatusLabel from '../StatusLabel';
 import { worker } from '../../utils/prop-types';
 import sort from '../../utils/sort';
-import Link from '../../utils/Link';
+import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
+import DataTable from '../DataTable';
+import DateDistance from '../DateDistance';
+import StatusLabel from '../StatusLabel';
+import TableCellItem from '../TableCellItem';
 
 @withRouter
 @withStyles((theme) => ({

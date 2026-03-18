@@ -1,8 +1,8 @@
-import { PureComponent } from 'react';
 import Typography from '@material-ui/core/Typography';
+import { PureComponent } from 'react';
 import Dashboard from '../../../components/Dashboard';
-import Search from '../../../components/Search';
 import HelpView from '../../../components/HelpView';
+import Search from '../../../components/Search';
 
 export default class ListScopes extends PureComponent {
   handleSearchSubmit = (searchTerm) => {

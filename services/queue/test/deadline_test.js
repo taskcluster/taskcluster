@@ -1,13 +1,15 @@
-import _ from 'lodash';
 import debugFactory from 'debug';
+import _ from 'lodash';
+
 const debug = debugFactory('test:deadline');
+
 import assert from 'node:assert';
-import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
-import assume from 'assume';
-import helper from './helper.js';
-import testing from '@taskcluster/lib-testing';
 import { LEVELS } from '@taskcluster/lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import slugid from 'slugid';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
   helper.withDb(mock, skipping);

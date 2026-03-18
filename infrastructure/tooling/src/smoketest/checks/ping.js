@@ -1,6 +1,6 @@
 import path from 'node:path';
-import libUrls from 'taskcluster-lib-urls';
 import got from 'got';
+import libUrls from 'taskcluster-lib-urls';
 import { listServices, readRepoYAML } from '../../utils/index.js';
 
 const SERVICES = listServices();

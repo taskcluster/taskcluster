@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
-import Button from './index';
 import { AuthContext } from '../../utils/Auth';
+import Button from './index';
 
 it('should render Button', () => {
   const { asFragment } = render(

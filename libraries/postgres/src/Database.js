@@ -1,16 +1,19 @@
 import _ from 'lodash';
 import pg from 'pg';
+
 const { Pool } = pg;
-import crypto from 'node:crypto';
-import { annotateError } from './util.js';
-import Keyring from './Keyring.js';
+
 import { strict as assert } from 'node:assert';
-import { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } from './constants.js';
+import crypto from 'node:crypto';
 import { MonitorManager } from '@taskcluster/lib-monitor';
 import pgConnectionString from 'pg-connection-string';
+import { DUPLICATE_OBJECT, READ, UNDEFINED_TABLE, WRITE } from './constants.js';
+import Keyring from './Keyring.js';
+import { annotateError } from './util.js';
+
 const { parse: parseConnectionString } = pgConnectionString;
 
-import { runMigration, runOnlineMigration, runDowngrade, runOnlineDowngrade, dropOnlineFns } from './migration.js';
+import { dropOnlineFns, runDowngrade, runMigration, runOnlineDowngrade, runOnlineMigration } from './migration.js';
 
 // Postgres extensions to "create".
 const EXTENSIONS = ['pgcrypto'];

@@ -1,12 +1,12 @@
-import helper from './helper.js';
-import ScopeResolver from '../src/scoperesolver.js';
-import exchanges from '../src/exchanges.js';
-import { scopeCompare } from 'taskcluster-lib-scopes';
 import assert from 'node:assert';
-import _ from 'lodash';
-import assume from 'assume';
-import testing from '@taskcluster/lib-testing';
 import { hrtime } from 'node:process';
+import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import _ from 'lodash';
+import { scopeCompare } from 'taskcluster-lib-scopes';
+import exchanges from '../src/exchanges.js';
+import ScopeResolver from '../src/scoperesolver.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function (mock, skipping) {
   let scopeResolver;

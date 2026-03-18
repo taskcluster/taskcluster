@@ -1,14 +1,14 @@
-import { Component, Fragment } from 'react';
-import { string } from 'prop-types';
-import { withRouter } from 'react-router-dom';
-import MDX from '@mdx-js/runtime';
 import Typography from '@material-ui/core/Typography';
+import MDX from '@mdx-js/runtime';
+import { string } from 'prop-types';
+import { Component, Fragment } from 'react';
+import { withRouter } from 'react-router-dom';
 import { titleCase } from 'title-case';
-import Entry from './Entry';
-import Anchor from '../components/Anchor';
-import components from '../components';
-import HeaderWithAnchor from '../components/HeaderWithAnchor';
 import findRefDoc from '../../../utils/findRefDoc';
+import components from '../components';
+import Anchor from '../components/Anchor';
+import HeaderWithAnchor from '../components/HeaderWithAnchor';
+import Entry from './Entry';
 
 @withRouter
 export default class MetricsReference extends Component {

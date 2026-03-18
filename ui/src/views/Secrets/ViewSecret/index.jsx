@@ -1,15 +1,15 @@
 import { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
-import SecretForm from '../../../components/SecretForm';
-import HelpView from '../../../components/HelpView';
 import ErrorPanel from '../../../components/ErrorPanel';
+import HelpView from '../../../components/HelpView';
+import SecretForm from '../../../components/SecretForm';
 import Snackbar from '../../../components/Snackbar';
-import secretQuery from './secret.graphql';
+import Spinner from '../../../components/Spinner';
 import createSecretQuery from './createSecret.graphql';
-import updateSecretQuery from './updateSecret.graphql';
 import deleteSecretQuery from './deleteSecret.graphql';
+import secretQuery from './secret.graphql';
+import updateSecretQuery from './updateSecret.graphql';
 
 @withApollo
 @graphql(secretQuery, {

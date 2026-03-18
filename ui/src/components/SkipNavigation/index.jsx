@@ -1,7 +1,7 @@
-import { Component } from 'react';
+import { withStyles } from '@material-ui/core';
 import classNames from 'classnames';
 import { string } from 'prop-types';
-import { withStyles } from '@material-ui/core';
+import { Component } from 'react';
 import Button from '../Button';
 
 @withStyles({

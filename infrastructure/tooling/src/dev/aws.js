@@ -1,14 +1,14 @@
-import _ from 'lodash';
 import {
-  IAMClient,
   CreateAccessKeyCommand,
   CreateUserCommand,
   DeleteAccessKeyCommand,
   EntityAlreadyExistsException,
+  IAMClient,
   ListAccessKeysCommand,
   PutUserPolicyCommand,
 } from '@aws-sdk/client-iam';
-import { S3Client, CreateBucketCommand, GetBucketLocationCommand, PutBucketPolicyCommand } from '@aws-sdk/client-s3';
+import { CreateBucketCommand, GetBucketLocationCommand, PutBucketPolicyCommand, S3Client } from '@aws-sdk/client-s3';
+import _ from 'lodash';
 
 const setupIam = async ({ iam = new IAMClient(), iamName, iamPolicy }) => {
   try {

@@ -1,7 +1,7 @@
-import config from '../src/index.js';
 import path from 'node:path';
-import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import config from '../src/index.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

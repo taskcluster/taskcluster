@@ -1,7 +1,7 @@
 // @ts-check
 import libUrls from 'taskcluster-lib-urls';
 import { getEmptyProfile, getEmptyThread, UniqueStringArray } from './profile.js';
-import { getLiveLogRowSchema, getLogTaskSchema, getLogCategories } from './schemas.js';
+import { getLiveLogRowSchema, getLogCategories, getLogTaskSchema } from './schemas.js';
 
 const LOG_PATTERN = /^\s*\[(?<component>\w+)(:(?<logLevel>\w+))?\s*(?<time>[\d\-T:.Z+]+)\]\s*(?<message>.*)/;
 const TIMESTAMP_CLEANUP = /^\s*\[[\d\-T:.Z+ ]+\]\s*/;

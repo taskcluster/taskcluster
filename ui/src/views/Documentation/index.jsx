@@ -1,7 +1,7 @@
-import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import catchLinks from 'catch-links';
 import { MDXProvider } from '@mdx-js/react';
+import catchLinks from 'catch-links';
+import { Component } from 'react';
 import 'prismjs';
 import 'prismjs/themes/prism.css';
 import 'prism-themes/themes/prism-atom-dark.css';
@@ -9,17 +9,17 @@ import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markup';
-import Dashboard from '../../components/Dashboard';
-import NotFound from '../../components/NotFound';
-import DocSearch from '../../components/DocSearch';
-import components from './components';
-import ScrollToTop from '../../utils/ScrollToTop';
-import { DOCS_PATH_PREFIX, DOCS_MENU_ITEMS } from '../../utils/constants';
-import scrollToHash from '../../utils/scrollToHash';
-import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
-import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
 import docsSearchOptions from '../../../../generated/docs-search.json';
+import docsTableOfContents from '../../../../generated/docs-table-of-contents.json';
+import Dashboard from '../../components/Dashboard';
+import DocSearch from '../../components/DocSearch';
 import ErrorPanel from '../../components/ErrorPanel';
+import NotFound from '../../components/NotFound';
+import { DOCS_MENU_ITEMS, DOCS_PATH_PREFIX } from '../../utils/constants';
+import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
+import ScrollToTop from '../../utils/ScrollToTop';
+import scrollToHash from '../../utils/scrollToHash';
+import components from './components';
 import PageMeta from './PageMeta';
 
 @withStyles(

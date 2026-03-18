@@ -1,4 +1,4 @@
-import { scopeCompare, mergeScopeSets, normalizeScopeSet } from 'taskcluster-lib-scopes';
+import { mergeScopeSets, normalizeScopeSet, scopeCompare } from 'taskcluster-lib-scopes';
 
 /**
  * BaseNode is the base-class for all node in an object-structure that holds a

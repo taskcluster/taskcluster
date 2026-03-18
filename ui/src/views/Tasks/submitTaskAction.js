@@ -1,15 +1,15 @@
 import merge from 'deepmerge';
-import { satisfiesExpression } from 'taskcluster-lib-scopes';
-import cloneDeep from 'lodash.clonedeep';
-import jsone from 'json-e';
 import { load } from 'js-yaml';
+import jsone from 'json-e';
+import cloneDeep from 'lodash.clonedeep';
+import { satisfiesExpression } from 'taskcluster-lib-scopes';
+import ajv from '../../utils/ajv';
 import removeKeys from '../../utils/removeKeys';
 import { nice } from '../../utils/slugid';
+import validateActionsJson from '../../utils/validateActionsJson';
+import createTaskQuery from './createTask.graphql';
 import expandScopesQuery from './expandScopes.graphql';
 import triggerHookQuery from './triggerHook.graphql';
-import createTaskQuery from './createTask.graphql';
-import validateActionsJson from '../../utils/validateActionsJson';
-import ajv from '../../utils/ajv';
 
 export default async ({ task, form, action, apolloClient, taskActions }) => {
   const actions = removeKeys(cloneDeep(taskActions), ['__typename']);

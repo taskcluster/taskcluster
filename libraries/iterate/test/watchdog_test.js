@@ -1,6 +1,6 @@
-import subject from '../src/watchdog.js';
-import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import subject from '../src/watchdog.js';
 
 suite(testing.suiteName(), function () {
   let events;

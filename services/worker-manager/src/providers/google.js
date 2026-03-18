@@ -1,13 +1,13 @@
 import assert from 'node:assert';
-import slugid from 'slugid';
-import _ from 'lodash';
-import taskcluster from '@taskcluster/client';
-import * as uuid from 'uuid';
 import gcpCompute from '@googleapis/compute';
 import gcpIam from '@googleapis/iam';
-import { ApiError, Provider } from './provider.js';
+import taskcluster from '@taskcluster/client';
+import _ from 'lodash';
+import slugid from 'slugid';
+import * as uuid from 'uuid';
+import { Worker, WorkerPool } from '../data.js';
 import { CloudAPI } from './cloudapi.js';
-import { WorkerPool, Worker } from '../data.js';
+import { ApiError, Provider } from './provider.js';
 
 /** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
 

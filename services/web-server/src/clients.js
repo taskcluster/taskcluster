@@ -1,4 +1,5 @@
 import tc from '@taskcluster/client';
+
 const { Auth, Github, Hooks, Index, PurgeCache, Queue, QueueEvents, Secrets, Notify, WorkerManager } = tc;
 
 export default (options) => ({

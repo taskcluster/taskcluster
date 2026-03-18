@@ -1,6 +1,6 @@
 import assert from 'node:assert';
-import request from 'superagent';
 import Debug from 'debug';
+import request from 'superagent';
 
 const debug = Debug('GithubClient');
 const baseUrl = 'https://api.github.com';

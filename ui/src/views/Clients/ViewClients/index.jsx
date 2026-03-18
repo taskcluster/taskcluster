@@ -1,22 +1,22 @@
-import { PureComponent, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
-import { parse, stringify } from 'qs';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import PlusIcon from 'mdi-react/PlusIcon';
 import dotProp from 'dot-prop-immutable';
 import escapeStringRegexp from 'escape-string-regexp';
-import Spinner from '../../../components/Spinner';
-import Dashboard from '../../../components/Dashboard';
-import Search from '../../../components/Search';
-import HelpView from '../../../components/HelpView';
+import PlusIcon from 'mdi-react/PlusIcon';
+import { parse, stringify } from 'qs';
+import { Fragment, PureComponent } from 'react';
+import { graphql, withApollo } from 'react-apollo';
 import Button from '../../../components/Button';
 import ClientsTable from '../../../components/ClientsTable';
+import Dashboard from '../../../components/Dashboard';
 import DialogAction from '../../../components/DialogAction';
+import ErrorPanel from '../../../components/ErrorPanel';
+import HelpView from '../../../components/HelpView';
+import Search from '../../../components/Search';
+import Spinner from '../../../components/Spinner';
 import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
 import clientsQuery from './clients.graphql';
 import deleteClientQuery from './deleteClient.graphql';
-import ErrorPanel from '../../../components/ErrorPanel';
 
 @withApollo
 @graphql(clientsQuery, {

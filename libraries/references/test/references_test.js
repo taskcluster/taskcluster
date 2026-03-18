@@ -1,10 +1,10 @@
 import assert from 'node:assert';
 import fs from 'node:fs';
-import { getCommonSchemas } from '../src/common-schemas.js';
-import { makeSerializable } from '../src/serializable.js';
-import mockFs from 'mock-fs';
-import References from '../src/index.js';
 import testing from '@taskcluster/lib-testing';
+import mockFs from 'mock-fs';
+import { getCommonSchemas } from '../src/common-schemas.js';
+import References from '../src/index.js';
+import { makeSerializable } from '../src/serializable.js';
 
 suite(testing.suiteName(), function () {
   teardown(function () {

@@ -1,9 +1,9 @@
-import { Component } from 'react';
-import ReactGA from 'react-ga';
 import MuiButton from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
 import Tooltip from '@material-ui/core/Tooltip';
-import { object, node, bool, oneOf, string } from 'prop-types';
+import { bool, node, object, oneOf, string } from 'prop-types';
+import { Component } from 'react';
+import ReactGA from 'react-ga';
 import { withAuth } from '../../utils/Auth';
 import { gaEvent } from '../../utils/prop-types';
 

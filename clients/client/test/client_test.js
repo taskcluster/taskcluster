@@ -1,8 +1,8 @@
-import taskcluster from '../src/index.js';
 import assert from 'node:assert';
+import net from 'node:net';
 import path from 'node:path';
 import nock from 'nock';
-import net from 'node:net';
+import taskcluster from '../src/index.js';
 import testing from './helper.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;

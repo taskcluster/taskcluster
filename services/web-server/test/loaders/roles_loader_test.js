@@ -1,9 +1,9 @@
 import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
-import gql from 'graphql-tag';
 import testing from '@taskcluster/lib-testing';
-import helper from '../helper.js';
+import gql from 'graphql-tag';
 import loader from '../../src/loaders/roles.js';
+import helper from '../helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

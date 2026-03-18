@@ -1,6 +1,6 @@
-import Keyring from '../src/Keyring.js';
-import path from 'node:path';
 import { strict as assert } from 'node:assert';
+import path from 'node:path';
+import Keyring from '../src/Keyring.js';
 
 const __filename = new URL('', import.meta.url).pathname;
 

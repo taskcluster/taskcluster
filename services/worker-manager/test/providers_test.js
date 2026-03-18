@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { setSetupRetryInterval } from '../src/providers/index.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

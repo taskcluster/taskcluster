@@ -1,29 +1,29 @@
-import { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
-import { shape, func, arrayOf, string, bool } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
-import { camelCase } from 'camel-case';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
 import Hidden from '@material-ui/core/Hidden';
-import LinkIcon from 'mdi-react/LinkIcon';
+import IconButton from '@material-ui/core/IconButton';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
+import Typography from '@material-ui/core/Typography';
+import { camelCase } from 'camel-case';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import WorkerIcon from 'mdi-react/WorkerIcon';
+import LinkIcon from 'mdi-react/LinkIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
+import WorkerIcon from 'mdi-react/WorkerIcon';
+import { arrayOf, bool, func, shape, string } from 'prop-types';
+import { map, pipe, sort as rSort } from 'ramda';
+import { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
-import { memoize } from '../../utils/memoize';
-import { WorkerManagerWorkerPoolSummary, pageInfo } from '../../utils/prop-types';
-import Label from '../Label';
-import ConnectionDataTable from '../ConnectionDataTable';
-import sort from '../../utils/sort';
-import Link from '../../utils/Link';
-import Button from '../Button';
-import TableCellItem from '../TableCellItem';
-import DialogAction from '../DialogAction';
 import { NULL_PROVIDER, VIEW_WORKER_POOLS_PAGE_SIZE } from '../../utils/constants';
+import Link from '../../utils/Link';
+import { memoize } from '../../utils/memoize';
+import { pageInfo, WorkerManagerWorkerPoolSummary } from '../../utils/prop-types';
+import sort from '../../utils/sort';
 import { splitWorkerPoolId } from '../../utils/workerPool';
+import Button from '../Button';
+import ConnectionDataTable from '../ConnectionDataTable';
+import DialogAction from '../DialogAction';
+import Label from '../Label';
+import TableCellItem from '../TableCellItem';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.workerPoolId, b.node.workerPoolId)),

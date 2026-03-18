@@ -1,10 +1,10 @@
 import assert from 'node:assert';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import stringify from 'fast-json-stable-stringify';
 import libUrls from 'taskcluster-lib-urls';
-import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
-import { makeDebug, isCollaborator } from './utils.js';
-import { POLICIES, ALLOW_COMMENT_POLICIES } from './policies.js';
 import { GITHUB_TASKS_FOR } from '../constants.js';
+import { ALLOW_COMMENT_POLICIES, POLICIES } from './policies.js';
+import { isCollaborator, makeDebug } from './utils.js';
 
 /**
  * If a .taskcluster.yml exists, attempt to turn it into a taskcluster

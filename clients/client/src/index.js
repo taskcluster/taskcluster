@@ -3,14 +3,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 export * from './client.js';
-export * from './utils.js';
-export * from './upload.js';
 export * from './download.js';
+export * from './upload.js';
+export * from './utils.js';
 
 import * as client from './client.js';
-import * as utils from './utils.js';
-import * as upload from './upload.js';
 import * as download from './download.js';
+import * as upload from './upload.js';
+import * as utils from './utils.js';
 
 export default {
   ...client,

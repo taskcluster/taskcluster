@@ -1,8 +1,8 @@
-import path from 'node:path';
-import { fork } from 'node:child_process';
-import mockFs from 'mock-fs';
 import assert from 'node:assert';
+import { fork } from 'node:child_process';
+import path from 'node:path';
 import testing from '@taskcluster/lib-testing';
+import mockFs from 'mock-fs';
 import MonitorManager from '../src/monitormanager.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;

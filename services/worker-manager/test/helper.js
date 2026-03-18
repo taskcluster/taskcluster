@@ -1,12 +1,10 @@
-import taskcluster from '@taskcluster/client';
-import { FakeEC2, FakeAzure, FakeGoogle } from './fakes/index.js';
-import { Worker } from '../src/data.js';
 import { globalAgent } from 'node:http';
-
+import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
-
 import builder from '../src/api.js';
+import { Worker } from '../src/data.js';
 import loadMain from '../src/main.js';
+import { FakeAzure, FakeEC2, FakeGoogle } from './fakes/index.js';
 
 export const rootUrl = 'http://localhost:60409';
 export const load = testing.stickyLoader(loadMain);

@@ -1,5 +1,5 @@
+import { intervalToDuration, isDate, parseISO } from 'date-fns';
 import { Component } from 'react';
-import { isDate, intervalToDuration, parseISO } from 'date-fns';
 import { date } from '../../utils/prop-types';
 
 /**

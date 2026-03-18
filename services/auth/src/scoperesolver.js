@@ -1,14 +1,16 @@
-import _ from 'lodash';
-import util from 'node:util';
 import assert from 'node:assert';
-import taskcluster from '@taskcluster/client';
 import events from 'node:events';
-import LRU from 'quick-lru';
+import util from 'node:util';
+import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
+import _ from 'lodash';
+import LRU from 'quick-lru';
+
 const debug = debugFactory('auth:ScopeResolver');
-import * as trie from './trie.js';
-import ScopeSetBuilder from './scopesetbuilder.js';
+
 import { consume } from '@taskcluster/lib-pulse';
+import ScopeSetBuilder from './scopesetbuilder.js';
+import * as trie from './trie.js';
 
 const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 

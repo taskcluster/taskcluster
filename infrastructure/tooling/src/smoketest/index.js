@@ -1,8 +1,8 @@
-import { loadChecks } from './checks/index.js';
 import taskcluster from '@taskcluster/client';
-import libScopes from 'taskcluster-lib-scopes';
-import { TaskGraph } from 'console-taskgraph';
 import chalk from 'chalk';
+import { TaskGraph } from 'console-taskgraph';
+import libScopes from 'taskcluster-lib-scopes';
+import { loadChecks } from './checks/index.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

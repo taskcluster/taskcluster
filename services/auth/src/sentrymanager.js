@@ -1,7 +1,9 @@
-import _ from 'lodash';
 import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
+import _ from 'lodash';
+
 const debug = debugFactory('app:sentry');
+
 import assert from 'node:assert';
 import { Client as SentryClient } from 'sentry-api';
 

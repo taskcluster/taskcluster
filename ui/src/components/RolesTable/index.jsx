@@ -1,18 +1,18 @@
-import { Component } from 'react';
-import { string, shape, func, arrayOf } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
-import { camelCase } from 'camel-case';
 import { withStyles } from '@material-ui/core/styles';
-import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
+import { camelCase } from 'camel-case';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import { memoize } from '../../utils/memoize';
-import Button from '../Button';
-import sort from '../../utils/sort';
-import ConnectionDataTable from '../ConnectionDataTable';
+import { arrayOf, func, shape, string } from 'prop-types';
+import { map, pipe, sort as rSort } from 'ramda';
+import { Component } from 'react';
 import { VIEW_ROLES_PAGE_SIZE } from '../../utils/constants';
-import { pageInfo, role } from '../../utils/prop-types';
 import Link from '../../utils/Link';
+import { memoize } from '../../utils/memoize';
+import { pageInfo, role } from '../../utils/prop-types';
+import sort from '../../utils/sort';
+import Button from '../Button';
+import ConnectionDataTable from '../ConnectionDataTable';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.roleId, b.node.roleId)),

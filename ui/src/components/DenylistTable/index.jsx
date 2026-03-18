@@ -1,16 +1,16 @@
+import { withStyles } from '@material-ui/core/styles';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
+import classNames from 'classnames';
+import LinkIcon from 'mdi-react/LinkIcon';
+import { arrayOf, func, shape, string } from 'prop-types';
+import { map, pipe, sort as rSort } from 'ramda';
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { string, shape, func, arrayOf } from 'prop-types';
 import { titleCase } from 'title-case';
-import classNames from 'classnames';
-import { pipe, map, sort as rSort } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import LinkIcon from 'mdi-react/LinkIcon';
+import { VIEW_DENYLIST_PAGE_SIZE } from '../../utils/constants';
 import { memoize } from '../../utils/memoize';
 import { notificationAddress, pageInfo } from '../../utils/prop-types';
-import { VIEW_DENYLIST_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
 import ConnectionDataTable from '../ConnectionDataTable';
 

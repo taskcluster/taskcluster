@@ -1,8 +1,8 @@
 import assert from 'node:assert';
 import events from 'node:events';
-import taskCreds from './task-creds.js';
 import { Task } from './data.js';
 import HintPoller from './hintpoller.js';
+import taskCreds from './task-creds.js';
 
 /** WorkClaimer manages to claim work from internal queues. */
 class WorkClaimer extends events.EventEmitter {

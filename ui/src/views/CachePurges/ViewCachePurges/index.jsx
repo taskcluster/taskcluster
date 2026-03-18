@@ -1,19 +1,19 @@
-import { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import dotProp from 'dot-prop-immutable';
 import PlusIcon from 'mdi-react/PlusIcon';
 import qs, { parse, stringify } from 'qs';
-import Spinner from '../../../components/Spinner';
-import Dashboard from '../../../components/Dashboard';
+import { Component, Fragment } from 'react';
+import { graphql } from 'react-apollo';
 import Button from '../../../components/Button';
 import CachePurgesTable from '../../../components/CachePurgesTable';
-import HelpView from '../../../components/HelpView';
-import { VIEW_CACHE_PURGES_PAGE_SIZE } from '../../../utils/constants';
+import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
-import cachePurgesQuery from './cachePurges.graphql';
+import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
+import Spinner from '../../../components/Spinner';
+import { VIEW_CACHE_PURGES_PAGE_SIZE } from '../../../utils/constants';
+import cachePurgesQuery from './cachePurges.graphql';
 
 @graphql(cachePurgesQuery, {
   options: () => ({

@@ -1,21 +1,21 @@
-import { Component, Fragment } from 'react';
-import { Query } from 'react-apollo';
-import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import { withStyles } from '@material-ui/core/styles';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { parse, stringify } from 'qs';
-import Spinner from '../../../components/Spinner';
-import CodeEditor from '../../../components/CodeEditor';
-import HelpView from '../../../components/HelpView';
-import Dashboard from '../../../components/Dashboard/index';
+import { Component, Fragment } from 'react';
+import { Query } from 'react-apollo';
 import Button from '../../../components/Button';
+import CodeEditor from '../../../components/CodeEditor';
+import Dashboard from '../../../components/Dashboard/index';
 import ErrorPanel from '../../../components/ErrorPanel';
-import splitLines from '../../../utils/splitLines';
+import HelpView from '../../../components/HelpView';
+import Spinner from '../../../components/Spinner';
 import Link from '../../../utils/Link';
-import scopesetQuery from './scopeset.graphql';
 import scopeLink from '../../../utils/scopeLink';
+import splitLines from '../../../utils/splitLines';
+import scopesetQuery from './scopeset.graphql';
 
 @withStyles((theme) => ({
   actionButton: {

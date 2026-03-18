@@ -1,5 +1,5 @@
-import indexedTaskRoutes from './TaskIndex/routes';
 import lazy from '../../utils/lazy';
+import indexedTaskRoutes from './TaskIndex/routes';
 
 const NoTask = lazy(() => import(/* webpackChunkName: 'Tasks.NoTask' */ './NoTask'));
 const NoTaskGroup = lazy(() => import(/* webpackChunkName: 'Tasks.NoTaskGroup' */ './NoTaskGroup'));

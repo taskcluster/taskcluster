@@ -1,25 +1,25 @@
-import React, { Fragment, Component } from 'react';
-import { string, arrayOf, shape, bool } from 'prop-types';
-import classNames from 'classnames';
-import { pipe, map, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import { FixedSizeList as List } from 'react-window';
-import { WindowScroller } from 'react-virtualized';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import Typography from '@material-ui/core/Typography';
 import Table from '@material-ui/core/Table';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
+import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import TableSortLabel from '@material-ui/core/TableSortLabel';
+import Typography from '@material-ui/core/Typography';
+import classNames from 'classnames';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { memoize } from '../../utils/memoize';
-import StatusLabel from '../StatusLabel';
+import { arrayOf, bool, shape, string } from 'prop-types';
+import { map, pipe, sort as rSort } from 'ramda';
+import React, { Component, Fragment } from 'react';
+import { WindowScroller } from 'react-virtualized';
+import { FixedSizeList as List } from 'react-window';
 import Link from '../../utils/Link';
+import { memoize } from '../../utils/memoize';
+import { pageInfo, task, taskState } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import { filterTasks, taskLastRun, taskRunDurationInMs } from '../../utils/task';
-import { pageInfo, task, taskState } from '../../utils/prop-types';
-import TimeDiff from '../Duration';
 import DateDistance from '../DateDistance';
+import TimeDiff from '../Duration';
+import StatusLabel from '../StatusLabel';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.metadata.name, b.node.metadata.name)),

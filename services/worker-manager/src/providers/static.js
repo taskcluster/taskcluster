@@ -1,6 +1,6 @@
 import taskcluster from '@taskcluster/client';
-import { ApiError, Provider } from './provider.js';
 import { Worker } from '../data.js';
+import { ApiError, Provider } from './provider.js';
 
 export class StaticProvider extends Provider {
   constructor(conf) {

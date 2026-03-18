@@ -1,22 +1,22 @@
+import { Box, TableCell, TableRow, Typography } from '@material-ui/core';
+import dotProp from 'dot-prop-immutable';
+import LinkIcon from 'mdi-react/LinkIcon';
 import { Component } from 'react';
 import { graphql } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
-import { TableRow, TableCell, Box, Typography } from '@material-ui/core';
-import LinkIcon from 'mdi-react/LinkIcon';
-import Spinner from '../../../components/Spinner';
-import Dashboard from '../../../components/Dashboard';
-import { VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE } from '../../../utils/constants';
-import pendingTasks from './pendingTasks.graphql';
-import ConnectionDataTable from '../../../components/ConnectionDataTable';
-import Link from '../../../utils/Link';
-import TableCellItem from '../../../components/TableCellItem';
-import DateDistance from '../../../components/DateDistance';
-import Label from '../../../components/Label';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import ErrorPanel from '../../../components/ErrorPanel';
-import { joinWorkerPoolId } from '../../../utils/workerPool';
-import WorkersNavbar from '../../../components/WorkersNavbar';
+import ConnectionDataTable from '../../../components/ConnectionDataTable';
 import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
+import Dashboard from '../../../components/Dashboard';
+import DateDistance from '../../../components/DateDistance';
+import ErrorPanel from '../../../components/ErrorPanel';
+import Label from '../../../components/Label';
+import Spinner from '../../../components/Spinner';
+import TableCellItem from '../../../components/TableCellItem';
+import WorkersNavbar from '../../../components/WorkersNavbar';
+import { VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE } from '../../../utils/constants';
+import Link from '../../../utils/Link';
+import { joinWorkerPoolId } from '../../../utils/workerPool';
+import pendingTasks from './pendingTasks.graphql';
 
 @graphql(pendingTasks, {
   options: (props) => ({

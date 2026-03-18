@@ -1,9 +1,9 @@
 import taskcluster from '@taskcluster/client';
-import PulseIterator from './PulseIterator.js';
-import MessageIterator from './MessageIterator.js';
-import EventIterator from './EventIterator.js';
-import Subscription from './Subscription.js';
 import pSynchronize from 'p-synchronize';
+import EventIterator from './EventIterator.js';
+import MessageIterator from './MessageIterator.js';
+import PulseIterator from './PulseIterator.js';
+import Subscription from './Subscription.js';
 
 export default class PulseEngine {
   /* Operation:

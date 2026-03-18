@@ -1,11 +1,11 @@
-import { Component } from 'react';
-import { string } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import IconButton from '@material-ui/core/IconButton';
+import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
-import ContentCopyIcon from '@material-ui/icons/FileCopy';
 import CheckIcon from '@material-ui/icons/Check';
+import ContentCopyIcon from '@material-ui/icons/FileCopy';
+import { string } from 'prop-types';
+import { Component } from 'react';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Code from '../Code';
 
 @withStyles((theme) => ({

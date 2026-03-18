@@ -1,6 +1,7 @@
-import util from 'node:util';
 import { execFile } from 'node:child_process';
-import { readRepoFile, modifyRepoFile } from '../../utils/index.js';
+import util from 'node:util';
+import { modifyRepoFile, readRepoFile } from '../../utils/index.js';
+
 const exec = util.promisify(execFile);
 
 /**

@@ -1,20 +1,20 @@
-import _ from 'lodash';
 import path from 'node:path';
 import glob from 'glob';
 import yaml from 'js-yaml';
 import jsone from 'json-e';
+import _ from 'lodash';
 import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
 
 import {
-  listServices,
-  writeRepoFile,
-  readRepoYAML,
-  writeRepoYAML,
-  writeRepoJSON,
-  REPO_ROOT,
-  configToSchema,
   configToExample,
+  configToSchema,
+  listServices,
+  REPO_ROOT,
+  readRepoYAML,
+  writeRepoFile,
+  writeRepoJSON,
+  writeRepoYAML,
 } from '../../utils/index.js';
 
 const SERVICES = listServices();

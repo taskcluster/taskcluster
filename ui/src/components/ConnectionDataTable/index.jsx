@@ -1,20 +1,20 @@
-import { Component, Fragment } from 'react';
-import { array, arrayOf, func, number, shape, string, oneOf, bool } from 'prop-types';
-import classNames from 'classnames';
+import InputAdornment from '@material-ui/core/InputAdornment';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
+import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TextField from '@material-ui/core/TextField';
-import InputAdornment from '@material-ui/core/InputAdornment';
+import classNames from 'classnames';
 import FilterIcon from 'mdi-react/FilterIcon';
-import { WindowScroller, AutoSizer, List } from 'react-virtualized';
-import Spinner from '../Spinner';
+import { array, arrayOf, bool, func, number, oneOf, shape, string } from 'prop-types';
+import { Component, Fragment } from 'react';
+import { AutoSizer, List, WindowScroller } from 'react-virtualized';
 import { pageInfo } from '../../utils/prop-types';
+import Spinner from '../Spinner';
 
 @withStyles((theme) => ({
   loading: {

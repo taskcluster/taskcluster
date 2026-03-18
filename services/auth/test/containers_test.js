@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { modifyRoles } from '../src/data.js';
+import helper from './helper.js';
 
 const sorted = (arr) => {
   arr.sort();

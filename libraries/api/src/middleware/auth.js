@@ -1,10 +1,10 @@
-import hawk from 'hawk';
 import assert from 'node:assert';
-import scopes from 'taskcluster-lib-scopes';
 import crypto from 'node:crypto';
-import { cleanRouteAndParams } from '../utils.js';
-import ScopeExpressionTemplate from '../expressions.js';
+import hawk from 'hawk';
+import scopes from 'taskcluster-lib-scopes';
 import { ErrorReply } from '../error-reply.js';
+import ScopeExpressionTemplate from '../expressions.js';
+import { cleanRouteAndParams } from '../utils.js';
 
 /** @typedef {import('../../@types/index.d.ts').SignatureValidatorResult} SignatureValidatorResult */
 /** @typedef {import('../../@types/index.d.ts').APIRequest} APIRequest */

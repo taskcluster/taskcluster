@@ -1,12 +1,12 @@
-import { PureComponent, Fragment } from 'react';
-import { string } from 'prop-types';
-import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
-import Spinner from '../../../components/Spinner';
+import { string } from 'prop-types';
+import { Fragment, PureComponent } from 'react';
+import { graphql } from 'react-apollo';
 import DenylistTable from '../../../components/DenylistTable';
 import ErrorPanel from '../../../components/ErrorPanel';
-import notificationsQuery from './denylist.graphql';
+import Spinner from '../../../components/Spinner';
 import { VIEW_DENYLIST_PAGE_SIZE } from '../../../utils/constants';
+import notificationsQuery from './denylist.graphql';
 
 @graphql(notificationsQuery, {
   options: (props) => ({

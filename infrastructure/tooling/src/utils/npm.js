@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import mkdirp from 'mkdirp';
 import taskcluster from '@taskcluster/client';
+import mkdirp from 'mkdirp';
+import { rimraf } from 'rimraf';
 import { execCommand } from './command.js';
 import { REPO_ROOT } from './repo.js';
-import { rimraf } from 'rimraf';
 
 /**
  * Perform an `npm publish`

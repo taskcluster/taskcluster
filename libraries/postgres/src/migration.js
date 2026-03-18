@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
-import { dollarQuote, ETA } from './util.js';
 import { UNDEFINED_FUNCTION } from './constants.js';
+import { dollarQuote, ETA } from './util.js';
 
 const inTransaction = async (client, callable) => {
   await client.query('begin');

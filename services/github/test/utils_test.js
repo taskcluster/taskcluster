@@ -2,18 +2,18 @@ import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 
 import {
-  throttleRequest,
+  ansi2txt,
+  checkGithubSignature,
+  extractHeadLinesFromLog,
+  extractLog,
+  extractTailLinesFromLog,
+  generateXHubSignature,
+  getTaskclusterCommand,
+  shouldSkipComment,
   shouldSkipCommit,
   shouldSkipPullRequest,
-  shouldSkipComment,
-  getTaskclusterCommand,
   tailLog,
-  extractLog,
-  extractHeadLinesFromLog,
-  extractTailLinesFromLog,
-  ansi2txt,
-  generateXHubSignature,
-  checkGithubSignature,
+  throttleRequest,
 } from '../src/utils.js';
 
 suite(testing.suiteName(), function () {

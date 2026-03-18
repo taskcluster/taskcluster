@@ -1,29 +1,29 @@
-import { Component, Fragment } from 'react';
+import { TableCell, TableRow, Typography } from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
+import { formatDistanceStrict, parseISO } from 'date-fns';
+import DeleteIcon from 'mdi-react/DeleteIcon';
+import LinkIcon from 'mdi-react/LinkIcon';
 import { func, string } from 'prop-types';
 import { parse, stringify } from 'qs';
+import { map, pipe, sort as rSort } from 'ramda';
+import { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
-import { formatDistanceStrict, parseISO } from 'date-fns';
-import { pipe, map, sort as rSort } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import { TableCell, TableRow, Typography } from '@material-ui/core';
-import LinkIcon from 'mdi-react/LinkIcon';
-import DeleteIcon from 'mdi-react/DeleteIcon';
-import { memoize } from '../../utils/memoize';
-import Button from '../Button';
-import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
-import StatusLabel from '../StatusLabel';
-import DateDistance from '../DateDistance';
-import TableCellItem from '../TableCellItem';
-import ConnectionDataTable from '../ConnectionDataTable';
-import Label from '../Label';
-import DialogAction from '../DialogAction';
-import { NULL_PROVIDER, VIEW_WORKERS_PAGE_SIZE } from '../../utils/constants';
-import { workers } from '../../utils/prop-types';
 import { withAuth } from '../../utils/Auth';
-import Link from '../../utils/Link';
 import { removeWorker } from '../../utils/client';
+import { NULL_PROVIDER, VIEW_WORKERS_PAGE_SIZE } from '../../utils/constants';
+import Link from '../../utils/Link';
+import { memoize } from '../../utils/memoize';
+import { workers } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import { enableTerminate, terminateDisabled } from '../../utils/terminate';
+import Button from '../Button';
+import ConnectionDataTable from '../ConnectionDataTable';
+import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
+import DateDistance from '../DateDistance';
+import DialogAction from '../DialogAction';
+import Label from '../Label';
+import StatusLabel from '../StatusLabel';
+import TableCellItem from '../TableCellItem';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.workerId, b.node.workerId)),

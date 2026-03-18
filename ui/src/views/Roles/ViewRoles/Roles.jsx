@@ -1,16 +1,16 @@
-import { PureComponent, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
-import { string } from 'prop-types';
 import Typography from '@material-ui/core/Typography';
 import dotProp from 'dot-prop-immutable';
 import escapeStringRegexp from 'escape-string-regexp';
-import Spinner from '../../../components/Spinner';
-import RolesTable from '../../../components/RolesTable';
-import ErrorPanel from '../../../components/ErrorPanel';
+import { string } from 'prop-types';
+import { Fragment, PureComponent } from 'react';
+import { graphql, withApollo } from 'react-apollo';
 import DialogAction from '../../../components/DialogAction';
-import rolesQuery from './roles.graphql';
-import deleteRoleQuery from './deleteRole.graphql';
+import ErrorPanel from '../../../components/ErrorPanel';
+import RolesTable from '../../../components/RolesTable';
+import Spinner from '../../../components/Spinner';
 import { VIEW_ROLES_PAGE_SIZE } from '../../../utils/constants';
+import deleteRoleQuery from './deleteRole.graphql';
+import rolesQuery from './roles.graphql';
 
 @withApollo
 @graphql(rolesQuery, {

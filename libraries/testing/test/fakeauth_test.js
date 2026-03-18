@@ -1,16 +1,18 @@
 import debugFactory from 'debug';
+
 const debug = debugFactory('test');
+
+import assert from 'node:assert';
+import path from 'node:path';
+import taskcluster from '@taskcluster/client';
+import { APIBuilder } from '@taskcluster/lib-api';
+import { App } from '@taskcluster/lib-app';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import SchemaSet from '@taskcluster/lib-validate';
 import hawk from 'hawk';
 import request from 'superagent';
-import SchemaSet from '@taskcluster/lib-validate';
-import { APIBuilder } from '@taskcluster/lib-api';
-import { MonitorManager } from '@taskcluster/lib-monitor';
-import { App } from '@taskcluster/lib-app';
-import assert from 'node:assert';
-import taskcluster from '@taskcluster/client';
-import path from 'node:path';
 import libUrls from 'taskcluster-lib-urls';
-import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

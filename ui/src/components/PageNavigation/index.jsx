@@ -1,9 +1,9 @@
-import { Fragment, Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
 import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';
-import { string, oneOf } from 'prop-types';
+import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
+import { oneOf, string } from 'prop-types';
+import { Component, Fragment } from 'react';
 import Link from '../../utils/Link';
 import Button from '../Button';
 

@@ -1,6 +1,6 @@
-import _ from 'lodash';
-import jsone from 'json-e';
 import { consume } from '@taskcluster/lib-pulse';
+import jsone from 'json-e';
+import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 
 /** Handler listening for tasks that carries notifications */

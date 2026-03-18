@@ -1,15 +1,15 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import Docker from 'dockerode';
-import Observable from 'zen-observable';
 import { PassThrough, Transform } from 'node:stream';
 import taskcluster from '@taskcluster/client';
-import { REPO_ROOT } from './repo.js';
+import Docker from 'dockerode';
 import got from 'got';
-import { execCommand } from './command.js';
 import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
+import Observable from 'zen-observable';
+import { execCommand } from './command.js';
+import { REPO_ROOT } from './repo.js';
 
 /**
  * Set up to call docker in the given baseDir (internal use only)

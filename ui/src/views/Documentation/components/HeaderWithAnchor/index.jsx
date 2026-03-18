@@ -1,9 +1,9 @@
-import { Component } from 'react';
-import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
-import { string, oneOf } from 'prop-types';
-import { paramCase } from 'param-case';
 import Typography from '@material-ui/core/Typography';
+import classNames from 'classnames';
+import { paramCase } from 'param-case';
+import { oneOf, string } from 'prop-types';
+import { Component } from 'react';
 
 @withStyles((theme) => ({
   header: {

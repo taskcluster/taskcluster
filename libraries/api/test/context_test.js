@@ -1,13 +1,13 @@
-import SchemaSet from '@taskcluster/lib-validate';
-import { App } from '@taskcluster/lib-app';
-import { APIBuilder } from '../src/index.js';
 import assert from 'node:assert';
-import request from 'superagent';
-import slugid from 'slugid';
-import sinon from 'sinon';
 import path from 'node:path';
-import { monitor } from './helper.js';
+import { App } from '@taskcluster/lib-app';
 import testing from '@taskcluster/lib-testing';
+import SchemaSet from '@taskcluster/lib-validate';
+import sinon from 'sinon';
+import slugid from 'slugid';
+import request from 'superagent';
+import { APIBuilder } from '../src/index.js';
+import { monitor } from './helper.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

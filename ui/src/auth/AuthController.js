@@ -1,7 +1,7 @@
 import mitt from 'mitt';
 import { AUTH_STORE } from '../utils/constants';
-import credentialsQuery from './credentials.graphql';
 import removeKeys from '../utils/removeKeys';
+import credentialsQuery from './credentials.graphql';
 import UserSession from './UserSession';
 
 /**

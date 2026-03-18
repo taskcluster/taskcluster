@@ -1,20 +1,20 @@
-import { Component } from 'react';
-import { withApollo, graphql } from 'react-apollo';
+import { Box, Typography } from '@material-ui/core';
 import { bool } from 'prop-types';
-import { Typography, Box } from '@material-ui/core';
-import Spinner from '../../../components/Spinner';
-import Dashboard from '../../../components/Dashboard';
-import createWorkerPoolQuery from './createWorkerPool.graphql';
-import updateWorkerPoolQuery from './updateWorkerPool.graphql';
-import deleteWorkerPoolQuery from './deleteWorkerPool.graphql';
-import workerPoolQuery from './workerPool.graphql';
-import providersQuery from './providers.graphql';
-import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
-import ErrorPanel from '../../../components/ErrorPanel';
+import { Component } from 'react';
+import { graphql, withApollo } from 'react-apollo';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import Dashboard from '../../../components/Dashboard';
+import ErrorPanel from '../../../components/ErrorPanel';
+import Spinner from '../../../components/Spinner';
+import WMWorkerPoolEditor from '../../../components/WMWorkerPoolEditor';
+import WorkersNavbar from '../../../components/WorkersNavbar';
 import Link from '../../../utils/Link';
 import { splitWorkerPoolId } from '../../../utils/workerPool';
-import WorkersNavbar from '../../../components/WorkersNavbar';
+import createWorkerPoolQuery from './createWorkerPool.graphql';
+import deleteWorkerPoolQuery from './deleteWorkerPool.graphql';
+import providersQuery from './providers.graphql';
+import updateWorkerPoolQuery from './updateWorkerPool.graphql';
+import workerPoolQuery from './workerPool.graphql';
 
 @withApollo
 @graphql(providersQuery, {

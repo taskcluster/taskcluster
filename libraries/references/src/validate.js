@@ -1,5 +1,5 @@
-import regexEscape from 'regex-escape';
 import { URL } from 'node:url';
+import regexEscape from 'regex-escape';
 import libUrls from 'taskcluster-lib-urls';
 
 /**

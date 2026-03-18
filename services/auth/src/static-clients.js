@@ -1,9 +1,9 @@
 import assert from 'node:assert';
-import _ from 'lodash';
-import taskcluster from '@taskcluster/client';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import taskcluster from '@taskcluster/client';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import _ from 'lodash';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

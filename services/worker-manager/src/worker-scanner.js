@@ -1,5 +1,5 @@
-import Iterate from '@taskcluster/lib-iterate';
 import taskcluster from '@taskcluster/client';
+import Iterate from '@taskcluster/lib-iterate';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
 import { Worker, WorkerPool } from './data.js';
 

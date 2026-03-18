@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import helper from './helper.js';
-import request from 'superagent';
 import testing from '@taskcluster/lib-testing';
+import request from 'superagent';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

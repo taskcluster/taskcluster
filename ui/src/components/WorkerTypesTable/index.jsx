@@ -1,31 +1,31 @@
-import { Component, Fragment } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import { withRouter } from 'react-router-dom';
-import { parse, stringify } from 'qs';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
+import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import { withStyles } from '@material-ui/core/styles';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
-import Drawer from '@material-ui/core/Drawer';
-import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import { func, array, shape } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
 import { camelCase } from 'camel-case';
+import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { array, func, shape } from 'prop-types';
+import { parse, stringify } from 'qs';
+import { map, pipe, sort as rSort } from 'ramda';
+import { Component, Fragment } from 'react';
+import { withRouter } from 'react-router-dom';
+import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../utils/constants';
+import Link from '../../utils/Link';
 import { memoize } from '../../utils/memoize';
+import { pageInfo } from '../../utils/prop-types';
+import sort from '../../utils/sort';
+import ConnectionDataTable from '../ConnectionDataTable';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
-import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
 import Markdown from '../Markdown';
+import StatusLabel from '../StatusLabel';
 import TableCellItem from '../TableCellItem';
-import ConnectionDataTable from '../ConnectionDataTable';
-import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../utils/constants';
-import sort from '../../utils/sort';
-import Link from '../../utils/Link';
-import { pageInfo } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.workerType, b.node.workerType)),

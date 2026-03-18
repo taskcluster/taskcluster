@@ -13,8 +13,8 @@ import secrets from './secrets.js';
 import taskStatuses from './taskStatuses.js';
 import tasks from './tasks.js';
 import workerManager from './workerManager.js';
-import workerTypes from './workerTypes.js';
 import workers from './workers.js';
+import workerTypes from './workerTypes.js';
 
 const loaders = [
   artifacts,

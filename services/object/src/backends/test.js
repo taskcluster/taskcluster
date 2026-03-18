@@ -1,6 +1,6 @@
 import assert from 'node:assert';
-import { Backend } from './base.js';
 import { reportError } from '@taskcluster/lib-api';
+import { Backend } from './base.js';
 
 /**
  * The test backend type is only available when running tests.

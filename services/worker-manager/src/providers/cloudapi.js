@@ -1,5 +1,6 @@
 import pqueue from 'p-queue';
 import { measureTime } from '../util.js';
+
 const PQueue = pqueue.default;
 
 const defaultMetrics = () => ({

@@ -1,20 +1,19 @@
-import chalk from 'chalk';
 import path from 'node:path';
+import { downgrade, upgrade } from '@taskcluster/db';
+import chalk from 'chalk';
+import inquirer from 'inquirer';
 import _ from 'lodash';
 import { readRepoYAML, writeRepoYAML } from '../utils/index.js';
-import inquirer from 'inquirer';
-import commonPrompts from './common.js';
-
-import { rabbitPrompts, rabbitResources, rabbitAdminPasswordPrompt, rabbitEnsureResources } from './rabbit.js';
+import awsResources from './aws.js';
 
 import { azureResources } from './azure.js';
-import { postgresPrompts, postgresResources, postgresEnsureDb } from './postgres.js';
-import { k8sResources } from './k8s.js';
-import awsResources from './aws.js';
-import taskclusterResources from './taskcluster.js';
+import commonPrompts from './common.js';
 import helm from './helm.js';
+import { k8sResources } from './k8s.js';
+import { postgresEnsureDb, postgresPrompts, postgresResources } from './postgres.js';
+import { rabbitAdminPasswordPrompt, rabbitEnsureResources, rabbitPrompts, rabbitResources } from './rabbit.js';
+import taskclusterResources from './taskcluster.js';
 import { makePgUrl } from './util.js';
-import { upgrade, downgrade } from '@taskcluster/db';
 
 const USER_CONF_FILE = 'dev-config.yml';
 export const readUserConfig = async () => {

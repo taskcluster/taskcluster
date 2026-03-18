@@ -1,5 +1,5 @@
+import { normalizeScopeSet, scopeCompare } from 'taskcluster-lib-scopes';
 import { listServices, writeRepoJSON } from '../../utils/index.js';
-import { scopeCompare, normalizeScopeSet } from 'taskcluster-lib-scopes';
 
 const SERVICES = listServices();
 

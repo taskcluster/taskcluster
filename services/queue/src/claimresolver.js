@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import QueueService from './queueservice.js';
 import Iterate from '@taskcluster/lib-iterate';
 import { Task } from './data.js';
+import QueueService from './queueservice.js';
 import { sleep, splitTaskQueueId } from './utils.js';
 
 /**

@@ -1,6 +1,6 @@
-import { string } from 'prop-types';
-import { alpha, withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
+import { alpha, withStyles } from '@material-ui/core/styles';
+import { string } from 'prop-types';
 import Markdown from '../../../../components/Markdown';
 
 const styles = withStyles((theme) => ({

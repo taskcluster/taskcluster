@@ -1,8 +1,8 @@
 import assert from 'node:assert';
-import helper from './helper.js';
-import assume from 'assume';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function (mock, skipping) {
   helper.withCfg(mock, skipping);

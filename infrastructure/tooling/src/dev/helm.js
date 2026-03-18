@@ -1,7 +1,7 @@
 import os from 'node:os';
 import path from 'node:path';
-import { REPO_ROOT, readRepoYAML, writeRepoFile, execCommand } from '../utils/index.js';
 import { TaskGraph } from 'console-taskgraph';
+import { execCommand, REPO_ROOT, readRepoYAML, writeRepoFile } from '../utils/index.js';
 
 const resourceTypes = ['cronjob', 'deployment', 'ingress', 'secret', 'serviceaccount', 'service'];
 

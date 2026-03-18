@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
-import { string, node } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
+import { node, string } from 'prop-types';
+import { Link } from 'react-router-dom';
 import resolve from 'resolve-pathname';
 
 const styles = (theme) => ({

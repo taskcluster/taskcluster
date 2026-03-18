@@ -1,10 +1,10 @@
-import fs from 'node:fs';
 import { strict as assert } from 'node:assert';
-import yaml from 'js-yaml';
+import fs from 'node:fs';
 import path from 'node:path';
-import Version from './Version.js';
+import yaml from 'js-yaml';
 import Access from './Access.js';
 import Relations from './Relations.js';
+import Version from './Version.js';
 
 /**
  * @typedef {Object} SerializableSchema

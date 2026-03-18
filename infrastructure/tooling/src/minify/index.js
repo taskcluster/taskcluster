@@ -1,5 +1,5 @@
+import { ConsoleRenderer, LogRenderer, TaskGraph } from 'console-taskgraph';
 import { getTasks } from './tasks.js';
-import { TaskGraph, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
 
 export const main = async (_options) => {
   const taskgraph = new TaskGraph(await getTasks(), {

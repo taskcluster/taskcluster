@@ -1,8 +1,8 @@
 import assert from 'node:assert';
-import _ from 'lodash';
 import { Octokit as github } from '@octokit/rest';
-import fakeGithubAuth from './github-auth.js';
 import testing from '@taskcluster/lib-testing';
+import _ from 'lodash';
+import fakeGithubAuth from './github-auth.js';
 
 suite(testing.suiteName(), function () {
   function checkKeys(obj, platonic) {

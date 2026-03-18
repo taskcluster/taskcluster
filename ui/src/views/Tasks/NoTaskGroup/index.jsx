@@ -1,15 +1,15 @@
-import { Component } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListSubheader from '@material-ui/core/ListSubheader';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import LinkIcon from 'mdi-react/LinkIcon';
+import { Component } from 'react';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
-import Link from '../../../utils/Link';
 import db from '../../../utils/db';
+import Link from '../../../utils/Link';
 
 @withStyles((theme) => ({
   infoText: {

@@ -1,11 +1,11 @@
-import { PureComponent } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
-import Denylist from './Denylist';
-import Dashboard from '../../../components/Dashboard';
-import Search from '../../../components/Search';
+import { PureComponent } from 'react';
 import Button from '../../../components/Button';
+import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
+import Search from '../../../components/Search';
+import Denylist from './Denylist';
 
 @withStyles((theme) => ({
   plusIconSpan: {

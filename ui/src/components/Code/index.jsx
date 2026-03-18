@@ -1,7 +1,7 @@
-import { Component } from 'react';
-import { string } from 'prop-types';
-import { getLanguage, highlight } from 'highlight.js';
 import classNames from 'classnames';
+import { getLanguage, highlight } from 'highlight.js';
+import { string } from 'prop-types';
+import { Component } from 'react';
 import 'highlight.js/styles/atom-one-dark.css';
 
 const validLanguage = (props, propName) => {

@@ -1,7 +1,7 @@
-import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import ShellConsole from '../../components/Shell';
+import { Component } from 'react';
 import Dashboard from '../../components/Dashboard';
+import ShellConsole from '../../components/Shell';
 
 @withStyles({
   main: {

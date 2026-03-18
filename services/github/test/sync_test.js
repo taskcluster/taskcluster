@@ -1,6 +1,6 @@
-import helper from './helper.js';
 import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
+import helper from './helper.js';
 
 /**
  * Tests of installation syncing

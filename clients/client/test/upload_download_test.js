@@ -1,8 +1,8 @@
-import taskcluster from '../src/index.js';
-import nock from 'nock';
-import { Readable, Writable } from 'node:stream';
-import crypto from 'node:crypto';
 import { strict as assert } from 'node:assert';
+import crypto from 'node:crypto';
+import { Readable, Writable } from 'node:stream';
+import nock from 'nock';
+import taskcluster from '../src/index.js';
 import testing from './helper.js';
 
 class WritableStream extends Writable {

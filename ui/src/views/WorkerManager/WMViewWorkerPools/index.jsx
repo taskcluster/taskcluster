@@ -1,19 +1,19 @@
-import { Component, Fragment } from 'react';
-import { withApollo, graphql } from 'react-apollo';
-import PlusIcon from 'mdi-react/PlusIcon';
-import escapeStringRegexp from 'escape-string-regexp';
-import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
-import Spinner from '../../../components/Spinner';
+import dotProp from 'dot-prop-immutable';
+import escapeStringRegexp from 'escape-string-regexp';
+import PlusIcon from 'mdi-react/PlusIcon';
+import { Component, Fragment } from 'react';
+import { graphql, withApollo } from 'react-apollo';
+import Button from '../../../components/Button';
 import Dashboard from '../../../components/Dashboard';
+import ErrorPanel from '../../../components/ErrorPanel';
+import Search from '../../../components/Search';
+import Spinner from '../../../components/Spinner';
+import WorkerManagerWorkerPoolsTable from '../../../components/WMWorkerPoolsTable';
+import { VIEW_WORKER_POOLS_PAGE_SIZE } from '../../../utils/constants';
+import updateWorkerPoolQuery from '../WMEditWorkerPool/updateWorkerPool.graphql';
 import workerPoolsQuery from './WMWorkerPools.graphql';
 import errorStatsQuery from './WMWorkerPoolsErrors.graphql';
-import ErrorPanel from '../../../components/ErrorPanel';
-import WorkerManagerWorkerPoolsTable from '../../../components/WMWorkerPoolsTable';
-import Search from '../../../components/Search';
-import Button from '../../../components/Button';
-import updateWorkerPoolQuery from '../WMEditWorkerPool/updateWorkerPool.graphql';
-import { VIEW_WORKER_POOLS_PAGE_SIZE } from '../../../utils/constants';
 
 @withApollo
 @graphql(workerPoolsQuery, {

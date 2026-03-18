@@ -1,14 +1,14 @@
-import { Component } from 'react';
-import { withRouter } from 'react-router-dom';
-import { oneOf, string, arrayOf, shape } from 'prop-types';
+import ListSubheader from '@material-ui/core/ListSubheader';
 import { alpha, withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import MagnifyIcon from 'mdi-react/MagnifyIcon';
-import TextField from '../TextField';
-import Link from '../../utils/Link';
+import { arrayOf, oneOf, shape, string } from 'prop-types';
+import { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import { THEME } from '../../utils/constants';
+import Link from '../../utils/Link';
+import TextField from '../TextField';
 
 @withRouter
 @withStyles(

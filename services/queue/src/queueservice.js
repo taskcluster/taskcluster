@@ -1,9 +1,11 @@
-import _ from 'lodash';
 import makeDebug from 'debug';
+import _ from 'lodash';
+
 const debug = makeDebug('app:queue');
+
 import assert from 'node:assert';
-import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
+import slugid from 'slugid';
 
 /** Get seconds until `target` relative to now (by default).  This rounds up
  * and always waits at least one second, to avoid races in tests where

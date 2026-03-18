@@ -1,8 +1,8 @@
-import { Component } from 'react';
-import classNames from 'classnames';
-import { bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import classNames from 'classnames';
+import { bool } from 'prop-types';
+import { Component } from 'react';
 import Emoticon from './Emoticon';
 
 @withStyles(

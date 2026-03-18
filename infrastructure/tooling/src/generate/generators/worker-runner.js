@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { rimraf } from 'rimraf';
-import { REPO_ROOT, modifyRepoFile, execCommand } from '../../utils/index.js';
+import { execCommand, modifyRepoFile, REPO_ROOT } from '../../utils/index.js';
 
 export const tasks = [];
 

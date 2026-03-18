@@ -1,10 +1,10 @@
 import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
-import gql from 'graphql-tag';
 import testing from '@taskcluster/lib-testing';
-import helper from '../helper.js';
-import WebSocket from 'ws';
+import gql from 'graphql-tag';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
+import WebSocket from 'ws';
+import helper from '../helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   // Use mutable scopeOverride to allow tests to dynamically change auth scopes

@@ -1,5 +1,6 @@
-import helper from '../helper/index.js';
 import assert from 'node:assert';
+import { promisify } from 'node:util';
+import zlib from 'node:zlib';
 import {
   DeleteObjectsCommand,
   GetObjectCommand,
@@ -9,11 +10,10 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
 import { AwsBackend, getBucketRegion } from '../../src/backends/aws.js';
-import { promisify } from 'node:util';
-import zlib from 'node:zlib';
+import helper from '../helper/index.js';
 
 const gzip = promisify(zlib.gzip);
 

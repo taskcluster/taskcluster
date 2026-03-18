@@ -1,17 +1,17 @@
-import { Component, Fragment } from 'react';
-import { BrowserRouter, Switch } from 'react-router-dom';
-import { withApollo } from 'react-apollo';
-import { object, arrayOf } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import RouteWithProps from '../components/RouteWithProps';
+import { arrayOf, object } from 'prop-types';
+import { Component, Fragment } from 'react';
+import { withApollo } from 'react-apollo';
+import { BrowserRouter, Switch } from 'react-router-dom';
 import ErrorPanel from '../components/ErrorPanel';
-import StatusBanner from '../components/StatusBanner';
+import RouteWithProps from '../components/RouteWithProps';
 import Snackbar from '../components/Snackbar';
-import { route } from '../utils/prop-types';
+import StatusBanner from '../components/StatusBanner';
 import { withAuth } from '../utils/Auth';
-import isThirdPartyLogin from '../utils/isThirdPartyLogin';
-import isLoggedInQuery from './isLoggedIn.graphql';
 import { AUTH_STARTED } from '../utils/constants';
+import isThirdPartyLogin from '../utils/isThirdPartyLogin';
+import { route } from '../utils/prop-types';
+import isLoggedInQuery from './isLoggedIn.graphql';
 
 @withApollo
 @withStyles((theme) => ({

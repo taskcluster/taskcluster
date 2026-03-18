@@ -1,28 +1,28 @@
-import { Component } from 'react';
-import { bool, func, shape, number, string } from 'prop-types';
-import { sum } from 'ramda';
-import { titleCase } from 'title-case';
-import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
+import ButtonBase from '@material-ui/core/ButtonBase';
 import amber from '@material-ui/core/colors/amber';
 import blue from '@material-ui/core/colors/blue';
-import grey from '@material-ui/core/colors/grey';
 import green from '@material-ui/core/colors/green';
+import grey from '@material-ui/core/colors/grey';
 import purple from '@material-ui/core/colors/purple';
-import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import ButtonBase from '@material-ui/core/ButtonBase';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import classNames from 'classnames';
+import AlertCircleOutlineIcon from 'mdi-react/AlertCircleOutlineIcon';
+import AutorenewIcon from 'mdi-react/AutorenewIcon';
+import CalendarClockIcon from 'mdi-react/CalendarClockIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
-import CalendarClockIcon from 'mdi-react/CalendarClockIcon';
-import AlertCircleOutlineIcon from 'mdi-react/AlertCircleOutlineIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
-import AutorenewIcon from 'mdi-react/AutorenewIcon';
 import PlaylistRemoveIcon from 'mdi-react/PlaylistRemoveIcon';
-import Spinner from '../Spinner';
-import { taskState } from '../../utils/prop-types';
+import { bool, func, number, shape, string } from 'prop-types';
+import { sum } from 'ramda';
+import { Component } from 'react';
+import { titleCase } from 'title-case';
 import { TASK_STATE, THEME } from '../../utils/constants';
+import { taskState } from '../../utils/prop-types';
 import Helmet from '../Helmet';
+import Spinner from '../Spinner';
 
 @withStyles((theme) => ({
   statusButton: {

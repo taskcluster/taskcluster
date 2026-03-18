@@ -1,18 +1,18 @@
-import { Fragment, Component } from 'react';
-import { arrayOf, string } from 'prop-types';
-import { withRouter } from 'react-router-dom';
-import { pipe, map, sort as rSort } from 'ramda';
-import { FixedSizeList } from 'react-window';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import Divider from '@material-ui/core/Divider';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { memoize } from '../../utils/memoize';
-import sort from '../../utils/sort';
+import { arrayOf, string } from 'prop-types';
+import { map, pipe, sort as rSort } from 'ramda';
+import { Component, Fragment } from 'react';
+import { withRouter } from 'react-router-dom';
+import { FixedSizeList } from 'react-window';
 import Link from '../../utils/Link';
+import { memoize } from '../../utils/memoize';
 import { role } from '../../utils/prop-types';
+import sort from '../../utils/sort';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.roleId, b.roleId)),

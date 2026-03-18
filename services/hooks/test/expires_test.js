@@ -1,6 +1,6 @@
-import helper from './helper.js';
-import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import helper from './helper.js';
 
 suite(testing.suiteName(), function () {
   helper.secrets.mockSuite('expires_test.js', [], function (mock, skipping) {

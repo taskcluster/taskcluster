@@ -1,4 +1,5 @@
 import assume from 'assume';
+
 /* eslint-disable quote-props */
 
 /** Test cases for use in trie_test.js */

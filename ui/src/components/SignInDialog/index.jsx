@@ -1,21 +1,21 @@
-import { Component } from 'react';
-import { withApollo } from 'react-apollo';
-import { bool, func } from 'prop-types';
 import Avatar from '@material-ui/core/Avatar';
 import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItemText from '@material-ui/core/ListItemText';
 import GithubCircleIcon from 'mdi-react/GithubCircleIcon';
-import LoginVariantIcon from 'mdi-react/LoginVariantIcon';
 import KeyboardOutlineIcon from 'mdi-react/KeyboardOutlineIcon';
-import { withAuth } from '../../utils/Auth';
-import CredentialsDialog from './CredentialsDialog';
+import LoginVariantIcon from 'mdi-react/LoginVariantIcon';
+import { bool, func } from 'prop-types';
+import { Component } from 'react';
+import { withApollo } from 'react-apollo';
 import UserSession from '../../auth/UserSession';
+import { withAuth } from '../../utils/Auth';
 import { AUTH_STARTED } from '../../utils/constants';
+import CredentialsDialog from './CredentialsDialog';
 
 @withAuth
 @withApollo

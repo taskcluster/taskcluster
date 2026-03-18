@@ -1,12 +1,12 @@
-import { Component } from 'react';
-import { node, string } from 'prop-types';
-import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
+import { node, string } from 'prop-types';
+import { Component } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import PageTitle from '../PageTitle';
-import Helmet from '../Helmet';
 import reportError from '../../utils/reportError';
 import ErrorPanel from '../ErrorPanel';
+import Helmet from '../Helmet';
+import PageTitle from '../PageTitle';
 
 @withStyles((theme) => ({
   root: {

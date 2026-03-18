@@ -1,12 +1,12 @@
-import { Component, Fragment } from 'react';
 import { join } from 'node:path';
-import { func } from 'prop-types';
-import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
+import { func } from 'prop-types';
+import { Component, Fragment } from 'react';
 import PageNavigation from '../../components/PageNavigation';
+import { DOCS_PATH_PREFIX } from '../../utils/constants';
 import { docsPageInfo } from '../../utils/prop-types';
 import removeReadmeFromPath from '../../utils/removeReadmeFromPath';
-import { DOCS_PATH_PREFIX } from '../../utils/constants';
 
 @withStyles((theme) => ({
   divider: {

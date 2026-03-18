@@ -1,9 +1,9 @@
-import { element, string } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import Typography from '@material-ui/core/Typography';
-import CardContent from '@material-ui/core/CardContent';
 import CardActionArea from '@material-ui/core/CardActionArea';
+import CardContent from '@material-ui/core/CardContent';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import { element, string } from 'prop-types';
 import Anchor from '../Anchor';
 
 const styles = (theme) => ({

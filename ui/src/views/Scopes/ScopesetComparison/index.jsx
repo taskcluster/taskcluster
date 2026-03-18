@@ -1,14 +1,14 @@
-import { Component, Fragment } from 'react';
-import { withStyles } from '@material-ui/core/styles';
-import { equals } from 'ramda';
-import { scopeUnion, scopeIntersection } from 'taskcluster-lib-scopes';
 import Grid from '@material-ui/core/Grid';
+import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
 import { parse, stringify } from 'qs';
+import { equals } from 'ramda';
+import { Component, Fragment } from 'react';
+import { scopeIntersection, scopeUnion } from 'taskcluster-lib-scopes';
+import Button from '../../../components/Button/index';
 import CodeEditor from '../../../components/CodeEditor';
 import Dashboard from '../../../components/Dashboard/index';
-import Button from '../../../components/Button/index';
 import splitLines from '../../../utils/splitLines';
 
 const getScopesetDiff = (scopesA, scopesB) => {

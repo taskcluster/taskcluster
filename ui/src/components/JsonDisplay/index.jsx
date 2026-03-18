@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { string, object, oneOf } from 'prop-types';
+import { Grid, Switch, Typography } from '@material-ui/core';
 import { dump } from 'js-yaml';
-import { Switch, Typography, Grid } from '@material-ui/core';
+import { object, oneOf, string } from 'prop-types';
+import React, { useState } from 'react';
 import Code from '../Code';
 import 'highlight.js/styles/atom-one-dark.css';
 import CopyToClipboardListItem from '../CopyToClipboardListItem';

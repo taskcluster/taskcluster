@@ -1,17 +1,17 @@
-import { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
-import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import { withStyles } from '@material-ui/core/styles';
-import Spinner from '../../components/Spinner';
+import Typography from '@material-ui/core/Typography';
+import { Component, Fragment } from 'react';
+import { graphql } from 'react-apollo';
 import Dashboard from '../../components/Dashboard';
 import DateDistance from '../../components/DateDistance';
-import { withAuth } from '../../utils/Auth';
 import ErrorPanel from '../../components/ErrorPanel';
-import profileQuery from './profile.graphql';
+import Spinner from '../../components/Spinner';
+import { withAuth } from '../../utils/Auth';
 import username from '../../utils/username';
+import profileQuery from './profile.graphql';
 
 @withAuth
 @graphql(profileQuery, {

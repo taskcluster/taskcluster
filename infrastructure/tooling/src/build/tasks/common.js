@@ -1,7 +1,7 @@
 import path from 'node:path';
 import mkdirp from 'mkdirp';
-import { ensureTask } from '../../utils/index.js';
 import { rimraf } from 'rimraf';
+import { ensureTask } from '../../utils/index.js';
 
 export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
   const artifactsDir = path.join(baseDir, 'release-artifacts');

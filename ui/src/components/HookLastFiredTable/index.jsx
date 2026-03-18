@@ -1,17 +1,17 @@
-import { func, array } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import { titleCase } from 'title-case';
 import IconButton from '@material-ui/core/IconButton';
-import LinkIcon from 'mdi-react/LinkIcon';
+import { withStyles } from '@material-ui/core/styles';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
-import DateDistance from '../DateDistance';
-import TableCellItem from '../TableCellItem';
-import StatusLabel from '../StatusLabel';
-import DataTable from '../DataTable';
+import LinkIcon from 'mdi-react/LinkIcon';
+import { array, func } from 'prop-types';
+import { titleCase } from 'title-case';
 import Link from '../../utils/Link';
+import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
+import DataTable from '../DataTable';
+import DateDistance from '../DateDistance';
+import StatusLabel from '../StatusLabel';
+import TableCellItem from '../TableCellItem';
 
 const styles = (theme) => ({
   informationIcon: {

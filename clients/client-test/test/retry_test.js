@@ -1,10 +1,10 @@
-import taskcluster from '@taskcluster/client';
 import assert from 'node:assert';
-import testing from '@taskcluster/lib-testing';
+import taskcluster from '@taskcluster/client';
 import { APIBuilder } from '@taskcluster/lib-api';
 import { App } from '@taskcluster/lib-app';
+import testing from '@taskcluster/lib-testing';
 import SchemaSet from '@taskcluster/lib-validate';
-import { monitorManager, monitor } from './monitor.js';
+import { monitor, monitorManager } from './monitor.js';
 
 const rootUrl = `http://localhost:60526`;
 

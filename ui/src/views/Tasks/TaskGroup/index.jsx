@@ -1,56 +1,56 @@
-import cloneDeep from 'lodash.clonedeep';
-import React, { Component } from 'react';
-import { graphql, withApollo } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
-import { sum, isEmpty } from 'ramda';
-import { paramCase } from 'param-case';
-import jsonSchemaDefaults from 'json-schema-defaults';
-import { dump } from 'js-yaml';
-import { alpha, withStyles } from '@material-ui/core/styles';
 import Badge from '@material-ui/core/Badge';
+import Checkbox from '@material-ui/core/Checkbox';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import Grid from '@material-ui/core/Grid';
 import FormGroup from '@material-ui/core/FormGroup';
-import HammerIcon from 'mdi-react/HammerIcon';
+import Grid from '@material-ui/core/Grid';
+import { alpha, withStyles } from '@material-ui/core/styles';
+import dotProp from 'dot-prop-immutable';
+import { dump } from 'js-yaml';
+import jsonSchemaDefaults from 'json-schema-defaults';
+import cloneDeep from 'lodash.clonedeep';
 import BellIcon from 'mdi-react/BellIcon';
 import ChartIcon from 'mdi-react/ChartBarIcon';
-import Spinner from '../../../components/Spinner';
+import HammerIcon from 'mdi-react/HammerIcon';
+import { paramCase } from 'param-case';
+import { isEmpty, sum } from 'ramda';
+import React, { Component } from 'react';
+import { graphql, withApollo } from 'react-apollo';
 import Button from '../../../components/Button';
+import CopyToClipboardListItem from '../../../components/CopyToClipboardListItem';
+import Dashboard from '../../../components/Dashboard';
+import DateDistance from '../../../components/DateDistance';
+import DialogAction from '../../../components/DialogAction';
+import ErrorPanel from '../../../components/ErrorPanel';
+import HelpView from '../../../components/HelpView';
+import Search from '../../../components/Search';
+import Snackbar from '../../../components/Snackbar';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
-import Dashboard from '../../../components/Dashboard';
-import Search from '../../../components/Search';
-import DialogAction from '../../../components/DialogAction';
-import HelpView from '../../../components/HelpView';
-import TaskGroupProgress from '../../../components/TaskGroupProgress';
-import TaskGroupTable from '../../../components/TaskGroupTable';
+import Spinner from '../../../components/Spinner';
 import TaskActionForm from '../../../components/TaskActionForm';
-import Snackbar from '../../../components/Snackbar';
+import TaskGroupProgress from '../../../components/TaskGroupProgress';
+import TaskGroupStats from '../../../components/TaskGroupStats';
+import TaskGroupTable from '../../../components/TaskGroupTable';
+import logoCompleted from '../../../images/logoCompleted.png';
+import logoFailed from '../../../images/logoFailed.png';
 import {
-  TASK_GROUP_PAGE_SIZE,
-  VALID_TASK,
   ACTIONS_JSON_KNOWN_KINDS,
-  INITIAL_CURSOR,
-  TASK_STATE,
-  INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
-  GROUP_NOTIFY_TASK_FAILED_KEY,
   GROUP_NOTIFY_SUCCESS_KEY,
+  GROUP_NOTIFY_TASK_FAILED_KEY,
+  INITIAL_CURSOR,
+  INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
+  TASK_GROUP_PAGE_SIZE,
+  TASK_STATE,
+  VALID_TASK,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
-import ErrorPanel from '../../../components/ErrorPanel';
+import notify from '../../../utils/notify';
+import submitTaskAction from '../submitTaskAction';
+import cancelTaskGroupQuery from './cancelTaskGroup.graphql';
+import sealTaskGroupQuery from './sealTaskGroup.graphql';
 import taskGroupQuery from './taskGroup.graphql';
 import taskGroupSubscription from './taskGroupSubscription.graphql';
-import submitTaskAction from '../submitTaskAction';
-import notify from '../../../utils/notify';
-import logoFailed from '../../../images/logoFailed.png';
-import logoCompleted from '../../../images/logoCompleted.png';
-import TaskGroupStats from '../../../components/TaskGroupStats';
-import CopyToClipboardListItem from '../../../components/CopyToClipboardListItem';
-import DateDistance from '../../../components/DateDistance';
-import sealTaskGroupQuery from './sealTaskGroup.graphql';
-import cancelTaskGroupQuery from './cancelTaskGroup.graphql';
 
 const initialTaskGroupActions = [
   {

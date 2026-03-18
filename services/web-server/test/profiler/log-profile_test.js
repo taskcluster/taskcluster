@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { Readable } from 'node:stream';
-import { StreamingProfileBuilder, lineIterator } from '../../src/profiler/log-profile.js';
+import { lineIterator, StreamingProfileBuilder } from '../../src/profiler/log-profile.js';
 
 const mockTask = {
   created: '2024-01-01T09:55:00.000Z',

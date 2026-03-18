@@ -1,6 +1,7 @@
-import base from '../../index.js';
 import { fileURLToPath } from 'node:url';
 import debugFactory from 'debug';
+import base from '../../index.js';
+
 const debug = debugFactory('base:test:bin:app.js');
 
 /** Global State where we count requests */

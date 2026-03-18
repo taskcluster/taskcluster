@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
-import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
+import helper from '../helper.js';
 
 suite(testing.suiteName(), function () {
   helper.withDbForProcs({ serviceName: 'notify' });

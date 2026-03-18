@@ -1,19 +1,17 @@
+import path from 'node:path';
 import appRootDir from 'app-root-dir';
-
+import mkdirp from 'mkdirp';
+import { rimraf } from 'rimraf';
 import {
-  dockerPull,
   dockerImages,
+  dockerPull,
+  dockerPush,
   dockerRegistryCheck,
   ensureTask,
-  dockerPush,
   execCommand,
-  writeRepoFile,
   REPO_ROOT,
+  writeRepoFile,
 } from '../../utils/index.js';
-
-import path from 'node:path';
-import { rimraf } from 'rimraf';
-import mkdirp from 'mkdirp';
 
 const tempDir = path.join(REPO_ROOT, 'temp');
 

@@ -1,9 +1,9 @@
-import { Component, Fragment } from 'react';
-import { bool, func, object, string } from 'prop-types';
 import { Grid } from '@material-ui/core';
-import summarizeWorkerPoolsStats from '../StatusDashboard/summarizeWorkerPoolsStats';
-import StatusGroup from '../StatusDashboard/StatusGroup';
+import { bool, func, object, string } from 'prop-types';
+import { Component, Fragment } from 'react';
 import Button from '../Button';
+import StatusGroup from '../StatusDashboard/StatusGroup';
+import summarizeWorkerPoolsStats from '../StatusDashboard/summarizeWorkerPoolsStats';
 
 const MiniTable = ({ data, title, onStatClick, selectedKey, pageSize = 15 }) => (
   <div>

@@ -1,24 +1,26 @@
 import '../../prelude.js';
-import Loader from '@taskcluster/lib-loader';
-import SchemaSet from '@taskcluster/lib-validate';
-import libReferences from '@taskcluster/lib-references';
 import tcdb from '@taskcluster/db';
-import { MonitorManager } from '@taskcluster/lib-monitor';
 import { App } from '@taskcluster/lib-app';
 import Config from '@taskcluster/lib-config';
-import builder, { AUDIT_ENTRY_TYPE } from './api.js';
+import Loader from '@taskcluster/lib-loader';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import libReferences from '@taskcluster/lib-references';
+import SchemaSet from '@taskcluster/lib-validate';
 import debugFactory from 'debug';
+import builder, { AUDIT_ENTRY_TYPE } from './api.js';
+
 const debug = debugFactory('server');
+
+import taskcluster, { fromNow } from '@taskcluster/client';
+import * as libPulse from '@taskcluster/lib-pulse';
 import exchanges from './exchanges.js';
 import ScopeResolver from './scoperesolver.js';
-import createSignatureValidator from './signaturevalidator.js';
-import taskcluster, { fromNow } from '@taskcluster/client';
 import makeSentryManager from './sentrymanager.js';
-import * as libPulse from '@taskcluster/lib-pulse';
+import createSignatureValidator from './signaturevalidator.js';
 import './monitor.js';
-import googleapis from '@googleapis/iamcredentials';
 import assert from 'node:assert';
 import { fileURLToPath } from 'node:url';
+import googleapis from '@googleapis/iamcredentials';
 import { syncStaticClients } from './static-clients.js';
 
 // Create component loader

@@ -1,31 +1,33 @@
 import '../../prelude.js';
 import debugFactory from 'debug';
+
 const debug = debugFactory('app:main');
+
+import { fileURLToPath } from 'node:url';
 import taskcluster from '@taskcluster/client';
+import tcdb from '@taskcluster/db';
+import { App } from '@taskcluster/lib-app';
+import config from '@taskcluster/lib-config';
+import loader from '@taskcluster/lib-loader';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import pulse from '@taskcluster/lib-pulse';
+import libReferences from '@taskcluster/lib-references';
+import SchemaSet from '@taskcluster/lib-validate';
+import QuickLRU from 'quick-lru';
 import builder from './api.js';
-import exchanges from './exchanges.js';
 import Bucket from './bucket.js';
-import QueueService from './queueservice.js';
-import EC2RegionResolver from './ec2regionresolver.js';
-import DeadlineResolver from './deadlineresolver.js';
 import ClaimResolver from './claimresolver.js';
-import WorkerRemovedResolver from './workerremovedresolver.js';
-import DependencyTracker from './dependencytracker.js';
+import DeadlineResolver from './deadlineresolver.js';
 import DependencyResolver from './dependencyresolver.js';
+import DependencyTracker from './dependencytracker.js';
+import EC2RegionResolver from './ec2regionresolver.js';
+import exchanges from './exchanges.js';
 import MetricsCollector from './metricscollector.js';
+import QueueService from './queueservice.js';
+import { artifactUtils } from './utils.js';
 import WorkClaimer from './workclaimer.js';
 import WorkerInfo from './workerinfo.js';
-import loader from '@taskcluster/lib-loader';
-import config from '@taskcluster/lib-config';
-import { MonitorManager } from '@taskcluster/lib-monitor';
-import SchemaSet from '@taskcluster/lib-validate';
-import libReferences from '@taskcluster/lib-references';
-import { App } from '@taskcluster/lib-app';
-import tcdb from '@taskcluster/db';
-import pulse from '@taskcluster/lib-pulse';
-import QuickLRU from 'quick-lru';
-import { artifactUtils } from './utils.js';
-import { fileURLToPath } from 'node:url';
+import WorkerRemovedResolver from './workerremovedresolver.js';
 
 // default claim timeout to 20 minutes (in seconds)
 const DEFAULT_CLAIM_TIMEOUT = 1200;

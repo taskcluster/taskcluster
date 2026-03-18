@@ -1,6 +1,6 @@
-import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import { snakeCase } from 'snake-case';
+import helper from '../helper.js';
 
 // due to some differences in different versions of snake-case, we
 // have some special-cases.  Everything else follows snake-case's

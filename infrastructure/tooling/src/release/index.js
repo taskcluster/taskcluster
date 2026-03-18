@@ -1,5 +1,5 @@
 import os from 'node:os';
-import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
+import { ConsoleRenderer, Lock, LogRenderer, TaskGraph } from 'console-taskgraph';
 import generateReleaseTasks from './tasks.js';
 
 export class Release {

@@ -1,6 +1,6 @@
-import taskcluster from '@taskcluster/client';
-import crypto from 'node:crypto';
 import assert from 'node:assert';
+import crypto from 'node:crypto';
+import taskcluster from '@taskcluster/client';
 import helper from '../helper/index.js';
 
 const responseSchema =

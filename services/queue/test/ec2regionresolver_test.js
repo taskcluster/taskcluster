@@ -1,9 +1,9 @@
 import assert from 'node:assert';
-import helper from './helper.js';
-import nock from 'nock';
-import testing from '@taskcluster/lib-testing';
-import EC2RegionResolver from '../src/ec2regionresolver.js';
 import { LEVELS } from '@taskcluster/lib-monitor';
+import testing from '@taskcluster/lib-testing';
+import nock from 'nock';
+import EC2RegionResolver from '../src/ec2regionresolver.js';
+import helper from './helper.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 suite(testing.suiteName(), function () {

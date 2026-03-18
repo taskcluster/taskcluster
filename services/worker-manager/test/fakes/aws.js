@@ -1,13 +1,13 @@
-import { FakeCloud } from './fake.js';
 import { strict as assert } from 'node:assert';
 import {
-  EC2Client,
   DescribeInstanceStatusCommand,
   DescribeRegionsCommand,
+  EC2Client,
   RunInstancesCommand,
   TerminateInstancesCommand,
 } from '@aws-sdk/client-ec2';
 import { mockClient } from 'aws-sdk-client-mock';
+import { FakeCloud } from './fake.js';
 
 const TEST_REGIONS = ['us-west-2', 'us-east-1', 'eu-central-1'];
 

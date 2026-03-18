@@ -1,17 +1,17 @@
-import { Component } from 'react';
-import { func, shape, arrayOf } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
-import LinkIcon from 'mdi-react/LinkIcon';
 import { camelCase } from 'camel-case';
-import { memoize } from '../../utils/memoize';
-import TableCellItem from '../TableCellItem';
-import ConnectionDataTable from '../ConnectionDataTable';
+import LinkIcon from 'mdi-react/LinkIcon';
+import { arrayOf, func, shape } from 'prop-types';
+import { map, pipe, sort as rSort } from 'ramda';
+import { Component } from 'react';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../utils/constants';
-import sort from '../../utils/sort';
 import Link from '../../utils/Link';
-import { pageInfo, namespace } from '../../utils/prop-types';
+import { memoize } from '../../utils/memoize';
+import { namespace, pageInfo } from '../../utils/prop-types';
+import sort from '../../utils/sort';
+import ConnectionDataTable from '../ConnectionDataTable';
+import TableCellItem from '../TableCellItem';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.namespace, b.node.namespace)),

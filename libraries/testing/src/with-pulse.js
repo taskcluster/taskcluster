@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import { QlobberTrue } from 'qlobber';
 import EventEmitter from 'node:events';
 import debug from 'debug';
+import { QlobberTrue } from 'qlobber';
 
 export default ({ helper, skipping, namespace }) => {
   let client;

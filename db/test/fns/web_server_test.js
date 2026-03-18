@@ -1,11 +1,13 @@
-import slug from 'slugid';
 import tc from '@taskcluster/client';
+import slug from 'slugid';
+
 const { fromNow } = tc;
-import crypto from 'node:crypto';
+
 import { strict as assert } from 'node:assert';
-import helper from '../helper.js';
-import testing from '@taskcluster/lib-testing';
+import crypto from 'node:crypto';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import testing from '@taskcluster/lib-testing';
+import helper from '../helper.js';
 
 suite(testing.suiteName(), function () {
   helper.withDbForProcs({ serviceName: 'web_server' });

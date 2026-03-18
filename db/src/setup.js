@@ -1,5 +1,5 @@
-import { schema } from './schema.js';
 import { Database } from '@taskcluster/lib-postgres';
+import { schema } from './schema.js';
 
 /** @param {import('@taskcluster/lib-postgres').SetupOptions & { useDbDirectory?: boolean }} options */
 export const setup = async ({

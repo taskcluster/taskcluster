@@ -1,11 +1,11 @@
-import request from 'superagent';
 import assert from 'node:assert';
-import { APIBuilder } from '../src/index.js';
-import helper from './helper.js';
-import _ from 'lodash';
-import libUrls from 'taskcluster-lib-urls';
-import { setIsProduction } from '../src/middleware/express-error.js';
 import testing from '@taskcluster/lib-testing';
+import _ from 'lodash';
+import request from 'superagent';
+import libUrls from 'taskcluster-lib-urls';
+import { APIBuilder } from '../src/index.js';
+import { setIsProduction } from '../src/middleware/express-error.js';
+import helper from './helper.js';
 
 suite(testing.suiteName(), function () {
   // Create test api

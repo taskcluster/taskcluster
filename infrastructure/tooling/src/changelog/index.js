@@ -1,23 +1,21 @@
-import yaml from 'js-yaml';
-import semver from 'semver';
-import glob from 'glob';
-import chalk from 'chalk';
+import path from 'node:path';
+import { Octokit } from '@octokit/rest';
+import taskcluster from '@taskcluster/client';
 import appRootDir from 'app-root-dir';
-
+import chalk from 'chalk';
+import glob from 'glob';
+import yaml from 'js-yaml';
+import openEditor from 'open-editor';
+import semver from 'semver';
 import {
+  gitAdd,
+  gitCurrentBranch,
+  gitLog,
   REPO_ROOT,
   readRepoFile,
   readRepoJSON,
   writeRepoFile,
-  gitAdd,
-  gitLog,
-  gitCurrentBranch,
 } from '../utils/index.js';
-
-import taskcluster from '@taskcluster/client';
-import path from 'node:path';
-import openEditor from 'open-editor';
-import { Octokit } from '@octokit/rest';
 
 const ALLOWED_LEVELS = {
   major: 1,

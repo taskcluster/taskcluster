@@ -1,7 +1,8 @@
-import _ from 'lodash';
 import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
+import _ from 'lodash';
+
 const debug = debugFactory('tc-lib-testing:secrets');
 
 class Secrets {

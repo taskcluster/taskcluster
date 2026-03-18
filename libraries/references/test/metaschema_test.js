@@ -1,7 +1,7 @@
+import testing from '@taskcluster/lib-testing';
+import libUrls from 'taskcluster-lib-urls';
 import { getCommonSchemas } from '../src/common-schemas.js';
 import References from '../src/index.js';
-import libUrls from 'taskcluster-lib-urls';
-import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function () {
   let validate;

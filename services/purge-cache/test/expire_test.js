@@ -1,7 +1,7 @@
-import helper from './helper.js';
 import taskcluster from '@taskcluster/client';
-import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

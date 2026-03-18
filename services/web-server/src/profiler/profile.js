@@ -1,6 +1,6 @@
 // @ts-check
 import libUrls from 'taskcluster-lib-urls';
-import { getTaskGroupCategories, getTaskGroupTaskSchema, getTaskGroupSchema } from './schemas.js';
+import { getTaskGroupCategories, getTaskGroupSchema, getTaskGroupTaskSchema } from './schemas.js';
 
 export function getEmptyThread() {
   return {

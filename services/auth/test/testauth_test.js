@@ -1,6 +1,6 @@
 import assert from 'node:assert';
-import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
+import helper from './helper.js';
 
 const credentials = {
   clientId: 'tester',

@@ -1,10 +1,10 @@
-import taskcluster from '@taskcluster/client';
 import { strict as assert } from 'node:assert';
-import helper from './helper.js';
-import { FakeGoogle } from './fakes/index.js';
-import { GoogleProvider } from '../src/providers/google.js';
+import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
-import { WorkerPool, WorkerPoolError, Worker, WorkerPoolStats } from '../src/data.js';
+import { Worker, WorkerPool, WorkerPoolError, WorkerPoolStats } from '../src/data.js';
+import { GoogleProvider } from '../src/providers/google.js';
+import { FakeGoogle } from './fakes/index.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

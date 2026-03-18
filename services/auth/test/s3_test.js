@@ -1,9 +1,11 @@
 import assert from 'node:assert';
-import slugid from 'slugid';
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import helper from './helper.js';
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import debugFactory from 'debug';
+import slugid from 'slugid';
+import helper from './helper.js';
+
 const debug = debugFactory('s3_test');
+
 import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function (mock, skipping) {

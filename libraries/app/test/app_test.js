@@ -1,11 +1,11 @@
 import assert from 'node:assert';
-import { App } from '../src/index.js';
-import request from 'superagent';
+import path from 'node:path';
+import testing from '@taskcluster/lib-testing';
 import express from 'express';
 import isUUID from 'is-uuid';
-import testing from '@taskcluster/lib-testing';
-import path from 'node:path';
 import mockFs from 'mock-fs';
+import request from 'superagent';
+import { App } from '../src/index.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = path.join(__dirname, '../../../');

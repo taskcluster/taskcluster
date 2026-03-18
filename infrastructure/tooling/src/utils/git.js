@@ -1,7 +1,8 @@
-import util from 'node:util';
+import assert from 'node:assert';
 import { execFile } from 'node:child_process';
 import fs from 'node:fs';
-import assert from 'node:assert';
+import util from 'node:util';
+
 const exec = util.promisify(execFile);
 
 /**

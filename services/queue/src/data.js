@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import _ from 'lodash';
 import { paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import _ from 'lodash';
 import { splitTaskQueueId } from './utils.js';
 
 const STATUS_FIELDS = ['retriesLeft', 'runs', 'takenUntil'];

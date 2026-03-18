@@ -1,26 +1,26 @@
-import { Component, Fragment } from 'react';
-import { oneOfType, object, string, func, bool } from 'prop-types';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListSubheader from '@material-ui/core/ListSubheader';
+import Switch from '@material-ui/core/Switch';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import classNames from 'classnames';
 import { addYears } from 'date-fns';
 import { dump, load } from 'js-yaml';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Typography from '@material-ui/core/Typography';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
-import DeleteIcon from 'mdi-react/DeleteIcon';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
-import CodeEditor from '../CodeEditor';
-import TextField from '../TextField';
-import DialogAction from '../DialogAction';
-import Button from '../Button';
-import SpeedDial from '../SpeedDial';
-import DatePicker from '../DatePicker';
-import SpeedDialAction from '../SpeedDialAction';
+import DeleteIcon from 'mdi-react/DeleteIcon';
+import { bool, func, object, oneOfType, string } from 'prop-types';
+import { Component, Fragment } from 'react';
 import { secret } from '../../utils/prop-types';
+import Button from '../Button';
+import CodeEditor from '../CodeEditor';
+import DatePicker from '../DatePicker';
+import DialogAction from '../DialogAction';
+import SpeedDial from '../SpeedDial';
+import SpeedDialAction from '../SpeedDialAction';
+import TextField from '../TextField';
 
 @withStyles((theme) => ({
   fab: {

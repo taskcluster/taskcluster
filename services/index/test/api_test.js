@@ -1,13 +1,15 @@
 import assert from 'node:assert';
 import debugFactory from 'debug';
+
 const debug = debugFactory('index:test:api_test');
-import helper from './helper.js';
-import slugid from 'slugid';
+
 import taskcluster from '@taskcluster/client';
-import request from 'superagent';
-import assume from 'assume';
-import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import slugid from 'slugid';
+import request from 'superagent';
+import libUrls from 'taskcluster-lib-urls';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

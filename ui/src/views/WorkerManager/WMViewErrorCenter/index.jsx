@@ -1,17 +1,17 @@
+import { TableCell, TableRow, Typography } from '@material-ui/core';
+import LinkIcon from 'mdi-react/LinkIcon';
+import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
-import { TableRow, TableCell, Typography } from '@material-ui/core';
-import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
-import LinkIcon from 'mdi-react/LinkIcon';
-import Spinner from '../../../components/Spinner';
-import Dashboard from '../../../components/Dashboard';
-import ErrorPanel from '../../../components/ErrorPanel';
-import errorsQuery from './wmPoolsErrors.graphql';
-import WorkerManagerErrorsSummary from '../../../components/WMErrorsSummary';
-import DataTable from '../../../components/DataTable';
-import Link from '../../../utils/Link';
-import TableCellItem from '../../../components/TableCellItem';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import Dashboard from '../../../components/Dashboard';
+import DataTable from '../../../components/DataTable';
+import ErrorPanel from '../../../components/ErrorPanel';
+import Spinner from '../../../components/Spinner';
+import TableCellItem from '../../../components/TableCellItem';
+import WorkerManagerErrorsSummary from '../../../components/WMErrorsSummary';
+import Link from '../../../utils/Link';
+import errorsQuery from './wmPoolsErrors.graphql';
 
 @graphql(errorsQuery)
 export default class WMViewErrorCenter extends Component {

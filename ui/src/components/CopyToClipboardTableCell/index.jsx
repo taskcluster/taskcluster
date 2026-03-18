@@ -1,11 +1,11 @@
-import { node, string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import TableCell from '@material-ui/core/TableCell';
-import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
-import TableCellItem from '../TableCellItem';
+import ContentCopyIcon from 'mdi-react/ContentCopyIcon';
+import { node, string } from 'prop-types';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import useCopyToClipboard from '../../utils/useCopyToClipboard';
+import TableCellItem from '../TableCellItem';
 
 const styles = (theme) => ({
   icon: {

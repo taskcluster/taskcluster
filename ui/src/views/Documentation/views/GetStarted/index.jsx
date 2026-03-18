@@ -1,13 +1,13 @@
-import { Fragment } from 'react';
-import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import BookOpenOutlineIcon from 'mdi-react/BookOpenOutlineIcon';
 import BookOpenVariantIcon from 'mdi-react/BookOpenVariantIcon';
 import OneTwoThreeIcon from 'mdi-react/OneTwoThreeIcon';
-import BookOpenOutlineIcon from 'mdi-react/BookOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
+import { Fragment } from 'react';
 import Anchor from '../../components/Anchor';
-import HeaderWithAnchor from '../../components/HeaderWithAnchor';
 import ExploreCard from '../../components/ExploreCard';
+import HeaderWithAnchor from '../../components/HeaderWithAnchor';
 
 const cards = [
   {

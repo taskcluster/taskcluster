@@ -1,19 +1,19 @@
-import { Component, Fragment } from 'react';
-import { oneOfType, object, string, func, bool } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
+import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import TextField from '../TextField';
-import DialogAction from '../DialogAction';
-import { notificationAddress as address } from '../../utils/prop-types';
+import { bool, func, object, oneOfType, string } from 'prop-types';
+import { Component, Fragment } from 'react';
 import { DENYLIST_NOTIFICATION_TYPES } from '../../utils/constants';
+import { notificationAddress as address } from '../../utils/prop-types';
 import titleCase from '../../utils/titleCase';
 import Button from '../Button';
+import DialogAction from '../DialogAction';
+import TextField from '../TextField';
 
 @withStyles((theme) => ({
   fab: {

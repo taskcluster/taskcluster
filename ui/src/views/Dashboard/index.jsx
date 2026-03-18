@@ -1,17 +1,17 @@
-import { Component } from 'react';
+import { Divider, Grid } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
 import HexagonIcon from 'mdi-react/HexagonIcon';
-import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
+import HexagonMultipleIcon from 'mdi-react/HexagonMultipleIcon';
 import LibraryIcon from 'mdi-react/LibraryIcon';
-import { Divider, Grid } from '@material-ui/core';
-import Dashboard from '../../components/Dashboard';
+import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
+import { Component } from 'react';
 import Button from '../../components/Button';
+import Dashboard from '../../components/Dashboard';
+import StatsFetcher from '../../components/StatusDashboard/StatsFetcher';
 import { withAuth } from '../../utils/Auth';
 import { DOCS_PATH_PREFIX } from '../../utils/constants';
 import Link from '../../utils/Link';
-import StatsFetcher from '../../components/StatusDashboard/StatsFetcher';
 import username from '../../utils/username';
 
 @withStyles((theme) => ({

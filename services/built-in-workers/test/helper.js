@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
-import { default as _load } from '../src/main.js';
 import { stickyLoader } from '@taskcluster/lib-testing';
+import { default as _load } from '../src/main.js';
 
 const load = stickyLoader(_load);
 const helper = { load };

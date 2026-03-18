@@ -1,5 +1,5 @@
+import { Grid, Typography, withStyles } from '@material-ui/core';
 import React from 'react';
-import { Grid, withStyles, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { StatusItem } from './StatusItem';
 

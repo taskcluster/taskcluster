@@ -1,24 +1,24 @@
 import assert from 'node:assert';
-import _ from 'lodash';
-import taskcluster from '@taskcluster/client';
-import forge from 'node-forge';
 import crypto from 'node:crypto';
-import got from 'got';
 import { rootCertificates } from 'node:tls';
-import { WorkerPool, Worker } from '../../data.js';
-import azureApi from './azure-api.js';
-import { ApiError, Provider } from '../provider.js';
+import taskcluster from '@taskcluster/client';
+import got from 'got';
+import _ from 'lodash';
+import forge from 'node-forge';
+import { Worker, WorkerPool } from '../../data.js';
 import { CloudAPI } from '../cloudapi.js';
+import { ApiError, Provider } from '../provider.js';
+import azureApi from './azure-api.js';
 import { loadCertificates } from './azure-ca-certs/index.js';
 import {
-  nicerId,
-  dnToString,
-  workerConfigWithSecrets,
-  getCertFingerprint,
-  getAuthorityAccessInfo,
-  cloneCaStore,
-  generateAdmin,
   ArmDeploymentProvisioningState,
+  cloneCaStore,
+  dnToString,
+  generateAdmin,
+  getAuthorityAccessInfo,
+  getCertFingerprint,
+  nicerId,
+  workerConfigWithSecrets,
 } from './utils.js';
 
 /** @typedef {import('../../data.js').WorkerPoolStats} WorkerPoolStats */

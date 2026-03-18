@@ -1,17 +1,17 @@
-import { Component } from 'react';
-import { func, shape, string } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import DeleteIcon from 'mdi-react/DeleteIcon';
+import { func, shape, string } from 'prop-types';
+import { map, pipe, sort as rSort } from 'ramda';
+import { Component } from 'react';
+import { VIEW_SECRETS_PAGE_SIZE } from '../../utils/constants';
+import Link from '../../utils/Link';
 import { memoize } from '../../utils/memoize';
+import { pageInfo, secrets } from '../../utils/prop-types';
+import sort from '../../utils/sort';
 import Button from '../Button';
 import ConnectionDataTable from '../ConnectionDataTable';
-import { VIEW_SECRETS_PAGE_SIZE } from '../../utils/constants';
-import sort from '../../utils/sort';
-import Link from '../../utils/Link';
-import { pageInfo, secrets } from '../../utils/prop-types';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.name, b.node.name)),

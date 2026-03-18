@@ -1,5 +1,6 @@
-import util from 'node:util';
 import { exec } from 'node:child_process';
+import util from 'node:util';
+
 const execPromise = util.promisify(exec);
 
 export const tasks = [];

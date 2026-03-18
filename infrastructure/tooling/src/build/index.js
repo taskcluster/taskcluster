@@ -1,11 +1,11 @@
-import path from 'node:path';
 import os from 'node:os';
-import { rimraf } from 'rimraf';
-import mkdirp from 'mkdirp';
+import path from 'node:path';
 import taskcluster from '@taskcluster/client';
-import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
+import { ConsoleRenderer, Lock, LogRenderer, TaskGraph } from 'console-taskgraph';
+import mkdirp from 'mkdirp';
+import { rimraf } from 'rimraf';
+import { gitDescribe, gitIsDirty, REPO_ROOT } from '../utils/index.js';
 import { generateTasks } from './tasks/index.js';
-import { gitIsDirty, gitDescribe, REPO_ROOT } from '../utils/index.js';
 
 class Base {
   constructor(cmdOptions) {

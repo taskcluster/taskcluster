@@ -1,12 +1,12 @@
-import { PureComponent } from 'react';
-import { parse, stringify } from 'qs';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
-import Roles from './Roles';
-import Dashboard from '../../../components/Dashboard';
-import Search from '../../../components/Search';
+import { parse, stringify } from 'qs';
+import { PureComponent } from 'react';
 import Button from '../../../components/Button';
+import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
+import Search from '../../../components/Search';
+import Roles from './Roles';
 
 @withStyles((theme) => ({
   plusIconSpan: {

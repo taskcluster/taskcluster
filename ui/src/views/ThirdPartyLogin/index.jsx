@@ -1,11 +1,11 @@
+import Typography from '@material-ui/core/Typography';
+import { parse } from 'qs';
 import { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
-import { parse } from 'qs';
-import Typography from '@material-ui/core/Typography';
-import Spinner from '../../components/Spinner';
 import AuthConsent from '../../components/AuthConsent';
 import Dashboard from '../../components/Dashboard';
+import Spinner from '../../components/Spinner';
 import { withAuth } from '../../utils/Auth';
 import fromNowJSON from '../../utils/fromNowJSON';
 import thirdPartyLoginQuery from './thirdPartyLogin.graphql';

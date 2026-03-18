@@ -1,16 +1,16 @@
 import '../../prelude.js';
-import tcdb from '@taskcluster/db';
-import builder from '../src/api.js';
-import loader from '@taskcluster/lib-loader';
-import SchemaSet from '@taskcluster/lib-validate';
-import { MonitorManager } from '@taskcluster/lib-monitor';
-import { App } from '@taskcluster/lib-app';
-import libReferences from '@taskcluster/lib-references';
-import config from '@taskcluster/lib-config';
-import { Backends } from './backends/index.js';
-import { Middleware } from './middleware/index.js';
-import expireObjects from './expire.js';
 import { fileURLToPath } from 'node:url';
+import tcdb from '@taskcluster/db';
+import { App } from '@taskcluster/lib-app';
+import config from '@taskcluster/lib-config';
+import loader from '@taskcluster/lib-loader';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import libReferences from '@taskcluster/lib-references';
+import SchemaSet from '@taskcluster/lib-validate';
+import builder from '../src/api.js';
+import { Backends } from './backends/index.js';
+import expireObjects from './expire.js';
+import { Middleware } from './middleware/index.js';
 
 const load = loader(
   {

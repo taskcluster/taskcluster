@@ -1,16 +1,16 @@
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
-import scopeUtils from 'taskcluster-lib-scopes';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
-import slugid from 'slugid';
-import _ from 'lodash';
-import createSignatureValidator from './signaturevalidator.js';
-import ScopeResolver from './scoperesolver.js';
 import Hashids from 'hashids';
+import _ from 'lodash';
+import slugid from 'slugid';
+import scopeUtils from 'taskcluster-lib-scopes';
 import { modifyRoles } from '../src/data.js';
 import { awsBuilder } from './aws.js';
-import { gcpBuilder } from './gcp.js';
 import { azureBuilder } from './azure.js';
+import { gcpBuilder } from './gcp.js';
+import ScopeResolver from './scoperesolver.js';
 import { sentryBuilder } from './sentry.js';
+import createSignatureValidator from './signaturevalidator.js';
 import { websocktunnelBuilder } from './websocktunnel.js';
 
 export const AUDIT_ENTRY_TYPE = Object.freeze({

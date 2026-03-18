@@ -1,17 +1,17 @@
-import { Component } from 'react';
-import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import { bool, func } from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import Avatar from '@material-ui/core/Avatar';
 import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
-import CardActionArea from '@material-ui/core/CardActionArea';
+import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import Avatar from '@material-ui/core/Avatar';
-import Anchor from '../components/Anchor';
+import classNames from 'classnames';
+import { bool, func } from 'prop-types';
+import { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 // eslint-disable-next-line import/extensions
 import contributorsJson from '../../../../../.all-contributorsrc';
+import Anchor from '../components/Anchor';
 
 @withRouter
 @withStyles((theme) => ({

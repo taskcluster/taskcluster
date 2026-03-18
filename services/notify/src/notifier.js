@@ -1,13 +1,15 @@
 import debugFactory from 'debug';
+
 const debug = debugFactory('notify');
-import _ from 'lodash';
-import path from 'node:path';
+
 import crypto from 'node:crypto';
-import sanitizeHtml from 'sanitize-html';
-import { marked } from 'marked';
-import Email from 'email-templates';
-import nodemailer from 'nodemailer';
+import path from 'node:path';
 import { SendEmailCommand } from '@aws-sdk/client-sesv2';
+import Email from 'email-templates';
+import _ from 'lodash';
+import { marked } from 'marked';
+import nodemailer from 'nodemailer';
+import sanitizeHtml from 'sanitize-html';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

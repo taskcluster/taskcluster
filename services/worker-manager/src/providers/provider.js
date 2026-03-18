@@ -1,9 +1,9 @@
 import assert from 'node:assert';
 import crypto from 'node:crypto';
-import _ from 'lodash';
-import libUrls from 'taskcluster-lib-urls';
-import slugid from 'slugid';
 import yaml from 'js-yaml';
+import _ from 'lodash';
+import slugid from 'slugid';
+import libUrls from 'taskcluster-lib-urls';
 import { Worker, WorkerPoolError } from '../data.js';
 
 /** @typedef {import('../data.js').WorkerPool} WorkerPool */

@@ -1,8 +1,8 @@
-import _ from 'lodash';
-import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import taskcluster from '@taskcluster/client';
-import { MAX_MODIFY_ATTEMPTS } from './util.js';
 import { paginateResults } from '@taskcluster/lib-api';
+import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import _ from 'lodash';
+import { MAX_MODIFY_ATTEMPTS } from './util.js';
 
 /** @typedef {import('@taskcluster/lib-postgres').Database} Database */
 

@@ -1,10 +1,10 @@
-import { Fragment } from 'react';
-import { arrayOf, string, shape } from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
+import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import HeaderWithAnchor from '../HeaderWithAnchor';
+import { arrayOf, shape, string } from 'prop-types';
+import { Fragment } from 'react';
 import Anchor from '../Anchor';
+import HeaderWithAnchor from '../HeaderWithAnchor';
 import List from '../List';
 import ListItem from '../ListItem';
 

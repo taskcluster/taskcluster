@@ -1,7 +1,7 @@
 import got, { HTTPError } from 'got';
-import { slugid } from './utils.js';
-import retry from './retry.js';
 import { HashStream } from './hashstream.js';
+import retry from './retry.js';
+import { slugid } from './utils.js';
 
 const DATA_INLINE_MAX_SIZE = 8192;
 

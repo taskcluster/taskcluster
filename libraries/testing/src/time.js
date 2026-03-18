@@ -1,5 +1,5 @@
-import zurvan from 'zurvan';
 import timers from 'node:timers';
+import zurvan from 'zurvan';
 
 /** Return promise that is resolved in `delay` ms */
 export const sleep = function (delay) {

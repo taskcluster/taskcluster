@@ -1,6 +1,6 @@
-import debug from 'debug';
-import amqplib from 'amqplib';
 import assert from 'node:assert';
+import amqplib from 'amqplib';
+import debug from 'debug';
 import slugid from 'slugid';
 
 /**

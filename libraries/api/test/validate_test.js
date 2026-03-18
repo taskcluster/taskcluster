@@ -1,11 +1,11 @@
-import request from 'superagent';
 import assert from 'node:assert';
+import path from 'node:path';
+import testing from '@taskcluster/lib-testing';
+import SchemaSet from '@taskcluster/lib-validate';
+import request from 'superagent';
+import libUrls from 'taskcluster-lib-urls';
 import { APIBuilder } from '../src/index.js';
 import helper, { monitor, monitorManager } from './helper.js';
-import libUrls from 'taskcluster-lib-urls';
-import path from 'node:path';
-import SchemaSet from '@taskcluster/lib-validate';
-import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

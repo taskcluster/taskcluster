@@ -1,17 +1,17 @@
-import { Fragment } from 'react';
 import {
-  Typography,
+  IconButton,
   List,
   ListItem,
   ListItemText,
-  IconButton,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  Typography,
 } from '@material-ui/core';
 import CloseIcon from 'mdi-react/CloseIcon';
+import { Fragment } from 'react';
 import DateDistance from '../../../components/DateDistance';
 import JsonDisplay from '../../../components/JsonDisplay';
 

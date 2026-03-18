@@ -1,4 +1,4 @@
-import { readRepoFile, modifyRepoFile, writeRepoFile, modifyRepoJSON, modifyRepoYAML } from '../../utils/index.js';
+import { modifyRepoFile, modifyRepoJSON, modifyRepoYAML, readRepoFile, writeRepoFile } from '../../utils/index.js';
 
 export const tasks = [];
 

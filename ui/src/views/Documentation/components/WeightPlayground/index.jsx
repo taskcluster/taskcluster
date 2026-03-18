@@ -1,17 +1,17 @@
-import { useState } from 'react';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import TableBody from '@material-ui/core/TableBody';
 import TextField from '@material-ui/core/TextField';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from 'mdi-react/DeleteIcon';
 import PlusIcon from 'mdi-react/PlusIcon';
+import { useState } from 'react';
 import computeWeightDistribution from './utils';
 
 const styles = (theme) => ({

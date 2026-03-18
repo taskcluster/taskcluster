@@ -1,6 +1,6 @@
-import TcYaml from '../src/tc-yaml.js';
-import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import TcYaml from '../src/tc-yaml.js';
 
 suite(testing.suiteName(), function () {
   suite('VersionZero', function () {

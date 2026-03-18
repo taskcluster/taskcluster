@@ -1,24 +1,26 @@
 import assert from 'node:assert';
 import path from 'node:path';
 import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
-import { SNSClient, CreateTopicCommand, ListSubscriptionsByTopicCommand, SubscribeCommand } from '@aws-sdk/client-sns';
+import { CreateTopicCommand, ListSubscriptionsByTopicCommand, SNSClient, SubscribeCommand } from '@aws-sdk/client-sns';
 import {
-  SQSClient,
   CreateQueueCommand,
   DeleteMessageCommand,
   GetQueueAttributesCommand,
   PurgeQueueCommand,
   ReceiveMessageCommand,
   SetQueueAttributesCommand,
+  SQSClient,
 } from '@aws-sdk/client-sqs';
-import { mockClient } from 'aws-sdk-client-mock';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
+import { mockClient } from 'aws-sdk-client-mock';
+import debugFactory from 'debug';
 import builder from '../src/api.js';
 import mainLoad from '../src/main.js';
 import RateLimit from '../src/ratelimit.js';
-import debugFactory from 'debug';
+
 const debug = debugFactory('test');
+
 import sinon from 'sinon';
 
 const testclients = {

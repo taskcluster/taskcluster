@@ -1,16 +1,16 @@
-import { Component } from 'react';
-import { graphql, withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { parse, stringify } from 'qs';
-import Typography from '@material-ui/core/Typography';
-import Spinner from '../../../components/Spinner';
-import Dashboard from '../../../components/Dashboard';
-import HelpView from '../../../components/HelpView';
-import Search from '../../../components/Search';
+import { Component } from 'react';
+import { graphql, withApollo } from 'react-apollo';
 import Button from '../../../components/Button';
+import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
+import HelpView from '../../../components/HelpView';
 import HookGroupsTable from '../../../components/HookGroupsTable';
+import Search from '../../../components/Search';
+import Spinner from '../../../components/Spinner';
 import hookGroupsQuery from './hookGroups.graphql';
 
 @withApollo

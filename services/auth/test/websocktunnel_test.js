@@ -1,7 +1,7 @@
-import helper from './helper.js';
 import assert from 'node:assert';
-import jwt from 'jsonwebtoken';
 import testing from '@taskcluster/lib-testing';
+import jwt from 'jsonwebtoken';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function (mock, skipping) {
   helper.withDb(mock, skipping);

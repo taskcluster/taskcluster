@@ -1,10 +1,10 @@
-import { Worker, isMainThread, parentPort } from 'node:worker_threads';
-import _ from 'lodash';
-import { gitLsFiles, readRepoFile } from '../../utils/index.js';
+import { isMainThread, parentPort, Worker } from 'node:worker_threads';
 import * as acorn from 'acorn-loose';
 import * as walk from 'acorn-walk';
 import builtinModules from 'builtin-modules';
 import stringify from 'fast-json-stable-stringify';
+import _ from 'lodash';
+import { gitLsFiles, readRepoFile } from '../../utils/index.js';
 
 const __filename = new URL('', import.meta.url).pathname;
 

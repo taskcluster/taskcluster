@@ -1,8 +1,8 @@
-import helper from './helper.js';
 import assert from 'node:assert';
-import scanner from '../src/login/scanner.js';
 import testing from '@taskcluster/lib-testing';
+import scanner from '../src/login/scanner.js';
 import Test from '../src/login/strategies/test.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

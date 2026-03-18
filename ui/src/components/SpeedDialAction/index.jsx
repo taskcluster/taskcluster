@@ -1,6 +1,6 @@
 import { withStyles } from '@material-ui/core/styles';
 import MuiSpeedDialAction from '@material-ui/lab/SpeedDialAction';
-import { string, bool } from 'prop-types';
+import { bool, string } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
 
 const styles = withStyles((theme) => ({

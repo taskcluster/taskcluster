@@ -1,8 +1,8 @@
-import { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { string } from 'prop-types';
-import { hterm, lib } from 'hterm-umdjs';
 import { DockerExecClient } from 'docker-exec-websocket-client';
+import { hterm, lib } from 'hterm-umdjs';
+import { string } from 'prop-types';
+import { Component } from 'react';
 import withAlertOnClose from '../../utils/withAlertOnClose';
 
 const DECODER = new TextDecoder('utf-8', { fatal: false });

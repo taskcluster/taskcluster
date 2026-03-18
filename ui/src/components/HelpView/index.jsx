@@ -1,9 +1,9 @@
-import { PureComponent, Fragment } from 'react';
-import { node, string, object, oneOfType } from 'prop-types';
-import classNames from 'classnames';
+import Divider from '@material-ui/core/Divider';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
+import classNames from 'classnames';
+import { node, object, oneOfType, string } from 'prop-types';
+import { Fragment, PureComponent } from 'react';
 
 @withStyles((theme) => ({
   divider: {

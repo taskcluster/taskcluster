@@ -4,7 +4,7 @@ export * from './credentials.js';
 export * from './publisher.js';
 
 import { Client, Connection } from './client.js';
-import { PulseConsumer, consume } from './consumer.js';
+import { consume, PulseConsumer } from './consumer.js';
 import { connectionStringCredentials, pulseCredentials } from './credentials.js';
 import { Entry, Exchanges, PulsePublisher } from './publisher.js';
 

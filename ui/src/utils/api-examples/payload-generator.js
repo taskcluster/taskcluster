@@ -5,7 +5,7 @@
  * providing developers with concrete starting points for API calls.
  */
 
-import { PLACEHOLDERS, getPlaceholderValue } from './helpers';
+import { getPlaceholderValue, PLACEHOLDERS } from './helpers';
 
 /**
  * Get contextual placeholder value for known property names

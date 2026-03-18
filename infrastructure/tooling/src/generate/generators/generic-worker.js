@@ -1,7 +1,7 @@
 import path from 'node:path';
 import glob from 'glob';
-import { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } from '../../utils/index.js';
 import { rimraf } from 'rimraf';
+import { execCommand, modifyRepoFile, REPO_ROOT, readRepoYAML, writeRepoFile } from '../../utils/index.js';
 export const tasks = [];
 
 const tempDir = path.join(REPO_ROOT, 'temp');

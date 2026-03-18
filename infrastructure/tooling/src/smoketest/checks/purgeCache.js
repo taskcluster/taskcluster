@@ -1,5 +1,5 @@
-import taskcluster from '@taskcluster/client';
 import assert from 'node:assert';
+import taskcluster from '@taskcluster/client';
 
 export const scopeExpression = {
   AllOf: ['purge-cache:built-in/succeed:smoketest-cache'],

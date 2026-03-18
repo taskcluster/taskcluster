@@ -1,10 +1,12 @@
 import assert from 'node:assert';
 import debugFactory from 'debug';
+
 const debug = debugFactory('@taskcluster/lib-testing:FakeAuth');
-import nock from 'nock';
-import hawk from 'hawk';
-import libUrls from 'taskcluster-lib-urls';
+
 import taskcluster from '@taskcluster/client';
+import hawk from 'hawk';
+import nock from 'nock';
+import libUrls from 'taskcluster-lib-urls';
 
 let anonymousScopes = [];
 

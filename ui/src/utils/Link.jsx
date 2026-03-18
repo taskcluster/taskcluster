@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { bool } from 'prop-types';
-import { Link as RouterLink, NavLink } from 'react-router-dom';
 import isAbsolute from 'is-absolute-url';
+import { bool } from 'prop-types';
+import React, { useState } from 'react';
+import { NavLink, Link as RouterLink } from 'react-router-dom';
 import matchRoutes from './matchRoutes';
 
 /**

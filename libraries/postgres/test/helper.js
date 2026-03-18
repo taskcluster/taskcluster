@@ -1,6 +1,7 @@
-import pg from 'pg';
-import { withMonitor } from '@taskcluster/lib-testing';
 import { MonitorManager } from '@taskcluster/lib-monitor';
+import { withMonitor } from '@taskcluster/lib-testing';
+import pg from 'pg';
+
 const testDbUrl = process.env.TEST_DB_URL;
 
 withMonitor({}, { noLoader: true });

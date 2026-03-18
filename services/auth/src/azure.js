@@ -1,6 +1,6 @@
-import _ from 'lodash';
-import azure from 'fast-azure-storage';
 import { APIBuilder } from '@taskcluster/lib-api';
+import azure from 'fast-azure-storage';
+import _ from 'lodash';
 
 // keyed by account/tableName, the last time createTable was called for the
 // given table.  This is used to avoid lots of redundant calls to createTable

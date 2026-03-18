@@ -1,8 +1,8 @@
 import assert from 'node:assert';
+import generator from 'generate-password';
 import _ from 'lodash';
 import forge from 'node-forge';
 import slugid from 'slugid';
-import generator from 'generate-password';
 
 // https://learn.microsoft.com/en-us/rest/api/resources/deployments/list-at-subscription-scope?view=rest-resources-2025-04-01#provisioningstate
 export const ArmDeploymentProvisioningState = {

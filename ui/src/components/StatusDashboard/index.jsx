@@ -1,11 +1,11 @@
-import { Component } from 'react';
 import { object } from 'prop-types';
+import { Component } from 'react';
+import StatusGroup from './StatusGroup';
+import summarizeAuthorization from './summarizeAuthorization';
+import summarizeHooks from './summarizeHooks';
+import summarizeProvisioners from './summarizeProvisioners';
 import summarizeWorkerPools from './summarizeWorkerPools';
 import summarizeWorkerPoolsStats from './summarizeWorkerPoolsStats';
-import summarizeProvisioners from './summarizeProvisioners';
-import summarizeHooks from './summarizeHooks';
-import summarizeAuthorization from './summarizeAuthorization';
-import StatusGroup from './StatusGroup';
 
 export default class StatusDashboard extends Component {
   static propTypes = {

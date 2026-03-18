@@ -1,9 +1,9 @@
-import { Component } from 'react';
 import { filter, map, pipe, sort as rSort } from 'ramda';
-import sort from '../../../utils/sort';
-import Entry from './Entry';
-import HeaderWithAnchor from '../components/HeaderWithAnchor';
+import { Component } from 'react';
 import references from '../../../../../generated/references.json';
+import sort from '../../../utils/sort';
+import HeaderWithAnchor from '../components/HeaderWithAnchor';
+import Entry from './Entry';
 
 const filteredSchemas = pipe(
   filter((entry) => entry.filename.startsWith('schemas/')),

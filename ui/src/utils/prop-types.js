@@ -1,4 +1,4 @@
-import { arrayOf, bool, instanceOf, array, number, object, oneOf, oneOfType, shape, string } from 'prop-types';
+import { array, arrayOf, bool, instanceOf, number, object, oneOf, oneOfType, shape, string } from 'prop-types';
 import { DENYLIST_NOTIFICATION_TYPES } from './constants';
 
 export const user = shape({

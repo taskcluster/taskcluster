@@ -1,11 +1,11 @@
+import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import assert from 'node:assert';
-import _ from 'lodash';
-import helper from './helper.js';
-import libUrls from 'taskcluster-lib-urls';
-import yaml from 'js-yaml';
 import testing from '@taskcluster/lib-testing';
+import yaml from 'js-yaml';
+import _ from 'lodash';
+import libUrls from 'taskcluster-lib-urls';
+import helper from './helper.js';
 
 const webhookDir = new URL('./data/webhooks/', import.meta.url).pathname;
 const loadWebhook = (filename) => JSON.parse(fs.readFileSync(path.join(webhookDir, filename), 'utf8'));

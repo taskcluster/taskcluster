@@ -1,7 +1,9 @@
 import assert from 'node:assert';
-import libUrls from 'taskcluster-lib-urls';
 import debugFactory from 'debug';
+import libUrls from 'taskcluster-lib-urls';
+
 const debug = debugFactory('@taskcluster/lib-pulse.publisher');
+
 import { MonitorManager } from '@taskcluster/lib-monitor';
 
 MonitorManager.register({

@@ -1,17 +1,17 @@
-import { Component, Fragment } from 'react';
-import { arrayOf, func, shape, string } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import LinkIcon from 'mdi-react/LinkIcon';
-import { FixedSizeList } from 'react-window';
 import Divider from '@material-ui/core/Divider';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import { memoize } from '../../utils/memoize';
-import sort from '../../utils/sort';
+import LinkIcon from 'mdi-react/LinkIcon';
+import { arrayOf, func, shape, string } from 'prop-types';
+import { map, pipe, sort as rSort } from 'ramda';
+import { Component, Fragment } from 'react';
+import { FixedSizeList } from 'react-window';
 import Link from '../../utils/Link';
-import { pageInfo, client } from '../../utils/prop-types';
+import { memoize } from '../../utils/memoize';
+import { client, pageInfo } from '../../utils/prop-types';
+import sort from '../../utils/sort';
 
 const sorted = pipe(
   rSort((a, b) => sort(a.node.clientId, b.node.clientId)),

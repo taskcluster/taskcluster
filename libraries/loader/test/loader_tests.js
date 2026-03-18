@@ -1,6 +1,6 @@
+import assert from 'node:assert';
 import assume from 'assume';
 import subject from '../src/index.js';
-import assert from 'node:assert';
 
 suite('component loader', () => {
   test('should load a single component with a static value', async () => {

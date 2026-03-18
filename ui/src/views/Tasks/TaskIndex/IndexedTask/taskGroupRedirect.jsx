@@ -1,9 +1,9 @@
 import { Component } from 'react';
-import { Redirect } from 'react-router-dom';
 import { graphql } from 'react-apollo';
-import Spinner from '../../../../components/Spinner';
+import { Redirect } from 'react-router-dom';
 import Dashboard from '../../../../components/Dashboard';
 import ErrorPanel from '../../../../components/ErrorPanel';
+import Spinner from '../../../../components/Spinner';
 import artifactsQuery from './artifacts.graphql';
 import indexedTaskQuery from './indexedTask.graphql';
 

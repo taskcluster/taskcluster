@@ -1,17 +1,17 @@
-import _ from 'lodash';
-import stringify from 'fast-json-stable-stringify';
+import assert from 'node:assert';
 import crypto from 'node:crypto';
 import taskcluster from '@taskcluster/client';
-import yaml from 'js-yaml';
-import assert from 'node:assert';
 import { consume } from '@taskcluster/lib-pulse';
-import { deprecatedStatusHandler } from './deprecatedStatus.js';
-import { taskGroupCreationHandler } from './taskGroupCreation.js';
-import { statusHandler } from './status.js';
-import { jobHandler } from './job.js';
-import { rerunHandler } from './rerun.js';
-import { POLICIES } from './policies.js';
+import stringify from 'fast-json-stable-stringify';
+import yaml from 'js-yaml';
+import _ from 'lodash';
 import { GITHUB_BUILD_STATES } from '../constants.js';
+import { deprecatedStatusHandler } from './deprecatedStatus.js';
+import { jobHandler } from './job.js';
+import { POLICIES } from './policies.js';
+import { rerunHandler } from './rerun.js';
+import { statusHandler } from './status.js';
+import { taskGroupCreationHandler } from './taskGroupCreation.js';
 
 /**
  * Create handlers

@@ -1,12 +1,12 @@
-import { Client, Exchanges, connectionStringCredentials } from '../src/index.js';
+import assert from 'node:assert';
 import path from 'node:path';
+import { poll, suiteName } from '@taskcluster/lib-testing';
+import SchemaSet from '@taskcluster/lib-validate';
 import amqplib from 'amqplib';
 import assume from 'assume';
-import assert from 'node:assert';
-import SchemaSet from '@taskcluster/lib-validate';
 import libUrls from 'taskcluster-lib-urls';
+import { Client, connectionStringCredentials, Exchanges } from '../src/index.js';
 import helper from './helper.js';
-import { suiteName, poll } from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 

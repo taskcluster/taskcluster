@@ -1,5 +1,5 @@
-import { schema } from './schema.js';
 import { Database } from '@taskcluster/lib-postgres';
+import { schema } from './schema.js';
 
 /** @typedef {import('@taskcluster/lib-postgres').UpgradeOptions} UpgradeOptions */
 /** @typedef {import('@taskcluster/lib-postgres').DowngradeOptions} DowngradeOptions */

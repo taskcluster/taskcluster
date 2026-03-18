@@ -1,6 +1,6 @@
-import { withRootUrl } from 'taskcluster-lib-urls';
-import { stringify } from 'query-string';
 import hawk from 'hawk';
+import { stringify } from 'query-string';
+import { withRootUrl } from 'taskcluster-lib-urls';
 import fetch from './fetch';
 
 export default class Client {

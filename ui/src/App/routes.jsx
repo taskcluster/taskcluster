@@ -1,16 +1,16 @@
 import { join } from 'node:path';
 import { DOCS_PATH_PREFIX } from '../utils/constants';
-import secretRoutes from '../views/Secrets/routes';
-import scopeRoutes from '../views/Scopes/routes';
-import taskRoutes from '../views/Tasks/routes';
-import provisionerRoutes from '../views/Provisioners/routes';
-import workerManagerRoutes from '../views/WorkerManager/routes';
-import clientRoutes from '../views/Clients/routes';
-import roleRoutes from '../views/Roles/routes';
-import hookRoutes from '../views/Hooks/routes';
-import denylistRoutes from '../views/Denylist/routes';
-import cachePurgeRoutes from '../views/CachePurges/routes';
 import lazy from '../utils/lazy';
+import cachePurgeRoutes from '../views/CachePurges/routes';
+import clientRoutes from '../views/Clients/routes';
+import denylistRoutes from '../views/Denylist/routes';
+import hookRoutes from '../views/Hooks/routes';
+import provisionerRoutes from '../views/Provisioners/routes';
+import roleRoutes from '../views/Roles/routes';
+import scopeRoutes from '../views/Scopes/routes';
+import secretRoutes from '../views/Secrets/routes';
+import taskRoutes from '../views/Tasks/routes';
+import workerManagerRoutes from '../views/WorkerManager/routes';
 
 const SwitchEntryPoint = lazy(() => import(/* webpackChunkName: 'SwitchEntryPoint' */ '../views/SwitchEntryPoint'));
 const Tasks = lazy(() => import(/* webpackChunkName: 'Tasks' */ '../views/Tasks'));

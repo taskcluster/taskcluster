@@ -1,6 +1,6 @@
-import Relations from '../src/Relations.js';
-import path from 'node:path';
 import { strict as assert } from 'node:assert';
+import path from 'node:path';
+import Relations from '../src/Relations.js';
 
 const __filename = new URL('', import.meta.url).pathname;
 

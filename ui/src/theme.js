@@ -1,11 +1,11 @@
-import { alpha, createTheme } from '@material-ui/core/styles';
-import { lighten } from '@material-ui/core/styles/colorManipulator';
-import transitions from '@material-ui/core/styles/transitions';
-import red from '@material-ui/core/colors/red';
 import amber from '@material-ui/core/colors/amber';
 import blue from '@material-ui/core/colors/blue';
 import green from '@material-ui/core/colors/green';
 import purple from '@material-ui/core/colors/purple';
+import red from '@material-ui/core/colors/red';
+import { alpha, createTheme } from '@material-ui/core/styles';
+import { lighten } from '@material-ui/core/styles/colorManipulator';
+import transitions from '@material-ui/core/styles/transitions';
 import { THEME } from './utils/constants';
 
 const Roboto300 = { fontFamily: 'Roboto, sans-serif', fontWeight: 300 };

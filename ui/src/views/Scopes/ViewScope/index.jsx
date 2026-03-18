@@ -1,17 +1,17 @@
+import { withStyles } from '@material-ui/core/styles';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
+import dotProp from 'dot-prop-immutable';
+import { parse, stringify } from 'qs';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
-import { parse, stringify } from 'qs';
-import dotProp from 'dot-prop-immutable';
-import { withStyles } from '@material-ui/core/styles';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Spinner from '../../../components/Spinner';
-import Dashboard from '../../../components/Dashboard';
-import Search from '../../../components/Search';
 import ClientScopesTable from '../../../components/ClientScopesTable';
-import RoleScopesTable from '../../../components/RoleScopesTable';
-import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../../utils/constants';
+import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
+import RoleScopesTable from '../../../components/RoleScopesTable';
+import Search from '../../../components/Search';
+import Spinner from '../../../components/Spinner';
+import { VIEW_CLIENT_SCOPES_INSPECT_SIZE } from '../../../utils/constants';
 import scopesQuery from '../scopes.graphql';
 
 @graphql(scopesQuery)

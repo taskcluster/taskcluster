@@ -1,18 +1,18 @@
-import { ApiError, Provider } from './provider.js';
-import {
-  EC2Client,
-  DescribeRegionsCommand,
-  RunInstancesCommand,
-  DescribeInstanceStatusCommand,
-  TerminateInstancesCommand,
-} from '@aws-sdk/client-ec2';
-import taskcluster from '@taskcluster/client';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  DescribeInstanceStatusCommand,
+  DescribeRegionsCommand,
+  EC2Client,
+  RunInstancesCommand,
+  TerminateInstancesCommand,
+} from '@aws-sdk/client-ec2';
+import taskcluster from '@taskcluster/client';
 import _ from 'lodash';
+import { Worker, WorkerPool } from '../data.js';
 import { CloudAPI } from './cloudapi.js';
-import { WorkerPool, Worker } from '../data.js';
+import { ApiError, Provider } from './provider.js';
 
 /** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
 

@@ -1,4 +1,4 @@
-import { withScope, captureException } from '@sentry/browser';
+import { captureException, withScope } from '@sentry/browser';
 
 /**
  * Report errors to sentry.

@@ -1,11 +1,11 @@
-import { Component, Fragment } from 'react';
-import { string, object, func } from 'prop-types';
+import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
+import { func, object, string } from 'prop-types';
+import { Component, Fragment } from 'react';
 import CodeEditor from '../CodeEditor';
-import JsonDisplay from '../JsonDisplay';
 import ErrorPanel from '../ErrorPanel';
+import JsonDisplay from '../JsonDisplay';
 import Markdown from '../Markdown';
 
 @withStyles((theme) => ({

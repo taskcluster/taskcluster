@@ -1,5 +1,5 @@
-import libUrls from 'taskcluster-lib-urls';
 import regexEscape from 'regex-escape';
+import libUrls from 'taskcluster-lib-urls';
 
 /**
  * Make a "serializable" data structure from the given references

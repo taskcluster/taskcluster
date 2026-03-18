@@ -1,15 +1,13 @@
+import path from 'node:path';
 import appRootDir from 'app-root-dir';
-
 import {
-  dockerPull,
   dockerImages,
+  dockerPull,
+  dockerPush,
   dockerRegistryCheck,
   ensureTask,
-  dockerPush,
   execCommand,
 } from '../../utils/index.js';
-
-import path from 'node:path';
 
 /**
  * This builds generic worker docker image containing all tools required to run generic worker

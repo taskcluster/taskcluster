@@ -1,7 +1,7 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift.js';
 import ConnectionLoader from '../ConnectionLoader.js';
 import WorkerCompact from '../entities/WorkerCompact.js';
+import sift from '../utils/sift.js';
 
 export default ({ workerManager }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const worker = new DataLoader((queries) =>

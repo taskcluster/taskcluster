@@ -1,8 +1,8 @@
-import helper from './helper.js';
 import assert from 'node:assert';
-import _ from 'lodash';
-import got from 'got';
 import testing from '@taskcluster/lib-testing';
+import got from 'got';
+import _ from 'lodash';
+import helper from './helper.js';
 
 /**
  * Tests of endpoints in the api _other than_

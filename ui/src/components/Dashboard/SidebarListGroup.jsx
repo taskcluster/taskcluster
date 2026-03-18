@@ -1,11 +1,11 @@
-import { Component, Fragment } from 'react';
-import { arrayOf, node, string } from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 import Collapse from '@material-ui/core/Collapse';
-import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
+import List from '@material-ui/core/List';
+import { withStyles } from '@material-ui/core/styles';
 import ChevronDownIcon from 'mdi-react/ChevronDownIcon';
 import ChevronUpIcon from 'mdi-react/ChevronUpIcon';
+import { arrayOf, node, string } from 'prop-types';
+import { Component, Fragment } from 'react';
 import SidebarListItem from './SidebarListItem';
 
 @withStyles((theme) => ({

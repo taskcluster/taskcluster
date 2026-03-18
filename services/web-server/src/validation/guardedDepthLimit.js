@@ -1,5 +1,5 @@
-import depthLimit from 'graphql-depth-limit';
 import { visit } from 'graphql';
+import depthLimit from 'graphql-depth-limit';
 
 export default function guardedDepthLimit(maxDepth, options, callback) {
   const rule = depthLimit(maxDepth, options, callback);

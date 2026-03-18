@@ -1,9 +1,11 @@
-import _ from 'lodash';
-import path from 'node:path';
-import yaml from 'js-yaml';
 import fs from 'node:fs';
+import path from 'node:path';
 import debugFactory from 'debug';
+import yaml from 'js-yaml';
+import _ from 'lodash';
+
 const debug = debugFactory('@taskcluster/lib-config');
+
 import assert from 'node:assert';
 import buildSchema from './schema.js';
 

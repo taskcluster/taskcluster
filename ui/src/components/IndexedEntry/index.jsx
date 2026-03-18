@@ -1,23 +1,23 @@
-import { Component } from 'react';
-import { arrayOf, func, shape, string } from 'prop-types';
-import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
+import { withStyles } from '@material-ui/core/styles';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
+import classNames from 'classnames';
 import LinkIcon from 'mdi-react/LinkIcon';
-import JsonDisplay from '../JsonDisplay';
-import ConnectionDataTable from '../ConnectionDataTable';
-import DateDistance from '../DateDistance';
-import { artifact, indexedTask, date, pageInfo } from '../../utils/prop-types';
+import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
+import { arrayOf, func, shape, string } from 'prop-types';
+import { Component } from 'react';
+import { withAuth } from '../../utils/Auth';
 import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
-import Link from '../../utils/Link';
 import { findArtifactFromTaskUrl } from '../../utils/getArtifactUrl';
 import getIconFromMime from '../../utils/getIconFromMime';
-import { withAuth } from '../../utils/Auth';
+import Link from '../../utils/Link';
+import { artifact, date, indexedTask, pageInfo } from '../../utils/prop-types';
+import ConnectionDataTable from '../ConnectionDataTable';
+import DateDistance from '../DateDistance';
+import JsonDisplay from '../JsonDisplay';
 
 const buildArtifactUrl = ({ user, namespace, name, contentType }) => {
   const icon = getIconFromMime(contentType);

@@ -1,15 +1,13 @@
-import hawk from 'hawk';
-import _ from 'lodash';
 import assert from 'node:assert';
-import slugid from 'slugid';
 import crypto from 'node:crypto';
 import taskcluster from '@taskcluster/client';
-import createSignatureValidator from '../src/signaturevalidator.js';
-import utils from 'taskcluster-lib-scopes';
 import testing from '@taskcluster/lib-testing';
+import hawk from 'hawk';
+import _ from 'lodash';
+import slugid from 'slugid';
+import utils from 'taskcluster-lib-scopes';
+import createSignatureValidator, { normalizeClientId } from '../src/signaturevalidator.js';
 import helper from './helper.js';
-
-import { normalizeClientId } from '../src/signaturevalidator.js';
 
 suite(testing.suiteName(), function () {
   const one_hour = taskcluster.fromNow('1 hour');

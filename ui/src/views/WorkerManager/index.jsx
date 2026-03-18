@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { Switch } from 'react-router-dom';
-import routes from './routes';
 import RouteWithProps from '../../components/RouteWithProps';
+import routes from './routes';
 
 export default class WorkerManager extends Component {
   render() {

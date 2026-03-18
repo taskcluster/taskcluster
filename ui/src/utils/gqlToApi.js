@@ -1,7 +1,7 @@
-import { omit } from 'ramda';
 import cloneDeep from 'lodash.clonedeep';
-import removeKeys from './removeKeys';
+import { omit } from 'ramda';
 import { TASK_ADDED_FIELDS } from './constants';
+import removeKeys from './removeKeys';
 
 /**
  * Given a task in the format embedded in graphql queries, convert it

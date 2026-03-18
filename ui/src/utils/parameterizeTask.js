@@ -1,8 +1,8 @@
-import { omit } from 'ramda';
 import merge from 'deepmerge';
 import cloneDeep from 'lodash.clonedeep';
-import fromNowJSON from './fromNowJSON';
+import { omit } from 'ramda';
 import { TASK_ADDED_FIELDS } from './constants';
+import fromNowJSON from './fromNowJSON';
 
 // Transform task to an interactive task
 export default (task) =>

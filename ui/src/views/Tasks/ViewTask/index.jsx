@@ -1,68 +1,68 @@
-import { Component, Fragment } from 'react';
-import { withApollo, graphql } from 'react-apollo';
-import { omit, pathOr, mergeRight } from 'ramda';
-import cloneDeep from 'lodash.clonedeep';
-import { withStyles } from '@material-ui/core/styles';
+import Checkbox from '@material-ui/core/Checkbox';
 import Chip from '@material-ui/core/Chip';
 import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import Checkbox from '@material-ui/core/Checkbox';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import dotProp from 'dot-prop-immutable';
-import jsonSchemaDefaults from 'json-schema-defaults';
 import { dump } from 'js-yaml';
-import HammerIcon from 'mdi-react/HammerIcon';
-import CreationIcon from 'mdi-react/CreationIcon';
-import PencilIcon from 'mdi-react/PencilIcon';
-import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
-import ShovelIcon from 'mdi-react/ShovelIcon';
-import CloseIcon from 'mdi-react/CloseIcon';
-import FlashIcon from 'mdi-react/FlashIcon';
-import ConsoleLineIcon from 'mdi-react/ConsoleLineIcon';
-import RestartIcon from 'mdi-react/RestartIcon';
+import jsonSchemaDefaults from 'json-schema-defaults';
+import cloneDeep from 'lodash.clonedeep';
 import ChartIcon from 'mdi-react/ChartBarIcon';
-import Spinner from '../../../components/Spinner';
+import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
+import CloseIcon from 'mdi-react/CloseIcon';
+import ConsoleLineIcon from 'mdi-react/ConsoleLineIcon';
+import CreationIcon from 'mdi-react/CreationIcon';
+import FlashIcon from 'mdi-react/FlashIcon';
+import HammerIcon from 'mdi-react/HammerIcon';
+import PencilIcon from 'mdi-react/PencilIcon';
+import RestartIcon from 'mdi-react/RestartIcon';
+import ShovelIcon from 'mdi-react/ShovelIcon';
+import { mergeRight, omit, pathOr } from 'ramda';
+import { Component, Fragment } from 'react';
+import { graphql, withApollo } from 'react-apollo';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import Dashboard from '../../../components/Dashboard';
-import Markdown from '../../../components/Markdown';
-import TaskDetailsCard from '../../../components/TaskDetailsCard';
-import TaskRunsCard from '../../../components/TaskRunsCard';
+import DialogAction from '../../../components/DialogAction';
+import ErrorPanel from '../../../components/ErrorPanel';
 import Helmet from '../../../components/Helmet';
 import HelpView from '../../../components/HelpView';
+import Markdown from '../../../components/Markdown';
 import Search from '../../../components/Search';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
-import DialogAction from '../../../components/DialogAction';
+import Spinner from '../../../components/Spinner';
 import TaskActionForm from '../../../components/TaskActionForm';
-import Breadcrumbs from '../../../components/Breadcrumbs';
-import splitTaskQueueId from '../../../utils/splitTaskQueueId';
-import { gqlTaskToApi } from '../../../utils/gqlToApi';
+import TaskDetailsCard from '../../../components/TaskDetailsCard';
+import TaskRunsCard from '../../../components/TaskRunsCard';
+import { AuthContext } from '../../../utils/Auth';
 import {
   ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
   DEPENDENTS_PAGE_SIZE,
-  VALID_TASK,
   TASK_ADDED_FIELDS,
   TASK_POLL_INTERVAL,
   UI_SCHEDULER_ID,
+  VALID_TASK,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
-import ErrorPanel from '../../../components/ErrorPanel';
 import formatError from '../../../utils/formatError';
-import removeKeys from '../../../utils/removeKeys';
-import parameterizeTask from '../../../utils/parameterizeTask';
-import { nice } from '../../../utils/slugid';
+import { gqlTaskToApi } from '../../../utils/gqlToApi';
 import Link from '../../../utils/Link';
+import parameterizeTask from '../../../utils/parameterizeTask';
+import removeKeys from '../../../utils/removeKeys';
+import { nice } from '../../../utils/slugid';
+import splitTaskQueueId from '../../../utils/splitTaskQueueId';
+import createTaskQuery from '../createTask.graphql';
 import submitTaskAction from '../submitTaskAction';
+import cancelTaskQuery from './cancelTask.graphql';
+import pageArtifactsQuery from './pageArtifacts.graphql';
+import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
+import rerunTaskQuery from './rerunTask.graphql';
+import scheduleTaskQuery from './scheduleTask.graphql';
 import taskQuery from './task.graphql';
 import taskSubscription from './taskSubscription.graphql';
-import scheduleTaskQuery from './scheduleTask.graphql';
-import rerunTaskQuery from './rerunTask.graphql';
-import cancelTaskQuery from './cancelTask.graphql';
-import purgeWorkerCacheQuery from './purgeWorkerCache.graphql';
-import pageArtifactsQuery from './pageArtifacts.graphql';
-import createTaskQuery from '../createTask.graphql';
-import { AuthContext } from '../../../utils/Auth';
 
 const updateTaskIdHistory = (id) => {
   if (!VALID_TASK.test(id)) {

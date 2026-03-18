@@ -1,20 +1,20 @@
+import { Badge, Tooltip } from '@material-ui/core';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
+import LinkIcon from 'mdi-react/LinkIcon';
+import { any, arrayOf, string } from 'prop-types';
+import { isEmpty, map, path, pipe, sort as rSort } from 'ramda';
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import { isEmpty, map, pipe, sort as rSort, path } from 'ramda';
-import { any, arrayOf, string } from 'prop-types';
-import LinkIcon from 'mdi-react/LinkIcon';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import { Badge, Tooltip } from '@material-ui/core';
-import { memoize } from '../../utils/memoize';
-import DataTable from '../DataTable';
-import TableCellItem from '../TableCellItem';
 import Link from '../../utils/Link';
-import sort from '../../utils/sort';
-import StatusLabel from '../StatusLabel';
-import DateDistance from '../DateDistance';
+import { memoize } from '../../utils/memoize';
 import { hookWithLastFire } from '../../utils/prop-types';
+import sort from '../../utils/sort';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
+import DataTable from '../DataTable';
+import DateDistance from '../DateDistance';
+import StatusLabel from '../StatusLabel';
+import TableCellItem from '../TableCellItem';
 
 @withRouter
 export default class HooksListTable extends Component {

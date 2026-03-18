@@ -1,23 +1,23 @@
+import { Box, Button, TableCell, TableRow, Tooltip, Typography } from '@material-ui/core';
+import Tab from '@material-ui/core/Tab/Tab';
+import Tabs from '@material-ui/core/Tabs/Tabs';
+import dotProp from 'dot-prop-immutable';
+import LinkIcon from 'mdi-react/LinkIcon';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
 import { withRouter } from 'react-router-dom';
-import dotProp from 'dot-prop-immutable';
-import Tab from '@material-ui/core/Tab/Tab';
-import Tabs from '@material-ui/core/Tabs/Tabs';
-import { TableCell, TableRow, Tooltip, Typography, Box, Button } from '@material-ui/core';
-import LinkIcon from 'mdi-react/LinkIcon';
-import Spinner from '../../../components/Spinner';
-import Dashboard from '../../../components/Dashboard';
-import ErrorPanel from '../../../components/ErrorPanel';
-import workersQuery from './WMWorkers.graphql';
-import ConnectionDataTable from '../../../components/ConnectionDataTable';
-import TableCellItem from '../../../components/TableCellItem';
-import Link from '../../../utils/Link';
-import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
-import Label from '../../../components/Label';
-import DateDistance from '../../../components/DateDistance';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import ConnectionDataTable from '../../../components/ConnectionDataTable';
+import Dashboard from '../../../components/Dashboard';
+import DateDistance from '../../../components/DateDistance';
+import ErrorPanel from '../../../components/ErrorPanel';
+import Label from '../../../components/Label';
+import Spinner from '../../../components/Spinner';
+import TableCellItem from '../../../components/TableCellItem';
 import WorkersNavbar from '../../../components/WorkersNavbar';
+import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
+import Link from '../../../utils/Link';
+import workersQuery from './WMWorkers.graphql';
 
 const stateToLabel = {
   requested: 'default',

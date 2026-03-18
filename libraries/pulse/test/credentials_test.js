@@ -1,7 +1,7 @@
-import { pulseCredentials } from '../src/index.js';
 import assert from 'node:assert';
-import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import { pulseCredentials } from '../src/index.js';
 
 suite(testing.suiteName(), function () {
   test('missing arguments are an error', async function () {

@@ -1,5 +1,5 @@
-import { hrtime } from 'node:process';
 import assert from 'node:assert';
+import { hrtime } from 'node:process';
 import taskcluster from '@taskcluster/client';
 
 /**

@@ -1,6 +1,6 @@
-import { render, waitFor, act } from '@testing-library/react';
-import { ApolloProvider } from 'react-apollo';
+import { act, render, waitFor } from '@testing-library/react';
 import setupClient from 'apollo-client-mock';
+import { ApolloProvider } from 'react-apollo';
 import { MemoryRouter } from 'react-router-dom';
 import ListHookGroups from './index';
 

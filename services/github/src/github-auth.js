@@ -1,7 +1,7 @@
-import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
-import { throttling } from '@octokit/plugin-throttling';
 import { retry } from '@octokit/plugin-retry';
+import { throttling } from '@octokit/plugin-throttling';
+import { Octokit } from '@octokit/rest';
 import Bottleneck from 'bottleneck';
 import nodeFetch from 'node-fetch';
 

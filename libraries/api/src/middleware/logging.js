@@ -1,5 +1,5 @@
-import { MonitorManager } from '@taskcluster/lib-monitor';
 import { hrtime } from 'node:process';
+import { MonitorManager } from '@taskcluster/lib-monitor';
 
 MonitorManager.register({
   name: 'apiMethod',

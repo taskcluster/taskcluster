@@ -1,9 +1,9 @@
-import { NullProvider } from './null.js';
-import { TestingProvider } from './testing.js';
-import { StaticProvider } from './static.js';
-import { GoogleProvider } from './google.js';
 import { AwsProvider } from './aws.js';
 import { AzureProvider } from './azure/index.js';
+import { GoogleProvider } from './google.js';
+import { NullProvider } from './null.js';
+import { StaticProvider } from './static.js';
+import { TestingProvider } from './testing.js';
 
 const PROVIDER_TYPES = {
   null: NullProvider,

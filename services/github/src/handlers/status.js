@@ -1,27 +1,27 @@
 import {
-  CONCLUSIONS,
+  CHECK_RUN_STATES,
+  CHECK_TASK_GROUP_TEXT,
   CHECKLOGS_TEXT,
   CHECKRUN_TEXT,
-  LIVE_BACKING_LOG_ARTIFACT_NAME,
-  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME,
+  CONCLUSIONS,
   CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME,
-  CHECK_RUN_STATES,
+  CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME,
+  LIVE_BACKING_LOG_ARTIFACT_NAME,
   TASK_STATE_TO_CHECK_RUN_STATE,
-  CHECK_TASK_GROUP_TEXT,
 } from '../constants.js';
 
 import QueueLock from '../queue-lock.js';
-import { markdownLog, markdownAnchor, extractLog } from '../utils.js';
+import { extractLog, markdownAnchor, markdownLog } from '../utils.js';
 import { requestArtifact } from './requestArtifact.js';
 import {
-  taskUI,
-  makeDebug,
-  taskLogUI,
+  buildLogUrl,
+  buildUrl,
   GithubCheck,
   getTimeDifference,
+  makeDebug,
   taskGroupUI,
-  buildUrl,
-  buildLogUrl,
+  taskLogUI,
+  taskUI,
 } from './utils.js';
 
 /**

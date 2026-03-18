@@ -1,8 +1,8 @@
 import path from 'node:path';
-import builder from '../src/api.js';
 import taskcluster from '@taskcluster/client';
-import loadMain from '../src/main.js';
 import testing from '@taskcluster/lib-testing';
+import builder from '../src/api.js';
+import loadMain from '../src/main.js';
 
 const testclients = {
   'test-client': ['*'],

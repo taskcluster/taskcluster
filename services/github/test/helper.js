@@ -1,13 +1,12 @@
-import http from 'node:http';
 import fs from 'node:fs';
+import http from 'node:http';
+import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
 import _ from 'lodash';
 import sinon from 'sinon';
 import builder from '../src/api.js';
-import taskcluster from '@taskcluster/client';
 import mainLoad from '../src/main.js';
 import fakeGithubAuth from './github-auth.js';
-
-import testing from '@taskcluster/lib-testing';
 
 const load = testing.stickyLoader(mainLoad);
 

@@ -1,6 +1,6 @@
-import MonitorManager from './monitormanager.js';
-import Monitor from './monitor.js';
 import { LEVELS } from './logger.js';
+import Monitor from './monitor.js';
+import MonitorManager from './monitormanager.js';
 import './builtins.js';
 
-export { MonitorManager, Monitor, LEVELS };
+export { LEVELS, Monitor, MonitorManager };

@@ -1,11 +1,11 @@
-import load from './built-services.js';
-import { makeSerializable, fromSerializable } from './serializable.js';
-import { writeUriStructured, readUriStructured } from './uri-structured.js';
-import { getCommonSchemas } from './common-schemas.js';
-import Ajv from 'ajv';
 import fs from 'node:fs';
+import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import regexEscape from 'regex-escape';
+import load from './built-services.js';
+import { getCommonSchemas } from './common-schemas.js';
+import { fromSerializable, makeSerializable } from './serializable.js';
+import { readUriStructured, writeUriStructured } from './uri-structured.js';
 import { validate } from './validate.js';
 
 const schemaPath = new URL('../../../node_modules/ajv/lib/refs/json-schema-draft-06.json', import.meta.url).pathname;

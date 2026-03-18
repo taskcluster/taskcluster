@@ -1,10 +1,10 @@
 import assert from 'node:assert';
+import { promisify } from 'node:util';
 import testing from '@taskcluster/lib-testing';
 import session from 'express-session';
-import { promisify } from 'node:util';
-import helper from './helper.js';
 import PostgresSessionStore from '../src/login/PostgresSessionStore.js';
 import hash from '../src/utils/hash.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

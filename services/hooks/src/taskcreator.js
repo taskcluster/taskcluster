@@ -1,9 +1,11 @@
 import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
+
 const debug = debugFactory('hooks:taskcreator');
-import _ from 'lodash';
+
 import jsone from 'json-e';
+import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 
 export class TaskCreator {

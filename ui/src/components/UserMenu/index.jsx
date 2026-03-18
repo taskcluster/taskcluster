@@ -1,18 +1,18 @@
-import { Component, Fragment } from 'react';
-import { bool } from 'prop-types';
-import { Link } from 'react-router-dom';
-import { withApollo } from 'react-apollo';
-import classNames from 'classnames';
-import { darken } from '@material-ui/core/styles/colorManipulator';
-import { withStyles } from '@material-ui/core/styles';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import { withStyles } from '@material-ui/core/styles';
+import { darken } from '@material-ui/core/styles/colorManipulator';
+import classNames from 'classnames';
 import AccountIcon from 'mdi-react/AccountIcon';
 import LogoutVariantIcon from 'mdi-react/LogoutVariantIcon';
+import { bool } from 'prop-types';
+import { Component, Fragment } from 'react';
+import { withApollo } from 'react-apollo';
+import { Link } from 'react-router-dom';
 import { withAuth } from '../../utils/Auth';
-import UserMenuList from './UserMenuList';
-import UserMenuButton from './UserMenuButton';
 import { THEME } from '../../utils/constants';
+import UserMenuButton from './UserMenuButton';
+import UserMenuList from './UserMenuList';
 
 @withAuth
 @withApollo

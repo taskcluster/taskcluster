@@ -1,22 +1,22 @@
-import React, { Component, Fragment } from 'react';
-import { withApollo } from 'react-apollo';
-import { withStyles } from '@material-ui/core/styles';
+import { Grid, MenuItem } from '@material-ui/core';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import { dump, load } from 'js-yaml';
 import debounce from 'lodash.debounce';
-import { Grid, MenuItem } from '@material-ui/core';
-import TextField from '../../components/TextField';
+import React, { Component, Fragment } from 'react';
+import { withApollo } from 'react-apollo';
+import Button from '../../components/Button';
 import CodeEditor from '../../components/CodeEditor';
 import Dashboard from '../../components/Dashboard';
-import Button from '../../components/Button';
-import { siteSpecificVariable } from '../../utils/siteSpecific';
+import JsonDisplay from '../../components/JsonDisplay';
+import TextField from '../../components/TextField';
 import ajv from '../../utils/ajv';
 import scrollToHash from '../../utils/scrollToHash';
+import { siteSpecificVariable } from '../../utils/siteSpecific';
 import githubQuery from './github.graphql';
-import JsonDisplay from '../../components/JsonDisplay';
 
 const prefetchSchema = async () => {
   await ajv.loadServiceSchema('common', 'metaschema.json');

@@ -1,11 +1,13 @@
-import _ from 'lodash';
 import assert from 'node:assert';
 import assume from 'assume';
 import debugFactory from 'debug';
+import _ from 'lodash';
+
 const debug = debugFactory('test:api:createhook');
+
 import taskcluster from '@taskcluster/client';
-import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
+import helper from './helper.js';
 
 import taskDefinition from './test_definition.js';
 

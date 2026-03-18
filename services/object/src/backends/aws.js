@@ -1,20 +1,20 @@
-import { Backend } from './base.js';
 import assert from 'node:assert';
-import {
-  S3Client,
-  GetBucketLocationCommand,
-  PutObjectCommand,
-  GetObjectCommand,
-  DeleteObjectCommand,
-  PutObjectTaggingCommand,
-} from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { getEndpointFromInstructions, toEndpointV1 } from '@aws-sdk/middleware-endpoint';
-import { reportError } from '@taskcluster/lib-api';
-import taskcluster from '@taskcluster/client';
 import path from 'node:path';
-import qs from 'qs';
+import {
+  DeleteObjectCommand,
+  GetBucketLocationCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  PutObjectTaggingCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
+import { getEndpointFromInstructions, toEndpointV1 } from '@aws-sdk/middleware-endpoint';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import taskcluster from '@taskcluster/client';
+import { reportError } from '@taskcluster/lib-api';
 import { parse as parseContentType } from 'content-type';
+import qs from 'qs';
+import { Backend } from './base.js';
 
 const PUT_URL_EXPIRES_SECONDS = 45 * 60;
 

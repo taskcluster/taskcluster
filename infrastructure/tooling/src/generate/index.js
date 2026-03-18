@@ -1,4 +1,4 @@
-import { TaskGraph, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
+import { ConsoleRenderer, LogRenderer, TaskGraph } from 'console-taskgraph';
 import { loadGenerators } from './generators/index.js';
 
 export const main = async (options) => {

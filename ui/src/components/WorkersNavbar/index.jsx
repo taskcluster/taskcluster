@@ -1,12 +1,12 @@
-import { Component } from 'react';
-import { string, bool } from 'prop-types';
 import { Chip } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
-import WorkerIcon from 'mdi-react/WorkerIcon';
-import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
-import HourglassIcon from 'mdi-react/HourglassIcon';
 import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
+import HourglassIcon from 'mdi-react/HourglassIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
+import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
+import WorkerIcon from 'mdi-react/WorkerIcon';
+import { bool, string } from 'prop-types';
+import { Component } from 'react';
 import Link from '../../utils/Link';
 import { splitWorkerPoolId } from '../../utils/workerPool';
 

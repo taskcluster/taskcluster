@@ -1,13 +1,13 @@
-import { Component, Fragment } from 'react';
-import { withApollo } from 'react-apollo';
-import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import { withStyles } from '@material-ui/core/styles';
 import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
-import TextField from '../../../components/TextField';
-import Dashboard from '../../../components/Dashboard';
+import { Component, Fragment } from 'react';
+import { withApollo } from 'react-apollo';
 import Button from '../../../components/Button';
+import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
+import TextField from '../../../components/TextField';
 import purgeCacheQuery from './purgeCache.graphql';
 
 @withApollo

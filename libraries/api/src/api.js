@@ -1,17 +1,17 @@
-import express from 'express';
 import assert from 'node:assert';
-import libUrls from 'taskcluster-lib-urls';
 import taskcluster from '@taskcluster/client';
-import { buildReportErrorMethod } from './middleware/errors.js';
-import { callHandler } from './middleware/handle.js';
-import { validateSchemas } from './middleware/schema.js';
-import { queryValidator } from './middleware/queries.js';
-import { parameterValidator } from './middleware/parameters.js';
+import express from 'express';
+import libUrls from 'taskcluster-lib-urls';
 import { remoteAuthentication } from './middleware/auth.js';
-import { parseBody } from './middleware/parse.js';
+import { buildReportErrorMethod } from './middleware/errors.js';
 import { expressError } from './middleware/express-error.js';
+import { callHandler } from './middleware/handle.js';
 import { logRequest } from './middleware/logging.js';
+import { parameterValidator } from './middleware/parameters.js';
+import { parseBody } from './middleware/parse.js';
 import { perRequestContext } from './middleware/per-request-context.js';
+import { queryValidator } from './middleware/queries.js';
+import { validateSchemas } from './middleware/schema.js';
 
 /**
  * A service represents an instance of an API at a specific rootUrl, ready to

@@ -1,9 +1,9 @@
-import helper from './helper.js';
-import assume from 'assume';
-import testing from '@taskcluster/lib-testing';
-import sinon from 'sinon';
 import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import sinon from 'sinon';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

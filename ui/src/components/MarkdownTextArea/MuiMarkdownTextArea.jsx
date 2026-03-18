@@ -1,10 +1,10 @@
-import { Component } from 'react';
-import classNames from 'classnames';
-import { object, string, func, number } from 'prop-types';
+import { alpha, withStyles } from '@material-ui/core/styles';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
-import { alpha, withStyles } from '@material-ui/core/styles';
+import classNames from 'classnames';
+import { func, number, object, string } from 'prop-types';
+import { Component } from 'react';
 import Markdown from '../Markdown';
 
 @withStyles((theme) => {

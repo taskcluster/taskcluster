@@ -1,20 +1,19 @@
 import { strict as assert } from 'node:assert';
 import taskcluster from '@taskcluster/client';
-import loadMain from '../../src/main.js';
-import builder from '../../src/api.js';
 import testing from '@taskcluster/lib-testing';
+import builder from '../../src/api.js';
 import { BACKEND_TYPES } from '../../src/backends/index.js';
-import { MIDDLEWARE_TYPES } from '../../src/middleware/index.js';
 import { TestBackend } from '../../src/backends/test.js';
+import loadMain from '../../src/main.js';
+import { MIDDLEWARE_TYPES } from '../../src/middleware/index.js';
 import { TestMiddleware } from '../../src/middleware/test.js';
 import { aws } from './aws.js';
-import { google } from './google.js';
-
 import { testBackend } from './backend-general.js';
-import { testSimpleDownloadMethod } from './simple-download.js';
-import { testGetUrlDownloadMethod } from './geturl-download.js';
 import { testDataInlineUpload } from './data-inline-upload.js';
+import { testGetUrlDownloadMethod } from './geturl-download.js';
+import { google } from './google.js';
 import { testPutUrlUpload } from './put-url-upload.js';
+import { testSimpleDownloadMethod } from './simple-download.js';
 
 export const load = testing.stickyLoader(loadMain);
 

@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import Dashboard from '../../../components/Dashboard';
-import Search from '../../../components/Search';
-import HelpView from '../../../components/HelpView';
+import React, { Component } from 'react';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Button from '../../../components/Button';
-import Link from '../../../utils/Link';
+import Dashboard from '../../../components/Dashboard';
+import HelpView from '../../../components/HelpView';
+import Search from '../../../components/Search';
 import { VALID_TASK } from '../../../utils/constants';
+import Link from '../../../utils/Link';
 
 @withStyles((theme) => ({
   openButton: {

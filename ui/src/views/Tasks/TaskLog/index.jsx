@@ -1,18 +1,18 @@
-import { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import ArrowLeftIcon from 'mdi-react/ArrowLeftIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
-import Dashboard from '../../../components/Dashboard';
+import { Component, Fragment } from 'react';
+import { graphql } from 'react-apollo';
 import Button from '../../../components/Button';
-import Log from '../../../components/Log';
-import Link from '../../../utils/Link';
-import Helmet from '../../../components/Helmet';
-import taskQuery from './task.graphql';
-import Search from '../../../components/Search';
+import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
-import { getArtifactUrl } from '../../../utils/getArtifactUrl';
+import Helmet from '../../../components/Helmet';
+import Log from '../../../components/Log';
+import Search from '../../../components/Search';
 import { withAuth } from '../../../utils/Auth';
+import { getArtifactUrl } from '../../../utils/getArtifactUrl';
+import Link from '../../../utils/Link';
+import taskQuery from './task.graphql';
 
 @withAuth
 @withStyles((theme) => ({

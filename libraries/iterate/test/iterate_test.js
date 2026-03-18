@@ -1,7 +1,9 @@
-import subject from '../src/index.js';
 import assume from 'assume';
 import debugFactory from 'debug';
+import subject from '../src/index.js';
+
 const debug = debugFactory('iterate-test');
+
 import { MonitorManager } from '@taskcluster/lib-monitor';
 import testing from '@taskcluster/lib-testing';
 

@@ -1,20 +1,20 @@
-import { Component } from 'react';
-import { withRouter } from 'react-router-dom';
-import { isEmpty, map, pipe, sort as rSort } from 'ramda';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
 import { formatDistanceStrict } from 'date-fns';
-import { arrayOf } from 'prop-types';
 import AlertIcon from 'mdi-react/AlertIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
+import { arrayOf } from 'prop-types';
+import { isEmpty, map, pipe, sort as rSort } from 'ramda';
+import { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import Link from '../../utils/Link';
 import { memoize } from '../../utils/memoize';
+import { WMWorker } from '../../utils/prop-types';
+import sort from '../../utils/sort';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import DataTable from '../DataTable';
-import TableCellItem from '../TableCellItem';
-import Link from '../../utils/Link';
 import DateDistance from '../DateDistance';
-import sort from '../../utils/sort';
-import { WMWorker } from '../../utils/prop-types';
+import TableCellItem from '../TableCellItem';
 
 @withRouter
 export default class WorkerManagerWorkersTable extends Component {

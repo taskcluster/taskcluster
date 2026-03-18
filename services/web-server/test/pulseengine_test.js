@@ -1,6 +1,6 @@
 import assert from 'node:assert';
-import PulseIterator from '../src/PulseEngine/PulseIterator.js';
 import testing from '@taskcluster/lib-testing';
+import PulseIterator from '../src/PulseEngine/PulseIterator.js';
 
 // load for side-effects
 import './helper.js';

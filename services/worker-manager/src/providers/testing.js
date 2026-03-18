@@ -1,6 +1,6 @@
 import taskcluster from '@taskcluster/client';
-import { Provider, ApiError } from './provider.js';
 import { Worker } from '../data.js';
+import { ApiError, Provider } from './provider.js';
 
 /** @typedef {import('../data.js').WorkerPool} WorkerPool */
 /** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */

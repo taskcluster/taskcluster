@@ -1,16 +1,16 @@
+import MenuItem from '@material-ui/core/MenuItem';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import dotProp from 'dot-prop-immutable';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import Dashboard from '../../../components/Dashboard';
+import ErrorPanel from '../../../components/ErrorPanel';
 import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';
 import WorkerTypesTable from '../../../components/WorkerTypesTable';
-import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../../utils/constants';
-import ErrorPanel from '../../../components/ErrorPanel';
-import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import workerTypesQuery from './workerTypes.graphql';
 

@@ -1,13 +1,13 @@
-import { Component, Fragment } from 'react';
-import { arrayOf, func, number, string, oneOf, oneOfType, object, shape, bool } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
-import TableRow from '@material-ui/core/TableRow';
 import TablePagination from '@material-ui/core/TablePagination';
+import TableRow from '@material-ui/core/TableRow';
+import TableSortLabel from '@material-ui/core/TableSortLabel';
+import { arrayOf, bool, func, number, object, oneOf, oneOfType, shape, string } from 'prop-types';
+import { Component, Fragment } from 'react';
 
 @withStyles((theme) => ({
   tableWrapper: {

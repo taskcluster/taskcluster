@@ -1,5 +1,5 @@
-import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
+import helper from '../helper.js';
 
 suite(testing.suiteName(), function () {
   helper.withDbForVersion();

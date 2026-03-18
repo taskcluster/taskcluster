@@ -1,7 +1,7 @@
-import yaml from 'js-yaml';
-import path from 'node:path';
-import fs from 'node:fs/promises';
 import assert from 'node:assert';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import yaml from 'js-yaml';
 
 let _commonSchemas;
 

@@ -1,25 +1,25 @@
-import { Component } from 'react';
-import { withRouter } from 'react-router-dom';
-import { array, shape, func, string } from 'prop-types';
-import classNames from 'classnames';
-import { addYears } from 'date-fns';
-import { withStyles } from '@material-ui/core/styles';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 import CardHeader from '@material-ui/core/CardHeader';
-import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import ExpandMoreIcon from 'mdi-react/ExpandMoreIcon';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import classNames from 'classnames';
+import { addYears } from 'date-fns';
 import CheckIcon from 'mdi-react/CheckIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
-import TextField from '../TextField';
+import ExpandMoreIcon from 'mdi-react/ExpandMoreIcon';
+import { array, func, shape, string } from 'prop-types';
+import { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import logo from '../../images/brandLogo.png';
+import { date } from '../../utils/prop-types';
 import Button from '../Button';
 import DatePicker from '../DatePicker';
-import { date } from '../../utils/prop-types';
-import logo from '../../images/brandLogo.png';
+import TextField from '../TextField';
 
 @withRouter
 @withStyles((theme) => ({

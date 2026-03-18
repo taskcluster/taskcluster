@@ -1,6 +1,6 @@
 import assert from 'node:assert';
-import { cleanupDescription } from '../src/util.js';
 import testing from '@taskcluster/lib-testing';
+import { cleanupDescription } from '../src/util.js';
 
 suite(testing.suiteName(), function () {
   test('empty string', function () {

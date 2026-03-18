@@ -1,28 +1,28 @@
+import { Box } from '@material-ui/core';
+import MenuItem from '@material-ui/core/MenuItem';
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import dotProp from 'dot-prop-immutable';
+import HammerIcon from 'mdi-react/HammerIcon';
+import { parse, stringify } from 'qs';
+import { filter, path } from 'ramda';
 import { Component, Fragment } from 'react';
 import { graphql } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
-import { parse, stringify } from 'qs';
-import { path, filter } from 'ramda';
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
-import HammerIcon from 'mdi-react/HammerIcon';
-import { Box } from '@material-ui/core';
-import Spinner from '../../../components/Spinner';
-import TextField from '../../../components/TextField';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import Dashboard from '../../../components/Dashboard';
+import DialogAction from '../../../components/DialogAction';
+import ErrorPanel from '../../../components/ErrorPanel';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
-import DialogAction from '../../../components/DialogAction';
-import WorkersTable from '../../../components/WorkersTable';
-import Dashboard from '../../../components/Dashboard';
-import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
-import { withAuth } from '../../../utils/Auth';
-import { joinWorkerPoolId } from '../../../utils/workerPool';
-import ErrorPanel from '../../../components/ErrorPanel';
-import Breadcrumbs from '../../../components/Breadcrumbs';
-import Link from '../../../utils/Link';
-import workersQuery from './workers.graphql';
+import Spinner from '../../../components/Spinner';
+import TextField from '../../../components/TextField';
 import WorkersNavbar from '../../../components/WorkersNavbar';
+import WorkersTable from '../../../components/WorkersTable';
+import { withAuth } from '../../../utils/Auth';
+import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
+import Link from '../../../utils/Link';
+import { joinWorkerPoolId } from '../../../utils/workerPool';
+import workersQuery from './workers.graphql';
 
 const STATES = {
   running: 'running',

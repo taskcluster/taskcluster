@@ -1,6 +1,6 @@
-import _ from 'lodash';
 import assert from 'node:assert';
 import yaml from 'js-yaml';
+import _ from 'lodash';
 
 /*
  * Create a YAML type that loads from environment variable

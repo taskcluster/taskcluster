@@ -1,9 +1,9 @@
-import helper from './helper.js';
 import assert from 'node:assert';
-import MockDate from 'mockdate';
 import testing from '@taskcluster/lib-testing';
-import { GithubCheckOutput, GithubCheck, getTimeDifference } from '../src/handlers/utils.js';
+import MockDate from 'mockdate';
 import { CHECK_RUN_STATES } from '../src/constants.js';
+import { GithubCheck, GithubCheckOutput, getTimeDifference } from '../src/handlers/utils.js';
+import helper from './helper.js';
 
 /**
  * Tests of installation syncing

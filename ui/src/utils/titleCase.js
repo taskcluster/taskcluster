@@ -1,5 +1,5 @@
+import { join, map, pipe, split } from 'ramda';
 import { titleCase } from 'title-case';
-import { map, split, join, pipe } from 'ramda';
 import { KNOWN_ACRONYMS } from './constants';
 
 const upperAcronym = (word) =>

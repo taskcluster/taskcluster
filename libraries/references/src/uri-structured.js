@@ -1,7 +1,7 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
-import path from 'node:path';
-import fs from 'node:fs/promises';
 
 export const writeUriStructured = async ({ directory, serializable }) => {
   // Delete contents of directory rather than the directory itself

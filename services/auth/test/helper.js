@@ -1,21 +1,23 @@
 import assert from 'node:assert';
 import debugFactory from 'debug';
+
 const debug = debugFactory('test-helper');
-import _ from 'lodash';
-import builder from '../src/api.js';
-import taskcluster from '@taskcluster/client';
-import { default as mainLoad } from '../src/main.js';
-import slugid from 'slugid';
+
 import fs from 'node:fs/promises';
-import { v4 } from 'uuid';
+import path from 'node:path';
+import { URL } from 'node:url';
+import taskcluster from '@taskcluster/client';
 import { APIBuilder } from '@taskcluster/lib-api';
+import * as libTesting from '@taskcluster/lib-testing';
+import { Secrets, stickyLoader, withMonitor } from '@taskcluster/lib-testing';
 import SchemaSet from '@taskcluster/lib-validate';
+import _ from 'lodash';
+import slugid from 'slugid';
+import { v4 } from 'uuid';
+import builder from '../src/api.js';
+import { default as mainLoad } from '../src/main.js';
 import makeSentryManager from './../src/sentrymanager.js';
 import { syncStaticClients } from '../src/static-clients.js';
-import { stickyLoader, Secrets, withMonitor } from '@taskcluster/lib-testing';
-import * as libTesting from '@taskcluster/lib-testing';
-import { URL } from 'node:url';
-import path from 'node:path';
 
 export const load = stickyLoader(mainLoad);
 

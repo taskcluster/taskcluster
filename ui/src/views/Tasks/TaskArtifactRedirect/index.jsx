@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { Redirect } from 'react-router-dom';
-import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
+import Spinner from '../../../components/Spinner';
 import { withAuth } from '../../../utils/Auth';
 import { getArtifactUrl } from '../../../utils/getArtifactUrl';
 

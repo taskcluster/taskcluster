@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
-import classNames from 'classnames';
-import { arrayOf, node, oneOfType } from 'prop-types';
-import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import MuiSpeedDial from '@material-ui/lab/SpeedDial';
 import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
+import classNames from 'classnames';
 import CloseIcon from 'mdi-react/CloseIcon';
 import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
+import { arrayOf, node, oneOfType } from 'prop-types';
+import { useEffect, useRef, useState } from 'react';
+import { withRouter } from 'react-router-dom';
 
 const styles = withStyles((theme) => ({
   speedDial: {

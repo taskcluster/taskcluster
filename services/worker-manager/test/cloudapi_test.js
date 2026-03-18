@@ -1,8 +1,8 @@
-import sinon from 'sinon';
 import { strict as assert } from 'node:assert';
 import testing from '@taskcluster/lib-testing';
-import helper from './helper.js';
+import sinon from 'sinon';
 import { CloudAPI } from '../src/providers/cloudapi.js';
+import helper from './helper.js';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

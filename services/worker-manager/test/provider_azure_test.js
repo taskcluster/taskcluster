@@ -1,17 +1,17 @@
-import taskcluster from '@taskcluster/client';
-import sinon from 'sinon';
 import assert from 'node:assert';
-import helper from './helper.js';
-import { FakeAzure } from './fakes/index.js';
-import { AzureProvider } from '../src/providers/azure/index.js';
-import { dnToString, getAuthorityAccessInfo, getCertFingerprint, cloneCaStore } from '../src/providers/azure/utils.js';
-import testing from '@taskcluster/lib-testing';
-import forge from 'node-forge';
 import fs from 'node:fs';
 import path from 'node:path';
-import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
+import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
 import Debug from 'debug';
+import forge from 'node-forge';
+import sinon from 'sinon';
+import { Worker, WorkerPool, WorkerPoolStats } from '../src/data.js';
 import { loadCertificates } from '../src/providers/azure/azure-ca-certs/index.js';
+import { AzureProvider } from '../src/providers/azure/index.js';
+import { cloneCaStore, dnToString, getAuthorityAccessInfo, getCertFingerprint } from '../src/providers/azure/utils.js';
+import { FakeAzure } from './fakes/index.js';
+import helper from './helper.js';
 
 const debug = Debug('provider_azure_test');
 const __dirname = new URL('.', import.meta.url).pathname;

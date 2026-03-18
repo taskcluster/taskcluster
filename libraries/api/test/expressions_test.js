@@ -1,6 +1,6 @@
 import assert from 'node:assert';
-import ScopeExpressionTemplate from '../src/expressions.js';
 import testing from '@taskcluster/lib-testing';
+import ScopeExpressionTemplate from '../src/expressions.js';
 
 suite(testing.suiteName(), function () {
   function scenario(expr, params, result, shouldFail = false) {

@@ -1,16 +1,16 @@
-import { Component, Fragment } from 'react';
-import classNames from 'classnames';
-import { withStyles } from '@material-ui/core/styles';
-import { arrayOf, func, object, string } from 'prop-types';
+import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
-import Autocomplete from '@material-ui/lab/Autocomplete';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import PlusIcon from 'mdi-react/PlusIcon';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import classNames from 'classnames';
 import DeleteIcon from 'mdi-react/DeleteIcon';
+import PlusIcon from 'mdi-react/PlusIcon';
+import { arrayOf, func, object, string } from 'prop-types';
+import { Component, Fragment } from 'react';
 import TextField from '../TextField';
 
 @withStyles((theme) => ({

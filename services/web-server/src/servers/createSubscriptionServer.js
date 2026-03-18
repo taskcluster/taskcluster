@@ -1,10 +1,10 @@
-import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { execute, subscribe } from 'graphql';
-import credentials from './credentials.js';
-import formatError from './formatError.js';
-import scopeUtils from 'taskcluster-lib-scopes';
-import { decryptToken } from './decryptToken.js';
 import { ErrorReply } from '@taskcluster/lib-api';
+import { execute, subscribe } from 'graphql';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import scopeUtils from 'taskcluster-lib-scopes';
+import credentials from './credentials.js';
+import { decryptToken } from './decryptToken.js';
+import formatError from './formatError.js';
 
 export default ({ cfg, server, schema, context, path, authFactory }) => {
   const timeoutMap = new WeakMap();

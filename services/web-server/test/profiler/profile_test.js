@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { getProfile, getEmptyProfile, getEmptyThread, UniqueStringArray } from '../../src/profiler/profile.js';
+import { getEmptyProfile, getEmptyThread, getProfile, UniqueStringArray } from '../../src/profiler/profile.js';
 
 suite('profiler/profile', function () {
   const mockTaskGroup = {

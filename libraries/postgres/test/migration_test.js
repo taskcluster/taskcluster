@@ -1,29 +1,26 @@
-import helper from './helper.js';
-import debug from 'debug';
-
-import {
-  Schema,
-  Database,
-  ignorePgErrors,
-  READ,
-  DUPLICATE_OBJECT,
-  UNDEFINED_COLUMN,
-  UNDEFINED_TABLE,
-  UNDEFINED_FUNCTION,
-} from '../src/index.js';
-
+import { strict as assert } from 'node:assert';
 import path from 'node:path';
 import testing from '@taskcluster/lib-testing';
-import { strict as assert } from 'node:assert';
-import { dollarQuote } from '../src/util.js';
-
+import debug from 'debug';
 import {
-  runMigration,
-  runOnlineMigration,
+  Database,
+  DUPLICATE_OBJECT,
+  ignorePgErrors,
+  READ,
+  Schema,
+  UNDEFINED_COLUMN,
+  UNDEFINED_FUNCTION,
+  UNDEFINED_TABLE,
+} from '../src/index.js';
+import {
   runDowngrade,
-  runOnlineDowngrade,
+  runMigration,
   runOnlineBatches,
+  runOnlineDowngrade,
+  runOnlineMigration,
 } from '../src/migration.js';
+import { dollarQuote } from '../src/util.js';
+import helper from './helper.js';
 
 const __filename = new URL('', import.meta.url).pathname;
 

@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { listServices, readRepoYAML, writeRepoFile, readRepoFile } from '../../utils/index.js';
+import { listServices, readRepoFile, readRepoYAML, writeRepoFile } from '../../utils/index.js';
 
 const SERVICES = listServices();
 

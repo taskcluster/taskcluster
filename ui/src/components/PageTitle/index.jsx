@@ -1,5 +1,5 @@
-import { PureComponent } from 'react';
 import { string } from 'prop-types';
+import { PureComponent } from 'react';
 import Helmet from 'react-helmet';
 
 /**

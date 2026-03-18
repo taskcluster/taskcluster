@@ -1,9 +1,11 @@
 import assert from 'node:assert';
-import SchemaSet from '../src/index.js';
 import debugFactory from 'debug';
+import SchemaSet from '../src/index.js';
+
 const debug = debugFactory('test');
-import libUrls from 'taskcluster-lib-urls';
+
 import testing from '@taskcluster/lib-testing';
+import libUrls from 'taskcluster-lib-urls';
 
 suite(testing.suiteName(), () => {
   const rootUrl = libUrls.testRootUrl();

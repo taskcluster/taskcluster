@@ -1,5 +1,5 @@
-import parseTime from './parsetime.js';
 import sluglib from 'slugid';
+import parseTime from './parsetime.js';
 
 /**
  * Create a Date object offset = '1d 2h 3min' into the future

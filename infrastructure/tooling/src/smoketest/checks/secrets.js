@@ -1,5 +1,5 @@
-import taskcluster from '@taskcluster/client';
 import assert from 'node:assert';
+import taskcluster from '@taskcluster/client';
 
 export const scopeExpression = {
   AllOf: ['secrets:get:project/taskcluster/smoketest/*', 'secrets:set:project/taskcluster/smoketest/*'],

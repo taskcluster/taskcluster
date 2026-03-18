@@ -1,14 +1,14 @@
 import { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import Spinner from '../../../components/Spinner';
-import Snackbar from '../../../components/Snackbar';
 import Dashboard from '../../../components/Dashboard';
-import RoleForm from '../../../components/RoleForm';
 import ErrorPanel from '../../../components/ErrorPanel';
-import roleQuery from './role.graphql';
+import RoleForm from '../../../components/RoleForm';
+import Snackbar from '../../../components/Snackbar';
+import Spinner from '../../../components/Spinner';
 import createRoleQuery from './createRole.graphql';
-import updateRoleQuery from './updateRole.graphql';
 import deleteRoleQuery from './deleteRole.graphql';
+import roleQuery from './role.graphql';
+import updateRoleQuery from './updateRole.graphql';
 
 @withApollo
 @graphql(roleQuery, {

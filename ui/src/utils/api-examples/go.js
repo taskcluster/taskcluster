@@ -2,7 +2,7 @@
  * Generate Go client library examples for API endpoints
  */
 
-import { PLACEHOLDERS, getPlaceholderValue, requiresAuth, capitalize, formatPayloadJson } from './helpers';
+import { capitalize, formatPayloadJson, getPlaceholderValue, PLACEHOLDERS, requiresAuth } from './helpers';
 
 /**
  * Convert hyphenated service name to valid Go identifier

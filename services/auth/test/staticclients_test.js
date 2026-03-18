@@ -1,10 +1,12 @@
 import assert from 'node:assert';
 import debugFactory from 'debug';
+
 const debug = debugFactory('test:static-clients');
-import helper from './helper.js';
-import assume from 'assume';
+
 import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
 import { syncStaticClients } from '../src/static-clients.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function (mock, skipping) {
   helper.withDb(mock, skipping);

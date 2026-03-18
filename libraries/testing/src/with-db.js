@@ -1,10 +1,12 @@
-import path from 'node:path';
 import assert from 'node:assert';
+import path from 'node:path';
 import pg from 'pg';
+
 const { Client } = pg;
-import { Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE } from '@taskcluster/lib-postgres';
-import tcdb from '@taskcluster/db';
+
 import { URL } from 'node:url';
+import tcdb from '@taskcluster/db';
+import { ignorePgErrors, Schema, UNDEFINED_OBJECT, UNDEFINED_TABLE } from '@taskcluster/lib-postgres';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const testDbUrl = process.env.TEST_DB_URL;

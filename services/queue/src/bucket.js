@@ -1,3 +1,4 @@
+import path from 'node:path';
 import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
@@ -7,12 +8,13 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getEndpointFromInstructions } from '@aws-sdk/middleware-endpoint';
-import _ from 'lodash';
-import path from 'node:path';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import debugFactory from 'debug';
+import _ from 'lodash';
+
 const debug = debugFactory('app:bucket');
+
 import assert from 'node:assert';
 
 /**

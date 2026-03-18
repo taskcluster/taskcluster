@@ -1,7 +1,7 @@
+import { formatDistanceStrict, isDate, parseISO } from 'date-fns';
 import { Component } from 'react';
-import { isDate, formatDistanceStrict, parseISO } from 'date-fns';
-import { date } from '../../utils/prop-types';
 import isDateWithin from '../../utils/isDateWithin';
+import { date } from '../../utils/prop-types';
 
 /**
  * Display a human-readable relative string between a date and now.

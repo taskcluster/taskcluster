@@ -1,20 +1,22 @@
 import '../../prelude.js';
 import debugFactory from 'debug';
+
 const debug = debugFactory('hooks:bin:server');
-import taskcreator from './taskcreator.js';
-import SchemaSet from '@taskcluster/lib-validate';
+
+import taskcluster from '@taskcluster/client';
 import tcdb from '@taskcluster/db';
-import builder from './api.js';
-import Scheduler from './scheduler.js';
+import { App } from '@taskcluster/lib-app';
 import config from '@taskcluster/lib-config';
 import loader from '@taskcluster/lib-loader';
-import { App } from '@taskcluster/lib-app';
-import libReferences from '@taskcluster/lib-references';
 import { MonitorManager } from '@taskcluster/lib-monitor';
-import taskcluster from '@taskcluster/client';
-import exchanges from './exchanges.js';
 import libPulse from '@taskcluster/lib-pulse';
+import libReferences from '@taskcluster/lib-references';
+import SchemaSet from '@taskcluster/lib-validate';
+import builder from './api.js';
+import exchanges from './exchanges.js';
 import HookListeners from './listeners.js';
+import Scheduler from './scheduler.js';
+import taskcreator from './taskcreator.js';
 import './monitor.js';
 import { fileURLToPath } from 'node:url';
 

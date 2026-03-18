@@ -1,14 +1,14 @@
+import Typography from '@material-ui/core/Typography';
 import { Component, Fragment } from 'react';
 import { graphql, withApollo } from 'react-apollo';
-import Typography from '@material-ui/core/Typography';
-import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import DenylistForm from '../../../components/DenylistForm';
 import ErrorPanel from '../../../components/ErrorPanel';
+import Spinner from '../../../components/Spinner';
 import formatError from '../../../utils/formatError';
-import denylistAddressQuery from './denylistAddress.graphql';
 import addAddressQuery from './addAddress.graphql';
 import deleteAddressQuery from './deleteAddress.graphql';
+import denylistAddressQuery from './denylistAddress.graphql';
 
 @withApollo
 @graphql(denylistAddressQuery, {

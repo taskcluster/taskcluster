@@ -1,11 +1,11 @@
 import assert from 'node:assert';
-import helper from './helper.js';
-import { modifyRoles } from '../src/data.js';
-import slugid from 'slugid';
-import _ from 'lodash';
-import assume from 'assume';
-import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
+import testing from '@taskcluster/lib-testing';
+import assume from 'assume';
+import _ from 'lodash';
+import slugid from 'slugid';
+import { modifyRoles } from '../src/data.js';
+import helper from './helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function (mock, skipping) {
   helper.withCfg(mock, skipping);

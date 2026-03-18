@@ -1,31 +1,29 @@
-import semver from 'semver';
 import path from 'node:path';
+import { schema as readSchema } from '@taskcluster/db';
+import semver from 'semver';
 import { ChangeLog } from '../changelog/index.js';
-
 import {
   ensureTask,
-  gitLsFiles,
-  gitRemoteRev,
+  execCommand,
+  getDbReleases,
+  gitCommit,
   gitDescribe,
   gitIsDirty,
-  gitCommit,
-  gitTag,
+  gitLsFiles,
   gitPush,
-  getDbReleases,
+  gitRemoteRev,
+  gitTag,
+  modifyRepoFile,
+  modifyRepoJSON,
+  REPO_ROOT,
+  readRepoFile,
+  readRepoJSON,
+  removeRepoFile,
   updateDbFns,
   updateVersionsReadme,
-  readRepoJSON,
-  readRepoFile,
   writeRepoFile,
-  modifyRepoJSON,
   writeRepoYAML,
-  modifyRepoFile,
-  removeRepoFile,
-  REPO_ROOT,
-  execCommand,
 } from '../utils/index.js';
-
-import { schema as readSchema } from '@taskcluster/db';
 
 const UPSTREAM_REMOTE = 'git@github.com:taskcluster/taskcluster';
 

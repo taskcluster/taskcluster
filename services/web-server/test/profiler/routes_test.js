@@ -1,9 +1,9 @@
 import assert from 'node:assert';
+import { MonitorManager } from '@taskcluster/lib-monitor';
+import SchemaSet from '@taskcluster/lib-validate';
 import express from 'express';
 import request from 'superagent';
 import builder from '../../src/api.js';
-import SchemaSet from '@taskcluster/lib-validate';
-import { MonitorManager } from '@taskcluster/lib-monitor';
 import '../../src/monitor.js';
 
 const VALID_SLUGID = 'dSlITZ4yQgmvxxAi4A8fHQ';

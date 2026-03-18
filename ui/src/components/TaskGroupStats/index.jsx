@@ -1,11 +1,11 @@
+import { Grid, Paper, withStyles } from '@material-ui/core';
+import { arrayOf, shape, string } from 'prop-types';
 import { Component } from 'react';
-import { shape, arrayOf, string } from 'prop-types';
-import { Paper, Grid, withStyles } from '@material-ui/core';
-import { taskState, pageInfo, task } from '../../utils/prop-types';
 import { THEME } from '../../utils/constants';
 import Link from '../../utils/Link';
-import { formatTime, sampleTasks, quantile, filterTasksWithDuration } from '../../utils/task';
 import { clearAllCaches } from '../../utils/memoize';
+import { pageInfo, task, taskState } from '../../utils/prop-types';
+import { filterTasksWithDuration, formatTime, quantile, sampleTasks } from '../../utils/task';
 
 @withStyles((theme) => ({
   container: {

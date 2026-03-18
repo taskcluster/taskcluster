@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
-import testing from '@taskcluster/lib-testing';
 import tcdb from '@taskcluster/db';
+import testing from '@taskcluster/lib-testing';
 import helper from './helper.js';
 
 suite(testing.suiteName(), function () {

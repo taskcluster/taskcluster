@@ -1,6 +1,8 @@
-import WatchDog from './watchdog.js';
 import debugFactory from 'debug';
+import WatchDog from './watchdog.js';
+
 const debug = debugFactory('iterate');
+
 import events from 'node:events';
 import { hrtime } from 'node:process';
 

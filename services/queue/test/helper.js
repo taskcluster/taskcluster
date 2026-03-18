@@ -1,23 +1,23 @@
-import _ from 'lodash';
 import assert from 'node:assert';
-import slugid from 'slugid';
-import taskcluster from '@taskcluster/client';
-import builder from '../src/api.js';
-import loadMain from '../src/main.js';
+import { globalAgent } from 'node:http';
 import {
-  S3Client,
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetBucketCorsCommand,
+  GetObjectCommand,
   ListObjectsCommand,
   PutBucketCorsCommand,
   PutObjectCommand,
-  GetObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3';
-import { mockClient } from 'aws-sdk-client-mock';
-import nock from 'nock';
+import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
-import { globalAgent } from 'node:http';
+import { mockClient } from 'aws-sdk-client-mock';
+import _ from 'lodash';
+import nock from 'nock';
+import slugid from 'slugid';
+import builder from '../src/api.js';
+import loadMain from '../src/main.js';
 
 export const load = testing.stickyLoader(loadMain);
 const __dirname = new URL('.', import.meta.url).pathname;

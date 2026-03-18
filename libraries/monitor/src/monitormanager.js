@@ -1,12 +1,12 @@
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import _ from 'lodash';
 import stream from 'node:stream';
-import { LEVELS } from './logger.js';
-import Monitor from './monitor.js';
 import chalk from 'chalk';
 import Debug from 'debug';
+import _ from 'lodash';
+import { LEVELS } from './logger.js';
+import Monitor from './monitor.js';
 import plugins from './plugins/index.js';
 import { cleanupDescription } from './util.js';
 
