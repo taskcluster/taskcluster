@@ -121,12 +121,14 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		AuthorizedScopes: taskScopes,
 	}
 
-	// For native tasks in multiuser mode, use --allowed-user for UID
-	// verification. For d2g tasks, the per-task Docker network provides
-	// isolation instead. In insecure mode, Context.User is nil (no
-	// separate task users), so no UID verification is possible.
+	// In multiuser mode, use --allowed-user for UID/SID connection
+	// verification. For D2G tasks on docker-bridge, the per-task Docker
+	// network provides isolation instead (the connecting process is the
+	// Docker daemon, not the task user). In insecure mode, Context.User
+	// is nil (no separate task users), so no UID verification is possible.
 	allowedUser := ""
-	if l.dockerNetwork == "" && l.task.Context.User != nil {
+	isD2GTask := l.task.D2GInfo != nil
+	if l.task.Context.User != nil && (l.dockerNetwork == "" || !isD2GTask) {
 		allowedUser = l.task.Context.User.Name
 	}
 
