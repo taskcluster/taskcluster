@@ -9,6 +9,7 @@
       "!workers/generic-worker/**", "!clients/client/src/apis.js",
       "!clients/client-web/src/clients/**", "!clients/client-test/test/clients_test.js",
       "!infrastructure/k8s/values.schema.json",
+      "!libraries/postgres/@types/fns.d.ts",
       "!generated/**", "!services/auth/src/static-scopes.json",
       "!**/*.css"
     ],
