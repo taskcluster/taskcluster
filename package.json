@@ -136,6 +136,7 @@
     "@aws-sdk/client-iam": "^3.864.0",
     "@aws-sdk/client-sns": "^3.864.0",
     "@aws-sdk/client-sqs": "^3.864.0",
+    "@biomejs/biome": "^2.4.7",
     "@taskcluster/lib-testing": "link:libraries/testing",
     "@types/pg": "^8.15.5",
     "acorn-loose": "^8.5.0",
@@ -152,7 +153,6 @@
     "cross-env": "^7.0.2",
     "dockerode": "^3.3.4",
     "error-stack-parser": "^2.0.2",
-    "eslint": "^8.57.0",
     "github-slugger": "^2.0.0",
     "glob": "^8.0.3",
     "graphql-tag": "^2.12.6",
@@ -181,8 +181,8 @@
     "mocha/mkdirp": "^1.0.0"
   },
   "scripts": {
-    "lint": "eslint --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
-    "lint:fix": "eslint --fix --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db workers/docker-worker",
+    "lint": "biome check libraries services infrastructure clients test db ui/src",
+    "lint:fix": "biome check --fix libraries services infrastructure clients test db ui/src",
     "lint:go": "bash test/go-lint.sh",
     "lint:py": "bash test/py-lint.sh",
     "test": "yarn workspaces foreach -A run test",
@@ -222,7 +222,7 @@
   },
   "metatests": {
     "specialImports": [
-      "eslint",
+      "@biomejs/biome",
       "c8",
       "cross-env",
       "ejs",
@@ -232,9 +232,5 @@
       "@types/pg"
     ]
   },
-  "eslintIgnore": [
-    "**/node_modules/**",
-    "services/web-server/build"
-  ],
   "heroku-run-build-script": true
 }

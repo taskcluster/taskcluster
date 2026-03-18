@@ -8,7 +8,7 @@
     "coverage": "c8 yarn test",
     "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "test": "mocha test/*_test.js",
-    "lint": "eslint src/*.js test/*.js"
+    "lint": "biome check src/ test/"
   },
   "exports": {
     ".": {
@@ -19,7 +19,6 @@
   "types": "./@types/index.d.ts",
   "devDependencies": {
     "c8": "^8.0.1",
-    "eslint": "^8.57.0",
     "mocha": "^10.8.2"
   }
 }

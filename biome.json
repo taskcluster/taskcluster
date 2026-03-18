@@ -1,0 +1,136 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.7/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": [
+      "**", "!**/node_modules/**", "!services/web-server/build/**",
+      "!clients/client-rust/**", "!clients/client-web/build/**",
+      "!clients/client-py/**", "!ui/test/e2e/**", "!.yarn/**",
+      "!workers/generic-worker/**", "!clients/client/src/apis.js", "!**/*.css"
+    ],
+    "maxSize": 5242880
+  },
+  "formatter": { "enabled": false },
+  "assist": { "enabled": false },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+
+      "correctness": {
+        "noUnusedVariables": "off",
+        "noSwitchDeclarations": "error",
+        "noUnreachable": "error",
+        "noConstantCondition": "off",
+        "noUnusedFunctionParameters": "off",
+        "noUnusedImports": "off",
+        "useParseIntRadix": "off",
+        "noConstructorReturn": "off",
+        "useYield": "off",
+        "noUnsafeFinally": "off",
+        "noUnknownTypeSelector": "off",
+        "noUnknownProperty": "off",
+        "noUnsafeOptionalChaining": "off",
+        "useJsxKeyInIterable": "off"
+      },
+
+      "security": {
+        "noGlobalEval": "off",
+        "noDangerouslySetInnerHtml": "off"
+      },
+
+      "suspicious": {
+        "noDoubleEquals": "off",
+        "noVar": "off",
+        "noConsole": "off",
+        "noMisleadingCharacterClass": "off",
+        "noUselessEscapeInString": "off",
+        "noExplicitAny": "off",
+        "noThenProperty": "off",
+        "useIsArray": "off",
+        "noTemplateCurlyInString": "off",
+        "noAssignInExpressions": "off",
+        "noPrototypeBuiltins": "off",
+        "noTsIgnore": "off",
+        "noGlobalIsNan": "off",
+        "noGlobalIsFinite": "off",
+        "noShadowRestrictedNames": "off",
+        "noDuplicateProperties": "off",
+        "noControlCharactersInRegex": "off",
+        "noConfusingVoidType": "off",
+        "useIterableCallbackReturn": "off",
+        "noDuplicateFields": "off"
+      },
+
+      "style": {
+        "useCollapsedElseIf": "off",
+        "useBlockStatements": "off",
+        "useConst": "off",
+        "useNodejsImportProtocol": "off",
+        "useTemplate": "off",
+        "useExponentiationOperator": "off",
+        "noDescendingSpecificity": "off"
+      },
+
+      "a11y": {
+        "noSvgWithoutTitle": "off",
+        "useSemanticElements": "off",
+        "useAltText": "off"
+      },
+
+      "performance": {
+        "noAccumulatingSpread": "off"
+      },
+
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "off",
+        "noUselessEscapeInRegex": "off",
+        "useArrowFunction": "off",
+        "useLiteralKeys": "off",
+        "useDateNow": "off",
+        "useOptionalChain": "off",
+        "noImportantStyles": "off",
+        "noBannedTypes": "off",
+        "noArguments": "off",
+        "useRegexLiterals": "off",
+        "noUselessUndefinedInitialization": "off",
+        "noCommaOperator": "off",
+        "noUselessTernary": "off",
+        "noUselessConstructor": "off",
+        "useIndexOf": "off",
+        "noUselessThisAlias": "off",
+        "noUselessContinue": "off",
+        "noStaticOnlyClass": "off",
+        "useFlatMap": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["ui/src/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useHookAtTopLevel": "off",
+            "useExhaustiveDependencies": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
+          },
+          "style": {
+            "useCollapsedElseIf": "off",
+            "useBlockStatements": "off"
+          },
+          "a11y": {
+            "useValidAnchor": "off",
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off"
+          },
+          "complexity": {
+            "noUselessFragments": "off"
+          }
+        }
+      }
+    }
+  ]
+}
