@@ -139,6 +139,16 @@ func main() {
 		}
 		fmt.Println(string(statusBytes))
 
+	case arguments["run-worker"]:
+		// run-worker subcommand: loads config and calls RunWorker() directly.
+		// This is used by the test harness to test external binaries.
+		configFile = &gwconfig.File{
+			Path: arguments["--config"].(string),
+		}
+		err := loadConfig(configFile)
+		exitOnError(CANT_LOAD_CONFIG, err, "Error loading config file %v", configFile.Path)
+		os.Exit(int(RunWorker()))
+
 	case arguments["run"]:
 		withWorkerRunner = arguments["--with-worker-runner"].(bool)
 		if withWorkerRunner {
