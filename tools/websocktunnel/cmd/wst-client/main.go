@@ -14,8 +14,8 @@ import (
 	set "github.com/deckarep/golang-set"
 	"github.com/docopt/docopt-go"
 	log "github.com/sirupsen/logrus"
-	"github.com/taskcluster/taskcluster/v97/internal"
-	"github.com/taskcluster/taskcluster/v97/tools/websocktunnel/client"
+	"github.com/taskcluster/taskcluster/v98/internal"
+	"github.com/taskcluster/taskcluster/v98/tools/websocktunnel/client"
 )
 
 const usage = `Websocketunnel Client is a command line utility which establishes a connection

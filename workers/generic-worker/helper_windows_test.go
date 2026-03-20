@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v98/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v98/workers/generic-worker/win32"
 )
 
 // makeDirWorldWritable makes a directory writable by any user, so that

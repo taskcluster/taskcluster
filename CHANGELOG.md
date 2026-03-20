@@ -3,6 +3,66 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v98.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades @octokit/core (v3 to v6), @octokit/rest (v18 to v21), and @octokit/auth-app (v4 to v6) to resolve peer dependency warnings.
+
+▶ [patch]
+Upgrades taskgraph decision image to v20.0.0
+
+### USERS
+
+▶ [MAJOR] [#6689](https://github.com/taskcluster/taskcluster/issues/6689)
+Breaking change: Generic Worker now evaluates absolute paths inside `mounts`
+(properties `directory` and `file`) and artifacts (property `path`) correctly.
+Previously Generic Worker would effectively strip leading path separators and
+treat them as relative paths inside the task directory. For example, `/tmp`
+would be resolved as the relative path `tmp` from inside the task directory.
+
+Although this is technically a bug fix, it does change the behaviour of Generic
+Worker when absolute paths are specified in task payloads. We have examined
+production tasks on both the Community and Firefox CI deployments of
+taskcluster, and are reasonably confident that this change should not have
+adverse effects on existing tasks. However we are bumping the major version
+number of the taskcluster release, in recognition of the backward
+incompatibility.
+
+▶ [minor]
+Generic Worker: Replaced the deprecated `github.com/mholt/archiver/v3` library with `github.com/mholt/archives`, and added support for new archive and compression formats in task payload mounts.
+
+New decompression formats for `FileMount`: `br` (Brotli), `lz` (Lzip), `mz` (MinLZ), `sz` (Snappy/S2), `zz` (Zlib).
+
+New archive formats for `ReadOnlyDirectory` and `WritableDirectoryCache`: `7z`, `tar`, `tar.br`, `tar.lz`, `tar.mz`, `tar.sz`, `tar.zz`.
+
+Artifact uploads now skip gzip compression for files with extensions matching the newly supported compressed formats (`.br`, `.lz`, `.lz4`, `.mz`, `.sz`, `.zz`).
+
+▶ [patch]
+Fix a panic in `taskcluster task status` and `taskcluster task artifacts` when the task has no runs (e.g., is in the `unscheduled` state). These commands now return a clear error message instead of crashing.
+
+### OTHER
+
+▶ Additional change not described here: [#7901](https://github.com/taskcluster/taskcluster/issues/7901).
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps): bump github.com/buger/jsonparser from 1.1.1 to 1.1.2 (d04733c693)
+* build(deps): bump flatted from 3.4.1 to 3.4.2 (f0a9504b1a)
+* build(deps): bump flatted from 3.2.6 to 3.4.2 in /clients/client-web (e614a7ba4d)
+* build(deps): bump google.golang.org/grpc from 1.78.0 to 1.79.3 (68e13cc458)
+* build(deps): bump flatted from 3.3.3 to 3.4.1 (b1e875c79a)
+* build(deps): bump tar from 7.5.10 to 7.5.11 (d3710b89f5)
+* build(deps): bump quinn-proto in /clients/client-rust (157c8b004c)
+* build(deps): bump @apollo/server from 4.12.2 to 5.4.0 (9572c8a293)
+* build(deps-dev): bump eslint in /clients/client-web (fa90bf806b)
+
+</details>
+
 ## v97.1.0
 
 ### GENERAL

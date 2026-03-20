@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v98/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v98/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v98/workers/generic-worker/gwconfig"
 )
 
 type ErrorArtifact struct {

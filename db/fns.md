@@ -6350,13 +6350,6 @@ end
 
 </details>
 
-### deprecated methods
-
-* `create_queue_artifact(task_id_in text, run_id_in integer, name_in text, storage_type_in text, content_type_in text, details_in jsonb, present_in boolean, expires_in timestamptz)` (compatibility guaranteed until v98.0.0)
-* `get_expired_artifacts_for_deletion(expires_in timestamptz, page_size_in integer)` (compatibility guaranteed until v98.0.0)
-* `get_queue_artifact(task_id_in text, run_id_in integer, name_in text)` (compatibility guaranteed until v98.0.0)
-* `get_queue_artifacts_paginated(task_id_in text, run_id_in integer, expires_in timestamptz, page_size_in integer, after_task_id_in text, after_run_id_in integer, after_name_in text)` (compatibility guaranteed until v98.0.0)
-
 ## secrets
 
 * [`delete_secret`](#delete_secret)

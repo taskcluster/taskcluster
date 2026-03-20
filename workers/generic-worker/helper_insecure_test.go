@@ -5,8 +5,8 @@ package main
 import (
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/gwconfig"
-	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v98/workers/generic-worker/gwconfig"
+	gwruntime "github.com/taskcluster/taskcluster/v98/workers/generic-worker/runtime"
 )
 
 func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {

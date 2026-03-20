@@ -10,13 +10,13 @@ import (
 	"time"
 
 	"github.com/shirou/gopsutil/v4/host"
-	taskcluster "github.com/taskcluster/taskcluster/v97/clients/client-go"
-	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcworkermanager"
-	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/tc"
-	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/util"
-	"github.com/taskcluster/taskcluster/v97/tools/workerproto"
+	taskcluster "github.com/taskcluster/taskcluster/v98/clients/client-go"
+	"github.com/taskcluster/taskcluster/v98/clients/client-go/tcworkermanager"
+	"github.com/taskcluster/taskcluster/v98/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v98/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v98/tools/worker-runner/tc"
+	"github.com/taskcluster/taskcluster/v98/tools/worker-runner/util"
+	"github.com/taskcluster/taskcluster/v98/tools/workerproto"
 )
 
 type RegistrationManager struct {
