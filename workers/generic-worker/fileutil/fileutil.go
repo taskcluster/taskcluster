@@ -138,7 +138,13 @@ func CopyDir(src, dst string) error {
 		return err
 	}
 
-	return os.CopyFS(dst, os.DirFS(src))
+	if err := os.CopyFS(dst, os.DirFS(src)); err != nil {
+		return err
+	}
+
+	// os.CopyFS creates files owned by the current process. Preserve the
+	// source directory's ownership so that CopyDir behaves like a move.
+	return preserveOwnership(dst, info)
 }
 
 func Unarchive(source, destination, format string) error {
