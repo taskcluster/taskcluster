@@ -45,7 +45,7 @@ func TestGracefulTermination(t *testing.T) {
 
 	done := make(chan bool, 1)
 
-	graceful.OnTerminationRequest(func(finishTasks bool) {
+	graceful.OnTerminationRequest("test-task", func(finishTasks bool) {
 		done <- finishTasks
 	})
 

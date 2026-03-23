@@ -24,7 +24,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 	log.Print("Creating Windows user " + user.Name + "...")
 	userExisted, err := host.RunIgnoreError(
 		"User "+user.Name+" already exists",
-		"powershell", "-Command", "New-LocalUser -Name '"+user.Name+"' -Password (ConvertTo-SecureString '"+user.Password+"' -AsPlainText -Force) -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword",
+		"powershell", "-Command", "New-LocalUser -Name '"+host.EscapePowerShellSingleQuote(user.Name)+"' -Password (ConvertTo-SecureString '"+host.EscapePowerShellSingleQuote(user.Password)+"' -AsPlainText -Force) -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword",
 	)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 	log.Print("Created new OS user!")
 	err = host.RunBatch(
 		userExisted,
-		[]string{"powershell", "-Command", "Add-LocalGroupMember -Group 'Remote Desktop Users' -Member '" + user.Name + "'"},
+		[]string{"powershell", "-Command", "Add-LocalGroupMember -Group 'Remote Desktop Users' -Member '" + host.EscapePowerShellSingleQuote(user.Name) + "'"},
 	)
 	// if user existed, the above commands can fail
 	// if it didn't, they can't
@@ -51,7 +51,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 func (user *OSUser) MakeAdmin() error {
 	_, err := host.RunIgnoreError(
 		user.Name+" is already a member of group administrators",
-		"powershell", "-Command", "Add-LocalGroupMember -Group 'administrators' -Member '"+user.Name+"'",
+		"powershell", "-Command", "Add-LocalGroupMember -Group 'administrators' -Member '"+host.EscapePowerShellSingleQuote(user.Name)+"'",
 	)
 	return err
 }
@@ -153,7 +153,7 @@ func DeleteUser(username string) (err error) {
 	} else {
 		log.Printf("WARNING: not able to look up SID for user %v: %v", username, err)
 	}
-	err2 := host.Run("powershell", "-Command", "Remove-LocalUser -Name '"+username+"'")
+	err2 := host.Run("powershell", "-Command", "Remove-LocalUser -Name '"+host.EscapePowerShellSingleQuote(username)+"'")
 	if err2 != nil {
 		log.Printf("WARNING: not able to delete user account %v: %v", username, err2)
 		if err == nil {

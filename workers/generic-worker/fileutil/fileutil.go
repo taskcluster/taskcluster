@@ -123,6 +123,30 @@ func CreateDir(dir string) error {
 	return os.MkdirAll(dir, 0700)
 }
 
+func CopyDir(src, dst string) error {
+	info, err := os.Lstat(src)
+	if err != nil {
+		return err
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("source is not a directory: %s", src)
+	}
+
+	if _, err := os.Stat(dst); err == nil {
+		return fmt.Errorf("destination already exists: %s", dst)
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+
+	if err := os.CopyFS(dst, os.DirFS(src)); err != nil {
+		return err
+	}
+
+	// os.CopyFS creates files owned by the current process. Preserve the
+	// source directory's ownership so that CopyDir behaves like a move.
+	return preserveOwnership(dst, info)
+}
+
 func Unarchive(source, destination, format string) error {
 	f, err := os.Open(source)
 	if err != nil {

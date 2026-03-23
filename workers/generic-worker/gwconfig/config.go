@@ -30,6 +30,7 @@ type (
 		AllowedHighMemoryDurationSecs  uint64         `json:"allowedHighMemoryDurationSecs"`
 		AvailabilityZone               string         `json:"availabilityZone"`
 		CachesDir                      string         `json:"cachesDir"`
+		Capacity                       uint8          `json:"capacity"`
 		CleanUpTaskDirs                bool           `json:"cleanUpTaskDirs"`
 		ClientID                       string         `json:"clientId"`
 		CreateObjectArtifacts          bool           `json:"createObjectArtifacts"`
@@ -142,7 +143,109 @@ func (c *Config) Validate() error {
 		}
 	}
 
+	if c.Capacity == 0 {
+		return fmt.Errorf("capacity must be at least 1 (got 0)")
+	}
+
+	// Validate port configuration for concurrent task execution
+	if err := c.ValidatePortConfiguration(); err != nil {
+		return err
+	}
+
 	// all required config set!
+	return nil
+}
+
+// PortsPerTask is the number of ports allocated per concurrent task slot.
+// Used for port spacing validation. The 4 ports are: LiveLog GET, LiveLog PUT,
+// Interactive, TaskclusterProxy.
+const PortsPerTask = 4
+
+// ValidatePortConfiguration checks that port ranges don't overlap when capacity > 1.
+// Each concurrent task slot uses an offset of PortsPerTask (4) ports from the base.
+// This validation ensures the configured base ports are spaced far enough apart
+// to avoid collisions.
+func (c *Config) ValidatePortConfiguration() error {
+	if c.Capacity == 1 {
+		return nil
+	}
+
+	// Calculate port ranges for the maximum capacity
+	// Each slot uses offset = slot * PortsPerTask from the base.
+	// Use uint32 to avoid uint16 overflow when base ports are near 65535.
+	maxOffset := uint32(c.Capacity-1) * uint32(PortsPerTask)
+
+	// Define port ranges: [start, end] inclusive
+	type portRange struct {
+		name  string
+		start uint32
+		end   uint32
+	}
+
+	portRanges := []portRange{}
+	if c.EnableLiveLog {
+		// LiveLog uses 2 consecutive ports (GET and PUT)
+		portRanges = append(portRanges, portRange{
+			name:  "livelogPortBase",
+			start: uint32(c.LiveLogPortBase),
+			end:   uint32(c.LiveLogPortBase) + maxOffset + 1,
+		})
+	}
+	if c.EnableInteractive {
+		// Interactive uses 1 port per slot
+		portRanges = append(portRanges, portRange{
+			name:  "interactivePort",
+			start: uint32(c.InteractivePort),
+			end:   uint32(c.InteractivePort) + maxOffset,
+		})
+	}
+	if c.EnableTaskclusterProxy {
+		// TaskclusterProxy uses 1 port per slot
+		portRanges = append(portRanges, portRange{
+			name:  "taskclusterProxyPort",
+			start: uint32(c.TaskclusterProxyPort),
+			end:   uint32(c.TaskclusterProxyPort) + maxOffset,
+		})
+	}
+
+	// Check that no range exceeds the valid port range
+	for _, r := range portRanges {
+		if r.end > 65535 {
+			return fmt.Errorf(
+				"port range for %s exceeds maximum port number with capacity=%d: %s needs ports %d-%d but max port is 65535; "+
+					"use a lower base port or reduce capacity",
+				r.name, c.Capacity, r.name, r.start, r.end,
+			)
+		}
+	}
+
+	if len(portRanges) < 2 {
+		return nil
+	}
+
+	// Check for overlaps between all pairs of ranges
+	for i := range portRanges {
+		for j := i + 1; j < len(portRanges); j++ {
+			r1, r2 := portRanges[i], portRanges[j]
+			// Ranges overlap if: r1.start <= r2.end && r2.start <= r1.end
+			if r1.start <= r2.end && r2.start <= r1.end {
+				len1 := int(r1.end-r1.start) + 1
+				len2 := int(r2.end-r2.start) + 1
+				if len2 > len1 {
+					len1 = len2
+				}
+				return fmt.Errorf(
+					"port range overlap detected with capacity=%d: %s [%d-%d] overlaps with %s [%d-%d]; "+
+						"ensure base ports are spaced at least %d apart "+
+						"(configured: livelogPortBase=%d, interactivePort=%d, taskclusterProxyPort=%d)",
+					c.Capacity, r1.name, r1.start, r1.end, r2.name, r2.start, r2.end,
+					len1,
+					c.LiveLogPortBase, c.InteractivePort, c.TaskclusterProxyPort,
+				)
+			}
+		}
+	}
+
 	return nil
 }
 

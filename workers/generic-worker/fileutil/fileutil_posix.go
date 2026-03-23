@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/taskcluster/taskcluster/v98/workers/generic-worker/host"
 )
@@ -76,4 +78,23 @@ func setPermissions(path string, permissions fs.FileMode) error {
 		path,
 		permissions,
 	)
+}
+
+// preserveOwnership recursively chowns dst to match the UID/GID of srcInfo,
+// so that CopyDir behaves like a move with respect to ownership.
+func preserveOwnership(dst string, srcInfo fs.FileInfo) error {
+	stat, ok := srcInfo.Sys().(*syscall.Stat_t)
+	if !ok {
+		return fmt.Errorf("cannot get syscall.Stat_t for source directory")
+	}
+	uid := strconv.FormatUint(uint64(stat.Uid), 10)
+	gid := strconv.FormatUint(uint64(stat.Gid), 10)
+	ownerSpec := uid + ":" + gid
+	switch runtime.GOOS {
+	case "linux":
+		return host.Run("/bin/chown", "-R", ownerSpec, dst)
+	case "darwin", "freebsd":
+		return host.Run("/usr/sbin/chown", "-R", ownerSpec, dst)
+	}
+	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
 }

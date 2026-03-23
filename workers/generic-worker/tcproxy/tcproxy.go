@@ -25,8 +25,10 @@ type TaskclusterProxy struct {
 }
 
 // New starts a tcproxy OS process using the executable specified, and returns
-// a *TaskclusterProxy.
-func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, rootURL string, creds *tcclient.Credentials) (*TaskclusterProxy, error) {
+// a *TaskclusterProxy. If allowedUser is non-empty, it is passed to the proxy
+// process via the --allowed-user flag, enabling per-connection OS user
+// verification.
+func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, rootURL string, creds *tcclient.Credentials, allowedUser string) (*TaskclusterProxy, error) {
 	args := []string{
 		"--port", strconv.Itoa(int(httpPort)),
 		"--root-url", rootURL,
@@ -36,6 +38,9 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 	}
 	if creds.Certificate != "" {
 		args = append(args, "--certificate", creds.Certificate)
+	}
+	if allowedUser != "" {
+		args = append(args, "--allowed-user", allowedUser)
 	}
 	args = append(args, creds.AuthorizedScopes...)
 	l := &TaskclusterProxy{
@@ -53,8 +58,18 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 	l.Pid = l.command.Process.Pid
 	log.Printf("Started taskcluster proxy process (PID %v)", l.Pid)
 	// Just to be safe, let's make sure the port is actually active before returning.
-	err = waitForPortToBeActive(ipAddress, httpPort)
-	return l, err
+	if err = waitForPortToBeActive(ipAddress, httpPort); err != nil {
+		killErr := l.command.Process.Kill()
+		if killErr != nil {
+			log.Printf("Failed to kill taskcluster-proxy process (PID %v) after readiness timeout: %v", l.Pid, killErr)
+		} else {
+			// Wait for the process to be reaped to avoid zombies
+			_, _ = l.command.Process.Wait()
+			log.Printf("Killed taskcluster-proxy process (PID %v) after readiness timeout", l.Pid)
+		}
+		return nil, err
+	}
+	return l, nil
 }
 
 func (l *TaskclusterProxy) Terminate() error {

@@ -19,7 +19,17 @@ func (feature *RunAsAdministratorFeature) Initialise() error {
 }
 
 func (feature *RunAsAdministratorFeature) IsEnabled() bool {
-	return config.EnableRunAsAdministrator
+	// Disabled when capacity > 1: running as the worker user would bypass
+	// per-task user isolation, giving the task full access to other tasks'
+	// directories, proxy ports, and credentials.
+	return config.EnableRunAsAdministrator && config.Capacity == 1
+}
+
+func (feature *RunAsAdministratorFeature) DisabledReason() string {
+	if config.Capacity > 1 {
+		return fmt.Sprintf("feature %q is not compatible with capacity > 1 (current capacity: %d) because it would bypass per-task user isolation", feature.Name(), config.Capacity)
+	}
+	return ""
 }
 
 func (feature *RunAsAdministratorFeature) IsRequested(task *TaskRun) bool {

@@ -1,6 +1,8 @@
 package fileutil
 
 import (
+	"io/fs"
+
 	"github.com/taskcluster/taskcluster/v98/workers/generic-worker/host"
 )
 
@@ -32,4 +34,10 @@ func GetPermissions(path string) (string, func() error, error) {
 
 func resetPermissions(path string) error {
 	return host.Run("icacls", path, "/reset", "/t")
+}
+
+// preserveOwnership is a no-op on Windows. D2G (which requires ownership
+// preservation for cache copies) only runs on Linux.
+func preserveOwnership(_ string, _ fs.FileInfo) error {
+	return nil
 }
