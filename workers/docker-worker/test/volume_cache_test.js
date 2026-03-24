@@ -127,6 +127,66 @@ suite(suiteName(), function() {
     }
   });
 
+  test('cache name with path separator is rejected', async () => {
+    let cache = new VolumeCache({
+      cache: {
+        volumeCachePath: localCacheDir,
+      },
+      log: debug,
+      monitor: monitor,
+      rootUrl: libUrls.testRootUrl(),
+    });
+
+    try {
+      await cache.get('../../etc');
+      assert(false, 'Error should have been thrown for cache name with path traversal');
+    } catch (e) {
+      assert.ok(e.message.includes('must not contain path separators'),
+        'Expected path validation error');
+      assert.ok(!fs.existsSync(path.join(localCacheDir, '../../etc')),
+        'No directory should have been created outside cache root');
+    }
+  });
+
+  test('cache name with encoded traversal is rejected', async () => {
+    let cache = new VolumeCache({
+      cache: {
+        volumeCachePath: localCacheDir,
+      },
+      log: debug,
+      monitor: monitor,
+      rootUrl: libUrls.testRootUrl(),
+    });
+
+    try {
+      await cache.get('legit-prefix-../../../../etc');
+      assert(false, 'Error should have been thrown for cache name with path traversal');
+    } catch (e) {
+      assert.ok(e.message.includes('must not contain path separators'),
+        'Expected path validation error');
+    }
+  });
+
+  test('cache name with absolute path is rejected', async () => {
+    let cache = new VolumeCache({
+      cache: {
+        volumeCachePath: localCacheDir,
+      },
+      log: debug,
+      monitor: monitor,
+      rootUrl: libUrls.testRootUrl(),
+    });
+
+    // path.resolve('/tmp/test-cache', '/etc/passwd') => '/etc/passwd'
+    try {
+      await cache.get('/etc/passwd');
+      assert(false, 'Error should have been thrown for absolute path cache name');
+    } catch (e) {
+      assert.ok(e.message.includes('must not contain path separators'),
+        'Expected path validation error');
+    }
+  });
+
   test('purge volume cache', async () => {
     let cache = new VolumeCache({
       cache: {

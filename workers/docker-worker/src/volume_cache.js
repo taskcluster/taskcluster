@@ -148,6 +148,12 @@ class VolumeCache {
         'name does not contain "' + KEY_DELIMITER + '".');
     }
 
+    // Validate that the resolved path stays within the cache root directory
+    let resolvedPath = path.resolve(this.rootCachePath, cacheName);
+    if (!resolvedPath.startsWith(this.rootCachePath + path.sep)) {
+      throw new Error('Invalid cache name: must not contain path separators or relative components');
+    }
+
     let instanceId;
 
     if (!this.cache[cacheName]) {
