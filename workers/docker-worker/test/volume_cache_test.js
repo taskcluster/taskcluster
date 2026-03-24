@@ -159,7 +159,7 @@ suite(suiteName(), function() {
     });
 
     try {
-      await cache.get('legit-prefix-../../../../etc');
+      await cache.get('legit-prefix-/../../../../etc');
       assert(false, 'Error should have been thrown for cache name with path traversal');
     } catch (e) {
       assert.ok(e.message.includes('must not contain path separators'),
