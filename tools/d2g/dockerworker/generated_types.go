@@ -273,6 +273,9 @@ func JSONSchema() string {
         "type": "string"
       },
       "description": "Caches are mounted within the docker container at the mount point specified. Example: ` + "`" + `` + "`" + `` + "`" + `{ \"CACHE NAME\": \"/mount/path/in/container\" }` + "`" + `` + "`" + `` + "`" + `",
+      "propertyNames": {
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]*$"
+      },
       "title": "Caches to mount point mapping.",
       "type": "object"
     },
