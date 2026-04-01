@@ -69,9 +69,9 @@ See the root [CLAUDE.md](/CLAUDE.md) for Postgres setup and `yarn generate` inst
 ### Platform dispatch pattern
 
 Platform-specific behavior is split across files using Go filename conventions and build tags:
-- `multiuser.go` - core engine logic (all platforms)
-- `multiuser_posix.go` - posix-specific engine logic (darwin/linux/freebsd)
-- `multiuser_windows.go` - windows-specific engine logic
+- `taskuser.go` - task user management (all platforms)
+- `taskuser_posix.go` - posix-specific task user management (darwin/linux/freebsd)
+- `taskuser_windows.go` - windows-specific task user management
 - `mounts.go` - mount operations
 - `artifacts.go` - artifact operations
 - `os_groups_{linux,darwin,freebsd,windows}.go` - OS group management per platform

@@ -1,6 +1,6 @@
 ---
 $schema: "/schemas/common/metaschema.json#"
-$id: "/schemas/generic-worker/multiuser_windows.json#"
+$id: "/schemas/generic-worker/windows.json#"
 title: Generic worker payload
 description: |-
   This schema defines the structure of the `payload` property referred to in a
@@ -56,7 +56,7 @@ properties:
         * `TASK_USER_CREDENTIALS` (if payload feature `runTaskAsCurrentUser` set to
           `true` in the task definition - the absolute file location of a
           json file containing the current task OS user account name and password.
-          This is only useful for the generic-worker multiuser CI tasks, where
+          This is only useful for the generic-worker CI tasks, where
           `runTaskAsCurrentUser` is set to `true`.
         * `TASKCLUSTER_INSTANCE_TYPE` - the cloud instance type of the worker (optional, not all workers run in a cloud)
         * `TASKCLUSTER_WORKER_LOCATION`. See

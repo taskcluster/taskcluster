@@ -467,7 +467,7 @@ running in its normal operational mode, i.e. running tasks as task users
 
 If `GW_TESTS_RUN_AS_CURRENT_USER` is a non-empty string, generic-worker will be
 tested running tasks as the same user that runs `go test` (config setting
-`runTasksAsCurrentUser` will be `true`). This is how the CI multiuser workers
+`runTasksAsCurrentUser` will be `true`). This is how the CI workers
 are configured, in order that the generic-worker under test has the required
 privileges to function correctly. Set this environment variable to ensure that
 the generic-worker under test will function correctly as a generic-worker CI

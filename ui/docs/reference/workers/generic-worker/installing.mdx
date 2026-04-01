@@ -92,7 +92,7 @@ __Important__: The generic-worker binary must be readable and executable by the
 task user, not only root. If it is not, the worker will exit with exit code 69
 (internal error).
 
-### Windows - multiuser build
+### Windows
 
 On Windows, generic-worker is managed by worker-runner (`start-worker.exe`),
 with both installed as NSSM services. Worker-runner is set to auto-start and
@@ -231,8 +231,6 @@ starting worker-runner.
     sudo mkdir -p /etc/generic-worker
     ```
 
-    __Insecure build only__: `sudo chown genericworker:staff /etc/generic-worker`
-
     ```
     /usr/local/bin/generic-worker new-ed25519-keypair --file /etc/generic-worker/ed25519_key
     ```
@@ -312,8 +310,6 @@ starting worker-runner.
  7. Create the launch daemon plist at
     `/Library/LaunchDaemons/com.mozilla.genericworker.plist`.
 
-    For a __multiuser__ build (runs as root):
-
     ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -336,9 +332,6 @@ starting worker-runner.
         </dict>
     </plist>
     ```
-
-    For an __insecure__ build, change the `UserName` value from `root` to
-    `genericworker`.
 
  8. Install the launch daemon and start it:
 

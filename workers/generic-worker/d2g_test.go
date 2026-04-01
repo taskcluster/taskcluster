@@ -961,8 +961,8 @@ func TestD2GDockerImageArtifactCaching(t *testing.T) {
 		t.Fatalf("Error marshaling JSON: %v", err)
 	}
 
-	switch fmt.Sprintf("%s:%s", engine, runtime.GOOS) {
-	case "multiuser:linux":
+	switch runtime.GOOS {
+	case "linux":
 		// Run 1: cold caches — should download artifact + docker load via stdin
 		payload1 := dockerworker.DockerWorkerPayload{
 			Command:    []string{"taskcluster-proxy", "--version"},

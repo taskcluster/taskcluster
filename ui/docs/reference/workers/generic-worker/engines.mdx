@@ -1,19 +1,17 @@
 ---
-title: Engines
+title: Task Isolation
 order: 30
 ---
 
-# Engines
+# Task Isolation
 
-## Multiuser engine
-
-Generic worker uses the multiuser engine, which provides task isolation by
-creating unique OS user accounts for each task that is to be run. Each task
-user account (by default) is unprivileged, much like a guest user account.
-Once the task has completed, the task user account is purged, and there should
-be no further trace of the task on the system. The task user does not have
-permission to alter system-wide settings, so after the user account is purged,
-the host environment should be restored to a pristine state.
+Generic worker provides task isolation by creating unique OS user accounts for
+each task that is to be run. Each task user account (by default) is
+unprivileged, much like a guest user account. Once the task has completed, the
+task user account is purged, and there should be no further trace of the task
+on the system. The task user does not have permission to alter system-wide
+settings, so after the user account is purged, the host environment should be
+restored to a pristine state.
 
 Since the generic-worker process runs under a different user account to the
 task processes, taskcluster credentials, signing keys, and other private matter
@@ -27,7 +25,14 @@ Administrator typically need to be installed on the host environment.
 Toolchains that do not require Administrator privileges to be installed can be
 installed as task steps.
 
-## Discontinued: Docker engine
+## Headless mode
+
+When the `headlessTasks` configuration option is set to `true`, tasks run
+without a dedicated graphical session. There are no reboots between tasks and
+multiple workers can run on the same host. This is useful for tasks that don't
+require a graphical session, such as software builds.
+
+## Running tasks in containers
 
 The preferred way to run tasks inside a container is for the task to execute
 podman/docker commands directly.
@@ -38,9 +43,15 @@ implemented as a translation layer (d2g) inside Generic Worker, that will
 internally translate the Docker Worker formatted task payload into an
 equivalent Generic Worker payload that invokes docker commands directly.
 
-## Discontinued: Insecure engine
+## Discontinued engines
 
-The insecure engine was the original, simplest engine. It executed processes as
-child processes of the generic-worker process, under the same user account.
-This provided no isolation between tasks and the worker process. It has been
-removed in favor of the multiuser engine, which provides proper task isolation.
+Previous versions of generic-worker supported multiple "engines" for task
+execution. These have been consolidated:
+
+* **Insecure engine** (removed): executed tasks as child processes of the
+  worker under the same user account, providing no isolation. Replaced by the
+  current task-user-per-task model with `headlessTasks: true` for equivalent
+  non-reboot behavior.
+
+* **Docker engine** (removed): ran tasks inside Docker containers. Replaced by
+  direct container invocation and the d2g translation layer.

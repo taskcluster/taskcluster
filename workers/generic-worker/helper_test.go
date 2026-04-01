@@ -411,7 +411,6 @@ func GWTest(t *testing.T) *Test {
 					"go-version": runtime.Version(),
 					"version":    version,
 					"revision":   revision,
-					"engine":     engine,
 				},
 				"parent-task": map[string]string{
 					"taskId": os.Getenv("TASK_ID"),

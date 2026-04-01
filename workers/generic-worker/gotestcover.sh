@@ -5,10 +5,9 @@ set -exv
 # This script is needed because `go test -covermode=atomic` cover doesn't
 # currently support being run against multiple packages
 
-ENGINE="${1}"
-REPORT="${2}"
+REPORT="${1}"
 if [ -z "${REPORT}" ]; then
-  echo "Specify build tags and a report filename, e.g. '${0}' 'multiuser' myreport.txt" >&2
+  echo "Specify a report filename, e.g. '${0}' myreport.txt" >&2
   exit 64
 fi
 cd "$(dirname "${0}")"
@@ -22,7 +21,7 @@ go list ./... > "${PACKAGE_LIST}"
 
 while read package
 do
-  CGO_ENABLED=1 go test -tags "${ENGINE}" -ldflags "-X github.com/taskcluster/generic-worker.revision=${HEAD_REV}" -v -race -timeout 1h -covermode=atomic "-coverprofile=${TEMP_SINGLE_REPORT}" "${package}"
+  CGO_ENABLED=1 go test -ldflags "-X github.com/taskcluster/generic-worker.revision=${HEAD_REV}" -v -race -timeout 1h -covermode=atomic "-coverprofile=${TEMP_SINGLE_REPORT}" "${package}"
   if [ -f "${TEMP_SINGLE_REPORT}" ]; then
     sed 1d "${TEMP_SINGLE_REPORT}" >> "${REPORT}"
     rm "${TEMP_SINGLE_REPORT}"

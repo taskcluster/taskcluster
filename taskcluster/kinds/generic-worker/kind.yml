@@ -99,8 +99,8 @@ tasks:
         - go tool goimports -w .
         - git diff
         - test $(git status --porcelain | wc -l) == 0
-  build/test-multiuser-ubuntu-24.04-amd64:
-    description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Ubuntu 24.04
+  build/test-ubuntu-24.04-amd64:
+    description: This builds and tests the amd64 version of generic-worker on Ubuntu 24.04
     worker-type: gw-ubuntu-24-04-gui
     scopes:
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
@@ -174,8 +174,8 @@ tasks:
           cp "${{TASK_USER_CREDENTIALS}}" next-task-user.json
           GORACE=history_size=7 CGO_ENABLED=1 go test -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v99/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
           ../../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --timeout=5m
-  build/test-multiuser-macos-arm64:
-    description: This builds and tests the arm64 version of generic-worker (multiuser engine) on macOS
+  build/test-macos-arm64:
+    description: This builds and tests the arm64 version of generic-worker on macOS
     worker-type: gw-ci-macos
     scopes:
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds
@@ -195,9 +195,9 @@ tasks:
             url: 'https://github.com/golangci/golangci-lint/releases/download/v{golangci_lint_version}/golangci-lint-{golangci_lint_version}-darwin-arm64.tar.gz'
           directory: golangci-lint
           format: tar.gz
-    copy-command-from: build/test-multiuser-ubuntu-24.04-amd64
-  build/test-multiuser-windows-server-2022-amd64:
-    description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Windows Server 2022
+    copy-command-from: build/test-ubuntu-24.04-amd64
+  build/test-windows-server-2022-amd64:
+    description: This builds and tests the amd64 version of generic-worker on Windows Server 2022
     worker-type: gw-windows-2022-gui
     scopes:
       - secrets:get:project/taskcluster/testing/generic-worker/ci-creds

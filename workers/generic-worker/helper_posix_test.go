@@ -12,7 +12,7 @@ import (
 )
 
 // makeDirWorldWritable makes a directory writable by any user, so that
-// the multiuser engine task user can write to it. On posix this is a
+// the task user can write to it. On posix this is a
 // simple chmod 0777.
 func makeDirWorldWritable(t *testing.T, dir string) {
 	t.Helper()

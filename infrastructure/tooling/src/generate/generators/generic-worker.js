@@ -34,8 +34,9 @@ tasks.push({
         // the `title` property of the on-disk schema file is used to generate a Go identifier
         // that must be the same (`GenericWorkerPayload`) for all of these schemas.  So we substitute
         // a nicer title in here.
-        const [engine, platform] = path.basename(filename, '.yml').split('_');
-        content.title = `${content.title} - ${engine}, ${platform}`;
+        const parts = path.basename(filename, '.yml').split('_');
+        const platform = parts[parts.length - 1];
+        content.title = `${content.title} - ${platform}`;
 
         return ({
           filename: filename.replace('workers/generic-worker/schemas', 'schemas/generic-worker'),
@@ -74,7 +75,7 @@ tasks.push({
       keepAllOutput: true,
     });
 
-    // replace the first line, which contains the engine and version, with a simpler string
+    // replace the first line, which contains the version, with a simpler string
     gwHelp = gwHelp.replace(/^generic-worker .*/, '$ generic-worker --help');
 
     // remove platform-specific defaults

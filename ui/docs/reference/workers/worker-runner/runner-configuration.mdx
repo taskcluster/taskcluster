@@ -73,4 +73,4 @@ cacheOverRestarts: true
 
 
 While most configuration should come from the worker pool definition in worker-manager, it makes sense to include configuration that is specific to the VM image (such as filesystem paths) in the runner config.
-The `cacheOverRestarts` option is set because the generic-worker build used here (multiuser) will reboot after every task, so worker-runner must cache its state over those reboots.
+The `cacheOverRestarts` option is set because generic-worker will reboot after every task (unless `headlessTasks` is enabled), so worker-runner must cache its state over those reboots.

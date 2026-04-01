@@ -3725,31 +3725,31 @@
   },
   {
     "element": "h1",
-    "id": "engines",
+    "id": "task-isolation",
     "path": "/reference/workers/generic-worker/engines",
     "subtitle": null,
-    "title": "Engines"
+    "title": "Task Isolation"
   },
   {
     "element": "h2",
-    "id": "discontinued-docker-engine",
+    "id": "discontinued-engines",
     "path": "/reference/workers/generic-worker/engines",
-    "subtitle": "Discontinued: Docker engine",
-    "title": "Engines"
+    "subtitle": "Discontinued engines",
+    "title": "Task Isolation"
   },
   {
     "element": "h2",
-    "id": "discontinued-insecure-engine",
+    "id": "headless-mode",
     "path": "/reference/workers/generic-worker/engines",
-    "subtitle": "Discontinued: Insecure engine",
-    "title": "Engines"
+    "subtitle": "Headless mode",
+    "title": "Task Isolation"
   },
   {
     "element": "h2",
-    "id": "multiuser-engine",
+    "id": "running-tasks-in-containers",
     "path": "/reference/workers/generic-worker/engines",
-    "subtitle": "Multiuser engine",
-    "title": "Engines"
+    "subtitle": "Running tasks in containers",
+    "title": "Task Isolation"
   },
   {
     "element": "h1",
@@ -3844,9 +3844,9 @@
   },
   {
     "element": "h3",
-    "id": "windows---multiuser-build",
+    "id": "windows",
     "path": "/reference/workers/generic-worker/installing",
-    "subtitle": "Windows - multiuser build",
+    "subtitle": "Windows",
     "title": "Installing Generic-Worker"
   },
   {
