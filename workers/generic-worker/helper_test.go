@@ -25,6 +25,7 @@ import (
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
+	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcindex"
 	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcqueue"
 	"github.com/taskcluster/taskcluster/v99/internal/mocktc"
 	"github.com/taskcluster/taskcluster/v99/internal/mocktc/tc"
@@ -702,4 +703,60 @@ func getArtifactContent(t *testing.T, taskID string, artifact string) []byte {
 		t.Fatalf("Error trying to fetch artifact:\n%e", err)
 	}
 	return buf
+}
+
+// indexArtifact inserts the given taskID into the index at the given namespace
+// with the given rank.
+func indexArtifact(t *testing.T, namespace string, taskID string, rank float64) {
+	t.Helper()
+	index := serviceFactory.Index(config.Credentials(), config.RootURL)
+	_, err := index.InsertTask(namespace, &tcindex.InsertTaskRequest{
+		Data:    json.RawMessage([]byte("{}")),
+		Expires: inAnHour,
+		TaskID:  taskID,
+		Rank:    rank,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// mountIndexedArtifact submits a task that mounts an indexed artifact from the
+// given namespace and republishes it as "public/republished-artifact". Returns
+// the taskID of the mount task.
+func mountIndexedArtifact(t *testing.T, namespace string, destFile string) string {
+	t.Helper()
+	ic := &IndexedContent{
+		Artifact:  "public/indexed-artifact",
+		Namespace: namespace,
+	}
+	rawMessageContent, err := json.Marshal(ic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fileMount := &FileMount{
+		File:    destFile,
+		Content: rawMessageContent,
+	}
+	rawMessageMount, err := json.Marshal(fileMount)
+	if err != nil {
+		t.Fatal(err)
+	}
+	payload := GenericWorkerPayload{
+		Mounts: []json.RawMessage{
+			rawMessageMount,
+		},
+		Artifacts: []Artifact{
+			{
+				Name: "public/republished-artifact",
+				Path: destFile,
+				Type: "file",
+			},
+		},
+		Command:    helloGoodbye(),
+		MaxRunTime: 30,
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	return submitAndAssert(t, td, payload, "completed", "completed")
 }
