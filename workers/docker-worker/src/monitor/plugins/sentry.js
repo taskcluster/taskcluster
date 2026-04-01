@@ -8,12 +8,9 @@ class SentryReporter {
     Sentry.init({
       dsn,
       release: taskclusterVersion,
-      autoSessionTracking: false,
     });
-    Sentry.configureScope(scope => {
-      scope.setTag('service', serviceName);
-      scope.setTag('proc', processName);
-    });
+    Sentry.setTag('service', serviceName);
+    Sentry.setTag('proc', processName);
   }
 
   report(error) {
