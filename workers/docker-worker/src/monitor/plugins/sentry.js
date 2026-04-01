@@ -8,6 +8,7 @@ class SentryReporter {
     Sentry.init({
       dsn,
       release: taskclusterVersion,
+      transport: Sentry.makeNodeTransport,
     });
     Sentry.setTag('service', serviceName);
     Sentry.setTag('proc', processName);
