@@ -26,21 +26,21 @@ func TestLoopbackVideo(t *testing.T) {
 	td := testTask(t)
 	td.Scopes = append(td.Scopes, "generic-worker:loopback-video:"+td.ProvisionerID+"/"+td.WorkerType)
 
+	switch engine {
+	case "insecure":
+		// modprobe requires root, so loopback video device setup fails as non-root
+		_ = submitAndAssert(t, td, payload, "failed", "failed")
+		return
+	}
+
 	_ = submitAndAssert(t, td, payload, "completed", "completed")
 
 	logText := LogText(t)
 	if !strings.Contains(logText, "Device: "+devicePath) {
 		t.Fatalf("Expected log to contain 'Device: %s', but it didn't\n%s", devicePath, logText)
 	}
-	switch engine {
-	case "multiuser":
-		if !strings.Contains(logText, "crw-rw----+ 1 root video") {
-			t.Fatalf("Expected log to contain 'crw-rw----+ 1 root video', but it didn't\n%s", logText)
-		}
-	case "insecure":
-		if !strings.Contains(logText, "crw-rw---- 1 root video") {
-			t.Fatalf("Expected log to contain 'crw-rw---- 1 root video', but it didn't\n%s", logText)
-		}
+	if !strings.Contains(logText, "crw-rw----+ 1 root video") {
+		t.Fatalf("Expected log to contain 'crw-rw----+ 1 root video', but it didn't\n%s", logText)
 	}
 }
 
