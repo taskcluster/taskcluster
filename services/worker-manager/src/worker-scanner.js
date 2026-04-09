@@ -23,6 +23,10 @@ export class WorkerScanner {
     this.providers = providers;
     this.monitor = monitor;
     this.providersFilter = providersFilter;
+    this._filteredProviderIds = new Set(
+      (providersFilter.value || '').split(',').filter(Boolean),
+    );
+    this._filterIsInclusive = providersFilter.cond === '=';
     this.estimator = estimator;
     this.iterate = new Iterate({
       maxFailures: 10,
@@ -51,8 +55,13 @@ export class WorkerScanner {
     await this.iterate.stop();
   }
 
+  #ownsProvider(provider) {
+    const match = this._filteredProviderIds.has(provider.providerId);
+    return this._filterIsInclusive ? match : !match;
+  }
+
   async scan() {
-    await this.providers.forAll(p => p.scanPrepare());
+    await this.providers.forAll(p => this.#ownsProvider(p) && p.scanPrepare());
 
     this.monitor.info(`WorkerScanner providers filter: ${this.providersFilter.cond} ${this.providersFilter.value}`);
 
@@ -106,7 +115,7 @@ export class WorkerScanner {
       }
     }
 
-    await this.providers.forAll(p => p.scanCleanup());
+    await this.providers.forAll(p => this.#ownsProvider(p) && p.scanCleanup());
 
     // Phase 2: Compute termination decisions
     await this.#computeTerminationDecisions(poolCandidates);
