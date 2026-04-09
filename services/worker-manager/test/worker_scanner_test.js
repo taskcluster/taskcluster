@@ -246,6 +246,48 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     },
   }));
 
+  test('scanPrepare and scanCleanup only run for providers matching the filter', async function() {
+    const { WorkerScanner } = await import('../src/worker-scanner.js');
+    const providers = await helper.load('providers');
+    const estimator = await helper.load('estimator');
+
+    // Create a scanner that only handles testing1 (like the azure-only scanner in production)
+    const filteredScanner = new WorkerScanner({
+      ownName: 'filtered-scanner',
+      providers,
+      monitor,
+      db: helper.db,
+      providersFilter: { cond: '=', value: 'testing1' },
+      estimator,
+    });
+
+    monitor.manager.reset();
+    await filteredScanner.scan();
+
+    // scanPrepare should have been called for testing1
+    const prepareMessages = monitor.manager.messages.filter(msg => msg.Type === 'scan-prepare');
+    const cleanupMessages = monitor.manager.messages.filter(msg => msg.Type === 'scan-cleanup');
+
+    assert(
+      prepareMessages.some(msg => msg.Logger.endsWith('testing1')),
+      'scanPrepare should be called for testing1',
+    );
+    assert(
+      cleanupMessages.some(msg => msg.Logger.endsWith('testing1')),
+      'scanCleanup should be called for testing1',
+    );
+
+    // scanPrepare should NOT have been called for testing2
+    assert(
+      !prepareMessages.some(msg => msg.Logger.endsWith('testing2')),
+      'scanPrepare should NOT be called for testing2',
+    );
+    assert(
+      !cleanupMessages.some(msg => msg.Logger.endsWith('testing2')),
+      'scanCleanup should NOT be called for testing2',
+    );
+  });
+
   test('default providers filter applied', async () => {
     const azureScanner = await helper.load('workerScannerAzure');
     assert.deepEqual(azureScanner.providersFilter, { cond: '=', value: 'azure' });
