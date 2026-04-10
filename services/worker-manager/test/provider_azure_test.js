@@ -1155,6 +1155,110 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       checkExistenceSpy.restore();
       createOrUpdateSpy.restore();
     });
+
+    test('evicts cache and retries after checkExistence failure', async function() {
+      const customRgName = 'test-failing-rg';
+      const launchConfig = {
+        armDeploymentResourceGroup: customRgName,
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: { location: { value: 'eastus' } },
+        },
+      };
+
+      // Create the pool once; call provision() separately each time
+      const workerPool = await makeWorkerPool({
+        config: {
+          minCapacity: 1,
+          maxCapacity: 1,
+          scalingRatio: 1,
+          launchConfigs: [{
+            workerManager: { capacityPerInstance: 1 },
+            subnetId: 'some/subnet',
+            location: 'westus',
+            hardwareProfile: { vmSize: 'Basic_A2' },
+            storageProfile: { osDisk: {} },
+            ...launchConfig,
+          }],
+        },
+      });
+
+      const checkStub = sinon.stub(fake.resourcesClient.resourceGroups, 'checkExistence');
+      checkStub.onFirstCall().rejects(new Error('Azure transient failure'));
+      checkStub.onSecondCall().resolves({ body: false });
+
+      const createSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'createOrUpdate');
+
+      // First attempt should fail
+      await assert.rejects(
+        () => provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats('wpid') }),
+        /Azure transient failure/,
+      );
+      assert.ok(!provider.resourceGroupCache.has(customRgName),
+        'cache entry should be evicted after failure');
+
+      // Second attempt should succeed (cache was cleared)
+      await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats('wpid') });
+
+      assert.equal(checkStub.callCount, 2, 'should retry checkExistence after cache eviction');
+      assert.equal(createSpy.callCount, 1, 'should create RG on successful retry');
+
+      checkStub.restore();
+      createSpy.restore();
+    });
+
+    test('second provision reuses cached promise without new API calls', async function() {
+      const customRgName = 'test-cached-rg';
+      const launchConfig = {
+        armDeploymentResourceGroup: customRgName,
+        armDeployment: {
+          mode: 'Incremental',
+          templateLink: {
+            id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+          },
+          parameters: { location: { value: 'eastus' } },
+        },
+      };
+
+      const workerPool = await makeWorkerPool({
+        config: {
+          minCapacity: 1,
+          maxCapacity: 1,
+          scalingRatio: 1,
+          launchConfigs: [{
+            workerManager: { capacityPerInstance: 1 },
+            subnetId: 'some/subnet',
+            location: 'westus',
+            hardwareProfile: { vmSize: 'Basic_A2' },
+            storageProfile: { osDisk: {} },
+            ...launchConfig,
+          }],
+        },
+      });
+
+      await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats('wpid') });
+
+      // Cache should now hold a resolved promise
+      assert.ok(provider.resourceGroupCache.has(customRgName),
+        'cache should have entry after successful provisioning');
+      assert.ok(provider.resourceGroupCache.get(customRgName) instanceof Promise,
+        'cache entry should be a promise');
+
+      // Spy after the first call so we can verify the second makes no API calls
+      const checkSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'checkExistence');
+      const createSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'createOrUpdate');
+
+      await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats('wpid') });
+
+      assert.equal(checkSpy.callCount, 0, 'should not call checkExistence when promise is cached');
+      assert.equal(createSpy.callCount, 0, 'should not call createOrUpdate when promise is cached');
+
+      checkSpy.restore();
+      createSpy.restore();
+    });
   });
 
   suite('provisionResources', function() {

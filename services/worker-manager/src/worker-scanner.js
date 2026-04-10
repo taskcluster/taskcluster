@@ -3,6 +3,7 @@ import Iterate from '@taskcluster/lib-iterate';
 import taskcluster from '@taskcluster/client';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
 import { Worker, WorkerPool } from './data.js';
+import { withTimeout } from './util.js';
 
 /**
  * Make sure that we visit each worker relatively frequently to update its state
@@ -24,6 +25,7 @@ export class WorkerScanner {
     this.monitor = monitor;
     this.providersFilter = providersFilter;
     this.estimator = estimator;
+    this.scanLoopAlive = false;
     this.iterate = new Iterate({
       maxFailures: 10,
       watchdogTime: 0,
@@ -52,6 +54,19 @@ export class WorkerScanner {
   }
 
   async scan() {
+    if (this.scanLoopAlive) {
+      this.monitor.alert('scan-loop-interference', {});
+      throw new Error('scan loop interference');
+    }
+    this.scanLoopAlive = true;
+    try {
+      await this._scanImpl();
+    } finally {
+      this.scanLoopAlive = false;
+    }
+  }
+
+  async _scanImpl() {
     await this.providers.forAll(p => p.scanPrepare());
 
     this.monitor.info(`WorkerScanner providers filter: ${this.providersFilter.cond} ${this.providersFilter.value}`);
@@ -72,7 +87,11 @@ export class WorkerScanner {
           continue;
         }
         try {
-          await provider.checkWorker({ worker });
+          await withTimeout(
+            provider.checkWorker({ worker }),
+            60_000, // 1 minute
+            `checkWorker timed out for ${worker.workerPoolId}/${worker.workerId}`,
+          );
         } catch (err) {
           this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
         }
@@ -104,6 +123,7 @@ export class WorkerScanner {
           poolCandidates.get(poolId).push(worker);
         }
       }
+
     }
 
     await this.providers.forAll(p => p.scanCleanup());

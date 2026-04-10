@@ -139,7 +139,7 @@ export class AzureProvider extends Provider {
       apiRateLimits,
       intervalDefault: 100 * 1000, // Intervals are enforced every 100 seconds
       intervalCapDefault: 2000, // The calls we make are all limited 20/sec so 20 * 100 are allowed
-      timeout: 10 * 60 * 1000, // each cloud call should not take longer than 10 minutes
+      timeout: 3 * 60 * 1000, // each cloud call should not take longer than 3 minutes
       throwOnTimeout: true,
       monitor: this.monitor,
       providerId: this.providerId,
@@ -267,31 +267,46 @@ export class AzureProvider extends Provider {
   }
 
   /**
-   * Ensure that a resource group exists, creating it if necessary
-   * Uses in-memory cache to avoid redundant API calls
+   * Ensure that a resource group exists, creating it if necessary.
+   * Concurrent callers for the same resource group coalesce behind a single
+   * in-flight promise so only one check/create cycle runs at a time.
+   * On failure the cache entry is evicted so the next attempt retries.
    *
    * @param {string} resourceGroupName
    * @param {string} location
    * @param {string} workerPoolId
    */
   async #ensureResourceGroup(resourceGroupName, location, workerPoolId) {
-    if (this.resourceGroupCache.has(resourceGroupName)) {
-      return;
+    const runEnsureRG = async () => {
+      const { body: exists } = await this._enqueue('query', () =>
+        this.resourcesClient.resourceGroups.checkExistence(resourceGroupName));
+
+      if (!exists) {
+        await this._enqueue('query', () =>
+          this.resourcesClient.resourceGroups.createOrUpdate(resourceGroupName, { location }));
+
+        this.monitor.log.azureResourceGroupEnsured({
+          workerPoolId, resourceGroupName, location,
+        });
+      }
+
+      return true;
+    };
+
+    let pending = this.resourceGroupCache.get(resourceGroupName);
+    if (!pending) {
+      pending = Promise.resolve().then(runEnsureRG);
+      this.resourceGroupCache.set(resourceGroupName, pending);
     }
 
-    const { body: exists } = await this._enqueue('query', () =>
-      this.resourcesClient.resourceGroups.checkExistence(resourceGroupName));
-
-    if (!exists) {
-      await this._enqueue('query', () =>
-        this.resourcesClient.resourceGroups.createOrUpdate(resourceGroupName, { location }));
-
-      this.monitor.log.azureResourceGroupEnsured({
-        workerPoolId, resourceGroupName, location,
-      });
+    try {
+      return await pending;
+    } catch (err) {
+      if (this.resourceGroupCache.get(resourceGroupName) === pending) {
+        this.resourceGroupCache.delete(resourceGroupName);
+      }
+      throw err;
     }
-
-    this.resourceGroupCache.set(resourceGroupName, true);
   }
 
   /** @param {ProvisionOptions} opts */
