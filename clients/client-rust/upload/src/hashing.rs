@@ -89,10 +89,20 @@ impl Hasher {
             );
         }
         json!({
-            "sha256": format!("{:x}", inner.sha256.finalize_reset()),
-            "sha512": format!("{:x}", inner.sha512.finalize_reset()),
+            "sha256": hex_encode(inner.sha256.finalize_reset().as_slice()),
+            "sha512": hex_encode(inner.sha512.finalize_reset().as_slice()),
         })
     }
+}
+
+/// Encode a byte slice as a lowercase hex string.
+fn hex_encode(bytes: &[u8]) -> String {
+    use std::fmt::Write;
+    let mut s = String::with_capacity(bytes.len() * 2);
+    for b in bytes {
+        write!(s, "{:02x}", b).unwrap();
+    }
+    s
 }
 
 /// Wraper for an AsyncRead that will also call a hasher with every chunk read

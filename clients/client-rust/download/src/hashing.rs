@@ -80,14 +80,24 @@ impl Hasher {
         let mut result = HashMap::new();
         result.insert(
             "sha256".into(),
-            format!("{:x}", inner.sha256.finalize_reset()),
+            hex_encode(inner.sha256.finalize_reset().as_slice()),
         );
         result.insert(
             "sha512".into(),
-            format!("{:x}", inner.sha512.finalize_reset()),
+            hex_encode(inner.sha512.finalize_reset().as_slice()),
         );
         result
     }
+}
+
+/// Encode a byte slice as a lowercase hex string.
+fn hex_encode(bytes: &[u8]) -> String {
+    use std::fmt::Write;
+    let mut s = String::with_capacity(bytes.len() * 2);
+    for b in bytes {
+        write!(s, "{:02x}", b).unwrap();
+    }
+    s
 }
 
 /// Wraper for an AsyncWrite that will also call a hasher with every chunk written

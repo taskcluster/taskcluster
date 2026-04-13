@@ -17,7 +17,7 @@ serde = "1.0.228"
 tokio = { version = "1.50", features = ["macros", "time", "fs"] }
 tokio-util = { version = "0.7.18", features = ["codec", "io"] }
 futures-util = "0.3"
-sha2 = "0.10.9"
+sha2 = "0.11.0"
 
 [dev-dependencies]
 httptest = "0.16"
