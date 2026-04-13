@@ -2367,11 +2367,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await worker.create(helper.db);
           const workerIdentityProof = { document: azureSignatures[0].document };
 
-          const oldDownloadTimeout = provider.downloadTimeout;
-          provider.downloadTimeout = 1; // 1 millisecond
+          const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
 
           removeAllCertsFromStore();
           const intermediateCert = getIntermediateCert();
+
+          // Simulate a timeout error from got. We override downloadBinaryResponse
+          // rather than setting a very short downloadTimeout because nock 14's
+          // @mswjs/interceptors intercepts all HTTP requests globally (even when
+          // this test does not use nock directly), and destroying a socket while
+          // the interceptor is still managing it causes a Node.js libuv crash.
+          provider.downloadBinaryResponse = async () => {
+            const err = new Error("Timeout awaiting 'request' for 1ms");
+            err.name = 'TimeoutError';
+            throw err;
+          };
 
           await assert.rejects(() =>
             provider.registerWorker({ workerPool, worker, workerIdentityProof }),
@@ -2392,7 +2402,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           // Restore test fixture
           restoreAllCerts();
-          provider.downloadTimeout = oldDownloadTimeout;
+          provider.downloadBinaryResponse = oldDownloadBinaryResponse;
           helper.assertNoPulseMessage('worker-running');
         });
 
