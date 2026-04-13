@@ -72,4 +72,44 @@ const jestBabelOptions = {
     ],
 };
 
-module.exports = babelJest.createTransformer(jestBabelOptions);
+const innerTransformer = babelJest.createTransformer(jestBabelOptions);
+
+// babel-jest 30 expects jest 30's 3-arg calling convention:
+//   getCacheKey(sourceText, sourcePath, transformOptions)
+//   process(sourceText, sourcePath, transformOptions)
+// where transformOptions = { config, instrument, ... }
+//
+// jest 26 calls with the older 4-arg convention:
+//   getCacheKey(fileData, filePath, configString, { config, instrument, ... })
+//   process(sourceText, sourcePath, config, { instrument, ... })
+//
+// This wrapper adapts the jest 26 calls to the format babel-jest 30 expects.
+module.exports = {
+  canInstrument: innerTransformer.canInstrument,
+
+  getCacheKey(sourceText, sourcePath, configStringOrOpts, transformOptions) {
+    if (transformOptions !== undefined) {
+      // jest 26 style: 4 args — configString is 3rd arg, options is 4th
+      // Merge configString into the transformOptions object babel-jest 30 expects
+      return innerTransformer.getCacheKey(sourceText, sourcePath, {
+        ...transformOptions,
+        configString: configStringOrOpts,
+      });
+    }
+    // jest 30 style: 3 args
+    return innerTransformer.getCacheKey(sourceText, sourcePath, configStringOrOpts);
+  },
+
+  process(sourceText, sourcePath, configOrOpts, transformOptions) {
+    if (transformOptions !== undefined) {
+      // jest 26 style: 4 args — config is 3rd arg, options is 4th
+      // Merge into the single transformOptions object babel-jest 30 expects
+      return innerTransformer.process(sourceText, sourcePath, {
+        ...transformOptions,
+        config: configOrOpts,
+      });
+    }
+    // jest 30 style: 3 args
+    return innerTransformer.process(sourceText, sourcePath, configOrOpts);
+  },
+};
