@@ -2,6 +2,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
+const webpack = require("webpack");
 const generateEnvJs = require("./generate-env-js");
 const DEFAULT_PORT = 5080;
 const port = process.env.PORT || DEFAULT_PORT;
@@ -24,27 +25,22 @@ if (process.env.GENERATE_ENV_JS) {
 }
 
 module.exports = (_, { mode }) => ({
-  devtool: mode === "production" ? false : "cheap-module-eval-source-map",
+  devtool: mode === "production" ? false : "eval-cheap-module-source-map",
   target: "web",
   context: __dirname,
   watchOptions: {
-    ignored: (p) => !p.startsWith(__dirname),
+    ignored: /node_modules/,
   },
   externals: { bindings: "bindings" },
   output: {
     path: `${__dirname}/build`,
     publicPath: "/",
-    filename: "assets/[name].[hash:8].js",
+    filename: "assets/[name].[contenthash:8].js",
   },
   stats: {
     children: false,
     entrypoints: false,
     modules: false,
-  },
-  node: {
-    Buffer: true,
-    fs: "empty",
-    tls: "empty",
   },
   resolve: {
     alias: {
@@ -59,10 +55,27 @@ module.exports = (_, { mode }) => ({
       ".js",
       ".json",
     ],
+    fallback: {
+      assert: require.resolve("assert/"),
+      buffer: require.resolve("buffer/"),
+      process: require.resolve("process/browser"),
+      querystring: require.resolve("querystring-es3/"),
+      url: require.resolve("url/"),
+      fs: false,
+      tls: false,
+      net: false,
+      path: false,
+      os: false,
+      crypto: false,
+      stream: false,
+      http: false,
+      https: false,
+      zlib: false,
+    },
   },
   optimization: {
     minimize: true,
-    splitChunks: { chunks: "all", maxInitialRequests: 5, name: false },
+    splitChunks: { chunks: "all", maxInitialRequests: 5 },
     runtimeChunk: "single",
   },
   devServer: {
@@ -71,41 +84,49 @@ module.exports = (_, { mode }) => ({
       disableDotRule: true,
       rewrites: [{ from: /^\/docs/, to: "/docs.html" }],
     },
-    proxy: {
-      "/login": {
+    proxy: [
+      {
+        context: ["/login"],
         target: proxyTarget,
         changeOrigin: true,
       },
-      "/graphql": {
+      {
+        context: ["/graphql"],
         target: proxyTarget,
         changeOrigin: true,
       },
-      "/schemas": {
+      {
+        context: ["/schemas"],
         target: proxyTarget,
         changeOrigin: true,
       },
-      "/references": {
+      {
+        context: ["/references"],
         target: proxyTarget,
         changeOrigin: true,
       },
-      "/subscription": {
+      {
+        context: ["/subscription"],
         ws: true,
         changeOrigin: true,
         target: proxyTarget.replace(/^http(s)?:/, "ws$1:"),
-        onError: function(err, req, res) {
-          console.warn("[WS Proxy Error]", err.code, err.message);
-        },
-        onProxyReqWs: function(proxyReq, req, socket) {
-          socket.on("error", function(err) {
-            console.warn("[WS Socket Error]", err.code, err.message);
-          });
+        on: {
+          error: function(err, req, res) {
+            console.warn("[WS Proxy Error]", err.code, err.message);
+          },
+          proxyReqWs: function(proxyReq, req, socket) {
+            socket.on("error", function(err) {
+              console.warn("[WS Socket Error]", err.code, err.message);
+            });
+          },
         },
       },
-      "/api/web-server": {
+      {
+        context: ["/api/web-server"],
         target: proxyTarget,
         changeOrigin: true,
       },
-    },
+    ],
   },
   module: {
     rules: [
@@ -115,7 +136,12 @@ module.exports = (_, { mode }) => ({
           {
             loader: "html-loader",
             options: {
-              attrs: ["img:src", "link:href"],
+              sources: {
+                list: [
+                  { tag: "img", attribute: "src", type: "src" },
+                  { tag: "link", attribute: "href", type: "src" },
+                ],
+              },
             },
           },
         ],
@@ -205,12 +231,7 @@ module.exports = (_, { mode }) => ({
           {
             test: /\.module\.css$/,
             use: [
-              {
-                loader: MiniCssExtractPlugin.loader,
-                options: {
-                  esModule: true,
-                },
-              },
+              MiniCssExtractPlugin.loader,
               {
                 loader: "css-loader",
                 options: {
@@ -223,12 +244,7 @@ module.exports = (_, { mode }) => ({
           {
             test: /\.css$/,
             use: [
-              {
-                loader: MiniCssExtractPlugin.loader,
-                options: {
-                  esModule: true,
-                },
-              },
+              MiniCssExtractPlugin.loader,
               {
                 loader: "css-loader",
                 options: {
@@ -241,27 +257,22 @@ module.exports = (_, { mode }) => ({
       },
       {
         test: /\.(eot|ttf|woff|woff2)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: "file-loader",
-            options: {
-              name: "assets/[name].[hash:8].[ext]",
-            },
-          },
-        ],
+        type: "asset/resource",
+        generator: {
+          filename: "assets/[name].[contenthash:8][ext]",
+        },
       },
       {
         test: /\.(ico|png|jpg|jpeg|gif|svg|webp)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: "url-loader",
-            options: {
-              limit: 8192,
-              name: "assets/[name].[hash:8].[ext]",
-              fallback: require.resolve("file-loader"),
-            },
+        type: "asset",
+        parser: {
+          dataUrlCondition: {
+            maxSize: 8192,
           },
-        ],
+        },
+        generator: {
+          filename: "assets/[name].[contenthash:8][ext]",
+        },
       },
       {
         test: /\.mjs?$/,
@@ -279,7 +290,7 @@ module.exports = (_, { mode }) => ({
       },
       {
         test: /CHANGELOG\.md?$/,
-        loader: "raw-loader",
+        type: "asset/source",
       },
       {
         test: /^(?!CHANGELOG\.md$).*\.mdx$/,
@@ -347,9 +358,9 @@ module.exports = (_, { mode }) => ({
       lang: "en",
     }),
     new MiniCssExtractPlugin({
-      filename: "assets/[name].[hash:8].css",
+      filename: "assets/[name].[contenthash:8].css",
       ignoreOrder: false,
-      chunkFilename: "assets/[name].[hash:8].css",
+      chunkFilename: "assets/[name].[contenthash:8].css",
     }),
     new CleanWebpackPlugin({
       dangerouslyAllowCleanPatternsOutsideProject: false,
@@ -363,7 +374,11 @@ module.exports = (_, { mode }) => ({
       initialClean: false,
       outputPath: "",
     }),
-    new CopyPlugin([{ context: "src/static", from: "**/*", to: "static" }]),
+    new CopyPlugin({ patterns: [{ from: "src/static", to: "static", noErrorOnMissing: true }] }),
+    new webpack.ProvidePlugin({
+      Buffer: ["buffer", "Buffer"],
+      process: "process/browser",
+    }),
   ],
   entry: {
     index: [`${__dirname}/src/index.jsx`],
