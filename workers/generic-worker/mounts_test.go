@@ -914,7 +914,7 @@ func TestCacheMoved(t *testing.T) {
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
 	// Whether permission is granted to task user depends if running multiuser
-	// engine or simple engine but is independent of whether running as current
+	// engine or insecure engine but is independent of whether running as current
 	// user or not.
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
 	updatingOwnership := updateOwnership(t)
