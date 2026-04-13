@@ -65,7 +65,7 @@ class DeadlineResolver {
     this.iterator = new Iterate({
       name: options.ownName,
       maxFailures: 10,
-      waitTime: this.pollingDelay,
+      waitTime: 0,
       monitor: this.monitor,
       maxIterationTime: 601 * 1000,
       handler: async () => {
@@ -109,9 +109,9 @@ class DeadlineResolver {
       }
     }));
 
-    // If there were no messages, back off for a bit.
-    if (messages.length === 0) {
-      await sleep(2000);
+    // If we emptied the queue, back off
+    if (messages.length < this.count) {
+      await sleep(this.pollingDelay);
     }
 
     this.monitor.log.queuePoll({

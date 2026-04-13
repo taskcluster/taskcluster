@@ -3,6 +3,41 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v99.0.3
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8446](https://github.com/taskcluster/taskcluster/issues/8446)
+Worker Manager no longer removes Azure workers that are actively running tasks when an ARM deployment operation URL expires or the deployment shows a failed state. Previously, if Azure cleaned up a deployment record or the operation tracking URL expired before worker-manager marked provisioning as complete, the worker would be removed and any in-flight tasks resolved as `exception/worker-shutdown`, even though the worker was healthy.
+
+### DEVELOPERS
+
+▶ [patch]
+Fixed scope resolver performance tests that were silently not running due to an async
+suite callback in mocha (which does not await suite callbacks). The tests using real-world
+role and client fixture data are now registered and executed correctly. Also removed a stale
+`docker_posix.json` entry from the unreferenced schemas list in `lib-references`.
+
+### Automated Package Updates
+
+<details>
+<summary>12 Dependabot updates</summary>
+
+* build(deps): bump github.com/go-jose/go-jose/v4 from 4.1.3 to 4.1.4 (13d894b6aa)
+* build(deps): bump lodash from 4.17.23 to 4.18.1 in /ui (57bbe0f3b1)
+* build(deps): bump lodash from 4.17.23 to 4.18.1 in /ui/test/e2e (6a58323820)
+* build(deps): bump lodash from 4.17.23 to 4.18.1 in /clients/client-web (c0454a4c74)
+* build(deps): bump lodash from 4.17.23 to 4.18.1 in /clients/client (9f961dfb6b)
+* build(deps): bump lodash from 4.17.23 to 4.18.1 (bd19c3bd6a)
+* build(deps): bump the client-python-deps group (86868da56a)
+* build(deps): bump the go-deps group with 5 updates (5ddd6ba940)
+* build(deps-dev): bump eslint (a523d2e67c)
+* build(deps): bump the client-rust-deps group (1f1353712c)
+* build(deps): bump dominikh/staticcheck-action (6540799a60)
+* build(deps): bump dependabot/fetch-metadata from 2.5.0 to 3.0.0 (dadd7754a3)
+
+</details>
+
 ## v99.0.2
 
 

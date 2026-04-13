@@ -1,16 +1,23 @@
 name: Dependabot auto-merge
 on: pull_request
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
-  dependabot:
+  dependabot: # zizmor: ignore[secrets-outside-env] - Dependabot workflows cannot use environment secrets
+    name: Dependabot auto-merge
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
     steps:
       - name: Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v3.0.0
+        uses: dependabot/fetch-metadata@ffa630c65fa7e0ecfa0625b5ceda64399aea1b36 # v3.0.0
         with:
-          github-token: "${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}"
+          github-token: ${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}
       - name: Approve a PR
         if: ${{ contains(fromJson('["version-update:semver-patch", "version-update:semver-minor"]'), steps.metadata.outputs.update-type) }}
         run: gh pr review --approve "$PR_URL"

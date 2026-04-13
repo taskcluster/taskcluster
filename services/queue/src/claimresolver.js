@@ -59,7 +59,7 @@ class ClaimResolver {
     this.iterator = new Iterate({
       name: options.ownName,
       maxFailures: 10,
-      waitTime: this.pollingDelay,
+      waitTime: 0,
       monitor: this.monitor,
       maxIterationTime: 600 * 1000,
       handler: async () => {
@@ -89,7 +89,7 @@ class ClaimResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    let messages = await this.queueService.pollClaimQueue();
+    let messages = await this.queueService.pollClaimQueue(this.count);
     let failed = 0;
 
     await Promise.all(messages.map(async (message) => {
@@ -103,9 +103,9 @@ class ClaimResolver {
       }
     }));
 
-    // If there were no messages, back off for a bit.
-    if (messages.length === 0) {
-      await sleep(2000);
+    // If we emptied the queue, back off
+    if (messages.length < this.count) {
+      await sleep(this.pollingDelay);
     }
 
     this.monitor.log.queuePoll({

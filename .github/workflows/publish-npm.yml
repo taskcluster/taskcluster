@@ -3,8 +3,15 @@ on:
   release:
     types: [published]
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
 jobs:
   publish:
+    name: Publish NPM packages
     runs-on: ubuntu-latest
     # Only run on the main repo, not forks or staging
     if: github.repository == 'taskcluster/taskcluster'

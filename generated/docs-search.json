@@ -2842,6 +2842,20 @@
     "title": "Taskcluster Yml Version 1"
   },
   {
+    "element": "h3",
+    "id": "hook-failures",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Hook Failures",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
+    "id": "hook-trigger-payload",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Hook Trigger Payload",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
     "element": "h2",
     "id": "json-e-rendering",
     "path": "/reference/integrations/github/taskcluster-yml-v1",
@@ -2906,6 +2920,13 @@
   },
   {
     "element": "h3",
+    "id": "scopes-for-hooks",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Scopes for Hooks",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h3",
     "id": "tag-metadata",
     "path": "/reference/integrations/github/taskcluster-yml-v1",
     "subtitle": "Tag Metadata",
@@ -2937,6 +2958,13 @@
     "id": "trigger-builds-on-comments",
     "path": "/reference/integrations/github/taskcluster-yml-v1",
     "subtitle": "Trigger builds on comments",
+    "title": "Taskcluster Yml Version 1"
+  },
+  {
+    "element": "h2",
+    "id": "triggering-hooks",
+    "path": "/reference/integrations/github/taskcluster-yml-v1",
+    "subtitle": "Triggering Hooks",
     "title": "Taskcluster Yml Version 1"
   },
   {

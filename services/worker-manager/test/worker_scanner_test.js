@@ -256,6 +256,35 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await scanner.terminate();
   });
 
+  test('scan loop is not running in parallel', async function() {
+    const providers = await helper.load('providers');
+    const estimator = await helper.load('estimator');
+    const scanner = new (await import('../src/worker-scanner.js')).WorkerScanner({
+      ownName: 'test-overlap',
+      providers,
+      monitor,
+      db: helper.db,
+      providersFilter: { cond: '<>', value: '' },
+      estimator,
+    });
+
+    await assert.rejects(async () => {
+      await Promise.all([
+        scanner.scan(),
+        scanner.scan(),
+      ]);
+    }, /scan loop interference/);
+
+    assert.deepEqual(
+      monitor.manager.messages.find(msg => msg.Type === 'scan-loop-interference'), {
+        Fields: {},
+        Logger: 'taskcluster.test',
+        Severity: 1,
+        Type: 'scan-loop-interference',
+      });
+    monitor.manager.reset();
+  });
+
   suite('termination decisions', function() {
     let scanner, providers, estimator;
 

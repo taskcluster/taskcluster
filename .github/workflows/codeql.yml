@@ -21,12 +21,16 @@ on:
     - cron: '18 19 * * 1'
 
 permissions:
-  contents: read
+  contents: read # Required: checkout repository
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze:
     permissions:
-      security-events: write
+      security-events: write # Required: upload SARIF results
     name: Analyze
     runs-on: ubuntu-latest
 
@@ -46,13 +50,13 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       with:
         persist-credentials: false
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v4
+      uses: github/codeql-action/init@c10b8064de6f491fea524254123dbe5e09572f13 # v4
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
@@ -71,4 +75,4 @@ jobs:
         ./workers/generic-worker/build.sh
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v4
+      uses: github/codeql-action/analyze@c10b8064de6f491fea524254123dbe5e09572f13 # v4

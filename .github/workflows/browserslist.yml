@@ -4,16 +4,22 @@ on:
   schedule:
     - cron: '0 2 1,15 * *'
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   update-browserslist-database:
+    name: Update Browserslist database
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required: push commits to the update branch
+      pull-requests: write # Required: create/update the Browserslist PR
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -23,7 +29,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Update Browserslist database and create PR if applies
-        uses: c2corg/browserslist-update-action@v2
+        uses: c2corg/browserslist-update-action@a76abb476199caea5399f9e28ff3f16e491ec566 # v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: browserslist-update

@@ -1303,6 +1303,190 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       assert(github.inst(INST_ID).repos.createCommitStatus.callCount === 0);
       assert(github.inst(INST_ID).issues.createComment.callCount === 0);
     });
+
+    suite('hooks', function () {
+      let mockTriggerHook;
+      let mockUse;
+
+      setup(function () {
+        mockTriggerHook = sinon.stub().resolves({ taskId: taskcluster.slugid() });
+        mockUse = sinon.stub().returns({ triggerHook: mockTriggerHook });
+        handlers.context.hooksClient = { use: mockUse };
+      });
+
+      test('hooks-only config triggers hook and creates build record', async function () {
+        github.inst(INST_ID).setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: {
+            version: 1,
+            hooks: [{ name: 'project-test/decision-hook', context: { trustDomain: 'test-domain' } }],
+          },
+        });
+
+        await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+        assert(mockTriggerHook.calledOnce);
+        const [hookGroup, hookName, payload] = mockTriggerHook.firstCall.args;
+        assert.equal(hookGroup, 'project-test');
+        assert.equal(hookName, 'decision-hook');
+        assert.deepEqual(payload.context, { trustDomain: 'test-domain' });
+        assert.ok(payload.taskId, 'payload should contain a pre-allocated taskId');
+        assert.ok(payload.event, 'payload should contain the event body');
+        assert.ok(payload.now, 'payload should contain now');
+        assert.equal(payload.tasks_for, 'github-push');
+
+        assert(mockUse.calledOnce);
+        assert.ok(mockUse.firstCall.args[0].authorizedScopes, 'use() should be called with authorizedScopes');
+
+        const [build] = await helper.db.fns.get_github_build_pr(payload.taskId);
+        assert.ok(build, 'build record should exist');
+        assert.equal(build.organization, 'TaskclusterRobot');
+        assert.equal(build.repository, 'hooks-testing');
+        assert.equal(build.sha, COMMIT_SHA);
+        assert.equal(build.state, 'pending');
+        assert.equal(build.event_type, 'push');
+        assert.equal(build.pull_number, null);
+
+        assert(handlers.createTasks.notCalled);
+      });
+
+      test('hook returning no taskId cleans up the build record', async function () {
+        mockTriggerHook.resolves({});
+
+        github.inst(INST_ID).setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: {
+            version: 1,
+            hooks: [{ name: 'project-test/decision-hook' }],
+          },
+        });
+
+        await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+        assert(mockTriggerHook.calledOnce);
+        const taskGroupId = mockTriggerHook.firstCall.args[2].taskId;
+        const builds = await helper.db.fns.get_github_build_pr(taskGroupId);
+        assert.deepEqual(builds, [], 'build record should be deleted when hook returns no taskId');
+      });
+
+      test('multiple hooks each get their own build record', async function () {
+        github.inst(INST_ID).setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: {
+            version: 1,
+            hooks: [
+              { name: 'project-test/hook-one' },
+              { name: 'project-test/hook-two' },
+            ],
+          },
+        });
+
+        await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+        assert.equal(mockTriggerHook.callCount, 2);
+        const taskGroupId1 = mockTriggerHook.firstCall.args[2].taskId;
+        const taskGroupId2 = mockTriggerHook.secondCall.args[2].taskId;
+        assert.notEqual(taskGroupId1, taskGroupId2, 'each hook should get a unique taskGroupId');
+
+        const [build1] = await helper.db.fns.get_github_build_pr(taskGroupId1);
+        const [build2] = await helper.db.fns.get_github_build_pr(taskGroupId2);
+        assert.ok(build1, 'build record for hook-one should exist');
+        assert.ok(build2, 'build record for hook-two should exist');
+        assert(handlers.createTasks.notCalled);
+      });
+
+      test('hooks and tasks both run when present in config', async function () {
+        github.inst(INST_ID).setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: {
+            ...validYamlV1Json,
+            hooks: [{ name: 'project-test/decision-hook' }],
+          },
+        });
+
+        await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+        assert(mockTriggerHook.calledOnce, 'hook should be triggered');
+        assert(handlers.createTasks.calledOnce, 'tasks should also be created');
+      });
+
+      test('hook trigger failure creates exception comment and cleans up build record', async function () {
+        mockTriggerHook.rejects(Object.assign(new Error('hook trigger failed'), { body: { error: 'hook error details' } }));
+
+        github.inst(INST_ID).setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: {
+            version: 1,
+            hooks: [{ name: 'project-test/decision-hook' }],
+          },
+        });
+
+        await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+        assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
+        const args = github.inst(INST_ID).repos.createCommitComment.args[0][0];
+        assert.equal(args.owner, 'TaskclusterRobot');
+        assert.equal(args.repo, 'hooks-testing');
+        assert.equal(args.commit_sha, COMMIT_SHA);
+        assert(args.body.includes('hook error details'));
+
+        const taskGroupId = mockTriggerHook.firstCall.args[2].taskId;
+        const builds = await helper.db.fns.get_github_build_pr(taskGroupId);
+        assert.deepEqual(builds, [], 'build record should be deleted when hook trigger fails');
+      });
+
+      test('hook failure does not prevent tasks from running', async function () {
+        mockTriggerHook.rejects(Object.assign(new Error('hook failed'), { body: { error: 'hook error' } }));
+
+        github.inst(INST_ID).setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: {
+            ...validYamlV1Json,
+            hooks: [{ name: 'project-test/decision-hook' }],
+          },
+        });
+
+        await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+        assert(github.inst(INST_ID).repos.createCommitComment.calledOnce, 'exception comment should be created for hook failure');
+        assert(handlers.createTasks.calledOnce, 'tasks should still run despite hook failure');
+      });
+
+      test('triggerHook reformats InsufficientScopes error with context', async function () {
+        const insufficientScopesErr = Object.assign(new Error('original scope error'), { code: 'InsufficientScopes' });
+        mockTriggerHook.rejects(insufficientScopesErr);
+
+        await assert.rejects(
+          () => handlers.triggerHook({ scopes: ['scope:a', 'scope:b'], name: 'group/name', payload: {} }),
+          err => {
+            assert(err.message.includes('Taskcluster-GitHub attempted to trigger a hook'), 'message should include context');
+            assert(err.message.includes('scope:a'), 'message should include the scopes');
+            assert(err.message.includes('original scope error'), 'message should include the original error');
+            return true;
+          },
+        );
+      });
+
+      test('triggerHook throws on invalid name format without calling use()', async function () {
+        await assert.rejects(
+          () => handlers.triggerHook({ scopes: [], name: 'invalid-no-slash', payload: {} }),
+          /Invalid hook name format/,
+        );
+        assert(mockUse.notCalled, 'use() should not be called for an invalid hook name');
+      });
+    });
   });
 
   suite('Statuses API: result status handler', function () {

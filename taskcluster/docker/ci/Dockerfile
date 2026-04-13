@@ -1,4 +1,4 @@
-FROM golang:1.26.1-trixie AS golang
+FROM golang:1.26.2-trixie AS golang
 FROM node:24.14.1-trixie-slim
 
 COPY --from=golang /usr/local/go /usr/local/go

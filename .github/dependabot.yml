@@ -10,6 +10,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
@@ -25,6 +27,8 @@ updates:
     directory: "/clients/client"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
@@ -40,6 +44,8 @@ updates:
     directory: "/clients/client-web"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
@@ -55,6 +61,8 @@ updates:
     directory: "/clients/client-rust"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
@@ -70,6 +78,8 @@ updates:
     directory: "/clients/client-py"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
@@ -85,6 +95,8 @@ updates:
     directory: "/ui"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
@@ -100,6 +112,8 @@ updates:
     directory: "/ui/test/e2e"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
@@ -115,6 +129,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
@@ -130,6 +146,8 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
@@ -145,6 +163,8 @@ updates:
     directory: "/taskcluster"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     groups:
       # Groups together all minor/patch version updates for dependencies
@@ -160,6 +180,8 @@ updates:
     directory: "/workers/docker-worker"
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 7
     rebase-strategy: "disabled"
     ignore:
       - dependency-name: "*"
