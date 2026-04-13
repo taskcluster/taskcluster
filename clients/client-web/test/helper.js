@@ -11,7 +11,7 @@ exports.withRootUrl = function() {
     exports.rootUrl = __karma__.config.args[0];
     if (!exports.rootUrl) {
       console.log('TASKCLUSTER_ROOT_URL not set');
-      if (process.env.NO_TEST_SKIP) {
+      if (typeof process !== 'undefined' && process.env && process.env.NO_TEST_SKIP) {
         throw new Error('TASKCLUSTER_ROOT_URL not set but NO_TEST_SKIP is set');
       } else {
         this.skip();

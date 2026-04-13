@@ -1,8 +1,10 @@
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
+const webpack = require('webpack');
+
 module.exports = config => {
   return config.set({
-    frameworks: ['mocha'],
+    frameworks: ['mocha', 'webpack'],
     files: [
       {
         pattern: 'test/*_test.js',
@@ -12,7 +14,7 @@ module.exports = config => {
       },
     ],
     preprocessors: {
-      '**/*.js': ['webpack'],
+      'test/*_test.js': ['webpack'],
     },
     webpackMiddleware: {
       stats: {
@@ -24,6 +26,20 @@ module.exports = config => {
     },
     webpack: {
       mode: 'development',
+      resolve: {
+        fallback: {
+          stream: require.resolve('stream-browserify'),
+          crypto: require.resolve('crypto-browserify'),
+          url: require.resolve('url/'),
+          buffer: require.resolve('buffer/'),
+        },
+      },
+      plugins: [
+        new webpack.ProvidePlugin({
+          Buffer: ['buffer', 'Buffer'],
+          process: ['process/browser'],
+        }),
+      ],
     },
     reporters: ['mocha'],
     browsers: [process.env.CI ? 'FirefoxHeadless' : 'Firefox'],
