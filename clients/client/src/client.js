@@ -117,8 +117,11 @@ export const makeRequest = async function(client, method, url, payload, query) {
     hooks: {
       afterResponse: [res => {
         // parse the body, if one was given (Got's `responseType: json` fails to check content-type)
-        if (res.rawBody.length > 0 && (res.headers['content-type'] || '').startsWith('application/json')) {
-          res.body = JSON.parse(res.rawBody);
+        // Note: use res.body (a string, since responseType is 'text') instead of res.rawBody,
+        // because got v15 changed rawBody from Buffer to Uint8Array, and JSON.parse(Uint8Array)
+        // does not work correctly (Uint8Array.toString() returns comma-separated byte values).
+        if (res.body && res.body.length > 0 && (res.headers['content-type'] || '').startsWith('application/json')) {
+          res.body = JSON.parse(res.body);
         }
         return res;
       }],
