@@ -1,7 +1,40 @@
 import { withRootUrl } from 'taskcluster-lib-urls';
-import { stringify } from 'query-string';
 import hawk from 'hawk';
 import fetch from './fetch';
+
+/**
+ * Minimal query-string serializer that replicates the subset of
+ * query-string.stringify() used by this client:
+ *  - Flat key/value objects (no arrays or nested objects)
+ *  - Keys sorted alphabetically (matches query-string default)
+ *  - undefined values omitted, null serialized as bare key
+ *  - encodeURIComponent encoding (matches query-string default)
+ *
+ * query-string v9+ is pure ESM with ES2020+ syntax that webpack 4
+ * (used by client-web) cannot parse, so we inline the needed logic.
+ */
+function stringify(params) {
+  return Object.keys(params)
+    .sort()
+    .filter(key => params[key] !== undefined)
+    .map(key => {
+      const value = params[key];
+
+      if (value === null) {
+        return encodeURIComponent(key);
+      }
+
+      if (Array.isArray(value)) {
+        return value
+          .filter(v => v !== undefined)
+          .map(v => `${encodeURIComponent(key)}=${encodeURIComponent(v)}`)
+          .join('&');
+      }
+
+      return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+    })
+    .join('&');
+}
 
 export default class Client {
   constructor(options = {}) {

@@ -8,7 +8,9 @@ const slugid = require('slugid');
 const SharedFileLock = require('../shared_file_lock');
 const url = require('url');
 const libUrls = require('taskcluster-lib-urls');
-const queryString = require('query-string');
+// query-string v9+ is pure ESM, incompatible with CommonJS require().
+// The only usage here is stringify() on a flat object, so we use the
+// built-in URLSearchParams (global since Node 10).
 const util = require('util');
 
 const readFile = util.promisify(fs.readFile);
@@ -140,12 +142,12 @@ class WebsocketServer {
         expires: expiration.toJSON(),
         contentType: 'text/html',
         url: libUrls.ui(task.runtime.rootUrl, '/shell/?' +
-          queryString.stringify({
+          new URLSearchParams({
             v: '1',
             socketUrl: shellSocketUrl,
             taskId: task.status.taskId,
-            runId: task.runId,
-          })),
+            runId: String(task.runId),
+          }).toString()),
       },
     );
     debug('artifacts made');
