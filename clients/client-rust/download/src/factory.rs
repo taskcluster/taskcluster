@@ -11,7 +11,14 @@ use tokio::io::{AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 pub trait AsyncWriterFactory {
     /// Get a fresh [AsyncWrite] object, positioned at the point where downloaded data should
     /// be written.
-    async fn get_writer<'a>(&'a mut self) -> Result<Box<dyn AsyncWrite + Unpin + 'a>>;
+    ///
+    /// The `content_length` parameter will have the content length of the artifact, if it is known.
+    /// See [content_length](reqwest::Response::content_length) on the `reqwest` response object
+    /// for more information on the matter.
+    async fn get_writer<'a>(
+        &'a mut self,
+        content_length: Option<u64>,
+    ) -> Result<Box<dyn AsyncWrite + Unpin + 'a>>;
 }
 
 /// A CusorWriterFactory creates [AsyncWrite] objects from a [std::io::Cursor], allowing
@@ -21,7 +28,10 @@ pub struct CursorWriterFactory<T>(Cursor<T>);
 
 #[async_trait]
 impl AsyncWriterFactory for CursorWriterFactory<Vec<u8>> {
-    async fn get_writer<'a>(&'a mut self) -> Result<Box<dyn AsyncWrite + Unpin + 'a>> {
+    async fn get_writer<'a>(
+        &'a mut self,
+        _: Option<u64>,
+    ) -> Result<Box<dyn AsyncWrite + Unpin + 'a>> {
         self.0.get_mut().clear();
         self.0.set_position(0);
         Ok(Box::new(&mut self.0))
@@ -30,7 +40,10 @@ impl AsyncWriterFactory for CursorWriterFactory<Vec<u8>> {
 
 #[async_trait]
 impl AsyncWriterFactory for CursorWriterFactory<&mut [u8]> {
-    async fn get_writer<'a>(&'a mut self) -> Result<Box<dyn AsyncWrite + Unpin + 'a>> {
+    async fn get_writer<'a>(
+        &'a mut self,
+        _: Option<u64>,
+    ) -> Result<Box<dyn AsyncWrite + Unpin + 'a>> {
         self.0.set_position(0);
         Ok(Box::new(&mut self.0))
     }
@@ -72,7 +85,10 @@ pub struct FileWriterFactory(File);
 
 #[async_trait]
 impl AsyncWriterFactory for FileWriterFactory {
-    async fn get_writer<'a>(&'a mut self) -> Result<Box<dyn AsyncWrite + Unpin + 'a>> {
+    async fn get_writer<'a>(
+        &'a mut self,
+        _: Option<u64>,
+    ) -> Result<Box<dyn AsyncWrite + Unpin + 'a>> {
         let mut file = self.0.try_clone().await?;
         file.set_len(0).await?;
         file.seek(SeekFrom::Start(0)).await?;
@@ -107,7 +123,7 @@ mod test {
         factory: &mut F,
     ) -> std::io::Result<()> {
         let mut reader = Cursor::new(data);
-        let mut writer = factory.get_writer().await.unwrap();
+        let mut writer = factory.get_writer(Some(data.len() as u64)).await.unwrap();
         copy(&mut reader, &mut writer).await?;
         Ok(())
     }

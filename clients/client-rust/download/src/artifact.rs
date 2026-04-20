@@ -87,7 +87,7 @@ pub async fn download_artifact_to_file(
 /// Download an artifact using an [AsyncWriterFactory].  This is useful for advanced cases where one
 /// of the convenience functions is not adequate.  Returns the artifact's content type.  If
 /// `run_id` is None then the latest run will be used.  Returns the content type.
-pub async fn download_artifact_with_factory<AWF: AsyncWriterFactory>(
+pub async fn download_artifact_with_factory<AWF: AsyncWriterFactory + Send>(
     task_id: &str,
     run_id: Option<&str>,
     name: &str,
@@ -131,7 +131,7 @@ where
     Q: QueueService,
     O: ObjectService,
     OF: FnOnce(&Q, Credentials, &Retry) -> Result<O>,
-    AWF: AsyncWriterFactory,
+    AWF: AsyncWriterFactory + Send,
 {
     let artifact = if let Some(run_id) = run_id {
         queue_service.artifact(task_id, run_id, name).await?
@@ -193,8 +193,7 @@ async fn download_url<AWF: AsyncWriterFactory>(
 
     loop {
         attempts += 1;
-        let mut writer = writer_factory.get_writer().await?;
-        match get_url(url, writer.as_mut()).await {
+        match get_url(url, writer_factory).await {
             RetriableResult::Ok(fetchmeta) => return Ok(fetchmeta.content_type),
             RetriableResult::Retriable(err) => match backoff.next_backoff() {
                 Some(duration) => {
