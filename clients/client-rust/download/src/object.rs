@@ -59,7 +59,7 @@ pub async fn download_to_file(
 
 /// Download an object using an [AsyncWriterFactory].  This is useful for advanced cases where one
 /// of the convenience functions is not adequate.  Returns the object's content type.
-pub async fn download_with_factory<AWF: AsyncWriterFactory>(
+pub async fn download_with_factory<AWF: AsyncWriterFactory + Send>(
     name: &str,
     retry: &Retry,
     object_service: &Object,
@@ -71,7 +71,7 @@ pub async fn download_with_factory<AWF: AsyncWriterFactory>(
 
 /// Internal implementation of downloads, using the ObjectService trait to allow
 /// injecting a fake dependency.  Returns the object's content-type.
-pub(crate) async fn download_impl<O: ObjectService, AWF: AsyncWriterFactory>(
+pub(crate) async fn download_impl<O: ObjectService, AWF: AsyncWriterFactory + Send>(
     name: &str,
     retry: &Retry,
     object_service: &O,
@@ -102,7 +102,7 @@ pub(crate) async fn download_impl<O: ObjectService, AWF: AsyncWriterFactory>(
     }
 }
 
-async fn geturl_download<O: ObjectService, AWF: AsyncWriterFactory>(
+async fn geturl_download<O: ObjectService, AWF: AsyncWriterFactory + Send>(
     mut response_json: serde_json::Value,
     name: &str,
     object_service: &O,
@@ -145,8 +145,7 @@ async fn geturl_download<O: ObjectService, AWF: AsyncWriterFactory>(
 
         response_used = true;
         attempts += 1;
-        let mut writer = writer_factory.get_writer().await?;
-        match get_url(start_download_response.url.as_ref(), writer.as_mut()).await {
+        match get_url(start_download_response.url.as_ref(), &mut writer_factory).await {
             RetriableResult::Ok(fetchmeta) => break Ok::<FetchMetadata, anyhow::Error>(fetchmeta),
             RetriableResult::Retriable(err) => match backoff.next_backoff() {
                 Some(duration) => {

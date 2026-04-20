@@ -1,5 +1,6 @@
 use super::factory::AsyncWriterFactory;
 use anyhow::Result;
+use async_trait::async_trait;
 use sha2::{Digest, Sha256, Sha512};
 use std::collections::HashMap;
 use std::pin::Pin;
@@ -26,17 +27,6 @@ impl<'f, AWF: AsyncWriterFactory> HasherAsyncWriterFactory<'f, AWF> {
         }
     }
 
-    pub(super) async fn get_writer<'a>(&'a mut self) -> Result<Box<dyn AsyncWrite + Unpin + 'a>> {
-        let writer = self.writer_factory.get_writer().await?;
-        let hasher = Arc::new(Hasher::new());
-        self.latest_hasher = Some(hasher.clone());
-
-        Ok(Box::new(HashingAsyncWrite {
-            inner: writer,
-            hasher,
-        }))
-    }
-
     /// Get the hashes determined from the latest writer.
     ///
     /// ## Panics
@@ -49,6 +39,26 @@ impl<'f, AWF: AsyncWriterFactory> HasherAsyncWriterFactory<'f, AWF> {
             .as_ref()
             .expect("no previous calls to get_writer");
         hasher.hashes()
+    }
+}
+
+#[async_trait]
+impl<'f, AWF> AsyncWriterFactory for HasherAsyncWriterFactory<'f, AWF>
+where
+    AWF: AsyncWriterFactory + Send,
+{
+    async fn get_writer<'a>(
+        &'a mut self,
+        content_length: Option<u64>,
+    ) -> Result<Box<dyn AsyncWrite + Unpin + 'a>> {
+        let writer = self.writer_factory.get_writer(content_length).await?;
+        let hasher = Arc::new(Hasher::new());
+        self.latest_hasher = Some(hasher.clone());
+
+        Ok(Box::new(HashingAsyncWrite {
+            inner: writer,
+            hasher,
+        }))
     }
 }
 

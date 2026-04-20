@@ -1,8 +1,10 @@
 use anyhow::Error;
 use futures_util::stream::StreamExt;
 use reqwest::header;
-use tokio::io::{copy, AsyncWrite};
+use tokio::io::copy;
 use tokio_util::io::StreamReader;
+
+use crate::AsyncWriterFactory;
 
 /// A result from a possibly-retriable operation.
 pub(crate) enum RetriableResult<R, E> {
@@ -20,9 +22,9 @@ pub(crate) struct FetchMetadata {
 
 /// Get a URL using `reqwest.get` and write it to an AsyncWriterFactory's factory.  The return
 /// value indicates whether the operation can be retried.  Returns metadata about the fetched data.
-pub(crate) async fn get_url(
+pub(crate) async fn get_url<AWF: AsyncWriterFactory>(
     url: &str,
-    writer: &mut (dyn AsyncWrite + Unpin),
+    writer_factory: &mut AWF,
 ) -> RetriableResult<FetchMetadata, Error> {
     let res = match reqwest::get(url)
         .await
@@ -38,6 +40,11 @@ pub(crate) async fn get_url(
         }
 
         Ok(res) => res,
+    };
+
+    let mut writer = match writer_factory.get_writer(res.content_length()).await {
+        Ok(w) => w,
+        Err(e) => return RetriableResult::Permanent(e),
     };
 
     // determine the content type and length before moving `res`
@@ -56,7 +63,7 @@ pub(crate) async fn get_url(
         .map(|r| r.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)));
     let mut reader = StreamReader::new(stream);
 
-    match copy(&mut reader, writer).await {
+    match copy(&mut reader, &mut writer).await {
         Ok(_) => {}
         // an error copying data from the remote is common and retriable
         Err(e) => return RetriableResult::Retriable(e.into()),
