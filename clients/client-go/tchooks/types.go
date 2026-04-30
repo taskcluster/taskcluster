@@ -155,6 +155,17 @@ type (
 		Owner string `json:"owner"`
 	}
 
+	// List of hooks matching a search query across all hook groups.
+	HookSearchResults struct {
+
+		// A continuation token is returned if there are more results than listed
+		// here. You can optionally provide the token in the request payload to
+		// load the additional results.
+		ContinuationToken string `json:"continuationToken,omitempty"`
+
+		Hooks []HookDefinition `json:"hooks"`
+	}
+
 	// A snapshot of the current status of a hook.
 	HookStatusResponse struct {
 

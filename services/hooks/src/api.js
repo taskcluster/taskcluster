@@ -54,6 +54,42 @@ builder.declare({
   return res.reply({ groups });
 });
 
+/** Search hooks across all groups **/
+builder.declare({
+  method: 'get',
+  route: '/hooks/search',
+  name: 'searchHooks',
+  scopes: 'hooks:list-hooks:',
+  category: 'Hooks',
+  output: 'search-hooks-response.yml',
+  query: {
+    ...paginateResults.query,
+    q: /^.*$/,
+  },
+  title: 'Search for hooks',
+  stability: 'stable',
+  description: [
+    'Search for hooks by a query string that matches hook group ID or hook ID',
+    '(case-insensitive substring match).',
+    '',
+    'By default this endpoint will return up to 100 results. Pass `limit` to',
+    'request a different page size (maximum 1000). If more results exist, the',
+    'response includes a `continuationToken`; pass it as the `continuationToken`',
+    'query parameter on a subsequent request to retrieve the next page.',
+    '',
+    'This endpoint requires the `hooks:list-hooks:` scope.',
+  ].join('\n'),
+}, async function(req, res) {
+  const { q } = req.query;
+  const { continuationToken, rows } = await paginateResults({
+    query: { ...req.query, limit: req.query.limit ?? '100' },
+    fetch: (size, offset) => this.db.fns.search_hooks(q || '', size, offset),
+    maxLimit: 1000,
+  });
+  const hooks = rows.map(hookUtils.fromDb).map(hookUtils.definition);
+  return res.reply({ hooks, continuationToken });
+});
+
 /** Get hooks in a given group **/
 builder.declare({
   method: 'get',

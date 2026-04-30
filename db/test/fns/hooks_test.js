@@ -543,6 +543,62 @@ suite(testing.suiteName(), function() {
       assert.equal(rows[0].hook_group_id, 'baz');
       assert.equal(rows[1].hook_group_id, 'foo');
     });
+
+    helper.dbTest('search_hooks returns all hooks when search is empty', async function(db) {
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-one' });
+      await create_hook(db, { hook_group_id: 'bar', hook_id: 'hook-two' });
+
+      const rows = await db.fns.search_hooks('', 100, 0);
+      assert.equal(rows.length, 2);
+    });
+
+    helper.dbTest('search_hooks returns all hooks when search is null', async function(db) {
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-one' });
+      const rows = await db.fns.search_hooks(null, 100, 0);
+      assert.equal(rows.length, 1);
+    });
+
+    helper.dbTest('search_hooks filters by group ID substring (case-insensitive)', async function(db) {
+      await create_hook(db, { hook_group_id: 'project-releng', hook_id: 'alpha' });
+      await create_hook(db, { hook_group_id: 'project-ci', hook_id: 'beta' });
+      await create_hook(db, { hook_group_id: 'taskcluster', hook_id: 'gamma' });
+
+      const rows = await db.fns.search_hooks('PROJECT', 100, 0);
+      assert.equal(rows.length, 2);
+      assert.deepEqual(rows.map(r => r.hook_group_id).sort(), ['project-ci', 'project-releng']);
+    });
+
+    helper.dbTest('search_hooks filters by hook ID substring (case-insensitive)', async function(db) {
+      await create_hook(db, { hook_group_id: 'group-a', hook_id: 'translations-nightly' });
+      await create_hook(db, { hook_group_id: 'group-b', hook_id: 'build-daily' });
+
+      const rows = await db.fns.search_hooks('Translations', 100, 0);
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].hook_group_id, 'group-a');
+      assert.equal(rows[0].hook_id, 'translations-nightly');
+    });
+
+    helper.dbTest('search_hooks paginates results', async function(db) {
+      for (let i = 0; i < 5; i++) {
+        await create_hook(db, { hook_group_id: 'group', hook_id: `hook-${i}` });
+      }
+
+      const page1 = await db.fns.search_hooks('', 3, 0);
+      assert.equal(page1.length, 3);
+
+      const page2 = await db.fns.search_hooks('', 3, 3);
+      assert.equal(page2.length, 2);
+    });
+
+    helper.dbTest('search_hooks returns full hook rows (not just ids)', async function(db) {
+      await create_hook(db, { hook_group_id: 'g', hook_id: 'h', metadata: { name: 'test', description: 'desc', owner: 'owner@x.com' } });
+
+      const rows = await db.fns.search_hooks('h', 100, 0);
+      assert.equal(rows.length, 1);
+      assert(rows[0].metadata);
+      assert(rows[0].task !== undefined);
+      assert(rows[0].trigger_schema !== undefined);
+    });
   });
 
   suite(`${testing.suiteName()} - hooks audit history`, function() {
