@@ -3,6 +3,7 @@ package internal
 import (
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/cenkalti/backoff/v3"
 	"github.com/taskcluster/httpbackoff/v3"
@@ -35,7 +36,8 @@ func GetURL(httpBackoffClient *httpbackoff.Client, url string, writeSeeker io.Wr
 			// straight away
 			return
 		}
-		resp, tempError = http.Get(url)
+		client := &http.Client{Timeout: 30 * time.Second}
+		resp, tempError = client.Get(url)
 		// httpbackoff handles http status codes, so we can consider all errors worth retrying here
 		if tempError != nil {
 			// temporary error!
