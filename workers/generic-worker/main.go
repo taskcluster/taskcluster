@@ -935,7 +935,9 @@ func (task *TaskRun) Run() (err *ExecutionErrors) {
 	workerStatus := &WorkerStatus{
 		CurrentTaskIDs: []string{task.TaskID},
 	}
-	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(workerStatus, workerStatusPath)))
+	if statusErr := fileutil.WriteToFileAsJSON(workerStatus, workerStatusPath); statusErr != nil {
+		log.Printf("WARNING: could not write worker status file %s: %v", workerStatusPath, statusErr)
+	}
 	defer os.Remove(workerStatusPath)
 
 	defer func() {
