@@ -18,6 +18,15 @@ func (re HTTPRetryError) Error() string {
 	return re.Err.Error()
 }
 
+// downloadHTTPClient is used for downloading artifacts.
+// ResponseHeaderTimeout is used instead of http.Client.Timeout to avoid
+// blocking while reading the response body (e.g., when streaming large artifacts).
+var downloadHTTPClient = func() *http.Client {
+	t := http.DefaultTransport.(*http.Transport).Clone()
+	t.ResponseHeaderTimeout = 30 * time.Second
+	return &http.Client{Transport: t}
+}()
+
 // Get the given URL, retrying based on the configuration of the given httpbackoff client, and writing the result to the given WriteSeeker.
 func GetURL(httpBackoffClient *httpbackoff.Client, url string, writeSeeker io.WriteSeeker) (contentType string, contentLength int64, err error) {
 	// Calling httpbackoff.Get(url) here would not be sufficient since that
@@ -36,8 +45,7 @@ func GetURL(httpBackoffClient *httpbackoff.Client, url string, writeSeeker io.Wr
 			// straight away
 			return
 		}
-		client := &http.Client{Timeout: 30 * time.Second}
-		resp, tempError = client.Get(url)
+		resp, tempError = downloadHTTPClient.Get(url)
 		// httpbackoff handles http status codes, so we can consider all errors worth retrying here
 		if tempError != nil {
 			// temporary error!
