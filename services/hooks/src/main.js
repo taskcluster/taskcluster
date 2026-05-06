@@ -56,6 +56,7 @@ const load = loader({
     setup: ({ cfg }) => {
       return new SchemaSet({
         serviceName: 'hooks',
+        folder: fileURLToPath(new URL('../schemas', import.meta.url)),
       });
     },
   },

@@ -1230,6 +1230,25 @@ export default {
         },
         {
           "args": [
+          ],
+          "category": "Hooks",
+          "description": "Search for hooks by a query string that matches hook group ID or hook ID\n(case-insensitive substring match).\n\nBy default this endpoint will return up to 100 results. Pass `limit` to\nrequest a different page size (maximum 1000). If more results exist, the\nresponse includes a `continuationToken`; pass it as the `continuationToken`\nquery parameter on a subsequent request to retrieve the next page.\n\nThis endpoint requires the `hooks:list-hooks:` scope.",
+          "method": "get",
+          "name": "searchHooks",
+          "output": "v1/search-hooks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit",
+            "q"
+          ],
+          "route": "/hooks/search",
+          "scopes": "hooks:list-hooks:",
+          "stability": "stable",
+          "title": "Search for hooks",
+          "type": "function"
+        },
+        {
+          "args": [
             "hookGroupId"
           ],
           "category": "Hooks",

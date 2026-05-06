@@ -158,6 +158,54 @@ impl Hooks {
         (path, query)
     }
 
+    /// Search for hooks
+    ///
+    /// Search for hooks by a query string that matches hook group ID or hook ID
+    /// (case-insensitive substring match).
+    ///
+    /// By default this endpoint will return up to 100 results. Pass `limit` to
+    /// request a different page size (maximum 1000). If more results exist, the
+    /// response includes a `continuationToken`; pass it as the `continuationToken`
+    /// query parameter on a subsequent request to retrieve the next page.
+    ///
+    /// This endpoint requires the `hooks:list-hooks:` scope.
+    pub async fn searchHooks(&self, continuationToken: Option<&str>, limit: Option<&str>, q: Option<&str>) -> Result<Value, Error> {
+        let method = "GET";
+        let (path, query) = Self::searchHooks_details(continuationToken, limit, q);
+        let body = None;
+        let resp = self.client.request(method, path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Generate an unsigned URL for the searchHooks endpoint
+    pub fn searchHooks_url(&self, continuationToken: Option<&str>, limit: Option<&str>, q: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::searchHooks_details(continuationToken, limit, q);
+        self.client.make_url(path, query)
+    }
+
+    /// Generate a signed URL for the searchHooks endpoint
+    pub fn searchHooks_signed_url(&self, continuationToken: Option<&str>, limit: Option<&str>, q: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::searchHooks_details(continuationToken, limit, q);
+        self.client.make_signed_url(path, query, ttl)
+    }
+
+    /// Determine the HTTP request details for searchHooks
+    fn searchHooks_details<'a>(continuationToken: Option<&'a str>, limit: Option<&'a str>, q: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+        let path = "hooks/search";
+        let mut query = None;
+        if let Some(q) = continuationToken {
+            query.get_or_insert_with(Vec::new).push(("continuationToken", q));
+        }
+        if let Some(q) = limit {
+            query.get_or_insert_with(Vec::new).push(("limit", q));
+        }
+        if let Some(q) = q {
+            query.get_or_insert_with(Vec::new).push(("q", q));
+        }
+
+        (path, query)
+    }
+
     /// List hooks in a given group
     ///
     /// This endpoint will return a list of all the hook definitions within a

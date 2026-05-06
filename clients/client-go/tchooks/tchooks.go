@@ -149,6 +149,59 @@ func (hooks *Hooks) ListHookGroups_SignedURL(duration time.Duration) (*url.URL, 
 	return (&cd).SignedURL("/hooks", nil, duration)
 }
 
+// Search for hooks by a query string that matches hook group ID or hook ID
+// (case-insensitive substring match).
+//
+// By default this endpoint will return up to 100 results. Pass `limit` to
+// request a different page size (maximum 1000). If more results exist, the
+// response includes a `continuationToken`; pass it as the `continuationToken`
+// query parameter on a subsequent request to retrieve the next page.
+//
+// This endpoint requires the `hooks:list-hooks:` scope.
+//
+// Required scopes:
+//
+//	hooks:list-hooks:
+//
+// See #searchHooks
+func (hooks *Hooks) SearchHooks(continuationToken, limit, q string) (*HookSearchResults, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	if q != "" {
+		v.Add("q", q)
+	}
+	cd := tcclient.Client(*hooks)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/search", new(HookSearchResults), v)
+	return responseObject.(*HookSearchResults), err
+}
+
+// Returns a signed URL for SearchHooks, valid for the specified duration.
+//
+// Required scopes:
+//
+//	hooks:list-hooks:
+//
+// See SearchHooks for more details.
+func (hooks *Hooks) SearchHooks_SignedURL(continuationToken, limit, q string, duration time.Duration) (*url.URL, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	if q != "" {
+		v.Add("q", q)
+	}
+	cd := tcclient.Client(*hooks)
+	return (&cd).SignedURL("/hooks/search", v, duration)
+}
+
 // This endpoint will return a list of all the hook definitions within a
 // given hook group.
 //

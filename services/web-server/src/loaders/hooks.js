@@ -17,6 +17,26 @@ export default ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, req
       }),
     ),
   );
+
+  const hookSearch = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ query, continuationToken, limit }) => {
+        try {
+          const params = { q: query };
+          if (continuationToken) {
+            params.continuationToken = continuationToken;
+          }
+          if (limit !== undefined && limit !== null) {
+            params.limit = limit;
+          }
+          const response = await hooks.searchHooks(params);
+          return { hooks: response.hooks, continuationToken: response.continuationToken };
+        } catch (err) {
+          return err;
+        }
+      }),
+    ),
+  );
   const hooksForGroup = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ hookGroupId, filter }) => {
@@ -81,5 +101,6 @@ export default ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, req
     hook,
     hookStatus,
     hookLastFires,
+    hookSearch,
   };
 };
