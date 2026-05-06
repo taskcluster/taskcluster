@@ -3,7 +3,7 @@ package gwconfig
 import (
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v99/tools/d2g"
+	"github.com/taskcluster/taskcluster/v100/tools/d2g"
 )
 
 type PublicPlatformConfig struct {

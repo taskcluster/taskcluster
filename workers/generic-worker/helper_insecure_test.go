@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/gwconfig"
-	gwruntime "github.com/taskcluster/taskcluster/v99/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/gwconfig"
+	gwruntime "github.com/taskcluster/taskcluster/v100/workers/generic-worker/runtime"
 )
 
 func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {

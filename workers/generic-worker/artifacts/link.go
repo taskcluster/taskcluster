@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v99/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v100/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/gwconfig"
 )
 
 type LinkArtifact struct {

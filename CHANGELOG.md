@@ -3,6 +3,90 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v100.0.0
+
+### GENERAL
+
+▶ [MAJOR] [#8437](https://github.com/taskcluster/taskcluster/issues/8437)
+Removed docker-worker from the monorepo. Docker-worker has been decommissioned across Taskcluster deployments and is no longer released. The d2g translation layer remains, so generic-worker continues to accept the legacy docker-worker payload format on Linux and the `docker-worker:*` scope namespace is unchanged. Existing tasks using the docker-worker payload format continue to run unchanged on generic-worker.
+
+**Notes for deployers:**
+
+- The `docker-worker` worker-runner implementation has been removed; deployments must run `generic-worker` (or a third-party worker that uses the Queue's worker protocol). worker-runner's `--help` no longer lists `docker-worker`.
+- The `docker-worker` entry has been removed from the task-creator UI's `TASK_PAYLOAD_SCHEMAS` map. Deployments that set `SITE_SPECIFIC.tutorial_worker_schema` to `docker-worker` should change it to a generic-worker schema key (e.g. `generic-multi-posix` on Linux, `generic-multi-win` on Windows). Deployments that did not set this variable now default to `generic-multi-posix` instead of `docker-worker`.
+- The `workers/docker-worker/` source tree is gone; deployments that built the docker-worker image themselves from this monorepo must source it from a docker-worker fork instead.
+- The docker-worker payload schema has moved from `workers/docker-worker/schemas/v1/payload.yml` to `tools/d2g/schemas/docker-worker/v1/payload.yml`. The published service-schema URL (`schemas/docker-worker/v1/payload.json`) is unchanged, so consumers fetching the schema from a running deployment are unaffected.
+
+### DEPLOYERS
+
+▶ [patch] [#8569](https://github.com/taskcluster/taskcluster/issues/8569)
+Fix Azure worker registration in regions whose Azure IMDS attested-data leaf certificates have rotated to the new `Microsoft TLS RSA Root G2` hierarchy (uksouth as of 2026-04-29; other regions follow as their leaves renew). The G2 root is bundled in `worker-manager`'s azure CA store, so `addIntermediateCert` succeeds for the dynamically fetched `Microsoft TLS G2 RSA CA OCSP NN` intermediates and `registerWorker` returns 200 again.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7388](https://github.com/taskcluster/taskcluster/issues/7388)
+Generic Worker now supports running multiple tasks concurrently via the new `capacity` configuration option.
+
+**Configuration:**
+
+- `capacity` (uint8, default: `1`, max: `255`) - the number of tasks the worker will claim and execute in parallel.
+- When `capacity` is `1`, behavior is unchanged from previous releases.
+- When `capacity` > 1, each task slot is allocated a block of 4 ports offset from the configured base ports (`livelogPortBase`, `interactivePort`, `taskclusterProxyPort`). Deployers must ensure these base ports are spaced far enough apart to avoid overlapping ranges. The worker validates this at startup and exits with an error if ranges collide.
+
+**Engine support:**
+
+- Insecure engine: supported.
+- Multiuser engine: supported only when `headlessTasks` is enabled. Non-headless multiuser mode (which reboots between tasks) is restricted to `capacity` = 1.
+
+**Task isolation:**
+
+- Each concurrent task receives its own task directory under `tasksDir`, its own set of dynamically allocated ports for LiveLog, Interactive, and TaskclusterProxy, and (in multiuser mode) its own OS user.
+- Caches and mounts are protected by per-cache read/write locks so that multiple tasks can read from the same cache concurrently while writes are serialized.
+- Docker image loading (D2G) uses file-level locking so parallel tasks sharing the same image coordinate without redundant loads.
+- In multiuser mode, TaskclusterProxy now verifies that incoming connections originate from the OS user running the task, preventing one task from accessing another task's credentials. This is implemented via `/proc/net/tcp` on Linux, `lsof` on macOS, and `GetExtendedTcpTable` on Windows. Note: in insecure mode, all tasks run as the same OS user, so UID-based connection verification is not possible; insecure mode with `capacity` > 1 does not provide credential isolation between concurrent tasks.
+
+**Constraints:**
+
+- The `runTaskAsCurrentUser` and `runAsAdministrator` task features are not supported when `capacity` > 1 and will return a `MalformedPayloadError` if requested.
+- Graceful shutdown waits for all running tasks to complete before the worker exits.
+- `numberOfTasksToRun` is respected across all concurrent slots - the worker will not start more tasks than the configured total.
+
+### USERS
+
+▶ [MAJOR] [#3521](https://github.com/taskcluster/taskcluster/issues/3521)
+The taskcluster proxy no longer inserts a `Content-Type: application/json` requests missing a content type and having a non empty body
+
+▶ [minor] [#8537](https://github.com/taskcluster/taskcluster/issues/8537)
+The web UI now displays artifact sizes in the task-runs and indexed-task artifact lists, when reported by the worker. Workers that do not report a size show a blank size column.
+
+### DEVELOPERS
+
+▶ [patch]
+Replaced locally-redefined Win32 constants in `workers/generic-worker` with their equivalents from `golang.org/x/sys/windows` and `syscall`. No behavior change.
+
+### OTHER
+
+▶ Additional changes not described here: [#6822](https://github.com/taskcluster/taskcluster/issues/6822), [#7722](https://github.com/taskcluster/taskcluster/issues/7722).
+
+### Automated Package Updates
+
+<details>
+<summary>11 Dependabot updates</summary>
+
+* build(deps): bump axios from 1.15.0 to 1.16.0 (676a61412d)
+* build(deps): bump chalk from 4.1.2 to 5.6.2 (8e5a5611c7)
+* build(deps): bump @googleapis/iam from 35.1.0 to 36.0.0 (8590ceae3f)
+* build(deps): bump the node-deps group with 2 updates (77c0d6d6eb)
+* build(deps): bump the node-deps group with 30 updates (9b90308a4f)
+* build(deps): bump the gh-actions-deps group with 4 updates (9b8c6d8749)
+* build(deps-dev): bump ruff (d6e256d05c)
+* build(deps): bump golang.org/x/tools in the go-deps group (0805268555)
+* build(deps-dev): bump eslint (eb341fd1e0)
+* build(deps): bump tokio (18a5a3e760)
+* build(deps-dev): bump chai from 4.3.10 to 6.2.2 in /clients/client-web (abc64fa116)
+
+</details>
+
 ## v99.2.1
 
 ### GENERAL

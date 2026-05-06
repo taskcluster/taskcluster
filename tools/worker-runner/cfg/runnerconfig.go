@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/taskcluster/taskcluster/v99/tools/worker-runner/perms"
+	"github.com/taskcluster/taskcluster/v100/tools/worker-runner/perms"
 	"gopkg.in/yaml.v3"
 )
 
