@@ -3,6 +3,13 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v100.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7388](https://github.com/taskcluster/taskcluster/issues/7388)
+Generic Worker (FreeBSD): taskcluster-proxy now cross-compiles for freebsd/amd64 and freebsd/arm64 again. The new connection-verification feature (`--allowed-user` / `--allowed-network`) only has darwin, linux, and windows implementations; on FreeBSD the proxy refuses to start if either flag is set. FreeBSD support for taskcluster-proxy is experimental.
+
 ## v100.0.0
 
 ### GENERAL
