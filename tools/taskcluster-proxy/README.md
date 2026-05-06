@@ -17,6 +17,11 @@ native executable.
 See [releases page](https://github.com/taskcluster/taskcluster/releases)
 and choose a download that matches your platform.
 
+> **Note:** FreeBSD builds are **experimental**. The `--allowed-user`
+> and `--allowed-network` connection-verification options are not
+> implemented on FreeBSD; the proxy will refuse to start if either is
+> set on that platform.
+
 ## Download source and install via `go get`
 
 Alternatively you can build and install from source. For this it is recommended
