@@ -2,7 +2,6 @@ import bodyParser from 'body-parser';
 import path from 'path';
 import bodyParserGraphql from 'body-parser-graphql';
 import session from 'express-session';
-import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
 import graphqlPlayground from 'graphql-playground-middleware-express';
@@ -78,7 +77,6 @@ export default async ({ cfg, strategies, auth, monitor, db, clients, rootUrl, ap
   app.disable('x-powered-by');
   app.use(passport.initialize());
   app.use(passport.session());
-  app.use(compression());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
   app.options('/graphql', cors(corsOptions));
