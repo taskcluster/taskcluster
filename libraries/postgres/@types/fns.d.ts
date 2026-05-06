@@ -5291,7 +5291,8 @@ type WorkerManagerGetNonStoppedWorkersScannerDeprecatedFn = {
   page_offset_in?: number | null;
  }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
 };
-type WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerFn = {
+/** @deprecated */
+type WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerDeprecatedFn = {
  (
    worker_pool_id_in: string | null,
    worker_group_in: string | null,
@@ -5309,6 +5310,30 @@ type WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerFn = {
   providers_filter_value_in?: string | null;
   page_size_in?: number | null;
   page_offset_in?: number | null;
+ }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, launch_config_id: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
+};
+type WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerAfterFn = {
+ (
+   worker_pool_id_in: string | null,
+   worker_group_in: string | null,
+   worker_id_in: string | null,
+   providers_filter_cond_in: string | null,
+   providers_filter_value_in: string | null,
+   page_size_in: number | null,
+   after_worker_pool_id_in: string | null,
+   after_worker_group_in: string | null,
+   after_worker_id_in: string | null
+ ): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, launch_config_id: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
+ (params: {
+  worker_pool_id_in?: string | null;
+  worker_group_in?: string | null;
+  worker_id_in?: string | null;
+  providers_filter_cond_in?: string | null;
+  providers_filter_value_in?: string | null;
+  page_size_in?: number | null;
+  after_worker_pool_id_in?: string | null;
+  after_worker_group_in?: string | null;
+  after_worker_id_in?: string | null;
  }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, launch_config_id: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
 };
 type WorkerManagerGetQueueWorkerWithWmDataFn = {
@@ -6466,7 +6491,7 @@ export interface DbFunctions {
   expire_worker_pool_launch_configs: WorkerManagerExpireWorkerPoolLaunchConfigsFn;
   expire_worker_pools: WorkerManagerExpireWorkerPoolsFn;
   expire_workers: WorkerManagerExpireWorkersFn;
-  get_non_stopped_workers_with_launch_config_scanner: WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerFn;
+  get_non_stopped_workers_with_launch_config_scanner_after: WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerAfterFn;
   get_queue_worker_with_wm_data: WorkerManagerGetQueueWorkerWithWmDataFn;
   get_queue_workers_with_wm_data: WorkerManagerGetQueueWorkersWithWmDataFn;
   get_task_queue_wm_2: WorkerManagerGetTaskQueueWm2Fn;
@@ -6730,6 +6755,7 @@ export interface DeprecatedDbFunctions {
   get_non_stopped_workers_quntil: WorkerManagerGetNonStoppedWorkersQuntilDeprecatedFn;
   get_non_stopped_workers_quntil_providers: WorkerManagerGetNonStoppedWorkersQuntilProvidersDeprecatedFn;
   get_non_stopped_workers_scanner: WorkerManagerGetNonStoppedWorkersScannerDeprecatedFn;
+  get_non_stopped_workers_with_launch_config_scanner: WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerDeprecatedFn;
   get_queue_worker_with_wm_join: WorkerManagerGetQueueWorkerWithWmJoinDeprecatedFn;
   get_queue_worker_with_wm_join_2: WorkerManagerGetQueueWorkerWithWmJoin2DeprecatedFn;
   get_queue_workers_with_wm_join: WorkerManagerGetQueueWorkersWithWmJoinDeprecatedFn;

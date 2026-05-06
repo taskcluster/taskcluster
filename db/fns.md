@@ -185,7 +185,7 @@
    * [`expire_worker_pool_launch_configs`](#expire_worker_pool_launch_configs)
    * [`expire_worker_pools`](#expire_worker_pools)
    * [`expire_workers`](#expire_workers)
-   * [`get_non_stopped_workers_with_launch_config_scanner`](#get_non_stopped_workers_with_launch_config_scanner)
+   * [`get_non_stopped_workers_with_launch_config_scanner_after`](#get_non_stopped_workers_with_launch_config_scanner_after)
    * [`get_queue_worker_with_wm_data`](#get_queue_worker_with_wm_data)
    * [`get_queue_workers_with_wm_data`](#get_queue_workers_with_wm_data)
    * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
@@ -7142,7 +7142,7 @@ end
 * [`expire_worker_pool_launch_configs`](#expire_worker_pool_launch_configs)
 * [`expire_worker_pools`](#expire_worker_pools)
 * [`expire_workers`](#expire_workers)
-* [`get_non_stopped_workers_with_launch_config_scanner`](#get_non_stopped_workers_with_launch_config_scanner)
+* [`get_non_stopped_workers_with_launch_config_scanner_after`](#get_non_stopped_workers_with_launch_config_scanner_after)
 * [`get_queue_worker_with_wm_data`](#get_queue_worker_with_wm_data)
 * [`get_queue_workers_with_wm_data`](#get_queue_workers_with_wm_data)
 * [`get_task_queue_wm_2`](#get_task_queue_wm_2)
@@ -7551,7 +7551,7 @@ end
 
 </details>
 
-### get_non_stopped_workers_with_launch_config_scanner
+### get_non_stopped_workers_with_launch_config_scanner_after
 
 * *Mode*: read
 * *Arguments*:
@@ -7561,7 +7561,9 @@ end
   * `providers_filter_cond_in text`
   * `providers_filter_value_in text`
   * `page_size_in integer`
-  * `page_offset_in integer`
+  * `after_worker_pool_id_in text`
+  * `after_worker_group_in text`
+  * `after_worker_id_in text`
 * *Returns*: `table`
   * `worker_pool_id text`
   * `worker_group text`
@@ -7580,18 +7582,30 @@ end
   * `quarantine_until timestamptz`
   * `first_claim timestamptz`
   * `last_date_active timestamptz`
-* *Last defined on version*: 105
+* *Last defined on version*: 125
 
-Get non-stopped workers filtered by the optional arguments,
-ordered by `worker_pool_id`, `worker_group`, and  `worker_id`.
-If the pagination arguments are both NULL, all rows are returned.
-Otherwise, page_size rows are returned at offset `page_offset`.
-The `quaratine_until` contains NULL or a date in the past if the
-worker is not quarantined, otherwise the date until which it is
-quaratined. `first_claim` and `last_date_active` contains information
-known to the queue service about the worker.
-`providers_filter_cond` and `providers_filter_value` used to
-filter `=` or `<>` provider by value.
+Get non-stopped workers filtered by the optional arguments, ordered by
+`(worker_pool_id, worker_group, worker_id)`. Uses keyset pagination via
+the `after_*_in` parameters: pass nulls to fetch the first page, then
+pass the last row's `(worker_pool_id, worker_group, worker_id)` to fetch
+the next page. Unlike the offset-based variant
+`get_non_stopped_workers_with_launch_config_scanner`, this is robust to
+concurrent inserts and deletes during a long-running scan — the cursor
+moves strictly forward through a unique key, so each row is returned at
+most once.
+
+Trade-off: rows inserted with a sort key *before* the current cursor
+are silently skipped for the remainder of the scan. This is fine for
+periodic scanners (worker-scanner / provisioner) that re-scan from the
+beginning each loop, but callers requiring "every row that existed at
+any point during the scan" should not use this function.
+
+`quarantine_until` contains NULL or a date in the past if the worker is
+not quarantined, otherwise the date until which it is quarantined.
+`first_claim` and `last_date_active` contain information known to the
+queue service about the worker. `providers_filter_cond` and
+`providers_filter_value` are used to filter `=` or `<>` provider by
+value (comma-separated list).
 
 <details><summary>Function Body</summary>
 
@@ -7634,10 +7648,15 @@ begin
         when providers_filter_cond_in = '<>'
           then workers.provider_id <> ALL(string_to_array(providers_filter_value_in, ','))
       end
-      )
-  order by worker_pool_id, worker_group, worker_id
-  limit get_page_limit(page_size_in)
-  offset get_page_offset(page_offset_in);
+      ) and
+    -- Each arg is null-checked individually so the codegen marks all
+    -- three as nullable; short-circuit OR keeps runtime semantics
+    -- identical to a single composite null check.
+    (after_worker_pool_id_in is null or after_worker_group_in is null or after_worker_id_in is null or
+      (workers.worker_pool_id, workers.worker_group, workers.worker_id) >
+      (after_worker_pool_id_in, after_worker_group_in, after_worker_id_in))
+  order by workers.worker_pool_id, workers.worker_group, workers.worker_id
+  limit get_page_limit(page_size_in);
 end
 ```
 
@@ -9024,3 +9043,7 @@ end
 ```
 
 </details>
+
+### deprecated methods
+
+* `get_non_stopped_workers_with_launch_config_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond_in text, providers_filter_value_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v102.0.0)

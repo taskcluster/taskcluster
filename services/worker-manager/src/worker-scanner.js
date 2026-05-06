@@ -74,10 +74,21 @@ export class WorkerScanner {
     // Phase 1: Check workers and collect termination candidates
     const poolCandidates = new Map();
 
-    const fetch =
-      async (size, offset) => await this.db.fns.get_non_stopped_workers_with_launch_config_scanner(
-        null, null, null, this.providersFilter.cond, this.providersFilter.value, size, offset);
-    for await (let row of paginatedIterator({ fetch, size: 500 })) {
+    const fetch = async (page_size_in, after) =>
+      await this.db.fns.get_non_stopped_workers_with_launch_config_scanner_after({
+        worker_pool_id_in: null,
+        worker_group_in: null,
+        worker_id_in: null,
+        providers_filter_cond_in: this.providersFilter.cond,
+        providers_filter_value_in: this.providersFilter.value,
+        page_size_in,
+        ...after,
+      });
+    for await (let row of paginatedIterator({
+      fetch,
+      indexColumns: ['worker_pool_id', 'worker_group', 'worker_id'],
+      size: 500,
+    })) {
       const worker = Worker.fromDb(row);
       const provider = this.providers.get(worker.providerId);
       if (provider) {
