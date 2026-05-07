@@ -9,6 +9,7 @@ const debug = debugFactory('auth:ScopeResolver');
 import * as trie from './trie.js';
 import ScopeSetBuilder from './scopesetbuilder.js';
 import { consume } from '@taskcluster/lib-pulse';
+import { paginatedIterator } from '@taskcluster/lib-postgres';
 
 const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 
@@ -190,29 +191,33 @@ class ScopeResolver extends events.EventEmitter {
           // Load all clients on a simplified form:
           // {clientId, accessToken, updateLastUsed}
           // _rebuildResolver() will construct the `_clientCache` object
-          let offset = 0;
-          while (true) {
-            const rows = await this.db.fns.get_clients(null, 1000, offset);
-            if (rows.length === 0) {
-              break;
-            } else {
-              offset += 1000;
-            }
-
-            let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
-            for (const client of rows) {
-              clients.push({
-                clientId: client.client_id,
-                accessToken: this.db.decrypt({ value: client.encrypted_access_token }).toString('utf8'),
-                expires: client.expires,
-                // Note that lastUsedDate should be updated, if it's out-dated by
-                // more than 6 hours.
-                // (cheap way to know if it's been used recently)
-                updateLastUsed: client.last_date_used < minLastUsed,
-                unexpandedScopes: client.scopes,
-                disabled: client.disabled,
-              });
-            }
+          //
+          // Keyset pagination via paginatedIterator: offset-based pagination
+          // here would silently skip or duplicate clients when concurrent
+          // inserts shift the result set during reload. See #8588 / #8586.
+          const minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
+          const fetch = async (page_size_in, after) =>
+            await this.db.fns.get_clients_after({
+              prefix_in: null,
+              page_size_in,
+              ...after,
+            });
+          for await (const client of paginatedIterator({
+            fetch,
+            indexColumns: ['client_id'],
+            size: 1000,
+          })) {
+            clients.push({
+              clientId: client.client_id,
+              accessToken: this.db.decrypt({ value: client.encrypted_access_token }).toString('utf8'),
+              expires: client.expires,
+              // Note that lastUsedDate should be updated, if it's out-dated by
+              // more than 6 hours.
+              // (cheap way to know if it's been used recently)
+              updateLastUsed: client.last_date_used < minLastUsed,
+              unexpandedScopes: client.scopes,
+              disabled: client.disabled,
+            });
           }
         })(),
         (async () => {
