@@ -195,39 +195,72 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(client.created, created);
     });
 
-    helper.dbTest('get_clients with a prefix', async function(db) {
+    helper.dbTest('get_clients_after with a prefix', async function(db) {
       await Promise.all([
         create(db, 'abc/1'),
         create(db, 'abc/2'),
         create(db, 'abc/3'),
         create(db, 'def/1'),
       ]);
-      const clients = await db.fns.get_clients('abc/', null, null);
+      const clients = await db.fns.get_clients_after('abc/', null, null);
       assert.deepEqual(clients.map(c => c.client_id), ['abc/1', 'abc/2', 'abc/3']);
     });
 
-    helper.dbTest('get_clients with pagination', async function(db) {
+    helper.dbTest('get_clients_after paginates by client_id', async function(db) {
       await Promise.all([
         create(db, 'abc/1'),
         create(db, 'abc/2'),
         create(db, 'abc/3'),
         create(db, 'abc/4'),
       ]);
-      const clients = await db.fns.get_clients(null, 2, null);
-      assert.deepEqual(clients.map(c => c.client_id), ['abc/1', 'abc/2']);
-      const clients2 = await db.fns.get_clients(null, 3, 2);
-      assert.deepEqual(clients2.map(c => c.client_id), ['abc/3', 'abc/4']);
+      const page1 = await db.fns.get_clients_after(null, 2, null);
+      assert.deepEqual(page1.map(c => c.client_id), ['abc/1', 'abc/2']);
+
+      const page2 = await db.fns.get_clients_after(null, 2, page1[page1.length - 1].client_id);
+      assert.deepEqual(page2.map(c => c.client_id), ['abc/3', 'abc/4']);
+
+      const page3 = await db.fns.get_clients_after(null, 2, page2[page2.length - 1].client_id);
+      assert.deepEqual(page3, []);
     });
 
-    helper.dbTest('get_clients with prefix and pagination', async function(db) {
+    helper.dbTest('get_clients_after with prefix and pagination', async function(db) {
       await Promise.all([
         create(db, 'abc/1'),
         create(db, 'def/2'),
         create(db, 'abc/3'),
         create(db, 'abc/4'),
       ]);
-      const clients = await db.fns.get_clients('abc/', 2, null);
-      assert.deepEqual(clients.map(c => c.client_id), ['abc/1', 'abc/3']);
+      const page1 = await db.fns.get_clients_after('abc/', 2, null);
+      assert.deepEqual(page1.map(c => c.client_id), ['abc/1', 'abc/3']);
+
+      const page2 = await db.fns.get_clients_after('abc/', 2, page1[page1.length - 1].client_id);
+      assert.deepEqual(page2.map(c => c.client_id), ['abc/4']);
+    });
+
+    helper.dbTest('get_clients_after is robust to inserts mid-scan', async function(db) {
+      // Seed with three clients covering the keyspace.
+      await Promise.all([
+        create(db, 'c/3'),
+        create(db, 'c/5'),
+        create(db, 'c/7'),
+      ]);
+
+      // Page 1: get the first row.
+      const page1 = await db.fns.get_clients_after(null, 1, null);
+      assert.equal(page1.length, 1);
+      assert.equal(page1[0].client_id, 'c/3');
+
+      // Simulate a concurrent insert with a client_id that sorts BEFORE the
+      // cursor (c/1 < c/3). With offset-based pagination this would shift
+      // the result set and cause c/3 to be returned again on the next page.
+      // With keyset pagination, the cursor is client_id > c/3, so c/1 is
+      // silently skipped (it's behind us) and we proceed forward.
+      await create(db, 'c/1');
+
+      const page2 = await db.fns.get_clients_after(null, 10, page1[page1.length - 1].client_id);
+      const ids = page2.map(c => c.client_id);
+      assert.deepEqual(ids, ['c/5', 'c/7'],
+        'keyset cursor must skip rows behind it and never re-yield rows in front of it');
     });
 
     helper.dbTest('delete a client', async function(db) {
@@ -358,7 +391,7 @@ suite(testing.suiteName(), function() {
       const res = await db.fns.expire_clients_return_client_ids();
       assert.deepEqual(res, [{ client_id: 'old' }]);
 
-      const clients = await db.fns.get_clients(null, null, null);
+      const clients = await db.fns.get_clients_after(null, null, null);
       assert.deepEqual(clients.map(c => c.client_id), ['new', 'new-keep', 'old-keep']);
     });
   });

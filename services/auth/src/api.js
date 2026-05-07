@@ -222,7 +222,12 @@ builder.declare({
 }, async function(req, res) {
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_clients(req.query.prefix, size, offset),
+    indexColumns: ['client_id'],
+    fetch: (size, after) => this.db.fns.get_clients_after({
+      prefix_in: req.query.prefix ?? null,
+      page_size_in: size,
+      ...after,
+    }),
     maxLimit: 1000,
   });
 

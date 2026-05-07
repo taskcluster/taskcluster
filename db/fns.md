@@ -6,7 +6,7 @@
    * [`delete_client`](#delete_client)
    * [`expire_clients_return_client_ids`](#expire_clients_return_client_ids)
    * [`get_client`](#get_client)
-   * [`get_clients`](#get_clients)
+   * [`get_clients_after`](#get_clients_after)
    * [`get_combined_audit_history`](#get_combined_audit_history)
    * [`get_roles`](#get_roles)
    * [`insert_auth_audit_history`](#insert_auth_audit_history)
@@ -220,7 +220,7 @@
 * [`delete_client`](#delete_client)
 * [`expire_clients_return_client_ids`](#expire_clients_return_client_ids)
 * [`get_client`](#get_client)
-* [`get_clients`](#get_clients)
+* [`get_clients_after`](#get_clients_after)
 * [`get_combined_audit_history`](#get_combined_audit_history)
 * [`get_roles`](#get_roles)
 * [`insert_auth_audit_history`](#insert_auth_audit_history)
@@ -388,13 +388,13 @@ end
 
 </details>
 
-### get_clients
+### get_clients_after
 
 * *Mode*: read
 * *Arguments*:
   * `prefix_in text`
   * `page_size_in integer`
-  * `page_offset_in integer`
+  * `after_client_id_in text`
 * *Returns*: `table`
   * `   client_id text`
   * `  description text`
@@ -407,12 +407,22 @@ end
   * `  last_date_used timestamptz`
   * `  last_rotated timestamptz`
   * `  delete_on_expiration boolean `
-* *Last defined on version*: 41
+* *Last defined on version*: 126
 
-Get clients, ordered by client_id.   If specified, only clients with
-client_id beginning with `prefix` are returned.  If the pagination
-arguments are both NULL, all rows are returned.  Otherwise, page_size
-rows are returned at offset page_offset.
+Get clients filtered by the optional `prefix_in`, ordered by
+`client_id`. Uses keyset pagination via `after_client_id_in`: pass
+null to fetch the first page, then pass the last row's `client_id`
+to fetch the next page. Unlike the offset-based variant
+`get_clients`, this is robust to concurrent inserts and deletes
+during a long-running scan — the cursor moves strictly forward
+through a unique key, so each row is returned at most once.
+
+Trade-off: rows inserted with a sort key *before* the current
+cursor are silently skipped for the remainder of the scan. This
+is fine for callers that re-scan from the beginning each loop
+(e.g. the auth scope-resolver cache reload), but callers
+requiring "every row that existed at any point during the scan"
+should not use this function.
 
 <details><summary>Function Body</summary>
 
@@ -432,10 +442,11 @@ begin
     clients.last_rotated,
     clients.delete_on_expiration
   from clients
-  where prefix_in is null or starts_with(clients.client_id, prefix_in)
+  where
+    (prefix_in is null or starts_with(clients.client_id, prefix_in)) and
+    (after_client_id_in is null or clients.client_id > after_client_id_in)
   order by clients.client_id
-  limit get_page_limit(page_size_in)
-  offset get_page_offset(page_offset_in);
+  limit get_page_limit(page_size_in);
 end
 ```
 
@@ -707,6 +718,10 @@ end
 ```
 
 </details>
+
+### deprecated methods
+
+* `get_clients(prefix_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v102.0.0)
 
 ## github
 
