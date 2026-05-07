@@ -28,8 +28,11 @@ suite(testing.suiteName(), function() {
       );
     }
 
-    // Fetch page by page (page size 2) and collect all task IDs
+    // Fetch page by page (page size 2) and collect all task IDs.
+    // Test exercises offset pagination intentionally in a no-concurrent-writes
+    // environment to verify stable ORDER BY ordering of the function itself.
     const allTaskIds = [];
+    // eslint-disable-next-line no-restricted-syntax
     for (let offset = 0; offset < taskIds.length; offset += 2) {
       const page = await db.fns.get_tasks_by_task_group_projid('group-1', 2, offset);
       allTaskIds.push(...page.map(r => r.task_id));

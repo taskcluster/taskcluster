@@ -68,6 +68,19 @@ rules:
   no-unreachable: error
   no-undef: error
 
+  # Ban offset-paginated full-set scan loops over `db.fns.*`.
+  #
+  # The pattern `let offset = 0; while (...) { ... db.fns.X(.., offset); offset += N }`
+  # silently skips or duplicates rows when concurrent inserts/deletes shift the
+  # result set mid-scan. See #8586 / #8587 / #8588 for incidents. Use
+  # `paginatedIterator` from `@taskcluster/lib-postgres` with an `_after`
+  # DB function instead — keyset pagination is robust to concurrent writes.
+  no-restricted-syntax:
+    - error
+    - selector: ':matches(WhileStatement, DoWhileStatement, ForStatement, ForInStatement, ForOfStatement):has(AwaitExpression CallExpression MemberExpression[property.name="fns"]):has(AssignmentExpression[operator="+="][right.type="Literal"])'
+      message: |-
+        Offset-paginated full-set scan over `db.fns.*` ('let offset = 0; ... db.fns.X(.., offset); offset += N') yields duplicate or skipped rows under concurrent writes. Use `paginatedIterator` from '@taskcluster/lib-postgres' with an `_after` DB function (keyset pagination). See #8586 / #8587 / #8588.
+
   # These we never want but are enabled by recommended
   no-console: off # We don't mind these being used for now until structured logging is available
   no-constant-condition: off # This is legitimately sometimes useful
