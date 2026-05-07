@@ -699,8 +699,8 @@ suite(testing.suiteName(), function () {
         }
       });
 
-      const rows = await db.fns.get_non_stopped_workers_with_launch_config_scanner(
-        null, null, null, null, null, null, null);
+      const rows = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null, null, null, null, null, null, null, null, null);
 
       assert.equal(rows.length, 6);
 
@@ -763,6 +763,159 @@ suite(testing.suiteName(), function () {
 
         assert.equal(rows.length, run.expected_count);
       }
+    });
+
+    helper.dbTest('get_non_stopped_workers_with_launch_config_scanner_after paginates by (worker_pool_id, worker_group, worker_id)', async function (db) {
+      const now = new Date();
+
+      // Insert in randomized order; the function must return them sorted.
+      const orderedKeys = [
+        ['wp/a', 'g1', 'id1'],
+        ['wp/a', 'g1', 'id2'],
+        ['wp/a', 'g2', 'id1'],
+        ['wp/b', 'g1', 'id1'],
+        ['wp/b', 'g1', 'id2'],
+      ];
+      const insertOrder = [3, 0, 4, 2, 1];
+      for (const idx of insertOrder) {
+        const [worker_pool_id, worker_group, worker_id] = orderedKeys[idx];
+        await create_worker(db, {
+          worker_pool_id, worker_group, worker_id,
+          state: 'running',
+          created: now, last_modified: now, last_checked: now, expires: now,
+        });
+      }
+
+      // First page: pass nulls for the after_* args.
+      const page1 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null, null, null, null, null, 2, null, null, null);
+      assert.equal(page1.length, 2);
+      assert.deepEqual(
+        page1.map(r => [r.worker_pool_id, r.worker_group, r.worker_id]),
+        orderedKeys.slice(0, 2),
+      );
+
+      // Second page: cursor at the end of page1.
+      const last1 = page1[page1.length - 1];
+      const page2 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null, null, null, null, null, 2,
+        last1.worker_pool_id, last1.worker_group, last1.worker_id);
+      assert.equal(page2.length, 2);
+      assert.deepEqual(
+        page2.map(r => [r.worker_pool_id, r.worker_group, r.worker_id]),
+        orderedKeys.slice(2, 4),
+      );
+
+      // Third page: only one row left, then exhausted.
+      const last2 = page2[page2.length - 1];
+      const page3 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null, null, null, null, null, 2,
+        last2.worker_pool_id, last2.worker_group, last2.worker_id);
+      assert.equal(page3.length, 1);
+      assert.deepEqual(
+        [page3[0].worker_pool_id, page3[0].worker_group, page3[0].worker_id],
+        orderedKeys[4],
+      );
+
+      const last3 = page3[page3.length - 1];
+      const page4 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null, null, null, null, null, 2,
+        last3.worker_pool_id, last3.worker_group, last3.worker_id);
+      assert.equal(page4.length, 0);
+    });
+
+    helper.dbTest('get_non_stopped_workers_with_launch_config_scanner_after is robust to inserts mid-scan', async function (db) {
+      const now = new Date();
+
+      // Seed with three workers covering the keyspace.
+      const seed = [
+        ['wp/a', 'g1', 'id3'],
+        ['wp/a', 'g1', 'id5'],
+        ['wp/a', 'g1', 'id7'],
+      ];
+      for (const [worker_pool_id, worker_group, worker_id] of seed) {
+        await create_worker(db, {
+          worker_pool_id, worker_group, worker_id,
+          state: 'running',
+          created: now, last_modified: now, last_checked: now, expires: now,
+        });
+      }
+
+      // Page 1: get the first row.
+      const page1 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null, null, null, null, null, 1, null, null, null);
+      assert.equal(page1.length, 1);
+      assert.equal(page1[0].worker_id, 'id3');
+
+      // Simulate a concurrent insert with a worker_id that sorts BEFORE the
+      // cursor (id1 < id3). With offset-based pagination this would shift
+      // the result set and cause id3 to be returned again on the next page.
+      // With keyset pagination, the cursor is the tuple > (wp/a, g1, id3),
+      // so id1 is silently skipped (it's behind us) and we proceed forward.
+      await create_worker(db, {
+        worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id1',
+        state: 'running',
+        created: now, last_modified: now, last_checked: now, expires: now,
+      });
+
+      const last1 = page1[page1.length - 1];
+      const page2 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null, null, null, null, null, 10,
+        last1.worker_pool_id, last1.worker_group, last1.worker_id);
+
+      // Must NOT contain id3 (already returned) and must NOT contain id1
+      // (sorts before the cursor). Must contain id5 and id7.
+      const ids = page2.map(r => r.worker_id);
+      assert.deepEqual(ids, ['id5', 'id7'],
+        'keyset cursor must skip rows behind it and never re-yield rows in front of it');
+    });
+
+    helper.dbTest('get_non_stopped_workers_with_launch_config_scanner_after honors providers_filter alongside keyset cursor', async function (db) {
+      const now = new Date();
+
+      // Mix of providers across the keyspace to exercise the WHERE clause's
+      // interaction between provider filtering and the keyset cursor — this
+      // is the call shape the worker-scanner uses in production.
+      const seed = [
+        { worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id1', provider_id: 'gcp' },
+        { worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id2', provider_id: 'aws' },
+        { worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id3', provider_id: 'gcp' },
+        { worker_pool_id: 'wp/b', worker_group: 'g1', worker_id: 'id1', provider_id: 'aws' },
+        { worker_pool_id: 'wp/b', worker_group: 'g1', worker_id: 'id2', provider_id: 'gcp' },
+      ];
+      for (const w of seed) {
+        await create_worker(db, {
+          ...w, state: 'running',
+          created: now, last_modified: now, last_checked: now, expires: now,
+        });
+      }
+
+      // First page filtering provider = 'gcp', size 2.
+      const page1 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null, null, null, '=', 'gcp', 2, null, null, null);
+      assert.equal(page1.length, 2);
+      assert.deepEqual(
+        page1.map(r => [r.worker_pool_id, r.worker_id]),
+        [['wp/a', 'id1'], ['wp/a', 'id3']],
+        'aws workers must be excluded; gcp workers ordered by composite key');
+
+      // Second page from the cursor of page1, still filtering provider = 'gcp'.
+      const last1 = page1[page1.length - 1];
+      const page2 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null, null, null, '=', 'gcp', 2,
+        last1.worker_pool_id, last1.worker_group, last1.worker_id);
+      assert.equal(page2.length, 1);
+      assert.deepEqual(
+        [page2[0].worker_pool_id, page2[0].worker_id],
+        ['wp/b', 'id2'],
+        'cursor advance must skip aws workers in between gcp pages');
+
+      // Inverse filter <> gcp returns the two aws workers in composite-key order.
+      const awsAll = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null, null, null, '<>', 'gcp', 100, null, null, null);
+      assert.deepEqual(
+        awsAll.map(r => [r.worker_pool_id, r.worker_id]),
+        [['wp/a', 'id2'], ['wp/b', 'id1']]);
     });
 
     helper.dbTest('update_worker, change to a single field', async function (db) {
