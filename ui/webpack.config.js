@@ -127,6 +127,7 @@ module.exports = (_, { mode }) => ({
           `${__dirname}/test`,
           resolve(__dirname, "node_modules/@sentry"),
           resolve(__dirname, "node_modules/@sentry-internal"),
+          resolve(__dirname, "node_modules/react-diff-viewer-continued"),
         ],
         use: [
           {
