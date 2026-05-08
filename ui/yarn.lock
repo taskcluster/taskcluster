@@ -3401,7 +3401,6 @@ __metadata:
     deep-sort-object: "npm:^1.0.2"
     deepmerge: "npm:^4.3.1"
     dexie: "npm:^3.2.6"
-    docker-exec-websocket-client: "npm:^3.0.0"
     dot-prop-immutable: "npm:^2.0.0"
     dotenv-cli: "npm:^6.0.0"
     error-stack-parser: "npm:^2.0.6"
@@ -6983,17 +6982,6 @@ __metadata:
   dependencies:
     buffer-indexof: "npm:^1.0.0"
   checksum: 10c0/71703e65156a2d626216157e6c4fddd844e7e790b6cd3cec830ef8eed80e7ea2697e5f4f2f3eb3aae809be3c91e370cad7a5d91b05ce6b6fcd5e191e7e3d31ca
-  languageName: node
-  linkType: hard
-
-"docker-exec-websocket-client@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "docker-exec-websocket-client@npm:3.0.0"
-  dependencies:
-    debug: "npm:^4.1.1"
-    through2: "npm:^4.0.2"
-    ws: "npm:^8.4.2"
-  checksum: 10c0/ba07ce147044715742aa7f2dab503a93c1eea2a9b5a3529d73399f3f76b8d6fcaa2ff8e0b187b3bd024ce6aa314aeedeee368734ddb8139ada82f89595528aa2
   languageName: node
   linkType: hard
 
@@ -14374,7 +14362,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"readable-stream@npm:3, readable-stream@npm:^3.0.6, readable-stream@npm:^3.6.0":
+"readable-stream@npm:^3.0.6, readable-stream@npm:^3.6.0":
   version: 3.6.0
   resolution: "readable-stream@npm:3.6.0"
   dependencies:
@@ -16374,15 +16362,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"through2@npm:^4.0.2":
-  version: 4.0.2
-  resolution: "through2@npm:4.0.2"
-  dependencies:
-    readable-stream: "npm:3"
-  checksum: 10c0/3741564ae99990a4a79097fe7a4152c22348adc4faf2df9199a07a66c81ed2011da39f631e479fdc56483996a9d34a037ad64e76d79f18c782ab178ea9b6778c
-  languageName: node
-  linkType: hard
-
 "through@npm:~2.3.6":
   version: 2.3.8
   resolution: "through@npm:2.3.8"
@@ -17900,21 +17879,6 @@ __metadata:
   dependencies:
     async-limiter: "npm:~1.0.0"
   checksum: 10c0/d628a1e95668a296644b4f51ce5debb43d9f1d89ebb2e32fef205a685b9439378eb824d60ce3a40bbc3bad0e887d84a56b343f2076f48d74f17c4c0800c42967
-  languageName: node
-  linkType: hard
-
-"ws@npm:^8.4.2":
-  version: 8.5.0
-  resolution: "ws@npm:8.5.0"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ^5.0.2
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: 10c0/0baeee03e97865accda8fad51e8e5fa17d19b8e264529efdf662bbba2acc1c7f1de8316287e6df5cb639231a96009e6d5234b57e6ff36ee2d04e49a0995fec2f
   languageName: node
   linkType: hard
 
