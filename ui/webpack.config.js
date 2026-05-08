@@ -301,7 +301,7 @@ module.exports = (_, { mode }) => ({
       },
       {
         test: /\.all-contributorsrc$/,
-        loader: "json-loader",
+        type: "json",
       },
     ],
   },
