@@ -1,14 +1,59 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import classNames from 'classnames';
 import { bool, string, func, number } from 'prop-types';
 import Tab from '@material-ui/core/Tab';
 import Tabs from '@material-ui/core/Tabs';
 import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
-import { alpha, withStyles } from '@material-ui/core/styles';
-import { ReactGhLikeDiff } from 'react-gh-like-diff';
-import 'react-gh-like-diff/dist/css/diff2html.min.css';
-import { THEME } from '../../utils/constants';
+import {
+  alpha,
+  darken,
+  lighten,
+  useTheme,
+  withStyles,
+} from '@material-ui/core/styles';
+import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
+
+const diffStyles = theme => {
+  const makeVariables = ({ tone, textColor, line, word, gutter }) => ({
+    diffViewerBackground: theme.palette.background.paper,
+    diffViewerColor: textColor,
+    addedBackground: tone(theme.palette.success.main, line),
+    addedColor: textColor,
+    removedBackground: tone(theme.palette.error.main, line),
+    removedColor: textColor,
+    wordAddedBackground: tone(theme.palette.success.main, word),
+    wordRemovedBackground: tone(theme.palette.error.main, word),
+    addedGutterBackground: tone(theme.palette.success.main, gutter),
+    removedGutterBackground: tone(theme.palette.error.main, gutter),
+    gutterBackground: theme.palette.background.default,
+    gutterBackgroundDark: theme.palette.background.default,
+    gutterColor: theme.palette.text.secondary,
+    addedGutterColor: textColor,
+    removedGutterColor: textColor,
+    emptyLineBackground: theme.palette.action.hover,
+  });
+
+  return {
+    variables: {
+      light: makeVariables({
+        tone: lighten,
+        textColor: theme.palette.common.black,
+        line: 0.7,
+        word: 0.4,
+        gutter: 0.55,
+      }),
+      dark: makeVariables({
+        tone: darken,
+        textColor: theme.palette.common.white,
+        line: 0.5,
+        word: 0.32,
+        gutter: 0.4,
+      }),
+    },
+    diffContainer: { minWidth: 'unset' },
+  };
+};
 
 const styles = withStyles(theme => {
   const borderColor =
@@ -17,66 +62,6 @@ const styles = withStyles(theme => {
       : alpha(theme.palette.common.white, 0.23);
 
   return {
-    '@global': {
-      '.d2h-wrapper': {
-        '& .d2h-file-wrapper': {
-          border: 'none',
-        },
-      },
-      '.d2h-file-header': {
-        display: 'none',
-      },
-      '.d2h-files-diff': {
-        '& .d2h-file-side-diff': {
-          overflowX: 'auto',
-        },
-      },
-      '.d2h-info': {
-        display: 'none',
-      },
-      '.d2h-diff-table': {
-        '& .d2h-cntx': {
-          background: theme.palette.background.paper,
-        },
-        '& .d2h-code-side-linenumber.d2h-cntx': {
-          background: theme.palette.background.paper,
-          color: theme.palette.text.secondary,
-        },
-        '& .d2h-code-side-linenumber.d2h-del': {
-          color: THEME.PRIMARY_TEXT_DARK,
-        },
-        '& .d2h-code-side-linenumber.d2h-ins': {
-          color: THEME.PRIMARY_TEXT_DARK,
-        },
-        '& .d2h-code-side-linenumber': {
-          border: `solid ${theme.palette.divider}`,
-          borderWidth: `0 1px 0 1px`,
-          cursor: 'text',
-        },
-        '& .d2h-code-side-linenumber.d2h-code-side-emptyplaceholder.d2h-cntx.d2h-emptyplaceholder': {
-          background: theme.palette.grey['500'],
-        },
-        '& .d2h-ins': {
-          borderColor: 'none',
-          backgroundColor: theme.palette.diff.green.line,
-          color: THEME.PRIMARY_TEXT_DARK,
-        },
-        '& .d2h-del': {
-          borderColor: 'none',
-          backgroundColor: theme.palette.diff.red.line,
-          color: THEME.PRIMARY_TEXT_DARK,
-        },
-        '& .d2h-code-line ins, & .d2h-code-side-line ins': {
-          backgroundColor: theme.palette.diff.green.word,
-        },
-        '& .d2h-code-line del, & .d2h-code-side-line del': {
-          backgroundColor: theme.palette.diff.red.word,
-        },
-        '& .d2h-code-side-emptyplaceholder, & .d2h-emptyplaceholder': {
-          backgroundColor: theme.palette.grey['500'],
-        },
-      },
-    },
     tab: {
       flexGrow: 1,
     },
@@ -107,6 +92,8 @@ function DiffTextArea(props) {
     defaultTabIndex,
     ...rest
   } = props;
+  const theme = useTheme();
+  const diffViewerStyles = useMemo(() => diffStyles(theme), [theme]);
   const [tabIndex, setTabIndex] = useState(defaultTabIndex);
   const [value, setValue] = useState(props.value);
   const isViewDiff = tabIndex === 1;
@@ -165,7 +152,15 @@ function DiffTextArea(props) {
           />
         )}
         {isViewDiff && isNotEqualText && (
-          <ReactGhLikeDiff past={pastValue} current={currentValue} />
+          <ReactDiffViewer
+            oldValue={pastValue}
+            newValue={currentValue}
+            splitView
+            hideSummary
+            compareMethod={DiffMethod.WORDS}
+            useDarkTheme={theme.palette.type === 'dark'}
+            styles={diffViewerStyles}
+          />
         )}
         {isViewDiff && !isNotEqualText && (
           <Typography>Nothing has changed yet</Typography>
