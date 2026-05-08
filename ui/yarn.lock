@@ -3429,7 +3429,6 @@ __metadata:
     jest-transform-graphql: "npm:^2.1.0"
     js-yaml: "npm:^4.1.1"
     json-e: "npm:^4.7.1"
-    json-loader: "npm:^0.5.7"
     json-schema-defaults: "npm:^0.4.0"
     jsonlint-mod: "npm:^1.7.6"
     localforage: "npm:^1.7.3"
@@ -11147,13 +11146,6 @@ __metadata:
   dependencies:
     json-stable-stringify-without-jsonify: "npm:^1.0.1"
   checksum: 10c0/b338aae43610b6b27ce6b0d4662371a2af7e96faea6d1464f294ddda78fb757fd6b6010fe048ebc54ad4fd334d5cae97ae94998a17ecbbb998cc3a59951cf594
-  languageName: node
-  linkType: hard
-
-"json-loader@npm:^0.5.7":
-  version: 0.5.7
-  resolution: "json-loader@npm:0.5.7"
-  checksum: 10c0/b155b81f644693b5418e595c127c552c34373f749d2d125df24cfe753de6b3b0af88dda5d58e7b65940ed03ec46c19fc3d09f53b932b45c9ae3ca1fb55e44a15
   languageName: node
   linkType: hard
 
