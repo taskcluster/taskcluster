@@ -2054,12 +2054,12 @@ export class AzureProvider extends Provider {
    * removeWorker marks a worker for deletion and begins removal.
    */
   async removeWorker({ worker, reason }) {
+    const previousState = worker.state;
     const shouldEmit = [Worker.states.REQUESTED, Worker.states.RUNNING].includes(worker.state);
     if (shouldEmit) {
       await this.onWorkerRemoved({ worker, reason });
     }
-    // transition from either REQUESTED or RUNNING to STOPPING, and let the
-    // worker scanner take it from there.
+
     await worker.update(this.db, w => {
       const now = new Date();
       if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
@@ -2069,6 +2069,32 @@ export class AzureProvider extends Provider {
       // additionally store removal reason
       w.providerData.reasonRemoved ??= reason;
     });
+
+    // Avoid racing ARM deployments that have not finished resource extraction.
+    const vmReadyForDelete =
+      previousState === Worker.states.RUNNING ||
+      worker.providerData.provisioningComplete === true;
+
+    if (vmReadyForDelete && worker.providerData.vm?.name && !worker.providerData.vm.deleted) {
+      this._enqueue('query', () => this.computeClient.virtualMachines.beginDelete(
+        worker.providerData.resourceGroupName,
+        worker.providerData.vm.name,
+      )).catch(err => {
+        const monitor = this.workerMonitor({
+          worker,
+          extra: {
+            resourceGroupName: worker.providerData.resourceGroupName,
+            vmName: worker.providerData.vm.name,
+          },
+        });
+        monitor.debug({
+          message: 'failed to start VM deletion from removeWorker; scanner will retry',
+          error: err.message,
+          code: err.code,
+          statusCode: err.statusCode,
+        });
+      });
+    }
   }
 
   /*
