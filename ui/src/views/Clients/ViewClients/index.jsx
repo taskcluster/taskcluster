@@ -192,7 +192,7 @@ export default class ViewClients extends PureComponent {
           )}
           <Button
             onClick={this.handleCreate}
-            variant="round"
+            variant="circular"
             color="secondary"
             className={classes.plusIcon}>
             <PlusIcon />

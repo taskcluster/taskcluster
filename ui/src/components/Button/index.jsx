@@ -36,7 +36,7 @@ export default class Button extends Component {
      * */
     track: gaEvent,
     /** The variant to use. */
-    variant: oneOf(['text', 'outlined', 'contained', 'round', 'extended']),
+    variant: oneOf(['text', 'outlined', 'contained', 'circular', 'extended']),
     /** Properties applied to the Tooltip component */
     tooltipProps: object,
     /**
@@ -85,7 +85,7 @@ export default class Button extends Component {
     const lackingAuth = requiresAuth && !user;
     const isDisabled = lackingAuth || disabled;
     const MuiComponent =
-      variant === 'round' || variant === 'extended' ? Fab : MuiButton;
+      variant === 'circular' || variant === 'extended' ? Fab : MuiButton;
     const ButtonComponent = (
       <MuiComponent
         onClick={this.handleButtonClick}

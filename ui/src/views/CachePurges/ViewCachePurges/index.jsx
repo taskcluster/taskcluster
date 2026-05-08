@@ -127,7 +127,7 @@ export default class ViewCachePurges extends Component {
               delay: 300,
             }}
             onClick={this.handleCreate}
-            variant="round"
+            variant="circular"
             color="secondary">
             <PlusIcon />
           </Button>

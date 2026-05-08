@@ -454,7 +454,7 @@ export default class CreateTask extends Component {
                 tooltipProps={{ title: 'Create Task' }}
                 requiresAuth
                 disabled={!task || invalid || loading}
-                variant="round"
+                variant="circular"
                 className={classes.createIcon}
                 onClick={this.handleCreateTask}>
                 <ContentSaveIcon />

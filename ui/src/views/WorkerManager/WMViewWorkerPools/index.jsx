@@ -210,7 +210,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
             tooltipProps={{ title: 'Create Worker Pool' }}
             requiresAuth
             color="secondary"
-            variant="round"
+            variant="circular"
             onClick={this.handleCreate}>
             <PlusIcon />
           </Button>

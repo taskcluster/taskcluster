@@ -55,7 +55,7 @@ export default class ViewRoles extends PureComponent {
           spanProps={{ className: classes.plusIconSpan }}
           tooltipProps={{ title: 'Create Role' }}
           onClick={this.handleCreate}
-          variant="round"
+          variant="circular"
           color="secondary">
           <PlusIcon />
         </Button>
