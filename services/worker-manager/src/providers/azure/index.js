@@ -2060,6 +2060,22 @@ export class AzureProvider extends Provider {
       await this.onWorkerRemoved({ worker, reason });
     }
 
+    // vm.id is truthy once a deployment operation referencing the VM has been
+    // observed (set by provisionResource on create or by
+    // #extractResourcesFromDeployment, which runs on both successful and
+    // failed ARM deployments). It is reset to false by markDeleted and by the
+    // delete branches of this function and deprovisionResource. Compared to
+    // vm?.name (set at config time, before any Azure call) it is the
+    // tightest predicate available here for "Azure may know about this VM".
+    // We may still issue an inline delete against a VM that never finished
+    // creating (failed-deployment path); the .catch handler below absorbs
+    // the resulting 404 / 409 and the scanner picks up cleanup.
+    const vmReadyForDelete =
+      (previousState === Worker.states.RUNNING ||
+        worker.providerData.provisioningComplete === true) &&
+      worker.providerData.vm?.id &&
+      !worker.providerData.vm.deleted;
+
     await worker.update(this.db, w => {
       const now = new Date();
       if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
@@ -2068,14 +2084,16 @@ export class AzureProvider extends Provider {
       }
       // additionally store removal reason
       w.providerData.reasonRemoved ??= reason;
+      // Match deprovisionResource's convention: id is unset once a delete
+      // request is in flight. Keeps the `worker.providerData.vm.id` gate in
+      // deprovisionResources correct on the next scanner pass and avoids
+      // confusing other readers.
+      if (vmReadyForDelete) {
+        w.providerData.vm.id = false;
+      }
     });
 
-    // Avoid racing ARM deployments that have not finished resource extraction.
-    const vmReadyForDelete =
-      previousState === Worker.states.RUNNING ||
-      worker.providerData.provisioningComplete === true;
-
-    if (vmReadyForDelete && worker.providerData.vm?.name && !worker.providerData.vm.deleted) {
+    if (vmReadyForDelete) {
       this._enqueue('query', () => this.computeClient.virtualMachines.beginDelete(
         worker.providerData.resourceGroupName,
         worker.providerData.vm.name,
