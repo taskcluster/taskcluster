@@ -4,7 +4,7 @@ import {
   execCommandVisible,
   formatCommand,
   gitStatus,
-  modifyRepoFile,
+  modifyRepoJSON,
   readRepoFile,
   readRepoJSON,
   shellQuote,
@@ -182,13 +182,11 @@ const writeNodeVersion = async ({ version, dryRun }) => {
     return;
   }
 
-  await modifyRepoFile('package.json', contents => {
-    const enginesNodePattern = /("engines"\s*:\s*\{[^}]*?^(\s*"node"\s*:\s*"))[^"]+(")/m;
-    const next = contents.replace(enginesNodePattern, `$1${version}$3`);
-    if (next === contents) {
+  await modifyRepoJSON('package.json', contents => {
+    if (!contents.engines || typeof contents.engines.node !== 'string') {
       throw new Error('Could not find engines.node in package.json');
     }
-    return next;
+    contents.engines.node = version;
   });
 };
 

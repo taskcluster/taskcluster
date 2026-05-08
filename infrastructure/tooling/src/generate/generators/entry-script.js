@@ -1,5 +1,5 @@
 import path from 'path';
-import { listServices, readRepoYAML, writeRepoFile, readRepoFile } from '../../utils/index.js';
+import { listServices, readRepoYAML, writeRepoFile, readRepoJSON } from '../../utils/index.js';
 
 const SERVICES = listServices();
 
@@ -13,7 +13,7 @@ export const tasks = [{
   locks: [],
   run: async (requirements, utils) => {
     const procs = {};
-    const packageJson = JSON.parse(await readRepoFile('package.json'));
+    const packageJson = await readRepoJSON('package.json');
 
     for (const name of SERVICES) {
       const processes = await readRepoYAML(path.join('services', name, 'procs.yml'));
