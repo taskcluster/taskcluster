@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`should render TaskRunsCard 1`] = `
 <DocumentFragment>
@@ -7,13 +7,13 @@ exports[`should render TaskRunsCard 1`] = `
   >
     <div>
       <div
-        class="MuiCardContent-root TaskRunsCard-cardContent-2"
+        class="MuiCardContent-root TaskRunsCard2-cardContent-2"
       >
         <div
           class="MuiPaper-root MuiMobileStepper-root MuiMobileStepper-positionStatic MuiPaper-elevation0"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-previousPageArrow-16 MuiButton-textSizeSmall MuiButton-sizeSmall Mui-disabled Mui-disabled"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard2-previousPageArrow-16 MuiButton-textSizeSmall MuiButton-sizeSmall Mui-disabled Mui-disabled"
             disabled=""
             tabindex="-1"
             type="button"
@@ -43,7 +43,7 @@ exports[`should render TaskRunsCard 1`] = `
             />
           </div>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-nextPageArrow-17 MuiButton-textSizeSmall MuiButton-sizeSmall Mui-disabled Mui-disabled"
+            class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard2-nextPageArrow-17 MuiButton-textSizeSmall MuiButton-sizeSmall Mui-disabled Mui-disabled"
             disabled=""
             tabindex="-1"
             type="button"
@@ -67,7 +67,7 @@ exports[`should render TaskRunsCard 1`] = `
           </button>
         </div>
         <h5
-          class="MuiTypography-root TaskRunsCard-headline-1 MuiTypography-h5"
+          class="MuiTypography-root TaskRunsCard2-headline-1 MuiTypography-h5"
         >
           Task Run 0
         </h5>
@@ -89,7 +89,7 @@ exports[`should render TaskRunsCard 1`] = `
                 class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-success-25 Label-disabled-23 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label2-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label2-dense-21 Mui-disabled Label2-success-25 Label2-disabled-23 Mui-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -108,7 +108,7 @@ exports[`should render TaskRunsCard 1`] = `
           >
             <div
               aria-disabled="false"
-              class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-4 MuiListItem-gutters MuiListItem-button"
+              class="MuiButtonBase-root MuiListItem-root TaskRunsCard2-listItemButton-4 MuiListItem-gutters MuiListItem-button"
               role="button"
               tabindex="0"
             >
@@ -120,7 +120,7 @@ exports[`should render TaskRunsCard 1`] = `
                 >
                   View Live Log 
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-liveLogLabel-15 Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-info-28 Label-disabled-23 Mui-disabled"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard2-liveLogLabel-15 Label2-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label2-dense-21 Mui-disabled Label2-info-28 Label2-disabled-23 Mui-disabled"
                     disabled=""
                     tabindex="-1"
                     type="button"
@@ -156,7 +156,7 @@ exports[`should render TaskRunsCard 1`] = `
           </a>
           <div
             aria-disabled="false"
-            class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-4 MuiListItem-gutters MuiListItem-button"
+            class="MuiButtonBase-root MuiListItem-root TaskRunsCard2-listItemButton-4 MuiListItem-gutters MuiListItem-button"
             role="button"
             tabindex="0"
           >
@@ -187,10 +187,10 @@ exports[`should render TaskRunsCard 1`] = `
                   class="MuiList-root"
                 >
                   <div
-                    class="MuiListItem-root TaskRunsCard-artifactsListItemContainer-7"
+                    class="MuiListItem-root TaskRunsCard2-artifactsListItemContainer-7"
                   >
                     <div
-                      class="ConnectionDataTable-tableWrapper-31"
+                      class="ConnectionDataTable2-tableWrapper-31"
                     >
                       <table
                         class="MuiTable-root"
@@ -199,17 +199,17 @@ exports[`should render TaskRunsCard 1`] = `
                           class="MuiTableBody-root"
                         >
                           <tr
-                            class="MuiTableRow-root TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 MuiTableRow-hover"
+                            class="MuiTableRow-root TaskRunsCard2-listItemButton-4 TaskRunsCard2-artifactTableRow-12 TaskRunsCard2-pointer-5 MuiTableRow-hover"
                           >
                             <td
                               class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
                             >
                               <a
-                                class="TaskRunsCard-artifactLink-11"
+                                class="TaskRunsCard2-artifactLink-11"
                                 href="/tasks/eR1kMya2SruyMaRMZguROg/runs/0/logs/public/logs/live_backing.log"
                               >
                                 <div
-                                  class="TaskRunsCard-iconDiv-18"
+                                  class="TaskRunsCard2-iconDiv-18"
                                 >
                                   <svg
                                     class="mdi-icon "
@@ -224,10 +224,10 @@ exports[`should render TaskRunsCard 1`] = `
                                   </svg>
                                 </div>
                                 <div
-                                  class="TaskRunsCard-artifactNameWrapper-13"
+                                  class="TaskRunsCard2-artifactNameWrapper-13"
                                 >
                                   <button
-                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-logButton-6 Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-info-28 Label-disabled-23 Mui-disabled"
+                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard2-logButton-6 Label2-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label2-dense-21 Mui-disabled Label2-info-28 Label2-disabled-23 Mui-disabled"
                                     disabled=""
                                     tabindex="-1"
                                     type="button"
@@ -239,7 +239,7 @@ exports[`should render TaskRunsCard 1`] = `
                                     </span>
                                   </button>
                                   <div
-                                    class="TaskRunsCard-artifactName-14"
+                                    class="TaskRunsCard2-artifactName-14"
                                   >
                                     public/logs/live_backing.log
                                   </div>
@@ -260,7 +260,7 @@ exports[`should render TaskRunsCard 1`] = `
                               </a>
                             </td>
                             <td
-                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard-copyButton-19 MuiTableCell-sizeSmall"
+                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard2-copyButton-19 MuiTableCell-sizeSmall"
                             >
                               <svg
                                 class="mdi-icon "
@@ -277,19 +277,19 @@ exports[`should render TaskRunsCard 1`] = `
                             </td>
                           </tr>
                           <tr
-                            class="MuiTableRow-root TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 MuiTableRow-hover"
+                            class="MuiTableRow-root TaskRunsCard2-listItemButton-4 TaskRunsCard2-artifactTableRow-12 TaskRunsCard2-pointer-5 MuiTableRow-hover"
                           >
                             <td
                               class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
                             >
                               <a
-                                class="TaskRunsCard-artifactLink-11"
+                                class="TaskRunsCard2-artifactLink-11"
                                 href="https://taskcluster.net/api/queue/v1/task/eR1kMya2SruyMaRMZguROg/runs/0/artifacts/public%2Fcoverage-final.json"
                                 rel="noopener noreferrer"
                                 target="_blank"
                               >
                                 <div
-                                  class="TaskRunsCard-iconDiv-18"
+                                  class="TaskRunsCard2-iconDiv-18"
                                 >
                                   <svg
                                     class="mdi-icon "
@@ -304,10 +304,10 @@ exports[`should render TaskRunsCard 1`] = `
                                   </svg>
                                 </div>
                                 <div
-                                  class="TaskRunsCard-artifactNameWrapper-13"
+                                  class="TaskRunsCard2-artifactNameWrapper-13"
                                 >
                                   <div
-                                    class="TaskRunsCard-artifactName-14"
+                                    class="TaskRunsCard2-artifactName-14"
                                   >
                                     public/coverage-final.json
                                   </div>
@@ -328,7 +328,7 @@ exports[`should render TaskRunsCard 1`] = `
                               </a>
                             </td>
                             <td
-                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard-copyButton-19 MuiTableCell-sizeSmall"
+                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard2-copyButton-19 MuiTableCell-sizeSmall"
                             >
                               <svg
                                 class="mdi-icon "
@@ -345,17 +345,17 @@ exports[`should render TaskRunsCard 1`] = `
                             </td>
                           </tr>
                           <tr
-                            class="MuiTableRow-root TaskRunsCard-listItemButton-4 TaskRunsCard-artifactTableRow-12 TaskRunsCard-pointer-5 MuiTableRow-hover"
+                            class="MuiTableRow-root TaskRunsCard2-listItemButton-4 TaskRunsCard2-artifactTableRow-12 TaskRunsCard2-pointer-5 MuiTableRow-hover"
                           >
                             <td
                               class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeSmall"
                             >
                               <a
-                                class="TaskRunsCard-artifactLink-11"
+                                class="TaskRunsCard2-artifactLink-11"
                                 href="/tasks/eR1kMya2SruyMaRMZguROg/runs/0/logs/apple/banana.log"
                               >
                                 <div
-                                  class="TaskRunsCard-iconDiv-18"
+                                  class="TaskRunsCard2-iconDiv-18"
                                 >
                                   <svg
                                     class="mdi-icon "
@@ -370,10 +370,10 @@ exports[`should render TaskRunsCard 1`] = `
                                   </svg>
                                 </div>
                                 <div
-                                  class="TaskRunsCard-artifactNameWrapper-13"
+                                  class="TaskRunsCard2-artifactNameWrapper-13"
                                 >
                                   <button
-                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard-logButton-6 Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-info-28 Label-disabled-23 Mui-disabled"
+                                    class="MuiButtonBase-root MuiButton-root MuiButton-text TaskRunsCard2-logButton-6 Label2-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label2-dense-21 Mui-disabled Label2-info-28 Label2-disabled-23 Mui-disabled"
                                     disabled=""
                                     tabindex="-1"
                                     type="button"
@@ -385,7 +385,7 @@ exports[`should render TaskRunsCard 1`] = `
                                     </span>
                                   </button>
                                   <div
-                                    class="TaskRunsCard-artifactName-14"
+                                    class="TaskRunsCard2-artifactName-14"
                                   >
                                     apple/banana.log
                                   </div>
@@ -406,7 +406,7 @@ exports[`should render TaskRunsCard 1`] = `
                               </a>
                             </td>
                             <td
-                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard-copyButton-19 MuiTableCell-sizeSmall"
+                              class="MuiTableCell-root MuiTableCell-body TaskRunsCard2-copyButton-19 MuiTableCell-sizeSmall"
                             >
                               <svg
                                 class="mdi-icon "
@@ -448,7 +448,7 @@ exports[`should render TaskRunsCard 1`] = `
                 class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-default-27 Label-disabled-23 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label2-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label2-dense-21 Mui-disabled Label2-default-27 Label2-disabled-23 Mui-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -589,7 +589,7 @@ exports[`should render TaskRunsCard 1`] = `
                 class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label-dense-21 Mui-disabled Label-default-27 Label-disabled-23 Mui-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text Label2-mini-22 MuiButton-textSizeSmall MuiButton-sizeSmall Label2-dense-21 Mui-disabled Label2-default-27 Label2-disabled-23 Mui-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -626,7 +626,7 @@ exports[`should render TaskRunsCard 1`] = `
           >
             <div
               aria-disabled="false"
-              class="MuiButtonBase-root MuiListItem-root TaskRunsCard-listItemButton-4 MuiListItem-gutters MuiListItem-button"
+              class="MuiButtonBase-root MuiListItem-root TaskRunsCard2-listItemButton-4 MuiListItem-gutters MuiListItem-button"
               role="button"
               tabindex="0"
               title="View Worker"

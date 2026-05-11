@@ -2,8 +2,10 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { string } from 'prop-types';
 import SchemaViewer from 'material-ui-json-schema-viewer';
-import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json';
-import jsonSchemaDraft07 from 'ajv/lib/refs/json-schema-draft-07.json';
+import {
+  jsonSchemaDraft06,
+  jsonSchemaDraft07,
+} from '../../utils/jsonSchemaMetaSchemas';
 import Spinner from '../Spinner';
 import ErrorPanel from '../ErrorPanel';
 import references from '../../../../generated/references.json';

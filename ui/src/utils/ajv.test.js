@@ -19,7 +19,7 @@ describe('ajv', () => {
 
   describe('loadServiceSchema', () => {
     beforeAll(() => {
-      window.fetch = jest.fn().mockImplementation(url => {
+      window.fetch = vi.fn().mockImplementation(url => {
         return {
           json: () =>
             Promise.resolve({

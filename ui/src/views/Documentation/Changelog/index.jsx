@@ -9,7 +9,8 @@ import Switch from '@material-ui/core/Switch';
 import { Chip, FormControlLabel } from '@material-ui/core';
 import { memoize } from '../../../utils/memoize';
 import Markdown from '../../../components/Markdown';
-import ChangelogMd from '../../../../../CHANGELOG.md';
+// eslint-disable-next-line
+import ChangelogMd from '../../../../../CHANGELOG.md?raw';
 import TextField from '../../../components/TextField';
 
 const parseMarkdownIntoSections = markdown => {

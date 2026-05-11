@@ -5,6 +5,23 @@ import { string, oneOf } from 'prop-types';
 import { paramCase } from 'param-case';
 import Typography from '@material-ui/core/Typography';
 
+// Helper function to extract text content from React children
+const getTextFromChildren = children => {
+  if (typeof children === 'string') {
+    return children;
+  }
+
+  if (Array.isArray(children)) {
+    return children.map(getTextFromChildren).join('');
+  }
+
+  if (React.isValidElement(children) && children.props.children) {
+    return getTextFromChildren(children.props.children);
+  }
+
+  return '';
+};
+
 @withStyles(theme => ({
   header: {
     color: theme.palette.text.primary,
@@ -69,7 +86,8 @@ export default class HeaderWithAnchor extends Component {
   render() {
     const { classes, type, children, id, className, ...props } = this.props;
     const variant = this.getVariantFromType(type);
-    const anchorId = id || paramCase(children);
+    const textContent = getTextFromChildren(children);
+    const anchorId = id || paramCase(textContent);
 
     return (
       <Typography

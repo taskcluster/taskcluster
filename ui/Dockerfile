@@ -11,6 +11,7 @@ RUN corepack enable && \
 COPY . ./
 
 ENV PATH="/app/ui/node_modules/.bin:${PATH}"
+ENV NODE_ENV=development
 
 ENTRYPOINT [ "yarn" ]
 CMD [ "start:docker" ]

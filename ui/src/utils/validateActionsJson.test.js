@@ -1,6 +1,6 @@
 describe('validation', () => {
   beforeAll(() => {
-    window.fetch = jest.fn().mockImplementation(() => {
+    window.fetch = vi.fn().mockImplementation(() => {
       return {
         json: () => Promise.resolve({}),
       };

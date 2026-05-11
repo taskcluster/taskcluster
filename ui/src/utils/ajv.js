@@ -1,12 +1,12 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import metaSchema from 'ajv/lib/refs/json-schema-draft-06.json';
-import urls from './urls';
+import { jsonSchemaDraft06 } from './jsonSchemaMetaSchemas.js';
+import urls from './urls.js';
 
 const ajv = new Ajv({ validateFormats: true, verbose: true, allErrors: true });
 
+ajv.addMetaSchema(jsonSchemaDraft06);
 addFormats(ajv);
-ajv.addMetaSchema(metaSchema);
 
 const schemaCache = {};
 const fetchSchema = async (service, schema) => {

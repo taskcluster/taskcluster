@@ -3,7 +3,7 @@ import isThirdPartyLogin from './isThirdPartyLogin';
 it('is third-party login', () => {
   expect(isThirdPartyLogin()).toBe(false);
 
-  const assignMock = jest.fn();
+  const assignMock = vi.fn();
 
   delete window.location;
   window.location = {
