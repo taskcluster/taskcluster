@@ -200,7 +200,7 @@ export default class ConnectionDataTable extends Component {
     }
   };
 
-  handlePageChange = (e, nextPage) => {
+  handlePageChange = (_e, nextPage) => {
     const { connection, onPageChange } = this.props;
     const { page } = this.state;
 

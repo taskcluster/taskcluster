@@ -78,7 +78,7 @@ export default class PulseBindings extends Component {
               freeSolo
               options={exchangesDictionary || []}
               inputValue={pulseExchange}
-              onInputChange={(event, newValue) =>
+              onInputChange={(_event, newValue) =>
                 onPulseExchangeChange({
                   target: {
                     name: 'pulseExchange',

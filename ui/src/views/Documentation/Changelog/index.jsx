@@ -165,7 +165,7 @@ export default class Changelog extends Component {
     }
   );
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(_prevProps, prevState) {
     if (FILTERS.map(key => prevState[key] !== this.state[key]).some(a => a)) {
       this.updateUrl();
     }

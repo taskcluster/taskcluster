@@ -115,24 +115,26 @@ export default class App extends Component {
    * context.noAuthorizationHeader; the latter can be set on
    * a request as an argument to `client.query({..})`.
    */
-  authLink = setContext(async (request, { noAuthorizationHeader, headers }) => {
-    if (noAuthorizationHeader) {
-      return {};
+  authLink = setContext(
+    async (_request, { noAuthorizationHeader, headers }) => {
+      if (noAuthorizationHeader) {
+        return {};
+      }
+
+      const user = await this.authController.getUser();
+
+      if (!user?.credentials) {
+        return {};
+      }
+
+      return {
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
+        },
+      };
     }
-
-    const user = await this.authController.getUser();
-
-    if (!user?.credentials) {
-      return {};
-    }
-
-    return {
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${btoa(JSON.stringify(user.credentials))}`,
-      },
-    };
-  });
+  );
 
   apolloClient = new ApolloClient({
     cache: this.cache,
