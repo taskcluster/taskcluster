@@ -172,7 +172,7 @@ export default class TaskGroup extends Component {
       unscheduled: 0,
     };
 
-    if (taskGroup && taskGroup.edges) {
+    if (taskGroup?.edges) {
       taskGroup.edges.forEach(({ node }) => {
         const { state } = node.status;
 
@@ -213,10 +213,9 @@ export default class TaskGroup extends Component {
     const taskGroupLoaded = taskGroup && !taskGroup.pageInfo.hasNextPage;
     // Make sure data is not from another task group which
     // can happen when a user searches for a different task group
-    const isFromSameTaskGroupId =
-      taskGroup && taskGroup.edges[0]
-        ? taskGroup.edges[0].node.taskGroupId === taskGroupId
-        : true;
+    const isFromSameTaskGroupId = taskGroup?.edges[0]
+      ? taskGroup.edges[0].node.taskGroupId === taskGroupId
+      : true;
     const statusCount =
       isFromSameTaskGroupId && taskGroup
         ? TaskGroup.calculateStatusCountStatic(taskGroup)
@@ -394,11 +393,7 @@ export default class TaskGroup extends Component {
         const isFromSameTaskGroupId =
           tasksSubscriptions.taskGroupId === taskGroupId;
 
-        if (
-          !previousResult ||
-          !previousResult.taskGroup ||
-          !isFromSameTaskGroupId
-        ) {
+        if (!previousResult?.taskGroup || !isFromSameTaskGroupId) {
           return previousResult;
         }
 
@@ -513,7 +508,7 @@ export default class TaskGroup extends Component {
         return !taskGroupInfo || !!taskGroupInfo.sealed;
 
       case 'cancelTaskGroup':
-        return !taskGroupInfo || !taskGroupInfo.sealed;
+        return !taskGroupInfo?.sealed;
 
       default:
         return false;
@@ -902,10 +897,9 @@ export default class TaskGroup extends Component {
     } = this.props;
     // Make sure data is not from another task group which
     // can happen when a user searches for a different task group
-    const isFromSameTaskGroupId =
-      taskGroup && taskGroup.edges[0]
-        ? taskGroup.edges[0].node.taskGroupId === taskGroupId
-        : true;
+    const isFromSameTaskGroupId = taskGroup?.edges[0]
+      ? taskGroup.edges[0].node.taskGroupId === taskGroupId
+      : true;
     const notificationsCount = Object.values(notifyPreferences).filter(Boolean)
       .length;
     const graphqlError = this.getError(error);
@@ -1033,21 +1027,20 @@ export default class TaskGroup extends Component {
               tooltipTitle="Open in Profiler"
               onClick={this.handleOpenProfiler}
             />
-            {groupActions &&
-              groupActions.map(action => (
-                <SpeedDialAction
-                  requiresAuth
-                  tooltipOpen
-                  key={action.title}
-                  FabProps={{
-                    disabled:
-                      actionLoading || this.groupActionDisabled(action.name),
-                  }}
-                  icon={<HammerIcon />}
-                  tooltipTitle={action.title}
-                  onClick={this.handleActionClick(action.name)}
-                />
-              ))}
+            {groupActions?.map(action => (
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                key={action.title}
+                FabProps={{
+                  disabled:
+                    actionLoading || this.groupActionDisabled(action.name),
+                }}
+                icon={<HammerIcon />}
+                tooltipTitle={action.title}
+                onClick={this.handleActionClick(action.name)}
+              />
+            ))}
           </SpeedDial>
         )}
         {dialogOpen && (

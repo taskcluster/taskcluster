@@ -120,7 +120,7 @@ export { BoundedCache };
  */
 export const clearAllCaches = memoizedFunctions => {
   memoizedFunctions.forEach(fn => {
-    if (fn && fn.cache && typeof fn.cache.clear === 'function') {
+    if (fn?.cache && typeof fn.cache.clear === 'function') {
       fn.cache.clear();
     }
   });

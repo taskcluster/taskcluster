@@ -17,7 +17,7 @@ export const taskLastRun = task => {
 };
 
 export const taskRunDurationInMs = run => {
-  if (!run || !run.from) {
+  if (!run?.from) {
     return 0;
   }
 

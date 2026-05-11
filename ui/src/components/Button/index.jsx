@@ -96,7 +96,7 @@ export default class Button extends Component {
         {children}
       </MuiComponent>
     );
-    const tooltipTitle = tooltipProps && tooltipProps.title;
+    const tooltipTitle = tooltipProps?.title;
 
     return tooltipProps ? (
       <Tooltip

@@ -124,7 +124,7 @@ export default class ViewRole extends Component {
             <Fragment>
               {data.loading && <Spinner loading />}
               {data && <ErrorPanel fixed error={data.error} />}
-              {data && data.role && (
+              {data?.role && (
                 <RoleForm
                   dialogError={dialogError}
                   key={data.role.roleId}

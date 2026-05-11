@@ -42,8 +42,8 @@ export default class PageMeta extends Component {
 
   render() {
     const { classes, pageInfo } = this.props;
-    const hasPreviousPage = pageInfo.prev && pageInfo.prev.path;
-    const hasNextPage = pageInfo.next && pageInfo.next.path;
+    const hasPreviousPage = pageInfo.prev?.path;
+    const hasNextPage = pageInfo.next?.path;
 
     return (
       <Fragment>
