@@ -26,8 +26,9 @@ import { CONTENT_MAX_WIDTH } from '../../utils/constants';
     maxHeight: '85vh',
   },
   fixedDocs: {
-    width: `calc(100% - ${2 * theme.docsDrawerWidth}px - ${2 *
-      theme.spacing(3)}px)`,
+    width: `calc(100% - ${2 * theme.docsDrawerWidth}px - ${
+      2 * theme.spacing(3)
+    }px)`,
     [theme.breakpoints.down('md')]: {
       width: `calc(100% - ${theme.docsDrawerWidth}px - ${theme.spacing(6)}px)`,
     },
@@ -135,8 +136,9 @@ export default class ErrorPanel extends Component {
       // special-case networkError as well, although note that this still shows
       // JSON errors when the response is not JSON, regardless of content-type.
       message.push(
-        `Network Error (${error.networkError.statusCode ||
-          'no status code'}): ${error.networkError}`
+        `Network Error (${
+          error.networkError.statusCode || 'no status code'
+        }): ${error.networkError}`
       );
     } else if (error.message) {
       message.push(error.message);

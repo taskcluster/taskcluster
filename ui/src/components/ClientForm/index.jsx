@@ -172,13 +172,8 @@ export default class ClientForm extends Component {
   };
 
   handleSaveClient = () => {
-    const {
-      clientId,
-      scopeText,
-      description,
-      expires,
-      deleteOnExpiration,
-    } = this.state;
+    const { clientId, scopeText, description, expires, deleteOnExpiration } =
+      this.state;
     const scopes = splitLines(scopeText);
     const client = {
       expires,

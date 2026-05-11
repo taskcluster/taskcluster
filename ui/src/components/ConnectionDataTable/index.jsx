@@ -377,8 +377,9 @@ export default class ConnectionDataTable extends Component {
                   <TableCell colSpan={colSpan}>
                     <em>
                       {searchTerm || filterValue
-                        ? `No items for this page with search term ${searchTerm ||
-                            filterValue}.`
+                        ? `No items for this page with search term ${
+                            searchTerm || filterValue
+                          }.`
                         : noItemsMessage}
                     </em>
                   </TableCell>

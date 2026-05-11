@@ -289,26 +289,28 @@ export default class ViewTask extends Component {
     }
   };
 
-  handleActionTaskSubmit = ({ name }) => async () => {
-    this.preRunningAction();
+  handleActionTaskSubmit =
+    ({ name }) =>
+    async () => {
+      this.preRunningAction();
 
-    const {
-      client,
-      data: { task },
-    } = this.props;
-    const { formInputs } = this.state;
-    const { actionData } = this.getTaskActionsData();
-    const { action } = actionData[name];
-    const taskId = await submitTaskAction({
-      task,
-      taskActions: task.taskActions,
-      form: formInputs,
-      action,
-      apolloClient: client,
-    });
+      const {
+        client,
+        data: { task },
+      } = this.props;
+      const { formInputs } = this.state;
+      const { actionData } = this.getTaskActionsData();
+      const { action } = actionData[name];
+      const taskId = await submitTaskAction({
+        task,
+        taskActions: task.taskActions,
+        form: formInputs,
+        action,
+        apolloClient: client,
+      });
 
-    return taskId;
-  };
+      return taskId;
+    };
 
   handleArtifactsPageChange = ({ cursor, previousCursor }) => {
     const {

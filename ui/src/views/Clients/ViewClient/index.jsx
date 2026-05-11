@@ -274,14 +274,8 @@ export default class ViewClient extends Component {
   };
 
   render() {
-    const {
-      error,
-      loading,
-      accessToken,
-      snackbar,
-      dialogError,
-      dialogOpen,
-    } = this.state;
+    const { error, loading, accessToken, snackbar, dialogError, dialogOpen } =
+      this.state;
     const {
       isNewClient,
       clientData,

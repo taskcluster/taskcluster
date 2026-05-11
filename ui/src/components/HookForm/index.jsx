@@ -418,12 +418,8 @@ export default class HookForm extends Component {
   };
 
   validHook = () => {
-    const {
-      hook,
-      taskValidYaml,
-      triggerSchemaValidYaml,
-      validation,
-    } = this.state;
+    const { hook, taskValidYaml, triggerSchemaValidYaml, validation } =
+      this.state;
 
     return (
       hook.hookGroupId &&

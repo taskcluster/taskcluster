@@ -27,10 +27,7 @@ export default class NoTask extends Component {
   };
 
   async componentDidMount() {
-    const recentTasks = await db.taskIdsHistory
-      .limit(5)
-      .reverse()
-      .toArray();
+    const recentTasks = await db.taskIdsHistory.limit(5).reverse().toArray();
 
     this.setState({ recentTasks });
   }

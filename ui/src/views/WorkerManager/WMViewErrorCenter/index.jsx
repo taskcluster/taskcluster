@@ -55,9 +55,9 @@ export default class WMViewErrorCenter extends Component {
     const items =
       !loading && !error
         ? this.sortItems(
-            Object.entries(
-              WorkerManagerErrorsStats?.totals?.workerPool
-            ).map(([key, value]) => ({ workerPool: key, errorsCount: value }))
+            Object.entries(WorkerManagerErrorsStats?.totals?.workerPool).map(
+              ([key, value]) => ({ workerPool: key, errorsCount: value })
+            )
           )
         : [];
     const headers = [

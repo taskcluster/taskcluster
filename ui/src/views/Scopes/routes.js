@@ -1,16 +1,17 @@
 import lazy from '../../utils/lazy';
 
-const ListScopes = lazy(() =>
-  import(/* webpackChunkName: 'Scopes.ListScopes' */ './ListScopes')
+const ListScopes = lazy(
+  () => import(/* webpackChunkName: 'Scopes.ListScopes' */ './ListScopes')
 );
-const ViewScope = lazy(() =>
-  import(/* webpackChunkName: 'Scopes.ViewScope' */ './ViewScope')
+const ViewScope = lazy(
+  () => import(/* webpackChunkName: 'Scopes.ViewScope' */ './ViewScope')
 );
-const ScopesetExpander = lazy(() =>
-  import(/* webpackChunkName: 'ScopesetExpander' */ './ScopesetExpander')
+const ScopesetExpander = lazy(
+  () => import(/* webpackChunkName: 'ScopesetExpander' */ './ScopesetExpander')
 );
-const ScopesetComparison = lazy(() =>
-  import(/* webpackChunkName: 'ScopesetComparison' */ './ScopesetComparison')
+const ScopesetComparison = lazy(
+  () =>
+    import(/* webpackChunkName: 'ScopesetComparison' */ './ScopesetComparison')
 );
 const description =
   'Manage secrets: values that can only be retrieved with the appropriate scopes.';

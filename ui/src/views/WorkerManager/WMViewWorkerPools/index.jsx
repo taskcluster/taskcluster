@@ -132,10 +132,8 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           : null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {
-        const {
-          edges,
-          pageInfo,
-        } = fetchMoreResult.WorkerManagerWorkerPoolSummaries;
+        const { edges, pageInfo } =
+          fetchMoreResult.WorkerManagerWorkerPoolSummaries;
 
         return dotProp.set(
           previousResult,

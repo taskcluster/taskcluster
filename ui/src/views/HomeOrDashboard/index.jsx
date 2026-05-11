@@ -3,8 +3,8 @@ import { withAuth } from '../../utils/Auth';
 import lazy from '../../utils/lazy';
 
 const Home = lazy(() => import(/* webpackChunkName: 'Home' */ '../Home'));
-const Dashboard = lazy(() =>
-  import(/* webpackChunkName: 'Dashboard' */ '../Dashboard')
+const Dashboard = lazy(
+  () => import(/* webpackChunkName: 'Dashboard' */ '../Dashboard')
 );
 
 @withAuth

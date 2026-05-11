@@ -120,22 +120,23 @@ const getTaskDefinition = state => {
       },
       in: {
         $match: {
-          'tasks_for == "github-pull-request" && event["action"] in ["opened", "synchronize"]': {
-            taskId: { $eval: 'as_slugid("test")' },
-            deadline: { $fromNow: '1 day' },
-            taskQueueId,
-            metadata: {
-              name: taskName,
-              description: taskDescription,
-              owner: '${event.sender.login}@users.noreply.github.com',
-              source: '${event.repository.url}',
+          'tasks_for == "github-pull-request" && event["action"] in ["opened", "synchronize"]':
+            {
+              taskId: { $eval: 'as_slugid("test")' },
+              deadline: { $fromNow: '1 day' },
+              taskQueueId,
+              metadata: {
+                name: taskName,
+                description: taskDescription,
+                owner: '${event.sender.login}@users.noreply.github.com',
+                source: '${event.repository.url}',
+              },
+              payload: {
+                maxRunTime: 3600,
+                image,
+                command: commands,
+              },
             },
-            payload: {
-              maxRunTime: 3600,
-              image,
-              command: commands,
-            },
-          },
         },
       },
     },

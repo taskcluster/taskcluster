@@ -96,12 +96,8 @@ export default class ViewWorker extends Component {
   };
 
   handleQuarantineDialogSubmit = async () => {
-    const {
-      provisionerId,
-      workerType,
-      workerGroup,
-      workerId,
-    } = this.props.match.params;
+    const { provisionerId, workerType, workerGroup, workerId } =
+      this.props.match.params;
 
     this.setState({ actionLoading: true, dialogError: null });
 

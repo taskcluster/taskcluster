@@ -49,13 +49,23 @@ export const taskRunLatestResolve = task => {
 
 export const filterTasksByState = curry((filter, tasks) =>
   filter
-    ? tasks.filter(({ node: { status: { state } } }) => filter.includes(state))
+    ? tasks.filter(
+        ({
+          node: {
+            status: { state },
+          },
+        }) => filter.includes(state)
+      )
     : tasks
 );
 export const filterTasksByName = curry((searchTerm, tasks) =>
   searchTerm
-    ? tasks.filter(({ node: { metadata: { name } } }) =>
-        (name ? name.toLowerCase() : '').includes(searchTerm)
+    ? tasks.filter(
+        ({
+          node: {
+            metadata: { name },
+          },
+        }) => (name ? name.toLowerCase() : '').includes(searchTerm)
       )
     : tasks
 );

@@ -572,65 +572,67 @@ export default class TaskGroup extends Component {
     this.setState({ dialogError: e, actionLoading: false });
   };
 
-  handleActionSubmit = ({ name }) => async () => {
-    this.preRunningAction();
+  handleActionSubmit =
+    ({ name }) =>
+    async () => {
+      this.preRunningAction();
 
-    const apolloClient = this.props.client;
-    const {
-      data: { taskGroup },
-    } = this.props;
-
-    if (name === 'sealTaskGroup') {
+      const apolloClient = this.props.client;
       const {
-        data: { sealTaskGroup },
-      } = await apolloClient.mutate({
-        mutation: sealTaskGroupQuery,
-        variables: {
-          taskGroupId: taskGroup.taskGroup.taskGroupId,
-        },
+        data: { taskGroup },
+      } = this.props;
+
+      if (name === 'sealTaskGroup') {
+        const {
+          data: { sealTaskGroup },
+        } = await apolloClient.mutate({
+          mutation: sealTaskGroupQuery,
+          variables: {
+            taskGroupId: taskGroup.taskGroup.taskGroupId,
+          },
+        });
+
+        this.setState({ taskGroupInfo: sealTaskGroup });
+        this.handleSnackbarOpen({
+          message: 'Task Group sealed',
+          open: true,
+        });
+
+        return null;
+      }
+
+      if (name === 'cancelTaskGroup') {
+        const {
+          data: { cancelTaskGroup },
+        } = await apolloClient.mutate({
+          mutation: cancelTaskGroupQuery,
+          variables: {
+            taskGroupId: taskGroup.taskGroup.taskGroupId,
+          },
+        });
+
+        this.handleSnackbarOpen({
+          message: `Tasks cancelled: ${cancelTaskGroup.cancelledCount} out of ${cancelTaskGroup.taskGroupSize}.`,
+          open: true,
+        });
+
+        return null;
+      }
+
+      const { taskActions, task } = this.props.data;
+      const { actionInputs, actionData } = this.state;
+      const form = actionInputs[name];
+      const { action } = actionData[name];
+      const taskId = await submitTaskAction({
+        task,
+        taskActions,
+        form,
+        action,
+        apolloClient,
       });
 
-      this.setState({ taskGroupInfo: sealTaskGroup });
-      this.handleSnackbarOpen({
-        message: 'Task Group sealed',
-        open: true,
-      });
-
-      return null;
-    }
-
-    if (name === 'cancelTaskGroup') {
-      const {
-        data: { cancelTaskGroup },
-      } = await apolloClient.mutate({
-        mutation: cancelTaskGroupQuery,
-        variables: {
-          taskGroupId: taskGroup.taskGroup.taskGroupId,
-        },
-      });
-
-      this.handleSnackbarOpen({
-        message: `Tasks cancelled: ${cancelTaskGroup.cancelledCount} out of ${cancelTaskGroup.taskGroupSize}.`,
-        open: true,
-      });
-
-      return null;
-    }
-
-    const { taskActions, task } = this.props.data;
-    const { actionInputs, actionData } = this.state;
-    const form = actionInputs[name];
-    const { action } = actionData[name];
-    const taskId = await submitTaskAction({
-      task,
-      taskActions,
-      form,
-      action,
-      apolloClient,
-    });
-
-    return taskId;
-  };
+      return taskId;
+    };
 
   handleActionTaskComplete = taskId => {
     if (taskId) {
@@ -817,14 +819,8 @@ export default class TaskGroup extends Component {
       notifyPreferences,
       taskGroupWasRunningOnPageLoad,
     } = this.state;
-    const {
-      completed,
-      exception,
-      failed,
-      pending,
-      running,
-      unscheduled,
-    } = statusCount;
+    const { completed, exception, failed, pending, running, unscheduled } =
+      statusCount;
     const allTasksCount = sum([
       completed,
       exception,
@@ -900,8 +896,8 @@ export default class TaskGroup extends Component {
     const isFromSameTaskGroupId = taskGroup?.edges[0]
       ? taskGroup.edges[0].node.taskGroupId === taskGroupId
       : true;
-    const notificationsCount = Object.values(notifyPreferences).filter(Boolean)
-      .length;
+    const notificationsCount =
+      Object.values(notifyPreferences).filter(Boolean).length;
     const graphqlError = this.getError(error);
 
     this.subscribe({ taskGroupId, subscribeToMore });
