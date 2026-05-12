@@ -1,4 +1,4 @@
-FROM golang:1.26.2-trixie AS golang
+FROM golang:1.26.3-trixie AS golang
 FROM node:24.15.0-trixie-slim
 
 COPY --from=golang /usr/local/go /usr/local/go
@@ -29,7 +29,7 @@ RUN mkdir -p /builds && \
     git \
     gnupg \
     python3 && \
-    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+    curl -sSfL https://golangci-lint.run/install.sh | \
     sh -s -- -b $(go env GOPATH)/bin v$(cat .golangci-lint-version) && \
     install -d /usr/share/postgresql-common/pgdg && \
     curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
