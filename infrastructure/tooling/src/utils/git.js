@@ -75,14 +75,20 @@ export const gitRemoteRev = async ({ dir, remote, ref, utils }) => {
 };
 
 /**
+ * Call `git status --porcelain` in repoDir.
+ */
+export const gitStatus = async ({ dir }) => {
+  const opts = { cwd: dir };
+  return (await exec('git', ['status', '--porcelain'], opts))
+    .stdout.split(/\n/)
+    .filter(l => l !== '');
+};
+
+/**
  * Call `git status --porcelain` in repoDir and return true if anything appears.
  */
 export const gitIsDirty = async ({ dir }) => {
-  const opts = { cwd: dir };
-  const status = (await exec('git', ['status', '--porcelain'], opts))
-    .stdout.split(/\n/)
-    .filter(l => l !== '');
-  return status.length > 0;
+  return (await gitStatus({ dir })).length > 0;
 };
 
 /**
