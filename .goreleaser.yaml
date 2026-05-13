@@ -53,7 +53,7 @@ checksum:
   # Default is false.
   disable: true
 
-brews:
+homebrew_casks:
   - name: taskcluster
 
     repository:
@@ -64,34 +64,36 @@ brews:
       # provided to GoReleaser
       token: "{{ .Env.GH_TOKEN }}"
 
-    # Allows you to set a custom download strategy. Note that you'll need
-    # to implement the strategy and add it to your tap repository.
-    # Example: https://docs.brew.sh/Formula-Cookbook#specifying-the-download-strategy-explicitly
-    # Default is empty.
-    download_strategy: CurlDownloadStrategy
-
     # The project name and current git tag are used in the format string.
-    commit_msg_template: "Brew formula update for taskcluster version {{ .Tag }}"
+    commit_msg_template: "Brew cask update for taskcluster version {{ .Tag }}"
 
-    # Directory inside the repository to put the formula.
-    # Default is the root directory.
-    directory: Formula
+    # Directory inside the repository to put the cask.
+    directory: Casks
 
     # Your app's homepage.
-    # Default is empty.
     homepage: "https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell"
 
-    url_template: "https://github.com/taskcluster/taskcluster/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    url:
+      template: "https://github.com/taskcluster/taskcluster/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+      verified: "github.com/taskcluster/taskcluster/"
 
     # Template of your app's description.
-    # Default is empty.
     description: "A Taskcluster client library for the command line"
 
-    # SPDX identifier of your app's license.
-    # Default is empty.
-    license: "MPL-2.0"
+    # Shell completions aren't generated automatically because the binary is
+    # not notarized; macOS Gatekeeper kills the invocation before the
+    # quarantine attribute can be cleared. Users can install them with
+    # `taskcluster completions <shell> <path>` instead.
+    caveats: |
+      To install shell completions, run one of:
+        taskcluster completions bash /opt/homebrew/etc/bash_completion.d/taskcluster
+        taskcluster completions zsh "$(brew --prefix)/share/zsh/site-functions/_taskcluster"
+        taskcluster completions fish "$(brew --prefix)/share/fish/vendor_completions.d/taskcluster.fish"
 
-    # So you can `brew test` your formula.
-    # Default is empty.
-    test: |
-      system "#{bin}/taskcluster version"
+    # Remove macOS quarantine attribute since the binary is not notarized.
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/taskcluster"]
+          end
