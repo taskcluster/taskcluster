@@ -3,6 +3,56 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v100.1.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.26.3 and golangci-lint v2.12.2.
+
+Release notes [here](https://go.dev/doc/devel/release#go1.26.3).
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#8586](https://github.com/taskcluster/taskcluster/issues/8586)
+Fixes a bug in worker-manager where the worker-scanner could incorrectly mark a running worker as `over capacity` and tell it to terminate, even when it was the sole running worker in a pool with `minCapacity >= 1`. Caused by offset-based pagination yielding duplicate rows when other workers were inserted mid-scan, leading to conflicting termination decisions for the same worker. The provisioner had the same root cause, silently over-counting `existingCapacity` on pools with more than 1000 non-stopped workers and under-provisioning them. Both call sites now use keyset pagination via a new function `get_non_stopped_workers_with_launch_config_scanner_after` in DB version 0125. The most visible symptom was excessive worker churn on small pools.
+
+### USERS
+
+▶ [patch]
+Fixed the diff viewer in the scopes/client editing pages
+
+▶ [patch] [#8613](https://github.com/taskcluster/taskcluster/issues/8613)
+Migrates the `taskcluster` shell client's Homebrew release pipeline from the deprecated GoReleaser `brews` field to `homebrew_casks`. `brew install taskcluster/tap/taskcluster` still works, and existing formula installs auto-migrate on the next `brew update`.
+
+▶ [patch]
+Removed the interactive shell viewer for docker-worker in the UI
+
+### DEVELOPERS
+
+▶ [patch]
+Adds scripts to automate Node.js and Go version upgrades.
+
+### Automated Package Updates
+
+<details>
+<summary>12 Dependabot updates</summary>
+
+* build(deps): bump protobufjs from 7.5.5 to 7.5.8 (70b5ce841e)
+* build(deps): bump @protobufjs/utf8 from 1.1.0 to 1.1.1 (d49171d65d)
+* build(deps): bump requests from 2.15.1 to 2.32.5 in /clients/client-py (60d765a4dc)
+* build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /clients/client-py (8eb162b014)
+* build(deps): bump github.com/go-git/go-git/v5 from 5.18.0 to 5.19.0 (2bd41df2cb)
+* build(deps): bump @babel/plugin-transform-modules-systemjs in /ui (2ba1f417bf)
+* build(deps): bump github.com/in-toto/in-toto-golang (42f02d4fff)
+* build(deps): bump fast-uri from 3.0.6 to 3.1.2 (4ef400783c)
+* build(deps): bump github.com/modelcontextprotocol/registry (6b078888a3)
+* build(deps): bump fast-xml-builder from 1.1.5 to 1.2.0 (77a1946708)
+* build(deps): bump fast-uri from 3.0.1 to 3.1.2 in /ui (e1727bf0f0)
+* build(deps): bump matrix-js-sdk from 34.13.0 to 41.4.0 (8f8d3c15bb)
+
+</details>
+
 ## v100.0.1
 
 ### WORKER-DEPLOYERS

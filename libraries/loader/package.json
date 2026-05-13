@@ -1,7 +1,7 @@
 {
   "name": "@taskcluster/lib-loader",
   "private": true,
-  "version": "100.0.1",
+  "version": "100.1.0",
   "description": "a component loader for taskcluster",
   "exports": {
     ".": {
