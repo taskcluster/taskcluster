@@ -7,3 +7,6 @@
 - queue:seal-task-group:taskcluster-github/*
 - queue:cancel-task-group:taskcluster-github/*
 - queue:list-artifacts:*
+- queue:get-artifact:public/github/customCheckRunAnnotations.json
+- queue:get-artifact:public/github/customCheckRunText.md
+- queue:get-artifact:public/logs/live_backing.log
