@@ -3,7 +3,85 @@ import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
 const debug = debugFactory('app:sentry');
 import assert from 'assert';
-import { Client as SentryClient } from 'sentry-api';
+import got from 'got';
+
+class SentryApiClient {
+  constructor(origin, { token }) {
+    assert(origin);
+    assert(token);
+
+    this._client = got.extend({
+      prefixUrl: new URL('/api/0/', origin).toString(),
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
+    this.organizations = {
+      projects: org => this._get(`organizations/${encodeURIComponent(org)}/projects/`),
+    };
+    this.projects = {
+      keys: (org, project) => {
+        return this._get(`projects/${encodeURIComponent(org)}/${encodeURIComponent(project)}/keys/`);
+      },
+      createKey: (org, project, body) => {
+        return this._post(`projects/${encodeURIComponent(org)}/${encodeURIComponent(project)}/keys/`, body);
+      },
+      deleteKey: (org, project, key) => {
+        return this._delete(
+          `projects/${encodeURIComponent(org)}/${encodeURIComponent(project)}/keys/${encodeURIComponent(key)}/`);
+      },
+    };
+    this.teams = {
+      createProject: (org, team, body) => {
+        return this._post(`teams/${encodeURIComponent(org)}/${encodeURIComponent(team)}/projects/`, body);
+      },
+    };
+  }
+
+  _errorFromResponse(err) {
+    if (!err.response) {
+      return err;
+    }
+
+    const { statusCode, statusMessage, body } = err.response;
+    let parsedBody = body;
+    if (typeof body === 'string') {
+      try {
+        parsedBody = JSON.parse(body);
+      } catch {
+        // Ignore JSON parse errors and fall back to the HTTP status.
+      }
+    }
+    if (parsedBody?.detail) {
+      return new Error(parsedBody.detail);
+    }
+    return new Error(`${statusCode}: ${statusMessage}`);
+  }
+
+  async _get(path) {
+    try {
+      return await this._client.get(path).json();
+    } catch (err) {
+      throw this._errorFromResponse(err);
+    }
+  }
+
+  async _post(path, body) {
+    try {
+      return await this._client.post(path, { json: body }).json();
+    } catch (err) {
+      throw this._errorFromResponse(err);
+    }
+  }
+
+  async _delete(path) {
+    try {
+      await this._client.delete(path);
+    } catch (err) {
+      throw this._errorFromResponse(err);
+    }
+  }
+}
 
 const pattern = /^ managed \(expires-at:([0-9TZ:.-]+)\)$/;
 const parseKeys = (keys, prefix) => {
@@ -39,7 +117,7 @@ const makeSentryManager = options => {
   ];
   if (cfgs.every(c => options[c])) {
     if (!options.sentryClient) {
-      options.sentryClient = new SentryClient(`https://${options.hostname}`, {
+      options.sentryClient = new SentryApiClient(`https://${options.hostname}`, {
         token: options.authToken,
       });
     }
@@ -61,7 +139,7 @@ class SentryManager {
    * Options:
    * {
    *   organization:   '...',  // Sentry organization
-   *   sentryClient:   require('sentry-api').Client,  // An instance of a client for sentry
+   *   sentryClient:   Sentry API client instance
    *   initialTeam:    '...',  // Initial team for new projects
    *   keyPrefix:      '...',  // Prefix for keys
    * }
@@ -167,3 +245,4 @@ class NullSentryManager {
 
 // Export SentryManager
 export default makeSentryManager;
+export { SentryApiClient };
