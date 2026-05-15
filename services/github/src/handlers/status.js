@@ -165,6 +165,7 @@ export async function statusHandler(message) {
       details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
       status: checkRunStatus,
       conclusion,
+      started_at: runs[runId]?.started,
 
       output_title: outputTitle || `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
       output_summary: outputSummary || taskDefinition.metadata.description,

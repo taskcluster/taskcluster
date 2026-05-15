@@ -2129,6 +2129,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await assertCheckRunStatus('in_progress');
     });
 
+    test('in_progress update sends started_at matching the worker claim time, not the queue time', async function () {
+      const claimedAt = '2026-05-15T10:00:00.000Z';
+      await addBuild({ state: 'running', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-running',
+        routingKey: 'route.checks',
+        taskId: TASKID,
+        state: 'running',
+        started: claimedAt,
+      });
+
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      const [args] = github.inst(9988).checks.update.firstCall.args;
+      assert.equal(args.status, 'in_progress');
+      assert.equal(args.started_at, claimedAt,
+        'started_at must come from runs[runId].started, not GitHub defaults');
+    });
+
     test('task is rerun and queued gets a queued check result and rerequested run', async function () {
       await addBuild({ state: 'running', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
@@ -2241,6 +2261,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         taskId: TASKID,
       });
       assertStatusCreate('pending');
+    });
+
+    test('taskDefined create omits started_at so GitHub does not anchor elapsed time to queue time', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-defined',
+        routingKey: 'route.checks',
+        taskId: TASKID,
+      });
+
+      assert(github.inst(9988).checks.create.called, 'checks.create was not called');
+      const [args] = github.inst(9988).checks.create.firstCall.args;
+      assert.equal(args.started_at, undefined,
+        'started_at must be omitted before the worker claims the task');
     });
 
     test('skip check when build is not defined', async function () {
