@@ -69,7 +69,7 @@ export default class ListHooks extends Component {
       match,
     } = this.props;
     const { search } = parse(window.location.search.slice(1));
-    const hooks = hookGroups?.map(group => group?.hooks).flat();
+    const hooks = hookGroups?.flatMap(group => group?.hooks);
 
     return (
       <Dashboard
