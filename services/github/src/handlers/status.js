@@ -13,7 +13,7 @@ import {
 import QueueLock from '../queue-lock.js';
 import utils from '../utils.js';
 const { markdownLog, markdownAnchor } = utils;
-import { requestArtifact } from './requestArtifact.js';
+import { requestArtifact, buildArtifactUrl } from './requestArtifact.js';
 import { taskUI, makeDebug, taskLogUI, GithubCheck, getTimeDifference, taskGroupUI, buildUrl, buildLogUrl } from './utils.js';
 
 /**
@@ -125,7 +125,6 @@ export async function statusHandler(message) {
         debug,
         instGithub,
         build,
-        scopes: taskDefinition.scopes,
       });
     };
 
@@ -249,12 +248,7 @@ export async function statusHandler(message) {
     }
     if (!taskDefined && runId !== undefined) {
       try {
-        const limitedQueueClient = this.queueClient.use({
-          authorizedScopes: taskDefinition.scopes,
-        });
-        const url = limitedQueueClient.buildSignedUrl(
-          limitedQueueClient.getArtifact, taskId, runId, LIVE_BACKING_LOG_ARTIFACT_NAME,
-        );
+        const url = buildArtifactUrl(this.queueClient, { taskId, runId, artifactName: LIVE_BACKING_LOG_ARTIFACT_NAME });
         const response = await fetch(url, { redirect: 'follow' });
         if (response.ok) {
           const logText = await utils.extractLog(

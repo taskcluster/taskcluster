@@ -35,6 +35,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
   const CUSTOM_CHECKRUN_TASKID = 'apple';
+  const CUSTOM_CHECKRUN_HOOK_TASKID = 'apple-hook';
   const CUSTOM_LIVELOG_NAME_TASKID = 'banana';
   const CUSTOM_CHECKRUN_TEXT = 'Hi there! This is your custom text';
   const LIVE_LOG_TEXT = 'Hi there! This is your live log';
@@ -190,7 +191,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       },
       use: () => ({
         getArtifact: async () => CUSTOM_CHECKRUN_TEXT,
-        buildSignedUrl: async () => 'http://example.com',
+        buildSignedUrl: () => 'http://example.com',
       }),
     };
 
@@ -1816,6 +1817,35 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_CHECKRUN_TASKID}**\nRunId: **0**\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_CHECKRUN_TASKID)}\n${CUSTOM_CHECKRUN_TEXT}\n`
       );
       /* eslint-enable comma-dangle */
+      sinon.restore();
+    });
+
+    test('uses github service credentials to fetch artifact from hook task', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_HOOK_TASKID });
+      sinon.restore();
+      sinon.stub(global, "fetch").resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(utils, "extractLog").resolves('');
+      sinon.stub(handlers.queueClient, 'task').resolves({
+        metadata: { name: 'Task with custom check run', description: 'Task Description' },
+        extra: { github: { customCheckRun: { textArtifactName: 'public/text.md' } } },
+      });
+      const useSpy = sinon.spy(handlers.queueClient, 'use');
+      sinon.stub(utils, "throttleRequest").returns({ status: 200, text: CUSTOM_CHECKRUN_TEXT });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_CHECKRUN_HOOK_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+        started: STARTED,
+        resolved: RESOLVED,
+      });
+      assert(
+        useSpy.getCalls().some(c => c.args[0].authorizedScopes?.[0] === 'queue:get-artifact:public/text.md'),
+        'use should be called with queue:get-artifact scope for the artifact',
+      );
       sinon.restore();
     });
 
