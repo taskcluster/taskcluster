@@ -195,7 +195,7 @@ export default class ViewWorkers extends Component {
     const { data } = this.props;
     const workers = path(['workers', 'edges'], data);
 
-    if (error && error.graphQLErrors && workers) {
+    if (error?.graphQLErrors && workers) {
       error.graphQLErrors.map(error => {
         const taskId = path(['requestInfo', 'params', 'taskId'], error);
 

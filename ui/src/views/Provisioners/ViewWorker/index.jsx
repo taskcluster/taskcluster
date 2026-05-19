@@ -56,10 +56,9 @@ export default class ViewWorker extends Component {
       terminateDialogTitle: '',
       terminateDialogBody: '',
       terminateDialogConfirmText: '',
-      quarantineUntilInput:
-        props.worker && props.worker.quarantineUntil
-          ? parseISO(props.worker.quarantineUntil)
-          : addYears(new Date(), 1000),
+      quarantineUntilInput: props.worker?.quarantineUntil
+        ? parseISO(props.worker.quarantineUntil)
+        : addYears(new Date(), 1000),
       quarantineInfo: '',
     };
   }

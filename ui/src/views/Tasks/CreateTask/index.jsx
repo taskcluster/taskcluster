@@ -149,7 +149,7 @@ export default class CreateTask extends Component {
       return task;
     }
 
-    if (location.state && location.state.task) {
+    if (location.state?.task) {
       return location.state.task;
     }
 
@@ -266,8 +266,8 @@ export default class CreateTask extends Component {
     const input = load(task);
     const errors = await validateTaskPayloadSchemas(
       input,
-      schema && schema.type,
-      schema && schema.schema
+      schema?.type,
+      schema?.schema
     );
 
     this.setState({

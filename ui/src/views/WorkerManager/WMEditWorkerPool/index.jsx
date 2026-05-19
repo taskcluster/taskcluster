@@ -100,10 +100,7 @@ export default class WMEditWorkerPool extends Component {
     const { isNewWorkerPool, data, providersData, match } = this.props;
 
     // detect a ridiculous number of providers and let the user know
-    if (
-      providersData.WorkerManagerProviders &&
-      providersData.WorkerManagerProviders.pageInfo.hasNextPage
-    ) {
+    if (providersData.WorkerManagerProviders?.pageInfo.hasNextPage) {
       const err = new Error(
         'This deployment has a lot of providers; not all can be displayed here.'
       );
@@ -115,12 +112,10 @@ export default class WMEditWorkerPool extends Component {
       ? providersData.WorkerManagerProviders.edges.map(({ node }) => node)
       : [];
     const loading =
-      !providersData ||
-      !providersData.WorkerManagerProviders ||
+      !providersData?.WorkerManagerProviders ||
       providersData.loading ||
-      (!isNewWorkerPool && (!data || !data.WorkerPool || data.loading));
-    const error =
-      (providersData && providersData.error) || (data && data.error);
+      (!isNewWorkerPool && (!data?.WorkerPool || data.loading));
+    const error = providersData?.error || data?.error;
     const workerPoolId = decodeURIComponent(match.params.workerPoolId ?? '');
 
     return (

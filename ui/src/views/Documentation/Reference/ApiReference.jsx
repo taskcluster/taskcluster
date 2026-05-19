@@ -47,8 +47,9 @@ export default class ApiReference extends Component {
       throw new Error(`Reference document version ${version} not supported`);
     }
 
-    const functionEntries =
-      ref.entries && ref.entries.filter(({ type }) => type === 'function');
+    const functionEntries = ref.entries?.filter(
+      ({ type }) => type === 'function'
+    );
     const groupedEntries = Array.from(
       this.groupBy(functionEntries, entry => entry.category)
     );
