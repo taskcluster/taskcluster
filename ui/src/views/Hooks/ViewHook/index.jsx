@@ -201,15 +201,13 @@ export default class ViewHook extends Component {
         </Breadcrumbs>
         <ErrorPanel fixed error={error} />
         {isNewHook ? (
-          <Fragment>
-            <HookForm
-              isNewHook
-              dialogError={dialogError}
-              actionLoading={actionLoading}
-              onCreateHook={this.handleCreateHook}
-              exchangesDictionary={exchangesDictionary}
-            />
-          </Fragment>
+          <HookForm
+            isNewHook
+            dialogError={dialogError}
+            actionLoading={actionLoading}
+            onCreateHook={this.handleCreateHook}
+            exchangesDictionary={exchangesDictionary}
+          />
         ) : (
           <Fragment>
             {!data.hook && data.loading && <Spinner loading />}

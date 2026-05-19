@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -557,13 +557,11 @@ export default class TcYamlDebug extends Component {
                   secondary={message}
                 />
                 {scopes?.length ? (
-                  <React.Fragment>
-                    <JsonDisplay
-                      wrapperClassName={classes.scopes}
-                      syntax="yaml"
-                      objectContent={{ scopes }}
-                    />
-                  </React.Fragment>
+                  <JsonDisplay
+                    wrapperClassName={classes.scopes}
+                    syntax="yaml"
+                    objectContent={{ scopes }}
+                  />
                 ) : (
                   ''
                 )}
@@ -607,127 +605,124 @@ export default class TcYamlDebug extends Component {
 
     return (
       <Dashboard title="GitHub .taskcluster.yml debug" disableTitleFormatting>
-        <Fragment>
-          <Typography className={classes.mainHeading} variant="h6">
-            Lint your <code>.taskcluster.yml</code>
-          </Typography>
-          <List>
-            <ListItem>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography variant="subtitle1">
-                    Your .taskcluster.yml
-                  </Typography>
-                }
-              />
-              <TextField
-                label="Link to .taskcluster.yml"
-                name="taskclusterYmlUrl"
-                onChange={this.handleTaskclusterYmlUrlChange}
-                value={taskclusterYmlUrl || ''}
-                className={classes.textField}
-                error={taskclusterYmlUrl !== '' && !isValidUrl}
-                helperText={validationMessage}
-              />
-            </ListItem>
-            <ListItem className={classes.editorListItem}>
-              <CodeEditor
-                onChange={this.handleEditorChange}
-                mode="yaml"
-                value={this.state.editorValue}
-                className={this.props.classes.codeEditor}
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography variant="subtitle2">Extra context</Typography>
-                }
-              />
-            </ListItem>
-            <ListItem className={classes.contextListItem}>
-              <CodeEditor
-                onChange={this.handleExtraContextChange}
-                mode="yaml"
-                value={this.state.extraContext}
-                className={classes.contextEditor}
-              />
-            </ListItem>
-            <ListItem>
-              <Grid container spacing={2} alignItems="flex-end">
-                <Grid item>
-                  <Button
-                    spanProps={{ className: classes.analyzeButton }}
-                    tooltipProps={{ title: 'Analyze' }}
-                    onClick={this.handleAnalyze}
-                    variant="contained"
-                    color="primary">
-                    Analyze
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <TextField
-                    className={classes.dropdown}
-                    select
-                    label="Simulate custom event"
-                    value=""
-                    onChange={this.handleCustomEventSimulate}>
-                    {releaseActions.map(action => (
-                      <MenuItem
-                        key={`gr-${action}`}
-                        value={`github-release.${action}`}>
-                        <code>github-release</code>.<strong>{action}</strong>
-                      </MenuItem>
-                    ))}
-                    {pullRequestActions.map(action => (
-                      <MenuItem
-                        key={`gpr-${action}`}
-                        value={`github-pull-request.${action}`}>
-                        <code>github-pull-request</code>.
-                        <strong>{action}</strong>
-                      </MenuItem>
-                    ))}
-                    {pullRequestActions.map(action => (
-                      <MenuItem
-                        key={`gpru-${action}`}
-                        value={`github-pull-request-untrusted.${action}`}>
-                        <code>github-pull-request-untrusted</code>.
-                        <strong>{action}</strong>
-                      </MenuItem>
-                    ))}
-                    {issueCommentActions.map(action => (
-                      <MenuItem
-                        key={`gic-${action}`}
-                        value={`github-issue-comment.${action}`}>
-                        <code>github-issue-comment</code>.
-                        <strong>{action}</strong>
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                {parsed && (
-                  <Grid item>
-                    <div>{parserOk ? '' : '⛔️ could not parse YAML'}</div>
-                    <div>
-                      {parserVersion === 0
-                        ? ` ⚠️ Uses v0, please migrate to v1`
-                        : ''}
-                    </div>
-                    <div>{parserChecks ? '' : ' ⚠️ not using checks'}</div>
-                    <div>
-                      {parserAutoCancel
-                        ? ''
-                        : ' ⚠️ not using autoCancelPreviousChecks: true'}
-                    </div>
-                  </Grid>
-                )}
+        <Typography className={classes.mainHeading} variant="h6">
+          Lint your <code>.taskcluster.yml</code>
+        </Typography>
+        <List>
+          <ListItem>
+            <ListItemText
+              disableTypography
+              primary={
+                <Typography variant="subtitle1">
+                  Your .taskcluster.yml
+                </Typography>
+              }
+            />
+            <TextField
+              label="Link to .taskcluster.yml"
+              name="taskclusterYmlUrl"
+              onChange={this.handleTaskclusterYmlUrlChange}
+              value={taskclusterYmlUrl || ''}
+              className={classes.textField}
+              error={taskclusterYmlUrl !== '' && !isValidUrl}
+              helperText={validationMessage}
+            />
+          </ListItem>
+          <ListItem className={classes.editorListItem}>
+            <CodeEditor
+              onChange={this.handleEditorChange}
+              mode="yaml"
+              value={this.state.editorValue}
+              className={this.props.classes.codeEditor}
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              disableTypography
+              primary={
+                <Typography variant="subtitle2">Extra context</Typography>
+              }
+            />
+          </ListItem>
+          <ListItem className={classes.contextListItem}>
+            <CodeEditor
+              onChange={this.handleExtraContextChange}
+              mode="yaml"
+              value={this.state.extraContext}
+              className={classes.contextEditor}
+            />
+          </ListItem>
+          <ListItem>
+            <Grid container spacing={2} alignItems="flex-end">
+              <Grid item>
+                <Button
+                  spanProps={{ className: classes.analyzeButton }}
+                  tooltipProps={{ title: 'Analyze' }}
+                  onClick={this.handleAnalyze}
+                  variant="contained"
+                  color="primary">
+                  Analyze
+                </Button>
               </Grid>
-            </ListItem>
-            <ListItem>{this.renderFindings()}</ListItem>
-          </List>
-        </Fragment>
+              <Grid item>
+                <TextField
+                  className={classes.dropdown}
+                  select
+                  label="Simulate custom event"
+                  value=""
+                  onChange={this.handleCustomEventSimulate}>
+                  {releaseActions.map(action => (
+                    <MenuItem
+                      key={`gr-${action}`}
+                      value={`github-release.${action}`}>
+                      <code>github-release</code>.<strong>{action}</strong>
+                    </MenuItem>
+                  ))}
+                  {pullRequestActions.map(action => (
+                    <MenuItem
+                      key={`gpr-${action}`}
+                      value={`github-pull-request.${action}`}>
+                      <code>github-pull-request</code>.<strong>{action}</strong>
+                    </MenuItem>
+                  ))}
+                  {pullRequestActions.map(action => (
+                    <MenuItem
+                      key={`gpru-${action}`}
+                      value={`github-pull-request-untrusted.${action}`}>
+                      <code>github-pull-request-untrusted</code>.
+                      <strong>{action}</strong>
+                    </MenuItem>
+                  ))}
+                  {issueCommentActions.map(action => (
+                    <MenuItem
+                      key={`gic-${action}`}
+                      value={`github-issue-comment.${action}`}>
+                      <code>github-issue-comment</code>.
+                      <strong>{action}</strong>
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              {parsed && (
+                <Grid item>
+                  <div>{parserOk ? '' : '⛔️ could not parse YAML'}</div>
+                  <div>
+                    {parserVersion === 0
+                      ? ` ⚠️ Uses v0, please migrate to v1`
+                      : ''}
+                  </div>
+                  <div>{parserChecks ? '' : ' ⚠️ not using checks'}</div>
+                  <div>
+                    {parserAutoCancel
+                      ? ''
+                      : ' ⚠️ not using autoCancelPreviousChecks: true'}
+                  </div>
+                </Grid>
+              )}
+            </Grid>
+          </ListItem>
+          <ListItem>{this.renderFindings()}</ListItem>
+        </List>
       </Dashboard>
     );
   }

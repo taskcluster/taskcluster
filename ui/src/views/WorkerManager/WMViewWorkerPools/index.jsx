@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import PlusIcon from 'mdi-react/PlusIcon';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -193,37 +193,33 @@ export default class WorkerManagerWorkerPoolsView extends Component {
             placeholder="Worker pool ID contains"
           />
         }>
-        <Fragment>
-          {!WorkerManagerWorkerPoolSummaries && loading && <Spinner loading />}
-          <ErrorPanel fixed error={error} />
-          <ErrorPanel
-            warning
-            error={
-              errorStatsError &&
-              `Failed to load worker pool error stats: ${errorStatsError.message}`
-            }
+        {!WorkerManagerWorkerPoolSummaries && loading && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        <ErrorPanel
+          warning
+          error={
+            errorStatsError &&
+            `Failed to load worker pool error stats: ${errorStatsError.message}`
+          }
+        />
+        {WorkerManagerWorkerPoolSummaries && (
+          <WorkerManagerWorkerPoolsTable
+            searchTerm={workerPoolSearch}
+            onPageChange={this.handlePageChange}
+            workerPoolsConnection={WorkerManagerWorkerPoolSummaries}
+            deleteRequest={this.deleteRequest}
+            errorStatsLoading={this.state.errorStatsLoading}
           />
-          {WorkerManagerWorkerPoolSummaries && (
-            <Fragment>
-              <WorkerManagerWorkerPoolsTable
-                searchTerm={workerPoolSearch}
-                onPageChange={this.handlePageChange}
-                workerPoolsConnection={WorkerManagerWorkerPoolSummaries}
-                deleteRequest={this.deleteRequest}
-                errorStatsLoading={this.state.errorStatsLoading}
-              />
-            </Fragment>
-          )}
-          <Button
-            spanProps={{ className: classes.createIconSpan }}
-            tooltipProps={{ title: 'Create Worker Pool' }}
-            requiresAuth
-            color="secondary"
-            variant="circular"
-            onClick={this.handleCreate}>
-            <PlusIcon />
-          </Button>
-        </Fragment>
+        )}
+        <Button
+          spanProps={{ className: classes.createIconSpan }}
+          tooltipProps={{ title: 'Create Worker Pool' }}
+          requiresAuth
+          color="secondary"
+          variant="circular"
+          onClick={this.handleCreate}>
+          <PlusIcon />
+        </Button>
       </Dashboard>
     );
   }

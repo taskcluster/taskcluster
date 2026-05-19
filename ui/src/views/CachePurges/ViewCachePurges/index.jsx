@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
@@ -109,29 +109,27 @@ export default class ViewCachePurges extends Component {
             placeholder="Cache Name contains"
           />
         }>
-        <Fragment>
-          {!cachePurges && loading && <Spinner loading />}
-          <ErrorPanel fixed error={error} />
-          {cachePurges && (
-            <CachePurgesTable
-              searchTerm={cacheSearch}
-              cachePurgesConnection={cachePurges}
-              onPageChange={this.handlePageChange}
-            />
-          )}
-          <Button
-            spanProps={{ className: classes.plusIconSpan }}
-            tooltipProps={{
-              title: 'Create Purge Cache Request',
-              id: 'create-purge-cache-tooltip',
-              delay: 300,
-            }}
-            onClick={this.handleCreate}
-            variant="circular"
-            color="secondary">
-            <PlusIcon />
-          </Button>
-        </Fragment>
+        {!cachePurges && loading && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        {cachePurges && (
+          <CachePurgesTable
+            searchTerm={cacheSearch}
+            cachePurgesConnection={cachePurges}
+            onPageChange={this.handlePageChange}
+          />
+        )}
+        <Button
+          spanProps={{ className: classes.plusIconSpan }}
+          tooltipProps={{
+            title: 'Create Purge Cache Request',
+            id: 'create-purge-cache-tooltip',
+            delay: 300,
+          }}
+          onClick={this.handleCreate}
+          variant="circular"
+          color="secondary">
+          <PlusIcon />
+        </Button>
       </Dashboard>
     );
   }

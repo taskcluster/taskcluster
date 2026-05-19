@@ -377,11 +377,9 @@ export default class InteractiveConnect extends Component {
 
     return (
       <Dashboard title="Interactive Connect">
-        <Fragment>
-          {!error && artifactsLoading && <Spinner loading />}
-          <ErrorPanel fixed error={error} />
-          {!artifactsLoading && task && this.renderTask()}
-        </Fragment>
+        {!error && artifactsLoading && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        {!artifactsLoading && task && this.renderTask()}
       </Dashboard>
     );
   }

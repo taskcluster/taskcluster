@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
@@ -169,47 +169,45 @@ export default class ViewSecrets extends Component {
             placeholder="Secret contains"
           />
         }>
-        <Fragment>
-          {loading && <Spinner loading />}
-          <ErrorPanel fixed error={error} />
-          {secrets && (
-            <SecretsTable
-              searchTerm={secretSearch}
-              onPageChange={this.handlePageChange}
-              secretsConnection={secrets}
-              onDialogActionOpen={this.handleDialogActionOpen}
-            />
-          )}
-          <Button
-            spanProps={{ className: classes.plusIconSpan }}
-            tooltipProps={{
-              title: 'Create Secret',
-              id: 'create-secret-tooltip',
-              enterDelay: 300,
-            }}
-            onClick={this.handleCreate}
-            variant="circular"
-            color="secondary">
-            <PlusIcon />
-          </Button>
-          {dialogOpen && (
-            <DialogAction
-              open={dialogOpen}
-              onSubmit={this.handleDeleteSecret}
-              onComplete={this.handleDialogActionComplete}
-              onClose={this.handleDialogActionClose}
-              onError={this.handleDialogActionError}
-              error={dialogError}
-              title="Delete Secret?"
-              body={
-                <Typography variant="body2">
-                  This will delete the secret {deleteSecretName}.
-                </Typography>
-              }
-              confirmText="Delete Secret"
-            />
-          )}
-        </Fragment>
+        {loading && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        {secrets && (
+          <SecretsTable
+            searchTerm={secretSearch}
+            onPageChange={this.handlePageChange}
+            secretsConnection={secrets}
+            onDialogActionOpen={this.handleDialogActionOpen}
+          />
+        )}
+        <Button
+          spanProps={{ className: classes.plusIconSpan }}
+          tooltipProps={{
+            title: 'Create Secret',
+            id: 'create-secret-tooltip',
+            enterDelay: 300,
+          }}
+          onClick={this.handleCreate}
+          variant="circular"
+          color="secondary">
+          <PlusIcon />
+        </Button>
+        {dialogOpen && (
+          <DialogAction
+            open={dialogOpen}
+            onSubmit={this.handleDeleteSecret}
+            onComplete={this.handleDialogActionComplete}
+            onClose={this.handleDialogActionClose}
+            onError={this.handleDialogActionError}
+            error={dialogError}
+            title="Delete Secret?"
+            body={
+              <Typography variant="body2">
+                This will delete the secret {deleteSecretName}.
+              </Typography>
+            }
+            confirmText="Delete Secret"
+          />
+        )}
       </Dashboard>
     );
   }
