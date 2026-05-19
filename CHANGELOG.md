@@ -3,6 +3,55 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v100.1.1
+
+### GENERAL
+
+▶ [patch]
+Replaces the deprecated `sentry-api` package with a small Sentry API client in the Auth service and upgrades transitive `form-data` dependencies to patched versions, resolving multiple critical security vulnerabilities.
+
+### USERS
+
+▶ [patch]
+Display YAML parser errors in the github taskcluster yml debugger
+
+▶ [patch]
+Display errors when fetching error stats for worker pools fails
+
+▶ [patch] [#8625](https://github.com/taskcluster/taskcluster/issues/8625)
+Explicitly ensure the GitHub service can fetch the well-defined artifacts used
+as integration points. Previously the `static/taskcluster/github` client
+attempted to assume the hook role for hook-created tasks, which it does not
+have scopes to do.
+
+▶ [patch] [#5431](https://github.com/taskcluster/taskcluster/issues/5431)
+Fix the worker view's recent tasks table rendering duplicate rows when the same task has been run more than once on the worker.
+
+▶ [patch] [#8631](https://github.com/taskcluster/taskcluster/issues/8631)
+GitHub check runs now report `started_at` based on the time the task was actually claimed by a worker, rather than when the task was first defined. Previously, the GitHub Checks UI showed elapsed time from when a task was first scheduled, making queued/pending time appear as running time.
+
+### OTHER
+
+▶ Additional change not described here: [#6866](https://github.com/taskcluster/taskcluster/issues/6866).
+
+### Automated Package Updates
+
+<details>
+<summary>10 Dependabot updates</summary>
+
+* build(deps): bump slugid from 3.2.0 to 5.0.1 (c650cdb4a0)
+* build(deps): bump the node-deps group with 14 updates (67f2e9c7bb)
+* build(deps): bump github/codeql-action in the gh-actions-deps group (bfe9a88e7f)
+* build(deps): bump the go-deps group with 4 updates (cdeac2ac2e)
+* build(deps-dev): bump ruff (e12a3c969b)
+* build(deps): bump the client-rust-deps group (0f666c4736)
+* build(deps-dev): bump eslint (4d537a0aae)
+* build(deps): bump the client-node-deps group (e3e07abe22)
+* build(deps): bump brace-expansion from 2.0.2 to 5.0.6 (ddafda1e53)
+* build(deps): bump github.com/slack-go/slack from 0.22.0 to 0.23.1 (ff2c07737d)
+
+</details>
+
 ## v100.1.0
 
 ### GENERAL
