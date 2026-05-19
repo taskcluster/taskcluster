@@ -349,14 +349,15 @@ export default class TcYamlDebug extends Component {
     let doc;
     let schema = 'github-v1';
 
+    this.setState({ parsed: true });
+
     try {
       doc = load(this.state.editorValue);
-      this.setState({
-        parsed: true,
-      });
     } catch (e) {
-      this.setState({
-        parsed: true,
+      this.addFinding({
+        type: 'parser',
+        sentiment: '⛔️',
+        message: e.message,
       });
     }
 
