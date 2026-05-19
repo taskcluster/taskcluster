@@ -323,6 +323,52 @@ export default class ViewClient extends Component {
       this.props.history.replace({ state });
     }
 
+    const clientContent = isNewClient ? (
+      <Fragment>
+        <ErrorPanel fixed error={error} />
+        <ClientForm
+          key={this.getClientFormKey(initialClient)}
+          loading={loading}
+          client={initialClient}
+          isNewClient
+          onSaveClient={this.handleSaveClient}
+        />
+      </Fragment>
+    ) : (
+      <Fragment>
+        {(clientData?.loading || currentScopesData?.loading) && (
+          <Spinner loading />
+        )}
+        <ErrorPanel
+          fixed
+          warning={isClientDisabled}
+          error={
+            (isClientDisabled && 'Disabled') ||
+            error ||
+            clientData?.error ||
+            currentScopesData?.error
+          }
+        />
+        {clientData?.client && (
+          <ClientForm
+            dialogError={dialogError}
+            loading={loading}
+            client={clientData.client}
+            onResetAccessToken={this.handleResetAccessToken}
+            onSaveClient={this.handleSaveClient}
+            onDeleteClient={this.handleDeleteClient}
+            onDisableClient={this.handleDisableClient}
+            onEnableClient={this.handleEnableClient}
+            dialogOpen={dialogOpen}
+            onDialogActionError={this.handleDialogActionError}
+            onDialogActionComplete={this.handleDialogActionComplete}
+            onDialogActionClose={this.handleDialogActionClose}
+            onDialogActionOpen={this.handleDialogActionOpen}
+          />
+        )}
+      </Fragment>
+    );
+
     return (
       <Dashboard title={isNewClient ? 'Create Client' : 'Client'}>
         <Collapse in={accessToken}>
@@ -355,57 +401,7 @@ export default class ViewClient extends Component {
             </CardContent>
           </Card>
         </Collapse>
-        {!isCliLogin || user ? (
-          <Fragment>
-            {isNewClient ? (
-              <Fragment>
-                <ErrorPanel fixed error={error} />
-                <ClientForm
-                  key={this.getClientFormKey(initialClient)}
-                  loading={loading}
-                  client={initialClient}
-                  isNewClient
-                  onSaveClient={this.handleSaveClient}
-                />
-              </Fragment>
-            ) : (
-              <Fragment>
-                {(clientData?.loading || currentScopesData?.loading) && (
-                  <Spinner loading />
-                )}
-                <ErrorPanel
-                  fixed
-                  warning={isClientDisabled}
-                  error={
-                    (isClientDisabled && 'Disabled') ||
-                    error ||
-                    clientData?.error ||
-                    currentScopesData?.error
-                  }
-                />
-                {clientData?.client && (
-                  <ClientForm
-                    dialogError={dialogError}
-                    loading={loading}
-                    client={clientData.client}
-                    onResetAccessToken={this.handleResetAccessToken}
-                    onSaveClient={this.handleSaveClient}
-                    onDeleteClient={this.handleDeleteClient}
-                    onDisableClient={this.handleDisableClient}
-                    onEnableClient={this.handleEnableClient}
-                    dialogOpen={dialogOpen}
-                    onDialogActionError={this.handleDialogActionError}
-                    onDialogActionComplete={this.handleDialogActionComplete}
-                    onDialogActionClose={this.handleDialogActionClose}
-                    onDialogActionOpen={this.handleDialogActionOpen}
-                  />
-                )}
-              </Fragment>
-            )}
-          </Fragment>
-        ) : (
-          <SignInDialog open />
-        )}
+        {!isCliLogin || user ? clientContent : <SignInDialog open />}
         <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
     );
