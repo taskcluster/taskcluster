@@ -13423,12 +13423,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slugid@npm:^3.2.0":
-  version: 3.2.0
-  resolution: "slugid@npm:3.2.0"
+"slugid@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "slugid@npm:5.0.1"
   dependencies:
-    uuid: "npm:^8.3.2"
-  checksum: 10c0/503cd270dd32ccd7db157c8569ec1bdb18f3c5e9e00d471bf15bf53838ff12c831564cfbc1f24b2ee4706dcecfc1fed26b1f6f5b002891186624c6522ff0189a
+    uuid: "npm:^9.0.0"
+  checksum: 10c0/08cc043cc5937ced8314efb5e47dec9c71ac99da5835fd012b948f991239147e8011c727cd74ce9e99ce2923b6047d35f20e4f8dc9b3bbfea1bbea20277ee915
   languageName: node
   linkType: hard
 
@@ -14078,7 +14078,7 @@ __metadata:
     semver: "npm:^7.7.4"
     sift: "npm:^17.1.3"
     sinon: "npm:^21.1.2"
-    slugid: "npm:^3.2.0"
+    slugid: "npm:^5.0.1"
     snake-case: "npm:^3.0.3"
     subscriptions-transport-ws: "npm:^0.11.0"
     superagent: "npm:^6.0.0"
@@ -14666,7 +14666,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^9.0.1":
+"uuid@npm:^9.0.0, uuid@npm:^9.0.1":
   version: 9.0.1
   resolution: "uuid@npm:9.0.1"
   bin:
