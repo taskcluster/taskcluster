@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import classNames from 'classnames';
 import { arrayOf, node, oneOfType } from 'prop-types';
 import { withRouter } from 'react-router-dom';
@@ -21,13 +21,12 @@ function SpeedDial(props) {
   const { classes, children, className, location, ...rest } = props;
   const [open, setOpen] = useState(false);
   const timeout = useRef(null);
-
-  function resetTimeout() {
+  const resetTimeout = useCallback(() => {
     if (timeout.current) {
       clearTimeout(timeout.current);
       timeout.current = null;
     }
-  }
+  }, []);
 
   // hide upon navigation
   useEffect(() => {
@@ -35,12 +34,12 @@ function SpeedDial(props) {
       resetTimeout();
       setOpen(false);
     };
-  }, []);
+  }, [resetTimeout]);
 
   useEffect(() => {
     resetTimeout();
     setOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, resetTimeout]);
 
   function handleClose(evt) {
     if (evt.type === 'click') {
