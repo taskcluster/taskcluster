@@ -2,6 +2,7 @@
  * Generate Go client library examples for API endpoints
  */
 
+import { version as taskclusterVersion } from '../../../package.json';
 import {
   PLACEHOLDERS,
   getPlaceholderValue,
@@ -9,6 +10,8 @@ import {
   capitalize,
   formatPayloadJson,
 } from './helpers';
+
+const TASKCLUSTER_MAJOR_VERSION = taskclusterVersion.split('.')[0];
 
 /**
  * Convert hyphenated service name to valid Go identifier
@@ -37,7 +40,6 @@ function formatGoIdentifier(name) {
  * @param {string} serviceName - Service name (e.g., 'queue')
  * @param {string} apiVersion - API version (e.g., 'v1')
  * @param {object} entry - API entry metadata
- * @param {string} version - Taskcluster version (default: '93')
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} Go code example
  */
@@ -45,7 +47,6 @@ export default function generateGoExample(
   serviceName,
   apiVersion,
   entry,
-  version = '93',
   payloadExample = null
 ) {
   const methodName = capitalize(entry.name);
@@ -142,8 +143,8 @@ export default function generateGoExample(
 import (
 ${importStatements}
 
-	tcclient "github.com/taskcluster/taskcluster/v${version}/clients/client-go"
-	"github.com/taskcluster/taskcluster/v${version}/clients/client-go/${packageName}"
+	tcclient "github.com/taskcluster/taskcluster/v${TASKCLUSTER_MAJOR_VERSION}/clients/client-go"
+	"github.com/taskcluster/taskcluster/v${TASKCLUSTER_MAJOR_VERSION}/clients/client-go/${packageName}"
 )
 
 func main() {
