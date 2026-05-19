@@ -67,31 +67,15 @@ function generateSingleExample(language, serviceName, apiVersion, entry) {
   const generators = {
     curl: () =>
       generateCurlExample(serviceName, apiVersion, entry, payloadExample),
-    go: () => generateGoExample(serviceName, apiVersion, entry, payloadExample),
+    go: () => generateGoExample(serviceName, entry, payloadExample),
     python: () =>
-      generatePythonExample(
-        serviceName,
-        apiVersion,
-        entry,
-        false,
-        payloadExample
-      ),
+      generatePythonExample(serviceName, entry, false, payloadExample),
     pythonAsync: () =>
-      generatePythonExample(
-        serviceName,
-        apiVersion,
-        entry,
-        true,
-        payloadExample
-      ),
-    node: () =>
-      generateNodeExample(serviceName, apiVersion, entry, payloadExample),
-    web: () =>
-      generateWebExample(serviceName, apiVersion, entry, payloadExample),
-    rust: () =>
-      generateRustExample(serviceName, apiVersion, entry, payloadExample),
-    shell: () =>
-      generateShellExample(serviceName, apiVersion, entry, payloadExample),
+      generatePythonExample(serviceName, entry, true, payloadExample),
+    node: () => generateNodeExample(serviceName, entry, payloadExample),
+    web: () => generateWebExample(serviceName, entry, payloadExample),
+    rust: () => generateRustExample(serviceName, entry, payloadExample),
+    shell: () => generateShellExample(serviceName, entry, payloadExample),
   };
   const generator = generators[language];
 

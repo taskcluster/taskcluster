@@ -14,14 +14,12 @@ import {
  * Generate a Web example for an API endpoint
  *
  * @param {string} serviceName - Service name (e.g., 'queue')
- * @param {string} apiVersion - API version (e.g., 'v1')
  * @param {object} entry - API entry metadata
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} Web/browser code example
  */
 export default function generateWebExample(
   serviceName,
-  apiVersion,
   entry,
   payloadExample = null
 ) {

@@ -38,14 +38,12 @@ function formatGoIdentifier(name) {
  * Generate a Go example for an API endpoint
  *
  * @param {string} serviceName - Service name (e.g., 'queue')
- * @param {string} apiVersion - API version (e.g., 'v1')
  * @param {object} entry - API entry metadata
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} Go code example
  */
 export default function generateGoExample(
   serviceName,
-  apiVersion,
   entry,
   payloadExample = null
 ) {
