@@ -14,14 +14,12 @@ import {
  * Generate a Rust example for an API endpoint
  *
  * @param {string} serviceName - Service name (e.g., 'queue')
- * @param {string} apiVersion - API version (e.g., 'v1')
  * @param {object} entry - API entry metadata
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} Rust code example
  */
 export default function generateRustExample(
   serviceName,
-  apiVersion,
   entry,
   payloadExample = null
 ) {
