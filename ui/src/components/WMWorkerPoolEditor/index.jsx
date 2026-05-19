@@ -363,7 +363,7 @@ export default class WMWorkerPoolEditor extends Component {
         },
         invalidProviderConfig: false,
       });
-    } catch (err) {
+    } catch (_err) {
       this.setState({
         workerPool: {
           ...workerPool,

@@ -89,7 +89,7 @@ export default class HooksListTable extends Component {
           const data = JSON.parse(lastFire.error);
 
           error = data?.body?.code;
-        } catch (err) {
+        } catch (_err) {
           error = lastFire.error;
         }
       } else if (lastFire.error?.body?.code) {

@@ -41,6 +41,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     workerPoolSearch: '',
     errorStatsLoading: false,
     errorStats: null,
+    errorStatsError: null,
   };
 
   componentDidMount() {
@@ -61,9 +62,10 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       this.setState({
         errorStats: data.WorkerManagerErrorsStats,
         errorStatsLoading: false,
+        errorStatsError: null,
       });
     } catch (error) {
-      this.setState({ errorStatsLoading: false });
+      this.setState({ errorStatsLoading: false, errorStatsError: error });
     }
   };
 
@@ -178,7 +180,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       data: { loading, error },
       classes,
     } = this.props;
-    const { workerPoolSearch } = this.state;
+    const { workerPoolSearch, errorStatsError } = this.state;
     const WorkerManagerWorkerPoolSummaries = this.getWorkerPoolSummaries();
 
     return (
@@ -194,6 +196,13 @@ export default class WorkerManagerWorkerPoolsView extends Component {
         <Fragment>
           {!WorkerManagerWorkerPoolSummaries && loading && <Spinner loading />}
           <ErrorPanel fixed error={error} />
+          <ErrorPanel
+            warning
+            error={
+              errorStatsError &&
+              `Failed to load worker pool error stats: ${errorStatsError.message}`
+            }
+          />
           {WorkerManagerWorkerPoolSummaries && (
             <Fragment>
               <WorkerManagerWorkerPoolsTable

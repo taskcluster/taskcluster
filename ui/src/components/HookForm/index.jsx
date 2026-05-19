@@ -364,7 +364,7 @@ export default class HookForm extends Component {
         hook: assocPath(['task'], load(value), hook),
         taskValidYaml: true,
       });
-    } catch (err) {
+    } catch (_err) {
       this.setState({
         taskInput: value,
         taskValidYaml: false,
@@ -397,7 +397,7 @@ export default class HookForm extends Component {
         hook: assocPath(['triggerSchema'], load(value), this.state.hook),
         triggerSchemaValidYaml: true,
       });
-    } catch (err) {
+    } catch (_err) {
       this.setState({
         triggerSchemaValidYaml: false,
         triggerSchemaInput: value,
