@@ -108,7 +108,7 @@ export default class ListHooks extends Component {
           spanProps={{ className: classes.actionButton }}
           tooltipProps={{ title: 'Create Hook' }}
           color="secondary"
-          variant="round"
+          variant="circular"
           onClick={this.handleCreateHook}>
           <PlusIcon />
         </Button>

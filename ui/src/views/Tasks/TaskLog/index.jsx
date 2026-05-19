@@ -117,7 +117,7 @@ export default class TaskLog extends Component {
                 <Button
                   spanProps={{ className: classes.fab }}
                   tooltipProps={{ title: 'View Task' }}
-                  variant="round"
+                  variant="circular"
                   color="secondary">
                   <ArrowLeftIcon />
                 </Button>
@@ -126,7 +126,7 @@ export default class TaskLog extends Component {
                 onClick={() => this.goToLog()}
                 spanProps={{ className: classes.rawLog }}
                 tooltipProps={{ title: 'Raw Log' }}
-                variant="round"
+                variant="circular"
                 color="secondary">
                 <OpenInNewIcon size={20} />
               </Button>

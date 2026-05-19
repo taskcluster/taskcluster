@@ -242,7 +242,7 @@ export default class SecretForm extends Component {
             tooltipProps={{ title: 'Save Secret' }}
             requiresAuth
             color="secondary"
-            variant="round"
+            variant="circular"
             className={classes.saveIcon}
             disabled={loading || !this.validSecret() || !isSecretDirty}
             onClick={this.handleSaveSecret}>
@@ -256,7 +256,7 @@ export default class SecretForm extends Component {
               }}
               tooltipProps={{ title: 'Save Secret' }}
               classes={{ root: classes.successIcon }}
-              variant="round"
+              variant="circular"
               className={classes.saveIcon}
               disabled={loading || !this.validSecret() || !isSecretDirty}
               onClick={this.handleSaveSecret}>

@@ -815,7 +815,7 @@ export default class HookForm extends Component {
             tooltipProps={{ title: 'Save Hook' }}
             requiresAuth
             classes={{ root: classes.successIcon }}
-            variant="round"
+            variant="circular"
             disabled={!this.validHook() || actionLoading || !isHookDirty}
             onClick={this.handleCreateHook}>
             <ContentSaveIcon />
@@ -831,7 +831,7 @@ export default class HookForm extends Component {
               }}
               tooltipProps={{ title: 'Save Hook' }}
               classes={{ root: classes.successIcon }}
-              variant="round"
+              variant="circular"
               disabled={!this.validHook() || actionLoading || !isHookDirty}
               onClick={this.handleUpdateHook}>
               <ContentSaveIcon />

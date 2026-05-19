@@ -640,7 +640,7 @@ export default class WMWorkerPoolEditor extends Component {
           tooltipProps={{ title: 'Save Worker Pool' }}
           onClick={this.handleOnClick}
           classes={{ root: classes.saveIcon }}
-          variant="round">
+          variant="circular">
           <ContentSaveIcon />
         </Button>
 

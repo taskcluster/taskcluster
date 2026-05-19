@@ -44,7 +44,7 @@ export default class ViewDenylist extends PureComponent {
           spanProps={{ className: classes.plusIconSpan }}
           tooltipProps={{ title: 'Add Address' }}
           onClick={this.handleAddressAdd}
-          variant="round"
+          variant="circular"
           color="secondary">
           <PlusIcon />
         </Button>

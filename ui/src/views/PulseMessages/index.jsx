@@ -300,7 +300,7 @@ export default class PulseMessages extends Component {
           </List>
           {listening ? (
             <Button
-              variant="round"
+              variant="circular"
               spanProps={{ className: classes.startStopIconSpan }}
               tooltipProps={{ title: 'Stop Listening' }}
               onClick={this.handleStopListening}
@@ -309,7 +309,7 @@ export default class PulseMessages extends Component {
             </Button>
           ) : (
             <Button
-              variant="round"
+              variant="circular"
               spanProps={{ className: classes.startStopIconSpan }}
               tooltipProps={{ title: 'Start Listening' }}
               onClick={this.handleStartListening}

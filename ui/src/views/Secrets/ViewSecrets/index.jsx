@@ -188,7 +188,7 @@ export default class ViewSecrets extends Component {
               enterDelay: 300,
             }}
             onClick={this.handleCreate}
-            variant="round"
+            variant="circular"
             color="secondary">
             <PlusIcon />
           </Button>

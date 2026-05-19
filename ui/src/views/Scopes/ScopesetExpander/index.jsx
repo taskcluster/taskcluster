@@ -116,7 +116,7 @@ export default class ScopesetExpander extends Component {
             tooltipProps={{ title: 'Expand Scopes' }}
             spanProps={{ className: classes.actionButton }}
             color="secondary"
-            variant="round"
+            variant="circular"
             onClick={this.handleExpandScopesClick}>
             <ArrowExpandVerticalIcon />
           </Button>

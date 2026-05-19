@@ -186,7 +186,7 @@ export default class ScopesetComparison extends Component {
             spanProps={{ className: classes.actionButton }}
             tooltipProps={{ title: 'Compare Scopes' }}
             color="secondary"
-            variant="round"
+            variant="circular"
             onClick={this.handleCompareScopesClick}>
             <ScaleBalanceIcon />
           </Button>

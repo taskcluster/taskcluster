@@ -485,7 +485,7 @@ export default class QuickStart extends Component {
                 onChange={this.handleInputChange}
                 fullWidth
                 multiline
-                rows={3}
+                minRows={3}
                 value={taskDescription}
               />
             </ListItem>
@@ -646,7 +646,7 @@ export default class QuickStart extends Component {
           <Button
             spanProps={{ className: classes.resetButtonSpan }}
             tooltipProps={{ title: 'Reset Form & File' }}
-            variant="round"
+            variant="circular"
             onClick={this.handleReset}
             color="secondary">
             <RestartIcon />

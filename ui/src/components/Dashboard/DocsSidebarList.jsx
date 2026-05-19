@@ -232,14 +232,13 @@ export default class DocsSidebarList extends Component {
     }
 
     return (
-      <Link to={href}>
+      <Link to={href} key={node.path}>
         <Typography
           variant="body2"
           className={classNames(classes.link, classes.hover, {
             [classes.linkActive]: isLinkActive,
             [classes.header]: isRoot,
-          })}
-          key={node.path}>
+          })}>
           {node.data.title}
         </Typography>
       </Link>
