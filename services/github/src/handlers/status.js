@@ -132,7 +132,7 @@ export async function statusHandler(message) {
     const textArtifactName = extraCheckRun?.textArtifactName || CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME;
     const annotationsArtifactName = extraCheckRun?.annotationsArtifactName || CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME;
 
-    const [ customCheckRunText, customCheckRunAnnotationsText ] = await Promise.all([
+    const [customCheckRunText, customCheckRunAnnotationsText] = await Promise.all([
       fetchArtifact(textArtifactName),
       fetchArtifact(annotationsArtifactName),
     ]);
@@ -221,18 +221,28 @@ export async function statusHandler(message) {
         output.addText(`### Artifacts`);
       }
 
+      // A quick helper function to format bytes nicely (e.g., 1024 -> "1 KB")
+      const formatBytes = (bytes) => {
+        if (!bytes || bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      };
       artifactList.artifacts.forEach(element => {
-
         let artifactUrl;
-
         if (element.name === 'public/logs/live_backing.log' || element.name === 'public/logs/live.log') {
           artifactUrl = buildLogUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         } else {
           artifactUrl = buildUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         }
-
+        // Add the formatted size to the name if the size exists
+        let displayName = element.name;
+        if (element.size !== undefined) {
+          displayName = `${element.name} (${formatBytes(element.size)})`;
+        }
         const ARTIFACT_LINK = markdownAnchor(
-          element.name,
+          displayName,
           artifactUrl,
         );
         output.addText(`\\- ${ARTIFACT_LINK}`);
