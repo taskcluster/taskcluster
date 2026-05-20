@@ -1644,6 +1644,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     let worker, ipName, nicName, vmName;
     const sandbox = sinon.createSandbox({});
 
+    // The inline beginDelete added in #8574 is fire-and-forget (the promise
+    // returned by `_enqueue` is not awaited inside `removeWorker`). Yielding
+    // once via setImmediate lets any p-queue-scheduled work run before the
+    // test asserts on its effects, so assertions don't depend on p-queue's
+    // scheduling internals.
+    const flushInlineBeginDelete = () => new Promise(resolve => setImmediate(resolve));
+
     setup('create un-provisioned worker', async function() {
       const workerPool = await makeWorkerPool();
       const workerPoolStats = new WorkerPoolStats('wpid');
@@ -1761,7 +1768,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       debug('removeWorker');
       await provider.removeWorker({ worker, reason: 'test' });
-      await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'allocated' });
+      // removeWorker now submits VM beginDelete inline, so by the time
+      // deprovisionResources runs the VM is already in Deleting and id has
+      // been cleared. flushInlineBeginDelete drains the fire-and-forget
+      // queue before we check state.
+      await flushInlineBeginDelete();
+      await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'deleting' });
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
       helper.assertNoPulseMessage('worker-stopped');
 
@@ -1893,11 +1905,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await makeResource('disks', true, 0);
       await makeResource('disks', true, 1);
       await makeResource('vm', true);
+      // Skip removeWorker so we exercise deprovisionResource's pre-flight
+      // GET + beginDelete-404 fallback path in isolation. (removeWorker now
+      // also submits an inline beginDelete; that is covered by its own
+      // tests below.)
       await worker.update(helper.db, worker => {
-        worker.state = 'running';
+        worker.state = 'stopping';
       });
-
-      await provider.removeWorker({ worker, reason: 'test' });
 
       // Resources still exist (GET succeeds) but every beginDelete throws 404
       // as if the resource disappeared between our GET and DELETE.
@@ -2017,11 +2031,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         fake.computeClient.virtualMachines.modifyFakeResource('rgrp', vmName, res => {
           res.provisioningState = midDeleteState;
         });
+        // Skip removeWorker; we are testing deprovisionResource's pre-flight
+        // GET behavior in isolation. The worker is already in STOPPING and
+        // someone else has put the VM into a mid-delete state.
         await worker.update(helper.db, worker => {
-          worker.state = 'running';
+          worker.state = 'stopping';
         });
-
-        await provider.removeWorker({ worker, reason: 'test' });
 
         const localSandbox = sinon.createSandbox({});
         const beginDeleteStub = localSandbox.stub(fake.computeClient.virtualMachines, 'beginDelete');
@@ -2044,6 +2059,146 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           'vm should not be marked deleted until a subsequent GET sees 404');
       });
     }
+
+    // Tests for the inline beginDelete behaviour added in removeWorker (#8574).
+    // Each test uses a fresh sinon spy on the fake's beginDelete so we can
+    // assert exactly when the inline call fires.
+    suite('inline beginDelete', function() {
+      test('RUNNING worker with vm.id set: fires inline beginDelete and clears vm.id', async function() {
+        await makeResource('vm', true);
+        await worker.update(helper.db, w => {
+          w.state = 'running';
+          w.providerData.provisioningComplete = true;
+        });
+
+        const beginDeleteSpy = sandbox.spy(fake.computeClient.virtualMachines, 'beginDelete');
+        await provider.removeWorker({ worker, reason: 'test' });
+        await flushInlineBeginDelete();
+
+        assert.equal(beginDeleteSpy.callCount, 1, 'inline beginDelete should fire exactly once');
+        assert.deepEqual(beginDeleteSpy.firstCall.args, ['rgrp', vmName]);
+        const [reloaded] = await helper.getWorkers();
+        assert.equal(reloaded.state, 'stopping');
+        assert.equal(reloaded.providerData.vm.id, false,
+          'vm.id should be cleared when inline beginDelete is submitted');
+        assert.equal(fake.computeClient.virtualMachines.getFakeResource('rgrp', vmName).provisioningState, 'Deleting');
+      });
+
+      test('REQUESTED worker without provisioningComplete: skips inline beginDelete', async function() {
+        await makeResource('vm', true);
+        // worker stays in REQUESTED, provisioningComplete is unset / falsy
+        const beginDeleteSpy = sandbox.spy(fake.computeClient.virtualMachines, 'beginDelete');
+        await provider.removeWorker({ worker, reason: 'test' });
+        await flushInlineBeginDelete();
+
+        assert.equal(beginDeleteSpy.callCount, 0,
+          'inline beginDelete must not fire while ARM resource extraction may still be in flight');
+        const [reloaded] = await helper.getWorkers();
+        assert.equal(reloaded.state, 'stopping');
+        assert.equal(reloaded.providerData.vm.id, `id/${vmName}`, 'vm.id should be untouched');
+        assert.equal(fake.computeClient.virtualMachines.getFakeResource('rgrp', vmName).provisioningState, 'Succeeded');
+      });
+
+      test('REQUESTED worker with provisioningComplete=true and vm.id set: fires inline beginDelete', async function() {
+        await makeResource('vm', true);
+        await worker.update(helper.db, w => {
+          // worker is still REQUESTED but provisioningComplete has been
+          // recorded (e.g. ARM deployment finished but VM never reached
+          // RUNNING due to a registration failure).
+          w.providerData.provisioningComplete = true;
+        });
+
+        const beginDeleteSpy = sandbox.spy(fake.computeClient.virtualMachines, 'beginDelete');
+        await provider.removeWorker({ worker, reason: 'test' });
+        await flushInlineBeginDelete();
+
+        assert.equal(beginDeleteSpy.callCount, 1);
+        const [reloaded] = await helper.getWorkers();
+        assert.equal(reloaded.providerData.vm.id, false);
+      });
+
+      test('RUNNING worker with vm.id falsy (already requested): skips inline beginDelete', async function() {
+        // simulate the resource record produced by deprovisionResource
+        // submitting beginDelete: id has been cleared, deleted not yet set
+        await makeResource('vm', false);
+        await worker.update(helper.db, w => {
+          w.state = 'running';
+          w.providerData.provisioningComplete = true;
+        });
+
+        const beginDeleteSpy = sandbox.spy(fake.computeClient.virtualMachines, 'beginDelete');
+        await provider.removeWorker({ worker, reason: 'test' });
+        await flushInlineBeginDelete();
+
+        assert.equal(beginDeleteSpy.callCount, 0,
+          'must not fire when vm.id is falsy: nothing to delete or delete already in flight');
+      });
+
+      test('RUNNING worker with vm.deleted=true: skips inline beginDelete', async function() {
+        await makeResource('vm', true);
+        await worker.update(helper.db, w => {
+          w.state = 'running';
+          w.providerData.provisioningComplete = true;
+          w.providerData.vm.deleted = true;
+        });
+
+        const beginDeleteSpy = sandbox.spy(fake.computeClient.virtualMachines, 'beginDelete');
+        await provider.removeWorker({ worker, reason: 'test' });
+        await flushInlineBeginDelete();
+
+        assert.equal(beginDeleteSpy.callCount, 0,
+          'must not re-fire delete on a resource already marked deleted');
+      });
+
+      test('inline beginDelete failure does not break removeWorker', async function() {
+        await makeResource('vm', true);
+        await worker.update(helper.db, w => {
+          w.state = 'running';
+          w.providerData.provisioningComplete = true;
+        });
+
+        const localSandbox = sinon.createSandbox({});
+        localSandbox.stub(fake.computeClient.virtualMachines, 'beginDelete').rejects(
+          Object.assign(new Error('boom'), { statusCode: 503 }),
+        );
+
+        try {
+          await provider.removeWorker({ worker, reason: 'test' });
+          await flushInlineBeginDelete();
+        } finally {
+          localSandbox.restore();
+        }
+
+        // removeWorker resolves cleanly; the worker still transitions to
+        // STOPPING so the scanner-driven fallback can pick up cleanup.
+        const [reloaded] = await helper.getWorkers();
+        assert.equal(reloaded.state, 'stopping');
+        // vm.id was cleared when we submitted the request (whether or not
+        // Azure ultimately accepted it), matching deprovisionResource's
+        // convention. The scanner uses vm.name to retry.
+        assert.equal(reloaded.providerData.vm.id, false);
+      });
+
+      test('idempotent: second removeWorker call does not re-fire inline beginDelete', async function() {
+        await makeResource('vm', true);
+        await worker.update(helper.db, w => {
+          w.state = 'running';
+          w.providerData.provisioningComplete = true;
+        });
+
+        const beginDeleteSpy = sandbox.spy(fake.computeClient.virtualMachines, 'beginDelete');
+        await provider.removeWorker({ worker, reason: 'test' });
+        await flushInlineBeginDelete();
+        assert.equal(beginDeleteSpy.callCount, 1);
+
+        // re-fetch worker to capture the post-first-call state, then call again
+        const [afterFirst] = await helper.getWorkers();
+        await provider.removeWorker({ worker: afterFirst, reason: 'test' });
+        await flushInlineBeginDelete();
+        assert.equal(beginDeleteSpy.callCount, 1,
+          'second removeWorker should not fire another beginDelete');
+      });
+    });
   });
 
   suite('deprovision', function () {

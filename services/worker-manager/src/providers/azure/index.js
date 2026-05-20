@@ -2054,12 +2054,28 @@ export class AzureProvider extends Provider {
    * removeWorker marks a worker for deletion and begins removal.
    */
   async removeWorker({ worker, reason }) {
+    const previousState = worker.state;
     const shouldEmit = [Worker.states.REQUESTED, Worker.states.RUNNING].includes(worker.state);
     if (shouldEmit) {
       await this.onWorkerRemoved({ worker, reason });
     }
-    // transition from either REQUESTED or RUNNING to STOPPING, and let the
-    // worker scanner take it from there.
+
+    // vm.id is truthy once a deployment operation referencing the VM has been
+    // observed (set by provisionResource on create or by
+    // #extractResourcesFromDeployment, which runs on both successful and
+    // failed ARM deployments). It is reset to false by markDeleted and by the
+    // delete branches of this function and deprovisionResource. Compared to
+    // vm?.name (set at config time, before any Azure call) it is the
+    // tightest predicate available here for "Azure may know about this VM".
+    // We may still issue an inline delete against a VM that never finished
+    // creating (failed-deployment path); the .catch handler below absorbs
+    // the resulting 404 / 409 and the scanner picks up cleanup.
+    const vmReadyForDelete =
+      (previousState === Worker.states.RUNNING ||
+        worker.providerData.provisioningComplete === true) &&
+      worker.providerData.vm?.id &&
+      !worker.providerData.vm.deleted;
+
     await worker.update(this.db, w => {
       const now = new Date();
       if ([Worker.states.REQUESTED, Worker.states.RUNNING].includes(w.state)) {
@@ -2068,7 +2084,35 @@ export class AzureProvider extends Provider {
       }
       // additionally store removal reason
       w.providerData.reasonRemoved ??= reason;
+      // Match deprovisionResource's convention: id is unset once a delete
+      // request is in flight. Keeps the `worker.providerData.vm.id` gate in
+      // deprovisionResources correct on the next scanner pass and avoids
+      // confusing other readers.
+      if (vmReadyForDelete) {
+        w.providerData.vm.id = false;
+      }
     });
+
+    if (vmReadyForDelete) {
+      this._enqueue('query', () => this.computeClient.virtualMachines.beginDelete(
+        worker.providerData.resourceGroupName,
+        worker.providerData.vm.name,
+      )).catch(err => {
+        const monitor = this.workerMonitor({
+          worker,
+          extra: {
+            resourceGroupName: worker.providerData.resourceGroupName,
+            vmName: worker.providerData.vm.name,
+          },
+        });
+        monitor.debug({
+          message: 'failed to start VM deletion from removeWorker; scanner will retry',
+          error: err.message,
+          code: err.code,
+          statusCode: err.statusCode,
+        });
+      });
+    }
   }
 
   /*
