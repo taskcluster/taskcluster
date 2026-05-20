@@ -1,6 +1,6 @@
 import assert from 'assert';
 import Iterate from '@taskcluster/lib-iterate';
-import { TaskQueue } from '../../worker-manager/src/queue-data.js';
+import { TaskQueue } from './data.js';
 import { splitTaskQueueId } from './utils.js';
 
 /**

@@ -28,7 +28,7 @@ export default class CredentialsDialog extends Component {
         JSON.parse(e.target.value);
         isCertificateValid = true;
       }
-    } catch (err) {
+    } catch (_err) {
       isCertificateValid = false;
     }
 

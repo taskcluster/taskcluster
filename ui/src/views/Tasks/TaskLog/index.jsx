@@ -40,10 +40,7 @@ import { withAuth } from '../../../utils/Auth';
 })
 export default class TaskLog extends Component {
   getCurrentRun() {
-    return (
-      this.props.data.task &&
-      this.props.data.task.status.runs[this.props.match.params.runId]
-    );
+    return this.props.data.task?.status.runs[this.props.match.params.runId];
   }
 
   getLogUrl() {
@@ -109,7 +106,7 @@ export default class TaskLog extends Component {
             onSubmit={this.handleTaskSearchSubmit}
           />
         }>
-        <Helmet state={run && run.state} />
+        <Helmet state={run?.state} />
         <Log
           url={url}
           stream={stream}
@@ -120,7 +117,7 @@ export default class TaskLog extends Component {
                 <Button
                   spanProps={{ className: classes.fab }}
                   tooltipProps={{ title: 'View Task' }}
-                  variant="round"
+                  variant="circular"
                   color="secondary">
                   <ArrowLeftIcon />
                 </Button>
@@ -129,7 +126,7 @@ export default class TaskLog extends Component {
                 onClick={() => this.goToLog()}
                 spanProps={{ className: classes.rawLog }}
                 tooltipProps={{ title: 'Raw Log' }}
-                variant="round"
+                variant="circular"
                 color="secondary">
                 <OpenInNewIcon size={20} />
               </Button>

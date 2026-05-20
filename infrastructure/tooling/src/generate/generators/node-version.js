@@ -1,5 +1,5 @@
 import {
-  readRepoFile,
+  readRepoJSON,
   modifyRepoFile,
   writeRepoFile,
   modifyRepoJSON,
@@ -16,7 +16,7 @@ tasks.push({
   title: 'Node Version',
   provides: ['target-node-version'],
   run: async (requirements, utils) => {
-    const nodeVersion = JSON.parse(await readRepoFile('package.json')).engines.node;
+    const nodeVersion = (await readRepoJSON('package.json')).engines.node;
     if (!nodeVersion || !nodeVersion.match(/[0-9.]+/)) {
       throw new Error(`invalid node version ${nodeVersion} in package.json`);
     }
@@ -87,7 +87,7 @@ tasks.push({
   title: 'Yarn Version',
   provides: ['target-yarn-version'],
   run: async (requirements, utils) => {
-    const yarnVersion = JSON.parse(await readRepoFile('package.json')).packageManager;
+    const yarnVersion = (await readRepoJSON('package.json')).packageManager;
     if (!yarnVersion || !yarnVersion.match(/yarn@[0-9.]+/)) {
       throw new Error(`invalid yarn version ${yarnVersion} in package.json`);
     }

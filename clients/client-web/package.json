@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/client-web",
-  "version": "100.0.1",
+  "version": "100.1.1",
   "main": "src/index.js",
   "author": "Eli Perelman <eli@eliperelman.com>",
   "license": "MPL-2.0",
@@ -17,7 +17,7 @@
     "chai": "^6.2.2",
     "chai-as-promised": "^8.0.2",
     "crypto-js": "^4.2.0",
-    "eslint": "^10.2.1",
+    "eslint": "^10.3.0",
     "karma": "^6.4.4",
     "karma-cli": "^2.0.0",
     "karma-coverage": "^2.2.1",

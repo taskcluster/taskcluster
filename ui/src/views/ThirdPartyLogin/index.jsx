@@ -96,7 +96,7 @@ export default class ThirdPartyLogin extends Component {
 
     return (
       <Dashboard title="Third Party Login">
-        {data && data.loading && <Spinner loading />}
+        {data?.loading && <Spinner loading />}
         {formData && (
           <AuthConsent
             transactionID={this.parsedQuery.transactionID}

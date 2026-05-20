@@ -35,6 +35,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
 
   const URL_PREFIX = 'https://tc-tests.example.com/tasks/groups/';
   const CUSTOM_CHECKRUN_TASKID = 'apple';
+  const CUSTOM_CHECKRUN_HOOK_TASKID = 'apple-hook';
   const CUSTOM_LIVELOG_NAME_TASKID = 'banana';
   const CUSTOM_CHECKRUN_TEXT = 'Hi there! This is your custom text';
   const LIVE_LOG_TEXT = 'Hi there! This is your live log';
@@ -190,7 +191,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       },
       use: () => ({
         getArtifact: async () => CUSTOM_CHECKRUN_TEXT,
-        buildSignedUrl: async () => 'http://example.com',
+        buildSignedUrl: () => 'http://example.com',
       }),
     };
 
@@ -1819,6 +1820,35 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       sinon.restore();
     });
 
+    test('uses github service credentials to fetch artifact from hook task', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_HOOK_TASKID });
+      sinon.restore();
+      sinon.stub(global, "fetch").resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(utils, "extractLog").resolves('');
+      sinon.stub(handlers.queueClient, 'task').resolves({
+        metadata: { name: 'Task with custom check run', description: 'Task Description' },
+        extra: { github: { customCheckRun: { textArtifactName: 'public/text.md' } } },
+      });
+      const useSpy = sinon.spy(handlers.queueClient, 'use');
+      sinon.stub(utils, "throttleRequest").returns({ status: 200, text: CUSTOM_CHECKRUN_TEXT });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-completed',
+        routingKey: 'route.checks',
+        taskId: CUSTOM_CHECKRUN_HOOK_TASKID,
+        reasonResolved: 'completed',
+        state: 'completed',
+        started: STARTED,
+        resolved: RESOLVED,
+      });
+      assert(
+        useSpy.getCalls().some(c => c.args[0].authorizedScopes?.[0] === 'queue:get-artifact:public/text.md'),
+        'use should be called with queue:get-artifact scope for the artifact',
+      );
+      sinon.restore();
+    });
+
     test('successfully adds live log text from an artifact', async function () {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
@@ -2129,6 +2159,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
       await assertCheckRunStatus('in_progress');
     });
 
+    test('in_progress update sends started_at matching the worker claim time, not the queue time', async function () {
+      const claimedAt = '2026-05-15T10:00:00.000Z';
+      await addBuild({ state: 'running', taskGroupId: TASKGROUPID });
+      await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-running',
+        routingKey: 'route.checks',
+        taskId: TASKID,
+        state: 'running',
+        started: claimedAt,
+      });
+
+      assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
+      const [args] = github.inst(9988).checks.update.firstCall.args;
+      assert.equal(args.status, 'in_progress');
+      assert.equal(args.started_at, claimedAt,
+        'started_at must come from runs[runId].started, not GitHub defaults');
+    });
+
     test('task is rerun and queued gets a queued check result and rerequested run', async function () {
       await addBuild({ state: 'running', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: TASKID });
@@ -2241,6 +2291,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
         taskId: TASKID,
       });
       assertStatusCreate('pending');
+    });
+
+    test('taskDefined create omits started_at so GitHub does not anchor elapsed time to queue time', async function () {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-defined',
+        routingKey: 'route.checks',
+        taskId: TASKID,
+      });
+
+      assert(github.inst(9988).checks.create.called, 'checks.create was not called');
+      const [args] = github.inst(9988).checks.create.firstCall.args;
+      assert.equal(args.started_at, undefined,
+        'started_at must be omitted before the worker claims the task');
     });
 
     test('skip check when build is not defined', async function () {

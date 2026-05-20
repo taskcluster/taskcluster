@@ -98,11 +98,12 @@ func Indent(text, indent string) string {
 		}
 		return result.String()
 	}
-	result := ""
+	var result strings.Builder
 	for j := range strings.SplitSeq(strings.TrimRight(text, "\n"), "\n") {
-		result += indent + j + "\n"
+		result.WriteString(indent + j + "\n")
 	}
-	return result[:len(result)-1]
+	s := result.String()
+	return s[:len(s)-1]
 }
 
 // Underline returns the provided text together with a new line character and a

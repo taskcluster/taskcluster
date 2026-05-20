@@ -17,7 +17,7 @@ export const taskLastRun = task => {
 };
 
 export const taskRunDurationInMs = run => {
-  if (!run || !run.from) {
+  if (!run?.from) {
     return 0;
   }
 
@@ -33,7 +33,7 @@ export const taskRunEarliestStart = task => {
     .filter(item => item)
     .sort((a, b) => a.started - b.started);
 
-  return started.length ? new Date(started[0]).getTime() : new Date().getTime();
+  return started.length ? new Date(started[0]).getTime() : Date.now();
 };
 
 export const taskRunLatestResolve = task => {
@@ -42,7 +42,7 @@ export const taskRunLatestResolve = task => {
     .filter(item => item)
     .sort((a, b) => b - a);
 
-  return resolved.length ? resolved[0] : new Date().getTime();
+  return resolved.length ? resolved[0] : Date.now();
 };
 
 export const filterTasksByState = curry((filter, tasks) =>

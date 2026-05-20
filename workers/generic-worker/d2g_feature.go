@@ -194,7 +194,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			// Only use the first line of output for image ID
 			// as docker images can output multiple sha256's for the
 			// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
-			idLine := strings.Split(strings.TrimSpace(string(out)), "\n")[0]
+			idLine, _, _ := strings.Cut(strings.TrimSpace(string(out)), "\n")
 			imageID = strings.TrimPrefix(idLine, "sha256:")
 		}
 

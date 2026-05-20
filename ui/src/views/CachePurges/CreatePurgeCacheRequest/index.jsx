@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -73,52 +73,50 @@ export default class CreatePurgeCacheRequest extends Component {
 
     return (
       <Dashboard title="Create Purge Cache Request">
-        <Fragment>
-          <ErrorPanel fixed error={error} />
-          <List>
-            <ListItem>
-              <TextField
-                label="Provisioner ID"
-                name="provisionerId"
-                onChange={this.handleInputChange}
-                fullWidth
-                value={provisionerId}
-              />
-            </ListItem>
-            <ListItem>
-              <TextField
-                label="Worker Type"
-                name="workerType"
-                onChange={this.handleInputChange}
-                fullWidth
-                value={workerType}
-              />
-            </ListItem>
-            <ListItem>
-              <TextField
-                label="Cache Name"
-                name="cacheName"
-                onChange={this.handleInputChange}
-                fullWidth
-                value={cacheName}
-              />
-            </ListItem>
-          </List>
-          <Button
-            spanProps={{ className: classes.contentSaveButtonSpan }}
-            tooltipProps={{
-              title: 'Create Request',
-              id: 'create-purge-cache-request-tooltip',
-              enterDelay: 300,
-            }}
-            requiresAuth
-            disabled={!this.isFormFilled() || actionLoading}
-            onClick={this.handleCreate}
-            variant="round"
-            classes={{ root: classes.contentSaveIcon }}>
-            <ContentSaveIcon />
-          </Button>
-        </Fragment>
+        <ErrorPanel fixed error={error} />
+        <List>
+          <ListItem>
+            <TextField
+              label="Provisioner ID"
+              name="provisionerId"
+              onChange={this.handleInputChange}
+              fullWidth
+              value={provisionerId}
+            />
+          </ListItem>
+          <ListItem>
+            <TextField
+              label="Worker Type"
+              name="workerType"
+              onChange={this.handleInputChange}
+              fullWidth
+              value={workerType}
+            />
+          </ListItem>
+          <ListItem>
+            <TextField
+              label="Cache Name"
+              name="cacheName"
+              onChange={this.handleInputChange}
+              fullWidth
+              value={cacheName}
+            />
+          </ListItem>
+        </List>
+        <Button
+          spanProps={{ className: classes.contentSaveButtonSpan }}
+          tooltipProps={{
+            title: 'Create Request',
+            id: 'create-purge-cache-request-tooltip',
+            enterDelay: 300,
+          }}
+          requiresAuth
+          disabled={!this.isFormFilled() || actionLoading}
+          onClick={this.handleCreate}
+          variant="circular"
+          classes={{ root: classes.contentSaveIcon }}>
+          <ContentSaveIcon />
+        </Button>
       </Dashboard>
     );
   }

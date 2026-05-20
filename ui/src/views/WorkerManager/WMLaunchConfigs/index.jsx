@@ -132,7 +132,7 @@ export default class WMLaunchConfigs extends Component {
       workerPool,
       highlightedLaunchConfigId
     ) => {
-      if (!launchConfigsConnection || !launchConfigsConnection.edges) {
+      if (!launchConfigsConnection?.edges) {
         return launchConfigsConnection;
       }
 
@@ -223,7 +223,7 @@ export default class WMLaunchConfigs extends Component {
         workerPool,
         highlightedLaunchConfigId,
       ]) => {
-        if (!launchConfigsConnection || !launchConfigsConnection.edges) {
+        if (!launchConfigsConnection?.edges) {
           return 'empty';
         }
 
@@ -243,7 +243,7 @@ export default class WMLaunchConfigs extends Component {
    */
   sortConnection = memoize(
     (enrichedConnection, sortBy, sortDirection) => {
-      if (!enrichedConnection || !enrichedConnection.edges || !sortBy) {
+      if (!enrichedConnection?.edges || !sortBy) {
         return enrichedConnection;
       }
 
@@ -276,7 +276,7 @@ export default class WMLaunchConfigs extends Component {
     },
     {
       serializer: ([enrichedConnection, sortBy, sortDirection]) => {
-        if (!enrichedConnection || !enrichedConnection.edges) {
+        if (!enrichedConnection?.edges) {
           return `empty-${sortBy}-${sortDirection}`;
         }
 
@@ -456,8 +456,8 @@ export default class WMLaunchConfigs extends Component {
   render() {
     const { data, match, location, classes } = this.props;
     const { sortBy, sortDirection, selectedLaunchConfig } = this.state;
-    const loading = !data || !data.WorkerPoolLaunchConfigs || data.loading;
-    const error = data && data.error;
+    const loading = !data?.WorkerPoolLaunchConfigs || data.loading;
+    const error = data?.error;
     const workerPoolId = decodeURIComponent(match.params.workerPoolId ?? '');
     const errorsStats = data?.WorkerManagerErrorsStats?.totals ?? {};
     const workerPoolStats = data?.WorkerPoolStats;

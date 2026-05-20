@@ -361,297 +361,289 @@ export default class QuickStart extends Component {
           <HelpView
             description="Create a configuration file and
                 plug the CI into your repository.">
-            <Fragment>
-              <Typography variant="body2" paragraph>
-                This tool lets you easily generate a simple generic{' '}
-                <code>.taskcluster.yml</code> file, which should live in the
-                root of your repository. It defines tasks that you want{' '}
-                {window.env.APPLICATION_NAME} to run for you. The tasks will run
-                when certain GitHub events happen. You will choose the events
-                you are interested in while creating the file.
-              </Typography>
-              <Typography variant="body2" paragraph>
-                For independent developers and organization owners: How to set
-                up your repository with {window.env.APPLICATION_NAME}
-              </Typography>
-              <ul>
-                <li>
-                  <Typography paragraph>
-                    Fill out the form below. All changes in the form will
-                    instantly show up in the code field.
-                  </Typography>
-                </li>
-                <li>
-                  <Typography paragraph>
-                    When you are done editing, copy the contents of the code
-                    field and paste it into a file named{' '}
-                    <code>.taskcluster.yml</code> in the root of your
-                    repository.
-                  </Typography>
-                </li>
-                <li>
-                  <SiteSpecific>
-                    Make sure to install the [GitHub app](%github_app_url%) on
-                    your repo. If you do not have permission, you may need to
-                    ask the repository or organization owners to do so.
-                  </SiteSpecific>
-                </li>
-              </ul>
-              <Typography variant="body2" paragraph>
-                Optionally, after you create your file, you can edit it here or
-                in you favorite editor to add more functionality. Please refer
-                to the{' '}
-                <a
-                  href={urls.docs(
-                    'reference/integrations/github/taskcluster-yml-v1'
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer">
-                  full documentation on our configuration files
-                </a>
-                .
-              </Typography>
-            </Fragment>
+            <Typography variant="body2" paragraph>
+              This tool lets you easily generate a simple generic{' '}
+              <code>.taskcluster.yml</code> file, which should live in the root
+              of your repository. It defines tasks that you want{' '}
+              {window.env.APPLICATION_NAME} to run for you. The tasks will run
+              when certain GitHub events happen. You will choose the events you
+              are interested in while creating the file.
+            </Typography>
+            <Typography variant="body2" paragraph>
+              For independent developers and organization owners: How to set up
+              your repository with {window.env.APPLICATION_NAME}
+            </Typography>
+            <ul>
+              <li>
+                <Typography paragraph>
+                  Fill out the form below. All changes in the form will
+                  instantly show up in the code field.
+                </Typography>
+              </li>
+              <li>
+                <Typography paragraph>
+                  When you are done editing, copy the contents of the code field
+                  and paste it into a file named <code>.taskcluster.yml</code>{' '}
+                  in the root of your repository.
+                </Typography>
+              </li>
+              <li>
+                <SiteSpecific>
+                  Make sure to install the [GitHub app](%github_app_url%) on
+                  your repo. If you do not have permission, you may need to ask
+                  the repository or organization owners to do so.
+                </SiteSpecific>
+              </li>
+            </ul>
+            <Typography variant="body2" paragraph>
+              Optionally, after you create your file, you can edit it here or in
+              you favorite editor to add more functionality. Please refer to the{' '}
+              <a
+                href={urls.docs(
+                  'reference/integrations/github/taskcluster-yml-v1'
+                )}
+                target="_blank"
+                rel="noopener noreferrer">
+                full documentation on our configuration files
+              </a>
+              .
+            </Typography>
           </HelpView>
         }>
-        <Fragment>
-          <div className={classes.orgRepoStatus}>
-            <div className={classes.orgRepoTextFields}>
-              <TextField
-                label="Org Name"
-                name="owner"
-                fullWidth
-                onChange={this.handleOrgRepoChange}
-                value={owner}
-                autoFocus
-              />
-              <Typography className={classes.separator} variant="h5">
-                /
-              </Typography>
-              <TextField
-                label="Repo Name"
-                name="repo"
-                fullWidth
-                onChange={this.handleOrgRepoChange}
-                value={repo}
-              />
-            </div>
-            <div className={classes.iconContainer}>
-              {(installedState === 'success' && (
-                <CheckIcon className={classes.checkIcon} />
-              )) ||
-                (installedState === 'error' && (
-                  <AlertCircleOutlineIcon className={classes.errorIcon} />
-                )) ||
-                (installedState === 'loading' && <Spinner size={24} />)}
-            </div>
+        <div className={classes.orgRepoStatus}>
+          <div className={classes.orgRepoTextFields}>
+            <TextField
+              label="Org Name"
+              name="owner"
+              fullWidth
+              onChange={this.handleOrgRepoChange}
+              value={owner}
+              autoFocus
+            />
+            <Typography className={classes.separator} variant="h5">
+              /
+            </Typography>
+            <TextField
+              label="Repo Name"
+              name="repo"
+              fullWidth
+              onChange={this.handleOrgRepoChange}
+              value={repo}
+            />
           </div>
+          <div className={classes.iconContainer}>
+            {(installedState === 'success' && (
+              <CheckIcon className={classes.checkIcon} />
+            )) ||
+              (installedState === 'error' && (
+                <AlertCircleOutlineIcon className={classes.errorIcon} />
+              )) ||
+              (installedState === 'loading' && <Spinner size={24} />)}
+          </div>
+        </div>
 
-          {installedState === 'error' && (
-            <Fragment>
-              <ErrorPanel
-                warning
-                className={classes.errorPanels}
-                error={
-                  new Error(
-                    'The integration has not been set up for this repository.'
-                  )
-                }
-              />
-              <SiteSpecific>
-                To use Taskcluster on this repository, add [this
-                app](%github_app_url%). If you do not have permission, you may
-                need to ask the repository or organization owners to do so.
-              </SiteSpecific>
-            </Fragment>
-          )}
-          <Typography className={classes.mainHeading} variant="h6">
-            Create Your Task Definition
-          </Typography>
-          <List>
-            <ListItem>
-              <TextField
-                label="Name"
-                name="taskName"
-                onChange={this.handleInputChange}
-                fullWidth
-                value={taskName}
-              />
-            </ListItem>
-            <ListItem className={classes.descriptionTextField}>
-              <TextField
-                label="Description"
-                name="taskDescription"
-                onChange={this.handleInputChange}
-                fullWidth
-                multiline
-                rows={3}
-                value={taskDescription}
-              />
-            </ListItem>
-            <ListItem>
-              <FormControl component="fieldset">
-                <FormLabel component="legend" focused={false}>
-                  This task should run on
-                </FormLabel>
-                <div className={classes.taskShouldRunFlex}>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={events.has('pull_request.opened')}
-                          onChange={this.handleEventsSelection}
-                          value="pull_request.opened"
-                        />
-                      }
-                      label="Pull request opened"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={events.has('pull_request.closed')}
-                          onChange={this.handleEventsSelection}
-                          value="pull_request.closed"
-                        />
-                      }
-                      label="Pull request merged or closed"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={events.has('pull_request.reopened')}
-                          onChange={this.handleEventsSelection}
-                          value="pull_request.reopened"
-                        />
-                      }
-                      label="Pull request re-opened"
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={events.has('pull_request.synchronize')}
-                          onChange={this.handleEventsSelection}
-                          value="pull_request.synchronize"
-                        />
-                      }
-                      label="New commit made in an opened pull request"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={events.has('push')}
-                          onChange={this.handleEventsSelection}
-                          value="push"
-                        />
-                      }
-                      label="Push"
-                    />
+        {installedState === 'error' && (
+          <Fragment>
+            <ErrorPanel
+              warning
+              className={classes.errorPanels}
+              error={
+                new Error(
+                  'The integration has not been set up for this repository.'
+                )
+              }
+            />
+            <SiteSpecific>
+              To use Taskcluster on this repository, add [this
+              app](%github_app_url%). If you do not have permission, you may
+              need to ask the repository or organization owners to do so.
+            </SiteSpecific>
+          </Fragment>
+        )}
+        <Typography className={classes.mainHeading} variant="h6">
+          Create Your Task Definition
+        </Typography>
+        <List>
+          <ListItem>
+            <TextField
+              label="Name"
+              name="taskName"
+              onChange={this.handleInputChange}
+              fullWidth
+              value={taskName}
+            />
+          </ListItem>
+          <ListItem className={classes.descriptionTextField}>
+            <TextField
+              label="Description"
+              name="taskDescription"
+              onChange={this.handleInputChange}
+              fullWidth
+              multiline
+              minRows={3}
+              value={taskDescription}
+            />
+          </ListItem>
+          <ListItem>
+            <FormControl component="fieldset">
+              <FormLabel component="legend" focused={false}>
+                This task should run on
+              </FormLabel>
+              <div className={classes.taskShouldRunFlex}>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={events.has('pull_request.opened')}
+                        onChange={this.handleEventsSelection}
+                        value="pull_request.opened"
+                      />
+                    }
+                    label="Pull request opened"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={events.has('pull_request.closed')}
+                        onChange={this.handleEventsSelection}
+                        value="pull_request.closed"
+                      />
+                    }
+                    label="Pull request merged or closed"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={events.has('pull_request.reopened')}
+                        onChange={this.handleEventsSelection}
+                        value="pull_request.reopened"
+                      />
+                    }
+                    label="Pull request re-opened"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={events.has('pull_request.synchronize')}
+                        onChange={this.handleEventsSelection}
+                        value="pull_request.synchronize"
+                      />
+                    }
+                    label="New commit made in an opened pull request"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={events.has('push')}
+                        onChange={this.handleEventsSelection}
+                        value="push"
+                      />
+                    }
+                    label="Push"
+                  />
 
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={events.has('release')}
-                          onChange={this.handleEventsSelection}
-                          value="release"
-                        />
-                      }
-                      label="Release or tag created"
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={events.has('issue_comment.created')}
-                          onChange={this.handleEventsSelection}
-                          value="issue_comment.created"
-                        />
-                      }
-                      label="New comment on pull request"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={events.has('issue_comment.edited')}
-                          onChange={this.handleEventsSelection}
-                          value="issue_comment.edited"
-                        />
-                      }
-                      label="Comment was edited on pull request"
-                    />
-                  </FormGroup>
-                </div>
-              </FormControl>
-            </ListItem>
-            <ListItem>
-              <TextField
-                id="select-access"
-                select
-                label="Access"
-                helperText="Who can trigger tasks from PRs?"
-                value={access}
-                name="access"
-                onChange={this.handleInputChange}
-                margin="normal">
-                <MenuItem value="public">Public</MenuItem>
-                <MenuItem value="collaborators">Collaborators</MenuItem>
-              </TextField>
-            </ListItem>
-            <ListItem>
-              <TextField
-                id="select-language"
-                select
-                label="Project Language"
-                helperText="This will select a corresponding docker image"
-                value={language}
-                name="language"
-                onChange={this.handleLanguageChange}
-                margin="normal">
-                <MenuItem value="node">Node.js</MenuItem>
-                <MenuItem value="python">Python</MenuItem>
-                <MenuItem value="rust">Rust</MenuItem>
-                <MenuItem value="go">Go</MenuItem>
-              </TextField>
-            </ListItem>
-            <ListItem>
-              <TextField
-                id="select-commands"
-                select
-                label="Commands"
-                value={commandSelection}
-                onChange={this.handleCommandsChange}
-                margin="normal">
-                <MenuItem value="standard">
-                  Clone repo and run my tests
-                </MenuItem>
-                <MenuItem value="custom">I will define them myself</MenuItem>
-              </TextField>
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography variant="subtitle1">
-                    Your .taskcluster.yml
-                  </Typography>
-                }
-              />
-            </ListItem>
-            <ListItem className={classes.editorListItem}>
-              {this.renderEditor()}
-            </ListItem>
-          </List>
-          <Button
-            spanProps={{ className: classes.resetButtonSpan }}
-            tooltipProps={{ title: 'Reset Form & File' }}
-            variant="round"
-            onClick={this.handleReset}
-            color="secondary">
-            <RestartIcon />
-          </Button>
-        </Fragment>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={events.has('release')}
+                        onChange={this.handleEventsSelection}
+                        value="release"
+                      />
+                    }
+                    label="Release or tag created"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={events.has('issue_comment.created')}
+                        onChange={this.handleEventsSelection}
+                        value="issue_comment.created"
+                      />
+                    }
+                    label="New comment on pull request"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={events.has('issue_comment.edited')}
+                        onChange={this.handleEventsSelection}
+                        value="issue_comment.edited"
+                      />
+                    }
+                    label="Comment was edited on pull request"
+                  />
+                </FormGroup>
+              </div>
+            </FormControl>
+          </ListItem>
+          <ListItem>
+            <TextField
+              id="select-access"
+              select
+              label="Access"
+              helperText="Who can trigger tasks from PRs?"
+              value={access}
+              name="access"
+              onChange={this.handleInputChange}
+              margin="normal">
+              <MenuItem value="public">Public</MenuItem>
+              <MenuItem value="collaborators">Collaborators</MenuItem>
+            </TextField>
+          </ListItem>
+          <ListItem>
+            <TextField
+              id="select-language"
+              select
+              label="Project Language"
+              helperText="This will select a corresponding docker image"
+              value={language}
+              name="language"
+              onChange={this.handleLanguageChange}
+              margin="normal">
+              <MenuItem value="node">Node.js</MenuItem>
+              <MenuItem value="python">Python</MenuItem>
+              <MenuItem value="rust">Rust</MenuItem>
+              <MenuItem value="go">Go</MenuItem>
+            </TextField>
+          </ListItem>
+          <ListItem>
+            <TextField
+              id="select-commands"
+              select
+              label="Commands"
+              value={commandSelection}
+              onChange={this.handleCommandsChange}
+              margin="normal">
+              <MenuItem value="standard">Clone repo and run my tests</MenuItem>
+              <MenuItem value="custom">I will define them myself</MenuItem>
+            </TextField>
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              disableTypography
+              primary={
+                <Typography variant="subtitle1">
+                  Your .taskcluster.yml
+                </Typography>
+              }
+            />
+          </ListItem>
+          <ListItem className={classes.editorListItem}>
+            {this.renderEditor()}
+          </ListItem>
+        </List>
+        <Button
+          spanProps={{ className: classes.resetButtonSpan }}
+          tooltipProps={{ title: 'Reset Form & File' }}
+          variant="circular"
+          onClick={this.handleReset}
+          color="secondary">
+          <RestartIcon />
+        </Button>
       </Dashboard>
     );
   }

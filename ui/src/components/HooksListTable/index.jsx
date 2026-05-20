@@ -89,7 +89,7 @@ export default class HooksListTable extends Component {
           const data = JSON.parse(lastFire.error);
 
           error = data?.body?.code;
-        } catch (err) {
+        } catch (_err) {
           error = lastFire.error;
         }
       } else if (lastFire.error?.body?.code) {
@@ -118,13 +118,9 @@ export default class HooksListTable extends Component {
                 {<code>{schedule[0]}</code>}
                 {schedule.length > 1 && (
                   <Tooltip
-                    title={
-                      <React.Fragment>
-                        {schedule.slice(1, 10).map(b => (
-                          <pre key={b}>{b}</pre>
-                        ))}
-                      </React.Fragment>
-                    }>
+                    title={schedule.slice(1, 10).map(b => (
+                      <pre key={b}>{b}</pre>
+                    ))}>
                     <Badge
                       badgeContent={`+${schedule.length - 1}`}
                       color="secondary"
@@ -146,13 +142,9 @@ export default class HooksListTable extends Component {
                 }
                 {bindings.length > 1 && (
                   <Tooltip
-                    title={
-                      <React.Fragment>
-                        {bindings.slice(1, 10).map(b => (
-                          <pre key={b.exchange}>{b.exchange}</pre>
-                        ))}
-                      </React.Fragment>
-                    }>
+                    title={bindings.slice(1, 10).map(b => (
+                      <pre key={b.exchange}>{b.exchange}</pre>
+                    ))}>
                     <Badge
                       badgeContent={`+${bindings.length - 1}`}
                       color="secondary"

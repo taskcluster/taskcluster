@@ -97,50 +97,46 @@ export default class ViewWorkerTypes extends Component {
 
     return (
       <Dashboard title="Worker Types">
-        <Fragment>
-          {!workerTypes && loading && <Spinner loading />}
-          <ErrorPanel fixed error={error} />
-          {provisioners && workerTypes && (
-            <Fragment>
-              <div className={classes.bar}>
-                <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
-                  <Link to="/provisioners">
-                    <Typography variant="body2" className={classes.link}>
-                      Workers
-                    </Typography>
-                  </Link>
-                  <Typography variant="body2" color="textSecondary">
-                    {`${provisionerId}`}
+        {!workerTypes && loading && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        {provisioners && workerTypes && (
+          <Fragment>
+            <div className={classes.bar}>
+              <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
+                <Link to="/provisioners">
+                  <Typography variant="body2" className={classes.link}>
+                    Workers
                   </Typography>
-                </Breadcrumbs>
-                <TextField
-                  disabled={loading}
-                  className={classes.dropdown}
-                  select
-                  label="Provisioner ID"
-                  value={provisionerId}
-                  onChange={this.handleProvisionerChange}>
-                  <MenuItem value="">
-                    <em>None</em>
+                </Link>
+                <Typography variant="body2" color="textSecondary">
+                  {`${provisionerId}`}
+                </Typography>
+              </Breadcrumbs>
+              <TextField
+                disabled={loading}
+                className={classes.dropdown}
+                select
+                label="Provisioner ID"
+                value={provisionerId}
+                onChange={this.handleProvisionerChange}>
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {provisioners.edges.map(({ node }) => (
+                  <MenuItem key={node.provisionerId} value={node.provisionerId}>
+                    {node.provisionerId}
                   </MenuItem>
-                  {provisioners.edges.map(({ node }) => (
-                    <MenuItem
-                      key={node.provisionerId}
-                      value={node.provisionerId}>
-                      {node.provisionerId}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </div>
-              <br />
-              <WorkerTypesTable
-                workerTypesConnection={workerTypes}
-                provisionerId={provisionerId}
-                onPageChange={this.handlePageChange}
-              />
-            </Fragment>
-          )}
-        </Fragment>
+                ))}
+              </TextField>
+            </div>
+            <br />
+            <WorkerTypesTable
+              workerTypesConnection={workerTypes}
+              provisionerId={provisionerId}
+              onPageChange={this.handlePageChange}
+            />
+          </Fragment>
+        )}
       </Dashboard>
     );
   }

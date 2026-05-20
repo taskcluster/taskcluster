@@ -19,8 +19,8 @@ task-defaults:
     max-run-time: 600
 
 tasks:
-  browser-test:
-    description: UI Browser Tests
+  lint-test-build:
+    description: UI lint, unit tests, and production build
     run:
       command: >-
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
@@ -29,3 +29,18 @@ tasks:
         corepack yarn lint &&
         corepack yarn test --coverage &&
         corepack yarn build
+  smoke:
+    description: UI Playwright smoke
+    worker:
+      artifacts:
+        - name: public/smoke-screenshots
+          path: /builds/worker/checkouts/taskcluster/ui/smoke-screenshots
+          type: directory
+        - name: public/playwright-report
+          path: /builds/worker/checkouts/taskcluster/ui/playwright-report
+          type: directory
+    run:
+      command: >-
+        cd ui &&
+        {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
+        bash smoke-ci.sh

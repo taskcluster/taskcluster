@@ -168,7 +168,7 @@ function resolveRef(ref, currentSchemaId, allSchemas, visitedRefs = new Set()) {
     );
 
     // If resolved schema has a $ref, resolve it recursively
-    if (resolved && resolved.$ref) {
+    if (resolved?.$ref) {
       return resolveRef(
         resolved.$ref,
         currentSchemaId,
@@ -181,9 +181,7 @@ function resolveRef(ref, currentSchemaId, allSchemas, visitedRefs = new Set()) {
   }
 
   // External reference - find schema by filename in $id
-  targetSchema = allSchemas.find(
-    s => s.content && s.content.$id && s.content.$id.endsWith(fileRef)
-  );
+  targetSchema = allSchemas.find(s => s.content?.$id?.endsWith(fileRef));
 
   if (!targetSchema) {
     return null;
@@ -197,7 +195,7 @@ function resolveRef(ref, currentSchemaId, allSchemas, visitedRefs = new Set()) {
 
   // If resolved schema has a $ref, resolve it recursively with the new
   // schema context
-  if (resolved && resolved.$ref) {
+  if (resolved?.$ref) {
     return resolveRef(
       resolved.$ref,
       targetSchema.content.$id,
@@ -673,7 +671,7 @@ export default function generatePayloadExample(schema, allSchemas = []) {
       schema.$id,
       new Set()
     );
-  } catch (error) {
+  } catch (_error) {
     // Error generating payload example
     return null;
   }

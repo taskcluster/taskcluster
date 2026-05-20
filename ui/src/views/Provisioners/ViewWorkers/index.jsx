@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import dotProp from 'dot-prop-immutable';
 import { parse, stringify } from 'qs';
@@ -195,7 +195,7 @@ export default class ViewWorkers extends Component {
     const { data } = this.props;
     const workers = path(['workers', 'edges'], data);
 
-    if (error && error.graphQLErrors && workers) {
+    if (error?.graphQLErrors && workers) {
       error.graphQLErrors.map(error => {
         const taskId = path(['requestInfo', 'params', 'taskId'], error);
 
@@ -230,91 +230,89 @@ export default class ViewWorkers extends Component {
 
     return (
       <Dashboard title="Workers">
-        <Fragment>
-          {(!workers || !workerType) && loading && <Spinner loading />}
-          {!shouldIgnoreGraphqlError && <ErrorPanel fixed error={error} />}
+        {(!workers || !workerType) && loading && <Spinner loading />}
+        {!shouldIgnoreGraphqlError && <ErrorPanel fixed error={error} />}
 
-          {shouldIgnoreGraphqlError && this.state.error && (
-            <ErrorPanel fixed error={this.state.error} />
-          )}
-          <Box className={classes.bar}>
-            <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
-              <Link to="/provisioners">
-                <Typography variant="body2" className={classes.link}>
-                  Workers
-                </Typography>
-              </Link>
-              <Link to={`/provisioners/${params.provisionerId}`}>
-                <Typography variant="body2" className={classes.link}>
-                  {params.provisionerId}
-                </Typography>
-              </Link>
-              <Typography variant="body2" color="textSecondary">
-                {`${params.workerType}`}
+        {shouldIgnoreGraphqlError && this.state.error && (
+          <ErrorPanel fixed error={this.state.error} />
+        )}
+        <Box className={classes.bar}>
+          <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
+            <Link to="/provisioners">
+              <Typography variant="body2" className={classes.link}>
+                Workers
               </Typography>
-              <WorkersNavbar
-                provisionerId={params.provisionerId}
-                workerType={params.workerType}
-                hasWorkerPool={!!WorkerPool?.workerPoolId}
-              />
-            </Breadcrumbs>
-
-            <Box marginTop={-2}>
-              <TextField
-                disabled={loading}
-                className={classes.dropdown}
-                select
-                label="Filter By"
-                value={query.filterBy || ''}
-                onChange={this.handleFilterChange}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value="quarantined">Quarantined</MenuItem>
-                <MenuItem value="running">Running</MenuItem>
-                <MenuItem value="stopping">Stopping</MenuItem>
-                <MenuItem value="stopped">Stopped</MenuItem>
-              </TextField>
-            </Box>
-          </Box>
-          <br />
-          <WorkersTable
-            workersConnection={workers}
-            onPageChange={this.handlePageChange}
-            workerType={params.workerType}
-            provisionerId={params.provisionerId}
-          />
-          {workerType?.actions?.length ? (
-            <SpeedDial>
-              {workerType.actions.map(action => (
-                <SpeedDialAction
-                  requiresAuth
-                  tooltipOpen
-                  key={action.title}
-                  FabProps={{
-                    disabled: actionLoading,
-                  }}
-                  icon={<HammerIcon />}
-                  tooltipTitle={action.title}
-                  onClick={() => this.handleActionClick(action)}
-                />
-              ))}
-            </SpeedDial>
-          ) : null}
-          {dialogOpen && (
-            <DialogAction
-              error={dialogError}
-              open={dialogOpen}
-              title={`${selectedAction.title}?`}
-              body={selectedAction.description}
-              confirmText={selectedAction.title}
-              onSubmit={this.handleActionSubmit}
-              onError={this.handleActionError}
-              onComplete={this.handleDialogClose}
-              onClose={this.handleDialogClose}
+            </Link>
+            <Link to={`/provisioners/${params.provisionerId}`}>
+              <Typography variant="body2" className={classes.link}>
+                {params.provisionerId}
+              </Typography>
+            </Link>
+            <Typography variant="body2" color="textSecondary">
+              {`${params.workerType}`}
+            </Typography>
+            <WorkersNavbar
+              provisionerId={params.provisionerId}
+              workerType={params.workerType}
+              hasWorkerPool={!!WorkerPool?.workerPoolId}
             />
-          )}
-        </Fragment>
+          </Breadcrumbs>
+
+          <Box marginTop={-2}>
+            <TextField
+              disabled={loading}
+              className={classes.dropdown}
+              select
+              label="Filter By"
+              value={query.filterBy || ''}
+              onChange={this.handleFilterChange}>
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value="quarantined">Quarantined</MenuItem>
+              <MenuItem value="running">Running</MenuItem>
+              <MenuItem value="stopping">Stopping</MenuItem>
+              <MenuItem value="stopped">Stopped</MenuItem>
+            </TextField>
+          </Box>
+        </Box>
+        <br />
+        <WorkersTable
+          workersConnection={workers}
+          onPageChange={this.handlePageChange}
+          workerType={params.workerType}
+          provisionerId={params.provisionerId}
+        />
+        {workerType?.actions?.length ? (
+          <SpeedDial>
+            {workerType.actions.map(action => (
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                key={action.title}
+                FabProps={{
+                  disabled: actionLoading,
+                }}
+                icon={<HammerIcon />}
+                tooltipTitle={action.title}
+                onClick={() => this.handleActionClick(action)}
+              />
+            ))}
+          </SpeedDial>
+        ) : null}
+        {dialogOpen && (
+          <DialogAction
+            error={dialogError}
+            open={dialogOpen}
+            title={`${selectedAction.title}?`}
+            body={selectedAction.description}
+            confirmText={selectedAction.title}
+            onSubmit={this.handleActionSubmit}
+            onError={this.handleActionError}
+            onComplete={this.handleDialogClose}
+            onClose={this.handleDialogClose}
+          />
+        )}
       </Dashboard>
     );
   }

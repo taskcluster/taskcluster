@@ -294,12 +294,11 @@ export default class HookForm extends Component {
       hook: { hookId, hookGroupId },
     } = this.state;
 
-    onCreateHook &&
-      onCreateHook({
-        hookId,
-        hookGroupId,
-        payload: this.getHookDefinition(),
-      });
+    onCreateHook?.({
+      hookId,
+      hookGroupId,
+      payload: this.getHookDefinition(),
+    });
   };
 
   handleDeleteCronJob = ({ currentTarget: { name } }) => {
@@ -364,7 +363,7 @@ export default class HookForm extends Component {
         hook: assocPath(['task'], load(value), hook),
         taskValidYaml: true,
       });
-    } catch (err) {
+    } catch (_err) {
       this.setState({
         taskInput: value,
         taskValidYaml: false,
@@ -397,7 +396,7 @@ export default class HookForm extends Component {
         hook: assocPath(['triggerSchema'], load(value), this.state.hook),
         triggerSchemaValidYaml: true,
       });
-    } catch (err) {
+    } catch (_err) {
       this.setState({
         triggerSchemaValidYaml: false,
         triggerSchemaInput: value,
@@ -411,12 +410,11 @@ export default class HookForm extends Component {
       hook: { hookId, hookGroupId },
     } = this.state;
 
-    onUpdateHook &&
-      onUpdateHook({
-        hookId,
-        hookGroupId,
-        payload: this.getHookDefinition(),
-      });
+    onUpdateHook?.({
+      hookId,
+      hookGroupId,
+      payload: this.getHookDefinition(),
+    });
   };
 
   validHook = () => {
@@ -817,7 +815,7 @@ export default class HookForm extends Component {
             tooltipProps={{ title: 'Save Hook' }}
             requiresAuth
             classes={{ root: classes.successIcon }}
-            variant="round"
+            variant="circular"
             disabled={!this.validHook() || actionLoading || !isHookDirty}
             onClick={this.handleCreateHook}>
             <ContentSaveIcon />
@@ -833,7 +831,7 @@ export default class HookForm extends Component {
               }}
               tooltipProps={{ title: 'Save Hook' }}
               classes={{ root: classes.successIcon }}
-              variant="round"
+              variant="circular"
               disabled={!this.validHook() || actionLoading || !isHookDirty}
               onClick={this.handleUpdateHook}>
               <ContentSaveIcon />
@@ -942,17 +940,16 @@ export default class HookForm extends Component {
           onClose={this.handleDrawerClose}>
           <div className={classes.metadataContainer}>
             <Typography variant="h6" className={classes.headline}>
-              {drawerData && drawerData.taskId}
+              {drawerData?.taskId}
             </Typography>
             <List>
               <ListItem>
                 <ListItemText
                   primary={
-                    drawerData &&
-                    drawerData.error && (
+                    drawerData?.error && (
                       <ErrorPanel
                         className={classes.errorPanel}
-                        error={drawerData && drawerData.error}
+                        error={drawerData?.error}
                         onClose={null}
                       />
                     )

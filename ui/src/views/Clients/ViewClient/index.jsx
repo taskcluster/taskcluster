@@ -303,16 +303,10 @@ export default class ViewClient extends Component {
       disabled: false,
     };
     const isCliLogin = Boolean(query.callback_url);
-    const isClientDisabled =
-      clientData && clientData.client && clientData.client.disabled;
+    const isClientDisabled = clientData?.client?.disabled;
 
     // CLI login
-    if (
-      isCliLogin &&
-      user &&
-      currentScopesData &&
-      currentScopesData.currentScopes
-    ) {
+    if (isCliLogin && user && currentScopesData?.currentScopes) {
       Object.assign(initialClient, {
         clientId: `${user.credentials.clientId}/${query.name}`,
         scopes: scopeIntersection(
@@ -322,12 +316,58 @@ export default class ViewClient extends Component {
       });
     }
 
-    if (location.state && location.state.accessToken) {
+    if (location.state?.accessToken) {
       const state = { ...location.state };
 
       delete state.accessToken;
       this.props.history.replace({ state });
     }
+
+    const clientContent = isNewClient ? (
+      <Fragment>
+        <ErrorPanel fixed error={error} />
+        <ClientForm
+          key={this.getClientFormKey(initialClient)}
+          loading={loading}
+          client={initialClient}
+          isNewClient
+          onSaveClient={this.handleSaveClient}
+        />
+      </Fragment>
+    ) : (
+      <Fragment>
+        {(clientData?.loading || currentScopesData?.loading) && (
+          <Spinner loading />
+        )}
+        <ErrorPanel
+          fixed
+          warning={isClientDisabled}
+          error={
+            (isClientDisabled && 'Disabled') ||
+            error ||
+            clientData?.error ||
+            currentScopesData?.error
+          }
+        />
+        {clientData?.client && (
+          <ClientForm
+            dialogError={dialogError}
+            loading={loading}
+            client={clientData.client}
+            onResetAccessToken={this.handleResetAccessToken}
+            onSaveClient={this.handleSaveClient}
+            onDeleteClient={this.handleDeleteClient}
+            onDisableClient={this.handleDisableClient}
+            onEnableClient={this.handleEnableClient}
+            dialogOpen={dialogOpen}
+            onDialogActionError={this.handleDialogActionError}
+            onDialogActionComplete={this.handleDialogActionComplete}
+            onDialogActionClose={this.handleDialogActionClose}
+            onDialogActionOpen={this.handleDialogActionOpen}
+          />
+        )}
+      </Fragment>
+    );
 
     return (
       <Dashboard title={isNewClient ? 'Create Client' : 'Client'}>
@@ -361,58 +401,7 @@ export default class ViewClient extends Component {
             </CardContent>
           </Card>
         </Collapse>
-        {!isCliLogin || user ? (
-          <Fragment>
-            {isNewClient ? (
-              <Fragment>
-                <ErrorPanel fixed error={error} />
-                <ClientForm
-                  key={this.getClientFormKey(initialClient)}
-                  loading={loading}
-                  client={initialClient}
-                  isNewClient
-                  onSaveClient={this.handleSaveClient}
-                />
-              </Fragment>
-            ) : (
-              <Fragment>
-                {((clientData && clientData.loading) ||
-                  (currentScopesData && currentScopesData.loading)) && (
-                  <Spinner loading />
-                )}
-                <ErrorPanel
-                  fixed
-                  warning={isClientDisabled}
-                  error={
-                    (isClientDisabled && 'Disabled') ||
-                    error ||
-                    (clientData && clientData.error) ||
-                    (currentScopesData && currentScopesData.error)
-                  }
-                />
-                {clientData && clientData.client && (
-                  <ClientForm
-                    dialogError={dialogError}
-                    loading={loading}
-                    client={clientData.client}
-                    onResetAccessToken={this.handleResetAccessToken}
-                    onSaveClient={this.handleSaveClient}
-                    onDeleteClient={this.handleDeleteClient}
-                    onDisableClient={this.handleDisableClient}
-                    onEnableClient={this.handleEnableClient}
-                    dialogOpen={dialogOpen}
-                    onDialogActionError={this.handleDialogActionError}
-                    onDialogActionComplete={this.handleDialogActionComplete}
-                    onDialogActionClose={this.handleDialogActionClose}
-                    onDialogActionOpen={this.handleDialogActionOpen}
-                  />
-                )}
-              </Fragment>
-            )}
-          </Fragment>
-        ) : (
-          <SignInDialog open />
-        )}
+        {!isCliLogin || user ? clientContent : <SignInDialog open />}
         <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
     );
