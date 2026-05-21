@@ -18,12 +18,20 @@ const parseMarkdownIntoSections = markdown => {
   let version = '';
   let audience = '';
   let content = [];
-  let id = 0;
+  const pushSection = () => {
+    sections.push({
+      id: sections.length,
+      version,
+      audience,
+      content,
+      html: content.join('\n'),
+    });
+  };
 
   lines.forEach(line => {
     if (line.startsWith('## ')) {
       if (version) {
-        sections.push({ version, audience, content, html: content.join('\n') });
+        pushSection();
       }
 
       version = line.slice(3);
@@ -31,7 +39,7 @@ const parseMarkdownIntoSections = markdown => {
       content = [];
     } else if (line.startsWith('### ')) {
       if (audience) {
-        sections.push({ version, audience, content, html: content.join('\n') });
+        pushSection();
         audience = '';
         content = [];
       }
@@ -42,9 +50,8 @@ const parseMarkdownIntoSections = markdown => {
     }
   });
 
-  if (version && version && content.length) {
-    sections.push({ version, audience, content, html: content.join('\n'), id });
-    id += 1;
+  if (version && content.length) {
+    pushSection();
   }
 
   return sections;
