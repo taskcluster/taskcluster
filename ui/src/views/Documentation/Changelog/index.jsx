@@ -104,12 +104,12 @@ export default class Changelog extends Component {
     const search = new URLSearchParams(this.props.location.search);
 
     this.state = {
-      version: search.get('version', ''),
-      from: search.get('from', ''),
-      to: search.get('to', ''),
-      q: search.get('q', ''),
-      all: search.get('all', ''),
-      audience: search.get('audience', ''),
+      version: search.get('version') || '',
+      from: search.get('from') || '',
+      to: search.get('to') || '',
+      q: search.get('q') || '',
+      all: search.get('all') === 'true',
+      audience: search.get('audience') || '',
     };
   }
 
