@@ -39,7 +39,7 @@ export default class ThirdPartyLogin extends Component {
     if (
       !data ||
       state.formData ||
-      !(data.currentScopes instanceof Array) ||
+      !Array.isArray(data.currentScopes) ||
       !query.transactionID
     ) {
       return null;
