@@ -26,6 +26,7 @@ const MiniSvgGraph = ({ data, width = 130, height = 72 }) => {
 
   return (
     <svg width={width + 18} height={height}>
+      <title>Trend graph</title>
       <polyline
         points={path}
         fill="none"
