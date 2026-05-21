@@ -205,8 +205,9 @@ export default class Changelog extends Component {
             <Autocomplete
               options={this.versions}
               getOptionLabel={option => option.label}
-              onInputChange={(event, value) => this.setState({ [key]: value })}
-              defaultValue={{ label: this.state[key], value: this.state[key] }}
+              freeSolo
+              inputValue={this.state[key]}
+              onInputChange={(_event, value) => this.setState({ [key]: value })}
               renderInput={params => (
                 <TextField {...params} label={label} fullWidth />
               )}
@@ -225,11 +226,11 @@ export default class Changelog extends Component {
           <Autocomplete
             options={this.audiences}
             getOptionLabel={option => option.label}
-            onInputChange={(event, value) => this.setState({ audience: value })}
-            defaultValue={{
-              label: this.state.audience,
-              value: this.state.audience,
-            }}
+            freeSolo
+            inputValue={this.state.audience}
+            onInputChange={(_event, value) =>
+              this.setState({ audience: value })
+            }
             renderInput={params => (
               <TextField {...params} label="Audience" fullWidth />
             )}
