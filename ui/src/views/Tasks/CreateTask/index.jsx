@@ -293,10 +293,11 @@ export default class CreateTask extends Component {
         case 'object':
           return Array.isArray(obj)
             ? obj.map(iter)
-            : Object.entries(obj).reduce(
-                (o, [key, value]) => ({ ...o, [key]: iter(value) }),
-                {}
-              );
+            : Object.entries(obj).reduce((o, [key, value]) => {
+                o[key] = iter(value);
+
+                return o;
+              }, {});
 
         case 'string':
           return ISO_8601_REGEX.test(obj)

@@ -113,10 +113,7 @@ export default class InteractiveConnect extends Component {
       const artifacts = task.latestArtifacts.edges;
       const interactives = artifacts.reduce((acc, { node: artifact }) => {
         if (artifact.name.endsWith('shell.html')) {
-          return {
-            ...acc,
-            shellArtifact: artifact,
-          };
+          acc.shellArtifact = artifact;
         }
 
         return acc;
