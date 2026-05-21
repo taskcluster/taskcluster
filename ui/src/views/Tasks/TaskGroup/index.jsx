@@ -271,7 +271,7 @@ export default class TaskGroup extends Component {
 
     this.previousCursor = INITIAL_CURSOR;
     this.listener = null;
-    this.tasks = new Map();
+    this.tasks = new Set();
 
     // Batching for table updates
     this.pendingTableUpdate = null;
@@ -436,7 +436,7 @@ export default class TaskGroup extends Component {
           });
         } else {
           // unseen task, so keep the Task and TaskStatus values
-          this.tasks.set(tasksSubscriptions.taskId);
+          this.tasks.add(tasksSubscriptions.taskId);
           edges = previousResult.taskGroup.edges.concat({
             // eslint-disable-next-line no-underscore-dangle
             __typename: 'TasksEdge',
@@ -726,7 +726,7 @@ export default class TaskGroup extends Component {
               return false;
             }
 
-            this.tasks.set(edge.node.taskId);
+            this.tasks.add(edge.node.taskId);
 
             return true;
           });
@@ -907,7 +907,9 @@ export default class TaskGroup extends Component {
     this.subscribe({ taskGroupId, subscribeToMore });
 
     if (!this.tasks.size && taskGroup && isFromSameTaskGroupId) {
-      taskGroup.edges.forEach(edge => this.tasks.set(edge.node.taskId));
+      taskGroup.edges.forEach(edge => {
+        this.tasks.add(edge.node.taskId);
+      });
     }
 
     const title = ['Task Group'];
