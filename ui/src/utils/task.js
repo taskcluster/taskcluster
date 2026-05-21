@@ -31,17 +31,17 @@ export const taskRunDurationInMs = run => {
 
 export const taskRunEarliestStart = task => {
   const started = (task?.status?.runs ?? [])
-    .map(run => run.started)
-    .filter(item => item)
-    .sort((a, b) => a.started - b.started);
+    .filter(run => run.started)
+    .map(run => new Date(run.started).getTime())
+    .sort((a, b) => a - b);
 
-  return started.length ? new Date(started[0]).getTime() : Date.now();
+  return started.length ? started[0] : Date.now();
 };
 
 export const taskRunLatestResolve = task => {
   const resolved = (task?.status?.runs ?? [])
-    .map(run => run.resolved && new Date(run.resolved).getTime())
-    .filter(item => item)
+    .filter(run => run.resolved)
+    .map(run => new Date(run.resolved).getTime())
     .sort((a, b) => b - a);
 
   return resolved.length ? resolved[0] : Date.now();
