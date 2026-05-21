@@ -91,6 +91,11 @@ const FILTERS = ['version', 'from', 'to', 'q', 'all', 'audience'];
   },
   version: {
     cursor: 'pointer',
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    font: 'inherit',
+    color: 'inherit',
   },
 }))
 export default class Changelog extends Component {
@@ -252,11 +257,12 @@ export default class Changelog extends Component {
         {this.filteredSections(this.state).map(section => (
           <Grid key={section.id} item xs={12} className={classes.section}>
             <h1>
-              <span
+              <button
+                type="button"
                 className={classes.version}
                 onClick={() => onToggleFilter('version', section.version)}>
                 {section.version}
-              </span>
+              </button>
               {section.audience && (
                 <Chip
                   className={classes.chip}
