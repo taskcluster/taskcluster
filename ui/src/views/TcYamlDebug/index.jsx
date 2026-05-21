@@ -114,6 +114,7 @@ const getTaskDefinition = state => {
         },
         repository: {
           $if: 'tasks_for == "github-pull-request"',
+          // biome-ignore lint/suspicious/noThenProperty: JSON-e operator, not a thenable
           then: '${event.pull_request.head.repo.html_url}',
           else: '${event.repository.html_url}',
         },
