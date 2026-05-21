@@ -73,6 +73,28 @@ it('should return latest task run resolve time', () => {
   );
 });
 
+it('handles missing data in taskLastRun', () => {
+  expect(taskLastRun(undefined)).toBeNull();
+  expect(taskLastRun({})).toBeNull();
+  expect(taskLastRun({ status: {} })).toBeNull();
+});
+
+it('handles missing data in taskRunEarliestStart', () => {
+  const before = Date.now();
+
+  expect(taskRunEarliestStart(undefined)).toBeGreaterThanOrEqual(before);
+  expect(taskRunEarliestStart({})).toBeGreaterThanOrEqual(before);
+  expect(taskRunEarliestStart({ status: {} })).toBeGreaterThanOrEqual(before);
+});
+
+it('handles missing data in taskRunLatestResolve', () => {
+  const before = Date.now();
+
+  expect(taskRunLatestResolve(undefined)).toBeGreaterThanOrEqual(before);
+  expect(taskRunLatestResolve({})).toBeGreaterThanOrEqual(before);
+  expect(taskRunLatestResolve({ status: {} })).toBeGreaterThanOrEqual(before);
+});
+
 it('should filter tasks by state', () => {
   expect(filterTasksByState(['started'], [])).toEqual([]);
   expect(
