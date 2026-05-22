@@ -248,6 +248,7 @@ export default class TaskGroupStats extends Component {
               viewBox={`0 0 ${width + padding} ${height + padding * 2}`}>
               <title>TaskGroup run times</title>
               {sampledTasks.map((task, index) => (
+                // biome-ignore lint/a11y/noStaticElementInteractions: chart bars are a mouse only.
                 <g
                   key={task.taskId}
                   className={`${classes.bar} ${
