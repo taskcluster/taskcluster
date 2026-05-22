@@ -4777,13 +4777,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/lockfile@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@yarnpkg/lockfile@npm:1.1.0"
-  checksum: 10c0/0bfa50a3d756623d1f3409bc23f225a1d069424dbc77c6fd2f14fb377390cd57ec703dc70286e081c564be9051ead9ba85d81d66a3e68eeb6eb506d4e0c0fbda
-  languageName: node
-  linkType: hard
-
 "@zone-eu/mailsplit@npm:5.4.8":
   version: 5.4.8
   resolution: "@zone-eu/mailsplit@npm:5.4.8"
@@ -10286,7 +10279,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mock-fs@npm:^4.12.0, mock-fs@npm:^4.8.0":
+"mock-fs@npm:^4.8.0":
   version: 4.14.0
   resolution: "mock-fs@npm:4.14.0"
   checksum: 10c0/a23bc2ce74f2a01d02053fb20aecc2ea359e62580cd15b5e1029b55929802e2770bbd683ccdc5c1eabb5cecbf452196bb81a0ef61c4629dc819023e10d8303c6
@@ -13290,7 +13283,6 @@ __metadata:
     uuid: "npm:^14.0.0"
     walk: "npm:^2.3.9"
     ws: "npm:^7.5.10"
-    yarn-minify: "npm:^1.0.1"
     zen-observable: "npm:^0.10.0"
     zurvan: "npm:^0.8.0"
   languageName: unknown
@@ -14269,19 +14261,6 @@ __metadata:
     y18n: "npm:^5.0.5"
     yargs-parser: "npm:^21.1.1"
   checksum: 10c0/ccd7e723e61ad5965fffbb791366db689572b80cca80e0f96aad968dfff4156cd7cd1ad18607afe1046d8241e6fb2d6c08bf7fa7bfb5eaec818735d8feac8f05
-  languageName: node
-  linkType: hard
-
-"yarn-minify@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "yarn-minify@npm:1.0.1"
-  dependencies:
-    "@yarnpkg/lockfile": "npm:1.1.0"
-    mock-fs: "npm:^4.12.0"
-    semver: "npm:^7.3.2"
-  bin:
-    yarn-minify: main.js
-  checksum: 10c0/a04a90cea4a9e29e5dce31cf77cf82668518b8dab255b3c576360a541f33eba23399fc5d55d6a51e6a7677e1f82cedfc26b1f033273d0e70ff5aa6dbfc462e44
   languageName: node
   linkType: hard
 

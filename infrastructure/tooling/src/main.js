@@ -127,13 +127,6 @@ program.command('upgrade:go:apply')
     run(applyGo, options);
   }));
 
-program.command('minify')
-  .description('minify yarn.lock files')
-  .action(actFn(async ({ options }) => {
-    const { main } = await import('./minify/index.js');
-    run(main, options);
-  }));
-
 program.command('changelog')
   .description('Add a changelog entry (required for every PR)')
   .option('--major', 'Add a major changelog entry')
