@@ -172,7 +172,6 @@
     "snake-case": "^3.0.3",
     "typescript": "^5.9.2",
     "ws": "^7.5.10",
-    "yarn-minify": "^1.0.1",
     "zen-observable": "^0.10.0",
     "zurvan": "^0.8.0"
   },
@@ -193,7 +192,6 @@
     "generate": "NODE_OPTIONS=--dns-result-order=ipv4first node infrastructure/tooling/src/main.js generate",
     "upgrade:node": "bash scripts/upgrade-node.sh",
     "upgrade:go": "bash scripts/upgrade-go.sh",
-    "minify": "node infrastructure/tooling/src/main.js minify",
     "changelog": "node infrastructure/tooling/src/main.js changelog",
     "changelog:show": "node infrastructure/tooling/src/main.js changelog:show",
     "changelog:check": "node infrastructure/tooling/src/main.js changelog:check",
