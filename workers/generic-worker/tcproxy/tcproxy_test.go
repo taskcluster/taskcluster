@@ -2,7 +2,9 @@ package tcproxy
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"runtime"
 	"testing"
@@ -12,6 +14,16 @@ import (
 	"github.com/taskcluster/taskcluster/v100/internal/scopes"
 	"github.com/taskcluster/taskcluster/v100/internal/testrooturl"
 )
+
+func getFreePort(t *testing.T) uint16 {
+	t.Helper()
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("Could not find a free port: %v", err)
+	}
+	defer listener.Close()
+	return uint16(listener.Addr().(*net.TCPAddr).Port)
+}
 
 func TestTcProxy(t *testing.T) {
 	rootURL, clientID, accessToken, certificate := testrooturl.GetWithCreds(t)
@@ -28,7 +40,8 @@ func TestTcProxy(t *testing.T) {
 		Certificate:      certificate,
 		AuthorizedScopes: []string{"queue:get-artifact:SampleArtifacts/_/X.txt"},
 	}
-	ll, err := New(executable, "127.0.0.1", 34570, rootURL, creds, "", "")
+	port := getFreePort(t)
+	ll, err := New(executable, "127.0.0.1", port, rootURL, creds, "", "")
 	if err != nil {
 		t.Fatalf("Could not initiate taskcluster-proxy process:\n%s", err)
 	}
@@ -38,7 +51,7 @@ func TestTcProxy(t *testing.T) {
 			t.Fatalf("Failed to terminate taskcluster-proxy process:\n%s", err)
 		}
 	}()
-	res, err := http.Get("http://localhost:34570/auth/v1/scopes/current")
+	res, err := http.Get(fmt.Sprintf("http://localhost:%d/auth/v1/scopes/current", port))
 	if err != nil {
 		t.Fatalf("Could not hit url to download artifact using taskcluster-proxy: %v", err)
 	}
