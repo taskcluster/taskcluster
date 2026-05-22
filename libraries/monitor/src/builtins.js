@@ -36,7 +36,7 @@ MonitorManager.register({
   description: 'A basic timer applied to a function.',
   fields: {
     name: 'The name of the handler.',
-    status: 'Whether or not the handler resolved succesfully.',
+    status: 'Whether or not the handler resolved successfully.',
     duration: 'The duration in ms of the function.',
   },
 });
