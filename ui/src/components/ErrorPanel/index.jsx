@@ -111,7 +111,7 @@ export default class ErrorPanel extends Component {
       // Log extensions for all errors received
       errors.forEach(err => {
         if (err?.extensions) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: log web server error extensions to help with debugging
           console.log('Error from web-server:', err.extensions);
         }
       });

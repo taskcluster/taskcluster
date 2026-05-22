@@ -67,10 +67,10 @@ const req = executor.request(options, res => {
       `${JSON.stringify(response.data)}\n`,
       err => {
         if (err) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: build time script output
           console.error('Error writing fragmentTypes file', err);
         } else {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: build time script output
           console.log('Fragment types successfully extracted!');
         }
       }
@@ -79,7 +79,7 @@ const req = executor.request(options, res => {
 });
 
 req.on('error', error => {
-  // eslint-disable-next-line no-console
+  // biome-ignore lint/suspicious/noConsole: build time script output
   console.error(error);
 });
 req.write(data);

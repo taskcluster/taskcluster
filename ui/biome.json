@@ -32,6 +32,9 @@
       "recommended": true,
       "style": {
         "useNodejsImportProtocol": "off"
+      },
+      "suspicious": {
+        "noConsole": "error"
       }
     }
   },
