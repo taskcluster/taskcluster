@@ -324,6 +324,7 @@ export default class TaskGroupTable extends Component {
     const itemCount = items.length;
 
     return (
+      // biome-ignore lint/a11y/useSemanticElements: the rows are virtualized with react-window, which cannot live inside a real <table>
       <div role="table">
         <Table className={classes.table} component="div">
           <TableHead
