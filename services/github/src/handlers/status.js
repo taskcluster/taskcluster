@@ -221,13 +221,15 @@ export async function statusHandler(message) {
         output.addText(`### Artifacts`);
       }
 
-      // A quick helper function to format bytes nicely (e.g., 1024 -> "1 KB")
+      // A helper function using native Intl to format bytes (base 1000)
       const formatBytes = (bytes) => {
-        if (!bytes || bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        if (!bytes || bytes === 0) {return '0 B';}
+        return new Intl.NumberFormat('en', {
+          notation: 'compact',
+          style: 'unit',
+          unit: 'byte',
+          unitDisplay: 'narrow',
+        }).format(bytes);
       };
       artifactList.artifacts.forEach(element => {
         let artifactUrl;
