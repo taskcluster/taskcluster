@@ -151,5 +151,8 @@
   "optionalDependencies": {
     "bufferutil": "^4.0.8",
     "utf-8-validate": "^5.0.0"
+  },
+  "resolutions": {
+    "get-intrinsic": "1.3.0"
   }
 }
