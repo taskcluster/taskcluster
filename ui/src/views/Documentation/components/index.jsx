@@ -9,7 +9,6 @@ import List from './List';
 import InlineCode from './InlineCode';
 import Pre from './Pre';
 
-// eslint-disable-next-line react/display-name
 const heading =
   variant =>
   ({ children, id, ...props }) => (

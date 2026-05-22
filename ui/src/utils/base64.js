@@ -1,4 +1,3 @@
-// eslint-disable-next-line max-len
 // https://stackoverflow.com/questions/30106476/using-javascripts-atob-to-decode-base64-doesnt-properly-decode-utf-8-strings
 // Using atob() with string that contain non-ascii
 // characters will not work as expected

@@ -62,7 +62,6 @@ export default class ErrorPanel extends Component {
 
   state = {
     error: null,
-    // eslint-disable-next-line react/no-unused-state
     previousError: null,
   };
 

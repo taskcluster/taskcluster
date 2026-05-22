@@ -172,7 +172,6 @@ export default class ConnectionDataTable extends Component {
       !this.props.connection.pageInfo.previousCursor &&
       prevProps.connection.pageInfo.previousCursor
     ) {
-      // eslint-disable-next-line react/no-did-update-set-state
       this.setState({ page: 0 });
     }
   }

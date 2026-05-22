@@ -146,7 +146,6 @@ export default class InteractiveConnect extends Component {
   state = {
     shellArtifact: null,
     artifactsLoading: true,
-    // eslint-disable-next-line react/no-unused-state
     previousTaskId: this.props.match.params.taskId,
     notifyOnReady:
       'Notification' in window && localStorage.getItem(NOTIFY_KEY) === 'true',

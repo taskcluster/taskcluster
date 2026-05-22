@@ -228,7 +228,6 @@ export default class HookForm extends Component {
     hookLastFires: null,
     routingKeyPattern: '#',
     pulseExchange: '',
-    // eslint-disable-next-line react/no-unused-state
     previousHook: null,
     taskInput: '',
     triggerSchemaInput: '',

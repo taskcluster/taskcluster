@@ -8,7 +8,7 @@ describe('validation', () => {
   });
 
   it('should validate actions json', async () => {
-    const validateActionsJson = require('./validateActionsJson').default; // eslint-disable-line global-require
+    const validateActionsJson = require('./validateActionsJson').default;
 
     const validateActionsJsonResponse = await validateActionsJson();
 

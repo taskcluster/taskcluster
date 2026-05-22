@@ -394,7 +394,6 @@ function generateArrayExample(
 
   // Generate array with one example item if items schema is defined
   if (schema.items) {
-    // eslint-disable-next-line no-use-before-define
     const itemExample = generateExampleValue(
       schema.items,
       propertyName,
@@ -447,7 +446,6 @@ function generateObjectExample(
     // Add required properties first
     required.forEach(propName => {
       if (schema.properties[propName]) {
-        // eslint-disable-next-line no-use-before-define
         example[propName] = generateExampleValue(
           schema.properties[propName],
           propName,
@@ -468,7 +466,6 @@ function generateObjectExample(
       // Only add optional if we don't have too many required
       const propName = optionalProps[0];
 
-      // eslint-disable-next-line no-use-before-define
       example[propName] = generateExampleValue(
         schema.properties[propName],
         propName,
@@ -582,7 +579,6 @@ function generateExampleValue(
     const merged = {};
 
     schema.allOf.forEach(subSchema => {
-      // eslint-disable-next-line no-use-before-define
       const example = generateExampleValue(
         subSchema,
         propertyName,

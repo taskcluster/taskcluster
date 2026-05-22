@@ -18,7 +18,6 @@ const removeKeys = (obj, keys) => {
             index = keys.indexOf(prop);
 
             if (index > -1) {
-              // eslint-disable-next-line no-param-reassign
               delete obj[prop];
             }
 
@@ -27,7 +26,6 @@ const removeKeys = (obj, keys) => {
             index = keys.indexOf(prop);
 
             if (index > -1) {
-              // eslint-disable-next-line no-param-reassign
               delete obj[prop];
             } else {
               removeKeys(obj[prop], keys);

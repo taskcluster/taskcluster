@@ -237,7 +237,6 @@ export default class TaskGroupTable extends Component {
 
   static propTypes = {
     /** Task GraphQL PageConnection instance. */
-    // eslint-disable-next-line react/no-unused-prop-types
     taskGroupConnection: shape({
       edges: arrayOf(task),
       pageInfo,

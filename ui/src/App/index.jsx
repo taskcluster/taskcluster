@@ -51,7 +51,6 @@ export default class App extends Component {
 
   cache = new InMemoryCache({
     fragmentMatcher: this.fragmentMatcher,
-    /* eslint-disable no-underscore-dangle */
     dataIdFromObject: object => {
       switch (object.__typename) {
         case 'TaskStatus': {
@@ -68,7 +67,6 @@ export default class App extends Component {
         }
       }
     },
-    /* eslint-enable no-underscore-dangle */
   });
 
   persistence = new CachePersistor({

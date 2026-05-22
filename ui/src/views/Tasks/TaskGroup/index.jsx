@@ -280,7 +280,6 @@ export default class TaskGroup extends Component {
 
   state = {
     filter: null,
-    // eslint-disable-next-line react/no-unused-state
     previousTaskGroupId: '',
     groupActions: initialTaskGroupActions,
     actionLoading: false,
@@ -438,7 +437,6 @@ export default class TaskGroup extends Component {
           // unseen task, so keep the Task and TaskStatus values
           this.tasks.add(tasksSubscriptions.taskId);
           edges = previousResult.taskGroup.edges.concat({
-            // eslint-disable-next-line no-underscore-dangle
             __typename: 'TasksEdge',
             node: {
               ...cloneDeep(tasksSubscriptions.task),
@@ -643,7 +641,6 @@ export default class TaskGroup extends Component {
   handleFormChange = (value, name) =>
     this.setState({
       actionInputs: {
-        // eslint-disable-next-line react/no-access-state-in-setstate
         ...this.state.actionInputs,
         [name]: value,
       },

@@ -62,7 +62,6 @@ export default class TaskLog extends Component {
         );
 
       if (match) {
-        // eslint-disable-next-line prefer-destructuring
         name = match[1];
       }
     } else {

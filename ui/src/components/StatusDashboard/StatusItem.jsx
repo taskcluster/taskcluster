@@ -55,7 +55,6 @@ const MiniSvgGraph = ({ data, width = 130, height = 72 }) => {
   );
 };
 
-/* eslint-disable import/prefer-default-export */
 export const StatusItem = ({
   title,
   type,

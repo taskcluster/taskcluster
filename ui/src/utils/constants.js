@@ -19,7 +19,6 @@ import ListStatusIcon from 'mdi-react/FormatListChecksIcon';
 import AccountHeartOutlineIcon from 'mdi-react/AccountHeartOutlineIcon';
 import { join } from 'path';
 
-// eslint-disable-next-line import/prefer-default-export
 export const ARTIFACTS_SHOW_MAX = 10;
 export const ARTIFACTS_PAGE_SIZE = 1000;
 export const DEPENDENTS_PAGE_SIZE = 25;
@@ -62,7 +61,6 @@ export const THEME = {
 };
 export const CONTENT_MAX_WIDTH = 2000;
 
-// eslint-disable-next-line max-len
 export const VALID_TASK =
   /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 export const TASKS_CREATE_STORAGE_KEY = 'tasks:create';

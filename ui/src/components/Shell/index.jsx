@@ -39,11 +39,9 @@ export default class Shell extends Component {
       terminal.setCursorPosition(0, 0);
       terminal.setCursorVisible(true);
       terminal.setScrollbarVisible(false);
-      /* eslint-disable no-underscore-dangle */
       terminal.prefs_.set('ctrl-c-copy', true);
       terminal.prefs_.set('ctrl-v-paste', true);
       terminal.prefs_.set('use-default-window-copy', true);
-      /* eslint-enable no-underscore-dangle */
 
       // Create a shell client, with interface similar to child_process
       // With an additional method client.resize(cols, rows) for TTY sizing.

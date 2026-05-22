@@ -55,12 +55,10 @@ const req = executor.request(options, res => {
     const response = JSON.parse(Buffer.from(result).toString());
     // here we're filtering out any type information unrelated
     // to unions or interfaces
-    // eslint-disable-next-line no-underscore-dangle
     const filteredData = response.data.__schema.types.filter(
       type => type.possibleTypes !== null
     );
 
-    // eslint-disable-next-line no-param-reassign, no-underscore-dangle
     response.data.__schema.types = filteredData;
     fs.writeFile(
       './src/fragments/fragmentTypes.json',

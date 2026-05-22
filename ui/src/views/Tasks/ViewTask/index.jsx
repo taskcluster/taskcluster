@@ -182,7 +182,6 @@ export default class ViewTask extends Component {
   }
 
   state = {
-    // eslint-disable-next-line react/no-unused-state
     previousTaskId: null,
     selectedAction: null,
     dialogOpen: false,
@@ -663,7 +662,6 @@ export default class ViewTask extends Component {
   };
 
   handleSelectCacheClick = cache => () => {
-    // eslint-disable-next-line react/no-access-state-in-setstate
     const selectedCaches = new Set([...this.state.selectedCaches]);
 
     if (selectedCaches.has(cache)) {
@@ -675,7 +673,6 @@ export default class ViewTask extends Component {
     this.setState({
       selectedCaches,
       dialogActionProps: {
-        // eslint-disable-next-line react/no-access-state-in-setstate
         ...this.state.dialogActionProps,
         body: this.renderPurgeWorkerCacheDialogBody(selectedCaches),
       },

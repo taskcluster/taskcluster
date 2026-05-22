@@ -101,7 +101,6 @@ export default class DocsSidebarList extends Component {
   state = {
     currentMenu: null,
     menuOpen: true,
-    // eslint-disable-next-line react/no-unused-state
     previousPathname: null,
   };
 
