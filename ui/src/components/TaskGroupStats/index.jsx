@@ -246,7 +246,7 @@ export default class TaskGroupStats extends Component {
               preserveAspectRatio="none"
               width="100%"
               viewBox={`0 0 ${width + padding} ${height + padding * 2}`}>
-              <desc>TaskGroup run times</desc>
+              <title>TaskGroup run times</title>
               {sampledTasks.map((task, index) => (
                 <g
                   key={task.taskId}
