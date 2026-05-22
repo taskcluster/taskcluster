@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noTemplateCurlyInString: we embed JSON-e here, which looks a lot like a template
 import React, { Component } from 'react';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -86,9 +87,6 @@ const isValidYamlUrl = url => {
     return false;
   }
 };
-
-// we embed JSON-e here, which looks a lot like a template to eslint..
-/* eslint-disable no-template-curly-in-string */
 
 const getTaskDefinition = state => {
   const { commands, image, taskName, taskDescription } = state;
