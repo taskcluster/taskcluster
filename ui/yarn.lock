@@ -2626,7 +2626,7 @@ __metadata:
     prism-themes: "npm:^1.0.1"
     prismjs: "npm:^1.30.0"
     prop-types: "npm:^15.6.2"
-    qs: "npm:^6.14.2"
+    qs: "npm:^6.15.2"
     ramda: "npm:^0.30.1"
     raw-loader: "npm:^4.0.2"
     react: "npm:^16.8.6"
@@ -12246,7 +12246,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:^6.14.2, qs@npm:~6.14.0":
+"qs@npm:^6.15.2":
+  version: 6.15.2
+  resolution: "qs@npm:6.15.2"
+  dependencies:
+    side-channel: "npm:^1.1.0"
+  checksum: 10c0/e6fd5f6f0aab06d480fe9ab15cebfc4ce4235303e2f91dc69a8f7f4df1e668a61c11d1cfbabacf4295cbbeb7b670ed23db45307480726259761f98e5695e93a7
+  languageName: node
+  linkType: hard
+
+"qs@npm:~6.14.0":
   version: 6.14.2
   resolution: "qs@npm:6.14.2"
   dependencies:
