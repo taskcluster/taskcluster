@@ -228,7 +228,6 @@ export default class HookForm extends Component {
     hookLastFires: null,
     routingKeyPattern: '#',
     pulseExchange: '',
-    // eslint-disable-next-line react/no-unused-state
     previousHook: null,
     taskInput: '',
     triggerSchemaInput: '',
@@ -418,12 +417,8 @@ export default class HookForm extends Component {
   };
 
   validHook = () => {
-    const {
-      hook,
-      taskValidYaml,
-      triggerSchemaValidYaml,
-      validation,
-    } = this.state;
+    const { hook, taskValidYaml, triggerSchemaValidYaml, validation } =
+      this.state;
 
     return (
       hook.hookGroupId &&

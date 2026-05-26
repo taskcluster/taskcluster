@@ -28,10 +28,6 @@ export default function StatsFetcher() {
     }, refreshInterval);
 
     return () => clearInterval(intervalRef.current);
-    // TODO(borivel): Don't forget about this when switching to biome.
-    // It's ignored now because eslint want the `refreshInterval` which
-    // is a literal constant as an effect.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workerPools]);
 
   return (

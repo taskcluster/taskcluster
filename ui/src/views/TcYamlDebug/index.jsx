@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noTemplateCurlyInString: we embed JSON-e here, which looks a lot like a template
 import React, { Component } from 'react';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -87,9 +88,6 @@ const isValidYamlUrl = url => {
   }
 };
 
-// we embed JSON-e here, which looks a lot like a template to eslint..
-/* eslint-disable no-template-curly-in-string */
-
 const getTaskDefinition = state => {
   const { commands, image, taskName, taskDescription } = state;
   const taskQueueId =
@@ -114,28 +112,30 @@ const getTaskDefinition = state => {
         },
         repository: {
           $if: 'tasks_for == "github-pull-request"',
+          // biome-ignore lint/suspicious/noThenProperty: JSON-e operator, not a thenable
           then: '${event.pull_request.head.repo.html_url}',
           else: '${event.repository.html_url}',
         },
       },
       in: {
         $match: {
-          'tasks_for == "github-pull-request" && event["action"] in ["opened", "synchronize"]': {
-            taskId: { $eval: 'as_slugid("test")' },
-            deadline: { $fromNow: '1 day' },
-            taskQueueId,
-            metadata: {
-              name: taskName,
-              description: taskDescription,
-              owner: '${event.sender.login}@users.noreply.github.com',
-              source: '${event.repository.url}',
+          'tasks_for == "github-pull-request" && event["action"] in ["opened", "synchronize"]':
+            {
+              taskId: { $eval: 'as_slugid("test")' },
+              deadline: { $fromNow: '1 day' },
+              taskQueueId,
+              metadata: {
+                name: taskName,
+                description: taskDescription,
+                owner: '${event.sender.login}@users.noreply.github.com',
+                source: '${event.repository.url}',
+              },
+              payload: {
+                maxRunTime: 3600,
+                image,
+                command: commands,
+              },
             },
-            payload: {
-              maxRunTime: 3600,
-              image,
-              command: commands,
-            },
-          },
         },
       },
     },

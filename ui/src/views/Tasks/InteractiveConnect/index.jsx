@@ -113,10 +113,7 @@ export default class InteractiveConnect extends Component {
       const artifacts = task.latestArtifacts.edges;
       const interactives = artifacts.reduce((acc, { node: artifact }) => {
         if (artifact.name.endsWith('shell.html')) {
-          return {
-            ...acc,
-            shellArtifact: artifact,
-          };
+          acc.shellArtifact = artifact;
         }
 
         return acc;
@@ -149,7 +146,6 @@ export default class InteractiveConnect extends Component {
   state = {
     shellArtifact: null,
     artifactsLoading: true,
-    // eslint-disable-next-line react/no-unused-state
     previousTaskId: this.props.match.params.taskId,
     notifyOnReady:
       'Notification' in window && localStorage.getItem(NOTIFY_KEY) === 'true',

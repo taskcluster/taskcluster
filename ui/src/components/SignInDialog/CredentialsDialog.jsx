@@ -50,12 +50,8 @@ export default class CredentialsDialog extends Component {
 
   render() {
     const { onSignIn, ...props } = this.props;
-    const {
-      isCertificateValid,
-      clientId,
-      accessToken,
-      certificate,
-    } = this.state;
+    const { isCertificateValid, clientId, accessToken, certificate } =
+      this.state;
     const isFormValid = clientId && accessToken && isCertificateValid;
 
     return (

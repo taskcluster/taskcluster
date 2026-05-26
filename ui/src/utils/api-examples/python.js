@@ -80,8 +80,8 @@ ${serviceName} = ${tcModule}.${className}({'rootUrl': '${PLACEHOLDERS.rootUrl}'}
 
       apiCall = `${payloadCode}
         result = await ${serviceName}.${entry.name}(${params.join(
-        ', '
-      )}, payload)`;
+          ', '
+        )}, payload)`;
     } else {
       apiCall = `# Call the API method
         result = await ${serviceName}.${entry.name}(${params.join(', ')})`;

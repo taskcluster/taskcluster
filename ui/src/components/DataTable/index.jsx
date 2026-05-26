@@ -125,7 +125,7 @@ export default class DataTable extends Component {
     }
   };
 
-  handlePageChange = (event, page) => {
+  handlePageChange = (_event, page) => {
     this.setState({ page });
   };
 

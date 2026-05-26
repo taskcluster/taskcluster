@@ -58,7 +58,6 @@ import { secret } from '../../utils/prop-types';
 export default class SecretForm extends Component {
   static propTypes = {
     /** A GraphQL secret response. Not needed when creating a new secret.  */
-    // eslint-disable-next-line react/no-unused-prop-types
     secret,
     /** Set to `true` when creating a new secret. */
     isNewSecret: bool,

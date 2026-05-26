@@ -25,13 +25,7 @@ function formatGoIdentifier(name) {
 
   const parts = name.split('-');
 
-  return (
-    parts[0] +
-    parts
-      .slice(1)
-      .map(capitalize)
-      .join('')
-  );
+  return parts[0] + parts.slice(1).map(capitalize).join('');
 }
 
 /**

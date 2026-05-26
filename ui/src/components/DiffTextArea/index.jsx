@@ -102,17 +102,9 @@ function DiffTextArea(props) {
   const isSorted =
     'sort' in props && props.sort !== undefined && props.sort !== null;
   const pastValue = isSorted
-    ? initialValue
-        .split('\n')
-        .sort()
-        .join('\n')
+    ? initialValue.split('\n').sort().join('\n')
     : initialValue;
-  const currentValue = isSorted
-    ? value
-        .split('\n')
-        .sort()
-        .join('\n')
-    : value;
+  const currentValue = isSorted ? value.split('\n').sort().join('\n') : value;
   const isNotEqualText = pastValue !== currentValue;
 
   function handleValueChange(event) {
@@ -125,7 +117,7 @@ function DiffTextArea(props) {
     setValue(event.target.value);
   }
 
-  function handleTabChange(event, value) {
+  function handleTabChange(_event, value) {
     setTabIndex(value);
   }
 

@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noTemplateCurlyInString: we embed JSON-e here, which looks a lot like a template
 import React, { Component, Fragment } from 'react';
 import { withApollo } from 'react-apollo';
 import { withStyles } from '@material-ui/core/styles';
@@ -27,9 +28,6 @@ import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import githubQuery from './github.graphql';
 import { siteSpecificVariable } from '../../utils/siteSpecific';
-
-// we embed JSON-e here, which looks a lot like a template to eslint..
-/* eslint-disable no-template-curly-in-string */
 
 const baseCmd = [
   'git clone ${repository} repo',
@@ -97,11 +95,13 @@ const getTaskDefinition = state => {
       $let: {
         head_rev: {
           $if: 'tasks_for == "github-pull-request"',
+          // biome-ignore lint/suspicious/noThenProperty: JSON-e operator, not a thenable
           then: '${event.pull_request.head.sha}',
           else: '${event.after}',
         },
         repository: {
           $if: 'tasks_for == "github-pull-request"',
+          // biome-ignore lint/suspicious/noThenProperty: JSON-e operator, not a thenable
           then: '${event.pull_request.head.repo.html_url}',
           else: '${event.repository.html_url}',
         },

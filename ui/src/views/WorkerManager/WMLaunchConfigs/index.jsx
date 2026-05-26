@@ -338,10 +338,7 @@ export default class WMLaunchConfigs extends Component {
     const { node: launchConfig } = row;
     const wpMaxCapacity = workerPool?.config?.maxCapacity ?? 'n/a';
     const launchConfigId =
-      launchConfig?.launchConfigId ||
-      Math.random()
-        .toString(36)
-        .substring(2);
+      launchConfig?.launchConfigId || Math.random().toString(36).substring(2);
     const initialWeight =
       launchConfig.configuration?.workerManager?.initialWeight ?? 1;
     const maxCapacity =

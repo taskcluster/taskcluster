@@ -10,7 +10,6 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
 import Anchor from '../components/Anchor';
-// eslint-disable-next-line import/extensions
 import contributorsJson from '../../../../../.all-contributorsrc';
 
 @withRouter

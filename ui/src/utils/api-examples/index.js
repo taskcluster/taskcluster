@@ -19,7 +19,6 @@ let references = [];
 
 try {
   // Try to import references - will be available after yarn generate
-  // eslint-disable-next-line global-require
   references = require('../../../../generated/references.json');
 } catch (_e) {
   // References not available - examples will use placeholder payloads

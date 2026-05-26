@@ -68,7 +68,6 @@ const Link = React.forwardRef(({ nav, to, skipPrefetch, ...props }, ref) => {
   }
 
   if (isPathAbsolute) {
-    /* eslint-disable jsx-a11y/anchor-has-content */
     return <a href={to} {...props} target="_blank" rel="noopener noreferrer" />;
   }
 

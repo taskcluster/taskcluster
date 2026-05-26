@@ -59,7 +59,6 @@ function WeightPlayground({ classes }) {
   };
 
   const handleAdd = () => {
-    // eslint-disable-next-line no-plusplus
     setConfigs(prev => [...prev, { id: nextId++, weight: 1.0 }]);
   };
 

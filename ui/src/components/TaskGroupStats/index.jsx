@@ -50,6 +50,10 @@ import { clearAllCaches } from '../../utils/memoize';
     right: theme.spacing(2),
     cursor: 'pointer',
     color: theme.palette.info.main,
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    font: 'inherit',
   },
   chart: {
     color: THEME.PRIMARY_TEXT_DARK,
@@ -227,15 +231,14 @@ export default class TaskGroupStats extends Component {
               </div>
             )}
             {tasks.length > maxTasksInGraph && (
-              <div
+              <button
+                type="button"
                 className={classes.sampleSwitch}
-                role="button"
-                tabIndex={0}
                 onClick={() => this.toggleGraphAll()}>
                 {graphAll
                   ? `Show sample (${maxInSample})`
                   : `Show all (${tasks.length})`}
-              </div>
+              </button>
             )}
             <svg
               className={classes.chart}
@@ -243,8 +246,9 @@ export default class TaskGroupStats extends Component {
               preserveAspectRatio="none"
               width="100%"
               viewBox={`0 0 ${width + padding} ${height + padding * 2}`}>
-              <desc>TaskGroup run times</desc>
+              <title>TaskGroup run times</title>
               {sampledTasks.map((task, index) => (
+                // biome-ignore lint/a11y/noStaticElementInteractions: chart bars are a mouse only.
                 <g
                   key={task.taskId}
                   className={`${classes.bar} ${

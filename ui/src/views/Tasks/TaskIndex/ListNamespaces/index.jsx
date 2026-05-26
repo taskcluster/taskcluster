@@ -205,23 +205,21 @@ export default class ListNamespaces extends Component {
                   Indexes
                 </Typography>
               </Link>
-              {indexPaths.map((indexName, i) =>
-                indexPaths.length === i + 1 ? (
-                  <Typography
-                    key={indexName}
-                    variant="body2"
-                    color="textSecondary">
+              {indexPaths.map((indexName, i) => {
+                const path = indexPaths.slice(0, i + 1).join('.');
+
+                return indexPaths.length === i + 1 ? (
+                  <Typography key={path} variant="body2" color="textSecondary">
                     {indexName}
                   </Typography>
                 ) : (
-                  <Link
-                    to={`/tasks/index/${indexPaths.slice(0, i + 1).join('.')}`}>
+                  <Link key={path} to={`/tasks/index/${path}`}>
                     <Typography variant="body2" className={classes.link}>
                       {indexName}
                     </Typography>
                   </Link>
-                )
-              )}
+                );
+              })}
             </Breadcrumbs>
             <br />
             <br />

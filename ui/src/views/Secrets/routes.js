@@ -1,10 +1,10 @@
 import lazy from '../../utils/lazy';
 
-const ViewSecrets = lazy(() =>
-  import(/* webpackChunkName: 'Secrets.ViewSecrets' */ './ViewSecrets')
+const ViewSecrets = lazy(
+  () => import(/* webpackChunkName: 'Secrets.ViewSecrets' */ './ViewSecrets')
 );
-const ViewSecret = lazy(() =>
-  import(/* webpackChunkName: 'Secrets.ViewSecret' */ './ViewSecret')
+const ViewSecret = lazy(
+  () => import(/* webpackChunkName: 'Secrets.ViewSecret' */ './ViewSecret')
 );
 const description =
   'Manage secrets: values that can only be retrieved with the appropriate scopes.';

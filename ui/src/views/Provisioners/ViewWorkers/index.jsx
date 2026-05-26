@@ -213,12 +213,8 @@ export default class ViewWorkers extends Component {
   };
 
   render() {
-    const {
-      actionLoading,
-      selectedAction,
-      dialogOpen,
-      dialogError,
-    } = this.state;
+    const { actionLoading, selectedAction, dialogOpen, dialogError } =
+      this.state;
     const {
       location,
       classes,

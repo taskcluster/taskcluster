@@ -63,13 +63,8 @@ export default class CreatePurgeCacheRequest extends Component {
 
   render() {
     const { classes } = this.props;
-    const {
-      error,
-      provisionerId,
-      workerType,
-      cacheName,
-      actionLoading,
-    } = this.state;
+    const { error, provisionerId, workerType, cacheName, actionLoading } =
+      this.state;
 
     return (
       <Dashboard title="Create Purge Cache Request">

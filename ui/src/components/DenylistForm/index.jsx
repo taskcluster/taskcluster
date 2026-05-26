@@ -90,7 +90,6 @@ export default class DenylistForm extends Component {
   state = {
     notificationType: '',
     notificationAddress: '',
-    // eslint-disable-next-line react/no-unused-state
     prevAddress: null,
     validation: {
       address: {

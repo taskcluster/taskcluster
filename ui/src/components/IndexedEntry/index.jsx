@@ -124,11 +124,8 @@ export default class IndexedEntry extends Component {
   };
 
   renderArtifactsTable() {
-    const {
-      classes,
-      onArtifactsPageChange,
-      latestArtifactsConnection,
-    } = this.props;
+    const { classes, onArtifactsPageChange, latestArtifactsConnection } =
+      this.props;
     const artifacts = this.loadArtifacts(latestArtifactsConnection);
 
     return (
