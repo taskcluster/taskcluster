@@ -1,0 +1,28 @@
+version: 126
+description: Add a `consume_authorization_code` method
+methods:
+  get_authorization_code:
+    deprecated: true
+
+  consume_authorization_code:
+    description: |-
+      Atomically delete the authorization code row matching `code_in` and
+      return its contents. If no such row exists, the returned set is empty.
+    mode: write
+    serviceName: web_server
+    args: code_in text
+    returns: table(code text, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)
+    body: |-
+      begin
+        return query
+        delete from authorization_codes
+        where authorization_codes.code = code_in
+        returning
+          authorization_codes.code,
+          authorization_codes.client_id,
+          authorization_codes.redirect_uri,
+          authorization_codes.identity,
+          authorization_codes.identity_provider_id,
+          authorization_codes.expires,
+          authorization_codes.client_details;
+      end

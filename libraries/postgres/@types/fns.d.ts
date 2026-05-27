@@ -4679,6 +4679,14 @@ type WebServerAuthorizationCodesTableEntitiesScanDeprecatedFn = {
   page: number;
  }): Promise<Array<{partition_key: string, row_key: string, value: JsonB, version: number, etag: string}>>;
 };
+type WebServerConsumeAuthorizationCodeFn = {
+ (
+   code_in: string
+ ): Promise<Array<{code: string, client_id: string, redirect_uri: string, identity: string, identity_provider_id: string, expires: Date, client_details: JsonB}>>;
+ (params: {
+  code_in: string;
+ }): Promise<Array<{code: string, client_id: string, redirect_uri: string, identity: string, identity_provider_id: string, expires: Date, client_details: JsonB}>>;
+};
 type WebServerCreateAccessTokenFn = {
  (
    hashed_access_token_in: string,
@@ -4751,7 +4759,8 @@ type WebServerGetAccessTokenFn = {
   hashed_access_token_in: string;
  }): Promise<Array<{hashed_access_token: string, encrypted_access_token: JsonB, client_id: string, redirect_uri: string, identity: string, identity_provider_id: string, expires: Date, client_details: JsonB}>>;
 };
-type WebServerGetAuthorizationCodeFn = {
+/** @deprecated */
+type WebServerGetAuthorizationCodeDeprecatedFn = {
  (
    code_in: string
  ): Promise<Array<{code: string, client_id: string, redirect_uri: string, identity: string, identity_provider_id: string, expires: Date, client_details: JsonB}>>;
@@ -6465,13 +6474,13 @@ export interface DbFunctions {
 
   // WebServer
   add_github_access_token: WebServerAddGithubAccessTokenFn;
+  consume_authorization_code: WebServerConsumeAuthorizationCodeFn;
   create_access_token: WebServerCreateAccessTokenFn;
   create_authorization_code: WebServerCreateAuthorizationCodeFn;
   expire_access_tokens: WebServerExpireAccessTokensFn;
   expire_authorization_codes: WebServerExpireAuthorizationCodesFn;
   expire_sessions: WebServerExpireSessionsFn;
   get_access_token: WebServerGetAccessTokenFn;
-  get_authorization_code: WebServerGetAuthorizationCodeFn;
   load_github_access_token: WebServerLoadGithubAccessTokenFn;
   session_add: WebServerSessionAddFn;
   session_load: WebServerSessionLoadFn;
@@ -6735,6 +6744,7 @@ export interface DeprecatedDbFunctions {
   authorization_codes_table_entities_modify: WebServerAuthorizationCodesTableEntitiesModifyDeprecatedFn;
   authorization_codes_table_entities_remove: WebServerAuthorizationCodesTableEntitiesRemoveDeprecatedFn;
   authorization_codes_table_entities_scan: WebServerAuthorizationCodesTableEntitiesScanDeprecatedFn;
+  get_authorization_code: WebServerGetAuthorizationCodeDeprecatedFn;
   github_access_token_table_entities_create: WebServerGithubAccessTokenTableEntitiesCreateDeprecatedFn;
   github_access_token_table_entities_load: WebServerGithubAccessTokenTableEntitiesLoadDeprecatedFn;
   github_access_token_table_entities_modify: WebServerGithubAccessTokenTableEntitiesModifyDeprecatedFn;

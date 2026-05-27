@@ -163,7 +163,7 @@ export default (cfg, db, strategies, auth, monitor) => {
    * authorized the code.
    */
   server.exchange(oauth2orize.exchange.code(unpromisify(async (client, code, redirectURI) => {
-    const [entry] = await db.fns.get_authorization_code(code);
+    const [entry] = await db.fns.consume_authorization_code(code);
 
     if (!entry) {
       return false;
@@ -174,8 +174,8 @@ export default (cfg, db, strategies, auth, monitor) => {
     }
 
     // Although we eventually delete expired rows, that only happens once per day
-    // so we need to check that the accessToken is not expired.
-    if (new Date(entry.client_details.expires) < new Date()) {
+    // so we need to check that the authorization code is not past its own lifetime
+    if (new Date(entry.expires) < new Date()) {
       return false;
     }
 

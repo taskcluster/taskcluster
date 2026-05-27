@@ -265,7 +265,7 @@ suite(testing.suiteName(), function() {
 
     helper.dbTest('get_authorization_code returns an entry', async function(db) {
       await mkAuthorizationCode(db);
-      const [authorizationCode] = await db.fns.get_authorization_code(code);
+      const [authorizationCode] = await db.deprecatedFns.get_authorization_code(code);
       assert.equal(authorizationCode.code, code);
       assert.equal(authorizationCode.client_id, 'client-id');
       assert.equal(authorizationCode.redirect_uri, 'www.example.com');
@@ -276,7 +276,7 @@ suite(testing.suiteName(), function() {
     });
 
     helper.dbTest('get_authorization_code does not throw when not found', async function(db) {
-      await db.fns.get_authorization_code('not-found');
+      await db.deprecatedFns.get_authorization_code('not-found');
     });
 
     helper.dbTest('create_authorization_code returns the authorization code', async function(db) {
@@ -311,6 +311,33 @@ suite(testing.suiteName(), function() {
       await mkAuthorizationCode(db, { code: slugs[2], expires: fromNow('1 day') });
       const count = (await db.fns.expire_authorization_codes(new Date()))[0].expire_authorization_codes;
       assert.equal(count, 2);
+    });
+
+    helper.dbTest('consume_authorization_code returns the row and deletes it', async function(db) {
+      await mkAuthorizationCode(db);
+      const [consumed] = await db.fns.consume_authorization_code(code);
+      assert.equal(consumed.code, code);
+      assert.equal(consumed.client_id, 'client-id');
+      assert.equal(consumed.redirect_uri, 'www.example.com');
+      assert.equal(consumed.identity, 'identity');
+      assert.equal(consumed.identity_provider_id, 'identity-provider-id');
+      assert.equal(consumed.expires.toJSON(), now.toJSON());
+      assert.deepEqual(consumed.client_details, clientDetails);
+      const rows = await db.fns.consume_authorization_code(code);
+      assert.equal(rows.length, 0);
+    });
+
+    helper.dbTest('consume_authorization_code returns empty for unknown code', async function(db) {
+      const rows = await db.fns.consume_authorization_code('not-found');
+      assert.equal(rows.length, 0);
+    });
+
+    helper.dbTest('consume_authorization_code only succeeds once for the same code', async function(db) {
+      await mkAuthorizationCode(db);
+      const first = await db.fns.consume_authorization_code(code);
+      const second = await db.fns.consume_authorization_code(code);
+      assert.equal(first.length, 1);
+      assert.equal(second.length, 0);
     });
   });
 
