@@ -55,22 +55,20 @@ const req = executor.request(options, res => {
     const response = JSON.parse(Buffer.from(result).toString());
     // here we're filtering out any type information unrelated
     // to unions or interfaces
-    // eslint-disable-next-line no-underscore-dangle
     const filteredData = response.data.__schema.types.filter(
       type => type.possibleTypes !== null
     );
 
-    // eslint-disable-next-line no-param-reassign, no-underscore-dangle
     response.data.__schema.types = filteredData;
     fs.writeFile(
       './src/fragments/fragmentTypes.json',
       `${JSON.stringify(response.data)}\n`,
       err => {
         if (err) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: build time script output
           console.error('Error writing fragmentTypes file', err);
         } else {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: build time script output
           console.log('Fragment types successfully extracted!');
         }
       }
@@ -79,7 +77,7 @@ const req = executor.request(options, res => {
 });
 
 req.on('error', error => {
-  // eslint-disable-next-line no-console
+  // biome-ignore lint/suspicious/noConsole: build time script output
   console.error(error);
 });
 req.write(data);

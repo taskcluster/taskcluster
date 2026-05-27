@@ -79,33 +79,35 @@ export default class RoleScopesTable extends Component {
     }
   );
 
-  renderItem = items => ({ index, style }) => {
-    const { selectedScope, classes } = this.props;
-    const item = items[index];
-    const iconSize = 16;
+  renderItem =
+    items =>
+    ({ index, style }) => {
+      const { selectedScope, classes } = this.props;
+      const item = items[index];
+      const iconSize = 16;
 
-    return (
-      <Fragment>
-        <Link
-          to={
-            selectedScope
-              ? `/auth/roles/${encodeURIComponent(item)}`
-              : `/auth/scopes/${encodeURIComponent(item)}`
-          }>
-          <ListItem className={classes.listItemButton} style={style} button>
-            {item}
-            <LinkIcon size={iconSize} />
-          </ListItem>
-        </Link>
-        <Divider
-          style={{
-            ...style,
-            height: 1,
-          }}
-        />
-      </Fragment>
-    );
-  };
+      return (
+        <Fragment>
+          <Link
+            to={
+              selectedScope
+                ? `/auth/roles/${encodeURIComponent(item)}`
+                : `/auth/scopes/${encodeURIComponent(item)}`
+            }>
+            <ListItem className={classes.listItemButton} style={style} button>
+              {item}
+              <LinkIcon size={iconSize} />
+            </ListItem>
+          </Link>
+          <Divider
+            style={{
+              ...style,
+              height: 1,
+            }}
+          />
+        </Fragment>
+      );
+    };
 
   render() {
     const {

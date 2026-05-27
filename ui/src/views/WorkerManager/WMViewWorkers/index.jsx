@@ -75,7 +75,7 @@ export default class WMViewWorkers extends Component {
 
   tabs = ['all', 'running', 'requested', 'stopping', 'stopped', 'standalone'];
 
-  handleTabChange = (e, currentTab) => {
+  handleTabChange = (_e, currentTab) => {
     this.setState({ currentTab });
     const searchState = this.tabs[currentTab];
 

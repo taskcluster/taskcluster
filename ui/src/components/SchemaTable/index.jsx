@@ -10,7 +10,11 @@ import references from '../../../../generated/references.json';
 
 // Local copies of the json-schemas schemas, since TC schemas $refer to these
 const EXTERNAL_SCHEMAS = [jsonSchemaDraft06, jsonSchemaDraft07].reduce(
-  (schemas, schema) => ({ ...schemas, [schema.$id]: schema }),
+  (schemas, schema) => {
+    schemas[schema.$id] = schema;
+
+    return schemas;
+  },
   {}
 );
 

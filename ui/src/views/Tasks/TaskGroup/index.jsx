@@ -280,7 +280,6 @@ export default class TaskGroup extends Component {
 
   state = {
     filter: null,
-    // eslint-disable-next-line react/no-unused-state
     previousTaskGroupId: '',
     groupActions: initialTaskGroupActions,
     actionLoading: false,
@@ -438,7 +437,6 @@ export default class TaskGroup extends Component {
           // unseen task, so keep the Task and TaskStatus values
           this.tasks.add(tasksSubscriptions.taskId);
           edges = previousResult.taskGroup.edges.concat({
-            // eslint-disable-next-line no-underscore-dangle
             __typename: 'TasksEdge',
             node: {
               ...cloneDeep(tasksSubscriptions.task),
@@ -572,65 +570,67 @@ export default class TaskGroup extends Component {
     this.setState({ dialogError: e, actionLoading: false });
   };
 
-  handleActionSubmit = ({ name }) => async () => {
-    this.preRunningAction();
+  handleActionSubmit =
+    ({ name }) =>
+    async () => {
+      this.preRunningAction();
 
-    const apolloClient = this.props.client;
-    const {
-      data: { taskGroup },
-    } = this.props;
-
-    if (name === 'sealTaskGroup') {
+      const apolloClient = this.props.client;
       const {
-        data: { sealTaskGroup },
-      } = await apolloClient.mutate({
-        mutation: sealTaskGroupQuery,
-        variables: {
-          taskGroupId: taskGroup.taskGroup.taskGroupId,
-        },
+        data: { taskGroup },
+      } = this.props;
+
+      if (name === 'sealTaskGroup') {
+        const {
+          data: { sealTaskGroup },
+        } = await apolloClient.mutate({
+          mutation: sealTaskGroupQuery,
+          variables: {
+            taskGroupId: taskGroup.taskGroup.taskGroupId,
+          },
+        });
+
+        this.setState({ taskGroupInfo: sealTaskGroup });
+        this.handleSnackbarOpen({
+          message: 'Task Group sealed',
+          open: true,
+        });
+
+        return null;
+      }
+
+      if (name === 'cancelTaskGroup') {
+        const {
+          data: { cancelTaskGroup },
+        } = await apolloClient.mutate({
+          mutation: cancelTaskGroupQuery,
+          variables: {
+            taskGroupId: taskGroup.taskGroup.taskGroupId,
+          },
+        });
+
+        this.handleSnackbarOpen({
+          message: `Tasks cancelled: ${cancelTaskGroup.cancelledCount} out of ${cancelTaskGroup.taskGroupSize}.`,
+          open: true,
+        });
+
+        return null;
+      }
+
+      const { taskActions, task } = this.props.data;
+      const { actionInputs, actionData } = this.state;
+      const form = actionInputs[name];
+      const { action } = actionData[name];
+      const taskId = await submitTaskAction({
+        task,
+        taskActions,
+        form,
+        action,
+        apolloClient,
       });
 
-      this.setState({ taskGroupInfo: sealTaskGroup });
-      this.handleSnackbarOpen({
-        message: 'Task Group sealed',
-        open: true,
-      });
-
-      return null;
-    }
-
-    if (name === 'cancelTaskGroup') {
-      const {
-        data: { cancelTaskGroup },
-      } = await apolloClient.mutate({
-        mutation: cancelTaskGroupQuery,
-        variables: {
-          taskGroupId: taskGroup.taskGroup.taskGroupId,
-        },
-      });
-
-      this.handleSnackbarOpen({
-        message: `Tasks cancelled: ${cancelTaskGroup.cancelledCount} out of ${cancelTaskGroup.taskGroupSize}.`,
-        open: true,
-      });
-
-      return null;
-    }
-
-    const { taskActions, task } = this.props.data;
-    const { actionInputs, actionData } = this.state;
-    const form = actionInputs[name];
-    const { action } = actionData[name];
-    const taskId = await submitTaskAction({
-      task,
-      taskActions,
-      form,
-      action,
-      apolloClient,
-    });
-
-    return taskId;
-  };
+      return taskId;
+    };
 
   handleActionTaskComplete = taskId => {
     if (taskId) {
@@ -641,7 +641,6 @@ export default class TaskGroup extends Component {
   handleFormChange = (value, name) =>
     this.setState({
       actionInputs: {
-        // eslint-disable-next-line react/no-access-state-in-setstate
         ...this.state.actionInputs,
         [name]: value,
       },
@@ -675,7 +674,7 @@ export default class TaskGroup extends Component {
     window.open(profilerUrl, '_blank');
   };
 
-  handleSnackbarClose = (event, reason) => {
+  handleSnackbarClose = (_event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -817,14 +816,8 @@ export default class TaskGroup extends Component {
       notifyPreferences,
       taskGroupWasRunningOnPageLoad,
     } = this.state;
-    const {
-      completed,
-      exception,
-      failed,
-      pending,
-      running,
-      unscheduled,
-    } = statusCount;
+    const { completed, exception, failed, pending, running, unscheduled } =
+      statusCount;
     const allTasksCount = sum([
       completed,
       exception,
@@ -900,8 +893,8 @@ export default class TaskGroup extends Component {
     const isFromSameTaskGroupId = taskGroup?.edges[0]
       ? taskGroup.edges[0].node.taskGroupId === taskGroupId
       : true;
-    const notificationsCount = Object.values(notifyPreferences).filter(Boolean)
-      .length;
+    const notificationsCount =
+      Object.values(notifyPreferences).filter(Boolean).length;
     const graphqlError = this.getError(error);
 
     this.subscribe({ taskGroupId, subscribeToMore });

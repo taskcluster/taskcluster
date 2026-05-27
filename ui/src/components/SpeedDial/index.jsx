@@ -36,6 +36,7 @@ function SpeedDial(props) {
     };
   }, [resetTimeout]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: location.pathname is the retrigger key on navigation
   useEffect(() => {
     resetTimeout();
     setOpen(false);

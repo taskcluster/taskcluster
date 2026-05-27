@@ -72,7 +72,7 @@ export default class ViewScope extends Component {
     }
   };
 
-  handleTabChange = (event, value) => {
+  handleTabChange = (_event, value) => {
     const { location, history } = this.props;
     const query = parse(location.search.slice(1));
 

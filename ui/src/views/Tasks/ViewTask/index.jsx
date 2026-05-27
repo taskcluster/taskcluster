@@ -182,7 +182,6 @@ export default class ViewTask extends Component {
   }
 
   state = {
-    // eslint-disable-next-line react/no-unused-state
     previousTaskId: null,
     selectedAction: null,
     dialogOpen: false,
@@ -289,26 +288,28 @@ export default class ViewTask extends Component {
     }
   };
 
-  handleActionTaskSubmit = ({ name }) => async () => {
-    this.preRunningAction();
+  handleActionTaskSubmit =
+    ({ name }) =>
+    async () => {
+      this.preRunningAction();
 
-    const {
-      client,
-      data: { task },
-    } = this.props;
-    const { formInputs } = this.state;
-    const { actionData } = this.getTaskActionsData();
-    const { action } = actionData[name];
-    const taskId = await submitTaskAction({
-      task,
-      taskActions: task.taskActions,
-      form: formInputs,
-      action,
-      apolloClient: client,
-    });
+      const {
+        client,
+        data: { task },
+      } = this.props;
+      const { formInputs } = this.state;
+      const { actionData } = this.getTaskActionsData();
+      const { action } = actionData[name];
+      const taskId = await submitTaskAction({
+        task,
+        taskActions: task.taskActions,
+        form: formInputs,
+        action,
+        apolloClient: client,
+      });
 
-    return taskId;
-  };
+      return taskId;
+    };
 
   handleArtifactsPageChange = ({ cursor, previousCursor }) => {
     const {
@@ -661,7 +662,6 @@ export default class ViewTask extends Component {
   };
 
   handleSelectCacheClick = cache => () => {
-    // eslint-disable-next-line react/no-access-state-in-setstate
     const selectedCaches = new Set([...this.state.selectedCaches]);
 
     if (selectedCaches.has(cache)) {
@@ -673,7 +673,6 @@ export default class ViewTask extends Component {
     this.setState({
       selectedCaches,
       dialogActionProps: {
-        // eslint-disable-next-line react/no-access-state-in-setstate
         ...this.state.dialogActionProps,
         body: this.renderPurgeWorkerCacheDialogBody(selectedCaches),
       },

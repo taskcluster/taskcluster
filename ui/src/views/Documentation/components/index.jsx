@@ -9,12 +9,13 @@ import List from './List';
 import InlineCode from './InlineCode';
 import Pre from './Pre';
 
-// eslint-disable-next-line react/display-name
-const heading = variant => ({ children, id, ...props }) => (
-  <HeaderWithAnchor type={variant} id={id} {...props}>
-    {children}
-  </HeaderWithAnchor>
-);
+const heading =
+  variant =>
+  ({ children, id, ...props }) => (
+    <HeaderWithAnchor type={variant} id={id} {...props}>
+      {children}
+    </HeaderWithAnchor>
+  );
 const a = props => <Anchor {...props} />;
 const p = props => <Paragraph {...props} />;
 const table = props => <Table {...props} />;

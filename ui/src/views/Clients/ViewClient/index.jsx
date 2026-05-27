@@ -263,7 +263,7 @@ export default class ViewClient extends Component {
     this.setState({ snackbar: { message, variant, open } });
   };
 
-  handleSnackbarClose = (event, reason) => {
+  handleSnackbarClose = (_event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -274,14 +274,8 @@ export default class ViewClient extends Component {
   };
 
   render() {
-    const {
-      error,
-      loading,
-      accessToken,
-      snackbar,
-      dialogError,
-      dialogOpen,
-    } = this.state;
+    const { error, loading, accessToken, snackbar, dialogError, dialogOpen } =
+      this.state;
     const {
       isNewClient,
       clientData,

@@ -80,12 +80,8 @@ export default class ClientsTable extends Component {
   };
 
   render() {
-    const {
-      onPageChange,
-      clientsConnection,
-      searchTerm,
-      onDialogActionOpen,
-    } = this.props;
+    const { onPageChange, clientsConnection, searchTerm, onDialogActionOpen } =
+      this.props;
     const { sortBy, sortDirection } = this.state;
     const iconSize = 16;
 

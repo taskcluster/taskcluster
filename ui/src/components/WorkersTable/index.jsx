@@ -29,8 +29,9 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.workerId, b.node.workerId)),
   map(
     ({ node: { workerId, latestTask } }) =>
-      `${workerId}.${latestTask?.run?.taskId ?? '-'}.${latestTask?.run?.runId ??
-        '-'}`
+      `${workerId}.${latestTask?.run?.taskId ?? '-'}.${
+        latestTask?.run?.runId ?? '-'
+      }`
   )
 );
 
