@@ -49,6 +49,8 @@ const InstanceStates = {
 const failProvisioningStates = new Set(['Failed', 'Deleting', 'Canceled', 'Deallocating']);
 
 const DEPLOYMENT_METHOD_ARM = 'arm-template';
+const UNKNOWN_METRIC_LABEL = 'unknown';
+const MAX_METRIC_LABEL_LENGTH = 200;
 const maxInstanceView404Streak = 2;
 // Per Azure Certificate Authority details, these are the HTTP AIA hosts
 // clients may need to reach for Azure certificate chain building.
@@ -90,6 +92,77 @@ export function isAllowedAiaLocation(location) {
   return allowedAiaLocations.some(entry =>
     hostname === entry.hostname &&
     (!entry.pathPrefix || parsedUrl.pathname.startsWith(entry.pathPrefix)));
+}
+
+function metricLabel(value) {
+  if (value === undefined || value === null || value === '') {
+    return UNKNOWN_METRIC_LABEL;
+  }
+  if (typeof value === 'object') {
+    return UNKNOWN_METRIC_LABEL;
+  }
+  return String(value).slice(0, MAX_METRIC_LABEL_LENGTH);
+}
+
+function firstMetricLabel(...values) {
+  for (const value of values) {
+    const label = metricLabel(value);
+    if (label !== UNKNOWN_METRIC_LABEL) {
+      return label;
+    }
+  }
+  return UNKNOWN_METRIC_LABEL;
+}
+
+function armParameterValue(parameters, name) {
+  const param = parameters?.[name];
+  if (param && typeof param === 'object' && 'value' in param) {
+    return param.value;
+  }
+  return param;
+}
+
+function extractAzureMetricError(error) {
+  const queue = [
+    error?.response?.parsedBody?.error,
+    error?.parsedBody?.error,
+    error?.body?.error,
+    error?.error,
+    error,
+  ];
+  const seen = new Set();
+  let fallbackError;
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current || typeof current !== 'object' || seen.has(current)) {
+      continue;
+    }
+    seen.add(current);
+
+    if (!fallbackError && (current.code || current.message || current.target)) {
+      fallbackError = current;
+    }
+
+    for (const nested of [
+      current.response?.parsedBody?.error,
+      current.parsedBody?.error,
+      current.body?.error,
+      current.error,
+    ]) {
+      if (nested && typeof nested === 'object') {
+        queue.push(nested);
+      }
+    }
+
+    if (Array.isArray(current.details) && current.details.length > 0) {
+      queue.push(...current.details);
+    } else if (current.code || current.message || current.target) {
+      return current;
+    }
+  }
+
+  return fallbackError;
 }
 
 export class AzureProvider extends Provider {
@@ -631,6 +704,14 @@ export class AzureProvider extends Provider {
         error: err,
       });
 
+      this.#recordAzureArmDeploymentError({
+        worker,
+        errorKind: 'creation-error',
+        error: err,
+        statusCode: err?.statusCode ?? err?.response?.status,
+        provisioningOperation: 'Create',
+      });
+
       await this.reportError({
         workerPool,
         kind: 'creation-error',
@@ -651,6 +732,38 @@ export class AzureProvider extends Provider {
       });
       await this.removeWorker({ worker, reason: `ARM Deployment failure: ${err.message}` });
     }
+  }
+
+  #recordAzureArmDeploymentError({
+    worker,
+    errorKind,
+    error,
+    statusCode,
+    provisioningState,
+    provisioningOperation,
+    targetResource,
+  }) {
+    const azureError = extractAzureMetricError(error);
+    const parameters = worker.providerData?.armDeployment?.parameters ?? {};
+
+    // Still emit a sample when Azure did not provide a structured error body.
+    // The labels below will fall back to the top-level error or "unknown".
+    this.monitor.metric.azureArmDeploymentError(1, {
+      providerId: this.providerId,
+      workerPoolId: worker.workerPoolId,
+      workerGroup: firstMetricLabel(worker.workerGroup, worker.providerData?.location),
+      errorKind: metricLabel(errorKind),
+      errorCode: firstMetricLabel(azureError?.code, error?.code, error?.name),
+      statusCode: firstMetricLabel(statusCode, error?.statusCode, error?.response?.status),
+      provisioningState: metricLabel(provisioningState),
+      provisioningOperation: metricLabel(provisioningOperation),
+      targetResourceType: metricLabel(targetResource?.resourceType),
+      vmSize: firstMetricLabel(
+        armParameterValue(parameters, 'vmSize'),
+        worker.providerData?.vm?.config?.hardwareProfile?.vmSize,
+      ),
+      priority: firstMetricLabel(armParameterValue(parameters, 'priority'), worker.providerData?.vm?.config?.priority),
+    });
   }
 
   /**
@@ -848,6 +961,16 @@ export class AzureProvider extends Provider {
         trackingId: properties.trackingId,
         timestamp: properties.timestamp,
       });
+
+      this.#recordAzureArmDeploymentError({
+        worker,
+        errorKind: 'arm-deployment-error',
+        error: operationError ?? status,
+        statusCode: properties.statusCode,
+        provisioningState: properties.provisioningState ?? status.status,
+        provisioningOperation: properties.provisioningOperation,
+        targetResource: properties.targetResource,
+      });
     }
 
     if (failingOperations.length === 0 && !defaultMessage) {
@@ -865,6 +988,15 @@ export class AzureProvider extends Provider {
     }
 
     const workerPool = await WorkerPool.get(this.db, worker.workerPoolId);
+
+    if (failingOperations.length === 0) {
+      this.#recordAzureArmDeploymentError({
+        worker,
+        errorKind: 'arm-deployment-error',
+        error: deployment.properties?.error ?? { message: defaultMessage },
+        provisioningState: deployment.properties?.provisioningState,
+      });
+    }
 
     await this.reportError({
       workerPool,

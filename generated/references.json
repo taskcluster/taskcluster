@@ -18065,6 +18065,29 @@
           "type": "gauge"
         },
         {
+          "description": "Count of Azure ARM deployment creation failures and failed deployment operations by worker pool, location, and Azure error details",
+          "labels": {
+            "errorCode": "Azure error code",
+            "errorKind": "Worker-manager error kind",
+            "priority": "Azure VM priority",
+            "providerId": "ID of the provider",
+            "provisioningOperation": "Azure provisioning operation",
+            "provisioningState": "Azure provisioning state",
+            "statusCode": "Operation status code from the resource provider",
+            "targetResourceType": "Azure target resource type",
+            "vmSize": "Azure VM size",
+            "workerGroup": "Worker group (region/zone/location)",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_azure_arm_deployment_errors_total",
+          "registers": [
+            "provision",
+            "scan"
+          ],
+          "title": "Azure ARM deployment errors",
+          "type": "counter"
+        },
+        {
           "description": "Most recently observed value of Azure x-ms-ratelimit-remaining-subscription-* headers",
           "labels": {
             "limitType": "Rate limit category: reads, writes, or deletes",
