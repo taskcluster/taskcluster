@@ -8018,6 +8018,24 @@
         }
       },
       "version": 125
+    },
+    {
+      "description": "Add a `consume_authorization_code` method",
+      "methods": {
+        "consume_authorization_code": {
+          "args": "code_in text",
+          "body": "begin\n  return query\n  delete from authorization_codes\n  where authorization_codes.code = code_in\n  returning\n    authorization_codes.code,\n    authorization_codes.client_id,\n    authorization_codes.redirect_uri,\n    authorization_codes.identity,\n    authorization_codes.identity_provider_id,\n    authorization_codes.expires,\n    authorization_codes.client_details;\nend",
+          "deprecated": false,
+          "description": "Atomically delete the authorization code row matching `code_in` and\nreturn its contents. If no such row exists, the returned set is empty.",
+          "mode": "write",
+          "returns": "table(code text, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)",
+          "serviceName": "web_server"
+        },
+        "get_authorization_code": {
+          "deprecated": true
+        }
+      },
+      "version": 126
     }
   ]
 }

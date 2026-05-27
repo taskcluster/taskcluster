@@ -160,13 +160,13 @@
    * [`upsert_secret`](#upsert_secret)
  * [web_server functions](#web_server)
    * [`add_github_access_token`](#add_github_access_token)
+   * [`consume_authorization_code`](#consume_authorization_code)
    * [`create_access_token`](#create_access_token)
    * [`create_authorization_code`](#create_authorization_code)
    * [`expire_access_tokens`](#expire_access_tokens)
    * [`expire_authorization_codes`](#expire_authorization_codes)
    * [`expire_sessions`](#expire_sessions)
    * [`get_access_token`](#get_access_token)
-   * [`get_authorization_code`](#get_authorization_code)
    * [`load_github_access_token`](#load_github_access_token)
    * [`session_add`](#session_add)
    * [`session_load`](#session_load)
@@ -6693,13 +6693,13 @@ end
 ## web_server
 
 * [`add_github_access_token`](#add_github_access_token)
+* [`consume_authorization_code`](#consume_authorization_code)
 * [`create_access_token`](#create_access_token)
 * [`create_authorization_code`](#create_authorization_code)
 * [`expire_access_tokens`](#expire_access_tokens)
 * [`expire_authorization_codes`](#expire_authorization_codes)
 * [`expire_sessions`](#expire_sessions)
 * [`get_access_token`](#get_access_token)
-* [`get_authorization_code`](#get_authorization_code)
 * [`load_github_access_token`](#load_github_access_token)
 * [`session_add`](#session_add)
 * [`session_load`](#session_load)
@@ -6734,6 +6734,44 @@ begin
   update
   set encrypted_access_token = encrypted_access_token_in
   where github_access_tokens.user_id = add_github_access_token.user_id_in;
+end
+```
+
+</details>
+
+### consume_authorization_code
+
+* *Mode*: write
+* *Arguments*:
+  * `code_in text`
+* *Returns*: `table`
+  * `code text`
+  * `client_id text`
+  * `redirect_uri text`
+  * `identity text`
+  * `identity_provider_id text`
+  * `expires timestamptz`
+  * `client_details jsonb`
+* *Last defined on version*: 126
+
+Atomically delete the authorization code row matching `code_in` and
+return its contents. If no such row exists, the returned set is empty.
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  return query
+  delete from authorization_codes
+  where authorization_codes.code = code_in
+  returning
+    authorization_codes.code,
+    authorization_codes.client_id,
+    authorization_codes.redirect_uri,
+    authorization_codes.identity,
+    authorization_codes.identity_provider_id,
+    authorization_codes.expires,
+    authorization_codes.client_details;
 end
 ```
 
@@ -6950,43 +6988,6 @@ end
 
 </details>
 
-### get_authorization_code
-
-* *Mode*: read
-* *Arguments*:
-  * `code_in text`
-* *Returns*: `table`
-  * `code text`
-  * `client_id text`
-  * `redirect_uri text`
-  * `identity text`
-  * `identity_provider_id text`
-  * `expires timestamptz`
-  * `client_details jsonb`
-* *Last defined on version*: 39
-
-Get an authorization code entry given a code.
-
-<details><summary>Function Body</summary>
-
-```
-begin
-  return query
-  select
-    authorization_codes.code,
-    authorization_codes.client_id,
-    authorization_codes.redirect_uri,
-    authorization_codes.identity,
-    authorization_codes.identity_provider_id,
-    authorization_codes.expires,
-    authorization_codes.client_details
-  from authorization_codes
-  where authorization_codes.code = code_in;
-end
-```
-
-</details>
-
 ### load_github_access_token
 
 * *Mode*: read
@@ -7127,6 +7128,10 @@ end
 ```
 
 </details>
+
+### deprecated methods
+
+* `get_authorization_code(code_in text)` (compatibility guaranteed until v102.0.0)
 
 ## worker_manager
 

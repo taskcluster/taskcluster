@@ -163,7 +163,7 @@ export default (cfg, db, strategies, auth, monitor) => {
    * authorized the code.
    */
   server.exchange(oauth2orize.exchange.code(unpromisify(async (client, code, redirectURI) => {
-    const [entry] = await db.fns.get_authorization_code(code);
+    const [entry] = await db.fns.consume_authorization_code(code);
 
     if (!entry) {
       return false;
