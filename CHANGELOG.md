@@ -3,6 +3,60 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v100.2.0
+
+### DEPLOYERS
+
+▶ [minor] [#8574](https://github.com/taskcluster/taskcluster/issues/8574)
+The Azure provider in worker-manager now submits VM `beginDelete` inline from `removeWorker`, removing one scanner cycle of latency before cloud-side deletion. Brings Azure to parity with GCP and AWS; the worker-scanner remains the fallback and verifier.
+
+### USERS
+
+▶ [patch] [bug 2042324](http://bugzil.la/2042324)
+Enforce a 10 minutes lifetime to provided oauth2 authorization tokens
+
+▶ [patch]
+Fix the changelog page filters to actually reflect what's in the URL.
+
+▶ [patch] [bug 2042324](http://bugzil.la/2042324)
+Invalidate oauth2 authorization codes immediately on exchange
+
+▶ [patch] [#8658](https://github.com/taskcluster/taskcluster/issues/8658)
+UI: fixes `Queue Workers` table appearing unsorted after navigating away and back to the page.
+
+▶ [patch]
+Use the current version for taskcluster in API code examples instead of a hardcoded '93'.
+
+### DEVELOPERS
+
+▶ [patch]
+Bump local-dev nginx image from 1.29.4 to 1.30.1 (CVE-2026-42945).
+
+▶ [patch]
+Drop `yarn minify` from our commands. It's been broken for 3 years without
+anyone complaining. To minify lockfiles, use the builtin `yarn dedupe` instead.
+
+### OTHER
+
+▶ Additional changes not described here: [#8377](https://github.com/taskcluster/taskcluster/issues/8377), [#8372](https://github.com/taskcluster/taskcluster/issues/8372).
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps): bump tmp from 0.2.5 to 0.2.7 in /clients/client-web (4590240864)
+* build(deps): bump qs from 6.14.2 to 6.15.2 in /ui (26e9adaaef)
+* build(deps): bump qs from 6.15.1 to 6.15.2 (be733191f9)
+* build(deps): bump @tootallnate/once in /clients/client-test (b53b8e4391)
+* build(deps): bump @tootallnate/once in /clients/client-web (ea5d13fb71)
+* build(deps): bump sanitize-html from 2.17.3 to 2.17.4 (db315c593e)
+* build(deps): bump idna from 3.11 to 3.15 in /clients/client-py (d5465a3265)
+* build(deps): bump github.com/go-git/go-git/v5 from 5.19.0 to 5.19.1 (ea49072b27)
+* build(deps): bump github.com/modelcontextprotocol/registry (95cd86e6cb)
+
+</details>
+
 ## v100.1.1
 
 ### GENERAL
