@@ -110,6 +110,47 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     );
   });
 
+  test('removeWorker reports runningDuration and omits deprovisionDuration (INV-4)', async () => {
+    // StaticProvider short-circuits straight to STOPPED (no separate stop
+    // event), so workerRemoved must carry runningDuration (anchored at
+    // removedAt) and must NOT carry deprovisionDuration (there is no
+    // remove->stop gap for the static provider).
+    const oldnow = Date.now;
+    Date.now = () => 50000;
+    try {
+      const worker = Worker.fromApi({
+        ...defaultWorker,
+        state: 'running',
+        providerData: {
+          staticSecret: 'good',
+          workerManager: {
+            registeredAt: new Date(10000).toJSON(),
+          },
+        },
+      });
+      await worker.create(helper.db);
+
+      provider.monitor.manager.reset();
+      await provider.removeWorker({ worker, reason: 'inv-4' });
+
+      const msg = provider.monitor.manager.messages.find(m => m.Type === 'worker-removed');
+      assert.ok(msg, 'worker-removed log event should be emitted');
+      // removedAt is captured at Date.now()=50000; runningDuration = (50000-10000)/1000 = 40.
+      assert.equal(
+        msg.Fields.runningDuration,
+        40,
+        'static workerRemoved should report runningDuration anchored at removedAt'
+      );
+      assert.equal(
+        msg.Fields.deprovisionDuration,
+        undefined,
+        'static workerRemoved must NOT report deprovisionDuration (no remove->stop gap)'
+      );
+    } finally {
+      Date.now = oldnow;
+    }
+  });
+
   suite('registerWorker', () => {
     // create a test worker pool directly in the DB
     const createWorker = overrides => {
