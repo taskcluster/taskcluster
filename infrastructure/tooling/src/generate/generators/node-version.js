@@ -47,10 +47,22 @@ tasks.push({
       contents.replace(/^( *NODE_VERSION *= *")[0-9.]+(")$/m, `$1${nodeVersion}$2`)
     );
 
-    for (const file of ['ui/package.json', 'clients/client/package.json', 'clients/client-test/package.json']) {
+    for (const file of ['ui/package.json']) {
       utils.status({ message: file });
       await modifyRepoJSON(file, contents => {
         contents.engines.node = nodeVersion;
+        return contents;
+      });
+    }
+
+    // Published clients declare a bounded range so engine-strict installs
+    // succeed on compatible patch releases of the current major, while still
+    // excluding the next major (which can introduce breaking changes).
+    const nodeMajor = parseInt(String(nodeVersion).split('.')[0], 10);
+    for (const file of ['clients/client/package.json', 'clients/client-test/package.json']) {
+      utils.status({ message: file });
+      await modifyRepoJSON(file, contents => {
+        contents.engines.node = `>=${nodeVersion} <${nodeMajor + 1}.0.0`;
         return contents;
       });
     }
