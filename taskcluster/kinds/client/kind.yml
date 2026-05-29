@@ -24,6 +24,9 @@ tasks:
     description: nodejs client tests
     worker:
       docker-image: {in-tree: ci}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
     run:
       command: >-
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
@@ -36,6 +39,9 @@ tasks:
     description: nodejs client external tests
     worker:
       docker-image: {in-tree: ci}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
     run:
       command: >-
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
@@ -47,6 +53,9 @@ tasks:
     description: golang client tests
     worker:
       docker-image: {in-tree: ci}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
     run:
       command: >-
         eval $(python3 test/client-library-secrets.py) &&
@@ -56,6 +65,9 @@ tasks:
     description: cli build & tests
     worker:
       docker-image: {in-tree: ci}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
     run:
       command: >-
         go tool goreleaser release --clean --snapshot &&
@@ -66,6 +78,9 @@ tasks:
     description: web js tests
     worker:
       docker-image: {in-tree: browser-test}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
     run:
       command: >-
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
@@ -100,6 +115,9 @@ tasks:
     description: rust client tests
     worker:
       docker-image: rust:{rust_version}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
     run:
       command: >-
         eval $(python3 test/client-library-secrets.py) &&

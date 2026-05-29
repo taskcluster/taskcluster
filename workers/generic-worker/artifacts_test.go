@@ -11,9 +11,9 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
-	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/artifacts"
 )
 
 var (
@@ -30,6 +30,12 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 	}
 	defaults.SetDefaults(&payload)
 
+	// Get platform data for the test context
+	pd, err := platformDataForTaskContext(taskContext)
+	if err != nil {
+		t.Fatalf("Failed to get platform data: %v", err)
+	}
+
 	// to test, create a dummy task run with given artifacts
 	// and then call Artifacts() method to see what
 	// artifacts would get uploaded...
@@ -38,7 +44,8 @@ func validateArtifacts(t *testing.T, payloadArtifacts []Artifact, expected []art
 		Definition: tcqueue.TaskDefinitionResponse{
 			Expires: inAnHour,
 		},
-		pd: currentPlatformData(),
+		pd:      pd,
+		Context: taskContext,
 	}
 	tr.Payload.Artifacts = append(tr.Payload.Artifacts, payloadArtifacts...)
 	atf := ArtifactTaskFeature{

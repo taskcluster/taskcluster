@@ -37,6 +37,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - -v
         - /dev/shm:/dev/shm
@@ -90,6 +92,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
@@ -141,6 +145,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --device=/dev/kvm
         - --env-file
@@ -193,6 +199,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
@@ -244,6 +252,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --device=__TASKCLUSTER_VIDEO_DEVICE__
         - --env-file
@@ -297,6 +307,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
@@ -348,6 +360,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --device=/dev/snd
         - --env-file
@@ -401,6 +415,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
@@ -449,6 +465,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --gpus
         - all
@@ -501,6 +519,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --gpus
         - device=GPU-3a23c669-1f69-c64e-cf85-44e9b07e7a2a

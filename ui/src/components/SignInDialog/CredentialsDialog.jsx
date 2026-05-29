@@ -28,7 +28,7 @@ export default class CredentialsDialog extends Component {
         JSON.parse(e.target.value);
         isCertificateValid = true;
       }
-    } catch (err) {
+    } catch (_err) {
       isCertificateValid = false;
     }
 
@@ -50,12 +50,8 @@ export default class CredentialsDialog extends Component {
 
   render() {
     const { onSignIn, ...props } = this.props;
-    const {
-      isCertificateValid,
-      clientId,
-      accessToken,
-      certificate,
-    } = this.state;
+    const { isCertificateValid, clientId, accessToken, certificate } =
+      this.state;
     const isFormValid = clientId && accessToken && isCertificateValid;
 
     return (

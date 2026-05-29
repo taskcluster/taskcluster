@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
 )
 
 // TaskclusterProxy provides access to a taskcluster-proxy process running on the OS.
@@ -26,7 +26,20 @@ type TaskclusterProxy struct {
 
 // New starts a tcproxy OS process using the executable specified, and returns
 // a *TaskclusterProxy.
-func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, rootURL string, creds *tcclient.Credentials) (*TaskclusterProxy, error) {
+//
+// If allowedUser is non-empty, it is passed via --allowed-user to enable
+// per-connection OS user verification.
+//
+// If allowedNetwork is non-empty (CIDR form, e.g. "172.18.0.0/16"), it is
+// passed via --allowed-network. Connections whose remote IP falls in this
+// CIDR are admitted when the OS-level peer-credential lookup is not
+// possible (e.g. a container connecting via a Docker bridge gateway —
+// the peer socket lives in the container's network namespace and is not
+// visible in the proxy's /proc/net/tcp). Connections whose UID is found
+// but does not match are still rejected, so a sibling task's host
+// process is not admitted just because its source IP happens to be inside
+// the CIDR.
+func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, rootURL string, creds *tcclient.Credentials, allowedUser string, allowedNetwork string) (*TaskclusterProxy, error) {
 	args := []string{
 		"--port", strconv.Itoa(int(httpPort)),
 		"--root-url", rootURL,
@@ -36,6 +49,12 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 	}
 	if creds.Certificate != "" {
 		args = append(args, "--certificate", creds.Certificate)
+	}
+	if allowedUser != "" {
+		args = append(args, "--allowed-user", allowedUser)
+	}
+	if allowedNetwork != "" {
+		args = append(args, "--allowed-network", allowedNetwork)
 	}
 	args = append(args, creds.AuthorizedScopes...)
 	l := &TaskclusterProxy{
@@ -52,9 +71,27 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 	}
 	l.Pid = l.command.Process.Pid
 	log.Printf("Started taskcluster proxy process (PID %v)", l.Pid)
-	// Just to be safe, let's make sure the port is actually active before returning.
-	err = waitForPortToBeActive(ipAddress, httpPort)
-	return l, err
+	// Wait on the address the launcher itself can reach. When
+	// allowedNetwork is set the proxy also binds 127.0.0.1, and
+	// dialing that loopback path is more reliable from the host netns
+	// than dialing a docker-bridge gateway IP through whatever NAT
+	// rules the host is running.
+	readinessAddr := ipAddress
+	if allowedNetwork != "" {
+		readinessAddr = "127.0.0.1"
+	}
+	if err = waitForPortToBeActive(readinessAddr, httpPort); err != nil {
+		killErr := l.command.Process.Kill()
+		if killErr != nil {
+			log.Printf("Failed to kill taskcluster-proxy process (PID %v) after readiness timeout: %v", l.Pid, killErr)
+		} else {
+			// Wait for the process to be reaped to avoid zombies
+			_, _ = l.command.Process.Wait()
+			log.Printf("Killed taskcluster-proxy process (PID %v) after readiness timeout", l.Pid)
+		}
+		return nil, err
+	}
+	return l, nil
 }
 
 func (l *TaskclusterProxy) Terminate() error {

@@ -1,0 +1,20 @@
+version: 123
+description: Ensure uniqueness of task_id in queue_task_deadlines to keep createTask idempotent
+migrationScript: |-
+  begin
+    delete from queue_task_deadlines q1
+    using queue_task_deadlines q2
+    where q1.task_id = q2.task_id
+      and (q1.created, q1.deadline, q1.ctid) < (q2.created, q2.deadline, q2.ctid);
+
+    alter table queue_task_deadlines drop constraint if exists queue_task_deadlines_pkey;
+    drop index if exists queue_task_deadline_idx;
+    alter table queue_task_deadlines add primary key (task_id);
+  end
+downgradeScript: |-
+  begin
+    alter table queue_task_deadlines drop constraint queue_task_deadlines_pkey;
+    alter table queue_task_deadlines add primary key (task_id, created, deadline);
+    create index queue_task_deadline_idx on queue_task_deadlines (task_id);
+  end
+methods: {}

@@ -18,6 +18,11 @@ type Artifact {
 
   # Mime-type for the artifact.
   contentType: String!
+
+  # Size of the artifact content in bytes, if reported by the worker.
+  # Null when the worker did not report a size. Float is used because
+  # artifact sizes can exceed the 32-bit GraphQL Int range.
+  contentLength: Float
 }
 
 enum ArtifactStorageType {

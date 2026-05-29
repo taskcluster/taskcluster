@@ -180,9 +180,10 @@ suite(testing.suiteName(), function() {
         hook.triggerSchema,
       );
       let taskId = taskcluster.slugid();
-      await creator.fire(hook, { firedBy: 'schedule' }, { taskId });
+      const res = await creator.fire(hook, { firedBy: 'schedule' }, { taskId });
       await assertNoTask(taskId);
       assertFireLogged({ firedBy: "schedule", taskId, result: 'declined' });
+      assert.ok(!res, `expected falsy return from declined fire(), got ${JSON.stringify(res)}`);
     });
 
     test('firing a hook where the json-e fails to render fails', async function() {

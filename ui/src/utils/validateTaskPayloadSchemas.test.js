@@ -11,7 +11,7 @@ describe('validation', () => {
   });
 
   it('should validate payload json', async () => {
-    const validate = require('./validateTaskPayloadSchemas').default; // eslint-disable-line global-require
+    const validate = require('./validateTaskPayloadSchemas').default;
 
     const errors = await validate('');
 
@@ -21,7 +21,7 @@ describe('validation', () => {
   });
 
   it('should format messages', () => {
-    const { formatErrorDetails } = require('./validateTaskPayloadSchemas'); // eslint-disable-line global-require
+    const { formatErrorDetails } = require('./validateTaskPayloadSchemas');
 
     expect(
       formatErrorDetails({

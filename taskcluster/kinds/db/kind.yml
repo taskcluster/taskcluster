@@ -13,6 +13,9 @@ task-defaults:
     docker-image: {in-tree: ci}
     chain-of-trust: true
     max-run-time: 600
+    caches:
+      - name: taskcluster
+        mount-point: /builds/worker/checkouts
 
 tasks:
   library:

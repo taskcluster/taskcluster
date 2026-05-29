@@ -18,6 +18,9 @@ tasks:
     description: nodejs lint
     worker:
       docker-image: {in-tree: ci}
+      caches:
+        - name: taskcluster
+          mount-point: /builds/worker/checkouts
     run:
       command: >-
         corepack yarn &> /dev/null &&

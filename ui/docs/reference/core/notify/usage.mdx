@@ -128,6 +128,7 @@ queue:route:notify.matrix-room.*
 
 Finally, an example to tie it all together. This is the as-of-this-writing ``.taskcluster.yml`` of the aforementioned taskcluster-github project.
 
+> **Note:** The example below uses the docker-worker payload format. This task now runs on generic-worker, which accepts this legacy payload format on Linux through the [d2g](https://github.com/taskcluster/taskcluster/tree/main/tools/d2g) translation layer for backward compatibility.
 
 ```yaml
 taskQueueId: tutorial/docker-worker

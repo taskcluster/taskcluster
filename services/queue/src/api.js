@@ -108,7 +108,7 @@ let builder = new APIBuilder({
     '* **Error artifacts**, only consists of meta-data which the queue will',
     'store for you. These artifacts are only meant to indicate that you the',
     'worker or the task failed to generate a specific artifact, that you',
-    'would otherwise have uploaded. For example docker-worker will upload an',
+    'would otherwise have uploaded. For example generic-worker will upload an',
     'error artifact, if the file it was supposed to upload doesn\'t exists or',
     'turns out to be a directory. Clients requesting an error artifact will',
     'get a `424` (Failed Dependency) response. This is mainly designed to',
@@ -918,14 +918,6 @@ builder.declare({
     return;
   }
 
-  // Insert entry in deadline queue
-  await this.queueService.putDeadlineMessage(
-    taskId,
-    taskDef.taskGroupId,
-    taskDef.schedulerId,
-    new Date(taskDef.deadline),
-  );
-
   let task = Task.fromApi(taskId, taskDef);
   useOnlyTaskQueueId(task);
 
@@ -934,8 +926,12 @@ builder.declare({
   // idempotent and does a DB fetch.
   let initialStatus = task.status();
 
+  // The task row and the queue_task_deadlines row are inserted atomically
+  // inside create_task_atomic (db v124), so the task can never end up with
+  // missing deadline tracking.
+  const deadlineDelaySeconds = Math.floor(this.queueService.deadlineDelay / 1000);
   try {
-    await task.create(this.db);
+    await task.create(this.db, deadlineDelaySeconds);
   } catch (err) {
     if (err.code !== UNIQUE_VIOLATION) {
       throw err;
@@ -974,9 +970,17 @@ builder.declare({
   // the `taskDefined` message. (This can happen when two identical calls are
   // made to createTask in quick succession, but it is very unlikely.)
   if (initialStatus.state === 'unscheduled') {
-    // Publish task-defined message, we want this arriving before the
-    // task-pending message, so we have to await publication here
-    await this.publisher.taskDefined({ status: initialStatus, task: taskPulseContents }, task.routes);
+    // Publish task-defined. The task row is already committed in tasks; this
+    // publish is best-effort: a Pulse failure here does not affect correctness
+    // (consumers can read the task from the DB).
+    try {
+      await this.publisher.taskDefined({ status: initialStatus, task: taskPulseContents }, task.routes);
+    } catch (err) {
+      this.monitor.reportError(err, 'warning', {
+        note: 'task-defined Pulse publish failed; task row is already committed',
+        taskId,
+      });
+    }
     this.monitor.log.taskDefined({ taskId });
   }
 
@@ -986,13 +990,17 @@ builder.declare({
   // Same as above but for tasks with no dependencies, scheduling the first run.
   let runZeroState = (task.runs[runId] || { state: 'unscheduled' }).state;
   if (runZeroState === 'pending') {
-    await Promise.all([
-      // Put message into the task pending queue
-      this.queueService.putPendingMessage(task, runId),
-
-      // Publish message to pulse
-      this.publisher.taskPending({ status, task: taskPulseContents, runId }, task.routes),
-    ]);
+    // queue_pending_tasks insert is now atomic inside schedule_task (db v124),
+    // so a Pulse-publish failure here cannot leave the task invisible to workers.
+    // Publish best-effort and log on failure rather than failing the response.
+    try {
+      await this.publisher.taskPending({ status, task: taskPulseContents, runId }, task.routes);
+    } catch (err) {
+      this.monitor.reportError(err, 'warning', {
+        note: 'task-pending Pulse publish failed; queue_pending_tasks row is already committed (db v124)',
+        taskId, runId,
+      });
+    }
     this.monitor.log.taskPending({ taskId, runId });
   }
 
@@ -1159,14 +1167,20 @@ builder.declare({
   let status = task.status();
   if (state === 'pending') {
     let runId = task.runs.length - 1;
-    await Promise.all([
-      this.queueService.putPendingMessage(task, runId),
-      this.publisher.taskPending({
+    // queue_pending_tasks insert is now atomic inside schedule_task / rerun_task
+    // (db v124). Publish best-effort.
+    try {
+      await this.publisher.taskPending({
         status: status,
         runId: runId,
         task: { tags: task.tags || {} },
-      }, task.routes),
-    ]);
+      }, task.routes);
+    } catch (err) {
+      this.monitor.reportError(err, 'warning', {
+        note: 'task-pending Pulse publish failed; queue_pending_tasks row is already committed (db v124)',
+        taskId, runId,
+      });
+    }
     this.monitor.log.taskPending({ taskId, runId });
   }
 
@@ -1974,14 +1988,23 @@ builder.declare({
     tags: task.tags,
   };
 
-  // Publish message about taskException
-  await this.publisher.taskException({
-    status,
-    runId,
-    task: taskPulseContents,
-    workerGroup: run.workerGroup,
-    workerId: run.workerId,
-  }, task.routes);
+  // Publish message about taskException. The DB transition (resolve_task)
+  // has already committed atomically with queue_pending_tasks for any retry,
+  // so publish best-effort.
+  try {
+    await this.publisher.taskException({
+      status,
+      runId,
+      task: taskPulseContents,
+      workerGroup: run.workerGroup,
+      workerId: run.workerId,
+    }, task.routes);
+  } catch (err) {
+    this.monitor.reportError(err, 'warning', {
+      note: 'task-exception Pulse publish failed; DB is already consistent (db v124)',
+      taskId, runId,
+    });
+  }
   this.monitor.log.taskException({ taskId, runId });
 
   const metricLabels = splitTaskQueueId(task.taskQueueId);
@@ -1999,14 +2022,20 @@ builder.declare({
       newRun.state === 'pending' &&
       (newRun.reasonCreated === 'retry' ||
        newRun.reasonCreated === 'task-retry')) {
-    await Promise.all([
-      this.queueService.putPendingMessage(task, runId + 1),
-      this.publisher.taskPending({
+    // queue_pending_tasks insert is now atomic inside resolve_task (db v124).
+    // Publish best-effort.
+    try {
+      await this.publisher.taskPending({
         status,
         task: taskPulseContents,
         runId: runId + 1,
-      }, task.routes),
-    ]);
+      }, task.routes);
+    } catch (err) {
+      this.monitor.reportError(err, 'warning', {
+        note: 'task-pending Pulse publish failed for retry run; queue_pending_tasks row is already committed (db v124)',
+        taskId, runId: runId + 1,
+      });
+    }
     this.monitor.log.taskPending({ taskId, runId: runId + 1 });
   } else {
     // Update dependency tracker, as the task is resolved (no new run)

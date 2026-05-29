@@ -1,0 +1,26 @@
+version: 1
+hooks:
+  - name: project-test/decision-hook
+    context:
+      trustDomain: test-domain
+      level: 1
+  - name: project-test/another-hook
+tasks:
+  - $if: 'tasks_for == "github-push"'
+    then:
+      taskId: {$eval: as_slugid('test-task')}
+      provisionerId: test-provisioner
+      workerType: test-worker
+      created: {$eval: 'now'}
+      deadline: {$fromNow: '1 hour'}
+      payload:
+        image: "ubuntu:jammy"
+        command:
+          - /bin/bash
+          - -c
+          - echo "Test task"
+      metadata:
+        name: "Test Task with Hooks"
+        description: "Task definition alongside hooks"
+        owner: ${event.pusher.email}
+        source: ${event.repository.url}

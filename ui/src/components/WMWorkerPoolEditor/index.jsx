@@ -363,7 +363,7 @@ export default class WMWorkerPoolEditor extends Component {
         },
         invalidProviderConfig: false,
       });
-    } catch (err) {
+    } catch (_err) {
       this.setState({
         workerPool: {
           ...workerPool,
@@ -477,50 +477,46 @@ export default class WMWorkerPoolEditor extends Component {
       <Fragment>
         <ErrorPanel fixed error={error} />
         {!isNewWorkerPool && (
-          <Fragment>
-            <Paper component="ul" className={classes.overviewList}>
-              {workerPoolStats.map(
-                ({ label, value, className, Icon, href }) => {
-                  return (
-                    <ButtonBase
-                      focusRipple
-                      key={className}
-                      name={className}
-                      variant="contained"
-                      href={href}
+          <Paper component="ul" className={classes.overviewList}>
+            {workerPoolStats.map(({ label, value, className, Icon, href }) => {
+              return (
+                <ButtonBase
+                  focusRipple
+                  key={className}
+                  name={className}
+                  variant="contained"
+                  href={href}
+                  className={classNames(
+                    classes[className],
+                    classes.statusButton
+                  )}>
+                  <div>
+                    <Icon
+                      color="white"
+                      className={classes.statusIcon}
+                      size={32}
+                    />
+                  </div>
+                  <div>
+                    <Typography
+                      align="right"
+                      className={classes.statusButtonTypography}
+                      variant="h4">
+                      {value || 0}
+                    </Typography>
+                    <Typography
                       className={classNames(
-                        classes[className],
-                        classes.statusButton
-                      )}>
-                      <div>
-                        <Icon
-                          color="white"
-                          className={classes.statusIcon}
-                          size={32}
-                        />
-                      </div>
-                      <div>
-                        <Typography
-                          align="right"
-                          className={classes.statusButtonTypography}
-                          variant="h4">
-                          {value || 0}
-                        </Typography>
-                        <Typography
-                          className={classNames(
-                            classes.statusTitle,
-                            classes.statusButtonTypography
-                          )}
-                          variant="caption">
-                          {titleCase(label)}
-                        </Typography>
-                      </div>
-                    </ButtonBase>
-                  );
-                }
-              )}
-            </Paper>
-          </Fragment>
+                        classes.statusTitle,
+                        classes.statusButtonTypography
+                      )}
+                      variant="caption">
+                      {titleCase(label)}
+                    </Typography>
+                  </div>
+                </ButtonBase>
+              );
+            })}
+          </Paper>
         )}
         <List>
           <div>
@@ -640,7 +636,7 @@ export default class WMWorkerPoolEditor extends Component {
           tooltipProps={{ title: 'Save Worker Pool' }}
           onClick={this.handleOnClick}
           classes={{ root: classes.saveIcon }}
-          variant="round">
+          variant="circular">
           <ContentSaveIcon />
         </Button>
 

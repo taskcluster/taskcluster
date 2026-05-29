@@ -11,8 +11,9 @@ import {
 } from '../constants.js';
 
 import QueueLock from '../queue-lock.js';
-import { markdownLog, markdownAnchor, extractLog } from '../utils.js';
-import { requestArtifact } from './requestArtifact.js';
+import utils from '../utils.js';
+const { markdownLog, markdownAnchor } = utils;
+import { requestArtifact, buildArtifactUrl } from './requestArtifact.js';
 import { taskUI, makeDebug, taskLogUI, GithubCheck, getTimeDifference, taskGroupUI, buildUrl, buildLogUrl } from './utils.js';
 
 /**
@@ -124,7 +125,6 @@ export async function statusHandler(message) {
         debug,
         instGithub,
         build,
-        scopes: taskDefinition.scopes,
       });
     };
 
@@ -132,8 +132,7 @@ export async function statusHandler(message) {
     const textArtifactName = extraCheckRun?.textArtifactName || CUSTOM_CHECKRUN_TEXT_ARTIFACT_NAME;
     const annotationsArtifactName = extraCheckRun?.annotationsArtifactName || CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT_NAME;
 
-    const [ liveLogText, customCheckRunText, customCheckRunAnnotationsText ] = await Promise.all([
-      fetchArtifact(LIVE_BACKING_LOG_ARTIFACT_NAME),
+    const [ customCheckRunText, customCheckRunAnnotationsText ] = await Promise.all([
       fetchArtifact(textArtifactName),
       fetchArtifact(annotationsArtifactName),
     ]);
@@ -165,6 +164,7 @@ export async function statusHandler(message) {
       details_url: taskUI(this.context.cfg.taskcluster.rootUrl, taskGroupId, taskId),
       status: checkRunStatus,
       conclusion,
+      started_at: runs[runId]?.started,
 
       output_title: outputTitle || `${this.context.cfg.app.statusContext} (${event_type.split('.')[0]})`,
       output_summary: outputSummary || taskDefinition.metadata.description,
@@ -246,8 +246,23 @@ export async function statusHandler(message) {
     if (customCheckRunText) {
       output.addText(customCheckRunText);
     }
-    if (liveLogText) {
-      output.addText(markdownLog(extractLog(liveLogText, 20, 200, githubCheck.output.getRemainingMaxSize())));
+    if (!taskDefined && runId !== undefined) {
+      try {
+        const url = buildArtifactUrl(this.queueClient, { taskId, runId, artifactName: LIVE_BACKING_LOG_ARTIFACT_NAME });
+        const response = await fetch(url, { redirect: 'follow' });
+        if (response.ok) {
+          const logText = await utils.extractLog(
+            response.body, 20, 200, githubCheck.output.getRemainingMaxSize(),
+          );
+          if (logText) {
+            output.addText(markdownLog(logText));
+          }
+        } else {
+          await response.body?.cancel();
+        }
+      } catch (e) {
+        await this.monitor.reportError(e);
+      }
     }
 
     let [checkRun] = await this.context.db.fns.get_github_check_by_task_group_and_task_id(taskGroupId, taskId);

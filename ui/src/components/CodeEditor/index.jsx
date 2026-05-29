@@ -43,7 +43,7 @@ export default class CodeEditor extends Component {
     className: null,
   };
 
-  handleTextUpdate = (editor, data, value) => {
+  handleTextUpdate = (_editor, _data, value) => {
     if (this.props.onChange) {
       this.props.onChange(value);
     }

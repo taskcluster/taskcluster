@@ -125,7 +125,7 @@ export default class DataTable extends Component {
     }
   };
 
-  handlePageChange = (event, page) => {
+  handlePageChange = (_event, page) => {
     this.setState({ page });
   };
 
@@ -145,7 +145,7 @@ export default class DataTable extends Component {
       size,
       ...props
     } = this.props;
-    const colSpan = columnsSize || (headers && headers.length) || 0;
+    const colSpan = columnsSize || headers?.length || 0;
     const { page } = this.state;
     const elements = paginate
       ? items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)

@@ -12,6 +12,15 @@ const resourceTypes = [
   'service',
 ];
 
+// Resource types whose CRDs may not be installed on a given cluster (e.g. an
+// Ingress-only deployment that hasn't installed the Gateway API CRDs). Deleted
+// in a separate kubectl call so a missing CRD doesn't abort the whole cleanup.
+const optionalResourceTypes = [
+  'gateway',
+  'httproute',
+  'healthcheckpolicy',
+];
+
 const dumpFileLocation = path.join(os.tmpdir(), 'taskcluster.k8s.yml');
 
 const actions = [
@@ -150,14 +159,25 @@ const actions = [
     title: 'Delete Your Deployment',
     requires: ['namespace-switch'],
     provides: ['target-delete'],
-    run: async (requirements, utils) => ({
-      'target-delete': await execCommand({
+    run: async (requirements, utils) => {
+      const coreOutput = await execCommand({
         command: ['kubectl', 'delete', resourceTypes.join(','), '-l', 'app.kubernetes.io/part-of=taskcluster'],
         dir: REPO_ROOT,
         keepAllOutput: true,
         utils,
-      }),
-    }),
+      });
+      // Optional CRDs (Gateway API, HealthCheckPolicy) may not be installed on
+      // every cluster; tolerate "the server doesn't have a resource type" so
+      // an Ingress-only deployment can still clean up.
+      const optionalOutput = await execCommand({
+        command: ['kubectl', 'delete', optionalResourceTypes.join(','), '-l', 'app.kubernetes.io/part-of=taskcluster'],
+        dir: REPO_ROOT,
+        keepAllOutput: true,
+        ignoreReturn: true,
+        utils,
+      });
+      return { 'target-delete': `${coreOutput}\n${optionalOutput}` };
+    },
   },
 ];
 

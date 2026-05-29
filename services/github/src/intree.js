@@ -12,17 +12,20 @@ import TcYaml from './tc-yaml.js';
 export const setup = async function({ cfg, schemaset }) {
   const validate = await schemaset.validator(cfg.taskcluster.rootUrl);
 
-  return function({ config, payload, schema }) {
+  return function({ config, payload, schema, now }) {
     const version = config.version;
 
     const errors = validate(config, schema[version]);
     if (errors) {
       throw new Error(errors);
     }
-    //
-    // We need to toss out the config version number; it's the only
-    // field that's not also in graph/task definitions
+
+    // Extract hooks before deleting version and other metadata fields
+    const hooks = config.hooks;
+
+    // Delete fields that aren't part of task graph
     delete config.version;
+    delete config.hooks;
 
     const tcyaml = TcYaml.instantiate(version);
 
@@ -34,7 +37,14 @@ export const setup = async function({ cfg, schemaset }) {
     // Compile individual tasks, filtering any that are not intended
     // for the current github event type. Append taskGroupId while
     // we're at it.
-    return tcyaml.compileTasks(config, cfg, payload, new Date().toJSON());
+    const result = tcyaml.compileTasks(config, cfg, payload, now);
+
+    // Attach hooks to the result (no rendering, just pass through)
+    if (hooks !== undefined && hooks.length > 0) {
+      result.hooks = hooks;
+    }
+
+    return result;
   };
 };
 

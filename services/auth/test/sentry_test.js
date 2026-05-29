@@ -1,7 +1,113 @@
 import helper from './helper.js';
+import { SentryApiClient } from '../src/sentrymanager.js';
 import taskcluster from '@taskcluster/client';
 import assert from 'assert';
 import testing from '@taskcluster/lib-testing';
+import nock from 'nock';
+
+suite('SentryApiClient', function() {
+  const origin = 'https://sentry.example.com';
+  const token = 'secret-token';
+  let client;
+
+  setup(function() {
+    client = new SentryApiClient(origin, { token });
+  });
+
+  teardown(function() {
+    nock.cleanAll();
+  });
+
+  const sentryApi = () => nock(origin, {
+    reqheaders: {
+      authorization: `Bearer ${token}`,
+    },
+  });
+
+  test('initializes the API surface auth uses', function() {
+    assert.equal(typeof client.organizations.projects, 'function');
+    assert.equal(typeof client.projects.keys, 'function');
+    assert.equal(typeof client.projects.createKey, 'function');
+    assert.equal(typeof client.projects.deleteKey, 'function');
+    assert.equal(typeof client.teams.createProject, 'function');
+  });
+
+  test('uses bearer auth and parses organization projects', async function() {
+    const sentry = sentryApi()
+      .get('/api/0/organizations/taskcluster/projects/')
+      .reply(200, [{ slug: 'project-one' }]);
+
+    assert.deepStrictEqual(await client.organizations.projects('taskcluster'), [{ slug: 'project-one' }]);
+    assert.equal(true, sentry.isDone());
+  });
+
+  test('parses project keys', async function() {
+    const sentry = sentryApi()
+      .get('/api/0/projects/taskcluster/project-one/keys/')
+      .reply(200, [{ id: 'key-one' }]);
+
+    assert.deepStrictEqual(await client.projects.keys('taskcluster', 'project-one'), [{ id: 'key-one' }]);
+    assert.equal(true, sentry.isDone());
+  });
+
+  test('creates projects with JSON bodies', async function() {
+    const project = { name: 'project-one', slug: 'project-one' };
+    const sentry = sentryApi()
+      .post('/api/0/teams/taskcluster/team-one/projects/', project)
+      .reply(201, { slug: 'project-one' });
+
+    assert.deepStrictEqual(
+      await client.teams.createProject('taskcluster', 'team-one', project),
+      { slug: 'project-one' },
+    );
+    assert.equal(true, sentry.isDone());
+  });
+
+  test('creates client keys with JSON bodies', async function() {
+    const sentry = sentryApi()
+      .post('/api/0/projects/taskcluster/project-one/keys/', { name: 'key-one' })
+      .reply(201, { id: 'key-one' });
+
+    assert.deepStrictEqual(
+      await client.projects.createKey('taskcluster', 'project-one', { name: 'key-one' }),
+      { id: 'key-one' },
+    );
+    assert.equal(true, sentry.isDone());
+  });
+
+  test('deletes client keys', async function() {
+    const sentry = sentryApi()
+      .delete('/api/0/projects/taskcluster/project-one/keys/key-one/')
+      .reply(204);
+
+    assert.strictEqual(await client.projects.deleteKey('taskcluster', 'project-one', 'key-one'), undefined);
+    assert.equal(true, sentry.isDone());
+  });
+
+  test('surfaces Sentry detail errors', async function() {
+    const sentry = sentryApi()
+      .get('/api/0/projects/taskcluster/missing/keys/')
+      .reply(404, { detail: 'Project not found' });
+
+    await assert.rejects(
+      () => client.projects.keys('taskcluster', 'missing'),
+      err => err.message === 'Project not found',
+    );
+    assert.equal(true, sentry.isDone());
+  });
+
+  test('surfaces HTTP status errors', async function() {
+    const sentry = sentryApi()
+      .get('/api/0/projects/taskcluster/missing/keys/')
+      .reply(400);
+
+    await assert.rejects(
+      () => client.projects.keys('taskcluster', 'missing'),
+      err => err.message.includes('400'),
+    );
+    assert.equal(true, sentry.isDone());
+  });
+});
 
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
   if (!mock) {

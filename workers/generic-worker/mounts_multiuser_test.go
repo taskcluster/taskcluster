@@ -13,7 +13,7 @@ import (
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/fileutil"
 )
 
 // grantingDenying returns regexp strings that match the log lines for granting
@@ -23,7 +23,7 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 	t.Helper()
 	// We need to escape file path that is contained in final regexp, e.g. due
 	// to '\' path separator on Windows. However, the path also includes an
-	// unknown task user (task_[0-9]*) which we don't want to escape. The
+	// unknown task user (task_\S+) which we don't want to escape. The
 	// simplest way to properly escape the expression but without escaping this
 	// one part of it, is to swap out the task user expression with a randomly
 	// generated slugid (122 bits of randomness) which doesn't contain
@@ -35,20 +35,13 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 		pathRegExp = ".*"
 	} else {
 		slug := slugid.V4()
-		pathRegExp = strings.ReplaceAll(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_[0-9]*")
+		pathRegExp = strings.ReplaceAll(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_\\S+")
 	}
 	return []string{
-			`Granting task_[0-9]* full control of ` + filetype + ` '` + pathRegExp + `'`,
+			`Granting task_\S+ full control of ` + filetype + ` '` + pathRegExp + `'`,
 		}, []string{
-			`Denying task_[0-9]* access to '.*'`,
+			`Denying task_\S+ access to '.*'`,
 		}
-}
-
-func updateOwnership(t *testing.T) []string {
-	t.Helper()
-	return []string{
-		"Updating ownership of files inside directory '.*" + t.Name() + "' from .* to task_[0-9]*",
-	}
 }
 
 func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {

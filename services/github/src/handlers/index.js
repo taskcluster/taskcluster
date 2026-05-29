@@ -256,6 +256,42 @@ class Handlers {
     }
   }
 
+  // Trigger a hook
+  async triggerHook({ scopes, name, payload }) {
+    const slashIndex = name.indexOf('/');
+    if (slashIndex === -1) {
+      throw new Error(`Invalid hook name format: ${name}. Expected format: <hookGroupId>/<hookId>`);
+    }
+    const hookGroup = name.slice(0, slashIndex);
+    const hookId = name.slice(slashIndex + 1);
+
+    const limitedHooksClient = this.context.hooksClient.use({
+      authorizedScopes: scopes,
+    });
+
+    try {
+      const result = await limitedHooksClient.triggerHook(hookGroup, hookId, payload);
+      return result.taskId || null;
+    } catch (err) {
+      // translate InsufficientScopes errors nicely for our users, since they are common and
+      // since we can provide additional context not available from the hooks service.
+      if (err.code === 'InsufficientScopes') {
+        err.message = [
+          'Taskcluster-GitHub attempted to trigger a hook for this event with the following scopes:',
+          '',
+          '```',
+          stringify(scopes, null, 2),
+          '```',
+          '',
+          'The expansion of these scopes is not sufficient to trigger the hook, leading to the following:',
+          '',
+          err.message,
+        ].join('\n');
+      }
+      throw err;
+    }
+  }
+
   /**
    * Cancel any running builds that are not the current build for a given pull request.
    * This will not cancel builds for the same SHA because they can belong to different branches.
@@ -265,7 +301,7 @@ class Handlers {
    */
   async cancelPreviousTaskGroups({ instGithub, debug, newBuild }) {
     const { organization, repository, sha, pull_number: pullNumber,
-      task_group_id: newTaskGroupId, event_type: eventType } = newBuild;
+      task_group_id: newTaskGroupId, event_type: eventType, event_id: eventId } = newBuild;
     debug(`canceling previous task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`);
 
     // avoid performing cancellation for non-push and non-pull-request events
@@ -300,7 +336,9 @@ class Handlers {
         pullNumber,
       );
       const taskGroupIds = builds?.filter(
-        build => build.task_group_id !== newTaskGroupId && includedEventTypes.includes(build.event_type),
+        build => build.task_group_id !== newTaskGroupId &&
+          build.event_id !== eventId &&
+          includedEventTypes.includes(build.event_type),
       ).map(build => build.task_group_id);
 
       if (taskGroupIds.length > 0) {

@@ -20,9 +20,13 @@ reporting: checks-v1
 tasks:
   - (task definition)
   - ...
+hooks:
+  - name: <hookGroupId>/<hookId>
+    context:
+      myKey: myValue
 ```
 
-The core of Taskcluster-Github's operation is this: when an event occurs on Github, such as a push or a pull request, it loads `.taskcluster.yml` from the commit specified in the event, renders it with JSON-e, and then calls `Queue.createTask` for each of the specified tasks.
+The core of Taskcluster-Github's operation is this: when an event occurs on Github, such as a push or a pull request, it loads `.taskcluster.yml` from the commit specified in the event, renders it with JSON-e, and then calls `Queue.createTask` for each of the specified tasks, and optionally triggers Taskcluster hooks.
 
 ## Automatically cancel running builds
 
@@ -244,6 +248,53 @@ tasks:
 #### Provisioner ID and Worker Type
 
 You need to know which provisioner and which worker type you want to use to run your tasks. If you don't know which worker to use, consult the administrators of the Taskcluster deployment. You can see a list of all worker types in the Provisioners tool.
+
+## Triggering Hooks
+
+In addition to (or instead of) creating tasks directly, `.taskcluster.yml` can trigger existing [Taskcluster hooks](/docs/reference/core/hooks) when a GitHub event occurs.
+This is useful when you want to decouple CI configuration from the repository — for example, to run a task defined in the hooks service rather than in the repository itself. This allows the task to be shared across many repositories.
+
+Add a `hooks` array to your `.taskcluster.yml`:
+
+```yaml
+version: 1
+hooks:
+  - name: project-myproject/decision
+    context:
+      trustDomain: myproject
+```
+
+Each entry requires a `name` in the format `<hookGroupId>/<hookId>`. A hook with this name must already exist in the Taskcluster instance. An optional `context` object (arbitrary key/value pairs) is passed through to the `triggerHook` payload.
+
+`hooks` and `tasks` may be used together in the same `.taskcluster.yml`. The `autoCancelPreviousChecks` setting applies to hooks the same way it does to tasks.
+
+### Hook Trigger Payload
+
+Each hook is triggered via `hooks.triggerHook` with a payload containing:
+
+| Field | Description |
+|-------|-------------|
+| `event` | The raw GitHub webhook event body |
+| `now` | The current time as an ISO 8601 string |
+| `taskcluster_root_url` | The root URL of the Taskcluster deployment |
+| `tasks_for` | The event type (e.g. `github-push`, `github-pull-request`) |
+| `taskId` | A pre-allocated task group ID for the hook's task group |
+| `context` | The user-defined `context` object from `.taskcluster.yml` |
+
+Note that hook `context` values are passed as-is and **do not support JSON-e templating**.
+
+### Scopes for Hooks
+
+The repository role (e.g. `repo:github.com/<owner>/<repo>:branch:<branch>`) must include the scope `hooks:trigger-hook:<hookGroupId>/<hookId>` for each hook being triggered. For example:
+
+```yaml
+# In the Roles tool, for role repo:github.com/myorg/myrepo:*
+hooks:trigger-hook:project-myproject/decision
+```
+
+### Hook Failures
+
+When a hook fails, e.g because it's missing scopes or there was an error rendering the template, any additional hooks may still fire successfully. For each failed hook, Taskcluster-Github will leave a comment containing the error on the relevant commit or pull request. If the hook attempted to fire in response to an issue comment event, Taskcluster-Github will additionally react with the `:confused:` emoji on the comment.
 
 ## Scopes and Roles
 

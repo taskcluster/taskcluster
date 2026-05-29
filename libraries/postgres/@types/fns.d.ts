@@ -2308,7 +2308,52 @@ type QueueCreateTaskDeprecatedFn = {
   extra: JsonB;
  }): Promise<void>;
 };
-type QueueCreateTaskProjidFn = {
+type QueueCreateTaskAtomicFn = {
+ (
+   task_id: string,
+   task_queue_id: string,
+   scheduler_id: string,
+   project_id: string,
+   task_group_id: string,
+   dependencies: JsonB,
+   requires: TaskRequires,
+   routes: JsonB,
+   priority: TaskPriority,
+   retries: number,
+   created: Date,
+   deadline: Date,
+   expires: Date,
+   scopes: JsonB,
+   payload: JsonB,
+   metadata: JsonB,
+   tags: JsonB,
+   extra: JsonB,
+   deadline_delay_seconds_in: number
+ ): Promise<void>;
+ (params: {
+  task_id: string;
+  task_queue_id: string;
+  scheduler_id: string;
+  project_id: string;
+  task_group_id: string;
+  dependencies: JsonB;
+  requires: TaskRequires;
+  routes: JsonB;
+  priority: TaskPriority;
+  retries: number;
+  created: Date;
+  deadline: Date;
+  expires: Date;
+  scopes: JsonB;
+  payload: JsonB;
+  metadata: JsonB;
+  tags: JsonB;
+  extra: JsonB;
+  deadline_delay_seconds_in: number;
+ }): Promise<void>;
+};
+/** @deprecated */
+type QueueCreateTaskProjidDeprecatedFn = {
  (
    task_id: string,
    task_queue_id: string,
@@ -3224,6 +3269,22 @@ type QueueQueuePendingTasksAddFn = {
   run_id_in: number;
   hint_id_in: string;
   expires_in: any;
+ }): Promise<void>;
+};
+type QueueQueuePendingTasksAddForTaskFn = {
+ (
+   task_queue_id_in: string,
+   priority_in: TaskPriority,
+   deadline_in: Date,
+   task_id_in: string,
+   run_id_in: number
+ ): Promise<void>;
+ (params: {
+  task_queue_id_in: string;
+  priority_in: TaskPriority;
+  deadline_in: Date;
+  task_id_in: string;
+  run_id_in: number;
  }): Promise<void>;
 };
 type QueueQueuePendingTasksCountFn = {
@@ -4618,6 +4679,14 @@ type WebServerAuthorizationCodesTableEntitiesScanDeprecatedFn = {
   page: number;
  }): Promise<Array<{partition_key: string, row_key: string, value: JsonB, version: number, etag: string}>>;
 };
+type WebServerConsumeAuthorizationCodeFn = {
+ (
+   code_in: string
+ ): Promise<Array<{code: string, client_id: string, redirect_uri: string, identity: string, identity_provider_id: string, expires: Date, client_details: JsonB}>>;
+ (params: {
+  code_in: string;
+ }): Promise<Array<{code: string, client_id: string, redirect_uri: string, identity: string, identity_provider_id: string, expires: Date, client_details: JsonB}>>;
+};
 type WebServerCreateAccessTokenFn = {
  (
    hashed_access_token_in: string,
@@ -4690,7 +4759,8 @@ type WebServerGetAccessTokenFn = {
   hashed_access_token_in: string;
  }): Promise<Array<{hashed_access_token: string, encrypted_access_token: JsonB, client_id: string, redirect_uri: string, identity: string, identity_provider_id: string, expires: Date, client_details: JsonB}>>;
 };
-type WebServerGetAuthorizationCodeFn = {
+/** @deprecated */
+type WebServerGetAuthorizationCodeDeprecatedFn = {
  (
    code_in: string
  ): Promise<Array<{code: string, client_id: string, redirect_uri: string, identity: string, identity_provider_id: string, expires: Date, client_details: JsonB}>>;
@@ -5230,7 +5300,8 @@ type WorkerManagerGetNonStoppedWorkersScannerDeprecatedFn = {
   page_offset_in?: number | null;
  }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
 };
-type WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerFn = {
+/** @deprecated */
+type WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerDeprecatedFn = {
  (
    worker_pool_id_in: string | null,
    worker_group_in: string | null,
@@ -5248,6 +5319,30 @@ type WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerFn = {
   providers_filter_value_in?: string | null;
   page_size_in?: number | null;
   page_offset_in?: number | null;
+ }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, launch_config_id: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
+};
+type WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerAfterFn = {
+ (
+   worker_pool_id_in: string | null,
+   worker_group_in: string | null,
+   worker_id_in: string | null,
+   providers_filter_cond_in: string | null,
+   providers_filter_value_in: string | null,
+   page_size_in: number | null,
+   after_worker_pool_id_in: string | null,
+   after_worker_group_in: string | null,
+   after_worker_id_in: string | null
+ ): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, launch_config_id: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
+ (params: {
+  worker_pool_id_in?: string | null;
+  worker_group_in?: string | null;
+  worker_id_in?: string | null;
+  providers_filter_cond_in?: string | null;
+  providers_filter_value_in?: string | null;
+  page_size_in?: number | null;
+  after_worker_pool_id_in?: string | null;
+  after_worker_group_in?: string | null;
+  after_worker_id_in?: string | null;
  }): Promise<Array<{worker_pool_id: string, worker_group: string, worker_id: string, provider_id: string, created: Date, expires: Date, state: string, provider_data: JsonB, capacity: number, last_modified: Date, last_checked: Date, secret: JsonB, etag: string, launch_config_id: string, quarantine_until: Date, first_claim: Date, last_date_active: Date}>>;
 };
 type WorkerManagerGetQueueWorkerWithWmDataFn = {
@@ -6301,7 +6396,7 @@ export interface DbFunctions {
   check_task_claim: QueueCheckTaskClaimFn;
   claim_task: QueueClaimTaskFn;
   create_queue_artifact_2: QueueCreateQueueArtifact2Fn;
-  create_task_projid: QueueCreateTaskProjidFn;
+  create_task_atomic: QueueCreateTaskAtomicFn;
   delete_queue_artifact: QueueDeleteQueueArtifactFn;
   delete_queue_artifacts: QueueDeleteQueueArtifactsFn;
   delete_queue_provisioner: QueueDeleteQueueProvisionerFn;
@@ -6341,6 +6436,7 @@ export interface DbFunctions {
   queue_claimed_tasks_count: QueueQueueClaimedTasksCountFn;
   queue_pending_task_delete: QueueQueuePendingTaskDeleteFn;
   queue_pending_tasks_add: QueueQueuePendingTasksAddFn;
+  queue_pending_tasks_add_for_task: QueueQueuePendingTasksAddForTaskFn;
   queue_pending_tasks_count: QueueQueuePendingTasksCountFn;
   queue_pending_tasks_delete: QueueQueuePendingTasksDeleteFn;
   queue_pending_tasks_delete_expired: QueueQueuePendingTasksDeleteExpiredFn;
@@ -6378,13 +6474,13 @@ export interface DbFunctions {
 
   // WebServer
   add_github_access_token: WebServerAddGithubAccessTokenFn;
+  consume_authorization_code: WebServerConsumeAuthorizationCodeFn;
   create_access_token: WebServerCreateAccessTokenFn;
   create_authorization_code: WebServerCreateAuthorizationCodeFn;
   expire_access_tokens: WebServerExpireAccessTokensFn;
   expire_authorization_codes: WebServerExpireAuthorizationCodesFn;
   expire_sessions: WebServerExpireSessionsFn;
   get_access_token: WebServerGetAccessTokenFn;
-  get_authorization_code: WebServerGetAuthorizationCodeFn;
   load_github_access_token: WebServerLoadGithubAccessTokenFn;
   session_add: WebServerSessionAddFn;
   session_load: WebServerSessionLoadFn;
@@ -6404,7 +6500,7 @@ export interface DbFunctions {
   expire_worker_pool_launch_configs: WorkerManagerExpireWorkerPoolLaunchConfigsFn;
   expire_worker_pools: WorkerManagerExpireWorkerPoolsFn;
   expire_workers: WorkerManagerExpireWorkersFn;
-  get_non_stopped_workers_with_launch_config_scanner: WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerFn;
+  get_non_stopped_workers_with_launch_config_scanner_after: WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerAfterFn;
   get_queue_worker_with_wm_data: WorkerManagerGetQueueWorkerWithWmDataFn;
   get_queue_workers_with_wm_data: WorkerManagerGetQueueWorkersWithWmDataFn;
   get_task_queue_wm_2: WorkerManagerGetTaskQueueWm2Fn;
@@ -6543,6 +6639,7 @@ export interface DeprecatedDbFunctions {
   create_queue_worker_tqid: QueueCreateQueueWorkerTqidDeprecatedFn;
   create_queue_worker_type: QueueCreateQueueWorkerTypeDeprecatedFn;
   create_task: QueueCreateTaskDeprecatedFn;
+  create_task_projid: QueueCreateTaskProjidDeprecatedFn;
   create_task_queue: QueueCreateTaskQueueDeprecatedFn;
   create_task_tqid: QueueCreateTaskTqidDeprecatedFn;
   expire_queue_provisioners: QueueExpireQueueProvisionersDeprecatedFn;
@@ -6647,6 +6744,7 @@ export interface DeprecatedDbFunctions {
   authorization_codes_table_entities_modify: WebServerAuthorizationCodesTableEntitiesModifyDeprecatedFn;
   authorization_codes_table_entities_remove: WebServerAuthorizationCodesTableEntitiesRemoveDeprecatedFn;
   authorization_codes_table_entities_scan: WebServerAuthorizationCodesTableEntitiesScanDeprecatedFn;
+  get_authorization_code: WebServerGetAuthorizationCodeDeprecatedFn;
   github_access_token_table_entities_create: WebServerGithubAccessTokenTableEntitiesCreateDeprecatedFn;
   github_access_token_table_entities_load: WebServerGithubAccessTokenTableEntitiesLoadDeprecatedFn;
   github_access_token_table_entities_modify: WebServerGithubAccessTokenTableEntitiesModifyDeprecatedFn;
@@ -6667,6 +6765,7 @@ export interface DeprecatedDbFunctions {
   get_non_stopped_workers_quntil: WorkerManagerGetNonStoppedWorkersQuntilDeprecatedFn;
   get_non_stopped_workers_quntil_providers: WorkerManagerGetNonStoppedWorkersQuntilProvidersDeprecatedFn;
   get_non_stopped_workers_scanner: WorkerManagerGetNonStoppedWorkersScannerDeprecatedFn;
+  get_non_stopped_workers_with_launch_config_scanner: WorkerManagerGetNonStoppedWorkersWithLaunchConfigScannerDeprecatedFn;
   get_queue_worker_with_wm_join: WorkerManagerGetQueueWorkerWithWmJoinDeprecatedFn;
   get_queue_worker_with_wm_join_2: WorkerManagerGetQueueWorkerWithWmJoin2DeprecatedFn;
   get_queue_workers_with_wm_join: WorkerManagerGetQueueWorkersWithWmJoinDeprecatedFn;

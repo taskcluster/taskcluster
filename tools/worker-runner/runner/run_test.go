@@ -11,8 +11,8 @@ import (
 
 	"github.com/Flaque/filet"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v97/tools/worker-runner/logging"
-	loggingCommon "github.com/taskcluster/taskcluster/v97/tools/worker-runner/logging/logging"
+	"github.com/taskcluster/taskcluster/v100/tools/worker-runner/logging"
+	loggingCommon "github.com/taskcluster/taskcluster/v100/tools/worker-runner/logging/logging"
 )
 
 func buildFakeGenericWorker(workerPath string) error {
@@ -63,7 +63,7 @@ worker:
   path: %s
 `, workerConfigPath, workerPath)
 
-	err := os.WriteFile(configPath, []byte(configData), 0755)
+	err := os.WriteFile(configPath, []byte(configData), 0600)
 	require.NoError(t, err)
 
 	// checks exit code of running fake worker
@@ -98,7 +98,7 @@ provider:
 getSecrets: false
 worker:
   implementation: dummy
-`), 0755)
+`), 0600)
 	require.NoError(t, err)
 
 	run, err := Run(configPath)
@@ -132,7 +132,7 @@ workerConfig:
   fromFirstRun: true
 worker:
   implementation: dummy
-`, cachePath), 0755)
+`, cachePath), 0600)
 	require.NoError(t, err)
 
 	run, err := Run(configPath)
@@ -157,7 +157,7 @@ getSecrets: false
 cacheOverRestarts: %s
 worker:
   implementation: dummy
-`, cachePath), 0755)
+`, cachePath), 0600)
 	require.NoError(t, err)
 
 	run, err = Run(configPath)

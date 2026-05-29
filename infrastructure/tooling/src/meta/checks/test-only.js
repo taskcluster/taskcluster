@@ -1,6 +1,6 @@
 import util from 'util';
-import { exec } from 'child_process';
-const execPromise = util.promisify(exec);
+import { execFile } from 'child_process';
+const execFileAsync = util.promisify(execFile);
 import _ from 'lodash';
 
 export const tasks = [];
@@ -10,7 +10,7 @@ tasks.push({
   provides: [],
   run: async () => {
     try {
-      const res = await execPromise(`git grep 'test.only(' -- './**_test.js' ':!.yarn'`);
+      const res = await execFileAsync('git', ['grep', 'test.only(', '--', './**_test.js', ':!.yarn']);
       // if the grep succeeded, then something matched
       throw new Error(`JS test with 'test.only(..)' found: ${res.stdout}`);
     } catch (err) {

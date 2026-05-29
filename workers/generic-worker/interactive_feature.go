@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
-	"github.com/taskcluster/taskcluster/v97/internal/scopes"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/expose"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/interactive"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	"github.com/taskcluster/taskcluster/v100/internal/scopes"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/expose"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/interactive"
 )
 
 type InteractiveFeature struct {
@@ -77,9 +77,15 @@ func (it *InteractiveTask) Start() *CommandExecutionError {
 		InteractiveCmd: interactiveCmd,
 	}
 
-	interactive, err := interactive.New(config.InteractivePort, interactiveCommands, ctx)
+	// Get allocated port for this task, fall back to config default
+	interactivePort, ok := it.task.InteractivePort()
+	if !ok {
+		interactivePort = config.InteractivePort
+	}
+
+	interactive, err := interactive.New(interactivePort, interactiveCommands, ctx)
 	if err != nil {
-		it.task.Warnf("[interactive] could not create interactive session: %v", err)
+		it.task.Warnf("[interactive] could not create interactive session on port %d: %v", interactivePort, err)
 		cancel()
 		return nil
 	}

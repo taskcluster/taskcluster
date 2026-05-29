@@ -42,6 +42,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
@@ -101,6 +103,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
@@ -166,6 +170,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
@@ -227,6 +233,8 @@ testSuite:
         - "-1"
         - --pids-limit
         - "-1"
+        - --pull=never
+        - --log-driver=none
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list

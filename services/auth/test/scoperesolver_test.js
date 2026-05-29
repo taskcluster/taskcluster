@@ -7,6 +7,9 @@ import _ from 'lodash';
 import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 import { hrtime } from 'process';
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
 helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], function (mock, skipping) {
   let scopeResolver;
@@ -359,7 +362,7 @@ suite(testing.suiteName(), () => {
     });
   });
 
-  suite('performance', async function() {
+  suite('performance', function() {
     const shouldMeasure = process.env.MEASURE_PERFORMANCE;
     let time;
     if (shouldMeasure) {
@@ -487,7 +490,8 @@ suite(testing.suiteName(), () => {
 
     // Test with a snapshot of real roles, captured with
     //   `curl https://auth.taskcluster.net/v1/roles > test/roles.json`
-    const realRoles = await helper.loadJson('./roles.json');
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const realRoles = JSON.parse(readFileSync(join(__dirname, 'roles.json'), 'utf8'));
     const testRealRoles = (scopes, expected) => {
       testResolver(`real roles with scopes ${scopes.join(', ')}`, {
         roles: realRoles,
@@ -524,7 +528,7 @@ suite(testing.suiteName(), () => {
     testRealRoles(['assume:moz-tree:level:3']);
 
     // curl https://auth.taskcluster.net/v1/clients | jq -r '.clients' > test/clients.json
-    const realClients = await helper.loadJson('./clients.json');
+    const realClients = JSON.parse(readFileSync(join(__dirname, 'clients.json'), 'utf8'));
 
     test('resolve all clients', () => {
       const resolver = time('setup', () => scopeResolver.buildResolver(realRoles));

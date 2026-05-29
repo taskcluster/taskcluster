@@ -9,9 +9,9 @@ import (
 	"strconv"
 
 	docopt "github.com/docopt/docopt-go"
-	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
-	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v97/internal"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v100/internal"
 )
 
 var (
@@ -41,26 +41,64 @@ task id.
     --client-id <clientId>          Use a specific auth.taskcluster hawk client id [default: ].
     --access-token <accessToken>    Use a specific auth.taskcluster hawk access token [default: ].
     --certificate <certificate>     Use a specific auth.taskcluster hawk certificate [default: ].
+    --allowed-user <username>       Only allow connections from this OS user [default: ].
+    --allowed-network <cidr>        Additionally allow connections whose remote
+                                    IP falls in the given CIDR when the OS-level
+                                    peer credential lookup is not possible (e.g.,
+                                    container traffic arriving via a Docker
+                                    bridge, where the peer socket lives in a
+                                    different network namespace and is not
+                                    visible in this process's /proc/net/tcp)
+                                    [default: ].
 `
 )
 
 func main() {
-	routes, address, err := ParseCommandArgs(os.Args[1:], true)
+	routes, address, allowedUser, allowedNetwork, err := ParseCommandArgs(os.Args[1:], true)
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
 
-	server := &http.Server{
-		Handler: &routes,
-		// Only listen on loopback interface to reduce attack surface. If we later
-		// wish to make this service available over the network, we could add
-		// configuration settings for this, but for now, let's lock it down.
-		Addr: address,
+	verifier, err := newConnectionVerifier(allowedUser, allowedNetwork)
+	if err != nil {
+		log.Fatalf("Failed to create connection verifier: %v", err)
 	}
 
-	startError := server.ListenAndServe()
-	if startError != nil {
-		log.Fatal(startError)
+	addresses := []string{address}
+	if allowedNetwork != nil {
+		// When --allowed-network is set, the primary listener targets
+		// in-namespace peers (typically containers reaching us via a
+		// Docker bridge gateway IP). The launcher itself — generic
+		// worker — usually runs in the host netns and may be unable to
+		// reach that bind address cleanly: kernel routing or iptables
+		// MASQUERADE rules can rewrite the source IP, leaving the
+		// connection invisible in /proc/net/tcp from the proxy's
+		// perspective and outside the allowed-network CIDR. Listen on
+		// 127.0.0.1 too so the launcher has a NAT-free loopback path.
+		// Loopback connections are always visible in /proc/net/tcp, so
+		// the UID-based admission (root and the task user) covers it.
+		_, port, splitErr := net.SplitHostPort(address)
+		if splitErr != nil {
+			log.Fatalf("Failed to split host/port from %s: %v", address, splitErr)
+		}
+		addresses = append(addresses, net.JoinHostPort("127.0.0.1", port))
+	}
+
+	server := &http.Server{Handler: &routes}
+
+	errCh := make(chan error, len(addresses))
+	for _, addr := range addresses {
+		listener, listenErr := net.Listen("tcp", addr)
+		if listenErr != nil {
+			log.Fatalf("Failed to listen on %s: %v", addr, listenErr)
+		}
+		log.Printf("Serving on %s", addr)
+		go func(ln net.Listener) {
+			errCh <- server.Serve(&verifiedListener{Listener: ln, verifier: verifier})
+		}(listener)
+	}
+	if err := <-errCh; err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -75,7 +113,7 @@ var getTask = func(rootURL string, taskID string) (task *tcqueue.TaskDefinitionR
 
 // ParseCommandArgs converts command line arguments into a configured Routes
 // and port.
-func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, err error) {
+func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, allowedUser string, allowedNetwork *net.IPNet, err error) {
 	fullversion := "Taskcluster proxy " + version
 	if revision != "" {
 		fullversion += " (git revision " + revision + ")"
@@ -114,6 +152,27 @@ func ParseCommandArgs(argv []string, exit bool) (routes Routes, address string, 
 	}
 	address = ipAddress + ":" + portStr
 	log.Printf("Listening on: %v", address)
+
+	allowedUser = arguments["--allowed-user"].(string)
+	if allowedUser != "" {
+		log.Printf("Allowed user: %v", allowedUser)
+	}
+
+	if cidr := arguments["--allowed-network"].(string); cidr != "" {
+		_, allowedNetwork, err = net.ParseCIDR(cidr)
+		if err != nil {
+			err = fmt.Errorf("invalid --allowed-network CIDR %q: %w", cidr, err)
+			return
+		}
+		// Reject overly broad CIDRs that would defeat the point of having
+		// the flag at all (any host can connect from anywhere).
+		ones, bits := allowedNetwork.Mask.Size()
+		if ones == 0 && bits != 0 {
+			err = fmt.Errorf("--allowed-network CIDR %q is too broad (0/%d allows all addresses)", cidr, bits)
+			return
+		}
+		log.Printf("Allowed network: %v", allowedNetwork)
+	}
 
 	rootURL := arguments["--root-url"]
 	if rootURL == nil || rootURL == "" {

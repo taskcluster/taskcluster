@@ -47,8 +47,8 @@ installed as task steps.
 The preferred way to run tasks inside a container is for the task to execute
 podman/docker commands directly.
 
-Docker Worker payload compatibility in Generic Worker is currently [under
-development](https://github.com/orgs/taskcluster/projects/14). It is being
-implemented as a translation layer (d2g) inside Generic Worker, that will
-internally translate the Docker Worker formatted task payload into an
-equivalent Generic Worker payload that invokes docker commands directly.
+Compatibility with the legacy docker-worker payload format is provided on Linux
+by the [d2g](https://github.com/taskcluster/taskcluster/tree/main/tools/d2g)
+translation layer inside generic-worker, which converts docker-worker payloads
+into equivalent generic-worker payloads that invoke docker/podman commands
+directly.

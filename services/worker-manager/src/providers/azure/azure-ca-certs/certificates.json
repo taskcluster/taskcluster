@@ -5,6 +5,11 @@
     "root": true
   },
   {
+    "filename": "microsoft_tls_rsa_root_g2.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20TLS%20RSA%20Root%20G2.crt",
+    "root": true
+  },
+  {
     "filename": "microsoft_azure_rsa_tls_issuing_ca_03_xsign.pem",
     "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003%20-%20xsign.crt"
   },

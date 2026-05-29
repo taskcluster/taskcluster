@@ -371,6 +371,18 @@
       "description": "If true, all connections must use ssl",
       "type": "boolean"
     },
+    "gatewayClassName": {
+      "description": "GatewayClass name for the Gateway API gateway, e.g. \"gke-l7-regional-external-managed\". Required when using Gateway API (ingressType: \"gateway\").",
+      "type": "string"
+    },
+    "gatewayStaticIpName": {
+      "description": "Name of the reserved static IP address for the Gateway, e.g. \"tc-dev-gateway-ip\".",
+      "type": "string"
+    },
+    "gcpManagedCertName": {
+      "description": "Name of the GCP Certificate Manager certificate for the Gateway, e.g. \"tc-dev-gw-cert\".",
+      "type": "string"
+    },
     "github": {
       "additionalProperties": false,
       "properties": {
@@ -937,7 +949,7 @@
       "type": "string"
     },
     "ingressType": {
-      "description": "Allows to use non-GLB ingress types, like \"nginx\"",
+      "description": "Allows to use non-GLB ingress types: \"nginx\" for ingress-nginx, or \"gateway\" for Gateway API",
       "type": "string"
     },
     "meta": {
@@ -2155,6 +2167,9 @@
           "configmap",
           "secret",
           "ingress",
+          "gateway",
+          "httproute",
+          "healthcheckpolicy",
           "serviceaccount",
           "podmonitoring"
         ],

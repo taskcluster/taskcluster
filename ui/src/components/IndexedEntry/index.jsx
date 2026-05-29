@@ -17,6 +17,7 @@ import { ARTIFACTS_PAGE_SIZE } from '../../utils/constants';
 import Link from '../../utils/Link';
 import { findArtifactFromTaskUrl } from '../../utils/getArtifactUrl';
 import getIconFromMime from '../../utils/getIconFromMime';
+import formatBytes from '../../utils/formatBytes';
 import { withAuth } from '../../utils/Auth';
 
 const buildArtifactUrl = ({ user, namespace, name, contentType }) => {
@@ -68,6 +69,12 @@ const buildArtifactUrl = ({ user, namespace, name, contentType }) => {
   latestArtifactsListItem: {
     paddingBottom: 0,
   },
+  sizeCell: {
+    whiteSpace: 'nowrap',
+    color: theme.palette.text.secondary,
+    marginRight: theme.spacing(1),
+    alignSelf: 'center',
+  },
 }))
 export default class IndexedEntry extends Component {
   static propTypes = {
@@ -117,11 +124,8 @@ export default class IndexedEntry extends Component {
   };
 
   renderArtifactsTable() {
-    const {
-      classes,
-      onArtifactsPageChange,
-      latestArtifactsConnection,
-    } = this.props;
+    const { classes, onArtifactsPageChange, latestArtifactsConnection } =
+      this.props;
     const artifacts = this.loadArtifacts(latestArtifactsConnection);
 
     return (
@@ -148,6 +152,9 @@ export default class IndexedEntry extends Component {
                     {artifact.icon && <artifact.icon />}
                   </div>
                   {artifact.name}
+                </div>
+                <div className={classes.sizeCell}>
+                  {formatBytes(artifact.contentLength)}
                 </div>
                 <div>
                   <OpenInNewIcon />

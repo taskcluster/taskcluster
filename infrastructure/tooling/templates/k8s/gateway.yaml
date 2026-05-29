@@ -1,0 +1,26 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: taskcluster-gateway
+  labels: {$eval: labels}
+spec:
+  gatewayClassName: '{{ .Values.gatewayClassName | default "nginx" }}'
+  addresses: GATEWAY_ADDRESSES_BLOCK
+  listeners:
+  - name: https
+    port: 443
+    protocol: HTTPS
+    hostname: '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}'
+    tls:
+      mode: Terminate
+      options: GATEWAY_TLS_OPTIONS_BLOCK
+    allowedRoutes:
+      namespaces:
+        from: Same
+  - name: http
+    port: 80
+    protocol: HTTP
+    hostname: '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}'
+    allowedRoutes:
+      namespaces:
+        from: Same

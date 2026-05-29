@@ -58,27 +58,49 @@ export default ({ userConfig, prompts, configTmpl }) => {
     when: () => !userConfig.ingressType,
     type: 'input',
     name: 'ingressType',
-    message: 'Leave blank if GLB is used, otherwise use "nginx" for ingress nginx type',
+    message: 'Leave blank if GLB is used, otherwise use "nginx" for ingress-nginx or "gateway" for Gateway API',
     validate: ingressType => {
-      if (ingressType !== '' && ingressType !== 'nginx') {
-        return 'Must be either empty string or "nginx"';
+      if (ingressType !== '' && ingressType !== 'nginx' && ingressType !== 'gateway') {
+        return 'Must be empty string, "nginx", or "gateway"';
       }
       return true;
     },
   });
 
   prompts.push({
-    when: () => !userConfig.ingressStaticIpName && userConfig.ingressType !== "nginx",
+    when: () => !userConfig.ingressStaticIpName && !["nginx", "gateway"].includes(userConfig.ingressType),
     type: 'input',
     name: 'ingressStaticIpName',
     message: 'Name of the google reserved static ip for this deployment. Or empty if ingress nginx is used.',
   });
 
   prompts.push({
-    when: () => !userConfig.ingressCertName && userConfig.ingressType !== "nginx",
+    when: () => !userConfig.ingressCertName && !["nginx", "gateway"].includes(userConfig.ingressType),
     type: 'input',
     name: 'ingressCertName',
     message: 'Name of the google cert for your cluster. Or empty if cert-manager is used.',
+  });
+
+  prompts.push({
+    when: () => !userConfig.gatewayClassName && userConfig.ingressType === "gateway",
+    type: 'input',
+    name: 'gatewayClassName',
+    default: 'gke-l7-regional-external-managed',
+    message: 'GatewayClass name for Gateway API (e.g. "gke-l7-regional-external-managed" for GKE, "nginx" for NGINX Gateway Fabric)',
+  });
+
+  prompts.push({
+    when: () => !userConfig.gatewayStaticIpName && userConfig.ingressType === "gateway",
+    type: 'input',
+    name: 'gatewayStaticIpName',
+    message: 'Name of the reserved static IP address for the Gateway (e.g. "tc-dev-gateway-ip"). Leave blank to auto-assign.',
+  });
+
+  prompts.push({
+    when: () => !userConfig.gcpManagedCertName && userConfig.ingressType === "gateway",
+    type: 'input',
+    name: 'gcpManagedCertName',
+    message: 'Name of the GCP Certificate Manager certificate for TLS (e.g. "tc-dev-gw-cert"). Leave blank if not using GCP-managed certs.',
   });
 
   prompts.push({

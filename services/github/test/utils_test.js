@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { Readable } from 'stream';
 import testing from '@taskcluster/lib-testing';
 
 import {
@@ -7,14 +8,14 @@ import {
   shouldSkipPullRequest,
   shouldSkipComment,
   getTaskclusterCommand,
-  tailLog,
   extractLog,
-  extractHeadLinesFromLog,
-  extractTailLinesFromLog,
   ansi2txt,
   generateXHubSignature,
   checkGithubSignature,
 } from '../src/utils.js';
+
+/** Create a readable stream from a string */
+const toStream = (str) => Readable.from([Buffer.from(str)]);
 
 suite(testing.suiteName(), function() {
   suite('throttleRequest', function() {
@@ -285,58 +286,122 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite('tailLog', function() {
-    test('should get max lines', function () {
-      const payload = Array.from({ length: 500 }).map(line => `line: ${line}`).join('\n');
-      assert.equal(250, tailLog(payload).split('\n').length);
-      assert.equal(25, tailLog(payload, 25).split('\n').length);
-
-      const payloadLong = Array.from({ length: 10 }).map(line => 'line'.repeat(1000)).join('\n');
-      assert.equal(1, tailLog(payloadLong, 10, 20).split('\n').length);
-      assert.equal('line', tailLog(payloadLong, 10, 4));
-    });
-  });
-
   suite('extractLog', function() {
-    test('extract log', function () {
-      const payload = Array.from({ length: 100 }).map(line => `line: ${line}`).join('\n');
-      assert.equal(100, extractLog(payload, 20, 200).split('\n').length);
-      assert.equal(100, extractLog(payload).split('\n').length);
+    // Reference implementation: the original sync extractLog from before the
+    // streaming rewrite. Used to verify the new streaming version produces
+    // identical output for all edge cases.
+    const extractTailLinesFromLog = (logString, maxPayloadLength, tailLines) => {
+      if (tailLines === 0) {
+        return null;
+      }
+      const tl = logString.split('\n').slice(-tailLines).join('\n');
+      if (logString.length <= maxPayloadLength) {
+        return tl;
+      }
+      let tailLogMaxPayload = logString.slice(-maxPayloadLength);
+      const newLinePosition = tailLogMaxPayload.indexOf('\n');
+      tailLogMaxPayload = tailLogMaxPayload.slice(newLinePosition + 1);
+      return tl.length <= tailLogMaxPayload.length ? tl : tailLogMaxPayload;
+    };
 
-      const payloadLong = Array.from({ length: 500 }).map(line => 'line'.repeat(10)).join('\n');
-      assert.equal(223, extractLog(payloadLong, 20, 200).split('\n').length);
+    const extractHeadLinesFromLog = (logString, maxPayloadLength) => {
+      if (logString.length <= maxPayloadLength) {
+        return logString;
+      }
+      const headLog = logString.slice(0, maxPayloadLength);
+      const lastNewLinePosition = headLog.lastIndexOf('\n');
+      return headLog.substring(0, lastNewLinePosition);
+    };
+
+    const originalExtractLog = (log, headLines = 20, tailLines = 200, maxPayloadLength = 30000) => {
+      const logString = ansi2txt(log);
+      const lines = logString.split('\n');
+      const LOG_BUFFER = 42;
+      if (lines.length <= headLines + tailLines && logString.length <= maxPayloadLength) {
+        return logString;
+      }
+      const headLogArray = lines.slice(0, headLines);
+      const headLog = headLogArray.join('\n');
+      if (maxPayloadLength <= headLog.length) {
+        return extractHeadLinesFromLog(logString, maxPayloadLength);
+      }
+      const tl = extractTailLinesFromLog(logString, maxPayloadLength - headLog.length - LOG_BUFFER, tailLines);
+      if (!tl) {
+        return `${headLog}\n\n...(${lines.length - headLogArray.length} lines hidden)...\n\n`;
+      }
+      const availableTailLines = tl.split('\n').length;
+      return `${headLog}\n\n...(${lines.length - headLines - availableTailLines} lines hidden)...\n\n${tl}`;
+    };
+
+    /** Generate a log with the given number of lines */
+    const generateLog = (numLines) =>
+      Array.from({ length: numLines }, (_, i) => `line ${i}: ${'x'.repeat(20)}`).join('\n');
+
+    /**
+     * Assert that the streaming extractLog produces identical output to the
+     * original string-based implementation for the given input.
+     */
+    const assertMatchesOriginal = async (log, headLines = 20, tailLines = 200, maxPayloadLength = 30000) => {
+      const expected = originalExtractLog(log, headLines, tailLines, maxPayloadLength);
+      const actual = await extractLog(toStream(log), headLines, tailLines, maxPayloadLength);
+      assert.strictEqual(actual, expected);
+    };
+
+    test('empty log', async function() {
+      await assertMatchesOriginal('');
     });
-  });
 
-  suite('extractHeadLinesFromLog', function() {
-    test('should get the complete head lines corresponding to the max payload length', function() {
-      const payload = Array.from({ length: 4 }, (_, i) => Array(i + 1).fill(`line ${i + 1}`).join(' ')).join('\n');
-      const payloadWithIncompleteLine = `${payload}\nline 5 line 5 line`;
-
-      assert.equal(payload, extractHeadLinesFromLog(payloadWithIncompleteLine, 80));
-      assert.equal(payload, extractHeadLinesFromLog(payload, 72));
+    test('short log (3 lines)', async function() {
+      await assertMatchesOriginal(generateLog(3));
     });
-  });
 
-  suite('extractLogWithLongLine', function() {
-    test('should get the complete head lines corresponding to the max payload length', function() {
-      const payload = Array.from({ length: 10 }).map(line => `line: ${line}`);
+    test('log with exactly headLines lines (20), no tail', async function() {
+      await assertMatchesOriginal(generateLog(20));
+    });
+
+    test('log with headLines + 1 (21 lines)', async function() {
+      await assertMatchesOriginal(generateLog(21));
+    });
+
+    test('log with exactly headLines + tailLines (220 lines, 0 hidden)', async function() {
+      await assertMatchesOriginal(generateLog(220));
+    });
+
+    test('log with headLines + tailLines + 1 (221 lines, 1 hidden)', async function() {
+      await assertMatchesOriginal(generateLog(221));
+    });
+
+    test('log with 100 lines hidden', async function() {
+      await assertMatchesOriginal(generateLog(320));
+    });
+
+    test('large log (1000 lines)', async function() {
+      await assertMatchesOriginal(generateLog(1000));
+    });
+
+    test('long single line exceeding maxPayloadLength', async function() {
+      const payload = Array.from({ length: 10 }).map((_, i) => `line: ${i}`);
       payload.push('A'.repeat(100000));
-
-      // Those values (20, 200, 60000) are what the github worker would use in "worst case scenarios".
-      // We append a line that far exceeds that within the `tail+head` of what it tries to get to make
-      // sure that the return value ignores it (doesn't include a cut line, doesn't exceed max payload)
-      assert.equal(extractLog(payload.join('\n'), 20, 200, 60000).length, 159);
+      await assertMatchesOriginal(payload.join('\n'), 20, 200, 60000);
     });
-  });
 
-  suite('extractTailLinesFromLog', function() {
-    test('should get complete tail lines corresponding to may payload length or taiLines whichever is minimum', function() {
-      const payload = Array.from({ length: 4 }, (_, i) => Array(i + 1).fill(`line ${i + 1}`).join(' ')).join('\n');
+    test('head alone exceeds maxPayloadLength', async function() {
+      // 20 lines of 2000 chars each = 40000 chars in head
+      const log = Array.from({ length: 500 }, (_, i) => `line ${i}: ${'x'.repeat(2000)}`).join('\n');
+      await assertMatchesOriginal(log, 20, 200, 30000);
+    });
 
-      assert.equal(null, extractTailLinesFromLog(payload, 100, 0));
-      assert.equal('line 4 line 4 line 4 line 4', extractTailLinesFromLog(payload, 100, 1));
-      assert.equal(payload, extractTailLinesFromLog(payload, 100, 4));
+    test('respects custom maxPayloadLength', async function() {
+      await assertMatchesOriginal(generateLog(500), 20, 200, 5000);
+    });
+
+    test('respects custom maxPayloadLength (60000)', async function() {
+      await assertMatchesOriginal(generateLog(500), 20, 200, 60000);
+    });
+
+    test('strips ANSI control sequences', async function() {
+      const payload = '\u001b[32mgreen text\u001b[0m\nnormal line';
+      await assertMatchesOriginal(payload);
     });
   });
 

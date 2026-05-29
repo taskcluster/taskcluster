@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from 'react';
+import React, { PureComponent } from 'react';
 import { graphql, withApollo } from 'react-apollo';
 import { parse, stringify } from 'qs';
 import { withStyles } from '@material-ui/core/styles';
@@ -179,42 +179,40 @@ export default class ViewClients extends PureComponent {
             placeholder="Client contains"
           />
         }>
-        <Fragment>
-          {loading && <Spinner loading />}
-          <ErrorPanel fixed error={error} />
-          {clients && (
-            <ClientsTable
-              searchTerm={searchTerm}
-              onPageChange={this.handlePageChange}
-              clientsConnection={clients}
-              onDialogActionOpen={this.handleDialogActionOpen}
-            />
-          )}
-          <Button
-            onClick={this.handleCreate}
-            variant="round"
-            color="secondary"
-            className={classes.plusIcon}>
-            <PlusIcon />
-          </Button>
-          {dialogOpen && (
-            <DialogAction
-              open={dialogOpen}
-              onSubmit={this.handleDeleteClient}
-              onComplete={this.handleDialogActionComplete}
-              onClose={this.handleDialogActionClose}
-              onError={this.handleDialogActionError}
-              error={dialogError}
-              title="Delete Client?"
-              body={
-                <Typography variant="body2">
-                  This will delete the {deleteClientId} client.
-                </Typography>
-              }
-              confirmText="Delete Client"
-            />
-          )}
-        </Fragment>
+        {loading && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        {clients && (
+          <ClientsTable
+            searchTerm={searchTerm}
+            onPageChange={this.handlePageChange}
+            clientsConnection={clients}
+            onDialogActionOpen={this.handleDialogActionOpen}
+          />
+        )}
+        <Button
+          onClick={this.handleCreate}
+          variant="circular"
+          color="secondary"
+          className={classes.plusIcon}>
+          <PlusIcon />
+        </Button>
+        {dialogOpen && (
+          <DialogAction
+            open={dialogOpen}
+            onSubmit={this.handleDeleteClient}
+            onComplete={this.handleDialogActionComplete}
+            onClose={this.handleDialogActionClose}
+            onError={this.handleDialogActionError}
+            error={dialogError}
+            title="Delete Client?"
+            body={
+              <Typography variant="body2">
+                This will delete the {deleteClientId} client.
+              </Typography>
+            }
+            confirmText="Delete Client"
+          />
+        )}
       </Dashboard>
     );
   }

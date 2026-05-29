@@ -80,11 +80,11 @@ impl Hasher {
         let mut result = HashMap::new();
         result.insert(
             "sha256".into(),
-            format!("{:x}", inner.sha256.finalize_reset()),
+            base16ct::lower::encode_string(&inner.sha256.finalize_reset()),
         );
         result.insert(
             "sha512".into(),
-            format!("{:x}", inner.sha512.finalize_reset()),
+            base16ct::lower::encode_string(&inner.sha512.finalize_reset()),
         );
         result
     }

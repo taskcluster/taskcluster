@@ -26,6 +26,7 @@ const MiniSvgGraph = ({ data, width = 130, height = 72 }) => {
 
   return (
     <svg width={width + 18} height={height}>
+      <title>Trend graph</title>
       <polyline
         points={path}
         fill="none"
@@ -54,7 +55,6 @@ const MiniSvgGraph = ({ data, width = 130, height = 72 }) => {
   );
 };
 
-/* eslint-disable import/prefer-default-export */
 export const StatusItem = ({
   title,
   type,
@@ -68,6 +68,7 @@ export const StatusItem = ({
 }) => {
   const [styles, setStyles] = useState({});
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: value is the retrigger key to flash on change
   useEffect(() => {
     setStyles({ backgroundColor: '#A459D1' });
     setTimeout(() => setStyles({}), 2000);

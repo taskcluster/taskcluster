@@ -1,0 +1,16 @@
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: ${hcName}
+  labels: {$eval: labels}
+spec:
+  default:
+    config:
+      type: HTTP
+      httpHealthCheck:
+        requestPath: ${readinessPath}
+        port: 8080
+  targetRef:
+    group: ""
+    kind: Service
+    name: ${projectName}

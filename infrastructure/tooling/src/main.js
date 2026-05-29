@@ -89,11 +89,42 @@ program.command('generate')
     run(main, options);
   }));
 
-program.command('minify')
-  .description('minify yarn.lock files')
+program.command('upgrade:node:prepare-shell')
+  .option('--node <version>', 'Node.js version to use')
+  .option('--yes', 'Do not prompt before continuing with a dirty working tree')
+  .option('--dry-run', 'Resolve versions without modifying files')
   .action(actFn(async ({ options }) => {
-    const { main } = await import('./minify/index.js');
-    run(main, options);
+    const { prepareNodeShell } = await import('./upgrade/index.js');
+    run(prepareNodeShell, options);
+  }));
+
+program.command('upgrade:node:apply')
+  .requiredOption('--target-node <version>', 'Resolved target Node.js version')
+  .option('--dry-run', 'Print commands without modifying files')
+  .action(actFn(async ({ options }) => {
+    const { applyNode } = await import('./upgrade/index.js');
+    run(applyNode, options);
+  }));
+
+program.command('upgrade:go:prepare-shell')
+  .option('--go <version>', 'Go version to use')
+  .option('--golangci-lint <version>', 'golangci-lint version to use')
+  .option('--yes', 'Do not prompt before continuing with a dirty working tree')
+  .option('--dry-run', 'Resolve versions without modifying files')
+  .action(actFn(async ({ options }) => {
+    const { prepareGoShell } = await import('./upgrade/index.js');
+    run(prepareGoShell, options);
+  }));
+
+program.command('upgrade:go:apply')
+  .requiredOption('--target-go <version>', 'Resolved target Go version')
+  .requiredOption('--target-golangci-lint <version>', 'Resolved target golangci-lint version')
+  .option('--go-changed', 'Whether the Go version changed')
+  .option('--golangci-lint-changed', 'Whether the golangci-lint version changed')
+  .option('--dry-run', 'Print commands without modifying files')
+  .action(actFn(async ({ options }) => {
+    const { applyGo } = await import('./upgrade/index.js');
+    run(applyGo, options);
   }));
 
 program.command('changelog')

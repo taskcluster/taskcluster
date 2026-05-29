@@ -1,0 +1,39 @@
+{{- if and (eq (.Values.ingressType | default "") "gateway") (not (has "gateway" .Values.skipResourceTypes)) -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: taskcluster-gateway
+  labels:
+    app.kubernetes.io/name: taskcluster-gateway
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-gateway-gateway
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  gatewayClassName: '{{ .Values.gatewayClassName | default "nginx" }}'
+  {{- if .Values.gatewayStaticIpName }}
+  addresses:
+  - type: NamedAddress
+    value: '{{ .Values.gatewayStaticIpName }}'
+  {{- end }}
+  listeners:
+    - name: https
+      port: 443
+      protocol: HTTPS
+      hostname: '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}'
+      tls:
+        mode: Terminate
+        {{- if .Values.gcpManagedCertName }}
+        options:
+          networking.gke.io/cert-manager-certs: '{{ .Values.gcpManagedCertName }}'
+        {{- end }}
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: http
+      port: 80
+      protocol: HTTP
+      hostname: '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}'
+      allowedRoutes:
+        namespaces:
+          from: Same
+{{- end }}

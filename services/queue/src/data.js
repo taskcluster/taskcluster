@@ -97,15 +97,19 @@ export class Task {
     return fetchResults(query ? query.continuationToken : {});
   }
 
-  // Call db.create_task_projid with the content of this instance.  This
+  // Call db.create_task_atomic with the content of this instance, atomically
+  // inserting the task row and its queue_task_deadlines tracking row.  This
   // implements the usual idempotency checks and returns an error with code
   // UNIQUE_VIOLATION when those checks fail.
-  async create(db) {
+  //
+  // `deadlineDelaySeconds` controls the deadline resolver's visibility offset
+  // (typically QueueService.deadlineDelay / 1000).
+  async create(db, deadlineDelaySeconds) {
     // for array values, we need to stringify manually because node-pg
     // otherwise does not correctly serialize the array values
     const arr = v => JSON.stringify(v);
     try {
-      await db.fns.create_task_projid(
+      await db.fns.create_task_atomic(
         this.taskId,
         this.taskQueueId,
         this.schedulerId,
@@ -124,6 +128,7 @@ export class Task {
         this.metadata,
         arr(this.tags),
         this.extra,
+        deadlineDelaySeconds,
       );
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {

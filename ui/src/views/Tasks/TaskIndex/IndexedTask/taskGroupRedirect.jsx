@@ -20,7 +20,7 @@ import indexedTaskQuery from './indexedTask.graphql';
   options: ({ indexedTaskData }) => ({
     variables: {
       skip: !indexedTaskData.indexedTask,
-      taskId: indexedTaskData.indexedTask && indexedTaskData.indexedTask.taskId,
+      taskId: indexedTaskData.indexedTask?.taskId,
       entryConnection: {
         limit: 1, // we don't need much for redirect, but we need the task
       },

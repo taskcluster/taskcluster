@@ -12,9 +12,9 @@ import (
 
 	"github.com/spf13/pflag"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
-	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v97/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v100/clients/client-shell/config"
 )
 
 func makeQueue(credentials *tcclient.Credentials) *tcqueue.Queue {
@@ -45,11 +45,14 @@ func runStatus(credentials *tcclient.Credentials, args []string, out io.Writer, 
 		return nil
 	}
 
-	if runID >= len(s.Status.Runs) {
-		return fmt.Errorf("there is no run #%v", runID)
-	}
 	if runID == -1 {
 		runID = len(s.Status.Runs) - 1
+	}
+	if runID < 0 {
+		return fmt.Errorf("task has no runs")
+	}
+	if runID >= len(s.Status.Runs) {
+		return fmt.Errorf("there is no run #%v", runID)
 	}
 
 	fmt.Fprintln(out, getRunStatusString(s.Status.Runs[runID].State, s.Status.Runs[runID].ReasonResolved))
@@ -169,11 +172,14 @@ func runArtifacts(credentials *tcclient.Credentials, args []string, out io.Write
 	}
 
 	runID, _ := flagSet.GetInt("run")
-	if runID >= len(s.Status.Runs) {
-		return fmt.Errorf("there is no run #%v", runID)
-	}
 	if runID == -1 {
 		runID = len(s.Status.Runs) - 1
+	}
+	if runID < 0 {
+		return fmt.Errorf("task has no runs")
+	}
+	if runID >= len(s.Status.Runs) {
+		return fmt.Errorf("there is no run #%v", runID)
 	}
 
 	buf := bytes.NewBufferString("")

@@ -75,6 +75,8 @@ testSuite:
           - "-1"
           - --pids-limit
           - "-1"
+          - --pull=never
+          - --log-driver=none
           - --add-host=localhost.localdomain:127.0.0.1
           - --device=/dev/kvm
           - --env-file
@@ -184,6 +186,8 @@ testSuite:
           - "-1"
           - --pids-limit
           - "-1"
+          - --pull=never
+          - --log-driver=none
           - --add-host=localhost.localdomain:127.0.0.1
           - --device=/dev/kvm
           - --env-file
@@ -296,6 +300,8 @@ testSuite:
           - "-1"
           - --pids-limit
           - "-1"
+          - --pull=never
+          - --log-driver=none
           - --add-host=localhost.localdomain:127.0.0.1
           - --device=/dev/kvm
           - --env-file

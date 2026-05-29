@@ -119,7 +119,7 @@ services:
     ports:
       - '3023:8080'
   taskcluster:
-    image: nginx:1.29.4
+    image: nginx:1.30.1
     networks:
       - local
     depends_on:

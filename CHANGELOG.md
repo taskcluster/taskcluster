@@ -3,6 +3,651 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v100.2.0
+
+### DEPLOYERS
+
+▶ [minor] [#8574](https://github.com/taskcluster/taskcluster/issues/8574)
+The Azure provider in worker-manager now submits VM `beginDelete` inline from `removeWorker`, removing one scanner cycle of latency before cloud-side deletion. Brings Azure to parity with GCP and AWS; the worker-scanner remains the fallback and verifier.
+
+### USERS
+
+▶ [patch] [bug 2042324](http://bugzil.la/2042324)
+Enforce a 10 minutes lifetime to provided oauth2 authorization tokens
+
+▶ [patch]
+Fix the changelog page filters to actually reflect what's in the URL.
+
+▶ [patch] [bug 2042324](http://bugzil.la/2042324)
+Invalidate oauth2 authorization codes immediately on exchange
+
+▶ [patch] [#8658](https://github.com/taskcluster/taskcluster/issues/8658)
+UI: fixes `Queue Workers` table appearing unsorted after navigating away and back to the page.
+
+▶ [patch]
+Use the current version for taskcluster in API code examples instead of a hardcoded '93'.
+
+### DEVELOPERS
+
+▶ [patch]
+Bump local-dev nginx image from 1.29.4 to 1.30.1 (CVE-2026-42945).
+
+▶ [patch]
+Drop `yarn minify` from our commands. It's been broken for 3 years without
+anyone complaining. To minify lockfiles, use the builtin `yarn dedupe` instead.
+
+### OTHER
+
+▶ Additional changes not described here: [#8377](https://github.com/taskcluster/taskcluster/issues/8377), [#8372](https://github.com/taskcluster/taskcluster/issues/8372).
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps): bump tmp from 0.2.5 to 0.2.7 in /clients/client-web (4590240864)
+* build(deps): bump qs from 6.14.2 to 6.15.2 in /ui (26e9adaaef)
+* build(deps): bump qs from 6.15.1 to 6.15.2 (be733191f9)
+* build(deps): bump @tootallnate/once in /clients/client-test (b53b8e4391)
+* build(deps): bump @tootallnate/once in /clients/client-web (ea5d13fb71)
+* build(deps): bump sanitize-html from 2.17.3 to 2.17.4 (db315c593e)
+* build(deps): bump idna from 3.11 to 3.15 in /clients/client-py (d5465a3265)
+* build(deps): bump github.com/go-git/go-git/v5 from 5.19.0 to 5.19.1 (ea49072b27)
+* build(deps): bump github.com/modelcontextprotocol/registry (95cd86e6cb)
+
+</details>
+
+## v100.1.1
+
+### GENERAL
+
+▶ [patch]
+Replaces the deprecated `sentry-api` package with a small Sentry API client in the Auth service and upgrades transitive `form-data` dependencies to patched versions, resolving multiple critical security vulnerabilities.
+
+### USERS
+
+▶ [patch]
+Display YAML parser errors in the github taskcluster yml debugger
+
+▶ [patch]
+Display errors when fetching error stats for worker pools fails
+
+▶ [patch] [#8625](https://github.com/taskcluster/taskcluster/issues/8625)
+Explicitly ensure the GitHub service can fetch the well-defined artifacts used
+as integration points. Previously the `static/taskcluster/github` client
+attempted to assume the hook role for hook-created tasks, which it does not
+have scopes to do.
+
+▶ [patch] [#5431](https://github.com/taskcluster/taskcluster/issues/5431)
+Fix the worker view's recent tasks table rendering duplicate rows when the same task has been run more than once on the worker.
+
+▶ [patch] [#8631](https://github.com/taskcluster/taskcluster/issues/8631)
+GitHub check runs now report `started_at` based on the time the task was actually claimed by a worker, rather than when the task was first defined. Previously, the GitHub Checks UI showed elapsed time from when a task was first scheduled, making queued/pending time appear as running time.
+
+### OTHER
+
+▶ Additional change not described here: [#6866](https://github.com/taskcluster/taskcluster/issues/6866).
+
+### Automated Package Updates
+
+<details>
+<summary>10 Dependabot updates</summary>
+
+* build(deps): bump slugid from 3.2.0 to 5.0.1 (c650cdb4a0)
+* build(deps): bump the node-deps group with 14 updates (67f2e9c7bb)
+* build(deps): bump github/codeql-action in the gh-actions-deps group (bfe9a88e7f)
+* build(deps): bump the go-deps group with 4 updates (cdeac2ac2e)
+* build(deps-dev): bump ruff (e12a3c969b)
+* build(deps): bump the client-rust-deps group (0f666c4736)
+* build(deps-dev): bump eslint (4d537a0aae)
+* build(deps): bump the client-node-deps group (e3e07abe22)
+* build(deps): bump brace-expansion from 2.0.2 to 5.0.6 (ddafda1e53)
+* build(deps): bump github.com/slack-go/slack from 0.22.0 to 0.23.1 (ff2c07737d)
+
+</details>
+
+## v100.1.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.26.3 and golangci-lint v2.12.2.
+
+Release notes [here](https://go.dev/doc/devel/release#go1.26.3).
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#8586](https://github.com/taskcluster/taskcluster/issues/8586)
+Fixes a bug in worker-manager where the worker-scanner could incorrectly mark a running worker as `over capacity` and tell it to terminate, even when it was the sole running worker in a pool with `minCapacity >= 1`. Caused by offset-based pagination yielding duplicate rows when other workers were inserted mid-scan, leading to conflicting termination decisions for the same worker. The provisioner had the same root cause, silently over-counting `existingCapacity` on pools with more than 1000 non-stopped workers and under-provisioning them. Both call sites now use keyset pagination via a new function `get_non_stopped_workers_with_launch_config_scanner_after` in DB version 0125. The most visible symptom was excessive worker churn on small pools.
+
+### USERS
+
+▶ [patch]
+Fixed the diff viewer in the scopes/client editing pages
+
+▶ [patch] [#8613](https://github.com/taskcluster/taskcluster/issues/8613)
+Migrates the `taskcluster` shell client's Homebrew release pipeline from the deprecated GoReleaser `brews` field to `homebrew_casks`. `brew install taskcluster/tap/taskcluster` still works, and existing formula installs auto-migrate on the next `brew update`.
+
+▶ [patch]
+Removed the interactive shell viewer for docker-worker in the UI
+
+### DEVELOPERS
+
+▶ [patch]
+Adds scripts to automate Node.js and Go version upgrades.
+
+### Automated Package Updates
+
+<details>
+<summary>12 Dependabot updates</summary>
+
+* build(deps): bump protobufjs from 7.5.5 to 7.5.8 (70b5ce841e)
+* build(deps): bump @protobufjs/utf8 from 1.1.0 to 1.1.1 (d49171d65d)
+* build(deps): bump requests from 2.15.1 to 2.32.5 in /clients/client-py (60d765a4dc)
+* build(deps): bump urllib3 from 2.6.3 to 2.7.0 in /clients/client-py (8eb162b014)
+* build(deps): bump github.com/go-git/go-git/v5 from 5.18.0 to 5.19.0 (2bd41df2cb)
+* build(deps): bump @babel/plugin-transform-modules-systemjs in /ui (2ba1f417bf)
+* build(deps): bump github.com/in-toto/in-toto-golang (42f02d4fff)
+* build(deps): bump fast-uri from 3.0.6 to 3.1.2 (4ef400783c)
+* build(deps): bump github.com/modelcontextprotocol/registry (6b078888a3)
+* build(deps): bump fast-xml-builder from 1.1.5 to 1.2.0 (77a1946708)
+* build(deps): bump fast-uri from 3.0.1 to 3.1.2 in /ui (e1727bf0f0)
+* build(deps): bump matrix-js-sdk from 34.13.0 to 41.4.0 (8f8d3c15bb)
+
+</details>
+
+## v100.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#7388](https://github.com/taskcluster/taskcluster/issues/7388)
+Generic Worker (FreeBSD): taskcluster-proxy now cross-compiles for freebsd/amd64 and freebsd/arm64 again. The new connection-verification feature (`--allowed-user` / `--allowed-network`) only has darwin, linux, and windows implementations; on FreeBSD the proxy refuses to start if either flag is set. FreeBSD support for taskcluster-proxy is experimental.
+
+## v100.0.0
+
+### GENERAL
+
+▶ [MAJOR] [#8437](https://github.com/taskcluster/taskcluster/issues/8437)
+Removed docker-worker from the monorepo. Docker-worker has been decommissioned across Taskcluster deployments and is no longer released. The d2g translation layer remains, so generic-worker continues to accept the legacy docker-worker payload format on Linux and the `docker-worker:*` scope namespace is unchanged. Existing tasks using the docker-worker payload format continue to run unchanged on generic-worker.
+
+**Notes for deployers:**
+
+- The `docker-worker` worker-runner implementation has been removed; deployments must run `generic-worker` (or a third-party worker that uses the Queue's worker protocol). worker-runner's `--help` no longer lists `docker-worker`.
+- The `docker-worker` entry has been removed from the task-creator UI's `TASK_PAYLOAD_SCHEMAS` map. Deployments that set `SITE_SPECIFIC.tutorial_worker_schema` to `docker-worker` should change it to a generic-worker schema key (e.g. `generic-multi-posix` on Linux, `generic-multi-win` on Windows). Deployments that did not set this variable now default to `generic-multi-posix` instead of `docker-worker`.
+- The `workers/docker-worker/` source tree is gone; deployments that built the docker-worker image themselves from this monorepo must source it from a docker-worker fork instead.
+- The docker-worker payload schema has moved from `workers/docker-worker/schemas/v1/payload.yml` to `tools/d2g/schemas/docker-worker/v1/payload.yml`. The published service-schema URL (`schemas/docker-worker/v1/payload.json`) is unchanged, so consumers fetching the schema from a running deployment are unaffected.
+
+### DEPLOYERS
+
+▶ [patch] [#8569](https://github.com/taskcluster/taskcluster/issues/8569)
+Fix Azure worker registration in regions whose Azure IMDS attested-data leaf certificates have rotated to the new `Microsoft TLS RSA Root G2` hierarchy (uksouth as of 2026-04-29; other regions follow as their leaves renew). The G2 root is bundled in `worker-manager`'s azure CA store, so `addIntermediateCert` succeeds for the dynamically fetched `Microsoft TLS G2 RSA CA OCSP NN` intermediates and `registerWorker` returns 200 again.
+
+### WORKER-DEPLOYERS
+
+▶ [minor] [#7388](https://github.com/taskcluster/taskcluster/issues/7388)
+Generic Worker now supports running multiple tasks concurrently via the new `capacity` configuration option.
+
+**Configuration:**
+
+- `capacity` (uint8, default: `1`, max: `255`) - the number of tasks the worker will claim and execute in parallel.
+- When `capacity` is `1`, behavior is unchanged from previous releases.
+- When `capacity` > 1, each task slot is allocated a block of 4 ports offset from the configured base ports (`livelogPortBase`, `interactivePort`, `taskclusterProxyPort`). Deployers must ensure these base ports are spaced far enough apart to avoid overlapping ranges. The worker validates this at startup and exits with an error if ranges collide.
+
+**Engine support:**
+
+- Insecure engine: supported.
+- Multiuser engine: supported only when `headlessTasks` is enabled. Non-headless multiuser mode (which reboots between tasks) is restricted to `capacity` = 1.
+
+**Task isolation:**
+
+- Each concurrent task receives its own task directory under `tasksDir`, its own set of dynamically allocated ports for LiveLog, Interactive, and TaskclusterProxy, and (in multiuser mode) its own OS user.
+- Caches and mounts are protected by per-cache read/write locks so that multiple tasks can read from the same cache concurrently while writes are serialized.
+- Docker image loading (D2G) uses file-level locking so parallel tasks sharing the same image coordinate without redundant loads.
+- In multiuser mode, TaskclusterProxy now verifies that incoming connections originate from the OS user running the task, preventing one task from accessing another task's credentials. This is implemented via `/proc/net/tcp` on Linux, `lsof` on macOS, and `GetExtendedTcpTable` on Windows. Note: in insecure mode, all tasks run as the same OS user, so UID-based connection verification is not possible; insecure mode with `capacity` > 1 does not provide credential isolation between concurrent tasks.
+
+**Constraints:**
+
+- The `runTaskAsCurrentUser` and `runAsAdministrator` task features are not supported when `capacity` > 1 and will return a `MalformedPayloadError` if requested.
+- Graceful shutdown waits for all running tasks to complete before the worker exits.
+- `numberOfTasksToRun` is respected across all concurrent slots - the worker will not start more tasks than the configured total.
+
+### USERS
+
+▶ [MAJOR] [#3521](https://github.com/taskcluster/taskcluster/issues/3521)
+The taskcluster proxy no longer inserts a `Content-Type: application/json` requests missing a content type and having a non empty body
+
+▶ [minor] [#8537](https://github.com/taskcluster/taskcluster/issues/8537)
+The web UI now displays artifact sizes in the task-runs and indexed-task artifact lists, when reported by the worker. Workers that do not report a size show a blank size column.
+
+### DEVELOPERS
+
+▶ [patch]
+Replaced locally-redefined Win32 constants in `workers/generic-worker` with their equivalents from `golang.org/x/sys/windows` and `syscall`. No behavior change.
+
+### OTHER
+
+▶ Additional changes not described here: [#6822](https://github.com/taskcluster/taskcluster/issues/6822), [#7722](https://github.com/taskcluster/taskcluster/issues/7722).
+
+### Automated Package Updates
+
+<details>
+<summary>11 Dependabot updates</summary>
+
+* build(deps): bump axios from 1.15.0 to 1.16.0 (676a61412d)
+* build(deps): bump chalk from 4.1.2 to 5.6.2 (8e5a5611c7)
+* build(deps): bump @googleapis/iam from 35.1.0 to 36.0.0 (8590ceae3f)
+* build(deps): bump the node-deps group with 2 updates (77c0d6d6eb)
+* build(deps): bump the node-deps group with 30 updates (9b90308a4f)
+* build(deps): bump the gh-actions-deps group with 4 updates (9b8c6d8749)
+* build(deps-dev): bump ruff (d6e256d05c)
+* build(deps): bump golang.org/x/tools in the go-deps group (0805268555)
+* build(deps-dev): bump eslint (eb341fd1e0)
+* build(deps): bump tokio (18a5a3e760)
+* build(deps-dev): bump chai from 4.3.10 to 6.2.2 in /clients/client-web (abc64fa116)
+
+</details>
+
+## v99.2.1
+
+### GENERAL
+
+▶ [patch] [#8525](https://github.com/taskcluster/taskcluster/issues/8525)
+Fix two related races that could leave a Taskcluster task in an inconsistent state when a Pulse publish failed during task creation or a run state transition:
+
+- A run could transition to `pending` in `tasks.runs` without a corresponding `queue_pending_tasks` row, making the task invisible to workers and to the "pending tasks" UI/API counts. Transitions of a run to `pending` (`schedule_task`, `rerun_task`, `resolve_task`, `check_task_claim`) now commit the `queue_pending_tasks` row in the same database transaction as the `tasks.runs` update.
+- A task could be inserted into `tasks` without a corresponding `queue_task_deadlines` row, leaving it untracked by the deadline resolver. `createTask` now inserts both rows atomically inside `create_task_atomic`.
+
+In the queue's HTTP API handlers (`createTask`, `scheduleTask`, `rerunTask`, `reportException`), Pulse `taskPending` / `taskException` / `taskDefined` publishes that follow these now-atomic DB commits are best-effort: the database is the source of truth, so a Pulse publish failure no longer fails the operation. Consumers that need exact-once notification should treat Pulse as advisory and read `queue.task(taskId).status` for the authoritative state. Background resolvers (`claim-resolver`, `worker-removed-resolver`, `dependency-resolver`) preserve their pre-existing at-least-once publish semantics by continuing to fail the handler on Pulse error so redelivery re-attempts the publish.
+
+### USERS
+
+▶ [patch]
+Update sha2 dependency in the rust client
+
+### OTHER
+
+▶ Additional changes not described here: [bug 2035431](http://bugzil.la/2035431), [#5457](https://github.com/taskcluster/taskcluster/issues/5457).
+
+## v99.2.0
+
+### DEPLOYERS
+
+▶ [minor] [#8243](https://github.com/taskcluster/taskcluster/issues/8243)
+Add optional [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) support (`Gateway`, `HTTPRoute`, `HealthCheckPolicy`) as an alternative to the existing `Ingress` resource. These new resources are only rendered when `ingressType: gateway` is set in Helm values, so existing Ingress-based deployments are unaffected and no new CRDs or `skipResourceTypes` entries are required.
+
+To adopt Gateway API for traffic routing, set `ingressType: gateway` along with `gatewayClassName`, and for GKE regional external ALBs, `gatewayStaticIpName` and `gcpManagedCertName`. Both `Ingress` and Gateway API resources will be rendered side-by-side, letting you migrate at your own pace; add `ingress` to `skipResourceTypes` once the Gateway setup is validated to stop rendering the legacy Ingress.
+
+See the [Gateway API section of the dev deployment docs](https://github.com/taskcluster/taskcluster/blob/main/dev-docs/dev-deployment.md#gateway-api) for setup instructions.
+
+▶ [patch] [#8526](https://github.com/taskcluster/taskcluster/issues/8526)
+Fixed the Azure provider's `deprovisionResource` wasting a worker-scanner cycle per resource when the backing VM/NIC/IP/disk had already been removed out-of-band (e.g. ARM cascade-delete via `deleteOption: 'Delete'`, Spot preemption). Previously the pre-flight `GET` was skipped whenever the worker still had a stored `id`, so the scanner fired a no-op `beginDelete` first and only discovered the resource was gone on the following cycle. The helper now always performs the pre-flight `GET`, so a missing resource is marked deleted immediately and the reap chain continues in a single cycle, shortening the `STOPPING` tail for affected Azure pools.
+
+▶ [patch]
+The default `sendDeadline` for the pulse publisher has been raised from 12 seconds to 30 seconds. Under load, RabbitMQ blocking and client reconnects could consume most of the 12-second budget before a single publish-confirm round-trip completed, causing cascading `PulsePublisher.sendDeadline exceeded` errors. The new default gives more headroom while still remaining below typical HTTP proxy timeouts. Services can override this per-publisher via the `sendDeadline` option to `exchanges.publisher()`.
+
+▶ [patch] [bug 2028956](http://bugzil.la/2028956)
+Worker Manager's Azure registration flow now restricts intermediate certificate downloads to trusted certificate distribution endpoints and records rejected certificate URLs in service logs.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 2032277](http://bugzil.la/2032277)
+worker-runner now tightens the permissions of its configuration file (typically `runner.yml` / `worker-runner.json`) to be readable only by its owner before reading it, and logs a warning if the file was previously group- or world-readable. This closes an exposure where a task running on a worker using the `static` provider could read the `staticSecret` out of a loosely-permissioned runner config and impersonate the worker via `registerWorker`. Worker deployers using the static provider should update their provisioning so the runner config is created with mode `0600` (or the equivalent owner-only ACL on Windows) from the start.
+
+### USERS
+
+▶ [patch] [#8534](https://github.com/taskcluster/taskcluster/issues/8534)
+Fix a 500 raised from hooks.triggerHook when a hook's task template evaluates
+to nothing. The endpoint now correctly replies with an empty object in that
+case.
+
+▶ [patch] [#8529](https://github.com/taskcluster/taskcluster/issues/8529)
+Fix a bug in `queue.createTask` where idempotent retries could insert multiple
+rows into the `queue_task_deadlines` table for a single task. Once those
+duplicates became visible, several deadline-resolver instances could pick up
+the same task concurrently, the first cancelled it, and the others crashed
+because they assumed they were the only one working on the cancellation of said
+task. A new unique constraint on `task_id` now prevents duplicate deadline
+rows, and the migration deduplicates any existing stale rows.
+
+### OTHER
+
+▶ Additional changes not described here: [#3684](https://github.com/taskcluster/taskcluster/issues/3684), [#8540](https://github.com/taskcluster/taskcluster/issues/8540).
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps): bump postcss from 8.5.6 to 8.5.10 (97fbba720e)
+* build(deps): bump rustls-webpki in /clients/client-rust (ae9c06296e)
+* build(deps): bump uuid from 9.0.1 to 14.0.0 (0770b27dad)
+
+</details>
+
+## v99.1.1
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v24.15.0 and yarn 4.14.1
+
+### DEPLOYERS
+
+▶ [patch] [#8517](https://github.com/taskcluster/taskcluster/issues/8517)
+Fixed Azure provider workers getting stuck in `STOPPING` indefinitely when their backing Azure resources (VM, NIC, IP, disks, or ARM deployment) were deleted out-of-band (e.g. Spot preemption, ARM cascade delete). The `deprovisionResource` helper now treats a `404` from `beginDelete` the same way as a `404` from `get`: mark the resource as deleted and let the reap path continue.
+
+▶ [patch] [#8270](https://github.com/taskcluster/taskcluster/issues/8270)
+Fixed a permission error on startup where nginx could not open its default error log
+at `/var/lib/nginx/logs/error.log` when the container runs as a non-root user (UID 1000).
+
+### USERS
+
+▶ [patch] [#7802](https://github.com/taskcluster/taskcluster/issues/7802)
+The pending tasks and claimed tasks pages now correctly display errors (such as
+insufficient scopes) instead of showing a blank page when the worker pool is
+also absent from worker-manager.
+
+### DEVELOPERS
+
+▶ [patch] [#8325](https://github.com/taskcluster/taskcluster/issues/8325)
+Fixed a flaky test in the worker-manager launch config selector suite by increasing the statistical sample size from 100 to 500 draws.
+
+▶ [patch]
+Yarn will not execute the postinstall scripts from third-party packages when installing the project. This change helps to reduce supply-chain risks by preventing potentially malicious scripts from running automatically.
+
+Note that you also have the ability to disable scripts on a per-package basis using `dependenciesMeta`, or to re-enable a specific script by combining `enableScripts` and `dependenciesMeta`.
+
+### Automated Package Updates
+
+<details>
+<summary>2 Dependabot updates</summary>
+
+* build(deps): bump github.com/go-git/go-git/v5 from 5.17.1 to 5.18.0 (5950fbfc32)
+* build(deps): bump protobufjs from 7.5.3 to 7.5.5 (b1dda113ee)
+
+</details>
+
+## v99.1.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.26.2 [SECURITY].
+
+### DEPLOYERS
+
+▶ [minor] [#8502](https://github.com/taskcluster/taskcluster/issues/8502)
+A new Prometheus histogram metric `iterate_duration_seconds` is now emitted by
+all background iteration loops (provisioner, worker-scanner, queue resolvers,
+etc.) via `lib-iterate`.
+
+The metric is registered as a global builtin, meaning it automatically
+propagates to whichever Prometheus registry a process exposes — no per-service
+configuration is required. It is a no-op in deployments without Prometheus
+configured.
+
+▶ [minor] [#8497](https://github.com/taskcluster/taskcluster/issues/8497)
+The worker-manager Azure provider now captures ARM throttling signals for observability.
+When Azure returns rate-limit headers (`x-ms-ratelimit-remaining-subscription-reads`, `-writes`, `-deletes`,
+`x-ms-ratelimit-remaining-resource`, `Retry-After`), the provider records them as Prometheus metrics and,
+on HTTP 429 responses, emits a structured `azureThrottled` warning log with the full header payload.
+
+New Prometheus metrics:
+- `worker_manager_azure_throttle_total` (counter) — incremented on every 429, labeled by `providerId` and `operationType`
+- `worker_manager_azure_ratelimit_remaining` (gauge) — tracks the most recently observed remaining-quota value, labeled by `providerId` and `limitType`
+
+The error handler in CloudAPI's `enqueue` path now respects `Retry-After` headers from Azure, using the server-specified delay (capped at 120 seconds) instead of the previous fixed backoff for 429 responses.
+
+Rate-limit headers are observed on both Track 2 SDK calls (via a pipeline policy) and Track 1 REST polling calls (in `handleOperation`), covering all Azure API interactions made by the provider.
+
+▶ [patch] [#8470](https://github.com/taskcluster/taskcluster/issues/8470)
+The worker-manager scanner now guards against overlapping scan loops and adds a per-worker timeout to `checkWorker` calls. Previously, when a scan exceeded `maxIterationTime` (common with large Azure worker pools), `lib-iterate` would start a new iteration while the old one was still running, resetting shared state and causing crashes in provider `checkWorker` methods. The scanner now detects loop overlap to prevent silent state corruption, and times out individual `checkWorker` calls after 60 seconds so a single hung cloud API call cannot abort the entire scan.
+
+### USERS
+
+▶ [minor] [#8430](https://github.com/taskcluster/taskcluster/issues/8430)
+The GitHub service now supports triggering Taskcluster hooks directly from
+`.taskcluster.yml`. Add a `hooks` array to your config to trigger one or more
+hooks on push, pull request, or other events:
+
+```yaml
+hooks:
+  - name: taskgraph/decision
+    context:
+      project: myproject
+```
+
+Each hook is triggered via the `hooks.triggerHook` API with a payload
+containing `event`, `now`, `taskcluster_root_url`, `tasks_for`, `taskId`, and
+the user-defined `context`. `hooks` and `tasks` may be used together in the same
+`.taskcluster.yml`. `autoCancelPreviousChecks` applies to hooks the same way it
+does to tasks.
+
+▶ [patch]
+The claim resolver no longer stalls between batches, only backing off when the
+queue is drained. It also now properly uses its configured batch size instead
+of being hardcoded to 32.
+
+▶ [patch]
+The deadline resolver no longer stalls between batches, only backing off when
+the queue is drained.
+
+▶ [patch]
+The dependency resolver no longer stalls for 5 seconds between every batch of
+32 resolved tasks. It now only backs off when the queue is drained, which
+dramatically improves scheduling latency when many tasks are resolved at once.
+
+### DEVELOPERS
+
+▶ [patch]
+Update `@sentry/node` from v6 to v10. Migrate Sentry SDK usage to v10 APIs: replace removed `configureScope()` with direct `setTag()` calls, update import style, and remove deprecated `autoSessionTracking` option.
+
+### OTHER
+
+▶ Additional change not described here: [#7838](https://github.com/taskcluster/taskcluster/issues/7838).
+
+### Automated Package Updates
+
+<details>
+<summary>12 Dependabot updates</summary>
+
+* build(deps): bump follow-redirects from 1.15.11 to 1.16.0 (d83f25d05f)
+* build(deps): bump rand from 0.9.2 to 0.9.4 in /clients/client-rust (2915aa6cd9)
+* build(deps): bump follow-redirects in /clients/client-web (95a5965f25)
+* build(deps): bump follow-redirects in /clients/client (6050a5fe59)
+* build(deps): bump follow-redirects in /clients/client-test (d9fc7c449a)
+* build(deps): bump follow-redirects from 1.15.6 to 1.16.0 in /ui (47d88e946c)
+* build(deps): bump github.com/sigstore/timestamp-authority/v2 (f7c2fdbcd2)
+* build(deps): bump axios from 1.13.5 to 1.15.0 (e18dc31ebc)
+* build(deps): bump nodemailer from 7.0.12 to 8.0.5 (f684254bf9)
+* build(deps): bump go.opentelemetry.io/otel/sdk from 1.39.0 to 1.43.0 (5aa58cb1c5)
+* build(deps): bump github.com/aws/aws-sdk-go-v2/service/s3 (05516efaec)
+* build(deps): bump github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream (e891da7f5a)
+
+</details>
+
+## v99.0.3
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8446](https://github.com/taskcluster/taskcluster/issues/8446)
+Worker Manager no longer removes Azure workers that are actively running tasks when an ARM deployment operation URL expires or the deployment shows a failed state. Previously, if Azure cleaned up a deployment record or the operation tracking URL expired before worker-manager marked provisioning as complete, the worker would be removed and any in-flight tasks resolved as `exception/worker-shutdown`, even though the worker was healthy.
+
+### DEVELOPERS
+
+▶ [patch]
+Fixed scope resolver performance tests that were silently not running due to an async
+suite callback in mocha (which does not await suite callbacks). The tests using real-world
+role and client fixture data are now registered and executed correctly. Also removed a stale
+`docker_posix.json` entry from the unreferenced schemas list in `lib-references`.
+
+### Automated Package Updates
+
+<details>
+<summary>12 Dependabot updates</summary>
+
+* build(deps): bump github.com/go-jose/go-jose/v4 from 4.1.3 to 4.1.4 (13d894b6aa)
+* build(deps): bump lodash from 4.17.23 to 4.18.1 in /ui (57bbe0f3b1)
+* build(deps): bump lodash from 4.17.23 to 4.18.1 in /ui/test/e2e (6a58323820)
+* build(deps): bump lodash from 4.17.23 to 4.18.1 in /clients/client-web (c0454a4c74)
+* build(deps): bump lodash from 4.17.23 to 4.18.1 in /clients/client (9f961dfb6b)
+* build(deps): bump lodash from 4.17.23 to 4.18.1 (bd19c3bd6a)
+* build(deps): bump the client-python-deps group (86868da56a)
+* build(deps): bump the go-deps group with 5 updates (5ddd6ba940)
+* build(deps-dev): bump eslint (a523d2e67c)
+* build(deps): bump the client-rust-deps group (1f1353712c)
+* build(deps): bump dominikh/staticcheck-action (6540799a60)
+* build(deps): bump dependabot/fetch-metadata from 2.5.0 to 3.0.0 (dadd7754a3)
+
+</details>
+
+## v99.0.2
+
+
+
+### OTHER
+
+▶ Additional change not described here: [#8013](https://github.com/taskcluster/taskcluster/issues/8013).
+
+## v99.0.1
+
+### DEPLOYERS
+
+▶ [patch] [#6898](https://github.com/taskcluster/taskcluster/issues/6898)
+Azure workers that report a failed provisioning state (e.g., `OSProvisioningClientError`) but are actually running (`PowerState/running`) are no longer immediately terminated. Instead, they are allowed to attempt registration, with the existing `terminateAfter` timeout serving as a safety net for truly broken workers.
+
+▶ [patch]
+Web Server: OAuth2 token scopes are now intersected with the registered client's allowed scopes in addition to the user's scopes, preventing a tampered consent form submission from requesting scopes beyond what the client was registered for. A warning is logged when a scope mismatch is detected.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8410](https://github.com/taskcluster/taskcluster/issues/8410)
+Generic Worker: Fix panic "close of closed channel" in `Command.Kill()` when multiple abort paths (e.g., reclaim failure and graceful termination) race to kill a task's processes.
+
+### OTHER
+
+▶ Additional changes not described here: [#8013](https://github.com/taskcluster/taskcluster/issues/8013), [#8013](https://github.com/taskcluster/taskcluster/issues/8013), [#8013](https://github.com/taskcluster/taskcluster/issues/8013).
+
+## v99.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+D2G: limits concurrent `docker cp` artifact extractions to 10 to reduce RAM usage and avoid overwhelming the Docker daemon.
+
+▶ [patch]
+D2G: performance improvements to `docker run` for d2g tasks. Adds `--pull=never` to skip redundant registry checks (image is already loaded), `--log-driver=none` to eliminate duplicate log writes, and parallelizes artifact extraction from stopped containers.
+
+### USERS
+
+▶ [MAJOR]
+The `taskcluster/websocktunnel` Docker image tags now include a `v` prefix (e.g., `v99.0.0` instead of `99.0.0`), matching the convention used by all other Taskcluster Docker images. A duplicate task definition in the release tooling was silently overriding the correct tag format since v36.0.0. If you reference websocktunnel images by tag, update your configurations to use the `v`-prefixed format.
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump pygments from 2.19.2 to 2.20.0 in /clients/client-py (a418693297)
+* build(deps): bump github.com/go-git/go-git/v5 from 5.16.5 to 5.17.1 (df949f6f14)
+* build(deps): bump brace-expansion from 1.1.12 to 1.1.13 (480b0afbef)
+* build(deps): bump brace-expansion from 1.1.12 to 1.1.13 in /ui (95ebf2e576)
+* build(deps): bump brace-expansion in /clients/client-web (3632239116)
+
+</details>
+
+## v98.0.1
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js 24.14.1 [SECURITY].
+
+### DEPLOYERS
+
+▶ [patch] [#8388](https://github.com/taskcluster/taskcluster/issues/8388)
+The GitHub service now streams backing log artifacts instead of downloading them entirely into memory. Previously, tasks with very large logs (e.g. ~98MB) caused the status handler to crash with an out-of-memory error, leaving GitHub check runs stuck as `in_progress` indefinitely.
+
+### OTHER
+
+▶ Additional change not described here: [#3665](https://github.com/taskcluster/taskcluster/issues/3665).
+
+### Automated Package Updates
+
+<details>
+<summary>8 Dependabot updates</summary>
+
+* build(deps): bump node-forge from 1.3.2 to 1.4.0 (f3d131fd44)
+* build(deps): bump @apollo/server from 5.4.0 to 5.5.0 (73dd22b5d7)
+* build(deps): bump picomatch from 2.3.1 to 2.3.2 in /clients/client-test (6380afb674)
+* build(deps): bump picomatch from 2.3.1 to 2.3.2 in /clients/client-web (2cbbc205fe)
+* build(deps): bump picomatch from 2.3.1 to 2.3.2 in /ui (d01a5f2ee0)
+* build(deps): bump picomatch from 2.3.1 to 2.3.2 (59c571c71b)
+* build(deps): bump flatted from 3.2.5 to 3.4.2 in /ui (fd066ad684)
+* build(deps): bump rustls-webpki in /clients/client-rust (7df9333c32)
+
+</details>
+
+## v98.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades @octokit/core (v3 to v6), @octokit/rest (v18 to v21), and @octokit/auth-app (v4 to v6) to resolve peer dependency warnings.
+
+▶ [patch]
+Upgrades taskgraph decision image to v20.0.0
+
+### USERS
+
+▶ [MAJOR] [#6689](https://github.com/taskcluster/taskcluster/issues/6689)
+Breaking change: Generic Worker now evaluates absolute paths inside `mounts`
+(properties `directory` and `file`) and artifacts (property `path`) correctly.
+Previously Generic Worker would effectively strip leading path separators and
+treat them as relative paths inside the task directory. For example, `/tmp`
+would be resolved as the relative path `tmp` from inside the task directory.
+
+Although this is technically a bug fix, it does change the behaviour of Generic
+Worker when absolute paths are specified in task payloads. We have examined
+production tasks on both the Community and Firefox CI deployments of
+taskcluster, and are reasonably confident that this change should not have
+adverse effects on existing tasks. However we are bumping the major version
+number of the taskcluster release, in recognition of the backward
+incompatibility.
+
+▶ [minor]
+Generic Worker: Replaced the deprecated `github.com/mholt/archiver/v3` library with `github.com/mholt/archives`, and added support for new archive and compression formats in task payload mounts.
+
+New decompression formats for `FileMount`: `br` (Brotli), `lz` (Lzip), `mz` (MinLZ), `sz` (Snappy/S2), `zz` (Zlib).
+
+New archive formats for `ReadOnlyDirectory` and `WritableDirectoryCache`: `7z`, `tar`, `tar.br`, `tar.lz`, `tar.mz`, `tar.sz`, `tar.zz`.
+
+Artifact uploads now skip gzip compression for files with extensions matching the newly supported compressed formats (`.br`, `.lz`, `.lz4`, `.mz`, `.sz`, `.zz`).
+
+▶ [patch]
+Fix a panic in `taskcluster task status` and `taskcluster task artifacts` when the task has no runs (e.g., is in the `unscheduled` state). These commands now return a clear error message instead of crashing.
+
+### OTHER
+
+▶ Additional change not described here: [#7901](https://github.com/taskcluster/taskcluster/issues/7901).
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps): bump github.com/buger/jsonparser from 1.1.1 to 1.1.2 (d04733c693)
+* build(deps): bump flatted from 3.4.1 to 3.4.2 (f0a9504b1a)
+* build(deps): bump flatted from 3.2.6 to 3.4.2 in /clients/client-web (e614a7ba4d)
+* build(deps): bump google.golang.org/grpc from 1.78.0 to 1.79.3 (68e13cc458)
+* build(deps): bump flatted from 3.3.3 to 3.4.1 (b1e875c79a)
+* build(deps): bump tar from 7.5.10 to 7.5.11 (d3710b89f5)
+* build(deps): bump quinn-proto in /clients/client-rust (157c8b004c)
+* build(deps): bump @apollo/server from 4.12.2 to 5.4.0 (9572c8a293)
+* build(deps-dev): bump eslint in /clients/client-web (fa90bf806b)
+
+</details>
+
 ## v97.1.0
 
 ### GENERAL

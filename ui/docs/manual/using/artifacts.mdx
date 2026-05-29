@@ -11,13 +11,13 @@ import Warning from '@taskcluster/ui/views/Documentation/components/Warning';
 
 Workers conventionally create a `public/logs/live.log`
 artifact containing the main task log. This default path can be overridden
-in Generic Worker task payloads using the `logs.live` property and the
-`log` property for Docker Worker task payloads.
+in tasks using the generic-worker payload format via the `logs.live` property,
+or in tasks using the docker-worker payload format via the `log` property.
 
 Workers also generally provide a way to specify, in the task description, the
 files and directories that should be uploaded as artifacts after the task
 completes. For a worker running
-[Generic-Worker](/docs/reference/workers/generic-worker/docs/payload), that looks like
+[Generic-Worker](/docs/reference/workers/generic-worker), that looks like
 
 ```yaml
 artifacts:
@@ -26,8 +26,7 @@ artifacts:
     type: directory
 ```
 
-Tor a worker running
-[Docker-Worker](/docs/reference/workers/docker-worker/docs/payload), the format is
+For tasks using the legacy Docker-Worker payload format (translated by [d2g](https://github.com/taskcluster/taskcluster/tree/main/tools/d2g)), the format is
 slightly different:
 
 ```yaml
@@ -37,12 +36,13 @@ artifacts:
     type: directory
 ```
 
-In either case the worker will upload all files in the `workspace/results` directory as
-artifacts named `public/results/<filename>`. Note that Docker-Worker requires
-an absolute path, while Generic-Worker requires a relative path.
+In either case generic-worker will upload all files in the `workspace/results`
+directory as artifacts named `public/results/<filename>`. Note that the
+docker-worker payload format requires an absolute path, while the generic-worker
+payload format requires a relative path.
 
-Both worker implementations support a `path` that points to a specific file.
-However, a task executed by generic-worker will fail if this file does not exist.
+Both payload formats support a `path` that points to a specific file. However,
+a task will fail if this file does not exist.
 
 It is also possible, although unusual, to create artifacts using the [Queue
 API](/docs/reference/platform/queue/api#createArtifact).

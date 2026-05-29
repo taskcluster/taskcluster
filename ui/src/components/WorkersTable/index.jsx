@@ -29,8 +29,9 @@ const sorted = pipe(
   rSort((a, b) => sort(a.node.workerId, b.node.workerId)),
   map(
     ({ node: { workerId, latestTask } }) =>
-      `${workerId}.${latestTask?.run?.taskId ?? '-'}.${latestTask?.run?.runId ??
-        '-'}`
+      `${workerId}.${latestTask?.run?.taskId ?? '-'}.${
+        latestTask?.run?.runId ?? '-'
+      }`
   )
 );
 
@@ -86,20 +87,18 @@ export default class WorkersTable extends Component {
         return workersConnection;
       }
 
+      const direction = sortDirection === 'desc' ? -1 : 1;
+
       return {
         ...workersConnection,
-        edges: [...workersConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? this.valueFromNode(b.node)
-              : this.valueFromNode(a.node);
-          const secondElement =
-            sortDirection === 'desc'
-              ? this.valueFromNode(a.node)
-              : this.valueFromNode(b.node);
-
-          return sort(firstElement, secondElement);
-        }),
+        edges: [...workersConnection.edges].sort(
+          (a, b) =>
+            direction *
+            sort(
+              this.valueFromNode(a.node, sortBy),
+              this.valueFromNode(b.node, sortBy)
+            )
+        ),
       };
     },
     {
@@ -167,8 +166,7 @@ export default class WorkersTable extends Component {
     });
   };
 
-  valueFromNode(node) {
-    const query = parse(this.props.location.search.slice(1));
+  valueFromNode(node, sortBy) {
     const mapping = {
       'Worker Group': node.workerGroup,
       'Worker ID': node.workerId,
@@ -183,7 +181,7 @@ export default class WorkersTable extends Component {
       Quarantined: node.quarantineUntil,
     };
 
-    return mapping[query.sortBy];
+    return mapping[sortBy];
   }
 
   componentDidMount() {
@@ -318,7 +316,7 @@ export default class WorkersTable extends Component {
               )}
               <TableCell>
                 {quarantineUntil &&
-                parseISO(quarantineUntil).getTime() > new Date().getTime() ? (
+                parseISO(quarantineUntil).getTime() > Date.now() ? (
                   formatDistanceStrict(new Date(), parseISO(quarantineUntil), {
                     unit: 'day',
                   })

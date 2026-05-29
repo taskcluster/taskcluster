@@ -11,7 +11,9 @@ func enableTaskFeatures() string {
           enableInteractive                 Enables the Interactive feature to be used in the
                                             task payload. [default: true]
           enableRunTaskAsCurrentUser        Enables the Run Task As Current User feature to be
-                                            used in the task payload. [default: true]`
+                                            used in the task payload. Automatically disabled
+                                            when capacity > 1 to preserve task isolation.
+                                            [default: true]`
 }
 
 func customTargetsSummary() string {

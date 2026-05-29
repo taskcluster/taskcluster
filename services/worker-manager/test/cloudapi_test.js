@@ -90,7 +90,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('operations timing out', async function() {
-    const cloudWithTimeout = await initCloudApi({ timeout: 1, throwOnTimeout: true });
+    const cloudWithTimeout = await initCloudApi({ timeout: 1 });
     const remote = sinon.stub();
     remote.onCall(0).resolves(sleep(5));
 

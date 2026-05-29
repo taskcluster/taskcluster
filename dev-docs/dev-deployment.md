@@ -59,6 +59,160 @@ If you want more flexibility you can use [ingress nginx](https://kubernetes.gith
 1. In `dev-config.yml` specify `ingressType: nginx` to make sure ingress routes are valid
 1. Refer to [cert-manager](#cert-manager) documentation on how to setup automatic provisioning of certificates.
 
+### Gateway API
+
+[Gateway API](https://gateway-api.sigs.k8s.io/) is the successor to the Kubernetes Ingress API. It can run side-by-side with an existing Ingress setup, making migration safe to test before cutting over.
+
+#### 1. Install Gateway API CRDs
+
+```sh
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/standard-install.yaml
+```
+
+#### 2. Enable a Gateway API controller
+
+**GKE** (recommended):
+
+```sh
+gcloud container clusters update <cluster-name> \
+  --region=<region> \
+  --gateway-api=standard
+```
+
+After the update completes, verify GatewayClasses are available (may take a minute to appear):
+
+```sh
+kubectl get gatewayclass
+```
+
+Available GKE GatewayClasses:
+- `gke-l7-regional-external-managed` — Regional external Application Load Balancer (recommended for single-region)
+- `gke-l7-global-external-managed` — Global external Application Load Balancer
+- `gke-l7-rilb` — Regional internal Load Balancer
+
+**NGINX Gateway Fabric** (alternative for non-GKE clusters):
+
+```sh
+helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
+  --create-namespace --namespace nginx-gateway \
+  --set service.type=LoadBalancer
+```
+
+See the [Gateway API implementations list](https://gateway-api.sigs.k8s.io/implementations/) for other options.
+
+#### 3. GKE prerequisites
+
+**Proxy-only subnet**: GKE regional external ALBs require a [proxy-only subnet](https://cloud.google.com/load-balancing/docs/proxy-only-subnets) in the same region and VPC. This is a one-time setup per region:
+
+```sh
+gcloud compute networks subnets create proxy-only-subnet-<region> \
+  --network=<vpc-network> \
+  --region=<region> \
+  --range=192.168.200.0/23 \
+  --purpose=REGIONAL_MANAGED_PROXY \
+  --role=ACTIVE
+```
+
+The range must not overlap with existing subnets. For auto-mode VPCs, use a range outside `10.128.0.0/9`.
+
+**Static IP** (optional but recommended):
+
+```sh
+gcloud compute addresses create <name> --region=<region>
+gcloud compute addresses describe <name> --region=<region> --format='get(address)'
+```
+
+Create a DNS A record pointing to this IP.
+
+#### 4. TLS with GCP-managed certificates
+
+GCP Certificate Manager handles certificate provisioning and auto-renewal. This is recommended over cert-manager for GKE Gateway API deployments, because cert-manager's HTTP-01 solver has compatibility issues with GKE regional ALBs (the ephemeral solver pods' health checks don't stabilize fast enough for the load balancer).
+
+```sh
+# Enable the Certificate Manager API (one-time)
+gcloud services enable certificatemanager.googleapis.com
+
+# Create DNS authorization
+gcloud certificate-manager dns-authorizations create <auth-name> \
+  --domain="<your-domain>" \
+  --location=<region>
+
+# Get the CNAME record to add to DNS
+gcloud certificate-manager dns-authorizations describe <auth-name> \
+  --location=<region> \
+  --format='yaml(dnsResourceRecord)'
+```
+
+Add the CNAME record to your DNS, then create the certificate:
+
+```sh
+gcloud certificate-manager certificates create <cert-name> \
+  --domains="<your-domain>" \
+  --dns-authorizations=<auth-name> \
+  --location=<region>
+```
+
+Wait for provisioning to complete:
+
+```sh
+gcloud certificate-manager certificates describe <cert-name> \
+  --location=<region> \
+  --format='get(managed.state)'
+# Should show: ACTIVE
+```
+
+#### 5. Configure Taskcluster for Gateway API
+
+In `dev-config.yml`:
+
+```yml
+ingressType: gateway
+gatewayClassName: gke-l7-regional-external-managed
+gatewayStaticIpName: tc-dev-gateway-ip        # name of the reserved static IP
+gcpManagedCertName: tc-dev-gw-cert            # name of the GCP Certificate Manager cert
+```
+
+This generates:
+- A **Gateway** resource with HTTP and HTTPS listeners
+- **HTTPRoute** resources for all service paths (automatically split to stay within the 16-rule-per-route limit)
+- An **HTTPRoute** for HTTP→HTTPS redirect
+- **HealthCheckPolicy** resources for each service (required for GKE to health-check backends correctly)
+
+To skip generating legacy Ingress resources (after validation):
+
+```yml
+skipResourceTypes:
+  - ingress
+```
+
+#### 6. Side-by-side migration
+
+When both `ingress` and `gateway`/`httproute` resources are generated, they operate independently with separate IPs. This lets you:
+
+1. Deploy the Gateway resources alongside existing Ingress
+2. Point a test DNS record at the Gateway's external IP
+3. Validate all service routes work (`/api/<service>/v1/ping` for each service)
+4. Update production DNS to the Gateway IP
+5. Add `ingress` to `skipResourceTypes` and uninstall ingress-nginx
+
+#### Converting existing resources with ingress2gateway
+
+If you have custom Ingress resources outside of Taskcluster's generated ones, the [ingress2gateway](https://github.com/kubernetes-sigs/ingress2gateway) tool can help convert them:
+
+```sh
+# Install
+go install github.com/kubernetes-sigs/ingress2gateway@latest
+# or: brew install ingress2gateway
+
+# Convert from ingress-nginx
+ingress2gateway print --providers ingress-nginx --namespace <namespace>
+
+# Convert from a manifest file
+ingress2gateway print --providers ingress-nginx --input-file my-ingress.yaml
+```
+
+Review the output carefully before applying — the tool does not copy annotations, so any provider-specific behavior configured via annotations needs to be recreated using Gateway API native features or policy attachments.
+
 ### Minikube
 
 If you want to run taskcluster on a kubernetes cluster on a server or virtual machine, minikube can be used.

@@ -219,14 +219,14 @@ export default class WorkerTypesTable extends Component {
           onClose={this.handleDrawerClose}>
           <div className={classes.metadataContainer}>
             <Typography variant="h5" className={classes.headline}>
-              {drawerWorkerType && drawerWorkerType.workerType}
+              {drawerWorkerType?.workerType}
             </Typography>
             <List>
               <ListItem>
                 <ListItemText
                   primary="Description"
                   secondary={
-                    drawerWorkerType && drawerWorkerType.description ? (
+                    drawerWorkerType?.description ? (
                       <Markdown>{drawerWorkerType.description}</Markdown>
                     ) : (
                       'n/a'

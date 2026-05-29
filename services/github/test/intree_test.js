@@ -544,4 +544,43 @@ suite(testing.suiteName(), function() {
       'tasks[3].taskId': 'docker_push',
     },
   );
+
+  buildConfigTest(
+    'Push Event with hooks, v1',
+    configPath + 'taskcluster.hooks.v1.yml',
+    {
+      payload: buildMessage({
+        details: { 'event.type': 'push' },
+        body: webhookPushJson.body,
+        tasks_for: 'github-push',
+        branch: 'master',
+      }),
+    },
+    {
+      'tasks[0].task.metadata.name': 'Test Task with Hooks',
+      'hooks[0].name': 'project-test/decision-hook',
+      'hooks[0].context.trustDomain': 'test-domain',
+      'hooks[0].context.level': 1,
+      'hooks[1].name': 'project-test/another-hook',
+    },
+    1,
+  );
+
+  buildConfigTest(
+    'Hooks only (no tasks), v1',
+    configPath + 'taskcluster.hooks-only.v1.yml',
+    {
+      payload: buildMessage({
+        details: { 'event.type': 'push' },
+        body: webhookPushJson.body,
+        tasks_for: 'github-push',
+        branch: 'master',
+      }),
+    },
+    {
+      tasks: [],
+      'hooks[0].name': 'project-test/decision-hook',
+    },
+    0,
+  );
 });

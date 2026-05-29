@@ -95,6 +95,10 @@ const createServer = function() {
 
       return new Promise((accept, reject) => {
         server.close(accept);
+        // force-close all open connections so the port is released immediately;
+        // called after server.close per Node.js docs to avoid race conditions
+        // where new connections arrive between the two calls
+        server.closeAllConnections();
       }).then(() => {
         debug('Server terminated on port ' + this.get('port'));
       });

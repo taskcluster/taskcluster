@@ -158,13 +158,8 @@ export default class WorkerManagerErrorsTable extends Component {
 
   renderTableRow = error => {
     const { classes, workerPoolId } = this.props;
-    const {
-      errorId,
-      title,
-      description,
-      reported,
-      launchConfigId,
-    } = error.node;
+    const { errorId, title, description, reported, launchConfigId } =
+      error.node;
 
     return (
       <TableRow key={errorId}>

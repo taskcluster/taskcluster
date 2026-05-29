@@ -3,6 +3,7 @@ import Iterate from '@taskcluster/lib-iterate';
 import taskcluster from '@taskcluster/client';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
 import { Worker, WorkerPool } from './data.js';
+import { withTimeout } from './util.js';
 
 /**
  * Make sure that we visit each worker relatively frequently to update its state
@@ -24,6 +25,7 @@ export class WorkerScanner {
     this.monitor = monitor;
     this.providersFilter = providersFilter;
     this.estimator = estimator;
+    this.scanLoopAlive = false;
     this.iterate = new Iterate({
       maxFailures: 10,
       watchdogTime: 0,
@@ -52,6 +54,19 @@ export class WorkerScanner {
   }
 
   async scan() {
+    if (this.scanLoopAlive) {
+      this.monitor.alert('scan-loop-interference', {});
+      throw new Error('scan loop interference');
+    }
+    this.scanLoopAlive = true;
+    try {
+      await this._scanImpl();
+    } finally {
+      this.scanLoopAlive = false;
+    }
+  }
+
+  async _scanImpl() {
     await this.providers.forAll(p => p.scanPrepare());
 
     this.monitor.info(`WorkerScanner providers filter: ${this.providersFilter.cond} ${this.providersFilter.value}`);
@@ -59,10 +74,21 @@ export class WorkerScanner {
     // Phase 1: Check workers and collect termination candidates
     const poolCandidates = new Map();
 
-    const fetch =
-      async (size, offset) => await this.db.fns.get_non_stopped_workers_with_launch_config_scanner(
-        null, null, null, this.providersFilter.cond, this.providersFilter.value, size, offset);
-    for await (let row of paginatedIterator({ fetch, size: 500 })) {
+    const fetch = async (page_size_in, after) =>
+      await this.db.fns.get_non_stopped_workers_with_launch_config_scanner_after({
+        worker_pool_id_in: null,
+        worker_group_in: null,
+        worker_id_in: null,
+        providers_filter_cond_in: this.providersFilter.cond,
+        providers_filter_value_in: this.providersFilter.value,
+        page_size_in,
+        ...after,
+      });
+    for await (let row of paginatedIterator({
+      fetch,
+      indexColumns: ['worker_pool_id', 'worker_group', 'worker_id'],
+      size: 500,
+    })) {
       const worker = Worker.fromDb(row);
       const provider = this.providers.get(worker.providerId);
       if (provider) {
@@ -72,7 +98,11 @@ export class WorkerScanner {
           continue;
         }
         try {
-          await provider.checkWorker({ worker });
+          await withTimeout(
+            provider.checkWorker({ worker }),
+            60_000, // 1 minute
+            `checkWorker timed out for ${worker.workerPoolId}/${worker.workerId}`,
+          );
         } catch (err) {
           this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
         }
@@ -104,6 +134,7 @@ export class WorkerScanner {
           poolCandidates.get(poolId).push(worker);
         }
       }
+
     }
 
     await this.providers.forAll(p => p.scanCleanup());

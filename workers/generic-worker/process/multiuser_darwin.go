@@ -37,7 +37,8 @@ type (
 		// abort channel is closed when Kill() is called so that Execute() can
 		// return even if cmd.Wait() is blocked. This is useful since cmd.Wait()
 		// sometimes does not return promptly.
-		abort chan struct{}
+		abort     chan struct{}
+		abortOnce sync.Once
 		// Once command has run, Result is updated (similar to cmd.ProcessState)
 		result *Result
 		conn   net.Conn

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -9,6 +10,9 @@ import (
 )
 
 func TestLoopbackAudio(t *testing.T) {
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		t.Skip("Skipping in Docker: loopback audio requires kernel modules not available in containers")
+	}
 	setup(t)
 
 	devicePaths := []string{
@@ -66,6 +70,9 @@ func TestIncorrectLoopbackAudioScopes(t *testing.T) {
 }
 
 func TestLoopbackAudioNotOwnedByTaskUser(t *testing.T) {
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		t.Skip("Skipping in Docker: loopback audio requires kernel modules not available in containers")
+	}
 	setup(t)
 
 	devicePaths := []string{

@@ -355,7 +355,7 @@ export default class TaskDetailsCard extends Component {
                   />
                 </ListItem>
               )}
-              {dependents && dependents.edges && dependents.edges.length ? (
+              {dependents?.edges?.length ? (
                 <Fragment>
                   <ListItem>
                     <ListItemText

@@ -160,95 +160,102 @@ export const ansi2txt = (src) => {
 };
 
 /**
- * Github checks API call is limited to 64kb
- * @param {string} log
- * @param {number} maxLines
- * @param {number} maxPayloadLength
- * @returns string
- */
-export const tailLog = (log, maxLines = 250, maxPayloadLength = 30000) => {
-  return ansi2txt(log).substring(log.length - maxPayloadLength)
-    .split('\n')
-    .slice(-maxLines)
-    .join('\n');
-};
-
-/**
+ * Github checks API call is limited to 64kb.
  *
- * @param {string} logString
- * @param {number} maxPayloadLength
- * @param {number} tailLines
- * @returns string or null
- */
-export const extractTailLinesFromLog = (logString, maxPayloadLength, tailLines) => {
-
-  if (tailLines === 0) {
-    return null;
-  }
-
-  const tailLog = logString.split("\n").slice(-tailLines).join("\n");
-
-  if (logString.length <= maxPayloadLength) {
-    return tailLog;
-  }
-
-  let tailLogMaxPayload = logString.slice(-maxPayloadLength);
-  const newLinePosition = tailLogMaxPayload.indexOf('\n');
-  tailLogMaxPayload = tailLogMaxPayload.slice(newLinePosition + 1);
-
-  return tailLog.length <= tailLogMaxPayload.length ? tailLog : tailLogMaxPayload;
-};
-
-/**
+ * Streams a log from an async iterable (e.g. a fetch response body),
+ * extracting the first headLines and last tailLines with bounded memory.
+ * Uses a head buffer and a tail buffer that evicts old entries, so memory
+ * usage is O(headLines + tailLines) regardless of log size.
  *
- * @param {string} logString
- * @param {number} maxPayloadLength
- * @returns string
+ * @param {AsyncIterable} stream - async iterable yielding byte chunks
+ * @param {number} headLines - number of lines to keep from the start
+ * @param {number} tailLines - number of lines to keep from the end
+ * @param {number} maxPayloadLength - maximum output length in bytes
+ * @returns {Promise<string>} formatted log extract
  */
-export const extractHeadLinesFromLog = (logString, maxPayloadLength) => {
-
-  if (logString.length <= maxPayloadLength) {
-    return logString;
-  }
-
-  const headLog = logString.slice(0, maxPayloadLength);
-  const lastNewLinePosition = headLog.lastIndexOf('\n');
-  return headLog.substring(0, lastNewLinePosition);
-};
-
-/**
- * Github checks API call is limited to 64kb
- * @param {string} log
- * @param {number} headLines
- * @param {number} tailLines
- * @param {number} maxPayloadLength
- * @returns string
- */
-export const extractLog = (log, headLines = 20, tailLines = 200, maxPayloadLength = 30000) => {
-  const logString = ansi2txt(log);
-  const lines = logString.split('\n');
+export const extractLog = async (stream, headLines = 20, tailLines = 200, maxPayloadLength = 30000) => {
   const LOG_BUFFER = 42;
+  const decoder = new TextDecoder('utf-8', { stream: true });
+  const head = [];
+  const tail = [];
+  let totalLines = 0;
+  let headFull = false;
+  let leftover = '';
 
-  if (lines.length <= headLines + tailLines && logString.length <= maxPayloadLength) {
-    return logString;
+  for await (const chunk of stream) {
+    const text = leftover + decoder.decode(chunk, { stream: true });
+    const lines = text.split('\n');
+    leftover = lines.pop();
+
+    for (const line of lines) {
+      const clean = ansi2txt(line);
+      totalLines++;
+      if (!headFull) {
+        head.push(clean);
+        if (head.length >= headLines) {
+          headFull = true;
+        }
+      } else {
+        tail.push(clean);
+        if (tail.length > tailLines) {
+          tail.shift();
+        }
+      }
+    }
   }
 
-  const headLogArray = lines.slice(0, headLines);
-  const headLog = headLogArray.join('\n');
+  // Flush any remaining bytes from the decoder
+  const finalText = leftover + decoder.decode();
+  if (finalText) {
+    const clean = ansi2txt(finalText);
+    totalLines++;
+    if (!headFull) {
+      head.push(clean);
+    } else {
+      tail.push(clean);
+      if (tail.length > tailLines) {
+        tail.shift();
+      }
+    }
+  }
 
+  const headLog = head.join('\n');
+  const tailLog = tail.join('\n');
+  const fullLog = tailLog ? headLog + '\n' + tailLog : headLog;
+
+  // Small log: return full content if it fits
+  if (totalLines <= headLines + tailLines && fullLog.length <= maxPayloadLength) {
+    return fullLog;
+  }
+
+  // If head alone exceeds the payload budget, truncate at a line boundary
   if (maxPayloadLength <= headLog.length) {
-    return extractHeadLinesFromLog(logString, maxPayloadLength);
+    const truncated = headLog.slice(0, maxPayloadLength);
+    const lastNewLine = truncated.lastIndexOf('\n');
+    return lastNewLine > 0 ? truncated.substring(0, lastNewLine) : truncated;
   }
 
-  const tailLog = extractTailLinesFromLog(logString, maxPayloadLength - headLog.length - LOG_BUFFER, tailLines);
+  // Budget remaining for the tail after head + separator
+  const tailBudget = maxPayloadLength - headLog.length - LOG_BUFFER;
 
-  if (!tailLog) {
-    return `${headLog}\n\n...(${lines.length - headLogArray.length} lines hidden)...\n\n`;
+  if (tailBudget <= 0 || !tailLog) {
+    return `${headLog}\n\n...(${totalLines - head.length} lines hidden)...\n\n`;
   }
 
-  const availableTailLines = tailLog.split('\n').length;
+  // Trim tail to fit the byte budget
+  let finalTail = tailLog;
+  if (finalTail.length > tailBudget) {
+    finalTail = finalTail.slice(-tailBudget);
+    const newLinePos = finalTail.indexOf('\n');
+    if (newLinePos >= 0) {
+      finalTail = finalTail.slice(newLinePos + 1);
+    }
+  }
 
-  return `${headLog}\n\n...(${lines.length - headLines - availableTailLines} lines hidden)...\n\n${tailLog}`;
+  const availableTailLines = finalTail.split('\n').length;
+  const finalHiddenLines = totalLines - head.length - availableTailLines;
+
+  return `${headLog}\n\n...(${finalHiddenLines} lines hidden)...\n\n${finalTail}`;
 };
 
 export const markdownLog = (log) => ['\n---\n\n```bash\n', log, '\n```'].join('');
@@ -295,7 +302,6 @@ export default {
   shouldSkipCommit,
   shouldSkipPullRequest,
   ansi2txt,
-  tailLog,
   extractLog,
   markdownLog,
   markdownAnchor,

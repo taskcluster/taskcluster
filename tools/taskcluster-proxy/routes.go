@@ -17,8 +17,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcUrls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
-	tc "github.com/taskcluster/taskcluster/v97/tools/taskcluster-proxy/taskcluster"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	tc "github.com/taskcluster/taskcluster/v100/tools/taskcluster-proxy/taskcluster"
 )
 
 // Routes represents the context of the running service
@@ -254,13 +254,6 @@ func (routes *Routes) commonHandler(res http.ResponseWriter, req *http.Request, 
 			return nil, nil, fmt.Errorf("error constructing request: %s", err)
 		}
 		maps.Copy(proxyreq.Header, req.Header)
-
-		// for compatibility, if there is no request Content-Type and the body
-		// has nonzero length, we add a Content-Type header.  See #3521.
-		if _, ok := req.Header["Content-Type"]; !ok && len(body) != 0 {
-			log.Printf("Adding missing Content-Type header (#3521)")
-			proxyreq.Header["Content-Type"] = []string{"application/json"}
-		}
 
 		// Refresh Authorization header with each call...
 		err = routes.Credentials.SignRequest(proxyreq)

@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
-	"github.com/taskcluster/taskcluster/v97/internal/scopes"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	"github.com/taskcluster/taskcluster/v100/internal/scopes"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/fileutil"
 )
 
 var (
@@ -77,13 +77,14 @@ func (l *RDPTask) Stop(err *ExecutionErrors) {
 }
 
 func (l *RDPTask) createRDPArtifact() {
+	ctx := l.task.GetContext()
 	l.info = &RDPInfo{
 		Host:     config.PublicIP,
 		Port:     3389,
-		Username: taskContext.User.Name,
-		Password: taskContext.User.Password,
+		Username: ctx.User.Name,
+		Password: ctx.User.Password,
 	}
-	rdpInfoFile := fileutil.AbsFrom(taskContext.TaskDir, rdpInfoPath)
+	rdpInfoFile := fileutil.AbsFrom(ctx.TaskDir, rdpInfoPath)
 	err := fileutil.WriteToFileAsJSON(l.info, rdpInfoFile)
 	// if we can't write this, something seriously wrong, so cause worker to
 	// report an internal-error to sentry and crash!
@@ -93,7 +94,8 @@ func (l *RDPTask) createRDPArtifact() {
 }
 
 func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
-	rdpInfoFile := fileutil.AbsFrom(taskContext.TaskDir, rdpInfoPath)
+	taskDir := l.task.TaskDir()
+	rdpInfoFile := fileutil.AbsFrom(taskDir, rdpInfoPath)
 	return l.task.uploadArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{

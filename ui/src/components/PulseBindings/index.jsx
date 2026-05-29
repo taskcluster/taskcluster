@@ -78,7 +78,7 @@ export default class PulseBindings extends Component {
               freeSolo
               options={exchangesDictionary || []}
               inputValue={pulseExchange}
-              onInputChange={(event, newValue) =>
+              onInputChange={(_event, newValue) =>
                 onPulseExchangeChange({
                   target: {
                     name: 'pulseExchange',
@@ -122,8 +122,9 @@ export default class PulseBindings extends Component {
           {bindings.map(binding => (
             <ListItem
               className={classes.bindingListItem}
-              key={`${binding.exchange}-${binding.pattern ||
-                bindings.routingKeyPattern}`}>
+              key={`${binding.exchange}-${
+                binding.pattern || bindings.routingKeyPattern
+              }`}>
               <ListItemText
                 disableTypography
                 primary={

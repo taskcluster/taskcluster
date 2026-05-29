@@ -60,7 +60,6 @@ export class AwsProvider extends Provider {
       intervalDefault: this.providerConfig.intervalDefault,
       intervalCapDefault: this.providerConfig.intervalCapDefault,
       timeout: 10 * 60 * 1000, // each cloud call should not take longer than 10 minutes
-      throwOnTimeout: true,
       monitor: this.monitor,
       providerId: this.providerId,
       errorHandler: ({ err, tries }) => {

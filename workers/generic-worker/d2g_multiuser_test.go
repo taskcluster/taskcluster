@@ -9,10 +9,11 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v100/tools/d2g/dockerworker"
 )
 
 func TestD2GWithChainOfTrust(t *testing.T) {
+	skipInDockerIfNoDocker(t)
 	setup(t)
 	payload := dockerworker.DockerWorkerPayload{
 		Command: []string{"/bin/bash", "-c", "echo hello"},

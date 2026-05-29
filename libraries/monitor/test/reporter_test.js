@@ -1,4 +1,3 @@
-import nock from 'nock';
 import assert from 'assert';
 import testing from '@taskcluster/lib-testing';
 import MonitorManager from '../src/monitormanager.js';
@@ -6,12 +5,9 @@ import MonitorManager from '../src/monitormanager.js';
 suite(testing.suiteName(), function() {
 
   suite('sentry', function() {
-    let monitor, scope, reported;
+    let monitor, reported;
     setup(function() {
-      scope = nock('https://sentry.example.com')
-        .post('/api/448/store/')
-        .reply(200, (_, report)=> {reported = report;});
-
+      reported = null;
       monitor = MonitorManager.setup({
         serviceName: 'testing-service',
         level: 'debug',
@@ -23,6 +19,13 @@ suite(testing.suiteName(), function() {
         errorConfig: {
           reporter: 'SentryReporter',
           dsn: 'https://fake123@sentry.example.com/448',
+          sentryOptions: {
+            beforeSend(event) {
+              reported = event;
+              // Return null to prevent actual sending
+              return null;
+            },
+          },
         },
       });
     });
@@ -30,7 +33,6 @@ suite(testing.suiteName(), function() {
     teardown(async function() {
       await monitor.terminate();
       reported = null;
-      assert(scope.isDone());
     });
 
     test('simple error report', async function() {

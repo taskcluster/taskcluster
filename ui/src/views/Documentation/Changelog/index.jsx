@@ -18,12 +18,20 @@ const parseMarkdownIntoSections = markdown => {
   let version = '';
   let audience = '';
   let content = [];
-  let id = 0;
+  const pushSection = () => {
+    sections.push({
+      id: sections.length,
+      version,
+      audience,
+      content,
+      html: content.join('\n'),
+    });
+  };
 
   lines.forEach(line => {
     if (line.startsWith('## ')) {
       if (version) {
-        sections.push({ version, audience, content, html: content.join('\n') });
+        pushSection();
       }
 
       version = line.slice(3);
@@ -31,7 +39,7 @@ const parseMarkdownIntoSections = markdown => {
       content = [];
     } else if (line.startsWith('### ')) {
       if (audience) {
-        sections.push({ version, audience, content, html: content.join('\n') });
+        pushSection();
         audience = '';
         content = [];
       }
@@ -42,9 +50,8 @@ const parseMarkdownIntoSections = markdown => {
     }
   });
 
-  if (version && version && content.length) {
-    sections.push({ version, audience, content, html: content.join('\n'), id });
-    id += 1;
+  if (version && content.length) {
+    pushSection();
   }
 
   return sections;
@@ -84,6 +91,11 @@ const FILTERS = ['version', 'from', 'to', 'q', 'all', 'audience'];
   },
   version: {
     cursor: 'pointer',
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    font: 'inherit',
+    color: 'inherit',
   },
 }))
 export default class Changelog extends Component {
@@ -104,12 +116,12 @@ export default class Changelog extends Component {
     const search = new URLSearchParams(this.props.location.search);
 
     this.state = {
-      version: search.get('version', ''),
-      from: search.get('from', ''),
-      to: search.get('to', ''),
-      q: search.get('q', ''),
-      all: search.get('all', ''),
-      audience: search.get('audience', ''),
+      version: search.get('version') || '',
+      from: search.get('from') || '',
+      to: search.get('to') || '',
+      q: search.get('q') || '',
+      all: search.get('all') === 'true',
+      audience: search.get('audience') || '',
     };
   }
 
@@ -153,7 +165,7 @@ export default class Changelog extends Component {
     }
   );
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(_prevProps, prevState) {
     if (FILTERS.map(key => prevState[key] !== this.state[key]).some(a => a)) {
       this.updateUrl();
     }
@@ -198,8 +210,9 @@ export default class Changelog extends Component {
             <Autocomplete
               options={this.versions}
               getOptionLabel={option => option.label}
-              onInputChange={(event, value) => this.setState({ [key]: value })}
-              defaultValue={{ label: this.state[key], value: this.state[key] }}
+              freeSolo
+              inputValue={this.state[key]}
+              onInputChange={(_event, value) => this.setState({ [key]: value })}
               renderInput={params => (
                 <TextField {...params} label={label} fullWidth />
               )}
@@ -218,11 +231,11 @@ export default class Changelog extends Component {
           <Autocomplete
             options={this.audiences}
             getOptionLabel={option => option.label}
-            onInputChange={(event, value) => this.setState({ audience: value })}
-            defaultValue={{
-              label: this.state.audience,
-              value: this.state.audience,
-            }}
+            freeSolo
+            inputValue={this.state.audience}
+            onInputChange={(_event, value) =>
+              this.setState({ audience: value })
+            }
             renderInput={params => (
               <TextField {...params} label="Audience" fullWidth />
             )}
@@ -244,11 +257,12 @@ export default class Changelog extends Component {
         {this.filteredSections(this.state).map(section => (
           <Grid key={section.id} item xs={12} className={classes.section}>
             <h1>
-              <span
+              <button
+                type="button"
                 className={classes.version}
                 onClick={() => onToggleFilter('version', section.version)}>
                 {section.version}
-              </span>
+              </button>
               {section.audience && (
                 <Chip
                   className={classes.chip}

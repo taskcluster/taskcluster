@@ -9539,6 +9539,32 @@
           "description": "Automatically cancel running task group on a non-default branch.\nUseful for PRs that are updated frequently. Only the last build will be running.\n",
           "type": "boolean"
         },
+        "hooks": {
+          "default": [
+          ],
+          "description": "Optional array of hooks to trigger. Each hook is triggered via the\nhooks.triggerHook API with a payload containing event, now,\ntaskcluster_root_url, tasks_for, taskId (a pre-allocated task group ID),\nand the user-defined context. Hook context values do not support JSON-e templating.\n",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "context": {
+                "additionalProperties": true,
+                "default": {
+                },
+                "description": "Optional arbitrary context object that will be passed to the hook\ntrigger payload under the \"context\" key. Must be JSON serializable.\n",
+                "type": "object"
+              },
+              "name": {
+                "description": "Hook identifier in the format \"<hookGroupId>/<hookId>\".\nThe hook must already exist in the Taskcluster instance.\n",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
         "policy": {
           "additionalProperties": false,
           "properties": {
@@ -13288,6 +13314,18 @@
           "description": "If true, all connections must use ssl",
           "type": "boolean"
         },
+        "gatewayClassName": {
+          "description": "GatewayClass name for the Gateway API gateway, e.g. \"gke-l7-regional-external-managed\". Required when using Gateway API (ingressType: \"gateway\").",
+          "type": "string"
+        },
+        "gatewayStaticIpName": {
+          "description": "Name of the reserved static IP address for the Gateway, e.g. \"tc-dev-gateway-ip\".",
+          "type": "string"
+        },
+        "gcpManagedCertName": {
+          "description": "Name of the GCP Certificate Manager certificate for the Gateway, e.g. \"tc-dev-gw-cert\".",
+          "type": "string"
+        },
         "github": {
           "additionalProperties": false,
           "properties": {
@@ -13854,7 +13892,7 @@
           "type": "string"
         },
         "ingressType": {
-          "description": "Allows to use non-GLB ingress types, like \"nginx\"",
+          "description": "Allows to use non-GLB ingress types: \"nginx\" for ingress-nginx, or \"gateway\" for Gateway API",
           "type": "string"
         },
         "meta": {
@@ -15072,6 +15110,9 @@
               "configmap",
               "secret",
               "ingress",
+              "gateway",
+              "httproute",
+              "healthcheckpolicy",
               "serviceaccount",
               "podmonitoring"
             ],
@@ -17984,6 +18025,33 @@
           "type": "counter"
         },
         {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
+        },
+        {
           "description": "This number represents difference in pending tasks and idle capacity.\nAdjustment is needed to make sure workers that are still running and are currently\nnot doing any work, will soon pick up those tasks, so we don't need additional workers for those.\nAssumption is that those idling workers would pick up tasks soon.",
           "labels": {
             "providerId": "ID of the provider",
@@ -17995,6 +18063,34 @@
           ],
           "title": "Adjusted pending tasks",
           "type": "gauge"
+        },
+        {
+          "description": "Most recently observed value of Azure x-ms-ratelimit-remaining-subscription-* headers",
+          "labels": {
+            "limitType": "Rate limit category: reads, writes, or deletes",
+            "providerId": "ID of the provider"
+          },
+          "name": "worker_manager_azure_ratelimit_remaining",
+          "registers": [
+            "provision",
+            "scan"
+          ],
+          "title": "Azure rate limit remaining quota",
+          "type": "gauge"
+        },
+        {
+          "description": "Count of HTTP 429 responses from Azure ARM API",
+          "labels": {
+            "operationType": "HTTP operation category: read, write, or delete",
+            "providerId": "ID of the provider"
+          },
+          "name": "worker_manager_azure_throttle_total",
+          "registers": [
+            "provision",
+            "scan"
+          ],
+          "title": "Azure API throttle events",
+          "type": "counter"
         },
         {
           "description": "This number represents the number of claimed tasks.",
@@ -18373,6 +18469,23 @@
           "version": 1
         },
         {
+          "description": "Azure ARM API returned HTTP 429 (Too Many Requests).\nIncludes rate-limit headers from the throttled response for diagnosing\nwhich subscription limits are being hit.",
+          "fields": {
+            "operationType": "HTTP operation category: read, write, or delete",
+            "providerId": "Provider ID",
+            "remainingDeletes": "x-ms-ratelimit-remaining-subscription-deletes value, or null",
+            "remainingReads": "x-ms-ratelimit-remaining-subscription-reads value, or null",
+            "remainingResource": "x-ms-ratelimit-remaining-resource raw value, or null",
+            "remainingWrites": "x-ms-ratelimit-remaining-subscription-writes value, or null",
+            "retryAfterSeconds": "Retry-After header value in seconds, or null if absent"
+          },
+          "level": "warning",
+          "name": "azureThrottled",
+          "title": "Azure API Throttled (429)",
+          "type": "azure-throttled",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -18498,7 +18611,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -18613,6 +18726,20 @@
           "name": "registrationNewIntermediateCertificate",
           "title": "Registration of New Intermediate Certificate",
           "type": "registration-new-intermediate-certificate",
+          "version": 1
+        },
+        {
+          "description": "A worker registration attempted to download an intermediate certificate from\na URL that is outside the configured AIA allowlist.",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "url": "The rejected intermediate certificate URL",
+            "workerId": "The worker that failed",
+            "workerPoolId": "The worker pool ID"
+          },
+          "level": "warning",
+          "name": "registrationRejectedIntermediateCertificateUrl",
+          "title": "Registration Rejected Intermediate Certificate URL",
+          "type": "registration-rejected-intermediate-certificate-url",
           "version": 1
         },
         {
@@ -19921,6 +20048,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "web-server"
@@ -20085,7 +20239,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -20351,6 +20505,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "secrets"
@@ -20491,7 +20672,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -20740,6 +20921,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         },
         {
           "description": "Total number of claimed tasks",
@@ -21013,7 +21221,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -22002,7 +22210,7 @@
     "content": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The queue service is responsible for accepting tasks and tracking their state\nas they are executed by workers, in order to ensure they are eventually\nresolved.\n\n## Artifact Storage Types\n\n* **Object artifacts** contain arbitrary data, stored via the object service.\n* **Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n* **Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n* **Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n* **S3 artifacts** are used for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`. S3 artifacts will be deprecated soon,\nand users should prefer object artifacts instead.\n\n## Artifact immutability\n\nGenerally speaking you cannot overwrite an artifact when created.\nBut if you repeat the request with the same properties the request will\nsucceed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nThe queue defines the following *immutability special cases*:\n\n* A `reference` artifact can replace an existing `reference` artifact.\n* A `link` artifact can replace an existing `reference` artifact.\n* Any artifact's `expires` can be extended (made later, but not earlier).",
+      "description": "The queue service is responsible for accepting tasks and tracking their state\nas they are executed by workers, in order to ensure they are eventually\nresolved.\n\n## Artifact Storage Types\n\n* **Object artifacts** contain arbitrary data, stored via the object service.\n* **Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n* **Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n* **Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example generic-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n* **S3 artifacts** are used for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`. S3 artifacts will be deprecated soon,\nand users should prefer object artifacts instead.\n\n## Artifact immutability\n\nGenerally speaking you cannot overwrite an artifact when created.\nBut if you repeat the request with the same properties the request will\nsucceed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nThe queue defines the following *immutability special cases*:\n\n* A `reference` artifact can replace an existing `reference` artifact.\n* A `link` artifact can replace an existing `reference` artifact.\n* Any artifact's `expires` can be extended (made later, but not earlier).",
       "entries": [
         {
           "args": [
@@ -23125,6 +23333,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "purge-cache"
@@ -23265,7 +23500,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -23499,6 +23734,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "object"
@@ -23639,7 +23901,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -23906,6 +24168,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "notify"
@@ -24057,7 +24346,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -24525,6 +24814,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "index"
@@ -24665,7 +24981,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -25011,6 +25327,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "hooks"
@@ -25151,7 +25494,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -25668,6 +26011,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "github"
@@ -25840,7 +26210,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -26380,6 +26750,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "built-in-workers"
@@ -26472,7 +26869,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -26611,6 +27008,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "auth"
@@ -26751,7 +27175,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",

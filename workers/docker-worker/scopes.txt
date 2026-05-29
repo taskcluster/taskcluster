@@ -1,1 +1,0 @@
---scopes assume:project:taskcluster:docker-worker-tester

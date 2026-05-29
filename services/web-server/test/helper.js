@@ -155,7 +155,10 @@ helper.withServer = (mock, skipping) => {
       return;
     }
     if (webServer) {
-      await new Promise(resolve => webServer.close(resolve));
+      await new Promise(resolve => {
+        webServer.close(resolve);
+        webServer.closeAllConnections();
+      });
       webServer = null;
     }
   });

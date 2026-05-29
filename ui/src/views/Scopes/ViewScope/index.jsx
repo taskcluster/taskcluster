@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { graphql } from 'react-apollo';
 import { parse, stringify } from 'qs';
 import dotProp from 'dot-prop-immutable';
@@ -72,7 +72,7 @@ export default class ViewScope extends Component {
     }
   };
 
-  handleTabChange = (event, value) => {
+  handleTabChange = (_event, value) => {
     const { location, history } = this.props;
     const query = parse(location.search.slice(1));
 
@@ -111,33 +111,31 @@ export default class ViewScope extends Component {
             defaultValue={searchTerm}
           />
         }>
-        <Fragment>
-          <Tabs
-            className={classes.tabs}
-            variant="fullWidth"
-            value={currentTabIndex}
-            onChange={this.handleTabChange}>
-            <Tab label="Roles" />
-            <Tab label="Clients" />
-          </Tabs>
-          {loading && <Spinner loading />}
-          <ErrorPanel fixed error={error} />
-          {roles && currentTabIndex === 0 && (
-            <RoleScopesTable
-              roles={roles}
-              searchTerm={searchTerm}
-              selectedScope={selectedScope}
-            />
-          )}
-          {clients && currentTabIndex === 1 && (
-            <ClientScopesTable
-              clientsConnection={clients}
-              onPageChange={this.handleClientsPageChange}
-              searchTerm={searchTerm}
-              selectedScope={selectedScope}
-            />
-          )}
-        </Fragment>
+        <Tabs
+          className={classes.tabs}
+          variant="fullWidth"
+          value={currentTabIndex}
+          onChange={this.handleTabChange}>
+          <Tab label="Roles" />
+          <Tab label="Clients" />
+        </Tabs>
+        {loading && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        {roles && currentTabIndex === 0 && (
+          <RoleScopesTable
+            roles={roles}
+            searchTerm={searchTerm}
+            selectedScope={selectedScope}
+          />
+        )}
+        {clients && currentTabIndex === 1 && (
+          <ClientScopesTable
+            clientsConnection={clients}
+            onPageChange={this.handleClientsPageChange}
+            searchTerm={searchTerm}
+            selectedScope={selectedScope}
+          />
+        )}
       </Dashboard>
     );
   }

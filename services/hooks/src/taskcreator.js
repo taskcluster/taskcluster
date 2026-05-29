@@ -28,7 +28,7 @@ export class TaskCreator {
 
   taskForHook(hook, context, options) {
     const now = options.created;
-    let task = jsone(hook.task, _.defaults({}, { now, taskId: options.taskId }, context));
+    let task = jsone(hook.task, _.defaults({}, context, { now, taskId: options.taskId }));
     if (!task) {
       return;
     }
@@ -120,7 +120,7 @@ export class TaskCreator {
 
       if (!task) {
         this.monitor.count(`fire.${context.firedBy}.declined`);
-        return { response: {}, declined: true };
+        return { declined: true };
       }
       this.monitor.count(`fire.${context.firedBy}.created`);
 

@@ -700,7 +700,7 @@ suite(testing.suiteName(), function() {
         rootUrl: 'https://tc.example.com',
       });
       await assert.rejects(
-        taskcluster.makeRequest(client, 'GET', 'https://127.0.0.1:' + server.address().port),
+        taskcluster.makeRequest(client, 'GET', 'http://127.0.0.1:' + server.address().port),
         err => err.code === 'ECONNABORTED');
     } finally {
       await new Promise(resolve => server.close(resolve));

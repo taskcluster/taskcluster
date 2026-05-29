@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -9,6 +10,9 @@ import (
 )
 
 func TestLoopbackVideo(t *testing.T) {
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		t.Skip("Skipping in Docker: loopback video requires kernel modules not available in containers")
+	}
 	setup(t)
 
 	devicePath := fmt.Sprintf("/dev/video%d", config.LoopbackVideoDeviceNumber)

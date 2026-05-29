@@ -16,6 +16,8 @@ bare_defaults = {
 }
 
 
+# "docker-worker" here names the payload format emitted by these transforms;
+# the tasks run on generic-worker, which accepts docker-worker payloads via d2g.
 @run_task_using("docker-worker", "bare", schema=BareSchema, defaults=bare_defaults)
 def bare_docker_worker(config, job, taskdesc):
     run = job["run"]

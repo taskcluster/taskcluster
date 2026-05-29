@@ -11,9 +11,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/host"
-	gwruntime "github.com/taskcluster/taskcluster/v97/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/win32"
+	"golang.org/x/sys/windows"
+
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/host"
+	gwruntime "github.com/taskcluster/taskcluster/v100/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/win32"
 )
 
 var sidsThatCanControlDesktopAndWindowsStation map[string]bool = map[string]bool{}
@@ -90,16 +92,16 @@ func newCommand(f func() *exec.Cmd, workingDirectory string, env []string, pd *P
 	cmd.Env = *combined
 	cmd.Dir = workingDirectory
 	isWindows8OrGreater := win32.IsWindows8OrGreater()
-	creationFlags := uint32(win32.CREATE_NEW_PROCESS_GROUP)
+	creationFlags := uint32(windows.CREATE_NEW_PROCESS_GROUP)
 
 	if pd.HideCmdWindow {
-		creationFlags |= win32.CREATE_NO_WINDOW
+		creationFlags |= windows.CREATE_NO_WINDOW
 	} else {
-		creationFlags |= win32.CREATE_NEW_CONSOLE
+		creationFlags |= windows.CREATE_NEW_CONSOLE
 	}
 
 	if !isWindows8OrGreater {
-		creationFlags |= win32.CREATE_BREAKAWAY_FROM_JOB
+		creationFlags |= windows.CREATE_BREAKAWAY_FROM_JOB
 	}
 
 	if accessToken != 0 {
@@ -134,7 +136,7 @@ func NewCommandNoOutputStreams(commandLine []string, workingDirectory string, en
 
 func (c *Command) Kill() (killOutput string, err error) {
 	// abort even if process hasn't started
-	close(c.abort)
+	c.abortOnce.Do(func() { close(c.abort) })
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	if c.Process == nil {

@@ -13,10 +13,10 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v97/clients/client-go"
-	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/process"
 )
 
 var (
@@ -168,8 +168,8 @@ func (task *TaskRun) classifyCreateArtifactError(artifact artifacts.TaskArtifact
 	}
 }
 
-func copyToTempFileAsTaskUser(filePath string, pd *process.PlatformData) (tempFilePath string, err error) {
-	tempFilePath, err = gwCopyToTempFile(filePath, pd)
+func copyToTempFileAsTaskUser(filePath string, pd *process.PlatformData, taskDir string) (tempFilePath string, err error) {
+	tempFilePath, err = gwCopyToTempFile(filePath, pd, taskDir)
 
 	if runtime.GOOS == "windows" {
 		// Windows syscall logs are sent to stdout, even though the code appears

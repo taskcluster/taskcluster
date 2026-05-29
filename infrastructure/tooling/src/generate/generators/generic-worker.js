@@ -81,17 +81,17 @@ tasks.push({
     gwHelp = gwHelp.replace(/\[default \(varies by platform\): .*\]/, '[default varies by platform]');
 
     const ticks = '```';
-    [
+    for (const file of [
       path.join('workers', 'generic-worker', 'README.md'),
       path.join('ui', 'docs', 'reference', 'workers', 'generic-worker', 'usage.mdx'),
-    ].forEach(async file => {
+    ]) {
       await modifyRepoFile(
         file,
         async content => content
           .replace(
             /(<!-- HELP BEGIN -->)(?:.|\n)*(<!-- HELP END -->)/m,
             `$1\n${ticks}\n${gwHelp.trimRight()}\n${ticks}\n$2`));
-    });
+    }
   },
 });
 

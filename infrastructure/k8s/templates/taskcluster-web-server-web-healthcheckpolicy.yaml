@@ -1,0 +1,22 @@
+{{- if and (eq (.Values.ingressType | default "") "gateway") (hasPrefix "gke-" (.Values.gatewayClassName | default "")) (not (has "healthcheckpolicy" .Values.skipResourceTypes)) -}}
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: taskcluster-web-server-web-hc
+  labels:
+    app.kubernetes.io/name: taskcluster-web-server-web-hc
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-web-server-web-hc-healthcheckpolicy
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  default:
+    config:
+      type: HTTP
+      httpHealthCheck:
+        requestPath: /api/web-server/v1/ping
+        port: 8080
+  targetRef:
+    group: ''
+    kind: Service
+    name: taskcluster-web-server
+{{- end }}

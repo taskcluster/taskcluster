@@ -79,7 +79,7 @@ tc-signin --name smoketest --scope assume:project:taskcluster:smoketests
 ### Using Clients in a Task
 
 Code running in a properly-configured task can use the scopes afforded to that task directly, avoiding handling any Taskcluster credentials directly.
-This functionality is implemented by [taskcluster-proxy](https://github.com/taskcluster/taskcluster-proxy), which is integrated into both docker-worker and generic-worker.
+This functionality is implemented by [taskcluster-proxy](https://github.com/taskcluster/taskcluster/tree/main/tools/taskcluster-proxy), which is integrated into generic-worker (including for tasks using the legacy docker-worker payload format, translated via [d2g](https://github.com/taskcluster/taskcluster/tree/main/tools/d2g)).
 
 To activate it, include `taskclusterProxy: true` in the task payload's `features` property:
 

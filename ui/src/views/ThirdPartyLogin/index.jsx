@@ -39,7 +39,7 @@ export default class ThirdPartyLogin extends Component {
     if (
       !data ||
       state.formData ||
-      !(data.currentScopes instanceof Array) ||
+      !Array.isArray(data.currentScopes) ||
       !query.transactionID
     ) {
       return null;
@@ -96,7 +96,7 @@ export default class ThirdPartyLogin extends Component {
 
     return (
       <Dashboard title="Third Party Login">
-        {data && data.loading && <Spinner loading />}
+        {data?.loading && <Spinner loading />}
         {formData && (
           <AuthConsent
             transactionID={this.parsedQuery.transactionID}

@@ -1,4 +1,4 @@
-//go:generate go run ../../workers/generic-worker/gw-codegen file://../../workers/docker-worker/schemas/v1/payload.yml dockerworker/generated_types.go
+//go:generate go run ../../workers/generic-worker/gw-codegen file://schemas/docker-worker/v1/payload.yml dockerworker/generated_types.go
 //go:generate go run ../../workers/generic-worker/gw-codegen file://../../workers/generic-worker/schemas/multiuser_posix.yml genericworker/generated_types.go
 
 package d2g
@@ -13,9 +13,9 @@ import (
 	"testing"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v97/internal/scopes"
-	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v97/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v100/internal/scopes"
+	"github.com/taskcluster/taskcluster/v100/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v100/tools/d2g/genericworker"
 
 	"slices"
 
@@ -398,6 +398,18 @@ func runCommand(
 	// https://docs.docker.com/reference/cli/docker/container/run/
 	args = append(args, "--memory-swap", "-1", "--pids-limit", "-1")
 
+	// The d2g task feature always ensures that the image is
+	// available locally (via docker pull or docker load) before running
+	// the container. Skip the local image lookup since we know the
+	// image is already present.
+	args = append(args, "--pull=never")
+
+	// Generic worker captures task output directly via process
+	// stdout/stderr. Docker's log driver would write a redundant copy
+	// of all output to disk that is never read (the container is
+	// removed after the task). Disable it to save disk I/O.
+	args = append(args, "--log-driver=none")
+
 	if dwPayload.Capabilities.Privileged && config.AllowPrivileged {
 		args = append(args, "--privileged")
 	} else if dwPayload.Features.AllowPtrace && config.AllowPtrace {
@@ -412,7 +424,10 @@ func runCommand(
 	args = append(args, createVolumeMountArgs(dwPayload, wdcs, gwArtifacts, config)...)
 
 	if dwPayload.Features.TaskclusterProxy && config.AllowTaskclusterProxy {
-		args = append(args, "--add-host=taskcluster:host-gateway")
+		// Use per-task Docker network for tc-proxy isolation.
+		// The network name and gateway IP are set by generic-worker at runtime.
+		args = append(args, "--network", "__TASKCLUSTER_DOCKER_NETWORK__")
+		args = append(args, "--add-host=taskcluster:__TASKCLUSTER_PROXY_GATEWAY__")
 	}
 
 	if config.AllowGPUs {

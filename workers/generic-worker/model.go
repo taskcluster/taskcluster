@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v97/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v97/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v97/tools/d2g"
-	"github.com/taskcluster/taskcluster/v97/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v97/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v100/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v100/tools/d2g"
+	"github.com/taskcluster/taskcluster/v100/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/process"
 )
 
 type (
@@ -57,6 +57,12 @@ type (
 		FileMountHandlers   map[string]FileMountHandler       `json:"-"`
 		D2GInfo             *d2g.ConversionInfo               `json:"-"`
 		DockerWorkerPayload *dockerworker.DockerWorkerPayload `json:"-"`
+		// Context holds per-task context including task directory and user.
+		// This replaces the global taskContext for concurrent task execution.
+		Context *TaskContext `json:"-"`
+		// AllocatedPorts holds the ports allocated to this task by PortManager.
+		// Indexed by PortIndex* constants.
+		AllocatedPorts []uint16 `json:"-"`
 	}
 
 	TaskStatus       string
@@ -67,6 +73,45 @@ type (
 	// cached file and its SHA256 hash.
 	FileMountHandler func(cachedFile, sha256 string) error
 )
+
+// GetContext returns the task's context.
+// Every task must have a Context set; this method panics if Context is nil.
+func (task *TaskRun) GetContext() *TaskContext {
+	if task.Context == nil {
+		panic("task.Context is nil - every task must have a context assigned")
+	}
+	return task.Context
+}
+
+// TaskDir returns the task's working directory.
+func (task *TaskRun) TaskDir() string {
+	return task.GetContext().TaskDir
+}
+
+// LiveLogPorts returns the PUT and GET ports for livelog.
+// Returns (putPort, getPort, ok) where ok is false if ports weren't allocated.
+func (task *TaskRun) LiveLogPorts() (putPort, getPort uint16, ok bool) {
+	if len(task.AllocatedPorts) < 2 {
+		return 0, 0, false
+	}
+	return task.AllocatedPorts[PortIndexLiveLogPUT], task.AllocatedPorts[PortIndexLiveLogGET], true
+}
+
+// InteractivePort returns the interactive shell port.
+func (task *TaskRun) InteractivePort() (uint16, bool) {
+	if len(task.AllocatedPorts) <= PortIndexInteractive {
+		return 0, false
+	}
+	return task.AllocatedPorts[PortIndexInteractive], true
+}
+
+// TaskclusterProxyPort returns the taskcluster-proxy port.
+func (task *TaskRun) TaskclusterProxyPort() (uint16, bool) {
+	if len(task.AllocatedPorts) <= PortIndexTaskclusterProxy {
+		return 0, false
+	}
+	return task.AllocatedPorts[PortIndexTaskclusterProxy], true
+}
 
 func (task *TaskRun) String() string {
 	response := fmt.Sprintf("Task Id:                 %v\n", task.TaskID)

@@ -14,14 +14,12 @@ import {
  * Generate a Node.js example for an API endpoint
  *
  * @param {string} serviceName - Service name (e.g., 'queue')
- * @param {string} apiVersion - API version (e.g., 'v1')
  * @param {object} entry - API entry metadata
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} Node.js code example
  */
 export default function generateNodeExample(
   serviceName,
-  apiVersion,
   entry,
   payloadExample = null
 ) {
