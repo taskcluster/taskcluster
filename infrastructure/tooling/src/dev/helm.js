@@ -59,12 +59,14 @@ const actions = [
       const match = /(SemVer|Version):"(v[0-9]+.[0-9]+.[0-9]+-?[^"]*)"/g.exec(res);
       if (!match) {
         throw new Error(`Could not determine helm version from: ${res}`);
-      } else if (match[2].includes('v3')) {
-        return { 'helm-version': 3 };
-      } else if (match[2].includes('v2')) {
+      }
+      const major = parseInt(match[2].replace(/^v/, '').split('.')[0], 10);
+      if (major >= 3) {
+        return { 'helm-version': major };
+      } else if (major === 2) {
         return { 'helm-version': 2 };
       } else {
-        throw new Error(`Must use supported helm version (2 or 3). You have ${match[2]}`);
+        throw new Error(`Must use supported helm version (2 or 3+). You have ${match[2]}`);
       }
     },
   },
