@@ -1,6 +1,5 @@
 import assert from 'node:assert';
 import helper from './helper.js';
-import _ from 'lodash';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 import { Worker, WorkerPoolError, WorkerPoolStats } from '../src/data.js';

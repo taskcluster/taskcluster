@@ -1,7 +1,6 @@
 import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import helper from './helper.js';
-import _ from 'lodash';
 import { Worker } from '../src/data.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
