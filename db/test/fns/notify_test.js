@@ -24,8 +24,8 @@ suite(testing.suiteName(), function() {
     await db.fns.add_denylist_address(n1.notificationType, n1.notificationAddress);
     const addresses = await db.fns.all_denylist_addresses(10, 0);
     assert.equal(addresses.length, 1);
-    assert.equal(addresses[0]["notification_type"], n1.notificationType);
-    assert.equal(addresses[0]["notification_address"], n1.notificationAddress);
+    assert.equal(addresses[0].notification_type, n1.notificationType);
+    assert.equal(addresses[0].notification_address, n1.notificationAddress);
   });
 
   helper.dbTest('add denylist address that already exists', async function(db) {
@@ -37,8 +37,8 @@ suite(testing.suiteName(), function() {
     await db.fns.add_denylist_address(n1.notificationType, n1.notificationAddress);
     const addresses = await db.fns.all_denylist_addresses(10, 0);
     assert.equal(addresses.length, 1);
-    assert.equal(addresses[0]["notification_type"], n1.notificationType);
-    assert.equal(addresses[0]["notification_address"], n1.notificationAddress);
+    assert.equal(addresses[0].notification_type, n1.notificationType);
+    assert.equal(addresses[0].notification_address, n1.notificationAddress);
   });
 
   helper.dbTest('delete denylist address that already exists', async function(db) {
@@ -65,8 +65,8 @@ suite(testing.suiteName(), function() {
     await db.fns.delete_denylist_address(n2.notificationType, n2.notificationAddress);
     const addresses = await db.fns.all_denylist_addresses(10, 0);
     assert.equal(addresses.length, 1);
-    assert.equal(addresses[0]["notification_type"], n1.notificationType);
-    assert.equal(addresses[0]["notification_address"], n1.notificationAddress);
+    assert.equal(addresses[0].notification_type, n1.notificationType);
+    assert.equal(addresses[0].notification_address, n1.notificationAddress);
   });
 
   helper.dbTest('test denylist address pagination', async function(db) {
@@ -85,8 +85,8 @@ suite(testing.suiteName(), function() {
     // so returned record should be n1 not n2
     const addresses = await db.fns.all_denylist_addresses(10, 1);
     assert.equal(addresses.length, 1);
-    assert.equal(addresses[0]["notification_type"], n1.notificationType);
-    assert.equal(addresses[0]["notification_address"], n1.notificationAddress);
+    assert.equal(addresses[0].notification_type, n1.notificationType);
+    assert.equal(addresses[0].notification_address, n1.notificationAddress);
   });
 
   helper.dbTest('test denylist existence check', async function(db) {
@@ -102,7 +102,7 @@ suite(testing.suiteName(), function() {
     await db.fns.add_denylist_address(n2.notificationType, n2.notificationAddress);
     const exists = await db.fns.exists_denylist_address(n2.notificationType, n2.notificationAddress);
     assert.equal(exists.length, 1);
-    assert(!!exists[0]["exists_denylist_address"]);
+    assert(!!exists[0].exists_denylist_address);
   });
 
   helper.dbTest('test denylist nonexistence check', async function(db) {
@@ -122,6 +122,6 @@ suite(testing.suiteName(), function() {
     await db.fns.add_denylist_address(n2.notificationType, n2.notificationAddress);
     const exists = await db.fns.exists_denylist_address(n3.notificationType, n3.notificationAddress);
     assert.equal(exists.length, 1);
-    assert(!exists[0]["exists_denylist_address"]);
+    assert(!exists[0].exists_denylist_address);
   });
 });

@@ -2174,7 +2174,7 @@ export class AzureProvider extends Provider {
         }
       }
       // check for un-deleted disks
-      if (!disksDeleted || _.some(worker.providerData.disks.map(i => i['id']))) {
+      if (!disksDeleted || _.some(worker.providerData.disks.map(i => i.id))) {
         return;
       }
 

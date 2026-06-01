@@ -790,7 +790,7 @@ class Database {
   decrypt({ value }) {
     const key = this.keyring.getCryptoKey(value.kid, 'aes-256');
 
-    const n = value['__bufchunks_val'];
+    const n = value.__bufchunks_val;
     const chunks = [];
     for (let i = 0; i < n; i++) {
       chunks[i] = Buffer.from(value['__buf' + i + '_val'], 'base64');

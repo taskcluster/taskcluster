@@ -90,7 +90,7 @@ suite(testing.suiteName(), function() {
 
         // create the authorization "header"
         let url = 'https://' + input.host + input.resource;
-        input['authorization'] = hawk.client.header(
+        input.authorization = hawk.client.header(
           url, input.method, input.authorization).header;
       }
 

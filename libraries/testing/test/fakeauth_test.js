@@ -105,7 +105,7 @@ suite(testing.suiteName(), function() {
       },
     };
     if (extContent) {
-      content['ext'] = Buffer.from(JSON.stringify(extContent)).toString('base64');
+      content.ext = Buffer.from(JSON.stringify(extContent)).toString('base64');
     }
 
     let { header } = hawk.client.header(reqUrl, 'GET', content);

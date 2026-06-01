@@ -36,7 +36,7 @@ suite(path.basename(__filename), function() {
       assert(ver1.migrationScript.startsWith('begin'));
 
       const ver2 = sch.getVersion(2);
-      assert(ver2.methods['list_secrets'].body.startsWith('begin'));
+      assert(ver2.methods.list_secrets.body.startsWith('begin'));
     });
 
     test('disallow duplicate method names', function () {
