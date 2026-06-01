@@ -63,7 +63,7 @@ const declareWithTrailingColon = (options, handler) => {
   const colonOptions = {
     ...options,
     route: options.route.replace("/workers/:workerPoolId/", "/workers/:workerPoolId:/"),
-    name: options.name + 'WithColon',
+    name: `${options.name}WithColon`,
     noPublish: true,
   };
   builder.declare(colonOptions, handler);

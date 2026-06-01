@@ -1250,7 +1250,7 @@ builder.declare({
     signatureValidator: createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
-          throw new Error('Client with clientId \'' + clientId + '\' not found');
+          throw new Error(`Client with clientId '${clientId}' not found`);
         }
         return {
           clientId: 'tester',
@@ -1307,7 +1307,7 @@ builder.declare({
     signatureValidator: createSignatureValidator({
       clientLoader: async (clientId) => {
         if (clientId !== 'tester') {
-          throw new Error('Client with clientId \'' + clientId + '\' not found');
+          throw new Error(`Client with clientId '${clientId}' not found`);
         }
         return {
           clientId: 'tester',

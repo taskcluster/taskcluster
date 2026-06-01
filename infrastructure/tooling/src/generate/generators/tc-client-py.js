@@ -10,7 +10,7 @@ const HEADER = `\
 `;
 
 const writePyFile = async (filename, content, omitHeader) => {
-  await writeRepoFile(path.join(filename), (omitHeader ? '' : HEADER) + content.trim() + '\n');
+  await writeRepoFile(path.join(filename), `${(omitHeader ? '' : HEADER) + content.trim()}\n`);
 };
 
 // poor man's python repr(..)
@@ -114,7 +114,7 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
       if (entry.description) {
         let ds = entry.description;
         if (entry.title) {
-          ds = entry.title + '\n\n' + ds;
+          ds = `${entry.title}\n\n${ds}`;
         }
         if (entry.stability) {
           ds = `${ds}\n\nThis method is \`\`${entry.stability}\`\``;
@@ -143,7 +143,7 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
       if (entry.description) {
         ds = entry.description || '';
         if (entry.title) {
-          ds = entry.title + '\n\n' + ds;
+          ds = `${entry.title}\n\n${ds}`;
         }
         if (entry.stability) {
           ds = `${ds}\n\nThis method is \`\`${entry.stability}\`\``;

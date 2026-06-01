@@ -20,7 +20,7 @@ tasks.push({
   run: async (requirements, utils) => {
     const queue = new taskcluster.Queue(taskcluster.fromEnvVars());
     const randomId = taskcluster.slugid();
-    const taskIndex = 'project.taskcluster.smoketest.' + randomId;
+    const taskIndex = `project.taskcluster.smoketest.${randomId}`;
     const task = {
       provisionerId: 'built-in',
       workerType: 'succeed',
@@ -37,7 +37,7 @@ tasks.push({
       payload: {},
       routes: [`index.${taskIndex}`],
     };
-    utils.status({ message: 'indexTask-find taskId: ' + randomId });
+    utils.status({ message: `indexTask-find taskId: ${randomId}` });
     await queue.createTask(randomId, task);
     const index = new taskcluster.Index(taskcluster.fromEnvVars());
     const pollForStatusStart = new Date();
@@ -45,7 +45,7 @@ tasks.push({
       const status = await queue.status(randomId);
       if (status.status.state === 'pending' || status.status.state === 'running') {
         utils.status({
-          message: 'Current task status: ' + status.status.state,
+          message: `Current task status: ${status.status.state}`,
         });
       } else if (status.status.state === 'completed') {
         try {

@@ -282,7 +282,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
 
       // append this TC release version and DB version to the list of releases
       await modifyRepoFile(releasesFile,
-        content => content.trim() + `\n${tcVersion}: ${dbVersion}\n`);
+        content => `${content.trim()}\n${tcVersion}: ${dbVersion}\n`);
 
       return {
         // load the whole txt file into `db-releases`

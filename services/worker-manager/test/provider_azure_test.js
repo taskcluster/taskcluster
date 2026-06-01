@@ -465,7 +465,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(providerData.location, 'westus');
       assert.equal(providerData.resourceGroupName, 'rgrp');
       assert.equal(providerData.workerConfig, undefined);
-      assert.equal(providerData.tags['created-by'], 'taskcluster-wm-' + providerId);
+      assert.equal(providerData.tags['created-by'], `taskcluster-wm-${providerId}`);
       assert.equal(providerData.tags['managed-by'], 'taskcluster');
       assert.equal(providerData.tags['provider-id'], providerId);
       assert.equal(providerData.tags['worker-group'], 'westus');
@@ -507,7 +507,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const worker = await provisionWorkerPool({
         tags: { 'created-by': 'me!' },
       });
-      assert.equal(worker.providerData.tags['created-by'], 'taskcluster-wm-' + providerId);
+      assert.equal(worker.providerData.tags['created-by'], `taskcluster-wm-${providerId}`);
       helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
     });
 
@@ -1454,7 +1454,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           primary: true,
         },
       ]);
-      assert.equal(vmParams.tags['created-by'], 'taskcluster-wm-' + providerId);
+      assert.equal(vmParams.tags['created-by'], `taskcluster-wm-${providerId}`);
       assert.equal(vmParams.tags['managed-by'], 'taskcluster');
       assert.equal(vmParams.tags['provider-id'], providerId);
       assert.equal(vmParams.tags['worker-group'], 'westus');

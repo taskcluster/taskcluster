@@ -21,12 +21,12 @@ export const queryValidator = ({ entry }) => {
       if (!pattern) {
         // Allow the bewit key, it's used in signed strings
         if (key !== 'bewit') {
-          errors.push('Query-string parameter: ' + key + ' is not supported!');
+          errors.push(`Query-string parameter: ${key} is not supported!`);
         }
         return;
       }
       if (typeof value !== 'string') {
-        errors.push('Query-string parameter: ' + key + ' must be a string!');
+        errors.push(`Query-string parameter: ${key} must be a string!`);
         return;
       }
       if (pattern instanceof RegExp) {

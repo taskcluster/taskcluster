@@ -7,7 +7,7 @@ export default ({ userConfig, prompts, configTmpl }) => {
     message: 'What is the root url you will use for this deployment?',
     filter: rootUrl => {
       if (!rootUrl.includes('://')) {
-        rootUrl = 'https://' + rootUrl;
+        rootUrl = `https://${rootUrl}`;
       }
       return rootUrl;
     },

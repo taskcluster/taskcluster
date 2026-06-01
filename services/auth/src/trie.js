@@ -188,7 +188,7 @@ const transformRules = (rules) => rules.map(({ pattern, scopes }) => {
       throw err;
     }
     // We forbid ambiguous kleenes
-    if (s.endsWith('*' + PARAM)) {
+    if (s.endsWith(`*${PARAM}`)) {
       const scope = s.replace(PARAM, '<..>');
       const err = new Error(`parameterized scope '${scope}' ends with '*<..>' which implies an ambiguous kleene`);
       err.code = 'InvalidScopeError';

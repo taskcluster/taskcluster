@@ -73,7 +73,7 @@ export const execCommand = async ({
       if (keepAllOutput) {
         output += chunk.toString();
       } else {
-        output = '...\n' + chunk.toString();
+        output = `...\n${chunk.toString()}`;
       }
       callback(null, chunk);
     },
