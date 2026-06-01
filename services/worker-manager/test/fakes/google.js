@@ -1,5 +1,5 @@
 import { FakeCloud } from './fake.js';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import slugid from 'slugid';
 import google from '@googleapis/compute';
 import gcpIam from '@googleapis/iam';

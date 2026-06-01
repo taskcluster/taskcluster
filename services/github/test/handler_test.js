@@ -1,7 +1,7 @@
 import debugFactory from 'debug';
 const debug = debugFactory('test');
 import helper from './helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import sinon from 'sinon';
 import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
@@ -9,8 +9,8 @@ import taskcluster from '@taskcluster/client';
 import { LEVELS } from '@taskcluster/lib-monitor';
 import { CHECKLOGS_TEXT, CHECKRUN_TEXT, CHECK_TASK_GROUP_TEXT } from '../src/constants.js';
 import utils from '../src/utils.js';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const dataDir = new URL('./data', import.meta.url).pathname;
 const loadJson = filename => JSON.parse(fs.readFileSync(path.join(dataDir, filename), 'utf8'));

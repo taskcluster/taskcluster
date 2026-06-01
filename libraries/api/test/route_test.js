@@ -1,5 +1,5 @@
 import request from 'superagent';
-import assert from 'assert';
+import assert from 'node:assert';
 import { APIBuilder } from '../src/index.js';
 import slugid from 'slugid';
 import helper from './helper.js';

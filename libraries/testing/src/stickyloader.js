@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 
 const stickyLoader = load => {
   let overwrites = {};

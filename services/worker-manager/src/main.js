@@ -17,7 +17,7 @@ import { WorkerScanner } from './worker-scanner.js';
 import { WorkerPool, WorkerPoolError, Worker, WorkerPoolLaunchConfig } from './data.js';
 import { LaunchConfigSelector } from './launch-config-selector.js';
 import './monitor.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 let load = loader({
   cfg: {

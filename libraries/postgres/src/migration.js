@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import { dollarQuote, ETA } from './util.js';
 import { UNDEFINED_FUNCTION } from './constants.js';
 

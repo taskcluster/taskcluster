@@ -1,5 +1,5 @@
 import { FakeCloud } from './fake.js';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 
 import azureApi from '../../src/providers/azure/azure-api.js';
 

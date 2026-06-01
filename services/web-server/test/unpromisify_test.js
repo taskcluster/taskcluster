@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import unpromisify from '../src/utils/unpromisify.js';
 import testing from '@taskcluster/lib-testing';
 

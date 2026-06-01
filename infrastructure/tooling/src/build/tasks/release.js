@@ -1,7 +1,7 @@
 import { Octokit } from '@octokit/rest';
-import fs from 'fs';
-import util from 'util';
-import path from 'path';
+import fs from 'node:fs';
+import util from 'node:util';
+import path from 'node:path';
 
 import {
   ensureTask,

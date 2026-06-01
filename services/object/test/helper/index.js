@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import loadMain from '../../src/main.js';
 import builder from '../../src/api.js';

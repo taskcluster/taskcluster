@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import { Octokit as github } from '@octokit/rest';
 import fakeGithubAuth from './github-auth.js';

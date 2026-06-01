@@ -1,5 +1,5 @@
 import helper from './helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
 import testing from '@taskcluster/lib-testing';
 

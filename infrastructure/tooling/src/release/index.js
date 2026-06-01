@@ -1,4 +1,4 @@
-import os from 'os';
+import os from 'node:os';
 import { TaskGraph, Lock, ConsoleRenderer, LogRenderer } from 'console-taskgraph';
 import generateReleaseTasks from './tasks.js';
 

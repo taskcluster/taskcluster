@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import cronstrue from 'cronstrue';
 import { markdownTable } from 'markdown-table';
 import { listServices, modifyRepoFile } from '../../utils/index.js';

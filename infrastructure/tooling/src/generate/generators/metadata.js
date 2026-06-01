@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import path from 'path';
+import path from 'node:path';
 import config from '@taskcluster/lib-config';
 import { listServices, readRepoYAML } from '../../utils/index.js';
 

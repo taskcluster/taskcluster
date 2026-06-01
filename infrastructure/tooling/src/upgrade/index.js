@@ -1,4 +1,4 @@
-import readline from 'readline/promises';
+import readline from 'node:readline/promises';
 import {
   execCommandOutput,
   execCommandVisible,

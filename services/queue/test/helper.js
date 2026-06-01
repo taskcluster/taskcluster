@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
 import builder from '../src/api.js';
@@ -17,7 +17,7 @@ import {
 import { mockClient } from 'aws-sdk-client-mock';
 import nock from 'nock';
 import testing from '@taskcluster/lib-testing';
-import { globalAgent } from 'http';
+import { globalAgent } from 'node:http';
 
 export const load = testing.stickyLoader(loadMain);
 const __dirname = new URL('.', import.meta.url).pathname;

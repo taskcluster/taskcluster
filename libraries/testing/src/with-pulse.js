@@ -1,6 +1,6 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { QlobberTrue } from 'qlobber';
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
 import debug from 'debug';
 
 export default ({ helper, skipping, namespace }) => {

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import request from 'superagent';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';

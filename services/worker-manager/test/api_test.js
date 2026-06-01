@@ -1,11 +1,11 @@
 import taskcluster from '@taskcluster/client';
 import slug from 'slugid';
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import { WorkerPool, Worker } from '../src/data.js';
 import testing from '@taskcluster/lib-testing';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);

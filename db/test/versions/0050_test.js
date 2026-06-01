@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import helper from '../helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);

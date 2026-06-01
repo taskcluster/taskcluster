@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import glob from 'glob';
 import { REPO_ROOT, readRepoYAML, modifyRepoFile, writeRepoFile, execCommand } from '../../utils/index.js';
 import { rimraf } from 'rimraf';

@@ -1,6 +1,6 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
-import events from 'events';
+import events from 'node:events';
 import taskCreds from './task-creds.js';
 import { Task } from './data.js';
 import HintPoller from './hintpoller.js';

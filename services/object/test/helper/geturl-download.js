@@ -1,6 +1,6 @@
 import request from 'superagent';
-import crypto from 'crypto';
-import assert from 'assert';
+import crypto from 'node:crypto';
+import assert from 'node:assert';
 import { load, testObjectName } from '../helper/index.js';
 
 /**

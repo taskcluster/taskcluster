@@ -1,5 +1,5 @@
 import { FakeCloud } from './fake.js';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import {
   EC2Client,
   DescribeInstanceStatusCommand,

@@ -1,5 +1,5 @@
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import _ from 'lodash';
 import glob from 'glob';
 import { REPO_ROOT } from '../../utils/index.js';

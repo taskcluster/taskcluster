@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { APIBuilder } from '../src/index.js';
 import testing from '@taskcluster/lib-testing';
 

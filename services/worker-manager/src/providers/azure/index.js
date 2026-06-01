@@ -1,11 +1,11 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import taskcluster from '@taskcluster/client';
 import forge from 'node-forge';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import got from 'got';
-import net from 'net';
-import { rootCertificates } from 'tls';
+import net from 'node:net';
+import { rootCertificates } from 'node:tls';
 import { WorkerPool, Worker } from '../../data.js';
 import azureApi from './azure-api.js';
 import { ApiError, Provider } from '../provider.js';

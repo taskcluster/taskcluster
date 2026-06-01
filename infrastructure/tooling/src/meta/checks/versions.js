@@ -1,6 +1,6 @@
-import assert from 'assert';
-import path from 'path';
-import fs from 'fs';
+import assert from 'node:assert';
+import path from 'node:path';
+import fs from 'node:fs';
 import _ from 'lodash';
 import { REPO_ROOT } from '../../utils/index.js';
 

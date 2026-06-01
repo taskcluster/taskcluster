@@ -11,7 +11,7 @@ import {
   REPO_ROOT,
 } from '../../utils/index.js';
 
-import path from 'path';
+import path from 'node:path';
 import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
 

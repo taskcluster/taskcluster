@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import forge from 'node-forge';
 import slugid from 'slugid';

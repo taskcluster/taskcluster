@@ -1,4 +1,4 @@
-import { Worker, isMainThread, parentPort } from 'worker_threads';
+import { Worker, isMainThread, parentPort } from 'node:worker_threads';
 import _ from 'lodash';
 import { gitLsFiles, readRepoFile, readRepoJSON } from '../../utils/index.js';
 import * as acorn from 'acorn-loose';

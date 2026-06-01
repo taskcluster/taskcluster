@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import path from 'path';
+import path from 'node:path';
 import _ from 'lodash';
 import { readRepoYAML, writeRepoYAML } from '../utils/index.js';
 import inquirer from 'inquirer';

@@ -1,10 +1,10 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-testing:schemas');
-import fs from 'fs';
+import fs from 'node:fs';
 import SchemaSet from '@taskcluster/lib-validate';
 import libUrls from 'taskcluster-lib-urls';
-import path from 'path';
+import path from 'node:path';
 
 /**
  * Test schemas with positive and negative test cases. This will call

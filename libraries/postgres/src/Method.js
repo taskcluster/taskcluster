@@ -1,5 +1,5 @@
-import { strict as assert } from 'assert';
-import path from 'path';
+import { strict as assert } from 'node:assert';
+import path from 'node:path';
 import { loadSql } from './util.js';
 
 /**

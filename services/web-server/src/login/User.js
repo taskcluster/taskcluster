@@ -1,5 +1,5 @@
 import taskcluster from '@taskcluster/client';
-import assert from 'assert';
+import assert from 'node:assert';
 
 export default class User {
   constructor() {

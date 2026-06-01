@@ -1,5 +1,5 @@
-import path from 'path';
-import os from 'os';
+import path from 'node:path';
+import os from 'node:os';
 import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
 import taskcluster from '@taskcluster/client';

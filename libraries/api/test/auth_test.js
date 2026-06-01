@@ -1,13 +1,13 @@
 import _ from 'lodash';
 import request from 'superagent';
 import hawk from 'hawk';
-import assert from 'assert';
+import assert from 'node:assert';
 import SchemaSet from '@taskcluster/lib-validate';
 import { App } from '@taskcluster/lib-app';
 import { APIBuilder } from '../src/index.js';
 import { monitor } from './helper.js';
 import testing from '@taskcluster/lib-testing';
-import path from 'path';
+import path from 'node:path';
 import debugFactory from 'debug';
 const debug = debugFactory('auth_test');
 

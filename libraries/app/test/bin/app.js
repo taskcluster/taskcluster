@@ -1,5 +1,5 @@
 import base from '../../index.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import debugFactory from 'debug';
 const debug = debugFactory('base:test:bin:app.js');
 

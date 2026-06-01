@@ -1,5 +1,5 @@
-import assert from 'assert';
-import crypto from 'crypto';
+import assert from 'node:assert';
+import crypto from 'node:crypto';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import slugid from 'slugid';

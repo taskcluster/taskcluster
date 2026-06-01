@@ -1,5 +1,5 @@
 import taskcluster from '@taskcluster/client';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from './helper.js';
 import { FakeGoogle } from './fakes/index.js';
 import { GoogleProvider } from '../src/providers/google.js';

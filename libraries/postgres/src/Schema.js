@@ -1,7 +1,7 @@
-import fs from 'fs';
-import { strict as assert } from 'assert';
+import fs from 'node:fs';
+import { strict as assert } from 'node:assert';
 import yaml from 'js-yaml';
-import path from 'path';
+import path from 'node:path';
 import Version from './Version.js';
 import Access from './Access.js';
 import Relations from './Relations.js';

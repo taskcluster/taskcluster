@@ -1,7 +1,7 @@
 import Debug from 'debug';
 import sinon from 'sinon';
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 
 class FakeGithub {
   constructor(installation_id) {

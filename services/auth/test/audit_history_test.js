@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import slugid from 'slugid';
 import _ from 'lodash';

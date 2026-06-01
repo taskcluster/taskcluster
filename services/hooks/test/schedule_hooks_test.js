@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import Scheduler from '../src/scheduler.js';
 import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';

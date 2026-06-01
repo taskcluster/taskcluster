@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import { Logger } from './logger.js';
 import TimeKeeper from './timekeeper.js';
-import { hrtime } from 'process';
+import { hrtime } from 'node:process';
 
 /**
 * @typedef {object} MonitorOptions

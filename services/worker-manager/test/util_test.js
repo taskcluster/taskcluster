@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import * as util from '../src/util.js';
 import testing from '@taskcluster/lib-testing';
 

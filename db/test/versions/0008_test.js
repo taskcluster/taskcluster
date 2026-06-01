@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import * as hugeBufs from './fixtures/huge_bufs.js';
 
 const ASCII = _.range(1, 128).map(i => String.fromCharCode(i)).join(' ');

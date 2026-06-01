@@ -16,7 +16,7 @@ import tcdb from '@taskcluster/db';
 import githubAuth from './github-auth.js';
 import { Client, pulseCredentials } from '@taskcluster/lib-pulse';
 import './monitor.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 const load = loader({
   cfg: {

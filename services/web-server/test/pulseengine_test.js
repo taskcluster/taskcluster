@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import PulseIterator from '../src/PulseEngine/PulseIterator.js';
 import testing from '@taskcluster/lib-testing';
 

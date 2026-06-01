@@ -1,6 +1,6 @@
 import { Secrets, stickyLoader, suiteName } from '../src/index.js';
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import nock from 'nock';
 
 suite(suiteName(), function() {

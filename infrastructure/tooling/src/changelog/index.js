@@ -15,7 +15,7 @@ import {
 } from '../utils/index.js';
 
 import taskcluster from '@taskcluster/client';
-import path from 'path';
+import path from 'node:path';
 import openEditor from 'open-editor';
 import { Octokit } from '@octokit/rest';
 

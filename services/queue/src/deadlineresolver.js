@@ -1,6 +1,6 @@
 import debugFactory from 'debug';
 const debug = debugFactory('app:deadline-resolver');
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import QueueService from './queueservice.js';
 import Iterate from '@taskcluster/lib-iterate';

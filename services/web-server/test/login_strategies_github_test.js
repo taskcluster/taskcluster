@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import helper from './helper.js';
 import Github from '../src/login/strategies/github.js';

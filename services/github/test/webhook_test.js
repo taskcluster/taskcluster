@@ -1,6 +1,6 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import helper from './helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import { LEVELS } from '@taskcluster/lib-monitor';
 

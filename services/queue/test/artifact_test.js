@@ -1,6 +1,6 @@
 import debugFactory from 'debug';
 const debug = debugFactory('test:artifacts');
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 import _ from 'lodash';
 import request from 'superagent';
