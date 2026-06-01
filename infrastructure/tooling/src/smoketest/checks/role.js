@@ -55,7 +55,7 @@ tasks.push({
     // clean up any leftover roles, in case previous runs crashed or failed
     const query = {};
     const anHourAgo = Date.now() - (1000 * 60 * 60);
-    while (1) {
+    while (true) {
       const res = await auth.listRoles2();
       for (let role of res.roles) {
         if (role.roleId.includes('project:taskcluster:smoketest:') &&

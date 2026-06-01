@@ -360,7 +360,7 @@ export const add = async (options) => {
 
   // invent a unique filename
   let filename, i = 0;
-  while (1) {
+  while (true) {
     filename = path.join('changelog', `${name}${i > 0 ? `-${i}` : ''}.md`);
     try {
       await readRepoFile(filename);
