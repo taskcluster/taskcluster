@@ -119,7 +119,7 @@ class VersionZero extends TcYaml {
     }).filter((task) => {
       // Filter out tasks that aren't associated with github at all, or with
       // the current event being handled
-      if (!task.task.extra || !task.task.extra.github) {
+      if (!task.task.extra?.github) {
         return false;
       }
 

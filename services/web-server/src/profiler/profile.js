@@ -181,7 +181,7 @@ export function getProfile(taskGroups, rootUrl) {
 
     const sortedTasks = taskGroup.tasks.map(task => {
       const { runs } = task.status;
-      if (!runs || !runs.length || !runs[0].started) {
+      if (!runs?.length || !runs[0].started) {
         return { task, start: null };
       }
       return { task, start: new Date(runs[0].started).valueOf() };

@@ -518,7 +518,7 @@ builder.declare({
     );
   }
 
-  if (input.scopes && input.scopes.some(s => s.endsWith('**'))) {
+  if (input.scopes?.some(s => s.endsWith('**'))) {
     return res.reportError('InputError', 'scopes must not end with `**`', {});
   }
 

@@ -89,7 +89,7 @@ if (isMainThread) {
         return checkImport(file, section, packageName, deps, used);
       },
       CallExpression(node) {
-        if (!node.callee || node.callee.name !== 'require') {
+        if (node.callee?.name !== 'require') {
           return;
         }
 

@@ -51,7 +51,7 @@ const getArtifactFollowingLinks = async function({ taskId, runId, name, req, res
     // Load artifact meta-data from table storage
     const artifact = artifactUtils.fromDbRows(await this.db.fns.get_queue_artifact_2(taskId, runId, name));
 
-    if (!artifact || !artifact.present) {
+    if (!artifact?.present) {
       return res.reportError('ResourceNotFound', 'Artifact not found', {});
     }
 
@@ -477,7 +477,7 @@ export const loadArtifactsRoutes = (builder) => {
       Task.get(this.db, taskId),
     ]);
 
-    if (!artifact_row || !task || !task.runs[runId]) {
+    if (!artifact_row || !task?.runs[runId]) {
       return res.reportError(
         'ResourceNotFound',
         'Artifact with taskId `{{taskId}}`, runId {{runId}}, name `{{name}}` not found',
@@ -889,7 +889,7 @@ export const loadArtifactsRoutes = (builder) => {
     const artifact = artifactUtils.fromDbRows(
       await this.db.fns.get_queue_artifact_2(taskId, runId, name));
 
-    if (!artifact || !artifact.present) {
+    if (!artifact?.present) {
       return res.reportError('ResourceNotFound', 'Artifact not found', {});
     }
 

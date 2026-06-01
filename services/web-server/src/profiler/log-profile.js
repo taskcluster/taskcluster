@@ -89,7 +89,7 @@ export class StreamingProfileBuilder {
     if (!line.trim()) { return; }
 
     const match = line.match(LOG_PATTERN);
-    if (match && match.groups) {
+    if (match?.groups) {
       const time = new Date(match.groups.time);
       const component = match.groups.component;
       const message = match.groups.message.replace(TIMESTAMP_CLEANUP, '');

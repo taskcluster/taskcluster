@@ -101,7 +101,7 @@ Handlers.prototype.completed = function(message) {
     }
 
     // Get `index` from `extra` section
-    let options = _.defaults({}, (task.extra || {}).index || {}, {
+    let options = _.defaults({}, task.extra?.index || {}, {
       rank: 0,
       expires: expires.toJSON(),
       data: {},
