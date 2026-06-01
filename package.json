@@ -134,6 +134,7 @@
     "@aws-sdk/client-iam": "^3.1045.0",
     "@aws-sdk/client-sns": "^3.1045.0",
     "@aws-sdk/client-sqs": "^3.1045.0",
+    "@biomejs/biome": "^2.4.15",
     "@taskcluster/lib-testing": "link:libraries/testing",
     "@types/pg": "^8.20.0",
     "acorn-loose": "^8.5.0",
@@ -178,10 +179,11 @@
     "mocha/mkdirp": "^1.0.0"
   },
   "scripts": {
-    "lint": "eslint --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db",
-    "lint:fix": "eslint --fix --cache --ext js --ignore-pattern clients/client-rust --ignore-pattern clients/client-web/build --ignore-pattern clients/client-py libraries services infrastructure clients test db",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
     "lint:go": "bash test/go-lint.sh",
     "lint:py": "bash test/py-lint.sh",
+    "format": "biome format --write",
     "test": "yarn workspaces foreach -A run test",
     "fetch-coverage": "node test/fetch-coverage.js",
     "build": "node infrastructure/tooling/src/main.js build",
