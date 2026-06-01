@@ -27,7 +27,7 @@ import path from 'path';
 let schemas = function(options) {
   // Validate options
   assert(options.schemasetOptions, 'Options must be given for validator');
-  assert(options.cases instanceof Array, 'Array of cases must be given');
+  assert(Array.isArray(options.cases), 'Array of cases must be given');
   assert(options.serviceName);
 
   let validate;

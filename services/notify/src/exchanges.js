@@ -53,7 +53,7 @@ const commonRoutingKeyBuilder = function(message, routing) {
 
 /** Build list of routing keys to CC */
 const commonCCBuilder = function(message, routes) {
-  assert(routes instanceof Array, 'Routes must be an array');
+  assert(Array.isArray(routes), 'Routes must be an array');
   return routes.map(route => 'route.' + route);
 };
 

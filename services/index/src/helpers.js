@@ -286,7 +286,7 @@ export const namespaceUtils = {
     );
 
     // Parse namespace
-    if (!(namespace instanceof Array)) {
+    if (!Array.isArray(namespace)) {
       namespace = namespace.split('.');
     }
     // Find parent and folder name

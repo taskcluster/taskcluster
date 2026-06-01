@@ -20,7 +20,7 @@ export const syncStaticClients = async function(db, clients = []) {
   const staticScopes = JSON.parse(await fs.readFile(path.join(__dirname, 'static-scopes.json'), 'utf8'));
 
   // Validate input for sanity (we hardly need perfect validation here...)
-  assert(clients instanceof Array, 'Expected clients to be am array');
+  assert(Array.isArray(clients), 'Expected clients to be am array');
   for (const client of clients) {
     assert(typeof client.clientId === 'string', 'expected clientId to be a string');
     assert(typeof client.accessToken === 'string', 'expected accessToken to be a string');
@@ -30,7 +30,7 @@ export const syncStaticClients = async function(db, clients = []) {
     if (client.clientId.startsWith('static/taskcluster')) {
       assert(!client.scopes, 'scopes are not allowed in configuration for static/taskcluster clients');
     } else {
-      assert(client.scopes instanceof Array, 'expected scopes to be an array of strings');
+      assert(Array.isArray(client.scopes), 'expected scopes to be an array of strings');
       assert(typeof client.description === 'string', 'expected description to be a string');
       assert(client.scopes.every(s => typeof s === 'string'), 'scopes must be strings');
     }

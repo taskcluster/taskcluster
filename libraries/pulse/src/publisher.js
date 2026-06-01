@@ -307,7 +307,7 @@ export class PulsePublisher {
           entry.routingKeyBuilder.apply(undefined, args));
 
         const CCs = entry.CCBuilder.apply(undefined, args);
-        assert(CCs instanceof Array, 'CCBuilder must return an array');
+        assert(Array.isArray(CCs), 'CCBuilder must return an array');
 
         // Serialize message to buffer
         const payload = Buffer.from(JSON.stringify(message), 'utf8');

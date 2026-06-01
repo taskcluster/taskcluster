@@ -102,7 +102,7 @@ const mergeParams = (paramsA, paramsB = {}) => {
  */
 const extractParams = (compiledTemplate) => {
   const ctmpl = compiledTemplate;
-  if (ctmpl instanceof Array) {
+  if (Array.isArray(ctmpl)) {
     return ctmpl
       .filter((value, i) => i % 2 === 1)
       .map(p => ({ [p]: 'string' }))
@@ -134,7 +134,7 @@ const extractParams = (compiledTemplate) => {
 /** Render a scope expression from a compiled scope expression template and parameters */
 const render = (compiledTemplate, params) => {
   const ctmpl = compiledTemplate;
-  if (ctmpl instanceof Array) {
+  if (Array.isArray(ctmpl)) {
     return ctmpl.map((value, i) => {
       if (i % 2 === 1) {
         if (typeof params[value] !== 'string' && typeof params[value] !== 'number') {
@@ -150,7 +150,7 @@ const render = (compiledTemplate, params) => {
     ctmpl.AllOf.forEach(t => {
       const result = render(t, params);
       if (result !== null) {
-        if (result instanceof Array) {
+        if (Array.isArray(result)) {
           AllOf.push(...result);
         } else {
           AllOf.push(result);
@@ -164,7 +164,7 @@ const render = (compiledTemplate, params) => {
     ctmpl.AnyOf.forEach(t => {
       const result = render(t, params);
       if (result !== null) {
-        if (result instanceof Array) {
+        if (Array.isArray(result)) {
           AnyOf.push(...result);
         } else {
           AnyOf.push(result);
@@ -175,7 +175,7 @@ const render = (compiledTemplate, params) => {
   }
   if ('for' in ctmpl) {
     const value = params[ctmpl.in];
-    if (value instanceof Array) {
+    if (Array.isArray(value)) {
       const nestedParams = _.assign({}, params);
       return value.map(val => {
         nestedParams[ctmpl.for] = val;
@@ -227,7 +227,7 @@ export default class ScopeExpressionTemplate {
         return typeof val === 'string' || typeof val === 'number';
       }
       if (T === 'array') {
-        return val instanceof Array && val.every(v => typeof v === 'string');
+        return Array.isArray(val) && val.every(v => typeof v === 'string');
       }
       if (T === 'boolean') {
         return typeof val === 'boolean';
