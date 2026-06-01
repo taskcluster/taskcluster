@@ -1534,15 +1534,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/code-frame@npm:7.12.11":
-  version: 7.12.11
-  resolution: "@babel/code-frame@npm:7.12.11"
-  dependencies:
-    "@babel/highlight": "npm:^7.10.4"
-  checksum: 10c0/836ffd155506768e991d6dd8c51db37cad5958ed1c8e0a2329ccd9527165d5c752e943d66a5c3c92ffd45f343419f0742e7636629a529f4fbd5303e3637746b9
-  languageName: node
-  linkType: hard
-
 "@babel/helper-string-parser@npm:^7.27.1":
   version: 7.27.1
   resolution: "@babel/helper-string-parser@npm:7.27.1"
@@ -1550,22 +1541,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/helper-validator-identifier@npm:^7.25.9, @babel/helper-validator-identifier@npm:^7.27.1":
+"@babel/helper-validator-identifier@npm:^7.27.1":
   version: 7.27.1
   resolution: "@babel/helper-validator-identifier@npm:7.27.1"
   checksum: 10c0/c558f11c4871d526498e49d07a84752d1800bf72ac0d3dad100309a2eaba24efbf56ea59af5137ff15e3a00280ebe588560534b0e894a4750f8b1411d8f78b84
-  languageName: node
-  linkType: hard
-
-"@babel/highlight@npm:^7.10.4":
-  version: 7.25.9
-  resolution: "@babel/highlight@npm:7.25.9"
-  dependencies:
-    "@babel/helper-validator-identifier": "npm:^7.25.9"
-    chalk: "npm:^2.4.2"
-    js-tokens: "npm:^4.0.0"
-    picocolors: "npm:^1.0.0"
-  checksum: 10c0/ae0ed93c151b85a07df42936117fa593ce91563a22dfc8944a90ae7088c9679645c33e00dcd20b081c1979665d65f986241172dae1fc9e5922692fc3ff685a49
   languageName: node
   linkType: hard
 
@@ -4117,8 +4096,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/auth@workspace:services/auth"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4127,8 +4106,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/built-in-workers@workspace:services/built-in-workers"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4149,8 +4128,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/db@workspace:db"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4159,8 +4138,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/github@workspace:services/github"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4169,8 +4148,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/hooks@workspace:services/hooks"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4179,8 +4158,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/index@workspace:services/index"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4195,8 +4174,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-api@workspace:libraries/api"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4211,8 +4190,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-app@workspace:libraries/app"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4227,8 +4206,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-config@workspace:libraries/config"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4243,8 +4222,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-iterate@workspace:libraries/iterate"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4259,8 +4238,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-loader@workspace:libraries/loader"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4275,8 +4254,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-monitor@workspace:libraries/monitor"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4291,8 +4270,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-postgres@workspace:libraries/postgres"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4307,8 +4286,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-pulse@workspace:libraries/pulse"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4323,8 +4302,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-references@workspace:libraries/references"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4339,8 +4318,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-testing@workspace:libraries/testing"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4355,8 +4334,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/lib-validate@workspace:libraries/validate"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4367,8 +4346,8 @@ __metadata:
   dependencies:
     "@aws-sdk/client-sns": "npm:^3.1045.0"
     "@aws-sdk/client-sqs": "npm:^3.1045.0"
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4377,8 +4356,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/object@workspace:services/object"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4387,8 +4366,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/purge-cache@workspace:services/purge-cache"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4397,8 +4376,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/queue@workspace:services/queue"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4407,6 +4386,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/secrets@workspace:services/secrets"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
     mocha: "npm:^10.8.2"
   languageName: unknown
@@ -4416,10 +4396,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/web-server@workspace:services/web-server"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
     cross-env: "npm:^10.1.0"
-    eslint: "npm:^8.57.0"
-    eslint-formatter-codeframe: "npm:^7.32.2"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -4428,8 +4407,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/worker-manager@workspace:services/worker-manager"
   dependencies:
+    "@biomejs/biome": "npm:^2.4.15"
     c8: "npm:^8.0.1"
-    eslint: "npm:^8.57.0"
     mocha: "npm:^10.8.2"
   languageName: unknown
   linkType: soft
@@ -5713,7 +5692,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^2.0.1, chalk@npm:^2.3.2, chalk@npm:^2.4.2":
+"chalk@npm:^2.0.1, chalk@npm:^2.3.2":
   version: 2.4.2
   resolution: "chalk@npm:2.4.2"
   dependencies:
@@ -7045,16 +7024,6 @@ __metadata:
     escodegen: bin/escodegen.js
     esgenerate: bin/esgenerate.js
   checksum: 10c0/e1450a1f75f67d35c061bf0d60888b15f62ab63aef9df1901cffc81cffbbb9e8b3de237c5502cf8613a017c1df3a3003881307c78835a1ab54d8c8d2206e01d3
-  languageName: node
-  linkType: hard
-
-"eslint-formatter-codeframe@npm:^7.32.2":
-  version: 7.32.2
-  resolution: "eslint-formatter-codeframe@npm:7.32.2"
-  dependencies:
-    "@babel/code-frame": "npm:7.12.11"
-    chalk: "npm:^4.0.0"
-  checksum: 10c0/faf4bad2cfe24e2083be647ba5127b4c80628db90fcfdbd0b5300c498686f9e733efcef924f4be3df06f3dda13515f85e9103be631e0ec6d5940691022021a20
   languageName: node
   linkType: hard
 
@@ -9143,7 +9112,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
+"js-tokens@npm:^3.0.0 || ^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
   checksum: 10c0/e248708d377aa058eacf2037b07ded847790e6de892bbad3dac0abba2e759cb9f121b00099a65195616badcb6eca8d14d975cb3e89eb1cfda644756402c8aeed
@@ -11272,7 +11241,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picocolors@npm:^1.0.0, picocolors@npm:^1.1.1":
+"picocolors@npm:^1.1.1":
   version: 1.1.1
   resolution: "picocolors@npm:1.1.1"
   checksum: 10c0/e2e3e8170ab9d7c7421969adaa7e1b31434f789afb9b3f115f6b96d91945041ac3ceb02e9ec6fe6510ff036bcc0bf91e69a1772edc0b707e12b19c0f2d6bcf58
