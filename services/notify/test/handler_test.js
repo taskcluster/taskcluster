@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noTemplateCurlyInString: notify substitutes ${...} placeholders in message templates
 import _ from 'lodash';
 import assert from 'node:assert';
 import helper from './helper.js';
