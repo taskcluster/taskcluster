@@ -148,7 +148,7 @@
     "commander": "^9.4.1",
     "console-taskgraph": "^1.7.2",
     "cronstrue": "^2.61.0",
-    "cross-env": "^7.0.2",
+    "cross-env": "^10.1.0",
     "dockerode": "^3.3.4",
     "error-stack-parser": "^2.0.2",
     "eslint": "^8.57.0",

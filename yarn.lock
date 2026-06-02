@@ -1618,6 +1618,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@epic-web/invariant@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@epic-web/invariant@npm:1.0.0"
+  checksum: 10c0/72dbeb026e4e4eb3bc9c65739b91408ca77ab7d603a2494fa2eff3790ec22892c4caba751cffdf30f5ccf0e7ba79c1e9c96cf0a357404b9432bf1365baac23ca
+  languageName: node
+  linkType: hard
+
 "@eslint-community/eslint-utils@npm:^4.2.0":
   version: 4.7.0
   resolution: "@eslint-community/eslint-utils@npm:4.7.0"
@@ -4290,7 +4297,7 @@ __metadata:
   resolution: "@taskcluster/web-server@workspace:services/web-server"
   dependencies:
     c8: "npm:^8.0.1"
-    cross-env: "npm:^7.0.3"
+    cross-env: "npm:^10.1.0"
     eslint: "npm:^8.57.0"
     eslint-formatter-codeframe: "npm:^7.32.2"
     mocha: "npm:^10.8.2"
@@ -6101,15 +6108,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-env@npm:^7.0.2, cross-env@npm:^7.0.3":
-  version: 7.0.3
-  resolution: "cross-env@npm:7.0.3"
+"cross-env@npm:^10.1.0":
+  version: 10.1.0
+  resolution: "cross-env@npm:10.1.0"
   dependencies:
-    cross-spawn: "npm:^7.0.1"
+    "@epic-web/invariant": "npm:^1.0.0"
+    cross-spawn: "npm:^7.0.6"
   bin:
-    cross-env: src/bin/cross-env.js
-    cross-env-shell: src/bin/cross-env-shell.js
-  checksum: 10c0/f3765c25746c69fcca369655c442c6c886e54ccf3ab8c16847d5ad0e91e2f337d36eedc6599c1227904bf2a228d721e690324446876115bc8e7b32a866735ecf
+    cross-env: dist/bin/cross-env.js
+    cross-env-shell: dist/bin/cross-env-shell.js
+  checksum: 10c0/834a862db456ba1fedf6c6da43436b123ae38f514fa286d6f0937c14fa83f13469f77f70f2812db041ae2d84f82bac627040b8686030aca27fbdf113dfa38b63
   languageName: node
   linkType: hard
 
@@ -6135,7 +6143,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-spawn@npm:^7.0.0, cross-spawn@npm:^7.0.1, cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.6":
+"cross-spawn@npm:^7.0.0, cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.6":
   version: 7.0.6
   resolution: "cross-spawn@npm:7.0.6"
   dependencies:
@@ -12973,7 +12981,7 @@ __metadata:
     cors: "npm:^2.8.6"
     cron-parser: "npm:5.5.0"
     cronstrue: "npm:^2.61.0"
-    cross-env: "npm:^7.0.2"
+    cross-env: "npm:^10.1.0"
     dataloader: "npm:^2.2.3"
     debug: "npm:^4.4.3"
     deepmerge: "npm:^4.3.1"
