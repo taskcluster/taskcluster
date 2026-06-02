@@ -13,7 +13,7 @@
     "test": "NODE_OPTIONS='--openssl-legacy-provider --network-family-autoselection=false' karma start --single-run"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
+    "@babel/core": "^7.29.7",
     "chai": "^6.2.2",
     "chai-as-promised": "^8.0.2",
     "crypto-js": "^4.2.0",
