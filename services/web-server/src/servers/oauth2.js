@@ -326,8 +326,10 @@ export default (cfg, db, strategies, auth, monitor) => {
     }
 
     // Although we eventually delete expired rows, that only happens once per day
-    // so we need to check that the accessToken is not expired.
-    if (new Date(entry.client_details.expires) < new Date()) {
+    // so we need to check that the access token is not past its own lifetime, as
+    // well as that the requested credentials have not already expired.
+    const now = new Date();
+    if (new Date(entry.expires) < now || new Date(entry.client_details.expires) < now) {
       throw inputError;
     }
 
