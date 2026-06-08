@@ -1,4 +1,5 @@
 // biome-ignore-all lint/suspicious/noThenProperty: JSON-e $if/then constructs, not thenables
+// biome-ignore-all lint/suspicious/noTemplateCurlyInString: these are JSON-e templates where ${...} is interpolated at render time
 import assert from 'node:assert';
 import assume from 'assume';
 import taskcreator from '../src/taskcreator.js';
