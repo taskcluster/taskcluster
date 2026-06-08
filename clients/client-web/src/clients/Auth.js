@@ -381,7 +381,7 @@ export default class Auth extends Client {
   // Get a temporary token suitable for use connecting to a
   // [websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.
   // The resulting token will only be accepted by servers with a matching audience
-  // value.  Reaching such a server is the callers responsibility.  In general,
+  // value.  Reaching such a server is the caller's responsibility.  In general,
   // a server URL or set of URLs should be provided to the caller as configuration
   // along with the audience value.
   // The token is valid for a limited time (on the scale of hours). Callers should

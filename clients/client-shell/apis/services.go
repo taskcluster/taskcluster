@@ -401,7 +401,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "websocktunnelToken",
 				Title:       "Get a client token for the Websocktunnel service",
-				Description: "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
+				Description: "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the caller's responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/websocktunnel/<wstAudience>/<wstClient>",
@@ -780,7 +780,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "triggerHook",
 				Title:       "Trigger a hook",
-				Description: "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
+				Description: "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hook's `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/hooks/<hookGroupId>/<hookId>/trigger",
@@ -822,7 +822,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "triggerHookWithToken",
 				Title:       "Trigger a hook with a token",
-				Description: "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
+				Description: "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hook's `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
