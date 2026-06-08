@@ -6,7 +6,7 @@ VOLUME /builds/worker/checkouts
 # re-download it (~200MB) every time. Must match the playwright version
 # in ui/package.json.
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-ENV PLAYWRIGHT_VERSION=1.59.1
+ENV PLAYWRIGHT_VERSION=1.60.0
 
 # Add worker user
 RUN mkdir -p /builds && \
