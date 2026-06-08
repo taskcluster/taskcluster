@@ -11,6 +11,7 @@ export default class ConnectionLoader {
         : await singleConnectionHandler({ options, ...props });
     };
 
+    // biome-ignore lint/correctness/noConstructorReturn: intentional, `new ConnectionLoader(handler)` returns a DataLoader. its batch fn reaches createPageConnection via the captured `this`
     return new DataLoader(connections =>
       Promise.all(
         connections.map(async ({ connection, ...props }) => {
