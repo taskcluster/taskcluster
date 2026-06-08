@@ -201,7 +201,8 @@ class SentryManager {
     }
 
     // Save to cache and return
-    return this._projectDSNCache[project] = key;
+    this._projectDSNCache[project] = key;
+    return key;
   }
 
   /** Remove old expired keys, returns number of keys deleted */

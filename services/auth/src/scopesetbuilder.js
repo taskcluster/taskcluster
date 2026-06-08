@@ -157,8 +157,10 @@ class ScopeSetBuilder {
     // Take scopes from tree until it's empty, ie. tree.next() returns null
     // Notice: that we must call tree.next() before we read the first value.
     const result = [];
-    while (tree = tree.next()) { // eslint-disable-line no-cond-assign
+    tree = tree.next();
+    while (tree) {
       result.push(tree.value);
+      tree = tree.next();
     }
     return result;
   }

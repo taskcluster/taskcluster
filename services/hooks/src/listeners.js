@@ -182,9 +182,10 @@ class HookListeners {
    * Run only one exeuction of this function at a time, reporting any errors to the monitor.
    */
   _synchronise(asyncfunc) {
-    return this._reconcileDone = this._reconcileDone
+    this._reconcileDone = this._reconcileDone
       .then(asyncfunc)
       .catch(err => this.monitor.reportError(err));
+    return this._reconcileDone;
   }
 
   /**
