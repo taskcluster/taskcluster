@@ -567,7 +567,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let [provisionerId, workerType] = tQueue.taskQueueId.split('/');
     result = await helper.queue.getWorkerType(provisionerId, workerType);
 
-    assert(Math.abs(new Date(result.lastDateActive) - new Date()) < 3600);
+    assert(Math.abs(new Date(result.lastDateActive) - Date.now()) < 3600);
   });
 
   test('provisioner lastDateActive updates', async () => {
@@ -581,7 +581,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     let { provisionerId } = splitTaskQueueId(tQueue.taskQueueId);
     result = await helper.queue.getProvisioner(provisionerId);
 
-    assert(Math.abs(new Date(result.lastDateActive) - new Date()) < 3600);
+    assert(Math.abs(new Date(result.lastDateActive) - Date.now()) < 3600);
   });
 
   test('queue.getWorker returns a worker', async () => {
