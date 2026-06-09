@@ -110,8 +110,8 @@ builder.declare({
     'Retrieve a list of providers that are available for worker pools.',
   ].join('\n'),
 }, function(req, res) {
-  const start = req.query.continuationToken ? parseInt(req.query.continuationToken) : 0;
-  const limit = req.query.limit ? parseInt(req.query.limit) : 100;
+  const start = req.query.continuationToken ? parseInt(req.query.continuationToken, 10) : 0;
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : 100;
 
   const providers = Object.entries(this.cfg.providers).map(([providerId, { providerType }]) => ({
     providerId,

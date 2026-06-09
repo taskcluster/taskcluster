@@ -54,7 +54,7 @@ export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
   let versionContent = fs.readFileSync(fromVersionFile, 'utf8');
   const version = yaml.load(versionContent);
 
-  versionContent = versionContent.replace(/^version: \d+/, `version: ${parseInt(toVersion)}`);
+  versionContent = versionContent.replace(/^version: \d+/, `version: ${parseInt(toVersion, 10)}`);
 
   if (version.migrationScript && !version.migrationScript.includes('\n')) {
     const newMigrationScript = version.migrationScript.replace(fromVersion, toVersion);
@@ -146,7 +146,7 @@ export const newVersion = async (options = { runGit: true }) => {
   // find latest version
   const versions = fs.readdirSync(filePath(''));
   const latestVersion = versions.filter(name => name.endsWith('.yml')).sort().pop()?.replace(/\.yml$/, '');
-  const nextVersion = parseInt(latestVersion || '0') + 1;
+  const nextVersion = parseInt(latestVersion || '0', 10) + 1;
   const newVersion = nextVersion.toString().padStart(4, '0');
 
   const newVersionFile = filePath(`${newVersion}.yml`);

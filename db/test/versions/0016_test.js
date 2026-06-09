@@ -5,7 +5,7 @@ import { strict as assert } from 'assert';
 import slugid from 'slugid';
 
 suite(testing.suiteName(), function() {
-  const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+  const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
   helper.withDbForVersion();
 
   suiteSetup(async function() {

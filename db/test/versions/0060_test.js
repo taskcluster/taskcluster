@@ -4,7 +4,7 @@ import assert from 'assert';
 import testing from '@taskcluster/lib-testing';
 import { UNDEFINED_COLUMN } from '@taskcluster/lib-postgres';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
 suite(testing.suiteName(), function() {
 
@@ -80,7 +80,7 @@ suite(testing.suiteName(), function() {
     concurrentCheck: async client => {
       // get number of rows to infer next task id
       const countRes = await client.query('select count(*) from tasks');
-      const nextTaskId = parseInt(countRes.rows[0].count) + 1;
+      const nextTaskId = parseInt(countRes.rows[0].count, 10) + 1;
 
       // check that get_task function works with items that may not yet have
       // provisioner_id and worker_type during a downgrade

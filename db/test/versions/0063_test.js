@@ -2,7 +2,7 @@ import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 import { strict as assert } from 'assert';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
 suite(testing.suiteName(), function() {
   helper.withDbForVersion();
