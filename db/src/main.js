@@ -19,7 +19,7 @@ const main = async () => {
   };
 
   const toVersion = process.argv[3] ? parseInt(process.argv[3], 10) : undefined;
-  if (toVersion !== undefined && (!process.argv[3].match(/^[0-9]+$/) || isNaN(toVersion))) {
+  if (toVersion !== undefined && (!process.argv[3].match(/^[0-9]+$/) || Number.isNaN(toVersion))) {
     throw new Error('invalid db version specified -- must be an integer DB version, not a TC release version');
   }
 

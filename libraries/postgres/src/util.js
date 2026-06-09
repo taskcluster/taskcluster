@@ -184,7 +184,7 @@ export class ETA {
     }
 
     const rate = this.rate();
-    if (isNaN(rate) || !rate) {
+    if (Number.isNaN(rate) || !rate) {
       return undefined;
     }
 

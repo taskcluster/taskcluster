@@ -201,7 +201,7 @@ export const isCollaborator = async (instGithub, organization, repository, login
 export const getTimeDifference = (timestamp1, timestamp2) => {
 
   const isValidDate = (date) => {
-    return !isNaN(Date.parse(date));
+    return !Number.isNaN(Date.parse(date));
   };
 
   if (timestamp1 === undefined || timestamp2 === undefined) {

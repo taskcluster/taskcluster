@@ -46,7 +46,7 @@ suite(testing.suiteName(), () => {
     for (const row of rows) {
       for (const run of row.runs) {
         for (const prop of ['scheduled', 'started', 'resolved', 'takenUntil']) {
-          if (prop in run && typeof run[prop] === 'string' && !isNaN(new Date(run[prop]))) {
+          if (prop in run && typeof run[prop] === 'string' && !Number.isNaN(new Date(run[prop]).getTime())) {
             run[prop] = 'date';
           }
         }
