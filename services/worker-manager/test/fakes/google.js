@@ -18,9 +18,6 @@ const PROJECT = 'testy';
  * the instance returned from the constructor is available at `fake.oauth2`.
  */
 export class FakeGoogle extends FakeCloud {
-  constructor() {
-    super();
-  }
 
   _patch() {
     this.sinon.stub(google, 'auth');

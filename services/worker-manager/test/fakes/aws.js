@@ -19,9 +19,6 @@ const TEST_REGIONS = [
  * Fake the EC2 AWS SDK.
  */
 export class FakeEC2 extends FakeCloud {
-  constructor() {
-    super();
-  }
 
   _patch() {
     this._reset();
