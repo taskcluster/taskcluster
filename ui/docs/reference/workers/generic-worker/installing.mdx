@@ -270,6 +270,17 @@ starting worker-runner.
 
     find /private/var/folders/ -nouser -delete
 
+    # Apple Neural Engine compiled-model cache - if enabled, grows over time,
+    # has no value in CI
+    rm -rf /Library/Caches/com.apple.aned
+
+    # Spotlight index, ideally disabled, but delete if present
+    rm -rf /System/Volumes/Data/.Spotlight-V100
+
+    # Remove BTM (backgroundtaskmanagementd) database
+    # See https://github.com/taskcluster/community-tc-config/issues/983
+    rm -f /var/db/com.apple.backgroundtaskmanagement/BackgroundItems-v*.btm
+
     cd ~
 
     /usr/local/bin/start-worker /etc/generic-worker/runner.yml
@@ -374,7 +385,20 @@ starting worker-runner.
     For an __insecure__ build, change the `UserName` value from `root` to
     `genericworker`.
 
- 8. Install the launch daemon and start it:
+ 8. Permanently disable macOS background services that accumulate unbounded
+    disk usage on CI workers.
+
+    ```bash
+    # disable Spotlight
+    sudo mdutil -a -i off
+    # and persist over reboots
+    sudo touch /System/Volumes/Data/.metadata_never_index
+
+    # disable Apple Neural Engine daemon
+    sudo launchctl disable system/com.apple.aned
+    ```
+
+ 9. Install the launch daemon and start it:
 
     ```
     sudo launchctl load -w /Library/LaunchDaemons/com.mozilla.genericworker.plist
