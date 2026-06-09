@@ -507,7 +507,7 @@ export class Provider {
     } catch (err) {
       this.monitor.reportError(err, { workerPool, kind, title });
     } finally {
-      // eslint-disable-next-line no-unsafe-finally
+      // biome-ignore lint/correctness/noUnsafeFinally: this method always returns the error record and never throws. The outer catch reports any failure
       return error;
     }
   }
