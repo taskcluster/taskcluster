@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noTemplateCurlyInString: `${...}` here are shell parameter expansions (e.g. ${1}, ${@}) emitted into a generated shell script, not JS interpolation
 import path from 'node:path';
 import { listServices, readRepoYAML, writeRepoFile, readRepoJSON } from '../../utils/index.js';
 

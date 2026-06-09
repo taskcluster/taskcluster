@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noTemplateCurlyInString: `${...}` here are docker-compose .env variable references emitted into generated config, not JS interpolation
 import path from 'node:path';
 import { listServices, readRepoYAML, writeRepoYAML, writeRepoFile } from '../../utils/index.js';
 
