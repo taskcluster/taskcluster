@@ -1,0 +1,130 @@
+{{- if and (eq (.Values.ingressType | default "") "gateway") (not (has "httproute" .Values.skipResourceTypes)) -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: taskcluster-routes-1
+  labels:
+    app.kubernetes.io/name: taskcluster-routes-1
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-routes-1-httproute
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  parentRefs:
+    - name: taskcluster-gateway
+      sectionName: https
+  hostnames:
+    - '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}'
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: taskcluster-ui
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /references
+      backendRefs:
+        - name: taskcluster-references
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /schemas
+      backendRefs:
+        - name: taskcluster-references
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/auth
+      backendRefs:
+        - name: taskcluster-auth
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/github
+      backendRefs:
+        - name: taskcluster-github
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/hooks
+      backendRefs:
+        - name: taskcluster-hooks
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/index
+      backendRefs:
+        - name: taskcluster-index
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/notify
+      backendRefs:
+        - name: taskcluster-notify
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/object
+      backendRefs:
+        - name: taskcluster-object
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/purge-cache
+      backendRefs:
+        - name: taskcluster-purge-cache
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/queue
+      backendRefs:
+        - name: taskcluster-queue
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/secrets
+      backendRefs:
+        - name: taskcluster-secrets
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /login
+      backendRefs:
+        - name: taskcluster-web-server
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /subscription
+      backendRefs:
+        - name: taskcluster-web-server
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /graphql
+      backendRefs:
+        - name: taskcluster-web-server
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/web-server
+      backendRefs:
+        - name: taskcluster-web-server
+          port: 80
+{{- end }}

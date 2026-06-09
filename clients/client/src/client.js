@@ -117,8 +117,8 @@ export const makeRequest = async function(client, method, url, payload, query) {
     hooks: {
       afterResponse: [res => {
         // parse the body, if one was given (Got's `responseType: json` fails to check content-type)
-        if (res.rawBody.length > 0 && (res.headers['content-type'] || '').startsWith('application/json')) {
-          res.body = JSON.parse(res.rawBody);
+        if (res.body && (res.headers['content-type'] || '').startsWith('application/json')) {
+          res.body = JSON.parse(res.body);
         }
         return res;
       }],

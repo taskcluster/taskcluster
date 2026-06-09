@@ -176,7 +176,7 @@ export class PulsePublisher {
     this.schemaset = schemaset;
     this.client = client;
     this.exchanges = exchanges;
-    this.sendDeadline = sendDeadline || 12000;
+    this.sendDeadline = sendDeadline || 30000;
     this.blocked = true;
 
     if (process.env.NODE_ENV === 'production') {

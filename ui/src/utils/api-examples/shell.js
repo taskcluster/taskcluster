@@ -14,14 +14,12 @@ import {
  * Generate a taskcluster-cli example for an API endpoint
  *
  * @param {string} serviceName - Service name (e.g., 'queue')
- * @param {string} apiVersion - API version (e.g., 'v1')
  * @param {object} entry - API entry metadata
  * @param {object} payloadExample - Example payload object (optional)
  * @returns {string} taskcluster-cli command example
  */
 export default function generateShellExample(
   serviceName,
-  apiVersion,
   entry,
   payloadExample = null
 ) {

@@ -61,15 +61,20 @@ export class FakeAzure extends FakeCloud {
     this.computeClient = {
       virtualMachines: this._managers['vm'],
       disks: this._managers['disk'],
+      pipeline: new FakePipeline(),
     };
     this.networkClient = {
       networkInterfaces: this._managers['nic'],
       publicIPAddresses: this._managers['ip'],
+      pipeline: new FakePipeline(),
     };
     this.resourcesClient = {
       resourceGroups: this._managers['resourceGroup'],
+      pipeline: new FakePipeline(),
     };
-    this.deploymentsClient = this._managers['deployment'];
+    this.deploymentsClient = Object.assign(this._managers['deployment'], {
+      pipeline: new FakePipeline(),
+    });
 
     this.restClient = new FakeRestClient(this);
   }
@@ -185,6 +190,15 @@ class ResourceManager {
   getFakeResource(resourceGroupName, name) {
     const key = `${resourceGroupName}/${name}`;
     return this._resources.get(key);
+  }
+
+  /**
+   * Remove a fake resource directly, simulating out-of-band deletion
+   * (e.g. Spot preemption or ARM cascade delete)
+   */
+  removeFakeResource(resourceGroupName, name) {
+    const key = `${resourceGroupName}/${name}`;
+    this._resources.delete(key);
   }
 
   /**
@@ -498,12 +512,86 @@ export class ResourceGroupManager {
   }
 }
 
+/**
+ * Simulate Azure SDK HttpHeaders with a `.get(name)` accessor.
+ * Accepts a plain object mapping lowercase header names to values.
+ */
+export class FakeHttpHeaders {
+  constructor(headers = {}) {
+    this._headers = {};
+    for (const [k, v] of Object.entries(headers)) {
+      this._headers[k.toLowerCase()] = String(v);
+    }
+  }
+
+  get(name) {
+    return this._headers[name.toLowerCase()] ?? undefined;
+  }
+}
+
+/**
+ * Minimal pipeline stub so tests can verify that the provider registers
+ * its observability policy and exercise the policy's sendRequest directly.
+ */
+export class FakePipeline {
+  constructor() {
+    this._policies = [];
+  }
+
+  addPolicy(policy, options) {
+    this._policies.push({ policy, options });
+  }
+
+  getPolicy(name) {
+    const entry = this._policies.find(e => e.policy.name === name);
+    return entry ? entry.policy : null;
+  }
+
+  getPolicyOptions(name) {
+    const entry = this._policies.find(e => e.policy.name === name);
+    return entry ? entry.options : null;
+  }
+}
+
 export class FakeRestClient {
   constructor(fake) {
     this.fake = fake;
+    this._throttleNextN = 0;
+    this._throttleHeaders = {};
+    this._responseHeaders = null;
+  }
+
+  /**
+   * Cause the next `count` calls to `sendLongRunningRequest` to throw
+   * a 429 error with the given rate-limit headers — mimicking how the
+   * Azure SDK surfaces throttled responses in the error path.
+   */
+  setThrottle(count, headers = {}) {
+    this._throttleNextN = count;
+    this._throttleHeaders = headers;
+  }
+
+  /**
+   * Set reusable rate-limit headers that will be included on every
+   * **successful** response returned by `sendLongRunningRequest`.
+   * Pass `null` to clear.
+   */
+  setResponseHeaders(headers) {
+    this._responseHeaders = headers;
   }
 
   async sendLongRunningRequest(req) {
+    // Throttle path — simulate a 429 from Azure
+    if (this._throttleNextN > 0) {
+      this._throttleNextN--;
+      const err = new Error('Too Many Requests');
+      err.statusCode = 429;
+      err.response = {
+        headers: new FakeHttpHeaders(this._throttleHeaders),
+      };
+      throw err;
+    }
+
     // op is op/<resourceType>/<resourceGroupName>/<resource>
     const op = req.url.split('/');
     assert.equal(op[0], 'op');
@@ -511,7 +599,10 @@ export class FakeRestClient {
     const key = `${op[2]}/${op[3]}`;
     const resourceReq = manager._requests.get(key);
     if (!resourceReq) {
-      return { status: 404 };
+      return {
+        status: 404,
+        headers: this._responseHeaders ? new FakeHttpHeaders(this._responseHeaders) : null,
+      };
     }
 
     return {
@@ -520,6 +611,7 @@ export class FakeRestClient {
         status: resourceReq.status,
         error: resourceReq.error,
       },
+      headers: this._responseHeaders ? new FakeHttpHeaders(this._responseHeaders) : null,
     };
   }
 }

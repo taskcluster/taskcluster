@@ -1,7 +1,6 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import PlusIcon from 'mdi-react/PlusIcon';
-import escapeStringRegexp from 'escape-string-regexp';
 import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
 import Spinner from '../../../components/Spinner';
@@ -41,6 +40,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     workerPoolSearch: '',
     errorStatsLoading: false,
     errorStats: null,
+    errorStatsError: null,
   };
 
   componentDidMount() {
@@ -61,9 +61,10 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       this.setState({
         errorStats: data.WorkerManagerErrorsStats,
         errorStatsLoading: false,
+        errorStatsError: null,
       });
     } catch (error) {
-      this.setState({ errorStatsLoading: false });
+      this.setState({ errorStatsLoading: false, errorStatsError: error });
     }
   };
 
@@ -76,14 +77,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       workerPoolsConnection: {
         limit: VIEW_WORKER_POOLS_PAGE_SIZE,
       },
-      filter: workerPoolSearch
-        ? {
-            workerPoolId: {
-              $regex: escapeStringRegexp(workerPoolSearch),
-              $options: 'i',
-            },
-          }
-        : null,
+      searchTerm: workerPoolSearch || null,
     });
     this.setState({ workerPoolSearch });
   };
@@ -120,20 +114,11 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           cursor,
           previousCursor,
         },
-        filter: this.state.workerPoolSearch
-          ? {
-              workerPoolId: {
-                $regex: escapeStringRegexp(this.state.workerPoolSearch),
-                $options: 'i',
-              },
-            }
-          : null,
+        searchTerm: this.state.workerPoolSearch || null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {
-        const {
-          edges,
-          pageInfo,
-        } = fetchMoreResult.WorkerManagerWorkerPoolSummaries;
+        const { edges, pageInfo } =
+          fetchMoreResult.WorkerManagerWorkerPoolSummaries;
 
         return dotProp.set(
           previousResult,
@@ -178,7 +163,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       data: { loading, error },
       classes,
     } = this.props;
-    const { workerPoolSearch } = this.state;
+    const { workerPoolSearch, errorStatsError } = this.state;
     const WorkerManagerWorkerPoolSummaries = this.getWorkerPoolSummaries();
 
     return (
@@ -191,30 +176,33 @@ export default class WorkerManagerWorkerPoolsView extends Component {
             placeholder="Worker pool ID contains"
           />
         }>
-        <Fragment>
-          {!WorkerManagerWorkerPoolSummaries && loading && <Spinner loading />}
-          <ErrorPanel fixed error={error} />
-          {WorkerManagerWorkerPoolSummaries && (
-            <Fragment>
-              <WorkerManagerWorkerPoolsTable
-                searchTerm={workerPoolSearch}
-                onPageChange={this.handlePageChange}
-                workerPoolsConnection={WorkerManagerWorkerPoolSummaries}
-                deleteRequest={this.deleteRequest}
-                errorStatsLoading={this.state.errorStatsLoading}
-              />
-            </Fragment>
-          )}
-          <Button
-            spanProps={{ className: classes.createIconSpan }}
-            tooltipProps={{ title: 'Create Worker Pool' }}
-            requiresAuth
-            color="secondary"
-            variant="round"
-            onClick={this.handleCreate}>
-            <PlusIcon />
-          </Button>
-        </Fragment>
+        {!WorkerManagerWorkerPoolSummaries && loading && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        <ErrorPanel
+          warning
+          error={
+            errorStatsError &&
+            `Failed to load worker pool error stats: ${errorStatsError.message}`
+          }
+        />
+        {WorkerManagerWorkerPoolSummaries && (
+          <WorkerManagerWorkerPoolsTable
+            searchTerm={workerPoolSearch}
+            onPageChange={this.handlePageChange}
+            workerPoolsConnection={WorkerManagerWorkerPoolSummaries}
+            deleteRequest={this.deleteRequest}
+            errorStatsLoading={this.state.errorStatsLoading}
+          />
+        )}
+        <Button
+          spanProps={{ className: classes.createIconSpan }}
+          tooltipProps={{ title: 'Create Worker Pool' }}
+          requiresAuth
+          color="secondary"
+          variant="circular"
+          onClick={this.handleCreate}>
+          <PlusIcon />
+        </Button>
       </Dashboard>
     );
   }

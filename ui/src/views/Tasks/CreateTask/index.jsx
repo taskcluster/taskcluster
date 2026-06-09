@@ -53,10 +53,10 @@ const tutorialWorkerPoolId =
   window.env.SITE_SPECIFIC.tutorial_worker_pool_id ||
   'proj-getting-started/tutorial';
 const tutorialWorkerSchema =
-  window.env.SITE_SPECIFIC.tutorial_worker_schema || 'docker-worker';
+  window.env.SITE_SPECIFIC.tutorial_worker_schema || 'generic-multi-posix';
 const defaultTask = schema => {
   const schemaDefinition =
-    TASK_PAYLOAD_SCHEMAS[schema] || TASK_PAYLOAD_SCHEMAS['docker-worker'];
+    TASK_PAYLOAD_SCHEMAS[schema] || TASK_PAYLOAD_SCHEMAS['generic-multi-posix'];
 
   return {
     taskQueueId: tutorialWorkerPoolId,
@@ -149,7 +149,7 @@ export default class CreateTask extends Component {
       return task;
     }
 
-    if (location.state && location.state.task) {
+    if (location.state?.task) {
       return location.state.task;
     }
 
@@ -157,7 +157,7 @@ export default class CreateTask extends Component {
       const task = await storage.getItem(TASKS_CREATE_STORAGE_KEY);
 
       return task || defaultTask(payloadSchema);
-    } catch (err) {
+    } catch (_err) {
       return defaultTask(payloadSchema);
     }
   }
@@ -251,7 +251,7 @@ export default class CreateTask extends Component {
     try {
       load(value);
       this.setState({ invalid: false, task: value });
-    } catch (err) {
+    } catch (_err) {
       this.setState({ invalid: true, task: value });
     }
   };
@@ -266,8 +266,8 @@ export default class CreateTask extends Component {
     const input = load(task);
     const errors = await validateTaskPayloadSchemas(
       input,
-      schema && schema.type,
-      schema && schema.schema
+      schema?.type,
+      schema?.schema
     );
 
     this.setState({
@@ -293,10 +293,11 @@ export default class CreateTask extends Component {
         case 'object':
           return Array.isArray(obj)
             ? obj.map(iter)
-            : Object.entries(obj).reduce(
-                (o, [key, value]) => ({ ...o, [key]: iter(value) }),
-                {}
-              );
+            : Object.entries(obj).reduce((o, [key, value]) => {
+                o[key] = iter(value);
+
+                return o;
+              }, {});
 
         case 'string':
           return ISO_8601_REGEX.test(obj)
@@ -362,123 +363,121 @@ export default class CreateTask extends Component {
             </Typography>
           </HelpView>
         }>
-        <Fragment>
-          {error ? (
-            <ErrorPanel fixed error={error} />
-          ) : (
-            <Fragment>
-              <ErrorPanel fixed error={createdTaskError} />
-              <Box style={{ display: 'flex', marginBottom: 10 }}>
-                <FormControlLabel
-                  style={{ flexBasis: 0, flexGrow: 1 }}
-                  control={
-                    <Switch
-                      checked={interactive}
-                      onChange={this.handleInteractiveChange}
-                      color="secondary"
-                    />
-                  }
-                  label="Interactive"
-                />
-                <FormControlLabel
-                  style={{ alignSelf: 'flex-end' }}
-                  control={
-                    <TextField
-                      select
-                      labelId="payload-schema-label"
-                      id="payload-schema"
-                      value={payloadSchema}
-                      defaultChecked
-                      onChange={this.handlePayloadSchemaChange}>
-                      {Object.entries(TASK_PAYLOAD_SCHEMAS).map(
-                        ([key, schema]) => (
-                          <MenuItem key={key} value={key}>
-                            {schema.label}
-                          </MenuItem>
-                        )
-                      )}
-                    </TextField>
-                  }
-                />
-                <Button
-                  style={{ alignSelf: 'flex-end' }}
-                  size="small"
-                  onClick={this.handleLint}>
-                  Validate schema
-                </Button>
-              </Box>
-              {validationErrors && (
-                <MuiErrorPanel
-                  className={classes.validationErrors}
-                  error={validationErrors}
-                />
-              )}
-              <CodeEditor
-                mode="yaml"
-                lint
-                value={task || ''}
-                onChange={this.handleTaskChange}
+        {error ? (
+          <ErrorPanel fixed error={error} />
+        ) : (
+          <Fragment>
+            <ErrorPanel fixed error={createdTaskError} />
+            <Box style={{ display: 'flex', marginBottom: 10 }}>
+              <FormControlLabel
+                style={{ flexBasis: 0, flexGrow: 1 }}
+                control={
+                  <Switch
+                    checked={interactive}
+                    onChange={this.handleInteractiveChange}
+                    color="secondary"
+                  />
+                }
+                label="Interactive"
               />
-              <br />
-              {Boolean(recentTaskDefinitions.length) && (
-                <List
-                  dense
-                  subheader={
-                    <ListSubheader component="div">
-                      Recent Task Definitions
-                    </ListSubheader>
-                  }>
-                  {this.state.recentTaskDefinitions.map(task => (
-                    <ListItem
-                      className={classes.listItemButton}
-                      button
-                      onClick={() => {
-                        this.handleRecentTaskDefinitionClick(task);
-                      }}
-                      key={task.metadata.name}>
-                      <ListItemText
-                        disableTypography
-                        primary={
-                          <Typography variant="body2">
-                            {task.metadata.name}
-                          </Typography>
-                        }
-                      />
-                      <LinkIcon />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+              <FormControlLabel
+                style={{ alignSelf: 'flex-end' }}
+                control={
+                  <TextField
+                    select
+                    labelId="payload-schema-label"
+                    id="payload-schema"
+                    value={payloadSchema}
+                    defaultChecked
+                    onChange={this.handlePayloadSchemaChange}>
+                    {Object.entries(TASK_PAYLOAD_SCHEMAS).map(
+                      ([key, schema]) => (
+                        <MenuItem key={key} value={key}>
+                          {schema.label}
+                        </MenuItem>
+                      )
+                    )}
+                  </TextField>
+                }
+              />
               <Button
-                spanProps={{ className: classes.createIconSpan }}
-                tooltipProps={{ title: 'Create Task' }}
-                requiresAuth
-                disabled={!task || invalid || loading}
-                variant="round"
-                className={classes.createIcon}
-                onClick={this.handleCreateTask}>
-                <ContentSaveIcon />
+                style={{ alignSelf: 'flex-end' }}
+                size="small"
+                onClick={this.handleLint}>
+                Validate schema
               </Button>
-              <SpeedDial>
-                <SpeedDialAction
-                  tooltipOpen
-                  icon={<RotateLeftIcon />}
-                  onClick={this.handleResetEditor}
-                  tooltipTitle="Reset Editor"
-                />
-                <SpeedDialAction
-                  tooltipOpen
-                  icon={<ClockOutlineIcon />}
-                  onClick={this.handleUpdateTimestamps}
-                  tooltipTitle="Update Timestamps"
-                  FabProps={{
-                    disabled: !task || invalid,
-                  }}
-                />
-              </SpeedDial>
-            </Fragment>
-          )}
-        </Fragment>
+            </Box>
+            {validationErrors && (
+              <MuiErrorPanel
+                className={classes.validationErrors}
+                error={validationErrors}
+              />
+            )}
+            <CodeEditor
+              mode="yaml"
+              lint
+              value={task || ''}
+              onChange={this.handleTaskChange}
+            />
+            <br />
+            {Boolean(recentTaskDefinitions.length) && (
+              <List
+                dense
+                subheader={
+                  <ListSubheader component="div">
+                    Recent Task Definitions
+                  </ListSubheader>
+                }>
+                {this.state.recentTaskDefinitions.map(task => (
+                  <ListItem
+                    className={classes.listItemButton}
+                    button
+                    onClick={() => {
+                      this.handleRecentTaskDefinitionClick(task);
+                    }}
+                    key={task.metadata.name}>
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography variant="body2">
+                          {task.metadata.name}
+                        </Typography>
+                      }
+                    />
+                    <LinkIcon />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+            <Button
+              spanProps={{ className: classes.createIconSpan }}
+              tooltipProps={{ title: 'Create Task' }}
+              requiresAuth
+              disabled={!task || invalid || loading}
+              variant="circular"
+              className={classes.createIcon}
+              onClick={this.handleCreateTask}>
+              <ContentSaveIcon />
+            </Button>
+            <SpeedDial>
+              <SpeedDialAction
+                tooltipOpen
+                icon={<RotateLeftIcon />}
+                onClick={this.handleResetEditor}
+                tooltipTitle="Reset Editor"
+              />
+              <SpeedDialAction
+                tooltipOpen
+                icon={<ClockOutlineIcon />}
+                onClick={this.handleUpdateTimestamps}
+                tooltipTitle="Update Timestamps"
+                FabProps={{
+                  disabled: !task || invalid,
+                }}
+              />
+            </SpeedDial>
+          </Fragment>
+        )}
       </Dashboard>
     );
   }

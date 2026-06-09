@@ -102,8 +102,13 @@ export default class WMViewClaimedTasks extends Component {
     } = this.props;
     const { provisionerId, workerType } = this.props.match.params;
     // Claimed tasks could exist for the pools that are not managed by w-m
-    // so one of the request would fail with errors
-    const wpMissing = error?.message?.includes('Worker pool does not exist');
+    // so one of the requests would fail with errors; only suppress the error
+    // panel when ALL errors are the expected "Worker pool does not exist" case
+    const wpMissing =
+      error?.graphQLErrors?.length > 0 &&
+      error.graphQLErrors.every(e =>
+        e.message?.includes('Worker pool does not exist')
+      );
 
     return (
       <Dashboard

@@ -82,3 +82,18 @@ export const measureTime = (precision = 1e6) => {
   const start = hrtime.bigint();
   return () => Number(hrtime.bigint() - start) / precision;
 };
+
+/**
+ * Run a promise with a timeout. If the promise does not settle
+ * within `ms` milliseconds, the returned promise rejects with `message`.
+ * The timer is always cleaned up to avoid leaks.
+ */
+export const withTimeout = (promise, ms, message) => {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(message)), ms);
+    }),
+  ]).finally(() => clearTimeout(timer));
+};

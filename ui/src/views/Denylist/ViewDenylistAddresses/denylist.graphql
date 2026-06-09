@@ -1,5 +1,5 @@
-query DenylistedNotification($notificationsConnection: PageConnection, $filter: JSON) {
-  listDenylistAddresses(connection: $notificationsConnection, filter: $filter) {
+query DenylistedNotification($notificationsConnection: PageConnection, $searchTerm: String) {
+  listDenylistAddresses(connection: $notificationsConnection, searchTerm: $searchTerm) {
     pageInfo {
       hasNextPage
       hasPreviousPage

@@ -35,13 +35,15 @@ These represent permissions to run tasks.
 Look for one that seems general-purpose, or ask the folks who administer your deployment.
 For example, you might see `queue:create-task:highest:proj-misc/tutorial`.
 This grants access to workerPool `proj-misc/tutorial`.
-If possible, choose one that is running docker-worker.
+If possible, choose a Linux generic-worker pool, since the example below uses the legacy docker-worker payload format that is supported on Linux generic-worker via the [d2g](https://github.com/taskcluster/taskcluster/tree/main/tools/d2g) translation layer.
 
 <SiteSpecific>
 In this deployment, `%tutorial_worker_pool_id%` is a good choice.
 </SiteSpecific>
 
 ## Creating a Task
+
+> **Note:** The example below uses the docker-worker payload format. This task now runs on generic-worker, which accepts this legacy payload format on Linux through the [d2g](https://github.com/taskcluster/taskcluster/tree/main/tools/d2g) translation layer for backward compatibility.
 
 Now that you've got a worker pool in mind, go to "Create a task" on the navigation menu.
 What you see in the resulting text box is a bare-bones task description, looking something like this (the details may evolve as features are added):
@@ -75,7 +77,7 @@ The fields in the task description are explained in greater detail throughout th
  * `created` and `deadline` give a time boundary for the task.
    If the task is not completed by its deadline, it will be resolved as `exception` with reason `"deadline-exceeded"`.
 
- * The `payload` is interpreted by the Docker worker.
+ * The `payload` uses the legacy docker-worker payload format, which generic-worker accepts on Linux via [d2g](https://github.com/taskcluster/taskcluster/tree/main/tools/d2g).
    The `image` key specifies the docker image to pull, and the `command` gives the command to run within that image.
 
 In the task inspector, you will see your task description as executed, and indications of the task's status: pending, executing, and then finished.

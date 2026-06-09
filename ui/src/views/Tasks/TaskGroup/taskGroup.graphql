@@ -1,5 +1,5 @@
-query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter: JSON, $taskActionsFilter: JSON) {
-  taskGroup(taskGroupId: $taskGroupId, connection: $taskGroupConnection, filter: $filter) {
+query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection) {
+  taskGroup(taskGroupId: $taskGroupId, connection: $taskGroupConnection) {
     pageInfo {
       hasNextPage
       hasPreviousPage
@@ -59,7 +59,7 @@ query TaskGroup($taskGroupId: ID!, $taskGroupConnection: PageConnection, $filter
     extra
   }
 
-  taskActions(taskGroupId: $taskGroupId, filter: $taskActionsFilter) {
+  taskActions(taskGroupId: $taskGroupId) {
     actions
     variables
     version

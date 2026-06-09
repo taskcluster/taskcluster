@@ -113,10 +113,7 @@ export default class InteractiveConnect extends Component {
       const artifacts = task.latestArtifacts.edges;
       const interactives = artifacts.reduce((acc, { node: artifact }) => {
         if (artifact.name.endsWith('shell.html')) {
-          return {
-            ...acc,
-            shellArtifact: artifact,
-          };
+          acc.shellArtifact = artifact;
         }
 
         return acc;
@@ -132,7 +129,7 @@ export default class InteractiveConnect extends Component {
           sessionReady ||
           getInteractiveStatus({
             shellArtifact: interactives.shellArtifact,
-            taskStatusState: task && task.status.state,
+            taskStatusState: task?.status.state,
           }) === INTERACTIVE_TASK_STATUS.READY,
       };
     }
@@ -149,7 +146,6 @@ export default class InteractiveConnect extends Component {
   state = {
     shellArtifact: null,
     artifactsLoading: true,
-    // eslint-disable-next-line react/no-unused-state
     previousTaskId: this.props.match.params.taskId,
     notifyOnReady:
       'Notification' in window && localStorage.getItem(NOTIFY_KEY) === 'true',
@@ -178,11 +174,7 @@ export default class InteractiveConnect extends Component {
     }
 
     // We're done fetching
-    if (
-      !task ||
-      !task.latestArtifacts ||
-      !task.latestArtifacts.pageInfo.hasNextPage
-    ) {
+    if (!task?.latestArtifacts?.pageInfo.hasNextPage) {
       previousCursor = INITIAL_CURSOR;
 
       return;
@@ -272,7 +264,7 @@ export default class InteractiveConnect extends Component {
     const { shellArtifact, notifyOnReady } = this.state;
     const interactiveStatus = getInteractiveStatus({
       shellArtifact,
-      taskStatusState: task && task.status.state,
+      taskStatusState: task?.status.state,
     });
     const isSessionReady = interactiveStatus === INTERACTIVE_TASK_STATUS.READY;
     const isSessionResolved =
@@ -381,11 +373,9 @@ export default class InteractiveConnect extends Component {
 
     return (
       <Dashboard title="Interactive Connect">
-        <Fragment>
-          {!error && artifactsLoading && <Spinner loading />}
-          <ErrorPanel fixed error={error} />
-          {!artifactsLoading && task && this.renderTask()}
-        </Fragment>
+        {!error && artifactsLoading && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        {!artifactsLoading && task && this.renderTask()}
       </Dashboard>
     );
   }

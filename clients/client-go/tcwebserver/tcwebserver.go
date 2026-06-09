@@ -42,7 +42,7 @@ package tcwebserver
 import (
 	"net/url"
 
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
 )
 
 type WebServer tcclient.Client

@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,10 +13,31 @@ import (
 	"sync"
 
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/singleflight"
 
-	"github.com/taskcluster/taskcluster/v99/internal/scopes"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v100/internal/scopes"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/process"
+)
+
+// Concurrency model (capacity > 1):
+//
+//   - d2gImageLoads is a singleflight.Group keyed by image cache key.
+//     Concurrent tasks that resolve to the *same* image key share a
+//     single docker load / docker pull invocation; tasks resolving to
+//     *different* keys run in parallel — that's what capacity > 1 is
+//     for. Mirrors the fileCacheDownloads pattern in mounts_feature.go.
+//
+//   - d2gCacheMutex protects the d2g-image-cache.json file. Held only
+//     across the read or write to that single shared file, never across
+//     a docker invocation, so it doesn't bottleneck unrelated loads.
+//
+// Lock ordering (when both are held): d2gCacheMutex outside cacheMutex
+// (cacheMutex is defined in mounts_feature.go and acquired by
+// garbageCollection → removeD2GCacheFile → d2gCacheMutex).
+var (
+	d2gCacheMutex sync.Mutex
+	d2gImageLoads singleflight.Group
 )
 
 type (
@@ -68,8 +90,11 @@ func (dtf *D2GTaskFeature) RequiredScopes() scopes.Required {
 func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	// load cache on every start in case the garbage
 	// collector has pruned docker images between tasks
+	d2gCacheMutex.Lock()
 	dtf.imageCache.loadFromFile("d2g-image-cache.json")
+	d2gCacheMutex.Unlock()
 
+	taskDir := dtf.task.TaskDir()
 	var isImageArtifact bool
 	var key string
 	if dtf.task.D2GInfo.ImageArtifactSHA256 != "" {
@@ -83,12 +108,8 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	}
 
 	image := dtf.imageCache[key]
-
-	// Always want to re-pull the docker image
-	// if it's not an image artifact, as the
-	// tag could be outdated
-	// (see https://github.com/taskcluster/taskcluster/issues/8004)
-	if image == nil || !isImageArtifact {
+	loadedImage := false
+	loadImage := func() (*Image, *CommandExecutionError) {
 		dtf.task.Info("[d2g] Loading docker image")
 
 		var cmd *process.Command
@@ -99,7 +120,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			// the task user process doesn't need file system access.
 			cachedImageFile, err := os.Open(dtf.task.D2GInfo.ImageArtifactPath)
 			if err != nil {
-				return executionError(internalError, errored, fmt.Errorf("[d2g] could not open cached docker image at %v: %v", dtf.task.D2GInfo.ImageArtifactPath, err))
+				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not open cached docker image at %v: %v", dtf.task.D2GInfo.ImageArtifactPath, err))
 			}
 			defer cachedImageFile.Close()
 
@@ -107,9 +128,9 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				"docker",
 				"load",
 				"--quiet",
-			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+			}, taskDir, []string{}, dtf.task.pd)
 			if err != nil {
-				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
+				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to load docker image: %v", err))
 			}
 			cmd.Stdin = cachedImageFile
 		} else {
@@ -118,14 +139,14 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				"pull",
 				"--quiet",
 				key,
-			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+			}, taskDir, []string{}, dtf.task.pd)
 			if err != nil {
-				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to pull docker image: %v", err))
+				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to pull docker image: %v", err))
 			}
 		}
 		out, err := cmd.Output()
 		if err != nil {
-			return executionError(internalError, errored, formatCommandError("[d2g] could not load docker image", err, out))
+			return nil, executionError(internalError, errored, formatCommandError("[d2g] could not load docker image", err, out))
 		}
 
 		// Default to use the first line of output for image
@@ -146,7 +167,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			}
 
 			if !imageNameFound {
-				return executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
+				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
 			}
 		}
 		imageID := imageName
@@ -161,27 +182,53 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 				"--no-trunc",
 				"--quiet",
 				imageName,
-			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+			}, taskDir, []string{}, dtf.task.pd)
 			if err != nil {
-				return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
+				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
 			}
 			out, err = cmd.Output()
 			if err != nil {
-				return executionError(internalError, errored, formatCommandError("[d2g] could not get sha256 of docker image", err, out))
+				return nil, executionError(internalError, errored, formatCommandError("[d2g] could not get sha256 of docker image", err, out))
 			}
 
 			// Only use the first line of output for image ID
 			// as docker images can output multiple sha256's for the
 			// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
-			idLine := strings.Split(strings.TrimSpace(string(out)), "\n")[0]
+			idLine, _, _ := strings.Cut(strings.TrimSpace(string(out)), "\n")
 			imageID = strings.TrimPrefix(idLine, "sha256:")
 		}
 
-		image = &Image{
+		return &Image{
 			ID:   imageID,
 			Name: imageName,
+		}, nil
+	}
+
+	// Always want to re-pull the docker image
+	// if it's not an image artifact, as the
+	// tag could be outdated
+	// (see https://github.com/taskcluster/taskcluster/issues/8004)
+	if isImageArtifact {
+		if image == nil {
+			var loadErr *CommandExecutionError
+			image, loadedImage, loadErr = dtf.loadImageLocked(key, loadImage)
+			if loadErr != nil {
+				return loadErr
+			}
 		}
-		dtf.imageCache[key] = image
+	} else {
+		// Registry pulls also serialize through the same mutex so that
+		// concurrent tasks running with the same `image: foo:tag`
+		// don't issue parallel `docker pull`s and race on the cache
+		// JSON write below.
+		var loadErr *CommandExecutionError
+		image, loadedImage, loadErr = dtf.loadImageLocked(key, loadImage)
+		if loadErr != nil {
+			return loadErr
+		}
+	}
+
+	if loadedImage {
 		dtf.task.Infof("[d2g] Loaded docker image %q", image.Name)
 	} else {
 		dtf.task.Infof("[d2g] Using cached docker image %q", image.Name)
@@ -197,7 +244,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			"inspect",
 			"--format={{index .Id}}",
 			image.ID,
-		}, taskContext.TaskDir, []string{}, dtf.task.pd)
+		}, taskDir, []string{}, dtf.task.pd)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to inspect docker image: %v", err))
 		}
@@ -214,14 +261,19 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			chainOfTrustAdditionalData = fmt.Sprintf(`{"environment":{"imageHash":"%s"}}`, imageHash)
 		}
 
-		chainOfTrustAdditionalDataPath := filepath.Join(taskContext.TaskDir, "chain-of-trust-additional-data.json")
+		chainOfTrustAdditionalDataPath := filepath.Join(taskDir, "chain-of-trust-additional-data.json")
+		// 0644 (not 0600): the worker (root) writes this file, then
+		// the task user reads it via copy-to-temp-file when the
+		// chain-of-trust feature folds it into the signed cert. The
+		// task dir is already 0700 owned by the task user, so this
+		// file is not exposed beyond that boundary.
 		err = os.WriteFile(chainOfTrustAdditionalDataPath, []byte(chainOfTrustAdditionalData), 0644)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not write chain of trust additional data file: %v", err))
 		}
 	}
 
-	envFile, err := os.Create(filepath.Join(taskContext.TaskDir, "env.list"))
+	envFile, err := os.Create(filepath.Join(taskDir, "env.list"))
 	if err != nil {
 		return executionError(internalError, errored, fmt.Errorf("[d2g] could not create env.list file: %v", err))
 	}
@@ -232,12 +284,73 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		return executionError(internalError, errored, fmt.Errorf("[d2g] could not write to env.list file: %v", err))
 	}
 
-	dtf.evaluateCommandPlaceholders(image.ID)
+	dtf.evaluateCommandPlaceholders(image.ID, taskDir)
+
+	d2gCacheMutex.Lock()
+	mergedCache := ImageCache{}
+	mergedCache.loadFromFile("d2g-image-cache.json")
+	maps.Copy(mergedCache, dtf.imageCache)
+	if writeErr := fileutil.WriteToFileAsJSON(&mergedCache, "d2g-image-cache.json"); writeErr != nil {
+		d2gCacheMutex.Unlock()
+		return executionError(internalError, errored, writeErr)
+	}
+	if secErr := fileutil.SecureFiles("d2g-image-cache.json"); secErr != nil {
+		d2gCacheMutex.Unlock()
+		return executionError(internalError, errored, secErr)
+	}
+	d2gCacheMutex.Unlock()
 
 	return nil
 }
 
+// loadImageLocked deduplicates concurrent docker image loads (both
+// artifact-based `docker load` and registry-based `docker pull`) per
+// image key. Tasks pulling the *same* key share one docker invocation;
+// tasks pulling *different* keys run in parallel.
+//
+// The first return is whether *this* call actually performed the load
+// (true) versus picked up a result populated by another task (false) —
+// kept for the existing "[d2g] Loaded ..." vs "[d2g] Using cached ..."
+// log distinction in Start.
+type imageLoadResult struct {
+	image  *Image
+	loaded bool
+}
+
+func (dtf *D2GTaskFeature) loadImageLocked(key string, loadImage func() (*Image, *CommandExecutionError)) (*Image, bool, *CommandExecutionError) {
+	v, err, _ := d2gImageLoads.Do(key, func() (any, error) {
+		// Re-read the on-disk cache: another task may have completed
+		// the load while we were waiting on singleflight, OR an
+		// unrelated process (a previous worker run) may have left a
+		// fresh entry behind. Done inside Do so the doubled-check
+		// happens under the per-key serialization.
+		latestCache := ImageCache{}
+		d2gCacheMutex.Lock()
+		latestCache.loadFromFile("d2g-image-cache.json")
+		d2gCacheMutex.Unlock()
+		maps.Copy(dtf.imageCache, latestCache)
+		if image := latestCache[key]; image != nil {
+			return imageLoadResult{image: image, loaded: false}, nil
+		}
+
+		image, loadErr := loadImage()
+		if loadErr != nil {
+			return nil, loadErr
+		}
+		dtf.imageCache[key] = image
+		return imageLoadResult{image: image, loaded: true}, nil
+	})
+	if err != nil {
+		// Only loadImage returns an error from inside Do, and it's
+		// always a *CommandExecutionError.
+		return nil, false, err.(*CommandExecutionError)
+	}
+	r := v.(imageLoadResult)
+	return r.image, r.loaded, nil
+}
+
 func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
+	taskDir := dtf.task.TaskDir()
 	// Copy artifacts from the stopped container in parallel since
 	// each docker cp reads from an independent path and destinations
 	// are unique (artifact0, artifact1, ...). Limit to 10 concurrent
@@ -253,7 +366,7 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 				"cp",
 				fmt.Sprintf("%s:%s", dtf.task.D2GInfo.ContainerName, artifact.SrcPath),
 				artifact.DestPath,
-			}, taskContext.TaskDir, []string{}, dtf.task.pd)
+			}, taskDir, []string{}, dtf.task.pd)
 			if e != nil {
 				execErr := executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to copy artifact: %v", e))
 				mu.Lock()
@@ -278,7 +391,7 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		"rm",
 		"--force",
 		dtf.task.D2GInfo.ContainerName,
-	}, taskContext.TaskDir, []string{}, dtf.task.pd)
+	}, taskDir, []string{}, dtf.task.pd)
 	if e != nil {
 		err.add(executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to remove docker container: %v", e)))
 	}
@@ -287,8 +400,6 @@ func (dtf *D2GTaskFeature) Stop(err *ExecutionErrors) {
 		err.add(executionError(internalError, errored, formatCommandError("[d2g] could not remove docker container", e, out)))
 	}
 
-	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&dtf.imageCache, "d2g-image-cache.json")))
-	err.add(executionError(internalError, errored, fileutil.SecureFiles("d2g-image-cache.json")))
 }
 
 func (ic *ImageCache) loadFromFile(stateFile string) {
@@ -304,12 +415,16 @@ func (ic *ImageCache) loadFromFile(stateFile string) {
 	}
 }
 
-func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string) {
+func (dtf *D2GTaskFeature) evaluateCommandPlaceholders(imageID string, taskDir string) {
 	videoDevice, _ := dtf.task.getVariable("TASKCLUSTER_VIDEO_DEVICE")
+	dockerNetwork, _ := dtf.task.getVariable("TASKCLUSTER_DOCKER_NETWORK")
+	proxyGateway, _ := dtf.task.getVariable("TASKCLUSTER_PROXY_GATEWAY")
 	placeholders := strings.NewReplacer(
 		"__D2G_IMAGE_ID__", imageID,
-		"__TASK_DIR__", taskContext.TaskDir,
+		"__TASK_DIR__", taskDir,
 		"__TASKCLUSTER_VIDEO_DEVICE__", videoDevice,
+		"__TASKCLUSTER_DOCKER_NETWORK__", dockerNetwork,
+		"__TASKCLUSTER_PROXY_GATEWAY__", proxyGateway,
 	)
 
 	// Update commands in the payload so that

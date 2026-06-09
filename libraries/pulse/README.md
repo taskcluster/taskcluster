@@ -468,7 +468,7 @@ const publisher = await exchanges.publisher({
   rootUrl: cfg.taskcluster.rootUrl,
   schemaset, // from @taskcluster/lib-validate
   client,    // @taskcluster/lib-pulse Client instance
-  sendDeadline: 12000,
+  sendDeadline: 30000,
 });
 ```
 
@@ -479,7 +479,7 @@ will resolve when the AMQP server has confirmed receipt of the message.
 The `sendDeadline` option gives a time (in ms) after which a send operation
 will not be retried.  This value is typically chosen so that operations sending
 messages (such as REST API handlers) can return an error instead of timing out.
-Default is 12 seconds.
+Default is 30 seconds.
 
 For compatibility with the deployment at `taskcluster.net`, this function also
 accepts parameters `publish` and `aws`, which control publishing the references

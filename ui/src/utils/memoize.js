@@ -63,10 +63,7 @@ const optimizeCacheKey = arg => {
   const key = Array.isArray(arg) ? arg.join(',') : arg;
 
   if (key.length > MAX_KEY_LENGTH) {
-    return crypto
-      .createHash('sha256')
-      .update(key)
-      .digest('hex');
+    return crypto.createHash('sha256').update(key).digest('hex');
   }
 
   return key;
@@ -120,7 +117,7 @@ export { BoundedCache };
  */
 export const clearAllCaches = memoizedFunctions => {
   memoizedFunctions.forEach(fn => {
-    if (fn && fn.cache && typeof fn.cache.clear === 'function') {
+    if (fn?.cache && typeof fn.cache.clear === 'function') {
       fn.cache.clear();
     }
   });

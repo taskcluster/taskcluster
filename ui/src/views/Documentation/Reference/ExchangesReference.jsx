@@ -28,9 +28,9 @@ export default class ExchangesReference extends Component {
       throw new Error(`Reference document version ${version} not supported`);
     }
 
-    const topicExchangeEntries =
-      ref.entries &&
-      ref.entries.filter(({ type }) => type === 'topic-exchange');
+    const topicExchangeEntries = ref.entries?.filter(
+      ({ type }) => type === 'topic-exchange'
+    );
 
     return (
       <div>

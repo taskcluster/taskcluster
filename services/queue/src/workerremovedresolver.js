@@ -20,7 +20,6 @@ class WorkerRemovedResolver {
   constructor(options) {
     assert(options, 'options must be given');
     assert(options.db, 'options must include db');
-    assert(options.queueService, 'Expected a queueService instance');
     assert(options.dependencyTracker, 'Expected a DependencyTracker instance');
     assert(options.publisher, 'Expected a publisher');
     assert(options.pulseClient, 'Expected a pulseClient');
@@ -28,7 +27,6 @@ class WorkerRemovedResolver {
     assert(options.monitor !== null, 'options.monitor required!');
 
     this.db = options.db;
-    this.queueService = options.queueService;
     this.dependencyTracker = options.dependencyTracker;
     this.publisher = options.publisher;
     this.pulseClient = options.pulseClient;
@@ -103,6 +101,10 @@ class WorkerRemovedResolver {
 
     const status = task.status();
 
+    // Publish task-exception. The publish is intentionally NOT wrapped:
+    // this resolver is Pulse-consumer-driven, and a throw triggers NACK +
+    // redelivery, preserving at-least-once semantics for downstream
+    // taskException / taskPending notifications.
     await this.publisher.taskException({
       status,
       runId,
@@ -124,14 +126,14 @@ class WorkerRemovedResolver {
         task.runs.length - 1 === runId + 1 &&
         newRun.state === 'pending' &&
         newRun.reasonCreated === 'retry') {
-      await Promise.all([
-        this.queueService.putPendingMessage(task, runId + 1),
-        this.publisher.taskPending({
-          status,
-          runId: runId + 1,
-          task: { tags: task.tags || {} },
-        }, task.routes),
-      ]);
+      // queue_pending_tasks insert is now atomic inside resolve_task
+      // (db v124). The publish is intentionally NOT wrapped: failing the
+      // handler triggers redelivery, preserving at-least-once semantics.
+      await this.publisher.taskPending({
+        status,
+        runId: runId + 1,
+        task: { tags: task.tags || {} },
+      }, task.routes);
       this.monitor.log.taskPending({ taskId, runId: runId + 1 });
     } else {
       await this.dependencyTracker.resolveTask(

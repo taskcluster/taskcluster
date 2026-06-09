@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import ArrowRightIcon from 'mdi-react/ArrowRightIcon';
@@ -51,25 +51,21 @@ export default class PageNavigation extends Component {
     return (
       <Link className={classes.link} to={to}>
         <Button variant="outlined" className={classes.button} {...props}>
-          <Fragment>
-            {variant === 'prev' && (
-              <ArrowLeftIcon className={classes.leftIcon} />
-            )}
-            <div
-              className={
-                variant === 'prev'
-                  ? classes.leftButtonText
-                  : classes.rightButtonText
-              }>
-              <Typography variant="caption" color="textSecondary">
-                {variant}
-              </Typography>
-              <Typography variant="button">{children}</Typography>
-            </div>
-            {variant === 'next' && (
-              <ArrowRightIcon className={classes.rightIcon} />
-            )}
-          </Fragment>
+          {variant === 'prev' && <ArrowLeftIcon className={classes.leftIcon} />}
+          <div
+            className={
+              variant === 'prev'
+                ? classes.leftButtonText
+                : classes.rightButtonText
+            }>
+            <Typography variant="caption" color="textSecondary">
+              {variant}
+            </Typography>
+            <Typography variant="button">{children}</Typography>
+          </div>
+          {variant === 'next' && (
+            <ArrowRightIcon className={classes.rightIcon} />
+          )}
         </Button>
       </Link>
     );

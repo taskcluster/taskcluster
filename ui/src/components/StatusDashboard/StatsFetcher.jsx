@@ -28,7 +28,7 @@ export default function StatsFetcher() {
     }, refreshInterval);
 
     return () => clearInterval(intervalRef.current);
-  }, [workerPools, refreshInterval]);
+  }, [workerPools]);
 
   return (
     <StatusDashboard

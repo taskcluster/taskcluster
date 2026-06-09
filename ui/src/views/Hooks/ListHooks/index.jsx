@@ -20,9 +20,7 @@ import Link from '../../../utils/Link';
   options: ({ match: { params } }) => ({
     fetchPolicy: 'network-only',
     variables: {
-      filter: {
-        hookGroupId: params.hookGroupId,
-      },
+      hookGroupId: params.hookGroupId || null,
     },
   }),
 })
@@ -69,7 +67,7 @@ export default class ListHooks extends Component {
       match,
     } = this.props;
     const { search } = parse(window.location.search.slice(1));
-    const hooks = hookGroups?.map(group => group?.hooks).flat();
+    const hooks = hookGroups?.flatMap(group => group?.hooks);
 
     return (
       <Dashboard
@@ -108,7 +106,7 @@ export default class ListHooks extends Component {
           spanProps={{ className: classes.actionButton }}
           tooltipProps={{ title: 'Create Hook' }}
           color="secondary"
-          variant="round"
+          variant="circular"
           onClick={this.handleCreateHook}>
           <PlusIcon />
         </Button>

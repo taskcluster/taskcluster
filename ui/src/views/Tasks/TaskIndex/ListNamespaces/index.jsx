@@ -167,9 +167,8 @@ export default class ListNamespaces extends Component {
     } = this.props;
     const { indexPathInput } = this.state;
     const hasIndexedTasks =
-      taskNamespace && taskNamespace.edges && taskNamespace.edges.length > 0;
-    const hasNamespaces =
-      namespaces && namespaces.edges && namespaces.edges.length > 0;
+      taskNamespace?.edges && taskNamespace.edges.length > 0;
+    const hasNamespaces = namespaces?.edges && namespaces.edges.length > 0;
     const loading = namespacesLoading || taskNamespaceLoading;
     const indexPaths = indexPathInput.split('.');
     const isSinglePath = indexPaths.length === 1;
@@ -188,75 +187,69 @@ export default class ListNamespaces extends Component {
             placeholder="Search path.to.index"
           />
         }>
-        <Fragment>
-          {loading && <Spinner loading />}
-          <ErrorPanel fixed error={namespacesError || taskNamespaceError} />
-          {!loading && !hasNamespaces && !hasIndexedTasks && !isSinglePath && (
-            <Redirect
-              to={`/tasks/index/${indexPathInput
-                .split('.')
-                .slice(0, -1)
-                .join('.')}/${indexPathInput.split('.').slice(-1)[0]}`}
-            />
-          )}
-          {!loading && params.namespace && (
-            <Fragment>
-              <Breadcrumbs>
-                <Link to="/tasks/index">
-                  <Typography variant="body2" className={classes.link}>
-                    Indexes
+        {loading && <Spinner loading />}
+        <ErrorPanel fixed error={namespacesError || taskNamespaceError} />
+        {!loading && !hasNamespaces && !hasIndexedTasks && !isSinglePath && (
+          <Redirect
+            to={`/tasks/index/${indexPathInput
+              .split('.')
+              .slice(0, -1)
+              .join('.')}/${indexPathInput.split('.').slice(-1)[0]}`}
+          />
+        )}
+        {!loading && params.namespace && (
+          <Fragment>
+            <Breadcrumbs>
+              <Link to="/tasks/index">
+                <Typography variant="body2" className={classes.link}>
+                  Indexes
+                </Typography>
+              </Link>
+              {indexPaths.map((indexName, i) => {
+                const path = indexPaths.slice(0, i + 1).join('.');
+
+                return indexPaths.length === i + 1 ? (
+                  <Typography key={path} variant="body2" color="textSecondary">
+                    {indexName}
                   </Typography>
-                </Link>
-                {indexPaths.map((indexName, i) =>
-                  indexPaths.length === i + 1 ? (
-                    <Typography
-                      key={indexName}
-                      variant="body2"
-                      color="textSecondary">
+                ) : (
+                  <Link key={path} to={`/tasks/index/${path}`}>
+                    <Typography variant="body2" className={classes.link}>
                       {indexName}
                     </Typography>
-                  ) : (
-                    <Link
-                      to={`/tasks/index/${indexPaths
-                        .slice(0, i + 1)
-                        .join('.')}`}>
-                      <Typography variant="body2" className={classes.link}>
-                        {indexName}
-                      </Typography>
-                    </Link>
-                  )
-                )}
-              </Breadcrumbs>
-              <br />
-              <br />
-            </Fragment>
-          )}
-          {!loading && !hasNamespaces && !hasIndexedTasks && isSinglePath && (
-            <Typography>
-              {searchTerm
-                ? `No items for this page with search term ${searchTerm}.`
-                : 'No items for this page.'}
-            </Typography>
-          )}
-          {!loading && hasNamespaces && (
-            <Fragment>
-              <Typography variant="subtitle1">Namespaces</Typography>
-              <IndexNamespacesTable
-                onPageChange={this.handleNamespacesPageChange}
-                connection={namespaces}
-              />
-            </Fragment>
-          )}
-          {!loading && hasIndexedTasks && (
-            <Fragment>
-              <Typography variant="subtitle1">Indexed Tasks</Typography>
-              <IndexTaskNamespaceTable
-                onPageChange={this.handleTaskNamespacePageChange}
-                connection={taskNamespace}
-              />
-            </Fragment>
-          )}
-        </Fragment>
+                  </Link>
+                );
+              })}
+            </Breadcrumbs>
+            <br />
+            <br />
+          </Fragment>
+        )}
+        {!loading && !hasNamespaces && !hasIndexedTasks && isSinglePath && (
+          <Typography>
+            {searchTerm
+              ? `No items for this page with search term ${searchTerm}.`
+              : 'No items for this page.'}
+          </Typography>
+        )}
+        {!loading && hasNamespaces && (
+          <Fragment>
+            <Typography variant="subtitle1">Namespaces</Typography>
+            <IndexNamespacesTable
+              onPageChange={this.handleNamespacesPageChange}
+              connection={namespaces}
+            />
+          </Fragment>
+        )}
+        {!loading && hasIndexedTasks && (
+          <Fragment>
+            <Typography variant="subtitle1">Indexed Tasks</Typography>
+            <IndexTaskNamespaceTable
+              onPageChange={this.handleTaskNamespacePageChange}
+              connection={taskNamespace}
+            />
+          </Fragment>
+        )}
       </Dashboard>
     );
   }

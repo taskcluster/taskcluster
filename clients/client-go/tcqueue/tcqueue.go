@@ -28,7 +28,7 @@
 // * **Error artifacts**, only consists of meta-data which the queue will
 // store for you. These artifacts are only meant to indicate that you the
 // worker or the task failed to generate a specific artifact, that you
-// would otherwise have uploaded. For example docker-worker will upload an
+// would otherwise have uploaded. For example generic-worker will upload an
 // error artifact, if the file it was supposed to upload doesn't exists or
 // turns out to be a directory. Clients requesting an error artifact will
 // get a `424` (Failed Dependency) response. This is mainly designed to
@@ -85,7 +85,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
 )
 
 type Queue tcclient.Client

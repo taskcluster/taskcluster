@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -9,11 +10,12 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/gwconfig"
 )
 
 func TestMissingScopes(t *testing.T) {
@@ -222,6 +224,7 @@ type MountsLoggingTestCase struct {
 // This is an extremely strict test helper, that requires you to specify
 // extracts from every log line that the mounts feature writes to the log
 func LogTest(m *MountsLoggingTestCase) {
+	m.Test.Helper()
 	payload := m.Payload
 	if payload == nil {
 		payload = &GenericWorkerPayload{
@@ -324,8 +327,9 @@ func TestValidSHA256(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or insecure engine but is independent of whether running as current
+	// user or not.
 	grantingDir, _ := grantingDenying(t, "directory", false, "unknown_issuer_app_1")
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
 
@@ -394,8 +398,9 @@ func TestFileMountNoSHA256(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or insecure engine but is independent of whether running as current
+	// user or not.
 	granting, _ := grantingDenying(t, "file", false, t.Name())
 
 	// No cache on first pass
@@ -552,10 +557,11 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or insecure engine but is independent of whether running as current
+	// user or not.
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
-	updatingOwnership := updateOwnership(t)
+	grantingDir, _ := grantingDenying(t, "directory", false, t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -573,7 +579,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -585,7 +591,7 @@ func TestWritableDirectoryCacheNoSHA256(t *testing.T) {
 		`Moving existing writable directory cache banana-cache from .* to .*` + t.Name(),
 		`Creating directory .*`,
 	},
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -794,7 +800,9 @@ func TestMounts(t *testing.T) {
 		"19168d6dc3cc840bd02658e30d761cd555bb1f2bb42da18edf08917dcaa55cf5",
 		filepath.Join(absPathTestDir, "abs-path-dir", "package.json"),
 	)
-	if _, err := os.Stat(directoryCaches["apple-cache"].Location); err != nil {
+	if entries := directoryCaches["apple-cache"]; len(entries) == 0 {
+		t.Error("Expected apple-cache to be persisted, but no pool entries found")
+	} else if _, err := os.Stat(entries[0].Location); err != nil {
 		t.Errorf("Expected apple-cache to be persisted, but got: %v", err)
 	}
 
@@ -833,7 +841,7 @@ func TestMounts(t *testing.T) {
 	checkSHA256(
 		t,
 		"51d818981374a447f0876610fd2baeeb911dd5ad60c6e6b4d2b6b6798ba5c071",
-		filepath.Join(directoryCaches["devtools-app"].Location, "foo.bar"),
+		filepath.Join(directoryCaches["devtools-app"][0].Location, "foo.bar"),
 	)
 }
 
@@ -869,7 +877,7 @@ func TestCachesCanBeModified(t *testing.T) {
 		}
 
 		getCounter := func() int {
-			counterFile := filepath.Join(directoryCaches["test-modifications"].Location, "counter")
+			counterFile := filepath.Join(directoryCaches["test-modifications"][0].Location, "counter")
 			bytes, err := os.ReadFile(counterFile)
 			if err != nil {
 				t.Fatalf("Error when trying to read cache file: %v", err)
@@ -909,10 +917,11 @@ func TestCacheMoved(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or insecure engine but is independent of whether running as current
+	// user or not.
 	grantingCacheFile, _ := grantingDenying(t, "file", true)
-	updatingOwnership := updateOwnership(t)
+	grantingDir, _ := grantingDenying(t, "directory", false, t.Name())
 
 	// No cache on first pass
 	pass1 := append([]string{
@@ -930,7 +939,7 @@ func TestCacheMoved(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass1 = append(pass1,
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass1 = append(pass1,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -954,7 +963,7 @@ func TestCacheMoved(t *testing.T) {
 		`Removing file '.*'`,
 	)
 	pass2 = append(pass2,
-		updatingOwnership...,
+		grantingDir...,
 	)
 	pass2 = append(pass2,
 		`Successfully mounted writable directory cache '.*`+t.Name()+`'`,
@@ -1008,8 +1017,9 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 	setup(t)
 	taskID := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/build/unknown_issuer_app_1.zip")
 
-	// whether permission is granted to task user depends if running under windows or not
-	// and is independent of whether running as current user or not
+	// Whether permission is granted to task user depends if running multiuser
+	// engine or insecure engine but is independent of whether running as current
+	// user or not.
 	granting, _ := grantingDenying(t, "file", false, "file-located-here")
 
 	// No cache on first pass
@@ -1080,6 +1090,103 @@ func TestMountFileAndDirSameLocation(t *testing.T) {
 			},
 		},
 	)
+}
+
+func TestIndexedArtifact(t *testing.T) {
+	setup(t)
+	namespace := fmt.Sprintf("garbage.generic-worker-tests.%v.%v", t.Name(), time.Now().UnixMilli())
+
+	for _, file := range []string{"unknown_issuer_app_1.zip", "mozharness.zip"} {
+		t.Run(file, func(t *testing.T) {
+			taskID := CreateArtifactFromFile(t, file, "public/indexed-artifact")
+			indexArtifact(t, namespace, taskID, 1)
+
+			mountTaskID := mountIndexedArtifact(t, namespace, file)
+
+			data1 := getArtifactContent(t, taskID, "public/indexed-artifact")
+			data2 := getArtifactContent(t, mountTaskID, "public/republished-artifact")
+			if string(data1) != string(data2) {
+				t.Fatalf("Artifact content from task %v and mount task %v should be identical but differ (%v vs %v bytes)", taskID, mountTaskID, len(data1), len(data2))
+			}
+		})
+	}
+}
+
+// TestIndexedArtifactCacheRedownloadOnNewTaskID verifies that when the index
+// is updated with a new taskID (pointing to a different artifact), a task that
+// mounts the indexed content downloads the new artifact rather than serving a
+// stale cached version.
+func TestIndexedArtifactCacheRedownloadOnNewTaskID(t *testing.T) {
+	setup(t)
+	namespace := fmt.Sprintf("garbage.generic-worker-tests.%v.%v", t.Name(), time.Now().UnixMilli())
+
+	// Create first artifact and index it
+	taskID1 := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/indexed-artifact")
+	indexArtifact(t, namespace, taskID1, 1)
+
+	// Mount the indexed artifact — this should download from taskID1
+	mountTaskID1 := mountIndexedArtifact(t, namespace, "mounted-file.zip")
+	data1 := getArtifactContent(t, mountTaskID1, "public/republished-artifact")
+
+	// Create a DIFFERENT artifact and update the index to point to it
+	taskID2 := CreateArtifactFromFile(t, "mozharness.zip", "public/indexed-artifact")
+	indexArtifact(t, namespace, taskID2, 2)
+
+	// Mount again — index now points to taskID2 with different content,
+	// so the worker must download anew (not serve cached)
+	mountTaskID2 := mountIndexedArtifact(t, namespace, "mounted-file.zip")
+	data2 := getArtifactContent(t, mountTaskID2, "public/republished-artifact")
+
+	// The content from the two mount tasks should differ since the index was updated
+	if string(data1) == string(data2) {
+		t.Fatalf("Expected different artifact content after index update, but both mount tasks (%v and %v) returned identical content (%v bytes)", mountTaskID1, mountTaskID2, len(data1))
+	}
+
+	// Verify data2 matches the new artifact (taskID2)
+	originalData2 := getArtifactContent(t, taskID2, "public/indexed-artifact")
+	if string(data2) != string(originalData2) {
+		t.Fatalf("Republished artifact from mount task %v does not match original artifact from task %v", mountTaskID2, taskID2)
+	}
+}
+
+// TestIndexedArtifactCacheHitOnSameTaskID verifies that when the index is
+// updated (e.g. with a higher rank) but the taskID remains the same, the
+// worker serves the cached artifact rather than re-downloading it.
+func TestIndexedArtifactCacheHitOnSameTaskID(t *testing.T) {
+	setup(t)
+	namespace := fmt.Sprintf("garbage.generic-worker-tests.%v.%v", t.Name(), time.Now().UnixMilli())
+
+	// Create an artifact and index it
+	taskID1 := CreateArtifactFromFile(t, "unknown_issuer_app_1.zip", "public/indexed-artifact")
+	indexArtifact(t, namespace, taskID1, 1)
+
+	// Mount the indexed artifact — first download
+	mountTaskID1 := mountIndexedArtifact(t, namespace, "mounted-file.zip")
+
+	// Update the index with a higher rank but SAME taskID
+	indexArtifact(t, namespace, taskID1, 100)
+
+	// Mount again — same taskID, so should use cache
+	mountTaskID2 := mountIndexedArtifact(t, namespace, "mounted-file.zip")
+
+	// Both mount tasks should produce identical content
+	data1 := getArtifactContent(t, mountTaskID1, "public/republished-artifact")
+	data2 := getArtifactContent(t, mountTaskID2, "public/republished-artifact")
+	if string(data1) != string(data2) {
+		t.Fatalf("Expected identical artifact content when index taskID unchanged, but mount tasks %v and %v returned different content", mountTaskID1, mountTaskID2)
+	}
+
+	// Verify the log from the second mount task shows a cache hit, not a
+	// fresh download. On cache hit the worker logs "No SHA256 specified in
+	// task mounts for" and does NOT log "Downloading" (since it skips the
+	// download entirely).
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "No SHA256 specified in task mounts for") {
+		t.Fatalf("Expected log to contain 'No SHA256 specified in task mounts for' but it didn't.\nLog:\n%v", logtext)
+	}
+	if strings.Contains(logtext, "Downloading") {
+		t.Fatalf("Expected no download on cache hit, but log contains 'Downloading'.\nLog:\n%v", logtext)
+	}
 }
 
 func TestInvalidSHADoesNotPreventMountedMountsFromBeingUnmounted(t *testing.T) {
@@ -1182,7 +1289,7 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 	t.Helper()
 	// We need to escape file path that is contained in final regexp, e.g. due
 	// to '\' path separator on Windows. However, the path also includes an
-	// unknown task user (task_[0-9]*) which we don't want to escape. The
+	// unknown task user (task_\S+) which we don't want to escape. The
 	// simplest way to properly escape the expression but without escaping this
 	// one part of it, is to swap out the task user expression with a randomly
 	// generated slugid (122 bits of randomness) which doesn't contain
@@ -1194,20 +1301,13 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 		pathRegExp = ".*"
 	} else {
 		slug := slugid.V4()
-		pathRegExp = strings.ReplaceAll(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_[0-9]*")
+		pathRegExp = strings.ReplaceAll(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_\\S+")
 	}
 	return []string{
-			`Granting task_[0-9]* full control of ` + filetype + ` '` + pathRegExp + `'`,
+			`Granting task_\S+ full control of ` + filetype + ` '` + pathRegExp + `'`,
 		}, []string{
-			`Denying task_[0-9]* access to '.*'`,
+			`Denying task_\S+ access to '.*'`,
 		}
-}
-
-func updateOwnership(t *testing.T) []string {
-	t.Helper()
-	return []string{
-		"Updating ownership of files inside directory '.*" + t.Name() + "' from .* to task_[0-9]*",
-	}
 }
 
 func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {

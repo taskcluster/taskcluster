@@ -96,7 +96,7 @@ export default class ViewRole extends Component {
     this.setState({ snackbar: { message, variant, open } });
   };
 
-  handleSnackbarClose = (event, reason) => {
+  handleSnackbarClose = (_event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
@@ -112,36 +112,34 @@ export default class ViewRole extends Component {
 
     return (
       <Dashboard title={isNewRole ? 'Create Role' : 'Role'}>
-        <Fragment>
-          <ErrorPanel fixed error={error} />
-          {isNewRole ? (
-            <RoleForm
-              isNewRole
-              loading={loading}
-              onRoleSave={this.handleSaveRole}
-            />
-          ) : (
-            <Fragment>
-              {data.loading && <Spinner loading />}
-              {data && <ErrorPanel fixed error={data.error} />}
-              {data && data.role && (
-                <RoleForm
-                  dialogError={dialogError}
-                  key={data.role.roleId}
-                  role={data.role}
-                  loading={loading}
-                  onRoleDelete={this.handleDeleteRole}
-                  onRoleSave={this.handleSaveRole}
-                  dialogOpen={dialogOpen}
-                  onDialogActionError={this.handleDialogActionError}
-                  onDialogActionComplete={this.handleDialogActionComplete}
-                  onDialogActionClose={this.handleDialogActionClose}
-                  onDialogActionOpen={this.handleDialogActionOpen}
-                />
-              )}
-            </Fragment>
-          )}
-        </Fragment>
+        <ErrorPanel fixed error={error} />
+        {isNewRole ? (
+          <RoleForm
+            isNewRole
+            loading={loading}
+            onRoleSave={this.handleSaveRole}
+          />
+        ) : (
+          <Fragment>
+            {data.loading && <Spinner loading />}
+            {data && <ErrorPanel fixed error={data.error} />}
+            {data?.role && (
+              <RoleForm
+                dialogError={dialogError}
+                key={data.role.roleId}
+                role={data.role}
+                loading={loading}
+                onRoleDelete={this.handleDeleteRole}
+                onRoleSave={this.handleSaveRole}
+                dialogOpen={dialogOpen}
+                onDialogActionError={this.handleDialogActionError}
+                onDialogActionComplete={this.handleDialogActionComplete}
+                onDialogActionClose={this.handleDialogActionClose}
+                onDialogActionOpen={this.handleDialogActionOpen}
+              />
+            )}
+          </Fragment>
+        )}
         <Snackbar onClose={this.handleSnackbarClose} {...snackbar} />
       </Dashboard>
     );

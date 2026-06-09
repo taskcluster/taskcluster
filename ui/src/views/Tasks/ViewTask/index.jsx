@@ -38,7 +38,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import splitTaskQueueId from '../../../utils/splitTaskQueueId';
 import { gqlTaskToApi } from '../../../utils/gqlToApi';
 import {
-  ACTIONS_JSON_KNOWN_KINDS,
   ARTIFACTS_PAGE_SIZE,
   DEPENDENTS_PAGE_SIZE,
   VALID_TASK,
@@ -113,16 +112,6 @@ const getCachesFromTask = task =>
       dependentsConnection: {
         limit: DEPENDENTS_PAGE_SIZE,
       },
-      taskActionsFilter: {
-        kind: {
-          $in: ACTIONS_JSON_KNOWN_KINDS,
-        },
-        context: {
-          $not: {
-            $size: 0,
-          },
-        },
-      },
     },
   }),
 })
@@ -162,8 +151,7 @@ export default class ViewTask extends Component {
         // if an action with this name has already been selected,
         // don't consider this version
         if (
-          task &&
-          task.tags &&
+          task?.tags &&
           taskInContext(action.context, task.tags) &&
           !taskActions.some(({ name }) => name === action.name)
         ) {
@@ -183,7 +171,6 @@ export default class ViewTask extends Component {
   }
 
   state = {
-    // eslint-disable-next-line react/no-unused-state
     previousTaskId: null,
     selectedAction: null,
     dialogOpen: false,
@@ -290,26 +277,28 @@ export default class ViewTask extends Component {
     }
   };
 
-  handleActionTaskSubmit = ({ name }) => async () => {
-    this.preRunningAction();
+  handleActionTaskSubmit =
+    ({ name }) =>
+    async () => {
+      this.preRunningAction();
 
-    const {
-      client,
-      data: { task },
-    } = this.props;
-    const { formInputs } = this.state;
-    const { actionData } = this.getTaskActionsData();
-    const { action } = actionData[name];
-    const taskId = await submitTaskAction({
-      task,
-      taskActions: task.taskActions,
-      form: formInputs,
-      action,
-      apolloClient: client,
-    });
+      const {
+        client,
+        data: { task },
+      } = this.props;
+      const { formInputs } = this.state;
+      const { actionData } = this.getTaskActionsData();
+      const { action } = actionData[name];
+      const taskId = await submitTaskAction({
+        task,
+        taskActions: task.taskActions,
+        form: formInputs,
+        action,
+        apolloClient: client,
+      });
 
-    return taskId;
-  };
+      return taskId;
+    };
 
   handleArtifactsPageChange = ({ cursor, previousCursor }) => {
     const {
@@ -662,7 +651,6 @@ export default class ViewTask extends Component {
   };
 
   handleSelectCacheClick = cache => () => {
-    // eslint-disable-next-line react/no-access-state-in-setstate
     const selectedCaches = new Set([...this.state.selectedCaches]);
 
     if (selectedCaches.has(cache)) {
@@ -674,7 +662,6 @@ export default class ViewTask extends Component {
     this.setState({
       selectedCaches,
       dialogActionProps: {
-        // eslint-disable-next-line react/no-access-state-in-setstate
         ...this.state.dialogActionProps,
         body: this.renderPurgeWorkerCacheDialogBody(selectedCaches),
       },
@@ -907,7 +894,7 @@ export default class ViewTask extends Component {
             defaultValue={match.params.taskId}
           />
         }>
-        <Helmet state={task && task.status.state} />
+        <Helmet state={task?.status.state} />
         {loading && (
           <Fragment>
             <Spinner loading />
@@ -1077,8 +1064,7 @@ export default class ViewTask extends Component {
                 tooltipTitle="Profile Task Log"
                 onClick={this.handleOpenLogProfiler}
               />
-              {taskActions &&
-                taskActions.length &&
+              {taskActions?.length &&
                 taskActions.map(action => (
                   <SpeedDialAction
                     requiresAuth

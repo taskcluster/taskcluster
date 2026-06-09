@@ -147,6 +147,11 @@ class Iterate extends events.EventEmitter {
         status: iterError ? 'exception' : 'success',
       }, { level: iterError ? 'err' : 'notice' });
 
+      this.monitor.metric.iterateDuration(duration / 1000, {
+        name: this.name,
+        status: iterError ? 'exception' : 'success',
+      });
+
       if (iterError) {
         this.monitor.reportError(iterError, 'warning', {
           consecutiveErrors: failures.length,

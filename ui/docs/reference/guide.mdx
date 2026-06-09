@@ -28,7 +28,7 @@ The Taskcluster team provides some useful libraries and related API methods, but
 
 ## Taskcluster Platform
 
-The [authentication service](platform/auth) provides methods for other Taskcluster services to authenticate API requests, so it implements most of the functionality in ["Using the APIs"](/docs/manual/integrations/apis).
+The [authentication service](platform/auth) provides methods for other Taskcluster services to authenticate API requests, so it implements most of the functionality in ["Using the APIs"](/docs/manual/access-control/api).
 It also provides functionality to get short-term credentials for other services such as Amazon S3 or Azure SAS.
 This functionality allows users and services to be provisioned with a simple set of Taskcluster credentials and dynamically acquire all of the other access from those credentials.
 
@@ -50,10 +50,8 @@ The [taskcluster-notify service](core/notify) handles sending notifications to u
 
 Taskcluster allows a great deal of flexibility in task execution, so the available options for workers are many.
 
-The project provides several implementations of workers.
-[Docker-worker](workers/docker-worker) runs tasks on Linux in docker containers.
-[Generic-worker](workers/generic-worker) runs tasks witout containers, and has thorough support for Windows.
-[Taskcluster-worker](workers/taskcluster-worker) aims to be the single implementation that is used everywhere, sporting "engines" for specific circumstances.
+The project provides [generic-worker](workers/generic-worker), a cross-platform worker with thorough support for Linux, macOS and Windows.
+On Linux, generic-worker also accepts the legacy docker-worker payload format, translated transparently by [d2g](https://github.com/taskcluster/taskcluster/tree/main/tools/d2g), so tasks written against the docker-worker payload format continue to run unchanged.
 
 Other users of Taskcluster have built worker implementations as well.
 For example, release engineering has built "scriptworker" which can execute tasks using predefined scripts for higher security.

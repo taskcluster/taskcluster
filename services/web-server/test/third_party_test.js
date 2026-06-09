@@ -7,6 +7,7 @@ import request from 'superagent';
 import moment from 'moment';
 import helper from './helper.js';
 import tryCatch from '../src/utils/tryCatch.js';
+import hash from '../src/utils/hash.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withDb(mock, skipping);
@@ -378,6 +379,85 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(error.response.body.error, 'invalid_grant');
       assert(!response);
     });
+    test('invalid_grant - authorization code cannot be exchanged twice', async function() {
+      const agent = await helper.signedInAgent();
+      const registeredClientId = 'test-code-whitelisted';
+      const redirectUri = 'https://test.example.com/cb';
+
+      // user sent to /login/oauth/authorize with query args
+
+      let res = await agent.get(url('/login/oauth/authorize' +
+        '?response_type=code' +
+        `&client_id=${registeredClientId}` +
+        '&redirect_uri=' + encodeURIComponent(redirectUri) +
+        '&scope=tags:get:*' +
+        '&state=abc123'))
+        .redirects(0)
+        .ok(res => res.status === 302);
+
+      const code = getQuery(res.header.location).get('code');
+      assert(code && code.length > 0, 'expected to receive an authorization code');
+
+      const firstExchange = await agent.post(url('/login/oauth/token'))
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .send('grant_type=authorization_code')
+        .send(`code=${code}`)
+        .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+        .send(`client_id=${registeredClientId}`);
+
+      assert.equal(firstExchange.status, 200);
+      assert(firstExchange.body.access_token, 'first exchange must return an access_token');
+
+      const [error, response] = await tryCatch(agent.post(url('/login/oauth/token'))
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .send('grant_type=authorization_code')
+        .send(`code=${code}`)
+        .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+        .send(`client_id=${registeredClientId}`));
+
+      assert(!response,
+        `expected code replay to be rejected, but exchange succeeded with status ${response?.status}`);
+      assert.equal(error.response.body.error, 'invalid_grant');
+    });
+    test('invalid_grant - authorization code past its lifetime cannot be exchanged', async function() {
+      const agent = await helper.signedInAgent();
+      const registeredClientId = 'test-code-whitelisted';
+      const redirectUri = 'https://test.example.com/cb';
+
+      // user sent to /login/oauth/authorize with query args
+
+      let res = await agent.get(url('/login/oauth/authorize' +
+        '?response_type=code' +
+        `&client_id=${registeredClientId}` +
+        '&redirect_uri=' + encodeURIComponent(redirectUri) +
+        '&scope=tags:get:*' +
+        '&state=abc123'))
+        .redirects(0)
+        .ok(res => res.status === 302);
+
+      const code = getQuery(res.header.location).get('code');
+      assert(code && code.length > 0, 'expected to receive an authorization code');
+
+      // Simulate the code aging past its lifetime by moving the
+      // authorization_codes row's `expires` column into the past.
+      await helper.withDbClient(async client => {
+        await client.query(
+          `update authorization_codes set expires = now() - interval '1 minute' where code = $1`,
+          [code],
+        );
+      });
+
+      const [error, response] = await tryCatch(agent.post(url('/login/oauth/token'))
+        .set('Content-Type', 'application/x-www-form-urlencoded')
+        .send('grant_type=authorization_code')
+        .send(`code=${code}`)
+        .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+        .send(`client_id=${registeredClientId}`));
+
+      assert(!response,
+        `expected expired code to be rejected, but exchange succeeded with status ${response?.status}`);
+      assert.equal(error.response.body.error, 'invalid_grant');
+    });
     test('InputError when trying to get credentials of an expired client', async function() {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-token';
@@ -413,6 +493,53 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const [error] = await tryCatch(agent.get(url('/login/oauth/credentials'))
         .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`));
 
+      assert.equal(error.response.body.name, 'InputError');
+      assert.equal(error.response.body.message, 'Could not generate credentials for this access token');
+
+      await helper.expectMonitorError('InputError');
+    });
+    test('InputError when the access token is past its own 10 minute lifetime', async function() {
+      const agent = await helper.signedInAgent();
+      const registeredClientId = 'test-token';
+
+      let res = await agent.get(url('/login/oauth/authorize' +
+        '?response_type=token' +
+        `&client_id=${registeredClientId}` +
+        '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
+        '&scope=tags:get:*' +
+        '&state=abc123' +
+        '&expires=3+days'))
+        .redirects(0)
+        .ok(res => res.status === 302);
+
+      let query = getQuery(res.header.location);
+      const scope = query.get('scope');
+
+      const expiry = moment(new Date()).startOf('day').add(3, 'days').format('YYYY/MM/DD');
+
+      res = await agent.post(url('/login/oauth/authorize/decision'))
+        .send(`clientId=${query.get('clientId')}`)
+        .send(`transaction_id=${query.get('transactionID')}`)
+        .send(`scope=${scope}`)
+        .send(`description='test'`)
+        .send(`expires=${expiry}`)
+        .redirects(0)
+        .ok(res => res.status === 302);
+
+      query = getQuery(res.header.location, '#');
+      const accessToken = query.get('access_token');
+
+      await helper.withDbClient(async client => {
+        await client.query(
+          `update access_tokens set expires = now() - interval '1 minute' where hashed_access_token = $1`,
+          [hash(accessToken)],
+        );
+      });
+
+      const [error] = await tryCatch(agent.get(url('/login/oauth/credentials'))
+        .set('authorization', `${query.get('token_type')} ${accessToken}`));
+
+      assert(error, 'expected an expired access token to be rejected');
       assert.equal(error.response.body.name, 'InputError');
       assert.equal(error.response.body.message, 'Could not generate credentials for this access token');
 

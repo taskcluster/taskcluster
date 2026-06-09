@@ -7929,6 +7929,113 @@
         }
       },
       "version": 122
+    },
+    {
+      "description": "Ensure uniqueness of task_id in queue_task_deadlines to keep createTask idempotent",
+      "downgradeScript": "begin\n  alter table queue_task_deadlines drop constraint queue_task_deadlines_pkey;\n  alter table queue_task_deadlines add primary key (task_id, created, deadline);\n  create index queue_task_deadline_idx on queue_task_deadlines (task_id);\nend",
+      "methods": {
+      },
+      "migrationScript": "begin\n  delete from queue_task_deadlines q1\n  using queue_task_deadlines q2\n  where q1.task_id = q2.task_id\n    and (q1.created, q1.deadline, q1.ctid) < (q2.created, q2.deadline, q2.ctid);\n\n  alter table queue_task_deadlines drop constraint if exists queue_task_deadlines_pkey;\n  drop index if exists queue_task_deadline_idx;\n  alter table queue_task_deadlines add primary key (task_id);\nend",
+      "version": 123
+    },
+    {
+      "description": "Atomic queue_pending_tasks and queue_task_deadlines inserts in createTask and pending-run transitions",
+      "methods": {
+        "check_task_claim": {
+          "args": "task_id text, run_id int, taken_until_in timestamptz",
+          "body": "declare\n  task record;\n  runs jsonb;\n  run jsonb;\n  new_runs jsonb;\n  added_retry boolean := false;\n  new_run_id int;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.retries_left, tasks.runs, tasks.deadline, tasks.task_queue_id, tasks.priority\n  into task\n  from tasks\n  where\n    tasks.task_id = check_task_claim.task_id and\n    tasks.taken_until = taken_until_in\n  for update;\n\n  if task.runs is null then\n    -- no such task, or taken_until did not match\n    return;\n  end if;\n\n  if jsonb_array_length(task.runs) != run_id + 1 then\n    -- run_id is not the latest run\n    return;\n  end if;\n\n  run = task.runs -> run_id;\n  if run ->> 'state' != 'running' then\n    -- run is not running\n    return;\n  end if;\n\n  if (run ->> 'takenUntil')::timestamptz != taken_until_in then\n    -- run has updated takenUntil\n    return;\n  end if;\n\n  if task.deadline < now() then\n    -- task has passed its deadline, so let check_task_deadline handle it\n    return;\n  end if;\n\n  -- reconstruct the runs object with an updated run\n  new_runs = (task.runs - run_id) || jsonb_build_array(\n    run || jsonb_build_object(\n      'state', 'exception',\n      'reasonResolved', 'claim-expired',\n      'resolved', now()));\n\n  -- add a retry if there are any left\n  if task.retries_left > 0 then\n    new_runs = new_runs || jsonb_build_array(\n      jsonb_build_object(\n        'state', 'pending',\n        'reasonCreated', 'retry',\n        'scheduled', now()));\n    task.retries_left = task.retries_left - 1;\n    added_retry := true;\n  end if;\n\n  update tasks\n  set\n    retries_left = task.retries_left,\n    runs = new_runs,\n    taken_until = null\n  where tasks.task_id = check_task_claim.task_id;\n\n  if added_retry then\n    new_run_id := jsonb_array_length(new_runs) - 1;\n    perform queue_pending_tasks_add_for_task(\n      task.task_queue_id, task.priority, task.deadline,\n      check_task_claim.task_id, new_run_id\n    );\n  end if;\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = check_task_claim.task_id;\nend",
+          "deprecated": false,
+          "description": "Check the given task for a claim on the given run expiring at the given\ntime.  If the run is still running, it is marked as claim-expired and\na retry scheduled (if retries_left).  When a retry run is scheduled, it\nis also atomically enqueued into queue_pending_tasks via\nqueue_pending_tasks_add_for_task, so a Pulse-publish failure in the JS\ncaller (claimresolver) can no longer leave the retry pending in\ntasks.runs but missing from the workers' claimable queue.\n\nThis returns the task's updated status, or nothing if the current status\nwas not as expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        },
+        "create_task_atomic": {
+          "args": "task_id text,\ntask_queue_id text,\nscheduler_id text,\nproject_id text,\ntask_group_id text,\ndependencies jsonb,\nrequires task_requires,\nroutes jsonb,\npriority task_priority,\nretries integer,\ncreated timestamptz,\ndeadline timestamptz,\nexpires timestamptz,\nscopes jsonb,\npayload jsonb,\nmetadata jsonb,\ntags jsonb,\nextra jsonb,\ndeadline_delay_seconds_in integer",
+          "body": "begin\n  insert\n  into tasks (\n    task_id,\n    task_queue_id,\n    scheduler_id,\n    project_id,\n    task_group_id,\n    dependencies,\n    requires,\n    routes,\n    priority,\n    retries,\n    created,\n    deadline,\n    expires,\n    scopes,\n    payload,\n    metadata,\n    tags,\n    extra,\n    retries_left,\n    runs,\n    taken_until,\n    ever_resolved\n  )\n  values (\n    task_id,\n    task_queue_id,\n    scheduler_id,\n    project_id,\n    task_group_id,\n    dependencies,\n    requires,\n    routes,\n    priority,\n    retries,\n    created,\n    deadline,\n    expires,\n    scopes,\n    payload,\n    metadata,\n    tags,\n    extra,\n    -- default values for the mutable bits\n    retries,\n    jsonb_build_array(),\n    null, -- not taken\n    false\n  );\n\n  -- Atomically track the deadline so a JS-layer failure between the\n  -- task insert and the deadline insert cannot leave a task uncovered\n  -- by the deadline resolver.\n  --\n  -- ON CONFLICT DO UPDATE handles a pre-existing row from before\n  -- this migration (rare orphan from the legacy non-atomic flow), or\n  -- any future inconsistency. The metadata is overwritten with the\n  -- current task's values so that the deadline resolver's match on\n  -- (task_id, deadline) reflects the actual task -- preserving DO\n  -- NOTHING here would let stale orphan metadata cause the resolver\n  -- to silently drop the deadline message and never enforce the\n  -- task's deadline. Idempotent retries on the same task_id are\n  -- caught earlier by the tasks unique violation, so reaching this\n  -- ON CONFLICT branch only happens via the orphan-recovery path.\n  insert into queue_task_deadlines (\n    task_group_id,\n    task_id,\n    scheduler_id,\n    created,\n    deadline,\n    visible\n  )\n  values (\n    task_group_id,\n    task_id,\n    scheduler_id,\n    now(),\n    deadline,\n    deadline + make_interval(secs => deadline_delay_seconds_in)\n  )\n  on conflict on constraint queue_task_deadlines_pkey do update\n    set task_group_id = excluded.task_group_id,\n        scheduler_id = excluded.scheduler_id,\n        created = excluded.created,\n        deadline = excluded.deadline,\n        visible = excluded.visible;\nend",
+          "deprecated": false,
+          "description": "Create a new task, with empty values for the status information, and\natomically insert its deadline-tracking row into queue_task_deadlines.\nThe deadline-tracking row's `visible` time is `deadline +\ndeadline_delay_seconds_in`, matching the pre-fix JS behavior in\nQueueService.putDeadlineMessage.\n\nReplaces the prior pattern of separate JS-layer create_task_projid +\nputDeadlineMessage calls, which could leave a task without deadline\ntracking if the second call failed.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "create_task_projid": {
+          "deprecated": true
+        },
+        "queue_pending_tasks_add_for_task": {
+          "args": "task_queue_id_in text, priority_in task_priority, deadline_in timestamptz, task_id_in text, run_id_in integer",
+          "body": "declare\n  priority_int integer;\nbegin\n  -- Skip if the task's deadline has already passed; the deadline\n  -- resolver will resolve it as `deadline-exceeded`. Matches the\n  -- pre-fix JS behavior of `QueueService.putPendingMessage`.\n  if deadline_in < now() then\n    return;\n  end if;\n\n  -- This mapping is duplicated in `PRIORITY_TO_CONSTANT` in\n  -- `services/queue/src/queueservice.js`. If you add or reorder\n  -- priority tiers, update both.\n  priority_int := case priority_in\n    when 'highest'   then 7\n    when 'very-high' then 6\n    when 'high'      then 5\n    when 'medium'    then 4\n    when 'low'       then 3\n    when 'very-low'  then 2\n    when 'lowest'    then 1\n    else 0\n  end;\n\n  perform queue_pending_tasks_add(\n    task_queue_id_in,\n    priority_int,\n    task_id_in,\n    run_id_in,\n    public.gen_random_uuid()::text,\n    deadline_in::timestamp\n  );\nend",
+          "deprecated": false,
+          "description": "Enqueue a pending task run into queue_pending_tasks atomically with its\ncaller. Intended to be called from DB functions that transition a run to\n`pending` (schedule_task, rerun_task, resolve_task, check_task_claim).\nSkips enqueue if the task's deadline has already passed (the deadline\nresolver will resolve it as `deadline-exceeded`). Otherwise delegates to\nqueue_pending_tasks_add (which does the INSERT ... ON CONFLICT DO UPDATE\nand NOTIFY task_pending).\n\nThe caller passes task_queue_id, priority, and deadline from its own\nFOR UPDATE-locked SELECT on the tasks row, avoiding a redundant lookup\nhere.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        },
+        "rerun_task": {
+          "args": "task_id text",
+          "body": "declare\n  task record;\n  run jsonb;\n  last_run_id int;\n  new_run_id int;\n  max_runs_allowed constant int = 50;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.runs, tasks.task_queue_id, tasks.priority, tasks.deadline\n  into task\n  from tasks\n  where tasks.task_id = rerun_task.task_id\n  for update;\n\n  if task.runs is null then\n    -- the task row was not found\n    return;\n  end if;\n\n  last_run_id := jsonb_array_length(task.runs) - 1;\n  if last_run_id >= 0 then\n    -- verify the most recent run is not pending or running\n    run = task.runs -> last_run_id;\n    if run ->> 'state' in ('pending', 'running') then\n      return;\n    end if;\n  end if;\n\n  -- apply a sanity check on the number of runs\n  if last_run_id + 1 >= max_runs_allowed then\n    return;\n  end if;\n\n  new_run_id := last_run_id + 1;\n\n  update tasks\n  set\n    retries_left = least(tasks.retries, max_runs_allowed - last_run_id - 2),\n    runs = tasks.runs || jsonb_build_array(\n      jsonb_build_object(\n        'state', 'pending',\n        'reasonCreated', 'rerun',\n        'scheduled', now())),\n    taken_until = null\n  where tasks.task_id = rerun_task.task_id;\n\n  perform queue_pending_tasks_add_for_task(\n    task.task_queue_id, task.priority, task.deadline,\n    rerun_task.task_id, new_run_id\n  );\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = rerun_task.task_id;\nend",
+          "deprecated": false,
+          "description": "Ensure that no run is currently running or pending, and then create a new\npending run with the given reason.  This also resets the retries_left\ncolumn to `retries` (unless the sanity-check maximum runs has been\nreached).  The new pending run is also atomically enqueued into\nqueue_pending_tasks via queue_pending_tasks_add_for_task, so a Pulse-publish\nfailure in the JS caller can no longer leave the rerun invisible to workers.\nThis returns the task's updated status, or nothing if the current status was\nnot as expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        },
+        "resolve_task": {
+          "args": "task_id text, run_id int, state text, reason text, retry_reason text",
+          "body": "declare\n  task record;\n  run jsonb;\n  new_runs jsonb;\n  added_retry boolean := false;\n  new_run_id int;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.retries_left, tasks.runs, tasks.task_queue_id, tasks.priority, tasks.deadline\n  into task\n  from tasks\n  where tasks.task_id = resolve_task.task_id\n  for update;\n\n  if task.runs is null then\n    return;\n  end if;\n\n  if jsonb_array_length(task.runs) != run_id + 1 then\n    -- run_id is not the latest run\n    return;\n  end if;\n\n  run = task.runs -> run_id;\n  if run ->> 'state' != 'running' then\n    -- run is not running\n    return;\n  end if;\n\n\n  -- reconstruct the task.runs object with an updated run\n  new_runs = (task.runs - run_id) || jsonb_build_array(\n    run || jsonb_build_object(\n      'state', state,\n      'reasonResolved', reason,\n      'resolved', now()));\n\n  -- add a retry if there are any left\n  if retry_reason is not null and task.retries_left > 0 then\n    new_runs = new_runs || jsonb_build_array(\n      jsonb_build_object(\n        'state', 'pending',\n        'reasonCreated', retry_reason,\n        'scheduled', now()));\n    task.retries_left = task.retries_left - 1;\n    added_retry := true;\n  end if;\n\n  update tasks\n  set\n    retries_left = task.retries_left,\n    runs = new_runs,\n    taken_until = null\n  where tasks.task_id = resolve_task.task_id;\n\n  if added_retry then\n    new_run_id := jsonb_array_length(new_runs) - 1;\n    perform queue_pending_tasks_add_for_task(\n      task.task_queue_id, task.priority, task.deadline,\n      resolve_task.task_id, new_run_id\n    );\n  end if;\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = resolve_task.task_id;\nend",
+          "deprecated": false,
+          "description": "Resolve the given run with the given state and reason, setting\nrun.resolved and resetting `taken_until`.  If `retry_reason` is not null\nand there are `retries_left`, a new pending run is added, and\n`retries_left` is decremented.  When a retry run is added, it is also\natomically enqueued into queue_pending_tasks via\nqueue_pending_tasks_add_for_task, so a Pulse-publish failure in the JS\ncaller (e.g. reportException, workerremovedresolver) can no longer leave\nthe retry pending in tasks.runs but missing from the workers' claimable\nqueue.  This returns the task's updated status, or nothing if the current\nstatus was not as expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        },
+        "schedule_task": {
+          "args": "task_id text, reason_created text",
+          "body": "declare\n  task record;\n  run_id int;\nbegin\n  -- lock the task row to prevent concurrent updates\n  select tasks.runs, tasks.task_queue_id, tasks.priority, tasks.deadline\n  into task\n  from tasks\n  where tasks.task_id = schedule_task.task_id\n  for update;\n\n  if task.runs is null then\n    -- the task row was not found\n    return;\n  end if;\n\n  run_id := jsonb_array_length(task.runs);\n  if run_id != 0 then\n    return;\n  end if;\n\n  update tasks\n  set\n    runs = jsonb_build_array(\n      jsonb_build_object(\n        'state', 'pending',\n        'reasonCreated', reason_created,\n        'scheduled', now())),\n    taken_until = null\n  where tasks.task_id = schedule_task.task_id;\n\n  -- Reached only after the UPDATE ran (all earlier branches `return`\n  -- without modifying tasks.runs). If you add an early-return below\n  -- the UPDATE above, move this PERFORM into the UPDATE's success\n  -- path to keep the tasks.runs / queue_pending_tasks invariant.\n  perform queue_pending_tasks_add_for_task(\n    task.task_queue_id, task.priority, task.deadline,\n    schedule_task.task_id, 0\n  );\n\n  return query\n  select tasks.retries_left, tasks.runs, tasks.taken_until\n  from tasks\n  where tasks.task_id = schedule_task.task_id;\nend",
+          "deprecated": false,
+          "description": "Schedule the initial run for a task, moving the task from \"unscheduled\" to \"pending\".\nAlso atomically enqueues the new pending run into queue_pending_tasks via\nqueue_pending_tasks_add_for_task, so a Pulse-publish failure in the JS caller\ncan no longer leave a task pending in tasks.runs but missing from the workers'\nclaimable queue.\nThis returns the task's updated status, or nothing if the current status was not\nas expected.",
+          "mode": "write",
+          "returns": "table(retries_left integer, runs jsonb, taken_until timestamptz)",
+          "serviceName": "queue"
+        }
+      },
+      "version": 124
+    },
+    {
+      "description": "keyset pagination variant of get_non_stopped_workers_with_launch_config_scanner to avoid duplicate or skipped rows when the result set changes during a multi-page scan",
+      "methods": {
+        "get_non_stopped_workers_with_launch_config_scanner": {
+          "deprecated": true
+        },
+        "get_non_stopped_workers_with_launch_config_scanner_after": {
+          "args": "worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond_in text, providers_filter_value_in text, page_size_in integer, after_worker_pool_id_in text, after_worker_group_in text, after_worker_id_in text",
+          "body": "begin\n  return query\n  select\n    workers.worker_pool_id,\n    workers.worker_group,\n    workers.worker_id,\n    workers.provider_id,\n    workers.created,\n    workers.expires,\n    workers.state,\n    workers.provider_data,\n    workers.capacity,\n    workers.last_modified,\n    workers.last_checked,\n    workers.secret,\n    workers.etag,\n    workers.launch_config_id,\n    queue_workers.quarantine_until,\n    queue_workers.first_claim,\n    queue_workers.last_date_active\n  from\n    workers\n    left join queue_workers on\n      workers.worker_pool_id = queue_workers.task_queue_id and\n      workers.worker_id = queue_workers.worker_id and\n      workers.worker_group = queue_workers.worker_group\n  where\n    (workers.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and\n    (workers.worker_group = worker_group_in or worker_group_in is null) and\n    (workers.worker_id = worker_id_in or worker_id_in is null) and\n    (workers.state <> 'stopped') and\n    (providers_filter_cond_in is null or providers_filter_value_in is null or\n      case\n        when providers_filter_cond_in = '='\n          then workers.provider_id = ANY(string_to_array(providers_filter_value_in, ','))\n        when providers_filter_cond_in = '<>'\n          then workers.provider_id <> ALL(string_to_array(providers_filter_value_in, ','))\n      end\n      ) and\n    -- Each arg is null-checked individually so the codegen marks all\n    -- three as nullable; short-circuit OR keeps runtime semantics\n    -- identical to a single composite null check.\n    (after_worker_pool_id_in is null or after_worker_group_in is null or after_worker_id_in is null or\n      (workers.worker_pool_id, workers.worker_group, workers.worker_id) >\n      (after_worker_pool_id_in, after_worker_group_in, after_worker_id_in))\n  order by workers.worker_pool_id, workers.worker_group, workers.worker_id\n  limit get_page_limit(page_size_in);\nend",
+          "deprecated": false,
+          "description": "Get non-stopped workers filtered by the optional arguments, ordered by\n`(worker_pool_id, worker_group, worker_id)`. Uses keyset pagination via\nthe `after_*_in` parameters: pass nulls to fetch the first page, then\npass the last row's `(worker_pool_id, worker_group, worker_id)` to fetch\nthe next page. Unlike the offset-based variant\n`get_non_stopped_workers_with_launch_config_scanner`, this is robust to\nconcurrent inserts and deletes during a long-running scan — the cursor\nmoves strictly forward through a unique key, so each row is returned at\nmost once.\n\nTrade-off: rows inserted with a sort key *before* the current cursor\nare silently skipped for the remainder of the scan. This is fine for\nperiodic scanners (worker-scanner / provisioner) that re-scan from the\nbeginning each loop, but callers requiring \"every row that existed at\nany point during the scan\" should not use this function.\n\n`quarantine_until` contains NULL or a date in the past if the worker is\nnot quarantined, otherwise the date until which it is quarantined.\n`first_claim` and `last_date_active` contain information known to the\nqueue service about the worker. `providers_filter_cond` and\n`providers_filter_value` are used to filter `=` or `<>` provider by\nvalue (comma-separated list).",
+          "mode": "read",
+          "returns": "table(worker_pool_id text, worker_group text, worker_id text, provider_id text, created timestamptz, expires timestamptz, state text, provider_data jsonb, capacity integer, last_modified timestamptz, last_checked timestamptz, secret jsonb, etag uuid, launch_config_id text, quarantine_until timestamptz, first_claim timestamptz, last_date_active timestamptz)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 125
+    },
+    {
+      "description": "Add a `consume_authorization_code` method",
+      "methods": {
+        "consume_authorization_code": {
+          "args": "code_in text",
+          "body": "begin\n  return query\n  delete from authorization_codes\n  where authorization_codes.code = code_in\n  returning\n    authorization_codes.code,\n    authorization_codes.client_id,\n    authorization_codes.redirect_uri,\n    authorization_codes.identity,\n    authorization_codes.identity_provider_id,\n    authorization_codes.expires,\n    authorization_codes.client_details;\nend",
+          "deprecated": false,
+          "description": "Atomically delete the authorization code row matching `code_in` and\nreturn its contents. If no such row exists, the returned set is empty.",
+          "mode": "write",
+          "returns": "table(code text, client_id text, redirect_uri text, identity text, identity_provider_id text, expires timestamptz, client_details jsonb)",
+          "serviceName": "web_server"
+        },
+        "get_authorization_code": {
+          "deprecated": true
+        }
+      },
+      "version": 126
     }
   ]
 }

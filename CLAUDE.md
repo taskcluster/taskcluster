@@ -167,7 +167,7 @@ Located in `clients/`, with support for:
 - Go (`client-go`) - auto-generated
 - Python (`client-py`) - auto-generated
 - Rust (`client-rust`) - auto-generated
-- Shell (`client-shell`) - CLI tool
+- Shell (`client-shell`) - the `taskcluster` CLI; build with `cd clients/client-shell && go build`, or install via `brew install taskcluster/tap/taskcluster`. Useful for `task log`/`status`/`retrigger`, direct `api` calls, and signing in. See `clients/client-shell/README.md`.
 - Web (`client-web`) - Browser-compatible client
 
 ## Development Practices
@@ -262,6 +262,7 @@ yarn start
 5. Add a changelog entry in `changelog/` (see `dev-docs/best-practices/changelog.md`)
 6. Commit changes (including generated files)
 7. CI will run full test suite and linting
+8. **Verify the change actually works.** Run the affected code path: open a UI page in a browser, hit a service endpoint, run a task. CI passing means code compiled and unit tests ran — not that the feature works. UI work has more specifics in `ui/CLAUDE.md`.
 
 ## Tools and Workers
 

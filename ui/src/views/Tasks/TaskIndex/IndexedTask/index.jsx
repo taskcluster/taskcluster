@@ -33,7 +33,7 @@ import Link from '../../../../utils/Link';
   options: ({ indexedTaskData }) => ({
     variables: {
       skip: !indexedTaskData.indexedTask,
-      taskId: indexedTaskData.indexedTask && indexedTaskData.indexedTask.taskId,
+      taskId: indexedTaskData.indexedTask?.taskId,
       entryConnection: {
         limit: ARTIFACTS_PAGE_SIZE,
       },

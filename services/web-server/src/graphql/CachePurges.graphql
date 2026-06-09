@@ -36,7 +36,7 @@ extend type Query {
   # Query the list of open purge requests. It should not be used by workers.
   # Workers should use the `purgeRequests` endpoint that is specific to their
   # `workerType` and `provisionerId`.
-  cachePurges(filter: JSON, connection: PageConnection): CachePurgesConnection
+  cachePurges(connection: PageConnection): CachePurgesConnection
 }
 
 extend type Mutation {

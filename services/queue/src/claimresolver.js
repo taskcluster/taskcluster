@@ -59,7 +59,7 @@ class ClaimResolver {
     this.iterator = new Iterate({
       name: options.ownName,
       maxFailures: 10,
-      waitTime: this.pollingDelay,
+      waitTime: 0,
       monitor: this.monitor,
       maxIterationTime: 600 * 1000,
       handler: async () => {
@@ -89,7 +89,7 @@ class ClaimResolver {
 
   /** Poll for messages and handle them in a loop */
   async poll() {
-    let messages = await this.queueService.pollClaimQueue();
+    let messages = await this.queueService.pollClaimQueue(this.count);
     let failed = 0;
 
     await Promise.all(messages.map(async (message) => {
@@ -103,9 +103,9 @@ class ClaimResolver {
       }
     }));
 
-    // If there were no messages, back off for a bit.
-    if (messages.length === 0) {
-      await sleep(2000);
+    // If we emptied the queue, back off
+    if (messages.length < this.count) {
+      await sleep(this.pollingDelay);
     }
 
     this.monitor.log.queuePoll({
@@ -145,7 +145,10 @@ class ClaimResolver {
 
     let status = task.status();
 
-    // Publish message about task exception
+    // Publish message about task exception. We deliberately throw on
+    // publish failure to honor the resolver's at-least-once semantics
+    // (see comment above): NACK + redelivery re-runs handleMessage which
+    // re-attempts the publish.
     await this.publisher.taskException({
       status: status,
       runId: runId,
@@ -168,14 +171,15 @@ class ClaimResolver {
         task.runs.length - 1 === runId + 1 &&
         newRun.state === 'pending' &&
         newRun.reasonCreated === 'retry') {
-      await Promise.all([
-        this.queueService.putPendingMessage(task, runId + 1),
-        this.publisher.taskPending({
-          status: status,
-          runId: runId + 1,
-          task: { tags: task.tags || {} },
-        }, task.routes),
-      ]);
+      // queue_pending_tasks insert is now atomic inside check_task_claim
+      // (db v124). The publish is intentionally NOT wrapped in try/catch
+      // here: failing the handler triggers redelivery so we re-attempt
+      // publication, preserving at-least-once semantics for resolvers.
+      await this.publisher.taskPending({
+        status: status,
+        runId: runId + 1,
+        task: { tags: task.tags || {} },
+      }, task.routes);
       this.monitor.log.taskPending({ taskId, runId: runId + 1 });
     } else {
       // Update dependencyTracker

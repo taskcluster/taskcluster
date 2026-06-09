@@ -11,24 +11,28 @@ the variable, and those where a component expects the variable to be set.
 
 ## TASK_ID
 
-`TASK_ID` is set in the environment of Generic Worker and Docker Worker tasks
-to the `taskId` of the current task.
+`TASK_ID` is set in the environment of tasks running on generic-worker (whether
+they use the generic-worker or the legacy docker-worker payload format) to the
+`taskId` of the current task.
 
 ## RUN_ID
 
-`RUN_ID` is set in the environment of Generic Worker and Docker Worker tasks
-to the `runId` of the current task run.
+`RUN_ID` is set in the environment of tasks running on generic-worker (whether
+they use the generic-worker or the legacy docker-worker payload format) to the
+`runId` of the current task run.
 
 ## TASK_GROUP_ID
 
-`TASK_GROUP_ID` is set in the environment of Generic Worker (but *not* Docker
-Worker) tasks to the `taskGroupId` of the current task.
+`TASK_GROUP_ID` is set in the environment of tasks running on generic-worker
+(whether they use the generic-worker or the legacy docker-worker payload
+format; in the latter case d2g forwards it into the container) to the
+`taskGroupId` of the current task.
 
 ## TASKCLUSTER_ROOT_URL
 
 `TASKCLUSTER_ROOT_URL` is the [root URL](/docs/manual/using/root-urls) for the current Taskcluster deployment.
 It is typically set during task execution by worker implementations.  The value
-is used by [client libraries](/docs/manual/using/integration/libraries) by
+is used by [client libraries](/docs/manual/using/api#client-libraries) by
 calling functions like `fromEnvVars` or `optionsFromEnvironment`.
 
 The root URL serves as a scope for `TASKCLUSTER_CLIENT_ID`, etc. which only
@@ -38,7 +42,7 @@ have meaning in a single deployment.
 
 `TASKCLUSTER_CLIENT_ID` is the clientId to use for Taskcluster API calls.
 
-This is read by [client libraries](/docs/manual/using/integration/libraries)
+This is read by [client libraries](/docs/manual/using/api#client-libraries)
 using functions like `fromEnvVars` or `optionsFromEnvironment`. The
 `taskcluster-cli` command `taskcluster signin` sets this and related variables
 in a shell environment.

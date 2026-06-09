@@ -22,7 +22,7 @@ cd workers/generic-worker
 # Quick test (current platform)
 # Note: the module version in the ldflags path changes with each major release.
 # Check go.mod for the current version.
-go test -count 1 -ldflags "-X github.com/taskcluster/taskcluster/v99/workers/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
+go test -count 1 -ldflags "-X github.com/taskcluster/taskcluster/v100/workers/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
 
 # Quick build (current platform)
 go build -ldflags "-X main.revision=$(git rev-parse HEAD)" .

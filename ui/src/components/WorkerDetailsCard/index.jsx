@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { format, parseISO } from 'date-fns';
 import {
   List,
@@ -82,119 +82,117 @@ export default class WorkerDetailsCard extends Component {
       : [];
 
     return (
-      <Fragment>
-        <List>
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
+      <List>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <ListItem>
+              <ListItemText
+                primary="Last Active"
+                secondary={
+                  lastDateActive ? (
+                    <DateDistance from={lastDateActive} />
+                  ) : (
+                    'n/a'
+                  )
+                }
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="First Claim"
+                secondary={
+                  firstClaim ? <DateDistance from={firstClaim} /> : 'n/a'
+                }
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="Quarantine Until"
+                secondary={
+                  quarantineUntil
+                    ? format(parseISO(quarantineUntil), 'yyyy/MM/dd')
+                    : 'n/a'
+                }
+              />
+            </ListItem>
+            {sortedQuarantineDetails?.length > 0 && (
               <ListItem>
                 <ListItemText
-                  primary="Last Active"
+                  primary="Quarantine History"
                   secondary={
-                    lastDateActive ? (
-                      <DateDistance from={lastDateActive} />
-                    ) : (
-                      'n/a'
-                    )
+                    <DataTable
+                      items={sortedQuarantineDetails}
+                      renderRow={this.renderQuarantineRow}
+                      headers={[
+                        { id: 'clientId', label: 'Client ID' },
+                        { id: 'updatedAt', label: 'Date' },
+                        { id: 'quarantineUntil', label: 'Until' },
+                        { id: 'quarantineInfo', label: 'Reason' },
+                      ]}
+                      paginate
+                      noItemsMessage="No quarantine history available."
+                    />
                   }
                 />
               </ListItem>
+            )}
+            <ListItem>
+              <ListItemText
+                primary="Worker State"
+                secondary={
+                  state ? (
+                    <StatusLabel state={state.toUpperCase()} />
+                  ) : (
+                    <em>n/a</em>
+                  )
+                }
+              />
+            </ListItem>
+            {state === 'stopping' && (
               <ListItem>
-                <ListItemText
-                  primary="First Claim"
-                  secondary={
-                    firstClaim ? <DateDistance from={firstClaim} /> : 'n/a'
-                  }
-                />
+                <Label mini status="warning">
+                  Scheduled for termination
+                </Label>
               </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Quarantine Until"
-                  secondary={
-                    quarantineUntil
-                      ? format(parseISO(quarantineUntil), 'yyyy/MM/dd')
-                      : 'n/a'
-                  }
-                />
-              </ListItem>
-              {sortedQuarantineDetails?.length > 0 && (
-                <ListItem>
-                  <ListItemText
-                    primary="Quarantine History"
-                    secondary={
-                      <DataTable
-                        items={sortedQuarantineDetails}
-                        renderRow={this.renderQuarantineRow}
-                        headers={[
-                          { id: 'clientId', label: 'Client ID' },
-                          { id: 'updatedAt', label: 'Date' },
-                          { id: 'quarantineUntil', label: 'Until' },
-                          { id: 'quarantineInfo', label: 'Reason' },
-                        ]}
-                        paginate
-                        noItemsMessage="No quarantine history available."
-                      />
-                    }
-                  />
-                </ListItem>
-              )}
-              <ListItem>
-                <ListItemText
-                  primary="Worker State"
-                  secondary={
-                    state ? (
-                      <StatusLabel state={state.toUpperCase()} />
-                    ) : (
-                      <em>n/a</em>
-                    )
-                  }
-                />
-              </ListItem>
-              {state === 'stopping' && (
-                <ListItem>
-                  <Label mini status="warning">
-                    Scheduled for termination
-                  </Label>
-                </ListItem>
-              )}
-            </Grid>
-            <Grid item xs={6}>
-              {/* worker-manager view specific info */}
-              {created && (
-                <ListItem>
-                  <ListItemText
-                    primary="Worker created"
-                    secondary={<DateDistance from={created} />}
-                  />
-                </ListItem>
-              )}
-              {expires && (
-                <ListItem>
-                  <ListItemText
-                    primary="Worker expires"
-                    secondary={<DateDistance from={expires} />}
-                  />
-                </ListItem>
-              )}
-              {lastModified && (
-                <ListItem>
-                  <ListItemText
-                    primary="Worker last modified"
-                    secondary={<DateDistance from={lastModified} />}
-                  />
-                </ListItem>
-              )}
-              {lastChecked && (
-                <ListItem>
-                  <ListItemText
-                    primary="Last checked by worker-manager"
-                    secondary={<DateDistance from={lastChecked} />}
-                  />
-                </ListItem>
-              )}
-            </Grid>
+            )}
           </Grid>
-        </List>
-      </Fragment>
+          <Grid item xs={6}>
+            {/* worker-manager view specific info */}
+            {created && (
+              <ListItem>
+                <ListItemText
+                  primary="Worker created"
+                  secondary={<DateDistance from={created} />}
+                />
+              </ListItem>
+            )}
+            {expires && (
+              <ListItem>
+                <ListItemText
+                  primary="Worker expires"
+                  secondary={<DateDistance from={expires} />}
+                />
+              </ListItem>
+            )}
+            {lastModified && (
+              <ListItem>
+                <ListItemText
+                  primary="Worker last modified"
+                  secondary={<DateDistance from={lastModified} />}
+                />
+              </ListItem>
+            )}
+            {lastChecked && (
+              <ListItem>
+                <ListItemText
+                  primary="Last checked by worker-manager"
+                  secondary={<DateDistance from={lastChecked} />}
+                />
+              </ListItem>
+            )}
+          </Grid>
+        </Grid>
+      </List>
     );
   }
 }

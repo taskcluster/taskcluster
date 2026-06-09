@@ -56,7 +56,7 @@ input ClientsOptions {
 }
 
 extend type Query {
-  clients(clientOptions: ClientsOptions, connection: PageConnection, filter: JSON): ClientsConnection
+  clients(clientOptions: ClientsOptions, connection: PageConnection, searchTerm: String): ClientsConnection
   client(clientId: ID!): Client
 }
 

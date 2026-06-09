@@ -13,11 +13,11 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
-	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v99/workers/generic-worker/runtime"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v100/workers/generic-worker/runtime"
 )
 
 var (
@@ -169,8 +169,8 @@ func (task *TaskRun) classifyCreateArtifactError(artifact artifacts.TaskArtifact
 	}
 }
 
-func gwCopyToTempFile(filePath string, pd *process.PlatformData) (string, error) {
-	cmd, err := process.NewCommandNoOutputStreams([]string{gwruntime.GenericWorkerBinary(), "copy-to-temp-file", "--copy-file", filePath}, taskContext.TaskDir, []string{}, pd)
+func gwCopyToTempFile(filePath string, pd *process.PlatformData, taskDir string) (string, error) {
+	cmd, err := process.NewCommandNoOutputStreams([]string{gwruntime.GenericWorkerBinary(), "copy-to-temp-file", "--copy-file", filePath}, taskDir, []string{}, pd)
 	if err != nil {
 		return "", fmt.Errorf("failed to create new command to copy file %s to temporary location as task user: %v", filePath, err)
 	}
@@ -183,8 +183,8 @@ func gwCopyToTempFile(filePath string, pd *process.PlatformData) (string, error)
 	return strings.TrimSpace(string(output)), nil
 }
 
-func copyToTempFileAsTaskUser(filePath string, pd *process.PlatformData) (tempFilePath string, err error) {
-	tempFilePath, err = gwCopyToTempFile(filePath, pd)
+func copyToTempFileAsTaskUser(filePath string, pd *process.PlatformData, taskDir string) (tempFilePath string, err error) {
+	tempFilePath, err = gwCopyToTempFile(filePath, pd, taskDir)
 
 	if runtime.GOOS == "windows" {
 		// Windows syscall logs are sent to stdout, even though the code appears

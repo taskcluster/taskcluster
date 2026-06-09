@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v99/internal/scopes"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v100/internal/scopes"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/graceful"
 )
 
 type (
@@ -56,7 +56,7 @@ func (atf *AbortTaskFeature) Start() *CommandExecutionError {
 	// with the reason `worker-shutdown`. Upon such report the queue will
 	// resolve the run as exception and create a new run, if the task has
 	// additional retries left.
-	atf.stopHandlingGracefulTermination = graceful.OnTerminationRequest(func(finishTasks bool) {
+	atf.stopHandlingGracefulTermination = graceful.OnTerminationRequest(atf.task.TaskID, func(finishTasks bool) {
 		if !finishTasks {
 			_ = atf.task.StatusManager.Abort(
 				&CommandExecutionError{

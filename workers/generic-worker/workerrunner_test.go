@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v99/tools/workerproto"
-	wptesting "github.com/taskcluster/taskcluster/v99/tools/workerproto/testing"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/graceful"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v100/tools/workerproto"
+	wptesting "github.com/taskcluster/taskcluster/v100/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/gwconfig"
 )
 
 func setupWorkerRunnerTest(t *testing.T, runnerCapabilities ...string) *workerproto.Protocol {
@@ -45,7 +45,7 @@ func TestGracefulTermination(t *testing.T) {
 
 	done := make(chan bool, 1)
 
-	graceful.OnTerminationRequest(func(finishTasks bool) {
+	graceful.OnTerminationRequest("test-task", func(finishTasks bool) {
 		done <- finishTasks
 	})
 

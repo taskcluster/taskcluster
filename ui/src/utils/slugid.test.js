@@ -71,10 +71,7 @@ const spreader = generator => {
     }
 
     // sort for easy comparison
-    actual[j] = actual[j]
-      .split('')
-      .sort()
-      .join('');
+    actual[j] = actual[j].split('').sort().join('');
   }
 
   return actual;
@@ -82,25 +79,17 @@ const spreader = generator => {
 
 describe('slugs', () => {
   test('should spread v4 slugs', () => {
-    const charsAll = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
-      .split('')
-      .sort()
-      .join('');
+    const charsAll =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+        .split('')
+        .sort()
+        .join('');
     // 16, 17, 18, 19: 0b0100xx
-    const charsD = 'QRST'
-      .split('')
-      .sort()
-      .join('');
+    const charsD = 'QRST'.split('').sort().join('');
     // 2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62: 0bxxxx10
-    const charsE = 'CGKOSWaeimquy26-'
-      .split('')
-      .sort()
-      .join('');
+    const charsE = 'CGKOSWaeimquy26-'.split('').sort().join('');
     // 0, 16, 32, 48: 0bxx0000
-    const charsF = 'AQgw'
-      .split('')
-      .sort()
-      .join('');
+    const charsF = 'AQgw'.split('').sort().join('');
     const expected = [
       charsAll,
       charsAll,
@@ -131,30 +120,19 @@ describe('slugs', () => {
   });
 
   test('should spread nice slugs', () => {
-    const charsAll = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
-      .split('')
-      .sort()
-      .join('');
+    const charsAll =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+        .split('')
+        .sort()
+        .join('');
     // 0 - 31: 0b0xxxxx
-    const charsC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef'
-      .split('')
-      .sort()
-      .join('');
+    const charsC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef'.split('').sort().join('');
     // 16, 17, 18, 19: 0b0100xx
-    const charsD = 'QRST'
-      .split('')
-      .sort()
-      .join('');
+    const charsD = 'QRST'.split('').sort().join('');
     // 2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62: 0bxxxx10
-    const charsE = 'CGKOSWaeimquy26-'
-      .split('')
-      .sort()
-      .join('');
+    const charsE = 'CGKOSWaeimquy26-'.split('').sort().join('');
     // 0, 16, 32, 48: 0bxx0000
-    const charsF = 'AQgw'
-      .split('')
-      .sort()
-      .join('');
+    const charsF = 'AQgw'.split('').sort().join('');
     const expected = [
       charsC,
       charsAll,

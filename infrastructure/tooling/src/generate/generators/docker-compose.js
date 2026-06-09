@@ -373,7 +373,7 @@ tasks.push({
           },
         }),
         taskcluster: serviceDefinition('taskcluster', {
-          image: 'nginx:1.29.4',
+          image: 'nginx:1.30.1',
           depends_on: ['ui', 'web-server-web'],
           volumes: [
             './docker/nginx.conf:/etc/nginx/nginx.conf',

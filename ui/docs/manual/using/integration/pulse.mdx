@@ -21,6 +21,4 @@ that were run, and might also look for a test-specific artifact in the task
 indicating the results of those tests. All of this gets loaded into the
 dashboard's database and displayed to developers.
 
-At the moment, Taskcluster does not react to external pulse messages, but there
-are [plans](https://github.com/taskcluster/taskcluster-rfcs/issues/66) to add
-such support.
+Taskcluster tasks can be created in response to pulse (AMQP 0.9.1) messages. See [Pulse Messages](/docs/reference/core/hooks/firing-hooks#pulse-messages).

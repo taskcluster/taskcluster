@@ -101,7 +101,6 @@ export default class DocsSidebarList extends Component {
   state = {
     currentMenu: null,
     menuOpen: true,
-    // eslint-disable-next-line react/no-unused-state
     previousPathname: null,
   };
 
@@ -189,7 +188,7 @@ export default class DocsSidebarList extends Component {
     const href = removeReadmeFromPath(join(DOCS_PATH_PREFIX, node.path));
     const isLinkActive = removeReadmeFromPath(location.pathname) === href;
 
-    if (node.children && node.children.length) {
+    if (node.children?.length) {
       const [nodes, inlineNodes] = node.children.reduce(
         (acc, curr) => {
           if (curr.data.inline) {
@@ -232,14 +231,13 @@ export default class DocsSidebarList extends Component {
     }
 
     return (
-      <Link to={href}>
+      <Link to={href} key={node.path}>
         <Typography
           variant="body2"
           className={classNames(classes.link, classes.hover, {
             [classes.linkActive]: isLinkActive,
             [classes.header]: isRoot,
-          })}
-          key={node.path}>
+          })}>
           {node.data.title}
         </Typography>
       </Link>
@@ -287,9 +285,9 @@ export default class DocsSidebarList extends Component {
               in={item.hasChildren && menuOpen && currentMenu === item.label}>
               <div className={classes.collapse}>
                 {docsTableOfContents[item.label.toLowerCase()] &&
-                  docsTableOfContents[
-                    item.label.toLowerCase()
-                  ].children.map(child => this.renderNode(child, true))}
+                  docsTableOfContents[item.label.toLowerCase()].children.map(
+                    child => this.renderNode(child, true)
+                  )}
               </div>
             </Collapse>
           </Fragment>

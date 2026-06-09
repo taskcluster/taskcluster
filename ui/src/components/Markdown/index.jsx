@@ -203,16 +203,15 @@ export default class Markdown extends Component {
     const { classes, children, className, allowHtml, ...props } = this.props;
     const md = allowHtml ? markdownHtml : markdown;
 
-    /* eslint-disable react/no-danger */
     return (
       <span
         className={classNames(classes.root, className)}
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: markdown-it output (sanitized unless allowHtml)
         dangerouslySetInnerHTML={{
           __html: md.render(children),
         }}
         {...props}
       />
     );
-    /* eslint-enable react/no-danger */
   }
 }

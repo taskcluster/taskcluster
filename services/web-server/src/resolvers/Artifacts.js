@@ -7,11 +7,11 @@ export default {
     ERROR: 'error',
   },
   Query: {
-    artifacts(parent, { taskId, runId, connection, filter }, { loaders }) {
-      return loaders.artifacts.load({ taskId, runId, connection, filter });
+    artifacts(parent, { taskId, runId, connection }, { loaders }) {
+      return loaders.artifacts.load({ taskId, runId, connection });
     },
-    latestArtifacts(parent, { taskId, connection, filter }, { loaders }) {
-      return loaders.latestArtifacts.load({ taskId, connection, filter });
+    latestArtifacts(parent, { taskId, connection }, { loaders }) {
+      return loaders.latestArtifacts.load({ taskId, connection });
     },
   },
   Subscription: {

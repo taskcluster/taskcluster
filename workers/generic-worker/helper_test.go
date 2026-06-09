@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -24,13 +25,16 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
-	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v99/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v99/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v99/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v100/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v100/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v100/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/gwconfig"
+	gwruntime "github.com/taskcluster/taskcluster/v100/workers/generic-worker/runtime"
 )
 
 var (
@@ -39,6 +43,17 @@ var (
 	testdataDir    = filepath.Join(cwd, "testdata")
 	cachesDir      = filepath.Join(cwd, "caches")
 )
+
+// skipInDockerIfNoDocker skips the test when running inside the GW test
+// Docker container and Docker is not available (no Docker-in-Docker).
+func skipInDockerIfNoDocker(t *testing.T) {
+	t.Helper()
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		if err := exec.Command("docker", "info").Run(); err != nil {
+			t.Skip("Skipping in Docker: test requires Docker-in-Docker which is not available")
+		}
+	}
+}
 
 func setup(t *testing.T) {
 	t.Helper()
@@ -359,6 +374,7 @@ func GWTest(t *testing.T) *Test {
 			// Need common caches directory across tests, since files
 			// directory-caches.json and file-caches.json are not per-test.
 			CachesDir:       cachesDir,
+			Capacity:        1,
 			CleanUpTaskDirs: false,
 			ClientID:        os.Getenv("TASKCLUSTER_CLIENT_ID"),
 			DisableReboots:  true,
@@ -518,6 +534,7 @@ func (gwtest *Test) Teardown() {
 	taskContext = nil
 	globalTestName = ""
 	config = nil
+	graceful.Reset()
 	// gwtest.srv nil if no services
 	if gwtest.srv != nil {
 		err = gwtest.srv.Shutdown(context.Background())
@@ -729,11 +746,38 @@ func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinit
 
 func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 	t.Helper()
-	runningTests = true
-	// macOS CI tests to not run in headless in order to exercise the launch agent as much as possible
+	// macOS CI tests do not run in headless in order to exercise the launch agent as much as possible
 	testConfig.HeadlessTasks = (runtime.GOOS != "darwin")
 	testConfig.EnableRunTaskAsCurrentUser = true
 	testConfig.EnableD2G(t)
+
+	// Set runningTests for both paths so the worker updates global taskContext
+	runningTests = true
+
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		// In Docker, exercise the real headless user creation path.
+		// CreateTaskContext will see GW_IN_DOCKER and skip the next-task-user.json shortcut.
+		// Create a temporary user for tests that directly access taskContext
+		// without going through RunWorker().
+		taskDirName := fmt.Sprintf("task_%d", time.Now().UnixNano())
+		if len(taskDirName) > 20 {
+			taskDirName = taskDirName[:20]
+		}
+		taskUser := &gwruntime.OSUser{
+			Name:     taskDirName,
+			Password: gwruntime.GeneratePassword(),
+		}
+		err := taskUser.CreateNew(false)
+		if err != nil {
+			t.Fatalf("Could not create test user: %v", err)
+		}
+		taskContext = &TaskContext{
+			User:    taskUser,
+			TaskDir: testdataDir,
+		}
+		return
+	}
+
 	// Needed for tests that don't call RunWorker()
 	// but test methods/functions directly
 	taskUserCredentials, err := StoredUserCredentials(filepath.Join(cwd, "next-task-user.json"))
@@ -744,4 +788,60 @@ func engineTestSetup(t *testing.T, testConfig *gwconfig.Config) {
 		User:    taskUserCredentials,
 		TaskDir: testdataDir,
 	}
+}
+
+// indexArtifact inserts the given taskID into the index at the given namespace
+// with the given rank.
+func indexArtifact(t *testing.T, namespace string, taskID string, rank float64) {
+	t.Helper()
+	index := serviceFactory.Index(config.Credentials(), config.RootURL)
+	_, err := index.InsertTask(namespace, &tcindex.InsertTaskRequest{
+		Data:    json.RawMessage([]byte("{}")),
+		Expires: inAnHour,
+		TaskID:  taskID,
+		Rank:    rank,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// mountIndexedArtifact submits a task that mounts an indexed artifact from the
+// given namespace and republishes it as "public/republished-artifact". Returns
+// the taskID of the mount task.
+func mountIndexedArtifact(t *testing.T, namespace string, destFile string) string {
+	t.Helper()
+	ic := &IndexedContent{
+		Artifact:  "public/indexed-artifact",
+		Namespace: namespace,
+	}
+	rawMessageContent, err := json.Marshal(ic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fileMount := &FileMount{
+		File:    destFile,
+		Content: rawMessageContent,
+	}
+	rawMessageMount, err := json.Marshal(fileMount)
+	if err != nil {
+		t.Fatal(err)
+	}
+	payload := GenericWorkerPayload{
+		Mounts: []json.RawMessage{
+			rawMessageMount,
+		},
+		Artifacts: []Artifact{
+			{
+				Name: "public/republished-artifact",
+				Path: destFile,
+				Type: "file",
+			},
+		},
+		Command:    helloGoodbye(),
+		MaxRunTime: 30,
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	return submitAndAssert(t, td, payload, "completed", "completed")
 }

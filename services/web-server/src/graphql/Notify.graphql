@@ -26,7 +26,7 @@ type NotificationAddressConnection implements Connection {
 }
 
 extend type Query {
-  listDenylistAddresses(filter: JSON, connection: PageConnection): NotificationAddressConnection
+  listDenylistAddresses(searchTerm: String, connection: PageConnection): NotificationAddressConnection
 }
 
 extend type Mutation {

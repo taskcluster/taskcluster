@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/win32"
 	"golang.org/x/sys/windows/registry"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/mgr"
@@ -24,7 +24,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 	log.Print("Creating Windows user " + user.Name + "...")
 	userExisted, err := host.RunIgnoreError(
 		"User "+user.Name+" already exists",
-		"powershell", "-Command", "New-LocalUser -Name '"+user.Name+"' -Password (ConvertTo-SecureString '"+user.Password+"' -AsPlainText -Force) -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword",
+		"powershell", "-Command", "New-LocalUser -Name '"+host.EscapePowerShellSingleQuote(user.Name)+"' -Password (ConvertTo-SecureString '"+host.EscapePowerShellSingleQuote(user.Password)+"' -AsPlainText -Force) -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword",
 	)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 	log.Print("Created new OS user!")
 	err = host.RunBatch(
 		userExisted,
-		[]string{"powershell", "-Command", "Add-LocalGroupMember -Group 'Remote Desktop Users' -Member '" + user.Name + "'"},
+		[]string{"powershell", "-Command", "Add-LocalGroupMember -Group 'Remote Desktop Users' -Member '" + host.EscapePowerShellSingleQuote(user.Name) + "'"},
 	)
 	// if user existed, the above commands can fail
 	// if it didn't, they can't
@@ -51,7 +51,7 @@ func (user *OSUser) CreateNew(okIfExists bool) error {
 func (user *OSUser) MakeAdmin() error {
 	_, err := host.RunIgnoreError(
 		user.Name+" is already a member of group administrators",
-		"powershell", "-Command", "Add-LocalGroupMember -Group 'administrators' -Member '"+user.Name+"'",
+		"powershell", "-Command", "Add-LocalGroupMember -Group 'administrators' -Member '"+host.EscapePowerShellSingleQuote(user.Name)+"'",
 	)
 	return err
 }
@@ -122,7 +122,7 @@ func (osUser *OSUser) CreateUserProfile() error {
 	}
 
 	// Allocate buffer for profile path (MAX_PATH = 260)
-	profilePath := make([]uint16, 260)
+	profilePath := make([]uint16, syscall.MAX_PATH)
 
 	err = win32.CreateProfile(sidPtr, namePtr, &profilePath[0], uint32(len(profilePath)))
 	if err != nil {
@@ -153,7 +153,7 @@ func DeleteUser(username string) (err error) {
 	} else {
 		log.Printf("WARNING: not able to look up SID for user %v: %v", username, err)
 	}
-	err2 := host.Run("powershell", "-Command", "Remove-LocalUser -Name '"+username+"'")
+	err2 := host.Run("powershell", "-Command", "Remove-LocalUser -Name '"+host.EscapePowerShellSingleQuote(username)+"'")
 	if err2 != nil {
 		log.Printf("WARNING: not able to delete user account %v: %v", username, err2)
 		if err == nil {

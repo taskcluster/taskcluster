@@ -110,7 +110,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ]);
     const wrc = await launchConfigSelector.forWorkerPool(wp);
 
-    const counts = getDistribution(wrc, 100);
+    const counts = getDistribution(wrc, 500);
     assert.ok(counts.lc1 > counts.lc2, 'lc1 should be chosen more often than lc2');
     assert.ok(counts.lc2 > counts.lc3, 'lc2 should be chosen more often than lc3');
     assert.ok(counts.unknown === undefined);

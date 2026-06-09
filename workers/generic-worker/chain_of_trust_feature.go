@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 
 	"github.com/peterbourgon/mergemap"
-	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v99/internal/scopes"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v100/internal/scopes"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/fileutil"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -138,15 +138,16 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if feature.disabled {
 		return
 	}
-	logFile := fileutil.AbsFrom(taskContext.TaskDir, logPath)
-	certifiedLogFile := fileutil.AbsFrom(taskContext.TaskDir, certifiedLogPath)
-	unsignedCert := fileutil.AbsFrom(taskContext.TaskDir, unsignedCertPath)
-	ed25519SignedCert := fileutil.AbsFrom(taskContext.TaskDir, ed25519SignedCertPath)
+	taskDir := feature.task.TaskDir()
+	logFile := fileutil.AbsFrom(taskDir, logPath)
+	certifiedLogFile := fileutil.AbsFrom(taskDir, certifiedLogPath)
+	unsignedCert := fileutil.AbsFrom(taskDir, unsignedCertPath)
+	ed25519SignedCert := fileutil.AbsFrom(taskDir, ed25519SignedCertPath)
 	copyErr := copyFileContents(logFile, certifiedLogFile)
 	if copyErr != nil {
 		panic(copyErr)
 	}
-	err.add(feature.task.uploadLog(certifiedLogName, fileutil.AbsFrom(taskContext.TaskDir, certifiedLogPath)))
+	err.add(feature.task.uploadLog(certifiedLogName, fileutil.AbsFrom(taskDir, certifiedLogPath)))
 	artifactHashes := map[string]ArtifactHash{}
 	feature.task.artifactsMux.RLock()
 	for _, artifact := range feature.task.Artifacts {
@@ -207,10 +208,15 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if e != nil {
 		panic(e)
 	}
-	err.add(feature.task.uploadLog(unsignedCertName, fileutil.AbsFrom(taskContext.TaskDir, unsignedCertPath)))
+	err.add(feature.task.uploadLog(unsignedCertName, fileutil.AbsFrom(taskDir, unsignedCertPath)))
 
 	// create detached ed25519 chain-of-trust.json.sig
 	sig := ed25519.Sign(feature.ed25519PrivKey, certBytes)
+	// 0644 (not 0600) so the artifact uploader, which copies via
+	// copy-to-temp-file as the task user, can read this file. The
+	// task dir is already 0700 owned by the task user, so the file
+	// is not exposed beyond that boundary. Same rationale as
+	// chain-of-trust-additional-data.json in d2g_feature.go.
 	e = os.WriteFile(ed25519SignedCert, sig, 0644)
 	if e != nil {
 		panic(e)
@@ -221,8 +227,8 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.TaskClaimResponse.Task.Expires,
 			},
-			fileutil.AbsFrom(taskContext.TaskDir, ed25519SignedCertPath),
-			fileutil.AbsFrom(taskContext.TaskDir, ed25519SignedCertPath),
+			fileutil.AbsFrom(taskDir, ed25519SignedCertPath),
+			fileutil.AbsFrom(taskDir, ed25519SignedCertPath),
 			"application/octet-stream",
 			"gzip",
 		),
@@ -243,7 +249,7 @@ func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error 
 }
 
 func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (mergedCert []byte, err error) {
-	additionalDataFile := filepath.Join(taskContext.TaskDir, additionalDataPath)
+	additionalDataFile := filepath.Join(cot.task.TaskDir(), additionalDataPath)
 
 	// Additional data is optional, if file hasn't been created by task, just return the original data
 	if _, err = os.Stat(additionalDataFile); errors.Is(err, os.ErrNotExist) {
@@ -251,7 +257,7 @@ func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (merge
 	}
 
 	// Ensure task user can read the data (e.g. in case somebody creates a symbolic link to a json file owned by root)
-	tempPath, err := copyToTempFileAsTaskUser(additionalDataFile, cot.task.pd)
+	tempPath, err := copyToTempFileAsTaskUser(additionalDataFile, cot.task.pd, cot.task.TaskDir())
 	if err != nil {
 		return
 	}

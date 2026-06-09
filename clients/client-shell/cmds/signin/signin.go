@@ -16,10 +16,10 @@ import (
 	"github.com/taskcluster/shell"
 	"github.com/taskcluster/slugid-go/slugid"
 	libUrls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
-	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v99/clients/client-shell/cmds/root"
-	"github.com/taskcluster/taskcluster/v99/clients/client-shell/config"
+	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v100/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v100/clients/client-shell/config"
 )
 
 var log = root.Logger
@@ -127,14 +127,16 @@ func cmdSignin(cmd *cobra.Command, _ []string) error {
 		loginURL += libUrls.UI(config.RootURL(), "/auth/clients/create")
 	}
 
+	var scopeBuilder strings.Builder
 	for i := range scopes {
 		if i == 0 {
-			loginURL += "?"
+			scopeBuilder.WriteString("?")
 		} else {
-			loginURL += "&"
+			scopeBuilder.WriteString("&")
 		}
-		loginURL += "scope=" + url.QueryEscape(scopes[i])
+		scopeBuilder.WriteString("scope=" + url.QueryEscape(scopes[i]))
 	}
+	loginURL += scopeBuilder.String()
 
 	loginURL += "&name=" + url.QueryEscape(name) + "-" + slugid.Nice()[0:6]
 	loginURL += "&expires=" + url.QueryEscape(expires)
