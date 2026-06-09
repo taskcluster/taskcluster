@@ -1,5 +1,5 @@
 //go:generate go run ../../workers/generic-worker/gw-codegen file://schemas/docker-worker/v1/payload.yml dockerworker/generated_types.go
-//go:generate go run ../../workers/generic-worker/gw-codegen file://../../workers/generic-worker/schemas/multiuser_posix.yml genericworker/generated_types.go
+//go:generate go run ../../workers/generic-worker/gw-codegen file://../../workers/generic-worker/schemas/posix.yml genericworker/generated_types.go
 
 package d2g
 

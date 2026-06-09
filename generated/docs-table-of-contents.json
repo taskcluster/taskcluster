@@ -4088,7 +4088,7 @@
                 "name": "features",
                 "next": {
                   "path": "reference/workers/generic-worker/engines",
-                  "title": "Engines"
+                  "title": "Task Isolation"
                 },
                 "path": "reference/workers/generic-worker/features",
                 "prev": {
@@ -4105,7 +4105,7 @@
                 ],
                 "data": {
                   "order": 30,
-                  "title": "Engines"
+                  "title": "Task Isolation"
                 },
                 "name": "engines",
                 "next": {
@@ -4137,7 +4137,7 @@
                 "path": "reference/workers/generic-worker/support-tiers",
                 "prev": {
                   "path": "reference/workers/generic-worker/engines",
-                  "title": "Engines"
+                  "title": "Task Isolation"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -4153,8 +4153,8 @@
                 },
                 "name": "installing",
                 "next": {
-                  "path": "reference/workers/generic-worker/insecure-posix-payload",
-                  "title": "Task Payload - insecure, posix"
+                  "path": "reference/workers/generic-worker/posix-payload",
+                  "title": "Task Payload - posix"
                 },
                 "path": "reference/workers/generic-worker/installing",
                 "prev": {
@@ -4171,14 +4171,14 @@
                 ],
                 "data": {
                   "order": 1000,
-                  "title": "Task Payload - insecure, posix"
+                  "title": "Task Payload - posix"
                 },
-                "name": "insecure-posix-payload",
+                "name": "posix-payload",
                 "next": {
-                  "path": "reference/workers/generic-worker/multiuser-posix-payload",
-                  "title": "Task Payload - multiuser, posix"
+                  "path": "reference/workers/generic-worker/windows-payload",
+                  "title": "Task Payload - windows"
                 },
-                "path": "reference/workers/generic-worker/insecure-posix-payload",
+                "path": "reference/workers/generic-worker/posix-payload",
                 "prev": {
                   "path": "reference/workers/generic-worker/installing",
                   "title": "Installing"
@@ -4193,39 +4193,17 @@
                 ],
                 "data": {
                   "order": 1000,
-                  "title": "Task Payload - multiuser, posix"
+                  "title": "Task Payload - windows"
                 },
-                "name": "multiuser-posix-payload",
-                "next": {
-                  "path": "reference/workers/generic-worker/multiuser-windows-payload",
-                  "title": "Task Payload - multiuser, windows"
-                },
-                "path": "reference/workers/generic-worker/multiuser-posix-payload",
-                "prev": {
-                  "path": "reference/workers/generic-worker/insecure-posix-payload",
-                  "title": "Task Payload - insecure, posix"
-                },
-                "up": {
-                  "path": "reference/workers/generic-worker/README",
-                  "title": "generic-worker"
-                }
-              },
-              {
-                "children": [
-                ],
-                "data": {
-                  "order": 1000,
-                  "title": "Task Payload - multiuser, windows"
-                },
-                "name": "multiuser-windows-payload",
+                "name": "windows-payload",
                 "next": {
                   "path": "reference/workers/websocktunnel",
                   "title": "websocktunnel"
                 },
-                "path": "reference/workers/generic-worker/multiuser-windows-payload",
+                "path": "reference/workers/generic-worker/windows-payload",
                 "prev": {
-                  "path": "reference/workers/generic-worker/multiuser-posix-payload",
-                  "title": "Task Payload - multiuser, posix"
+                  "path": "reference/workers/generic-worker/posix-payload",
+                  "title": "Task Payload - posix"
                 },
                 "up": {
                   "path": "reference/workers/generic-worker/README",
@@ -4265,8 +4243,8 @@
             },
             "path": "reference/workers/websocktunnel",
             "prev": {
-              "path": "reference/workers/generic-worker/multiuser-windows-payload",
-              "title": "Task Payload - multiuser, windows"
+              "path": "reference/workers/generic-worker/windows-payload",
+              "title": "Task Payload - windows"
             },
             "up": {
               "path": "reference/workers/README",

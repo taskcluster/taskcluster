@@ -303,28 +303,29 @@ const payloadCommand = [
 ];
 
 export const TASK_PAYLOAD_SCHEMAS = {
-  'generic-insecure-posix': {
-    label: 'Generic worker insecure posix',
-    type: 'generic-worker',
-    schema: 'insecure_posix.json',
+  'docker-worker': {
+    label: 'Docker worker',
+    type: 'docker-worker',
+    schema: 'v1/payload.json',
     samplePayload: {
-      command: [payloadCommand],
+      image: 'ubuntu:latest',
+      command: payloadCommand,
       maxRunTime: 60 + 30,
     },
   },
-  'generic-multi-win': {
-    label: 'Generic worker multiuser windows',
+  'generic-worker-win': {
+    label: 'Generic worker windows',
     type: 'generic-worker',
-    schema: 'multiuser_windows.json',
+    schema: 'windows.json',
     samplePayload: {
       command: ['dir'],
       maxRunTime: 60 + 30,
     },
   },
-  'generic-multi-posix': {
-    label: 'Generic worker multiuser posix',
+  'generic-worker-posix': {
+    label: 'Generic worker posix',
     type: 'generic-worker',
-    schema: 'multiuser_posix.json',
+    schema: 'posix.json',
     samplePayload: {
       command: [payloadCommand],
       maxRunTime: 60 + 30,

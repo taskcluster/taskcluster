@@ -34,9 +34,8 @@ const UNREFERENCED_SCHEMAS = [
   { service: 'worker-manager', schema: 'v1/config-azure.json#' },
 
   // schemas for workers
-  { service: 'generic-worker', schema: 'insecure_posix.json#' },
-  { service: 'generic-worker', schema: 'multiuser_windows.json#' },
-  { service: 'generic-worker', schema: 'multiuser_posix.json#' },
+  { service: 'generic-worker', schema: 'windows.json#' },
+  { service: 'generic-worker', schema: 'posix.json#' },
   { service: 'docker-worker', schema: 'v1/payload.json#' },
 ];
 

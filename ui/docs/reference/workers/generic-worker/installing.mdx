@@ -92,7 +92,7 @@ __Important__: The generic-worker binary must be readable and executable by the
 task user, not only root. If it is not, the worker will exit with exit code 69
 (internal error).
 
-### Windows - multiuser build
+### Windows
 
 On Windows, generic-worker is managed by worker-runner (`start-worker.exe`),
 with both installed as NSSM services. Worker-runner is set to auto-start and
@@ -219,20 +219,15 @@ launches generic-worker (set to demand-start) when work is available.
     and launch generic-worker when work is available.
 
 
-### macOS - multiuser/insecure build
+### macOS
 
 On macOS, worker-runner is launched by a launchd daemon via a small wrapper
 script. The wrapper performs cleanup of stale temporary directories before
 starting worker-runner.
 
- 1. Log into the target user account:
+ 1. Log in as _root_ (`sudo su -`).
 
-    * __Insecure build__: Create a user account `genericworker` and log in as
-      that user in a shell.
-    * __Multiuser build__: Log in as _root_ (`sudo su -`).
-
- 2. __Multiuser build only__: Disable wizards and warning pop-ups on
-    first-login to user accounts:
+ 2. Disable wizards and warning pop-ups on first-login to user accounts:
 
     * `git clone https://github.com/mozilla-platform-ops/macos-configuration-profiles.git`
     * For macOS versions prior to macOS 11:
@@ -251,8 +246,6 @@ starting worker-runner.
     ```
     sudo mkdir -p /etc/generic-worker
     ```
-
-    __Insecure build only__: `sudo chown genericworker:staff /etc/generic-worker`
 
     ```
     /usr/local/bin/generic-worker new-ed25519-keypair --file /etc/generic-worker/ed25519_key
@@ -357,8 +350,6 @@ starting worker-runner.
  7. Create the launch daemon plist at
     `/Library/LaunchDaemons/com.mozilla.genericworker.plist`.
 
-    For a __multiuser__ build (runs as root):
-
     ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -382,23 +373,7 @@ starting worker-runner.
     </plist>
     ```
 
-    For an __insecure__ build, change the `UserName` value from `root` to
-    `genericworker`.
-
- 8. Permanently disable macOS background services that accumulate unbounded
-    disk usage on CI workers.
-
-    ```bash
-    # disable Spotlight
-    sudo mdutil -a -i off
-    # and persist over reboots
-    sudo touch /System/Volumes/Data/.metadata_never_index
-
-    # disable Apple Neural Engine daemon
-    sudo launchctl disable system/com.apple.aned
-    ```
-
- 9. Install the launch daemon and start it:
+ 8. Install the launch daemon and start it:
 
     ```
     sudo launchctl load -w /Library/LaunchDaemons/com.mozilla.genericworker.plist
@@ -407,7 +382,7 @@ starting worker-runner.
     Check logs in `/var/log/genericworker/`.
 
 
-### Linux - multiuser/insecure build
+### Linux
 
 On Linux, worker-runner is run as a systemd service that starts on boot and
 manages the generic-worker process.
@@ -425,7 +400,7 @@ manages the generic-worker process.
     apt install -y curl
     ```
 
- 3. For _multiuser_, ensure a desktop environment is installed:
+ 3. Ensure a desktop environment is installed (needed for non-headless tasks):
 
     ```
     apt install -y ubuntu-desktop ubuntu-gnome-desktop
@@ -447,7 +422,7 @@ manages the generic-worker process.
 
     ```
     cd /usr/local/bin
-    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v100.3.0/generic-worker-multiuser-linux-amd64" > generic-worker
+    curl -L "https://github.com/taskcluster/taskcluster/releases/download/v100.3.0/generic-worker-linux-amd64" > generic-worker
     curl -L "https://github.com/taskcluster/taskcluster/releases/download/v100.3.0/livelog-linux-amd64" > livelog
     curl -L "https://github.com/taskcluster/taskcluster/releases/download/v100.3.0/taskcluster-proxy-linux-amd64" > taskcluster-proxy
     curl -L "https://github.com/taskcluster/taskcluster/releases/download/v100.3.0/start-worker-linux-amd64" > start-worker

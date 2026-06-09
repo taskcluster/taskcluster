@@ -14,7 +14,7 @@ import (
 )
 
 // makeDirWorldWritable makes a directory writable by any user, so that
-// the multiuser engine task user can write to it. On Windows this
+// the task user can write to it. On Windows this
 // grants full control to Everyone via icacls.
 func makeDirWorldWritable(t *testing.T, dir string) {
 	t.Helper()

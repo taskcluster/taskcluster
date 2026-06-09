@@ -1,10 +1,7 @@
-//go:generate go run ./gw-codegen file://schemas/insecure_posix.yml     generated_insecure_linux.go      insecure
-//go:generate go run ./gw-codegen file://schemas/insecure_posix.yml     generated_insecure_darwin.go     insecure
-//go:generate go run ./gw-codegen file://schemas/insecure_posix.yml     generated_insecure_freebsd.go    insecure
-//go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_darwin.go    multiuser
-//go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_linux.go     multiuser
-//go:generate go run ./gw-codegen file://schemas/multiuser_posix.yml    generated_multiuser_freebsd.go   multiuser
-//go:generate go run ./gw-codegen file://schemas/multiuser_windows.yml  generated_multiuser_windows.go   multiuser
+//go:generate go run ./gw-codegen file://schemas/posix.yml    generated_darwin.go
+//go:generate go run ./gw-codegen file://schemas/posix.yml    generated_linux.go
+//go:generate go run ./gw-codegen file://schemas/posix.yml    generated_freebsd.go
+//go:generate go run ./gw-codegen file://schemas/windows.yml  generated_windows.go
 
 package main
 
@@ -117,7 +114,7 @@ func init() {
 
 // Entry point into the generic worker...
 func main() {
-	versionName := "generic-worker (" + engine + " engine) " + version
+	versionName := "generic-worker " + version
 	if revision != "" {
 		versionName += " [ revision: https://github.com/taskcluster/taskcluster/commits/" + revision + " ]"
 	}
@@ -313,7 +310,6 @@ func loadConfig(configFile *gwconfig.File) error {
 		"go-version": runtime.Version(),
 		"release":    "https://github.com/taskcluster/taskcluster/releases/tag/v" + version,
 		"version":    version,
-		"engine":     engine,
 	}
 	if revision != "" {
 		gwMetadata["revision"] = revision
@@ -324,7 +320,6 @@ func loadConfig(configFile *gwconfig.File) error {
 		"GOARCH":          runtime.GOARCH,
 		"GOOS":            runtime.GOOS,
 		"cleanUpTaskDirs": strconv.FormatBool(config.CleanUpTaskDirs),
-		"engine":          engine,
 		"gwRevision":      revision,
 		"gwVersion":       version,
 		"instanceType":    config.InstanceType,
@@ -430,7 +425,6 @@ func RunWorker() (exitCode ExitCode) {
 	// This *DOESN'T* output secret fields, so is SAFE
 	log.Printf("Config: %v", config)
 	log.Printf("Detected %s platform", runtime.GOOS)
-	log.Printf("Detected %s engine", engine)
 	if host, err := sysinfo.Host(); err == nil {
 		logEvent("instanceBoot", nil, host.Info().BootTime)
 	}

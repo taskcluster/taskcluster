@@ -12,8 +12,8 @@ env:
   STATICCHECK_VERSION: "2026.1"
 
 jobs:
-  staticcheck-gw-multiuser:
-    name: Multiuser Engine
+  staticcheck-gw:
+    name: Generic Worker
     strategy:
       fail-fast: false
       matrix:
@@ -30,29 +30,6 @@ jobs:
     - uses: dominikh/staticcheck-action@9716614d4101e79b4340dd97b10e54d68234e431 # v1.4.1
       with:
         working-directory: workers/generic-worker
-        build-tags: multiuser
-        install-go: false
-        version: ${{ env.STATICCHECK_VERSION }}
-
-  staticcheck-gw-insecure:
-    name: Insecure Engine
-    strategy:
-      fail-fast: false
-      matrix:
-        os:  ["ubuntu-latest", "macOS-latest"]
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      with:
-        fetch-depth: 1
-        persist-credentials: false
-    - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
-      with:
-        go-version-file: go.mod
-    - uses: dominikh/staticcheck-action@9716614d4101e79b4340dd97b10e54d68234e431 # v1.4.1
-      with:
-        working-directory: workers/generic-worker
-        build-tags: insecure
         install-go: false
         version: ${{ env.STATICCHECK_VERSION }}
 

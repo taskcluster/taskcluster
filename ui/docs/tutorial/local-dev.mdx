@@ -68,7 +68,7 @@ To run any task in Taskcluster you need a worker. If you go to the [Workers](htt
 * `built-in` which is a simple provisioner that doesn't do anything and has two workers:
   - `succeed` will make the task resolve with success
   - `fail` will make the task fail
-* `docker-compose` will have a single worker type called `generic-worker`. This is an [insecure generic worker engine](/docs/reference/workers/generic-worker) that can run real commands.
+* `docker-compose` will have a single worker type called `generic-worker`. This is a [generic worker](/docs/reference/workers/generic-worker) that can run real commands.
 
 Let's try to create a task for this generic-worker!
 
