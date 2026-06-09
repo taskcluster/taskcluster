@@ -151,7 +151,6 @@
     "cross-env": "^10.1.0",
     "dockerode": "^3.3.4",
     "error-stack-parser": "^2.0.2",
-    "eslint": "^8.57.0",
     "github-slugger": "^2.0.0",
     "glob": "^8.0.3",
     "graphql-tag": "^2.12.6",
@@ -222,7 +221,7 @@
   },
   "metatests": {
     "specialImports": [
-      "eslint",
+      "@biomejs/biome",
       "c8",
       "cross-env",
       "ejs",
@@ -232,9 +231,5 @@
       "@types/pg"
     ]
   },
-  "eslintIgnore": [
-    "**/node_modules/**",
-    "services/web-server/build"
-  ],
   "heroku-run-build-script": true
 }
