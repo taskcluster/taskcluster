@@ -31,14 +31,14 @@ export default {
 
       return loaders.status.load(parent.taskId);
     },
-    taskActions(parent, { filter }, { loaders }) {
+    taskActions(parent, args, { loaders }) {
       if (parent.taskActions) {
         return parent.taskActions;
       }
 
       return loaders.taskActions.load({
         taskGroupId: parent.taskGroupId,
-        filter,
+        contextScope: 'task',
       });
     },
     async decisionTask(parent, args, { loaders }) {
@@ -57,12 +57,12 @@ export default {
         return e;
       }
     },
-    latestArtifacts(parent, { taskId, connection, filter }, { loaders }) {
+    latestArtifacts(parent, { taskId, connection }, { loaders }) {
       if (parent.latestArtifacts) {
         return parent.latestArtifacts;
       }
 
-      return loaders.latestArtifacts.load({ taskId, connection, filter });
+      return loaders.latestArtifacts.load({ taskId, connection });
     },
   },
   DependentTask: {
@@ -113,17 +113,17 @@ export default {
         }
       }));
     },
-    async dependents(parent, { taskId, connection, filter }, { loaders }) {
-      return loaders.dependents.load({ taskId, connection, filter });
+    async dependents(parent, { taskId, connection }, { loaders }) {
+      return loaders.dependents.load({ taskId, connection });
     },
     indexedTask(parent, { indexPath }, { loaders }) {
       return loaders.indexedTask.load(indexPath);
     },
-    taskGroup(parent, { taskGroupId, connection, filter }, { loaders }) {
-      return loaders.taskGroup.load({ taskGroupId, connection, filter });
+    taskGroup(parent, { taskGroupId, connection }, { loaders }) {
+      return loaders.taskGroup.load({ taskGroupId, connection });
     },
-    taskActions(parent, { taskGroupId, filter }, { loaders }) {
-      return loaders.taskActions.load({ taskGroupId, filter });
+    taskActions(parent, { taskGroupId }, { loaders }) {
+      return loaders.taskActions.load({ taskGroupId, contextScope: 'group' });
     },
     listPendingTasks(parent, { taskQueueId, connection }, { loaders }) {
       return loaders.listPendingTasks.load({ taskQueueId, connection });

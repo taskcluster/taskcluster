@@ -1,5 +1,5 @@
-query Providers($providersConnection: PageConnection, $filter: JSON) {
-    WorkerManagerProviders(connection: $providersConnection, filter: $filter) {
+query Providers($providersConnection: PageConnection) {
+    WorkerManagerProviders(connection: $providersConnection) {
         pageInfo {
           hasNextPage
         }

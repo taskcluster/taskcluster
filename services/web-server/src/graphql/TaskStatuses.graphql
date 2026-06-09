@@ -49,7 +49,7 @@ type TaskStatus {
 
   # Ordered list of runs where run `n` is at `runs[n]`, e.g. Run 0 is `runs[0]`.
   # Always starts at `0`.
-  runs(filter: JSON): [TaskRun]!
+  runs: [TaskRun]!
 
   # The task definition associated with this status.
   task(taskId: ID = taskId): Task

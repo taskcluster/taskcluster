@@ -154,16 +154,16 @@ type WorkerPoolStats {
 }
 
 extend type Query {
-    WorkerManagerWorkerPoolSummaries(connection: PageConnection, filter: JSON): WorkerManagerWorkerPoolSummaryConnection!
+    WorkerManagerWorkerPoolSummaries(connection: PageConnection, searchTerm: String): WorkerManagerWorkerPoolSummaryConnection!
 
-    WorkerManagerErrors(workerPoolId: String, launchConfigId: String, connection: PageConnection, filter: JSON): WorkerManagerErrorsConnection!
+    WorkerManagerErrors(workerPoolId: String, launchConfigId: String, connection: PageConnection): WorkerManagerErrorsConnection!
     WorkerManagerErrorsStats(workerPoolId: String): WorkerManagerErrorsStats!
 
     WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
     WorkerPoolLaunchConfigs(workerPoolId: String!, includeArchived: Boolean, connection: PageConnection): WorkerPoolLaunchConfigConnection!
     WorkerPoolStats(workerPoolId: String!): WorkerPoolStats!
 
-    WorkerManagerProviders(connection: PageConnection, filter: JSON): WorkerManagerProvidersConnection!
+    WorkerManagerProviders(connection: PageConnection): WorkerManagerProvidersConnection!
 
     WorkerManagerWorkers(workerPoolId: String!, state: String, launchConfigId: String, connection: PageConnection): WorkerManagerWorkerConnection!
 

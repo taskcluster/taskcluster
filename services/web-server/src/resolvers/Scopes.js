@@ -1,10 +1,10 @@
 export default {
   Query: {
-    currentScopes(parent, { filter }, { loaders }) {
-      return loaders.currentScopes.load({ filter });
+    currentScopes(parent, args, { loaders }) {
+      return loaders.currentScopes.load({});
     },
-    expandScopes(parent, { scopes, filter }, { loaders }) {
-      return loaders.expandScopes.load({ scopes, filter });
+    expandScopes(parent, { scopes }, { loaders }) {
+      return loaders.expandScopes.load({ scopes });
     },
   },
 };

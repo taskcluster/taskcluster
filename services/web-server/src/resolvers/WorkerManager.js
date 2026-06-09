@@ -11,11 +11,11 @@ export default {
     },
   },
   Query: {
-    WorkerManagerWorkerPoolSummaries(parent, { connection, filter }, { loaders }) {
-      return loaders.WorkerManagerWorkerPoolSummaries.load({ connection, filter });
+    WorkerManagerWorkerPoolSummaries(parent, { connection, searchTerm }, { loaders }) {
+      return loaders.WorkerManagerWorkerPoolSummaries.load({ connection, searchTerm });
     },
-    WorkerManagerErrors(parent, { workerPoolId, launchConfigId, connection, filter }, { loaders }) {
-      return loaders.WorkerManagerErrors.load({ workerPoolId, launchConfigId, connection, filter });
+    WorkerManagerErrors(parent, { workerPoolId, launchConfigId, connection }, { loaders }) {
+      return loaders.WorkerManagerErrors.load({ workerPoolId, launchConfigId, connection });
     },
     WorkerManagerErrorsStats(parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerManagerErrorsStats.load({ workerPoolId });
@@ -32,8 +32,8 @@ export default {
     WorkerManagerWorkers(parent, { workerPoolId, launchConfigId, state, connection }, { loaders }) {
       return loaders.WorkerManagerWorkers.load({ workerPoolId, launchConfigId, state, connection });
     },
-    WorkerManagerProviders(parent, { connection, filter }, { loaders }) {
-      return loaders.WorkerManagerProviders.load({ connection, filter });
+    WorkerManagerProviders(parent, { connection }, { loaders }) {
+      return loaders.WorkerManagerProviders.load({ connection });
     },
     WorkerPoolStats(parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerPoolStats.load({ workerPoolId });

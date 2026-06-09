@@ -1,5 +1,3 @@
-import sift from '../utils/sift.js';
-
 export default {
   TaskState: {
     UNSCHEDULED: 'unscheduled',
@@ -14,7 +12,7 @@ export default {
       return loaders.task.load(parent.taskId);
     },
     runs(parent, args) {
-      return sift(args.filter, parent.runs);
+      return parent.runs;
     },
   },
   Query: {
