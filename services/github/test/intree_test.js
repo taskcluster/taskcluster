@@ -94,7 +94,7 @@ suite(testing.suiteName(), function() {
         assert.equal(config.tasks.length, count);
       }
       for (let key of Object.keys(expected)) {
-        if ('key' === 'scopes') {
+        if (key === 'scopes') {
           expected[key].sort();
         }
         assert.deepEqual(_.get(config, key), expected[key]);
@@ -125,9 +125,9 @@ suite(testing.suiteName(), function() {
       'tasks[0].task.extra.github.events': ['push'],
       'metadata.owner': 'test@test.com',
       scopes: [
-        'assume:repo:github.com/testorg/testrepo:branch:default_branch',
-        'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
+        'queue:route:statuses',
+        'assume:repo:github.com/testorg/testrepo:branch:default_branch',
       ],
     });
 
