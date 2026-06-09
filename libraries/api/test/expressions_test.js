@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noThenProperty: `then` is part of { if, then, else } template expressions, not a thenable
 import assert from 'node:assert';
 import ScopeExpressionTemplate from '../src/expressions.js';
 import testing from '@taskcluster/lib-testing';

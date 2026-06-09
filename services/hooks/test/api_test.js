@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noThenProperty: JSON-e $if/then constructs, not thenables
 import _ from 'lodash';
 import assert from 'node:assert';
 import assume from 'assume';

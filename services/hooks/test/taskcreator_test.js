@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noThenProperty: JSON-e $if/then constructs, not thenables
 import assert from 'node:assert';
 import assume from 'assume';
 import taskcreator from '../src/taskcreator.js';

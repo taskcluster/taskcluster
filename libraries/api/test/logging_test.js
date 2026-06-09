@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noThenProperty: `then` is part of { if, then, else } template expressions, not a thenable
 import request from 'superagent';
 import assert from 'node:assert';
 import hawk from 'hawk';
