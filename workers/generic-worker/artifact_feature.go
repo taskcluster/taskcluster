@@ -346,12 +346,15 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 		SkipCompressionExtensions := map[string]bool{
 			".7z":    true,
 			".br":    true,
+			".aab":   true,
+			".apk":   true,
 			".bz2":   true,
 			".deb":   true,
 			".dmg":   true,
 			".flv":   true,
 			".gif":   true,
 			".gz":    true,
+			".jar":   true,
 			".jpeg":  true,
 			".jpg":   true,
 			".lz":    true,
@@ -367,6 +370,7 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 			".whl":   true, // Python wheel are already zip file
 			".woff":  true,
 			".woff2": true,
+			".xpi":   true,
 			".xz":    true,
 			".zip":   true,
 			".zst":   true,
