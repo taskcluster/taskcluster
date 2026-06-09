@@ -31,7 +31,6 @@ import Snackbar from '../../../components/Snackbar';
 import {
   TASK_GROUP_PAGE_SIZE,
   VALID_TASK,
-  ACTIONS_JSON_KNOWN_KINDS,
   INITIAL_CURSOR,
   TASK_STATE,
   INITIAL_TASK_GROUP_NOTIFICATION_PREFERENCES,
@@ -111,12 +110,6 @@ const updateTaskGroupIdHistory = id => {
       taskGroupId: props.match.params.taskGroupId,
       taskGroupConnection: {
         limit: 20,
-      },
-      taskActionsFilter: {
-        kind: {
-          $in: ACTIONS_JSON_KNOWN_KINDS,
-        },
-        $or: [{ context: { $size: 0 } }, { context: { $size: 1 } }],
       },
     },
   }),
@@ -700,12 +693,6 @@ export default class TaskGroup extends Component {
           limit: TASK_GROUP_PAGE_SIZE,
           cursor: taskGroup.pageInfo.nextCursor,
           previousCursor: taskGroup.pageInfo.cursor,
-        },
-        taskActionsFilter: {
-          kind: {
-            $in: ACTIONS_JSON_KNOWN_KINDS,
-          },
-          $or: [{ context: { $size: 0 } }, { context: { $size: 1 } }],
         },
       },
       updateQuery: (previousResult = {}, { fetchMoreResult, variables }) => {

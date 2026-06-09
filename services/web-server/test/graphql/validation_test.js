@@ -67,7 +67,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         await client.query({
           query: gql`
             query CircularFragment {
-              secrets(filter: {}) {
+              secrets {
                 ...FragA
               }
             }

@@ -34,7 +34,7 @@ type Provisioner {
   lastDateActive: DateTime!
   actions: [ProvisionerAction]!
   # Note: This field will trigger an additional request.
-  workerTypes(provisionerId: String = provisionerId, connection: PageConnection, filter: JSON): WorkerTypesConnection
+  workerTypes(provisionerId: String = provisionerId, connection: PageConnection): WorkerTypesConnection
   # Note: This field will trigger an additional request.
   workerType(provisionerId: String = provisionerId, workerType: String!): WorkerType
 }
@@ -51,7 +51,7 @@ type ProvisionersConnection implements Connection {
 
 extend type Query {
   provisioner(provisionerId: String!): Provisioner
-  provisioners(connection: PageConnection, filter: JSON): ProvisionersConnection
+  provisioners(connection: PageConnection): ProvisionersConnection
 }
 
 # TODO: Provisioner mutations

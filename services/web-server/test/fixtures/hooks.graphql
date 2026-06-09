@@ -1,5 +1,5 @@
-query Hooks($hookGroupId: ID!, $filter: JSON) {
-  hooks(hookGroupId: $hookGroupId, filter: $filter) {
+query Hooks($hookGroupId: ID!) {
+  hooks(hookGroupId: $hookGroupId) {
     hookId,
   }
 }

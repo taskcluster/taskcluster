@@ -2601,7 +2601,6 @@ __metadata:
     dot-prop-immutable: "npm:^2.0.0"
     dotenv-cli: "npm:^6.0.0"
     error-stack-parser: "npm:^2.0.6"
-    escape-string-regexp: "npm:^5.0.0"
     fast-memoize: "npm:^2.5.1"
     file-loader: "npm:^6.2.0"
     graphql: "npm:^16.9.0"
@@ -6191,13 +6190,6 @@ __metadata:
   version: 4.0.0
   resolution: "escape-string-regexp@npm:4.0.0"
   checksum: 10c0/9497d4dd307d845bd7f75180d8188bb17ea8c151c1edbf6b6717c100e104d629dc2dfb687686181b0f4b7d732c7dfdc4d5e7a8ff72de1b0ca283a75bbb3a9cd9
-  languageName: node
-  linkType: hard
-
-"escape-string-regexp@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "escape-string-regexp@npm:5.0.0"
-  checksum: 10c0/6366f474c6f37a802800a435232395e04e9885919873e382b157ab7e8f0feb8fed71497f84a6f6a81a49aab41815522f5839112bd38026d203aea0c91622df95
   languageName: node
   linkType: hard
 

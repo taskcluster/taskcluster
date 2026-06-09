@@ -1,5 +1,5 @@
-query Clients($clientsConnection: PageConnection, $clientOptions: ClientsOptions, $filter: JSON) {
-  clients(connection: $clientsConnection, clientOptions: $clientOptions, filter: $filter) {
+query Clients($clientsConnection: PageConnection, $clientOptions: ClientsOptions, $searchTerm: String) {
+  clients(connection: $clientsConnection, clientOptions: $clientOptions, searchTerm: $searchTerm) {
     pageInfo {
       hasNextPage
       hasPreviousPage

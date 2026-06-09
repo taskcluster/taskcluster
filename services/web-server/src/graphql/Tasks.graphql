@@ -161,7 +161,7 @@ type Task {
   status(taskId: ID = taskId): TaskStatus!
 
   # Actions exposed by the decision task defined in the public/actions.json artifact.
-  taskActions(taskGroupId: String = taskGroupId, filter: JSON): TaskActionsJson
+  taskActions(taskGroupId: String = taskGroupId): TaskActionsJson
 
   # Definition of the task group ID (decision task).
   decisionTask: Task
@@ -173,7 +173,7 @@ type Task {
   # It **may return less**, even if more artifacts are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
-  latestArtifacts(taskId: ID! = taskId, connection: PageConnection, filter: JSON): ArtifactsConnection
+  latestArtifacts(taskId: ID! = taskId, connection: PageConnection): ArtifactsConnection
 
   # the "raw" JSON task definition, without any interpretation
   rawDefinition: JSON
@@ -288,7 +288,7 @@ extend type Query {
   dependentTasks(taskId: ID!): [DependentTask]
 
   # List tasks that depend on the given `taskId`.
-  dependents(taskId: ID!, connection: PageConnection, filter: JSON): TasksConnection
+  dependents(taskId: ID!, connection: PageConnection): TasksConnection
 
   # Find a task by index path, returning the highest-ranked task with that path.
   # Will be empty if no task exists for the given path.
@@ -305,10 +305,10 @@ extend type Query {
   # It **may return less**, even if more tasks are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
-  taskGroup(taskGroupId: ID!, connection: PageConnection, filter: JSON): TaskGroupConnection
+  taskGroup(taskGroupId: ID!, connection: PageConnection): TaskGroupConnection
 
   # Actions exposed by the decision task defined in the public/actions.json artifact.
-  taskActions(taskGroupId: ID!, filter: JSON): TaskActionsJson
+  taskActions(taskGroupId: ID!): TaskActionsJson
 
   # pending tasks paginated
   listPendingTasks(taskQueueId: String!, connection: PageConnection): PendingTasksConnection

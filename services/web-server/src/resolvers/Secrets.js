@@ -1,7 +1,7 @@
 export default {
   Query: {
-    secrets(parent, { connection, filter }, { loaders }) {
-      return loaders.secrets.load({ connection, filter });
+    secrets(parent, { connection, searchTerm }, { loaders }) {
+      return loaders.secrets.load({ connection, searchTerm });
     },
     secret(parent, { name }, { loaders }) {
       return loaders.secret.load(name);

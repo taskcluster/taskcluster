@@ -15,11 +15,7 @@ import { VIEW_DENYLIST_PAGE_SIZE } from '../../../utils/constants';
       notificationsConnection: {
         limit: VIEW_DENYLIST_PAGE_SIZE,
       },
-      filter: {
-        ...(props.searchTerm
-          ? { notificationAddress: { $regex: props.searchTerm } }
-          : null),
-      },
+      searchTerm: props.searchTerm || null,
     },
   }),
 })
@@ -46,11 +42,7 @@ export default class Denylist extends PureComponent {
           cursor,
           previousCursor,
         },
-        filter: {
-          ...(searchTerm
-            ? { notificationAddress: { $regex: searchTerm } }
-            : null),
-        },
+        searchTerm: searchTerm || null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } = fetchMoreResult.listDenylistAddresses;

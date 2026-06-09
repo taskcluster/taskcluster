@@ -1,5 +1,5 @@
-query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnection, $filter: JSON) {
-  WorkerManagerErrors(workerPoolId: $workerPoolId, connection: $errorsConnection, filter: $filter) {
+query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnection) {
+  WorkerManagerErrors(workerPoolId: $workerPoolId, connection: $errorsConnection) {
     pageInfo {
       hasNextPage
       hasPreviousPage

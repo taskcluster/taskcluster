@@ -1,10 +1,10 @@
 export default {
   Query: {
-    roles(parent, { filter }, { loaders }) {
-      return loaders.roles.load({ filter });
+    roles(parent, { searchTerm }, { loaders }) {
+      return loaders.roles.load({ searchTerm });
     },
-    listRoleIds(parent, { connection, filter }, { loaders }) {
-      return loaders.roleIds.load({ filter, connection });
+    listRoleIds(parent, { connection, searchTerm }, { loaders }) {
+      return loaders.roleIds.load({ searchTerm, connection });
     },
     role(parent, { roleId }, { loaders }) {
       return loaders.role.load(roleId);

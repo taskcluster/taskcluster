@@ -1,16 +1,16 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift.js';
+import substringFilter from '../utils/searchFilter.js';
 import ConnectionLoader from '../ConnectionLoader.js';
 
 export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const WorkerManagerWorkerPoolSummaries = new ConnectionLoader(
-    async ({ filter, options }) => {
+    async ({ searchTerm, options }) => {
       const [pools, stats] = await Promise.all([
         workerManager.listWorkerPools(options),
         workerManager.listWorkerPoolsStats(options),
       ]);
 
-      const workerPools = sift(filter, pools.workerPools);
+      const workerPools = substringFilter(searchTerm, 'workerPoolId', pools.workerPools);
 
       const fullWorkerPools = workerPools.map((wp) => {
         const poolStats = stats.workerPoolsStats.find((stat) => stat.workerPoolId === wp.workerPoolId) ?? {};
@@ -75,12 +75,12 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
   );
 
   const WorkerManagerErrors = new ConnectionLoader(
-    async ({ workerPoolId, launchConfigId, filter, options }) => {
+    async ({ workerPoolId, launchConfigId, options }) => {
       if (launchConfigId) {
         options.launchConfigId = launchConfigId;
       }
       const raw = await workerManager.listWorkerPoolErrors(workerPoolId, options);
-      const errors = sift(filter, raw.workerPoolErrors);
+      const errors = raw.workerPoolErrors;
 
       return {
         ...raw,
@@ -96,9 +96,9 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
   ));
 
   const WorkerManagerProviders = new ConnectionLoader(
-    async ({ filter, options }) => {
+    async ({ options }) => {
       const raw = await workerManager.listProviders(options);
-      const providers = sift(filter, raw.providers);
+      const providers = raw.providers;
 
       return {
         ...raw,

@@ -1,14 +1,13 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift.js';
 
 export default ({ auth }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
   const currentScopes = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({ filter }) => {
+      queries.map(async () => {
         try {
           const { scopes } = await auth.currentScopes();
 
-          return sift(filter, scopes);
+          return scopes;
         } catch (err) {
           return err;
         }
@@ -17,11 +16,11 @@ export default ({ auth }, isAuthed, rootUrl, monitor, strategies, req, cfg, requ
   );
   const expandScopes = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({ scopes, filter }) => {
+      queries.map(async ({ scopes }) => {
         try {
           const { scopes: expandedScopes } = await auth.expandScopes({ scopes });
 
-          return sift(filter, expandedScopes);
+          return expandedScopes;
         } catch (err) {
           return err;
         }

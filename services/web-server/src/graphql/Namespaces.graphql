@@ -25,6 +25,6 @@ type NamespacesConnection implements Connection {
 }
 
 extend type Query {
-  taskNamespace(namespace: String!, connection: PageConnection, filter: JSON): TaskNamespaceConnection
-  namespaces(namespace: String = "", connection: PageConnection, filter: JSON): NamespacesConnection
+  taskNamespace(namespace: String!, connection: PageConnection): TaskNamespaceConnection
+  namespaces(namespace: String = "", connection: PageConnection): NamespacesConnection
 }
