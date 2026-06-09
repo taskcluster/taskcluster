@@ -2,7 +2,8 @@ import ScopeSetBuilder from './scopesetbuilder.js';
 
 // Construct character SUBSTITUTE used for representation of <..>
 const PARAM = '\u001a';
-const PARAM_TO_END = /\u001a.*$/; // eslint-disable-line no-control-regex
+// biome-ignore lint/suspicious/noControlCharactersInRegex: SUBSTITUTE (U+001A) is a deliberate sentinel representing <..> params
+const PARAM_TO_END = /\u001a.*$/;
 
 /**
  * Given a sorted list of scopes that contains PARAM, replace PARAM with param
