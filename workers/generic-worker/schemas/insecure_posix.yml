@@ -152,12 +152,15 @@ oneOf:
               compressed:
 
               * 7z
+              * aab
+              * apk
               * bz2
               * deb
               * dmg
               * flv
               * gif
               * gz
+              * jar
               * jpeg
               * jpg
               * npz
@@ -169,6 +172,7 @@ oneOf:
               * whl
               * woff
               * woff2
+              * xpi
               * xz
               * zip
               * zst
