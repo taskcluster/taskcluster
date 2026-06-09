@@ -12,6 +12,7 @@ class RefBuilder {
   constructor() {
     this.schemas = [];
     this.references = [];
+    // biome-ignore lint/correctness/noConstructorReturn: `new RefBuilder()` returns a promise that resolves to the initialized instance
     return this.init();
   }
 
