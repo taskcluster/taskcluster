@@ -13,6 +13,7 @@ const branchTest = branch => {
   }
 };
 
+// biome-ignore lint/complexity/noStaticOnlyClass: abstract base + static factory for VersionZero/VersionOne subclasses
 class TcYaml {
   static instantiate(version) {
     if (version === 0) {
