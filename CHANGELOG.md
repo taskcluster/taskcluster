@@ -3,6 +3,59 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v100.3.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.26.4.
+
+Release notes [here](https://go.dev/doc/devel/release#go1.26.4).
+
+### DEPLOYERS
+
+▶ [minor] [#8347](https://github.com/taskcluster/taskcluster/issues/8347)
+HTTP responses from Taskcluster API services are now gzip-compressed when the client sends `Accept-Encoding: gzip`. Compression is applied at the `@taskcluster/lib-api` router level with a 1 KB threshold, so small payloads are sent uncompressed.
+
+▶ [minor] [#8716](https://github.com/taskcluster/taskcluster/issues/8716)
+Removed the `sift` dependency from the web-server. The GraphQL `filter: JSON` argument was only ever used for simple case-insensitive substring search, so it has been replaced with a typed `searchTerm: String` argument on the list queries that support search (clients, roles, secrets, worker pools, denylist addresses). Task-action filtering is now applied server-side, and the unused `filter` argument has been removed from the remaining GraphQL queries.
+
+### USERS
+
+▶ [minor] [bug 2045069](http://bugzil.la/2045069)
+Generic-worker: skip gzip compression for artifacts with extensions matching `.aab`, `.apk`, `.jar`, `.xpi`.
+
+▶ [patch] [bug 2042324](http://bugzil.la/2042324)
+Enforce oauth2 access token lifetimes when issuing Taskcluster credentials
+
+▶ [patch] [#8688](https://github.com/taskcluster/taskcluster/issues/8688)
+Fix the changelog page so it doesn't ignore URL parameters anymore
+
+▶ [patch] [#8689](https://github.com/taskcluster/taskcluster/issues/8689)
+Fixed `on-defined` route notifications not firing
+
+### DEVELOPERS
+
+▶ [patch]
+Bump node version to `24.16.0`
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps-dev): bump cross-env from 7.0.3 to 10.1.0 (8c1e820c6a)
+* build(deps-dev): bump ws from 7.5.10 to 7.5.11 (0527b3b0bd)
+* build(deps-dev): bump webpack-cli in /clients/client-web (38302b5df4)
+* build(deps-dev): bump ruff (d8976dbd9b)
+* build(deps): bump the gh-actions-deps group with 2 updates (63b8632402)
+* build(deps): bump the client-rust-deps group (8076548b56)
+* build(deps): bump the go-deps group with 2 updates (c138c12727)
+* build(deps-dev): bump @babel/core (b4b057e4a6)
+* build(deps-dev): bump mocha (2acb267838)
+
+</details>
+
 ## v100.2.0
 
 ### DEPLOYERS
