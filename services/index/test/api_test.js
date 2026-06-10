@@ -142,7 +142,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       let results = [];
       let iterations = 0;
 
-      while (1) {
+      while (true) {
         iterations++;
         const result = await helper.index.listNamespaces('', opts);
         results = results.concat(result.namespaces);
@@ -172,7 +172,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const opts = { limit: 1 };
       let results = [];
 
-      while (1) {
+      while (true) {
         const result = await helper.index.listTasks('', opts);
         results = results.concat(result.tasks);
         if (!result.continuationToken) {
