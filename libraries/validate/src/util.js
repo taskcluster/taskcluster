@@ -7,7 +7,7 @@ export function renderConstants(schema, constants) {
   // Replace val with constant, if it is an {$const: <key>} schema
   let substitute = (val) => {
     // Primitives and arrays shouldn't event be considered
-    if (!(val instanceof Object) || val instanceof Array) {
+    if (!(val instanceof Object) || Array.isArray(val)) {
       return undefined;
     }
 

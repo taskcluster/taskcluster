@@ -15,7 +15,7 @@ const LOCAL_IP_RANGES = path.join(__dirname, 'ip-ranges.json');
 class EC2RegionResolver {
   /** Construct EC2RegionResolver given a list of regions we care about */
   constructor(regions, monitor) {
-    assert(regions instanceof Array, 'regions must be an array');
+    assert(Array.isArray(regions), 'regions must be an array');
     this.regions = regions;
     this.monitor = monitor;
     this.ipRanges = [];

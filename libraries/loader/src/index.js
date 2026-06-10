@@ -18,7 +18,7 @@ function validateComponent(def, name) {
   }
   // If requires is defined, then we check that it's an array of strings
   if (def.requires) {
-    if (!(def.requires instanceof Array)) {
+    if (!Array.isArray(def.requires)) {
       throw new Error(e + ' if present, requires must be array');
     }
     // Check that all entries in def.requires are strings
@@ -34,7 +34,7 @@ function validateComponent(def, name) {
  */
 function loader(componentDirectory, virtualComponents = {}) {
   assert(typeof componentDirectory === 'object');
-  if (virtualComponents instanceof Array) {
+  if (Array.isArray(virtualComponents)) {
     virtualComponents = virtualComponents.reduce((acc, k) => {
       acc[k] = null;
       return acc;
