@@ -16,7 +16,7 @@ suite(testing.suiteName(), () => {
         // client name as the continuationToken
         let names = Object.keys(clients).filter(n => n.startsWith(prefix));
         if (continuationToken) {
-          names = names.slice(names.findIndex(n => n === continuationToken));
+          names = names.slice(names.indexOf(continuationToken));
         }
         if (names.length > 1) {
           continuationToken = names[1];
