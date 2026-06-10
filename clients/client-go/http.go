@@ -9,8 +9,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-
-	// "net/http/httputil"
 	"net/url"
 	"reflect"
 	"time"
@@ -22,6 +20,7 @@ import (
 )
 
 var debug = false
+const maxResponseBodySize = 10 * 1024 * 1024
 
 func init() {
 	if _, ok := os.LookupEnv("TASKCLUSTER_DEBUG"); ok {
@@ -164,10 +163,6 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 		if client.Context != nil && client.Context.Err() != nil {
 			return nil, nil, client.Context.Err()
 		}
-		// b, e := httputil.DumpResponse(resp, true)
-		// if e == nil {
-		// 	fmt.Println(string(b))
-		// }
 		return resp, err, nil
 	}
 
@@ -182,7 +177,9 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 
 	// read response into memory, so that we can return the body
 	if callSummary.HTTPResponse != nil {
-		body, err2 := io.ReadAll(callSummary.HTTPResponse.Body)
+		defer callSummary.HTTPResponse.Body.Close()
+		limitedReader := io.LimitReader(callSummary.HTTPResponse.Body, maxResponseBodySize)
+		body, err2 := io.ReadAll(limitedReader)
 		if err2 == nil {
 			callSummary.HTTPResponseBody = string(body)
 		}
@@ -238,7 +235,7 @@ func (client *Client) APICall(payload any, method, route string, result any, que
 				&APICallException{
 					CallSummary: cs,
 					RootCause:   err,
-				}
+				},
 		}
 	}
 	callSummary, err := client.Request(rawPayload, method, route, query)
@@ -259,7 +256,7 @@ func (client *Client) APICall(payload any, method, route string, result any, que
 				&APICallException{
 					CallSummary: callSummary,
 					RootCause:   err,
-				}
+				},
 		}
 	}
 	// if result is passed in as nil, it means the API defines no response body
@@ -274,7 +271,7 @@ func (client *Client) APICall(payload any, method, route string, result any, que
 			&APICallException{
 				CallSummary: callSummary,
 				RootCause:   err,
-			}
+			},
 	}
 	return result, callSummary, nil
 }
