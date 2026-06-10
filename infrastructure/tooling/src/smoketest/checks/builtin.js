@@ -42,7 +42,7 @@ export const tasks = [];
       let queue = new taskcluster.Queue(taskcluster.fromEnvVars());
       await queue.createTask(taskId, task);
       let pollForStatusStart = new Date();
-      while ((new Date() - pollForStatusStart) < 120000) {
+      while ((Date.now() - pollForStatusStart) < 120000) {
         let status = await queue.status(taskId);
         if (status.status.state === 'pending' || status.status.state === 'running') {
           utils.status({

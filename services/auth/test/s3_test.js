@@ -40,7 +40,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       bucket,
       'folder1/folder2/',
     );
-    assert(new Date(result.expires).getTime() > new Date().getTime(),
+    assert(new Date(result.expires).getTime() > Date.now(),
       'Expected expires to be in the future');
 
     // Create aws credentials
@@ -81,7 +81,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       bucket,
       '',
     );
-    assert(new Date(result.expires).getTime() > new Date().getTime(),
+    assert(new Date(result.expires).getTime() > Date.now(),
       'Expected expires to be in the future');
 
     // Create aws credentials
@@ -122,7 +122,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       bucket,
       'folder1/',
     );
-    assert(new Date(result.expires).getTime() > new Date().getTime(),
+    assert(new Date(result.expires).getTime() > Date.now(),
       'Expected expires to be in the future');
 
     // Create aws credentials

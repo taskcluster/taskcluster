@@ -153,7 +153,7 @@ export class Client extends events.EventEmitter {
 
     // don't actually start connecting until at least minReconnectionInterval has passed
     const earliestConnectionTime = this.lastConnectionTime + this._minReconnectionInterval;
-    const now = new Date().getTime();
+    const now = Date.now();
     setTimeout(async () => {
       if (newConn.state !== 'waiting') {
         // the connection is no longer waiting, so don't proceed with
@@ -163,7 +163,7 @@ export class Client extends events.EventEmitter {
       }
 
       try {
-        this.lastConnectionTime = new Date().getTime();
+        this.lastConnectionTime = Date.now();
         const { connectionString } = await this.credentials();
         newConn.connect(connectionString).catch(err => {
           // .connect should be infallible, but just in case..

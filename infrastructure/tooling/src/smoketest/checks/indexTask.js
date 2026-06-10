@@ -41,7 +41,7 @@ tasks.push({
     await queue.createTask(randomId, task);
     let index = new taskcluster.Index(taskcluster.fromEnvVars());
     let pollForStatusStart = new Date();
-    while ((new Date() - pollForStatusStart) < 120000) {
+    while ((Date.now() - pollForStatusStart) < 120000) {
       let status = await queue.status(randomId);
       if (status.status.state === 'pending' || status.status.state === 'running') {
         utils.status({
