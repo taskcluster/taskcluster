@@ -74,7 +74,7 @@ export const dbUpgrade = async (options) => {
   const meta = userConfig.meta || {};
 
   const { dbVersion } = options;
-  const toVersion = dbVersion ? parseInt(dbVersion) : undefined;
+  const toVersion = dbVersion ? parseInt(dbVersion, 10) : undefined;
 
   const { adminDbUrl, usernamePrefix } = dbParams(meta);
   const showProgress = message => {
@@ -89,7 +89,7 @@ export const dbDowngrade = async (options) => {
   const meta = userConfig.meta || {};
 
   const { dbVersion } = options;
-  const toVersion = parseInt(dbVersion);
+  const toVersion = parseInt(dbVersion, 10);
   if (!dbVersion.match(/^[0-9]+$/) || isNaN(toVersion)) {
     throw new Error('Missing or invalid --db-version');
   }
