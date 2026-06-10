@@ -48,6 +48,11 @@ if (isMainThread) {
       return;
     }
 
+    // `node:` prefixed imports are always builtin modules
+    if (packageName.startsWith('node:')) {
+      return;
+    }
+
     // In non-namespaced packages the first bit before the slash is a package. the rest is a path
     // within the package
     if (!packageName.startsWith('@')) {
