@@ -196,7 +196,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
     ],
     run: async (requirements, utils) => {
       const tag = requirements[`monoimage-docker-image`];
-      const provides = { [`monoimage-push`]: tag };
+      const provides = { 'monoimage-push': tag };
 
       if (!cmdOptions.push) {
         return utils.skip({ provides });
@@ -237,7 +237,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
     ],
     run: async (requirements, utils) => {
       const tag = requirements[`monoimage-devel-docker-image`];
-      const provides = { [`monoimage-devel-push`]: tag };
+      const provides = { 'monoimage-devel-push': tag };
 
       if (!cmdOptions.push) {
         return utils.skip(provides);

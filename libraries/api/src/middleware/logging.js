@@ -77,8 +77,8 @@ export const logRequest = ({ builder, entry }) => {
           query[k] = req.query[k];
         });
       }
-      if (req.query['bewit']) {
-        query['bewit'] = '...';
+      if (req.query.bewit) {
+        query.bewit = '...';
       }
 
       const end = hrtime.bigint();

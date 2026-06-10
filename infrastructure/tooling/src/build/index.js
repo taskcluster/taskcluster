@@ -11,8 +11,8 @@ class Base {
   constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
 
-    this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
-    this.logsDir = cmdOptions['logsDir'] || path.join(this.baseDir, 'logs');
+    this.baseDir = cmdOptions.baseDir || '/tmp/taskcluster-builder-build';
+    this.logsDir = cmdOptions.logsDir || path.join(this.baseDir, 'logs');
   }
 
   // credentials for the tasks

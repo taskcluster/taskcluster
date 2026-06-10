@@ -211,7 +211,7 @@ export const tasks = [{
   requires: ['apis'],
   provides: ['target-taskcluster-client-py'],
   run: async (requirements, utils) => {
-    const apis = requirements['apis'];
+    const apis = requirements.apis;
     const moduleDir = path.join(REPO_ROOT, 'clients', 'client-py', 'taskcluster', 'generated');
 
     // clean up the clients directory to eliminate any "leftovers"

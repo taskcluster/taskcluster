@@ -66,7 +66,7 @@ tasks.push({
       utils.status({ message: message });
       if (statuses[statuses.length - 1].status.state === 'completed') {
         return {
-          ['target-dependencies']: statuses[statuses.length - 1].status.state,
+          'target-dependencies': statuses[statuses.length - 1].status.state,
         };
       }
 

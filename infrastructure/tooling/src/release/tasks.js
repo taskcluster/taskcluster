@@ -59,7 +59,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
         throw new Error(`Version ${pkgJson.version} in package.json is not valid`);
       }
 
-      const level = requirements['changelog'].level();
+      const level = requirements.changelog.level();
 
       return {
         'release-version': semver.inc(pkgJson.version, level),
@@ -367,12 +367,12 @@ export default ({ tasks, cmdOptions, credentials }) => {
       await writeRepoFile('CHANGELOG.md',
         oldCL.slice(0, breakpoint) +
           `\n## v${requirements['release-version']}\n\n` +
-          (await requirements['changelog'].format()) +
+          (await requirements.changelog.format()) +
           '\n' +
           oldCL.slice(breakpoint));
       changed.push('CHANGELOG.md');
 
-      for (let filename of requirements['changelog'].filenames()) {
+      for (let filename of requirements.changelog.filenames()) {
         await removeRepoFile(filename);
         changed.push(filename);
       }

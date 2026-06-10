@@ -6,7 +6,7 @@ export const tasks = [{
   requires: ['apis'],
   provides: ['target-taskcluster-client'],
   run: async (requirements, utils) => {
-    const apis = requirements['apis'];
+    const apis = requirements.apis;
 
     await writeRepoFile('clients/client/src/apis.js',
       '/* eslint-disable */\nexport default ' + stringify(apis, { space: 2 }) + ';\n');

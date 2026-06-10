@@ -50,7 +50,7 @@ class Monitor {
     this._log = new Logger({
       name: ['taskcluster', this.manager.serviceName, ...this.name].join('.'),
       service: this.manager.serviceName,
-      level: this.manager.levels[name.join('.')] || this.manager.levels['root'],
+      level: this.manager.levels[name.join('.')] || this.manager.levels.root,
       destination: this.manager.destination,
       metadata,
       taskclusterVersion: this.manager.taskclusterVersion,
@@ -318,7 +318,7 @@ class Monitor {
     }
 
     if (this.manager._reporter) {
-      extra['reportId'] = this.manager._reporter.report(err, level, extra);
+      extra.reportId = this.manager._reporter.report(err, level, extra);
     }
     this.log.errorReport({ ...serialized, ...extra }, { level });
   }

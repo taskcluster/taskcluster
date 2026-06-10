@@ -138,7 +138,7 @@ export const runOnlineBatches = async ({ client, showProgress, versionNum, kind 
   const batchFn = `online_${kind}_v${versionNum}_batch`;
   const isCompleteFn = `online_${kind}_v${versionNum}_is_complete`;
 
-  const runBatch = hooks['runBatch'] || (async (batchSize, state) => {
+  const runBatch = hooks.runBatch || (async (batchSize, state) => {
     let res;
     // expect the version to already be incremented (migration) or decremented (downgrade)
     const expectedVersion = kind === 'migration' ? versionNum : versionNum - 1;
@@ -153,14 +153,14 @@ export const runOnlineBatches = async ({ client, showProgress, versionNum, kind 
     return { state: res.rows[0].state, count: res.rows[0].count };
   });
 
-  const isComplete = hooks['isComplete'] || (async () => {
+  const isComplete = hooks.isComplete || (async () => {
     const res = await client.query(
       `select * from ${isCompleteFn}()`);
     return res.rows[0][isCompleteFn];
   });
 
   // if there is no online-migration function, there's nothing to do
-  if (!hooks['runBatch'] && !(await fnExists({ client, name: batchFn }))) {
+  if (!hooks.runBatch && !(await fnExists({ client, name: batchFn }))) {
     return;
   }
 
@@ -185,8 +185,8 @@ export const runOnlineBatches = async ({ client, showProgress, versionNum, kind 
 
     eta.measurement(0);
     while (true) {
-      if (hooks['preBatch']) {
-        await hooks['preBatch'](outerCount, count);
+      if (hooks.preBatch) {
+        await hooks.preBatch(outerCount, count);
       }
       const res = await runBatch(batchSize, state);
       state = res.state;
@@ -203,8 +203,8 @@ export const runOnlineBatches = async ({ client, showProgress, versionNum, kind 
       if (!isNaN(rate)) {
         batchSize = Math.round(Math.max(1, rate * batchTime));
       }
-      if (hooks['batchSize']) {
-        batchSize = await hooks['batchSize'](batchSize);
+      if (hooks.batchSize) {
+        batchSize = await hooks.batchSize(batchSize);
       }
 
       if (nextReport <= Date.now()) {
