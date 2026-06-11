@@ -320,7 +320,7 @@ helper.dbSuite(path.basename(__filename), function() {
         service2: { tables: { foo: 'write' } },
       });
       await assert.rejects(() => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
-        new RegExp(`test_service2 has unexpected role badrole`));
+        /test_service2 has unexpected role badrole/);
     });
   });
 

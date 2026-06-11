@@ -100,7 +100,7 @@ describe('Building URLs', function() {
 
   it('should build signed URL with empty query options', () => {
     return expect(client.buildSignedUrl(client.query, {}))
-      .to.eventually.match(new RegExp('^https://tc-tests\\.example\\.com/api/fake/v1/query/test'));
+      .to.eventually.match(/^https:\/\/tc-tests\.example\.com\/api\/fake\/v1\/query\/test/);
   });
 
   it('should not build URL with incorrect query option', () => {
