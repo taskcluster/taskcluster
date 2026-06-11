@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { Middleware } from './base.js';
 
 export class CdnMiddleware extends Middleware {

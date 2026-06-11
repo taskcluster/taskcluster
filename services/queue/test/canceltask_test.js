@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import debugFactory from 'debug';
 const debug = debugFactory('test:cancel');
 import slugid from 'slugid';

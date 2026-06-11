@@ -1,4 +1,4 @@
-import process from 'process';
+import process from 'node:process';
 import Iterate from '@taskcluster/lib-iterate';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
 import { WorkerPool, Worker, WorkerPoolStats } from './data.js';

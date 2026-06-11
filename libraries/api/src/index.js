@@ -1,10 +1,10 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { cleanRouteAndParams } from './utils.js';
 import { ERROR_CODES } from './middleware/errors.js';
 import ScopeExpressionTemplate from './expressions.js';
 import API from './api.js';
-import path from 'path';
-import fs from 'fs/promises';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import * as middleware from './middleware/index.js';
 
 export * from './pagination.js';

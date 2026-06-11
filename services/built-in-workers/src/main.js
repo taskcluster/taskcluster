@@ -5,7 +5,7 @@ import libReferences from '@taskcluster/lib-references';
 import taskcluster from '@taskcluster/client';
 import config from '@taskcluster/lib-config';
 import TaskQueue from './TaskQueue.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 const load = loader({
   cfg: {

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import stringify from 'fast-json-stable-stringify';
 import taskcluster from '@taskcluster/client';
 import libUrls from 'taskcluster-lib-urls';

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import assume from 'assume';
 import taskcreator from '../src/taskcreator.js';
 import helper from './helper.js';

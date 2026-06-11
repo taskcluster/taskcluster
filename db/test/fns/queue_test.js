@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import slugid from 'slugid';
 import _ from 'lodash';
 const { cloneDeep, range } = _;

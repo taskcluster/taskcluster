@@ -1,7 +1,7 @@
 import helper from './helper.js';
 import { SentryApiClient } from '../src/sentrymanager.js';
 import taskcluster from '@taskcluster/client';
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import nock from 'nock';
 

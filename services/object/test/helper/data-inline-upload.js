@@ -1,6 +1,6 @@
 import taskcluster from '@taskcluster/client';
-import crypto from 'crypto';
-import assert from 'assert';
+import crypto from 'node:crypto';
+import assert from 'node:assert';
 import helper from '../helper/index.js';
 
 const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-upload-response.json#/properties/uploadMethod';

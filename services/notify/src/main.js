@@ -21,7 +21,7 @@ import slack from '@slack/web-api';
 import SlackBot from './slack.js';
 import tcdb from '@taskcluster/db';
 import './monitor.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 // Create component loader
 const load = loader({

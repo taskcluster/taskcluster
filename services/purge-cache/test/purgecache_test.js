@@ -2,7 +2,7 @@ import helper from './helper.js';
 import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 import sinon from 'sinon';
-import assert from 'assert';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {

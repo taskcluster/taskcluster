@@ -12,9 +12,9 @@ import {
   UNDEFINED_FUNCTION,
 } from '../src/index.js';
 
-import path from 'path';
+import path from 'node:path';
 import testing from '@taskcluster/lib-testing';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import { dollarQuote } from '../src/util.js';
 
 import {

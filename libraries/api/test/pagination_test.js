@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import { paginateResults } from '../src/pagination.js';
 import testing from '@taskcluster/lib-testing';
 import Hashids from 'hashids';

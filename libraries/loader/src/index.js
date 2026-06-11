@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import TopoSort from 'topo-sort';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-loader');

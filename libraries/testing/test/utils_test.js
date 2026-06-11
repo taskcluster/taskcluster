@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {

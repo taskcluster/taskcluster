@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import express from 'express';
 import request from 'superagent';
 import builder from '../../src/api.js';

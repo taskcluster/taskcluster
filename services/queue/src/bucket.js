@@ -10,10 +10,10 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getEndpointFromInstructions } from '@aws-sdk/middleware-endpoint';
 import _ from 'lodash';
-import path from 'path';
+import path from 'node:path';
 import debugFactory from 'debug';
 const debug = debugFactory('app:bucket');
-import assert from 'assert';
+import assert from 'node:assert';
 
 /**
  * Create S3 bucket wrapper.

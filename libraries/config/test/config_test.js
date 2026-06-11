@@ -1,5 +1,5 @@
 import config from '../src/index.js';
-import path from 'path';
+import path from 'node:path';
 import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 

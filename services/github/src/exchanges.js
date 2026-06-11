@@ -1,6 +1,6 @@
 import { Exchanges } from '@taskcluster/lib-pulse';
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import { PUBLISHERS } from './constants.js';
 
 /** Build common routing key construct for `exchanges.declare` */

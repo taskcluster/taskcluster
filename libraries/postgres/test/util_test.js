@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { dollarQuote, paginatedIterator } from '../src/util.js';
-import assert from 'assert';
-import path from 'path';
+import assert from 'node:assert';
+import path from 'node:path';
 
 const { range } = _;
 const __filename = new URL('', import.meta.url).pathname;

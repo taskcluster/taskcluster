@@ -1,8 +1,8 @@
-import events from 'events';
+import events from 'node:events';
 import amqplib from 'amqplib';
-import assert from 'assert';
+import assert from 'node:assert';
 import { MonitorManager } from '@taskcluster/lib-monitor';
-import URL from 'url';
+import URL from 'node:url';
 
 let clientCounter = 0;
 

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 class TaskQueue {
   constructor(cfg, queue, monitor, type) {

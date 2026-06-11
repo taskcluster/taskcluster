@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import Iterate from '@taskcluster/lib-iterate';
 import { TaskQueue } from './data.js';
 import { splitTaskQueueId } from './utils.js';

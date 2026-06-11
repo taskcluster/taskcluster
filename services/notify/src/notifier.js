@@ -1,8 +1,8 @@
 import debugFactory from 'debug';
 const debug = debugFactory('notify');
 import _ from 'lodash';
-import path from 'path';
-import crypto from 'crypto';
+import path from 'node:path';
+import crypto from 'node:crypto';
 import sanitizeHtml from 'sanitize-html';
 import { marked } from 'marked';
 import Email from 'email-templates';

@@ -9,7 +9,7 @@ import {
   execCommand,
 } from '../../utils/index.js';
 
-import path from 'path';
+import path from 'node:path';
 
 /**
  * This builds generic worker docker image containing all tools required to run generic worker

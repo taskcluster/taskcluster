@@ -1,9 +1,9 @@
 import { Netmask } from 'netmask';
 import requestIp from 'request-ip';
 import request from 'superagent';
-import assert from 'assert';
-import fs from 'fs';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 // Static URL from which ip-ranges from AWS services can be fetched

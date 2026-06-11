@@ -10,7 +10,7 @@ import config from '@taskcluster/lib-config';
 import { Backends } from './backends/index.js';
 import { Middleware } from './middleware/index.js';
 import expireObjects from './expire.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 let load = loader({
   cfg: {

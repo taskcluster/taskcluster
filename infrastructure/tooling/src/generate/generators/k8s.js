@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import path from 'path';
+import path from 'node:path';
 import glob from 'glob';
 import yaml from 'js-yaml';
 import jsone from 'json-e';

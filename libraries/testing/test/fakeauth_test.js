@@ -6,9 +6,9 @@ import SchemaSet from '@taskcluster/lib-validate';
 import { APIBuilder } from '@taskcluster/lib-api';
 import { MonitorManager } from '@taskcluster/lib-monitor';
 import { App } from '@taskcluster/lib-app';
-import assert from 'assert';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
-import path from 'path';
+import path from 'node:path';
 import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
 

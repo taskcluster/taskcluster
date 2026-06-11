@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import { Schema } from '@taskcluster/lib-postgres';
 import { readRepoFile, writeRepoFile } from '../../utils/index.js';
 

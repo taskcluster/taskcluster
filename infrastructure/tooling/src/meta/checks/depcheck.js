@@ -1,4 +1,4 @@
-import { Worker, isMainThread, parentPort } from 'worker_threads';
+import { Worker, isMainThread, parentPort } from 'node:worker_threads';
 import _ from 'lodash';
 import { gitLsFiles, readRepoFile, readRepoJSON } from '../../utils/index.js';
 import * as acorn from 'acorn-loose';
@@ -45,6 +45,11 @@ if (isMainThread) {
     // Local imports are less tricky to get right and if broken will fail in tests so we don't
     // bother doing extra work to assert they exist here
     if (packageName.startsWith('.')) {
+      return;
+    }
+
+    // `node:` prefixed imports are always builtin modules
+    if (packageName.startsWith('node:')) {
       return;
     }
 

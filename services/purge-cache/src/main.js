@@ -10,7 +10,7 @@ import libReferences from '@taskcluster/lib-references';
 import taskcluster from '@taskcluster/client';
 import tcdb from '@taskcluster/db';
 import builder from './api.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 const load = loader({
   cfg: {

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import SchemaSet from '../src/index.js';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';

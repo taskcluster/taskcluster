@@ -17,8 +17,8 @@ import makeSentryManager from './sentrymanager.js';
 import * as libPulse from '@taskcluster/lib-pulse';
 import './monitor.js';
 import googleapis from '@googleapis/iamcredentials';
-import assert from 'assert';
-import { fileURLToPath } from 'url';
+import assert from 'node:assert';
+import { fileURLToPath } from 'node:url';
 import { syncStaticClients } from './static-clients.js';
 
 // Create component loader

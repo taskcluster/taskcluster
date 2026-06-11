@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
 import debugFactory from 'debug';

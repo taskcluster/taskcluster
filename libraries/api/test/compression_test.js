@@ -1,6 +1,6 @@
-import assert from 'assert';
-import http from 'http';
-import { gzipSync, gunzipSync } from 'zlib';
+import assert from 'node:assert';
+import http from 'node:http';
+import { gzipSync, gunzipSync } from 'node:zlib';
 import request from 'superagent';
 import { APIBuilder } from '../src/index.js';
 import helper from './helper.js';

@@ -1,5 +1,5 @@
 import stringify from 'json-stable-stringify';
-import path from 'path';
+import path from 'node:path';
 import lodash from 'lodash';
 const { omit } = lodash;
 import { compile } from 'ejs';

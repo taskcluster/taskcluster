@@ -7,9 +7,9 @@ import {
   TerminateInstancesCommand,
 } from '@aws-sdk/client-ec2';
 import taskcluster from '@taskcluster/client';
-import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import _ from 'lodash';
 import { CloudAPI } from './cloudapi.js';
 import { WorkerPool, Worker } from '../data.js';

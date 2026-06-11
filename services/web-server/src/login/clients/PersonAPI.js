@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import request from 'superagent';
 import Debug from 'debug';
 

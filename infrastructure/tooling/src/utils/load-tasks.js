@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { ensureTask } from './tasks.js';
 
 export const enumFiles = (dirname) => {

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import libUrls from 'taskcluster-lib-urls';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-pulse.publisher');

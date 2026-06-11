@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import passport from 'passport';
 import { Strategy } from 'passport-github';
 import taskcluster from '@taskcluster/client';

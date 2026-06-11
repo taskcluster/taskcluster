@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import assume from 'assume';
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';

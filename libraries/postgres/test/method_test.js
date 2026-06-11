@@ -1,7 +1,7 @@
-import path from 'path';
+import path from 'node:path';
 import _ from 'lodash';
 import Method from '../src/Method.js';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 
 const { omit } = _;
 

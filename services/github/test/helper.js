@@ -1,5 +1,5 @@
-import http from 'http';
-import fs from 'fs';
+import http from 'node:http';
+import fs from 'node:fs';
 import _ from 'lodash';
 import sinon from 'sinon';
 import builder from '../src/api.js';

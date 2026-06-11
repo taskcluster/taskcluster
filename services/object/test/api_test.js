@@ -1,9 +1,9 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from './helper/index.js';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 import request from 'superagent';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { toDataUrl, TestBackend } from '../src/backends/test.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {

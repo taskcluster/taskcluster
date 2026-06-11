@@ -1,5 +1,5 @@
 import semver from 'semver';
-import path from 'path';
+import path from 'node:path';
 import { ChangeLog } from '../changelog/index.js';
 
 import {

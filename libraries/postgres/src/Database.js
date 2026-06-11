@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import pg from 'pg';
 const { Pool } = pg;
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { annotateError } from './util.js';
 import Keyring from './Keyring.js';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import { READ, WRITE, DUPLICATE_OBJECT, UNDEFINED_TABLE } from './constants.js';
 import { MonitorManager } from '@taskcluster/lib-monitor';
 import pgConnectionString from 'pg-connection-string';

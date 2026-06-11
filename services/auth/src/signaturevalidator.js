@@ -1,10 +1,10 @@
 import hawk from 'hawk';
-import assert from 'assert';
+import assert from 'node:assert';
 
 // Someone should rename utils to scopes...
 import utils from 'taskcluster-lib-scopes';
 
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 /**
  * Normalize clientIds to avoid storing every id possible

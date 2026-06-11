@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import { NOOP } from '../utils/constants.js';
 import hash from '../utils/hash.js';

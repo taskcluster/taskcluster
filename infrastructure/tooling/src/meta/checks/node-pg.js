@@ -1,5 +1,5 @@
-import util from 'util';
-import { execFile } from 'child_process';
+import util from 'node:util';
+import { execFile } from 'node:child_process';
 import _ from 'lodash';
 const execFileAsync = util.promisify(execFile);
 

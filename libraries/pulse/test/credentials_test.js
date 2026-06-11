@@ -1,5 +1,5 @@
 import { pulseCredentials } from '../src/index.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 

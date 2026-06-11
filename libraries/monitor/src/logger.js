@@ -1,5 +1,5 @@
-import os from 'os';
-import assert from 'assert';
+import os from 'node:os';
+import assert from 'node:assert';
 import stringify from 'fast-json-stable-stringify';
 
 export const LEVELS = {

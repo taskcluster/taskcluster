@@ -1,6 +1,6 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import request from 'superagent';
-import util from 'util';
+import util from 'node:util';
 
 import { ISSUE_COMMENT_ACTIONS } from './constants.js';
 

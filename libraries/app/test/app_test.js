@@ -1,10 +1,10 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { App } from '../src/index.js';
 import request from 'superagent';
 import express from 'express';
 import isUUID from 'is-uuid';
 import testing from '@taskcluster/lib-testing';
-import path from 'path';
+import path from 'node:path';
 import mockFs from 'mock-fs';
 
 const __dirname = new URL('.', import.meta.url).pathname;

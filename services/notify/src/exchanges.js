@@ -1,5 +1,5 @@
 import { Exchanges } from '@taskcluster/lib-pulse';
-import assert from 'assert';
+import assert from 'node:assert';
 
 /** Declaration of exchanges offered by the queue */
 const exchanges = new Exchanges({

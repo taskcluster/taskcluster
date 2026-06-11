@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import Strategy from '../src/login/strategies/mozilla-auth0.js';
 import sinon from 'sinon';

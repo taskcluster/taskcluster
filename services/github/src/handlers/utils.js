@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import libUrls from 'taskcluster-lib-urls';
 import { CHECK_RUN_STATES } from '../constants.js';
 

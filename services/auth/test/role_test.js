@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import { modifyRoles } from '../src/data.js';
 import slugid from 'slugid';
