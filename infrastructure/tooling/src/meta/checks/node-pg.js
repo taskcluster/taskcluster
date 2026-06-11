@@ -1,6 +1,5 @@
 import util from 'node:util';
 import { execFile } from 'node:child_process';
-import _ from 'lodash';
 const execFileAsync = util.promisify(execFile);
 
 export const tasks = [{

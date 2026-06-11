@@ -7,7 +7,6 @@ import config from '@taskcluster/lib-config';
 import SchemaSet from '@taskcluster/lib-validate';
 import libReferences from '@taskcluster/lib-references';
 import taskcluster from '@taskcluster/client';
-import _ from 'lodash';
 import { MonitorManager } from '@taskcluster/lib-monitor';
 import builder from './api.js';
 import Notifier from './notifier.js';

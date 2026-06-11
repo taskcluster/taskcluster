@@ -3,7 +3,6 @@ import assert from 'node:assert';
 import hawk from 'hawk';
 import { APIBuilder } from '../src/index.js';
 import helper, { monitorManager } from './helper.js';
-import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
 import { LEVELS } from '@taskcluster/lib-monitor';

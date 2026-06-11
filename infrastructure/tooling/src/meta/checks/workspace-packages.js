@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import glob from 'glob';
-import _ from 'lodash';
 import { REPO_ROOT } from '../../utils/index.js';
 
 export const tasks = [{
