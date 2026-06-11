@@ -26,7 +26,7 @@ export const start = function(clients, { rootUrl } = {}) {
         clientId = authorization.id;
         scopes = clients[clientId];
         ext = authorization.ext;
-      } else if (/^\/.*[\?&]bewit\=/.test(body.resource)) {
+      } else if (/^\/.*[?&]bewit=/.test(body.resource)) {
         // The following is a hacky reproduction of the bewit logic in
         // https://github.com/hueniverse/hawk/blob/0833f99ba64558525995a7e21d4093da1f3e15fa/lib/server.js#L366-L383
         let bewitString = URL.parse(body.resource, rootUrl)?.searchParams?.get('bewit');

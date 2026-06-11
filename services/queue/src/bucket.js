@@ -41,7 +41,7 @@ let Bucket = function(options) {
   assert(options.monitor, 'options.monitor is required');
   if (options.bucketCDN) {
     assert(/^https?:\/\//.test(options.bucketCDN), 'bucketCDN must be http(s)');
-    assert(/[^\/]$/.test(options.bucketCDN),
+    assert(/[^/]$/.test(options.bucketCDN),
       'bucketCDN shouldn\'t end with slash');
   }
   // Store the monitor

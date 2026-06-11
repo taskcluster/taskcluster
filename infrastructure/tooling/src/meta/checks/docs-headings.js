@@ -21,7 +21,7 @@ export const tasks = [{
 
       //remove the markdown code blocks which may include python # comment
       // which can be confused with # markdown heading, as in, ui/docs/manual/using/s3-uploads.mdx
-      md = md.replace(/```[a-z]*[\s\S]*?\```/g, "");
+      md = md.replace(/```[a-z]*[\s\S]*?```/g, "");
       const hd = [];
 
       //hd[i] stores the number of headings with level i

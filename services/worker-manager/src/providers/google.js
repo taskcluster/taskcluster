@@ -245,7 +245,7 @@ export class GoogleProvider extends Provider {
       // The lost entropy from downcasing, etc should be ok due to the fact that
       // only running instances need not be identical. We do not use this name to identify
       // workers in taskcluster.
-      const poolName = workerPoolId.replace(/[\/_]/g, '-').slice(0, 38);
+      const poolName = workerPoolId.replace(/[/_]/g, '-').slice(0, 38);
       const instanceName = `${poolName}-${slugid.nice().replace(/_/g, '-').toLowerCase()}`;
       // Historically we set workerGroup to cfg.region (e.g. 'us-east1') but
       // cfg.zone (e.g. 'us-east1-d') is more specific, and required for e.g.
