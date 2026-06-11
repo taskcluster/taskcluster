@@ -49,6 +49,8 @@ export default class Emitter {
   emit(eventName, ...args) {
     const handlers = this.events[eventName];
 
+    // TODO: use optional chaining once this package is no longer parsed by webpack 4
+    // biome-ignore lint/complexity/useOptionalChain: optional chaining is not supported by webpack 4
     if (!handlers || !handlers[0]) {
       return;
     }

@@ -155,6 +155,8 @@ export default class Client {
     // Find the method
     const { entry } = method;
 
+    // TODO: use optional chaining once this package is no longer parsed by webpack 4
+    // biome-ignore lint/complexity/useOptionalChain: optional chaining is not supported by webpack 4
     if (!entry || entry.type !== 'function') {
       throw new Error(
         'Method in buildUrl must be an API method from the same object',
