@@ -478,7 +478,7 @@ builder.declare({
   description: [
     'This endpoint will trigger the creation of a task from a hook definition.',
     '',
-    'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
+    'The HTTP payload must match the hook\'s `triggerSchema`.  If it does, it is',
     'provided as the `payload` property of the JSON-e context used to render the',
     'task template.',
     '',
@@ -594,7 +594,7 @@ builder.declare({
   description: [
     'This endpoint triggers a defined hook with a valid token.',
     '',
-    'The HTTP payload must match the hook\s `triggerSchema`.  If it does, it is',
+    'The HTTP payload must match the hook\'s `triggerSchema`.  If it does, it is',
     'provided as the `payload` property of the JSON-e context used to render the',
     'task template.',
     '',

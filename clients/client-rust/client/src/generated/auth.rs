@@ -988,7 +988,7 @@ impl Auth {
     /// [websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.
     ///
     /// The resulting token will only be accepted by servers with a matching audience
-    /// value.  Reaching such a server is the callers responsibility.  In general,
+    /// value.  Reaching such a server is the caller's responsibility.  In general,
     /// a server URL or set of URLs should be provided to the caller as configuration
     /// along with the audience value.
     ///
