@@ -21,7 +21,7 @@ import { getEventPayload } from './fake-payloads.js';
 // Strips/replaces undesirable characters which GitHub allows in
 // repository/organization names (notably .)
 function sanitizeGitHubField(field) {
-  return field.replace(/[^a-zA-Z0-9-_\.]/gi, '').replace(/\./g, '%');
+  return field.replace(/[^a-zA-Z0-9-_.]/gi, '').replace(/\./g, '%');
 }
 
 // Reduce a pull request WebHook's data to only fields needed to checkout a

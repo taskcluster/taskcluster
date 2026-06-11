@@ -226,7 +226,7 @@ suite(testing.suiteName(), () => {
         if (pattern.endsWith('*')) {
           const remaining = patternMatch(pattern, input) ? input.slice(pattern.length - 1) : '*';
           if (input.endsWith('*')) {
-            newScopes = scopes.map(s => s.replace(/\<\.\.\>.*$/, remaining));
+            newScopes = scopes.map(s => s.replace(/<\.\.>.*$/, remaining));
           } else {
             newScopes = scopes.map(s => s.replace('<..>', remaining));
           }

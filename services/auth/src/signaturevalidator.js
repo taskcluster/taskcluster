@@ -50,7 +50,7 @@ export const determineSchemeFromRequest = (req) => {
   if (req.authorization) {
     return 'hawk';
   }
-  if (/bewit\=/.test(req.resource)) {
+  if (/bewit=/.test(req.resource)) {
     return 'bewit';
   }
   return 'unknown';
@@ -354,7 +354,7 @@ const createSignatureValidator = function(options) {
 
         credentials = authResult.credentials;
         attributes = authResult.artifacts; // Hawk uses "artifacts" and "attributes"
-      } else if (/^\/.*[\?&]bewit\=/.test(req.resource)) { // using regex because query parsing is disabled
+      } else if (/^\/.*[?&]bewit=/.test(req.resource)) { // using regex because query parsing is disabled
         scheme = 'bewit';
         // Bewit present
         authResult = await hawk.uri.authenticate({
@@ -367,12 +367,12 @@ const createSignatureValidator = function(options) {
 
           // Get bewit string (stolen from hawk)
           let parts = req.resource.match(
-            /^(\/.*)([\?&])bewit\=([^&$]*)(?:&(.+))?$/,
+            /^(\/.*)([?&])bewit=([^&$]*)(?:&(.+))?$/,
           );
 
           let bewitString;
           try {
-            if (!/^[\w\-]*$/.test(parts[3])) {
+            if (!/^[\w-]*$/.test(parts[3])) {
               throw new Error('invalid character in bewit');
             }
             bewitString = Buffer.from(parts[3], 'base64').toString('binary');

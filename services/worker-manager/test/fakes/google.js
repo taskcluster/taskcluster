@@ -196,7 +196,7 @@ export class ServiceAccounts {
   }
 
   async get({ name }) {
-    const [_, proj, acct] = /^projects\/([^\/]*)\/serviceAccounts\/([^\/]*)$/.exec(name);
+    const [_, proj, acct] = /^projects\/([^/]*)\/serviceAccounts\/([^/]*)$/.exec(name);
     return { data: { email: `${proj}-${acct}@example.com` } };
   }
 }

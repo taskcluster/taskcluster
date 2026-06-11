@@ -28,7 +28,7 @@ const builder = new APIBuilder({
   apiVersion: 'v1',
   params: {
     hookGroupId: /^[a-zA-Z0-9-_]{1,1000}$/,
-    hookId: /^[a-zA-Z0-9-_\/]{1,1000}$/,
+    hookId: /^[a-zA-Z0-9-_/]{1,1000}$/,
   },
   context: ['db', 'taskcreator', 'publisher', 'denylist', 'monitor'],
 });
