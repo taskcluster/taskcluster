@@ -26,10 +26,13 @@ export class FakeGoogle extends FakeCloud {
       return { fake: true };
     };
 
+    const self = this;
     // OAuth2 must be a constructor, so we have to use `function` here, but
     // we want to refer to the FakeGoogle instance.
-    const self = this;
-    google.auth.OAuth2 = function () { return self.oauth2; };
+    // biome-ignore lint/complexity/useArrowFunction: must stay a function. The provider calls `new ...OAuth2()` and arrows can't be constructors
+    google.auth.OAuth2 = function() {
+      return self.oauth2;
+    };
 
     this.sinon.stub(google, 'compute').callsFake(({ version, auth }) => {
       assert.equal(version, 'v1');
