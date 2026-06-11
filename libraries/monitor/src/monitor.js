@@ -294,7 +294,7 @@ class Monitor {
    *
    */
   reportError(err, level = 'err', extra = {}) {
-    if (!(Object.prototype.hasOwnProperty.call(err, 'stack') || Object.prototype.hasOwnProperty.call(err, 'message'))) {
+    if (!(Object.hasOwn(err, 'stack') || Object.hasOwn(err, 'message'))) {
       err = new Error(err);
     }
     if (typeof level !== 'string') {
