@@ -3017,7 +3017,7 @@
       "description": "Message containing a list of secret names\n",
       "properties": {
         "continuationToken": {
-          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of provisioners.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called with `continuationToken` until you get a\nresult without a `continuationToken`.\n",
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of secrets.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called with `continuationToken` until you get a\nresult without a `continuationToken`.\n",
           "title": "Continuation Token",
           "type": "string"
         },
@@ -20845,7 +20845,7 @@
           "args": [
           ],
           "category": "Secrets Service",
-          "description": "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
+          "description": "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more secrets are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `list` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "list",
           "output": "v1/secret-list.json#",
