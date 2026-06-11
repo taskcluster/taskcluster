@@ -155,7 +155,7 @@ suite(suiteName(), () => {
       },
       load: sticky,
     });
-    let testsRun = [];
+    const testsRun = [];
 
     secrets.mockSuite('outer', ['sec'], (mock) => {
       test('inner', () => {
@@ -176,7 +176,7 @@ suite(suiteName(), () => {
       },
       load: sticky,
     });
-    let testsRun = [];
+    const testsRun = [];
 
     suiteSetup(() => {
       sticky.inject('cfg', { sec: 'here' });

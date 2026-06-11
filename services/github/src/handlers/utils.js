@@ -223,7 +223,7 @@ export const getTimeDifference = (timestamp1, timestamp2) => {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  let parts = [];
+  const parts = [];
 
   if (days > 0) {parts.push(`${days} day${days > 1 ? 's' : ''}`);}
   if (hours % 24 > 0) {parts.push(`${hours % 24} hour${hours % 24 > 1 ? 's' : ''}`);}

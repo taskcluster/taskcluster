@@ -9,7 +9,7 @@ suite(testing.suiteName(), () => {
   const rootUrl = libUrls.testRootUrl();
 
   const assert_file = (serializable, filename, content) => {
-    for (let file of serializable) {
+    for (const file of serializable) {
       if (file.filename !== filename) {
         continue;
       }

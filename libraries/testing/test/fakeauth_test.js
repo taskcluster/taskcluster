@@ -53,7 +53,7 @@ builder.declare({
 
 suite(testing.suiteName(), () => {
   const rootUrl = 'http://localhost:1208';
-  let fakeauth = testing.fakeauth;
+  const fakeauth = testing.fakeauth;
   let server;
 
   suiteSetup(async () => {
@@ -91,10 +91,10 @@ suite(testing.suiteName(), () => {
     fakeauth.stop();
   });
 
-  let callApi = (clientId, extContent) => {
+  const callApi = (clientId, extContent) => {
     // We'll call both with auth headers and bewit
-    let reqUrl = libUrls.api(rootUrl, 'test', 'v1', 'test');
-    let content = {
+    const reqUrl = libUrls.api(rootUrl, 'test', 'v1', 'test');
+    const content = {
       ttlSec: 60 * 5,
       credentials: {
         id: clientId,
@@ -106,10 +106,10 @@ suite(testing.suiteName(), () => {
       content.ext = Buffer.from(JSON.stringify(extContent)).toString('base64');
     }
 
-    let { header } = hawk.client.header(reqUrl, 'GET', content);
+    const { header } = hawk.client.header(reqUrl, 'GET', content);
 
-    let bewit = hawk.uri.getBewit(reqUrl, content);
-    let bewitUrl = reqUrl + '?bewit=' + bewit;
+    const bewit = hawk.uri.getBewit(reqUrl, content);
+    const bewitUrl = reqUrl + '?bewit=' + bewit;
     return Promise.all([
       request
         .get(reqUrl)
@@ -130,7 +130,7 @@ suite(testing.suiteName(), () => {
   test('using a rawClientId', () => {
     fakeauth.start({ client1: ['test.scope'] }, { rootUrl });
     return callApi('client1').then((responses) => {
-      for (let res of responses) {
+      for (const res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
     });
@@ -150,7 +150,7 @@ suite(testing.suiteName(), () => {
     return callApi('client1', {
       authorizedScopes: ['test.scope'],
     }).then((responses) => {
-      for (let res of responses) {
+      for (const res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
     });
@@ -158,7 +158,7 @@ suite(testing.suiteName(), () => {
 
   test('using temp creds', () => {
     fakeauth.start({ client1: ['some.other.scope'] }, { rootUrl });
-    let tempCreds = taskcluster.createTemporaryCredentials({
+    const tempCreds = taskcluster.createTemporaryCredentials({
       scopes: ['test.scope'],
       expiry: taskcluster.fromNow('1d'),
       credentials: {
@@ -169,7 +169,7 @@ suite(testing.suiteName(), () => {
     return callApi('client1', {
       certificate: JSON.parse(tempCreds.certificate),
     }).then((responses) => {
-      for (let res of responses) {
+      for (const res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
     });

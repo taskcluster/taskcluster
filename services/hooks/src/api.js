@@ -103,7 +103,7 @@ builder.declare({
   }
 
   // Reply with the hook definition
-  let definition = hookUtils.definition(hook);
+  const definition = hookUtils.definition(hook);
   return res.reply(definition);
 });
 
@@ -220,7 +220,7 @@ builder.declare({
   await req.authorize({ hookGroupId, hookId });
 
   // Validate cron-parser expressions
-  for (let schedElement of hookDef.schedule) {
+  for (const schedElement of hookDef.schedule) {
     try {
       parser.parse(schedElement);
     } catch (err) {
@@ -230,7 +230,7 @@ builder.declare({
   }
 
   // Handle an invalid schema
-  let valid = ajv.validateSchema(hookDef.triggerSchema);
+  const valid = ajv.validateSchema(hookDef.triggerSchema);
   if (!valid) {
 
     const errors = [];
@@ -244,7 +244,7 @@ builder.declare({
     });
   }
 
-  let denied = await isDeniedBinding({
+  const denied = await isDeniedBinding({
     bindings: hookDef.bindings || [],
     denylist: this.denylist,
   });
@@ -353,7 +353,7 @@ builder.declare({
   }
 
   //Handle an invalid schema
-  let valid = ajv.validateSchema(hookDef.triggerSchema);
+  const valid = ajv.validateSchema(hookDef.triggerSchema);
 
   if (!valid) {
     const errors = [];
@@ -369,7 +369,7 @@ builder.declare({
 
   // Attempt to modify properties of the hook
   const schedule = hookDef.schedule ? hookDef.schedule : [];
-  for (let schedElement of schedule) {
+  for (const schedElement of schedule) {
     try {
       parser.parse(schedElement);
     } catch (err) {
@@ -379,7 +379,7 @@ builder.declare({
   }
   hookDef.bindings = _.defaultTo(hookDef.bindings, hook.bindings);
 
-  let denied = await isDeniedBinding({
+  const denied = await isDeniedBinding({
     bindings: hookDef.bindings,
     denylist: this.denylist,
   });
@@ -418,7 +418,7 @@ builder.declare({
     AUDIT_ENTRY_TYPE.HOOK.UPDATED,
   );
 
-  let definition = hookUtils.definition(hook);
+  const definition = hookUtils.definition(hook);
   await this.publisher.hookUpdated({ hookGroupId, hookId });
 
   return res.reply(definition);
@@ -637,7 +637,7 @@ const triggerHookCommon = async function({ req, res, hook, payload, clientId, fi
   //Using ajv lib to check if the context respect the triggerSchema
   const validate = ajv.compile(hook.triggerSchema);
 
-  let valid = validate(payload);
+  const valid = validate(payload);
   if (!valid) {
     return res.reportError('InputError', '{{message}}', {
       message: ajv.errorsText(validate.errors, { separator: '; ' }),
@@ -696,8 +696,8 @@ const triggerHookCommon = async function({ req, res, hook, payload, clientId, fi
 };
 
 const isDeniedBinding = async ({ bindings, denylist }) => {
-  for (let deny of denylist) {
-    for (let binding of bindings) {
+  for (const deny of denylist) {
+    for (const binding of bindings) {
       const denyPattern = new RegExp(`^${deny}`);
       if (denyPattern.test(binding.exchange)) {
         return true;

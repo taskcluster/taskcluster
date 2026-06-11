@@ -169,7 +169,7 @@ export const dockerPull = async ({ baseDir, image, utils }) => {
     (resolve, reject) => docker.pull(image, (err, stream) => err ? reject(err) : resolve(stream)));
 
   await utils.waitFor(new Observable(observer => {
-    let downloading = {}, extracting = {}, totals = {};
+    const downloading = {}, extracting = {}, totals = {};
     docker.modem.followProgress(dockerStream,
       err => err ? observer.error(err) : observer.complete(),
       update => {

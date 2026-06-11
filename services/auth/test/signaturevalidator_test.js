@@ -12,12 +12,12 @@ import helper from './helper.js';
 import { normalizeClientId } from '../src/signaturevalidator.js';
 
 suite(testing.suiteName(), () => {
-  let one_hour = taskcluster.fromNow('1 hour');
-  let two_hours = taskcluster.fromNow('2 hour');
-  let three_hours = taskcluster.fromNow('3 hour');
+  const one_hour = taskcluster.fromNow('1 hour');
+  const two_hours = taskcluster.fromNow('2 hour');
+  const three_hours = taskcluster.fromNow('3 hour');
 
   let validator;
-  let clients = {
+  const clients = {
     root: {
       clientId: 'root',
       accessToken: 'root-secret',
@@ -59,7 +59,7 @@ suite(testing.suiteName(), () => {
     });
   });
 
-  let makeTest = (name, input, expected) => {
+  const makeTest = (name, input, expected) => {
     test(name, async () => {
       // defer creation of input until the test runs, if necessary
       if (typeof input === 'function') {
@@ -75,7 +75,7 @@ suite(testing.suiteName(), () => {
       });
 
       if (input.authorization) {
-        let creds = input.authorization.credentials || {};
+        const creds = input.authorization.credentials || {};
         input.authorization.credentials = _.defaults({}, creds, {
           key: creds.id + '-secret',
           algorithm: 'sha256',
@@ -89,7 +89,7 @@ suite(testing.suiteName(), () => {
         }
 
         // create the authorization "header"
-        let url = 'https://' + input.host + input.resource;
+        const url = 'https://' + input.host + input.resource;
         input.authorization = hawk.client.header(
           url, input.method, input.authorization).header;
       }
@@ -106,7 +106,7 @@ suite(testing.suiteName(), () => {
             .toString('base64');
         }
 
-        let bewit = hawk.client.getBewit('https://' + input.host + input.resource, {
+        const bewit = hawk.client.getBewit('https://' + input.host + input.resource, {
           credentials: {
             id: input.bewit.id,
             key: input.bewit.key,
@@ -119,7 +119,7 @@ suite(testing.suiteName(), () => {
         delete input.bewit;
       }
 
-      let got = await validator(input);
+      const got = await validator(input);
       assert.deepStrictEqual(expected, got);
 
       // *any* successful request should be returning `anonscope`, no matter
@@ -130,7 +130,7 @@ suite(testing.suiteName(), () => {
     });
   };
 
-  let testWithTemp = (name, options, inputFn, expected) => {
+  const testWithTemp = (name, options, inputFn, expected) => {
     /**
      * Options is on the form
      * {
@@ -145,10 +145,10 @@ suite(testing.suiteName(), () => {
      *   omitIssuerFromSig: if true, omit the `issuer` line from the signature
      * }
      */
-    let makeInput = () => {
-      let id = options.id;
+    const makeInput = () => {
+      const id = options.id;
 
-      let start = new Date();
+      const start = new Date();
       start.setMinutes(start.getMinutes() - 5);
 
       // Set default options
@@ -160,7 +160,7 @@ suite(testing.suiteName(), () => {
       });
 
       // Construct certificate
-      let cert = {
+      const cert = {
         version: 1,
         scopes: _.cloneDeep(options.scopes),
         start: options.start.getTime(),
@@ -179,7 +179,7 @@ suite(testing.suiteName(), () => {
           .createHmac('sha256', options.signature)
           .digest('base64');
       } else {
-        let sig = crypto.createHmac('sha256', options.accessToken);
+        const sig = crypto.createHmac('sha256', options.accessToken);
         sig.update('version:' + cert.version + '\n');
         if (options.credentialName && !options.omitClientIdFromSig) {
           sig.update('clientId:' + options.credentialName + '\n');
@@ -196,7 +196,7 @@ suite(testing.suiteName(), () => {
       }
 
       // Construct temporary key
-      let accessToken = crypto
+      const accessToken = crypto
         .createHmac('sha256', options.accessToken)
         .update(cert.seed)
         .digest('base64')
@@ -213,9 +213,9 @@ suite(testing.suiteName(), () => {
   };
 
   // shorthands
-  let success = (scopes, options) => {
+  const success = (scopes, options) => {
     options = options || {};
-    let exp = {
+    const exp = {
       clientId: options.clientId || 'root',
       status: 'auth-success',
       scheme: 'hawk',
@@ -231,7 +231,7 @@ suite(testing.suiteName(), () => {
     return exp;
   };
 
-  let failed = (message) => ({ status: 'auth-failed', message });
+  const failed = (message) => ({ status: 'auth-failed', message });
 
   makeTest('simple credentials', {
     authorization: {

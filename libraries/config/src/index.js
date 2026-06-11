@@ -66,7 +66,7 @@ const config = ({
 
     // Add profile to list of configurations, if it is given
     if (profile && data[profile]) {
-      let prof = data[profile];
+      const prof = data[profile];
       assert(typeof prof === 'object', 'profile must be an object');
       cfgs.unshift(prof);
     }

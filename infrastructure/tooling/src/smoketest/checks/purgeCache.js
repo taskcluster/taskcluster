@@ -17,7 +17,7 @@ tasks.push({
     'target-purge-cache',
   ],
   run: async () => {
-    let purge = new taskcluster.PurgeCache(taskcluster.fromEnvVars());
+    const purge = new taskcluster.PurgeCache(taskcluster.fromEnvVars());
     const workerPoolId = 'built-in/succeed';
     const payload = {
       cacheName: 'smoketest-cache',

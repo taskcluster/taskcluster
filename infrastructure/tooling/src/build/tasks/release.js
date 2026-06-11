@@ -92,7 +92,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         .concat([requirements['npm-client-artifact']])
         .concat([requirements['npm-client-web-artifact']])
         .map(name => ({ name, contentType: 'application/octet-stream' }));
-      for (let { name, contentType } of files) {
+      for (const { name, contentType } of files) {
         utils.status({ message: `Upload Release asset ${name}` });
         const data = await readFile(path.join(artifactsDir, name));
 

@@ -38,7 +38,7 @@ helper.withDb = (mock, skipping) => {
  */
 helper.withServer = (mock, skipping) => {
   let webServer;
-  let cachePurgeCache = {};
+  const cachePurgeCache = {};
 
   suiteSetup(async () => {
     if (skipping()) {

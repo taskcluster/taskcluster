@@ -15,7 +15,7 @@ export const DOWNLOAD_METHODS = [
 const NAME_PATTERN = /^[\x20-\x7e]+$/;
 const PROJECT_ID_PATTERN = /^([a-zA-Z0-9._/-]*)$/;
 
-let builder = new APIBuilder({
+const builder = new APIBuilder({
   title: 'Object Service',
   description: [
     'The object service provides HTTP-accessible storage for large blobs of data.',
@@ -70,8 +70,8 @@ builder.declare({
     'Unfinished uploads expire after 1 day.',
   ].join('\n'),
 }, async function(req, res) {
-  let { projectId, uploadId, expires, hashes, proposedUploadMethods } = req.body;
-  let { name } = req.params;
+  const { projectId, uploadId, expires, hashes, proposedUploadMethods } = req.body;
+  const { name } = req.params;
   const uploadExpires = taskcluster.fromNow('1 day');
 
   await req.authorize({ projectId, name });
@@ -127,7 +127,7 @@ builder.declare({
     throw err;
   }
 
-  let uploadMethod = await backend.createUpload(object, proposedUploadMethods);
+  const uploadMethod = await backend.createUpload(object, proposedUploadMethods);
 
   return res.reply({
     projectId,
@@ -160,8 +160,8 @@ builder.declare({
     'Note that, once `finishUpload` is complete, the object is considered immutable.',
   ].join('\n'),
 }, async function(req, res) {
-  let { projectId, uploadId, hashes } = req.body;
-  let { name } = req.params;
+  const { projectId, uploadId, hashes } = req.body;
+  const { name } = req.params;
 
   await req.authorize({ projectId, name });
 
@@ -263,7 +263,7 @@ builder.declare({
     'See [Download Methods](https://docs.taskcluster.net/docs/reference/platform/object/download-methods) for more detail.',
   ].join('\n'),
 }, async function(req, res) {
-  let { name } = req.params;
+  const { name } = req.params;
   const { acceptDownloadMethods } = req.body;
   const [object] = await this.db.fns.get_object_with_upload(name);
 

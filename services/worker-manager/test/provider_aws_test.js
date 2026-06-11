@@ -91,7 +91,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   const makeWorkerPool = async (overrides = {}) => {
-    let workerPool = WorkerPool.fromApi({
+    const workerPool = WorkerPool.fromApi({
       workerPoolId,
       providerId,
       description: 'none',
@@ -219,7 +219,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({ MinCount }) => MinCount), [2, 2, 2]);
     });
 
-    for (let ResourceType of ['instance', 'volume', 'launch-template']) {
+    for (const ResourceType of ['instance', 'volume', 'launch-template']) {
       provisionTest(`${ResourceType} tags in launch spec - should merge them`, {
         config: {
           launchConfigs: [

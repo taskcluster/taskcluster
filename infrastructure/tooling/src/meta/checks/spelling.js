@@ -15,7 +15,7 @@ export const tasks = [{
       "[tT]askclsuter",
       "[tT]asksluter",
     ];
-    for (let pattern of Taskcluster) {
+    for (const pattern of Taskcluster) {
       try {
         const res = await execFileAsync('git', ['grep', pattern, '--', './*', ':!.yarn']);
         // if the grep succeeded, then something matched

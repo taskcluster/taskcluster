@@ -17,7 +17,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   const deadline = new Date();
   deadline.setMinutes(deadline.getMinutes() + 25);
 
-  let makeTask = (routes) => ({
+  const makeTask = (routes) => ({
     provisionerId: 'dummy-test-provisioner',
     workerType: 'dummy-test-worker-type',
     scopes: [],
@@ -39,7 +39,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     },
   });
 
-  let baseStatus = {
+  const baseStatus = {
     taskId: 'DKPZPsvvQEiw67Pb3rkdNg',
     provisionerId: 'test-provisioner',
     workerType: 'gecko-t-win7-32-gpu',

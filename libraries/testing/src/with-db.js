@@ -28,7 +28,7 @@ export const resetDb = async () => {
     const schema = Schema.fromDbDirectory(path.join(__dirname, '../../../db'));
 
     // and reset/create a user for each one..
-    for (let serviceName of schema.access.serviceNames()) {
+    for (const serviceName of schema.access.serviceNames()) {
       const serviceUsername = `test_${serviceName.replace(/-/g, '_')}`;
       await ignorePgErrors(client.query(`drop owned by ${serviceUsername}`), UNDEFINED_OBJECT);
       await ignorePgErrors(client.query(`drop user ${serviceUsername}`), UNDEFINED_OBJECT);

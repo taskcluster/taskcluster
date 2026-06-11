@@ -111,7 +111,7 @@ export class Backends {
    * Get the backend to use for this upload
    */
   forUpload(upload) {
-    for (let matcher of this._matchers) {
+    for (const matcher of this._matchers) {
       const backendId = matcher(upload);
       if (backendId) {
         return this.get(backendId);

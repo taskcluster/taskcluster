@@ -32,7 +32,7 @@ export async function requestArtifact(artifactName, { taskId, runId, debug, inst
           }
           break;
       }
-      let { organization, repository, sha } = build;
+      const { organization, repository, sha } = build;
       await this.createExceptionComment({
         debug,
         instGithub,

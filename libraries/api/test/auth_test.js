@@ -80,7 +80,7 @@ suite(testing.suiteName(), function() {
   });
 
   const testEndpoint = ({ method, route, name, scopes = null, handler, handlerBuilder, tests }) => {
-    let sideEffects = {};
+    const sideEffects = {};
     builder.declare({
       method,
       route,
@@ -109,7 +109,7 @@ suite(testing.suiteName(), function() {
       const url = buildUrl(params);
       const auth = buildHawk(id);
       test(label, async () => {
-        for (let key of Object.keys(sideEffects)) {
+        for (const key of Object.keys(sideEffects)) {
           delete sideEffects[key];
         }
         try {

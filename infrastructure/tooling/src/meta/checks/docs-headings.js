@@ -14,7 +14,7 @@ export const tasks = [{
     let errors = "";
     let countErrors = 0;
 
-    for (let filename of markdowns) {
+    for (const filename of markdowns) {
       const data = fs.readFileSync(filename, 'utf8');
       let md = data.toString();
 

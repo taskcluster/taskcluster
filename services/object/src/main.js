@@ -12,7 +12,7 @@ import { Middleware } from './middleware/index.js';
 import expireObjects from './expire.js';
 import { fileURLToPath } from 'node:url';
 
-let load = loader({
+const load = loader({
   cfg: {
     requires: ['profile'],
     setup: ({ profile }) => config({

@@ -21,7 +21,7 @@ suite(testing.suiteName(), () => {
 
   suite(`${testing.suiteName()} - github_access_tokens`, () => {
     helper.dbTest('add github access token that already exists', async (db) => {
-      let n1 = {
+      const n1 = {
         userId: "benjaminrabbit",
         encryptedAccessToken: db.encrypt({ value: Buffer.from("carrots", 'utf8') }),
       };
@@ -33,8 +33,8 @@ suite(testing.suiteName(), () => {
     });
 
     helper.dbTest('update existing github access token', async (db) => {
-      for (let accessToken of ["carrots", "sprouts"]) {
-        let n1 = {
+      for (const accessToken of ["carrots", "sprouts"]) {
+        const n1 = {
           userId: "benjaminrabbit",
           encryptedAccessToken: db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),
         };
@@ -61,7 +61,7 @@ suite(testing.suiteName(), () => {
   suite(`${testing.suiteName()} - sessions`, () => {
     helper.dbTest('add session data', async (db) => {
       const sessionId = 'sEssI0n#Id';
-      let sessionData1 = {
+      const sessionData1 = {
         hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
@@ -84,7 +84,7 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('add session data can overwrite', async (db) => {
       const sessionId = 'sEssI0n#Id';
-      let sessionData1 = {
+      const sessionData1 = {
         hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
@@ -92,7 +92,7 @@ suite(testing.suiteName(), () => {
         },
         expires: new Date(),
       };
-      let sessionData2 = {
+      const sessionData2 = {
         ...sessionData1,
         data: {
           foo: "bar",
@@ -119,7 +119,7 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('get session data does not throw when not found', async (db) => {
       const sessionId = 'sEssI0n#Id';
-      let sessionData1 = {
+      const sessionData1 = {
         hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
@@ -133,7 +133,7 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('remove session data', async (db) => {
       const sessionId = 'sEssI0n#Id';
-      let sessionData1 = {
+      const sessionData1 = {
         hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {
@@ -160,7 +160,7 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('touch a session', async (db) => {
       const sessionId = 'sEssI0n#Id';
-      let sessionData1 = {
+      const sessionData1 = {
         hashedSessionId: hash(sessionId),
         encryptedSessionID: db.encrypt({ value: Buffer.from(sessionId, 'utf8') }),
         data: {

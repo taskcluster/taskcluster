@@ -62,12 +62,12 @@ class WorkClaimer extends events.EventEmitter {
       hintPoller = this.getHintPoller(taskQueueId);
 
       // Poll for hints (messages saying a task may be pending)
-      let hints = await hintPoller.requestClaim(count, aborted);
+      const hints = await hintPoller.requestClaim(count, aborted);
       // Try to claim all the hints
       claims = await Promise.all(hints.map(async (hint) => {
         try {
           // Try to claim task from hint
-          let result = await this._monitor.timer('claimTask', this.claimTask(
+          const result = await this._monitor.timer('claimTask', this.claimTask(
             hint.taskId, hint.runId, workerGroup, workerId, null, hint.hintId,
           ));
           // Remove hint, if successfully used (don't block)
@@ -116,7 +116,7 @@ class WorkClaimer extends events.EventEmitter {
     // Set takenUntil to now + claimTimeout, rounding up to the nearest second
     // since we compare these times for equality after sending them to queue
     // and toJSON()
-    let takenUntil = new Date();
+    const takenUntil = new Date();
     takenUntil.setSeconds(Math.ceil(takenUntil.getSeconds() + this._claimTimeout));
 
     // put the claim-expiration message into the queue first.  If the
@@ -127,7 +127,7 @@ class WorkClaimer extends events.EventEmitter {
       await this.db.fns.claim_task(taskId, runId, workerGroup, workerId, hintId, takenUntil));
 
     // Find run that we (may) have modified
-    let run = task.runs[runId];
+    const run = task.runs[runId];
     if (!run) {
       return 'run-not-found';
     }
@@ -143,7 +143,7 @@ class WorkClaimer extends events.EventEmitter {
     }
 
     // Construct status object
-    let status = task.status();
+    const status = task.status();
 
     // Publish task running message, it's important that we publish even if this
     // is a retry request and we didn't make any changes in task.modify
@@ -157,7 +157,7 @@ class WorkClaimer extends events.EventEmitter {
     }, task.routes);
     this._monitor.log.taskRunning({ taskId, runId });
 
-    let credentials = taskCreds(
+    const credentials = taskCreds(
       taskId,
       runId,
       workerGroup,

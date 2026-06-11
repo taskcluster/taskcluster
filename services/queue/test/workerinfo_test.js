@@ -52,7 +52,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
       });
     }
 
-    for (let task of opts.recentTasks || []) {
+    for (const task of opts.recentTasks || []) {
       await db.fns.queue_worker_task_seen({
         task_queue_id_in, worker_group_in, worker_id_in,
         task_run_in: task,
@@ -554,7 +554,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('worker-type lastDateActive updates', async () => {
-    let result;
     const workerInfo = await helper.load('workerInfo');
 
     const tQueue = {
@@ -564,22 +563,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
     await workerInfo.seen(tQueue.taskQueueId);
 
-    let [provisionerId, workerType] = tQueue.taskQueueId.split('/');
-    result = await helper.queue.getWorkerType(provisionerId, workerType);
+    const [provisionerId, workerType] = tQueue.taskQueueId.split('/');
+    const result = await helper.queue.getWorkerType(provisionerId, workerType);
 
     assert(Math.abs(new Date(result.lastDateActive) - Date.now()) < 3600);
   });
 
   test('provisioner lastDateActive updates', async () => {
-    let result;
     const workerInfo = await helper.load('workerInfo');
 
     const tQueue = await makeTaskQueue({});
 
     await workerInfo.seen(tQueue.taskQueueId);
 
-    let { provisionerId } = splitTaskQueueId(tQueue.taskQueueId);
-    result = await helper.queue.getProvisioner(provisionerId);
+    const { provisionerId } = splitTaskQueueId(tQueue.taskQueueId);
+    const result = await helper.queue.getProvisioner(provisionerId);
 
     assert(Math.abs(new Date(result.lastDateActive) - Date.now()) < 3600);
   });
@@ -821,7 +819,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     const workerId = 'my-worker-extended-extended';
     await makeTaskQueue({ taskQueueId });
 
-    let taskIds = [];
+    const taskIds = [];
 
     for (let i = 0; i < 30; i++) {
       const taskId = slugid.v4();

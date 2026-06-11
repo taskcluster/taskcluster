@@ -22,7 +22,7 @@ export const getCommonSchemas = async () => {
   _commonSchemas = [];
   const dir = path.join(__dirname, '..', 'schemas');
 
-  for (let dentry of await fs.readdir(dir)) {
+  for (const dentry of await fs.readdir(dir)) {
     if (!dentry.endsWith('.yml')) {
       continue;
     }

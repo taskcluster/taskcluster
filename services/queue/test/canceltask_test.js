@@ -88,7 +88,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
       assume(r2.status.runs[0].reasonResolved).equals('canceled');
     }));
     // raise any exceptions in any of those calls
-    for (let { reason } of res) {
+    for (const { reason } of res) {
       if (reason) {
         throw reason;
       }
@@ -118,7 +118,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
       assume(r2.status.runs[0].reasonResolved).equals('canceled');
     }));
     // raise any exceptions in any of those calls
-    for (let { reason } of res) {
+    for (const { reason } of res) {
       if (reason) {
         throw reason;
       }

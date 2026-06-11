@@ -88,7 +88,7 @@ export class FakeCloud {
     if (this.ajv.validate(schemaFile, value)) {
       return;
     }
-    for (let error of this.ajv.errors) {
+    for (const error of this.ajv.errors) {
       if (error.params.additionalProperty) {
         error.message += ': ' + JSON.stringify(error.params.additionalProperty);
       }

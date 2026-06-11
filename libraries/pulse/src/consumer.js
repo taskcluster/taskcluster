@@ -160,7 +160,7 @@ export class PulseConsumer {
       },
     });
 
-    for (let { exchange, routingKeyPattern } of this.bindings) {
+    for (const { exchange, routingKeyPattern } of this.bindings) {
       await channel.bindQueue(queueName, exchange, routingKeyPattern);
     }
 
@@ -261,7 +261,7 @@ export class PulseConsumer {
 
   async _handleMessage(msg) {
     // Construct message
-    let message = {
+    const message = {
       payload: JSON.parse(msg.content.toString('utf8')),
       exchange: msg.fields.exchange,
       routingKey: msg.fields.routingKey,
@@ -291,11 +291,11 @@ export class PulseConsumer {
     // If we have a routing key reference we can parse the routing key
     if (routingKeyReference) {
       let i, j;
-      let routing = {};
-      let keys = message.routingKey.split('.');
+      const routing = {};
+      const keys = message.routingKey.split('.');
       // first handle non-multi keys from the beginning
       for (i = 0; i < routingKeyReference.length; i++) {
-        let ref = routingKeyReference[i];
+        const ref = routingKeyReference[i];
         if (ref.multipleWords) {
           break;
         }
@@ -305,7 +305,7 @@ export class PulseConsumer {
       if (i < routingKeyReference.length) {
         // then handle non-multi keys from the end
         for (j = routingKeyReference.length - 1; j > i; j--) {
-          let ref = routingKeyReference[j];
+          const ref = routingKeyReference[j];
           if (ref.multipleWords) {
             break;
           }

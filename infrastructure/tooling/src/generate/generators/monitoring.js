@@ -67,7 +67,7 @@ tasks.push({
   requires: SERVICES.map(name => `procs-${name}`),
   provides: [],
   run: async (requirements, utils) => {
-    let res = [['Service', 'Name', 'Type', 'Reference']];
+    const res = [['Service', 'Name', 'Type', 'Reference']];
     SERVICES.forEach(name => {
       const procs = requirements[`procs-${name}`];
       Object.entries(procs).filter(([_, { metrics }]) => !!metrics).forEach(([proc, ext]) => {

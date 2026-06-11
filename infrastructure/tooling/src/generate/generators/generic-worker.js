@@ -112,7 +112,7 @@ tasks.push({
     const gwDocsDir = path.join('ui', 'docs', 'reference', 'workers', 'generic-worker');
 
     // begin by deleting all *-payload--schema.mdx files
-    for (let file of glob.sync(`${gwDocsDir}/*-payload.mdx`, { cwd: REPO_ROOT })) {
+    for (const file of glob.sync(`${gwDocsDir}/*-payload.mdx`, { cwd: REPO_ROOT })) {
       await rimraf(path.join(REPO_ROOT, file));
     }
 
@@ -122,7 +122,7 @@ tasks.push({
       filename_base: path.basename(content.$id, '.json#').replace('_', '-') + '-payload',
     }));
 
-    for (let { $id, title, filename_base } of schemaFiles) {
+    for (const { $id, title, filename_base } of schemaFiles) {
       await writeRepoFile(path.join(gwDocsDir, filename_base + '.mdx'), schemaMdx(title, $id));
     }
 

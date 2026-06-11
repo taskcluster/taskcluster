@@ -159,7 +159,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // The address to denylist
-  let address = {
+  const address = {
     notificationType: req.body.notificationType,
     notificationAddress: req.body.notificationAddress,
   };
@@ -182,7 +182,7 @@ builder.declare({
   ].join('\n'),
 }, async function(req, res) {
   // The address to remove from the denylist
-  let address = {
+  const address = {
     notificationType: req.body.notificationType,
     notificationAddress: req.body.notificationAddress,
   };

@@ -57,7 +57,7 @@ tasks.push({
     const anHourAgo = Date.now() - (1000 * 60 * 60);
     while (true) {
       const res = await auth.listRoles2();
-      for (let role of res.roles) {
+      for (const role of res.roles) {
         if (role.roleId.includes('project:taskcluster:smoketest:') &&
            new Date(role.lastModified) < new Date(anHourAgo)) {
           await auth.deleteRole(role.roleId);

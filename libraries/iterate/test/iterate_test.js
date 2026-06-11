@@ -21,7 +21,7 @@ class IterateEvents {
     this.iterator = iterator;
     this.expectedOrder = expectedOrder;
     this.orderOfEmission = [];
-    for (let x of possibleEvents) {
+    for (const x of possibleEvents) {
       iterator.on(x, () => {
         this.orderOfEmission.push(x);
       });

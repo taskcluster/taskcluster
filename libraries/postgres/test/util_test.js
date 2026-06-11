@@ -27,7 +27,7 @@ suite(path.basename(__filename), () => {
         };
 
         const got = [];
-        for await (let v of paginatedIterator({ fetch, size: 13 })) {
+        for await (const v of paginatedIterator({ fetch, size: 13 })) {
           got.push(v);
         }
 
@@ -41,7 +41,7 @@ suite(path.basename(__filename), () => {
         };
 
         const got = [];
-        for await (let v of paginatedIterator({ fetch, size: 100 })) {
+        for await (const v of paginatedIterator({ fetch, size: 100 })) {
           got.push(v);
         }
 
@@ -58,7 +58,7 @@ suite(path.basename(__filename), () => {
 
         assert.rejects(async () => {
           const got = [];
-          for await (let v of paginatedIterator({ fetch, size: 100 })) {
+          for await (const v of paginatedIterator({ fetch, size: 100 })) {
             got.push(v);
           }
         }, /oh noes/);
@@ -86,7 +86,7 @@ suite(path.basename(__filename), () => {
       test('iterate in a few batches', async () => {
         calls = [];
         const got = [];
-        for await (let v of paginatedIterator({
+        for await (const v of paginatedIterator({
           indexColumns,
           fetch: fetcher(20, 11),
           size: 13,
@@ -119,7 +119,7 @@ suite(path.basename(__filename), () => {
 
       test('batch size smaller than requested', async () => {
         const got = [];
-        for await (let v of paginatedIterator({
+        for await (const v of paginatedIterator({
           indexColumns,
           fetch: fetcher(20, 12, 15),
           size: 130,
@@ -132,7 +132,7 @@ suite(path.basename(__filename), () => {
 
       test('fetch fails', async () => {
         assert.rejects(async () => {
-          for await (let _ of paginatedIterator({
+          for await (const _ of paginatedIterator({
             indexColumns,
             fetch: async () => { throw new Error('uhoh'); },
           })) {

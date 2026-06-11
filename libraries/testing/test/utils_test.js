@@ -3,7 +3,7 @@ import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), () => {
   test('sleep', async () => {
-    let start = Date.now();
+    const start = Date.now();
     await testing.sleep(10);
     const end = Date.now();
     // as long as it waited 5ms or more we'll call it good..
