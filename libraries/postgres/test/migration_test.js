@@ -57,7 +57,7 @@ helper.dbSuite(path.basename(__filename), () => {
       const res = await client.query(`
         select *
         from pg_catalog.pg_roles
-        where rolname like 'test\_%'`);
+        where rolname like 'test_%'`);
       for (const row of res.rows) {
         // both of these are successful if they are no-ops (although they show warnings)
         await client.query(`alter role ${row.rolname} with nosuperuser nocreatedb nocreaterole noreplication`);

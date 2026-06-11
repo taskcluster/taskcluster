@@ -89,7 +89,7 @@ export const validate = (references) => {
   // be sad..
 
   // (capture group 1 === prefix up to and including service name)
-  const schemaPattern = new RegExp(`(^${regexEscape(references.rootUrl)}\/schemas\/[^\/]*\/).*\\.json#`);
+  const schemaPattern = new RegExp(`(^${regexEscape(references.rootUrl)}/schemas/[^/]*/).*\\.json#`);
 
   for (const { filename, content } of references.schemas) {
     if (!content.$id) {
