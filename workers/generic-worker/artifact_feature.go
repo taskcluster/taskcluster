@@ -361,11 +361,13 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 			".lz4":   true,
 			".mz":    true,
 			".npz":   true,
+			".pkg":   true,
 			".png":   true,
 			".swf":   true,
 			".sz":    true,
 			".tbz":   true,
 			".tgz":   true,
+			".wasm":  true,
 			".webp":  true,
 			".whl":   true, // Python wheel are already zip file
 			".woff":  true,

@@ -176,10 +176,12 @@ oneOf:
               * jpeg
               * jpg
               * npz
+              * pkg
               * png
               * swf
               * tbz
               * tgz
+              * wasm
               * webp
               * whl
               * woff
