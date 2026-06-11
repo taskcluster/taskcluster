@@ -136,7 +136,7 @@ export class APIBuilder {
         },
       },
     };
-    // @ts-ignore - we know that options.errorCodes is defined
+    // @ts-expect-error - we know that options.errorCodes is defined
     Object.entries(options.errorCodes).forEach(([key, value]) => {
       assert(/[A-Z][A-Za-z0-9]*/.test(key), `Invalid error code: ${key}`);
       assert(typeof value === 'number', 'Expected HTTP status code to be int');

@@ -18,7 +18,7 @@ export const callHandler = ({ entry, context, monitor }) => {
   assert(entry.handler, 'No handler is provided');
   return (req, res, next) => {
     Promise.resolve(null).then(() => {
-      // @ts-ignore - we check this above already
+      // @ts-expect-error - we check this above already
       return entry.handler.call(req.tcContext, req, res);
     }).then(() => {
       if (!req.public && !req.satisfyingScopes) {

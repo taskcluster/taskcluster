@@ -150,7 +150,7 @@ export class Providers {
     if (p?.setupFailed) {
       // If setup failed, we do not return the provider, but just an empty object.  This
       // avoids mistakes where the caller does not check for failed setup.
-      // @ts-ignore
+      // @ts-expect-error
       return { setupFailed: true };
     }
     return p;
