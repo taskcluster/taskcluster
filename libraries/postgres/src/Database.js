@@ -636,7 +636,7 @@ class Database {
     // next attempt to use the client, but we have to handle them anyway
     // or Node will kill the process.  However, when this happens we must
     // pass the error back to the pool or it won't know the client is bad.
-    let clientError = undefined;
+    let clientError;
     const handleError = err => clientError = err;
     client.on('error', handleError);
     const wrapped = {

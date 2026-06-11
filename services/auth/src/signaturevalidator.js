@@ -327,7 +327,7 @@ const createSignatureValidator = function(options) {
           port: req.port,
           authorization: req.authorization,
         }, async (clientId) => {
-          let ext = undefined;
+          let ext;
 
           // Parse authorization header for ext
           let attrs = hawk.utils.parseAuthorizationHeader(
@@ -363,7 +363,7 @@ const createSignatureValidator = function(options) {
           host: req.host,
           port: req.port,
         }, async (clientId) => {
-          let ext = undefined;
+          let ext;
 
           // Get bewit string (stolen from hawk)
           let parts = req.resource.match(

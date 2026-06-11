@@ -194,7 +194,7 @@ suite(testing.suiteName(), function() {
       res.status(200).json(this.foo());
     });
 
-    let fooFake = undefined;
+    let fooFake;
     const api = await builder.build({
       rootUrl,
       monitor,
