@@ -122,7 +122,7 @@ class Secrets {
     // if no secrets are required, just run this as a regular suite with no "(real)" suffix
     if (secretList.length === 0) {
       suite(title, function() {
-        suiteSetup(async function() {
+        suiteSetup(async () => {
           if (that.load) {
             that.load.save();
           }
@@ -130,7 +130,7 @@ class Secrets {
 
         fn.call(this, false, () => skipping);
 
-        suiteTeardown(function() {
+        suiteTeardown(() => {
           if (that.load) {
             that.load.restore();
           }
@@ -144,7 +144,7 @@ class Secrets {
     }
 
     suite(`${title} (mock)`, function() {
-      suiteSetup(async function() {
+      suiteSetup(async () => {
         skipping = false;
         await that.setup();
         if (that.load) {
@@ -163,7 +163,7 @@ class Secrets {
 
       fn.call(this, true, () => skipping);
 
-      suiteTeardown(function() {
+      suiteTeardown(() => {
         if (that.load) {
           that.load.restore();
         }
@@ -202,7 +202,7 @@ class Secrets {
 
       fn.call(this, false, () => skipping);
 
-      suiteTeardown(function() {
+      suiteTeardown(() => {
         if (saveOccured) {
           that.load.restore();
         }

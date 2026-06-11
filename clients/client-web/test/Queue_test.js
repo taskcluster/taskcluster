@@ -8,7 +8,7 @@ describe('Queue', function() {
   this.timeout(30000);
 
   let queue;
-  before(function() {
+  before(() => {
     if (helper.rootUrl) {
       queue = new Queue({ rootUrl: helper.rootUrl });
     }

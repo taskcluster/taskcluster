@@ -3,14 +3,14 @@ import gql from 'graphql-tag';
 import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withClients(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  suite('GraphQL Validation', function() {
-    test('max tokens in request', async function() {
+  suite('GraphQL Validation', () => {
+    test('max tokens in request', async () => {
       const client = helper.getHttpClient({ suppressErrors: true });
 
       try {
@@ -28,7 +28,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       helper.expectMonitorError('PayloadTooLargeError');
     });
-    test('max queries in request', async function() {
+    test('max queries in request', async () => {
       const client = helper.getHttpClient({ suppressErrors: true });
 
       try {
@@ -44,7 +44,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         assert.ok(/validation errors/.test(JSON.stringify(err.networkError.result)));
       }
     });
-    test('max depth in request', async function() {
+    test('max depth in request', async () => {
       const client = helper.getHttpClient({ suppressErrors: true });
 
       try {
@@ -60,7 +60,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         assert.ok(/exceeds maximum operation depth/.test(JSON.stringify(err.networkError.result)));
       }
     });
-    test('circular fragments return a validation error', async function() {
+    test('circular fragments return a validation error', async () => {
       const client = helper.getHttpClient({ suppressErrors: true });
 
       try {

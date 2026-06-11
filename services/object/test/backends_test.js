@@ -4,12 +4,12 @@ import testing from '@taskcluster/lib-testing';
 import { Backends } from '../src/backends/index.js';
 import { TestBackend } from '../src/backends/test.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withBackends(mock, skipping);
 
   let db, monitor, cfg;
-  setup(async function() {
+  setup(async () => {
     db = helper.db;
     monitor = await helper.load('monitor');
     cfg = await helper.load('cfg');
@@ -17,7 +17,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     helper.load.cfg('backendMap', []);
   });
 
-  test('fails when unknown backend type is given', async function() {
+  test('fails when unknown backend type is given', async () => {
     await assert.rejects(
       () => new Backends().setup({ cfg: {
         ...cfg,
@@ -28,7 +28,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       /Unknown backendType/);
   });
 
-  test('sets up multiple backends with the same type', async function() {
+  test('sets up multiple backends with the same type', async () => {
     const backends = await new Backends().setup({ cfg: {
       ...cfg,
       backends: {
@@ -42,7 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(backends.get('test2').backendId, 'test2');
   });
 
-  test('get returns undefined for unknown backends', async function() {
+  test('get returns undefined for unknown backends', async () => {
     const backends = await new Backends().setup({ cfg: {
       ...cfg,
       backends: [],
@@ -50,7 +50,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.deepEqual(backends.get('nosuch'), undefined);
   });
 
-  test('backendMap can be an empty object', async function() {
+  test('backendMap can be an empty object', async () => {
     await new Backends().setup({ cfg: {
       ...cfg,
       backendMap: {},
@@ -59,7 +59,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   const testBackendMap = (title, { backendMap, check, rejects }) => {
-    test(title, async function() {
+    test(title, async () => {
       const backends = {
         t1: { backendType: 'test' },
         t2: { backendType: 'test' },

@@ -6,10 +6,10 @@ import taskcluster from '@taskcluster/client';
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
-  test('schedule_task atomically inserts into queue_pending_tasks after upgrade', async function() {
+  test('schedule_task atomically inserts into queue_pending_tasks after upgrade', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
 
@@ -41,7 +41,7 @@ suite(testing.suiteName(), function() {
     assert.equal(rows[0].run_id, 0);
   });
 
-  test('downgrade removes queue_pending_tasks_add_for_task / create_task_atomic and reverts schedule_task', async function() {
+  test('downgrade removes queue_pending_tasks_add_for_task / create_task_atomic and reverts schedule_task', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     await helper.downgradeTo(PREV_VERSION);
@@ -86,7 +86,7 @@ suite(testing.suiteName(), function() {
     assert.equal(pendingRows, 0, 'post-downgrade schedule_task must not enqueue into queue_pending_tasks');
   });
 
-  test('create_task_atomic inserts task and queue_task_deadlines atomically', async function() {
+  test('create_task_atomic inserts task and queue_task_deadlines atomically', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
 
@@ -125,7 +125,7 @@ suite(testing.suiteName(), function() {
     assert.equal(deadlineRow.visible.getTime(), expectedVisibleMs);
   });
 
-  test('create_task_atomic overwrites stale orphan deadline metadata via ON CONFLICT DO UPDATE', async function() {
+  test('create_task_atomic overwrites stale orphan deadline metadata via ON CONFLICT DO UPDATE', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
 

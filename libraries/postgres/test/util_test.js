@@ -6,20 +6,20 @@ import path from 'node:path';
 const { range } = _;
 const __filename = new URL('', import.meta.url).pathname;
 
-suite(path.basename(__filename), function() {
-  suite('dollarQuote', function() {
-    test('simple string', function() {
+suite(path.basename(__filename), () => {
+  suite('dollarQuote', () => {
+    test('simple string', () => {
       assert.equal(dollarQuote('abcd'), '$$abcd$$');
     });
 
-    test('string containing $$', function() {
+    test('string containing $$', () => {
       assert.equal(dollarQuote('pre $$abcd$$ post'), '$x$pre $$abcd$$ post$x$');
     });
   });
 
-  suite('paginatedIterator', function() {
-    suite('offset/limit', function() {
-      test('iterate in a few batches', async function() {
+  suite('paginatedIterator', () => {
+    suite('offset/limit', () => {
+      test('iterate in a few batches', async () => {
         const calls = [];
         const fetch = async (size, offset) => {
           calls.push([size, offset]);
@@ -35,7 +35,7 @@ suite(path.basename(__filename), function() {
         assert.deepEqual(calls, range(0, 1000, 13).map(i => [13, i]).concat([[13, 1000]]));
       });
 
-      test('batch size smaller than requested', async function() {
+      test('batch size smaller than requested', async () => {
         const fetch = async (size, offset) => {
           return range(1000).slice(offset, offset + 10);
         };
@@ -48,7 +48,7 @@ suite(path.basename(__filename), function() {
         assert.deepEqual(got, range(1000));
       });
 
-      test('fetch fails', async function() {
+      test('fetch fails', async () => {
         const fetch = async (size, offset) => {
           if (offset > 300) {
             throw new Error('oh noes');
@@ -65,7 +65,7 @@ suite(path.basename(__filename), function() {
       });
     });
 
-    suite('index-based', function() {
+    suite('index-based', () => {
       const indexColumns = ['a', 'b'];
       const data = (A, B) => range(0, A).flatMap(a => range(0, B).map(b => ({ a, b })));
       let calls;
@@ -83,7 +83,7 @@ suite(path.basename(__filename), function() {
         };
       };
 
-      test('iterate in a few batches', async function() {
+      test('iterate in a few batches', async () => {
         calls = [];
         const got = [];
         for await (let v of paginatedIterator({
@@ -117,7 +117,7 @@ suite(path.basename(__filename), function() {
         ]);
       });
 
-      test('batch size smaller than requested', async function() {
+      test('batch size smaller than requested', async () => {
         const got = [];
         for await (let v of paginatedIterator({
           indexColumns,
@@ -130,7 +130,7 @@ suite(path.basename(__filename), function() {
         assert.deepEqual(got, data(20, 12));
       });
 
-      test('fetch fails', async function() {
+      test('fetch fails', async () => {
         assert.rejects(async () => {
           for await (let _ of paginatedIterator({
             indexColumns,

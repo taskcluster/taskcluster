@@ -65,7 +65,7 @@ function loader(componentDirectory, virtualComponents = {}) {
   }
   tsort.sort();
 
-  let load = function(target, options = {}) {
+  let load = (target, options = {}) => {
     options = Object.assign({}, options);
 
     if (typeof target !== 'string') {
@@ -111,7 +111,7 @@ function loader(componentDirectory, virtualComponents = {}) {
             } catch (err) {
               reject(err);
             }
-          }).catch(function(err) {
+          }).catch((err) => {
             debug(`error while loading component '${target}': ${err}`);
             throw err;
           });
@@ -122,7 +122,7 @@ function loader(componentDirectory, virtualComponents = {}) {
     return recursiveLoad(target);
   };
 
-  load.crashOnError = function(target) {
+  load.crashOnError = (target) => {
     load(target).catch(err => {
       console.log(err.stack);
       process.exit(1);

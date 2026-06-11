@@ -4,10 +4,10 @@ import { strict as assert } from 'node:assert';
 
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
   });
@@ -41,7 +41,7 @@ suite(testing.suiteName(), function() {
     });
   };
   const entityToCryptoContainerV0 = (name, properties, expected) => {
-    test(`entity_to_crypto_container_v0: ${name}`, async function() {
+    test(`entity_to_crypto_container_v0: ${name}`, async () => {
       const c = await mkContainer(properties);
       assert.deepEqual(c, expected);
     });
@@ -55,7 +55,7 @@ suite(testing.suiteName(), function() {
   entityToCryptoContainerV0('multiple chunks', samples[4], { ...container, ...samples[4] });
 
   const encryptedEntityBufEncode = (name, properties) => {
-    test(`entity_buf_encode: ${name}`, async function() {
+    test(`entity_buf_encode: ${name}`, async () => {
       const c = await mkContainer(properties);
       const e = await encodeContainer(c);
       assert.equal(e.__bufchunks_fooBar, c.__bufchunks_val);

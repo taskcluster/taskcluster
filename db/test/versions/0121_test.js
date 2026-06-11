@@ -5,10 +5,10 @@ import testing from '@taskcluster/lib-testing';
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
-  test('column added and functions work', async function() {
+  test('column added and functions work', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
     await helper.assertNoTableColumn('queue_artifacts', 'content_length');
@@ -61,7 +61,7 @@ suite(testing.suiteName(), function() {
     assert.equal(expArt.content_length, 99999);
   });
 
-  test('downgrade removes column', async function() {
+  test('downgrade removes column', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     await helper.assertTableColumn('queue_artifacts', 'content_length');

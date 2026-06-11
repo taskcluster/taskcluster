@@ -51,8 +51,8 @@ MonitorManager.register({
   },
 });
 
-suite(testing.suiteName(), function() {
-  test('can add custom message types', function() {
+suite(testing.suiteName(), () => {
+  test('can add custom message types', () => {
     const monitor = MonitorManager.setup({
       serviceName: 'taskcluster-testing-service',
       level: 'debug',
@@ -63,7 +63,7 @@ suite(testing.suiteName(), function() {
     assert.equal(monitor.manager.messages.length, 1);
   });
 
-  test('can verify custom types', function() {
+  test('can verify custom types', () => {
     const monitor = MonitorManager.setup({
       serviceName: 'taskcluster-testing-service',
       level: 'debug',
@@ -75,7 +75,7 @@ suite(testing.suiteName(), function() {
     assert.throws(() => monitor.log.auditLog({ foo: null }), /"auditLog" must include field "bar"/);
   });
 
-  test('can publish types', function() {
+  test('can publish types', () => {
     const serviceName = 'taskcluster-testing-service';
     assert.equal(MonitorManager.reference(serviceName).serviceName, serviceName);
     const ref = _.find(MonitorManager.reference(serviceName).types, { name: 'auditLog' });
@@ -86,7 +86,7 @@ suite(testing.suiteName(), function() {
     assert.deepEqual(ref.version, 1);
   });
 
-  test('can publish metrics in metrics reference', function() {
+  test('can publish metrics in metrics reference', () => {
     const serviceName = 'taskcluster-testing-service';
     const ref = MonitorManager.metricsReference(serviceName);
 
@@ -103,7 +103,7 @@ suite(testing.suiteName(), function() {
     assert.deepEqual(serviceMetric.buckets, [0.05, 0.1, 0.5, 1.0]);
   });
 
-  test('throws on duplicate metric registration', function() {
+  test('throws on duplicate metric registration', () => {
     assert.throws(() => {
       MonitorManager.registerMetric('aa1', {
         name: 'test_counter_xx',
@@ -124,7 +124,7 @@ suite(testing.suiteName(), function() {
     }, /Cannot register metric service_histogram_xx twice/);
   });
 
-  test('validates metric type and labels', function() {
+  test('validates metric type and labels', () => {
     assert.throws(() => {
       MonitorManager.registerMetric('aa3', {
         name: 'invalid_type_metric',
@@ -143,7 +143,7 @@ suite(testing.suiteName(), function() {
       });
     }, /Invalid label name 0invalid/);
   });
-  test('validates registers', function() {
+  test('validates registers', () => {
     assert.throws(() => {
       MonitorManager.registerMetric('aa5', {
         name: 'empty_registers',
@@ -155,7 +155,7 @@ suite(testing.suiteName(), function() {
     }, /Must provide at least one register/);
   });
 
-  test('can use metrics', async function() {
+  test('can use metrics', async () => {
     const monitor = MonitorManager.setup({
       serviceName: 'taskcluster-testing-service',
       level: 'debug',
@@ -191,7 +191,7 @@ suite(testing.suiteName(), function() {
       'expected shared metric in special registry');
   });
 
-  test('throws error when invalid metric names are used', async function () {
+  test('throws error when invalid metric names are used', async () => {
     const monitor = MonitorManager.setup({
       serviceName: 'taskcluster-testing-service',
       level: 'debug',

@@ -70,7 +70,7 @@ const testCases = [
   },
 ];
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   // Run test cases using schemas testing utility from @taskcluster/lib-testing
   testing.schemas({
     schemasetOptions: {

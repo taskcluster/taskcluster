@@ -2,11 +2,9 @@ import zurvan from 'zurvan';
 import timers from 'node:timers';
 
 /** Return promise that is resolved in `delay` ms */
-export const sleep = function(delay) {
-  return new Promise(function(accept) {
-    setTimeout(accept, delay);
-  });
-};
+export const sleep = (delay) => new Promise((accept) => {
+  setTimeout(accept, delay);
+});
 
 export const runWithFakeTime = (fn, { mock = true, maxTime = 30000, ...zurvanOptions } = {}) => {
   if (!mock) {

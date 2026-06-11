@@ -3,20 +3,20 @@ import taskcluster from '@taskcluster/client';
 import helper from './helper/index.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.resetTables(mock, skipping);
   helper.withBackends(mock, skipping);
 
-  setup(async function() {
+  setup(async () => {
     helper.load.save();
   });
 
-  teardown(async function() {
+  teardown(async () => {
     helper.load.restore();
   });
 
-  test('expiration deletes row when backend returns true', async function() {
+  test('expiration deletes row when backend returns true', async () => {
     await helper.db.fns.create_object_for_upload({
       name_in: 'test-obj',
       project_id_in: 'proj',
@@ -33,7 +33,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.deepEqual(res, []);
   });
 
-  test('expiration does not delete row when backend returns false', async function() {
+  test('expiration does not delete row when backend returns false', async () => {
     await helper.db.fns.create_object_for_upload({
       name_in: 'test-obj',
       project_id_in: 'proj',
@@ -50,7 +50,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.deepEqual(res.map(obj => obj.name), ['test-obj']);
   });
 
-  test('expiration does not fail row when backend fails', async function() {
+  test('expiration does not fail row when backend fails', async () => {
     await helper.db.fns.create_object_for_upload({
       name_in: 'test-obj',
       project_id_in: 'proj',
@@ -75,7 +75,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     monitor.manager.reset();
   });
 
-  test('expiration does not fail row when backend does not exist', async function() {
+  test('expiration does not fail row when backend does not exist', async () => {
     await helper.db.fns.create_object_for_upload({
       name_in: 'test-obj',
       project_id_in: 'proj',

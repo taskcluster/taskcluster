@@ -3,7 +3,7 @@ import testing from '@taskcluster/lib-testing';
 import tcdb from '@taskcluster/db';
 import helper from './helper.js';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
   const schema = tcdb.schema({ useDbDirectory: true });
@@ -58,21 +58,21 @@ suite(testing.suiteName(), function() {
     });
   };
 
-  test('upgrade to latest version', async function() {
+  test('upgrade to latest version', async () => {
     await helper.upgradeTo(latestVersion.version);
   });
 
-  test('downgrade to version 0', async function() {
+  test('downgrade to version 0', async () => {
     await helper.downgradeTo(0);
     await assertEmptySchema();
     await assertNoPermissions();
   });
 
-  test('upgrade to latest version again', async function() {
+  test('upgrade to latest version again', async () => {
     await helper.upgradeTo(latestVersion.version);
   });
 
-  test('downgrade to version 0', async function() {
+  test('downgrade to version 0', async () => {
     await helper.downgradeTo(0);
     await assertEmptySchema();
     await assertNoPermissions();

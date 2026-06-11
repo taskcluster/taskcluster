@@ -5,7 +5,7 @@ import { StaticProvider } from '../src/providers/static.js';
 import testing from '@taskcluster/lib-testing';
 import { WorkerPool, Worker } from '../src/data.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);
@@ -50,7 +50,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     emailOnError: false,
   };
 
-  setup(async function() {
+  setup(async () => {
     provider = new StaticProvider({
       providerId,
       db: helper.db,
@@ -72,7 +72,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await provider.setup();
   });
 
-  test('updateWorker updates expires, capacity, secret', async function() {
+  test('updateWorker updates expires, capacity, secret', async () => {
     let worker = Worker.fromApi(defaultWorker);
     await worker.create(helper.db);
 
@@ -96,7 +96,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ]);
   });
 
-  test('removeWorker marks the worker as stopped', async function() {
+  test('removeWorker marks the worker as stopped', async () => {
     const worker = Worker.fromApi(defaultWorker);
     await worker.create(helper.db);
 
@@ -108,7 +108,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     ]);
   });
 
-  suite('registerWorker', function() {
+  suite('registerWorker', () => {
     // create a test worker pool directly in the DB
     const createWorker = overrides => {
       const worker = Worker.fromApi(
@@ -116,7 +116,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return worker.create(helper.db);
     };
 
-    test('no token', async function() {
+    test('no token', async () => {
       const worker = await createWorker({ state: 'running' });
       const workerIdentityProof = {};
       await assert.rejects(() =>
@@ -124,7 +124,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       /missing staticSecret/);
     });
 
-    test('not running', async function() {
+    test('not running', async () => {
       const worker = await createWorker({ state: 'stopped' });
       const workerIdentityProof = { staticSecret: 'good' };
       await assert.rejects(() =>
@@ -132,7 +132,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       /worker is not running/);
     });
 
-    test('invalid token', async function() {
+    test('invalid token', async () => {
       const worker = await createWorker({ state: 'running' });
       const workerIdentityProof = { staticSecret: 'invalid' };
       await assert.rejects(() =>
@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       /bad staticSecret/);
     });
 
-    test('successful registration', async function() {
+    test('successful registration', async () => {
       const pool = WorkerPool.fromApi({
         ...defaultWorkerPool,
         workerPoolId: 'pool/config',

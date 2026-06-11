@@ -5,7 +5,7 @@ import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -19,7 +19,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
     );
   };
 
-  teardown(async function() {
+  teardown(async () => {
     helper.onPulsePublish(); // don't fail to publish this time!
     helper.setupScopes();
     await helper.apiClient.deleteRole('anonymous');
@@ -514,7 +514,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       { scopes: ['assume:anonymous', 'myapi:x', 'auth:current-scopes'] });
   });
 
-  suite('auth.listClients', function() {
+  suite('auth.listClients', () => {
     const suffixes = ['/aa', '/bb', '/bb/1', '/bb/2', '/bb/3', '/bb/4', '/bb/5'];
 
     setup(async function() {

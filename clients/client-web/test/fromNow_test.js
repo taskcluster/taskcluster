@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { fromNow } from '../src';
 
-describe('fromNow', function() {
+describe('fromNow', () => {
   it('should generate current datetime', () => {
     const date1 = new Date();
     const date2 = fromNow();

@@ -39,7 +39,7 @@ function startServer(app) {
   });
 }
 
-suite('profiler/routes', function() {
+suite('profiler/routes', () => {
   const completedTask = {
     task: {
       schedulerId: 'test-scheduler',
@@ -68,10 +68,10 @@ suite('profiler/routes', function() {
     },
   };
 
-  suite('task group profile endpoint', function() {
+  suite('task group profile endpoint', () => {
     let server, port;
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       const app = await createTestApp(() => ({
         queue: {
           listTaskGroup: async () => ({ tasks: [completedTask] }),
@@ -80,11 +80,11 @@ suite('profiler/routes', function() {
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown(function(done) {
+    suiteTeardown((done) => {
       server.close(done);
     });
 
-    test('returns a valid profile for a task group', async function() {
+    test('returns a valid profile for a task group', async () => {
       const res = await request
         .get(`http://localhost:${port}/api/web-server/v1/task-group/${VALID_SLUGID}/profile`)
         .ok(() => true);
@@ -96,7 +96,7 @@ suite('profiler/routes', function() {
       assert.equal(res.headers['cache-control'], 'public, max-age=86400');
     });
 
-    test('returns 400 for invalid task group ID', async function() {
+    test('returns 400 for invalid task group ID', async () => {
       const res = await request
         .get(`http://localhost:${port}/api/web-server/v1/task-group/not valid!/profile`)
         .ok(() => true);
@@ -106,10 +106,10 @@ suite('profiler/routes', function() {
     });
   });
 
-  suite('cache headers', function() {
+  suite('cache headers', () => {
     let server, port;
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       const app = await createTestApp(() => ({
         queue: {
           listTaskGroup: async () => ({
@@ -141,11 +141,11 @@ suite('profiler/routes', function() {
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown(function(done) {
+    suiteTeardown((done) => {
       server.close(done);
     });
 
-    test('returns no-cache for running tasks', async function() {
+    test('returns no-cache for running tasks', async () => {
       const res = await request
         .get(`http://localhost:${port}/api/web-server/v1/task-group/${VALID_SLUGID}/profile`)
         .ok(() => true);
@@ -155,10 +155,10 @@ suite('profiler/routes', function() {
     });
   });
 
-  suite('error handling', function() {
+  suite('error handling', () => {
     let server, port;
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       const app = await createTestApp(() => ({
         queue: {
           listTaskGroup: async () => {
@@ -181,11 +181,11 @@ suite('profiler/routes', function() {
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown(function(done) {
+    suiteTeardown((done) => {
       server.close(done);
     });
 
-    test('returns 404 when task group not found', async function() {
+    test('returns 404 when task group not found', async () => {
       const res = await request
         .get(`http://localhost:${port}/api/web-server/v1/task-group/${VALID_SLUGID}/profile`)
         .ok(() => true);
@@ -194,7 +194,7 @@ suite('profiler/routes', function() {
       assert.equal(res.body.code, 'ResourceNotFound');
     });
 
-    test('returns 404 when task not found', async function() {
+    test('returns 404 when task not found', async () => {
       const res = await request
         .get(`http://localhost:${port}/api/web-server/v1/task/${VALID_SLUGID_2}/profile`)
         .ok(() => true);
@@ -204,19 +204,19 @@ suite('profiler/routes', function() {
     });
   });
 
-  suite('CORS', function() {
+  suite('CORS', () => {
     let server, port;
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       const app = await createTestApp(() => ({ queue: {} }));
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown(function(done) {
+    suiteTeardown((done) => {
       server.close(done);
     });
 
-    test('responds to OPTIONS preflight for task group profile', async function() {
+    test('responds to OPTIONS preflight for task group profile', async () => {
       const res = await request
         .options(`http://localhost:${port}/api/web-server/v1/task-group/${VALID_SLUGID}/profile`)
         .set('Origin', 'https://profiler.firefox.com')
@@ -226,7 +226,7 @@ suite('profiler/routes', function() {
       assert.equal(res.headers['access-control-allow-origin'], '*');
     });
 
-    test('responds to OPTIONS preflight for task log profile', async function() {
+    test('responds to OPTIONS preflight for task log profile', async () => {
       const res = await request
         .options(`http://localhost:${port}/api/web-server/v1/task/${VALID_SLUGID}/profile`)
         .set('Origin', 'https://profiler.firefox.com')
@@ -254,7 +254,7 @@ suite('profiler/routes', function() {
     return () => { global.fetch = original; };
   }
 
-  suite('task log profile endpoint', function() {
+  suite('task log profile endpoint', () => {
     const logContent = [
       '[taskcluster:info 2024-01-01T10:00:00.000Z] Starting task',
       '[setup:warn 2024-01-01T10:00:01.000Z] Installing dependencies',
@@ -263,7 +263,7 @@ suite('profiler/routes', function() {
 
     let server, port, restoreFetch;
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       restoreFetch = mockFetch({
         'live.log': () => ({
           ok: true,
@@ -288,12 +288,12 @@ suite('profiler/routes', function() {
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown(function(done) {
+    suiteTeardown((done) => {
       restoreFetch();
       server.close(done);
     });
 
-    test('returns gzip-compressed profile', async function() {
+    test('returns gzip-compressed profile', async () => {
       const res = await request
         .get(`http://localhost:${port}/api/web-server/v1/task/${VALID_SLUGID_2}/profile`)
         .buffer(true)
@@ -310,7 +310,7 @@ suite('profiler/routes', function() {
       assert.equal(profile.threads[0].name, 'Live Log');
     });
 
-    test('returns cache headers for completed task', async function() {
+    test('returns cache headers for completed task', async () => {
       const res = await request
         .get(`http://localhost:${port}/api/web-server/v1/task/${VALID_SLUGID_2}/profile`)
         .buffer(true)
@@ -321,10 +321,10 @@ suite('profiler/routes', function() {
     });
   });
 
-  suite('task log profile size limit', function() {
+  suite('task log profile size limit', () => {
     let server, port, restoreFetch;
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       restoreFetch = mockFetch({
         'live.log': () => ({
           ok: true,
@@ -344,12 +344,12 @@ suite('profiler/routes', function() {
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown(function(done) {
+    suiteTeardown((done) => {
       restoreFetch();
       server.close(done);
     });
 
-    test('returns 413 for oversized logs', async function() {
+    test('returns 413 for oversized logs', async () => {
       const res = await request
         .get(`http://localhost:${port}/api/web-server/v1/task/${VALID_SLUGID_2}/profile`)
         .ok(() => true);

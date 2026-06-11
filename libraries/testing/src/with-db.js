@@ -65,7 +65,7 @@ export const withDb = (mock, skipping, helper, serviceName) => {
   assert(testDbUrl,
     "TEST_DB_URL must be set to run these tests - see dev-docs/development-process.md for more information");
 
-  suiteSetup('withDb', async function() {
+  suiteSetup('withDb', async () => {
     if (skipping()) {
       return;
     }
@@ -116,7 +116,7 @@ export const withDb = (mock, skipping, helper, serviceName) => {
     }
   });
 
-  suiteTeardown('withDb', async function() {
+  suiteTeardown('withDb', async () => {
     if (skipping()) {
       return;
     }

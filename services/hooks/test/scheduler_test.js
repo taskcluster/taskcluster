@@ -13,7 +13,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   this.slow(500);
 
-  setup(function() {
+  setup(() => {
     helper.load.cfg('app.scheduler.pollingDelay', 1);
     helper.load.inject('notify', new taskcluster.Notify({
       rootUrl: helper.rootUrl,
@@ -67,7 +67,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assume(callCount).equals(newCallCount);
   });
 
-  suite('poll method', function() {
+  suite('poll method', () => {
     subSkip();
     setup(async () => {
       const hookParams = {
@@ -118,7 +118,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('handleHook method', function() {
+  suite('handleHook method', () => {
     subSkip();
     let hook;
 

@@ -7,7 +7,7 @@ export default ({ helper, skipping, namespace }) => {
   let client;
   const debugPulseAssertion = debug('withPulse');
 
-  suiteSetup('withPulse', async function () {
+  suiteSetup('withPulse', async () => {
     if (skipping?.()) {
       return;
     }
@@ -79,7 +79,7 @@ export default ({ helper, skipping, namespace }) => {
     };
   });
 
-  setup('withPulse', function() {
+  setup('withPulse', () => {
     if (skipping?.()) {
       return;
     }

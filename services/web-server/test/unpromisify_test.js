@@ -7,7 +7,7 @@ suite(testing.suiteName(), () => {
   // sleep until the next event-loop round
   const sleep = () => new Promise(resolve => setTimeout(resolve, 1));
 
-  test('Successful callback', function(done) {
+  test('Successful callback', (done) => {
     const success = unpromisify(async (a, b) => {
       await sleep();
       return a + b;
@@ -23,7 +23,7 @@ suite(testing.suiteName(), () => {
     });
   });
 
-  test('Successful callback returning an array', function(done) {
+  test('Successful callback returning an array', (done) => {
     const success = unpromisify(async (a, b) => {
       await sleep();
       return [a + b, a * b];
@@ -40,7 +40,7 @@ suite(testing.suiteName(), () => {
     });
   });
 
-  test('Unsuccessful callback', function(done) {
+  test('Unsuccessful callback', (done) => {
     const success = unpromisify(async () => {
       await sleep();
       throw new Error('uhoh');

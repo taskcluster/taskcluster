@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withDenier(mock, skipping);
   helper.withFakeQueue(mock, skipping);
@@ -17,29 +17,27 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   const deadline = new Date();
   deadline.setMinutes(deadline.getMinutes() + 25);
 
-  let makeTask = function(routes) {
-    return {
-      provisionerId: 'dummy-test-provisioner',
-      workerType: 'dummy-test-worker-type',
-      scopes: [],
-      routes: routes,
-      retries: 3,
-      created: created.toJSON(),
-      deadline: deadline.toJSON(),
-      payload: {
-        desiredResolution: 'success',
-      },
-      metadata: {
-        name: 'Print `"Hello World"` Once',
-        description: 'This task will prìnt `"Hello World"` **once**!',
-        owner: 'jojensen@mozilla.com', // Because this is stolen from tc-index tests!
-        source: 'https://github.com/taskcluster/taskcluster-notify',
-      },
-      tags: {
-        objective: 'Test task notifications',
-      },
-    };
-  };
+  let makeTask = (routes) => ({
+    provisionerId: 'dummy-test-provisioner',
+    workerType: 'dummy-test-worker-type',
+    scopes: [],
+    routes: routes,
+    retries: 3,
+    created: created.toJSON(),
+    deadline: deadline.toJSON(),
+    payload: {
+      desiredResolution: 'success',
+    },
+    metadata: {
+      name: 'Print `"Hello World"` Once',
+      description: 'This task will prìnt `"Hello World"` **once**!',
+      owner: 'jojensen@mozilla.com', // Because this is stolen from tc-index tests!
+      source: 'https://github.com/taskcluster/taskcluster-notify',
+    },
+    tags: {
+      objective: 'Test task notifications',
+    },
+  });
 
   let baseStatus = {
     taskId: 'DKPZPsvvQEiw67Pb3rkdNg',
@@ -74,7 +72,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   let monitor;
-  suiteSetup('create handler', async function() {
+  suiteSetup('create handler', async () => {
     if (skipping()) {
       return;
     }

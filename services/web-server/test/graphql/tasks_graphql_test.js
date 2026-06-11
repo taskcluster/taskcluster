@@ -6,11 +6,11 @@ import helper from '../helper.js';
 import WebSocket from 'ws';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   // Use mutable scopeOverride to allow tests to dynamically change auth scopes
   let scopeOverride = null;
 
-  suiteSetup('withMutableAuthFactory', function() {
+  suiteSetup('withMutableAuthFactory', () => {
     if (skipping()) {
       return;
     }
@@ -26,7 +26,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     );
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(() => {
     helper.load.remove('authFactory');
   });
 
@@ -36,8 +36,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.withPulse(helper, skipping);
   helper.resetTables(mock, skipping);
 
-  suite('Task Queries and Mutations', function() {
-    test('query works', async function() {
+  suite('Task Queries and Mutations', () => {
+    test('query works', async () => {
       const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
       const createTaskQuery = await helper.loadFixture('createTask.graphql');
@@ -63,7 +63,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.task.taskId, taskId);
     });
 
-    test('mutation works', async function() {
+    test('mutation works', async () => {
       const client = helper.getHttpClient();
       const taskId = taskcluster.slugid();
       const createTaskQuery = await helper.loadFixture('createTask.graphql');
@@ -80,10 +80,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('Task Subscriptions', function() {
+  suite('Task Subscriptions', () => {
     helper.withMockedEventIterator();
 
-    test('subscribe works', async function() {
+    test('subscribe works', async () => {
       let subscriptionClient = await helper.createSubscriptionClient();
       const client = helper.getWebsocketClient(subscriptionClient);
 
@@ -130,7 +130,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       subscriptionClient.close();
     });
 
-    test('connection rejected without web:read-pulse scope', async function() {
+    test('connection rejected without web:read-pulse scope', async () => {
       scopeOverride = [];
       let subscriptionClient;
       try {

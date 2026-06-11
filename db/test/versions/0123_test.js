@@ -6,10 +6,10 @@ import taskcluster from '@taskcluster/client';
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
-  test('migration deduplicates deadline rows and enforces task_id uniqueness', async function() {
+  test('migration deduplicates deadline rows and enforces task_id uniqueness', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
@@ -57,7 +57,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('migration deduplicates rows with identical (created, deadline)', async function() {
+  test('migration deduplicates rows with identical (created, deadline)', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
@@ -104,7 +104,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('downgrade restores the previous primary key', async function() {
+  test('downgrade restores the previous primary key', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     await helper.downgradeTo(PREV_VERSION);

@@ -287,7 +287,7 @@ builder.declare({
     this.db,
     namespace,
     input,
-  ).then(function(task) {
+  ).then((task) => {
     res.reply(helpers.taskUtils.serialize(task));
   });
 });
@@ -410,7 +410,7 @@ builder.declare({
     'This endpoint is used to check on backing services this service',
     'depends on.',
   ].join('\n'),
-}, function(_req, res) {
+}, (_req, res) => {
   // TODO: add implementation
   res.reply({});
 });

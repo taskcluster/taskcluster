@@ -10,7 +10,7 @@ import testing from '@taskcluster/lib-testing';
 const webhookDir = new URL('./data/webhooks/', import.meta.url).pathname;
 const loadWebhook = filename => JSON.parse(fs.readFileSync(path.join(webhookDir, filename), 'utf8'));
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   let intree;
 
   const webhookPullRequestJson = loadWebhook('webhook.pull_request.open.json');
@@ -20,14 +20,14 @@ suite(testing.suiteName(), function() {
   const webhookReleaseJson = loadWebhook('webhook.release.json');
   const webhookTagPushJson = loadWebhook('webhook.tag_push.json');
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     helper.load.save();
     await helper.load('cfg');
     helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
     intree = await helper.load('intree');
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(() => {
     helper.load.restore();
   });
 
@@ -71,8 +71,8 @@ suite(testing.suiteName(), function() {
    * expected:    {}, keys=>values expected to exist in the compiled config
    * shouldError: if you want intree to throw an exception, set this to true
    **/
-  let buildConfigTest = function(testName, configPath, params, expected, count = -1, shouldError = false) {
-    test(testName, async function() {
+  let buildConfigTest = (testName, configPath, params, expected, count = -1, shouldError = false) => {
+    test(testName, async () => {
       params.config = yaml.load(fs.readFileSync(configPath));
       params.schema = {
         0: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.yml'),

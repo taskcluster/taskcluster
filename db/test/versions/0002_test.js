@@ -48,12 +48,12 @@ const azureTableNames = [
   'WMWorkerPoolErrors',
 ];
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
   /* Note that these tests run in order */
 
-  test(`tables created on upgrade`, async function () {
+  test(`tables created on upgrade`, async () => {
     await helper.upgradeTo(1);
 
     for (let azureTableName of azureTableNames) {
@@ -67,7 +67,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test(`tables dropped on downgrade`, async function () {
+  test(`tables dropped on downgrade`, async () => {
     await helper.downgradeTo(1);
     for (let azureTableName of azureTableNames) {
       await helper.assertNoTable(postgresTableName(azureTableName));

@@ -135,7 +135,7 @@ class SchemaSet {
       }
       ajv.validate(id, obj);
       if (ajv.errors) {
-        _.forEach(ajv.errors, function(error) {
+        _.forEach(ajv.errors, (error) => {
           if (error.params['additionalProperty']) {
             error.message += ': ' + JSON.stringify(error.params['additionalProperty']);
           }

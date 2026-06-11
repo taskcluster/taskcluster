@@ -560,7 +560,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(res.statusCode).equals(303);
     });
 
-    test('Listing artifacts without scopes', async function() {
+    test('Listing artifacts without scopes', async () => {
       const taskId = slugid.nice();
 
       helper.scopes('none');
@@ -720,13 +720,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       assume(r3.artifacts.length).equals(0);
     });
 
-    test('finish an artifact for a task that does not exist', async function() {
+    test('finish an artifact for a task that does not exist', async () => {
       await assert.rejects(
         () => helper.queue.finishArtifact(taskId, 0, 'public/foo.json', { uploadId: taskcluster.slugid() }),
         err => err.statusCode === 404);
     });
 
-    test('finish an artifact that does not exist', async function() {
+    test('finish an artifact that does not exist', async () => {
       await makeAndClaimTask();
       await assert.rejects(
         () => helper.queue.finishArtifact(taskId, 0, 'public/foo.json', { uploadId: taskcluster.slugid() }),
@@ -1167,7 +1167,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
-  suite('createArtifactCallsCompatible', function() {
+  suite('createArtifactCallsCompatible', () => {
     const sooner = taskcluster.fromNow('1 day');
     const later = taskcluster.fromNow('2 day');
     const base = {
@@ -1177,18 +1177,18 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       details: { x: 10 },
     };
 
-    test('same call is compatible', function() {
+    test('same call is compatible', () => {
       assume(createArtifactCallsCompatible(base, base)).is.ok();
     });
 
-    test('extending expires is compatible', function() {
+    test('extending expires is compatible', () => {
       assume(createArtifactCallsCompatible(
         base,
         { ...base, expires: later }))
         .is.ok();
     });
 
-    test('reducing expires is not compatible', function() {
+    test('reducing expires is not compatible', () => {
       assume(createArtifactCallsCompatible(
         { ...base, expires: later },
         { ...base, expires: sooner }))
@@ -1197,7 +1197,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     for (const storageType of ['error', 's3', 'object', 'link']) {
       // NOTE: the list above omits 'reference', as it allows detail changes
-      test(`changing details for storageType ${storageType} is not allowed`, function() {
+      test(`changing details for storageType ${storageType} is not allowed`, () => {
         assume(createArtifactCallsCompatible(
           { ...base, storageType, details: { x: 10 } },
           { ...base, storageType, details: { x: 20 } }))
@@ -1205,7 +1205,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       });
     }
 
-    test('changing details for storageType reference is allowed', function() {
+    test('changing details for storageType reference is allowed', () => {
       assume(createArtifactCallsCompatible(
         { ...base, storageType: 'reference', details: { x: 10 } },
         { ...base, storageType: 'reference', details: { x: 20 } }))
@@ -1218,7 +1218,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         if (original === update || (original === 'reference' && update === 'link')) {
           continue;
         }
-        test(`storageType ${original} -> ${update} is not allowed`, function() {
+        test(`storageType ${original} -> ${update} is not allowed`, () => {
           assume(createArtifactCallsCompatible(
             { ...base, storageType: original },
             { ...base, storageType: update }))
@@ -1227,7 +1227,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       }
     }
 
-    test(`storageType reference -> link is allowed, and content-type is ignored in this case`, function() {
+    test(`storageType reference -> link is allowed, and content-type is ignored in this case`, () => {
       assume(createArtifactCallsCompatible(
         { ...base, storageType: 'reference', details: { url: 'abc' }, contentType: 'old/content-type' },
         { ...base, storageType: 'link', details: { artiact: 'def' }, contentType: 'new/content-type' }))

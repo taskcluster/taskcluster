@@ -8,7 +8,7 @@ export const load = testing.stickyLoader(loadMain);
 const helper = { load };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -47,7 +47,7 @@ let testClients = {
 helper.withServer = (mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -73,7 +73,7 @@ helper.withServer = (mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }

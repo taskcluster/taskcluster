@@ -2,10 +2,10 @@ import { strict as assert } from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import tcdb from '@taskcluster/db';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const schema = tcdb.schema({ useDbDirectory: true });
 
-  test('DB has no timezone-less timestamp columns', function() {
+  test('DB has no timezone-less timestamp columns', () => {
     /* Postgres TIMESTAMP columns, by default, lack a timezone.  While it's possible to
      * design a DB with the implicit assumption that all timestamps are in UTC, this is
      * a source of confusion and errors.  Instead, we require that every TIMESTAMP column

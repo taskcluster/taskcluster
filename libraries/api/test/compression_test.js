@@ -7,7 +7,7 @@ import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   const builder = new APIBuilder({
@@ -28,7 +28,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     stability: APIBuilder.stability.stable,
     description: 'Returns a large JSON payload',
-  }, function(req, res) {
+  }, (req, res) => {
     res.reply({ data: 'x'.repeat(2000) });
   });
 
@@ -42,7 +42,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     stability: APIBuilder.stability.stable,
     description: 'Returns a small JSON payload',
-  }, function(req, res) {
+  }, (req, res) => {
     res.reply({ ok: true });
   });
 
@@ -58,7 +58,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     stability: APIBuilder.stability.stable,
     description: 'Returns a pre-gzipped payload',
-  }, function(req, res) {
+  }, (req, res) => {
     const payload = Buffer.from('y'.repeat(2000));
     const gzipped = gzipSync(payload);
     res.set('Content-Type', 'application/json');
@@ -66,15 +66,15 @@ suite(testing.suiteName(), function() {
     res.send(gzipped);
   });
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     await helper.setupServer({ builder, context: {} });
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     await helper.teardownServer();
   });
 
-  test('large response is gzip-compressed when client accepts gzip', async function() {
+  test('large response is gzip-compressed when client accepts gzip', async () => {
     const res = await request
       .get(u('/large-payload'))
       .set('Accept-Encoding', 'gzip');
@@ -84,7 +84,7 @@ suite(testing.suiteName(), function() {
     assert.strictEqual(res.body.data.length, 2000);
   });
 
-  test('small response is not compressed (below 1024-byte threshold)', async function() {
+  test('small response is not compressed (below 1024-byte threshold)', async () => {
     const res = await request
       .get(u('/small-payload'))
       .set('Accept-Encoding', 'gzip');
@@ -92,7 +92,7 @@ suite(testing.suiteName(), function() {
       'Expected no Content-Encoding for small payload below threshold');
   });
 
-  test('response is not compressed when client does not accept gzip', async function() {
+  test('response is not compressed when client does not accept gzip', async () => {
     const res = await request
       .get(u('/large-payload'))
       .set('Accept-Encoding', 'identity');
@@ -101,7 +101,7 @@ suite(testing.suiteName(), function() {
     assert.strictEqual(res.body.data.length, 2000);
   });
 
-  test('pre-set Content-Encoding is preserved (no double compression)', async function() {
+  test('pre-set Content-Encoding is preserved (no double compression)', async () => {
     // Fetch raw response bytes without client-side decompression. If the
     // middleware had re-gzipped, gunzipping once would yield still-gzipped
     // bytes (starting with 0x1f 0x8b) instead of the plaintext body.

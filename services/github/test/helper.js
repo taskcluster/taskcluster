@@ -17,7 +17,7 @@ const helper = {
 };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -32,7 +32,7 @@ helper.secrets = new testing.Secrets({
 
 // Build an http request from a json file with fields describing
 // headers and a body
-helper.jsonHttpRequest = function(jsonFile, options) {
+helper.jsonHttpRequest = (jsonFile, options) => {
   let defaultOptions = {
     hostname: 'localhost',
     port: 60415,
@@ -43,7 +43,7 @@ helper.jsonHttpRequest = function(jsonFile, options) {
   let jsonData = JSON.parse(fs.readFileSync(jsonFile));
   options.headers = jsonData.headers;
 
-  return new Promise(function(accept, reject) {
+  return new Promise((accept, reject) => {
     try {
       let req = http.request(options, accept);
       req.write(JSON.stringify(jsonData.body));
@@ -67,15 +67,15 @@ helper.withPulse = (mock, skipping) => {
  * This is reset before each test.  Call this before withServer.
  */
 helper.withFakeGithub = (mock, skipping) => {
-  suiteSetup(function() {
+  suiteSetup(() => {
     load.inject('github', fakeGithubAuth());
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(() => {
     load.remove('github');
   });
 
-  setup(async function() {
+  setup(async () => {
     let fakeGithub = await load('github');
     fakeGithub.resetStubs();
   });
@@ -94,11 +94,11 @@ helper.withFakeQueue = (mock, skipping) => {
     },
   });
 
-  suiteSetup(function() {
+  suiteSetup(() => {
     load.inject('queueClient', fakeQueueClient());
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(() => {
     load.remove('queueClient');
   });
 };
@@ -112,7 +112,7 @@ helper.withFakeQueue = (mock, skipping) => {
 helper.withServer = (mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -137,7 +137,7 @@ helper.withServer = (mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -150,7 +150,7 @@ helper.withServer = (mock, skipping) => {
 };
 
 helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
+  setup('reset tables', async () => {
     await testing.resetTables({ tableNames: [
       'github_builds',
       'github_checks',

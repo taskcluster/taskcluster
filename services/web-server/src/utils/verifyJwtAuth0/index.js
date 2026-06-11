@@ -24,7 +24,7 @@ export default async ({ token, domain, audience }) => new Promise((resolve, reje
       issuer: `https://${domain}/`,
       algorithms: ['RS256'],
     },
-    function(err, decoded) {
+    (err, decoded) => {
       if (err) {
         reject(err);
       } else {

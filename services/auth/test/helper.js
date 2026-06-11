@@ -21,7 +21,7 @@ export const load = stickyLoader(mainLoad);
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   process.env.GCP_ALLOWED_SERVICE_ACCOUNTS = JSON.stringify([
     'invalid@mozilla.com',
   ]);
@@ -68,7 +68,7 @@ helper.withCfg = (mock, skipping) => {
   if (skipping()) {
     return;
   }
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -95,7 +95,7 @@ helper.withCfg = (mock, skipping) => {
     }
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -113,7 +113,7 @@ helper.withDb = (mock, skipping) => {
  */
 helper.withSentry = (mock, skipping) => {
   const sentryOrgs = {};
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -181,7 +181,7 @@ testServiceBuilder.declare({
   title: 'Get Resource',
   category: 'Auth Service',
   description: '...',
-}, function(req, res) {
+}, (req, res) => {
   res.status(200).json({
     message: 'Hello World',
   });
@@ -199,7 +199,7 @@ testServiceBuilder.declare({
 helper.withServers = (mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -258,7 +258,7 @@ helper.withServers = (mock, skipping) => {
     helper.setupScopes();
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -381,7 +381,7 @@ helper.withGcp = (mock, skipping) => {
 };
 
 helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
+  setup('reset tables', async () => {
     await libTesting.resetTables({ tableNames: [
       'roles',
       'clients',

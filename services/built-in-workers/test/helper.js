@@ -7,7 +7,7 @@ const load = stickyLoader(_load);
 const helper = { load };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -22,7 +22,7 @@ suiteSetup(async function() {
 helper.rootUrl = 'http://localhost:8080';
 
 helper.withFakeQueue = () => {
-  suiteSetup(function() {
+  suiteSetup(() => {
     const queue = stubbedQueue(helper);
     load.inject('queue', queue);
   });
@@ -52,7 +52,7 @@ const stubbedQueue = (fakeQueue) => {
       accessToken: 'none',
     },
     fake: {
-      task: async function (taskId) {
+      task: async (taskId) => {
         const task = tasks[taskId];
         assert(task, `fake queue has no task ${taskId}`);
         return task;

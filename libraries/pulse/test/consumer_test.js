@@ -7,18 +7,18 @@ import assert from 'node:assert';
 import helper from './helper.js';
 import { suiteName } from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
+helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, skipping) => {
   if (mock) {
     return; // Only test with real creds
   }
   let connectionString;
   const monitor = helper.monitor;
 
-  setup(async function() {
+  setup(async () => {
     connectionString = helper.secrets.get('pulse').connectionString;
   });
 
-  suite('PulseConsumer', function() {
+  suite('PulseConsumer', () => {
     // use a unique name for each test run, just to ensure nothing interferes
     const unique = Date.now().toString();
     const exchangeName = `exchanges/test/${unique}`;
@@ -30,7 +30,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
     ];
     const debug = debugModule('test');
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
 
       // otherwise, set up the exchange
       const conn = await amqplib.connect(connectionString);
@@ -69,7 +69,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       });
     };
 
-    test('consume messages', async function() {
+    test('consume messages', async () => {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,
@@ -139,7 +139,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       monitor.manager.messages = [];
     });
 
-    test('handle connection failure during consumption', async function() {
+    test('handle connection failure during consumption', async () => {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,
@@ -185,7 +185,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       assume(numbers).to.deeply.equal([0, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
 
-    test('consume messages ephemerally', async function() {
+    test('consume messages ephemerally', async () => {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,
@@ -278,7 +278,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       monitor.manager.messages = [];
     });
 
-    test('no queueName is an error', async function() {
+    test('no queueName is an error', async () => {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,

@@ -6,7 +6,7 @@ import { UNDEFINED_COLUMN } from '@taskcluster/lib-postgres';
 
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
 
   // A helper to make it easier to create tasks with dummy values within queries
   const makeFieldsForCreation = (opts) => {

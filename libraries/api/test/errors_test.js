@@ -7,7 +7,7 @@ import libUrls from 'taskcluster-lib-urls';
 import { setIsProduction } from '../src/middleware/express-error.js';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   // Create test api
   const builder = new APIBuilder({
     title: 'Test Api',
@@ -24,8 +24,8 @@ suite(testing.suiteName(), function() {
   teardown(helper.teardownServer);
 
   // we want to test the production behavior..
-  suiteSetup(function() { setIsProduction(true); });
-  suiteTeardown(function() { setIsProduction(false); });
+  suiteSetup(() => { setIsProduction(true); });
+  suiteTeardown(() => { setIsProduction(false); });
 
   builder.declare({
     method: 'get',
@@ -35,11 +35,11 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, (req, res) => {
     res.reportError('InputError', 'Testing Error', { dee: 'tails' });
   });
 
-  test('InputError response', async function() {
+  test('InputError response', async () => {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputerror');
     return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
       if (!res.status) {
@@ -66,7 +66,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     description: 'Place we can call to test something',
     scopes: null,
-  }, function(req, res) {
+  }, (req, res) => {
     req.body.foos = [4, 5];
     res.reportError(
       'TooManyFoos',
@@ -74,7 +74,7 @@ suite(testing.suiteName(), function() {
       { foos: [1, 2, 3] });
   });
 
-  test('TooManyFoos response', async function() {
+  test('TooManyFoos response', async () => {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/toomanyfoos');
     return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
       assert(res.status === 472);
@@ -116,11 +116,11 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     description: 'Place we can call to test something',
     scopes: null,
-  }, function(req, res) {
+  }, (req, res) => {
     throw new Error('uhoh');
   });
 
-  test('ISE response', async function() {
+  test('ISE response', async () => {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/ISE');
     return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
       assert(res.status === 500);
@@ -150,10 +150,10 @@ suite(testing.suiteName(), function() {
       return payload;
     },
     scopes: null,
-  }, function(req, res) {
+  }, (req, res) => {
   });
 
-  test('InputValidationError response', async function() {
+  test('InputValidationError response', async () => {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputvalidationerror');
     return request.post(url).send({ invalid: 'yep', secret: 's3kr!t' })
       .then(res => assert(false, 'should have failed!'))

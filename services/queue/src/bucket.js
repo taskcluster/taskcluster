@@ -156,11 +156,9 @@ Bucket.prototype.deleteObjects = function(prefixes, quiet = false) {
   return this.s3.send(new DeleteObjectsCommand({
     Bucket: this.bucket,
     Delete: {
-      Objects: prefixes.map(function(prefix) {
-        return {
-          Key: prefix,
-        };
-      }),
+      Objects: prefixes.map((prefix) => ({
+        Key: prefix,
+      })),
       ...(quiet ? { Quiet: true } : {}),
     },
   }));

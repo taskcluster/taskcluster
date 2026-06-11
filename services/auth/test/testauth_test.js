@@ -12,8 +12,8 @@ const badcreds = {
   accessToken: 'wrong',
 };
 
-suite(testing.suiteName(), function() {
-  helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+suite(testing.suiteName(), () => {
+  helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);
@@ -100,7 +100,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.secrets.mockSuite('testAuthGet', ['azure', 'gcp'], function(mock, skipping) {
+  helper.secrets.mockSuite('testAuthGet', ['azure', 'gcp'], (mock, skipping) => {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
     helper.withPulse(mock, skipping);

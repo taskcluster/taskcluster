@@ -8,16 +8,16 @@ import { CHECK_RUN_STATES } from '../src/constants.js';
 /**
  * Tests of installation syncing
  */
-helper.secrets.mockSuite(testing.suiteName(), [], function() {
-  setup(async function () {
+helper.secrets.mockSuite(testing.suiteName(), [], () => {
+  setup(async () => {
     MockDate.set('2000-05-05T12:12:12.000Z');
   });
 
-  teardown(function () {
+  teardown(() => {
     MockDate.reset();
   });
 
-  test('GithubCheckOutput', function() {
+  test('GithubCheckOutput', () => {
     const gco = new GithubCheckOutput({ title: 'a', summary: 'b', text: 'c', annotations: [] });
 
     // 60000 max - 'a'.length - 'b'.length - 'c'.length = '[]'.length (json)
@@ -41,7 +41,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function() {
     assert.equal(0, gco.getRemainingMaxSize());
   });
 
-  test('GithubCheck', function() {
+  test('GithubCheck', () => {
     const gc = new GithubCheck({
       check_run_id: 1,
       status: CHECK_RUN_STATES.QUEUED,
@@ -107,7 +107,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function() {
     }, gc.getRerequestPayload());
   });
 
-  test('Get Time Difference', function() {
+  test('Get Time Difference', () => {
 
     const START_TIMESTAMP = new Date('2024-07-16T18:23:18.118Z');
     const END_TIMESTAMP_MILLISECONDS = new Date('2024-07-16T18:23:18.128Z');

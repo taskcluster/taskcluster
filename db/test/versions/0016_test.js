@@ -3,11 +3,11 @@ import testing from '@taskcluster/lib-testing';
 import { strict as assert } from 'node:assert';
 import slugid from 'slugid';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
   helper.withDbForVersion();
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
 
@@ -27,7 +27,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('uuid_to_slugid', async function() {
+  test('uuid_to_slugid', async () => {
     await helper.withDbClient(async client => {
       const bugs = await client.query(
         `select
@@ -40,7 +40,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('slugid_to_uuid', async function() {
+  test('slugid_to_uuid', async () => {
     await helper.withDbClient(async client => {
       const bugs = await client.query(
         `select

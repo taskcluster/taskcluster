@@ -37,12 +37,12 @@ export const testSimpleDownloadMethod = ({
     (suiteDefinition || (() => {})).call(this);
 
     let backend;
-    setup(async function() {
+    setup(async () => {
       const backends = await load('backends');
       backend = backends.get(backendId);
     });
 
-    test('supports simple downloads', async function() {
+    test('supports simple downloads', async () => {
       const data = crypto.randomBytes(256);
       const name = testObjectName(prefix);
       const object = await makeObject({ name, data });

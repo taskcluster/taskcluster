@@ -2,35 +2,35 @@ import assert from 'node:assert';
 import * as util from '../src/util.js';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function () {
-  suite('workerPoolId', function () {
-    test('splitWorkerPoolId for valid workerPoolId', function () {
+suite(testing.suiteName(), () => {
+  suite('workerPoolId', () => {
+    test('splitWorkerPoolId for valid workerPoolId', () => {
       assert.deepEqual(util.splitWorkerPoolId('provFoo/wtFoo'),
         { provisionerId: 'provFoo', workerType: 'wtFoo' });
     });
 
-    test('splitWorkerPoolId for invalid workerPoolId', function () {
+    test('splitWorkerPoolId for invalid workerPoolId', () => {
       assert.throws(() => util.splitWorkerPoolId('noSlashes'), /invalid workerPoolId/);
     });
 
-    test('joinWorkerPoolId for valid inputs', function () {
+    test('joinWorkerPoolId for valid inputs', () => {
       assert.equal(util.joinWorkerPoolId('myProv', 'myWt'), 'myProv/myWt');
     });
 
-    test('joinWorkerPoolId for undefined provisionerId', function () {
+    test('joinWorkerPoolId for undefined provisionerId', () => {
       assert.throws(() => util.joinWorkerPoolId(undefined, 'myWt'), /provisionerId omitted/);
     });
 
-    test('joinWorkerPoolId for invalid provisionerId', function () {
+    test('joinWorkerPoolId for invalid provisionerId', () => {
       assert.throws(() => util.joinWorkerPoolId('a/b', 'myWt'), /provisionerId cannot contain/);
     });
 
-    test('joinWorkerPoolId for undefined workerTypoe', function () {
+    test('joinWorkerPoolId for undefined workerTypoe', () => {
       assert.throws(() => util.joinWorkerPoolId('myProv', undefined), /workerType omitted/);
     });
   });
 
-  suite('sanitizeRegisterWorkerPayload', function () {
+  suite('sanitizeRegisterWorkerPayload', () => {
     const testPairs = [
       [{}, {}],
       [{ one: 1, two: '2', arr: [] }, { one: 1, two: '2', arr: [] }],
@@ -43,13 +43,13 @@ suite(testing.suiteName(), function () {
     }));
   });
 
-  suite('measureTime', function () {
-    test('measureTime returns function that returns total time', function () {
+  suite('measureTime', () => {
+    test('measureTime returns function that returns total time', () => {
       const start = util.measureTime();
       const total = start();
       assert(total > 0);
     });
-    test('measureTime uses different precision', function () {
+    test('measureTime uses different precision', () => {
       const start1 = util.measureTime(1e9);
       const start2 = util.measureTime(1e6);
 

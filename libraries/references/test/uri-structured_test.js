@@ -5,12 +5,12 @@ import { readUriStructured, writeUriStructured } from '../src/uri-structured.js'
 import mockFs from 'mock-fs';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
-  teardown(function() {
+suite(testing.suiteName(), () => {
+  teardown(() => {
     mockFs.restore();
   });
 
-  test('writes files', async function() {
+  test('writes files', async () => {
     mockFs({});
 
     // write some data to check later that it's deleted
@@ -35,7 +35,7 @@ suite(testing.suiteName(), function() {
     assert.equal(await fs.readFile('/refdata/abc.json'), '"abc"');
   });
 
-  test('reads files', async function() {
+  test('reads files', async () => {
     mockFs({
       '/data/schemas/common/foo.json': '{"foo": "true"}',
       '/data/references/something/bar.json': '{"bar": "true"}',
@@ -50,7 +50,7 @@ suite(testing.suiteName(), function() {
     }]);
   });
 
-  test('fromUriStructured', async function() {
+  test('fromUriStructured', async () => {
     mockFs({
       '/data/schemas/common/foo.json':
         '{"foo": "true", "$id": "/schemas/common/foo.json", "$schema": "http://json-schema.org/draft-06/schema#"}',

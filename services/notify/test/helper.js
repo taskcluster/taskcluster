@@ -41,7 +41,7 @@ const load = testing.stickyLoader(mainLoad);
 const helper = { load, rootUrl, suiteName };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -66,7 +66,7 @@ helper.secrets = new testing.Secrets({
  * Define a fake denier that will deny anything with 'denied' in the address
  */
 helper.withDenier = (mock, skipping) => {
-  suiteSetup('withDenier', async function() {
+  suiteSetup('withDenier', async () => {
     if (skipping()) {
       return;
     }
@@ -82,7 +82,7 @@ helper.withSES = (mock, skipping) => {
   let ses;
   let sqs;
 
-  suiteSetup('withSES', async function() {
+  suiteSetup('withSES', async () => {
     if (skipping()) {
       return;
     }
@@ -200,7 +200,7 @@ helper.withSES = (mock, skipping) => {
     }
   });
 
-  suiteTeardown('withSES', async function() {
+  suiteTeardown('withSES', async () => {
     if (skipping()) {
       return;
     }
@@ -231,7 +231,7 @@ const stubbedQueue = () => {
     },
   });
 
-  queue.addTask = function(taskId, task) {
+  queue.addTask = (taskId, task) => {
     tasks[taskId] = task;
   };
 
@@ -246,7 +246,7 @@ const stubbedQueue = () => {
  * The component is available at `helper.queue`.
  */
 helper.withFakeQueue = (mock, skipping) => {
-  suiteSetup('withFakeQueue', function() {
+  suiteSetup('withFakeQueue', () => {
     if (skipping()) {
       return;
     }
@@ -265,7 +265,7 @@ const fakeMatrixSend = () => sinon.fake(roomId => {
 });
 
 helper.withFakeMatrix = (mock, skipping) => {
-  suiteSetup('withFakeMatrix', function() {
+  suiteSetup('withFakeMatrix', () => {
     if (skipping()) {
       return;
     }
@@ -277,7 +277,7 @@ helper.withFakeMatrix = (mock, skipping) => {
     load.inject('matrixClient', helper.matrixClient);
   });
 
-  setup(function() {
+  setup(() => {
     helper.matrixClient.sendEvent = fakeMatrixSend();
   });
 };
@@ -285,7 +285,7 @@ helper.withFakeMatrix = (mock, skipping) => {
 helper.withFakeSlack = (mock, skipping) => {
   const fakeSlackSend = () => sinon.fake(() => ({ ok: true }));
 
-  suiteSetup('withFakeSlack', async function() {
+  suiteSetup('withFakeSlack', async () => {
     if (skipping()) {
       return;
     }
@@ -299,7 +299,7 @@ helper.withFakeSlack = (mock, skipping) => {
     load.inject('slackClient', helper.slackClient);
   });
 
-  setup(function() {
+  setup(() => {
     helper.slackClient.chat.postMessage = fakeSlackSend();
   });
 };
@@ -314,7 +314,7 @@ helper.withPulse = (mock, skipping) => {
 helper.withServer = (mock, skipping) => {
   let webServer;
 
-  suiteSetup('withServer', async function() {
+  suiteSetup('withServer', async () => {
     if (skipping()) {
       return;
     }
@@ -344,7 +344,7 @@ helper.withServer = (mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -361,7 +361,7 @@ helper.withDb = (mock, skipping) => {
 };
 
 helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
+  setup('reset tables', async () => {
     await testing.resetTables({ tableNames: [
       'denylisted_notifications',
     ] });

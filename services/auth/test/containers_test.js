@@ -8,18 +8,18 @@ const sorted = (arr) => {
   return arr;
 };
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServers(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  test('get when blob is empty', async function() {
+  test('get when blob is empty', async () => {
     assert.deepEqual(await helper.db.fns.get_roles(), []);
   });
 
-  test('first modification of an empty blob', async function() {
+  test('first modification of an empty blob', async () => {
     await modifyRoles(helper.db, ({ roles }) => {
       roles.push({
         role_id: 'my-role',
@@ -34,7 +34,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       sorted(['my-role']));
   });
 
-  test('add a second role', async function() {
+  test('add a second role', async () => {
     await modifyRoles(helper.db, ({ roles }) => {
       roles.push({
         role_id: 'my-role',

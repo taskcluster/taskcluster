@@ -6,7 +6,7 @@ import taskcluster from '@taskcluster/client';
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function () {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
   const insertOldRecords = async (db, dt1, dt2) => {
@@ -70,7 +70,7 @@ suite(testing.suiteName(), function () {
     assert.equal(deadlines[0].deadline.toJSON(), dt2.toJSON());
   };
 
-  test('new tables are created', async function () {
+  test('new tables are created', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
@@ -89,7 +89,7 @@ suite(testing.suiteName(), function () {
     await helper.assertTable('queue_task_deadlines');
     await helper.assertIndexOnColumn('queue_task_deadlines', 'queue_task_deadline_idx', 'task_id');
   });
-  test('UP: data is being migrated into new tables', async function () {
+  test('UP: data is being migrated into new tables', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
     const db = await helper.setupDb('queue');
@@ -103,7 +103,7 @@ suite(testing.suiteName(), function () {
     await assertRecordsExistInNewTables(db, dt1, dt2);
   });
 
-  test('existing functions should be patched to use new tables', async function () {
+  test('existing functions should be patched to use new tables', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     const db = await helper.setupDb('queue');
@@ -117,7 +117,7 @@ suite(testing.suiteName(), function () {
     await assertRecordsExistInNewTables(db, dt1, dt2);
   });
 
-  test('DOWN: data is being put back into azure messages table', async function () {
+  test('DOWN: data is being put back into azure messages table', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     const db = await helper.setupDb('queue');

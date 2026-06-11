@@ -9,7 +9,7 @@ import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   setup(async () => {
@@ -37,7 +37,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, (req, res) => {
     res.status(200).send('Hello World');
   });
 
@@ -51,7 +51,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, (req, res) => {
     res.reply({ value: 4 });
   });
 
@@ -65,7 +65,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, (req, res) => {
     res.reply({ value: 12 });
   });
 
@@ -80,7 +80,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, (req, res) => {
     res.status(200).send('Hello World');
   });
 
@@ -95,7 +95,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     title: 'Test End-Point',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, (req, res) => {
     res.reply({ value: 12 });
   });
 
@@ -109,7 +109,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, (req, res) => {
     res.reply({ value: 'Hello World' });
   });
 
@@ -122,7 +122,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, (req, res) => {
     res.reply();
   });
 
@@ -135,7 +135,7 @@ suite(testing.suiteName(), function() {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, function(req, res) {
+  }, (req, res) => {
     res.reply();
   });
 
@@ -148,7 +148,7 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     title: 'Test End-Point',
     description: 'place to call to trigger a double send',
-  }, function(req, res) {
+  }, (req, res) => {
     res.status(400).json({ error: 'yep' });
     res.status(200).reply({ value: 1 });
   });
@@ -162,53 +162,53 @@ suite(testing.suiteName(), function() {
     category: 'API Library',
     title: 'Test End-Point',
     description: 'place to call to trigger a double send',
-  }, function(req, res) {
+  }, (req, res) => {
     res.status(400).reply({ value: 1 });
     res.reportError('InputError', 'uhoh', {});
   });
 
   // Test valid input
-  test('input (valid)', function() {
+  test('input (valid)', () => {
     const url = u('/test-input');
     return request
       .post(url)
       .send({ value: 5 })
-      .then(function(res) {
+      .then((res) => {
         assert(res.ok, 'Request failed');
         assert(res.text === 'Hello World', 'Got wrong value');
       });
   });
 
   // Test invalid input
-  test('input (invalid)', function() {
+  test('input (invalid)', () => {
     const url = u('/test-input');
     return request
       .post(url)
       .send({ value: 11 })
       .then(res => assert(false, 'should have failed!'))
-      .catch(function(err) {
+      .catch((err) => {
         assert(err.status === 400, 'Request wasn\'t rejected');
       });
   });
 
   // Test valid output
-  test('output (valid)', function() {
+  test('output (valid)', () => {
     const url = u('/test-output');
     return request
       .get(url)
-      .then(function(res) {
+      .then((res) => {
         assert(res.ok, 'Request okay');
         assert(res.body.value === 4, 'Got wrong value');
       });
   });
 
   // test invalid output
-  test('output (invalid)', function() {
+  test('output (invalid)', () => {
     const url = u('/test-invalid-output');
     return request
       .get(url)
       .then(res => assert(false, 'should have failed!'))
-      .catch(function(err) {
+      .catch((err) => {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data.value must be/));
@@ -218,80 +218,80 @@ suite(testing.suiteName(), function() {
   });
 
   // test skipping input validation
-  test('skip input validation', function() {
+  test('skip input validation', () => {
     const url = u('/test-skip-input-validation');
     return request
       .post(url)
       .send({ value: 100 })
-      .then(function(res) {
+      .then((res) => {
         assert(res.ok, 'Request failed');
         assert(res.text === 'Hello World', 'Got wrong value');
       });
   });
 
   // test skipping output validation
-  test('skip output validation', function() {
+  test('skip output validation', () => {
     const url = u('/test-skip-output-validation');
     return request
       .get(url)
-      .then(function(res) {
+      .then((res) => {
         assert(res.ok, 'Request failed');
         assert(res.body.value === 12, 'Got wrong value');
       });
   });
 
   // test blob output
-  test('blob output', function() {
+  test('blob output', () => {
     const url = u('/test-blob-output');
     return request
       .get(url)
-      .then(function(res) {
+      .then((res) => {
         assert(res.ok, 'Request failed');
         assert(res.body.value === 'Hello World', 'Got wrong value');
       });
   });
 
-  test('input (correct content-type)', function() {
+  test('input (correct content-type)', () => {
     const url = u('/test-input');
     return request
       .post(url)
       .send(JSON.stringify({ value: 5 }))
       .set('content-type', 'application/json')
-      .then(function(res) {
+      .then((res) => {
         assert(res.status === 200, 'Request rejected');
       });
   });
 
-  test('input (wrong content-type)', function() {
+  test('input (wrong content-type)', () => {
     const url = u('/test-input');
     return request
       .post(url)
       .send(JSON.stringify({ value: 5 }))
       .set('content-type', 'text/x-json')
       .then(res => assert(false, 'should have failed!'))
-      .catch(function(err) {
+      .catch((err) => {
         assert(err.status === 400, 'Request wasn\'t rejected');
       });
   });
 
   // Test res.reply with empty body for get request
-  test('res reply with empty body get request without output schema', function() {
+  test('res reply with empty body get request without output schema', () => {
     const url = u('/test-res-reply');
     return request
       .get(url)
-      .then(function(res) {
+      .then((res) => {
         assert(res.status === 204, 'Got 204 status code with empty body');
       });
   });
 
   // Test res.reply with empty body for post request
-  test('res reply with empty body post request with output schema', function() {
+  test('res reply with empty body post request with output schema', () => {
     const url = u('/test-res-reply-post');
     return request
       .post(url)
-      .then(function(res) {
+      .then((res) => {
         assert(false, 'Request validation failed');
-      }).catch(function(err) {
+      }).catch((err) => {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data must be object/));
@@ -300,7 +300,7 @@ suite(testing.suiteName(), function() {
       });
   });
 
-  test('nonexistent schemas are caught at setup time', async function() {
+  test('nonexistent schemas are caught at setup time', async () => {
     const builder = new APIBuilder({
       title: 'Test Api',
       description: 'Another test api',
@@ -317,7 +317,7 @@ suite(testing.suiteName(), function() {
       category: 'API Library',
       title: 'Test End-Point',
       description: '..',
-    }, function(req, res) {});
+    }, (req, res) => {});
 
     const schemaset = new SchemaSet({
       serviceName: 'test',

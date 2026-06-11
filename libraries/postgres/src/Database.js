@@ -645,7 +645,7 @@ class Database {
        * @param {...any[]} args
        * @returns {Promise<pg.QueryResult>}
        */
-      query: async function(query, ...args) {
+      query: async (query, ...args) => {
         try {
           // it is important to keep await here, as we need to catch the error
           return await client.query(query, ...args);

@@ -24,21 +24,21 @@ import path from 'node:path';
  *   basePath:      path.join(__dirname, 'validate')  // basePath test cases
  * }
  */
-let schemas = function(options) {
+let schemas = (options) => {
   // Validate options
   assert(options.schemasetOptions, 'Options must be given for validator');
   assert(Array.isArray(options.cases), 'Array of cases must be given');
   assert(options.serviceName);
 
   let validate;
-  setup(async function() {
+  setup(async () => {
     const schemaset = new SchemaSet(options.schemasetOptions);
     validate = await schemaset.validator(libUrls.testRootUrl());
   });
 
   // Create test cases
-  options.cases.forEach(function(testCase) {
-    test(testCase.path, function() {
+  options.cases.forEach((testCase) => {
+    test(testCase.path, () => {
       // Load test data
       let filePath = testCase.path;
       // Prefix with basePath if a basePath is given

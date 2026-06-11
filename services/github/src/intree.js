@@ -9,10 +9,10 @@ import TcYaml from './tc-yaml.js';
  *    schema:             url,   Url to the taskcluster config schema
  *  }
  **/
-export const setup = async function({ cfg, schemaset }) {
+export const setup = async ({ cfg, schemaset }) => {
   const validate = await schemaset.validator(cfg.taskcluster.rootUrl);
 
-  return function({ config, payload, schema, now }) {
+  return ({ config, payload, schema, now }) => {
     const version = config.version;
 
     const errors = validate(config, schema[version]);

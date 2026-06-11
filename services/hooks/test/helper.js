@@ -35,7 +35,7 @@ helper.withDb = (mock, skipping) => {
  * helper.creator.shouldFail to make the TaskCreator fail.
  * Call this before withServer.
  */
-helper.withTaskCreator = function(mock, skipping) {
+helper.withTaskCreator = (mock, skipping) => {
   suiteSetup(async () => {
     if (skipping()) {
       return;
@@ -47,7 +47,7 @@ helper.withTaskCreator = function(mock, skipping) {
     helper.load.inject('taskcreator', helper.creator);
   });
 
-  setup(function() {
+  setup(() => {
     helper.creator.fireCalls = [];
     helper.creator.shouldFail = false;
     helper.creator.shouldNotProduceTask = false;
@@ -68,7 +68,7 @@ helper.withPulse = (mock, skipping) => {
 helper.withServer = (mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -103,11 +103,11 @@ helper.withServer = (mock, skipping) => {
     webServer = await helper.load('server');
   });
 
-  setup(function() {
+  setup(() => {
     helper.scopes();
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (webServer) {
       await webServer.terminate();
       webServer = null;
@@ -116,7 +116,7 @@ helper.withServer = (mock, skipping) => {
 };
 
 helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
+  setup('reset tables', async () => {
     await testing.resetTables({ tableNames: [
       'hooks',
       'hooks_queues',

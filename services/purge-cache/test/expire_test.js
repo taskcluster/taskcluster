@@ -3,15 +3,15 @@ import taskcluster from '@taskcluster/client';
 import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
 
-  test('expire nothing', async function() {
+  test('expire nothing', async () => {
     const count = (await helper.db.fns.expire_cache_purges(new Date()))[0].expire_cache_purges;
     assume(count).to.equal(0);
   });
 
-  test('expire something', async function() {
+  test('expire something', async () => {
     const wpid = 'pid/wt';
     const times = [
       taskcluster.fromNow('-3 hours'),

@@ -149,55 +149,55 @@ suite(testing.suiteName(), () => {
   });
 
   suite('userFromIdentity', () => {
-    test('LDAP and LDAP groups', async function () {
+    test('LDAP and LDAP groups', async () => {
       const user = await strategy.userFromIdentity('mozilla-auth0/ad|Mozilla-LDAP|tcperson');
       assert.equal(user.identity, 'mozilla-auth0/ad|Mozilla-LDAP|tcperson');
       assert.deepEqual(user.roles, ['mozilla-group:taskcluster']);
     });
 
-    test('LDAP and HRIS groups', async function () {
+    test('LDAP and HRIS groups', async () => {
       const user = await strategy.userFromIdentity('mozilla-auth0/ad|Mozilla-LDAP|torperson');
       assert.equal(user.identity, 'mozilla-auth0/ad|Mozilla-LDAP|torperson');
       assert.deepEqual(user.roles, ['mozilla-hris:office-tor']);
     });
 
-    test('LDAP and Mozillians groups', async function () {
+    test('LDAP and Mozillians groups', async () => {
       const user = await strategy.userFromIdentity('mozilla-auth0/ad|Mozilla-LDAP|mozillian');
       assert.equal(user.identity, 'mozilla-auth0/ad|Mozilla-LDAP|mozillian');
       assert.deepEqual(user.roles, ['mozillians-group:foxy']);
     });
 
-    test('GitHub', async function () {
+    test('GitHub', async () => {
       const user = await strategy.userFromIdentity('mozilla-auth0/github|1234');
       assert.equal(user.identity, 'mozilla-auth0/github|1234');
       assert.deepEqual(user.roles, []);
     });
 
-    test('GitHub inactive', async function () {
+    test('GitHub inactive', async () => {
       const user = await strategy.userFromIdentity('mozilla-auth0/github|9999');
       assert.equal(user, undefined);
     });
 
-    test('Firefox Accounts', async function () {
+    test('Firefox Accounts', async () => {
       const user = await strategy.userFromIdentity('mozilla-auth0/oauth2|firefoxaccounts|abcdef');
       assert.equal(user.identity, 'mozilla-auth0/oauth2|firefoxaccounts|abcdef');
       assert.deepEqual(user.roles, []);
     });
 
-    test('Email (with a slash)', async function () {
+    test('Email (with a slash)', async () => {
       const user = await strategy.userFromIdentity('mozilla-auth0/email|slashy!2Fslashy');
       assert.equal(user.identity, 'mozilla-auth0/email|slashy!2Fslashy');
       assert.deepEqual(user.roles, []);
     });
 
-    test('profile without identities should not have no roles', async function () {
+    test('profile without identities should not have no roles', async () => {
       const user = await strategy.userFromIdentity('mozilla-auth0/oauth2|firefoxaccounts|012345abcdef');
       assert.deepEqual(user.roles, []);
     });
   });
 
   suite('access token expiration', () => {
-    test('token should be requested once', async function() {
+    test('token should be requested once', async () => {
       let calls = 0;
       sinon.stub(strategy, 'fetchAccessToken').callsFake(() => {
         calls++;
@@ -209,7 +209,7 @@ suite(testing.suiteName(), () => {
 
       assert.equal(calls, 1);
     });
-    test('token should be re-fetched after expiry', async function() {
+    test('token should be re-fetched after expiry', async () => {
       let calls = 0;
       sinon.stub(strategy, 'fetchAccessToken').callsFake(() => {
         calls++;

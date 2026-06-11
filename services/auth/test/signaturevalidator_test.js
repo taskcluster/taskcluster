@@ -11,7 +11,7 @@ import helper from './helper.js';
 
 import { normalizeClientId } from '../src/signaturevalidator.js';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   let one_hour = taskcluster.fromNow('1 hour');
   let two_hours = taskcluster.fromNow('2 hour');
   let three_hours = taskcluster.fromNow('3 hour');
@@ -46,7 +46,7 @@ suite(testing.suiteName(), function() {
     return scopes;
   };
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     validator = createSignatureValidator({
       clientLoader: async clientId => {
         if (!clients[clientId]) {
@@ -59,8 +59,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  let makeTest = function(name, input, expected) {
-    test(name, async function() {
+  let makeTest = (name, input, expected) => {
+    test(name, async () => {
       // defer creation of input until the test runs, if necessary
       if (typeof input === 'function') {
         input = input();
@@ -130,7 +130,7 @@ suite(testing.suiteName(), function() {
     });
   };
 
-  let testWithTemp = function(name, options, inputFn, expected) {
+  let testWithTemp = (name, options, inputFn, expected) => {
     /**
      * Options is on the form
      * {
@@ -213,7 +213,7 @@ suite(testing.suiteName(), function() {
   };
 
   // shorthands
-  let success = function(scopes, options) {
+  let success = (scopes, options) => {
     options = options || {};
     let exp = {
       clientId: options.clientId || 'root',
@@ -231,9 +231,7 @@ suite(testing.suiteName(), function() {
     return exp;
   };
 
-  let failed = function(message) {
-    return { status: 'auth-failed', message };
-  };
+  let failed = (message) => ({ status: 'auth-failed', message });
 
   makeTest('simple credentials', {
     authorization: {
