@@ -269,7 +269,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     debug('listNamespaces returns continuationToken after limit = 10');
 
     let i = 1;
-    let continuationToken = undefined;
+    let continuationToken;
     do {
       const query = { limit: 1 };
       if (!_.isUndefined(continuationToken)) {
