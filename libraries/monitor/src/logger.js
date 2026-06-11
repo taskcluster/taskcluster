@@ -118,7 +118,7 @@ export class Logger {
     if (fields === null || typeof fields === 'boolean') {
       level = LEVELS.err;
       const origType = type;
-      type = 'monitor.loggingError',
+      type = 'monitor.loggingError';
       fields = {
         error: 'Invalid field to be logged.',
         origType,
@@ -128,7 +128,7 @@ export class Logger {
     if (fields.meta !== undefined) {
       level = LEVELS.err;
       const origType = type;
-      type = 'monitor.loggingError',
+      type = 'monitor.loggingError';
       fields = {
         error: 'You may not set meta fields on logs directly.',
         origType,
