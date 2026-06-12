@@ -545,6 +545,27 @@ MonitorManager.registerMetric('azureThrottleCount', {
   registers: ['provision', 'scan'],
 });
 
+MonitorManager.registerMetric('azureArmDeploymentError', {
+  name: 'worker_manager_azure_arm_deployment_errors_total',
+  type: 'counter',
+  title: 'Azure ARM deployment errors',
+  description: 'Count of Azure ARM deployment creation failures and failed deployment operations by worker pool, location, and Azure error details',
+  labels: {
+    providerId: 'ID of the provider',
+    workerPoolId: 'The worker pool ID',
+    workerGroup: 'Worker group (region/zone/location)',
+    errorKind: 'Worker-manager error kind',
+    errorCode: 'Azure error code',
+    statusCode: 'Operation status code from the resource provider',
+    provisioningState: 'Azure provisioning state',
+    provisioningOperation: 'Azure provisioning operation',
+    targetResourceType: 'Azure target resource type',
+    vmSize: 'Azure VM size',
+    priority: 'Azure VM priority',
+  },
+  registers: ['provision', 'scan'],
+});
+
 MonitorManager.registerMetric('azureRateLimitRemaining', {
   name: 'worker_manager_azure_ratelimit_remaining',
   type: 'gauge',

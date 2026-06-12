@@ -623,6 +623,72 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(worker.providerData.armDeployment.mode, 'Incremental');
     });
 
+    test('records metric when ARM deployment creation fails', async () => {
+      const recordedMetrics = [];
+      const originalMetric = provider.monitor._metric.azureArmDeploymentError;
+      const originalBeginCreateOrUpdate = fake.deploymentsClient.deployments.beginCreateOrUpdate;
+      provider.monitor._metric.azureArmDeploymentError = (value, labels) => {
+        recordedMetrics.push({ value, labels });
+      };
+      fake.deploymentsClient.deployments.beginCreateOrUpdate = async () => {
+        const err = new Error('Task timed out after 180000ms (queue has 4 running, 0 waiting)');
+        err.name = 'TimeoutError';
+        throw err;
+      };
+
+      try {
+        const workerPool = await makeWorkerPool({
+          config: {
+            minCapacity: 1,
+            maxCapacity: 1,
+            scalingRatio: 1,
+            launchConfigs: [{
+              workerManager: {
+                capacityPerInstance: 1,
+              },
+              armDeployment: {
+                mode: 'Incremental',
+                templateLink: {
+                  id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+                },
+                parameters: {
+                  location: { value: 'east' },
+                  vmSize: { value: 'Standard_F8s_v2' },
+                  priority: { value: 'Spot' },
+                  imageId: {
+                    value: '/subscriptions/fake/resourceGroups/images/providers/Microsoft.Compute/galleries/g/images/i/versions/1.0.3',
+                  },
+                },
+              },
+            }],
+          },
+        });
+        const workerPoolStats = new WorkerPoolStats('wpid');
+
+        await provider.provision({ workerPool, workerPoolStats });
+
+        assert.deepEqual(recordedMetrics, [{
+          value: 1,
+          labels: {
+            providerId,
+            workerPoolId,
+            workerGroup: 'east',
+            errorKind: 'creation-error',
+            errorCode: 'TimeoutError',
+            statusCode: 'unknown',
+            provisioningState: 'unknown',
+            provisioningOperation: 'Create',
+            targetResourceType: 'unknown',
+            vmSize: 'Standard_F8s_v2',
+            priority: 'Spot',
+          },
+        }]);
+      } finally {
+        provider.monitor._metric.azureArmDeploymentError = originalMetric;
+        fake.deploymentsClient.deployments.beginCreateOrUpdate = originalBeginCreateOrUpdate;
+      }
+    });
+
     test('ARM deployment is cleaned up after successful provisioning', async () => {
       await provisionWorkerPool({
         armDeployment: {
@@ -2485,75 +2551,117 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     test('reports worker-pool error when ARM deployment fails', async () => {
       const reportErrorStub = sandbox.stub(provider, 'reportError').resolves();
+      const recordedMetrics = [];
+      const originalMetric = provider.monitor._metric.azureArmDeploymentError;
+      provider.monitor._metric.azureArmDeploymentError = (value, labels) => {
+        recordedMetrics.push({ value, labels });
+      };
       const existingWorkerPool = await WorkerPool.get(helper.db, workerPoolId);
       if (!existingWorkerPool) {
         await makeWorkerPool();
       }
 
-      const deploymentName = 'deploy-failure';
-      await worker.update(helper.db, worker => {
-        worker.providerData = {
-          ...worker.providerData,
-          deploymentMethod: 'arm-template',
-          deployment: {
-            name: deploymentName,
-            operation: 'op/deployment',
-            id: false,
-          },
-          provisioningComplete: false,
-        };
-      });
-
-      await fake.deploymentsClient.deployments.beginCreateOrUpdate('rgrp', deploymentName, {
-        parameters: {
-          vmName: { value: worker.providerData.vm.name },
-        },
-      });
-      fake.deploymentsClient.deployments.setFakeDeploymentState(
-        'rgrp',
-        deploymentName,
-        'Failed',
-        'Ephemeral OS disk is not supported for VM size Standard_D32ads_v6.',
-      );
-
-      const operation = {
-        id: '/fake-operation/1',
-        properties: {
-          provisioningState: 'Failed',
-          provisioningOperation: 'Create',
-          statusCode: 'Conflict',
-          statusMessage: {
-            status: 'Failed',
-            error: {
-              code: 'NotSupported',
-              message: 'Ephemeral OS disk is not supported for VM size Standard_D32ads_v6.',
+      try {
+        const deploymentName = 'deploy-failure';
+        await worker.update(helper.db, worker => {
+          worker.providerData = {
+            ...worker.providerData,
+            deploymentMethod: 'arm-template',
+            armDeployment: {
+              parameters: {
+                vmSize: { value: 'Standard_D32ads_v6' },
+                priority: { value: 'Spot' },
+                imageId: {
+                  value: '/subscriptions/fake-sub/resourceGroups/images/providers/Microsoft.Compute/galleries/images/versions/1.2.3',
+                },
+              },
             },
+            deployment: {
+              name: deploymentName,
+              operation: 'op/deployment',
+              id: false,
+            },
+            provisioningComplete: false,
+          };
+        });
+
+        await fake.deploymentsClient.deployments.beginCreateOrUpdate('rgrp', deploymentName, {
+          parameters: {
+            vmName: { value: worker.providerData.vm.name },
+          },
+        });
+        fake.deploymentsClient.deployments.setFakeDeploymentState(
+          'rgrp',
+          deploymentName,
+          'Failed',
+          'At least one resource deployment operation failed.',
+        );
+
+        const operation = {
+          id: '/fake-operation/1',
+          properties: {
+            provisioningState: 'Failed',
+            provisioningOperation: 'Create',
+            statusCode: 'Conflict',
+            statusMessage: {
+              status: 'Failed',
+              error: {
+                code: 'DeploymentFailed',
+                message: 'At least one resource deployment operation failed.',
+                details: [{
+                  code: 'NotSupported',
+                  message: 'Ephemeral OS disk is not supported for VM size Standard_D32ads_v6.',
+                }, {
+                  code: 'AnotherNestedError',
+                  message: 'Second nested detail should not create another metric sample.',
+                }],
+              },
+            },
+            targetResource: {
+              id: `/subscriptions/fake-sub/resourceGroups/rgrp/providers/Microsoft.Compute/virtualMachines/${worker.providerData.vm.name}`,
+              resourceType: 'Microsoft.Compute/virtualMachines',
+              resourceName: worker.providerData.vm.name,
+            },
+            timestamp: '2025-11-12T18:25:38.128Z',
             trackingId: 'tracking-id',
           },
-          targetResource: {
-            id: `/subscriptions/fake-sub/resourceGroups/rgrp/providers/Microsoft.Compute/virtualMachines/${worker.providerData.vm.name}`,
-            resourceType: 'Microsoft.Compute/virtualMachines',
-            resourceName: worker.providerData.vm.name,
+        };
+        fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations('rgrp', deploymentName, [operation]);
+
+        await setState({ state: 'requested' });
+
+        await provider.checkWorker({ worker });
+
+        sandbox.assert.calledOnce(reportErrorStub);
+        const reportedError = reportErrorStub.firstCall.args[0];
+        assert.equal(reportedError.kind, 'arm-deployment-error');
+        assert.equal(reportedError.title, 'ARM Deployment Error');
+        assert(reportedError.description.includes('At least one resource deployment operation failed'));
+        assert.equal(reportedError.workerPool.workerPoolId, workerPoolId);
+        assert.equal(reportedError.extra.operations.length, 1);
+        assert.equal(reportedError.extra.operations[0].statusMessage.error.code, 'DeploymentFailed');
+        assert.equal(reportedError.extra.operations[0].statusMessage.error.details[0].code, 'NotSupported');
+        assert.equal(reportedError.extra.operations[0].statusMessage.error.details[1].code, 'AnotherNestedError');
+        assert.equal(reportedError.extra.operations[0].targetResource.resourceType, 'Microsoft.Compute/virtualMachines');
+        assert.deepEqual(recordedMetrics, [{
+          value: 1,
+          labels: {
+            providerId,
+            workerPoolId,
+            workerGroup: 'westus',
+            errorKind: 'arm-deployment-error',
+            errorCode: 'NotSupported',
+            statusCode: 'Conflict',
+            provisioningState: 'Failed',
+            provisioningOperation: 'Create',
+            targetResourceType: 'Microsoft.Compute/virtualMachines',
+            vmSize: 'Standard_D32ads_v6',
+            priority: 'Spot',
           },
-          timestamp: '2025-11-12T18:25:38.128Z',
-          trackingId: 'tracking-id',
-        },
-      };
-      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations('rgrp', deploymentName, [operation]);
-
-      await setState({ state: 'requested' });
-
-      await provider.checkWorker({ worker });
-
-      sandbox.assert.calledOnce(reportErrorStub);
-      const reportedError = reportErrorStub.firstCall.args[0];
-      assert.equal(reportedError.kind, 'arm-deployment-error');
-      assert.equal(reportedError.title, 'ARM Deployment Error');
-      assert(reportedError.description.includes('Ephemeral OS disk is not supported'));
-      assert.equal(reportedError.workerPool.workerPoolId, workerPoolId);
-      assert.equal(reportedError.extra.operations.length, 1);
-      assert.equal(reportedError.extra.operations[0].statusMessage.error.code, 'NotSupported');
-      assert.equal(reportedError.extra.operations[0].targetResource.resourceType, 'Microsoft.Compute/virtualMachines');
+        }]);
+      } finally {
+        provider.monitor._metric.azureArmDeploymentError = originalMetric;
+      }
     });
   });
 
