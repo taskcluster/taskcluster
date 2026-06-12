@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
+import ListSubheader from '@material-ui/core/ListSubheader';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import DateDistance from '../../../components/DateDistance';
 import StatusLabel from '../../../components/StatusLabel';
+import DataTable from '../../../components/DataTable';
+import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
 import db from '../../../utils/db';
 import Link from '../../../utils/Link';
 
@@ -18,22 +18,11 @@ import Link from '../../../utils/Link';
   infoText: {
     marginBottom: theme.spacing(1),
   },
-  listItemButton: {
-    ...theme.mixins.listItemButton,
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
-  secondaryLine: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  source: {
-    textOverflow: 'ellipsis',
-    overflowX: 'hidden',
+  // Belt-and-suspenders on top of the DataTable's `overflowX: 'auto'`
+  // wrapper: date/age fragments stay on one line (INV-2) and the table
+  // scrolls as a unit rather than wrapping a cell's content.
+  nowrap: {
     whiteSpace: 'nowrap',
-    maxWidth: 260,
-    display: 'inline-block',
   },
 }))
 export default class NoTask extends Component {
@@ -55,41 +44,42 @@ export default class NoTask extends Component {
     this.props.history.push(`/tasks/${taskId}`);
   };
 
-  renderSecondary(entry) {
+  renderTaskRow = entry => {
     const { classes } = this.props;
-    const { taskId, taskQueueId, created, source } = entry;
-    const parts = [];
-
-    if (taskQueueId) {
-      parts.push(<span key="queue">{taskQueueId}</span>);
-    }
-
-    if (created) {
-      parts.push(
-        <span key="created">
-          <DateDistance from={created} />
-        </span>
-      );
-    }
-
-    if (source) {
-      parts.push(
-        <span key="source" className={classes.source} title={source}>
-          {source}
-        </span>
-      );
-    }
-
-    if (!parts.length) {
-      return taskId;
-    }
+    const { taskId, name, state, taskQueueId, created, viewedAt } = entry;
 
     return (
-      <span className={classes.secondaryLine}>
-        {parts.flatMap((el, i) => (i === 0 ? [el] : [' · ', el]))}
-      </span>
+      <TableRow key={taskId}>
+        <CopyToClipboardTableCell
+          tooltipTitle={taskId}
+          textToCopy={taskId}
+          text={<code>{taskId}</code>}
+        />
+        <TableCell>
+          <Link to={`/tasks/${taskId}`}>{name || taskId}</Link>
+        </TableCell>
+        <TableCell>
+          {state ? (
+            <StatusLabel
+              state={state}
+              title="State recorded at view time; may be stale"
+            />
+          ) : null}
+        </TableCell>
+        <TableCell>{taskQueueId || null}</TableCell>
+        <TableCell className={classes.nowrap}>
+          {created ? <DateDistance from={created} /> : null}
+        </TableCell>
+        <TableCell className={classes.nowrap}>
+          {viewedAt ? (
+            <span>
+              viewed <DateDistance from={new Date(viewedAt)} />
+            </span>
+          ) : null}
+        </TableCell>
+      </TableRow>
     );
-  }
+  };
 
   render() {
     const { description, classes } = this.props;
@@ -109,37 +99,25 @@ export default class NoTask extends Component {
           Enter a task ID in the search box
         </Typography>
         {recentTasks && Boolean(recentTasks.length) && (
-          <List
-            dense
-            subheader={
-              <ListSubheader component="div">Recent Tasks</ListSubheader>
-            }>
-            {recentTasks.map(entry => {
-              const { taskId, name, state } = entry;
-
-              return (
-                <Link key={taskId} to={`/tasks/${taskId}`}>
-                  <ListItem button className={classes.listItemButton}>
-                    <ListItemText
-                      primary={
-                        <span>
-                          {name || taskId}
-                          {state && (
-                            <>
-                              {' '}
-                              <StatusLabel state={state} />
-                            </>
-                          )}
-                        </span>
-                      }
-                      secondary={this.renderSecondary(entry)}
-                    />
-                    <LinkIcon />
-                  </ListItem>
-                </Link>
-              );
-            })}
-          </List>
+          <React.Fragment>
+            <ListSubheader component="div" disableGutters>
+              Recent Tasks
+            </ListSubheader>
+            <DataTable
+              headers={[
+                { id: 'taskId', label: 'Task ID' },
+                { id: 'name', label: 'Name' },
+                { id: 'state', label: 'State' },
+                { id: 'taskQueueId', label: 'Queue' },
+                { id: 'created', label: 'Created' },
+                { id: 'viewedAt', label: 'Viewed' },
+              ]}
+              items={recentTasks}
+              renderRow={this.renderTaskRow}
+              paginate
+              rowsPerPage={10}
+            />
+          </React.Fragment>
         )}
       </Dashboard>
     );

@@ -2,16 +2,16 @@ import React, { Component } from 'react';
 import { sum } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import TableCell from '@material-ui/core/TableCell';
+import TableRow from '@material-ui/core/TableRow';
 import ListSubheader from '@material-ui/core/ListSubheader';
-import LinkIcon from 'mdi-react/LinkIcon';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
 import DateDistance from '../../../components/DateDistance';
 import StatusLabel from '../../../components/StatusLabel';
+import DataTable from '../../../components/DataTable';
+import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
 import Link from '../../../utils/Link';
 import db from '../../../utils/db';
 
@@ -19,23 +19,11 @@ import db from '../../../utils/db';
   infoText: {
     marginBottom: theme.spacing(1),
   },
-  listItemButton: {
-    ...theme.mixins.listItemButton,
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
-  secondaryLine: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    flexWrap: 'wrap',
-  },
-  source: {
-    textOverflow: 'ellipsis',
-    overflowX: 'hidden',
+  // Belt-and-suspenders on top of the DataTable's `overflowX: 'auto'`
+  // wrapper: date/age fragments stay on one line (INV-2) and the table
+  // scrolls as a unit rather than wrapping a cell's content.
+  nowrap: {
     whiteSpace: 'nowrap',
-    maxWidth: 260,
-    display: 'inline-block',
   },
 }))
 export default class NoTaskGroup extends Component {
@@ -57,7 +45,7 @@ export default class NoTaskGroup extends Component {
     this.props.history.push(`/tasks/groups/${taskGroupId}`);
   };
 
-  renderStatusSummary(statusCount) {
+  renderStatusCell(statusCount) {
     if (!statusCount) {
       return null;
     }
@@ -77,69 +65,83 @@ export default class NoTaskGroup extends Component {
       return null;
     }
 
-    const resolved = running + pending + unscheduled === 0;
-    const parts = [`${total} tasks`];
+    const unresolved = running + pending + unscheduled > 0;
+    const parts = [];
 
-    if (completed) parts.push(`${completed} completed`);
-    if (failed) parts.push(`${failed} failed`);
-    if (exception) parts.push(`${exception} exception`);
-    if (running) parts.push(`${running} running`);
-    if (pending) parts.push(`${pending} pending`);
+    if (completed) {
+      parts.push(`${completed} completed`);
+    }
+    if (failed) {
+      parts.push(`${failed} failed`);
+    }
+    if (exception) {
+      parts.push(`${exception} exception`);
+    }
+    if (running) {
+      parts.push(`${running} running`);
+    }
+    if (pending) {
+      parts.push(`${pending} pending`);
+    }
+    if (unscheduled) {
+      parts.push(`${unscheduled} unscheduled`);
+    }
 
+    let resolvedState;
+
+    if (unresolved) {
+      resolvedState = 'RUNNING';
+    } else if (failed > 0 || exception > 0) {
+      resolvedState = 'FAILED';
+    } else {
+      resolvedState = 'COMPLETED';
+    }
+
+    // The full per-state breakdown moves into the tooltip (INV-8) so the
+    // status cell stays compact; the resolved indicator stays visible.
+    // The stored statusCount is a point-in-time snapshot, surfaced in the
+    // same tooltip so it is never mistaken for live state (INV-5).
     return (
       <span>
-        {parts.join(' · ')}
-        {' · '}
-        <StatusLabel state={resolved ? 'COMPLETED' : 'RUNNING'} />
+        {total} tasks{' '}
+        <StatusLabel
+          state={resolvedState}
+          title={`${parts.join(' · ')} (recorded at view time; may be stale)`}
+        />
       </span>
     );
   }
 
-  renderSecondary(entry) {
+  renderTaskGroupRow = entry => {
     const { classes } = this.props;
-    const { taskGroupId, taskQueueId, created, source, statusCount } = entry;
-    const infoparts = [];
-
-    if (taskQueueId) {
-      infoparts.push(<span key="queue">{taskQueueId}</span>);
-    }
-
-    if (created) {
-      infoparts.push(
-        <span key="created">
-          <DateDistance from={created} />
-        </span>
-      );
-    }
-
-    if (source) {
-      infoparts.push(
-        <span key="source" className={classes.source} title={source}>
-          {source}
-        </span>
-      );
-    }
-
-    const statusSummary = this.renderStatusSummary(statusCount);
-    const hasInfo = infoparts.length > 0 || statusSummary;
-
-    if (!hasInfo) {
-      return taskGroupId;
-    }
-
-    const infoLine =
-      infoparts.length > 0
-        ? infoparts.flatMap((el, i) => (i === 0 ? [el] : [' · ', el]))
-        : null;
+    const { taskGroupId, name, statusCount, taskQueueId, created, viewedAt } =
+      entry;
 
     return (
-      <span className={classes.secondaryLine}>
-        {infoLine}
-        {infoLine && statusSummary && ' · '}
-        {statusSummary}
-      </span>
+      <TableRow key={taskGroupId}>
+        <CopyToClipboardTableCell
+          tooltipTitle={taskGroupId}
+          textToCopy={taskGroupId}
+          text={<code>{taskGroupId}</code>}
+        />
+        <TableCell>
+          <Link to={`/tasks/groups/${taskGroupId}`}>{name || taskGroupId}</Link>
+        </TableCell>
+        <TableCell>{this.renderStatusCell(statusCount)}</TableCell>
+        <TableCell>{taskQueueId || null}</TableCell>
+        <TableCell className={classes.nowrap}>
+          {created ? <DateDistance from={created} /> : null}
+        </TableCell>
+        <TableCell className={classes.nowrap}>
+          {viewedAt ? (
+            <span>
+              viewed <DateDistance from={new Date(viewedAt)} />
+            </span>
+          ) : null}
+        </TableCell>
+      </TableRow>
     );
-  }
+  };
 
   render() {
     const { classes, description } = this.props;
@@ -159,27 +161,25 @@ export default class NoTaskGroup extends Component {
           Enter a task group ID in the search box
         </Typography>
         {recentTaskGroups && Boolean(recentTaskGroups.length) && (
-          <List
-            dense
-            subheader={
-              <ListSubheader component="div">Recent Task Groups</ListSubheader>
-            }>
-            {recentTaskGroups.map(entry => {
-              const { taskGroupId, name } = entry;
-
-              return (
-                <Link key={taskGroupId} to={`/tasks/groups/${taskGroupId}`}>
-                  <ListItem button className={classes.listItemButton}>
-                    <ListItemText
-                      primary={name || taskGroupId}
-                      secondary={this.renderSecondary(entry)}
-                    />
-                    <LinkIcon />
-                  </ListItem>
-                </Link>
-              );
-            })}
-          </List>
+          <React.Fragment>
+            <ListSubheader component="div" disableGutters>
+              Recent Task Groups
+            </ListSubheader>
+            <DataTable
+              headers={[
+                { id: 'taskGroupId', label: 'Task Group ID' },
+                { id: 'name', label: 'Name' },
+                { id: 'statusCount', label: 'Status' },
+                { id: 'taskQueueId', label: 'Queue' },
+                { id: 'created', label: 'Created' },
+                { id: 'viewedAt', label: 'Viewed' },
+              ]}
+              items={recentTaskGroups}
+              renderRow={this.renderTaskGroupRow}
+              paginate
+              rowsPerPage={10}
+            />
+          </React.Fragment>
         )}
       </Dashboard>
     );

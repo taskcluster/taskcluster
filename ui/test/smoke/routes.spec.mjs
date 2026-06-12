@@ -9,6 +9,7 @@ const ROUTES = [
   { path: '/docs/tutorial/hello-world', name: 'docs-tutorial' },
   { path: '/docs/reference', name: 'docs-reference' },
   { path: '/tasks', name: 'tasks' },
+  { path: '/tasks/groups', name: 'tasks-groups' },
   { path: '/provisioners', name: 'provisioners' },
   { path: '/quickstart', name: 'quickstart' },
 ];

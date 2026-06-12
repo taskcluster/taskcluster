@@ -226,31 +226,47 @@ export default class TaskGroup extends Component {
         : state.statusCount;
     const previousStatusCount = state.statusCount;
 
-    if (
+    // Record the viewed group as soon as its data has loaded for the current
+    // taskGroupId. This is intentionally independent of `taskActions`: groups
+    // without a decision task (and thus no `taskActions`) must still be
+    // recorded (INV-5). Gating on `taskGroup` for the current id ensures we
+    // write rich metadata rather than a null/zero snapshot taken while the
+    // query is still loading.
+    const isNewGroupForCurrentData =
       isFromSameTaskGroupId &&
-      taskGroupId !== state.previousTaskGroupId &&
-      taskActions
-    ) {
+      taskGroup &&
+      taskGroupId !== state.previousTaskGroupId;
+
+    if (isNewGroupForCurrentData) {
       updateTaskGroupIdHistory(
         taskGroupId,
         props.data.task,
         TaskGroup.calculateStatusCountStatic(taskGroup)
       );
-      taskActions.actions
-        .filter(action => isEmpty(action.context))
-        .forEach(action => {
-          const schema = action.schema || {};
 
-          // if an action with this name has already been selected,
-          // don't consider this version
-          if (!groupActions.some(({ name }) => name === action.name)) {
-            groupActions.push(action);
-            actionInputs[action.name] = dump(jsonSchemaDefaults(schema) || {});
-            actionData[action.name] = {
-              action,
-            };
-          }
-        });
+      // Only the action-collection loop depends on the optional `taskActions`
+      // field; the history write above no longer does. Groups without a
+      // decision task still advance previousTaskGroupId below so we record
+      // them once and don't re-write on every render.
+      if (taskActions && Array.isArray(taskActions.actions)) {
+        taskActions.actions
+          .filter(action => isEmpty(action.context))
+          .forEach(action => {
+            const schema = action.schema || {};
+
+            // if an action with this name has already been selected,
+            // don't consider this version
+            if (!groupActions.some(({ name }) => name === action.name)) {
+              groupActions.push(action);
+              actionInputs[action.name] = dump(
+                jsonSchemaDefaults(schema) || {}
+              );
+              actionData[action.name] = {
+                action,
+              };
+            }
+          });
+      }
 
       return {
         groupActions,
@@ -532,7 +548,11 @@ export default class TaskGroup extends Component {
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       this.tasks.clear();
       this.previousCursor = INITIAL_CURSOR;
-      updateTaskGroupIdHistory(taskGroupId, null, null);
+      // The history write for the newly-navigated group happens in
+      // getDerivedStateFromProps once Apollo loads its data, so that rich
+      // metadata (name/source/queue/statusCount) is recorded rather than
+      // clobbered with nulls. Do NOT write here: a put keyed by taskGroupId
+      // would overwrite previously-stored metadata with null/undefined.
       this.subscribe({ taskGroupId, subscribeToMore });
     }
 
