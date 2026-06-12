@@ -1757,7 +1757,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       err => {
         assert.equal(err.statusCode, 400);
         return true;
-      }
+      },
     );
 
     await assert.rejects(
@@ -1765,7 +1765,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       err => {
         assert.equal(err.statusCode, 400);
         return true;
-      }
+      },
     );
   });
 
@@ -1777,7 +1777,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       err => {
         assert.equal(err.statusCode, 400);
         return true;
-      }
+      },
     );
   });
 
