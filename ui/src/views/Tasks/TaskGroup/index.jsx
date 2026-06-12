@@ -94,12 +94,20 @@ const initialActionInputs = {
   sealTaskGroup: '',
   cancelTaskGroup: '',
 };
-const updateTaskGroupIdHistory = id => {
+const updateTaskGroupIdHistory = (id, decisionTask, statusCount) => {
   if (!VALID_TASK.test(id)) {
     return;
   }
 
-  db.taskGroupIdsHistory.put({ taskGroupId: id });
+  db.taskGroupIdsHistory.put({
+    taskGroupId: id,
+    name: decisionTask?.metadata?.name,
+    source: decisionTask?.metadata?.source,
+    taskQueueId: decisionTask?.taskQueueId,
+    created: decisionTask?.created,
+    statusCount,
+    viewedAt: Date.now(),
+  });
 };
 
 @withApollo
@@ -223,7 +231,11 @@ export default class TaskGroup extends Component {
       taskGroupId !== state.previousTaskGroupId &&
       taskActions
     ) {
-      updateTaskGroupIdHistory(taskGroupId);
+      updateTaskGroupIdHistory(
+        taskGroupId,
+        props.data.task,
+        TaskGroup.calculateStatusCountStatic(taskGroup)
+      );
       taskActions.actions
         .filter(action => isEmpty(action.context))
         .forEach(action => {
@@ -520,7 +532,7 @@ export default class TaskGroup extends Component {
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       this.tasks.clear();
       this.previousCursor = INITIAL_CURSOR;
-      updateTaskGroupIdHistory(taskGroupId);
+      updateTaskGroupIdHistory(taskGroupId, null, null);
       this.subscribe({ taskGroupId, subscribeToMore });
     }
 
