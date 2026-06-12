@@ -442,36 +442,49 @@ impl WorkerManager {
     /// List Worker Pool Errors Count
     ///
     /// Get the list of worker pool errors count.
-    /// Contains total count of errors for the past 7 days and 24 hours
-    /// Also includes total counts grouped by titles of error and error code.
+    /// Contains total count of errors broken down by day and hour.
+    /// Also includes total counts grouped by title, error code, worker pool, and launch config.
     ///
-    /// If `workerPoolId` is not specified, it will return the count of all errors
-    pub async fn workerPoolErrorStats(&self, workerPoolId: Option<&str>) -> Result<Value, Error> {
+    /// If `workerPoolId` is not specified, it will return the count of all errors.
+    ///
+    /// The optional `from` and `to` query parameters accept ISO 8601 datetime strings
+    /// to filter statistics to an arbitrary time range. When omitted, defaults to the
+    /// last 7 days (daily) and last 24 hours (hourly). When a custom range spans more
+    /// than 31 days, the hourly breakdown is omitted to bound response size.
+    ///
+    /// The `total` field is always the sum over the daily series.
+    pub async fn workerPoolErrorStats(&self, workerPoolId: Option<&str>, from: Option<&str>, to: Option<&str>) -> Result<Value, Error> {
         let method = "GET";
-        let (path, query) = Self::workerPoolErrorStats_details(workerPoolId);
+        let (path, query) = Self::workerPoolErrorStats_details(workerPoolId, from, to);
         let body = None;
         let resp = self.client.request(method, path, query, body).await?;
         Ok(resp.json().await?)
     }
 
     /// Generate an unsigned URL for the workerPoolErrorStats endpoint
-    pub fn workerPoolErrorStats_url(&self, workerPoolId: Option<&str>) -> Result<String, Error> {
-        let (path, query) = Self::workerPoolErrorStats_details(workerPoolId);
+    pub fn workerPoolErrorStats_url(&self, workerPoolId: Option<&str>, from: Option<&str>, to: Option<&str>) -> Result<String, Error> {
+        let (path, query) = Self::workerPoolErrorStats_details(workerPoolId, from, to);
         self.client.make_url(path, query)
     }
 
     /// Generate a signed URL for the workerPoolErrorStats endpoint
-    pub fn workerPoolErrorStats_signed_url(&self, workerPoolId: Option<&str>, ttl: Duration) -> Result<String, Error> {
-        let (path, query) = Self::workerPoolErrorStats_details(workerPoolId);
+    pub fn workerPoolErrorStats_signed_url(&self, workerPoolId: Option<&str>, from: Option<&str>, to: Option<&str>, ttl: Duration) -> Result<String, Error> {
+        let (path, query) = Self::workerPoolErrorStats_details(workerPoolId, from, to);
         self.client.make_signed_url(path, query, ttl)
     }
 
     /// Determine the HTTP request details for workerPoolErrorStats
-    fn workerPoolErrorStats_details<'a>(workerPoolId: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
+    fn workerPoolErrorStats_details<'a>(workerPoolId: Option<&'a str>, from: Option<&'a str>, to: Option<&'a str>) -> (&'static str, Option<Vec<(&'static str, &'a str)>>) {
         let path = "worker-pool-errors/stats";
         let mut query = None;
         if let Some(q) = workerPoolId {
             query.get_or_insert_with(Vec::new).push(("workerPoolId", q));
+        }
+        if let Some(q) = from {
+            query.get_or_insert_with(Vec::new).push(("from", q));
+        }
+        if let Some(q) = to {
+            query.get_or_insert_with(Vec::new).push(("to", q));
         }
 
         (path, query)
