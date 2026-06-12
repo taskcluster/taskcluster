@@ -31,7 +31,7 @@ export class StaticProvider extends Provider {
       worker = Worker.fromApi(workerData);
       await worker.create(this.db);
     } catch (err) {
-      if (!err || err.code !== 'EntityAlreadyExists') {
+      if (err?.code !== 'EntityAlreadyExists') {
         throw err;
       }
       const existing = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });

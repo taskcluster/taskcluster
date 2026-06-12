@@ -162,9 +162,9 @@ export default class MozillaAuth0 {
     const { ldap, mozilliansorg, hris } = accessInformation;
 
     const groups = [
-      ...(ldap && ldap.values ? Object.keys(ldap.values).map(group => `mozilla-group:${group}`) : []),
-      ...(hris && hris.values ? Object.keys(hris.values).map(group => `mozilla-hris:${group}`) : []),
-      ...(mozilliansorg && mozilliansorg.values ? Object.keys(mozilliansorg.values).map(group => `mozillians-group:${group}`) : []),
+      ...(ldap?.values ? Object.keys(ldap.values).map(group => `mozilla-group:${group}`) : []),
+      ...(hris?.values ? Object.keys(hris.values).map(group => `mozilla-hris:${group}`) : []),
+      ...(mozilliansorg?.values ? Object.keys(mozilliansorg.values).map(group => `mozillians-group:${group}`) : []),
     ];
 
     user.addRole(...groups);
@@ -175,7 +175,7 @@ export default class MozillaAuth0 {
     const strategyCfg = cfg.login.strategies['mozilla-auth0'];
     const loginMiddleware = login(cfg.app.publicUrl);
 
-    if (!credentials || !credentials.clientId || !credentials.accessToken) {
+    if (!credentials?.clientId || !credentials.accessToken) {
       throw new Error(
         'Unable to use "mozilla-auth0" login strategy without taskcluster clientId and accessToken',
       );

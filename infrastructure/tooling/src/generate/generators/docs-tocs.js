@@ -54,7 +54,7 @@ function sort(a, b) {
 
 function sortChildren(children) {
   // recursively sort child nodes
-  if (children && children.length) {
+  if (children?.length) {
     children.map(child => sortChildren(child.children));
   }
 
@@ -64,22 +64,22 @@ function sortChildren(children) {
 let prevNode = null;
 // Traverse the nodes in order, setting `up`, `next`, and `prev` links
 function addNav(node, parentNode) {
-  if (parentNode && parentNode.path) {
+  if (parentNode?.path) {
     node.up = {
       path: parentNode.path,
-      title: (parentNode.data && parentNode.data.title) || parentNode.name,
+      title: (parentNode.data?.title) || parentNode.name,
     };
   }
 
-  if (prevNode && prevNode.path) {
+  if (prevNode?.path) {
     node.prev = {
       path: prevNode.path,
-      title: (prevNode.data && prevNode.data.title) || prevNode.name,
+      title: (prevNode.data?.title) || prevNode.name,
     };
 
     prevNode.next = {
       path: node.path,
-      title: (node.data && node.data.title) || node.name,
+      title: (node.data?.title) || node.name,
     };
   }
 

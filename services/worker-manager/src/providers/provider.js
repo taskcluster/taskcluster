@@ -495,7 +495,7 @@ export class Provider {
       try {
         await error.create(this.db);
       } catch (err) {
-        if (!err || err.code !== 'EntityAlreadyExists') {
+        if (err?.code !== 'EntityAlreadyExists') {
           throw err;
         }
         const existing = await this.WorkerPoolError.get(this.db, { errorId, workerPoolId: workerPool.workerPoolId });

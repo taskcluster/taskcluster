@@ -15,7 +15,7 @@ export default class ConnectionLoader {
       Promise.all(
         connections.map(async ({ connection, ...props }) => {
           const limit =
-            connection && connection.limit
+            connection?.limit
               ? connection.limit > LIMIT
                 ? LIMIT
                 : connection.limit

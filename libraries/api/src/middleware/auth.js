@@ -134,8 +134,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
     // smart to let bewit overwrite header authentication.
     // But neither Azure or AWS tolerates two authentication schemes,
     // so this is probably a fair policy for now. We can always allow more.
-    if (req.headers && req.headers.authorization &&
-        req.query && req.query.bewit) {
+    if (req.headers?.authorization && req.query?.bewit) {
       return {
         status: 'auth-failed',
         message: 'Cannot use two authentication schemes at once ' +

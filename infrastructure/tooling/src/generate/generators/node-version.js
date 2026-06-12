@@ -17,7 +17,7 @@ tasks.push({
   provides: ['target-node-version'],
   run: async (requirements, utils) => {
     const nodeVersion = (await readRepoJSON('package.json')).engines.node;
-    if (!nodeVersion || !nodeVersion.match(/[0-9.]+/)) {
+    if (!nodeVersion?.match(/[0-9.]+/)) {
       throw new Error(`invalid node version ${nodeVersion} in package.json`);
     }
     utils.step({ title: `Setting node version ${nodeVersion}` });
@@ -88,7 +88,7 @@ tasks.push({
   provides: ['target-yarn-version'],
   run: async (requirements, utils) => {
     const yarnVersion = (await readRepoJSON('package.json')).packageManager;
-    if (!yarnVersion || !yarnVersion.match(/yarn@[0-9.]+/)) {
+    if (!yarnVersion?.match(/yarn@[0-9.]+/)) {
       throw new Error(`invalid yarn version ${yarnVersion} in package.json`);
     }
     utils.step({ title: `Setting yarn version ${yarnVersion}` });

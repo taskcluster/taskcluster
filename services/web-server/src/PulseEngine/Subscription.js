@@ -110,8 +110,7 @@ export default class Subscription {
           };
 
           if (
-            amqpMsg.properties &&
-            amqpMsg.properties.headers &&
+            amqpMsg.properties?.headers &&
             Array.isArray(amqpMsg.properties.headers.cc)
           ) {
             message.cc = amqpMsg.properties.headers.cc;

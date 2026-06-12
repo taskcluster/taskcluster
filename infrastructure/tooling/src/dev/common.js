@@ -33,7 +33,7 @@ export default ({ userConfig, prompts, configTmpl }) => {
     type: 'input',
     when: () => !userConfig.applicationName,
     // this config was renamed, so help the user out with a default
-    default: userConfig.ui && userConfig.ui.application_name,
+    default: userConfig.ui?.application_name,
     name: 'applicationName',
     message: 'What human-readable name will your deployment have?',
   });
@@ -118,7 +118,7 @@ export default ({ userConfig, prompts, configTmpl }) => {
   });
 
   prompts.push({
-    when: () => !userConfig.notify || !userConfig.notify.email_source_address,
+    when: () => !userConfig.notify?.email_source_address,
     type: 'input',
     name: 'notify.email_source_address',
     message: 'Email address for notifications to come from (must set up ses manually)',

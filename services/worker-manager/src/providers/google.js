@@ -317,7 +317,7 @@ export class GoogleProvider extends Provider {
             },
             metadata: {
               items: [
-                ...((cfg.metadata || {}).items || []),
+                ...(cfg.metadata?.items || []),
                 {
                   key: 'taskcluster',
                   value: JSON.stringify({

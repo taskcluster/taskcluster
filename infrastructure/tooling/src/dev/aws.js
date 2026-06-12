@@ -153,7 +153,7 @@ export default async ({ userConfig, answer, configTmpl }) => {
     userConfig.queue.aws_secret_access_key = accessKey.SecretAccessKey;
   }
 
-  if (!userConfig.notify || !userConfig.notify.aws_access_key_id) {
+  if (!userConfig.notify?.aws_access_key_id) {
     const accessKey = await setupIam({
       iam,
       iamName: `${prefix}-taskcluster-notify`,
@@ -168,7 +168,7 @@ export default async ({ userConfig, answer, configTmpl }) => {
             "Resource": "*",
             "Condition": {
               "StringEquals": {
-                "ses:FromAddress": `${(answer.notify || {}).email_source_address || userConfig.notify.email_source_address}`,
+                "ses:FromAddress": `${answer.notify?.email_source_address || userConfig.notify.email_source_address}`,
               },
             },
           },

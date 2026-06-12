@@ -278,7 +278,7 @@ const createSignatureValidator = function(options) {
     // extract ext.certificate.issuer, if present
     if (ext) {
       ext = parseExt(ext);
-      if (ext.certificate && ext.certificate.issuer) {
+      if (ext.certificate?.issuer) {
         issuingClientId = ext.certificate.issuer;
         if (typeof issuingClientId !== 'string') {
           throw new Error('ext.certificate.issuer must be a string');
@@ -418,7 +418,7 @@ const createSignatureValidator = function(options) {
         });
       }
 
-      if (attributes && attributes.hash) {
+      if (attributes?.hash) {
         result.hash = attributes.hash;
       }
     } catch (err) {

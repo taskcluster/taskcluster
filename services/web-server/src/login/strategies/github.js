@@ -115,7 +115,7 @@ export default class Github {
       );
     }
 
-    if (!credentials || !credentials.clientId || !credentials.accessToken) {
+    if (!credentials?.clientId || !credentials.accessToken) {
       throw new Error(
         'Unable to use "github" login strategy without taskcluster clientId and accessToken',
       );

@@ -4,7 +4,7 @@ import request from 'superagent';
 export const servicesWithoutRabbitConfig = (userConfig, configTmpl) => {
   let services = [];
   for (const [name, cfg] of Object.entries(configTmpl)) {
-    if (cfg.pulse_username !== undefined && (!userConfig[name] || !userConfig[name].pulse_username)) {
+    if (cfg.pulse_username !== undefined && (!userConfig[name]?.pulse_username)) {
       services.push(name);
     }
   }
