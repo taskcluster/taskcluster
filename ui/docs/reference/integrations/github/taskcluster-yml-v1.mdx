@@ -155,6 +155,13 @@ produces multiple tasks, then the same default `taskGroupId` will apply to all
 tasks, with each task getting a unique `taskId` distinct from the
 `taskGroupId`.
 
+Tasks may also set distinct `taskGroupId` values to form multiple task groups
+within the same `.taskcluster.yml`.  In that case tc-github creates one build
+record per unique `taskGroupId`.  Multiple task groups are supported under
+`reporting: checks-v1`, which reports results per group and per task; the
+legacy Statuses API cannot distinguish between them, as it posts a single
+commit-status context per commit (sha) and event type.
+
 ### Task Definition and Examples
 
 #### Github Events
