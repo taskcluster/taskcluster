@@ -1,4 +1,4 @@
-query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnection, $launchConfigId: String) {
+query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnection, $launchConfigId: String, $from: String, $to: String) {
   WorkerManagerErrors(workerPoolId: $workerPoolId, launchConfigId: $launchConfigId, connection: $errorsConnection) {
     pageInfo {
       hasNextPage
@@ -18,7 +18,7 @@ query WorkerManagerErrors($workerPoolId: String, $errorsConnection: PageConnecti
       }
     }
   }
-  WorkerManagerErrorsStats(workerPoolId: $workerPoolId) {
+  WorkerManagerErrorsStats(workerPoolId: $workerPoolId, from: $from, to: $to) {
     totals {
       total
       daily

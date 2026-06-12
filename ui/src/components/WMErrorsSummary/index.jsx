@@ -59,17 +59,23 @@ export default class WorkerManagerErrorsSummary extends Component {
     onStatClick: func,
     selectedLaunchConfigId: string,
     includeLaunchConfig: bool,
+    customRange: bool,
   };
 
   render() {
     const {
       data: { loading, WorkerManagerErrorsStats },
       includeLaunchConfig,
+      customRange,
     } = this.props;
     const errorWidgets =
       !loading && WorkerManagerErrorsStats
         ? {
-            Summary: summarizeWorkerPoolsStats(this.props),
+            Summary: summarizeWorkerPoolsStats(
+              this.props,
+              undefined,
+              customRange
+            ),
           }
         : {};
 
