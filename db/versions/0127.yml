@@ -1,0 +1,60 @@
+version: 127
+description: keyset pagination variant of get_clients to avoid duplicate or skipped rows when the result set changes during a multi-page scan
+methods:
+  get_clients:
+    deprecated: true
+  get_clients_after:
+    description: |-
+      Get clients filtered by the optional `prefix_in`, ordered by
+      `client_id`. Uses keyset pagination via `after_client_id_in`: pass
+      null to fetch the first page, then pass the last row's `client_id`
+      to fetch the next page. Unlike the offset-based variant
+      `get_clients`, this is robust to concurrent inserts and deletes
+      during a long-running scan — the cursor moves strictly forward
+      through a unique key, so each row is returned at most once.
+
+      Trade-off: rows inserted with a sort key *before* the current
+      cursor are silently skipped for the remainder of the scan. This
+      is fine for callers that re-scan from the beginning each loop
+      (e.g. the auth scope-resolver cache reload), but callers
+      requiring "every row that existed at any point during the scan"
+      should not use this function.
+    mode: read
+    serviceName: auth
+    args: prefix_in text, page_size_in integer, after_client_id_in text
+    returns: |-
+      table (
+        client_id text,
+        description text,
+        encrypted_access_token jsonb,
+        expires timestamptz,
+        disabled boolean,
+        scopes jsonb,
+        created timestamptz,
+        last_modified timestamptz,
+        last_date_used timestamptz,
+        last_rotated timestamptz,
+        delete_on_expiration boolean
+      )
+    body: |-
+      begin
+        return query
+        select
+          clients.client_id,
+          clients.description,
+          clients.encrypted_access_token,
+          clients.expires,
+          clients.disabled,
+          clients.scopes,
+          clients.created,
+          clients.last_modified,
+          clients.last_date_used,
+          clients.last_rotated,
+          clients.delete_on_expiration
+        from clients
+        where
+          (prefix_in is null or starts_with(clients.client_id, prefix_in)) and
+          (after_client_id_in is null or clients.client_id > after_client_id_in)
+        order by clients.client_id
+        limit get_page_limit(page_size_in);
+      end

@@ -79,7 +79,7 @@ export const syncStaticClients = async function(db, clients = []) {
   // static clients, as that number should be small and anyway we are handling them
   // all in memory.
   const done = []; // list of clientIds we've already synchronized
-  const rows = await db.fns.get_clients('static/', null, null);
+  const rows = await db.fns.get_clients_after('static/', null, null);
 
   for (let row of rows) {
     // Find target we should modify the client match

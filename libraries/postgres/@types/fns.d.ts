@@ -145,7 +145,8 @@ type AuthGetClientFn = {
   client_id_in: string;
  }): Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
 };
-type AuthGetClientsFn = {
+/** @deprecated */
+type AuthGetClientsDeprecatedFn = {
  (
    prefix_in: string | null,
    page_size_in: number | null,
@@ -155,6 +156,18 @@ type AuthGetClientsFn = {
   prefix_in?: string | null;
   page_size_in?: number | null;
   page_offset_in?: number | null;
+ }): Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
+};
+type AuthGetClientsAfterFn = {
+ (
+   prefix_in: string | null,
+   page_size_in: number | null,
+   after_client_id_in: string | null
+ ): Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
+ (params: {
+  prefix_in?: string | null;
+  page_size_in?: number | null;
+  after_client_id_in?: string | null;
  }): Promise<Array<{client_id: string, description: string, encrypted_access_token: JsonB, expires: Date, disabled: boolean, scopes: JsonB, created: Date, last_modified: Date, last_date_used: Date, last_rotated: Date, delete_on_expiration: boolean}>>;
 };
 type AuthGetCombinedAuditHistoryFn = {
@@ -6311,7 +6324,7 @@ export interface DbFunctions {
   delete_client: AuthDeleteClientFn;
   expire_clients_return_client_ids: AuthExpireClientsReturnClientIdsFn;
   get_client: AuthGetClientFn;
-  get_clients: AuthGetClientsFn;
+  get_clients_after: AuthGetClientsAfterFn;
   get_combined_audit_history: AuthGetCombinedAuditHistoryFn;
   get_roles: AuthGetRolesFn;
   insert_auth_audit_history: AuthInsertAuthAuditHistoryFn;
@@ -6540,6 +6553,7 @@ export interface DeprecatedDbFunctions {
   clients_entities_scan: AuthClientsEntitiesScanDeprecatedFn;
   expire_clients: AuthExpireClientsDeprecatedFn;
   get_audit_history: AuthGetAuditHistoryDeprecatedFn;
+  get_clients: AuthGetClientsDeprecatedFn;
   roles_entities_create: AuthRolesEntitiesCreateDeprecatedFn;
   roles_entities_load: AuthRolesEntitiesLoadDeprecatedFn;
   roles_entities_modify: AuthRolesEntitiesModifyDeprecatedFn;

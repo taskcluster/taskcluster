@@ -8036,6 +8036,24 @@
         }
       },
       "version": 126
+    },
+    {
+      "description": "keyset pagination variant of get_clients to avoid duplicate or skipped rows when the result set changes during a multi-page scan",
+      "methods": {
+        "get_clients": {
+          "deprecated": true
+        },
+        "get_clients_after": {
+          "args": "prefix_in text, page_size_in integer, after_client_id_in text",
+          "body": "begin\n  return query\n  select\n    clients.client_id,\n    clients.description,\n    clients.encrypted_access_token,\n    clients.expires,\n    clients.disabled,\n    clients.scopes,\n    clients.created,\n    clients.last_modified,\n    clients.last_date_used,\n    clients.last_rotated,\n    clients.delete_on_expiration\n  from clients\n  where\n    (prefix_in is null or starts_with(clients.client_id, prefix_in)) and\n    (after_client_id_in is null or clients.client_id > after_client_id_in)\n  order by clients.client_id\n  limit get_page_limit(page_size_in);\nend",
+          "deprecated": false,
+          "description": "Get clients filtered by the optional `prefix_in`, ordered by\n`client_id`. Uses keyset pagination via `after_client_id_in`: pass\nnull to fetch the first page, then pass the last row's `client_id`\nto fetch the next page. Unlike the offset-based variant\n`get_clients`, this is robust to concurrent inserts and deletes\nduring a long-running scan — the cursor moves strictly forward\nthrough a unique key, so each row is returned at most once.\n\nTrade-off: rows inserted with a sort key *before* the current\ncursor are silently skipped for the remainder of the scan. This\nis fine for callers that re-scan from the beginning each loop\n(e.g. the auth scope-resolver cache reload), but callers\nrequiring \"every row that existed at any point during the scan\"\nshould not use this function.",
+          "mode": "read",
+          "returns": "table (\n  client_id text,\n  description text,\n  encrypted_access_token jsonb,\n  expires timestamptz,\n  disabled boolean,\n  scopes jsonb,\n  created timestamptz,\n  last_modified timestamptz,\n  last_date_used timestamptz,\n  last_rotated timestamptz,\n  delete_on_expiration boolean\n)",
+          "serviceName": "auth"
+        }
+      },
+      "version": 127
     }
   ]
 }

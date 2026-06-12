@@ -214,15 +214,19 @@ builder.declare({
     '',
     'By default this end-point will try to return up to 1000 clients in one',
     'request. But it **may return less, even none**.',
-    'It may also return a `continuationToken` even though there are no more',
-    'results. However, you can only be sure to have seen all results if you',
-    'keep calling `listClients` with the last `continuationToken` until you',
-    'get a result without a `continuationToken`.',
+    'If there are more results, a `continuationToken` is included in the',
+    'response. To retrieve all results, keep calling `listClients` with the',
+    'last `continuationToken` until a response is returned without one.',
   ].join('\n'),
 }, async function(req, res) {
   const { continuationToken, rows } = await paginateResults({
     query: req.query,
-    fetch: (size, offset) => this.db.fns.get_clients(req.query.prefix, size, offset),
+    indexColumns: ['client_id'],
+    fetch: (size, after) => this.db.fns.get_clients_after({
+      prefix_in: req.query.prefix ?? null,
+      page_size_in: size,
+      ...after,
+    }),
     maxLimit: 1000,
   });
 
