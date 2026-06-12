@@ -57,7 +57,7 @@ export default class NoTask extends Component {
 
   renderSecondary(entry) {
     const { classes } = this.props;
-    const { taskId, taskQueueId, created, source } = entry;
+    const { taskQueueId, created, source } = entry;
     const parts = [];
 
     if (taskQueueId) {
@@ -81,7 +81,7 @@ export default class NoTask extends Component {
     }
 
     if (!parts.length) {
-      return taskId;
+      return null;
     }
 
     return (

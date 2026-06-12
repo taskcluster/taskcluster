@@ -77,7 +77,7 @@ export default class NoTaskGroup extends Component {
       return null;
     }
 
-    const resolved = running + pending + unscheduled === 0;
+    const unresolved = running + pending + unscheduled > 0;
     const parts = [`${total} tasks`];
 
     if (completed) parts.push(`${completed} completed`);
@@ -86,18 +86,28 @@ export default class NoTaskGroup extends Component {
     if (running) parts.push(`${running} running`);
     if (pending) parts.push(`${pending} pending`);
 
+    let resolvedState;
+
+    if (unresolved) {
+      resolvedState = 'RUNNING';
+    } else if (failed > 0 || exception > 0) {
+      resolvedState = 'FAILED';
+    } else {
+      resolvedState = 'COMPLETED';
+    }
+
     return (
       <span>
         {parts.join(' · ')}
         {' · '}
-        <StatusLabel state={resolved ? 'COMPLETED' : 'RUNNING'} />
+        <StatusLabel state={resolvedState} />
       </span>
     );
   }
 
   renderSecondary(entry) {
     const { classes } = this.props;
-    const { taskGroupId, taskQueueId, created, source, statusCount } = entry;
+    const { taskQueueId, created, source, statusCount } = entry;
     const infoparts = [];
 
     if (taskQueueId) {
@@ -124,7 +134,7 @@ export default class NoTaskGroup extends Component {
     const hasInfo = infoparts.length > 0 || statusSummary;
 
     if (!hasInfo) {
-      return taskGroupId;
+      return null;
     }
 
     const infoLine =
