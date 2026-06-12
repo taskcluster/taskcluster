@@ -16,7 +16,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
  * , where description will be amended with a section explaining that this
  * client is static and can't be modified at runtime.
  */
-export const syncStaticClients = async function(db, clients = []) {
+export const syncStaticClients = async (db, clients = []) => {
   const staticScopes = JSON.parse(await fs.readFile(path.join(__dirname, 'static-scopes.json'), 'utf8'));
 
   // Validate input for sanity (we hardly need perfect validation here...)

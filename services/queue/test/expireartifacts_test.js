@@ -7,7 +7,7 @@ import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { ListObjectsCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -196,7 +196,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 });
 
 // GCS specific mock
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   if (!mock) {
     // see https://github.com/taskcluster/taskcluster/issues/6416 for details
     // at the moment real tests are done against AWS S3 and those patches would make no sense
@@ -214,7 +214,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
   const MAX_ARTIFACTS = 5;
 
   let monitor;
-  suiteSetup(async function () {
+  suiteSetup(async () => {
     monitor = await helper.load('monitor');
   });
 

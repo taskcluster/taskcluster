@@ -10,7 +10,7 @@ import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
 import { hookUtils } from '../src/utils.js';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.secrets.mockSuite('TaskCreator', [], function(mock, skipping) {
     helper.withDb(mock, skipping);
     helper.resetTables(mock, skipping);
@@ -71,7 +71,7 @@ suite(testing.suiteName(), function() {
       },
     };
 
-    const createTestHook = async function(scopes, extra) {
+    const createTestHook = async (scopes, extra) => {
       let hook = _.cloneDeep(defaultHook);
       hook.task.then.extra = extra;
       hook.task.then.scopes = scopes;
@@ -118,10 +118,10 @@ suite(testing.suiteName(), function() {
         });
 
     let monitor;
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       monitor = await helper.load('monitor');
     });
-    test('firing a real task succeeds', async function() {
+    test('firing a real task succeeds', async () => {
       let hook = await createTestHook([], {
         context: '${context}',
         firedBy: '${firedBy}',
@@ -133,7 +133,7 @@ suite(testing.suiteName(), function() {
       assertFireLogged({ firedBy: "schedule", taskId, result: 'success' });
     });
 
-    test('firing a real task with a JSON-e context succeeds', async function() {
+    test('firing a real task with a JSON-e context succeeds', async () => {
       let hook = await createTestHook([], {
         context: {
           valueFromContext: { $eval: 'someValue + 13' },
@@ -164,7 +164,7 @@ suite(testing.suiteName(), function() {
       assertFireLogged({ firedBy: "schedule", taskId, result: 'success' });
     });
 
-    test('firing a hook where the json-e renders to nothing does nothing', async function() {
+    test('firing a hook where the json-e renders to nothing does nothing', async () => {
       const hook = _.cloneDeep(defaultHook);
       hook.task = { $if: 'false', then: hook.task };
       await helper.db.fns.create_hook(
@@ -186,7 +186,7 @@ suite(testing.suiteName(), function() {
       assert.ok(!res, `expected falsy return from declined fire(), got ${JSON.stringify(res)}`);
     });
 
-    test('firing a hook where the json-e fails to render fails', async function() {
+    test('firing a hook where the json-e fails to render fails', async () => {
       const hook = _.cloneDeep(defaultHook);
       hook.task = { $if: 'uhoh, this is invalid' };
       await helper.db.fns.create_hook(
@@ -226,7 +226,7 @@ suite(testing.suiteName(), function() {
       throw new Error('should have seen an error from .fire');
     });
 
-    test('firing a real task that sets its own task times works', async function() {
+    test('firing a real task that sets its own task times works', async () => {
       let hook = _.cloneDeep(defaultHook);
       hook.task.then.created = { $fromNow: '0 seconds' };
       hook.task.then.deadline = { $fromNow: '1 minute' };
@@ -251,7 +251,7 @@ suite(testing.suiteName(), function() {
       assume(new Date(task.expires) - new Date(task.created)).to.equal(120000);
     });
 
-    test('firing a real task that sets its own taskGroupId works', async function() {
+    test('firing a real task that sets its own taskGroupId works', async () => {
       let hook = _.cloneDeep(defaultHook);
       hook.task.then.taskGroupId = taskcluster.slugid();
       await helper.db.fns.create_hook(
@@ -273,7 +273,7 @@ suite(testing.suiteName(), function() {
       assume(task.taskGroupId).equals(hook.task.then.taskGroupId);
     });
 
-    test('firing a task with options.created always generates the same task', async function() {
+    test('firing a task with options.created always generates the same task', async () => {
       await helper.db.fns.create_hook(
         defaultHook.hookGroupId,
         defaultHook.hookId,
@@ -302,7 +302,7 @@ suite(testing.suiteName(), function() {
       assume(taskA.expires).deeply.equal(taskB.expires);
     });
 
-    test('firing a real task includes values from context', async function() {
+    test('firing a real task includes values from context', async () => {
       let hook = await createTestHook([], {
         env: { DUSTIN_LOCATION: '${location}' },
         firedBy: '${firedBy}',
@@ -320,7 +320,7 @@ suite(testing.suiteName(), function() {
       });
     });
 
-    test('adds a taskId if one is not specified', async function() {
+    test('adds a taskId if one is not specified', async () => {
       let hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1'],
         { context: '${context}' });
       let resp = await creator.fire(hook, { context: true, firedBy: 'foo' });
@@ -328,7 +328,7 @@ suite(testing.suiteName(), function() {
       assume(task.workerType).equals(hook.task.then.workerType);
     });
 
-    test('adds a new row to lastFire', async function() {
+    test('adds a new row to lastFire', async () => {
       let hook = _.cloneDeep(defaultHook);
       let taskCreateTime = new Date();
       await creator.appendLastFire({
@@ -350,7 +350,7 @@ suite(testing.suiteName(), function() {
       assume(res.task_id).equals(hook.nextTaskId);
     });
 
-    test('Fetch two appended lastFire rows independently', async function() {
+    test('Fetch two appended lastFire rows independently', async () => {
       let hook = _.cloneDeep(defaultHook);
       let hook2 = _.cloneDeep({ ...defaultHook,
         hookId: 'tc-test-hook2',
@@ -395,13 +395,13 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite('MockTaskCreator', function() {
+  suite('MockTaskCreator', () => {
     let creator = null;
     setup(async () => {
       creator = new taskcreator.MockTaskCreator();
     });
 
-    test('the fire method records calls', async function() {
+    test('the fire method records calls', async () => {
       const hook = _.cloneDeep(hookDef);
       hook.hookGroupId = 'g';
       hook.hookId = 'h';

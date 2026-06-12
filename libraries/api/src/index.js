@@ -55,7 +55,7 @@ const ping = {
     'Respond without doing anything.',
     'This endpoint is used to check that the service is up.',
   ].join('\n'),
-  handler: function(req, res) {
+  handler: (req, res) => {
     res.status(200).json({
       alive: true,
       uptime: process.uptime(),
@@ -80,7 +80,7 @@ const lbHeartbeat = {
     'Respond without doing anything.',
     'This endpoint is used to check that the service is up.',
   ].join('\n'),
-  handler: function(_req, res) {
+  handler: (_req, res) => {
     res.json({});
   },
 };
@@ -101,7 +101,7 @@ const version = {
     'Respond with the JSON version object.',
     'https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md',
   ].join('\n'),
-  handler: async function(_req, res) {
+  handler: async (_req, res) => {
     res.json(await loadVersion());
   },
 };
@@ -120,7 +120,7 @@ export class APIBuilder {
     assert(!options.schemaPrefix, 'schemaPrefix is no longer allowed!');
     assert(!options.version, 'version is now apiVersion');
     /** @satisfies {Array<keyof APIBuilderOptions<TContext>>} */
-    (['title', 'description', 'serviceName', 'apiVersion']).forEach(function(key) {
+    (['title', 'description', 'serviceName', 'apiVersion']).forEach((key) => {
       assert(options[key], 'Option \'' + key + '\' must be provided');
     });
     assert(/^[a-z][a-z0-9_-]*$/.test(options.serviceName), `api serviceName "${options.serviceName}" is not valid`);
@@ -207,7 +207,7 @@ export class APIBuilder {
    */
   declare(options, handler) {
     /** @satisfies {Array<keyof APIEntryOptions<TContext>>} */
-    (['name', 'method', 'route', 'title', 'description', 'category']).forEach(function(key) {
+    (['name', 'method', 'route', 'title', 'description', 'category']).forEach((key) => {
       assert(options[key], 'Option \'' + key + '\' must be provided');
     });
     // unlike other options above, scopes is allowed to be null, but not undefined...

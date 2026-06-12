@@ -9,7 +9,7 @@ import testing from '@taskcluster/lib-testing';
 
 import taskDefinition from './test_definition.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withTaskCreator(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -123,7 +123,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   };
 
-  suite('createHook', function() {
+  suite('createHook', () => {
     subSkip();
     test("creates a hook", async () => {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
@@ -265,7 +265,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('updateHook', function() {
+  suite('updateHook', () => {
     subSkip();
     test('updates a hook', async () => {
       const inputWithTriggerSchema = _.defaults({
@@ -295,7 +295,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await auditRecordExists('foo/bar', 'updated');
     });
 
-    test('fails if pulse publisher fails', async function() {
+    test('fails if pulse publisher fails', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       helper.onPulsePublish(() => {
         throw new Error('uhoh');
@@ -341,7 +341,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('removeHook', function() {
+  suite('removeHook', () => {
     subSkip();
     test('removes a hook', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
@@ -357,7 +357,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await auditRecordExists('foo/bar', 'deleted');
     });
 
-    test('fails if pulse publisher fails', async function() {
+    test('fails if pulse publisher fails', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
       helper.onPulsePublish(() => {
         throw new Error('uhoh');
@@ -399,10 +399,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('listHookGroups', function() {
+  suite('listHookGroups', () => {
     subSkip();
 
-    test('without scopes', async function() {
+    test('without scopes', async () => {
       const client = new helper.Hooks({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.listHookGroups(),
@@ -422,10 +422,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('listHooks', function() {
+  suite('listHooks', () => {
     subSkip();
 
-    test('without scopes', async function() {
+    test('without scopes', async () => {
       const client = new helper.Hooks({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.listHooks('foo'),
@@ -446,10 +446,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('hook', function() {
+  suite('hook', () => {
     subSkip();
 
-    test('without scopes', async function() {
+    test('without scopes', async () => {
       const client = new helper.Hooks({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.hook('gp', 'hk'),
@@ -469,7 +469,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('getTriggerToken', function() {
+  suite('getTriggerToken', () => {
     subSkip();
 
     test('returns the same token', async () => {
@@ -486,10 +486,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('getHookStatus', function() {
+  suite('getHookStatus', () => {
     subSkip();
 
-    test('without scopes', async function() {
+    test('without scopes', async () => {
       const client = new helper.Hooks({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.getHookStatus('gp', 'hk'),
@@ -570,7 +570,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('triggerHook', function() {
+  suite('triggerHook', () => {
     subSkip();
     test('should launch task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
@@ -692,7 +692,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('schemaTests', function() {
+  suite('schemaTests', () => {
     subSkip();
 
     test('checking schema validation', async () => {
@@ -764,7 +764,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('resetTriggerToken', function() {
+  suite('resetTriggerToken', () => {
     subSkip();
     test('creates a new token', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
@@ -783,7 +783,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('triggerHookWithToken', function() {
+  suite('triggerHookWithToken', () => {
     subSkip();
     test('successfully triggers task with the given payload', async () => {
       await helper.hooks.createHook('foo', 'bar', hookWithTriggerSchema);
@@ -867,7 +867,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('listLastFires', function() {
+  suite('listLastFires', () => {
     subSkip();
     let creator = null;
     suiteSetup(async function() {
@@ -913,7 +913,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
     };
 
-    test('without scopes', async function() {
+    test('without scopes', async () => {
       const client = new helper.Hooks({ rootUrl: helper.rootUrl });
       await assert.rejects(
         () => client.listLastFires('gp', 'hk'),
@@ -957,7 +957,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('pulseHooks', function() {
+  suite('pulseHooks', () => {
     subSkip();
     test('createing a hook sends a pulse message', async () => {
       const r1 = await helper.hooks.createHook('foo', 'bar', hookWithBindings);

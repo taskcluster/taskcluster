@@ -12,7 +12,7 @@ export const load = testing.stickyLoader(loadMain);
 const helper = { load };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -47,7 +47,7 @@ helper.withPulse = withPulse;
  * The component is available at `helper.queue`.
  */
 export const withFakeQueue = (mock, skipping) => {
-  suiteSetup(function() {
+  suiteSetup(() => {
     if (skipping()) {
       return;
     }
@@ -65,7 +65,7 @@ helper.setAnonymousScopes = (scopes) => {
 };
 
 export const withFakeAnonymousScopeCache = (mock, skipping) => {
-  suiteSetup(function() {
+  suiteSetup(() => {
     if (skipping()) {
       return;
     }
@@ -75,7 +75,7 @@ export const withFakeAnonymousScopeCache = (mock, skipping) => {
     });
   });
 
-  setup(function() {
+  setup(() => {
     if (skipping()) {
       return;
     }
@@ -94,7 +94,7 @@ helper.withFakeAnonymousScopeCache = withFakeAnonymousScopeCache;
 export const withServer = (mock, skipping) => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -132,7 +132,7 @@ export const withServer = (mock, skipping) => {
     webServer = await load('server');
   });
 
-  setup(async function() {
+  setup(async () => {
     if (skipping()) {
       return;
     }
@@ -140,7 +140,7 @@ export const withServer = (mock, skipping) => {
     helper.scopes();
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -181,11 +181,11 @@ const stubbedQueue = () => {
     },
   });
 
-  queue.addTask = function(taskId, task) {
+  queue.addTask = (taskId, task) => {
     tasks[taskId] = task;
   };
 
-  queue.setArtifact = function(taskId, name, response) {
+  queue.setArtifact = (taskId, name, response) => {
     artifacts[`${taskId}/${name}`] = response;
   };
 
@@ -193,7 +193,7 @@ const stubbedQueue = () => {
 };
 
 export const resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
+  setup('reset tables', async () => {
     await testing.resetTables({ tableNames: [
       'indexed_tasks',
       'index_namespaces',

@@ -5,10 +5,10 @@ import helper from '../helper.js';
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function () {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
-  test('tables and columns are created, data is migrated', async function () {
+  test('tables and columns are created, data is migrated', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     const db = await helper.setupDb('worker_manager');
 

@@ -11,7 +11,7 @@ import debugFactory from 'debug';
 const debug = debugFactory('s3_test');
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
   if (mock) {
     return; // This is actually testing sts tokens and we are not going to mock those
   }
@@ -22,7 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
   helper.withServers(mock, skipping);
 
   let bucket;
-  setup(function() {
+  setup(() => {
     const secret = helper.secrets.get('aws');
     bucket = secret.testBucket;
     helper.load.cfg('awsCredentials.allowedBuckets', [{

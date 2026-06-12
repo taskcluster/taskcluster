@@ -39,7 +39,7 @@ suite(testing.suiteName(), () => {
     clients[clientId] = { clientId, disabled, expandedScopes };
   };
 
-  setup(function() {
+  setup(() => {
     clients = {};
   });
 
@@ -63,7 +63,7 @@ suite(testing.suiteName(), () => {
 
   const strategies = { test: new TestStrategy({ name: 'test' }) };
 
-  test('test strategy with valid clients', async function() {
+  test('test strategy with valid clients', async () => {
     addClient('test/user1/', ['assume:also:user1']);
     addClient('test/user1/another', ['assume:is:user1']);
     addClient('test/user2/hi', ['assume:also:user2']);
@@ -75,7 +75,7 @@ suite(testing.suiteName(), () => {
     assert.equal(clients['test/user2/ho'].disabled, false);
   });
 
-  test('test strategy with some invalid clients', async function() {
+  test('test strategy with some invalid clients', async () => {
     addClient('test/user1/', ['assume:also:user1']);
     addClient('test/user1/another', ['assume:NOSUCH']);
     addClient('test/user2/hi', ['assume:also:user2']);
@@ -87,7 +87,7 @@ suite(testing.suiteName(), () => {
     assert.equal(clients['test/user2/ho'].disabled, true);
   });
 
-  test('test strategy with some clients that have no user', async function() {
+  test('test strategy with some clients that have no user', async () => {
     addClient('test/user1/x', ['assume:is:user1']);
     addClient('test/NOSUCH/hi', ['assume:NOSUCH']);
     await scan(auth, strategies);
@@ -95,7 +95,7 @@ suite(testing.suiteName(), () => {
     assert.equal(clients['test/NOSUCH/hi'].disabled, true);
   });
 
-  test('test strategy with valid but disabled client', async function() {
+  test('test strategy with valid but disabled client', async () => {
     addClient('test/user1/', ['assume:also:user1'], true);
     await scan(auth, strategies);
     assert.equal(clients['test/user1/'].disabled, true);

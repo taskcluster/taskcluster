@@ -9,7 +9,7 @@ import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { LEVELS } from '@taskcluster/lib-monitor';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -40,7 +40,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   let monitor;
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     monitor = await helper.load('monitor');
   });
 
@@ -425,9 +425,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.scopes(
       'assume:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
     );
-    await helper.queue.reportCompleted(taskId, 0).then(function() {
+    await helper.queue.reportCompleted(taskId, 0).then(() => {
       throw new Error('Expected authentication error');
-    }, function(err) {
+    }, (err) => {
       if (err.code !== 'InsufficientScopes') {
         throw err;
       }
@@ -498,7 +498,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       m.payload.status.runs.length === 2));
   });
 
-  test('regression: pulse taskPending failure during reportException retry does not orphan the retry run', async function() {
+  test('regression: pulse taskPending failure during reportException retry does not orphan the retry run', async () => {
     const taskId = slugid.v4();
 
     debug('### Creating task');

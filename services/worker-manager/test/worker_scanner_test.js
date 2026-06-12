@@ -5,7 +5,7 @@ import taskcluster from '@taskcluster/client';
 import { LEVELS } from '@taskcluster/lib-monitor';
 import { Worker, WorkerPool } from '../src/data.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withFakeQueue(mock, skipping);
@@ -16,7 +16,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   helper.resetTables(mock, skipping);
 
   let monitor;
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     monitor = await helper.load('monitor');
   });
 
@@ -256,7 +256,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     await scanner.terminate();
   });
 
-  test('scan loop is not running in parallel', async function() {
+  test('scan loop is not running in parallel', async () => {
     const providers = await helper.load('providers');
     const estimator = await helper.load('estimator');
     const scanner = new (await import('../src/worker-scanner.js')).WorkerScanner({
@@ -285,10 +285,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     monitor.manager.reset();
   });
 
-  suite('termination decisions', function() {
+  suite('termination decisions', () => {
     let scanner, providers, estimator;
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       if (skipping()) {
         return;
       }
@@ -296,7 +296,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       estimator = await helper.load('estimator');
     });
 
-    setup(async function() {
+    setup(async () => {
       // Create a fresh scanner for each test (no iterate loop, just call scan() directly)
       scanner = new (await import('../src/worker-scanner.js')).WorkerScanner({
         ownName: 'test-scanner',
@@ -336,7 +336,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return worker.create(helper.db);
     };
 
-    test('worker with archived launch config is marked for termination', async function() {
+    test('worker with archived launch config is marked for termination', async () => {
       const poolId = 'pp/archived';
       await createPool(poolId, { maxCapacity: 10 });
       await createLaunchConfig('lc-archived', poolId, true);
@@ -367,7 +367,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(worker.providerData.shouldTerminate.decidedAt);
     });
 
-    test('idle workers with minCapacity=0 and no pending tasks are terminated', async function() {
+    test('idle workers with minCapacity=0 and no pending tasks are terminated', async () => {
       const poolId = 'pp/overcap';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
       await createLaunchConfig('lc-active', poolId, false);
@@ -406,7 +406,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(wNewest.providerData.shouldTerminate.terminate, true);
     });
 
-    test('all workers needed when pending tasks require them', async function() {
+    test('all workers needed when pending tasks require them', async () => {
       const poolId = 'pp/needed';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
       await createLaunchConfig('lc-needed', poolId, false);
@@ -445,7 +445,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(wNewest.providerData.shouldTerminate.terminate, false);
     });
 
-    test('excess workers with maxCapacity=1 — oldest terminated', async function() {
+    test('excess workers with maxCapacity=1 — oldest terminated', async () => {
       const poolId = 'pp/excess';
       await createPool(poolId, { maxCapacity: 1, minCapacity: 0 });
       await createLaunchConfig('lc-active2', poolId, false);
@@ -478,7 +478,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(wNew.providerData.shouldTerminate.reason, 'needed');
     });
 
-    test('workers with claimed tasks and pending tasks are not terminated', async function() {
+    test('workers with claimed tasks and pending tasks are not terminated', async () => {
       const poolId = 'pp/claimed';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
       await createLaunchConfig('lc-claimed', poolId, false);
@@ -518,7 +518,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(w3.providerData.shouldTerminate.terminate, false);
     });
 
-    test('workers at minCapacity are not marked even with no pending tasks', async function() {
+    test('workers at minCapacity are not marked even with no pending tasks', async () => {
       const poolId = 'pp/mincap';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 2 });
       await createLaunchConfig('lc-min', poolId, false);
@@ -549,7 +549,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(w2.providerData.shouldTerminate.terminate, false);
     });
 
-    test('decision is reversible when demand returns', async function() {
+    test('decision is reversible when demand returns', async () => {
       const poolId = 'pp/reverse';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 0 });
       await createLaunchConfig('lc-rev', poolId, false);
@@ -586,7 +586,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(w.providerData.shouldTerminate.reason, 'needed');
     });
 
-    test('reducing minCapacity marks workers for termination on next scan', async function() {
+    test('reducing minCapacity marks workers for termination on next scan', async () => {
       const poolId = 'pp/minchange';
       await createPool(poolId, { maxCapacity: 10, minCapacity: 1 });
       await createLaunchConfig('lc-minchange', poolId, false);
@@ -626,7 +626,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(w.providerData.shouldTerminate.reason, 'over capacity');
     });
 
-    test('static provider workers do not get shouldTerminate set', async function() {
+    test('static provider workers do not get shouldTerminate set', async () => {
       await createWorker({
         workerPoolId: 'pp/static',
         workerGroup: 'wg',
@@ -649,7 +649,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.strictEqual(worker.providerData.shouldTerminate, undefined);
     });
 
-    test('emits workersToTerminate metric with correct values and labels', async function() {
+    test('emits workersToTerminate metric with correct values and labels', async () => {
       const poolId = 'pp/metrics';
       await createPool(poolId, { maxCapacity: 1, minCapacity: 0 });
       await createLaunchConfig('lc-metric-active', poolId, false);
@@ -708,7 +708,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     });
 
-    test('integration: scanner decision is returned by API endpoint', async function() {
+    test('integration: scanner decision is returned by API endpoint', async () => {
       const poolId = 'pp/integ';
       await createPool(poolId, { maxCapacity: 1, minCapacity: 0 });
       await createLaunchConfig('lc-integ', poolId, false);

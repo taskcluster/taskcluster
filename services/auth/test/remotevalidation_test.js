@@ -5,7 +5,7 @@ import taskcluster from '@taskcluster/client';
 import request from 'superagent';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
   helper.withCfg(mock, skipping);
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -13,7 +13,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
 
   let rootCredentials;
 
-  suiteSetup(function() {
+  suiteSetup(() => {
     helper.setupScopes(['*']);
     rootCredentials = {
       clientId: 'static/taskcluster/root',

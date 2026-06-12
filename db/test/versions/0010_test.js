@@ -6,15 +6,15 @@ import { entityBufDecodeTest } from './0008_test.js';
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
   // note that this test suite initially tested the migration much more thoroughly, but did
   // so using tc-lib-entities, which has since been removed from the codebase.
 
   // version 10 updates entity_buf_decode to fix a bug, so we re-test that function here
-  suite('entity_buf_decode bugfix', function() {
-    suiteSetup(async function() {
+  suite('entity_buf_decode bugfix', () => {
+    suiteSetup(async () => {
       await testing.resetDb({ testDbUrl: helper.dbUrl });
       await helper.upgradeTo(THIS_VERSION);
     });
@@ -27,7 +27,7 @@ suite(testing.suiteName(), function() {
     entityBufDecodeTest('2 huge bufs', hugeBufs.encoded, hugeBufs.decoded);
   });
 
-  test('tables created / removed on upgrade and downgrade', async function() {
+  test('tables created / removed on upgrade and downgrade', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 

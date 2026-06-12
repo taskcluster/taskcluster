@@ -10,13 +10,13 @@ import mockFs from 'mock-fs';
 const __dirname = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = path.join(__dirname, '../../../');
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
 
   // Test app creation
-  suite('app({port: 1459})', function() {
+  suite('app({port: 1459})', () => {
     let server;
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       mockFs({
         [path.resolve(REPO_ROOT, 'version.json')]: JSON.stringify({ version: 'v99.99.99' }),
       });
@@ -25,10 +25,10 @@ suite(testing.suiteName(), function() {
       const fakeApi = {
         express(app) {
           const router = express.Router();
-          router.get('/test', function(req, res) {
+          router.get('/test', (req, res) => {
             res.status(200).send('Okay this works');
           });
-          router.get('/req-id', function(req, res) {
+          router.get('/req-id', (req, res) => {
             res.status(200).send(JSON.stringify({
               valueSet: req.traceId,
             }));
@@ -48,18 +48,18 @@ suite(testing.suiteName(), function() {
       });
     });
 
-    test('get /test', async function() {
+    test('get /test', async () => {
       const res = await request.get('http://localhost:1459/api/test/v1/test');
       assert(res.ok, 'Got response');
       assert.equal(res.text, 'Okay this works', 'Got the right text');
     });
 
-    test('hsts header', async function() {
+    test('hsts header', async () => {
       const res = await request.get('http://localhost:1459/api/test/v1/test');
       assert.equal(res.headers['strict-transport-security'], 'max-age=7776000000; includeSubDomains');
     });
 
-    test('trace ids', async function() {
+    test('trace ids', async () => {
       const res = await request
         .get('http://localhost:1459/api/test/v1/req-id')
         .set('x-taskcluster-trace-id', 'foo/123')
@@ -69,7 +69,7 @@ suite(testing.suiteName(), function() {
       assert.equal(body.valueSet, 'foo/123');
     });
 
-    test('trace ids (created when none passed in)', async function() {
+    test('trace ids (created when none passed in)', async () => {
       const res = await request
         .get('http://localhost:1459/api/test/v1/req-id')
         .buffer();
@@ -79,28 +79,28 @@ suite(testing.suiteName(), function() {
       assert(isUUID.v4(body.valueSet));
     });
 
-    test('/__version__', async function() {
+    test('/__version__', async () => {
       const res = await request.get('http://localhost:1459/__version__');
       assert(res.ok, 'Got response');
       assert.equal(res.body.version, 'v99.99.99', 'Got the right version');
       assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
     });
 
-    test('/__heartbeat__', async function() {
+    test('/__heartbeat__', async () => {
       const res = await request.get('http://localhost:1459/__heartbeat__');
       assert(res.ok, 'Got response');
       assert.equal(res.status, 200);
       assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
     });
 
-    test('/__lbheartbeat__', async function() {
+    test('/__lbheartbeat__', async () => {
       const res = await request.get('http://localhost:1459/__lbheartbeat__');
       assert(res.ok, 'Got response');
       assert.equal(res.status, 200);
       assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
     });
 
-    test('/not-found', async function() {
+    test('/not-found', async () => {
       try {
         await request.get('http://localhost:1459/api/test/v1/notfound');
       } catch (err) {
@@ -117,7 +117,7 @@ suite(testing.suiteName(), function() {
       throw new Error('expected exception not seen');
     });
 
-    test('graceful shutdown', async function() {
+    test('graceful shutdown', async () => {
       const conn = request.get('http://localhost:1459/__heartbeat__')
         .set('Connection', 'keep-alive');
 
@@ -132,12 +132,10 @@ suite(testing.suiteName(), function() {
       }
     });
 
-    teardown(function() {
+    teardown(() => {
       mockFs.restore();
     });
 
-    suiteTeardown(function() {
-      return server.terminate();
-    });
+    suiteTeardown(() => server.terminate());
   });
 });

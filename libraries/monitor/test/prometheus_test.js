@@ -44,7 +44,7 @@ MonitorManager.registerMetric('testingGlobalCounter', {
 
 const TEST_PORT = 39090;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const configDefaults = {
     serviceName: 'testing-service',
     level: 'debug',
@@ -64,11 +64,11 @@ suite(testing.suiteName(), function() {
     },
   };
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     nock.cleanAll();
   });
 
-  test('starts server and responds to metrics', async function() {
+  test('starts server and responds to metrics', async () => {
     const monitor = MonitorManager.setup(configDefaults);
     monitor.exposeMetrics();
     monitor.metric.testingServiceTestCounter(1);
@@ -82,7 +82,7 @@ suite(testing.suiteName(), function() {
     await monitor.terminate();
   });
 
-  test('server ignores other urls and methods', async function () {
+  test('server ignores other urls and methods', async () => {
     const monitor = MonitorManager.setup(configDefaults);
     monitor.exposeMetrics();
     await assert.rejects(
@@ -96,7 +96,7 @@ suite(testing.suiteName(), function() {
     await monitor.terminate();
   });
 
-  test('global metrics propagate to non-default registries on exposeMetrics', async function() {
+  test('global metrics propagate to non-default registries on exposeMetrics', async () => {
     const monitor = MonitorManager.setup({
       ...configDefaults,
       prometheusConfig: { server: { port: TEST_PORT } },
@@ -118,7 +118,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('global metrics appear in default registry', async function() {
+  test('global metrics appear in default registry', async () => {
     const monitor = MonitorManager.setup({
       ...configDefaults,
       prometheusConfig: { server: { port: TEST_PORT } },
@@ -135,7 +135,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('push gateway successfully sends metrics', async function() {
+  test('push gateway successfully sends metrics', async () => {
     const pushGateway = nock('http://push-gateway.test:9091')
       .put('/metrics/job/push-test-job/instance/test-instance', (body) => {
         return body.includes('http_requests_total') &&

@@ -235,7 +235,7 @@ suite(testing.suiteName(), function() {
         label: 'request scopes from caller',
         id: 'test-client',
         tester: (auth, url) => requestWithHawk(url, auth)
-          .then(function(res) {
+          .then((res) => {
             assert(res.ok, 'Request failed');
             assert(res.body.scopes.length === 1, 'wrong number of scopes');
             assert(res.body.scopes[0] === 'service:magic', 'failed scopes');
@@ -410,7 +410,7 @@ suite(testing.suiteName(), function() {
         label: 'client has sufficient scopes',
         id: 'admin',
         tester: (auth, url) => requestWithHawk(url, auth)
-          .then(function(res) {
+          .then((res) => {
             assert(res.body.clientId === 'admin');
             return res;
           }),

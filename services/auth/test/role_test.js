@@ -7,7 +7,7 @@ import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 
-helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   helper.withCfg(mock, skipping);
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -123,7 +123,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
       err => assert(err.statusCode === 400, 'Expected 400'));
   });
 
-  test('createRole twice with identical roles', async function() {
+  test('createRole twice with identical roles', async () => {
     await helper.apiClient.createRole('double', {
       description: 'double-add',
       scopes: ['foo'],
@@ -140,7 +140,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     await helper.apiClient.deleteRole('double');
   });
 
-  test('createRole but pulse publish fails', async function() {
+  test('createRole but pulse publish fails', async () => {
     helper.onPulsePublish(() => {
       throw new Error('uhoh');
     });
@@ -168,7 +168,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     });
   });
 
-  test('createRole twice with different roles', async function() {
+  test('createRole twice with different roles', async () => {
     await helper.apiClient.createRole('double', {
       description: 'double-add',
       scopes: ['foo'],
@@ -192,7 +192,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     await helper.apiClient.deleteRole('double');
   });
 
-  test('createRole twice at the same time, with identical roles', async function() {
+  test('createRole twice at the same time, with identical roles', async () => {
     await Promise.all([
       helper.apiClient.createRole('double', {
         description: 'double-add',
@@ -476,7 +476,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
     );
   });
 
-  suite('updateRole', function() {
+  suite('updateRole', () => {
     let roleId = `thing-id:${clientId}`;
     let roleId2 = `sub-thing:${clientId}`;
     let auth;
@@ -487,7 +487,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
       }
     });
 
-    setup(async function() {
+    setup(async () => {
       auth = new helper.AuthClient({
         rootUrl: helper.rootUrl,
         credentials: {
@@ -515,7 +515,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], function(mock, skipping) 
       });
     });
 
-    teardown(async function() {
+    teardown(async () => {
       await modifyRoles(helper.db, ({ roles }) => roles.splice(0));
     });
 

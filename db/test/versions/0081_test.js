@@ -6,10 +6,10 @@ import slugid from 'slugid';
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
-  test('task group seal column', async function() {
+  test('task group seal column', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
@@ -21,7 +21,7 @@ suite(testing.suiteName(), function() {
     await helper.assertTableColumn('task_groups', 'sealed');
   });
 
-  test('seal function', async function() {
+  test('seal function', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     const db = await helper.setupDb('queue');

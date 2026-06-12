@@ -74,13 +74,10 @@ Handlers.prototype.completed = function(message) {
   let that = this;
 
   // Find namespaces to index under
-  let namespaces = message.routes.filter(function(route) {
-    return that.routeRegexp.test(route);
-  }).map(function(route) {
-    return that.routeRegexp.exec(route)[1];
-  }).filter(function(namespace) {
-    return helpers.namespaceFormat.test(namespace);
-  });
+  let namespaces = message.routes
+    .filter((route) => that.routeRegexp.test(route))
+    .map((route) => that.routeRegexp.exec(route)[1])
+    .filter((namespace) => helpers.namespaceFormat.test(namespace));
 
   // If there is no namespace we better log this
   if (namespaces.length === 0) {
@@ -89,7 +86,7 @@ Handlers.prototype.completed = function(message) {
   }
 
   // Get task definition
-  return this.queue.task(message.payload.status.taskId).then(function(task) {
+  return this.queue.task(message.payload.status.taskId).then((task) => {
 
     // Create default expiration date
     let expires;
@@ -125,14 +122,12 @@ Handlers.prototype.completed = function(message) {
     }
 
     // Insert everything into the index
-    return Promise.all(namespaces.map(function(namespace) {
-      return helpers.taskUtils.insertTask(that.db, namespace, {
-        taskId: message.payload.status.taskId,
-        data: options.data,
-        expires: expires,
-        rank: options.rank,
-      });
-    })).then(function() {
+    return Promise.all(namespaces.map((namespace) => helpers.taskUtils.insertTask(that.db, namespace, {
+      taskId: message.payload.status.taskId,
+      data: options.data,
+      expires: expires,
+      rank: options.rank,
+    }))).then(() => {
       debug('Indexed: %s', message.payload.status.taskId);
     });
   });

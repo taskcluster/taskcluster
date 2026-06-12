@@ -9,7 +9,7 @@ import helper from './helper.js';
 import tryCatch from '../src/utils/tryCatch.js';
 import hash from '../src/utils/hash.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withFakeAuth(mock, skipping);
   helper.withServer(mock, skipping);
@@ -24,8 +24,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     return new URLSearchParams(url.slice(qmark + 1));
   };
 
-  suite('unit', function() {
-    test('authorization endpoint redirects to the third party page if user is not logged in', async function() {
+  suite('unit', () => {
+    test('authorization endpoint redirects to the third party page if user is not logged in', async () => {
       const registeredClientId = 'test-code';
       const query = new URLSearchParams({
         response_type: 'token',
@@ -45,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(res.header.location, `/third-party?${query}`);
     });
-    test('decision endpoint redirects to the third party page if user is not logged in', async function() {
+    test('decision endpoint redirects to the third party page if user is not logged in', async () => {
       const formData = new URLSearchParams({
         clientId: `test/test/test`,
         transaction_id: '123',
@@ -64,7 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(res.header.location, '/third-party');
     });
-    test('unauthorized_client when mismatch in redirect_uri', async function() {
+    test('unauthorized_client when mismatch in redirect_uri', async () => {
       const agent = await helper.signedInAgent();
 
       // user sent to /login/oauth/authorize with query arg
@@ -84,7 +84,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await helper.expectMonitorError('unauthorized_client');
     });
-    test('unauthorized_client when client_id is not registered', async function() {
+    test('unauthorized_client when client_id is not registered', async () => {
       const agent = await helper.signedInAgent();
       const redirectUri = 'https://test.example.com/cb';
 
@@ -105,7 +105,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await helper.expectMonitorError('unauthorized_client');
     });
-    test('invalid_request when missing required parameters', async function() {
+    test('invalid_request when missing required parameters', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-token';
       const state = 'abc123';
@@ -139,7 +139,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         await helper.expectMonitorError('invalid_request');
       }
     });
-    test('invalid_scope', async function() {
+    test('invalid_scope', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-token';
       const state = 'abc123';
@@ -180,7 +180,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(query.get('error'), 'invalid_scope');
       assert.equal(query.get('state'), state);
     });
-    test('unsupported_response_type', async function() {
+    test('unsupported_response_type', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-token';
       const state = 'abc123';
@@ -221,7 +221,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(query.get('error'), 'unsupported_response_type');
       assert.equal(query.get('state'), state);
     });
-    test('invalid transactionID', async function() {
+    test('invalid transactionID', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code';
       const state = 'abc123';
@@ -260,7 +260,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await helper.expectMonitorError('ForbiddenError');
     });
-    test('maxExpires is respected', async function() {
+    test('maxExpires is respected', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-token';
 
@@ -296,7 +296,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert(new Date(res.body.expires) < taskcluster.fromNow('1 year'));
     });
-    test('can request a client with expires less than maxExpires when client is whitelisted', async function() {
+    test('can request a client with expires less than maxExpires when client is whitelisted', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code-whitelisted';
       const redirectUri = 'https://test.example.com/cb';
@@ -332,7 +332,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert(new Date(res.body.expires) < taskcluster.fromNow(fifteenMinutes));
     });
-    test('skip decision step when client is whitelisted', async function() {
+    test('skip decision step when client is whitelisted', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code-whitelisted';
 
@@ -351,7 +351,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert(query.get('code').length > 1);
     });
-    test('invalid_grant - invalid code does not return an access token', async function() {
+    test('invalid_grant - invalid code does not return an access token', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code-whitelisted';
       const redirectUri = 'https://test.example.com/cb';
@@ -379,7 +379,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(error.response.body.error, 'invalid_grant');
       assert(!response);
     });
-    test('invalid_grant - authorization code cannot be exchanged twice', async function() {
+    test('invalid_grant - authorization code cannot be exchanged twice', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code-whitelisted';
       const redirectUri = 'https://test.example.com/cb';
@@ -419,7 +419,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         `expected code replay to be rejected, but exchange succeeded with status ${response?.status}`);
       assert.equal(error.response.body.error, 'invalid_grant');
     });
-    test('invalid_grant - authorization code past its lifetime cannot be exchanged', async function() {
+    test('invalid_grant - authorization code past its lifetime cannot be exchanged', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code-whitelisted';
       const redirectUri = 'https://test.example.com/cb';
@@ -458,7 +458,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         `expected expired code to be rejected, but exchange succeeded with status ${response?.status}`);
       assert.equal(error.response.body.error, 'invalid_grant');
     });
-    test('InputError when trying to get credentials of an expired client', async function() {
+    test('InputError when trying to get credentials of an expired client', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-token';
 
@@ -498,7 +498,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       await helper.expectMonitorError('InputError');
     });
-    test('InputError when the access token is past its own 10 minute lifetime', async function() {
+    test('InputError when the access token is past its own 10 minute lifetime', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-token';
 
@@ -546,8 +546,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await helper.expectMonitorError('InputError');
     });
   });
-  suite('scope tampering defense', function() {
-    test('implicit flow: tampered scope in decision is rejected', async function() {
+  suite('scope tampering defense', () => {
+    test('implicit flow: tampered scope in decision is rejected', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-token';
       const state = 'abc123';
@@ -584,7 +584,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(query.get('error'), 'invalid_scope');
       assert.equal(query.get('state'), state);
     });
-    test('authorization code flow: tampered scope in decision is rejected', async function() {
+    test('authorization code flow: tampered scope in decision is rejected', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code';
       const redirectUri = 'https://test.example.com/cb';
@@ -622,8 +622,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(query.get('state'), state);
     });
   });
-  suite('integration', function() {
-    test('implicit flow', async function() {
+  suite('integration', () => {
+    test('implicit flow', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-token';
 
@@ -691,7 +691,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(res.body.credentials.clientId.startsWith(`test/test/${registeredClientId}-`));
     });
 
-    test('authorization code flow', async function() {
+    test('authorization code flow', async () => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-code';
       const redirectUri = 'https://test.example.com/cb';

@@ -3,14 +3,14 @@ import gql from 'graphql-tag';
 import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withClients(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  suite('WorkerPools', function() {
-    test('deleting a worker pool calls deleteWorkerPool', async function() {
+  suite('WorkerPools', () => {
+    test('deleting a worker pool calls deleteWorkerPool', async () => {
       const workerPoolId = 'ww/pp';
       helper.fakes.makeWorkerPool(workerPoolId, {});
 
@@ -29,7 +29,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('get single workerpool', async function() {
+  test('get single workerpool', async () => {
     helper.fakes.makeWorkerPool('baz/bing', { owner: 'foo@example.com', currentCapacity: 4, requestedCount: 0, runningCount: 1, stoppingCount: 0, stoppedCount: 0, requestedCapacity: 0, runningCapacity: 1, stoppingCapacity: 0, stoppedCapacity: 0 });
     const client = helper.getHttpClient();
     const workerPoolQuery = await helper.loadFixture('workerPool.graphql');
@@ -53,7 +53,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(single.data.WorkerPool.stoppedCapacity, 0);
   });
 
-  test('list workerpools', async function() {
+  test('list workerpools', async () => {
     helper.fakes.makeWorkerPool('foo/bar', { providerId: 'baz', currentCapacity: 0, requestedCount: 0, runningCount: 0, stoppingCount: 0, stoppedCount: 0, requestedCapacity: 0, runningCapacity: 0, stoppingCapacity: 0, stoppedCapacity: 0 });
     helper.fakes.makeWorkerPool('baz/bing', { providerId: 'wow', currentCapacity: 2, requestedCount: 1, runningCount: 0, stoppingCount: 1, stoppedCount: 0, requestedCapacity: 1, runningCapacity: 0, stoppingCapacity: 1, stoppedCapacity: 0 });
     const client = helper.getHttpClient();

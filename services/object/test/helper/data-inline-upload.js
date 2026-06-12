@@ -37,7 +37,7 @@ export const testDataInlineUpload = ({
     (suiteDefinition || (() => {})).call(this);
 
     let backend;
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       const backends = await helper.load('backends');
       backend = backends.get(backendId);
     });
@@ -53,7 +53,7 @@ export const testDataInlineUpload = ({
     };
 
     for (const length of [0, 1024]) {
-      test(`upload an object (length=${length})`, async function() {
+      test(`upload an object (length=${length})`, async () => {
         const data = crypto.randomBytes(length);
         const name = helper.testObjectName(prefix);
 
@@ -76,7 +76,7 @@ export const testDataInlineUpload = ({
     }
 
     if (!omit.includes('htmlContentDisposition')) {
-      test(`upload of type text/html has attachment disposition`, async function() {
+      test(`upload of type text/html has attachment disposition`, async () => {
         const data = crypto.randomBytes(256);
         const name = helper.testObjectName(prefix);
 

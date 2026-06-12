@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import ScopeExpressionTemplate from '../src/expressions.js';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
 
   function scenario(expr, params, result, shouldFail = false) {
     return () => {

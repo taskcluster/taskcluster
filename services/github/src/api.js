@@ -981,7 +981,7 @@ builder.declare({
     'This endpoint is used to check on backing services this service',
     'depends on.',
   ].join('\n'),
-}, function(_req, res) {
+}, (_req, res) => {
   // TODO: add implementation
   res.reply({});
 });

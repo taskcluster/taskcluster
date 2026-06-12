@@ -5,10 +5,10 @@ import taskcluster from '@taskcluster/client';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import * as uuid from 'uuid';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForProcs({ serviceName: 'auth' });
 
-  suite('roles', function() {
+  suite('roles', () => {
     // make a role with default values
     const mkrole = ({ role_id, scopes }) => ({
       role_id,
@@ -18,25 +18,25 @@ suite(testing.suiteName(), function() {
       last_modified: new Date(2020, 7, 15),
     });
 
-    setup('truncate roles', async function() {
+    setup('truncate roles', async () => {
       await helper.withDbClient(async client => {
         await client.query('truncate roles');
       });
     });
 
-    helper.dbTest('get_roles when there are none', async function(db) {
+    helper.dbTest('get_roles when there are none', async (db) => {
       const roles = await db.fns.get_roles();
       assert.deepEqual(roles, []);
     });
 
-    helper.dbTest('modify_roles when no roles exist', async function(db) {
+    helper.dbTest('modify_roles when no roles exist', async (db) => {
       const etag = uuid.v4();
       await db.fns.modify_roles(JSON.stringify([mkrole({ role_id: 'abc' })]), etag);
       const roles = await db.fns.get_roles();
       assert.deepEqual(roles.map(({ etag, ...rest }) => rest), [mkrole({ role_id: 'abc' })]);
     });
 
-    helper.dbTest('modify_roles when roles do exist, no conflict', async function(db) {
+    helper.dbTest('modify_roles when roles do exist, no conflict', async (db) => {
       const etag = uuid.v4();
       await db.fns.modify_roles(JSON.stringify([mkrole({ role_id: 'abc' })]), etag);
       const roles1 = await db.fns.get_roles();
@@ -45,7 +45,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(roles2.map(r => r.role_id), ['def']);
     });
 
-    helper.dbTest('modify_roles when roles do exist, with conflict', async function(db) {
+    helper.dbTest('modify_roles when roles do exist, with conflict', async (db) => {
       const etag = uuid.v4();
       await db.fns.modify_roles(JSON.stringify([mkrole({ role_id: 'abc' })]), etag);
       await assert.rejects(
@@ -56,8 +56,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite('clients', function() {
-    setup('truncate clients', async function() {
+  suite('clients', () => {
+    setup('truncate clients', async () => {
       await helper.withDbClient(async client => {
         await client.query('truncate clients');
       });
@@ -75,12 +75,12 @@ suite(testing.suiteName(), function() {
       );
     };
 
-    helper.dbTest('get_client when it does not exixt', async function(db) {
+    helper.dbTest('get_client when it does not exixt', async (db) => {
       const clients = await db.fns.get_client('some-client');
       assert.deepEqual(clients, []);
     });
 
-    helper.dbTest('create and get a client', async function(db) {
+    helper.dbTest('create and get a client', async (db) => {
       const expires = new Date();
       await db.fns.create_client(
         'some-client',
@@ -118,7 +118,7 @@ suite(testing.suiteName(), function() {
       delete_on_expiration_in: false,
     });
 
-    helper.dbTest('create the same client a few times', async function(db) {
+    helper.dbTest('create the same client a few times', async (db) => {
       for (let i = 0; i < 5; i++) {
         // on each iteration, change all of the things that the idempotency doesn't
         // check..
@@ -137,7 +137,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(client.delete_on_expiration, false);
     });
 
-    helper.dbTest('create the same client with different descriptions', async function(db) {
+    helper.dbTest('create the same client with different descriptions', async (db) => {
       await db.fns.create_client(baseClient(db));
       await assert.rejects(
         () => db.fns.create_client({ ...baseClient(db), description_in: 'CHANGED' }),
@@ -146,7 +146,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(client.description, 'Some client...');
     });
 
-    helper.dbTest('create the same client with different scopes', async function(db) {
+    helper.dbTest('create the same client with different scopes', async (db) => {
       await db.fns.create_client(baseClient(db));
       await assert.rejects(
         () => db.fns.create_client({ ...baseClient(db), scopes_in: JSON.stringify(['scope1']) }),
@@ -155,7 +155,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(client.scopes, ['scope1', 'scope2']);
     });
 
-    helper.dbTest('create the same client with different expires', async function(db) {
+    helper.dbTest('create the same client with different expires', async (db) => {
       await db.fns.create_client(baseClient(db));
       await assert.rejects(
         () => db.fns.create_client({ ...baseClient(db), expires_in: taskcluster.fromNow('1 hour') }),
@@ -164,7 +164,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(client.expires, expires);
     });
 
-    helper.dbTest('create the same client but it is disabled', async function(db) {
+    helper.dbTest('create the same client but it is disabled', async (db) => {
       await db.fns.create_client(baseClient(db));
       await db.fns.update_client({
         client_id_in: 'some-client',
@@ -182,7 +182,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(client.disabled, true);
     });
 
-    helper.dbTest('create the same client but it was created long ago', async function(db) {
+    helper.dbTest('create the same client but it was created long ago', async (db) => {
       await db.fns.create_client(baseClient(db));
       const created = taskcluster.fromNow('-30 minutes');
       await helper.withDbClient(async client => {
@@ -195,7 +195,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(client.created, created);
     });
 
-    helper.dbTest('get_clients with a prefix', async function(db) {
+    helper.dbTest('get_clients with a prefix', async (db) => {
       await Promise.all([
         create(db, 'abc/1'),
         create(db, 'abc/2'),
@@ -206,7 +206,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(clients.map(c => c.client_id), ['abc/1', 'abc/2', 'abc/3']);
     });
 
-    helper.dbTest('get_clients with pagination', async function(db) {
+    helper.dbTest('get_clients with pagination', async (db) => {
       await Promise.all([
         create(db, 'abc/1'),
         create(db, 'abc/2'),
@@ -219,7 +219,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(clients2.map(c => c.client_id), ['abc/3', 'abc/4']);
     });
 
-    helper.dbTest('get_clients with prefix and pagination', async function(db) {
+    helper.dbTest('get_clients with prefix and pagination', async (db) => {
       await Promise.all([
         create(db, 'abc/1'),
         create(db, 'def/2'),
@@ -230,14 +230,14 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(clients.map(c => c.client_id), ['abc/1', 'abc/3']);
     });
 
-    helper.dbTest('delete a client', async function(db) {
+    helper.dbTest('delete a client', async (db) => {
       await create(db, 'some-client');
       await db.fns.delete_client('some-client');
       const clients = await db.fns.get_client('some-client');
       assert.deepEqual(clients, []);
     });
 
-    helper.dbTest('update a client, changing nothing', async function(db) {
+    helper.dbTest('update a client, changing nothing', async (db) => {
       const expires = new Date();
       await db.fns.create_client(
         'some-client',
@@ -271,7 +271,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(client1.last_rotated, client2.last_rotated);
     });
 
-    helper.dbTest('update a client, changing everything', async function(db) {
+    helper.dbTest('update a client, changing everything', async (db) => {
       const expires = new Date();
       await db.fns.create_client(
         'some-client',
@@ -314,7 +314,7 @@ suite(testing.suiteName(), function() {
       assert.notDeepEqual(client1.last_rotated, client2.last_rotated);
     });
 
-    helper.dbTest('update a client last_date_used', async function(db) {
+    helper.dbTest('update a client last_date_used', async (db) => {
       const expires = new Date();
       await db.fns.create_client(
         'some-client',
@@ -347,7 +347,7 @@ suite(testing.suiteName(), function() {
       assert.notDeepEqual(client1.last_date_used, client2.last_date_used);
     });
 
-    helper.dbTest('expire clients', async function(db) {
+    helper.dbTest('expire clients', async (db) => {
       await Promise.all([
         create(db, 'old', { expires: taskcluster.fromNow('-1 hour'), delete_on_expiration: true }),
         create(db, 'old-keep', { expires: taskcluster.fromNow('-1 hour'), delete_on_expiration: false }),
@@ -363,14 +363,14 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite('audit history', function() {
-    setup('truncate audit_history', async function() {
+  suite('audit history', () => {
+    setup('truncate audit_history', async () => {
       await helper.withDbClient(async client => {
         await client.query('truncate audit_history');
       });
     });
 
-    helper.dbTest('insert and get audit history', async function(db) {
+    helper.dbTest('insert and get audit history', async (db) => {
       await db.fns.insert_auth_audit_history(
         'client-1',
         'client',
@@ -392,7 +392,7 @@ suite(testing.suiteName(), function() {
       assert(results[0].created instanceof Date);
     });
 
-    helper.dbTest('get_audit_history with pagination', async function(db) {
+    helper.dbTest('get_audit_history with pagination', async (db) => {
 
       for (let i = 0; i < 5; i++) {
         await db.fns.insert_auth_audit_history(
@@ -414,7 +414,7 @@ suite(testing.suiteName(), function() {
       assert.equal(page2[1].client_id, 'test-client-3');
     });
 
-    helper.dbTest('purge_audit_history', async function(db) {
+    helper.dbTest('purge_audit_history', async (db) => {
 
       await helper.withDbClient(async client => {
         await client.query(`
@@ -433,7 +433,7 @@ suite(testing.suiteName(), function() {
       assert.equal(results[0].action_type, 'updated');
     });
 
-    helper.dbTest('get_audit_history with non-existent entity', async function(db) {
+    helper.dbTest('get_audit_history with non-existent entity', async (db) => {
       const results = await db.fns.get_combined_audit_history(
         null,
         'non-existent',

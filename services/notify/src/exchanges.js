@@ -18,7 +18,7 @@ const exchanges = new Exchanges({
 export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-const buildCommonRoutingKey = function(options) {
+const buildCommonRoutingKey = (options) => {
   options = options || {};
   return [
     {
@@ -39,20 +39,18 @@ const buildCommonRoutingKey = function(options) {
 };
 
 /** Build an AMQP compatible message from a message */
-const commonMessageBuilder = function(message) {
+const commonMessageBuilder = (message) => {
   message.version = 1;
   return message;
 };
 
 /** Build a message from message */
-const commonRoutingKeyBuilder = function(message, routing) {
-  return {
-    topic: routing[0],
-  };
-};
+const commonRoutingKeyBuilder = (message, routing) => ({
+  topic: routing[0],
+});
 
 /** Build list of routing keys to CC */
-const commonCCBuilder = function(message, routes) {
+const commonCCBuilder = (message, routes) => {
   assert(Array.isArray(routes), 'Routes must be an array');
   return routes.map(route => 'route.' + route);
 };

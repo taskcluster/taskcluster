@@ -5,7 +5,7 @@ import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
 
   test('load yaml', () => {
     let cfg = config({

@@ -20,7 +20,7 @@ const helper = {};
 export default helper;
 helper.load = stickyLoader(load);
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   helper.load.inject('profile', 'test');
   helper.load.inject('process', 'test');
 });
@@ -80,7 +80,7 @@ helper.withMockedEventIterator = () => {
 };
 
 helper.withFakeAuth = (mock, skipping) => {
-  suiteSetup('withFakeAuth', function() {
+  suiteSetup('withFakeAuth', () => {
     if (skipping()) {
       return;
     }
@@ -90,7 +90,7 @@ helper.withFakeAuth = (mock, skipping) => {
 };
 
 helper.withFakeAuthFactory = (mock, skipping) => {
-  suiteSetup('withFakeAuthFactory', function() {
+  suiteSetup('withFakeAuthFactory', () => {
     if (skipping()) {
       return;
     }
@@ -98,13 +98,13 @@ helper.withFakeAuthFactory = (mock, skipping) => {
     helper.load.inject('authFactory', stubbedAuthFactory());
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(() => {
     helper.load.remove('authFactory');
   });
 };
 
 helper.withClients = (mock, skipping) => {
-  suiteSetup('withClients', async function() {
+  suiteSetup('withClients', async () => {
     if (skipping()) {
       return;
     }
@@ -115,7 +115,7 @@ helper.withClients = (mock, skipping) => {
     helper.clients = clients;
   });
 
-  suiteTeardown(function () {
+  suiteTeardown(() => {
     helper.load.remove('clients');
   });
 };
@@ -130,7 +130,7 @@ helper.withServer = (mock, skipping) => {
     return agent;
   };
 
-  suiteSetup('withServer', async function() {
+  suiteSetup('withServer', async () => {
     if (skipping()) {
       return;
     }
@@ -139,7 +139,7 @@ helper.withServer = (mock, skipping) => {
     webServer = await helper.load('httpServer');
     await new Promise((resolve, reject) => {
       webServer.once('error', reject);
-      webServer.listen(cfg.server.port, function() {
+      webServer.listen(cfg.server.port, () => {
         resolve();
       });
     });
@@ -150,7 +150,7 @@ helper.withServer = (mock, skipping) => {
     helper.load.cfg('app.publicUrl', `http://127.0.0.1:${helper.serverPort}`);
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -340,7 +340,7 @@ helper.createSubscriptionClient = async () => {
     accessToken: 'testing',
   };
 
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     const subscriptionClient = new SubscriptionClient(
       `ws://localhost:${helper.serverPort}/subscription`,
       {
@@ -353,10 +353,10 @@ helper.createSubscriptionClient = async () => {
       },
       WebSocket,
     );
-    subscriptionClient.onConnected(function() {
+    subscriptionClient.onConnected(() => {
       resolve(subscriptionClient);
     });
-    subscriptionClient.onError(function(err) {
+    subscriptionClient.onError((err) => {
       reject(err);
     });
   });
@@ -607,7 +607,7 @@ const stubbedClients = () => {
 };
 
 helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
+  setup('reset tables', async () => {
     await resetTables({ tableNames: [
       'authorization_codes',
       'access_tokens',

@@ -17,19 +17,19 @@ import {
 /** Create a readable stream from a string */
 const toStream = (str) => Readable.from([Buffer.from(str)]);
 
-suite(testing.suiteName(), function() {
-  suite('throttleRequest', function() {
+suite(testing.suiteName(), () => {
+  suite('throttleRequest', () => {
     let oldRequest;
 
-    suiteSetup(function() {
+    suiteSetup(() => {
       oldRequest = throttleRequest.request;
     });
 
-    teardown(function() {
+    teardown(() => {
       throttleRequest.request = oldRequest;
     });
 
-    test('calls with the given method and url and returns a success result immediately', async function() {
+    test('calls with the given method and url and returns a success result immediately', async () => {
       throttleRequest.request = async (method, url) => {
         assert.equal(method, 'GET');
         assert.equal(url, 'https://foo');
@@ -40,7 +40,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(res, { result: true });
     });
 
-    test('4xx statuses are returned (not thrown) immediately', async function() {
+    test('4xx statuses are returned (not thrown) immediately', async () => {
       let calls = 0;
 
       throttleRequest.request = async (method, url) => {
@@ -55,7 +55,7 @@ suite(testing.suiteName(), function() {
       assert.equal(calls, 1); // didn't retry
     });
 
-    test('5xx statuses are retried', async function() {
+    test('5xx statuses are retried', async () => {
       let calls = 0;
 
       throttleRequest.request = async (method, url) => {
@@ -71,7 +71,7 @@ suite(testing.suiteName(), function() {
       assert.equal(calls, 5);
     });
 
-    test('5xx status retried once returns successful result', async function() {
+    test('5xx status retried once returns successful result', async () => {
       let calls = 0;
 
       throttleRequest.request = async (method, url) => {
@@ -89,7 +89,7 @@ suite(testing.suiteName(), function() {
       assert.equal(calls, 1);
     });
 
-    test('connection errors are thrown directly', async function() {
+    test('connection errors are thrown directly', async () => {
       throttleRequest.request = async (method, url) => {
         const err = new Error('uhoh');
         err.code = 'ECONNREFUSED';
@@ -101,7 +101,7 @@ suite(testing.suiteName(), function() {
         err => err.code === 'ECONNREFUSED');
     });
   });
-  suite('shouldSkipCommit', function() {
+  suite('shouldSkipCommit', () => {
     const skipMessages = [
       '[CI Skip] this is not ready',
       'this is WIP [ci skip]',
@@ -109,7 +109,7 @@ suite(testing.suiteName(), function() {
       'testing things out [skip CI] .. please wait',
     ];
 
-    test('should not skip commit', function() {
+    test('should not skip commit', () => {
       assert.equal(false, shouldSkipCommit({
         commits: [{
           message: 'first commit',
@@ -148,7 +148,7 @@ suite(testing.suiteName(), function() {
         commits: [{ message }, { message: 'this commit is the last' }],
       })));
     });
-    test('should skip commit', function() {
+    test('should skip commit', () => {
       skipMessages.forEach(message => assert.equal(true, shouldSkipCommit({
         commits: [{ message: 'this commit is the first' }, { message }],
       })));
@@ -158,8 +158,8 @@ suite(testing.suiteName(), function() {
       })));
     });
   });
-  suite('shouldSkipPullRequest', function() {
-    test('should not skip pull request', function() {
+  suite('shouldSkipPullRequest', () => {
+    test('should not skip pull request', () => {
       assert.equal(false, shouldSkipPullRequest({
         pull_request: {
           title: 'Regular pr title',
@@ -169,7 +169,7 @@ suite(testing.suiteName(), function() {
         something: 'This one does not include pull_request for some reason',
       }));
     });
-    test('should skip pull request', function() {
+    test('should skip pull request', () => {
       const skipMessages = [
         'PR: [CI Skip] this is not ready',
         'PR: this is WIP [skip ci]',
@@ -183,8 +183,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite('shouldSkipComment', function() {
-    test('should not skip comment', function() {
+  suite('shouldSkipComment', () => {
+    test('should not skip comment', () => {
       assert.equal(false, shouldSkipComment({
         action: 'created',
         comment: {
@@ -210,7 +210,7 @@ suite(testing.suiteName(), function() {
         },
       }));
     });
-    test('should skip comment', function() {
+    test('should skip comment', () => {
       assert.equal(true, shouldSkipComment({
         action: 'deleted',
         comment: {},
@@ -248,8 +248,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite('getTaskclusterCommand', function() {
-    test('should return taskcluster command', function() {
+  suite('getTaskclusterCommand', () => {
+    test('should return taskcluster command', () => {
       assert.equal('cmd-with-dashes1', getTaskclusterCommand({
         body: ' /taskcluster cmd-with-dashes1 ',
       }));
@@ -268,8 +268,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite('ansi2txt', function() {
-    test('it should remove control sequences', function() {
+  suite('ansi2txt', () => {
+    test('it should remove control sequences', () => {
       const src = [
         '[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/utils/[22m[1misDateWithin.test.js[22m',
         '[2K[1G[2m$ webpack --mode production[22m',
@@ -286,7 +286,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite('extractLog', function() {
+  suite('extractLog', () => {
     // Reference implementation: the original sync extractLog from before the
     // streaming rewrite. Used to verify the new streaming version produces
     // identical output for all edge cases.
@@ -347,85 +347,85 @@ suite(testing.suiteName(), function() {
       assert.strictEqual(actual, expected);
     };
 
-    test('empty log', async function() {
+    test('empty log', async () => {
       await assertMatchesOriginal('');
     });
 
-    test('short log (3 lines)', async function() {
+    test('short log (3 lines)', async () => {
       await assertMatchesOriginal(generateLog(3));
     });
 
-    test('log with exactly headLines lines (20), no tail', async function() {
+    test('log with exactly headLines lines (20), no tail', async () => {
       await assertMatchesOriginal(generateLog(20));
     });
 
-    test('log with headLines + 1 (21 lines)', async function() {
+    test('log with headLines + 1 (21 lines)', async () => {
       await assertMatchesOriginal(generateLog(21));
     });
 
-    test('log with exactly headLines + tailLines (220 lines, 0 hidden)', async function() {
+    test('log with exactly headLines + tailLines (220 lines, 0 hidden)', async () => {
       await assertMatchesOriginal(generateLog(220));
     });
 
-    test('log with headLines + tailLines + 1 (221 lines, 1 hidden)', async function() {
+    test('log with headLines + tailLines + 1 (221 lines, 1 hidden)', async () => {
       await assertMatchesOriginal(generateLog(221));
     });
 
-    test('log with 100 lines hidden', async function() {
+    test('log with 100 lines hidden', async () => {
       await assertMatchesOriginal(generateLog(320));
     });
 
-    test('large log (1000 lines)', async function() {
+    test('large log (1000 lines)', async () => {
       await assertMatchesOriginal(generateLog(1000));
     });
 
-    test('long single line exceeding maxPayloadLength', async function() {
+    test('long single line exceeding maxPayloadLength', async () => {
       const payload = Array.from({ length: 10 }).map((_, i) => `line: ${i}`);
       payload.push('A'.repeat(100000));
       await assertMatchesOriginal(payload.join('\n'), 20, 200, 60000);
     });
 
-    test('head alone exceeds maxPayloadLength', async function() {
+    test('head alone exceeds maxPayloadLength', async () => {
       // 20 lines of 2000 chars each = 40000 chars in head
       const log = Array.from({ length: 500 }, (_, i) => `line ${i}: ${'x'.repeat(2000)}`).join('\n');
       await assertMatchesOriginal(log, 20, 200, 30000);
     });
 
-    test('respects custom maxPayloadLength', async function() {
+    test('respects custom maxPayloadLength', async () => {
       await assertMatchesOriginal(generateLog(500), 20, 200, 5000);
     });
 
-    test('respects custom maxPayloadLength (60000)', async function() {
+    test('respects custom maxPayloadLength (60000)', async () => {
       await assertMatchesOriginal(generateLog(500), 20, 200, 60000);
     });
 
-    test('strips ANSI control sequences', async function() {
+    test('strips ANSI control sequences', async () => {
       const payload = '\u001b[32mgreen text\u001b[0m\nnormal line';
       await assertMatchesOriginal(payload);
     });
   });
 
-  suite('generateXHubSignature', function() {
-    test('supports sha1', function () {
+  suite('generateXHubSignature', () => {
+    test('supports sha1', () => {
       assert.equal(
         generateXHubSignature('secret', '{payload}', 'sha1'),
         'sha1=ab20ad67182f5ac039c105be046648f980d60558',
       );
     });
-    test('supports sha256', function () {
+    test('supports sha256', () => {
       assert.equal(
         generateXHubSignature('secret', '{payload}', 'sha256'),
         'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be',
       );
     });
-    test('throws on invalid algorithm', function () {
+    test('throws on invalid algorithm', () => {
       assert.throws(() => {
         generateXHubSignature('secret', 'payload', 'sha999');
       }, /Invalid algorithm/);
     });
   });
-  suite('checkGithubSignature', function() {
-    test('supports sha1', function () {
+  suite('checkGithubSignature', () => {
+    test('supports sha1', () => {
       assert.equal(
         checkGithubSignature('secret', '{payload}', 'sha1=ab20ad67182f5ac039c105be046648f980d60558'),
         true,
@@ -435,7 +435,7 @@ suite(testing.suiteName(), function() {
         false,
       );
     });
-    test('supports sha256', function () {
+    test('supports sha256', () => {
       assert.equal(
         checkGithubSignature('secret', '{payload}', 'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be'),
         true,

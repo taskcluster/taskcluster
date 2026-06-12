@@ -2,8 +2,8 @@ import TcYaml from '../src/tc-yaml.js';
 import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
-  suite('VersionZero', function() {
+suite(testing.suiteName(), () => {
+  suite('VersionZero', () => {
     const tcyaml = TcYaml.instantiate(0);
     const cfg = {
       taskcluster: {
@@ -16,7 +16,7 @@ suite(testing.suiteName(), function() {
     };
     const now = new Date().toJSON();
 
-    test('compileTasks for a pull-request sets scopes correctly', function() {
+    test('compileTasks for a pull-request sets scopes correctly', () => {
       const config = {
         tasks: [{}],
       };
@@ -33,7 +33,7 @@ suite(testing.suiteName(), function() {
       ]);
     });
 
-    test('compileTasks for a push sets scopes correctly', function() {
+    test('compileTasks for a push sets scopes correctly', () => {
       const config = {
         tasks: [{}],
       };
@@ -50,7 +50,7 @@ suite(testing.suiteName(), function() {
       ]);
     });
 
-    test('compileTasks for a tag sets scopes correctly', function() {
+    test('compileTasks for a tag sets scopes correctly', () => {
       const config = {
         tasks: [{}],
       };
@@ -67,7 +67,7 @@ suite(testing.suiteName(), function() {
       ]);
     });
 
-    test('compileTasks for a release sets scopes correctly', function() {
+    test('compileTasks for a release sets scopes correctly', () => {
       const config = {
         tasks: [{}],
       };
@@ -86,7 +86,7 @@ suite(testing.suiteName(), function() {
 
   });
 
-  suite('VersionOne', function() {
+  suite('VersionOne', () => {
     const tcyaml = TcYaml.instantiate(1);
     const cfg = {
       taskcluster: {
@@ -99,7 +99,7 @@ suite(testing.suiteName(), function() {
     };
     const now = new Date().toJSON();
 
-    test('compileTasks with no tasks', function() {
+    test('compileTasks with no tasks', () => {
       const config = {
         tasks: [],
       };
@@ -111,7 +111,7 @@ suite(testing.suiteName(), function() {
       ]);
     });
 
-    test('compileTasks with one task sets default properties', function() {
+    test('compileTasks with one task sets default properties', () => {
       const config = {
         tasks: [{}],
       };
@@ -132,8 +132,8 @@ suite(testing.suiteName(), function() {
       ]);
     });
 
-    suite('scopes', function() {
-      test('compileTasks with collaborators policy for a pull-request sets scopes correctly', function() {
+    suite('scopes', () => {
+      test('compileTasks with collaborators policy for a pull-request sets scopes correctly', () => {
         const config = {
           policy: { pullRequests: "collaborators" },
           tasks: [{}],
@@ -151,7 +151,7 @@ suite(testing.suiteName(), function() {
         ]);
       });
 
-      test('compileTasks with public_restricted policy for a untrusted pull-request sets scopes correctly', function() {
+      test('compileTasks with public_restricted policy for a untrusted pull-request sets scopes correctly', () => {
         const config = {
           policy: { pullRequests: "public_restricted" },
           tasks: [{}],
@@ -172,7 +172,7 @@ suite(testing.suiteName(), function() {
         assume(payload.tasks_for).to.deeply.equal("github-pull-request-untrusted");
       });
 
-      test('compileTasks with public_restricted policy for a trusted pull-request sets scopes correctly', function() {
+      test('compileTasks with public_restricted policy for a trusted pull-request sets scopes correctly', () => {
         const config = {
           policy: { pullRequests: "public_restricted" },
           tasks: [{}],
@@ -193,7 +193,7 @@ suite(testing.suiteName(), function() {
         assume(payload.tasks_for).to.deeply.equal("github-pull-request");
       });
 
-      test('compileTasks with public policy for a pull-request sets scopes correctly', function() {
+      test('compileTasks with public policy for a pull-request sets scopes correctly', () => {
         const config = {
           policy: { pullRequests: "public" },
           tasks: [{}],
@@ -214,7 +214,7 @@ suite(testing.suiteName(), function() {
         assume(payload.tasks_for).to.deeply.equal("github-pull-request");
       });
 
-      test('compileTasks for a pull-request with checks sets scopes correctly', function() {
+      test('compileTasks for a pull-request with checks sets scopes correctly', () => {
         const config = {
           policy: { pullRequests: "collaborators" },
           tasks: [{}],
@@ -233,7 +233,7 @@ suite(testing.suiteName(), function() {
         ]);
       });
 
-      test('compileTasks for a push sets scopes correctly', function() {
+      test('compileTasks for a push sets scopes correctly', () => {
         const config = {
           tasks: [{}],
         };
@@ -252,7 +252,7 @@ suite(testing.suiteName(), function() {
         ]);
       });
 
-      test('compileTasks for a tag sets scopes correctly', function() {
+      test('compileTasks for a tag sets scopes correctly', () => {
         const config = {
           tasks: [{}],
         };
@@ -271,7 +271,7 @@ suite(testing.suiteName(), function() {
         ]);
       });
 
-      test('compileTasks for a release sets scopes correctly', function() {
+      test('compileTasks for a release sets scopes correctly', () => {
         const config = {
           tasks: [{}],
         };
@@ -289,7 +289,7 @@ suite(testing.suiteName(), function() {
         ]);
       });
 
-      test('compileTasks for a pre-release sets scopes correctly', function() {
+      test('compileTasks for a pre-release sets scopes correctly', () => {
         const config = {
           tasks: [{}],
         };
@@ -309,7 +309,7 @@ suite(testing.suiteName(), function() {
         ]);
       });
 
-      test('compileTasks with one taskId sets taskGroupId', function() {
+      test('compileTasks with one taskId sets taskGroupId', () => {
         const config = {
           tasks: [{
             taskId: 'task-1',
@@ -327,7 +327,7 @@ suite(testing.suiteName(), function() {
         }]);
       });
     });
-    test('compileTasks with taskGroupId and one task sets taskId', function() {
+    test('compileTasks with taskGroupId and one task sets taskId', () => {
       const config = {
         tasks: [{
           taskGroupId: 'tgid-1',
@@ -345,7 +345,7 @@ suite(testing.suiteName(), function() {
       }]);
     });
 
-    test('compileTasks with two tasks sets default properties', function() {
+    test('compileTasks with two tasks sets default properties', () => {
       const config = {
         tasks: [{}, {}],
       };
@@ -359,7 +359,7 @@ suite(testing.suiteName(), function() {
       assume(config.tasks[1].taskId).to.not.equal(config.tasks[1].task.taskGroupId);
     });
 
-    test('compileTasks uses user-supplied taskId/taskGroupId/schedulerId', function() {
+    test('compileTasks uses user-supplied taskId/taskGroupId/schedulerId', () => {
       const config = {
         tasks: [{
           taskId: 'task-1',
@@ -391,8 +391,8 @@ suite(testing.suiteName(), function() {
       }]);
     });
 
-    suite('status/checks routes', function() {
-      test('compileTasks sets checks route if we have reporting in the YML', function() {
+    suite('status/checks routes', () => {
+      test('compileTasks sets checks route if we have reporting in the YML', () => {
         const config = {
           tasks: [{
             taskId: 'task-1',
@@ -411,7 +411,7 @@ suite(testing.suiteName(), function() {
         }]);
       });
 
-      test('compileTasks sets statuses route by default', function() {
+      test('compileTasks sets statuses route by default', () => {
         const config = {
           tasks: [{
             taskId: 'task-1',
@@ -429,7 +429,7 @@ suite(testing.suiteName(), function() {
         }]);
       });
 
-      test('compileTasks sets statuses just once', function() {
+      test('compileTasks sets statuses just once', () => {
         const config = {
           tasks: [{
             taskId: 'task-1',
@@ -448,7 +448,7 @@ suite(testing.suiteName(), function() {
         }]);
       });
 
-      test('compileTasks allows both statuses and checks to be defined', function() {
+      test('compileTasks allows both statuses and checks to be defined', () => {
         const config = {
           tasks: [{
             taskId: 'task-1',
@@ -468,7 +468,7 @@ suite(testing.suiteName(), function() {
         }]);
       });
 
-      test('compileTasks does not erase existing routes', function() {
+      test('compileTasks does not erase existing routes', () => {
         const config = {
           tasks: [{
             taskId: 'task-1',

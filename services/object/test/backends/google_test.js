@@ -16,7 +16,7 @@ import { toEndpointV1 } from '@aws-sdk/middleware-endpoint';
 
 const gzip = promisify(zlib.gzip);
 
-helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['google'], (mock, skipping) => {
   if (mock) {
     // tests for this backend require real google cloud storage access, and
     // aren't even defined for the mock case
@@ -31,7 +31,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
   // unique object name prefix for this test run
   const prefix = taskcluster.slugid() + '/';
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     await helper.load('cfg');
 
     secret = helper.secrets.get('google');
@@ -51,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     });
   });
 
-  setup(async function() {
+  setup(async () => {
     // set up a backend with a public bucket, and separately with a private
     // bucket; these are in fact the same bucket, and we'll just check that the
     // URLs have a signature for the non-public version.  S3 verifies
@@ -125,8 +125,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     }
   };
 
-  suite('setup', function() {
-    test('any tags are rejected', async function() {
+  suite('setup', () => {
+    test('any tags are rejected', async () => {
       const backend = new AwsBackend({
         backendId: 'broken',
         db: helper.db,
@@ -152,7 +152,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     mock, skipping, prefix,
     backendId: 'googlePublic',
     makeObject,
-  }, async function() {
+  }, async () => {
     teardown(cleanup);
   });
 
@@ -166,7 +166,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       assert(!url.match(/X-Amz-Credential=/), `got ${url}`);
       assert(!url.match(/X-Amz-Signature=/), `got ${url}`);
     },
-  }, async function() {
+  }, async () => {
     teardown(cleanup);
   });
 
@@ -182,7 +182,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       assert(url.match(/X-Amz-Credential=/), `got ${url}`);
       assert(url.match(/X-Amz-Signature=/), `got ${url}`);
     },
-  }, async function() {
+  }, async () => {
     teardown(cleanup);
   });
 
@@ -194,7 +194,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       assert(url.match(/X-Amz-Credential=/), `got ${url}`);
       assert(url.match(/X-Amz-Signature=/), `got ${url}`);
     },
-  }, async function() {
+  }, async () => {
     teardown(cleanup);
   });
 
@@ -212,7 +212,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       }));
       return { data: await res.Body.transformToByteArray(), contentType: res.ContentType };
     },
-  }, async function() {
+  }, async () => {
     teardown(cleanup);
   });
 
@@ -230,14 +230,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       }));
       return { data: await res.Body.transformToByteArray(), contentType: res.ContentType };
     },
-  }, async function() {
+  }, async () => {
     teardown(cleanup);
   });
 
-  suite('expireObject', function() {
+  suite('expireObject', () => {
     teardown(cleanup);
 
-    test('expires an object', async function() {
+    test('expires an object', async () => {
       const name = 'some/object';
       const object = await makeObject({ name, data: Buffer.from('abc') });
 
@@ -254,7 +254,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       err => err.Code === 'NoSuchKey');
     });
 
-    test('succeeds for an object that no longer exists', async function() {
+    test('succeeds for an object that no longer exists', async () => {
       const name = 'some/object';
       const uploadId = taskcluster.slugid();
       await helper.db.fns.create_object_for_upload(

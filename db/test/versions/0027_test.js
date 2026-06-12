@@ -7,10 +7,10 @@ const PREV_VERSION = THIS_VERSION - 1;
 // Since we don't migrate data from previous version, no need for tests for
 // validating data migration.
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
-  test('github_access_tokens table created / removed on upgrade and downgrade', async function() {
+  test('github_access_tokens table created / removed on upgrade and downgrade', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 

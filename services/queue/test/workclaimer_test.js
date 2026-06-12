@@ -5,7 +5,7 @@ import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 import WorkClaimer from '../src/workclaimer.js';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withS3(mock, skipping);

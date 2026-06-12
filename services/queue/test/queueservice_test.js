@@ -7,7 +7,7 @@ const debug = debugFactory('test:queueservice');
 import testing from '@taskcluster/lib-testing';
 import helper from './helper.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   let queueService;
 
@@ -42,7 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(() => {
     if (skipping()) {
       return;
     }

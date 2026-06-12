@@ -6,7 +6,7 @@ import { CloudAPI } from '../src/providers/cloudapi.js';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   let cloud;
 
   const initCloudApi = async (options = {}) => {
@@ -42,7 +42,7 @@ suite(testing.suiteName(), function() {
     cloud = await initCloudApi();
   });
 
-  test('non existing queue', async function() {
+  test('non existing queue', async () => {
     try {
       await cloud.enqueue('nonexisting', () => {});
     } catch (err) {
@@ -52,12 +52,12 @@ suite(testing.suiteName(), function() {
     throw new Error('should have thrown an error');
   });
 
-  test('simple', async function() {
+  test('simple', async () => {
     const result = await cloud.enqueue('query', () => 5);
     assert.equal(result, 5);
   });
 
-  test('one 500', async function() {
+  test('one 500', async () => {
     const remote = sinon.stub();
     remote.onCall(0).throws({ code: 500 });
     remote.onCall(1).returns(10);
@@ -65,7 +65,7 @@ suite(testing.suiteName(), function() {
     assert.equal(result, 10);
     assert.equal(remote.callCount, 2);
   });
-  test('multiple 500', async function() {
+  test('multiple 500', async () => {
     const remote = sinon.stub();
     remote.onCall(0).throws({ code: 500 });
     remote.onCall(1).throws({ code: 520 });
@@ -75,7 +75,7 @@ suite(testing.suiteName(), function() {
     assert.equal(result, 15);
     assert.equal(remote.callCount, 4);
   });
-  test('500s forever should throw', async function() {
+  test('500s forever should throw', async () => {
     const remote = sinon.stub();
     remote.throws({ code: 500 });
 
@@ -89,7 +89,7 @@ suite(testing.suiteName(), function() {
     throw new Error('should have thrown an error');
   });
 
-  test('operations timing out', async function() {
+  test('operations timing out', async () => {
     const cloudWithTimeout = await initCloudApi({ timeout: 1 });
     const remote = sinon.stub();
     remote.onCall(0).resolves(sleep(5));
@@ -103,13 +103,13 @@ suite(testing.suiteName(), function() {
     assert.equal(remote.callCount, 1);
   });
 
-  test('metrics not counted if not enabled', async function() {
+  test('metrics not counted if not enabled', async () => {
     cloud = await initCloudApi({ collectMetrics: false });
     await cloud.enqueue('query', () => 5);
     assert.equal(cloud.metrics.total, 0);
   });
 
-  test('metrics should be collected and logged', async function () {
+  test('metrics should be collected and logged', async () => {
     const monitor = await helper.load('monitor');
     cloud = await initCloudApi({ collectMetrics: true, monitor });
 

@@ -677,7 +677,7 @@ builder.declare({
 /**
  * Generate the list of acceptable priorities for a task with this priority
  */
-const authorizeTaskCreation = async function(req, taskId, taskDef) {
+const authorizeTaskCreation = async (req, taskId, taskDef) => {
   const priority = taskDef.priority === 'normal' ? 'lowest' : taskDef.priority;
   const priorities = PRIORITY_LEVELS.slice(0, PRIORITY_LEVELS.indexOf(priority) + 1);
   assert(priorities.length > 0, 'must have a non-empty list of priorities');
@@ -697,7 +697,7 @@ const authorizeTaskCreation = async function(req, taskId, taskDef) {
 };
 
 /** Construct default values and validate dates */
-let patchAndValidateTaskDef = function(taskId, taskDef, maxTaskDeadlineDays) {
+let patchAndValidateTaskDef = (taskId, taskDef, maxTaskDeadlineDays) => {
   // Set taskGroupId to taskId if not provided
   if (!taskDef.taskGroupId) {
     taskDef.taskGroupId = taskId;
@@ -2792,7 +2792,7 @@ builder.declare({
     'This endpoint is used to check on backing services this service',
     'depends on.',
   ].join('\n'),
-}, function(_req, res) {
+}, (_req, res) => {
   // TODO: add implementation
   res.reply({});
 });

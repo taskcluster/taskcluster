@@ -11,7 +11,7 @@ import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const rootUrl = 'http://localhost:4321';
 
   setup(async () => {
@@ -68,15 +68,11 @@ suite(testing.suiteName(), function() {
 
     await request
       .get('http://localhost:60872/api/test/v1/context')
-      .then(function(res) {
+      .then((res) => {
         assert(res.body.myProp === value);
-      }).then(function() {
-        return server.terminate();
-      }, function(err) {
-        return server.terminate().then(function() {
-          throw err;
-        });
-      });
+      }).then(() => server.terminate(), (err) => server.terminate().then(() => {
+        throw err;
+      }));
   });
 
   test('Context properties can be required', async () => {
@@ -222,16 +218,12 @@ suite(testing.suiteName(), function() {
     await request
       .get('http://localhost:60872/api/test/v1/context')
       .set('x-taskcluster-trace-id', 'foo/bar')
-      .then(function(res) {
+      .then((res) => {
         assert.equal(res.body.foo, 'foo/bar');
         assert(res.body.bar);
-      }).then(function() {
-        return server.terminate();
-      }, function(err) {
-        return server.terminate().then(function() {
-          throw err;
-        });
-      });
+      }).then(() => server.terminate(), (err) => server.terminate().then(() => {
+        throw err;
+      }));
 
     assert.equal(fooFake.callCount, 1);
   });

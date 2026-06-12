@@ -3,11 +3,11 @@ import testing from '@taskcluster/lib-testing';
 import { strict as assert } from 'node:assert';
 import crypto from 'node:crypto';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
   helper.withDbForVersion();
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
   });
@@ -19,7 +19,7 @@ suite(testing.suiteName(), function() {
       .digest('hex');
   };
 
-  test('hashes a key', async function() {
+  test('hashes a key', async () => {
     await helper.withDbClient(async client => {
       const result = await client.query(
         `select sha512('foo/bar')`);

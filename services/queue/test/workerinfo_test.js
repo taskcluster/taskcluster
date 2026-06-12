@@ -6,7 +6,7 @@ import testing from '@taskcluster/lib-testing';
 import { Worker, TaskQueue } from '../src/data.js';
 import { splitTaskQueueId } from '../src/utils.js';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPulse(mock, skipping);
@@ -63,7 +63,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   let workerInfo;
-  suiteSetup('load workerInfo', async function() {
+  suiteSetup('load workerInfo', async () => {
     if (skipping()) {
       return;
     }

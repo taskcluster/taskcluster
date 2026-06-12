@@ -3,8 +3,8 @@ import assert from 'node:assert';
 import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
-  test('missing arguments are an error', async function() {
+suite(testing.suiteName(), () => {
+  test('missing arguments are an error', async () => {
     assume(() => pulseCredentials({ password: 'pw', hostname: 'h', vhost: 'v' }))
       .throws(/username/);
     assume(() => pulseCredentials({ username: 'me', hostname: 'h', vhost: 'v' }))
@@ -15,7 +15,7 @@ suite(testing.suiteName(), function() {
       .throws(/vhost/);
   });
 
-  test('builds a connection string with given host', async function() {
+  test('builds a connection string with given host', async () => {
     const credentials = await pulseCredentials({
       username: 'me',
       password: 'letmein',
@@ -28,7 +28,7 @@ suite(testing.suiteName(), function() {
       'amqps://me:letmein@pulse.abc.com:5671/%2F?frameMax=0');
   });
 
-  test('builds a connection string with urlencoded values', async function() {
+  test('builds a connection string with urlencoded values', async () => {
     const credentials = await pulseCredentials({
       username: 'ali-escaper:/@\\|()<>&',
       password: 'bobby-tables:/@\\|()<>&',

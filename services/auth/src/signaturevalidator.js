@@ -63,7 +63,7 @@ export const determineSchemeFromRequest = (req) => {
  * applies scope restrictions, certificate validation and returns a clone if
  * modified (otherwise it returns the original).
  */
-const parseExt = function(ext) {
+const parseExt = (ext) => {
   // Attempt to parse ext
   try {
     ext = JSON.parse(Buffer.from(ext, 'base64').toString('utf-8'));
@@ -81,8 +81,8 @@ const parseExt = function(ext) {
  * applies scope restrictions, certificate validation and returns a clone if
  * modified (otherwise it returns the original).
  */
-const limitClientWithExt = function(credentialName, issuingClientId, accessToken, scopes,
-  expires, ext, expandScopes) {
+const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes,
+  expires, ext, expandScopes) => {
   let issuingScopes = scopes;
   let res = { scopes, expires, accessToken };
 
@@ -256,13 +256,13 @@ const limitClientWithExt = function(credentialName, issuingClientId, accessToken
  * The method returned by this function works as `signatureValidator` for
  * `remoteAuthentication`.
  */
-const createSignatureValidator = function(options) {
+const createSignatureValidator = (options) => {
   assert(typeof options === 'object', 'options must be an object');
   assert(options.clientLoader instanceof Function,
     'options.clientLoader must be a function');
   if (!options.expandScopes) {
     // Default to the identity function
-    options.expandScopes = function(scopes) { return scopes; };
+    options.expandScopes = (scopes) => scopes;
   }
   assert(options.expandScopes instanceof Function,
     'options.expandScopes must be a function');
@@ -314,7 +314,7 @@ const createSignatureValidator = function(options) {
     };
   };
 
-  return async function(req) {
+  return async (req) => {
     let credentials, attributes, result, authResult, scheme;
 
     try {

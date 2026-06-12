@@ -3,15 +3,15 @@ import gql from 'graphql-tag';
 import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withFakeAuthFactory(mock, skipping);
   helper.withDb(mock, skipping);
   helper.withClients(mock, skipping);
   helper.withServer(mock, skipping);
   helper.resetTables(mock, skipping);
 
-  suite('Artifact Queries GraphQL', function() {
-    test('artifacts query works', async function() {
+  suite('Artifact Queries GraphQL', () => {
+    test('artifacts query works', async () => {
       const client = helper.getHttpClient();
       const taskId = "artifact-id";
       const runId = 123456;
@@ -30,7 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(response.data.artifacts.edges[0].node.name.includes('artifact-'), true);
     });
 
-    test('latest artifacts query works', async function() {
+    test('latest artifacts query works', async () => {
       const client = helper.getHttpClient();
       const taskId = "artifact-id";
       const getLatestArtifacts = await helper.loadFixture('latestArtifacts.graphql');
@@ -48,10 +48,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('Artifact Subscriptions', function() {
+  suite('Artifact Subscriptions', () => {
     helper.withMockedEventIterator();
 
-    test('subscribe works', async function() {
+    test('subscribe works', async () => {
       let subscriptionClient = await helper.createSubscriptionClient();
       const client = helper.getWebsocketClient(subscriptionClient);
       const artifactsCreated = await helper.loadFixture('artifactsCreated.graphql');

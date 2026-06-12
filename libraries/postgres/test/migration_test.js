@@ -27,7 +27,7 @@ import {
 
 const __filename = new URL('', import.meta.url).pathname;
 
-helper.dbSuite(path.basename(__filename), function() {
+helper.dbSuite(path.basename(__filename), () => {
   let db;
 
   const showProgress = debug('showProgress');
@@ -66,12 +66,12 @@ helper.dbSuite(path.basename(__filename), function() {
     });
   };
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     db = new Database({ urlsByMode: { admin: helper.dbUrl } });
     await resetRoles(db);
   });
 
-  teardown(async function() {
+  teardown(async () => {
     if (db) {
       try {
         await db.close();
@@ -81,17 +81,17 @@ helper.dbSuite(path.basename(__filename), function() {
     }
   });
 
-  suite('runMigration', function() {
-    suiteSetup(async function() {
+  suite('runMigration', () => {
+    suiteSetup(async () => {
       db = new Database({ urlsByMode: { admin: helper.dbUrl } });
       await createUsers(db);
     });
 
-    setup(function() {
+    setup(() => {
       db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
     });
 
-    test('runs upgrade script with multiple statements and $db_user_prefix$', async function() {
+    test('runs upgrade script with multiple statements and $db_user_prefix$', async () => {
       await db._withClient('admin', async client => {
         await runMigration({
           client,
@@ -118,7 +118,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    test('failure does not modify version', async function() {
+    test('failure does not modify version', async () => {
       try {
         await db._withClient('admin', async client => {
           await runMigration({
@@ -143,7 +143,7 @@ helper.dbSuite(path.basename(__filename), function() {
       throw new Error('runMigration did not fail');
     });
 
-    test('allows deprecated methods without failing', async function() {
+    test('allows deprecated methods without failing', async () => {
       await db._withClient('admin', async client => {
         await runMigration({
           client,
@@ -186,13 +186,13 @@ helper.dbSuite(path.basename(__filename), function() {
     });
   });
 
-  suite('runOnlineMigration/runOnlineDowngrade', function() {
-    suiteSetup(async function() {
+  suite('runOnlineMigration/runOnlineDowngrade', () => {
+    suiteSetup(async () => {
       db = new Database({ urlsByMode: { admin: helper.dbUrl } });
       await createUsers(db);
     });
 
-    setup(async function() {
+    setup(async () => {
       runOnlineBatches.resetHooks();
       db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
       await db._withClient('admin', async client => {
@@ -211,7 +211,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    teardown(async function() {
+    teardown(async () => {
       await db._withClient('admin', async client => {
         await ignorePgErrors(client.query('drop table online_test'), UNDEFINED_TABLE);
       });
@@ -233,14 +233,14 @@ helper.dbSuite(path.basename(__filename), function() {
         language plpgsql`);
     };
 
-    test('does nothing when there is no batch function', async function() {
+    test('does nothing when there is no batch function', async () => {
       await db._withClient('admin', async client => {
         await runOnlineMigration({ client, showProgress, version: { version: 1 } });
       });
       // just doesn't throw anything..
     });
 
-    test('does nothing when the online migration is already complete', async function() {
+    test('does nothing when the online migration is already complete', async () => {
       await db._withClient('admin', async client => {
         await mkBatchFn({
           client,
@@ -261,7 +261,7 @@ helper.dbSuite(path.basename(__filename), function() {
       // just doesn't throw anything..
     });
 
-    test('runs a real migration', async function() {
+    test('runs a real migration', async () => {
       await db._withClient('admin', async client => {
         await client.query(`
           create table online_test as
@@ -323,7 +323,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    test('batch function that just does one item per iteration', testing.runWithFakeTime(async function() {
+    test('batch function that just does one item per iteration', testing.runWithFakeTime(async () => {
       let itemsComplete = 0;
       runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
         if (itemsComplete >= 1000) {
@@ -340,7 +340,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(itemsComplete, 1000);
     }, { maxTime: Infinity }));
 
-    test('batch function that returns 0 items early', testing.runWithFakeTime(async function() {
+    test('batch function that returns 0 items early', testing.runWithFakeTime(async () => {
       let itemsComplete = 0;
       let isCompleteCalls = 0;
       runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
@@ -365,7 +365,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(isCompleteCalls, 12);
     }, { maxTime: Infinity }));
 
-    test('(downgrade) batch function that just does more items than requested per iteration', testing.runWithFakeTime(async function() {
+    test('(downgrade) batch function that just does more items than requested per iteration', testing.runWithFakeTime(async () => {
       let itemsComplete = 0;
       runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
         if (itemsComplete >= 1000) {
@@ -384,8 +384,8 @@ helper.dbSuite(path.basename(__filename), function() {
     }));
   });
 
-  suite('runDowngrade', function() {
-    suiteSetup(async function() {
+  suite('runDowngrade', () => {
+    suiteSetup(async () => {
       db = new Database({ urlsByMode: { admin: helper.dbUrl } });
       await createUsers(db);
     });
@@ -455,7 +455,7 @@ helper.dbSuite(path.basename(__filename), function() {
       assert.equal(res.rows[0].test, v);
     };
 
-    setup(async function() {
+    setup(async () => {
       db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
       for (let version of [schema.getVersion(1), schema.getVersion(2), schema.getVersion(3)]) {
         await db._withClient('admin', async client => {
@@ -470,7 +470,7 @@ helper.dbSuite(path.basename(__filename), function() {
       }
     });
 
-    test('runs downgrade script with multiple statements and $db_user_prefix$', async function() {
+    test('runs downgrade script with multiple statements and $db_user_prefix$', async () => {
       await db._withClient('admin', async client => {
         await runDowngrade({
           client,
@@ -492,7 +492,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    test('failure does not modify version', async function() {
+    test('failure does not modify version', async () => {
       await db._withClient('admin', async client => {
         await assert.rejects(
           async () => runDowngrade({
@@ -517,7 +517,7 @@ helper.dbSuite(path.basename(__filename), function() {
       });
     });
 
-    test('allows deprecated methods without failing', async function() {
+    test('allows deprecated methods without failing', async () => {
       await db._withClient('admin', async client => {
         await runMigration({
           client,

@@ -4,7 +4,7 @@ import assert from 'node:assert';
 import { PUBLISHERS } from './constants.js';
 
 /** Build common routing key construct for `exchanges.declare` */
-const commonRoutingKey = function(options) {
+const commonRoutingKey = (options) => {
   options = options || {};
   let routingKey = [
     {
@@ -44,7 +44,7 @@ const commonRoutingKey = function(options) {
   return routingKey;
 };
 
-const commonMessageBuilder = function(msg) {
+const commonMessageBuilder = (msg) => {
   msg.version = 1;
   return msg;
 };

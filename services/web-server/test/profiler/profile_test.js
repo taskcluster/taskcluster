@@ -6,7 +6,7 @@ import {
   UniqueStringArray,
 } from '../../src/profiler/profile.js';
 
-suite('profiler/profile', function() {
+suite('profiler/profile', () => {
   const mockTaskGroup = {
     taskGroupId: 'group-1',
     schedulerId: 'test-scheduler',
@@ -67,8 +67,8 @@ suite('profiler/profile', function() {
     ],
   };
 
-  suite('getProfile', function() {
-    test('generates a valid Firefox Profiler profile', function() {
+  suite('getProfile', () => {
+    test('generates a valid Firefox Profiler profile', () => {
       const rootUrl = 'https://taskcluster.net';
       const profile = getProfile([mockTaskGroup], rootUrl);
       assert.equal(profile.meta.version, 27);
@@ -76,28 +76,28 @@ suite('profiler/profile', function() {
       assert.equal(profile.meta.symbolicationNotSupported, true);
     });
 
-    test('creates one thread per task group', function() {
+    test('creates one thread per task group', () => {
       const rootUrl = 'https://taskcluster.net';
       const profile = getProfile([mockTaskGroup], rootUrl);
       assert.equal(profile.threads.length, 1);
       assert.equal(profile.threads[0].name, 'group-1');
     });
 
-    test('creates markers for tasks', function() {
+    test('creates markers for tasks', () => {
       const rootUrl = 'https://taskcluster.net';
       const profile = getProfile([mockTaskGroup], rootUrl);
       const thread = profile.threads[0];
       assert(thread.markers.length >= 2);
     });
 
-    test('sets correct startTime from earliest run', function() {
+    test('sets correct startTime from earliest run', () => {
       const rootUrl = 'https://taskcluster.net';
       const profile = getProfile([mockTaskGroup], rootUrl);
       const expectedStart = new Date('2024-01-01T10:00:00.000Z').valueOf();
       assert.equal(profile.meta.startTime, expectedStart);
     });
 
-    test('includes task URLs pointing to the deployment', function() {
+    test('includes task URLs pointing to the deployment', () => {
       const rootUrl = 'https://taskcluster.net';
       const profile = getProfile([mockTaskGroup], rootUrl);
       const thread = profile.threads[0];
@@ -107,7 +107,7 @@ suite('profiler/profile', function() {
       assert(taskMarkerData.taskURL.includes('taskcluster.net'));
     });
 
-    test('includes internal profiler URL for task profiles', function() {
+    test('includes internal profiler URL for task profiles', () => {
       const rootUrl = 'https://taskcluster.net';
       const profile = getProfile([mockTaskGroup], rootUrl);
       const thread = profile.threads[0];
@@ -117,7 +117,7 @@ suite('profiler/profile', function() {
       assert(taskMarkerData.taskProfile.includes('/profiler'));
     });
 
-    test('handles task groups with no runs', function() {
+    test('handles task groups with no runs', () => {
       const emptyGroup = {
         ...mockTaskGroup,
         tasks: [{
@@ -131,7 +131,7 @@ suite('profiler/profile', function() {
       assert.equal(profile.meta.startTime, 0);
     });
 
-    test('handles multiple task groups', function() {
+    test('handles multiple task groups', () => {
       const secondGroup = { ...mockTaskGroup, taskGroupId: 'group-2' };
       const rootUrl = 'https://taskcluster.net';
       const profile = getProfile([mockTaskGroup, secondGroup], rootUrl);
@@ -139,8 +139,8 @@ suite('profiler/profile', function() {
     });
   });
 
-  suite('getEmptyProfile', function() {
-    test('has required meta fields', function() {
+  suite('getEmptyProfile', () => {
+    test('has required meta fields', () => {
       const profile = getEmptyProfile();
       assert.equal(profile.meta.version, 27);
       assert.equal(profile.meta.preprocessedProfileVersion, 47);
@@ -150,8 +150,8 @@ suite('profiler/profile', function() {
     });
   });
 
-  suite('getEmptyThread', function() {
-    test('has required marker fields', function() {
+  suite('getEmptyThread', () => {
+    test('has required marker fields', () => {
       const thread = getEmptyThread();
       assert.deepEqual(thread.markers.data, []);
       assert.deepEqual(thread.markers.name, []);
@@ -161,24 +161,24 @@ suite('profiler/profile', function() {
     });
   });
 
-  suite('UniqueStringArray', function() {
-    test('returns consistent indices for the same string', function() {
+  suite('UniqueStringArray', () => {
+    test('returns consistent indices for the same string', () => {
       const arr = new UniqueStringArray();
       assert.equal(arr.indexForString('hello'), arr.indexForString('hello'));
     });
 
-    test('returns different indices for different strings', function() {
+    test('returns different indices for different strings', () => {
       const arr = new UniqueStringArray();
       assert.notEqual(arr.indexForString('hello'), arr.indexForString('world'));
     });
 
-    test('retrieves strings by index', function() {
+    test('retrieves strings by index', () => {
       const arr = new UniqueStringArray();
       const idx = arr.indexForString('test');
       assert.equal(arr.getString(idx), 'test');
     });
 
-    test('serializes to array', function() {
+    test('serializes to array', () => {
       const arr = new UniqueStringArray();
       arr.indexForString('a');
       arr.indexForString('b');

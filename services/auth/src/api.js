@@ -1180,9 +1180,7 @@ builder.declare({
     'of scopes and scope restrictions (temporary credentials, assumeScopes, client scopes,',
     'and roles).',
   ].join('\n'),
-}, async function(req, res) {
-  return res.reply({ scopes: await req.scopes() });
-});
+}, async (req, res) => res.reply({ scopes: await req.scopes() }));
 
 // Load aws and azure API implementations, these loads API and declares methods
 // on the API object exported from this file
@@ -1348,7 +1346,7 @@ builder.declare({
     'This endpoint is used to check on backing services this service',
     'depends on.',
   ].join('\n'),
-}, function(_req, res) {
+}, (_req, res) => {
   // TODO: add implementation
   res.reply({});
 });

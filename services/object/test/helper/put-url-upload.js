@@ -39,7 +39,7 @@ export const testPutUrlUpload = ({
     (suiteDefinition || (() => {})).call(this);
 
     let backend;
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       const backends = await helper.load('backends');
       backend = backends.get(backendId);
     });
@@ -79,7 +79,7 @@ export const testPutUrlUpload = ({
     };
 
     for (const length of [0, 1024]) {
-      test(`upload an object (length=${length})`, async function() {
+      test(`upload an object (length=${length})`, async () => {
         const { name, data, res, object, uploadId } = await makeUpload({ length });
         await performUpload({ name, data, res, uploadId });
         await finishUpload({ name, uploadId, object });
@@ -90,7 +90,7 @@ export const testPutUrlUpload = ({
       });
     }
 
-    test('upload an object with a bad Content-Type', async function() {
+    test('upload an object with a bad Content-Type', async () => {
       const { data, res } = await makeUpload();
 
       let req = request.put(res.putUrl.url);
@@ -106,7 +106,7 @@ export const testPutUrlUpload = ({
     });
 
     if (!omit.includes('htmlContentDisposition')) {
-      test(`upload of type text/html has attachment disposition`, async function() {
+      test(`upload of type text/html has attachment disposition`, async () => {
         const { name, data, res, object, uploadId } = await makeUpload({ contentType: 'text/html' });
 
         await performUpload({ name, data, res, uploadId });

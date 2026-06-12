@@ -13,7 +13,7 @@ export const rootUrl = 'http://localhost:23525';
 export let monitor = null;
 export let monitorManager = null;
 
-suiteSetup('set up monitorManager', async function() {
+suiteSetup('set up monitorManager', async () => {
   monitor = MonitorManager.setup({
     serviceName: 'lib-api',
     fake: true,
@@ -24,7 +24,7 @@ suiteSetup('set up monitorManager', async function() {
   monitorManager = monitor.manager;
 });
 
-teardown(function() {
+teardown(() => {
   monitorManager.reset();
 });
 
@@ -60,8 +60,8 @@ export const setupServer = async ({ builder, context }) => {
 
 export const teardownServer = async () => {
   if (runningServer) {
-    await new Promise(function(accept) {
-      runningServer.once('close', function() {
+    await new Promise((accept) => {
+      runningServer.once('close', () => {
         runningServer = null;
         accept();
       });

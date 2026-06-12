@@ -9,14 +9,14 @@ import testing from '@taskcluster/lib-testing';
  * the github webhook endpoint which is tested
  * in webhook_test.js
  */
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withFakeGithub(mock, skipping);
   helper.withFakeQueue(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServer(mock, skipping);
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -87,7 +87,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   let github;
 
-  setup(async function() {
+  setup(async () => {
     github = await helper.load('github');
     github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo', 'nonTCGHRepo', 'checksRepo',
       'softStatusRepo');
@@ -269,7 +269,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('all builds', async function() {
+  test('all builds', async () => {
     let builds = await helper.apiClient.builds();
     assert.equal(builds.builds.length, 4);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
@@ -279,21 +279,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(builds.builds[3].organization, 'ghi789');
   });
 
-  test('all builds without scopes', async function() {
+  test('all builds without scopes', async () => {
     const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
       () => client.builds(),
       err => err.code === 'InsufficientScopes');
   });
 
-  test('org builds', async function() {
+  test('org builds', async () => {
     let builds = await helper.apiClient.builds({ organization: 'abc123' });
     assert.equal(builds.builds.length, 3);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
     assert.equal(builds.builds[0].organization, 'abc123');
   });
 
-  test('repo builds', async function() {
+  test('repo builds', async () => {
     let builds = await helper.apiClient.builds({ organization: 'abc123', repository: 'xyz' });
     assert.equal(builds.builds.length, 2);
     builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
@@ -301,7 +301,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(builds.builds[0].repository, 'xyz');
   });
 
-  test('sha builds', async function() {
+  test('sha builds', async () => {
     let builds = await helper.apiClient.builds({
       organization: 'abc123',
       repository: 'xyz',
@@ -314,7 +314,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(builds.builds[0].sha, 'y650871208002a13ba35cf232c0e30d2c3d64783');
   });
 
-  test('pull request builds', async function() {
+  test('pull request builds', async () => {
     let builds = await helper.apiClient.builds({
       organization: 'abc123',
       repository: 'xyz',
@@ -328,7 +328,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(builds.builds[0].pullRequestNumber, 2);
   });
 
-  test('builds invalid queries are rejected', async function() {
+  test('builds invalid queries are rejected', async () => {
     await assert.rejects(async () => {
       await helper.apiClient.builds({
         repository: 'xyz',
@@ -343,18 +343,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }, /Error: Must provide/);
   });
 
-  suite('cancel builds', function() {
-    setup(async function() {
+  suite('cancel builds', () => {
+    setup(async () => {
       // reset build states
       const builds = await helper.db.fns.get_github_builds_pr(null, null, null, null, null, null);
       await Promise.all(builds.map(build => helper.db.fns.set_github_build_state(build.task_group_id, 'pending')));
     });
-    test('nothing to cancel', async function () {
+    test('nothing to cancel', async () => {
       await assert.rejects(async () => {
         await helper.apiClient.cancelBuilds('no-such-org', 'no-repo');
       }, /Error: No cancellable builds found/);
     });
-    test('cancel running builds for repo', async function() {
+    test('cancel running builds for repo', async () => {
       let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz');
       assert.equal(builds.builds.length, 2);
       builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
@@ -362,7 +362,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(builds.builds[0].repository, 'xyz');
       assert.equal(builds.builds[0].state, 'cancelled');
     });
-    test('cancel running builds for PR', async function() {
+    test('cancel running builds for PR', async () => {
       let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz', { pullRequest: 2 });
       assert.equal(builds.builds.length, 1);
       builds.builds = _.orderBy(builds.builds, ['organization', 'repository']);
@@ -370,20 +370,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(builds.builds[0].repository, 'xyz');
       assert.equal(builds.builds[0].state, 'cancelled');
     });
-    test('cannot cancel twice same builds', async function() {
+    test('cannot cancel twice same builds', async () => {
       let builds = await helper.apiClient.cancelBuilds('abc123', 'xyz', { pullRequest: 2 });
       assert.equal(builds.builds.length, 1);
       await assert.rejects(async () => {
         await helper.apiClient.cancelBuilds('no-such-org', 'no-repo');
       }, /Error: No cancellable builds found/);
     });
-    test('no scopes', async function() {
+    test('no scopes', async () => {
       const noScopesClient = new helper.GithubClient({ rootUrl: helper.rootUrl });
       await assert.rejects(async () => {
         await noScopesClient.cancelBuilds('abc123', 'xyz');
       }, err => err.code === 'InsufficientScopes');
     });
-    test('scopes: wrong org and repo', async function () {
+    test('scopes: wrong org and repo', async () => {
       await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:wrong-org:wrong-repo'], async () => {
         await assert.rejects(
           () => got.post(helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz')),
@@ -391,7 +391,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         );
       });
     });
-    test('scopes: wrong repo', async function () {
+    test('scopes: wrong repo', async () => {
       await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:abc123:wrong-repo'], async () => {
         await assert.rejects(
           () => got.post(helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz', {})),
@@ -399,7 +399,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         );
       });
     });
-    test('scopes: expand scopes works', async function () {
+    test('scopes: expand scopes works', async () => {
       await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:abc123:*'], async () => {
         const builds = await got.post(
           helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz'),
@@ -410,7 +410,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('integration installation', async function() {
+  test('integration installation', async () => {
     let result = await helper.apiClient.repository('abc123', 'coolRepo');
     assert.deepEqual(result, { installed: true });
     result = await helper.apiClient.repository('abc123', 'unknownRepo');
@@ -419,14 +419,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.deepEqual(result, { installed: false });
   });
 
-  test('repository() without scopes', async function() {
+  test('repository() without scopes', async () => {
     const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
       () => client.repository('a', 'b'),
       err => err.code === 'InsufficientScopes');
   });
 
-  test('build badges - status:failure', async function() {
+  test('build badges - status:failure', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'coolRepo', 'master'));
       assert.equal(res.headers['x-taskcluster-status'], 'failure');
@@ -434,7 +434,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('build badges - status:failure (checks API)', async function() {
+  test('build badges - status:failure (checks API)', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'failure'));
       assert.equal(res.headers['x-taskcluster-status'], 'failure');
@@ -442,7 +442,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('build badges - status:failure (combined status and checks)', async function() {
+  test('build badges - status:failure (combined status and checks)', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'combined'));
       assert.equal(res.headers['x-taskcluster-status'], 'failure');
@@ -455,7 +455,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('build badges - status: success', async function() {
+  test('build badges - status: success', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'awesomeRepo', 'master'));
       assert.equal(res.headers['x-taskcluster-status'], 'success');
@@ -463,7 +463,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('build badges - status: success (checks API)', async function() {
+  test('build badges - status: success (checks API)', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'success'));
       assert.equal(res.headers['x-taskcluster-status'], 'success');
@@ -471,7 +471,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('build badges - status: pending (checks API)', async function() {
+  test('build badges - status: pending (checks API)', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'checksRepo', 'pending'));
       assert.equal(res.headers['x-taskcluster-status'], 'pending');
@@ -479,7 +479,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('build badges - error', async function() {
+  test('build badges - error', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'errorRepo', 'master'));
       assert.equal(res.headers['x-taskcluster-status'], 'error');
@@ -487,7 +487,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('build badges - no such status', async function() {
+  test('build badges - no such status', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'unknownRepo', 'master'));
       assert.equal(res.headers['x-taskcluster-status'], 'newrepo');
@@ -495,7 +495,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('build badges - new repo (no info yet)', async function() {
+  test('build badges - new repo (no info yet)', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'nonTCGHRepo', 'master'));
       assert.equal(res.headers['x-taskcluster-status'], 'newrepo');
@@ -503,42 +503,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('build badges - checks conclusion - timed out', async function() {
+  test('build badges - checks conclusion - timed out', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'timedout'));
       assert.equal(res.headers['x-taskcluster-status'], 'timed_out');
       assert.equal(res.body.length, 7159);
     });
   });
-  test('build badges - checks conclusion - action required', async function() {
+  test('build badges - checks conclusion - action required', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'actionRequired'));
       assert.equal(res.headers['x-taskcluster-status'], 'action_required');
       assert.equal(res.body.length, 10864);
     });
   });
-  test('build badges - checks conclusion - skipped', async function() {
+  test('build badges - checks conclusion - skipped', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'skipped'));
       assert.equal(res.headers['x-taskcluster-status'], 'skipped');
       assert.equal(res.body.length, 7248);
     });
   });
-  test('build badges - checks conclusion - stale', async function() {
+  test('build badges - checks conclusion - stale', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'stale'));
       assert.equal(res.headers['x-taskcluster-status'], 'stale');
       assert.equal(res.body.length, 5509);
     });
   });
-  test('build badges - checks conclusion - neutral', async function() {
+  test('build badges - checks conclusion - neutral', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'neutral'));
       assert.equal(res.headers['x-taskcluster-status'], 'neutral');
       assert.equal(res.body.length, 5775);
     });
   });
-  test('build badges - checks conclusion - cancelled', async function() {
+  test('build badges - checks conclusion - cancelled', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
       let res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'cancelled'));
       assert.equal(res.headers['x-taskcluster-status'], 'cancelled');
@@ -546,14 +546,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('build badges without scopes', async function() {
+  test('build badges without scopes', async () => {
     const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
       () => client.badge('a', 'b', 'c'),
       err => err.code === 'InsufficientScopes');
   });
 
-  test('link for clickable badges with status', async function() {
+  test('link for clickable badges with status', async () => {
     let res;
 
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
@@ -569,7 +569,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('link for clickable badges with checks', async function() {
+  test('link for clickable badges with checks', async () => {
     let res;
 
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
@@ -585,7 +585,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('link for clickable badges when no such thing exists', async function() {
+  test('link for clickable badges when no such thing exists', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
       await assert.rejects(() => got(
         helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'unknownRepo', 'nosuch'),
@@ -593,7 +593,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('link for clickable badges when no branch exists', async function() {
+  test('link for clickable badges when no branch exists', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
       await assert.rejects(() => got(
         helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'checksRepo', 'noSuchBranch'),
@@ -601,7 +601,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('link for clickable badges when no installation exists', async function() {
+  test('link for clickable badges when no installation exists', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:noSuchOwner:*'], async () => {
       await assert.rejects(() => got(
         helper.apiClient.buildUrl(helper.apiClient.latest, 'noSuchOwner', 'noSuchRepo', 'noSuchBranch'),
@@ -609,14 +609,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  test('latest link without scopes', async function() {
+  test('latest link without scopes', async () => {
     const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
       () => client.latest('a', 'b', 'c'),
       err => err.code === 'InsufficientScopes');
   });
 
-  test('simple status creation', async function() {
+  test('simple status creation', async () => {
     await helper.apiClient.createStatus('abc123', 'awesomeRepo', 'master', {
       state: 'error',
     });
@@ -632,7 +632,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(status.context, 'default');
   });
 
-  test('advanced status creation', async function() {
+  test('advanced status creation', async () => {
     await helper.apiClient.createStatus('abc123', 'awesomeRepo', 'master', {
       state: 'failure',
       target_url: 'http://test.com',
@@ -651,7 +651,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(status.context, 'customContext');
   });
 
-  test('status creation where integration lacks permission', async function() {
+  test('status creation where integration lacks permission', async () => {
     try {
       await helper.apiClient.createStatus('abc123', 'no-permission', 'master', {
         state: 'failure',
@@ -665,7 +665,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
     throw new Error('endpoint should have failed');
   });
-  test('pull request comment', async function() {
+  test('pull request comment', async () => {
     await helper.apiClient.createComment('abc123', 'awesomeRepo', 1, {
       body: 'Task failed here',
     });
@@ -678,7 +678,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     assert.equal(comment.body, 'Task failed here');
   });
 
-  test('pull request comment where integration lacks permission', async function() {
+  test('pull request comment where integration lacks permission', async () => {
     try {
       await helper.apiClient.createComment('abc123', 'no-permission', 1, { body: 'x' });
     } catch (e) {
@@ -688,7 +688,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     throw new Error('endpoint should have failed');
   });
 
-  suite('render taskcluster.yml', function() {
+  suite('render taskcluster.yml', () => {
     const tcYaml = `version: 1
 reporting: checks-v1
 policy:
@@ -730,7 +730,7 @@ tasks:
       { fakeEvent: { type: 'github-release', action: 'released' }, tasksCount: 0, scopesCount: 3, scope: 'release:released' },
     ];
     eventTypes.map(({ fakeEvent, tasksCount, scopesCount, scope }) =>
-      test(`render .tc.yml for event ${fakeEvent.type} ${fakeEvent.action || ''} ${scope}`, async function() {
+      test(`render .tc.yml for event ${fakeEvent.type} ${fakeEvent.action || ''} ${scope}`, async () => {
         const { tasks, scopes } = await helper.apiClient.renderTaskclusterYml({
           body: tcYaml,
           fakeEvent,
@@ -747,7 +747,7 @@ tasks:
         ]);
       }),
     );
-    test('invalid branch name is properly escaped', async function () {
+    test('invalid branch name is properly escaped', async () => {
       const tcYaml = `version: 1
 reporting: checks-v1
 tasks: []

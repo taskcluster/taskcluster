@@ -4,7 +4,7 @@ import { Octokit as github } from '@octokit/rest';
 import fakeGithubAuth from './github-auth.js';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
 
   function checkKeys(obj, platonic) {
     let ours = _.filter(Object.keys(obj), k => !k.startsWith('_'));
@@ -17,7 +17,7 @@ suite(testing.suiteName(), function() {
     });
   }
 
-  test('matches real lib', async function() {
+  test('matches real lib', async () => {
     let inst = await fakeGithubAuth().getInstallationGithub('doesntmatter');
     checkKeys(inst, new github());
   });

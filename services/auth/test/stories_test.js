@@ -4,13 +4,13 @@ import assume from 'assume';
 import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
   helper.withCfg(mock, skipping);
   helper.withDb(mock, skipping);
   helper.withPulse(mock, skipping);
   helper.withServers(mock, skipping);
 
-  suite('charlene creates permanent credentials for a test runner', function() {
+  suite('charlene creates permanent credentials for a test runner', () => {
     suiteSetup(async function() {
       if (skipping()) {
         this.skip();
@@ -170,7 +170,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       });
     });
 
-    test('A disabled travis-tests client can\'t do things anymore', async function() {
+    test('A disabled travis-tests client can\'t do things anymore', async () => {
       // give the user a scope we can use as a probe
       await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',

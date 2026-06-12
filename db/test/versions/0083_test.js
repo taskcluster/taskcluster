@@ -6,10 +6,10 @@ import taskcluster from '@taskcluster/client';
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function () {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
-  test('queue worker quarantine details', async function () {
+  test('queue worker quarantine details', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
@@ -21,7 +21,7 @@ suite(testing.suiteName(), function () {
     await helper.assertTableColumn('queue_workers', 'quarantine_details');
   });
 
-  test('quarantine details function', async function () {
+  test('quarantine details function', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     const db = await helper.setupDb('queue');

@@ -8,7 +8,7 @@ import assume from 'assume';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withAmazonIPRanges(mock, skipping);
   helper.withPollingServices(mock, skipping);
@@ -237,7 +237,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
-  suite('get task group', function () {
+  suite('get task group', () => {
     test('get task-group -- doesn\'t exist', async () => {
       let taskGroupId = slugid.v4();
       await helper.queue.getTaskGroup(taskGroupId).then(
@@ -283,7 +283,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
-  suite('task group sealing', function () {
+  suite('task group sealing', () => {
     test('sealing empty task group', async () => {
       let taskGroupId = slugid.v4();
       await helper.queue.sealTaskGroup(taskGroupId).then(() => {

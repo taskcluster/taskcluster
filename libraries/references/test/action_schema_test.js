@@ -3,7 +3,7 @@ import libUrls from 'taskcluster-lib-urls';
 import References from '../src/index.js';
 import testing from '@taskcluster/lib-testing';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const rootUrl = libUrls.testRootUrl();
 
   let ajv;
@@ -36,7 +36,7 @@ suite(testing.suiteName(), function() {
     }
   };
 
-  test('empty list is OK', async function() {
+  test('empty list is OK', async () => {
     await validate({
       version: 1,
       variables: {},
@@ -44,7 +44,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('action with bogus kind fails', async function() {
+  test('action with bogus kind fails', async () => {
     await validateFails({
       version: 1,
       variables: {},
@@ -54,7 +54,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('task kind is OK', async function() {
+  test('task kind is OK', async () => {
     await validate({
       version: 1,
       variables: {},
@@ -70,7 +70,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('hook kind is OK', async function() {
+  test('hook kind is OK', async () => {
     await validate({
       version: 1,
       variables: {},
@@ -88,7 +88,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  test('action.extra is allowed', async function() {
+  test('action.extra is allowed', async () => {
     await validate({
       version: 1,
       variables: {},

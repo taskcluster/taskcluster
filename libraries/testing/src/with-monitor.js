@@ -17,7 +17,7 @@ export default (helper, options = {}) => {
     helper.load.inject('monitor', monitor);
   }
 
-  teardown(async function() {
+  teardown(async () => {
     // any messages at the ERROR level of above should cause a test failure
     if (monitor) {
       const errors = monitor.manager.messages

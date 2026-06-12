@@ -6,10 +6,10 @@ import taskcluster from '@taskcluster/client';
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function () {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
-  test('github_builds with pull request number', async function () {
+  test('github_builds with pull request number', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
@@ -21,7 +21,7 @@ suite(testing.suiteName(), function () {
     await helper.assertTableColumn('github_builds', 'pull_request_number');
   });
 
-  test('github functions use new column', async function () {
+  test('github functions use new column', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     const db = await helper.setupDb('github');

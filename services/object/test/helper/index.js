@@ -27,7 +27,7 @@ const helper = {
   testPutUrlUpload,
 };
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -70,7 +70,7 @@ helper.withBackends = (mock, skipping) => {
     { backendId: 'testBackend', when: 'all' },
   ];
 
-  suiteSetup('withBackends', async function() {
+  suiteSetup('withBackends', async () => {
     if (skipping()) {
       return;
     }
@@ -100,12 +100,12 @@ helper.withBackends = (mock, skipping) => {
     };
   });
 
-  setup('withBackends', async function() {
+  setup('withBackends', async () => {
     // reset to default
     await helper.setBackendConfig();
   });
 
-  suiteTeardown('withBackends', async function() {
+  suiteTeardown('withBackends', async () => {
     if (skipping()) {
       return;
     }
@@ -118,7 +118,7 @@ helper.withBackends = (mock, skipping) => {
 };
 
 helper.withMiddleware = (mock, skipping, config) => {
-  suiteSetup('withMiddleware', async function() {
+  suiteSetup('withMiddleware', async () => {
     if (skipping()) {
       return;
     }
@@ -132,7 +132,7 @@ helper.withMiddleware = (mock, skipping, config) => {
     ]);
   });
 
-  suiteTeardown('withMiddleware', async function() {
+  suiteTeardown('withMiddleware', async () => {
     delete MIDDLEWARE_TYPES.test;
   });
 };
@@ -140,7 +140,7 @@ helper.withMiddleware = (mock, skipping, config) => {
 helper.withServer = (mock, skipping) => {
   let webServer;
 
-  suiteSetup('withServer', async function() {
+  suiteSetup('withServer', async () => {
     if (skipping()) {
       return;
     }
@@ -172,7 +172,7 @@ helper.withServer = (mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -189,7 +189,7 @@ helper.withDb = (mock, skipping) => {
 };
 
 helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
+  setup('reset tables', async () => {
     await testing.resetTables({
       tableNames: ['objects', 'object_hashes'],
     });

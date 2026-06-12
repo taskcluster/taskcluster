@@ -7,10 +7,10 @@ import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForProcs({ serviceName: 'web_server' });
 
-  setup('truncate tables', async function() {
+  setup('truncate tables', async () => {
     await helper.withDbClient(async client => {
       await client.query('truncate github_access_tokens');
       await client.query('truncate sessions');
@@ -19,8 +19,8 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite(`${testing.suiteName()} - github_access_tokens`, function() {
-    helper.dbTest('add github access token that already exists', async function(db) {
+  suite(`${testing.suiteName()} - github_access_tokens`, () => {
+    helper.dbTest('add github access token that already exists', async (db) => {
       let n1 = {
         userId: "benjaminrabbit",
         encryptedAccessToken: db.encrypt({ value: Buffer.from("carrots", 'utf8') }),
@@ -32,7 +32,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(encryptedAccessTokenAsTable[0].encrypted_access_token, n1.encryptedAccessToken);
     });
 
-    helper.dbTest('update existing github access token', async function(db) {
+    helper.dbTest('update existing github access token', async (db) => {
       for (let accessToken of ["carrots", "sprouts"]) {
         let n1 = {
           userId: "benjaminrabbit",
@@ -45,7 +45,7 @@ suite(testing.suiteName(), function() {
       }
     });
 
-    helper.dbTest('load non-existent github access token', async function(db) {
+    helper.dbTest('load non-existent github access token', async (db) => {
       const encryptedAccessTokenAsTable = await db.fns.load_github_access_token("pretend-user");
       assert.equal(encryptedAccessTokenAsTable.length, 0);
     });
@@ -58,8 +58,8 @@ suite(testing.suiteName(), function() {
       .digest('hex');
   };
 
-  suite(`${testing.suiteName()} - sessions`, function() {
-    helper.dbTest('add session data', async function(db) {
+  suite(`${testing.suiteName()} - sessions`, () => {
+    helper.dbTest('add session data', async (db) => {
       const sessionId = 'sEssI0n#Id';
       let sessionData1 = {
         hashedSessionId: hash(sessionId),
@@ -82,7 +82,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(sessionAsTable[0].expires, sessionData1.expires);
     });
 
-    helper.dbTest('add session data can overwrite', async function(db) {
+    helper.dbTest('add session data can overwrite', async (db) => {
       const sessionId = 'sEssI0n#Id';
       let sessionData1 = {
         hashedSessionId: hash(sessionId),
@@ -117,7 +117,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(sessionAsTable[0].expires, sessionData2.expires);
     });
 
-    helper.dbTest('get session data does not throw when not found', async function(db) {
+    helper.dbTest('get session data does not throw when not found', async (db) => {
       const sessionId = 'sEssI0n#Id';
       let sessionData1 = {
         hashedSessionId: hash(sessionId),
@@ -131,7 +131,7 @@ suite(testing.suiteName(), function() {
       assert.equal(sessionAsTable.length, 0);
     });
 
-    helper.dbTest('remove session data', async function(db) {
+    helper.dbTest('remove session data', async (db) => {
       const sessionId = 'sEssI0n#Id';
       let sessionData1 = {
         hashedSessionId: hash(sessionId),
@@ -158,7 +158,7 @@ suite(testing.suiteName(), function() {
       assert.equal(sessionAsTable.length, 0);
     });
 
-    helper.dbTest('touch a session', async function(db) {
+    helper.dbTest('touch a session', async (db) => {
       const sessionId = 'sEssI0n#Id';
       let sessionData1 = {
         hashedSessionId: hash(sessionId),
@@ -188,7 +188,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(sessionAsTable[0].expires, new Date(2));
     });
 
-    helper.dbTest('touch throws a P0002 when no such row', async function(db) {
+    helper.dbTest('touch throws a P0002 when no such row', async (db) => {
       const sessionId = 'sEssI0n#Id';
       await assert.rejects(
         async () => {
@@ -198,11 +198,11 @@ suite(testing.suiteName(), function() {
       );
     });
 
-    helper.dbTest('remove session data does not throw when not found', async function(db) {
+    helper.dbTest('remove session data does not throw when not found', async (db) => {
       await db.fns.session_remove(hash('not-found'));
     });
 
-    helper.dbTest('expire_sessions', async function(db) {
+    helper.dbTest('expire_sessions', async (db) => {
       const sessionIds = [
         'sEssI0n#Id',
         'sEssI1n#Id',
@@ -241,7 +241,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite(`${testing.suiteName()} - authorization_codes`, function() {
+  suite(`${testing.suiteName()} - authorization_codes`, () => {
     const code = slug.v4();
     const now = new Date();
     const clientDetails = {
@@ -263,7 +263,7 @@ suite(testing.suiteName(), function() {
       );
     };
 
-    helper.dbTest('get_authorization_code returns an entry', async function(db) {
+    helper.dbTest('get_authorization_code returns an entry', async (db) => {
       await mkAuthorizationCode(db);
       const [authorizationCode] = await db.deprecatedFns.get_authorization_code(code);
       assert.equal(authorizationCode.code, code);
@@ -275,11 +275,11 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(authorizationCode.client_details, clientDetails);
     });
 
-    helper.dbTest('get_authorization_code does not throw when not found', async function(db) {
+    helper.dbTest('get_authorization_code does not throw when not found', async (db) => {
       await db.deprecatedFns.get_authorization_code('not-found');
     });
 
-    helper.dbTest('create_authorization_code returns the authorization code', async function(db) {
+    helper.dbTest('create_authorization_code returns the authorization code', async (db) => {
       const [authorizationCode] = await mkAuthorizationCode(db);
       assert.equal(authorizationCode.code, code);
       assert.equal(authorizationCode.client_id, 'client-id');
@@ -290,7 +290,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(authorizationCode.client_details, clientDetails);
     });
 
-    helper.dbTest('create_authorization_code throws when row exists', async function(db) {
+    helper.dbTest('create_authorization_code throws when row exists', async (db) => {
       await mkAuthorizationCode(db);
       await assert.rejects(
         async () => {
@@ -300,7 +300,7 @@ suite(testing.suiteName(), function() {
       );
     });
 
-    helper.dbTest('expire_authorization_codes returns the count', async function(db) {
+    helper.dbTest('expire_authorization_codes returns the count', async (db) => {
       const slugs = [
         slug.v4(),
         slug.v4(),
@@ -313,7 +313,7 @@ suite(testing.suiteName(), function() {
       assert.equal(count, 2);
     });
 
-    helper.dbTest('consume_authorization_code returns the row and deletes it', async function(db) {
+    helper.dbTest('consume_authorization_code returns the row and deletes it', async (db) => {
       await mkAuthorizationCode(db);
       const [consumed] = await db.fns.consume_authorization_code(code);
       assert.equal(consumed.code, code);
@@ -327,12 +327,12 @@ suite(testing.suiteName(), function() {
       assert.equal(rows.length, 0);
     });
 
-    helper.dbTest('consume_authorization_code returns empty for unknown code', async function(db) {
+    helper.dbTest('consume_authorization_code returns empty for unknown code', async (db) => {
       const rows = await db.fns.consume_authorization_code('not-found');
       assert.equal(rows.length, 0);
     });
 
-    helper.dbTest('consume_authorization_code only succeeds once for the same code', async function(db) {
+    helper.dbTest('consume_authorization_code only succeeds once for the same code', async (db) => {
       await mkAuthorizationCode(db);
       const first = await db.fns.consume_authorization_code(code);
       const second = await db.fns.consume_authorization_code(code);
@@ -341,7 +341,7 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  suite(`${testing.suiteName()} - access_tokens`, function() {
+  suite(`${testing.suiteName()} - access_tokens`, () => {
     const accessToken = 'womp';
     const now = new Date();
     const clientDetails = {
@@ -364,7 +364,7 @@ suite(testing.suiteName(), function() {
       );
     };
 
-    helper.dbTest('get_access_token returns an entry', async function(db) {
+    helper.dbTest('get_access_token returns an entry', async (db) => {
       await mkAcessToken(db);
       const [at] = await db.fns.get_access_token(hash(accessToken));
       assert.equal(at.hashed_access_token, hash(accessToken));
@@ -377,11 +377,11 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(at.client_details, clientDetails);
     });
 
-    helper.dbTest('get_access_token does not throw when not found', async function(db) {
+    helper.dbTest('get_access_token does not throw when not found', async (db) => {
       await db.fns.get_access_token('not-found');
     });
 
-    helper.dbTest('create_access_token returns the authorization code', async function(db) {
+    helper.dbTest('create_access_token returns the authorization code', async (db) => {
       const [at] = await mkAcessToken(db);
       assert.equal(at.hashed_access_token, hash(accessToken));
       assert.equal(db.decrypt({ value: at.encrypted_access_token }).toString('utf8'), accessToken);
@@ -393,7 +393,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(at.client_details, clientDetails);
     });
 
-    helper.dbTest('create_access_token throws when row exists', async function(db) {
+    helper.dbTest('create_access_token throws when row exists', async (db) => {
       await mkAcessToken(db);
       await assert.rejects(
         async () => {
@@ -403,7 +403,7 @@ suite(testing.suiteName(), function() {
       );
     });
 
-    helper.dbTest('expire_authorization_codes returns the count', async function(db) {
+    helper.dbTest('expire_authorization_codes returns the count', async (db) => {
       const slugs = [
         slug.v4(),
         slug.v4(),

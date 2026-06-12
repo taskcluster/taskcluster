@@ -34,12 +34,12 @@ export const testBackend = ({
     (suiteDefinition || (() => {})).call(this);
 
     let backend;
-    setup(async function() {
+    setup(async () => {
       const backends = await load('backends');
       backend = backends.get(backendId);
     });
 
-    test('supports only defined downlad methods', async function() {
+    test('supports only defined downlad methods', async () => {
       const data = crypto.randomBytes(256);
       const name = testObjectName(prefix);
       const object = await makeObject({ name, data, hashes: { }, gzipped: false });

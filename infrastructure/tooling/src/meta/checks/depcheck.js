@@ -22,7 +22,7 @@ if (isMainThread) {
     run: async (requirements, utils) => {
       return new Promise((resolve, reject) => {
         const worker = new Worker(__filename, {});
-        worker.on('message', function ({ err, message }) {
+        worker.on('message', ({ err, message }) => {
           err ? reject(err) : utils.status({ message });
         });
         worker.on('error', reject);

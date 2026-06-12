@@ -37,23 +37,17 @@ let buildCommonRoutingKey = (options) => {
 };
 
 /** Build an AMQP compatible message from a message */
-let commonMessageBuilder = function(message) {
-  return message;
-};
+let commonMessageBuilder = (message) => message;
 
 /** Build a routingKey from message */
 /** Empty now, might be useful in the future */
 /** when this comment should be removed */
-let commonRoutingKeyBuilder = function(message, routing) {
-  return '';
-};
+let commonRoutingKeyBuilder = (message, routing) => '';
 
 /** Build list of routing keys to CC */
 /** Empty now, might be useful in the future */
 /** when this comment should be removed */
-let commonCCBuilder = function(message, routes) {
-  return [];
-};
+let commonCCBuilder = (message, routes) => [];
 
 // Hook created exchange
 exchanges.declare({
