@@ -1,5 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`NoTask page renders recent tasks with rich and legacy records 1`] = `<DocumentFragment />`;
-
-exports[`NoTask page renders without crashing when no recent tasks 1`] = `<DocumentFragment />`;
