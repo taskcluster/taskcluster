@@ -344,7 +344,6 @@ builder.declare({
     'If no task exists for the given index path, this API end-point responds with 404.',
   ].join('\n'),
 }, async function(req, res) {
-  let that = this;
   let indexPath = req.params.indexPath || '';
   const artifactName = req.params.name;
 
@@ -364,30 +363,30 @@ builder.declare({
 
   let isPublic = false;
   try {
-    isPublic = await that.isPublicArtifact(artifactName);
+    isPublic = await this.isPublicArtifact(artifactName);
   } catch {
     isPublic = false;
   }
 
   if (isPublic) {
     try {
-      const artifact = await that.queue.latestArtifact(task.taskId, artifactName);
+      const artifact = await this.queue.latestArtifact(task.taskId, artifactName);
       if (artifact.url) {
         return res.redirect(303, artifact.url);
       }
     } catch {
       // fall through to queue redirect
     }
-    const url = that.queue.externalBuildUrl(
-      that.queue.getLatestArtifact,
+    const url = this.queue.externalBuildUrl(
+      this.queue.getLatestArtifact,
       task.taskId,
       artifactName,
     );
     return res.redirect(303, url);
   }
 
-  const url = that.queue.externalBuildSignedUrl(
-    that.queue.getLatestArtifact,
+  const url = this.queue.externalBuildSignedUrl(
+    this.queue.getLatestArtifact,
     task.taskId,
     artifactName, {
       expiration: 15 * 60,
