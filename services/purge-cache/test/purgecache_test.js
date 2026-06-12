@@ -41,18 +41,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     // Check that the first request is valid
     openRequests = await helper.apiClient.allPurgeRequests();
     assume(openRequests.requests.length).equals(1);
-    let request = openRequests.requests[0];
+    const request = openRequests.requests[0];
     assume(request.cacheName).equals('my-test-cache');
     assume(request.provisionerId).equals('dummy-provisioner-extended-extended');
     assume(request.workerType).equals('dummy-worker-extended-extended');
-    let firstBefore = new Date(request.before);
+    const firstBefore = new Date(request.before);
 
     // Check if we can override and update an existing request
     await helper.apiClient.purgeCache('dummy-provisioner-extended-extended/dummy-worker-extended-extended', {
       cacheName: 'my-test-cache',
     });
     openRequests = await helper.apiClient.allPurgeRequests();
-    let newBefore = new Date(openRequests.requests[0].before);
+    const newBefore = new Date(openRequests.requests[0].before);
     assume(newBefore.valueOf()).is.gt(firstBefore.valueOf());
 
     // Add a second request

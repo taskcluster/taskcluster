@@ -83,7 +83,7 @@ export class WorkerScanner {
         page_size_in,
         ...after,
       });
-    for await (let row of paginatedIterator({
+    for await (const row of paginatedIterator({
       fetch,
       indexColumns: ['worker_pool_id', 'worker_group', 'worker_id'],
       size: 500,

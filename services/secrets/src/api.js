@@ -17,7 +17,7 @@ const secretToJson = (db, item) => ({
 /** API end-point for version v1/
  *
  */
-let builder = new APIBuilder({
+const builder = new APIBuilder({
   title: 'Secrets Service',
   description: [
     'The secrets service provides a simple key/value store for small bits of secret',
@@ -36,7 +36,7 @@ let builder = new APIBuilder({
 // Export API
 export default builder;
 
-let cleanPayload = payload => {
+const cleanPayload = payload => {
   payload.secret = '(OMITTED)';
   return payload;
 };

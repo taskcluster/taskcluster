@@ -58,7 +58,7 @@ helper.withPulse = (helper, skipping) => {
 };
 
 helper.withMockedEventIterator = () => {
-  let PulseEngineCopy = Object.assign({}, PulseEngine);
+  const PulseEngineCopy = Object.assign({}, PulseEngine);
 
   PulseEngineCopy.NextAsyncIterator = null;
   helper.setNextAsyncIterator = (asyncIterator) => {
@@ -482,14 +482,14 @@ const stubbedClients = () => {
       ...options,
       fake: {
         listRoles: async () => {
-          let allRoles = [];
-          for (let roleId of roles.keys()) {
+          const allRoles = [];
+          for (const roleId of roles.keys()) {
             allRoles.push(roles.get(roleId));
           }
           return Promise.resolve(allRoles);
         },
         listRoleIds: async () => {
-          let roleIds = Array.from(roles.keys());
+          const roleIds = Array.from(roles.keys());
           return Promise.resolve({ roleIds });
         },
         role: async (roleId) => {

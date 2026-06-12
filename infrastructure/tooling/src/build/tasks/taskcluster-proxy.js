@@ -71,7 +71,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
         'ENTRYPOINT ["/taskcluster-proxy", "--port", "80"]',
       ].join('\n'));
-      let command = [
+      const command = [
         'docker', 'build',
         '--no-cache',
         '--progress', 'plain',

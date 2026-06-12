@@ -71,11 +71,11 @@ export class Task {
   // Get multiple tasks from the DB, or empty list
   static async getMultiple(db, { taskIds }, { query } = {}) {
     assert(_.isArray(taskIds), 'taskIds must be an Array');
-    for (let taskId of taskIds) {
+    for (const taskId of taskIds) {
       assert(_.isString(taskId), 'taskId must be a String');
     }
     const fetchResults = async (continuation) => {
-      let q = query;
+      const q = query;
 
       if (continuation) {
         q.continuationToken = continuation;
@@ -89,7 +89,7 @@ export class Task {
           offset,
         ),
       });
-      let tasks = rows.map(Task.fromDb);
+      const tasks = rows.map(Task.fromDb);
       return { tasks, continuationToken };
     };
 

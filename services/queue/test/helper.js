@@ -89,7 +89,7 @@ export const withS3 = (mock, skipping) => {
         })
         .on(DeleteObjectsCommand)
         .callsFake(async ({ Delete }) => {
-          for (let { Key } of Delete.Objects) {
+          for (const { Key } of Delete.Objects) {
             artifacts = artifacts.filter(a => a.Key !== Key);
           }
           return {};
@@ -428,7 +428,7 @@ export const checkDates = ({ status }) => {
 
   chk(status.deadline, "status.deadline");
   chk(status.expires, "status.expires");
-  for (let run of status.runs) {
+  for (const run of status.runs) {
     chk(run.takenUntil, "run.takenUntil");
     chk(run.scheduled, "run.scheduled");
     chk(run.started, "run.started");

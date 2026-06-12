@@ -21,7 +21,7 @@ helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], (mock, skippin
   setup('mock scoperesolver reloading', async () => {
     reloads = [];
 
-    let monitor = await helper.load('monitor');
+    const monitor = await helper.load('monitor');
     scopeResolver = new ScopeResolver({ monitor, disableCache: true });
 
     scopeResolver.reload = () => reloads.push('all');
@@ -393,7 +393,7 @@ suite(testing.suiteName(), () => {
           }
         }
         // Estimate iterations to measure and run them
-        let iterations = Math.ceil(TIMEING_TIME / mean);
+        const iterations = Math.ceil(TIMEING_TIME / mean);
         const start = hrtime.bigint();
         for (let i = 0; i < iterations; i++) {
           result = fn();
@@ -419,7 +419,7 @@ suite(testing.suiteName(), () => {
 
     const testResolver = (title, { roles, scopes, expected }) => {
       test(title, () => {
-        let resolver = time('setup', () => scopeResolver.buildResolver(roles));
+        const resolver = time('setup', () => scopeResolver.buildResolver(roles));
         time('execute', () => resolver(scopes));
         if (expected) {
           expected.sort(scopeCompare);

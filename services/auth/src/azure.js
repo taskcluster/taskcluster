@@ -47,8 +47,8 @@ export const azureBuilder = builder => {
       'Retrieve a list of all tables in an account.',
     ].join('\n'),
   }, async function(req, res) {
-    let account = req.params.account;
-    let continuationToken = req.query.continuationToken || null;
+    const account = req.params.account;
+    const continuationToken = req.query.continuationToken || null;
 
     const accessKey = getAzureAccount(this, account);
     if (!accessKey) {
@@ -56,13 +56,13 @@ export const azureBuilder = builder => {
         `Account '${account}' not found, can't delegate access`);
     }
 
-    let table = new azure.Table({
+    const table = new azure.Table({
       accountId: account,
       accessKey,
     });
 
-    let result = await table.queryTables({ nextTableName: continuationToken });
-    let data = { tables: result.tables };
+    const result = await table.queryTables({ nextTableName: continuationToken });
+    const data = { tables: result.tables };
     if (result.nextTableName) {
       data.continuationToken = result.nextTableName;
     }
@@ -95,9 +95,9 @@ export const azureBuilder = builder => {
       'table if it doesn\'t already exist.',
     ].join('\n'),
   }, async function(req, res) {
-    let account = req.params.account;
-    let tableName = req.params.table;
-    let level = req.params.level;
+    const account = req.params.account;
+    const tableName = req.params.table;
+    const level = req.params.level;
 
     // We have a complicated scope situation for read-only since we want
     // read-write to grant read-only permissions as well
@@ -116,7 +116,7 @@ export const azureBuilder = builder => {
     }
 
     // Construct client
-    let table = new azure.Table({
+    const table = new azure.Table({
       accountId: account,
       accessKey,
     });
@@ -137,11 +137,11 @@ export const azureBuilder = builder => {
       }
     }
 
-    let perm = level === 'read-write';
+    const perm = level === 'read-write';
 
     // Construct SAS
-    let expiry = new Date(Date.now() + 25 * 60 * 1000);
-    let sas = table.sas(tableName, {
+    const expiry = new Date(Date.now() + 25 * 60 * 1000);
+    const sas = table.sas(tableName, {
       start: new Date(Date.now() - 15 * 60 * 1000),
       expiry: expiry,
       permissions: {
@@ -176,8 +176,8 @@ export const azureBuilder = builder => {
       'Retrieve a list of all containers in an account.',
     ].join('\n'),
   }, async function(req, res) {
-    let account = req.params.account;
-    let continuationToken = req.query.continuationToken || null;
+    const account = req.params.account;
+    const continuationToken = req.query.continuationToken || null;
 
     const accessKey = getAzureAccount(this, account);
     if (!accessKey) {
@@ -185,13 +185,13 @@ export const azureBuilder = builder => {
         `Account '${account}' not found, can't delegate access.`);
     }
 
-    let blob = new azure.Blob({
+    const blob = new azure.Blob({
       accountId: account,
       accessKey,
     });
 
-    let result = await blob.listContainers({ marker: continuationToken });
-    let data = { containers: result.containers.map(c => c.name) };
+    const result = await blob.listContainers({ marker: continuationToken });
+    const data = { containers: result.containers.map(c => c.name) };
     if (result.nextMarker) {
       data.continuationToken = result.nextMarker;
     }
@@ -225,9 +225,9 @@ export const azureBuilder = builder => {
     ].join('\n'),
   }, async function(req, res) {
     // Get parameters
-    let account = req.params.account;
-    let container = req.params.container;
-    let level = req.params.level;
+    const account = req.params.account;
+    const container = req.params.container;
+    const level = req.params.level;
 
     // Check that the client is authorized to access given account and container
     await req.authorize({ level, account, container, levelIsReadOnly: level === 'read-only' });
@@ -240,7 +240,7 @@ export const azureBuilder = builder => {
     }
 
     // Construct client
-    let blob = new azure.Blob({
+    const blob = new azure.Blob({
       accountId: account,
       accessKey,
     });
@@ -260,11 +260,11 @@ export const azureBuilder = builder => {
       }
     }
 
-    let perm = level === 'read-write';
+    const perm = level === 'read-write';
 
     // Construct SAS
-    let expiry = new Date(Date.now() + 25 * 60 * 1000);
-    let sas = blob.sas(container, null, {
+    const expiry = new Date(Date.now() + 25 * 60 * 1000);
+    const sas = blob.sas(container, null, {
       start: new Date(Date.now() - 15 * 60 * 1000),
       expiry: expiry,
       resourceType: 'container',

@@ -78,14 +78,14 @@ if (isMainThread) {
         if (node.source.type !== 'Literal') {
           return;
         }
-        let packageName = node.source.value;
+        const packageName = node.source.value;
         return checkImport(file, section, packageName, deps, used);
       },
       ImportDeclaration(node) {
         if (node.source.type !== 'Literal') {
           return;
         }
-        let packageName = node.source.value;
+        const packageName = node.source.value;
         return checkImport(file, section, packageName, deps, used);
       },
       CallExpression(node) {
@@ -98,7 +98,7 @@ if (isMainThread) {
           return;
         }
 
-        let packageName = node.arguments[0].value;
+        const packageName = node.arguments[0].value;
         return checkImport(file, section, packageName, deps, used);
       },
     });

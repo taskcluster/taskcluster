@@ -107,7 +107,7 @@ suite(testing.suiteName(), () => {
   helper.dbTest('create_object_for_upload fails if two objects use the same uploadId', async (db, isFake) => {
     const expires = fromNow('1 year');
     const uploadExpires = fromNow('1 day');
-    let uploadId = taskcluster.slugid();
+    const uploadId = taskcluster.slugid();
 
     await db.fns.create_object_for_upload('foo', 'projectId', 'backendId', uploadId, uploadExpires, {}, expires);
     await assert.rejects(
@@ -118,7 +118,7 @@ suite(testing.suiteName(), () => {
   helper.dbTest('object_upload_complete', async (db, isFake) => {
     const expires = fromNow('1 year');
     const uploadExpires = fromNow('1 day');
-    let uploadId = taskcluster.slugid();
+    const uploadId = taskcluster.slugid();
 
     await db.fns.create_object_for_upload('foo', 'projectId', 'backendId', uploadId, uploadExpires, {}, expires);
     await db.fns.object_upload_complete('foo', uploadId);
@@ -133,7 +133,7 @@ suite(testing.suiteName(), () => {
 
   const insertData = async samples => {
     await helper.withDbClient(async client => {
-      for (let s of samples) {
+      for (const s of samples) {
         await client.query(`
             insert into objects (name, data, backend_id, project_id, upload_id, upload_expires, expires)
             values ($1, $2, $3, $4, $5, $6, $7)`,
@@ -219,7 +219,7 @@ suite(testing.suiteName(), () => {
       if (res.length === 0) {
         break;
       }
-      for (let { name } of res) {
+      for (const { name } of res) {
         gotNames.push(name);
         startAt = name;
       }

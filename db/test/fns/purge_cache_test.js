@@ -122,7 +122,7 @@ suite(testing.suiteName(), () => {
       );
     }
 
-    let entries = await db.fns.purge_requests_wpid("prov-3/wt-3");
+    const entries = await db.fns.purge_requests_wpid("prov-3/wt-3");
     assert.equal(entries.length, 3);
     compare(entries, samples);
   });

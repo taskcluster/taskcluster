@@ -51,8 +51,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   };
 
   test('createTask , claimWork, claim expires, retried', async () => {
-    let taskId = slugid.v4();
-    let task = makeTask(1);
+    const taskId = slugid.v4();
+    const task = makeTask(1);
 
     await helper.startPollingService('claim-resolver');
 
@@ -64,7 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     monitor.manager.reset(); // clear the first task-pending message
 
     debug('### Claim task');
-    let r1 = await helper.queue.claimWork(taskQueueId, {
+    const r1 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
       tasks: 2,
@@ -88,8 +88,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   });
 
   test('createTask , claimWork, claim expires, resolve exception', async () => {
-    let taskId = slugid.v4();
-    let task = makeTask(0);
+    const taskId = slugid.v4();
+    const task = makeTask(0);
 
     await helper.startPollingService('claim-resolver');
 
@@ -101,7 +101,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     monitor.manager.reset(); // clear the first task-pending message
 
     debug('### Claim task');
-    let r1 = await helper.queue.claimWork(taskQueueId, {
+    const r1 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
       tasks: 2,

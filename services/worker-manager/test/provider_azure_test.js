@@ -26,13 +26,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.resetTables(mock, skipping);
 
   let provider;
-  let providerId = 'azure';
-  let workerPoolId = 'foo/bar';
+  const providerId = 'azure';
+  const workerPoolId = 'foo/bar';
 
   const fake = new FakeAzure();
   fake.forSuite();
 
-  let baseProviderData = {
+  const baseProviderData = {
     location: 'westus',
     resourceGroupName: 'rgrp',
     vm: {
@@ -60,7 +60,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.equal(workers.length, 1);
     const worker = workers[0];
 
-    for (let resourceType of ['ip', 'vm', 'nic']) {
+    for (const resourceType of ['ip', 'vm', 'nic']) {
       const name = worker.providerData[resourceType].name;
       switch (expectations[resourceType]) {
         case 'none':
@@ -292,7 +292,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   const makeWorkerPool = async (overrides = {}, launchConfigOverrides = {}) => {
-    let workerPool = WorkerPool.fromApi({
+    const workerPool = WorkerPool.fromApi({
       workerPoolId,
       providerId,
       description: 'none',
@@ -640,7 +640,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
-      let worker = workers[0];
+      const worker = workers[0];
 
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
@@ -684,7 +684,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
-      let worker = workers[0];
+      const worker = workers[0];
 
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
@@ -716,7 +716,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
-      let worker = workers[0];
+      const worker = workers[0];
 
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
@@ -762,7 +762,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
-      let worker = workers[0];
+      const worker = workers[0];
 
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
@@ -880,7 +880,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         },
       });
 
-      let [worker] = await helper.getWorkers();
+      const [worker] = await helper.getWorkers();
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
       const vmName = worker.providerData.vm.name;
@@ -954,7 +954,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         },
       });
 
-      let [worker] = await helper.getWorkers();
+      const [worker] = await helper.getWorkers();
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
 
@@ -1004,7 +1004,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         },
       });
 
-      let [worker] = await helper.getWorkers();
+      const [worker] = await helper.getWorkers();
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
 
@@ -1043,7 +1043,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         },
       });
 
-      let [worker] = await helper.getWorkers();
+      const [worker] = await helper.getWorkers();
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
 
@@ -1676,7 +1676,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(workers.length, 1);
       worker = workers[0];
 
-      let checkResourceExpectation = (expectation, resourceType, typeData, index) => {
+      const checkResourceExpectation = (expectation, resourceType, typeData, index) => {
         const client = clientForResourceType(resourceType);
         switch (expectation) {
           case 'none':
@@ -1701,7 +1701,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
             }
         }
       };
-      for (let resourceType of ['ip', 'vm', 'nic', 'disks']) {
+      for (const resourceType of ['ip', 'vm', 'nic', 'disks']) {
         // multiple of a resource type
         if (Array.isArray(worker.providerData[resourceType])) {
           for (let i = 0; i < worker.providerData[resourceType].length; i++) {
@@ -2978,7 +2978,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
         test('sweet success (different reregister)', async () => {
           const workerPool = await makeWorkerPool();
-          let worker = Worker.fromApi({
+          const worker = Worker.fromApi({
             ...defaultWorker,
             providerData: {
               ...defaultWorker.providerData,
@@ -3024,7 +3024,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           assert(res.expires - Date.now() - 10000 < 96 * 3600 * 1000, res.expires);
           assert.equal(res.workerConfig.someKey, 'someValue');
 
-          let log0 = monitor.manager.messages[0];
+          const log0 = monitor.manager.messages[0];
           assert.equal(log0.Type, 'registration-new-intermediate-certificate');
           assert.equal(
             log0.Fields.fingerprint,

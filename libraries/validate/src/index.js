@@ -49,7 +49,7 @@ class SchemaSet {
     let walkErr;
     walk.walkSync(path.resolve(this.cfg.folder), { listeners: { file: (root, stats) => {
       try {
-        let name = path.relative(this.cfg.folder, path.join(root, stats.name));
+        const name = path.relative(this.cfg.folder, path.join(root, stats.name));
 
         let json = null;
         const data = fs.readFileSync(path.join(this.cfg.folder, name), 'utf-8');

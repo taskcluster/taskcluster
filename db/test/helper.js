@@ -130,7 +130,7 @@ helper.withDbForVersion = () => {
       await pool.end();
     }
     pool = null;
-    for (let db of Object.values(dbs)) {
+    for (const db of Object.values(dbs)) {
       await db.close();
     }
     dbs = {};

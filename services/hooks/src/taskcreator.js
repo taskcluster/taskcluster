@@ -28,7 +28,7 @@ export class TaskCreator {
 
   taskForHook(hook, context, options) {
     const now = options.created;
-    let task = jsone(hook.task, _.defaults({}, context, { now, taskId: options.taskId }));
+    const task = jsone(hook.task, _.defaults({}, context, { now, taskId: options.taskId }));
     if (!task) {
       return;
     }
@@ -187,7 +187,7 @@ export class MockTaskCreator extends TaskCreator {
 
   async fire(hook, context, options) {
     if (this.shouldFail) {
-      let err = new Error();
+      const err = new Error();
       Object.assign(err, this.shouldFail);
       throw err;
     }

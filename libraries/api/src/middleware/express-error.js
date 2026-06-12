@@ -64,7 +64,7 @@ export const expressError = ({ errorCodes, entry }) => {
     }
 
     let code = err.code;
-    let details = err.details;
+    const details = err.details;
     let message = err.message;
 
     let status = errorCodes[code];

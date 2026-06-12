@@ -50,7 +50,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         'COPY version.json /app/version.json',
         'ENTRYPOINT ["/websocktunnel"]',
       ].join('\n'));
-      let command = [
+      const command = [
         'docker', 'build',
         '--no-cache',
         '--progress', 'plain',

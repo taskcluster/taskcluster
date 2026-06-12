@@ -481,7 +481,7 @@ tasks.push({
       ui: serviceEnv('ui'),
     };
 
-    for (let name of SERVICES) {
+    for (const name of SERVICES) {
       const procs = requirements[`procslist-${name}`];
       // only web services for now
       Object.keys(procs).forEach((proc) => {

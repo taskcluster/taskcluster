@@ -14,8 +14,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.resetTables(mock, skipping);
 
   let provider;
-  let providerId = 'google';
-  let workerPoolId = 'foo/bar';
+  const providerId = 'google';
+  const workerPoolId = 'foo/bar';
   const project = 'testy';
 
   const fake = new FakeGoogle;
@@ -62,7 +62,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   };
 
   const makeWorker = async (overrides = {}) => {
-    let worker = Worker.fromApi({
+    const worker = Worker.fromApi({
       ...overrides,
     });
     await worker.create(helper.db);
@@ -71,7 +71,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   };
 
   const makeWorkerPool = async (overrides = {}) => {
-    let workerPool = WorkerPool.fromApi({
+    const workerPool = WorkerPool.fromApi({
       workerPoolId,
       providerId,
       description: 'none',

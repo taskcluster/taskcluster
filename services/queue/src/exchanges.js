@@ -2,7 +2,7 @@ import { Exchanges } from '@taskcluster/lib-pulse';
 import assert from 'node:assert';
 
 /** Declaration of exchanges offered by the queue */
-let exchanges = new Exchanges({
+const exchanges = new Exchanges({
   title: 'Queue AMQP Exchanges',
   projectName: 'taskcluster-queue',
   serviceName: 'queue',
@@ -62,7 +62,7 @@ let exchanges = new Exchanges({
 export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-let buildCommonRoutingKey = (options) => {
+const buildCommonRoutingKey = (options) => {
   options = options || {};
   return [
     {
@@ -127,7 +127,7 @@ let buildCommonRoutingKey = (options) => {
 };
 
 /** Build common routing key construct for task-group-messages for `exchanges.declare` */
-let buildTaskGroupRoutingKey = (options) => {
+const buildTaskGroupRoutingKey = (options) => {
   options = options || {};
   return [
     {
@@ -158,13 +158,13 @@ let buildTaskGroupRoutingKey = (options) => {
 };
 
 /** Build an AMQP compatible message from a message */
-let commonMessageBuilder = (message) => {
+const commonMessageBuilder = (message) => {
   message.version = 1;
   return message;
 };
 
 /** Build a message from message */
-let commonRoutingKeyBuilder = (message, routing) => ({
+const commonRoutingKeyBuilder = (message, routing) => ({
   taskId: message.status.taskId,
   runId: message.runId,
   workerGroup: message.workerGroup,
@@ -176,13 +176,13 @@ let commonRoutingKeyBuilder = (message, routing) => ({
 });
 
 /** Build a message from message for task-group messages */
-let taskGroupRoutingKeyBuilder = (message, routing) => ({
+const taskGroupRoutingKeyBuilder = (message, routing) => ({
   schedulerId: message.schedulerId,
   taskGroupId: message.taskGroupId,
 });
 
 /** Build list of routing keys to CC */
-let commonCCBuilder = (message, routes) => {
+const commonCCBuilder = (message, routes) => {
   assert(Array.isArray(routes), 'Routes must be an array');
   return routes.map(route => 'route.' + route);
 };

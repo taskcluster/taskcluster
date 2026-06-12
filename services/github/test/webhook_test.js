@@ -28,8 +28,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   function statusTest(testName, jsonFile, statusCode, installationId = 5808, check = () => {}) {
     test(testName, async () => {
       const filename = './test/data/webhooks/' + jsonFile;
-      let request = JSON.parse(fs.readFileSync(filename));
-      let response = await helper.jsonHttpRequest(filename);
+      const request = JSON.parse(fs.readFileSync(filename));
+      const response = await helper.jsonHttpRequest(filename);
       assert.equal(response.statusCode, statusCode);
       response.connection?.destroy();
       if (statusCode < 300) {

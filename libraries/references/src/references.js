@@ -185,7 +185,7 @@ export class References {
 
       // identify metaschemas, so we can all addMetaSchema for them
       const metaSchemas = new Set(this.schemas.map(({ content }) => content.$schema));
-      for (let { content } of this.schemas) {
+      for (const { content } of this.schemas) {
         // try to be resilient to bad schemas, as validation should be able to give
         // better error messages about schema problems.
         if (!content.$id) {

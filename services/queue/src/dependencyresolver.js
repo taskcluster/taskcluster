@@ -67,7 +67,7 @@ class DependencyResolver {
 
   /** Poll for messages and handle them in a loop */
   async _pollResolvedTasks() {
-    let messages = await this.queueService.pollResolvedQueue(this.count);
+    const messages = await this.queueService.pollResolvedQueue(this.count);
     let failed = 0;
     await Promise.all(messages.map(async (m) => {
       // Don't let a single task error break the loop, it'll be retried later

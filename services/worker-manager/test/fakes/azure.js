@@ -268,7 +268,7 @@ export class VMResourceManager extends ResourceManager {
   // Subclass Overrides
 
   _requestToResource(request) {
-    let dataDisks = [];
+    const dataDisks = [];
     for (let i = 0; i < request.parameters.storageProfile.dataDisks.length; i++) {
       dataDisks.push({ name: slugid.nice() });
     }

@@ -262,7 +262,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         },
       };
 
-      let res = await helper.apiClient.createUpload('public/foo', {
+      const res = await helper.apiClient.createUpload('public/foo', {
         projectId: 'x',
         uploadId,
         expires,

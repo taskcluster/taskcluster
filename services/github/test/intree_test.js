@@ -36,7 +36,7 @@ suite(testing.suiteName(), () => {
    * after a pull request
    **/
   function buildMessage(params) {
-    let defaultMessage = {
+    const defaultMessage = {
       organization: 'testorg',
       repository: 'testrepo',
       details: {
@@ -71,7 +71,7 @@ suite(testing.suiteName(), () => {
    * expected:    {}, keys=>values expected to exist in the compiled config
    * shouldError: if you want intree to throw an exception, set this to true
    **/
-  let buildConfigTest = (testName, configPath, params, expected, count = -1, shouldError = false) => {
+  const buildConfigTest = (testName, configPath, params, expected, count = -1, shouldError = false) => {
     test(testName, async () => {
       params.config = yaml.load(fs.readFileSync(configPath));
       params.schema = {
@@ -93,7 +93,7 @@ suite(testing.suiteName(), () => {
       if (count > 0) {
         assert.equal(config.tasks.length, count);
       }
-      for (let key of Object.keys(expected)) {
+      for (const key of Object.keys(expected)) {
         if (key === 'scopes') {
           expected[key].sort();
         }
@@ -102,7 +102,7 @@ suite(testing.suiteName(), () => {
     });
   };
 
-  let configPath = 'test/data/configs/';
+  const configPath = 'test/data/configs/';
 
   buildConfigTest(
     'Single Task Config, v0',

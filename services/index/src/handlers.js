@@ -20,7 +20,7 @@ import { consume } from '@taskcluster/lib-pulse';
  *   db:                 // db instance
  * }
  */
-let Handlers = function(options) {
+const Handlers = function(options) {
   // Validate options
   assert(options.queue, 'An instance of taskcluster.Queue is required');
   assert(options.queueEvents instanceof taskcluster.QueueEvents,
@@ -71,10 +71,10 @@ Handlers.prototype.terminate = async function() {
 
 /** Handle notifications of completed messages */
 Handlers.prototype.completed = function(message) {
-  let that = this;
+  const that = this;
 
   // Find namespaces to index under
-  let namespaces = message.routes
+  const namespaces = message.routes
     .filter((route) => that.routeRegexp.test(route))
     .map((route) => that.routeRegexp.exec(route)[1])
     .filter((namespace) => helpers.namespaceFormat.test(namespace));
@@ -98,7 +98,7 @@ Handlers.prototype.completed = function(message) {
     }
 
     // Get `index` from `extra` section
-    let options = _.defaults({}, task.extra?.index || {}, {
+    const options = _.defaults({}, task.extra?.index || {}, {
       rank: 0,
       expires: expires.toJSON(),
       data: {},

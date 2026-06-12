@@ -79,7 +79,7 @@ export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
     renames.push([fromTestFile, fromTestFile.replace(fromVersion, toVersion)]);
   }
 
-  for (let [s, d] of renames) {
+  for (const [s, d] of renames) {
     console.log(`${s} -> ${d}`);
     if (options.runGit) {
       await run(['git', 'mv', s, d]);

@@ -220,7 +220,7 @@ export class GoogleProvider extends Provider {
         workerPool.workerPoolId, this.providerId, {});
     }
 
-    let toSpawn = await this.estimator.simple({
+    const toSpawn = await this.estimator.simple({
       workerPoolId,
       providerId: this.providerId,
       ...workerPool.config,
@@ -264,7 +264,7 @@ export class GoogleProvider extends Provider {
       const disks = [
         ...(cfg.disks || {}),
       ];
-      for (let disk of disks) {
+      for (const disk of disks) {
         if (disk.type !== 'PERSISTENT') {
           delete disk.labels;
           continue;

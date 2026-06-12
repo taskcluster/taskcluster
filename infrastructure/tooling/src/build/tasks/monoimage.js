@@ -87,7 +87,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
 
       utils.step({ title: `Building Docker Image ${tag}` });
 
-      let versionJson = requirements['docker-flow-version'];
+      const versionJson = requirements['docker-flow-version'];
       let command = ['docker', 'build'];
       if (!cmdOptions.cache) {
         command.push('--no-cache');

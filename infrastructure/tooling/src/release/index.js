@@ -19,7 +19,7 @@ export class Release {
   }
 
   async run(staging) {
-    let tasks = this.generateTasks();
+    const tasks = this.generateTasks();
 
     const taskgraph = new TaskGraph(tasks, {
       locks: {

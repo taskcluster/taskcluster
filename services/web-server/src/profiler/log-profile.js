@@ -23,7 +23,7 @@ export async function* lineIterator(stream, onBytes) {
     if (onBytes) {onBytes(chunk.byteLength);}
 
     // Combine ONLY the leftover bit from the previous chunk
-    let combined = leftover.length > 0
+    const combined = leftover.length > 0
       ? Buffer.concat([leftover, chunk])
       : chunk;
 

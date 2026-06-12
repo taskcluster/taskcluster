@@ -135,7 +135,7 @@ export const load = loader({
   handlers: {
     requires: ['queue', 'queueEvents', 'cfg', 'monitor', 'pulseClient', 'db'],
     setup: async ({ queue, queueEvents, cfg, monitor, pulseClient, db }) => {
-      let handlers = new Handlers({
+      const handlers = new Handlers({
         queue: queue,
         queueEvents: queueEvents,
         credentials: cfg.pulse,

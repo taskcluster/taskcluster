@@ -80,7 +80,7 @@ export default class Subscription {
         // also raised as exceptions and handled that way)
         bindChannel.on('error', () => {});
         try {
-          for (let { pattern, exchange } of subscriptions) {
+          for (const { pattern, exchange } of subscriptions) {
             await bindChannel.bindQueue(queueName, exchange, pattern);
           }
         } catch (err) {

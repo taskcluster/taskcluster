@@ -14,8 +14,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   let provider;
   let workerPool;
-  let providerId = 'stat';
-  let workerPoolId = 'foo/bar';
+  const providerId = 'stat';
+  const workerPoolId = 'foo/bar';
   const workerGroup = providerId;
   const workerId = 'abc123';
   const defaultWorker = {

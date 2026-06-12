@@ -9,7 +9,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
 
 suite(testing.suiteName(), () => {
   let monitorManager, monitor;
-  let errorBucket = [];
+  const errorBucket = [];
 
   suiteSetup(() => {
     monitor = MonitorManager.setup({

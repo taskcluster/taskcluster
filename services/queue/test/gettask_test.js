@@ -87,7 +87,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     await helper.queue.createTask(taskId4, task4);
     task4 = await helper.queue.task(taskId4);
 
-    let res = await helper.queue.tasks({ taskIds: [taskId2, taskId3, taskId4] });
+    const res = await helper.queue.tasks({ taskIds: [taskId2, taskId3, taskId4] });
     let tasks = res.tasks;
 
     // Convert to object for easy comparison. See `tasks-response.yml`
@@ -147,7 +147,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     await helper.queue.createTask(taskId4, task4);
     task4 = await helper.queue.status(taskId4);
 
-    let res = await helper.queue.statuses({ taskIds: [taskId2, taskId3, taskId4] });
+    const res = await helper.queue.statuses({ taskIds: [taskId2, taskId3, taskId4] });
     let statuses = res.statuses;
 
     // Convert to object for easy comparison. See `tasks-statuses-response.yml`

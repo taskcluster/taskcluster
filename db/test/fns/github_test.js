@@ -285,10 +285,10 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('create and get', async (db, isFake) => {
       await create_check(db, checks[0]);
-      let [fetched] = await db.deprecatedFns.get_github_check_by_task_id(checks[0].task_id);
+      const [fetched] = await db.deprecatedFns.get_github_check_by_task_id(checks[0].task_id);
       assert.deepEqual(fetched, checks[0]);
 
-      let [fetched2] = await db.fns.get_github_check_by_task_group_and_task_id(
+      const [fetched2] = await db.fns.get_github_check_by_task_group_and_task_id(
         checks[0].task_group_id, checks[0].task_id);
       assert.deepEqual(fetched2, checks[0]);
 
@@ -300,7 +300,7 @@ suite(testing.suiteName(), () => {
     helper.dbTest('create idempotency', async (db, isFake) => {
       await create_check(db, checks[0]);
       await create_check(db, { ...checks[0], check_run_id: 'abc' });
-      let [fetched] = await db.deprecatedFns.get_github_check_by_task_id(checks[0].task_id);
+      const [fetched] = await db.deprecatedFns.get_github_check_by_task_id(checks[0].task_id);
       assert.deepEqual(fetched, { ...checks[0], check_run_id: 'abc' });
     });
 

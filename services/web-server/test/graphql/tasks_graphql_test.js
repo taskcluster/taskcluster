@@ -84,11 +84,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     helper.withMockedEventIterator();
 
     test('subscribe works', async () => {
-      let subscriptionClient = await helper.createSubscriptionClient();
+      const subscriptionClient = await helper.createSubscriptionClient();
       const client = helper.getWebsocketClient(subscriptionClient);
 
-      let taskId = "subscribe-task-id";
-      let taskGroupId = "subscribe-task-group-id";
+      const taskId = "subscribe-task-id";
+      const taskGroupId = "subscribe-task-group-id";
 
       const payload = {
         tasksSubscriptions: {
@@ -109,7 +109,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const subscribeTasks = await helper.loadFixture('tasksSubscriptions.graphql');
 
       let tasksSubscriptionsResult;
-      let taskSubscription = client.subscribe({
+      const taskSubscription = client.subscribe({
         query: gql`${subscribeTasks}`,
         variables: {
           taskGroupId,

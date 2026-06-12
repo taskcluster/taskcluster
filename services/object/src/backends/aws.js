@@ -25,7 +25,7 @@ export class AwsBackend extends Backend {
   constructor(options) {
     super(options);
 
-    for (let prop of ['accessKeyId', 'secretAccessKey', 'bucket', 'signGetUrls']) {
+    for (const prop of ['accessKeyId', 'secretAccessKey', 'bucket', 'signGetUrls']) {
       assert(prop in options.config, `backend ${options.backendId} is missing ${prop}`);
     }
 

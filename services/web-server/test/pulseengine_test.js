@@ -44,7 +44,7 @@ suite(testing.suiteName(), () => {
 
       // now see that those appear in the output
       const received = [];
-      for await (let msg of pi) {
+      for await (const msg of pi) {
         received.push(msg);
         if (received.length === 3) {
           break;
@@ -63,7 +63,7 @@ suite(testing.suiteName(), () => {
       // start waiting for output before messages arrive..
       const result = [];
       const finished = (async () => {
-        for await (let msg of pi) {
+        for await (const msg of pi) {
           result.push(msg);
           if (result.length === 3) {
             break;

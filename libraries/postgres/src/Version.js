@@ -42,7 +42,7 @@ class Version {
    * @returns {Version}
    */
   static fromSerializable(serializable) {
-    for (let k of Object.keys(serializable)) {
+    for (const k of Object.keys(serializable)) {
       if (!ALLOWED_KEYS.includes(k)) {
         throw new Error(`unexpected version key ${k}`);
       }

@@ -70,7 +70,7 @@ export const annotateError = (query, err) => {
 
   // show hints or details from this error in the debug log, to help
   // debugging issues..
-  for (let p of ['hint', 'detail', 'where', 'code']) {
+  for (const p of ['hint', 'detail', 'where', 'code']) {
     if (err[p]) {
       err.message += `\n${p.toUpperCase()}: ${err[p]}`;
     }

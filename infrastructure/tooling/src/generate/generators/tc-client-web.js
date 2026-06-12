@@ -33,7 +33,7 @@ export const tasks = [{
 
     const template = compile(await readRepoFile('clients/client-web/templates/client.ejs'));
 
-    for (let name of Object.keys(apis)) {
+    for (const name of Object.keys(apis)) {
       const { reference } = apis[name];
 
       utils.status({ message: name });

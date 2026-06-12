@@ -8,7 +8,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: ['client-shell-artifacts'],
     run: async (requirements, utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
-      let goreleaserCmd = [
+      const goreleaserCmd = [
         'go',
         'tool',
         'goreleaser',

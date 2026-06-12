@@ -24,7 +24,7 @@ import path from 'node:path';
  *   basePath:      path.join(__dirname, 'validate')  // basePath test cases
  * }
  */
-let schemas = (options) => {
+const schemas = (options) => {
   // Validate options
   assert(options.schemasetOptions, 'Options must be given for validator');
   assert(Array.isArray(options.cases), 'Array of cases must be given');
@@ -45,14 +45,14 @@ let schemas = (options) => {
       if (options.basePath) {
         filePath = path.join(options.basePath, filePath);
       }
-      let data = fs.readFileSync(filePath, { encoding: 'utf-8' });
-      let json = JSON.parse(data);
+      const data = fs.readFileSync(filePath, { encoding: 'utf-8' });
+      const json = JSON.parse(data);
 
       // Find schema
-      let schema = libUrls.schema(libUrls.testRootUrl(), options.serviceName, testCase.schema);
+      const schema = libUrls.schema(libUrls.testRootUrl(), options.serviceName, testCase.schema);
 
       // Validate json
-      let error = validate(json, schema);
+      const error = validate(json, schema);
 
       // Test errors
       if (testCase.success) {

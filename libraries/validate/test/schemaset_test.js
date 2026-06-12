@@ -16,7 +16,7 @@ suite(testing.suiteName(), () => {
   };
 
   test('abstract schemas available', () => {
-    let schemas = makeSchemaSet().abstractSchemas();
+    const schemas = makeSchemaSet().abstractSchemas();
     assert.equal(_.keys(schemas).length, 9);
     assert(_.includes(_.keys(schemas), 'v1/default-schema.json'));
     assert.equal(
@@ -26,7 +26,7 @@ suite(testing.suiteName(), () => {
   });
 
   test('absolute schemas available', () => {
-    let schemas = makeSchemaSet().absoluteSchemas(rootUrl);
+    const schemas = makeSchemaSet().absoluteSchemas(rootUrl);
     assert.equal(_.keys(schemas).length, 9);
     assert(_.includes(_.keys(schemas), 'v1/default-schema.json'));
     assert.equal(

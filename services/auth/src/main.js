@@ -123,7 +123,7 @@ const load = Loader({
         pulseClient,
       });
 
-      let signatureValidator = createSignatureValidator({
+      const signatureValidator = createSignatureValidator({
         expandScopes: (scopes) => resolver.resolve(scopes),
         clientLoader: (clientId) => resolver.loadClient(clientId),
         monitor: monitor.childMonitor('signature-validator'),
