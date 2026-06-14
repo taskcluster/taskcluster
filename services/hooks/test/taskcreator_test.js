@@ -226,6 +226,47 @@ suite(testing.suiteName(), () => {
       throw new Error('should have seen an error from .fire');
     });
 
+    test('firing a hook where the queue throws a network error stores a serialized error', async () => {
+      const hook = await createTestHook([], { firedBy: '${firedBy}' });
+      const taskId = taskcluster.slugid();
+
+      // Build an error with the same shape a failed `got` request carries
+      const circErr = new Error('connect ECONNREFUSED taskcluster-queue:80');
+      circErr.code = 'ECONNREFUSED';
+      const agent = { sockets: {} };
+      const clientRequest = { agent };
+      agent.sockets['taskcluster-queue:80:'] = [{ _httpMessage: clientRequest }];
+      circErr.options = {
+        agent: { http: agent, https: undefined, http2: undefined },
+      };
+
+      creator.fakeCreate = false;
+      const realCreateTask = taskcluster.Queue.prototype.createTask;
+      taskcluster.Queue.prototype.createTask = async () => { throw circErr; };
+
+      let caught;
+      try {
+        await creator.fire(hook, { firedBy: 'me' }, { taskId });
+      } catch (err) {
+        caught = err;
+      } finally {
+        taskcluster.Queue.prototype.createTask = realCreateTask;
+      }
+
+      assert.ok(caught, 'expected fire() to throw');
+      assert.ok(caught === circErr, 'should rethrow the original queue error');
+
+      const [lf] = await helper.db.fns.get_last_fire(
+        hook.hookGroupId,
+        hook.hookId,
+        taskId,
+      );
+      assume(lf.result).to.equal('error');
+      assume(lf.error).to.match(/ECONNREFUSED/);
+      assume(lf.fired_by).to.equal('me');
+      assertFireLogged({ firedBy: 'me', taskId, result: 'failure' });
+    });
+
     test('firing a real task that sets its own task times works', async () => {
       const hook = _.cloneDeep(defaultHook);
       hook.task.then.created = { $fromNow: '0 seconds' };

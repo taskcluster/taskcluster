@@ -141,10 +141,17 @@ export class TaskCreator {
         // of the LastFire table
         let lfError;
 
-        if (typeof err === 'object') {
-          lfError = JSON.stringify(err, null, 2);
+        if (err && typeof err === 'object') {
+          lfError = JSON.stringify({
+            name: err.name,
+            message: err.message,
+            code: err.code,
+            statusCode: err.statusCode ?? err.response?.statusCode,
+            url: err.options?.url?.href,
+            body: err.body,
+          }, null, 2);
         } else {
-          lfError = err.toString();
+          lfError = String(err);
         }
         if (lfError.length > 256 * 1024 / 2) {
           lfError = lfError.substring(0, 256 * 1024 / 2);
