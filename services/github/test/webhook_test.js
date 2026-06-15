@@ -220,7 +220,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // Verify event-specific fields
       for (const field of specificFields) {
-        assert.ok(Object.prototype.hasOwnProperty.call(payload.body, field),
+        assert.ok(Object.hasOwn(payload.body, field),
           `${file} should have event-specific field: ${field}`);
       }
     }
