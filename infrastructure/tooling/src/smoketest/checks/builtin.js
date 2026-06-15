@@ -20,7 +20,7 @@ export const tasks = [];
       'ping-queue',
     ],
     provides: [
-      'target-built-in/' + taskType,
+      `target-built-in/${taskType}`,
     ],
     run: async (requirements, utils) => {
       const task = {
@@ -30,15 +30,15 @@ export const tasks = [];
         deadline: taskcluster.fromNowJSON('2 minutes'),
         schedulerId: 'smoketest',
         metadata: {
-          name: 'Smoketest built-in/' + taskType,
-          description: 'built-in/' + taskType + ' task created during smoketest',
+          name: `Smoketest built-in/${taskType}`,
+          description: `built-in/${taskType} task created during smoketest`,
           owner: 'smoketest@taskcluster.net',
           source: 'https://taskcluster.net',
         },
         payload: {},
       };
       const taskId = taskcluster.slugid();
-      utils.status({ message: 'built-in/' + taskType + ' taskId: ' + taskId });
+      utils.status({ message: `built-in/${taskType} taskId: ${taskId}` });
       const queue = new taskcluster.Queue(taskcluster.fromEnvVars());
       await queue.createTask(taskId, task);
       const pollForStatusStart = new Date();
@@ -46,13 +46,13 @@ export const tasks = [];
         const status = await queue.status(taskId);
         if (status.status.state === 'pending' || status.status.state === 'running') {
           utils.status({
-            message: 'Polling built-in/' + taskType + ' task. Current status: ' + status.status.state,
+            message: `Polling built-in/${taskType} task. Current status: ${status.status.state}`,
           });
           await new Promise(resolve => setTimeout(resolve, 1000));
         } else if (status.status.state === successCondition) {
           return;
         } else {
-          throw new Error('Task finished with status ' + status.status.state);
+          throw new Error(`Task finished with status ${status.status.state}`);
         }
       }
       throw new Error('Deadline exceeded');

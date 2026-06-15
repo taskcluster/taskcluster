@@ -109,7 +109,7 @@ suite(testing.suiteName(), () => {
     const { header } = hawk.client.header(reqUrl, 'GET', content);
 
     const bewit = hawk.uri.getBewit(reqUrl, content);
-    const bewitUrl = reqUrl + '?bewit=' + bewit;
+    const bewitUrl = `${reqUrl}?bewit=${bewit}`;
     return Promise.all([
       request
         .get(reqUrl)

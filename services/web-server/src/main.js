@@ -264,7 +264,7 @@ const load = loader(
 
           debug('Expiring authorization codes');
           const count = (await db.fns.expire_authorization_codes(now))[0].expire_authorization_codes;
-          debug('Expired ' + count + ' authorization codes');
+          debug(`Expired ${count} authorization codes`);
         });
       },
     },
@@ -278,7 +278,7 @@ const load = loader(
 
           debug('Expiring access tokens');
           const count = (await db.fns.expire_access_tokens(now))[0].expire_access_tokens;
-          debug('Expired ' + count + ' access tokens');
+          debug(`Expired ${count} access tokens`);
         });
       },
     },
@@ -289,7 +289,7 @@ const load = loader(
         return monitor.oneShot('cleanup-expire-session-storage', async () => {
           debug('Expiring session storage entries');
           const count = (await db.fns.expire_sessions())[0].expire_sessions;
-          debug('Expired ' + count + ' session storage entries');
+          debug(`Expired ${count} session storage entries`);
         });
       },
     },

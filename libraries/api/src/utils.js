@@ -22,7 +22,7 @@ export const cleanRouteAndParams = (route) => {
     if (match.endsWith('?')) {
       optionalParams.push(param);
     }
-    return '/<' + param + '>';
+    return `/<${param}>`;
   });
   return [route, params, optionalParams];
 };

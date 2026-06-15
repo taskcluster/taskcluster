@@ -254,7 +254,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       await makeArtifact({ ...s3Artifact, putFn: null });
 
       helper.scopes(
-        'queue:list-artifacts:' + taskId + ':0',
+        `queue:list-artifacts:${taskId}:0`,
       );
 
       const r2 = await helper.queue.listArtifacts(taskId, 0);
@@ -266,7 +266,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       await makeArtifact({ ...s3Artifact, putFn: null });
 
       helper.scopes(
-        'queue:list-artifacts:' + taskId,
+        `queue:list-artifacts:${taskId}`,
       );
 
       const r3 = await helper.queue.listLatestArtifacts(taskId);
@@ -387,7 +387,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       await makeArtifact({ ...s3Artifact, putFn: null });
 
       helper.scopes(
-        'queue:list-artifacts:' + taskId + ':0',
+        `queue:list-artifacts:${taskId}:0`,
       );
 
       const res = await helper.queue.artifactInfo(taskId, 0, s3Artifact.name);
@@ -412,7 +412,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       await makeArtifact({ ...s3Artifact, putFn: null });
 
       helper.scopes(
-        'queue:list-artifacts:' + taskId,
+        `queue:list-artifacts:${taskId}`,
       );
 
       const res = await helper.queue.latestArtifactInfo(taskId, s3Artifact.name);
@@ -431,7 +431,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       });
 
       helper.scopes(
-        'queue:list-artifacts:' + taskId + ':0',
+        `queue:list-artifacts:${taskId}:0`,
       );
 
       const list = await helper.queue.listArtifacts(taskId, 0);
@@ -447,7 +447,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       await makeArtifact({ ...s3Artifact, putFn: null });
 
       helper.scopes(
-        'queue:list-artifacts:' + taskId + ':0',
+        `queue:list-artifacts:${taskId}:0`,
       );
 
       const list = await helper.queue.listArtifacts(taskId, 0);

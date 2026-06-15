@@ -56,7 +56,7 @@ suite(testing.suiteName(), () => {
       }
       const user = new User();
       user.identity = identity;
-      user.addRole('is:' + userId);
+      user.addRole(`is:${userId}`);
       return user;
     }
   }

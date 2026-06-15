@@ -47,7 +47,7 @@ Handlers.prototype.setup = async function() {
   assert(this.pq === null, 'Cannot setup twice!');
 
   // Create regular expression for parsing routes
-  this.routeRegexp = new RegExp('^' + this.routePrefix + '\\.(.*)$');
+  this.routeRegexp = new RegExp(`^${this.routePrefix}\\.(.*)$`);
 
   this.pq = await consume(
     {

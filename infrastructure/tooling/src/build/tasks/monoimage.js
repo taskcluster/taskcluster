@@ -95,7 +95,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
       command = command.concat([
         '--progress', 'plain',
         '--tag', tag,
-        '--build-arg', 'DOCKER_FLOW_VERSION=' + versionJson,
+        '--build-arg', `DOCKER_FLOW_VERSION=${versionJson}`,
         '.']);
       await execCommand({
         command,
@@ -121,7 +121,7 @@ const generateMonoimageTasks = ({ tasks, baseDir, cmdOptions, credentials, logsD
     ],
     locks: ['git'],
     run: async (requirements, utils) => {
-      const tag = requirements['monoimage-docker-image'] + '-devel';
+      const tag = `${requirements['monoimage-docker-image']}-devel`;
 
       utils.step({ title: 'Check for Existing Images' });
 

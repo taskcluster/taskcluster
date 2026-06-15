@@ -90,7 +90,7 @@ export const modifyRepoJSON = async (filename, modifier) => {
   return modifyRepoFile(filename, async contents => {
     const data = JSON.parse(contents);
     await modifier(data);
-    return JSON.stringify(data, null, 2) + '\n';
+    return `${JSON.stringify(data, null, 2)}\n`;
   });
 };
 

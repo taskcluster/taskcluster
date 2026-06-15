@@ -29,7 +29,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], (mock, skipping) => {
   let secret, s3;
 
   // unique object name prefix for this test run
-  const prefix = taskcluster.slugid() + '/';
+  const prefix = `${taskcluster.slugid()}/`;
 
   suiteSetup(async () => {
     await helper.load('cfg');

@@ -403,7 +403,7 @@ export class PulsePublisher {
     if (err) {
       debug('Failed to validate message: %j against schema: %s, error: %j',
         message, entry.schema, err);
-      throw new Error('Message validation failed. ' + err);
+      throw new Error(`Message validation failed. ${err}`);
     }
   }
 

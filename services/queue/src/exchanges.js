@@ -184,7 +184,7 @@ const taskGroupRoutingKeyBuilder = (message, routing) => ({
 /** Build list of routing keys to CC */
 const commonCCBuilder = (message, routes) => {
   assert(Array.isArray(routes), 'Routes must be an array');
-  return routes.map(route => 'route.' + route);
+  return routes.map(route => `route.${route}`);
 };
 
 /** Task defined exchange */

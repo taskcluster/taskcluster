@@ -71,8 +71,8 @@ export default ({ helper, skipping, namespace }) => {
       if (!delivered) {
         debugPulseAssertion(`${client.consumers.length} consumers registered:`);
         client.consumers.forEach(cons =>
-          debugPulseAssertion('- ' + cons.bindings.map(({ exchange, routingKeyPattern }) =>
-            `${exchange} - ${routingKeyPattern}`).join('; ')));
+          debugPulseAssertion(`- ${cons.bindings.map(({ exchange, routingKeyPattern }) =>
+            `${exchange} - ${routingKeyPattern}`).join('; ')}`));
 
         throw new Error('Fake message not delivered to any consumers');
       }

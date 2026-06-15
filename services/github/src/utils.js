@@ -221,7 +221,7 @@ export const extractLog = async (stream, headLines = 20, tailLines = 200, maxPay
 
   const headLog = head.join('\n');
   const tailLog = tail.join('\n');
-  const fullLog = tailLog ? headLog + '\n' + tailLog : headLog;
+  const fullLog = tailLog ? `${headLog}\n${tailLog}` : headLog;
 
   // Small log: return full content if it fits
   if (totalLines <= headLines + tailLines && fullLog.length <= maxPayloadLength) {

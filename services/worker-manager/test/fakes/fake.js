@@ -90,7 +90,7 @@ export class FakeCloud {
     }
     for (const error of this.ajv.errors) {
       if (error.params.additionalProperty) {
-        error.message += ': ' + JSON.stringify(error.params.additionalProperty);
+        error.message += `: ${JSON.stringify(error.params.additionalProperty)}`;
       }
     }
     throw new Error([

@@ -1670,7 +1670,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, COMMIT_SHA);
-          debug('Created task group: ' + args.target_url);
+          debug(`Created task group: ${args.target_url}`);
           assert(args.target_url.startsWith(URL_PREFIX));
           const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
@@ -2231,7 +2231,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, COMMIT_SHA);
-          debug('Created task group: ' + args.target_url);
+          debug(`Created task group: ${args.target_url}`);
           assert(args.target_url.startsWith(URL_PREFIX));
           const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
@@ -2273,7 +2273,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, COMMIT_SHA);
-          debug('Created task group: ' + args.target_url);
+          debug(`Created task group: ${args.target_url}`);
           assert(args.target_url.startsWith(URL_PREFIX));
           const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);
@@ -2341,7 +2341,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           assert.equal(args.owner, 'TaskclusterRobot');
           assert.equal(args.repo, 'hooks-testing');
           assert.equal(args.sha, COMMIT_SHA);
-          debug('Created task group: ' + args.target_url);
+          debug(`Created task group: ${args.target_url}`);
           assert(args.target_url.startsWith(URL_PREFIX));
           const taskGroupId = args.target_url.substr(URL_PREFIX.length);
           assert.equal(taskGroupId, TASKGROUPID);

@@ -63,7 +63,7 @@ const schemas = (options) => {
           `Schema doesn\'t match test for ${testCase.path}: ${error}`);
       } else {
         assert(error !== null,
-          'Schema matches unexpectedly test for ' + testCase.path);
+          `Schema matches unexpectedly test for ${testCase.path}`);
       }
     });
   });

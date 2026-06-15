@@ -19,7 +19,7 @@ export const dollarQuote = str => {
     if (str.indexOf(quote) === -1) {
       return quote + str + quote;
     }
-    i = i + 'x';
+    i = `${i}x`;
   }
 };
 
@@ -59,7 +59,7 @@ export const annotateError = (query, err) => {
       line++;
     }
     if (line < queryLines.length) {
-      const caret = " ".repeat(position) + "^";
+      const caret = `${" ".repeat(position)}^`;
       queryLines.splice(line + 1, 0, caret);
     }
 

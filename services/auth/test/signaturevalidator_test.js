@@ -77,7 +77,7 @@ suite(testing.suiteName(), () => {
       if (input.authorization) {
         const creds = input.authorization.credentials || {};
         input.authorization.credentials = _.defaults({}, creds, {
-          key: creds.id + '-secret',
+          key: `${creds.id}-secret`,
           algorithm: 'sha256',
         });
 
@@ -89,14 +89,14 @@ suite(testing.suiteName(), () => {
         }
 
         // create the authorization "header"
-        const url = 'https://' + input.host + input.resource;
+        const url = `https://${input.host}${input.resource}`;
         input.authorization = hawk.client.header(
           url, input.method, input.authorization).header;
       }
 
       if (input.bewit) {
         input.bewit = _.defaults({}, input.bewit, {
-          key: input.bewit.id + '-secret',
+          key: `${input.bewit.id}-secret`,
           algorithm: 'sha256',
         });
 
@@ -106,7 +106,7 @@ suite(testing.suiteName(), () => {
             .toString('base64');
         }
 
-        const bewit = hawk.client.getBewit('https://' + input.host + input.resource, {
+        const bewit = hawk.client.getBewit(`https://${input.host}${input.resource}`, {
           credentials: {
             id: input.bewit.id,
             key: input.bewit.key,
@@ -115,7 +115,7 @@ suite(testing.suiteName(), () => {
           ttlSec: 15 * 60,
           ext: input.bewit.ext,
         });
-        input.resource += '?bewit=' + bewit;
+        input.resource += `?bewit=${bewit}`;
         delete input.bewit;
       }
 
@@ -156,7 +156,7 @@ suite(testing.suiteName(), () => {
         start,
         expiry: two_hours,
         scopes: [],
-        accessToken: id + '-secret',
+        accessToken: `${id}-secret`,
       });
 
       // Construct certificate
@@ -180,16 +180,16 @@ suite(testing.suiteName(), () => {
           .digest('base64');
       } else {
         const sig = crypto.createHmac('sha256', options.accessToken);
-        sig.update('version:' + cert.version + '\n');
+        sig.update(`version:${cert.version}\n`);
         if (options.credentialName && !options.omitClientIdFromSig) {
-          sig.update('clientId:' + options.credentialName + '\n');
+          sig.update(`clientId:${options.credentialName}\n`);
         }
         if (options.issuer && !options.omitIssuerFromSig) {
-          sig.update('issuer:' + options.issuer + '\n');
+          sig.update(`issuer:${options.issuer}\n`);
         }
-        sig.update('seed:' + cert.seed + '\n');
-        sig.update('start:' + cert.start + '\n');
-        sig.update('expiry:' + cert.expiry + '\n');
+        sig.update(`seed:${cert.seed}\n`);
+        sig.update(`start:${cert.start}\n`);
+        sig.update(`expiry:${cert.expiry}\n`);
         sig.update('scopes:\n');
         sig.update(cert.scopes.join('\n'));
         cert.signature = sig.digest('base64');
@@ -761,7 +761,7 @@ suite(testing.suiteName(), () => {
   }, failed('Unauthorized: Bad mac'));
 
   makeTest('invalid: bogus bewit', {
-    resource: '/?bewit=' + slugid.v4(),
+    resource: `/?bewit=${slugid.v4()}`,
   }, failed('Bad Request: Invalid bewit structure'));
 
   makeTest('invalid: bewit with unknown client', {

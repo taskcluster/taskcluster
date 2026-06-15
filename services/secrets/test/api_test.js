@@ -180,8 +180,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   test('Expire secrets', async () => {
     const client = await helper.client('captain-read-write');
-    const expireKey = 'captain:' + slugid.v4();
-    const saveKey = 'captain:' + slugid.v4();
+    const expireKey = `captain:${slugid.v4()}`;
+    const saveKey = `captain:${slugid.v4()}`;
 
     helper.load.save();
 

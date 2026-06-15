@@ -206,7 +206,7 @@ helper.assertSatisfiesSchema = async (data, id) => {
 
   const validator_error = validator(data, id);
   if (validator_error) {
-    assert(false, "validation error:\n" + validator_error);
+    assert(false, `validation error:\n${validator_error}`);
   }
 };
 

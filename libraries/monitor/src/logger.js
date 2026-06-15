@@ -169,7 +169,7 @@ export class Logger {
       delete fields.requestId;
     }
 
-    this.destination.write(stringify({
+    this.destination.write(`${stringify({
       Timestamp: Date.now() * 1000000,
       Type: type,
       Logger: this.name,
@@ -186,7 +186,7 @@ export class Logger {
         service: this.service,
         version: this.taskclusterVersion,
       },
-    }) + '\n');
+    })}\n`);
   }
 
   emerg(type, fields) {

@@ -236,11 +236,11 @@ builder.declare({
     const errors = [];
 
     for (let index = 0; index < ajv.errors.length; index++) {
-      errors.push(' * Property ' + ajv.errors[index].dataPath + ' ' + ajv.errors[index].message);
+      errors.push(` * Property ${ajv.errors[index].dataPath} ${ajv.errors[index].message}`);
     }
 
     return res.reportError('InputError', '{{message}}', {
-      message: 'triggerSchema is not a valid JSON schema:\n' + errors.join('\n'),
+      message: `triggerSchema is not a valid JSON schema:\n${errors.join('\n')}`,
     });
   }
 
@@ -250,7 +250,7 @@ builder.declare({
   });
   if (denied) {
     return res.reportError('InputError', '{{message}}', {
-      message: 'One or more of the exchanges below have been denied access to hooks\n' + JSON.stringify(hookDef.bindings),
+      message: `One or more of the exchanges below have been denied access to hooks\n${JSON.stringify(hookDef.bindings)}`,
     });
   }
 
@@ -297,7 +297,7 @@ builder.declare({
 
     if (!_.isEqual(hookDef, hookUtils.definition(existingHook))) {
       return res.reportError('RequestConflict',
-        'hook `' + hookGroupId + '/' + hookId + '` already exists.',
+        `hook \`${hookGroupId}/${hookId}\` already exists.`,
         {});
     }
   }
@@ -359,11 +359,11 @@ builder.declare({
     const errors = [];
 
     for (let index = 0; index < ajv.errors.length; index++) {
-      errors.push(' * Property ' + ajv.errors[index].dataPath + ' ' + ajv.errors[index].message);
+      errors.push(` * Property ${ajv.errors[index].dataPath} ${ajv.errors[index].message}`);
     }
 
     return res.reportError('InputError', '{{message}}', {
-      message: 'triggerSchema is not a valid JSON schema:\n' + errors.join('\n'),
+      message: `triggerSchema is not a valid JSON schema:\n${errors.join('\n')}`,
     });
   }
 
@@ -385,7 +385,7 @@ builder.declare({
   });
   if (denied) {
     return res.reportError('InputError', '{{message}}', {
-      message: 'One or more of the exchanges below have been denied access to hooks\n' + JSON.stringify(hookDef.bindings),
+      message: `One or more of the exchanges below have been denied access to hooks\n${JSON.stringify(hookDef.bindings)}`,
     });
   }
 
