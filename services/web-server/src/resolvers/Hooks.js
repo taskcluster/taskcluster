@@ -33,40 +33,40 @@ export default {
     UNKNOWN: 'unknown', // task not found
   },
   Hook: {
-    status({ hookGroupId, hookId }, args, { loaders }) {
+    status({ hookGroupId, hookId }, _args, { loaders }) {
       // this is deprecated
       return loaders.hookStatus.load({ hookGroupId, hookId });
     },
-    lastFire({ hookGroupId, hookId }, args, { loaders }) {
+    lastFire({ hookGroupId, hookId }, _args, { loaders }) {
       return loaders.hookLastFires.load({
         hookGroupId, hookId, connection: { limit: 1 },
       }).then(({ lastFires }) => lastFires?.[0]);
     },
   },
   HookGroup: {
-    hooks({ hookGroupId }, args, { loaders }) {
+    hooks({ hookGroupId }, _args, { loaders }) {
       return loaders.hooks.load({ hookGroupId });
     },
   },
   Query: {
-    hookGroups(parent, { hookGroupId }, { loaders }) {
+    hookGroups(_parent, { hookGroupId }, { loaders }) {
       return loaders.hookGroups.load({ hookGroupId });
     },
-    hooks(parent, { hookGroupId }, { loaders }) {
+    hooks(_parent, { hookGroupId }, { loaders }) {
       return loaders.hooks.load({ hookGroupId });
     },
-    hook(parent, { hookGroupId, hookId }, { loaders }) {
+    hook(_parent, { hookGroupId, hookId }, { loaders }) {
       return loaders.hook.load({ hookGroupId, hookId });
     },
-    hookStatus(parent, { hookGroupId, hookId }, { loaders }) {
+    hookStatus(_parent, { hookGroupId, hookId }, { loaders }) {
       return loaders.hookStatus.load({ hookGroupId, hookId });
     },
-    hookLastFires(parent, { hookGroupId, hookId, connection, options }, { loaders }) {
+    hookLastFires(_parent, { hookGroupId, hookId, connection, options }, { loaders }) {
       return loaders.hookLastFires.load({ hookGroupId, hookId, connection, options });
     },
   },
   Mutation: {
-    async triggerHook(parent, { hookGroupId, hookId, payload }, { clients }) {
+    async triggerHook(_parent, { hookGroupId, hookId, payload }, { clients }) {
       const { status } = await clients.hooks.triggerHook(
         hookGroupId,
         hookId,
@@ -75,13 +75,13 @@ export default {
 
       return status;
     },
-    createHook(parent, { hookGroupId, hookId, payload }, { clients }) {
+    createHook(_parent, { hookGroupId, hookId, payload }, { clients }) {
       return clients.hooks.createHook(hookGroupId, hookId, payload);
     },
-    updateHook(parent, { hookGroupId, hookId, payload }, { clients }) {
+    updateHook(_parent, { hookGroupId, hookId, payload }, { clients }) {
       return clients.hooks.updateHook(hookGroupId, hookId, payload);
     },
-    async deleteHook(parent, { hookGroupId, hookId }, { clients }) {
+    async deleteHook(_parent, { hookGroupId, hookId }, { clients }) {
       await clients.hooks.removeHook(hookGroupId, hookId);
 
       return { hookGroupId, hookId };

@@ -13,7 +13,7 @@ import { hookUtils } from '../src/utils.js';
 suite(testing.suiteName(), () => {
   helper.secrets.mockSuite('TaskCreator', [], function(mock, skipping) {
     helper.withDb(mock, skipping);
-    helper.resetTables(mock, skipping);
+    helper.resetTables();
 
     this.slow(500);
 
@@ -98,7 +98,7 @@ suite(testing.suiteName(), () => {
       return creator.lastCreateTask.task;
     };
 
-    const assertNoTask = async taskId => {
+    const assertNoTask = async () => {
       assert(!creator.lastCreateTask);
     };
 
@@ -181,7 +181,7 @@ suite(testing.suiteName(), () => {
       );
       const taskId = taskcluster.slugid();
       const res = await creator.fire(hook, { firedBy: 'schedule' }, { taskId });
-      await assertNoTask(taskId);
+      await assertNoTask();
       assertFireLogged({ firedBy: "schedule", taskId, result: 'declined' });
       assert.ok(!res, `expected falsy return from declined fire(), got ${JSON.stringify(res)}`);
     });

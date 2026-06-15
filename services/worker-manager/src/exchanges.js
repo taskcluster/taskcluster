@@ -68,7 +68,7 @@ const buildCommonRoutingKey = (options) => {
 
 const commonMessageBuilder = (message) => message;
 
-const commonRoutingKeyBuilder = (message, routing) => {
+const commonRoutingKeyBuilder = (message, _routing) => {
   const mapping = {
     workerGroup: message.workerGroup,
     providerId: message.providerId,

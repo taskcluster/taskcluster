@@ -11,9 +11,9 @@ const sorted = (arr) => {
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServers(skipping);
+  helper.resetTables();
 
   test('get when blob is empty', async () => {
     assert.deepEqual(await helper.db.fns.get_roles(), []);

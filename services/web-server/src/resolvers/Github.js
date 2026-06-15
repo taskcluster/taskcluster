@@ -1,9 +1,9 @@
 export default {
   Query: {
-    githubRepository(parent, { owner, repo }, { loaders }) {
+    githubRepository(_parent, { owner, repo }, { loaders }) {
       return loaders.githubRepository.load({ owner, repo });
     },
-    renderTaskclusterYml(parent, payload, { loaders }) {
+    renderTaskclusterYml(_parent, payload, { loaders }) {
       return loaders.renderTaskclusterYml.load(payload);
     },
   },

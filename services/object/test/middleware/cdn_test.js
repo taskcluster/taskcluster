@@ -7,12 +7,12 @@ import taskcluster from '@taskcluster/client';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.resetTables(mock, skipping);
-  helper.withBackends(mock, skipping);
-  helper.withMiddleware(mock, skipping, [
+  helper.resetTables();
+  helper.withBackends(skipping);
+  helper.withMiddleware(skipping, [
     { 'middlewareType': 'cdn', regexp: "^public/.*", baseUrl: "https://cdn.example.com/" },
   ]);
-  helper.withServer(mock, skipping);
+  helper.withServer(skipping);
 
   const makeObject = async name => {
     const data = crypto.randomBytes(128);

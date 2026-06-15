@@ -6,7 +6,7 @@ import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withServer(mock, skipping);
+  helper.withServer(skipping);
 
   const SECRET_NAME = `captain:${slugid.v4()}`;
   const testValueFoo = {

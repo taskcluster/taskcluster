@@ -10,7 +10,7 @@ tasks.push({
   title: 'Update worker-runner README file',
   requires: ['references-json', 'target-go-version'],
   provides: ['target-worker-runner'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, utils) => {
     const binary = path.join(tempDir, 'w-r-generate-docs');
     // we have to build this binary, rather than just using `go run`, because otherwise `go run` spews
     // its own output into stdout

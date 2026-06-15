@@ -10,8 +10,6 @@ const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-
  * of tests.
  */
 export const testDataInlineUpload = ({
-  mock, skipping,
-
   // optional title suffix
   title,
 
@@ -42,7 +40,7 @@ export const testDataInlineUpload = ({
       backend = backends.get(backendId);
     });
 
-    const createUpload = async ({ name, data, proposedUploadMethods }) => {
+    const createUpload = async ({ name, proposedUploadMethods }) => {
       const expires = taskcluster.fromNow('1 hour');
       const uploadId = taskcluster.slugid();
 

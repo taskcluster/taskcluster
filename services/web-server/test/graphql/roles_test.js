@@ -6,9 +6,9 @@ import helper from '../helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withClients(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withClients(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   suite('Roles GraphQL', () => {
     test('role query works', async () => {

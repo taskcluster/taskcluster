@@ -7,7 +7,7 @@ import taskcluster from '@taskcluster/client';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withServer(mock, skipping);
+  helper.withServer(skipping);
 
   test('ping', () => {
     return helper.apiClient.ping();
@@ -98,7 +98,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('purgeRequest caching', async () => {
-    sinon.stub(helper.db.fns, 'purge_requests_wpid').callsFake(async (query) => []);
+    sinon.stub(helper.db.fns, 'purge_requests_wpid').callsFake(async () => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await helper.apiClient.purgeRequests('pp/wt', { since });
@@ -119,7 +119,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     sinon.stub(helper.db.fns, 'purge_requests_wpid')
       .onFirstCall().throws(new Error('uhoh'))
-      .onSecondCall().callsFake(async (query) => []);
+      .onSecondCall().callsFake(async () => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await assert.rejects(() => client.purgeRequests('pp/wt', { since }));

@@ -14,8 +14,8 @@ const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 
 /** ZeroCache is an LRU cache instance that contains nothing for caching is disabled */
 const ZeroCache = {
-  get: (k) => null,
-  set: (k, v) => null,
+  get: (_k) => null,
+  set: (_k, _v) => null,
 };
 
 class ScopeResolver extends events.EventEmitter {
@@ -136,7 +136,7 @@ class ScopeResolver extends events.EventEmitter {
       // no need for both _clientPq and _rolePq to call this.reload()
       // for the same reconnection..
       onConnected: () => {},
-      handleMessage: m => this.reloadRoles(),
+      handleMessage: () => this.reloadRoles(),
     });
   }
 

@@ -5,7 +5,7 @@
  * @param {import('express').Response} res
  * @param {import('express').NextFunction} next
  */
-export const applySecurityHeaders = (req, res, next) => {
+export const applySecurityHeaders = (_req, res, next) => {
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   next();

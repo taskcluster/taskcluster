@@ -6,7 +6,7 @@ import Github from '../src/login/strategies/github.js';
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withGithubClient();
-  helper.resetTables(mock, skipping);
+  helper.resetTables();
 
   suite(testing.suiteName(), () => {
     const makeUser = (userId) => {

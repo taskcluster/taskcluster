@@ -20,10 +20,10 @@ const __dirname = new URL('.', import.meta.url).pathname;
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
-  helper.withFakeNotify(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withFakeQueue(skipping);
+  helper.withFakeNotify(skipping);
+  helper.resetTables();
 
   let provider;
   const providerId = 'azure';
@@ -2847,8 +2847,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           const intermediateCert = getIntermediateCert();
 
           // Disable downloads
-          provider.downloadBinaryResponse = (url) => {
-            return new Promise((resolve, reject) => {
+          provider.downloadBinaryResponse = (_url) => {
+            return new Promise((_resolve, reject) => {
               reject(Error('Mocked downloadBinaryResponse'));
             });
           };
@@ -2939,7 +2939,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           const intermediateCert = getIntermediateCert();
 
           // Download is not a binary certificate
-          provider.downloadBinaryResponse = async url =>
+          provider.downloadBinaryResponse = async () =>
             '<html><body><h1>Apache2 Default Page</h1></body></html>';
 
           await assert.rejects(() =>

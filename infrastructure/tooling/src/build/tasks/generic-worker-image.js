@@ -147,7 +147,7 @@ export default ({ tasks, baseDir, cmdOptions, credentials, logsDir }) => {
     provides: [
       `generic-worker-image`,
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       return {
         'generic-worker-image': `Generic worker docker image: ${requirements['generic-worker-push']}`,
       };

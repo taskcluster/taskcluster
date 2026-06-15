@@ -17,12 +17,12 @@ const launch = () => {
   });
 
   // Respond 'Hello World' for /test
-  app.get('/test', (req, res) => {
+  app.get('/test', (_req, res) => {
     res.status(200).send('Hello World');
   });
 
   // Respond request count in process for /request-count
-  app.get('/request-count', (req, res) => {
+  app.get('/request-count', (_req, res) => {
     global_state += 1;
     res.status(200).send(`Count: ${global_state}`);
   });

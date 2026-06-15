@@ -147,7 +147,7 @@ class FakeClient {
 }
 
 class FakePulseConsumer {
-  constructor({ client, bindings, queueName, prefetch, ephemeral, onConnected, handleMessage, ...queueOptions }) {
+  constructor({ client, bindings, queueName, ephemeral, onConnected, handleMessage }) {
     assert(handleMessage, 'Must provide a message handler function');
 
     this.client = client;

@@ -10,7 +10,7 @@
  * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */
 export const perRequestContext = ({ entry, context }) => {
-  return (req, res, next) => {
+  return (req, _res, next) => {
     /** @type {{ [key: string | symbol]: any }} */
     const cache = {};
     req.tcContext = new Proxy(context, {
@@ -32,10 +32,10 @@ export const perRequestContext = ({ entry, context }) => {
         });
         return cache[prop];
       },
-      set(target, prop, value) {
+      set(_target, _prop, _value) {
         throw new Error('Cannot set values in context inside a handler!');
       },
-      deleteProperty(target, prop) {
+      deleteProperty(_target, _prop) {
         throw new Error('Cannot delete values in context inside a handler!');
       },
     });

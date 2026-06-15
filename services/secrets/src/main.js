@@ -32,8 +32,8 @@ const load = loader({
   },
 
   schemaset: {
-    requires: ['cfg'],
-    setup: ({ cfg }) => new SchemaSet({
+    requires: [],
+    setup: () => new SchemaSet({
       serviceName: 'secrets',
     }),
   },
@@ -52,8 +52,8 @@ const load = loader({
   },
 
   generateReferences: {
-    requires: ['cfg', 'schemaset'],
-    setup: async ({ cfg, schemaset }) => libReferences.fromService({
+    requires: ['schemaset'],
+    setup: async ({ schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), MonitorManager.reference('secrets'), MonitorManager.metricsReference('secrets')],
     }).then(ref => ref.generateReferences()),
@@ -91,8 +91,8 @@ const load = loader({
   },
 
   expire: {
-    requires: ['cfg', 'db', 'monitor'],
-    setup: ({ cfg, db, monitor }, ownName) => {
+    requires: ['db', 'monitor'],
+    setup: ({ db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Expiring secrets');
         const records = (await db.fns.expire_secrets_return_names());

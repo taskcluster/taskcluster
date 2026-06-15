@@ -8,8 +8,6 @@ import { load, testObjectName } from '../helper/index.js';
  * of tests.
  */
 export const testSimpleDownloadMethod = ({
-  mock, skipping,
-
   // optional title suffix
   title,
 

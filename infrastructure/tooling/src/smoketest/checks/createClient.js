@@ -17,7 +17,7 @@ tasks.push({
   provides: [
     'target-client',
   ],
-  run: async (requirements, utils) => {
+  run: async (_requirements, utils) => {
     const auth = new taskcluster.Auth(taskcluster.fromEnvVars());
     const randomId = taskcluster.slugid();
 

@@ -44,7 +44,7 @@ export class StaticProvider extends Provider {
     return worker;
   }
 
-  async updateWorker({ workerPool, worker, input }) {
+  async updateWorker({ worker, input }) {
     await worker.update(this.db, worker => {
       worker.expires = input.expires;
       worker.capacity = input.capacity;

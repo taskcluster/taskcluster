@@ -99,7 +99,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: [
       'target-websocktunnel',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       return {
         'target-websocktunnel': `Websocktunnel docker image: ${requirements['websocktunnel-docker-image']}`,
       };

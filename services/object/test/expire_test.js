@@ -5,8 +5,8 @@ import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.resetTables(mock, skipping);
-  helper.withBackends(mock, skipping);
+  helper.resetTables();
+  helper.withBackends(skipping);
 
   setup(async () => {
     helper.load.save();

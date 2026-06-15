@@ -124,8 +124,8 @@ const load = loader(
     },
 
     schemaset: {
-      requires: ['cfg'],
-      setup: ({ cfg }) => new SchemaSet({
+      requires: [],
+      setup: () => new SchemaSet({
         serviceName: 'web-server',
       }),
     },
@@ -141,8 +141,8 @@ const load = loader(
     },
 
     generateReferences: {
-      requires: ['cfg', 'schemaset'],
-      setup: async ({ cfg, schemaset }) => libReferences.fromService({
+      requires: ['schemaset'],
+      setup: async ({ schemaset }) => libReferences.fromService({
         schemaset,
         references: [builder.reference(), MonitorManager.reference('web-server'), MonitorManager.metricsReference('web-server')],
       }).then(ref => ref.generateReferences()),
@@ -284,8 +284,8 @@ const load = loader(
     },
 
     'cleanup-session-storage': {
-      requires: ['cfg', 'monitor', 'db'],
-      setup: ({ cfg, monitor, db }) => {
+      requires: ['monitor', 'db'],
+      setup: ({ monitor, db }) => {
         return monitor.oneShot('cleanup-expire-session-storage', async () => {
           debug('Expiring session storage entries');
           const count = (await db.fns.expire_sessions())[0].expire_sessions;

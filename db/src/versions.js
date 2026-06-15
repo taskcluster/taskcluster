@@ -130,9 +130,8 @@ methods:
 
 /**
  * test for new migration
- * @param {number} version
  */
-const testTemplate = version => `import testing from '@taskcluster/lib-testing';
+const testTemplate = () => `import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   // add tests if necessary
@@ -164,7 +163,7 @@ export const newVersion = async (options = { runGit: true }) => {
 
   try {
     const fd = fs.openSync(newTestFile, 'wx');
-    fs.writeFileSync(fd, testTemplate(nextVersion), 'utf8');
+    fs.writeFileSync(fd, testTemplate(), 'utf8');
     fs.closeSync(fd);
     console.log(`${newVersion}_test.js written`);
   } catch (err) {

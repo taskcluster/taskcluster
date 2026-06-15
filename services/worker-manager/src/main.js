@@ -51,8 +51,8 @@ const load = loader({
   },
 
   expireWorkerPools: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: ({ cfg, monitor, db }, ownName) => {
+    requires: ['monitor', 'db'],
+    setup: ({ monitor, db }, ownName) => {
       return monitor.childMonitor('expireWorkerPools').oneShot(ownName, async () => {
         const expired = await WorkerPool.expire({ db, monitor });
         for (const workerPoolId of expired) {
@@ -63,8 +63,8 @@ const load = loader({
   },
 
   expireLaunchConfigs: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: ({ cfg, monitor, db }, ownName) => {
+    requires: ['monitor', 'db'],
+    setup: ({ monitor, db }, ownName) => {
       return monitor.childMonitor('expireLaunchConfigs').oneShot(ownName, async () => {
         const expired = await WorkerPoolLaunchConfig.expire({ db, monitor });
         for (const launchConfigId of expired) {
@@ -75,8 +75,8 @@ const load = loader({
   },
 
   expireWorkers: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: ({ cfg, monitor, db }, ownName) => {
+    requires: ['monitor', 'db'],
+    setup: ({ monitor, db }, ownName) => {
       return monitor.childMonitor('expireWorkers').oneShot(ownName, async () => {
         const count = await Worker.expire({ db, monitor });
         monitor.info(`deleted ${count} workers`);
@@ -98,8 +98,8 @@ const load = loader({
   },
 
   schemaset: {
-    requires: ['cfg'],
-    setup: ({ cfg }) => new SchemaSet({
+    requires: [],
+    setup: () => new SchemaSet({
       serviceName: 'worker-manager',
     }),
   },
@@ -110,8 +110,8 @@ const load = loader({
   },
 
   generateReferences: {
-    requires: ['cfg', 'schemaset'],
-    setup: async ({ cfg, schemaset }) => libReferences.fromService({
+    requires: ['schemaset'],
+    setup: async ({ schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('worker-manager'), MonitorManager.metricsReference('worker-manager')],
     }).then(ref => ref.generateReferences()),
@@ -189,8 +189,8 @@ const load = loader({
   },
 
   estimator: {
-    requires: ['cfg', 'queue', 'monitor'],
-    setup: ({ cfg, queue, monitor }) => new Estimator({
+    requires: ['queue', 'monitor'],
+    setup: ({ queue, monitor }) => new Estimator({
       queue,
       monitor: monitor.childMonitor('estimator'),
     }),
@@ -207,8 +207,8 @@ const load = loader({
   },
 
   providers: {
-    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'schemaset', 'publisher', 'validator', 'launchConfigSelector'],
-    setup: async ({ cfg, monitor, notify, db, estimator, schemaset, publisher, validator, launchConfigSelector }) =>
+    requires: ['cfg', 'monitor', 'notify', 'db', 'estimator', 'publisher', 'validator', 'launchConfigSelector'],
+    setup: async ({ cfg, monitor, notify, db, estimator, publisher, validator, launchConfigSelector }) =>
       new Providers().setup({ cfg, monitor, notify, db, estimator, publisher, validator, launchConfigSelector }),
   },
 

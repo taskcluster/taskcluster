@@ -1,4 +1,4 @@
-export default ({ userConfig, prompts, configTmpl }) => {
+export default ({ userConfig, prompts }) => {
 
   prompts.push({
     type: 'input',

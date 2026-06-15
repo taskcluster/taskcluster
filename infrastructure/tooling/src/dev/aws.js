@@ -51,7 +51,7 @@ const setupIam = async ({ iam = new IAMClient(), iamName, iamPolicy }) => {
   return accessKey;
 };
 
-export default async ({ userConfig, answer, configTmpl }) => {
+export default async ({ userConfig, answer }) => {
   const iam = new IAMClient();
   const s3 = new S3Client();
   const prefix = answer.meta?.deploymentPrefix || userConfig.meta?.deploymentPrefix;

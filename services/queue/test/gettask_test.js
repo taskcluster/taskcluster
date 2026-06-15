@@ -7,11 +7,11 @@ import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withAmazonIPRanges(mock, skipping);
-  helper.withPulse(mock, skipping);
+  helper.withAmazonIPRanges(skipping);
+  helper.withPulse(skipping);
   helper.withS3(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   const taskDef = {
     taskQueueId: 'no-provisioner-extended-extended/test-worker-extended-extended',

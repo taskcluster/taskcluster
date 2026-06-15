@@ -1,9 +1,9 @@
 export default {
   Query: {
-    currentScopes(parent, args, { loaders }) {
+    currentScopes(_parent, _args, { loaders }) {
       return loaders.currentScopes.load({});
     },
-    expandScopes(parent, { scopes }, { loaders }) {
+    expandScopes(_parent, { scopes }, { loaders }) {
       return loaders.expandScopes.load({ scopes });
     },
   },

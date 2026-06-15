@@ -38,8 +38,8 @@ const load = loader({
   },
 
   schemaset: {
-    requires: ['cfg'],
-    setup: ({ cfg }) => new SchemaSet({
+    requires: [],
+    setup: () => new SchemaSet({
       serviceName: 'github',
     }),
   },
@@ -59,8 +59,8 @@ const load = loader({
   },
 
   generateReferences: {
-    requires: ['cfg', 'schemaset'],
-    setup: async ({ cfg, schemaset }) => libReferences.fromService({
+    requires: ['schemaset'],
+    setup: async ({ schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('github'), MonitorManager.metricsReference('github')],
     }).then(ref => ref.generateReferences()),
@@ -113,7 +113,7 @@ const load = loader({
     // where taskcluster-github is acting of its own accord
     // Where it is acting on behalf of a task, use this.queueClient.use({authorizedScopes: scopes}).blahblah
     // (see handlers.createTasks for example)
-    setup: ({ cfg, monitor }) => new taskcluster.Queue({
+    setup: ({ cfg }) => new taskcluster.Queue({
       rootUrl: cfg.taskcluster.rootUrl,
       credentials: cfg.taskcluster.credentials,
     }),

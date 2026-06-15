@@ -11,7 +11,7 @@ export const tasks = [{
     'db-versions-readme',
     'db-fns-readme',
   ],
-  run: async (requirements, utils) => {
+  run: async (_requirements, utils) => {
     utils.status({ message: 'gathering READMEs' });
     let readmes = (await gitLsFiles())
       .filter(file => file.endsWith('README.md'))
@@ -58,7 +58,7 @@ export const tasks = [{
     };
 
     // recursively write out TOC's
-    const rewrite = async ({ content, dir, title, children }) => {
+    const rewrite = async ({ content, dir, children }) => {
       const lines = tocLines([], '', dir, children);
       if (lines.length > 0) {
         utils.status({ message: `rewriting ${path.join(dir, 'README.md')}` });

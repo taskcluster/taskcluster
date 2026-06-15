@@ -10,7 +10,7 @@ const exec = util.promisify(execFile);
 export const tasks = [{
   title: 'Go Version',
   provides: ['target-go-version'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, utils) => {
     const goVersion = (await readRepoFile('.go-version')).trim();
     const goVersionMajor = goVersion.replace(/^go([0-9]+)\.[0-9]+\.[0-9]+$/, '$1');
     const goVersionMinor = goVersion.replace(/^go[0-9]+\.([0-9]+)\.[0-9]+$/, '$1');

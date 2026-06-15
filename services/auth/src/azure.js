@@ -26,7 +26,7 @@ export const azureBuilder = builder => {
     description: [
       'Retrieve a list of all Azure accounts managed by Taskcluster Auth.',
     ].join('\n'),
-  }, function(req, res) {
+  }, function(_req, res) {
     return res.reply({ accounts: _.keys(getAzureAccounts(this)) });
   });
 

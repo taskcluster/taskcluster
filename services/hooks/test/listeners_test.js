@@ -8,9 +8,9 @@ import { queueUtils } from '../src/utils.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withTaskCreator(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withTaskCreator(skipping);
+  helper.withPulse(skipping);
+  helper.resetTables();
 
   const hookGroupId = 't';
   const hookId = 'h';
@@ -215,7 +215,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       hookListeners.deleteQueue = sinon.fake(
         async queueName => createdQueues.delete(queueName));
       hookListeners.syncBindings = sinon.fake(
-        async (queueName, newBindings, oldBindings) => {
+        async (queueName, newBindings, _oldBindings) => {
           createdQueues.set(queueName, newBindings);
           return newBindings;
         });

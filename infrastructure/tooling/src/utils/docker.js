@@ -131,7 +131,7 @@ class DemuxDockerStream extends Transform {
     this.buffer = Buffer.alloc(0);
   }
 
-  _transform(chunk, encoding, callback) {
+  _transform(chunk, _encoding, callback) {
     if (this.buffer.length) {
       this.buffer = Buffer.concat([this.buffer, chunk]);
     } else {

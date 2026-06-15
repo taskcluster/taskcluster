@@ -234,7 +234,7 @@ suite(testing.suiteName(), () => {
     return request
       .get(url)
       .query({ nextPage: 'abc' })
-      .then(res => assert(false, 'should have failed!'))
+      .then(() => assert(false, 'should have failed!'))
       .catch((res) => {
         assert(!res.ok, 'Expected request failure!');
         assert(res.status === 400, 'Expected a 400 error');
@@ -257,7 +257,7 @@ suite(testing.suiteName(), () => {
     return request
       .get(url)
       .query({ incantation: 'alohomora' })
-      .then(res => assert(false, 'should have failed!'))
+      .then(() => assert(false, 'should have failed!'))
       .catch((res) => {
         assert(!res.ok, 'Expected request failure!');
         assert(res.status === 400, 'Expected a 400 error');
@@ -289,7 +289,7 @@ suite(testing.suiteName(), () => {
     const url = u('/validated-param/-');
     return request
       .get(url)
-      .then(res => assert(false, 'should have failed!'))
+      .then(() => assert(false, 'should have failed!'))
       .catch((res) => {
         assert(!res.ok, 'Expected a failure');
         assert(res.status === 400, 'Expected a 400 error');
@@ -310,7 +310,7 @@ suite(testing.suiteName(), () => {
     const url = u('/validated-param-2/incorrect');
     return request
       .get(url)
-      .then(res => assert(false, 'should have failed!'))
+      .then(() => assert(false, 'should have failed!'))
       .catch((res) => {
         assert(!res.ok, 'Expected a failure');
         assert(res.status === 400, 'Expected a 400 error');
@@ -331,7 +331,7 @@ suite(testing.suiteName(), () => {
     const url = u('/function-validated-param/open-amaranth');
     return request
       .get(url)
-      .then(res => assert(false, 'should have failed!'))
+      .then(() => assert(false, 'should have failed!'))
       .catch((res) => {
         assert(!res.ok, 'Expected request failure!');
         assert(res.status === 400, 'Expected a 400 error');
@@ -363,7 +363,7 @@ suite(testing.suiteName(), () => {
     const url = u('/unknown');
     return request
       .get(url)
-      .then(res => assert(false, 'should have failed!'))
+      .then(() => assert(false, 'should have failed!'))
       .catch((err) => {
         assert(err.response.header['cache-control'] === 'no-store no-cache must-revalidate', 'Got wrong header');
       });
@@ -390,7 +390,7 @@ suite(testing.suiteName(), () => {
       title: 'Test',
       category: 'API Library',
       description: 'Test',
-    }, (req, res) => {});
+    }, (_req, _res) => {});
 
     assert.throws(() => {
       builder.declare({
@@ -401,7 +401,7 @@ suite(testing.suiteName(), () => {
         title: 'Test',
         category: 'API Library',
         description: 'Test',
-      }, (req, res) => {});
+      }, (_req, _res) => {});
     }, /Identical route and method/);
   });
 

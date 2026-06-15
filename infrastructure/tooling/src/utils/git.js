@@ -17,7 +17,7 @@ const exec = util.promisify(execFile);
  *   changed: ..,      // true if the repo was cloned or the revision changed
  * }
  */
-export const gitClone = async ({ dir, url, sha, utils }) => {
+export const gitClone = async ({ dir, url }) => {
   const [repo, ref = 'main'] = url.split('#');
   const opts = { cwd: dir };
 
@@ -60,7 +60,7 @@ export const gitClone = async ({ dir, url, sha, utils }) => {
  *   revision: .., // the sha of the remote ref
  * }
  */
-export const gitRemoteRev = async ({ dir, remote, ref, utils }) => {
+export const gitRemoteRev = async ({ dir, remote, ref }) => {
   const opts = { cwd: dir };
 
   assert(fs.existsSync(dir), `${dir} does not exist`);
@@ -126,7 +126,7 @@ export const gitDescribe = async ({ dir }) => {
  *   ref: ..., // abbreviated ref
  * }
  */
-export const gitCurrentBranch = async ({ dir, utils }) => {
+export const gitCurrentBranch = async ({ dir }) => {
   const opts = { cwd: dir };
 
   assert(fs.existsSync(dir), `${dir} does not exist`);
@@ -155,7 +155,7 @@ export const gitAdd = async ({ dir, files }) => {
  * - files -- files to include in the commit (anything staged will get committed too..)
  * - utils -- taskgraph utils (waitFor, etc.)
  */
-export const gitCommit = async ({ dir, message, files, utils }) => {
+export const gitCommit = async ({ dir, message, files }) => {
   const opts = { cwd: dir };
   await exec('git', ['commit', '-m', message, ...files], opts);
 };
@@ -167,7 +167,7 @@ export const gitCommit = async ({ dir, message, files, utils }) => {
  * - rev -- revision to tag
  * - tag -- tag to apply
  */
-export const gitTag = async ({ dir, rev, tag, utils }) => {
+export const gitTag = async ({ dir, rev, tag }) => {
   const opts = { cwd: dir };
   await exec('git', ['tag', tag, rev], opts);
 };
@@ -180,7 +180,7 @@ export const gitTag = async ({ dir, rev, tag, utils }) => {
  * - refs -- refs to push
  * - force -- if true, -f
  */
-export const gitPush = async ({ dir, remote, refs, force, utils }) => {
+export const gitPush = async ({ dir, remote, refs, force }) => {
   const opts = { cwd: dir };
   await exec('git', ['push', ...(force ? ['-f'] : []), remote, ...refs], opts);
 };

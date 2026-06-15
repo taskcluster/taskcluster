@@ -14,10 +14,10 @@ const __dirname = new URL('.', import.meta.url).pathname;
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
-  helper.withFakeNotify(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withFakeQueue(skipping);
+  helper.withFakeNotify(skipping);
+  helper.resetTables();
 
   let provider;
   const providerId = 'aws';
@@ -213,7 +213,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       },
       // capacity 34 at 6 per instance should be 6 instances..
       expectedWorkers: 6,
-    }, async (workers) => {
+    }, async (_workers) => {
       // spawn two each in three launchConfigs; spawning one each would only get us 5 instances since there
       // are only 5 launchConfigs
       assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({ MinCount }) => MinCount), [2, 2, 2]);
@@ -238,7 +238,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           scalingRatio: 1,
         },
         expectedWorkers: 1,
-      }, async (workers) => {
+      }, async (_workers) => {
         assert.equal(fake.rgn('us-west-2').runInstancesCalls.length, 1);
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], ResourceType, 'mytag', 'testy');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'CreatedBy', 'taskcluster-wm-aws');

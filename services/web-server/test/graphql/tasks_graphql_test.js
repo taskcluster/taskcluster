@@ -14,7 +14,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    helper.load.inject('authFactory', ({ credentials }) =>
+    helper.load.inject('authFactory', () =>
       new taskcluster.Auth({
         rootUrl: helper.rootUrl,
         fake: {
@@ -31,10 +31,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   helper.withDb(mock, skipping);
-  helper.withClients(mock, skipping);
-  helper.withServer(mock, skipping);
+  helper.withClients(skipping);
+  helper.withServer(skipping);
   helper.withPulse(helper, skipping);
-  helper.resetTables(mock, skipping);
+  helper.resetTables();
 
   suite('Task Queries and Mutations', () => {
     test('query works', async () => {

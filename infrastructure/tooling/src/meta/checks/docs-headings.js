@@ -6,7 +6,7 @@ export const tasks = [{
   title: 'Docs headings match expectations',
   requires: [],
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     const markdowns = glob.sync(
       'ui/docs/**/*.mdx',
       { cwd: REPO_ROOT });

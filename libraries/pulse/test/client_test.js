@@ -177,7 +177,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, skipping) => {
 
     let gotConnection = false;
     let finishedWithConnection = false;
-    client.withConnection(conn => { gotConnection = true; })
+    client.withConnection(() => { gotConnection = true; })
       .then(() => { finishedWithConnection = true; });
 
     assume(finishedWithConnection).to.equal(false);
@@ -238,7 +238,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, skipping) => {
 
       let gotException;
       try {
-        await client.withChannel(async chan => {
+        await client.withChannel(async () => {
           // throw an error to exercise error-handling code
           throw new Error('uhoh');
         });

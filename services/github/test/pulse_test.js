@@ -16,10 +16,10 @@ const loadWebhookJson = async filename => {
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withFakeGithub(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withFakeGithub();
+  helper.withServer(skipping);
+  helper.resetTables();
 
   let github = null;
 

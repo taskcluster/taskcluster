@@ -8,11 +8,11 @@ import { splitTaskQueueId } from '../src/utils.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withAmazonIPRanges(mock, skipping);
-  helper.withPulse(mock, skipping);
+  helper.withAmazonIPRanges(skipping);
+  helper.withPulse(skipping);
   helper.withS3(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   const makeTaskQueue = async (opts) => {
     const taskQueueId = opts.taskQueueId || 'prov1-extended-extended-extended/gecko-b-2-linux-extended-extended';

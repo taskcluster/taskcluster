@@ -61,7 +61,7 @@ const testclients = {
  *  helper.setBackendConfig({ backends, backendMap }) - set and activate the backends config,
  *    or if no args then reset it to the default.
  */
-helper.withBackends = (mock, skipping) => {
+helper.withBackends = skipping => {
   let _backends;
   const defaultBackends = {
     testBackend: { backendType: 'test' },
@@ -117,7 +117,7 @@ helper.withBackends = (mock, skipping) => {
   });
 };
 
-helper.withMiddleware = (mock, skipping, config) => {
+helper.withMiddleware = (skipping, config) => {
   suiteSetup('withMiddleware', async () => {
     if (skipping()) {
       return;
@@ -137,7 +137,7 @@ helper.withMiddleware = (mock, skipping, config) => {
   });
 };
 
-helper.withServer = (mock, skipping) => {
+helper.withServer = skipping => {
   let webServer;
 
   suiteSetup('withServer', async () => {
@@ -188,7 +188,7 @@ helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'object');
 };
 
-helper.resetTables = (mock, skipping) => {
+helper.resetTables = () => {
   setup('reset tables', async () => {
     await testing.resetTables({
       tableNames: ['objects', 'object_hashes'],

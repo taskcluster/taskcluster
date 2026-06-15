@@ -69,7 +69,7 @@ export default ({ cfg, server, schema, context, path, authFactory }) => {
         clearTimeout(timeout);
         timeoutMap.delete(socket);
       },
-      async onOperation(message, connection) {
+      async onOperation(_message, connection) {
         // formatResponse should be replaced when
         // SubscriptionServer accepts a formatError
         // parameter for custom error formatting.

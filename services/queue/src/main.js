@@ -68,8 +68,8 @@ const load = loader({
 
   // Validator and publisher
   schemaset: {
-    requires: ['cfg'],
-    setup: ({ cfg }) => new SchemaSet({
+    requires: [],
+    setup: () => new SchemaSet({
       serviceName: 'queue',
     }),
   },
@@ -204,8 +204,8 @@ const load = loader({
   },
 
   generateReferences: {
-    requires: ['cfg', 'schemaset'],
-    setup: async ({ cfg, schemaset }) => libReferences.fromService({
+    requires: ['schemaset'],
+    setup: async ({ schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('queue'), MonitorManager.metricsReference('queue')],
     }).then(ref => ref.generateReferences()),
@@ -384,8 +384,8 @@ const load = loader({
 
   // Create the queue-message expiration process (periodic job)
   'expire-queue-messages': {
-    requires: ['cfg', 'queueService', 'monitor'],
-    setup: ({ cfg, queueService, monitor }, ownName) => {
+    requires: ['queueService', 'monitor'],
+    setup: ({ queueService, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Expiring pending messages at: %s', new Date());
         await queueService.deleteExpired();

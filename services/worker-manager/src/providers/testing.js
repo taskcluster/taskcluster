@@ -45,7 +45,7 @@ export class TestingProvider extends Provider {
     this.monitor.notice('scan-cleanup', {});
   }
 
-  async registerWorker({ worker, workerPool, workerIdentityProof }) {
+  async registerWorker({ worker }) {
     await worker.update(this.db, worker => {
       worker.state = Worker.states.RUNNING;
     });

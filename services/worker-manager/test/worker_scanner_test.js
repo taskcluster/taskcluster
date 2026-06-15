@@ -7,13 +7,13 @@ import { Worker, WorkerPool } from '../src/data.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
-  helper.withFakeNotify(mock, skipping);
-  helper.withProviders(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.withWorkerScanner(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withFakeQueue(skipping);
+  helper.withFakeNotify(skipping);
+  helper.withProviders();
+  helper.withServer(skipping);
+  helper.withWorkerScanner(skipping);
+  helper.resetTables();
 
   let monitor;
   suiteSetup(async () => {

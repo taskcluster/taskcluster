@@ -65,14 +65,14 @@ helper.secrets = new testing.Secrets({
 /**
  * Define a fake denier that will deny anything with 'denied' in the address
  */
-helper.withDenier = (mock, skipping) => {
+helper.withDenier = skipping => {
   suiteSetup('withDenier', async () => {
     if (skipping()) {
       return;
     }
 
     load.inject('denier', {
-      isDenied: async (notificationType, notificationAddress) =>
+      isDenied: async (_notificationType, notificationAddress) =>
         /denied/.test(notificationAddress),
     });
   });
@@ -245,7 +245,7 @@ const stubbedQueue = () => {
  *
  * The component is available at `helper.queue`.
  */
-helper.withFakeQueue = (mock, skipping) => {
+helper.withFakeQueue = skipping => {
   suiteSetup('withFakeQueue', () => {
     if (skipping()) {
       return;
@@ -264,7 +264,7 @@ const fakeMatrixSend = () => sinon.fake(roomId => {
   }
 });
 
-helper.withFakeMatrix = (mock, skipping) => {
+helper.withFakeMatrix = skipping => {
   suiteSetup('withFakeMatrix', () => {
     if (skipping()) {
       return;
@@ -282,7 +282,7 @@ helper.withFakeMatrix = (mock, skipping) => {
   });
 };
 
-helper.withFakeSlack = (mock, skipping) => {
+helper.withFakeSlack = skipping => {
   const fakeSlackSend = () => sinon.fake(() => ({ ok: true }));
 
   suiteSetup('withFakeSlack', async () => {
@@ -304,14 +304,14 @@ helper.withFakeSlack = (mock, skipping) => {
   });
 };
 
-helper.withPulse = (mock, skipping) => {
+helper.withPulse = skipping => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-notify' });
 };
 
 /**
  * Set up an API server.
  */
-helper.withServer = (mock, skipping) => {
+helper.withServer = skipping => {
   let webServer;
 
   suiteSetup('withServer', async () => {
@@ -360,7 +360,7 @@ helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'notify');
 };
 
-helper.resetTables = (mock, skipping) => {
+helper.resetTables = () => {
   setup('reset tables', async () => {
     await testing.resetTables({ tableNames: [
       'denylisted_notifications',

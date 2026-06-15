@@ -32,8 +32,8 @@ const load = loader({
   },
 
   schemaset: {
-    requires: ['cfg'],
-    setup: ({ cfg }) => new SchemaSet({
+    requires: [],
+    setup: () => new SchemaSet({
       serviceName: 'object',
     }),
   },
@@ -51,8 +51,8 @@ const load = loader({
   },
 
   generateReferences: {
-    requires: ['cfg', 'schemaset'],
-    setup: async ({ cfg, schemaset }) => libReferences.fromService({
+    requires: ['schemaset'],
+    setup: async ({ schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), MonitorManager.reference('object'), MonitorManager.metricsReference('object')],
     }).then(ref => ref.generateReferences()),

@@ -7,12 +7,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     return;
   }
 
-  helper.withDenier(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
-  helper.withFakeMatrix(mock, skipping);
-  helper.withFakeSlack(mock, skipping);
+  helper.withDenier(skipping);
+  helper.withFakeQueue(skipping);
+  helper.withFakeMatrix(skipping);
+  helper.withFakeSlack(skipping);
   helper.withSES(mock, skipping);
-  helper.withPulse(mock, skipping);
+  helper.withPulse(skipping);
 
   test('isDuplicate', async () => {
     const notifier = await helper.load('notifier');

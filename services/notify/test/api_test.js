@@ -5,12 +5,12 @@ import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withFakeMatrix(mock, skipping);
-  helper.withFakeSlack(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withFakeMatrix(skipping);
+  helper.withFakeSlack(skipping);
   helper.withSES(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   // Dummy address for denylist tests
   const dummyAddress1 = {

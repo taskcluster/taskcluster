@@ -11,11 +11,11 @@ import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
-  helper.withFakeAnonymousScopeCache(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withFakeQueue(skipping);
+  helper.withFakeAnonymousScopeCache(skipping);
+  helper.withPulse(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   test('insert (and rank)', async () => {
     const myns = slugid.v4();

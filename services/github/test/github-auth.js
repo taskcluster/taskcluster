@@ -133,7 +133,7 @@ class FakeGithub {
           throwError(404);
         }
       },
-      'checks.create': async ({ owner, repo, name, head_sha, output, details_url, actions, status, conclusion }) => {
+      'checks.create': async ({ owner, repo, name, head_sha, status, conclusion }) => {
         if (repo === 'no-permission') {
           throwError(403);
         }
@@ -189,7 +189,7 @@ class FakeGithub {
           throwError(404);
         }
       },
-      'reactions.createForIssueComment': async ({ owner, repo, commentId, body }) => {
+      'reactions.createForIssueComment': async ({ repo }) => {
         if (repo === 'no-permission') {
           throwError(403);
         }

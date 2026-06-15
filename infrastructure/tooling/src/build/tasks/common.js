@@ -3,7 +3,7 @@ import mkdirp from 'mkdirp';
 import { ensureTask } from '../../utils/index.js';
 import { rimraf } from 'rimraf';
 
-export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, baseDir }) => {
   const artifactsDir = path.join(baseDir, 'release-artifacts');
 
   // Clean the artifacts directory and return it
@@ -11,7 +11,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     title: 'Clean release-artifacts',
     requires: [],
     provides: ['clean-artifacts-dir'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, _utils) => {
       await rimraf(artifactsDir);
       await mkdirp(artifactsDir);
       return { 'clean-artifacts-dir': artifactsDir };

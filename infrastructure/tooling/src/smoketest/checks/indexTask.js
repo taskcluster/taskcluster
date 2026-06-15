@@ -17,7 +17,7 @@ tasks.push({
   provides: [
     'target-index',
   ],
-  run: async (requirements, utils) => {
+  run: async (_requirements, utils) => {
     const queue = new taskcluster.Queue(taskcluster.fromEnvVars());
     const randomId = taskcluster.slugid();
     const taskIndex = `project.taskcluster.smoketest.${randomId}`;

@@ -1,4 +1,4 @@
-export default () => (request, response, next) => {
+export default () => (request, _response, next) => {
   if (
     (!request.accessToken && !request.headers.authorization) ||
     !request.headers.authorization.startsWith('Bearer')

@@ -5,7 +5,7 @@ export const tasks = [{
   title: 'README DB Functions',
   requires: ['db-schema-serializable'],
   provides: ['db-fns-readme'],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const currentTcVersion = (await readRepoJSON('package.json')).version;
     const schema = Schema.fromSerializable(requirements['db-schema-serializable']);
     const releases = await getDbReleases();

@@ -38,8 +38,8 @@ export const load = loader({
 
   // Create a validator
   schemaset: {
-    requires: ['cfg'],
-    setup: ({ cfg }) => new SchemaSet({
+    requires: [],
+    setup: () => new SchemaSet({
       serviceName: 'index',
     }),
   },
@@ -83,8 +83,8 @@ export const load = loader({
   },
 
   generateReferences: {
-    requires: ['cfg', 'schemaset'],
-    setup: async ({ cfg, schemaset }) => libReferences.fromService({
+    requires: ['schemaset'],
+    setup: async ({ schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), MonitorManager.reference('index'), MonitorManager.metricsReference('index')],
     }).then(ref => ref.generateReferences()),
@@ -154,8 +154,8 @@ export const load = loader({
   },
 
   expire: {
-    requires: ['cfg', 'monitor', 'db'],
-    setup: ({ cfg, monitor, db }, ownName) => {
+    requires: ['monitor', 'db'],
+    setup: ({ monitor, db }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Expiring namespaces');
         const namespaces = (await db.fns.expire_index_namespaces())[0].expire_index_namespaces;

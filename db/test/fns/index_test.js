@@ -46,7 +46,7 @@ suite(testing.suiteName(), () => {
   };
 
   suite(`${testing.suiteName()} - index_namespaces`, () => {
-    helper.dbTest('create_index_namespace/get_index_namespace', async (db, isFake) => {
+    helper.dbTest('create_index_namespace/get_index_namespace', async (db, _isFake) => {
       await create_index_namespace(db, {});
 
       const rows = await db.fns.get_index_namespace('par/ent', 'name');
@@ -54,7 +54,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows[0].name, 'name');
     });
 
-    helper.dbTest('get_index_namespace does not omit expired indexed namespaces', async (db, isFake) => {
+    helper.dbTest('get_index_namespace does not omit expired indexed namespaces', async (db, _isFake) => {
       const now = new Date();
       await create_index_namespace(db, { expires: now });
 
@@ -62,17 +62,17 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('get_index_namespace not found', async (db, isFake) => {
+    helper.dbTest('get_index_namespace not found', async (db, _isFake) => {
       const rows = await db.fns.get_index_namespace('par/ent', 'name');
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_index_namespaces empty', async (db, isFake) => {
+    helper.dbTest('get_index_namespaces empty', async (db, _isFake) => {
       const rows = await db.fns.get_index_namespaces(null, null, null, null);
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_index_namespaces full, pagination', async (db, isFake) => {
+    helper.dbTest('get_index_namespaces full, pagination', async (db, _isFake) => {
       const oneDay = fromNow('1 day');
       for (let i = 0; i < 10; i++) {
         await create_index_namespace(db, {
@@ -94,7 +94,7 @@ suite(testing.suiteName(), () => {
         [4, 5].map(i => ({ parent: `parent/${i}`, name: `name/${i}` })));
     });
 
-    helper.dbTest('get_index_namespaces only returns non expired tasks', async (db, isFake) => {
+    helper.dbTest('get_index_namespaces only returns non expired tasks', async (db, _isFake) => {
       const oneDay = fromNow('1 day');
       await create_index_namespace(db, {
         parent: `parent/1`,
@@ -114,7 +114,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].expires, oneDay);
     });
 
-    helper.dbTest('expire_index_namespaces', async (db, isFake) => {
+    helper.dbTest('expire_index_namespaces', async (db, _isFake) => {
       await create_index_namespace(db, { parent: 'parent/1', expires: fromNow('- 1 day') });
       await create_index_namespace(db, { parent: 'parent/2', expires: fromNow('- 2 days') });
       await create_index_namespace(db, { parent: 'parent/3', expires: fromNow('1 day') });
@@ -125,7 +125,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('update_index_namespace, change to a single field', async (db, isFake) => {
+    helper.dbTest('update_index_namespace, change to a single field', async (db, _isFake) => {
       await create_index_namespace(db);
       await db.fns.update_index_namespace(
         'par/ent',
@@ -139,7 +139,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows[0].expires.toJSON(), new Date(1).toJSON());
     });
 
-    helper.dbTest('update_index_namespace, no changes', async (db, isFake) => {
+    helper.dbTest('update_index_namespace, no changes', async (db, _isFake) => {
       await create_index_namespace(db);
       const updated = await db.fns.update_index_namespace(
         'par/ent',
@@ -156,7 +156,7 @@ suite(testing.suiteName(), () => {
       assert(rows[0].expires instanceof Date);
     });
 
-    helper.dbTest('update_index_namespace, throws when row does not exist', async (db, isFake) => {
+    helper.dbTest('update_index_namespace, throws when row does not exist', async (db, _isFake) => {
       await create_index_namespace(db);
 
       await assert.rejects(
@@ -173,7 +173,7 @@ suite(testing.suiteName(), () => {
   });
 
   suite(`${testing.suiteName()} - indexed_tasks`, () => {
-    helper.dbTest('create_indexed_task/get_indexed_task', async (db, isFake) => {
+    helper.dbTest('create_indexed_task/get_indexed_task', async (db, _isFake) => {
       const taskId = slug.nice();
       await create_indexed_task(db, { taskId });
 
@@ -183,7 +183,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].data, { data: true });
     });
 
-    helper.dbTest('get_indexed_task does not omit expired indexed tasks', async (db, isFake) => {
+    helper.dbTest('get_indexed_task does not omit expired indexed tasks', async (db, _isFake) => {
       const now = new Date();
       const taskId = slug.nice();
       await create_indexed_task(db, { expires: now, taskId });
@@ -192,7 +192,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('get_tasks_from_indexes_and_namespaces does not omit expired indexed tasks', async (db, isFake) => {
+    helper.dbTest('get_tasks_from_indexes_and_namespaces does not omit expired indexed tasks', async (db, _isFake) => {
       const now = new Date();
       const taskId = slug.nice();
       await create_indexed_task(db, { expires: now, taskId });
@@ -201,27 +201,27 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('get_tasks_from_indexes_and_namespaces not found', async (db, isFake) => {
+    helper.dbTest('get_tasks_from_indexes_and_namespaces not found', async (db, _isFake) => {
       const rows = await db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(['name/space.name']), 1000, 0);
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_indexed_task not found', async (db, isFake) => {
+    helper.dbTest('get_indexed_task not found', async (db, _isFake) => {
       const rows = await db.fns.get_indexed_task('name/space', 'name');
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_tasks_from_indexes_and_namespaces empty', async (db, isFake) => {
+    helper.dbTest('get_tasks_from_indexes_and_namespaces empty', async (db, _isFake) => {
       const rows = await db.fns.get_tasks_from_indexes_and_namespaces(null, null, null);
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_indexed_tasks empty', async (db, isFake) => {
+    helper.dbTest('get_indexed_tasks empty', async (db, _isFake) => {
       const rows = await db.fns.get_indexed_tasks(null, null, null, null);
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_tasks_from_indexes_and_namespaces pagination', async (db, isFake) => {
+    helper.dbTest('get_tasks_from_indexes_and_namespaces pagination', async (db, _isFake) => {
       const oneDay = fromNow('1 day');
       const expectedIndexes = [];
       const expectedTasks = [];
@@ -258,7 +258,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 0);
     });
 
-    helper.dbTest('get_indexed_tasks full, pagination', async (db, isFake) => {
+    helper.dbTest('get_indexed_tasks full, pagination', async (db, _isFake) => {
       const oneDay = fromNow('1 day');
       for (let i = 0; i < 10; i++) {
         await create_indexed_task(db, {
@@ -280,7 +280,7 @@ suite(testing.suiteName(), () => {
         [4, 5].map(i => ({ namespace: `namespace/${i}`, name: `name/${i}` })));
     });
 
-    helper.dbTest('get_indexed_tasks only returns non expired tasks', async (db, isFake) => {
+    helper.dbTest('get_indexed_tasks only returns non expired tasks', async (db, _isFake) => {
       const oneDay = fromNow('1 day');
       await create_indexed_task(db, {
         namespace: `namespace/1`,
@@ -304,7 +304,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].expires, oneDay);
     });
 
-    helper.dbTest('expire_indexed_tasks', async (db, isFake) => {
+    helper.dbTest('expire_indexed_tasks', async (db, _isFake) => {
       await create_indexed_task(db, { namespace: 'namespace/1', expires: fromNow('- 1 day') });
       await create_indexed_task(db, { namespace: 'namespace/2', expires: fromNow('- 2 days') });
       await create_indexed_task(db, { namespace: 'namespace/3', expires: fromNow('1 day') });
@@ -315,7 +315,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('update_indexed_task, change to a single field', async (db, isFake) => {
+    helper.dbTest('update_indexed_task, change to a single field', async (db, _isFake) => {
       await create_indexed_task(db);
       await db.fns.update_indexed_task(
         'name/space',
@@ -335,7 +335,7 @@ suite(testing.suiteName(), () => {
       assert(rows[0].expires instanceof Date);
     });
 
-    helper.dbTest('update_indexed_task, change to a multiple fields', async (db, isFake) => {
+    helper.dbTest('update_indexed_task, change to a multiple fields', async (db, _isFake) => {
       await create_indexed_task(db);
       const updated = await db.fns.update_indexed_task(
         'name/space',
@@ -357,7 +357,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(updated, rows);
     });
 
-    helper.dbTest('update_indexed_task, no changes', async (db, isFake) => {
+    helper.dbTest('update_indexed_task, no changes', async (db, _isFake) => {
       await create_indexed_task(db);
       const updated = await db.fns.update_indexed_task(
         'name/space',
@@ -379,7 +379,7 @@ suite(testing.suiteName(), () => {
       assert(rows[0].expires instanceof Date);
     });
 
-    helper.dbTest('update_indexed_task, indexed task doesn\'t exist', async (db, isFake) => {
+    helper.dbTest('update_indexed_task, indexed task doesn\'t exist', async (db, _isFake) => {
       await create_indexed_task(db);
 
       await assert.rejects(
@@ -390,7 +390,7 @@ suite(testing.suiteName(), () => {
       );
     });
 
-    helper.dbTest('update_indexed_task, throws when row does not exist', async (db, isFake) => {
+    helper.dbTest('update_indexed_task, throws when row does not exist', async (db, _isFake) => {
       await create_indexed_task(db);
 
       await assert.rejects(
@@ -408,7 +408,7 @@ suite(testing.suiteName(), () => {
       );
     });
 
-    helper.dbTest('delete_indexed_task', async (db, isFake) => {
+    helper.dbTest('delete_indexed_task', async (db, _isFake) => {
       const taskId = slug.nice();
       await create_indexed_task(db, { taskId });
 

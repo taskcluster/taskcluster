@@ -28,18 +28,18 @@ export default {
         workerId,
       });
     },
-    pendingTasks({ provisionerId, workerType }, args, { loaders }) {
+    pendingTasks({ provisionerId, workerType }, _args, { loaders }) {
       return loaders.pendingTasks.load({ provisionerId, workerType });
     },
   },
   Query: {
-    workerType(parent, { provisionerId, workerType }, { loaders }) {
+    workerType(_parent, { provisionerId, workerType }, { loaders }) {
       return loaders.workerType.load({ provisionerId, workerType });
     },
-    pendingTasks(parent, { provisionerId, workerType }, { loaders }) {
+    pendingTasks(_parent, { provisionerId, workerType }, { loaders }) {
       return loaders.pendingTasks.load({ provisionerId, workerType });
     },
-    workerTypes(parent, { provisionerId, connection }, { loaders }) {
+    workerTypes(_parent, { provisionerId, connection }, { loaders }) {
       return loaders.workerTypes.load({ provisionerId, connection });
     },
   },
