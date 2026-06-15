@@ -146,7 +146,8 @@ class ScopeResolver extends events.EventEmitter {
    * functions are executed in serial.
    */
   _syncReload(reloader) {
-    return this._reloadDone = this._reloadDone.catch(() => {}).then(reloader);
+    this._reloadDone = this._reloadDone.catch(() => {}).then(reloader);
+    return this._reloadDone;
   }
 
   reloadClient(clientId) {

@@ -79,10 +79,13 @@ class HintPoller {
 
       // While limit of hints requested is greater zero, and we are getting
       // hints from the queue we continue to claim from this queue
-      let limit, hints;
       let i = 10; // count iterations a limit to 10, before we start over
-      while ((limit = _.sumBy(this.requests, 'count')) > 0 &&
-          (hints = await this.pollPendingQueue(limit)).length > 0 && i-- > 0) {
+      let limit = _.sumBy(this.requests, 'count');
+      while (limit > 0) {
+        const hints = await this.pollPendingQueue(limit);
+        if (hints.length === 0 || i-- <= 0) {
+          break;
+        }
         // Count hints claimed
         claimed += hints.length;
 
@@ -95,6 +98,8 @@ class HintPoller {
         // Release remaining hints (this shouldn't happen often!)
         await Promise.all(hints.map(hint => hint.release()));
         released += hints.length;
+
+        limit = _.sumBy(this.requests, 'count');
       }
 
       // If nothing was claimed, we sleep 1000ms before polling again

@@ -100,7 +100,7 @@ function loader(componentDirectory, virtualComponents = {}) {
         // Initialize component, this won't cause an infinite loop because
         // we've already check that the componentDirectory is a DAG
         const requires = def.requires || [];
-        return loaded[target] = Promise.all(requires.map(recursiveLoad)).then(deps => {
+        loaded[target] = Promise.all(requires.map(recursiveLoad)).then(deps => {
           const ctx = {};
           for (let i = 0; i < deps.length; i++) {
             ctx[def.requires[i]] = deps[i];
@@ -116,6 +116,7 @@ function loader(componentDirectory, virtualComponents = {}) {
             throw err;
           });
         });
+        return loaded[target];
       }
       return loaded[target];
     }

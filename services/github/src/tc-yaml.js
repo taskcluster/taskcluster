@@ -223,7 +223,8 @@ class VersionOne extends TcYaml {
       if (rv) {
         return rv;
       } else {
-        return slugids[label] = slugid.nice();
+        slugids[label] = slugid.nice();
+        return slugids[label];
       }
     };
 
