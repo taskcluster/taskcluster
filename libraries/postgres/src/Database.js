@@ -115,7 +115,7 @@ class Database {
         collection = this.deprecatedFns;
       }
 
-      // @ts-ignore method name is known to be correct for DbFunctions
+      // @ts-expect-error method name is known to be correct for DbFunctions
       collection[method.name] = async (...args) => {
         if (serviceName !== method.serviceName && method.mode !== READ) {
           throw new Error(
@@ -599,7 +599,7 @@ class Database {
 
     this.pools = /** @type {Record<DbAccessMode, pg.Pool>} */({});
     for (const mode of Object.keys(urlsByMode)) {
-      // @ts-ignore mode is of a type DbAccessMode
+      // @ts-expect-error mode is of a type DbAccessMode
       this.pools[mode] = makePool(urlsByMode[mode]);
     }
 

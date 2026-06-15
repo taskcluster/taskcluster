@@ -173,14 +173,14 @@ export class PrometheusPlugin {
         break;
       case 'histogram':
         if (buckets) {
-          // @ts-ignore
+          // @ts-expect-error
           metricOptions.buckets = buckets;
         }
         metric = new Histogram(metricOptions);
         break;
       case 'summary':
         if (percentiles) {
-          // @ts-ignore
+          // @ts-expect-error
           metricOptions.percentiles = percentiles;
         }
         metric = new Summary(metricOptions);
