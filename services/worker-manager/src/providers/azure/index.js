@@ -286,7 +286,9 @@ export class AzureProvider extends Provider {
 
     // Load root certificates from Node, which get them from the Mozilla CA store.
     this.caStore = forge.pki.createCaStore();
-    rootCertificates.forEach(pem => this.addRootCertPem(pem));
+    rootCertificates.forEach(pem => {
+      this.addRootCertPem(pem);
+    });
 
     // load known microsoft intermediate certs from disk
     loadCertificates().forEach(cert => {
@@ -2046,13 +2048,15 @@ export class AzureProvider extends Provider {
       }),
     );
 
-    Object.entries(this.seenByWorkerGroup).forEach(([workerPoolId, seenByGroup]) =>
-      Object.entries(seenByGroup).forEach(([workerGroup, seen]) =>
+    Object.entries(this.seenByWorkerGroup).forEach(([workerPoolId, seenByGroup]) => {
+      Object.entries(seenByGroup).forEach(([workerGroup, seen]) => {
         this.monitor.metric.scanSeen(seen, {
           providerId: this.providerId,
           workerPoolId,
           workerGroup,
-        })));
+        });
+      });
+    });
   }
 
   /**

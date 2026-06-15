@@ -53,10 +53,14 @@ const recurseJSON = (content, callbacks) => {
   const recurse = (value, path) => {
     if (Array.isArray(value)) {
       callbacks.array(value, path);
-      value.forEach((v, i) => recurse(v, `${path}[${i}]`));
+      value.forEach((v, i) => {
+        recurse(v, `${path}[${i}]`);
+      });
     } else if (typeof value === 'object') {
       callbacks.object(value, path);
-      Object.entries(value).forEach(([k, v]) => recurse(v, `${path}.${k}`));
+      Object.entries(value).forEach(([k, v]) => {
+        recurse(v, `${path}.${k}`);
+      });
     } else {
       callbacks.scalar(value, path);
     }
@@ -167,7 +171,9 @@ export const validate = (references) => {
         ajv
           .errorsText(ajv.errors, { separator: '%%/%%', dataVar: 'schema' })
           .split('%%/%%')
-          .forEach(err => problems.push(`${filename}: ${err}`));
+          .forEach(err => {
+            problems.push(`${filename}: ${err}`);
+          });
       }
     }
 
@@ -182,7 +188,9 @@ export const validate = (references) => {
         ajv
           .errorsText(ajv.errors, { separator: '%%/%%', dataVar: 'reference' })
           .split('%%/%%')
-          .forEach(err => problems.push(`${filename}: ${err}`));
+          .forEach(err => {
+            problems.push(`${filename}: ${err}`);
+          });
       }
     }
   }

@@ -86,7 +86,9 @@ function addNav(node, parentNode) {
   prevNode = node;
   parentNode = node;
 
-  node.children.forEach(child => addNav(child, parentNode));
+  node.children.forEach(child => {
+    addNav(child, parentNode);
+  });
 }
 
 function makeToc({ files, rootPath }) {

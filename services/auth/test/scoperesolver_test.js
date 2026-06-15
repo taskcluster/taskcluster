@@ -461,7 +461,9 @@ suite(testing.suiteName(), () => {
       const recur = (prefix, h) => {
         const role_ids = _.range(W).map(w => `${prefix}-${w}`);
         if (h !== H) {
-          role_ids.forEach(role_id => recur(role_id, h + 1));
+          role_ids.forEach(role_id => {
+            recur(role_id, h + 1);
+          });
         }
         roles.push({
           role_id: prefix,

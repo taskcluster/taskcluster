@@ -2572,7 +2572,9 @@ suite(testing.suiteName(), () => {
           [taskIds],
         );
         assert.equal(rows.length, 150);
-        rows.forEach(row => assert.equal(row.priority, 2));
+        rows.forEach(row => {
+          assert.equal(row.priority, 2);
+        });
       });
     });
 

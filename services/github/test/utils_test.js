@@ -144,18 +144,24 @@ suite(testing.suiteName(), () => {
         },
       }));
       // should not skip as this is not present in latest commit
-      skipMessages.forEach(message => assert.equal(false, shouldSkipCommit({
-        commits: [{ message }, { message: 'this commit is the last' }],
-      })));
+      skipMessages.forEach(message => {
+        assert.equal(false, shouldSkipCommit({
+          commits: [{ message }, { message: 'this commit is the last' }],
+        }));
+      });
     });
     test('should skip commit', () => {
-      skipMessages.forEach(message => assert.equal(true, shouldSkipCommit({
-        commits: [{ message: 'this commit is the first' }, { message }],
-      })));
+      skipMessages.forEach(message => {
+        assert.equal(true, shouldSkipCommit({
+          commits: [{ message: 'this commit is the first' }, { message }],
+        }));
+      });
 
-      skipMessages.forEach(message => assert.equal(true, shouldSkipCommit({
-        head_commit: { message },
-      })));
+      skipMessages.forEach(message => {
+        assert.equal(true, shouldSkipCommit({
+          head_commit: { message },
+        }));
+      });
     });
   });
   suite('shouldSkipPullRequest', () => {
@@ -174,12 +180,16 @@ suite(testing.suiteName(), () => {
         'PR: [CI Skip] this is not ready',
         'PR: this is WIP [skip ci]',
       ];
-      skipMessages.forEach(title => assert.equal(true, shouldSkipPullRequest({
-        pull_request: { title },
-      })));
-      skipMessages.forEach(body => assert.equal(false, shouldSkipPullRequest({
-        pull_request: { title: 'regular title', body },
-      })));
+      skipMessages.forEach(title => {
+        assert.equal(true, shouldSkipPullRequest({
+          pull_request: { title },
+        }));
+      });
+      skipMessages.forEach(body => {
+        assert.equal(false, shouldSkipPullRequest({
+          pull_request: { title: 'regular title', body },
+        }));
+      });
     });
   });
 

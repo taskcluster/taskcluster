@@ -16,8 +16,12 @@ suite(suiteName(), () => {
 
   teardown(() => {
     // reset process.env back to savedEnv, in-place (without $TASK_ID)
-    Object.keys(process.env).forEach(k => delete process.env[k]);
-    Object.entries(savedEnv).forEach(([k, v]) => process.env[k] = v);
+    Object.keys(process.env).forEach(k => {
+      delete process.env[k];
+    });
+    Object.entries(savedEnv).forEach(([k, v]) => {
+      process.env[k] = v;
+    });
   });
 
   suiteTeardown(() => {

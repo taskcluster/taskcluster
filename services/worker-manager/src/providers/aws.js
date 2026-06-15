@@ -440,13 +440,15 @@ export class AwsProvider extends Provider {
 
     this.cloudApi?.logAndResetMetrics();
 
-    Object.entries(this.seenByWorkerGroup).forEach(([workerPoolId, seenByGroup]) =>
-      Object.entries(seenByGroup).forEach(([workerGroup, seen]) =>
+    Object.entries(this.seenByWorkerGroup).forEach(([workerPoolId, seenByGroup]) => {
+      Object.entries(seenByGroup).forEach(([workerGroup, seen]) => {
         this.monitor.metric.scanSeen(seen, {
           providerId: this.providerId,
           workerPoolId,
           workerGroup,
-        })));
+        });
+      });
+    });
   }
 
   /**

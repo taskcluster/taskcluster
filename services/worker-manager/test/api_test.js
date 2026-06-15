@@ -102,7 +102,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     while (true) {
       const res = await helper.workerManager.listProviders(query);
       pages += 1;
-      res.providers.forEach(({ providerId }) => providerIds.push(providerId));
+      res.providers.forEach(({ providerId }) => {
+        providerIds.push(providerId);
+      });
       if (res.continuationToken) {
         query.continuationToken = res.continuationToken;
       } else {
