@@ -155,7 +155,7 @@ export const tasks = [{
   requires: ['target-gw-docs', 'target-worker-runner'],
   provides: ['docs-toc'],
   run: async (requirements, utils) => {
-    const filesWithExtensions = await mdParseDir(DOCS_DIR, { dirnames: true, filter: '**\/*.mdx' });
+    const filesWithExtensions = await mdParseDir(DOCS_DIR, { dirnames: true, filter: '**/*.mdx' });
     // strip .md and .mdx extensions from those filenames..
     const files = Object.assign({},
       ...Object.entries(filesWithExtensions)

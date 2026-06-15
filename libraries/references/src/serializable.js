@@ -20,7 +20,7 @@ export const makeSerializable = ({ references }) => {
 
   let urlPattern;
   if (references.rootUrl) {
-    urlPattern = new RegExp(`^${regexEscape(references.rootUrl)}/schemas\/(.*)#`);
+    urlPattern = new RegExp(`^${regexEscape(references.rootUrl)}/schemas/(.*)#`);
   } else {
     urlPattern = /^\/schemas\/(.*)#/;
   }
