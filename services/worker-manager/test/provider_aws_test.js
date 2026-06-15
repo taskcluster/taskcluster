@@ -492,8 +492,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const workers = await helper.getWorkers();
       assert.notStrictEqual(workers.length, 0);
-      workers.forEach(w =>
-        assert.strictEqual(w.state, Worker.states.STOPPED));
+      workers.forEach(w => {
+        assert.strictEqual(w.state, Worker.states.STOPPED);
+      });
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
     });
@@ -511,8 +512,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const workers = await helper.getWorkers();
       assert.notStrictEqual(workers.length, 0);
-      workers.forEach(w =>
-        assert.strictEqual(w.state, Worker.states.REQUESTED));
+      workers.forEach(w => {
+        assert.strictEqual(w.state, Worker.states.REQUESTED);
+      });
       assert.strictEqual(provider.seen[worker.workerPoolId], 1);
       helper.assertNoPulseMessage('worker-stopped');
     });
@@ -544,8 +546,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // should be marked as stopped because it was missing
       const workers = await helper.getWorkers();
       assert.notStrictEqual(workers.length, 0);
-      workers.forEach(w =>
-        assert.strictEqual(w.state, Worker.states.STOPPED));
+      workers.forEach(w => {
+        assert.strictEqual(w.state, Worker.states.STOPPED);
+      });
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
       helper.assertPulseMessage('worker-stopped', m => m.payload.launchConfigId === worker.launchConfigId);
     });
@@ -563,8 +566,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const workers = await helper.getWorkers();
       assert.notStrictEqual(workers.length, 0);
-      workers.forEach(w =>
-        assert.strictEqual(w.state, Worker.states.STOPPED));
+      workers.forEach(w => {
+        assert.strictEqual(w.state, Worker.states.STOPPED);
+      });
       assert.strictEqual(provider.seen[worker.workerPoolId], 0);
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
     });

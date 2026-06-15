@@ -28,7 +28,9 @@ suite(testing.suiteName(), () => {
           ajv
             .errorsText(ajv.errors, { separator: '%%/%%', dataVar: 'schema' })
             .split('%%/%%')
-            .forEach(err => problems.push(err));
+            .forEach(err => {
+              problems.push(err);
+            });
         }
       } catch (err) {
         problems.push(err.toString());

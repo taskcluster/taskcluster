@@ -47,15 +47,17 @@ suite(testing.suiteName(), () => {
         { pattern: 'a*', scopes: ['b<..>z'] },
         { pattern: 'c*', scopes: ['d<..>'] },
       ],
-    ].forEach((rules, index) => test(`independent rules (${index + 1})`, () => {
-      _.range(50).forEach(() => { // run 50 times with different shuffling
-        const ordering = trie.dependencyOrdering(_.shuffle(rules));
-        assume(ordering).has.length(rules.length);
-        for (const { pattern } of rules) {
-          assume(ordering.map(r => r.pattern)).contains(pattern);
-        }
+    ].forEach((rules, index) => {
+      test(`independent rules (${index + 1})`, () => {
+        _.range(50).forEach(() => { // run 50 times with different shuffling
+          const ordering = trie.dependencyOrdering(_.shuffle(rules));
+          assume(ordering).has.length(rules.length);
+          for (const { pattern } of rules) {
+            assume(ordering.map(r => r.pattern)).contains(pattern);
+          }
+        });
       });
-    }));
+    });
 
     [ // rules must be strictly dependent and ordered by dependency
       [
@@ -89,12 +91,14 @@ suite(testing.suiteName(), () => {
         { pattern: 'bbb', scopes: ['cb'] },
         { pattern: 'a*', scopes: ['b<..>c'] },
       ],
-    ].forEach((rules, index) => test(`acyclic rules (${index + 1})`, () => {
-      _.range(50).forEach(() => { // run 50 times with different shuffling
-        const ordering = trie.dependencyOrdering(_.shuffle(rules));
-        assume(ordering.map(r => r.pattern)).eql(rules.map(r => r.pattern));
+    ].forEach((rules, index) => {
+      test(`acyclic rules (${index + 1})`, () => {
+        _.range(50).forEach(() => { // run 50 times with different shuffling
+          const ordering = trie.dependencyOrdering(_.shuffle(rules));
+          assume(ordering.map(r => r.pattern)).eql(rules.map(r => r.pattern));
+        });
       });
-    }));
+    });
 
     [
       [
@@ -134,11 +138,13 @@ suite(testing.suiteName(), () => {
         { pattern: 'bbb', scopes: ['cb'] },
         { pattern: 'a*', scopes: ['b<..>c'] },
       ],
-    ].forEach((rules, index) => test(`cyclic rules (${index + 1})`, () => {
-      assume(() => {
-        trie.dependencyOrdering(rules);
-      }).throws('cycle');
-    }));
+    ].forEach((rules, index) => {
+      test(`cyclic rules (${index + 1})`, () => {
+        assume(() => {
+          trie.dependencyOrdering(rules);
+        }).throws('cycle');
+      });
+    });
 
     [
       [
@@ -152,11 +158,13 @@ suite(testing.suiteName(), () => {
       ], [
         { pattern: 'a*', scopes: ['bc*<..>'] },
       ],
-    ].forEach((rules, index) => test(`illegal scopes (${index + 1})`, () => {
-      assume(() => {
-        trie.dependencyOrdering(rules);
-      }).throws('scope', 'expected illegal scope');
-    }));
+    ].forEach((rules, index) => {
+      test(`illegal scopes (${index + 1})`, () => {
+        assume(() => {
+          trie.dependencyOrdering(rules);
+        }).throws('scope', 'expected illegal scope');
+      });
+    });
   });
 
   /**

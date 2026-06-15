@@ -42,7 +42,9 @@ export default class PulseEngine {
 
   connected(connection) {
     // reset everything and reconcile
-    Array.from(this.subscriptions.values()).forEach(sub => sub.reset());
+    Array.from(this.subscriptions.values()).forEach(sub => {
+      sub.reset();
+    });
     this.reset();
     this.connection = connection;
     this.reconcileSubscriptions();
@@ -108,7 +110,9 @@ export default class PulseEngine {
     // clean up any garbage
     Array.from(this.subscriptions.values())
       .filter(sub => sub.garbage)
-      .forEach(sub => this.subscriptions.delete(sub.subscriptionId));
+      .forEach(sub => {
+        this.subscriptions.delete(sub.subscriptionId);
+      });
   }
 
   /**

@@ -73,7 +73,9 @@ helper.withServer = (mock, skipping) => {
   });
 
   setup(() => {
-    Object.keys(cachePurgeCache).forEach(k => delete cachePurgeCache[k]);
+    Object.keys(cachePurgeCache).forEach(k => {
+      delete cachePurgeCache[k];
+    });
   });
 
   suiteTeardown(async () => {

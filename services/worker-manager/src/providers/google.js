@@ -489,12 +489,13 @@ export class GoogleProvider extends Provider {
       }
 
       const seenByGroup = this.seenByWorkerGroup[workerPoolId] || {};
-      Object.entries(seenByGroup).forEach(([workerGroup, groupSeen]) =>
+      Object.entries(seenByGroup).forEach(([workerGroup, groupSeen]) => {
         this.monitor.metric.scanSeen(groupSeen, {
           providerId: this.providerId,
           workerPoolId,
           workerGroup,
-        }));
+        });
+      });
 
       if (this.errors[workerPoolId].length) {
         await Promise.all(this.errors[workerPoolId].map(error => this.reportError({ workerPool, ...error })));

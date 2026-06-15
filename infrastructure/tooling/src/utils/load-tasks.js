@@ -25,7 +25,9 @@ export const loadTasks = async (dirname) => {
 
   await Promise.all(files.map(async (file) => {
     const { tasks } = await import(path.join(dirname, file));
-    tasks.forEach(val => ensureTask(result, val));
+    tasks.forEach(val => {
+      ensureTask(result, val);
+    });
   }));
 
   return result;

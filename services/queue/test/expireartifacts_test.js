@@ -21,7 +21,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     ['expire s3 artifacts using bulk delete', true, undefined],
     ['expire s3 artifacts using single delete', false, undefined],
     ['expire s3 artifacts using single delete and batch size 1', false, 1],
-  ].forEach(([name, useBulkDelete, batchSize]) =>
+  ].forEach(([name, useBulkDelete, batchSize]) => {
     test(name, async () => {
       const yesterday = taskcluster.fromNow('-1 day');
       const today = new Date();
@@ -86,75 +86,77 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
         Prefix: `${taskId}/`,
       }));
       assume(objects.Contents.length).equals(0);
-    }),
-  );
+    });
+  });
 
   [
     ['expire s3 artifacts handle missing ones using bulk delete', true],
     ['expire s3 artifacts handle missing ones using single delete', false],
-  ].forEach(([name, useBulkDelete]) => test(name, async () => {
-    const yesterday = taskcluster.fromNow('-1 day');
-    const today = new Date();
-    const taskId = slugid.nice();
-    const bucket = await helper.load('publicArtifactBucket');
+  ].forEach(([name, useBulkDelete]) => {
+    test(name, async () => {
+      const yesterday = taskcluster.fromNow('-1 day');
+      const today = new Date();
+      const taskId = slugid.nice();
+      const bucket = await helper.load('publicArtifactBucket');
 
-    await helper.load('cfg');
-    helper.load.cfg('aws.useBulkDelete', useBulkDelete);
+      await helper.load('cfg');
+      helper.load.cfg('aws.useBulkDelete', useBulkDelete);
 
-    const maxUploads = 1;
+      const maxUploads = 1;
 
-    for (let i = 0; i < MAX_ARTIFACTS; i++) {
-      await helper.db.fns.create_queue_artifact_2(
-        taskId,
-        i,
-        `name-${i}`,
-        's3',
-        'content-type',
-        {
-          bucket: bucket.bucket,
-          prefix: `${taskId}/${i}/log.log`,
-        },
-        false,
-        yesterday,
-        null,
-      );
-    }
-    // don't "upload" all files, just one to make them all fail during deletion
-    await bucket.s3.send(new PutObjectCommand({
-      Bucket: bucket.bucket,
-      Key: `${taskId}/1/log.log`,
-      Body: 'there can be only one',
-    }));
+      for (let i = 0; i < MAX_ARTIFACTS; i++) {
+        await helper.db.fns.create_queue_artifact_2(
+          taskId,
+          i,
+          `name-${i}`,
+          's3',
+          'content-type',
+          {
+            bucket: bucket.bucket,
+            prefix: `${taskId}/${i}/log.log`,
+          },
+          false,
+          yesterday,
+          null,
+        );
+      }
+      // don't "upload" all files, just one to make them all fail during deletion
+      await bucket.s3.send(new PutObjectCommand({
+        Bucket: bucket.bucket,
+        Key: `${taskId}/1/log.log`,
+        Body: 'there can be only one',
+      }));
 
-    // check that the s3 objects exist
-    let objects = await bucket.s3.send(new ListObjectsCommand({
-      Bucket: bucket.bucket,
-      Prefix: `${taskId}/`,
-    }));
-    assume(objects.Contents.length).equals(maxUploads);
+      // check that the s3 objects exist
+      let objects = await bucket.s3.send(new ListObjectsCommand({
+        Bucket: bucket.bucket,
+        Prefix: `${taskId}/`,
+      }));
+      assume(objects.Contents.length).equals(maxUploads);
 
-    let rows = await helper.db.fns.get_expired_artifacts_for_deletion_2({
-      expires_in: today,
-      page_size_in: 1000,
+      let rows = await helper.db.fns.get_expired_artifacts_for_deletion_2({
+        expires_in: today,
+        page_size_in: 1000,
+      });
+      assume(rows.length).equals(MAX_ARTIFACTS);
+
+      debug('### Expire artifacts');
+      await helper.runExpiration('expire-artifacts');
+
+      rows = await helper.db.fns.get_expired_artifacts_for_deletion_2({
+        expires_in: today,
+        page_size_in: 1000,
+      });
+      assume(rows.length).equals(0);
+
+      // check that the s3 objects are gone
+      objects = await bucket.s3.send(new ListObjectsCommand({
+        Bucket: bucket.bucket,
+        Prefix: `${taskId}/`,
+      }));
+      assume(objects.Contents.length).equals(0);
     });
-    assume(rows.length).equals(MAX_ARTIFACTS);
-
-    debug('### Expire artifacts');
-    await helper.runExpiration('expire-artifacts');
-
-    rows = await helper.db.fns.get_expired_artifacts_for_deletion_2({
-      expires_in: today,
-      page_size_in: 1000,
-    });
-    assume(rows.length).equals(0);
-
-    // check that the s3 objects are gone
-    objects = await bucket.s3.send(new ListObjectsCommand({
-      Bucket: bucket.bucket,
-      Prefix: `${taskId}/`,
-    }));
-    assume(objects.Contents.length).equals(0);
-  }));
+  });
 
   test('expire non s3 artifacts', async () => {
     const yesterday = taskcluster.fromNow('-1 day');

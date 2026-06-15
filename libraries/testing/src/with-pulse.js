@@ -28,8 +28,9 @@ export default ({ helper, skipping, namespace }) => {
     helper.assertPulseMessage = (exchange, check) => {
       if (!matchingMessageExists(exchange, check)) {
         debugPulseAssertion(`${client.messages.length} pulse messages recorded:`);
-        client.messages.forEach(({ exchange, routingKey }) =>
-          debugPulseAssertion(`${exchange} - ${routingKey}`));
+        client.messages.forEach(({ exchange, routingKey }) => {
+          debugPulseAssertion(`${exchange} - ${routingKey}`);
+        });
         throw new Error(`No matching messages found with exchange ${exchange}`);
       }
     };
@@ -37,8 +38,9 @@ export default ({ helper, skipping, namespace }) => {
     helper.assertNoPulseMessage = (exchange, check) => {
       if (matchingMessageExists(exchange, check)) {
         debugPulseAssertion(`${client.messages.length} pulse messages recorded:`);
-        client.messages.forEach(({ exchange, routingKey }) =>
-          debugPulseAssertion(`${exchange} - ${routingKey}`));
+        client.messages.forEach(({ exchange, routingKey }) => {
+          debugPulseAssertion(`${exchange} - ${routingKey}`);
+        });
         throw new Error(`Matching messages found with exchange ${exchange}`);
       }
     };
@@ -70,9 +72,10 @@ export default ({ helper, skipping, namespace }) => {
       }
       if (!delivered) {
         debugPulseAssertion(`${client.consumers.length} consumers registered:`);
-        client.consumers.forEach(cons =>
+        client.consumers.forEach(cons => {
           debugPulseAssertion(`- ${cons.bindings.map(({ exchange, routingKeyPattern }) =>
-            `${exchange} - ${routingKeyPattern}`).join('; ')}`));
+            `${exchange} - ${routingKeyPattern}`).join('; ')}`);
+        });
 
         throw new Error('Fake message not delivered to any consumers');
       }

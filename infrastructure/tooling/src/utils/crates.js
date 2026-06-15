@@ -69,7 +69,9 @@ export const cargoPublish = async ({ dir, token, push, logfile, utils }) => {
       }
 
       const loglines = data =>
-        data.toString('utf-8').trimRight().split(/[\r\n]+/).forEach(l => observer.next(l));
+        data.toString('utf-8').trimRight().split(/[\r\n]+/).forEach(l => {
+          observer.next(l);
+        });
       proc.stdout.on('data', loglines);
       proc.stderr.on('data', loglines);
       proc.on('close', code => {

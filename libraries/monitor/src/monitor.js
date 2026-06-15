@@ -354,7 +354,9 @@ class Monitor {
         assert(level !== 'any' || overrides.level !== undefined, 'Must provide `overrides.level` if registered level is `any`.');
         const providedFields = Object.keys(fields);
         assert(!providedFields.includes('v'), '"v" is a reserved field for logging messages.');
-        requiredFields.forEach(f => assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`));
+        requiredFields.forEach(f => {
+          assert(providedFields.includes(f), `Log message "${name}" must include field "${f}".`);
+        });
       }
       const lv = level === 'any' ? overrides.level : level;
       this._log[lv](type, { v: version, ...fields });
