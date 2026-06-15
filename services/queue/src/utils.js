@@ -80,7 +80,6 @@ export const artifactUtils = {
             err.taskId = entry.taskId;
             err.runId = entry.runId;
             monitor.reportError(err);
-            continue;
           }
         }
       }
