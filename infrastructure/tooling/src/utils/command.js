@@ -192,7 +192,7 @@ export const checkExecutableExists = async (executable) => {
   try {
     await execFileAsync(command, [executable]);
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 };

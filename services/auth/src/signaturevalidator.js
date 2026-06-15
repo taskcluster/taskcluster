@@ -67,7 +67,7 @@ const parseExt = (ext) => {
   // Attempt to parse ext
   try {
     ext = JSON.parse(Buffer.from(ext, 'base64').toString('utf-8'));
-  } catch (err) {
+  } catch {
     throw new Error('Failed to parse ext');
   }
 

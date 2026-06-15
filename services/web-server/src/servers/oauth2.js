@@ -249,7 +249,7 @@ export default (cfg, db, strategies, auth, monitor) => {
           } else {
             expires = req.query.expires;
           }
-        } catch (e) {
+        } catch {
           // req.query.expires was probably an invalid date.
           // We default to the max expiration time defined by the client.
         }

@@ -889,7 +889,7 @@ tasks.push({
             cpu: DEFAULT_RESOURCES[`${serviceName}.${proc}`][0],
             memory: DEFAULT_RESOURCES[`${serviceName}.${proc}`][1],
           };
-        } catch (e) {
+        } catch {
           // default for the defaults
           return { cpu: '50m', memory: '100Mi' };
         }
