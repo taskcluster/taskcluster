@@ -5,7 +5,7 @@
  * appropriate arity (one more than the input arity, to account for the 'done' argument)
  */
 export default (fn, { returnsArray } = {}) => {
-  // eslint-disable-next-line no-unused-vars
+  // biome-ignore lint/correctness/noUnusedVariables: referenced only inside the eval'd string below, which biome can't see
   const call = (self, args) => {
     const done = args.pop();
     Promise.resolve(fn.apply(self, args)).then(
