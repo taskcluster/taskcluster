@@ -90,7 +90,7 @@ export const dbDowngrade = async (options) => {
 
   const { dbVersion } = options;
   const toVersion = parseInt(dbVersion, 10);
-  if (!dbVersion.match(/^[0-9]+$/) || isNaN(toVersion)) {
+  if (!dbVersion.match(/^[0-9]+$/) || Number.isNaN(toVersion)) {
     throw new Error('Missing or invalid --db-version');
   }
 

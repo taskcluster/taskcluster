@@ -200,7 +200,7 @@ export const runOnlineBatches = async ({ client, showProgress, versionNum, kind 
 
       // update the batch size to try to get to batchTime (but minimum of one)
       const rate = eta.rate();
-      if (!isNaN(rate)) {
+      if (!Number.isNaN(rate)) {
         batchSize = Math.round(Math.max(1, rate * batchTime));
       }
       if (hooks.batchSize) {

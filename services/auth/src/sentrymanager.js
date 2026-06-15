@@ -95,7 +95,7 @@ const parseKeys = (keys, prefix) => {
       continue;
     }
     const expires = new Date(match[1]);
-    if (isNaN(expires)) {
+    if (Number.isNaN(expires.getTime())) {
       continue;
     }
     results.push({
