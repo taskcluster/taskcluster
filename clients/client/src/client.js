@@ -283,7 +283,7 @@ export const createClient = (reference, name) => {
 
       // If set of authorized scopes is provided, we'll restrict the request
       // to only use these scopes
-      if (this._options.authorizedScopes instanceof Array) {
+      if (Array.isArray(this._options.authorizedScopes)) {
         ext.authorizedScopes = this._options.authorizedScopes;
       }
 
@@ -747,7 +747,7 @@ export const createTemporaryCredentials = (options) => {
          'credentials; ensure that options.credentials.certificate is null');
   assert(options.start instanceof Date, 'options.start must be a Date');
   assert(options.expiry instanceof Date, 'options.expiry must be a Date');
-  assert(options.scopes instanceof Array, 'options.scopes must be an array');
+  assert(Array.isArray(options.scopes), 'options.scopes must be an array');
   options.scopes.forEach((scope) => {
     assert(typeof scope === 'string',
       'options.scopes must be an array of strings');
