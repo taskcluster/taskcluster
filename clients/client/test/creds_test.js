@@ -24,9 +24,9 @@ suite(testing.suiteName(), () => {
 
   const expectError = (promise, code) => {
     return promise.then(() => {
-      assert(false, 'Expected error code: ' + code + ', but got a response');
+      assert(false, `Expected error code: ${code}, but got a response`);
     }, err => {
-      assert(err.code === code, 'Expected error with code: ' + code + ' but got ' + err.code);
+      assert(err.code === code, `Expected error with code: ${code} but got ${err.code}`);
     });
   };
 
