@@ -44,7 +44,7 @@ suite(testing.suiteName(), () => {
   });
 
   class TestStrategy {
-    constructor({ name, cfg }) {
+    constructor({ name }) {
       this.identityProviderId = name;
     }
 

@@ -35,7 +35,7 @@ helper.withDb = (mock, skipping) => {
  * helper.creator.shouldFail to make the TaskCreator fail.
  * Call this before withServer.
  */
-helper.withTaskCreator = (mock, skipping) => {
+helper.withTaskCreator = skipping => {
   suiteSetup(async () => {
     if (skipping()) {
       return;
@@ -54,7 +54,7 @@ helper.withTaskCreator = (mock, skipping) => {
   });
 };
 
-helper.withPulse = (mock, skipping) => {
+helper.withPulse = skipping => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-hooks' });
 };
 
@@ -65,7 +65,7 @@ helper.withPulse = (mock, skipping) => {
  * This also sets up helper.hooks as an API client, using scopes configurable
  * with helper.scopes([..]); and configures fakeAuth to support that.
  */
-helper.withServer = (mock, skipping) => {
+helper.withServer = skipping => {
   let webServer;
 
   suiteSetup(async () => {
@@ -115,7 +115,7 @@ helper.withServer = (mock, skipping) => {
   });
 };
 
-helper.resetTables = (mock, skipping) => {
+helper.resetTables = () => {
   setup('reset tables', async () => {
     await testing.resetTables({ tableNames: [
       'hooks',

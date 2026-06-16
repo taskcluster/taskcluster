@@ -2,7 +2,7 @@ import glob from 'glob';
 import path from 'node:path';
 import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
-export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks }) => {
   ensureTask(tasks, {
     title: 'Build worker-runner artifacts',
     requires: ['clean-artifacts-dir'],
@@ -33,7 +33,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: [
       'target-worker-runner',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {
         'target-worker-runner': [

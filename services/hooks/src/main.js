@@ -52,8 +52,8 @@ const load = loader({
   },
 
   schemaset: {
-    requires: ['cfg'],
-    setup: ({ cfg }) => {
+    requires: [],
+    setup: () => {
       return new SchemaSet({
         serviceName: 'hooks',
       });
@@ -135,8 +135,8 @@ const load = loader({
   },
 
   generateReferences: {
-    requires: ['cfg', 'schemaset'],
-    setup: async ({ cfg, schemaset }) => libReferences.fromService({
+    requires: ['schemaset'],
+    setup: async ({ schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('hooks'), MonitorManager.metricsReference('hooks')],
     }).then(ref => ref.generateReferences()),
@@ -173,8 +173,8 @@ const load = loader({
   },
 
   expires: {
-    requires: ['cfg', 'db', 'monitor'],
-    setup: ({ cfg, db, monitor }, ownName) => {
+    requires: ['db', 'monitor'],
+    setup: ({ db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Expiring lastFires rows');
         const count = (await db.fns.expire_last_fires())[0].expire_last_fires;

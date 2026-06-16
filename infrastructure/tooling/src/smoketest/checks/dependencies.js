@@ -16,7 +16,7 @@ tasks.push({
   provides: [
     'target-dependencies',
   ],
-  run: async (requirements, utils) => {
+  run: async (_requirements, utils) => {
     const taskCount = 3;
     const taskIds = [];
     const queue = new taskcluster.Queue(taskcluster.fromEnvVars());

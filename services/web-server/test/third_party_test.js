@@ -11,9 +11,9 @@ import hash from '../src/utils/hash.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withFakeAuth(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withFakeAuth(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   const url = path => `http://127.0.0.1:${helper.serverPort}${path}`;
   const getQuery = (url, sep = '?') => {

@@ -61,7 +61,7 @@ export const resetTables = async ({ tableNames }) => {
  *
  * It's up to the caller to set up and clear any data between test cases.
  */
-export const withDb = (mock, skipping, helper, serviceName) => {
+export const withDb = (_mock, skipping, helper, serviceName) => {
   assert(testDbUrl,
     "TEST_DB_URL must be set to run these tests - see dev-docs/development-process.md for more information");
 

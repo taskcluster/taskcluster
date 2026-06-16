@@ -14,7 +14,7 @@ import assert from 'node:assert';
  * }} options
  * @returns {import('../../@types/index.d.ts').APIRequestHandler<TContext>}
  */
-export const callHandler = ({ entry, context, monitor }) => {
+export const callHandler = ({ entry, context: _context, monitor }) => {
   assert(entry.handler, 'No handler is provided');
   return (req, res, next) => {
     Promise.resolve(null).then(() => {

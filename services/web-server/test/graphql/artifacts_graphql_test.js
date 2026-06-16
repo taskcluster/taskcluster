@@ -4,11 +4,11 @@ import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
-  helper.withFakeAuthFactory(mock, skipping);
+  helper.withFakeAuthFactory(skipping);
   helper.withDb(mock, skipping);
-  helper.withClients(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withClients(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   suite('Artifact Queries GraphQL', () => {
     test('artifacts query works', async () => {

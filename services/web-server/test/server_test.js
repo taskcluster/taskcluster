@@ -5,7 +5,7 @@ import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.resetTables();
 
   const makeSuite = (allowedCORSOrigins, requestOrigin, responseOrigin) => {
     suite(`with ${JSON.stringify(allowedCORSOrigins)}, request origin = ${requestOrigin}`, () => {
@@ -19,7 +19,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         helper.load.restore();
       });
 
-      helper.withServer(mock, skipping);
+      helper.withServer(skipping);
 
       test('request', async () => {
         try {
@@ -47,7 +47,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     'https://deploy-preview-897--taskcluster-web.netlify.com/');
 
   suite('auth endpoints', () => {
-    helper.withServer(mock, skipping);
+    helper.withServer(skipping);
 
     test('login/logout', async () => {
       const logout = await request.post(`http://localhost:${helper.serverPort}/login/logout`);
@@ -56,7 +56,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   suite('service endpoints', () => {
-    helper.withServer(mock, skipping);
+    helper.withServer(skipping);
 
     test('version', async () => {
       const version = await request.get(`http://localhost:${helper.serverPort}/api/web-server/v1/__version__`);

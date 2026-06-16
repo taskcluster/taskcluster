@@ -7,8 +7,6 @@ import { DOWNLOAD_METHODS } from '../../src/api.js';
  * Test properties general to all backends.
  */
 export const testBackend = ({
-  mock, skipping,
-
   // optional title suffix
   title,
 

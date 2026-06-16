@@ -1,9 +1,9 @@
 export default {
   Query: {
-    getCredentials(parent, args, { loaders }) {
+    getCredentials(_parent, args, { loaders }) {
       return loaders.getCredentials.load(args);
     },
-    isLoggedIn(parent, args, { loaders }) {
+    isLoggedIn(_parent, args, { loaders }) {
       return loaders.isLoggedIn.load(args);
     },
   },

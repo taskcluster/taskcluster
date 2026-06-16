@@ -6,7 +6,7 @@ export const tasks = [{
   title: 'Workspace package.json files do not have forbidden fields',
   requires: [],
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     const packageJsons = glob.sync(
       '{services,libraries}/*/package.json',
       { cwd: REPO_ROOT });

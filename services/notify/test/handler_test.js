@@ -5,13 +5,13 @@ import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withDenier(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
-  helper.withFakeMatrix(mock, skipping);
-  helper.withFakeSlack(mock, skipping);
+  helper.withDenier(skipping);
+  helper.withFakeQueue(skipping);
+  helper.withFakeMatrix(skipping);
+  helper.withFakeSlack(skipping);
   helper.withSES(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServer(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServer(skipping);
 
   const created = new Date();
   const deadline = new Date();

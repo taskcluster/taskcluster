@@ -2,9 +2,9 @@ import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
-  helper.withFakeQueue(mock, skipping);
-  helper.withFakeNotify(mock, skipping);
+helper.secrets.mockSuite(testing.suiteName(), [], (_mock, skipping) => {
+  helper.withFakeQueue(skipping);
+  helper.withFakeNotify(skipping);
 
   let estimator, monitor;
 

@@ -8,10 +8,10 @@ import { toDataUrl, TestBackend } from '../src/backends/test.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.resetTables(mock, skipping);
-  helper.withBackends(mock, skipping);
-  helper.withMiddleware(mock, skipping);
-  helper.withServer(mock, skipping);
+  helper.resetTables();
+  helper.withBackends(skipping);
+  helper.withMiddleware(skipping);
+  helper.withServer(skipping);
 
   // these don't have to be hashes of anything, just have the right format
   const sha256 = 'e38808a4dbfdd9c82a351cc9a6055dffc7b4cc8e12020b2685f8eef92f5d1544';

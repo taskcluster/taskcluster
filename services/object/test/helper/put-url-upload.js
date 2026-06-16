@@ -11,8 +11,6 @@ const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-
  * of tests.
  */
 export const testPutUrlUpload = ({
-  mock, skipping,
-
   // optional title suffix
   title,
 
@@ -62,7 +60,7 @@ export const testPutUrlUpload = ({
       return { name, data, res, uploadId, object };
     };
 
-    const performUpload = async ({ name, data, res, uploadId }) => {
+    const performUpload = async ({ data, res }) => {
       assert(new Date(res.putUrl.expires) > new Date());
 
       let req = request.put(res.putUrl.url);

@@ -21,7 +21,7 @@ const filterTaskActions = (actions, contextScope) =>
       : !isContextSize(action.context, 0);
   });
 
-export default ({ queue, index }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ queue, index }, isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const task = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async (taskId) => {

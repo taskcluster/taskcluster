@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
-export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions }) => {
   ensureTask(tasks, {
     title: 'Build client-shell artifacts',
     requires: ['clean-artifacts-dir'],
@@ -69,7 +69,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: [
       'target-client-shell',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {
         'target-client-shell': [

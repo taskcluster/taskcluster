@@ -7,7 +7,7 @@ import { LEVELS } from '@taskcluster/lib-monitor';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 suite(testing.suiteName(), () => {
-  helper.withAmazonIPRanges(false, () => false);
+  helper.withAmazonIPRanges(() => false);
 
   let monitor;
   setup(async () => {

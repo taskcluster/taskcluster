@@ -2,7 +2,7 @@ import DataLoader from 'dataloader';
 import ConnectionLoader from '../ConnectionLoader.js';
 import WorkerCompact from '../entities/WorkerCompact.js';
 
-export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ workerManager }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const worker = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ provisionerId, workerType, workerGroup, workerId }) => {

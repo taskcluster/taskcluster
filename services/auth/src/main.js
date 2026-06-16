@@ -69,15 +69,15 @@ const load = Loader({
   },
 
   schemaset: {
-    requires: ['cfg'],
-    setup: ({ cfg }) => new SchemaSet({
+    requires: [],
+    setup: () => new SchemaSet({
       serviceName: 'auth',
     }),
   },
 
   generateReferences: {
-    requires: ['cfg', 'schemaset'],
-    setup: async ({ cfg, schemaset }) => libReferences.fromService({
+    requires: ['schemaset'],
+    setup: async ({ schemaset }) => libReferences.fromService({
       schemaset,
       references: [builder.reference(), exchanges.reference(), MonitorManager.reference('auth'), MonitorManager.metricsReference('auth')],
     }).then(ref => ref.generateReferences()),
@@ -223,8 +223,8 @@ const load = Loader({
   },
 
   'purge-expired-clients': {
-    requires: ['cfg', 'db', 'monitor'],
-    setup: ({ cfg, db, monitor }, ownName) => {
+    requires: ['db', 'monitor'],
+    setup: ({ db, monitor }, ownName) => {
       return monitor.oneShot(ownName, async () => {
         debug('Purging expired clients');
         const records = await db.fns.expire_clients_return_client_ids();

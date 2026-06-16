@@ -35,7 +35,7 @@ export const readUserConfig = async () => {
   return userConfig;
 };
 
-export const init = async (options) => {
+export const init = async (_options) => {
   const configTmpl = await readRepoYAML(path.join('dev-docs', 'dev-config-example.yml'));
   let userConfig = await readUserConfig();
 
@@ -102,25 +102,25 @@ export const dbDowngrade = async (options) => {
   await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
 };
 
-export const apply = async (options) => {
+export const apply = async (_options) => {
   await helm('apply');
 };
 
-export const verify = async (options) => {
+export const verify = async (_options) => {
   await helm('verify');
 };
 
-export const templates = async (options) => {
+export const templates = async (_options) => {
   const templates = await helm('dump-templates');
   return templates;
 };
 
-export const ensureDb = async (options) => {
+export const ensureDb = async (_options) => {
   const userConfig = await readUserConfig();
   await postgresEnsureDb({ userConfig });
 };
 
-export const ensureRabbit = async (options) => {
+export const ensureRabbit = async (_options) => {
   const userConfig = await readUserConfig();
   const prompts = [];
 
@@ -130,7 +130,7 @@ export const ensureRabbit = async (options) => {
   await rabbitEnsureResources({ userConfig, answer });
 };
 
-export const delete_ = async (options) => {
+export const delete_ = async (_options) => {
   await helm('delete');
 };
 

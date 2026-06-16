@@ -4,7 +4,7 @@ import pg from 'pg';
 import { makePgUrl } from './util.js';
 import URL from 'node:url';
 
-export const postgresPrompts = ({ userConfig, prompts, configTmpl }) => {
+export const postgresPrompts = ({ userConfig, prompts }) => {
   prompts.push({
     when: () => !userConfig.meta?.dbPublicIp,
     type: 'input',

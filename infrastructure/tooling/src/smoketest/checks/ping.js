@@ -14,7 +14,7 @@ tasks.push({
   provides: [
     `deployment-version`,
   ],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     const dunderVersion = `${process.env.TASKCLUSTER_ROOT_URL}/__version__`;
     const resp = await got(dunderVersion, { throwHttpErrors: true });
 
@@ -34,7 +34,7 @@ SERVICES.forEach(name => {
     provides: [
       `ping-${name}`,
     ],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       const procs = await readRepoYAML(path.join('services', name, 'procs.yml'));
 
       let checked = false;
@@ -70,5 +70,5 @@ tasks.push({
   provides: [
     `target-ping`,
   ],
-  run: async (requirements, utils) => {},
+  run: async (_requirements, _utils) => {},
 });

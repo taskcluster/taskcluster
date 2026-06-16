@@ -8,10 +8,10 @@ const TC_DEV_INSTALLATION_ID = 28513985;
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withFakeGithub(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withFakeGithub();
+  helper.withPulse(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   let github = null;
   let monitor;

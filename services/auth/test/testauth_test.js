@@ -16,9 +16,9 @@ suite(testing.suiteName(), () => {
   helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
-    helper.withPulse(mock, skipping);
-    helper.withServers(mock, skipping);
-    helper.resetTables(mock, skipping);
+    helper.withPulse(skipping);
+    helper.withServers(skipping);
+    helper.resetTables();
 
     const testAuth = (name, { config, requiredScopes, clientScopes, errorCode }) => {
       test(name, async () => {
@@ -103,9 +103,9 @@ suite(testing.suiteName(), () => {
   helper.secrets.mockSuite('testAuthGet', ['azure', 'gcp'], (mock, skipping) => {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
-    helper.withPulse(mock, skipping);
-    helper.withServers(mock, skipping);
-    helper.resetTables(mock, skipping);
+    helper.withPulse(skipping);
+    helper.withServers(skipping);
+    helper.resetTables();
 
     const testAuthGet = (name, { config, errorCode }) => {
       test(name, async () => {

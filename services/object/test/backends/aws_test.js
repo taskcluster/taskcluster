@@ -25,7 +25,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   }
 
   helper.withDb(mock, skipping);
-  helper.withBackends(mock, skipping);
+  helper.withBackends(skipping);
 
   let secret, s3;
 
@@ -196,7 +196,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     title: 'public bucket',
     backendId: 'awsPublic',
     makeObject,
-    async checkUrl({ name, url }) {
+    async checkUrl({ url }) {
       // *not* signed
       assert(!url.match(/X-Amz-Credential=/), `got ${url}`);
       assert(!url.match(/X-Amz-Signature=/), `got ${url}`);
@@ -210,7 +210,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     title: 'private bucket',
     backendId: 'awsPrivate',
     makeObject,
-    async checkUrl({ name, url }) {
+    async checkUrl({ url }) {
       // ..contains S3 signature query args (note that testSimpleDownloadMethod
       // will verify that the URL actually works; this just verifies that it
       // is not un-signed).
@@ -225,7 +225,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     mock, skipping, prefix,
     backendId: 'awsPrivate',
     makeObject,
-    async checkUrl({ name, url }) {
+    async checkUrl({ url }) {
       // URL should always be signed
       assert(url.match(/X-Amz-Credential=/), `got ${url}`);
       assert(url.match(/X-Amz-Signature=/), `got ${url}`);

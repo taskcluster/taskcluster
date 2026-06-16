@@ -73,7 +73,7 @@ class Handlers {
   /**
    * Set up the handlers.
    */
-  async setup(options = {}) {
+  async setup(_options = {}) {
     assert(!this.jobPq, 'Cannot setup twice!');
     assert(!this.resultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');

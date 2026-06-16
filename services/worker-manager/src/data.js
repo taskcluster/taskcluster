@@ -375,7 +375,7 @@ export class WorkerPoolLaunchConfig {
   }
 
   // remove launch configurations that no longer have workers associated with them
-  static async expire({ db, monitor }) {
+  static async expire({ db }) {
     const rows = await db.fns.expire_worker_pool_launch_configs();
     return rows.map(row => row.launch_config_id);
   }
@@ -657,7 +657,7 @@ export class Worker {
 
   // Expire workers,
   // returning the count of workers expired.
-  static async expire({ db, monitor }) {
+  static async expire({ db }) {
     return (await db.fns.expire_workers(new Date()))[0].expire_workers;
   }
 
@@ -855,7 +855,7 @@ export class Worker {
 
     this._properties = {
       ...worker,
-      ..._.pickBy(_.pick(this, queueFields), (v, k) => worker[k] === undefined),
+      ..._.pickBy(_.pick(this, queueFields), (_v, k) => worker[k] === undefined),
     };
   }
 

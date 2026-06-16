@@ -120,7 +120,7 @@ export const rabbitResources = async ({ userConfig, answer, configTmpl }) => {
   return userConfig;
 };
 
-export const rabbitAdminPasswordPrompt = ({ userConfig, prompts }) => {
+export const rabbitAdminPasswordPrompt = ({ prompts }) => {
   prompts.push({
     type: 'password',
     name: 'rabbitAdminPassword',

@@ -9,10 +9,10 @@ import path from 'node:path';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withProviders(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withProviders();
+  helper.withServer(skipping);
+  helper.resetTables();
 
   const workerPoolId = 'pp/ee';
   const providerId = 'testing1';

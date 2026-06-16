@@ -15,7 +15,7 @@ helper.secrets.mockSuite('setup and listening', ['azure', 'gcp'], (mock, skippin
   let scopeResolver;
 
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
+  helper.withPulse(skipping);
   let reloads = [];
 
   setup('mock scoperesolver reloading', async () => {
@@ -414,7 +414,7 @@ suite(testing.suiteName(), () => {
         return result;
       };
     } else {
-      time = (step, fn) => fn();
+      time = (_step, fn) => fn();
     }
 
     const testResolver = (title, { roles, scopes, expected }) => {

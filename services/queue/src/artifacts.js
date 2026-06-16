@@ -552,7 +552,7 @@ export const loadArtifactsRoutes = (builder) => {
    * names is used internally for tracking artifact names that have already been seen
    * when traversing links.
    */
-  const replyWithArtifactDownload = async function({ taskId, runId, name, req, res, names }) {
+  const replyWithArtifactDownload = async function({ taskId, runId, name, req, res }) {
     const artifact = await getArtifactFollowingLinks.call(this, { taskId, runId, name, req, res });
 
     const { storageType } = artifact;
@@ -885,7 +885,7 @@ export const loadArtifactsRoutes = (builder) => {
    * does not return information about the artifact's content (which would require a
    * `queue:get-artifact:..` scope).
    */
-  const replyWithArtifactInfo = async function({ taskId, runId, name, req, res }) {
+  const replyWithArtifactInfo = async function({ taskId, runId, name, res }) {
     const artifact = artifactUtils.fromDbRows(
       await this.db.fns.get_queue_artifact_2(taskId, runId, name));
 

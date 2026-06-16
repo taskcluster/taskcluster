@@ -37,7 +37,7 @@ suite(testing.suiteName(), () => {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.status(200).send('Hello World');
   });
 
@@ -51,7 +51,7 @@ suite(testing.suiteName(), () => {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.reply({ value: 4 });
   });
 
@@ -65,7 +65,7 @@ suite(testing.suiteName(), () => {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.reply({ value: 12 });
   });
 
@@ -80,7 +80,7 @@ suite(testing.suiteName(), () => {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.status(200).send('Hello World');
   });
 
@@ -95,7 +95,7 @@ suite(testing.suiteName(), () => {
     category: 'API Library',
     title: 'Test End-Point',
     description: 'Place we can call to test something',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.reply({ value: 12 });
   });
 
@@ -109,7 +109,7 @@ suite(testing.suiteName(), () => {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.reply({ value: 'Hello World' });
   });
 
@@ -122,7 +122,7 @@ suite(testing.suiteName(), () => {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.reply();
   });
 
@@ -135,7 +135,7 @@ suite(testing.suiteName(), () => {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.reply();
   });
 
@@ -148,7 +148,7 @@ suite(testing.suiteName(), () => {
     category: 'API Library',
     title: 'Test End-Point',
     description: 'place to call to trigger a double send',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.status(400).json({ error: 'yep' });
     res.status(200).reply({ value: 1 });
   });
@@ -162,7 +162,7 @@ suite(testing.suiteName(), () => {
     category: 'API Library',
     title: 'Test End-Point',
     description: 'place to call to trigger a double send',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.status(400).reply({ value: 1 });
     res.reportError('InputError', 'uhoh', {});
   });
@@ -185,7 +185,7 @@ suite(testing.suiteName(), () => {
     return request
       .post(url)
       .send({ value: 11 })
-      .then(res => assert(false, 'should have failed!'))
+      .then(() => assert(false, 'should have failed!'))
       .catch((err) => {
         assert(err.status === 400, 'Request wasn\'t rejected');
       });
@@ -207,7 +207,7 @@ suite(testing.suiteName(), () => {
     const url = u('/test-invalid-output');
     return request
       .get(url)
-      .then(res => assert(false, 'should have failed!'))
+      .then(() => assert(false, 'should have failed!'))
       .catch((err) => {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
@@ -268,7 +268,7 @@ suite(testing.suiteName(), () => {
       .post(url)
       .send(JSON.stringify({ value: 5 }))
       .set('content-type', 'text/x-json')
-      .then(res => assert(false, 'should have failed!'))
+      .then(() => assert(false, 'should have failed!'))
       .catch((err) => {
         assert(err.status === 400, 'Request wasn\'t rejected');
       });
@@ -289,7 +289,7 @@ suite(testing.suiteName(), () => {
     const url = u('/test-res-reply-post');
     return request
       .post(url)
-      .then((res) => {
+      .then((_res) => {
         assert(false, 'Request validation failed');
       }).catch((err) => {
         assert.equal(err.status, 500);
@@ -317,7 +317,7 @@ suite(testing.suiteName(), () => {
       category: 'API Library',
       title: 'Test End-Point',
       description: '..',
-    }, (req, res) => {});
+    }, (_req, _res) => {});
 
     const schemaset = new SchemaSet({
       serviceName: 'test',

@@ -13,7 +13,7 @@ export const makeSerializable = ({ references }) => {
     return `references/${serviceName}/${apiVersion || 'v1'}/${kind}.json`;
   };
 
-  const namedReferences = references.references.map(({ filename, content }) => ({
+  const namedReferences = references.references.map(({ content }) => ({
     content,
     filename: referenceFilename(content),
   }));
@@ -26,7 +26,7 @@ export const makeSerializable = ({ references }) => {
   }
   const schemaFilename = content => content.$id.replace(urlPattern, 'schemas/$1');
 
-  const namedSchemas = references.schemas.map(({ filename, content }) => ({
+  const namedSchemas = references.schemas.map(({ content }) => ({
     content,
     filename: schemaFilename(content),
   }));

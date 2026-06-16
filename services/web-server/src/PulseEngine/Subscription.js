@@ -94,7 +94,7 @@ export default class Subscription {
         }
         await bindChannel.close();
 
-        const { consumerTag } = await channel.consume(queueName, (amqpMsg, err) => {
+        const { consumerTag } = await channel.consume(queueName, (amqpMsg, _err) => {
           // "If the consumer is cancelled by RabbitMQ, the message callback will be invoked with null."
           // This is most likely due to the queue being deleted, so we just report it to the user.
           if (!amqpMsg) {

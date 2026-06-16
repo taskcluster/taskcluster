@@ -43,7 +43,7 @@ suite(testing.suiteName(), () => {
     test('4xx statuses are returned (not thrown) immediately', async () => {
       let calls = 0;
 
-      throttleRequest.request = async (method, url) => {
+      throttleRequest.request = async (_method, _url) => {
         calls++;
         const err = new Error('uhoh');
         err.status = 424;
@@ -58,7 +58,7 @@ suite(testing.suiteName(), () => {
     test('5xx statuses are retried', async () => {
       let calls = 0;
 
-      throttleRequest.request = async (method, url) => {
+      throttleRequest.request = async (_method, _url) => {
         calls++;
         const err = new Error('uhoh');
         err.status = 543;
@@ -74,7 +74,7 @@ suite(testing.suiteName(), () => {
     test('5xx status retried once returns successful result', async () => {
       let calls = 0;
 
-      throttleRequest.request = async (method, url) => {
+      throttleRequest.request = async (_method, _url) => {
         calls++;
         if (calls >= 1) {
           return { status: 200 };
@@ -90,7 +90,7 @@ suite(testing.suiteName(), () => {
     });
 
     test('connection errors are thrown directly', async () => {
-      throttleRequest.request = async (method, url) => {
+      throttleRequest.request = async (_method, _url) => {
         const err = new Error('uhoh');
         err.code = 'ECONNREFUSED';
         throw err;

@@ -7,9 +7,9 @@ import loader from '../../src/loaders/roles.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withClients(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withClients(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   suite('roles loaders', () => {
     test('load role while gracefully handling errors', async () => {

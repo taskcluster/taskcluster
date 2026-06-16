@@ -46,7 +46,7 @@ suite(testing.suiteName(), () => {
       build.event_id,
     );
 
-    helper.dbTest('create and get', async (db, isFake) => {
+    helper.dbTest('create and get', async (db, _isFake) => {
       await create_build(db, builds[0]);
       const [fetched] = await db.deprecatedFns.get_github_build(builds[0].task_group_id);
       assert(fetched.etag);
@@ -60,7 +60,7 @@ suite(testing.suiteName(), () => {
         await create_build(db, builds[0]);
       }, /duplicate key value violates unique constraint/);
     });
-    helper.dbTest('list', async (db, isFake) => {
+    helper.dbTest('list', async (db, _isFake) => {
       for (let i = 0; i < 10; i++) {
         await create_build(db, builds[i]);
       }
@@ -72,7 +72,7 @@ suite(testing.suiteName(), () => {
         assert.deepEqual(build, builds[builds.length - i - 1]);
       });
     });
-    helper.dbTest('delete', async (db, isFake) => {
+    helper.dbTest('delete', async (db, _isFake) => {
       await create_build(db, builds[0]);
       const [fetched] = await db.deprecatedFns.get_github_build(builds[0].task_group_id);
       assert(fetched.etag);
@@ -81,7 +81,7 @@ suite(testing.suiteName(), () => {
       await db.fns.delete_github_build(builds[0].task_group_id);
       assert.deepEqual(await db.deprecatedFns.get_github_build(builds[0].task_group_id), []);
     });
-    helper.dbTest('set state', async (db, isFake) => {
+    helper.dbTest('set state', async (db, _isFake) => {
       await create_build(db, builds[0]);
       const [fetched] = await db.deprecatedFns.get_github_build(builds[0].task_group_id);
       await db.fns.set_github_build_state(
@@ -144,7 +144,7 @@ suite(testing.suiteName(), () => {
       build.pull_request_number,
     );
 
-    helper.dbTest('create and get', async (db, isFake) => {
+    helper.dbTest('create and get', async (db, _isFake) => {
       await create_build(db, builds[0]);
       const [fetched] = await db.fns.get_github_build_pr(builds[0].task_group_id);
       assert(fetched.etag);
@@ -158,7 +158,7 @@ suite(testing.suiteName(), () => {
         await create_build(db, builds[0]);
       }, /duplicate key value violates unique constraint/);
     });
-    helper.dbTest('list', async (db, isFake) => {
+    helper.dbTest('list', async (db, _isFake) => {
       for (let i = 0; i < 10; i++) {
         await create_build(db, builds[i]);
       }
@@ -175,7 +175,7 @@ suite(testing.suiteName(), () => {
       assert.equal(prBuilds.length, 1);
       assert.deepEqual(prBuilds[0].pull_request_number, builds[0].pull_request_number);
     });
-    helper.dbTest('list pending', async (db, isFake) => {
+    helper.dbTest('list pending', async (db, _isFake) => {
       for (let i = 0; i < 10; i++) {
         await create_build(db, { ...builds[i], state: i < 5 ? 'pending' : 'success' });
       }
@@ -187,7 +187,7 @@ suite(testing.suiteName(), () => {
       assert.equal(prBuilds.length, 1);
       assert.deepEqual(prBuilds[0].pull_request_number, builds[0].pull_request_number);
     });
-    helper.dbTest('delete', async (db, isFake) => {
+    helper.dbTest('delete', async (db, _isFake) => {
       await create_build(db, builds[0]);
       const [fetched] = await db.fns.get_github_build_pr(builds[0].task_group_id);
       assert(fetched.etag);
@@ -196,7 +196,7 @@ suite(testing.suiteName(), () => {
       await db.fns.delete_github_build(builds[0].task_group_id);
       assert.deepEqual(await db.fns.get_github_build_pr(builds[0].task_group_id), []);
     });
-    helper.dbTest('set state', async (db, isFake) => {
+    helper.dbTest('set state', async (db, _isFake) => {
       await create_build(db, builds[0]);
       const [fetched] = await db.fns.get_github_build_pr(builds[0].task_group_id);
       await db.fns.set_github_build_state(
@@ -240,7 +240,7 @@ suite(testing.suiteName(), () => {
       integration.installation_id,
     );
 
-    helper.dbTest('create and get', async (db, isFake) => {
+    helper.dbTest('create and get', async (db, _isFake) => {
       await upsert_integration(db, integrations[0]);
       let [fetched] = await db.fns.get_github_integration(integrations[0].owner);
       assert.deepEqual(fetched, integrations[0]);
@@ -253,7 +253,7 @@ suite(testing.suiteName(), () => {
       [fetched] = await db.fns.get_github_integration(integrations[0].owner);
       assert.deepEqual(fetched, { ...integrations[0], installation_id: 12345 });
     });
-    helper.dbTest('list', async (db, isFake) => {
+    helper.dbTest('list', async (db, _isFake) => {
       for (let i = 0; i < 10; i++) {
         await upsert_integration(db, integrations[i]);
       }
@@ -283,7 +283,7 @@ suite(testing.suiteName(), () => {
       check.check_run_id,
     );
 
-    helper.dbTest('create and get', async (db, isFake) => {
+    helper.dbTest('create and get', async (db, _isFake) => {
       await create_check(db, checks[0]);
       const [fetched] = await db.deprecatedFns.get_github_check_by_task_id(checks[0].task_id);
       assert.deepEqual(fetched, checks[0]);
@@ -297,7 +297,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual([], await db.deprecatedFns.get_github_check_by_task_id('doesntexist'));
     });
 
-    helper.dbTest('create idempotency', async (db, isFake) => {
+    helper.dbTest('create idempotency', async (db, _isFake) => {
       await create_check(db, checks[0]);
       await create_check(db, { ...checks[0], check_run_id: 'abc' });
       const [fetched] = await db.deprecatedFns.get_github_check_by_task_id(checks[0].task_id);

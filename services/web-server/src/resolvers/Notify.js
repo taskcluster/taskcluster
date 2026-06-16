@@ -6,17 +6,17 @@ export default {
     SLACK_CHANNEL: 'slack-channel',
   },
   Query: {
-    listDenylistAddresses(parent, { connection, searchTerm }, { loaders }) {
+    listDenylistAddresses(_parent, { connection, searchTerm }, { loaders }) {
       return loaders.listDenylistAddresses.load({ connection, searchTerm });
     },
   },
   Mutation: {
-    async addDenylistAddress(parent, { address }, { clients }) {
+    async addDenylistAddress(_parent, { address }, { clients }) {
       await clients.notify.addDenylistAddress(address);
 
       return address;
     },
-    async deleteDenylistAddress(parent, { address }, { clients }) {
+    async deleteDenylistAddress(_parent, { address }, { clients }) {
       await clients.notify.deleteDenylistAddress(address);
 
       return address;

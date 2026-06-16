@@ -8,9 +8,9 @@ import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withFakeNotify(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withFakeNotify(skipping);
+  helper.resetTables();
 
   let monitor;
   suiteSetup(async () => {

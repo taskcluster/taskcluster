@@ -65,7 +65,7 @@ helper.withMockedEventIterator = () => {
     PulseEngineCopy.NextAsyncIterator = asyncIterator;
   };
 
-  PulseEngineCopy.eventIterator = (eventName, subscriptions) => {
+  PulseEngineCopy.eventIterator = (_eventName, _subscriptions) => {
     if (!PulseEngineCopy.NextAsyncIterator) {
       throw new Error(`No async iterator to return. Set one up with SetNextAsyncIterator`);
     }
@@ -79,7 +79,7 @@ helper.withMockedEventIterator = () => {
   });
 };
 
-helper.withFakeAuth = (mock, skipping) => {
+helper.withFakeAuth = skipping => {
   suiteSetup('withFakeAuth', () => {
     if (skipping()) {
       return;
@@ -89,7 +89,7 @@ helper.withFakeAuth = (mock, skipping) => {
   });
 };
 
-helper.withFakeAuthFactory = (mock, skipping) => {
+helper.withFakeAuthFactory = skipping => {
   suiteSetup('withFakeAuthFactory', () => {
     if (skipping()) {
       return;
@@ -103,7 +103,7 @@ helper.withFakeAuthFactory = (mock, skipping) => {
   });
 };
 
-helper.withClients = (mock, skipping) => {
+helper.withClients = skipping => {
   suiteSetup('withClients', async () => {
     if (skipping()) {
       return;
@@ -120,7 +120,7 @@ helper.withClients = (mock, skipping) => {
   });
 };
 
-helper.withServer = (mock, skipping) => {
+helper.withServer = skipping => {
   let webServer;
 
   // return a signed-in Superagent agent
@@ -386,7 +386,7 @@ const stubbedAuth = () => {
 };
 
 const stubbedAuthFactory = () => {
-  return ({ credentials }) => new taskcluster.Auth({
+  return () => new taskcluster.Auth({
     rootUrl: helper.rootUrl,
     fake: {
       currentScopes: async () => ({ scopes: ['web:read-pulse'] }),
@@ -443,7 +443,7 @@ const stubbedClients = () => {
             hookId,
           });
         },
-        listLastFires: async (hookGroupId, hookId, filter) => {
+        listLastFires: async (hookGroupId, hookId, _filter) => {
           const taskStates = ['unscheduled', 'pending', 'running', 'completed', 'failed', 'exception', 'unknown'];
           const fireResults = ['success', 'error', 'no-fire'];
           const lastFires = taskStates.map((taskState, i) => ({
@@ -581,7 +581,7 @@ const stubbedClients = () => {
           };
           return Promise.resolve(artifact);
         },
-        listArtifacts: async (taskId, runId, options) => {
+        listArtifacts: async (taskId, runId, _options) => {
           const artifacts = ["1", "2", "3"].map(artifactSuffix => {
             return {
               taskId,
@@ -591,7 +591,7 @@ const stubbedClients = () => {
           });
           return Promise.resolve({ artifacts });
         },
-        listLatestArtifacts: async (taskId, options) => {
+        listLatestArtifacts: async (taskId, _options) => {
           const artifacts = ["1", "2", "3"].map(artifactSuffix => {
             return {
               taskId,
@@ -600,13 +600,13 @@ const stubbedClients = () => {
           });
           return Promise.resolve({ artifacts });
         },
-        pendingTasks: async (taskQueueId) => 0,
+        pendingTasks: async (_taskQueueId) => 0,
       },
     }),
   });
 };
 
-helper.resetTables = (mock, skipping) => {
+helper.resetTables = () => {
   setup('reset tables', async () => {
     await resetTables({ tableNames: [
       'authorization_codes',

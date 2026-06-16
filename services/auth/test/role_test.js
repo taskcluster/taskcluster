@@ -10,8 +10,8 @@ import taskcluster from '@taskcluster/client';
 helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   helper.withCfg(mock, skipping);
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServers(skipping);
 
   const sorted = (arr) => {
     arr.sort();

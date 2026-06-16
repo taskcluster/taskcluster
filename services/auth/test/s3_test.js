@@ -18,8 +18,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
   // pulse/azure aren't under test, so we always mock them out
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServers(skipping);
 
   let bucket;
   setup(() => {

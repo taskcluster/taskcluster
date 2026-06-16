@@ -59,7 +59,7 @@ export class Estimator {
     minCapacity,
     maxCapacity,
     scalingRatio = 1.0,
-    workerInfo: { existingCapacity = 0, stoppingCapacity = 0, requestedCapacity = 0 },
+    workerInfo: { existingCapacity = 0, stoppingCapacity = 0 },
   }) {
     const { pendingTasks, claimedTasks } = await this.queue.taskQueueCounts(workerPoolId);
     const { desiredCapacity } = this.#calculateCapacity({

@@ -54,7 +54,7 @@ suite(testing.suiteName(), () => {
   test('logger separates lines with newlines', () => {
     let results = Buffer.alloc(0);
     const destination = new stream.Writable({
-      write: (chunk, encoding, next) => {
+      write: (chunk, _encoding, next) => {
         results = Buffer.concat([results, chunk]);
         next();
       },

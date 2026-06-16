@@ -92,13 +92,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
   suite('without public artifact signing', () => {
     withCleanLoaderState();
-    helper.withObjectService(mock, skipping);
+    helper.withObjectService();
     helper.withDb(mock, skipping);
-    helper.withAmazonIPRanges(mock, skipping);
-    helper.withPulse(mock, skipping);
+    helper.withAmazonIPRanges(skipping);
+    helper.withPulse(skipping);
     helper.withS3(mock, skipping);
-    helper.withServer(mock, skipping);
-    helper.resetTables(mock, skipping);
+    helper.withServer(skipping);
+    helper.resetTables();
 
     let taskId, taskCredentials;
 
@@ -1117,10 +1117,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       helper.load.cfg('app.signPublicArtifactUrls', true);
     });
     helper.withDb(mock, skipping);
-    helper.withPulse(mock, skipping);
+    helper.withPulse(skipping);
     helper.withS3(mock, skipping);
-    helper.withServer(mock, skipping);
-    helper.resetTables(mock, skipping);
+    helper.withServer(skipping);
+    helper.resetTables();
 
     test('S3 artifacts contain a Signature field in the redirect', async () => {
       const taskId = slugid.v4();

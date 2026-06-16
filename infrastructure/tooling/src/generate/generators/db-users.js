@@ -6,7 +6,7 @@ export const tasks = [{
   title: 'Users in DB Deployment Docs',
   requires: ['db-schema-serializable'],
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const schema = Schema.fromSerializable(requirements['db-schema-serializable']);
     const services = schema.access.serviceNames().sort();
 
@@ -28,7 +28,7 @@ export const tasks = [{
   title: 'Users in db/test-setup.sh',
   requires: ['db-schema-serializable'],
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const schema = Schema.fromSerializable(requirements['db-schema-serializable']);
     const services = schema.access.serviceNames().sort();
 

@@ -92,19 +92,19 @@ export class Provider {
   /**
    * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
    */
-  async provision({ workerPool, workerPoolStats }) {
+  async provision() {
   }
 
   /**
    * @param {{ workerPool: WorkerPool }} opts
    */
-  async deprovision({ workerPool }) {
+  async deprovision() {
   }
 
   /**
    * @param {{ workerPool: WorkerPool, worker: Worker, workerIdentityProof: Record<string, any> }} opts
    */
-  async registerWorker({ worker, workerPool, workerIdentityProof }) {
+  async registerWorker() {
     throw new ApiError('not supported for this provider');
   }
 
@@ -117,7 +117,7 @@ export class Provider {
   /**
    * @param {{ worker: Worker }} opts
    */
-  async checkWorker({ worker }) {
+  async checkWorker() {
   }
 
   async scanCleanup() {
@@ -156,21 +156,21 @@ export class Provider {
   /**
    * @param {{ workerPool: WorkerPool, workerId: string, workerGroup: string, input: object }} opts
    */
-  async createWorker({ workerPool, workerGroup, workerId, input }) {
+  async createWorker() {
     throw new ApiError('not supported for this provider');
   }
 
   /**
    * @param {{ workerPool: WorkerPool, worker: Worker, input: object }} opts
    */
-  async updateWorker({ workerPool, worker, input }) {
+  async updateWorker() {
     throw new ApiError('not supported for this provider');
   }
 
   /**
    * @param {{ worker: Worker, reason: string }} opts
    */
-  async removeWorker({ worker, reason }) {
+  async removeWorker() {
     throw new ApiError('not supported for this provider');
   }
 

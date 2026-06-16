@@ -35,20 +35,20 @@ const load = loader({
   },
 
   generateReferences: {
-    requires: ['cfg'],
-    setup: async ({ cfg }) => libReferences.fromService({
+    requires: [],
+    setup: async () => libReferences.fromService({
       references: [MonitorManager.reference('built-in-workers'), MonitorManager.metricsReference('built-in-workers')],
     }).then(ref => ref.generateReferences()),
   },
 
   succeedTaskQueue: {
-    requires: ['queue', 'cfg', 'monitor'],
-    setup: ({ cfg, queue, monitor }) => new TaskQueue(cfg, queue, monitor.childMonitor('succeed'), 'succeed'),
+    requires: ['queue', 'monitor'],
+    setup: ({ queue, monitor }) => new TaskQueue(queue, monitor.childMonitor('succeed'), 'succeed'),
   },
 
   failTaskQueue: {
-    requires: ['queue', 'cfg', 'monitor'],
-    setup: ({ cfg, queue, monitor }) => new TaskQueue(cfg, queue, monitor.childMonitor('fail'), 'fail'),
+    requires: ['queue', 'monitor'],
+    setup: ({ queue, monitor }) => new TaskQueue(queue, monitor.childMonitor('fail'), 'fail'),
   },
 
   server: {

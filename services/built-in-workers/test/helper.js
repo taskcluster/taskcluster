@@ -57,7 +57,7 @@ const stubbedQueue = (fakeQueue) => {
         assert(task, `fake queue has no task ${taskId}`);
         return task;
       },
-      claimWork: async function (taskQueueId, payload) {
+      claimWork: async function (_taskQueueId, payload) {
         assert.equal(this._options.credentials.clientId, 'built-in-workers');
         const work = fakeQueue.claimableWork.pop();
         work.tasks.map(task => task.credentials = {
@@ -68,17 +68,17 @@ const stubbedQueue = (fakeQueue) => {
         work.workerId = payload.workerId;
         return work;
       },
-      reportCompleted: async function (taskId, runId) {
+      reportCompleted: async function (taskId, _runId) {
         assert.equal(this._options.credentials.clientId, 'task-creds');
         fakeQueue.taskResolutions[taskId] = { completed: true };
         return {};
       },
-      reportFailed: async function (taskId, runId) {
+      reportFailed: async function (taskId, _runId) {
         assert.equal(this._options.credentials.clientId, 'task-creds');
         fakeQueue.taskResolutions[taskId] = { failed: true };
         return {};
       },
-      reportException: async function (taskId, runId, payload) {
+      reportException: async function (taskId, _runId, payload) {
         assert.equal(this._options.credentials.clientId, 'task-creds');
         fakeQueue.taskResolutions[taskId] = { exception: payload };
         return {};

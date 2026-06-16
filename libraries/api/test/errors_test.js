@@ -35,13 +35,13 @@ suite(testing.suiteName(), () => {
     title: 'Test End-Point',
     category: 'API Library',
     description: 'Place we can call to test something',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.reportError('InputError', 'Testing Error', { dee: 'tails' });
   });
 
   test('InputError response', async () => {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputerror');
-    return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
+    return request.get(url).then(() => assert(false, 'should have failed!')).catch(res => {
       if (!res.status) {
         throw res;
       }
@@ -76,7 +76,7 @@ suite(testing.suiteName(), () => {
 
   test('TooManyFoos response', async () => {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/toomanyfoos');
-    return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
+    return request.get(url).then(() => assert(false, 'should have failed!')).catch(res => {
       assert(res.status === 472);
       const response = JSON.parse(res.response.text);
       response.message = response.message.replace(response.requestInfo.time, '<nowish>');
@@ -116,13 +116,13 @@ suite(testing.suiteName(), () => {
     category: 'API Library',
     description: 'Place we can call to test something',
     scopes: null,
-  }, (req, res) => {
+  }, (_req, _res) => {
     throw new Error('uhoh');
   });
 
   test('ISE response', async () => {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/ISE');
-    return request.get(url).then(res => assert(false, 'should have failed!')).catch(res => {
+    return request.get(url).then(() => assert(false, 'should have failed!')).catch(res => {
       assert(res.status === 500);
       const response = JSON.parse(res.response.text);
       assert(response.code === 'InternalServerError');
@@ -150,13 +150,13 @@ suite(testing.suiteName(), () => {
       return payload;
     },
     scopes: null,
-  }, (req, res) => {
+  }, (_req, _res) => {
   });
 
   test('InputValidationError response', async () => {
     const url = libUrls.api(helper.rootUrl, 'test', 'v1', '/inputvalidationerror');
     return request.post(url).send({ invalid: 'yep', secret: 's3kr!t' })
-      .then(res => assert(false, 'should have failed!'))
+      .then(() => assert(false, 'should have failed!'))
       .catch(res => {
         assert.equal(res.status, 400);
         const response = JSON.parse(res.response.text);

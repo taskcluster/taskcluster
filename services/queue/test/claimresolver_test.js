@@ -9,12 +9,12 @@ import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withAmazonIPRanges(mock, skipping);
-  helper.withPollingServices(mock, skipping);
-  helper.withPulse(mock, skipping);
+  helper.withAmazonIPRanges(skipping);
+  helper.withPollingServices(skipping);
+  helper.withPulse(skipping);
   helper.withS3(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   // Generate random task queue id to use for this test
   const taskQueueId = helper.makeTaskQueueId('no-provisioner-extended-extended');

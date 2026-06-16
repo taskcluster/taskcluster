@@ -1,5 +1,5 @@
 // https://www.apollographql.com/docs/apollo-server/migration#error-formatting-changes
-export default (formattedError, error) => {
+export default (_formattedError, error) => {
   const data = error?.toJson?.() || error;
 
   if (

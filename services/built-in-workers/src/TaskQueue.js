@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 
 class TaskQueue {
-  constructor(cfg, queue, monitor, type) {
+  constructor(queue, monitor, type) {
     assert(queue, 'Instance of taskcluster queue is required');
     this.queue = queue;
     this.builtinType = type;

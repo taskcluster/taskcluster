@@ -164,7 +164,7 @@ const commonMessageBuilder = (message) => {
 };
 
 /** Build a message from message */
-const commonRoutingKeyBuilder = (message, routing) => ({
+const commonRoutingKeyBuilder = (message, _routing) => ({
   taskId: message.status.taskId,
   runId: message.runId,
   workerGroup: message.workerGroup,
@@ -176,13 +176,13 @@ const commonRoutingKeyBuilder = (message, routing) => ({
 });
 
 /** Build a message from message for task-group messages */
-const taskGroupRoutingKeyBuilder = (message, routing) => ({
+const taskGroupRoutingKeyBuilder = (message, _routing) => ({
   schedulerId: message.schedulerId,
   taskGroupId: message.taskGroupId,
 });
 
 /** Build list of routing keys to CC */
-const commonCCBuilder = (message, routes) => {
+const commonCCBuilder = (_message, routes) => {
   assert(Array.isArray(routes), 'Routes must be an array');
   return routes.map(route => `route.${route}`);
 };

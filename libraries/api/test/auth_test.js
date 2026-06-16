@@ -166,7 +166,7 @@ suite(testing.suiteName(), function() {
     route: '/test-static-scope',
     name: 'testStaticScope',
     scopes: { AllOf: ['service:magic'] },
-    handler: (req, res) => {
+    handler: (_req, res) => {
       res.status(200).json({ ok: true });
     },
     tests: [
@@ -344,7 +344,7 @@ suite(testing.suiteName(), function() {
         label: 'insufficient scopes without auth has documented details',
         shouldCallAuth: true,
         desiredStatus: 403,
-        tester: (auth, url) => noAuthRequest(url),
+        tester: (_auth, url) => noAuthRequest(url),
       },
     ],
   });
@@ -390,7 +390,7 @@ suite(testing.suiteName(), function() {
       {
         shouldCallAuth: false,
         label: 'public unauthenticated endpoint',
-        tester: (auth, url) => noAuthRequest(url),
+        tester: (_auth, url) => noAuthRequest(url),
       },
     ],
   });
@@ -583,7 +583,7 @@ suite(testing.suiteName(), function() {
       {
         label: 'scope expression if/then (success with no client)',
         shouldCallAuth: false,
-        tester: (auth, url) => request
+        tester: (_auth, url) => request
           .get(url)
           .set('x-taskcluster-trace-id', 'foo/bar')
           .send({
@@ -606,7 +606,7 @@ suite(testing.suiteName(), function() {
         label: 'scope expression if/then (failure with no client)',
         shouldCallAuth: false,
         desiredStatus: 403,
-        tester: (auth, url) => request
+        tester: (_auth, url) => request
           .get(url)
           .set('x-taskcluster-trace-id', 'foo/bar')
           .send({
@@ -624,7 +624,7 @@ suite(testing.suiteName(), function() {
       'some:scope:nobody:has',
       { if: 'public', then: { AllOf: [] } },
     ] },
-    handler: async (req, res) => {
+    handler: async (_req, res) => {
       return res.reply({});
     },
     tests: [
@@ -643,7 +643,7 @@ suite(testing.suiteName(), function() {
     route: '/test-dyn-auth-no-authorize',
     name: 'testDynNoAuth',
     scopes: { AllOf: [{ for: 'scope', in: 'scopes', each: '<scope>' }] },
-    handler: async (req, res) => {
+    handler: async (_req, res) => {
       return res.reply({});
     },
     tests: [

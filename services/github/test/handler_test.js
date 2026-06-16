@@ -21,9 +21,9 @@ const loadJson = filename => JSON.parse(fs.readFileSync(path.join(dataDir, filen
  */
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withFakeGithub(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withFakeGithub();
+  helper.withPulse(skipping);
+  helper.resetTables();
 
   const validYamlJson = loadJson('yml/valid-yaml.json');
   const validYamlV1Json = loadJson('yml/valid-yaml-v1.json');
@@ -178,7 +178,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         }
       },
       listTaskGroup: async () => ({ tasks: [] }),
-      listArtifacts: async (taskId, runId, options) => {
+      listArtifacts: async (_taskId, _runId, options) => {
 
         const artifacts = [];
 
@@ -341,10 +341,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       handlers.queueClient = new taskcluster.Queue({
         rootUrl: 'https://tc.example.com',
         fake: {
-          sealTaskGroup: async (taskGroupId) => {
+          sealTaskGroup: async (_taskGroupId) => {
             throw new Error('sealTaskGroup error: missing scopes');
           },
-          cancelTaskGroup: async (taskGroupId) => {
+          cancelTaskGroup: async (_taskGroupId) => {
             throw new Error('cancelTaskGroup error: missing scopes');
           },
         },
@@ -383,11 +383,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       handlers.queueClient = new taskcluster.Queue({
         rootUrl: 'https://tc.example.com',
         fake: {
-          sealTaskGroup: async (taskGroupId) => {
+          sealTaskGroup: async (_taskGroupId) => {
             err.method = 'sealTaskGroup';
             throw err;
           },
-          cancelTaskGroup: async (taskGroupId) => {
+          cancelTaskGroup: async (_taskGroupId) => {
             err.method = 'cancelTaskGroup';
             throw err;
           },

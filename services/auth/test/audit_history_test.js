@@ -7,9 +7,9 @@ import taskcluster from '@taskcluster/client';
 helper.secrets.mockSuite('audit', ['gcp'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServers(skipping);
+  helper.resetTables();
 
   let clientId;
   clientId = slugid.v4();

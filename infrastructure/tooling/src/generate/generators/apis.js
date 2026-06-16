@@ -5,7 +5,7 @@ export const tasks = [{
   title: 'APIs data structure',
   requires: ['references-json'],
   provides: ['apis'],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const refs = References.fromSerializable({ serializable: requirements['references-json'] });
 
     const apis = {};

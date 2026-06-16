@@ -32,7 +32,7 @@ export const tasks = [{
   title: 'Docs Search',
   requires: ['target-gw-docs', 'target-worker-runner'],
   provides: ['docs-search'],
-  run: (requirements, utils) => {
+  run: (_requirements, _utils) => {
     const docsSearch = [];
     const files = walkSync(DOCS_DIR).filter(path => path.endsWith('.mdx'));
     const textFromHash = text => text.replace(/(^#{1,6}\s)/, '');

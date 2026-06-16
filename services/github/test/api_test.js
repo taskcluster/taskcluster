@@ -11,10 +11,10 @@ import testing from '@taskcluster/lib-testing';
  */
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withFakeGithub(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServer(mock, skipping);
+  helper.withFakeGithub();
+  helper.withFakeQueue();
+  helper.withPulse(skipping);
+  helper.withServer(skipping);
 
   suiteSetup(async () => {
     if (skipping()) {

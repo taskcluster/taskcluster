@@ -6,9 +6,9 @@ import testing from '@taskcluster/lib-testing';
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServers(skipping);
+  helper.resetTables();
 
   test('websocktunnelToken', async () => {
     const wstAudience = 'websocktunnel-usw2';

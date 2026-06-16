@@ -6,7 +6,7 @@ import { TestBackend } from '../src/backends/test.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withBackends(mock, skipping);
+  helper.withBackends(skipping);
 
   let db, monitor, cfg;
   setup(async () => {

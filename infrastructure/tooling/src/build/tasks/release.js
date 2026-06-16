@@ -14,14 +14,14 @@ import {
 
 const readFile = util.promisify(fs.readFile);
 
-export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks, cmdOptions, credentials, logsDir }) => {
   ensureTask(tasks, {
     title: 'Get ChangeLog',
     requires: ['release-version'],
     provides: [
       'changelog-text',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       if (cmdOptions.staging) {
         return {
           'changelog-text': '(staging release)',
@@ -207,7 +207,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: [
       `publish-clients/client-py`,
     ],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       if (cmdOptions.staging || !cmdOptions.push) {
         return utils.skip();
       }
@@ -229,7 +229,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: [
       `publish-clients/client-rust`,
     ],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       // upload each of the individual crates, in dependency order; note that
       // integration-tests does not get published!
       for (const dir of ['client', 'download', 'upload']) {
@@ -255,7 +255,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
     provides: [
       'target-publish',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       return {
         'target-publish': [
           `Release version: ${requirements['release-version']}`,

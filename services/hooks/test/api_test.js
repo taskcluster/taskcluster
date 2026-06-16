@@ -11,10 +11,10 @@ import taskDefinition from './test_definition.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withTaskCreator(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withTaskCreator(skipping);
+  helper.withPulse(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   // Use the same hook definition for everything
   const hookDef = _.cloneDeep(taskDefinition);

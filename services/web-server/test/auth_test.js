@@ -5,8 +5,8 @@ import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   test('Unauthorized', async () => {
     const credentialsQuery = await helper.loadFixture('credentials.graphql');

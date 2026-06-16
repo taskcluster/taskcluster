@@ -6,8 +6,8 @@ import Test from '../src/login/strategies/test.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withFakeAuth(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withFakeAuth(skipping);
+  helper.resetTables();
 
   let strategies;
   let clients;

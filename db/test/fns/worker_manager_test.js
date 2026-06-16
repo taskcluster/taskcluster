@@ -1532,7 +1532,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(await db.fns.expire_worker_pool_launch_configs(), [{ launch_config_id: 'lc2' }]);
     });
 
-    helper.dbTest('get_worker_pool_launch_config_stats', async (db) => {
+    helper.dbTest('get_worker_pool_launch_config_stats', async (_db) => {
       // test stats are being returned for workers groupped by state
     });
 

@@ -5,7 +5,7 @@ export const tasks = [{
   title: 'Generate d2g',
   requires: ['references-json', 'target-go-version'],
   provides: ['target-d2g'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, utils) => {
     await execCommand({
       dir: path.join(REPO_ROOT, 'tools', 'd2g'),
       command: ['go', 'generate', './...'],

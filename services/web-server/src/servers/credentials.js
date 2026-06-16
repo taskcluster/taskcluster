@@ -1,6 +1,6 @@
 import { decryptToken } from "./decryptToken.js";
 
-export default () => async (request, response, next) => {
+export default () => async (request, _response, next) => {
   if (
     (!request.credentials && !request.headers.authorization) ||
     !request.headers.authorization.startsWith('Bearer')

@@ -9,8 +9,8 @@ import { syncStaticClients } from '../src/static-clients.js';
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServers(skipping);
 
   test('static/taskcluster/root exists', async () => {
     await helper.apiClient.client('static/taskcluster/root');

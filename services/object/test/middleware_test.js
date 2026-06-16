@@ -2,8 +2,8 @@ import { strict as assert } from 'node:assert';
 import helper from './helper/index.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
-  helper.withMiddleware(mock, skipping, [
+helper.secrets.mockSuite(testing.suiteName(), [], (_mock, skipping) => {
+  helper.withMiddleware(skipping, [
     { 'middlewareType': 'test', startDownload: { intercept: 'dl' } },
     { 'middlewareType': 'test', download: { intercept: 'simple' } },
   ]);

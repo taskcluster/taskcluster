@@ -122,7 +122,7 @@ class Notifier {
     return true;
   }
 
-  async matrix({ roomId, format, formattedBody, body, notice, msgtype }) {
+  async matrix({ roomId, format, formattedBody, body, msgtype }) {
     if (this.isDuplicate(roomId, format, formattedBody, body, msgtype)) {
       debug('Duplicate matrix send detected. Not attempting resend.');
       return false;
@@ -133,7 +133,7 @@ class Notifier {
       return false;
     }
 
-    await this._matrix.sendMessage({ roomId, format, formattedBody, body, notice, msgtype });
+    await this._matrix.sendMessage({ roomId, format, formattedBody, body, msgtype });
     this.markSent(roomId, format, formattedBody, body, msgtype);
     this.monitor.log.matrix({ dest: roomId });
     return true;

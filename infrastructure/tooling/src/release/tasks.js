@@ -29,7 +29,7 @@ import { schema as readSchema } from '@taskcluster/db';
 
 const UPSTREAM_REMOTE = 'git@github.com:taskcluster/taskcluster';
 
-export default ({ tasks, cmdOptions, credentials }) => {
+export default ({ tasks, cmdOptions }) => {
   ensureTask(tasks, {
     title: 'Get Changelog',
     requires: [
@@ -38,7 +38,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
     provides: [
       'changelog',
     ],
-    run: async (requirements, utils) => {
+    run: async (_requirements, _utils) => {
       const changelog = new ChangeLog();
       await changelog.load();
       return { changelog };
@@ -53,7 +53,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
     provides: [
       'release-version',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const pkgJson = await readRepoJSON('package.json');
       if (!semver.valid(pkgJson.version)) {
         throw new Error(`Version ${pkgJson.version} in package.json is not valid`);
@@ -74,7 +74,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
       'repo-clean',
     ],
     locks: ['git'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, _utils) => {
       if (await gitIsDirty({ dir: REPO_ROOT })) {
         throw new Error([
           'The current git working copy is not clean.  Releases can only be made from a clean',
@@ -91,7 +91,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
       'repo-up-to-date',
     ],
     locks: ['git'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       const { revision: localRevision } = await gitDescribe({ dir: REPO_ROOT, utils });
       const { revision: remoteRevision } = await gitRemoteRev({
         dir: REPO_ROOT,
@@ -274,7 +274,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
       'db-releases',
       'db-releases-txt',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const schema = await readSchema();
       const tcVersion = `v${requirements['release-version']}`;
       const dbVersion = schema.latestVersion().version;
@@ -303,7 +303,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
     provides: [
       'db-version-updated',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const schema = await readSchema();
 
       // then, regenerate the versions reference
@@ -327,7 +327,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
     provides: [
       'db-fns-updated',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const schema = await readSchema();
 
       // then, regenerate the versions reference
@@ -352,7 +352,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
     provides: [
       'changed-files',
     ],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       const changed = [];
 
       const marker = '<!-- NEXT RELEASE HERE -->\n';

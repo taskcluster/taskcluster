@@ -6,7 +6,7 @@ import testing from '@taskcluster/lib-testing';
 import './helper.js';
 
 class FakePulseEngine {
-  subscribe(subscriptions, handleMessage, handleError) {
+  subscribe(_subscriptions, handleMessage, handleError) {
     this.handleMessage = handleMessage;
     this.handleError = handleError;
     this.subscribed = true;

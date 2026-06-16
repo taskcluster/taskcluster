@@ -12,11 +12,11 @@ import { splitTaskQueueId } from '../src/utils.js';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withAmazonIPRanges(mock, skipping);
+  helper.withAmazonIPRanges(skipping);
   helper.withS3(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   // Use the same task definition for everything
   const taskDef = {
@@ -399,7 +399,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     );
     await helper.queue.createTask(slugid.v4(), makePriorityTask('high')).then(() => {
       assert(false, 'Expected 400 error!');
-    }, err => {
+    }, () => {
       debug('Got error as expected');
     });
   });

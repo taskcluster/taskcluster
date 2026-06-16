@@ -88,7 +88,7 @@ class Iterate extends events.EventEmitter {
 
     // build a promise that will reject when either the watchdog
     // times out or the maxIterationTimeTimer expires
-    const timeoutRejector = new Promise((resolve, reject) => {
+    const timeoutRejector = new Promise((_resolve, reject) => {
       watchdog.on('expired', () => {
         debug('watchdog expired');
         reject(new Error('watchdog exceeded'));

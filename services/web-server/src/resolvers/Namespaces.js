@@ -1,9 +1,9 @@
 export default {
   Query: {
-    namespaces(parent, { namespace, connection }, { loaders }) {
+    namespaces(_parent, { namespace, connection }, { loaders }) {
       return loaders.namespaces.load({ namespace, connection });
     },
-    taskNamespace(parent, { namespace, connection }, { loaders }) {
+    taskNamespace(_parent, { namespace, connection }, { loaders }) {
       return loaders.taskNamespace.load({ namespace, connection });
     },
   },

@@ -180,7 +180,7 @@ helper.withGCS = withGCS;
  *
  * Note that this file is *always* mocked, regardless of any secrets.
  */
-export const withAmazonIPRanges = (mock, skipping) => {
+export const withAmazonIPRanges = skipping => {
   let interceptor;
 
   suiteSetup(async () => {
@@ -211,7 +211,7 @@ helper.withDb = withDb;
 /**
  * Set up a fake object service that supports uploads and downlods.
  */
-export const withObjectService = (mock, skipping) => {
+export const withObjectService = () => {
   let objects = new Map();
   suiteSetup(async () => {
     const err404 = message => {
@@ -222,14 +222,14 @@ export const withObjectService = (mock, skipping) => {
     helper.objectService = new taskcluster.Object({
       rootUrl: helper.rootUrl,
       fake: {
-        createUpload: async (name, { expires, hashes, projectId, proposedUploadMethods, uploadId }) => {
+        createUpload: async (name, { expires, hashes, projectId, uploadId }) => {
           if (objects.has(name)) {
             throw new Error(`Object ${name} already exists`);
           }
           objects.set(name, { uploadId, expires, projectId, hashes });
           return { expires, projectId, uploadId, uploadMethod: {} };
         },
-        finishUpload: async (name, { expires, hashes, projectId, uploadId }) => {
+        finishUpload: async (name, { uploadId }) => {
           const object = objects.get(name);
           if (!object) {
             throw err404(`No such object ${name}`);
@@ -279,7 +279,7 @@ helper.withObjectService = withObjectService;
  * This also sets up helper.scopes to set the scopes for helper.queue, the
  * API client object, and stores a client class a helper.Queue.
  */
-export const withServer = (mock, skipping) => {
+export const withServer = skipping => {
   let webServer;
 
   suiteSetup(async () => {
@@ -347,7 +347,7 @@ export const withServer = (mock, skipping) => {
 };
 helper.withServer = withServer;
 
-export const withPulse = (mock, skipping) => {
+export const withPulse = skipping => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-queue' });
 };
 helper.withPulse = withPulse;
@@ -358,7 +358,7 @@ helper.withPulse = withPulse;
  * helper.startPollingService will start the service.  Note that the
  * caller must stop the service *before* returning.
  */
-export const withPollingServices = (mock, skipping) => {
+export const withPollingServices = skipping => {
   let svc;
 
   suiteSetup(async () => {
@@ -438,7 +438,7 @@ export const checkDates = ({ status }) => {
 };
 helper.checkDates = checkDates;
 
-export const resetTables = (mock, skipping) => {
+export const resetTables = () => {
   setup('reset tables', async () => {
     await testing.resetTables({ tableNames: [
       'tasks',

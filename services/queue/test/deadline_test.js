@@ -11,12 +11,12 @@ import { LEVELS } from '@taskcluster/lib-monitor';
 
 helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPollingServices(mock, skipping);
-  helper.withAmazonIPRanges(mock, skipping);
+  helper.withPollingServices(skipping);
+  helper.withAmazonIPRanges(skipping);
   helper.withS3(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   // Use the same task definition for everything
   const makeTask = () => {

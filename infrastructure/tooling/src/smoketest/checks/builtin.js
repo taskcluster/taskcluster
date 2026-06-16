@@ -22,7 +22,7 @@ export const tasks = [];
     provides: [
       `target-built-in/${taskType}`,
     ],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       const task = {
         provisionerId: 'built-in',
         workerType: taskType,

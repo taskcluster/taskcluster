@@ -1,12 +1,12 @@
 export default {
   Query: {
-    cachePurges(parent, { connection }, { loaders }) {
+    cachePurges(_parent, { connection }, { loaders }) {
       return loaders.cachePurges.load({ connection });
     },
   },
   Mutation: {
     async purgeCache(
-      parent,
+      _parent,
       { provisionerId, workerType, payload },
       { clients },
     ) {

@@ -111,7 +111,7 @@ helper.withDb = (mock, skipping) => {
 /**
  * Setup a fake sentry
  */
-helper.withSentry = (mock, skipping) => {
+helper.withSentry = skipping => {
   const sentryOrgs = {};
   suiteSetup(async () => {
     if (skipping()) {
@@ -125,7 +125,7 @@ helper.withSentry = (mock, skipping) => {
         projects: org => Object.values(sentryOrgs[org]),
       },
       teams: {
-        createProject: (org, team, info) => {
+        createProject: (org, _team, info) => {
           if (!sentryOrgs[org]) {
             sentryOrgs[org] = {};
           }
@@ -162,7 +162,7 @@ helper.withSentry = (mock, skipping) => {
   });
 };
 
-helper.withPulse = (mock, skipping) => {
+helper.withPulse = skipping => {
   libTesting.withPulse({ helper, skipping, namespace: 'taskcluster-auth' });
 };
 
@@ -181,7 +181,7 @@ testServiceBuilder.declare({
   title: 'Get Resource',
   category: 'Auth Service',
   description: '...',
-}, (req, res) => {
+}, (_req, res) => {
   res.status(200).json({
     message: 'Hello World',
   });
@@ -196,7 +196,7 @@ testServiceBuilder.declare({
  *
  * This also sets up helper.apiClient as a client of the service API.
  */
-helper.withServers = (mock, skipping) => {
+helper.withServers = skipping => {
   let webServer;
 
   suiteSetup(async () => {
@@ -380,7 +380,7 @@ helper.withGcp = (mock, skipping) => {
   });
 };
 
-helper.resetTables = (mock, skipping) => {
+helper.resetTables = () => {
   setup('reset tables', async () => {
     await libTesting.resetTables({ tableNames: [
       'roles',

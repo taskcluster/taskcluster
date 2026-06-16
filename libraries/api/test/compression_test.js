@@ -28,7 +28,7 @@ suite(testing.suiteName(), () => {
     category: 'API Library',
     stability: APIBuilder.stability.stable,
     description: 'Returns a large JSON payload',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.reply({ data: 'x'.repeat(2000) });
   });
 
@@ -42,7 +42,7 @@ suite(testing.suiteName(), () => {
     category: 'API Library',
     stability: APIBuilder.stability.stable,
     description: 'Returns a small JSON payload',
-  }, (req, res) => {
+  }, (_req, res) => {
     res.reply({ ok: true });
   });
 
@@ -58,7 +58,7 @@ suite(testing.suiteName(), () => {
     category: 'API Library',
     stability: APIBuilder.stability.stable,
     description: 'Returns a pre-gzipped payload',
-  }, (req, res) => {
+  }, (_req, res) => {
     const payload = Buffer.from('y'.repeat(2000));
     const gzipped = gzipSync(payload);
     res.set('Content-Type', 'application/json');

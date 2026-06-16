@@ -18,19 +18,19 @@ export class FakeAzure extends FakeCloud {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.restClient;
     });
-    this.sinon.stub(azureApi, 'ComputeManagementClient').callsFake((creds, subId) => {
+    this.sinon.stub(azureApi, 'ComputeManagementClient').callsFake((creds, _subId) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.computeClient;
     });
-    this.sinon.stub(azureApi, 'NetworkManagementClient').callsFake((creds, subId) => {
+    this.sinon.stub(azureApi, 'NetworkManagementClient').callsFake((creds, _subId) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.networkClient;
     });
-    this.sinon.stub(azureApi, 'ResourceManagementClient').callsFake((creds, subId) => {
+    this.sinon.stub(azureApi, 'ResourceManagementClient').callsFake((creds, _subId) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.resourcesClient;
     });
-    this.sinon.stub(azureApi, 'DeploymentsClient').callsFake((creds, subId) => {
+    this.sinon.stub(azureApi, 'DeploymentsClient').callsFake((creds, _subId) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.deploymentsClient;
     });

@@ -17,7 +17,7 @@ import { traceMiddleware } from '@taskcluster/lib-app';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-export default async ({ cfg, strategies, auth, monitor, db, clients, rootUrl, api }) => {
+export default async ({ cfg, strategies, auth, monitor, db, api }) => {
   const app = express();
 
   app.set('trust proxy', cfg.server.trustProxy);
@@ -155,7 +155,7 @@ export default async ({ cfg, strategies, auth, monitor, db, clients, rootUrl, ap
   }
 
   // Error handling middleware
-  app.use((err, req, res, next) => {
+  app.use((err, _req, res, _next) => {
     // Minimize the amount of information we disclose. The err could potentially disclose something to an attacker.
     const error = { code: err.code, name: err.name };
     monitor.reportError(err);

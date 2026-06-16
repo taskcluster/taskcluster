@@ -9,10 +9,10 @@ import taskcluster from '@taskcluster/client';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withFakeQueue(skipping);
+  helper.withPulse(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   const makeTask = () => ({
     provisionerId: 'dummy-test-provisioner',

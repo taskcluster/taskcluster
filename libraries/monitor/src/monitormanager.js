@@ -278,7 +278,7 @@ export class MonitorManager {
     } else if (fake || debug) {
       manager.messages = [];
       manager.destination = new stream.Writable({
-        write: (chunk, encoding, next) => {
+        write: (chunk, _encoding, next) => {
           manager._handleMessage(JSON.parse(chunk));
           next();
         },
@@ -392,7 +392,7 @@ export class MonitorManager {
    * Handle a message from any logger. This is only used in testing
    * and development.
    */
-  _handleMessage({ Type, Fields, Logger, Severity, severity, message }) {
+  _handleMessage({ Type, Fields, Logger, Severity, message }) {
     if (this.fake) {
       this.messages.push({ Type, Fields, Logger, Severity });
     }

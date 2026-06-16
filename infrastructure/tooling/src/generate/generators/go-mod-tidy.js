@@ -10,7 +10,7 @@ export const tasks = [{
     'target-generic-worker',
   ],
   provides: ['target-go-mod-tidy'],
-  run: async (requirements, utils) => {
+  run: async (_requirements, _utils) => {
     await promisify(execFile)('go', ['mod', 'tidy']);
   },
 }];

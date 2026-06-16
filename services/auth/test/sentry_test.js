@@ -116,9 +116,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
   suite('regular SentryManager with fake client', () => {
     helper.withCfg(mock, skipping);
     helper.withDb(mock, skipping);
-    helper.withSentry(mock, skipping);
-    helper.withPulse(mock, skipping);
-    helper.withServers(mock, skipping);
+    helper.withSentry(skipping);
+    helper.withPulse(skipping);
+    helper.withServers(skipping);
 
     test('sentryDSN api method', async () => {
       await helper.apiClient.sentryDSN('playground');
@@ -148,10 +148,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
     });
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
-    helper.withSentry(mock, skipping);
-    helper.withPulse('mock', skipping);
-    helper.withServers(mock, skipping);
-    helper.resetTables(mock, skipping);
+    helper.withSentry(skipping);
+    helper.withPulse(skipping);
+    helper.withServers(skipping);
+    helper.resetTables();
 
     test('sentryDSN api method', async () => {
       await assert.rejects(

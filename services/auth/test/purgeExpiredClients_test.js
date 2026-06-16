@@ -6,8 +6,8 @@ import testing from '@taskcluster/lib-testing';
 helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
   helper.withCfg(mock, skipping);
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServers(skipping);
 
   const CLIENT_ID = 'nobody/sds:ad_asd/df-sAdSfchsdfsdfs';
 

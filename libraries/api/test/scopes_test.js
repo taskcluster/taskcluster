@@ -21,7 +21,7 @@ suite(testing.suiteName(), () => {
       category: 'API Library',
       title: 'Test',
       description: 'Test',
-    }, (req, res) => {});
+    }, (_req, _res) => {});
   });
 
   test('string scope works', () => {
@@ -33,7 +33,7 @@ suite(testing.suiteName(), () => {
       category: 'API Library',
       title: 'Test',
       description: 'Test',
-    }, (req, res) => {});
+    }, (_req, _res) => {});
   });
 
   test('array of string scope rejected', () => {
@@ -46,7 +46,7 @@ suite(testing.suiteName(), () => {
         category: 'API Library',
         title: 'Test',
         description: 'Test',
-      }, (req, res) => {});
+      }, (_req, _res) => {});
     }, /Invalid scope expression/);
   });
 
@@ -60,7 +60,7 @@ suite(testing.suiteName(), () => {
         category: 'API Library',
         title: 'Test',
         description: 'Test',
-      }, (req, res) => {});
+      }, (_req, _res) => {});
     }, /Invalid scope expression/);
   });
 
@@ -73,7 +73,7 @@ suite(testing.suiteName(), () => {
       category: 'API Library',
       title: 'Test',
       description: 'Test',
-    }, (req, res) => {});
+    }, (_req, _res) => {});
   });
 
   test('scope expression with looping template not rejected', () => {
@@ -85,6 +85,6 @@ suite(testing.suiteName(), () => {
       category: 'API Library',
       title: 'Test',
       description: 'Test',
-    }, (req, res) => {});
+    }, (_req, _res) => {});
   });
 });

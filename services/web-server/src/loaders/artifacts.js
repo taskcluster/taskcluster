@@ -1,7 +1,7 @@
 import ConnectionLoader from '../ConnectionLoader.js';
 import Artifacts from '../entities/Artifacts.js';
 
-export default ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ queue }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const artifacts = new ConnectionLoader(
     async ({ taskId, runId, options }) => {
       const raw = await queue.listArtifacts(taskId, runId, options);

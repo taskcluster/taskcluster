@@ -278,7 +278,7 @@ export class AwsProvider extends Provider {
    * This method checks instance identity document authenticity
    * If it's authentic it checks whether the data in it corresponds to the worker
    */
-  async registerWorker({ worker, workerPool, workerIdentityProof }) {
+  async registerWorker({ worker, workerIdentityProof }) {
     const monitor = this.workerMonitor({ worker });
 
     if (worker.state !== Worker.states.REQUESTED) {
