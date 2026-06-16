@@ -16,7 +16,7 @@ export class HashStream extends Transform {
     this.bytes = 0;
   }
 
-  _transform(chunk, enc, cb) {
+  _transform(chunk, _enc, cb) {
     this.sha256.update(chunk);
     this.sha512.update(chunk);
     this.bytes += chunk.length;

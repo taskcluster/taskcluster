@@ -310,7 +310,7 @@ export const createClient = (reference, name) => {
     return new Client(options);
   };
 
-  Client.prototype.taskclusterPerRequestInstance = function({ requestId, traceId }) {
+  Client.prototype.taskclusterPerRequestInstance = function({ traceId }) {
     return this.use({ traceId });
   };
 
