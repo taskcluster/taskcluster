@@ -302,7 +302,7 @@ export const createClient = function(reference, name) {
       reference.entries.filter(e => e.type === 'function').forEach(e => this.fakeCalls[e.name] = []);
       // Throw an error if creating fakes in production
       if (process.env.NODE_ENV === 'production') {
-        new Error('@taskcluster/client object created in "fake" mode, when NODE_ENV == "production"');
+        throw new Error('@taskcluster/client object created in "fake" mode, when NODE_ENV == "production"');
       }
     }
   };
