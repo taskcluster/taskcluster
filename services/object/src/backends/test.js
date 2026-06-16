@@ -27,7 +27,7 @@ export class TestBackend extends Backend {
     let bytes;
     try {
       bytes = Buffer.from(objectData, 'base64');
-    } catch (err) {
+    } catch {
       return reportError('InputError', 'Invalid base64 objectData', {});
     }
 

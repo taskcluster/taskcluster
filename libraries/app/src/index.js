@@ -219,7 +219,7 @@ export const App = async (options) => {
       res.header('Content-Type', 'application/json');
       res.send(taskclusterVersion);
     });
-  } catch (err) {
+  } catch {
     app.use('/__version__', (req, res) => {
       res.header('Content-Type', 'application/json');
       res.status(500).send({ error: 'Not found' });
