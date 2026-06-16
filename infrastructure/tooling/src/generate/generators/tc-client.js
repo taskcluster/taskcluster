@@ -16,7 +16,7 @@ export const tasks = [{
 import taskcluster from '@taskcluster/client';
 import assert from 'assert';
 
-test('Main clients exposed', function () {
+test('Main clients exposed', () => {
 ${Object.keys(apis)
     .sort()
     .map(api => `  assert.equal(taskcluster.${api} instanceof Function, true);`).join('\n')}

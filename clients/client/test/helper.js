@@ -7,17 +7,17 @@ export const withRestoredEnvVars = () => {
   const vars = ['TASKCLUSTER_CLIENT_ID', 'TASKCLUSTER_ROOT_URL', 'TASKCLUSTER_ACCESS_TOKEN'];
 
   let values;
-  suiteSetup('save TASKCLUSTER_* env vars', function() {
+  suiteSetup('save TASKCLUSTER_* env vars', () => {
     values = {};
-    for (let v of vars) {
+    for (const v of vars) {
       if (process.env[v]) {
         values[v] = process.env[v];
       }
     }
   });
 
-  suiteTeardown('restore TASKCLUSTER_* env vars', function() {
-    for (let v of vars) {
+  suiteTeardown('restore TASKCLUSTER_* env vars', () => {
+    for (const v of vars) {
       if (values[v]) {
         process.env[v] = values[v];
       } else {
@@ -34,11 +34,9 @@ export const suiteName = () => {
   return path.relative(ROOT_DIR, stack[0].fileName);
 };
 
-export const sleep = function (delay) {
-  return new Promise(function (accept) {
+export const sleep = (delay) => new Promise((accept) => {
     setTimeout(accept, delay);
   });
-};
 
 export default {
   withRestoredEnvVars,

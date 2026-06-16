@@ -25,7 +25,7 @@ class WritableStream extends Writable {
   }
 }
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   testing.withRestoredEnvVars();
 
   /**
@@ -73,7 +73,7 @@ suite(testing.suiteName(), function() {
     });
 
     let stream;
-    let contentType = await taskcluster.download({
+    const contentType = await taskcluster.download({
       name,
       object,
       streamFactory: async () => {
@@ -86,16 +86,16 @@ suite(testing.suiteName(), function() {
     assert(contentType === "application/random");
   };
 
-  test('upload and download a small object (dataInline)', async function() {
+  test('upload and download a small object (dataInline)', async () => {
     await tryUploadAndDownload(Buffer.from("hello, world", "utf-8"));
   });
 
-  test('upload and download a large object (putUrl)', async function() {
+  test('upload and download a large object (putUrl)', async () => {
     const data = crypto.randomBytes(10240);
     await tryUploadAndDownload(data);
   });
 
-  test('download of a nonexistent file fails', async function() {
+  test('download of a nonexistent file fails', async () => {
     const name = "taskcluster/test/client/" + taskcluster.slugid();
     await assert.rejects(
       () => taskcluster.download({ name, object }),
@@ -151,7 +151,7 @@ suite(testing.suiteName(), function() {
     });
   };
 
-  test('download that encounters a 500 error retries', async function() {
+  test('download that encounters a 500 error retries', async () => {
     try {
       nockSuccessfulObjectApi({ hashes: {
         sha256: '6185f05eedae5f2c26d91088b90bce00200bd77d26d794050de09ed18fa72f17',
@@ -174,7 +174,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('download with no acceptable hashes fails', async function() {
+  test('download with no acceptable hashes fails', async () => {
     try {
       nockSuccessfulObjectApi({ hashes: { 'md5': 'hahaha' } });
       nock('http://testing.example.com')
@@ -191,7 +191,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('download with one matching and one incorrect hash fails', async function() {
+  test('download with one matching and one incorrect hash fails', async () => {
     try {
       nockSuccessfulObjectApi({ hashes: {
         sha256: '9999999999999999999999999999999999999999999999999999999999999999',
@@ -211,7 +211,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('download with only one matching acceptable hash succeeds', async function() {
+  test('download with only one matching acceptable hash succeeds', async () => {
     try {
       nockSuccessfulObjectApi({ hashes: {
         sha256: '6185f05eedae5f2c26d91088b90bce00200bd77d26d794050de09ed18fa72f17',
@@ -230,7 +230,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('download that retries after startDownload response expires re-calls that method', async function() {
+  test('download that retries after startDownload response expires re-calls that method', async () => {
     try {
       nock(process.env.TASKCLUSTER_ROOT_URL)
         .put('/api/object/v1/start-download/some-object')
@@ -269,7 +269,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('download that encounters a 400 error fails immediately', async function() {
+  test('download that encounters a 400 error fails immediately', async () => {
     try {
       nockSuccessfulObjectApi({ hashes: {} });
       nock('http://testing.example.com')
@@ -287,7 +287,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('putUrl upload that encounters a 500 error retries', async function() {
+  test('putUrl upload that encounters a 500 error retries', async () => {
     try {
       nockSuccessfulObjectApi({ hashes: {} });
       nock('http://testing.example.com')
@@ -303,7 +303,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('putUrl upload that encounters a 400 error fails right away', async function() {
+  test('putUrl upload that encounters a 400 error fails right away', async () => {
     try {
       nockSuccessfulObjectApi({ hashes: {} });
       nock('http://testing.example.com')
@@ -316,7 +316,7 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  test('putUrl upload that encounters many 500 errors fails', async function() {
+  test('putUrl upload that encounters many 500 errors fails', async () => {
     try {
       nockSuccessfulObjectApi({ hashes: {} });
       nock('http://testing.example.com')
@@ -335,11 +335,11 @@ suite(testing.suiteName(), function() {
     }
   });
 
-  suite("downloadArtifact", function() {
+  suite("downloadArtifact", () => {
     let queue;
     let artifact;
 
-    suiteSetup(function() {
+    suiteSetup(() => {
       nock.cleanAll();
       // for testing artifact downloads, we use a fake queue but a real object service.
       queue = new taskcluster.Queue({
@@ -402,7 +402,7 @@ suite(testing.suiteName(), function() {
       };
     };
 
-    test("s3 artifact", async function() {
+    test("s3 artifact", async () => {
       const name = await createObject();
       const { url } = await object.startDownload(name, { acceptDownloadMethods: { simple: true } });
 
@@ -413,7 +413,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(content, Buffer.from('hello, world'));
     });
 
-    test("reference artifact", async function() {
+    test("reference artifact", async () => {
       const name = await createObject();
       const { url } = await object.startDownload(name, { acceptDownloadMethods: { simple: true } });
 
@@ -424,7 +424,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(content, Buffer.from('hello, world'));
     });
 
-    test("object artifact", async function() {
+    test("object artifact", async () => {
       const name = await createObject();
 
       artifact = {
@@ -443,7 +443,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(content, Buffer.from('hello, world'));
     });
 
-    test("error artifact", async function() {
+    test("error artifact", async () => {
       artifact = { storageType: 'error', message: 'oh noes', reason: 'test case' };
 
       await assert.rejects(
