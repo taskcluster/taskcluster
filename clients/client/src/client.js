@@ -297,7 +297,7 @@ export const createClient = (reference, name) => {
     if (this._options.fake) {
       debug('Creating @taskcluster/client object in "fake" mode');
       this.fakeCalls = {};
-      reference.entries.filter(e => e.type === 'function').forEach(e => this.fakeCalls[e.name] = []);
+      reference.entries.filter(e => e.type === 'function').forEach(e => { this.fakeCalls[e.name] = []; });
       // Throw an error if creating fakes in production
       if (process.env.NODE_ENV === 'production') {
         new Error('@taskcluster/client object created in "fake" mode, when NODE_ENV == "production"');
@@ -377,7 +377,7 @@ export const createClient = (reference, name) => {
         if (query !== null) {
           record.query = _.cloneDeep(query);
         }
-        entry.args.forEach((k, i) => record[k] = _.cloneDeep(args[i]));
+        entry.args.forEach((k, i) => { record[k] = _.cloneDeep(args[i]); });
         this.fakeCalls[entry.name].push(record);
         // Call fake[<method>]
         if (!this._options.fake[entry.name]) {
