@@ -141,7 +141,7 @@ export const makeRequest = async (client, method, url, payload, query) => {
       },
       ext: client._extData,
     });
-    options.headers['Authorization'] = header.header;
+    options.headers.Authorization = header.header;
   }
 
   // Send payload if defined
