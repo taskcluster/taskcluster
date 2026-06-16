@@ -307,7 +307,6 @@ const load = loader(
 
         await new Promise(resolve => httpServer.listen(cfg.server.port, resolve));
 
-        /* eslint-disable no-console */
         console.log(`\n\nWeb server running on port ${cfg.server.port}.`);
         if (cfg.app.playground) {
           console.log(
@@ -318,7 +317,6 @@ const load = loader(
         if (!cfg.pulse.namespace) {
           console.log(`\nNo Pulse namespace defined; no Pulse messages will be received.\n`);
         }
-        /* eslint-enable no-console */
       },
     },
 

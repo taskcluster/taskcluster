@@ -1,6 +1,5 @@
 import hawk from 'hawk';
 
-/* eslint-disable-next-line max-len */
 const JSON_CONTENT = /^(application\/(json|x-javascript)|text\/(x-)?javascript|x-json)(;.*)?$/;
 const defaults = {
   credentials: 'omit',

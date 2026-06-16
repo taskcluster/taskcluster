@@ -172,7 +172,6 @@ export const credentialInformation = async (credentials, rootUrl) => {
     result.expiry = new Date(certificate.expiry);
 
     if (certificate.issuer) {
-      // eslint-disable-next-line prefer-destructuring
       issuer = certificate.issuer;
     }
   } else {

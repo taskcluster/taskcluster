@@ -221,8 +221,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
     try {
       /** Create method that returns list of scopes the caller has */
       req.scopes = async () => {
-        // This lint can be disabled because authenticate() will always return the same value
-        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
+        result = await (result || authenticate(req));
         if (result.status === 'auth-failed') {
           return [];
         }
@@ -230,8 +229,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
       };
 
       req.clientId = async () => {
-        // This lint can be disabled because authenticate() will always return the same value
-        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
+        result = await (result || authenticate(req));
         if (result.status === 'auth-success') {
           return result.clientId || 'unknown-clientId';
         }
@@ -239,8 +237,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
       };
 
       req.expires = async () => {
-        // This lint can be disabled because authenticate() will always return the same value
-        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
+        result = await (result || authenticate(req));
         if (result.status === 'auth-success') {
           return new Date(result.expires);
         }
@@ -268,8 +265,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
           return;
         }
 
-        // This lint can be disabled because authenticate() will always return the same value
-        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
+        result = await (result || authenticate(req));
 
         // If authentication failed
         if (result.status === 'auth-failed') {

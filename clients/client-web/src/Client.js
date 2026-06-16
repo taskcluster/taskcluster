@@ -54,7 +54,6 @@ export default class Client {
       if (reference.entries) {
         reference.entries.forEach(entry => {
           if (entry.type === 'function') {
-            // eslint-disable-next-line func-names
             this[entry.name] = function (...args) {
               this.validate(entry, args);
 
@@ -65,7 +64,6 @@ export default class Client {
           }
 
           if (entry.type === 'topic-exchange') {
-            // eslint-disable-next-line func-names
             this[entry.name] = function (pattern) {
               return this.normalizePattern(entry, pattern);
             };
@@ -85,7 +83,6 @@ export default class Client {
     return input ? args.length + 1 : args.length;
   }
 
-  /* eslint-disable consistent-return */
   buildExtraData(credentials) {
     if (!credentials) {
       return;
@@ -117,7 +114,6 @@ export default class Client {
       return window.btoa(JSON.stringify(extra));
     }
   }
-  /* eslint-enable consistent-return */
 
   buildEndpoint(entry, args) {
     return entry.route.replace(/<([^<>]+)>/g, (text, arg) => {
@@ -222,7 +218,6 @@ export default class Client {
       const options = args.pop();
 
       if (options.expiration) {
-        // eslint-disable-next-line prefer-destructuring
         expiration = options.expiration;
       }
 

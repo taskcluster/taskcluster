@@ -1708,7 +1708,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const TASKID = 'banana';
     const CONCLUSIONS = {
       // maps status communicated by the queue service to github checkrun conclusions
-      /*eslint-disable quote-props*/
       completed: 'success',
       failed: 'failure',
       exception: 'failure',
@@ -1885,12 +1884,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
       const [args] = github.inst(9988).checks.update.firstCall.args;
-      /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
         `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_CHECKRUN_TASKID}**\nRunId: **0**\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_CHECKRUN_TASKID)}\n${CUSTOM_CHECKRUN_TEXT}\n`
       );
-      /* eslint-enable comma-dangle */
       sinon.restore();
     });
 
@@ -1943,12 +1940,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
       const [args] = github.inst(9988).checks.update.firstCall.args;
-      /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
         `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_CHECKRUN_TASKID}/runs/0/logs/live/public/logs/live.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_CHECKRUN_TASKID}**\nRunId: **0**\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_CHECKRUN_TASKID)}\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
-      /* eslint-enable comma-dangle */
       sinon.restore();
     });
 
@@ -1972,12 +1967,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
       const [args] = github.inst(9988).checks.update.firstCall.args;
-      /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
         `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_LIVELOG_NAME_TASKID}**\nRunId: **0**\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_LIVELOG_NAME_TASKID)}\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
-      /* eslint-enable comma-dangle */
       sinon.restore();
     });
 
@@ -2008,12 +2001,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
       assert(github.inst(9988).repos.createCommitComment.notCalled, 'createCommitComment should not be called'); // not expecting 404 to be reported
       const [args] = github.inst(9988).checks.update.firstCall.args;
-      /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
         `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: ${STARTED}\nResolved: ${RESOLVED}\nTask Execution Time: 1 day\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_LIVELOG_NAME_TASKID}**\nRunId: **0**\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
-      /* eslint-enable comma-dangle */
       sinon.restore();
     });
 
@@ -2167,12 +2158,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       assert(github.inst(9988).checks.update.calledOnce, 'checks.update was not called');
       const [args] = github.inst(9988).checks.update.firstCall.args;
-      /* eslint-disable comma-dangle */
       assert.strictEqual(
         args.output.text,
         `[${CHECKRUN_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}) | [${CHECKLOGS_TEXT}](${libUrls.testRootUrl()}/tasks/${CUSTOM_LIVELOG_NAME_TASKID}/runs/0/logs/live/apple/banana.log) | [${CHECK_TASK_GROUP_TEXT}](${libUrls.testRootUrl()}/tasks/groups/${TASKGROUPID})\n### Task Status\nStarted: n/a\nResolved: n/a\nTask Execution Time: n/a\nTask Status: **completed**\nReason Resolved: **completed**\nTaskId: **${CUSTOM_LIVELOG_NAME_TASKID}**\nRunId: **0**\n### Artifacts\n${buildArtifactLinks(50, CUSTOM_LIVELOG_NAME_TASKID)}\n\n---\n\n\`\`\`bash\n${LIVE_LOG_TEXT}\n\`\`\`\n`
       );
-      /* eslint-enable comma-dangle */
       sinon.restore();
     });
   });

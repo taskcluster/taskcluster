@@ -78,7 +78,6 @@ export const fromNow = (offset, reference = new Date()) => {
  */
 export const fromNowJSON = (offset, reference) => fromNow(offset, reference).toJSON();
 
-/* eslint-disable no-bitwise, no-mixed-operators */
 export const uuid = () => {
   const randoms = crypto.getRandomValues(new Uint8Array(16));
 
@@ -100,7 +99,6 @@ const slug = (nice = false) => {
     .replace(/\//g, '_') // Replace / with _ (see RFC 4648, sec. 5)
     .substring(0, 22); // Drop '==' padding
 };
-/* eslint-enable no-bitwise, no-mixed-operators */
 
 /**
  * Returns a randomly generated uuid v4 compliant slug

@@ -200,7 +200,7 @@ class FakeGithub {
     const debug = Debug('FakeGithub');
     _.forEach(stubs, (implementation, name) => {
       const atoms = name.split(/\./);
-      let obj = this; // eslint-disable-line consistent-this
+      let obj = this;
       while (atoms.length > 1) {
         const atom = atoms.shift();
         if (!obj[atom]) {

@@ -225,7 +225,6 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, _skipping) => {
       });
 
       publisher = await exchanges.publisher({
-        // eslint-disable-line require-atomic-updates
         rootUrl: libUrls.testRootUrl(),
         schemaset,
         client,

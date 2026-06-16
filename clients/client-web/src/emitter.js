@@ -39,7 +39,6 @@ export default class Emitter {
   off(eventName, handler) {
     const event = this.events[eventName] || [];
 
-    // eslint-disable-next-line no-bitwise
     event.splice(event.indexOf(handler) >>> 0, 1);
   }
 

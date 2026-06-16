@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 const push = `{
   "ref": "refs/heads/$BRANCH",
   "before": "7a257a6d139708a3188bf2e0cd1f15e466a88d0e",
