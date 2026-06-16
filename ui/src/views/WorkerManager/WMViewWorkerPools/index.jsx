@@ -48,7 +48,9 @@ export default class WorkerManagerWorkerPoolsView extends Component {
   }
 
   loadErrorStats = async () => {
-    if (this.state.errorStatsLoading) return;
+    if (this.state.errorStatsLoading) {
+      return;
+    }
 
     this.setState({ errorStatsLoading: true });
 
