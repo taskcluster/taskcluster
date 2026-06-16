@@ -22,7 +22,7 @@ export const parameterValidator = ({ entry }) => {
   Object.keys(params).forEach(param => {
     assert(
       params[param] instanceof RegExp || params[param] instanceof Function,
-      "Pattern given for param: '" + param + "' must be a RegExp or " + 'a function'
+      `Pattern given for param: '${param}' must be a RegExp or a function`
     );
   });
   return (req, res, next) => {
@@ -46,7 +46,7 @@ export const parameterValidator = ({ entry }) => {
       } else if (pattern instanceof Function) {
         const msg = pattern.call(req.tcContext, val);
         if (typeof msg === 'string') {
-          errors.push("URL parameter '" + param + "' given  as '" + val + "' is not " + 'valid: ' + msg);
+          errors.push(`URL parameter '${param}' given  as '${val}' is not valid: ${msg}`);
         }
       }
     });

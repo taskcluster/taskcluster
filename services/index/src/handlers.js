@@ -137,7 +137,7 @@ Handlers.prototype.messageHandler = function (message) {
     return this.completed(message);
   }
   debug('WARNING: received message from unexpected exchange: %s, message: %j', message.exchange, message);
-  throw new Error('Got message from unexpected exchange: ' + message.exchange);
+  throw new Error(`Got message from unexpected exchange: ${message.exchange}`);
 };
 
 // Export Handlers

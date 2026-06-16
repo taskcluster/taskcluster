@@ -28,7 +28,7 @@ export const callHandler = ({ entry, context: _context, monitor }) => {
           // been sent at this point. It will report to sentry however!
           // This is only to catch the case where people do not use res.reply()
           monitor.reportError(
-            `${entry.name}: req.authorize was never called, ` + 'or some parameters were missing from the request',
+            `${entry.name}: req.authorize was never called, or some parameters were missing from the request`,
             {
               url: req.originalUrl,
               method: req.method,

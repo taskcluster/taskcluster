@@ -100,7 +100,7 @@ export const validate = references => {
       problems.push(`schema ${filename} has no $id`);
     } else if (!schemaPattern.test(content.$id)) {
       problems.push(
-        `schema ${filename} has an invalid $id '${content.$id}' ` + "(expected '/schemas/<something>/something>.json#'"
+        `schema ${filename} has an invalid $id '${content.$id}' (expected '/schemas/<something>/something>.json#'`
       );
     }
 
@@ -124,7 +124,7 @@ export const validate = references => {
       const schema = references.getSchema(content.$schema, { skipValidation: true });
       if (schema.$schema !== metadataMetaschema) {
         problems.push(
-          `reference ${filename} has schema '${content.$schema}' which does not have ` + 'the metadata metaschema'
+          `reference ${filename} has schema '${content.$schema}' which does not have the metadata metaschema`
         );
       }
     }

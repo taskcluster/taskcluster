@@ -111,7 +111,7 @@ export const execCommand = async ({
       if (code === 0 || ignoreReturn) {
         resolve(output);
       } else {
-        reject(new Error(`Nonzero exit status ${code}; ` + (logfile ? `see ${logfile} for details` : `\n${output}`)));
+        reject(new Error(`Nonzero exit status ${code}; ${logfile ? `see ${logfile} for details` : `\n${output}`}`));
       }
     });
     cp.once('error', reject);

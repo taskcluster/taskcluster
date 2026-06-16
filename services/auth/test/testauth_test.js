@@ -25,11 +25,11 @@ suite(testing.suiteName(), () => {
         const auth = new helper.AuthClient(config);
         await auth.testAuthenticate({ requiredScopes, clientScopes }).then(
           () => {
-            assert(!errorCode, 'Request was successful, but expected an error ' + 'with code: ' + errorCode);
+            assert(!errorCode, `Request was successful, but expected an error with code: ${errorCode}`);
           },
           err => {
             assert(errorCode, 'Request failed!');
-            assert(err.code === errorCode, 'Expected error with code: ' + errorCode + ' but got: ' + err.code);
+            assert(err.code === errorCode, `Expected error with code: ${errorCode} but got: ${err.code}`);
           }
         );
       });
@@ -113,11 +113,11 @@ suite(testing.suiteName(), () => {
         const auth = new helper.AuthClient(config);
         await auth.testAuthenticateGet().then(
           () => {
-            assert(!errorCode, 'Request was successful, but expected an error ' + 'with code: ' + errorCode);
+            assert(!errorCode, `Request was successful, but expected an error with code: ${errorCode}`);
           },
           err => {
             assert(errorCode, 'Request failed!');
-            assert(err.code === errorCode, 'Expected error with code: ' + errorCode + ' but got: ' + err.code);
+            assert(err.code === errorCode, `Expected error with code: ${errorCode} but got: ${err.code}`);
           }
         );
       });

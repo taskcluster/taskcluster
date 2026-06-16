@@ -72,7 +72,7 @@ export const expressError = ({ errorCodes, entry }) => {
     }
 
     if (status === undefined || typeof message !== 'string') {
-      const newMessage = 'Internal error, unknown error code: ' + code + '\n' + (message || 'Missing message!');
+      const newMessage = `Internal error, unknown error code: ${code}\n${message || 'Missing message!'}`;
       code = 'InternalServerError';
       status = 500;
       /** @type {Error & Record<string, any>} */

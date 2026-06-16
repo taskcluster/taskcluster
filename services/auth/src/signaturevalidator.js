@@ -132,7 +132,7 @@ const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes
       const createScope = `auth:create-client:${credentialName}`;
       if (!utils.satisfiesExpression(issuingScopes, createScope)) {
         throw new Error(
-          'ext.certificate issuer `' + issuingClientId + "` doesn't have `" + createScope + '` for supplied clientId.'
+          `ext.certificate issuer \`${issuingClientId}\` doesn't have \`${createScope}\` for supplied clientId.`
         );
       }
     } else if ('clientId' in cert) {

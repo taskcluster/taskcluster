@@ -201,8 +201,7 @@ export class ChangeLog {
       }
       const snippets = categorizedSnippets[audience]
         .map(
-          ({ level, reference, body }) =>
-            '▶ ' + levelLabels[level] + (reference ? ` ${reference}` : '') + '\n' + body.trim()
+          ({ level, reference, body }) => `▶ ${levelLabels[level]}${reference ? ` ${reference}` : ''}\n${body.trim()}`
         )
         .join('\n\n');
       return `\n\n### ${audience.toUpperCase()}\n\n${snippets}`;

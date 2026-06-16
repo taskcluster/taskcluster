@@ -23,7 +23,7 @@ export default (helper, options = {}) => {
       const errors = monitor.manager.messages.filter(({ Severity }) => Severity <= LEVELS.err);
       if (errors.length > 0) {
         throw new Error(
-          'Errors logged to monitor during test run:\n' + errors.map(msg => JSON.stringify(msg.Fields)).join('\n')
+          `Errors logged to monitor during test run:\n${errors.map(msg => JSON.stringify(msg.Fields)).join('\n')}`
         );
       }
 

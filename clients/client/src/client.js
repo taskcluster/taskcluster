@@ -338,9 +338,7 @@ export const createClient = (reference, name) => {
         // Validate number of arguments
         const N = args.length;
         if (N !== nb_args && (optKeys.length === 0 || N !== nb_args + 1)) {
-          throw new Error(
-            'Function ' + entry.name + ' takes ' + nb_args + ' arguments, but was given ' + N + ' arguments'
-          );
+          throw new Error(`Function ${entry.name} takes ${nb_args} arguments, but was given ${N} arguments`);
         }
         // Substitute parameters into route
         const endpoint = entry.route.replace(/<([^<>]+)>/g, (text, arg) => {
@@ -348,7 +346,7 @@ export const createClient = (reference, name) => {
           if (index !== -1) {
             const param = args[index];
             if (typeof param !== 'string' && typeof param !== 'number') {
-              throw new Error('URL parameter ' + arg + ' must be a string, but ' + 'we received a: ' + typeof param);
+              throw new Error(`URL parameter ${arg} must be a string, but we received a: ${typeof param}`);
             }
             return encodeURIComponent(param);
           }
@@ -366,9 +364,7 @@ export const createClient = (reference, name) => {
         if (query) {
           _.keys(query).forEach(key => {
             if (!_.includes(optKeys, key)) {
-              throw new Error(
-                'Function ' + entry.name + ' takes options: ' + optKeys.join(', ') + ' but was given ' + key
-              );
+              throw new Error(`Function ${entry.name} takes options: ${optKeys.join(', ')} but was given ${key}`);
             }
           });
         }
@@ -497,7 +493,7 @@ export const createClient = (reference, name) => {
               // Check that we haven't got an invalid value
               assert(
                 value === null || value === undefined,
-                "Value: '" + value + "' is not supported as routingKey " + 'pattern for ' + key.name
+                `Value: '${value}' is not supported as routingKey pattern for ${key.name}`
               );
               // Return default pattern for entry not being matched
               return key.multipleWords ? '#' : '*';
@@ -550,7 +546,7 @@ export const createClient = (reference, name) => {
       if (index !== -1) {
         const param = args[index];
         if (typeof param !== 'string' && typeof param !== 'number') {
-          throw new Error('URL parameter ' + arg + ' must be a string, but ' + 'we received a: ' + typeof param);
+          throw new Error(`URL parameter ${arg} must be a string, but we received a: ${typeof param}`);
         }
         return encodeURIComponent(param);
       }
@@ -562,7 +558,7 @@ export const createClient = (reference, name) => {
     if (query) {
       _.keys(query).forEach(key => {
         if (!_.includes(optKeys, key)) {
-          throw new Error('Function ' + entry.name + ' takes options: ' + optKeys.join(', ') + ' but was given ' + key);
+          throw new Error(`Function ${entry.name} takes options: ${optKeys.join(', ')} but was given ${key}`);
         }
       });
 

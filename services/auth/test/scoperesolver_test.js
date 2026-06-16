@@ -841,7 +841,7 @@ suite(testing.suiteName(), () => {
           console.error(result);
           console.error('Got: ');
           console.error(ScopeResolver.normalizeScopes(scopes));
-          assert(false, 'Expected normalizeScopes(' + scopes.join(', ') + ') === ' + result.join(', '));
+          assert(false, `Expected normalizeScopes(${scopes.join(', ')}) === ${result.join(', ')}`);
         }
       });
     });
