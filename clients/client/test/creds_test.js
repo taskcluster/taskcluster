@@ -1,5 +1,5 @@
 import taskcluster from '../src/index.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import request from 'superagent';
 import _ from 'lodash';
 import testing from './helper.js';

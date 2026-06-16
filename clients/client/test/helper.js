@@ -1,5 +1,5 @@
 import errorStackParser from 'error-stack-parser';
-import path from 'path';
+import path from 'node:path';
 
 // Restore TASKCLUSTER_* env vars after this test suite runs, to the values they
 // had when it began.

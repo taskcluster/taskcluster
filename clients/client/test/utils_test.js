@@ -1,6 +1,6 @@
 import taskcluster from '../src/index.js';
 import parseTime from '../src/parsetime.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from './helper.js';
 
 suite(testing.suiteName(), () => {

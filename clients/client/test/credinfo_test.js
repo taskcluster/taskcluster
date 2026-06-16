@@ -1,5 +1,5 @@
 import taskcluster from '../src/index.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import nock from 'nock';
 import testing from './helper.js';
 
