@@ -647,18 +647,17 @@ suite(testing.suiteName(), () => {
   });
 
   test('inject custom fake method', async () => {
-    let client;
     let gotArgs;
 
     const Fake = taskcluster.createClient(referenceNameStyle);
-    client = new Fake({
+    const client = new Fake({
       rootUrl: 'https://whatever.net',
       credentials: {
         clientId: 'nobody',
         accessToken: 'nothing',
       },
       fake: {
-        postParam: async function(...args) {
+        postParam: async (...args) => {
           gotArgs = args;
           return { result: 42 };
         },
