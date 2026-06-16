@@ -658,8 +658,8 @@ suite(testing.suiteName(), () => {
         accessToken: 'nothing',
       },
       fake: {
-        postParam: async function() {
-          gotArgs = Array.prototype.slice.call(arguments);
+        postParam: async function(...args) {
+          gotArgs = args;
           return { result: 42 };
         },
       },

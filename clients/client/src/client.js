@@ -325,9 +325,7 @@ export const createClient = (reference, name) => {
     const optKeys = entry.query || [];
 
     // Create method on prototype
-    Client.prototype[entry.name] = function() {
-      // Convert arguments to actual array
-      const args = Array.prototype.slice.call(arguments);
+    Client.prototype[entry.name] = function(...args) {
       // Validate number of arguments
       const N = args.length;
       if (N !== nb_args && (optKeys.length === 0 || N !== nb_args + 1)) {
@@ -563,11 +561,11 @@ export const createClient = (reference, name) => {
   // Utility functions to build the request URL for given method and
   // input parameters. The first builds with whatever rootUrl currently
   // is while the latter builds with trueRootUrl for sending to users
-  Client.prototype.buildUrl = function() {
-    return this._buildUrl(this._options.rootUrl, Array.prototype.slice.call(arguments));
+  Client.prototype.buildUrl = function(...args) {
+    return this._buildUrl(this._options.rootUrl, args);
   };
-  Client.prototype.externalBuildUrl = function() {
-    return this._buildUrl(this._options._trueRootUrl, Array.prototype.slice.call(arguments));
+  Client.prototype.externalBuildUrl = function(...args) {
+    return this._buildUrl(this._options._trueRootUrl, args);
   };
 
   Client.prototype._buildSignedUrl = function(builder, args) {
@@ -643,11 +641,11 @@ export const createClient = (reference, name) => {
 
   // Utility function to construct a bewit URL for GET requests. Same convention
   // as unsigned buildUrl applies here too
-  Client.prototype.buildSignedUrl = function() {
-    return this._buildSignedUrl(this.buildUrl, Array.prototype.slice.call(arguments));
+  Client.prototype.buildSignedUrl = function(...args) {
+    return this._buildSignedUrl(this.buildUrl, args);
   };
-  Client.prototype.externalBuildSignedUrl = function() {
-    return this._buildSignedUrl(this.externalBuildUrl, Array.prototype.slice.call(arguments));
+  Client.prototype.externalBuildSignedUrl = function(...args) {
+    return this._buildSignedUrl(this.externalBuildUrl, args);
   };
 
   // Return client class
