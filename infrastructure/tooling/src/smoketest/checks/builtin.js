@@ -13,20 +13,16 @@ export const tasks = [];
 [
   { taskType: 'succeed', successCondition: 'completed' },
   { taskType: 'fail', successCondition: 'failed' },
-].forEach(({ taskType, successCondition })=>{
+].forEach(({ taskType, successCondition }) => {
   tasks.push({
     title: `Create built-in/${taskType} task (--target built-in/${taskType})`,
-    requires: [
-      'ping-queue',
-    ],
-    provides: [
-      `target-built-in/${taskType}`,
-    ],
+    requires: ['ping-queue'],
+    provides: [`target-built-in/${taskType}`],
     run: async (_requirements, utils) => {
       const task = {
         provisionerId: 'built-in',
         workerType: taskType,
-        created: (new Date()).toJSON(),
+        created: new Date().toJSON(),
         deadline: taskcluster.fromNowJSON('2 minutes'),
         schedulerId: 'smoketest',
         metadata: {
@@ -42,7 +38,7 @@ export const tasks = [];
       const queue = new taskcluster.Queue(taskcluster.fromEnvVars());
       await queue.createTask(taskId, task);
       const pollForStatusStart = new Date();
-      while ((Date.now() - pollForStatusStart) < 120000) {
+      while (Date.now() - pollForStatusStart < 120000) {
         const status = await queue.status(taskId);
         if (status.status.state === 'pending' || status.status.state === 'running') {
           utils.status({

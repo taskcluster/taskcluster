@@ -18,133 +18,154 @@ suite(testing.suiteName(), () => {
     params: {
       taskId: /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/,
     },
-    context: [
-      'expectedValidatedParam',
-      'expectedValidatedQuery',
-    ],
+    context: ['expectedValidatedParam', 'expectedValidatedQuery'],
   });
 
-  builder.declare({
-    method: 'get',
-    route: '/single-param/:myparam',
-    name: 'testParam',
-    scopes: null,
-    title: 'Test End-Point',
-    category: 'API Library',
-    stability: APIBuilder.stability.stable,
-    description: 'Place we can call to test something',
-  }, (req, res) => {
-    res.status(200).send(req.params.myparam);
-  });
-
-  builder.declare({
-    method: 'get',
-    route: '/single-param-with-slashes/:myparam(*)',
-    name: 'testParamWithSlashes',
-    scopes: null,
-    title: 'Test End-Point',
-    stability: APIBuilder.stability.stable,
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, (req, res) => {
-    res.status(200).send(req.params.myparam);
-  });
-
-  builder.declare({
-    method: 'get',
-    route: '/query-param/',
-    query: {
-      nextPage: /^[0-9]+$/,
+  builder.declare(
+    {
+      method: 'get',
+      route: '/single-param/:myparam',
+      name: 'testParam',
+      scopes: null,
+      title: 'Test End-Point',
+      category: 'API Library',
+      stability: APIBuilder.stability.stable,
+      description: 'Place we can call to test something',
     },
-    name: 'testQueryParam',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-    scopes: null,
-  }, (req, res) => {
-    res.status(200).send(req.query.nextPage || 'empty');
-  });
+    (req, res) => {
+      res.status(200).send(req.params.myparam);
+    }
+  );
 
-  builder.declare({
-    method: 'get',
-    route: '/query-param-fn/',
-    query: {
-      incantation: function(val) {
-        if (val !== this.expectedValidatedQuery) {
-          return 'uhoh: query not valid';
-        }
+  builder.declare(
+    {
+      method: 'get',
+      route: '/single-param-with-slashes/:myparam(*)',
+      name: 'testParamWithSlashes',
+      scopes: null,
+      title: 'Test End-Point',
+      stability: APIBuilder.stability.stable,
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (req, res) => {
+      res.status(200).send(req.params.myparam);
+    }
+  );
+
+  builder.declare(
+    {
+      method: 'get',
+      route: '/query-param/',
+      query: {
+        nextPage: /^[0-9]+$/,
+      },
+      name: 'testQueryParam',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      scopes: null,
+    },
+    (req, res) => {
+      res.status(200).send(req.query.nextPage || 'empty');
+    }
+  );
+
+  builder.declare(
+    {
+      method: 'get',
+      route: '/query-param-fn/',
+      query: {
+        incantation: function (val) {
+          if (val !== this.expectedValidatedQuery) {
+            return 'uhoh: query not valid';
+          }
+        },
+      },
+      name: 'testQueryParamFn',
+      scopes: null,
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (req, res) => {
+      res.status(200).send(req.query.incantation);
+    }
+  );
+
+  builder.declare(
+    {
+      method: 'get',
+      route: '/slash-param/:name(*)',
+      name: 'testSlashParam',
+      scopes: null,
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (req, res) => {
+      res.status(200).send(req.params.name);
+    }
+  );
+
+  builder.declare(
+    {
+      method: 'get',
+      route: '/validated-param/:taskId',
+      name: 'testParamValidation',
+      scopes: null,
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (req, res) => {
+      res.status(200).send(req.params.taskId);
+    }
+  );
+
+  builder.declare(
+    {
+      method: 'get',
+      route: '/function-validated-param/:fnValidated',
+      name: 'testFunctionParamValidation',
+      scopes: null,
+      title: 'Test End-Point',
+      category: 'API Library',
+      params: {
+        fnValidated: function (val) {
+          if (val !== this.expectedValidatedParam) {
+            return 'uhoh: param not valid';
+          }
+        },
+      },
+      description: 'Place we can call to test something',
+    },
+    (req, res) => {
+      res.status(200).send(req.params.fnValidated);
+    }
+  );
+
+  builder.declare(
+    {
+      method: 'get',
+      route: '/validated-param-2/:param2',
+      name: 'testParam2Validation',
+      scopes: null,
+      title: 'Test End-Point',
+      description: 'Place we can call to test something',
+      category: 'API Library',
+      params: {
+        param2: value => {
+          if (value !== 'correct') {
+            return 'Wrong value passed!';
+          }
+        },
       },
     },
-    name: 'testQueryParamFn',
-    scopes: null,
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, (req, res) => {
-    res.status(200).send(req.query.incantation);
-  });
-
-  builder.declare({
-    method: 'get',
-    route: '/slash-param/:name(*)',
-    name: 'testSlashParam',
-    scopes: null,
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, (req, res) => {
-    res.status(200).send(req.params.name);
-  });
-
-  builder.declare({
-    method: 'get',
-    route: '/validated-param/:taskId',
-    name: 'testParamValidation',
-    scopes: null,
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, (req, res) => {
-    res.status(200).send(req.params.taskId);
-  });
-
-  builder.declare({
-    method: 'get',
-    route: '/function-validated-param/:fnValidated',
-    name: 'testFunctionParamValidation',
-    scopes: null,
-    title: 'Test End-Point',
-    category: 'API Library',
-    params: {
-      fnValidated: function(val) {
-        if (val !== this.expectedValidatedParam) {
-          return 'uhoh: param not valid';
-        }
-      },
-    },
-    description: 'Place we can call to test something',
-  }, (req, res) => {
-    res.status(200).send(req.params.fnValidated);
-  });
-
-  builder.declare({
-    method: 'get',
-    route: '/validated-param-2/:param2',
-    name: 'testParam2Validation',
-    scopes: null,
-    title: 'Test End-Point',
-    description: 'Place we can call to test something',
-    category: 'API Library',
-    params: {
-      param2: (value) => {
-        if (value !== 'correct') {
-          return 'Wrong value passed!';
-        }
-      },
-    },
-  }, (req, res) => {
-    res.status(200).send(req.params.param2);
-  });
+    (req, res) => {
+      res.status(200).send(req.params.param2);
+    }
+  );
 
   // Create a mock authentication server
   setup(async () => {
@@ -160,52 +181,42 @@ suite(testing.suiteName(), () => {
 
   test('single parameter', () => {
     const url = u('/single-param/Hello');
-    return request
-      .get(url)
-      .then((res) => {
-        assert(res.ok, 'Request failed');
-        assert(res.text === 'Hello', 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert(res.text === 'Hello', 'Got wrong value');
+    });
   });
 
   test('single parameter, trailing slash', () => {
     const url = u('/single-param/Hello/');
-    return request
-      .get(url)
-      .then((res) => {
-        assert(res.ok, 'Request failed');
-        assert(res.text === 'Hello', 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert(res.text === 'Hello', 'Got wrong value');
+    });
   });
 
   test('single parameter with slashes', () => {
     const url = u('/single-param-with-slashes/Hello/world');
-    return request
-      .get(url)
-      .then((res) => {
-        assert(res.ok, 'Request failed');
-        assert.equal(res.text, 'Hello/world', 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert.equal(res.text, 'Hello/world', 'Got wrong value');
+    });
   });
 
   test('single parameter allowing slashes without slashes', () => {
     const url = u('/single-param-with-slashes/Helloworld');
-    return request
-      .get(url)
-      .then((res) => {
-        assert(res.ok, 'Request failed');
-        assert.equal(res.text, 'Helloworld', 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert.equal(res.text, 'Helloworld', 'Got wrong value');
+    });
   });
 
   test('single parameter with encoded slashes', () => {
     const url = u('/single-param-with-slashes/Hello%2Fworld');
-    return request
-      .get(url)
-      .then((res) => {
-        assert(res.ok, 'Request failed');
-        assert.equal(res.text, 'Hello/world', 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert.equal(res.text, 'Hello/world', 'Got wrong value');
+    });
   });
 
   test('query parameter', () => {
@@ -213,7 +224,7 @@ suite(testing.suiteName(), () => {
     return request
       .get(url)
       .query({ nextPage: '352' })
-      .catch((res) => {
+      .catch(res => {
         assert(res.ok, 'Request failed');
         assert(res.text === '352', 'Got wrong value');
       });
@@ -221,12 +232,10 @@ suite(testing.suiteName(), () => {
 
   test('query parameter (is optional)', () => {
     const url = u('/query-param/');
-    return request
-      .get(url)
-      .then((res) => {
-        assert(res.ok, 'Request failed');
-        assert(res.text === 'empty', 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert(res.text === 'empty', 'Got wrong value');
+    });
   });
 
   test('query parameter (validation works)', () => {
@@ -235,7 +244,7 @@ suite(testing.suiteName(), () => {
       .get(url)
       .query({ nextPage: 'abc' })
       .then(() => assert(false, 'should have failed!'))
-      .catch((res) => {
+      .catch(res => {
         assert(!res.ok, 'Expected request failure!');
         assert(res.status === 400, 'Expected a 400 error');
       });
@@ -258,7 +267,7 @@ suite(testing.suiteName(), () => {
       .get(url)
       .query({ incantation: 'alohomora' })
       .then(() => assert(false, 'should have failed!'))
-      .catch((res) => {
+      .catch(res => {
         assert(!res.ok, 'Expected request failure!');
         assert(res.status === 400, 'Expected a 400 error');
       });
@@ -266,23 +275,19 @@ suite(testing.suiteName(), () => {
 
   test('slash parameter', () => {
     const url = u('/slash-param/Hello/World');
-    return request
-      .get(url)
-      .then((res) => {
-        assert(res.ok, 'Request failed');
-        assert(res.text === 'Hello/World', 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert(res.text === 'Hello/World', 'Got wrong value');
+    });
   });
 
   test('validated reg-exp parameter (valid)', () => {
     const id = slugid.v4();
     const url = u('/validated-param/') + id;
-    return request
-      .get(url)
-      .then((res) => {
-        assert(res.ok, 'Request failed');
-        assert(res.text === id, 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert(res.text === id, 'Got wrong value');
+    });
   });
 
   test('validated reg-exp parameter (invalid)', () => {
@@ -290,7 +295,7 @@ suite(testing.suiteName(), () => {
     return request
       .get(url)
       .then(() => assert(false, 'should have failed!'))
-      .catch((res) => {
+      .catch(res => {
         assert(!res.ok, 'Expected a failure');
         assert(res.status === 400, 'Expected a 400 error');
       });
@@ -298,12 +303,10 @@ suite(testing.suiteName(), () => {
 
   test('validated function parameter (valid)', () => {
     const url = u('/validated-param-2/correct');
-    return request
-      .get(url)
-      .then((res) => {
-        assert(res.ok, 'Request failed');
-        assert(res.text === 'correct', 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert(res.text === 'correct', 'Got wrong value');
+    });
   });
 
   test('validated function parameter (invalid)', () => {
@@ -311,7 +314,7 @@ suite(testing.suiteName(), () => {
     return request
       .get(url)
       .then(() => assert(false, 'should have failed!'))
-      .catch((res) => {
+      .catch(res => {
         assert(!res.ok, 'Expected a failure');
         assert(res.status === 400, 'Expected a 400 error');
       });
@@ -319,12 +322,10 @@ suite(testing.suiteName(), () => {
 
   test('validated function parameter using context (valid)', () => {
     const url = u('/function-validated-param/open-sesame');
-    return request
-      .get(url)
-      .then(res => {
-        assert(res.ok, 'Request failed');
-        assert(res.text === 'open-sesame');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert(res.text === 'open-sesame');
+    });
   });
 
   test('validated function parameter using context (invalid)', () => {
@@ -332,7 +333,7 @@ suite(testing.suiteName(), () => {
     return request
       .get(url)
       .then(() => assert(false, 'should have failed!'))
-      .catch((res) => {
+      .catch(res => {
         assert(!res.ok, 'Expected request failure!');
         assert(res.status === 400, 'Expected a 400 error');
       });
@@ -343,7 +344,7 @@ suite(testing.suiteName(), () => {
     return request
       .get(url)
       .set('origin', 'https://tc.example.com')
-      .then((res) => {
+      .then(res => {
         assert(res.ok, 'Request failed');
         assert.equal(res.header['access-control-allow-origin'], '*');
       });
@@ -351,12 +352,10 @@ suite(testing.suiteName(), () => {
 
   test('cache header', () => {
     const url = u('/single-param/Hello');
-    return request
-      .get(url)
-      .then((res) => {
-        assert(res.ok, 'Request failed');
-        assert(res.header['cache-control'] === 'no-store no-cache must-revalidate', 'Got wrong header');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert(res.header['cache-control'] === 'no-store no-cache must-revalidate', 'Got wrong header');
+    });
   });
 
   test('cache header on 404s', () => {
@@ -364,17 +363,16 @@ suite(testing.suiteName(), () => {
     return request
       .get(url)
       .then(() => assert(false, 'should have failed!'))
-      .catch((err) => {
+      .catch(err => {
         assert(err.response.header['cache-control'] === 'no-store no-cache must-revalidate', 'Got wrong header');
       });
   });
 
   test('reference', async () => {
     const ref = builder.reference();
-    ref.entries.forEach((entry) => {
+    ref.entries.forEach(entry => {
       if (entry.name === 'testSlashParam') {
-        assert(entry.route === '/slash-param/<name>',
-          'not parsing route correctly');
+        assert(entry.route === '/slash-param/<name>', 'not parsing route correctly');
         assert(entry.args.length === 1, 'Wrong number of args');
         assert(entry.args[0] === 'name', 'Failed to parse route correctly');
       }
@@ -382,37 +380,44 @@ suite(testing.suiteName(), () => {
   });
 
   test('no duplicate route and method', () => {
-    builder.declare({
-      method: 'get',
-      route: '/test',
-      name: 'test',
-      scopes: null,
-      title: 'Test',
-      category: 'API Library',
-      description: 'Test',
-    }, (_req, _res) => {});
-
-    assert.throws(() => {
-      builder.declare({
+    builder.declare(
+      {
         method: 'get',
         route: '/test',
-        name: 'testDuplicate',
+        name: 'test',
         scopes: null,
         title: 'Test',
         category: 'API Library',
         description: 'Test',
-      }, (_req, _res) => {});
+      },
+      (_req, _res) => {}
+    );
+
+    assert.throws(() => {
+      builder.declare(
+        {
+          method: 'get',
+          route: '/test',
+          name: 'testDuplicate',
+          scopes: null,
+          title: 'Test',
+          category: 'API Library',
+          description: 'Test',
+        },
+        (_req, _res) => {}
+      );
     }, /Identical route and method/);
   });
 
   test('routes are case-sensitive', () => {
     const url = u('/SiNgLe-pArAm/Hello');
-    return request
-      .get(url)
-      .then((res) => {
+    return request.get(url).then(
+      res => {
         assert(!res.ok, 'Request succeeded');
-      }, (err) => {
+      },
+      err => {
         assert.equal(err.status, 404);
-      });
+      }
+    );
   });
 });

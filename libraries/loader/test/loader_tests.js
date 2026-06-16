@@ -30,70 +30,86 @@ suite('component loader', () => {
   test('should accept a virtual component', async () => {
     const a = { a: 1 };
 
-    const load = subject({
-      test: {
-        requires: ['dep'],
-        setup: deps => {
-          return deps.dep;
+    const load = subject(
+      {
+        test: {
+          requires: ['dep'],
+          setup: deps => {
+            return deps.dep;
+          },
         },
       },
-    }, {
-      dep: null,
-    });
+      {
+        dep: null,
+      }
+    );
 
-    assume(await load('test', {
-      dep: a,
-    })).equals(a);
+    assume(
+      await load('test', {
+        dep: a,
+      })
+    ).equals(a);
   });
 
   test('should accept a virtual component as array', async () => {
     const a = { a: 1 };
 
-    const load = subject({
-      test: {
-        requires: ['dep'],
-        setup: deps => {
-          return deps.dep;
+    const load = subject(
+      {
+        test: {
+          requires: ['dep'],
+          setup: deps => {
+            return deps.dep;
+          },
         },
       },
-    }, [
-      'dep',
-    ]);
+      ['dep']
+    );
 
-    assume(await load('test', {
-      dep: a,
-    })).equals(a);
+    assume(
+      await load('test', {
+        dep: a,
+      })
+    ).equals(a);
   });
 
   test('should allow setting defaults for virtual components', async () => {
-    const load = subject({
-      test: {
-        requires: ['dep'],
-        setup: deps => {
-          return deps.dep;
+    const load = subject(
+      {
+        test: {
+          requires: ['dep'],
+          setup: deps => {
+            return deps.dep;
+          },
         },
       },
-    }, {
-      dep: 5,
-    });
+      {
+        dep: 5,
+      }
+    );
 
     assume(await load('test', {})).equals(5);
     assume(await load('test')).equals(5);
   });
 
   test('should allow overwrites', async () => {
-    const load = subject({
-      test: {
-        requires: [],
-        setup: () => {
-          return 'Hello World';
+    const load = subject(
+      {
+        test: {
+          requires: [],
+          setup: () => {
+            return 'Hello World';
+          },
         },
       },
-    }, {});
+      {}
+    );
 
-    assume(await load('test', {
-      test: 'Mocking Hello World',
-    })).equals('Mocking Hello World');
+    assume(
+      await load('test', {
+        test: 'Mocking Hello World',
+      })
+    ).equals('Mocking Hello World');
   });
 
   test('should forbid undefined components', async () => {
@@ -285,7 +301,11 @@ suite('component loader', () => {
       object: { setup: () => a },
       number: { setup: () => 123.456 },
       promise: { setup: () => Promise.resolve(b) },
-      func: { setup: ()=> () => { return c; } },
+      func: {
+        setup: () => () => {
+          return c;
+        },
+      },
       base: {
         requires: ['string', 'object', 'number', 'promise', 'func'],
         setup: async deps => {
@@ -336,11 +356,14 @@ suite('component loader', () => {
 
   test('should fail when a virtual component is a dupe of a real one', () => {
     try {
-      subject({
-        dep1: 'string',
-      }, {
-        'dep1': null,
-      });
+      subject(
+        {
+          dep1: 'string',
+        },
+        {
+          dep1: null,
+        }
+      );
     } catch (e) {
       if (!e.message.match(/virtual keys must not have definitions in the loader/)) {
         throw e;
@@ -356,14 +379,20 @@ suite('component loader', () => {
     ['def that is a string', 'this ought to fail'],
     ['def with non-func setup property', { setup: 'hi' }],
     ['def with missing setup property', {}],
-    ['def with requires that is not array', {
-      setup: () => {},
-      requires: 'hi',
-    }],
-    ['def with requires that is not array of only strings', {
-      setup: () => {},
-      requires: ['a', 1, 'b'],
-    }],
+    [
+      'def with requires that is not array',
+      {
+        setup: () => {},
+        requires: 'hi',
+      },
+    ],
+    [
+      'def with requires that is not array of only strings',
+      {
+        setup: () => {},
+        requires: ['a', 1, 'b'],
+      },
+    ],
   ];
   for (const x of badDef) {
     test(`should fail on a ${x[0]}`, () => {
@@ -387,7 +416,7 @@ suite('component loader', () => {
         requires: ['dep2'],
         setup: d => {
           orderCalled.push('dep1');
-          return new Promise((r) => {
+          return new Promise(r => {
             setTimeout(() => {
               r(d.dep2);
             }, 200);
@@ -405,7 +434,7 @@ suite('component loader', () => {
         requires: ['dep4'],
         setup: d => {
           orderCalled.push('dep3');
-          return new Promise((r) => {
+          return new Promise(r => {
             setTimeout(() => {
               r(d.dep4);
             }, 200);
@@ -426,7 +455,6 @@ suite('component loader', () => {
           return d.dep1;
         },
       },
-
     });
 
     assume(await load('base', {})).equals(rv);
@@ -441,7 +469,9 @@ suite('component loader', () => {
       },
     });
 
-    assert.throws(() => { load.crashOnError(true); }, 'false');
+    assert.throws(() => {
+      load.crashOnError(true);
+    }, 'false');
   });
 
   test('should pass own name to setup', async () => {
@@ -451,5 +481,4 @@ suite('component loader', () => {
 
     assume(await load('testName')).equals('testName');
   });
-
 });

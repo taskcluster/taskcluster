@@ -26,7 +26,7 @@ suite(testing.suiteName(), () => {
       wp.task_id || slug.nice(),
       wp.task_create_time || new Date(),
       wp.result || 'result',
-      wp.error || 'error',
+      wp.error || 'error'
     );
 
     return etag;
@@ -37,7 +37,7 @@ suite(testing.suiteName(), () => {
       queue.hook_group_id || 'hook/group/id',
       queue.hook_id || 'hook-id',
       queue.queue_name || 'queue-name',
-      queue.bindings || '[]', // N.B. JSON-encoded
+      queue.bindings || '[]' // N.B. JSON-encoded
     );
 
     return etag;
@@ -54,12 +54,12 @@ suite(testing.suiteName(), () => {
       hook.encrypted_trigger_token || { v: 0, kid: 'azure', __bufchunks_val: 0 },
       hook.encrypted_next_task_id || { v: 0, kid: 'azure', __bufchunks_val: 0 },
       hook.next_scheduled_date || new Date(1),
-      hook.trigger_schema || {},
+      hook.trigger_schema || {}
     );
   };
 
   suite(`${testing.suiteName()} - hooks_last_fires`, () => {
-    helper.dbTest('create_last_fire/get_last_fires_with_task_state', async (db) => {
+    helper.dbTest('create_last_fire/get_last_fires_with_task_state', async db => {
       const now = new Date();
       const taskId = slug.nice();
       await create_last_fire(db, { task_id: taskId, task_create_time: now });
@@ -75,7 +75,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows[0].error, 'error');
     });
 
-    helper.dbTest('create_last_fire throws when row already exists', async (db) => {
+    helper.dbTest('create_last_fire throws when row already exists', async db => {
       const now = new Date();
       const taskId = slug.nice();
       await create_last_fire(db, { task_id: taskId, task_create_time: now });
@@ -84,20 +84,20 @@ suite(testing.suiteName(), () => {
         async () => {
           await create_last_fire(db, { task_id: taskId, task_create_time: now });
         },
-        err => err.code === UNIQUE_VIOLATION,
+        err => err.code === UNIQUE_VIOLATION
       );
     });
 
-    helper.dbTest('get_last_fires does not throw when no such row', async (db) => {
+    helper.dbTest('get_last_fires does not throw when no such row', async db => {
       const rows = await db.deprecatedFns.get_last_fires('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 0);
     });
-    helper.dbTest('get_last_fires_with_task_state does not throw when no such row', async (db) => {
+    helper.dbTest('get_last_fires_with_task_state does not throw when no such row', async db => {
       const rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 0);
     });
 
-    helper.dbTest('get_last_fires full, pagination', async (db) => {
+    helper.dbTest('get_last_fires full, pagination', async db => {
       for (let i = 0; i < 10; i++) {
         await create_last_fire(db, { task_id: slug.nice() });
       }
@@ -112,7 +112,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 2);
     });
 
-    helper.dbTest('get_last_fires_with_task_state full, pagination', async (db) => {
+    helper.dbTest('get_last_fires_with_task_state full, pagination', async db => {
       await helper.withDbClient(async client => {
         const createTask = async (_db, options = {}) => {
           const taskId = options.taskId || slug.nice();
@@ -137,12 +137,12 @@ suite(testing.suiteName(), () => {
               '{}', // metadata jsonb,
               '{}', // tags jsonb,
               '{}', // extra jsonb
-            ],
+            ]
           );
-          await client.query(
-            'update tasks set runs = $1 where task_id = $2;',
-            [JSON.stringify(options.runs) || '[]', taskId],
-          );
+          await client.query('update tasks set runs = $1 where task_id = $2;', [
+            JSON.stringify(options.runs) || '[]',
+            taskId,
+          ]);
         };
         for (let i = 0; i < 10; i++) {
           const taskId = slug.nice();
@@ -164,11 +164,13 @@ suite(testing.suiteName(), () => {
       });
     });
 
-    helper.dbTest('delete_last_fires', async (db) => {
-      await Promise.all(_.range(5).map(() => {
-        const taskId = slug.nice();
-        return create_last_fire(db, { task_id: taskId });
-      }));
+    helper.dbTest('delete_last_fires', async db => {
+      await Promise.all(
+        _.range(5).map(() => {
+          const taskId = slug.nice();
+          return create_last_fire(db, { task_id: taskId });
+        })
+      );
 
       let rows = await db.fns.get_last_fires_with_task_state('hook/group/id', 'hook-id', 10, 0);
       assert.equal(rows.length, 5);
@@ -177,14 +179,16 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 0);
     });
 
-    helper.dbTest('delete_last_fires does not throw when no such row', async (db) => {
+    helper.dbTest('delete_last_fires does not throw when no such row', async db => {
       await db.fns.delete_last_fires('hook/group/id', 'hook-id');
     });
 
-    helper.dbTest('expire_last_fires does not delete when < 1 year', async (db) => {
-      await Promise.all(['1 day', '1 month', '1 year'].map(period => {
-        return create_last_fire(db, { task_create_time: fromNow(period) });
-      }));
+    helper.dbTest('expire_last_fires does not delete when < 1 year', async db => {
+      await Promise.all(
+        ['1 day', '1 month', '1 year'].map(period => {
+          return create_last_fire(db, { task_create_time: fromNow(period) });
+        })
+      );
 
       await db.fns.expire_last_fires();
 
@@ -192,10 +196,12 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 3);
     });
 
-    helper.dbTest('expire_last_fires deletes when > 1 year', async (db) => {
-      await Promise.all(['-1 day', '-13 months', '-2 years'].map(period => {
-        return create_last_fire(db, { task_create_time: fromNow(period) });
-      }));
+    helper.dbTest('expire_last_fires deletes when > 1 year', async db => {
+      await Promise.all(
+        ['-1 day', '-13 months', '-2 years'].map(period => {
+          return create_last_fire(db, { task_create_time: fromNow(period) });
+        })
+      );
 
       const count = (await db.fns.expire_last_fires())[0].expire_last_fires;
       assert.equal(count, 2);
@@ -206,7 +212,7 @@ suite(testing.suiteName(), () => {
   });
 
   suite(`${testing.suiteName()} - hooks_queues`, () => {
-    helper.dbTest('create_queue/get_queues', async (db) => {
+    helper.dbTest('create_queue/get_queues', async db => {
       await create_hooks_queue(db, {});
 
       const rows = await db.fns.get_hooks_queues(10, 0);
@@ -217,7 +223,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].bindings, []);
     });
 
-    helper.dbTest('create_queue with bindings', async (db) => {
+    helper.dbTest('create_queue with bindings', async db => {
       const bindings = [{ exchange: 'exchange', routingKeyPattern: 'routingKeyPattern' }];
       await create_hooks_queue(db, { bindings: JSON.stringify(bindings) });
 
@@ -229,23 +235,23 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].bindings, bindings);
     });
 
-    helper.dbTest('create_queue throws when row already exists', async (db) => {
+    helper.dbTest('create_queue throws when row already exists', async db => {
       await create_hooks_queue(db, {});
 
       await assert.rejects(
         async () => {
           await create_hooks_queue(db, {});
         },
-        err => err.code === UNIQUE_VIOLATION,
+        err => err.code === UNIQUE_VIOLATION
       );
     });
 
-    helper.dbTest('get_hooks_queues does not throw when no such row', async (db) => {
+    helper.dbTest('get_hooks_queues does not throw when no such row', async db => {
       const rows = await db.fns.get_hooks_queues(10, 0);
       assert.equal(rows.length, 0);
     });
 
-    helper.dbTest('get_hooks_queues full, pagination', async (db) => {
+    helper.dbTest('get_hooks_queues full, pagination', async db => {
       for (let i = 0; i < 10; i++) {
         await create_hooks_queue(db, { hook_id: `hook-id/${i}` });
       }
@@ -260,10 +266,12 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 2);
     });
 
-    helper.dbTest('delete_hooks_queue', async (db) => {
-      await Promise.all(_.range(5).map(i => {
-        return create_hooks_queue(db, { hook_id: `hook-id/${i}` });
-      }));
+    helper.dbTest('delete_hooks_queue', async db => {
+      await Promise.all(
+        _.range(5).map(i => {
+          return create_hooks_queue(db, { hook_id: `hook-id/${i}` });
+        })
+      );
 
       let rows = await db.fns.get_hooks_queues(10, 0);
       assert.equal(rows.length, 5);
@@ -272,11 +280,11 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 4);
     });
 
-    helper.dbTest('delete_hooks_queue does not throw when no such row', async (db) => {
+    helper.dbTest('delete_hooks_queue does not throw when no such row', async db => {
       await db.fns.delete_last_fires('hook/group/id', 'hook-id');
     });
 
-    helper.dbTest('update_hooks_queue_bindings updates bindings', async (db) => {
+    helper.dbTest('update_hooks_queue_bindings updates bindings', async db => {
       const bindings = [];
       await create_hooks_queue(db, { bindings });
 
@@ -292,7 +300,7 @@ suite(testing.suiteName(), () => {
   });
 
   suite(`${testing.suiteName()} - hooks`, () => {
-    helper.dbTest('create_hook/get_hook', async (db) => {
+    helper.dbTest('create_hook/get_hook', async db => {
       await create_hook(db, {});
 
       const rows = await db.fns.get_hook('hook/group/id', 'hook-id');
@@ -309,7 +317,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].trigger_schema, {});
     });
 
-    helper.dbTest('create_hook with bindings', async (db) => {
+    helper.dbTest('create_hook with bindings', async db => {
       const bindings = [{ exchange: 'exchange', routingKeyPattern: 'routingKeyPattern' }];
       await create_hook(db, { bindings: JSON.stringify(bindings) });
 
@@ -325,14 +333,14 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].trigger_schema, {});
     });
 
-    helper.dbTest('create_hook throws when row already exists', async (db) => {
+    helper.dbTest('create_hook throws when row already exists', async db => {
       await create_hook(db, {});
 
       await assert.rejects(
         async () => {
           await create_hook(db, {});
         },
-        err => err.code === UNIQUE_VIOLATION,
+        err => err.code === UNIQUE_VIOLATION
       );
     });
 
@@ -349,7 +357,7 @@ suite(testing.suiteName(), () => {
         null,
         null,
         null,
-        null,
+        null
       );
 
       const rows = await db.fns.get_hook('hook/group/id', 'hook-id');
@@ -378,7 +386,7 @@ suite(testing.suiteName(), () => {
         null,
         db.encrypt({ value: Buffer.from(nextTaskId, 'utf8') }),
         null,
-        null,
+        null
       );
 
       const rows = await db.fns.get_hook('hook/group/id', 'hook-id');
@@ -406,7 +414,7 @@ suite(testing.suiteName(), () => {
         null,
         null,
         null,
-        null,
+        null
       );
       // this is not 0 because there was a row that matched even though there was no change
       assert.equal(updated.length, 1);
@@ -426,31 +434,17 @@ suite(testing.suiteName(), () => {
     });
 
     helper.dbTest('update_hook, throws when row does not exist', async (db, _isFake) => {
-      await assert.rejects(
-        async () => {
-          await db.fns.update_hook(
-            'does-not-exist',
-            'does-not-exist',
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-          );
-        },
-        /no such row/,
-      );
+      await assert.rejects(async () => {
+        await db.fns.update_hook('does-not-exist', 'does-not-exist', null, null, null, null, null, null, null, null);
+      }, /no such row/);
     });
 
-    helper.dbTest('get_hooks does not throw when no such row', async (db) => {
+    helper.dbTest('get_hooks does not throw when no such row', async db => {
       const rows = await db.fns.get_hooks(null, null, 10, 0);
       assert.equal(rows.length, 0);
     });
 
-    helper.dbTest('get_hooks full, pagination', async (db) => {
+    helper.dbTest('get_hooks full, pagination', async db => {
       for (let i = 0; i < 10; i++) {
         await create_hook(db, { hook_id: `hook-id/${i}` });
       }
@@ -465,7 +459,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 2);
     });
 
-    helper.dbTest('get_hooks filtered by hook group id', async (db) => {
+    helper.dbTest('get_hooks filtered by hook group id', async db => {
       for (let i = 0; i < 10; i++) {
         if (i < 5) {
           await create_hook(db, { hook_group_id: 'foo', hook_id: `hook-id/${i}` });
@@ -479,7 +473,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.filter(r => r.hook_group_id === 'foo').length, 5);
     });
 
-    helper.dbTest('get_hooks filtered by next_scheduled_date', async (db) => {
+    helper.dbTest('get_hooks filtered by next_scheduled_date', async db => {
       const oneDayAgo = fromNow('-1 day');
       const now = fromNow();
       for (let i = 0; i < 10; i++) {
@@ -497,13 +491,17 @@ suite(testing.suiteName(), () => {
       });
     });
 
-    helper.dbTest('get_hooks filtered by hook_group_id and next_scheduled_date', async (db) => {
+    helper.dbTest('get_hooks filtered by hook_group_id and next_scheduled_date', async db => {
       const oneDayAgo = fromNow('-1 day');
       const now = fromNow();
       await create_hook(db, { hook_group_id: 'foo', next_scheduled_date: oneDayAgo });
       for (let i = 0; i < 10; i++) {
         if (i < 5) {
-          await create_hook(db, { hook_group_id: 'foo', hook_id: `hook-id/${i}`, next_scheduled_date: fromNow('1 day') });
+          await create_hook(db, {
+            hook_group_id: 'foo',
+            hook_id: `hook-id/${i}`,
+            next_scheduled_date: fromNow('1 day'),
+          });
         } else {
           await create_hook(db, { hook_group_id: 'bar', hook_id: `hook-id/${i}`, next_scheduled_date: oneDayAgo });
         }
@@ -517,10 +515,12 @@ suite(testing.suiteName(), () => {
       });
     });
 
-    helper.dbTest('delete_hook', async (db) => {
-      await Promise.all(_.range(5).map(i => {
-        return create_hook(db, { hook_id: `hook-id/${i}` });
-      }));
+    helper.dbTest('delete_hook', async db => {
+      await Promise.all(
+        _.range(5).map(i => {
+          return create_hook(db, { hook_id: `hook-id/${i}` });
+        })
+      );
 
       let rows = await db.fns.get_hooks(null, null, 10, 0);
       assert.equal(rows.length, 5);
@@ -529,11 +529,11 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 4);
     });
 
-    helper.dbTest('delete_hook does not throw when no such row', async (db) => {
+    helper.dbTest('delete_hook does not throw when no such row', async db => {
       await db.fns.delete_hook('hook/group/id', 'hook-id');
     });
 
-    helper.dbTest('get_hook_groups returns unique groups', async (db) => {
+    helper.dbTest('get_hook_groups returns unique groups', async db => {
       await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/1', next_scheduled_date: fromNow('1 day') });
       await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-id/2', next_scheduled_date: fromNow('1 day') });
       await create_hook(db, { hook_group_id: 'baz', hook_id: 'hook-id/3', next_scheduled_date: fromNow('1 day') });
@@ -546,19 +546,18 @@ suite(testing.suiteName(), () => {
   });
 
   suite(`${testing.suiteName()} - hooks audit history`, () => {
-    helper.dbTest('insert_hooks_audit_history creates audit entry', async (db) => {
-      await db.fns.insert_hooks_audit_history(
-        'hook/1',
-        'client-1',
-        'created',
-      );
+    helper.dbTest('insert_hooks_audit_history creates audit entry', async db => {
+      await db.fns.insert_hooks_audit_history('hook/1', 'client-1', 'created');
 
       const rows = await helper.withDbClient(async client => {
-        const result = await client.query(`
+        const result = await client.query(
+          `
           SELECT client_id, action_type, created
           FROM audit_history
           WHERE entity_id = $1 AND entity_type = $2
-        `, ['hook/1', 'hook']);
+        `,
+          ['hook/1', 'hook']
+        );
         return result.rows;
       });
 

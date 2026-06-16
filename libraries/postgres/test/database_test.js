@@ -120,7 +120,8 @@ helper.dbSuite(path.basename(__filename), () => {
           end`,
         },
       },
-    }, {
+    },
+    {
       version: 2,
       methods: {
         old: {
@@ -247,8 +248,10 @@ helper.dbSuite(path.basename(__filename), () => {
         service1: { tables: { foo: 'read' } },
         service2: { tables: { foo: 'write' } },
       });
-      await assert.rejects(() => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
-        /missing database user grant: test_service1: SELECT on foo/);
+      await assert.rejects(
+        () => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
+        /missing database user grant: test_service1: SELECT on foo/
+      );
     });
 
     test('extra permissions', async () => {
@@ -261,8 +264,10 @@ helper.dbSuite(path.basename(__filename), () => {
         service1: { tables: { foo: 'read' } },
         service2: { tables: { foo: 'write' } },
       });
-      await assert.rejects(() => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
-        /unexpected database user grant: test_service2: SELECT on bar/);
+      await assert.rejects(
+        () => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
+        /unexpected database user grant: test_service2: SELECT on bar/
+      );
     });
 
     test('extra column permissions', async () => {
@@ -276,8 +281,10 @@ helper.dbSuite(path.basename(__filename), () => {
         service1: { tables: { foo: 'read' } },
         service2: { tables: { foo: 'write' } },
       });
-      await assert.rejects(() => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
-        /unexpected database user grant: test_service2: SELECT on bar/);
+      await assert.rejects(
+        () => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
+        /unexpected database user grant: test_service2: SELECT on bar/
+      );
     });
 
     test('correct permissions', async () => {
@@ -304,8 +311,10 @@ helper.dbSuite(path.basename(__filename), () => {
           service1: { tables: { foo: 'read' } },
           service2: { tables: { foo: 'write' } },
         });
-        await assert.rejects(() => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
-          new RegExp(`test_service2 has attribute ${attr.toUpperCase()}`));
+        await assert.rejects(
+          () => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
+          new RegExp(`test_service2 has attribute ${attr.toUpperCase()}`)
+        );
       });
     }
 
@@ -319,15 +328,23 @@ helper.dbSuite(path.basename(__filename), () => {
         service1: { tables: { foo: 'read' } },
         service2: { tables: { foo: 'write' } },
       });
-      await assert.rejects(() => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
-        /test_service2 has unexpected role badrole/);
+      await assert.rejects(
+        () => Database._checkPermissions({ db, schema, usernamePrefix: 'test' }),
+        /test_service2 has unexpected role badrole/
+      );
     });
   });
 
   suite('Database.setup', () => {
     test('setup creates JS methods that can be called', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
       await db.fns.testdata();
       const res = await db.fns.addup(13);
       assert.deepEqual(res.map(r => r.total).sort(), [16, 20]);
@@ -335,31 +352,53 @@ helper.dbSuite(path.basename(__filename), () => {
 
     test('setup moves deprecated methods to deprecatedFns', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
       assert(!db.fns.old);
       assert(db.deprecatedFns.old);
       assert.equal((await db.deprecatedFns.old('hi'))[0].old, 'got hi');
     });
 
     test('non-numeric statementTimeout is not allowed', async () => {
-      await assert.rejects(() => Database.setup({
+      await assert.rejects(
+        () =>
+          Database.setup({
+            schema,
+            readDbUrl: helper.dbUrl,
+            writeDbUrl: helper.dbUrl,
+            serviceName: 'service-1',
+            statementTimeout: 'about 3 seconds',
+            monitor,
+          }),
+        err => err.code === 'ERR_ASSERTION'
+      );
+    });
+
+    test('setup creates keyring', async () => {
+      db = await Database.setup({
         schema,
         readDbUrl: helper.dbUrl,
         writeDbUrl: helper.dbUrl,
         serviceName: 'service-1',
-        statementTimeout: 'about 3 seconds',
         monitor,
-      }), err => err.code === 'ERR_ASSERTION');
-    });
-
-    test('setup creates keyring', async () => {
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
+      });
       assert(db.keyring);
     });
 
     test('methods do not allow SQL injection', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
       await db.fns.testdata();
       const res = await db.fns.stringparam("' or 1=1; --");
       assert.equal(res[0].stringparam, "got ' or 1=1; --");
@@ -367,20 +406,34 @@ helper.dbSuite(path.basename(__filename), () => {
 
     test('passing too few parameters fails', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
       await db.fns.testdata();
       await assert.rejects(
         () => db.fns.addup(),
-        err => err.code === UNDEFINED_FUNCTION);
+        err => err.code === UNDEFINED_FUNCTION
+      );
     });
 
     test('passing too many parameters fails', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
       await db.fns.testdata();
       await assert.rejects(
         () => db.fns.addup(13, 14),
-        err => err.code === UNDEFINED_FUNCTION);
+        err => err.code === UNDEFINED_FUNCTION
+      );
     });
 
     test('slow methods are aborted if statementTimeout is set', async () => {
@@ -393,27 +446,51 @@ helper.dbSuite(path.basename(__filename), () => {
         statementTimeout: 100, // 0.1s
         monitor,
       });
-      await assert.rejects(() => db.fns.slow(),
-        err => err.code === QUERY_CANCELED);
+      await assert.rejects(
+        () => db.fns.slow(),
+        err => err.code === QUERY_CANCELED
+      );
     });
 
     test('read-only methods are called in read-only transactions', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
-      await assert.rejects(() => db.fns.readonlywrites(),
-        err => err.code === READ_ONLY_SQL_TRANSACTION);
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
+      await assert.rejects(
+        () => db.fns.readonlywrites(),
+        err => err.code === READ_ONLY_SQL_TRANSACTION
+      );
     });
 
     test('failing methods correctly reject', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
-      await assert.rejects(() => db.fns.fail(),
-        err => err.code === '0A000');
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
+      await assert.rejects(
+        () => db.fns.fail(),
+        err => err.code === '0A000'
+      );
     });
 
     test('do not allow service A to call any methods for service B which have mode=WRITE', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      const db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-2', monitor });
+      const db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2',
+        monitor,
+      });
 
       assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
       assert.equal(versions[0].methods.testdata.mode, WRITE);
@@ -423,7 +500,13 @@ helper.dbSuite(path.basename(__filename), () => {
 
     test('allow service A to call any methods for service A which have mode=WRITE', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      const db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
+      const db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
 
       assert.equal(versions[0].methods.testdata.serviceName, 'service-1');
       assert.equal(versions[0].methods.testdata.mode, WRITE);
@@ -433,7 +516,13 @@ helper.dbSuite(path.basename(__filename), () => {
 
     test('allow service A to call any methods for service B which have mode=READ', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      const db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
+      const db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
 
       assert.equal(versions[0].methods.addup.serviceName, 'service-2');
       assert.equal(versions[0].methods.addup.mode, READ);
@@ -459,51 +548,60 @@ helper.dbSuite(path.basename(__filename), () => {
     });
 
     const makeSchema = (migrationScript, tables) => {
-      const versions = [{
-        version: 1,
-        migrationScript,
-        downgradeScript: 'unused',
-        methods: {},
-      }];
+      const versions = [
+        {
+          version: 1,
+          migrationScript,
+          downgradeScript: 'unused',
+          methods: {},
+        },
+      ];
       return Schema.fromSerializable({ versions, access: {}, tables });
     };
 
     test('validates a simple table with integer, timestamp, and text cols', async () => {
-      const schema = makeSchema(`
+      const schema = makeSchema(
+        `
         begin
           create table testtable (
             quantity int,
             quality text,
             moment timestamptz
           );
-        end`, {
-        testtable: {
-          quantity: 'integer',
-          quality: 'text',
-          moment: 'timestamp with time zone',
-        },
-      });
+        end`,
+        {
+          testtable: {
+            quantity: 'integer',
+            quality: 'text',
+            moment: 'timestamp with time zone',
+          },
+        }
+      );
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
       const db = new Database({ urlsByMode: { admin: helper.dbUrl } });
       await Database._checkTableColumns({ db, schema });
     });
 
     test('fails when not null is omitted', async () => {
-      const schema = makeSchema(`
+      const schema = makeSchema(
+        `
         begin
           create table testtable (
             quantity int not null
           );
-        end`, {
-        testtable: {
-          quantity: 'integer',
-        },
-      });
+        end`,
+        {
+          testtable: {
+            quantity: 'integer',
+          },
+        }
+      );
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test', skipChecks: true });
       const db = new Database({ urlsByMode: { admin: helper.dbUrl } });
       await assert.rejects(
         () => Database._checkTableColumns({ db, schema }),
-        err => err.code === 'ERR_ASSERTION');
+        err => err.code === 'ERR_ASSERTION'
+      );
     });
   });
 
@@ -512,8 +610,14 @@ helper.dbSuite(path.basename(__filename), () => {
     const pgCryptoKey = 'aSdtIGJzdGFjayEgaGVsbG8gZnV0dXJlIHBlcnNvbgo=';
 
     setup(async () => {
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
-        serviceName: 'service-2', monitor, azureCryptoKey });
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2',
+        monitor,
+        azureCryptoKey,
+      });
     });
 
     test('encrypt/decrypt simple', async () => {
@@ -537,10 +641,15 @@ helper.dbSuite(path.basename(__filename), () => {
       assert(encrypted.__buf0_val !== undefined);
 
       // This new_db does not have azureCryptoKey as it's current key but can still read old encryptions
-      const new_db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
-        serviceName: 'service-2', monitor, azureCryptoKey, dbCryptoKeys: [
-          { id: 'foo', algo: 'aes-256', key: pgCryptoKey },
-        ] });
+      const new_db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2',
+        monitor,
+        azureCryptoKey,
+        dbCryptoKeys: [{ id: 'foo', algo: 'aes-256', key: pgCryptoKey }],
+      });
       assert.equal(new_db.keyring.currentCryptoKey('aes-256').id, 'foo');
       const decrypted = new_db.decrypt({ value: encrypted });
       assert.equal(decrypted.toString(), 'hi');
@@ -573,14 +682,16 @@ helper.dbSuite(path.basename(__filename), () => {
     });
 
     test('decrypt multi-chunk from lib-entities', async () => {
-      const content = new Array(50000).fill(0).map((_v, i) => String.fromCharCode(i % 65535)).join('');
+      const content = new Array(50000)
+        .fill(0)
+        .map((_v, i) => String.fromCharCode(i % 65535))
+        .join('');
 
       // generated with:
       //  const entity = Entity.types.EncryptedText('val');
       //  const encrypted = {v: 0, kid: 'azure'};
       //  entity.serialize(encrypted, content, Buffer.from(azureCryptoKey, 'base64'));
-      const encrypted = JSON.parse(fs.readFileSync(
-        path.resolve(__dirnname, './big-encrypted-value.json')), 'utf8');
+      const encrypted = JSON.parse(fs.readFileSync(path.resolve(__dirnname, './big-encrypted-value.json')), 'utf8');
 
       // let's make sure this still tests what we mean it to even if lib-entity impl changes
       assert(encrypted.__bufchunks_val > 1);
@@ -590,8 +701,13 @@ helper.dbSuite(path.basename(__filename), () => {
     });
 
     test('encrypt/decrypt errors without keys', async () => {
-      const bad_db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl,
-        serviceName: 'service-2', monitor });
+      const bad_db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-2',
+        monitor,
+      });
       assert.throws(() => {
         bad_db.encrypt({ value: Buffer.from('hi') });
       }, /no current key is configured/);
@@ -612,7 +728,13 @@ helper.dbSuite(path.basename(__filename), () => {
   suite('named arguments', async () => {
     test('subtract two numbers', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
 
       let res = await db.fns.sub_from_numbers_named({ a_in: 5, b_in: 2 });
       assert.equal(res[0].total, 3);
@@ -624,12 +746,18 @@ helper.dbSuite(path.basename(__filename), () => {
 
     test('throws when arguments do not end with "_in"', async () => {
       await Database.upgrade({ schema, adminDbUrl: helper.dbUrl, usernamePrefix: 'test' });
-      db = await Database.setup({ schema, readDbUrl: helper.dbUrl, writeDbUrl: helper.dbUrl, serviceName: 'service-1', monitor });
+      db = await Database.setup({
+        schema,
+        readDbUrl: helper.dbUrl,
+        writeDbUrl: helper.dbUrl,
+        serviceName: 'service-1',
+        monitor,
+      });
       await assert.rejects(
         async () => {
           await db.fns.add_from_numbers({ a: 1, b: 2 });
         },
-        err => err.code === UNDEFINED_FUNCTION,
+        err => err.code === UNDEFINED_FUNCTION
       );
     });
   });

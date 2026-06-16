@@ -22,20 +22,26 @@ suite(testing.suiteName(), () => {
     { __bufchunks_val: 2, __buf0_val: b64('Good'), __buf1_val: b64('Morning') },
   ];
 
-  const mkContainer = async (properties) => {
+  const mkContainer = async properties => {
     return await helper.withDbClient(async client => {
-      const t = await client.query(`
+      const t = await client.query(
+        `
           select entity_to_crypto_container_v0($1, 'val') as container
-        `, [properties]);
+        `,
+        [properties]
+      );
 
       return t.rows[0].container;
     });
   };
-  const encodeContainer = async (properties) => {
+  const encodeContainer = async properties => {
     return await helper.withDbClient(async client => {
-      const t = await client.query(`
+      const t = await client.query(
+        `
           select encrypted_entity_buf_encode('{}'::jsonb, 'fooBar', $1) as encoded
-        `, [properties]);
+        `,
+        [properties]
+      );
 
       return t.rows[0].encoded;
     });

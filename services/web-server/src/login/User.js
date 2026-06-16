@@ -18,9 +18,7 @@ export default class User {
   }
 
   get identityId() {
-    return this._identity.split('/')
-      .slice(1)
-      .join('|');
+    return this._identity.split('/').slice(1).join('|');
   }
 
   addRole(...roles) {

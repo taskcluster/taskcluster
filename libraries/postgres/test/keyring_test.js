@@ -31,10 +31,12 @@ suite(path.basename(__filename), () => {
   });
 
   test('only pg (multiple keys)', () => {
-    const keyring = new Keyring({ dbCryptoKeys: [
-      { id: 'foo', algo: 'aes-256', key: pgCryptoKey },
-      { id: 'bar', algo: 'aes-256', key: pgCryptoKey2 },
-    ] });
+    const keyring = new Keyring({
+      dbCryptoKeys: [
+        { id: 'foo', algo: 'aes-256', key: pgCryptoKey },
+        { id: 'bar', algo: 'aes-256', key: pgCryptoKey2 },
+      ],
+    });
     const { id, key } = keyring.currentCryptoKey('aes-256');
     assert.equal(id, 'bar');
     assert.equal(key.toString('base64'), pgCryptoKey2);
@@ -51,10 +53,13 @@ suite(path.basename(__filename), () => {
   });
 
   test('pg and azure (multiple keys)', () => {
-    const keyring = new Keyring({ azureCryptoKey, dbCryptoKeys: [
-      { id: 'foo', algo: 'aes-256', key: pgCryptoKey },
-      { id: 'bar', algo: 'aes-256', key: pgCryptoKey2 },
-    ] });
+    const keyring = new Keyring({
+      azureCryptoKey,
+      dbCryptoKeys: [
+        { id: 'foo', algo: 'aes-256', key: pgCryptoKey },
+        { id: 'bar', algo: 'aes-256', key: pgCryptoKey2 },
+      ],
+    });
     const { id, key } = keyring.currentCryptoKey('aes-256');
     assert.equal(id, 'bar');
     assert.equal(key.toString('base64'), pgCryptoKey2);

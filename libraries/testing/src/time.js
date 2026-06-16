@@ -2,9 +2,10 @@ import zurvan from 'zurvan';
 import timers from 'node:timers';
 
 /** Return promise that is resolved in `delay` ms */
-export const sleep = (delay) => new Promise((accept) => {
-  setTimeout(accept, delay);
-});
+export const sleep = delay =>
+  new Promise(accept => {
+    setTimeout(accept, delay);
+  });
 
 export const runWithFakeTime = (fn, { mock = true, maxTime = 30000, ...zurvanOptions } = {}) => {
   if (!mock) {
@@ -30,7 +31,8 @@ export const runWithFakeTime = (fn, { mock = true, maxTime = 30000, ...zurvanOpt
       e => {
         finished = true;
         err = e;
-      });
+      }
+    );
 
     // intermingle setImmediate calls with advanceTime calls, so that things zurvan cannot
     // successfully fake (like JS files internal to Node) get a chance to run.

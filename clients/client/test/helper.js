@@ -29,12 +29,14 @@ export const withRestoredEnvVars = () => {
 
 const ROOT_DIR = new URL('../../..', import.meta.url).pathname;
 export const suiteName = () => {
-  const o = {}; Error.captureStackTrace(o, suiteName);
+  const o = {};
+  Error.captureStackTrace(o, suiteName);
   const stack = errorStackParser.parse(o);
   return path.relative(ROOT_DIR, stack[0].fileName);
 };
 
-export const sleep = (delay) => new Promise((accept) => {
+export const sleep = delay =>
+  new Promise(accept => {
     setTimeout(accept, delay);
   });
 

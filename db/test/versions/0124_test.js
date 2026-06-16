@@ -20,10 +20,24 @@ suite(testing.suiteName(), () => {
     const expires = taskcluster.fromNow('2 hours');
 
     await db.deprecatedFns.create_task_projid(
-      taskId, 'prov/wt', 'sched', 'proj', 'group-1',
-      JSON.stringify([]), 'all-completed', JSON.stringify([]),
-      'high', 5, created, deadline, expires,
-      JSON.stringify([]), {}, {}, JSON.stringify([]), {},
+      taskId,
+      'prov/wt',
+      'sched',
+      'proj',
+      'group-1',
+      JSON.stringify([]),
+      'all-completed',
+      JSON.stringify([]),
+      'high',
+      5,
+      created,
+      deadline,
+      expires,
+      JSON.stringify([]),
+      {},
+      {},
+      JSON.stringify([]),
+      {}
     );
 
     await db.fns.schedule_task(taskId, 'scheduled');
@@ -31,7 +45,7 @@ suite(testing.suiteName(), () => {
     const rows = await helper.withDbClient(async client => {
       const { rows } = await client.query(
         'select task_queue_id, priority, run_id from queue_pending_tasks where task_id = $1',
-        [taskId],
+        [taskId]
       );
       return rows;
     });
@@ -68,19 +82,32 @@ suite(testing.suiteName(), () => {
     const expires = taskcluster.fromNow('2 hours');
 
     await db.deprecatedFns.create_task_projid(
-      taskId, 'prov/wt', 'sched', 'proj', 'group-1',
-      JSON.stringify([]), 'all-completed', JSON.stringify([]),
-      'high', 5, created, deadline, expires,
-      JSON.stringify([]), {}, {}, JSON.stringify([]), {},
+      taskId,
+      'prov/wt',
+      'sched',
+      'proj',
+      'group-1',
+      JSON.stringify([]),
+      'all-completed',
+      JSON.stringify([]),
+      'high',
+      5,
+      created,
+      deadline,
+      expires,
+      JSON.stringify([]),
+      {},
+      {},
+      JSON.stringify([]),
+      {}
     );
 
     await db.fns.schedule_task(taskId, 'scheduled');
 
     const pendingRows = await helper.withDbClient(async client => {
-      const { rows } = await client.query(
-        'select count(*)::int as c from queue_pending_tasks where task_id = $1',
-        [taskId],
-      );
+      const { rows } = await client.query('select count(*)::int as c from queue_pending_tasks where task_id = $1', [
+        taskId,
+      ]);
       return rows[0].c;
     });
     assert.equal(pendingRows, 0, 'post-downgrade schedule_task must not enqueue into queue_pending_tasks');
@@ -97,11 +124,25 @@ suite(testing.suiteName(), () => {
     const expires = taskcluster.fromNow('2 hours');
 
     await db.fns.create_task_atomic(
-      taskId, 'prov/wt', 'sched', 'proj', 'group-1',
-      JSON.stringify([]), 'all-completed', JSON.stringify([]),
-      'high', 5, created, deadline, expires,
-      JSON.stringify([]), {}, {}, JSON.stringify([]), {},
-      600,
+      taskId,
+      'prov/wt',
+      'sched',
+      'proj',
+      'group-1',
+      JSON.stringify([]),
+      'all-completed',
+      JSON.stringify([]),
+      'high',
+      5,
+      created,
+      deadline,
+      expires,
+      JSON.stringify([]),
+      {},
+      {},
+      JSON.stringify([]),
+      {},
+      600
     );
 
     const tasksRow = await helper.withDbClient(async client => {
@@ -113,7 +154,7 @@ suite(testing.suiteName(), () => {
     const deadlineRow = await helper.withDbClient(async client => {
       const { rows } = await client.query(
         'select task_group_id, task_id, scheduler_id, deadline, visible from queue_task_deadlines where task_id = $1',
-        [taskId],
+        [taskId]
       );
       return rows[0];
     });
@@ -144,17 +185,31 @@ suite(testing.suiteName(), () => {
     await helper.withDbClient(async client => {
       await client.query(
         'insert into queue_task_deadlines (task_group_id, task_id, scheduler_id, created, deadline, visible)' +
-        " values ('stale-group', $1, 'stale-sched', now(), $2::timestamptz, $2::timestamptz + interval '10 minutes')",
-        [taskId, staleDeadline],
+          " values ('stale-group', $1, 'stale-sched', now(), $2::timestamptz, $2::timestamptz + interval '10 minutes')",
+        [taskId, staleDeadline]
       );
     });
 
     await db.fns.create_task_atomic(
-      taskId, 'prov/wt', 'sched', 'proj', 'group-1',
-      JSON.stringify([]), 'all-completed', JSON.stringify([]),
-      'high', 5, created, deadline, expires,
-      JSON.stringify([]), {}, {}, JSON.stringify([]), {},
-      600,
+      taskId,
+      'prov/wt',
+      'sched',
+      'proj',
+      'group-1',
+      JSON.stringify([]),
+      'all-completed',
+      JSON.stringify([]),
+      'high',
+      5,
+      created,
+      deadline,
+      expires,
+      JSON.stringify([]),
+      {},
+      {},
+      JSON.stringify([]),
+      {},
+      600
     );
 
     const taskCount = await helper.withDbClient(async client => {
@@ -169,7 +224,7 @@ suite(testing.suiteName(), () => {
     const deadlineRow = await helper.withDbClient(async client => {
       const { rows } = await client.query(
         'select task_group_id, scheduler_id, deadline, visible from queue_task_deadlines where task_id = $1',
-        [taskId],
+        [taskId]
       );
       return rows[0];
     });

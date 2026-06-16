@@ -21,10 +21,24 @@ suite(testing.suiteName(), () => {
     const taskIds = ['zzz-task', 'aaa-task', 'mmm-task', 'bbb-task', 'yyy-task'];
     for (const taskId of taskIds) {
       await db.deprecatedFns.create_task_projid(
-        taskId, 'prov/wt', 'sched', 'proj', 'group-1',
-        JSON.stringify([]), 'all-completed', JSON.stringify([]),
-        'high', 5, created, deadline, expires,
-        JSON.stringify([]), {}, {}, JSON.stringify([]), {},
+        taskId,
+        'prov/wt',
+        'sched',
+        'proj',
+        'group-1',
+        JSON.stringify([]),
+        'all-completed',
+        JSON.stringify([]),
+        'high',
+        5,
+        created,
+        deadline,
+        expires,
+        JSON.stringify([]),
+        {},
+        {},
+        JSON.stringify([]),
+        {}
       );
     }
 

@@ -14,8 +14,7 @@ suite(testing.suiteName(), () => {
     // fill a temporary table with a mess of slugids
     await helper.withDbClient(async client => {
       await client.query(`create table test_v${THIS_VERSION} (slugid text, uuid text)`);
-      const insert = s =>
-        client.query(`insert into test_v${THIS_VERSION} values ($1, $2)`, [s, slugid.decode(s)]);
+      const insert = s => client.query(`insert into test_v${THIS_VERSION} values ($1, $2)`, [s, slugid.decode(s)]);
 
       // use a few hard-coded slugids to ensure we get special characters, then some randomness
       await insert('VSCO_-TISMKF-qp3Z6_R_w');
@@ -35,7 +34,8 @@ suite(testing.suiteName(), () => {
            slugid as exp_slugid,
            uuid_to_slugid(uuid) as got_slugid
          from test_v${THIS_VERSION}
-         where uuid_to_slugid(uuid) != slugid`);
+         where uuid_to_slugid(uuid) != slugid`
+      );
       assert.deepEqual(bugs.rows, []);
     });
   });
@@ -48,7 +48,8 @@ suite(testing.suiteName(), () => {
            slugid,
            slugid_to_uuid(slugid) as got_uuid
          from test_v${THIS_VERSION}
-         where slugid_to_uuid(slugid) != uuid`);
+         where slugid_to_uuid(slugid) != uuid`
+      );
       assert.deepEqual(bugs.rows, []);
     });
   });

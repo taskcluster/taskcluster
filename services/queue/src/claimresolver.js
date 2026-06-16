@@ -35,16 +35,12 @@ class ClaimResolver {
   constructor(options) {
     assert(options, 'options must be given');
     assert(options.db, 'options must include db');
-    assert(options.queueService instanceof QueueService,
-      'Expected instance of QueueService');
+    assert(options.queueService instanceof QueueService, 'Expected instance of QueueService');
     assert(options.dependencyTracker, 'Expected a DependencyTracker instance');
     assert(options.publisher, 'Expected a publisher');
-    assert(typeof options.pollingDelay === 'number',
-      'Expected pollingDelay to be a number');
-    assert(typeof options.parallelism === 'number',
-      'Expected parallelism to be a number');
-    assert(typeof options.count === 'number',
-      'Expected count to be a number');
+    assert(typeof options.pollingDelay === 'number', 'Expected pollingDelay to be a number');
+    assert(typeof options.parallelism === 'number', 'Expected parallelism to be a number');
+    assert(typeof options.count === 'number', 'Expected count to be a number');
     assert(options.monitor !== null, 'options.monitor required!');
     assert(options.ownName, 'Must provide a name');
     this.db = options.db;
@@ -92,16 +88,18 @@ class ClaimResolver {
     const messages = await this.queueService.pollClaimQueue(this.count);
     let failed = 0;
 
-    await Promise.all(messages.map(async (message) => {
-      // Don't let a single task error break the loop, it'll be retried later
-      // as we don't remove message unless they are handled
-      try {
-        await this.handleMessage(message);
-      } catch (err) {
-        failed += 1;
-        this.monitor.reportError(err, 'warning');
-      }
-    }));
+    await Promise.all(
+      messages.map(async message => {
+        // Don't let a single task error break the loop, it'll be retried later
+        // as we don't remove message unless they are handled
+        try {
+          await this.handleMessage(message);
+        } catch (err) {
+          failed += 1;
+          this.monitor.reportError(err, 'warning');
+        }
+      })
+    );
 
     // If we emptied the queue, back off
     if (messages.length < this.count) {
@@ -136,10 +134,12 @@ class ClaimResolver {
 
     // If run isn't resolved to exception with 'claim-expired', we had
     // concurrency and we're done.
-    if (!run ||
-        task.runs.length - 1 > runId + 1 ||
-        run.state !== 'exception' ||
-        run.reasonResolved !== 'claim-expired') {
+    if (
+      !run ||
+      task.runs.length - 1 > runId + 1 ||
+      run.state !== 'exception' ||
+      run.reasonResolved !== 'claim-expired'
+    ) {
       return remove();
     }
 
@@ -149,13 +149,16 @@ class ClaimResolver {
     // publish failure to honor the resolver's at-least-once semantics
     // (see comment above): NACK + redelivery re-runs handleMessage which
     // re-attempts the publish.
-    await this.publisher.taskException({
-      status: status,
-      runId: runId,
-      task: { tags: task.tags || {} },
-      workerGroup: run.workerGroup,
-      workerId: run.workerId,
-    }, task.routes);
+    await this.publisher.taskException(
+      {
+        status: status,
+        runId: runId,
+        task: { tags: task.tags || {} },
+        workerGroup: run.workerGroup,
+        workerId: run.workerId,
+      },
+      task.routes
+    );
     this.monitor.log.taskException({ taskId, runId });
 
     const metricLabels = splitTaskQueueId(task.taskQueueId);
@@ -167,19 +170,24 @@ class ClaimResolver {
     // If a newRun was created and it is a retry with state pending then we
     // better publish messages about it
     const newRun = task.runs[runId + 1];
-    if (newRun &&
-        task.runs.length - 1 === runId + 1 &&
-        newRun.state === 'pending' &&
-        newRun.reasonCreated === 'retry') {
+    if (
+      newRun &&
+      task.runs.length - 1 === runId + 1 &&
+      newRun.state === 'pending' &&
+      newRun.reasonCreated === 'retry'
+    ) {
       // queue_pending_tasks insert is now atomic inside check_task_claim
       // (db v124). The publish is intentionally NOT wrapped in try/catch
       // here: failing the handler triggers redelivery so we re-attempt
       // publication, preserving at-least-once semantics for resolvers.
-      await this.publisher.taskPending({
-        status: status,
-        runId: runId + 1,
-        task: { tags: task.tags || {} },
-      }, task.routes);
+      await this.publisher.taskPending(
+        {
+          status: status,
+          runId: runId + 1,
+          task: { tags: task.tags || {} },
+        },
+        task.routes
+      );
       this.monitor.log.taskPending({ taskId, runId: runId + 1 });
     } else {
       // Update dependencyTracker

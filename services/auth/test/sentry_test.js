@@ -18,11 +18,12 @@ suite('SentryApiClient', () => {
     nock.cleanAll();
   });
 
-  const sentryApi = () => nock(origin, {
-    reqheaders: {
-      authorization: `Bearer ${token}`,
-    },
-  });
+  const sentryApi = () =>
+    nock(origin, {
+      reqheaders: {
+        authorization: `Bearer ${token}`,
+      },
+    });
 
   test('initializes the API surface auth uses', () => {
     assert.equal(typeof client.organizations.projects, 'function');
@@ -56,10 +57,9 @@ suite('SentryApiClient', () => {
       .post('/api/0/teams/taskcluster/team-one/projects/', project)
       .reply(201, { slug: 'project-one' });
 
-    assert.deepStrictEqual(
-      await client.teams.createProject('taskcluster', 'team-one', project),
-      { slug: 'project-one' },
-    );
+    assert.deepStrictEqual(await client.teams.createProject('taskcluster', 'team-one', project), {
+      slug: 'project-one',
+    });
     assert.equal(true, sentry.isDone());
   });
 
@@ -68,17 +68,14 @@ suite('SentryApiClient', () => {
       .post('/api/0/projects/taskcluster/project-one/keys/', { name: 'key-one' })
       .reply(201, { id: 'key-one' });
 
-    assert.deepStrictEqual(
-      await client.projects.createKey('taskcluster', 'project-one', { name: 'key-one' }),
-      { id: 'key-one' },
-    );
+    assert.deepStrictEqual(await client.projects.createKey('taskcluster', 'project-one', { name: 'key-one' }), {
+      id: 'key-one',
+    });
     assert.equal(true, sentry.isDone());
   });
 
   test('deletes client keys', async () => {
-    const sentry = sentryApi()
-      .delete('/api/0/projects/taskcluster/project-one/keys/key-one/')
-      .reply(204);
+    const sentry = sentryApi().delete('/api/0/projects/taskcluster/project-one/keys/key-one/').reply(204);
 
     assert.strictEqual(await client.projects.deleteKey('taskcluster', 'project-one', 'key-one'), undefined);
     assert.equal(true, sentry.isDone());
@@ -91,19 +88,17 @@ suite('SentryApiClient', () => {
 
     await assert.rejects(
       () => client.projects.keys('taskcluster', 'missing'),
-      err => err.message === 'Project not found',
+      err => err.message === 'Project not found'
     );
     assert.equal(true, sentry.isDone());
   });
 
   test('surfaces HTTP status errors', async () => {
-    const sentry = sentryApi()
-      .get('/api/0/projects/taskcluster/missing/keys/')
-      .reply(400);
+    const sentry = sentryApi().get('/api/0/projects/taskcluster/missing/keys/').reply(400);
 
     await assert.rejects(
       () => client.projects.keys('taskcluster', 'missing'),
-      err => err.message.includes('400'),
+      err => err.message.includes('400')
     );
     assert.equal(true, sentry.isDone());
   });
@@ -132,7 +127,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       // This tests that we don't just purge all keys, but only the ones expired.
       const farInThePast = taskcluster.fromNow('- 100 years');
       let expired = await sentryManager.purgeExpiredKeys(farInThePast);
-      assert(expired === 0, 'Didn\'t expect any keys to expire!');
+      assert(expired === 0, "Didn't expect any keys to expire!");
 
       // There should be keys expired, when we expire 7 days into the future
       // we should at least see the key from the test case above be expired
@@ -156,7 +151,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
     test('sentryDSN api method', async () => {
       await assert.rejects(
         () => helper.apiClient.sentryDSN('playground'),
-        err => err.statusCode === 404);
+        err => err.statusCode === 404
+      );
     });
 
     test('purgeExpiredKeys', async () => {

@@ -37,7 +37,7 @@ suite(testing.suiteName(), () => {
       wp.last_modified || new Date(),
       wp.owner || 'me@me.com',
       wp.email_on_error || false,
-      wp.provider_data || { providerdata: true },
+      wp.provider_data || { providerdata: true }
     );
   };
   /**
@@ -82,7 +82,7 @@ suite(testing.suiteName(), () => {
       e.title || 'title',
       e.description || 'descr',
       e.extra || { extra: true },
-      e.launch_config_id || null,
+      e.launch_config_id || null
     );
   };
   /**
@@ -90,20 +90,22 @@ suite(testing.suiteName(), () => {
    * @param {Record<string, any>} w
    */
   const create_worker = async (db, w = {}) => {
-    return (await db.fns.create_worker_with_lc(
-      w.worker_pool_id || 'wp/id',
-      w.worker_group || 'w/group',
-      w.worker_id || 'w/id',
-      w.provider_id || 'provider',
-      w.created || new Date(),
-      w.expires || new Date(),
-      w.state || 'state',
-      w.provider_data || { providerdata: true },
-      w.capacity || 1,
-      w.last_modified || new Date(),
-      w.last_checked || new Date(),
-      w.launch_config_id || null,
-    ))[0].create_worker_with_lc;
+    return (
+      await db.fns.create_worker_with_lc(
+        w.worker_pool_id || 'wp/id',
+        w.worker_group || 'w/group',
+        w.worker_id || 'w/id',
+        w.provider_id || 'provider',
+        w.created || new Date(),
+        w.expires || new Date(),
+        w.state || 'state',
+        w.provider_data || { providerdata: true },
+        w.capacity || 1,
+        w.last_modified || new Date(),
+        w.last_checked || new Date(),
+        w.launch_config_id || null
+      )
+    )[0].create_worker_with_lc;
   };
   /**
    * @param {Database} db
@@ -123,7 +125,7 @@ suite(testing.suiteName(), () => {
       w.capacity || 1,
       w.last_modified || new Date(),
       w.last_checked || new Date(),
-      etag,
+      etag
     );
   };
   /**
@@ -145,7 +147,7 @@ suite(testing.suiteName(), () => {
       w.last_modified || new Date(),
       w.last_checked || new Date(),
       etag,
-      w.secret || null,
+      w.secret || null
     );
   };
 
@@ -177,7 +179,7 @@ suite(testing.suiteName(), () => {
   };
 
   suite(`${testing.suiteName()} - worker_pools`, () => {
-    helper.dbTest('create_worker_pool/get_worker_pool', async (db) => {
+    helper.dbTest('create_worker_pool/get_worker_pool', async db => {
       const now = new Date();
       await create_worker_pool(db, { created: now, last_modified: now });
 
@@ -194,23 +196,26 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].provider_data, { providerdata: true });
     });
 
-    helper.dbTest('get_worker_pool not found', async (db) => {
+    helper.dbTest('get_worker_pool not found', async db => {
       const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_worker_pools empty', async (db) => {
+    helper.dbTest('get_worker_pools empty', async db => {
       const rows = await get_worker_pools(db, null, null);
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_worker_pools full, pagination', async (db) => {
+    helper.dbTest('get_worker_pools full, pagination', async db => {
       for (let i = 0; i < 10; i++) {
         await create_worker_pool(db, { worker_pool_id: `wp/${i}` });
       }
 
       let rows = await get_worker_pools(db, null, null);
-      assert.deepEqual(rows.map(r => r.worker_pool_id), _.range(10).map(i => `wp/${i}`));
+      assert.deepEqual(
+        rows.map(r => r.worker_pool_id),
+        _.range(10).map(i => `wp/${i}`)
+      );
       assert.equal(rows[0].provider_id, 'provider');
       assert.deepEqual(rows[0].previous_provider_ids, []);
       assert.equal(rows[0].description, 'descr');
@@ -220,10 +225,13 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].provider_data, { providerdata: true });
 
       rows = await get_worker_pools(db, 2, 4);
-      assert.deepEqual(rows.map(r => r.worker_pool_id), [4, 5].map(i => `wp/${i}`));
+      assert.deepEqual(
+        rows.map(r => r.worker_pool_id),
+        [4, 5].map(i => `wp/${i}`)
+      );
     });
 
-    helper.dbTest('update_worker_pool, change to providerId', async (db) => {
+    helper.dbTest('update_worker_pool, change to providerId', async db => {
       await create_worker_pool(db);
       const upd = await update_worker_pool(db, { provider_id: 'provider2' });
       assert.deepEqual(upd[0].previous_provider_id, 'provider');
@@ -232,7 +240,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].previous_provider_ids, ['provider']);
     });
 
-    helper.dbTest('update_worker_pool, change to providerId, new provider already in previous', async (db) => {
+    helper.dbTest('update_worker_pool, change to providerId, new provider already in previous', async db => {
       await create_worker_pool(db, { previous_provider_ids: JSON.stringify(['provider2']) });
       const upd = await update_worker_pool(db, { provider_id: 'provider2' });
       assert.deepEqual(upd[0].previous_provider_id, 'provider');
@@ -241,7 +249,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].previous_provider_ids, ['provider']);
     });
 
-    helper.dbTest('update_worker_pool, change to providerId, old provider already in previous', async (db) => {
+    helper.dbTest('update_worker_pool, change to providerId, old provider already in previous', async db => {
       await create_worker_pool(db, { previous_provider_ids: JSON.stringify(['provider']) });
       const upd = await update_worker_pool(db, { provider_id: 'provider2' });
       assert.deepEqual(upd[0].previous_provider_id, 'provider');
@@ -250,7 +258,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].previous_provider_ids, ['provider']);
     });
 
-    helper.dbTest('expire_worker_pool', async (db) => {
+    helper.dbTest('expire_worker_pool', async db => {
       await create_worker_pool(db, {
         worker_pool_id: 'done',
         provider_id: 'null-provider',
@@ -268,10 +276,13 @@ suite(testing.suiteName(), () => {
       });
 
       const rows = await db.fns.expire_worker_pools();
-      assert.deepEqual(rows.map(r => r.worker_pool_id), ['done']);
+      assert.deepEqual(
+        rows.map(r => r.worker_pool_id),
+        ['done']
+      );
     });
 
-    helper.dbTest('delete_worker_pool', async (db) => {
+    helper.dbTest('delete_worker_pool', async db => {
       await create_worker_pool(db);
 
       await db.fns.delete_worker_pool('wp/id');
@@ -280,7 +291,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('remove_worker_pool_previous_provider_id', async (db) => {
+    helper.dbTest('remove_worker_pool_previous_provider_id', async db => {
       await create_worker_pool(db, { previous_provider_ids: JSON.stringify(['old1', 'old2']) });
 
       await db.fns.remove_worker_pool_previous_provider_id('wp/id', 'old1');
@@ -289,14 +300,14 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].previous_provider_ids, ['old2']);
     });
 
-    helper.dbTest('remove_worker_pool_previous_provider_id, no worker-pool', async (db) => {
+    helper.dbTest('remove_worker_pool_previous_provider_id, no worker-pool', async db => {
       await db.fns.remove_worker_pool_previous_provider_id('wp/id', 'old1');
 
       const rows = await get_worker_pool(db, 'wp/id');
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('remove_worker_pool_previous_provider_id, no such provider', async (db) => {
+    helper.dbTest('remove_worker_pool_previous_provider_id, no such provider', async db => {
       await create_worker_pool(db, { previous_provider_ids: JSON.stringify(['old1', 'old2']) });
 
       await db.fns.remove_worker_pool_previous_provider_id('wp/id', 'unknown');
@@ -305,7 +316,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].previous_provider_ids, ['old1', 'old2']);
     });
 
-    helper.dbTest('update_worker_pool_provider_data', async (db) => {
+    helper.dbTest('update_worker_pool_provider_data', async db => {
       await create_worker_pool(db, { provider_data: { someprov: { somedata: true } } });
 
       await db.fns.update_worker_pool_provider_data('wp/id', 'another', { moredata: true });
@@ -319,7 +330,7 @@ suite(testing.suiteName(), () => {
   });
 
   suite(`${testing.suiteName()} - worker_pool_errors`, () => {
-    helper.dbTest('create_worker_pool_error/get_worker_pool_error', async (db) => {
+    helper.dbTest('create_worker_pool_error/get_worker_pool_error', async db => {
       const now = new Date();
       await create_worker_pool_error(db, { reported: now, launch_config_id: 'lc/id' });
       const rows = await db.fns.get_worker_pool_error_launch_config('e/id', 'wp/id');
@@ -333,17 +344,17 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].extra, { extra: true });
     });
 
-    helper.dbTest('get_worker_pool_error not found', async (db) => {
+    helper.dbTest('get_worker_pool_error not found', async db => {
       const rows = await db.fns.get_worker_pool_error_launch_config('e/id', 'wp/id');
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_worker_pool_errors_for_worker_pool empty', async (db) => {
+    helper.dbTest('get_worker_pool_errors_for_worker_pool empty', async db => {
       const rows = await db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_worker_pool_errors_for_worker_pool empty query', async (db) => {
+    helper.dbTest('get_worker_pool_errors_for_worker_pool empty query', async db => {
       const now = new Date();
       await create_worker_pool_error(db, { reported: now });
       const rows = await db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
@@ -356,7 +367,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].extra, { extra: true });
     });
 
-    helper.dbTest('get_worker_pool_errors_for_worker_pool full, pagination', async (db) => {
+    helper.dbTest('get_worker_pool_errors_for_worker_pool full, pagination', async db => {
       let newestDate;
       for (let i = 9; i >= 0; i--) {
         newestDate = fromNow(`- ${i} days`);
@@ -370,7 +381,8 @@ suite(testing.suiteName(), () => {
       let rows = await db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, null, null);
       assert.deepEqual(
         rows.map(r => ({ error_id: r.error_id, worker_pool_id: r.worker_pool_id })),
-        _.range(10).map(i => ({ error_id: `e/${i}`, worker_pool_id: `wp/${i}` })));
+        _.range(10).map(i => ({ error_id: `e/${i}`, worker_pool_id: `wp/${i}` }))
+      );
       assert.deepEqual(rows[0].reported, newestDate);
       assert.equal(rows[0].kind, 'kind');
       assert.equal(rows[0].title, 'title');
@@ -380,10 +392,11 @@ suite(testing.suiteName(), () => {
       rows = await db.fns.get_worker_pool_errors_for_worker_pool2(null, null, null, 2, 4);
       assert.deepEqual(
         rows.map(r => ({ error_id: r.error_id, worker_pool_id: r.worker_pool_id })),
-        [4, 5].map(i => ({ error_id: `e/${i}`, worker_pool_id: `wp/${i}` })));
+        [4, 5].map(i => ({ error_id: `e/${i}`, worker_pool_id: `wp/${i}` }))
+      );
     });
 
-    helper.dbTest('expire_worker_pool_errors', async (db) => {
+    helper.dbTest('expire_worker_pool_errors', async db => {
       await create_worker_pool_error(db, { error_id: 'done', reported: fromNow('- 1 day') });
       await create_worker_pool_error(db, { error_id: 'also-done', reported: fromNow('- 2 days') });
       await create_worker_pool_error(db, { error_id: 'still-running', reported: fromNow('1 day') });
@@ -394,7 +407,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('delete_worker_pool_errors', async (db) => {
+    helper.dbTest('delete_worker_pool_errors', async db => {
       await create_worker_pool_error(db);
 
       await db.fns.delete_worker_pool_error('e/id', 'wp/id');
@@ -402,7 +415,7 @@ suite(testing.suiteName(), () => {
       const rows = await db.fns.get_worker_pool_error_launch_config('e/id', 'wp/id');
       assert.deepEqual(rows, []);
     });
-    helper.dbTest('get_worker_pool_error_stats_last_24_hours', async (db) => {
+    helper.dbTest('get_worker_pool_error_stats_last_24_hours', async db => {
       await create_worker_pool_error(db, { error_id: 'id1', worker_pool_id: 'wp/id1' });
       await create_worker_pool_error(db, { error_id: 'id2', worker_pool_id: 'wp/id2' });
 
@@ -418,7 +431,7 @@ suite(testing.suiteName(), () => {
       assert.equal(res3.length, 24);
       assert.equal(res3[23].count, 1);
     });
-    helper.dbTest('get_worker_pool_error_stats_last_7_days', async (db) => {
+    helper.dbTest('get_worker_pool_error_stats_last_7_days', async db => {
       await create_worker_pool_error(db, { error_id: 'id1', worker_pool_id: 'wp/id1' });
       await create_worker_pool_error(db, { error_id: 'id2', worker_pool_id: 'wp/id2' });
 
@@ -434,7 +447,7 @@ suite(testing.suiteName(), () => {
       assert.equal(res3.length, 7);
       assert.equal(res3[6].count, 1);
     });
-    helper.dbTest('get_worker_pool_error_titles', async (db) => {
+    helper.dbTest('get_worker_pool_error_titles', async db => {
       await create_worker_pool_error(db, { error_id: 'id1', title: 'title1', worker_pool_id: 'wp/id1' });
       await create_worker_pool_error(db, { error_id: 'id2', title: 'title2', worker_pool_id: 'wp/id2' });
 
@@ -443,20 +456,29 @@ suite(testing.suiteName(), () => {
       assert.equal(res[0].count, 1);
       assert.equal(res[1].count, 1);
     });
-    helper.dbTest('get_worker_pool_error_codes', async (db) => {
-      await create_worker_pool_error(db, { error_id: 'id1', kind: 'kind1', worker_pool_id: 'wp/id1', extra: { code: 'c1' } });
-      await create_worker_pool_error(db, { error_id: 'id2', kind: 'kind2', worker_pool_id: 'wp/id2', extra: { code: 'c2' } });
+    helper.dbTest('get_worker_pool_error_codes', async db => {
+      await create_worker_pool_error(db, {
+        error_id: 'id1',
+        kind: 'kind1',
+        worker_pool_id: 'wp/id1',
+        extra: { code: 'c1' },
+      });
+      await create_worker_pool_error(db, {
+        error_id: 'id2',
+        kind: 'kind2',
+        worker_pool_id: 'wp/id2',
+        extra: { code: 'c2' },
+      });
 
       const res = await db.fns.get_worker_pool_error_codes(null);
       assert.equal(res.length, 2);
       assert.equal(res[0].count, 1);
       assert.equal(res[1].count, 1);
     });
-
   });
 
   suite(`${testing.suiteName()} - workers`, () => {
-    helper.dbTest('create_worker/get_worker', async (db) => {
+    helper.dbTest('create_worker/get_worker', async db => {
       const now = new Date();
       await create_worker(db, { created: now, last_modified: now, last_checked: now, expires: now });
 
@@ -474,7 +496,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].last_checked, now);
     });
 
-    helper.dbTest('create_worker/get_worker_3', async (db) => {
+    helper.dbTest('create_worker/get_worker_3', async db => {
       const now = new Date();
       await create_worker(db, {
         created: now,
@@ -498,17 +520,17 @@ suite(testing.suiteName(), () => {
       assert.equal(rows[0].secret, null);
     });
 
-    helper.dbTest('get_worker not found', async (db) => {
+    helper.dbTest('get_worker not found', async db => {
       const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('get_worker_3 not found', async (db) => {
+    helper.dbTest('get_worker_3 not found', async db => {
       const rows = await db.fns.get_worker_3('wp/id', 'w/group', 'w/id');
       assert.deepEqual(rows, []);
     });
 
-    helper.dbTest('expire_workers', async (db) => {
+    helper.dbTest('expire_workers', async db => {
       await create_worker(db, { worker_pool_id: 'done', provider_id: 'null-provider', expires: fromNow('- 1 day') });
       await create_worker(db, { worker_pool_id: 'also-done', expires: fromNow('- 2 days') });
       await create_worker(db, { worker_pool_id: 'still-running', expires: fromNow('1 day') });
@@ -519,7 +541,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows.length, 1);
     });
 
-    helper.dbTest('get workers without provider_data', async (db) => {
+    helper.dbTest('get workers without provider_data', async db => {
       const now = new Date();
       for (let i = 0; i < 2; i++) {
         await create_worker(db, {
@@ -553,13 +575,22 @@ suite(testing.suiteName(), () => {
       }
     });
 
-    helper.dbTest('get non-stopped workers', async (db) => {
+    helper.dbTest('get non-stopped workers', async db => {
       const now = new Date();
 
       let i = 0;
       // we are randomly ordering the ids to make sure rows are actually coming back ordered accordingly
       const randomOrderIds = [4, 6, 5, 3, 2, 7, 0, 1];
-      for (const state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
+      for (const state of [
+        'requested',
+        'running',
+        'stopping',
+        'stopped',
+        'requested',
+        'running',
+        'stopping',
+        'stopped',
+      ]) {
         await create_worker(db, {
           worker_pool_id: `wp/${randomOrderIds[i]}`,
           worker_group: `group${randomOrderIds[i]}`,
@@ -597,13 +628,22 @@ suite(testing.suiteName(), () => {
       }
     });
 
-    helper.dbTest('get non-stopped workers with quarantine_until', async (db) => {
+    helper.dbTest('get non-stopped workers with quarantine_until', async db => {
       const now = new Date();
 
       let i = 0;
       // we are randomly ordering the ids to make sure rows are actually coming back ordered accordingly
       const randomOrderIds = [4, 6, 5, 3, 2, 7, 0, 1];
-      for (const state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
+      for (const state of [
+        'requested',
+        'running',
+        'stopping',
+        'stopped',
+        'requested',
+        'running',
+        'stopping',
+        'stopped',
+      ]) {
         await create_worker(db, {
           worker_pool_id: `wp/${randomOrderIds[i]}`,
           worker_group: `group${randomOrderIds[i]}`,
@@ -625,17 +665,27 @@ suite(testing.suiteName(), () => {
           ['wp/4', 'group4', 'id4'],
           ['wp/1', 'group6', 'id6'],
         ]) {
-          await client.query(`
+          await client.query(
+            `
             insert
             into queue_workers
             (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim, last_date_active) values
             ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', now() - interval '1 hour', now())
-          `, [workerPoolId, workerGroup, workerId, quarantineUntil]);
+          `,
+            [workerPoolId, workerGroup, workerId, quarantineUntil]
+          );
         }
       });
 
       const rows = await db.deprecatedFns.get_non_stopped_workers_quntil_providers(
-        null, null, null, null, null, null, null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      );
 
       assert.equal(rows.length, 6);
 
@@ -660,13 +710,22 @@ suite(testing.suiteName(), () => {
       }
     });
 
-    helper.dbTest('get non-stopped workers with queue view timestamps ', async (db) => {
+    helper.dbTest('get non-stopped workers with queue view timestamps ', async db => {
       const now = new Date();
 
       let i = 0;
       // we are randomly ordering the ids to make sure rows are actually coming back ordered accordingly
       const randomOrderIds = [4, 6, 5, 3, 2, 7, 0, 1];
-      for (const state of ["requested", "running", "stopping", "stopped", "requested", "running", "stopping", "stopped"]) {
+      for (const state of [
+        'requested',
+        'running',
+        'stopping',
+        'stopped',
+        'requested',
+        'running',
+        'stopping',
+        'stopped',
+      ]) {
         await create_worker(db, {
           worker_pool_id: `wp/${randomOrderIds[i]}`,
           worker_group: `group${randomOrderIds[i]}`,
@@ -690,17 +749,29 @@ suite(testing.suiteName(), () => {
           ['wp/4', 'group4', 'id4'],
           ['wp/6', 'group6', 'id6'],
         ]) {
-          await client.query(`
+          await client.query(
+            `
             insert
             into queue_workers
             (task_queue_id, worker_group, worker_id, recent_tasks, quarantine_until, expires, first_claim, last_date_active) values
             ($1, $2, $3, jsonb_build_array(), $4, now() + interval '1 hour', $5, $6)
-          `, [workerPoolId, workerGroup, workerId, quarantineUntil, firstClaim, lastDateActive]);
+          `,
+            [workerPoolId, workerGroup, workerId, quarantineUntil, firstClaim, lastDateActive]
+          );
         }
       });
 
       const rows = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-        null, null, null, null, null, null, null, null, null);
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      );
 
       assert.equal(rows.length, 6);
 
@@ -721,17 +792,23 @@ suite(testing.suiteName(), () => {
         assert(row.secret !== undefined);
         assert(row.etag !== undefined);
         assert.deepEqual(row.quarantine_until, ['id4', 'id6'].includes(row.worker_id) ? quarantineUntil : null);
-        assert.equal(row.first_claim?.toJSON(), ['id4', 'id6'].includes(row.worker_id) ? firstClaim.toJSON() : undefined);
-        assert.equal(row.last_date_active?.toJSON(), ['id4', 'id6'].includes(row.worker_id) ? lastDateActive.toJSON() : undefined);
+        assert.equal(
+          row.first_claim?.toJSON(),
+          ['id4', 'id6'].includes(row.worker_id) ? firstClaim.toJSON() : undefined
+        );
+        assert.equal(
+          row.last_date_active?.toJSON(),
+          ['id4', 'id6'].includes(row.worker_id) ? lastDateActive.toJSON() : undefined
+        );
         i++;
       }
     });
 
-    helper.dbTest('get non-stopped workers by provider', async (db) => {
+    helper.dbTest('get non-stopped workers by provider', async db => {
       const now = new Date();
 
       let i = 0;
-      for (const provider_id of ["azure", "static", "aws", "gcp"]) {
+      for (const provider_id of ['azure', 'static', 'aws', 'gcp']) {
         await create_worker(db, {
           worker_id: `id${i++}`,
           state: 'running',
@@ -759,166 +836,286 @@ suite(testing.suiteName(), () => {
 
       for (const run of testRuns) {
         const rows = await db.deprecatedFns.get_non_stopped_workers_quntil_providers(
-          null, null, null, run.providers_filter_cond, run.providers_filter_value, null, null);
+          null,
+          null,
+          null,
+          run.providers_filter_cond,
+          run.providers_filter_value,
+          null,
+          null
+        );
 
         assert.equal(rows.length, run.expected_count);
       }
     });
 
-    helper.dbTest('get_non_stopped_workers_with_launch_config_scanner_after paginates by (worker_pool_id, worker_group, worker_id)', async (db) => {
-      const now = new Date();
+    helper.dbTest(
+      'get_non_stopped_workers_with_launch_config_scanner_after paginates by (worker_pool_id, worker_group, worker_id)',
+      async db => {
+        const now = new Date();
 
-      // Insert in randomized order; the function must return them sorted.
-      const orderedKeys = [
-        ['wp/a', 'g1', 'id1'],
-        ['wp/a', 'g1', 'id2'],
-        ['wp/a', 'g2', 'id1'],
-        ['wp/b', 'g1', 'id1'],
-        ['wp/b', 'g1', 'id2'],
-      ];
-      const insertOrder = [3, 0, 4, 2, 1];
-      for (const idx of insertOrder) {
-        const [worker_pool_id, worker_group, worker_id] = orderedKeys[idx];
+        // Insert in randomized order; the function must return them sorted.
+        const orderedKeys = [
+          ['wp/a', 'g1', 'id1'],
+          ['wp/a', 'g1', 'id2'],
+          ['wp/a', 'g2', 'id1'],
+          ['wp/b', 'g1', 'id1'],
+          ['wp/b', 'g1', 'id2'],
+        ];
+        const insertOrder = [3, 0, 4, 2, 1];
+        for (const idx of insertOrder) {
+          const [worker_pool_id, worker_group, worker_id] = orderedKeys[idx];
+          await create_worker(db, {
+            worker_pool_id,
+            worker_group,
+            worker_id,
+            state: 'running',
+            created: now,
+            last_modified: now,
+            last_checked: now,
+            expires: now,
+          });
+        }
+
+        // First page: pass nulls for the after_* args.
+        const page1 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+          null,
+          null,
+          null,
+          null,
+          null,
+          2,
+          null,
+          null,
+          null
+        );
+        assert.equal(page1.length, 2);
+        assert.deepEqual(
+          page1.map(r => [r.worker_pool_id, r.worker_group, r.worker_id]),
+          orderedKeys.slice(0, 2)
+        );
+
+        // Second page: cursor at the end of page1.
+        const last1 = page1[page1.length - 1];
+        const page2 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+          null,
+          null,
+          null,
+          null,
+          null,
+          2,
+          last1.worker_pool_id,
+          last1.worker_group,
+          last1.worker_id
+        );
+        assert.equal(page2.length, 2);
+        assert.deepEqual(
+          page2.map(r => [r.worker_pool_id, r.worker_group, r.worker_id]),
+          orderedKeys.slice(2, 4)
+        );
+
+        // Third page: only one row left, then exhausted.
+        const last2 = page2[page2.length - 1];
+        const page3 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+          null,
+          null,
+          null,
+          null,
+          null,
+          2,
+          last2.worker_pool_id,
+          last2.worker_group,
+          last2.worker_id
+        );
+        assert.equal(page3.length, 1);
+        assert.deepEqual([page3[0].worker_pool_id, page3[0].worker_group, page3[0].worker_id], orderedKeys[4]);
+
+        const last3 = page3[page3.length - 1];
+        const page4 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+          null,
+          null,
+          null,
+          null,
+          null,
+          2,
+          last3.worker_pool_id,
+          last3.worker_group,
+          last3.worker_id
+        );
+        assert.equal(page4.length, 0);
+      }
+    );
+
+    helper.dbTest(
+      'get_non_stopped_workers_with_launch_config_scanner_after is robust to inserts mid-scan',
+      async db => {
+        const now = new Date();
+
+        // Seed with three workers covering the keyspace.
+        const seed = [
+          ['wp/a', 'g1', 'id3'],
+          ['wp/a', 'g1', 'id5'],
+          ['wp/a', 'g1', 'id7'],
+        ];
+        for (const [worker_pool_id, worker_group, worker_id] of seed) {
+          await create_worker(db, {
+            worker_pool_id,
+            worker_group,
+            worker_id,
+            state: 'running',
+            created: now,
+            last_modified: now,
+            last_checked: now,
+            expires: now,
+          });
+        }
+
+        // Page 1: get the first row.
+        const page1 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+          null,
+          null,
+          null,
+          null,
+          null,
+          1,
+          null,
+          null,
+          null
+        );
+        assert.equal(page1.length, 1);
+        assert.equal(page1[0].worker_id, 'id3');
+
+        // Simulate a concurrent insert with a worker_id that sorts BEFORE the
+        // cursor (id1 < id3). With offset-based pagination this would shift
+        // the result set and cause id3 to be returned again on the next page.
+        // With keyset pagination, the cursor is the tuple > (wp/a, g1, id3),
+        // so id1 is silently skipped (it's behind us) and we proceed forward.
         await create_worker(db, {
-          worker_pool_id, worker_group, worker_id,
+          worker_pool_id: 'wp/a',
+          worker_group: 'g1',
+          worker_id: 'id1',
           state: 'running',
-          created: now, last_modified: now, last_checked: now, expires: now,
+          created: now,
+          last_modified: now,
+          last_checked: now,
+          expires: now,
         });
+
+        const last1 = page1[page1.length - 1];
+        const page2 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+          null,
+          null,
+          null,
+          null,
+          null,
+          10,
+          last1.worker_pool_id,
+          last1.worker_group,
+          last1.worker_id
+        );
+
+        // Must NOT contain id3 (already returned) and must NOT contain id1
+        // (sorts before the cursor). Must contain id5 and id7.
+        const ids = page2.map(r => r.worker_id);
+        assert.deepEqual(
+          ids,
+          ['id5', 'id7'],
+          'keyset cursor must skip rows behind it and never re-yield rows in front of it'
+        );
       }
+    );
 
-      // First page: pass nulls for the after_* args.
-      const page1 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-        null, null, null, null, null, 2, null, null, null);
-      assert.equal(page1.length, 2);
-      assert.deepEqual(
-        page1.map(r => [r.worker_pool_id, r.worker_group, r.worker_id]),
-        orderedKeys.slice(0, 2),
-      );
+    helper.dbTest(
+      'get_non_stopped_workers_with_launch_config_scanner_after honors providers_filter alongside keyset cursor',
+      async db => {
+        const now = new Date();
 
-      // Second page: cursor at the end of page1.
-      const last1 = page1[page1.length - 1];
-      const page2 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-        null, null, null, null, null, 2,
-        last1.worker_pool_id, last1.worker_group, last1.worker_id);
-      assert.equal(page2.length, 2);
-      assert.deepEqual(
-        page2.map(r => [r.worker_pool_id, r.worker_group, r.worker_id]),
-        orderedKeys.slice(2, 4),
-      );
+        // Mix of providers across the keyspace to exercise the WHERE clause's
+        // interaction between provider filtering and the keyset cursor — this
+        // is the call shape the worker-scanner uses in production.
+        const seed = [
+          { worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id1', provider_id: 'gcp' },
+          { worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id2', provider_id: 'aws' },
+          { worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id3', provider_id: 'gcp' },
+          { worker_pool_id: 'wp/b', worker_group: 'g1', worker_id: 'id1', provider_id: 'aws' },
+          { worker_pool_id: 'wp/b', worker_group: 'g1', worker_id: 'id2', provider_id: 'gcp' },
+        ];
+        for (const w of seed) {
+          await create_worker(db, {
+            ...w,
+            state: 'running',
+            created: now,
+            last_modified: now,
+            last_checked: now,
+            expires: now,
+          });
+        }
 
-      // Third page: only one row left, then exhausted.
-      const last2 = page2[page2.length - 1];
-      const page3 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-        null, null, null, null, null, 2,
-        last2.worker_pool_id, last2.worker_group, last2.worker_id);
-      assert.equal(page3.length, 1);
-      assert.deepEqual(
-        [page3[0].worker_pool_id, page3[0].worker_group, page3[0].worker_id],
-        orderedKeys[4],
-      );
+        // First page filtering provider = 'gcp', size 2.
+        const page1 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+          null,
+          null,
+          null,
+          '=',
+          'gcp',
+          2,
+          null,
+          null,
+          null
+        );
+        assert.equal(page1.length, 2);
+        assert.deepEqual(
+          page1.map(r => [r.worker_pool_id, r.worker_id]),
+          [
+            ['wp/a', 'id1'],
+            ['wp/a', 'id3'],
+          ],
+          'aws workers must be excluded; gcp workers ordered by composite key'
+        );
 
-      const last3 = page3[page3.length - 1];
-      const page4 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-        null, null, null, null, null, 2,
-        last3.worker_pool_id, last3.worker_group, last3.worker_id);
-      assert.equal(page4.length, 0);
-    });
+        // Second page from the cursor of page1, still filtering provider = 'gcp'.
+        const last1 = page1[page1.length - 1];
+        const page2 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+          null,
+          null,
+          null,
+          '=',
+          'gcp',
+          2,
+          last1.worker_pool_id,
+          last1.worker_group,
+          last1.worker_id
+        );
+        assert.equal(page2.length, 1);
+        assert.deepEqual(
+          [page2[0].worker_pool_id, page2[0].worker_id],
+          ['wp/b', 'id2'],
+          'cursor advance must skip aws workers in between gcp pages'
+        );
 
-    helper.dbTest('get_non_stopped_workers_with_launch_config_scanner_after is robust to inserts mid-scan', async (db) => {
-      const now = new Date();
-
-      // Seed with three workers covering the keyspace.
-      const seed = [
-        ['wp/a', 'g1', 'id3'],
-        ['wp/a', 'g1', 'id5'],
-        ['wp/a', 'g1', 'id7'],
-      ];
-      for (const [worker_pool_id, worker_group, worker_id] of seed) {
-        await create_worker(db, {
-          worker_pool_id, worker_group, worker_id,
-          state: 'running',
-          created: now, last_modified: now, last_checked: now, expires: now,
-        });
+        // Inverse filter <> gcp returns the two aws workers in composite-key order.
+        const awsAll = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+          null,
+          null,
+          null,
+          '<>',
+          'gcp',
+          100,
+          null,
+          null,
+          null
+        );
+        assert.deepEqual(
+          awsAll.map(r => [r.worker_pool_id, r.worker_id]),
+          [
+            ['wp/a', 'id2'],
+            ['wp/b', 'id1'],
+          ]
+        );
       }
+    );
 
-      // Page 1: get the first row.
-      const page1 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-        null, null, null, null, null, 1, null, null, null);
-      assert.equal(page1.length, 1);
-      assert.equal(page1[0].worker_id, 'id3');
-
-      // Simulate a concurrent insert with a worker_id that sorts BEFORE the
-      // cursor (id1 < id3). With offset-based pagination this would shift
-      // the result set and cause id3 to be returned again on the next page.
-      // With keyset pagination, the cursor is the tuple > (wp/a, g1, id3),
-      // so id1 is silently skipped (it's behind us) and we proceed forward.
-      await create_worker(db, {
-        worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id1',
-        state: 'running',
-        created: now, last_modified: now, last_checked: now, expires: now,
-      });
-
-      const last1 = page1[page1.length - 1];
-      const page2 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-        null, null, null, null, null, 10,
-        last1.worker_pool_id, last1.worker_group, last1.worker_id);
-
-      // Must NOT contain id3 (already returned) and must NOT contain id1
-      // (sorts before the cursor). Must contain id5 and id7.
-      const ids = page2.map(r => r.worker_id);
-      assert.deepEqual(ids, ['id5', 'id7'],
-        'keyset cursor must skip rows behind it and never re-yield rows in front of it');
-    });
-
-    helper.dbTest('get_non_stopped_workers_with_launch_config_scanner_after honors providers_filter alongside keyset cursor', async (db) => {
-      const now = new Date();
-
-      // Mix of providers across the keyspace to exercise the WHERE clause's
-      // interaction between provider filtering and the keyset cursor — this
-      // is the call shape the worker-scanner uses in production.
-      const seed = [
-        { worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id1', provider_id: 'gcp' },
-        { worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id2', provider_id: 'aws' },
-        { worker_pool_id: 'wp/a', worker_group: 'g1', worker_id: 'id3', provider_id: 'gcp' },
-        { worker_pool_id: 'wp/b', worker_group: 'g1', worker_id: 'id1', provider_id: 'aws' },
-        { worker_pool_id: 'wp/b', worker_group: 'g1', worker_id: 'id2', provider_id: 'gcp' },
-      ];
-      for (const w of seed) {
-        await create_worker(db, {
-          ...w, state: 'running',
-          created: now, last_modified: now, last_checked: now, expires: now,
-        });
-      }
-
-      // First page filtering provider = 'gcp', size 2.
-      const page1 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-        null, null, null, '=', 'gcp', 2, null, null, null);
-      assert.equal(page1.length, 2);
-      assert.deepEqual(
-        page1.map(r => [r.worker_pool_id, r.worker_id]),
-        [['wp/a', 'id1'], ['wp/a', 'id3']],
-        'aws workers must be excluded; gcp workers ordered by composite key');
-
-      // Second page from the cursor of page1, still filtering provider = 'gcp'.
-      const last1 = page1[page1.length - 1];
-      const page2 = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-        null, null, null, '=', 'gcp', 2,
-        last1.worker_pool_id, last1.worker_group, last1.worker_id);
-      assert.equal(page2.length, 1);
-      assert.deepEqual(
-        [page2[0].worker_pool_id, page2[0].worker_id],
-        ['wp/b', 'id2'],
-        'cursor advance must skip aws workers in between gcp pages');
-
-      // Inverse filter <> gcp returns the two aws workers in composite-key order.
-      const awsAll = await db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-        null, null, null, '<>', 'gcp', 100, null, null, null);
-      assert.deepEqual(
-        awsAll.map(r => [r.worker_pool_id, r.worker_id]),
-        [['wp/a', 'id2'], ['wp/b', 'id1']]);
-    });
-
-    helper.dbTest('update_worker, change to a single field', async (db) => {
+    helper.dbTest('update_worker, change to a single field', async db => {
       const etag = await create_worker(db);
       await db.deprecatedFns.update_worker(
         'wp/id',
@@ -932,7 +1129,7 @@ suite(testing.suiteName(), () => {
         null,
         null,
         null,
-        etag,
+        etag
       );
 
       const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
@@ -949,7 +1146,7 @@ suite(testing.suiteName(), () => {
       assert(rows[0].last_checked instanceof Date);
     });
 
-    helper.dbTest('update_worker_3, change to a single field', async (db) => {
+    helper.dbTest('update_worker_3, change to a single field', async db => {
       const etag = await create_worker(db);
       const secret = `${slug.v4()}${slug.v4()}`;
       const encryptedSecret = db.encrypt({ value: Buffer.from(secret, 'utf8') });
@@ -966,7 +1163,7 @@ suite(testing.suiteName(), () => {
         null,
         null,
         etag,
-        encryptedSecret,
+        encryptedSecret
       );
 
       const rows = await db.fns.get_worker_3('wp/id', 'w/group', 'w/id');
@@ -984,7 +1181,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(rows[0].secret, encryptedSecret);
     });
 
-    helper.dbTest('update_worker, change to a multiple fields', async (db) => {
+    helper.dbTest('update_worker, change to a multiple fields', async db => {
       const etag = await create_worker(db);
       const updated = await db.deprecatedFns.update_worker(
         'wp/id',
@@ -998,7 +1195,7 @@ suite(testing.suiteName(), () => {
         null,
         null,
         null,
-        etag,
+        etag
       );
 
       const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
@@ -1007,7 +1204,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(updated, rows);
     });
 
-    helper.dbTest('update_worker_3, change to a multiple fields', async (db) => {
+    helper.dbTest('update_worker_3, change to a multiple fields', async db => {
       const etag = await create_worker(db);
       const updated = await db.fns.update_worker_3(
         'wp/id',
@@ -1022,7 +1219,7 @@ suite(testing.suiteName(), () => {
         null,
         null,
         etag,
-        null,
+        null
       );
 
       const rows = await db.fns.get_worker_3('wp/id', 'w/group', 'w/id');
@@ -1031,7 +1228,7 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(updated, rows);
     });
 
-    helper.dbTest('update_worker, no changes', async (db) => {
+    helper.dbTest('update_worker, no changes', async db => {
       const etag = await create_worker(db);
       const updated = await db.deprecatedFns.update_worker(
         'wp/id',
@@ -1045,7 +1242,7 @@ suite(testing.suiteName(), () => {
         null,
         null,
         null,
-        etag,
+        etag
       );
       // this is not 0 because there was a row that matched even though there was no change
       assert.equal(updated.length, 1);
@@ -1055,7 +1252,7 @@ suite(testing.suiteName(), () => {
       assert.equal(rows[0].state, 'state');
     });
 
-    helper.dbTest('update_worker_3, no changes', async (db) => {
+    helper.dbTest('update_worker_3, no changes', async db => {
       const etag = await create_worker(db);
       const updated = await db.fns.update_worker_3(
         'wp/id',
@@ -1070,7 +1267,7 @@ suite(testing.suiteName(), () => {
         null,
         null,
         etag,
-        null,
+        null
       );
       // this is not 0 because there was a row that matched even though there was no change
       assert.equal(updated.length, 1);
@@ -1080,29 +1277,23 @@ suite(testing.suiteName(), () => {
       assert.equal(rows[0].state, 'state');
     });
 
-    helper.dbTest('update_worker, worker doesn\'t exist', async (db) => {
+    helper.dbTest("update_worker, worker doesn't exist", async db => {
       const etag = await create_worker(db);
 
-      await assert.rejects(
-        async () => {
-          await update_worker(db, { worker_pool_id: 'does-not-exist' }, etag);
-        },
-        /no such row/,
-      );
+      await assert.rejects(async () => {
+        await update_worker(db, { worker_pool_id: 'does-not-exist' }, etag);
+      }, /no such row/);
     });
 
-    helper.dbTest('update_worker_3, worker doesn\'t exist', async (db) => {
+    helper.dbTest("update_worker_3, worker doesn't exist", async db => {
       const etag = await create_worker(db);
 
-      await assert.rejects(
-        async () => {
-          await update_worker_3(db, { worker_pool_id: 'does-not-exist' }, etag);
-        },
-        /no such row/,
-      );
+      await assert.rejects(async () => {
+        await update_worker_3(db, { worker_pool_id: 'does-not-exist' }, etag);
+      }, /no such row/);
     });
 
-    helper.dbTest('update_worker, override when etag not specified', async (db) => {
+    helper.dbTest('update_worker, override when etag not specified', async db => {
       await create_worker(db);
       await db.deprecatedFns.update_worker(
         'wp/id',
@@ -1113,17 +1304,17 @@ suite(testing.suiteName(), () => {
         null,
         null,
         null,
-        2, /* capacity */
+        2 /* capacity */,
         null,
         null,
-        null, /* etag */
+        null /* etag */
       );
 
       const rows = await db.deprecatedFns.get_worker('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].capacity, 2);
     });
 
-    helper.dbTest('update_worker_3, override when etag not specified', async (db) => {
+    helper.dbTest('update_worker_3, override when etag not specified', async db => {
       await create_worker(db);
       await db.fns.update_worker_3(
         'wp/id',
@@ -1134,112 +1325,100 @@ suite(testing.suiteName(), () => {
         null,
         null,
         null,
-        2, /* capacity */
+        2 /* capacity */,
         null,
         null,
-        null, /* etag */
-        null,
+        null /* etag */,
+        null
       );
 
       const rows = await db.fns.get_worker_3('wp/id', 'w/group', 'w/id');
       assert.equal(rows[0].capacity, 2);
     });
 
-    helper.dbTest('update_worker, throws when etag is wrong', async (db) => {
+    helper.dbTest('update_worker, throws when etag is wrong', async db => {
       await create_worker(db);
-      await assert.rejects(
-        async () => {
-          await db.deprecatedFns.update_worker(
-            'wp/id',
-            'w/group',
-            'w/id',
-            null,
-            null,
-            null,
-            null,
-            null,
-            2, /* capacity */
-            null,
-            null,
-            '915a609a-f3bb-42fa-b584-a1209e7d9a02', /* etag */
-          );
-        },
-        /unsuccessful update/,
-      );
+      await assert.rejects(async () => {
+        await db.deprecatedFns.update_worker(
+          'wp/id',
+          'w/group',
+          'w/id',
+          null,
+          null,
+          null,
+          null,
+          null,
+          2 /* capacity */,
+          null,
+          null,
+          '915a609a-f3bb-42fa-b584-a1209e7d9a02' /* etag */
+        );
+      }, /unsuccessful update/);
     });
 
-    helper.dbTest('update_worker_3, throws when etag is wrong', async (db) => {
+    helper.dbTest('update_worker_3, throws when etag is wrong', async db => {
       await create_worker(db);
-      await assert.rejects(
-        async () => {
-          await db.fns.update_worker_3(
-            'wp/id',
-            'w/group',
-            'w/id',
-            null,
-            null,
-            null,
-            null,
-            null,
-            2, /* capacity */
-            null,
-            null,
-            '915a609a-f3bb-42fa-b584-a1209e7d9a02', /* etag */
-            null,
-          );
-        },
-        /unsuccessful update/,
-      );
+      await assert.rejects(async () => {
+        await db.fns.update_worker_3(
+          'wp/id',
+          'w/group',
+          'w/id',
+          null,
+          null,
+          null,
+          null,
+          null,
+          2 /* capacity */,
+          null,
+          null,
+          '915a609a-f3bb-42fa-b584-a1209e7d9a02' /* etag */,
+          null
+        );
+      }, /unsuccessful update/);
     });
 
-    helper.dbTest('update_worker, throws when row does not exist', async (db) => {
+    helper.dbTest('update_worker, throws when row does not exist', async db => {
       const etag = await create_worker(db);
-      await assert.rejects(
-        async () => {
-          await db.deprecatedFns.update_worker(
-            'does-not-exist',
-            'w/group',
-            'w/id',
-            null,
-            null,
-            null,
-            null,
-            null,
-            2, /* capacity */
-            null,
-            null,
-            etag,
-          );
-        },
-        /no such row/,
-      );
+      await assert.rejects(async () => {
+        await db.deprecatedFns.update_worker(
+          'does-not-exist',
+          'w/group',
+          'w/id',
+          null,
+          null,
+          null,
+          null,
+          null,
+          2 /* capacity */,
+          null,
+          null,
+          etag
+        );
+      }, /no such row/);
     });
 
-    helper.dbTest('update_worker_3, throws when row does not exist', async (db) => {
+    helper.dbTest('update_worker_3, throws when row does not exist', async db => {
       const etag = await create_worker(db);
-      await assert.rejects(
-        async () => {
-          await db.fns.update_worker_3(
-            'does-not-exist',
-            'w/group',
-            'w/id',
-            null,
-            null,
-            null,
-            null,
-            null,
-            2, /* capacity */
-            null,
-            null,
-            etag,
-            null,
-          );
-        },
-        /no such row/,
-      );
+      await assert.rejects(async () => {
+        await db.fns.update_worker_3(
+          'does-not-exist',
+          'w/group',
+          'w/id',
+          null,
+          null,
+          null,
+          null,
+          null,
+          2 /* capacity */,
+          null,
+          null,
+          etag,
+          null
+        );
+      }, /no such row/);
     });
 
-    helper.dbTest('delete_worker', async (db) => {
+    helper.dbTest('delete_worker', async db => {
       await create_worker_pool(db);
 
       await db.fns.delete_worker('wp/id', 'w/group', 'w/id');
@@ -1250,7 +1429,7 @@ suite(testing.suiteName(), () => {
   });
 
   suite('existing capacity', () => {
-    helper.dbTest('no workers', async (db) => {
+    helper.dbTest('no workers', async db => {
       await create_worker_pool(db);
       const row = (await db.fns.get_worker_pool_counts_and_capacity('wp/id'))[0];
       assert.equal(row.current_capacity, 0);
@@ -1263,7 +1442,7 @@ suite(testing.suiteName(), () => {
       assert.equal(row.stopping_capacity, 0);
       assert.equal(row.stopped_capacity, 0);
     });
-    helper.dbTest('single worker, capacity 1', async (db) => {
+    helper.dbTest('single worker, capacity 1', async db => {
       await create_worker_pool(db);
       await create_worker(db, { capacity: 1, state: 'running' });
       const row = (await db.fns.get_worker_pool_counts_and_capacity('wp/id'))[0];
@@ -1277,7 +1456,7 @@ suite(testing.suiteName(), () => {
       assert.equal(row.stopping_capacity, 0);
       assert.equal(row.stopped_capacity, 0);
     });
-    helper.dbTest('single worker, capacity > 1', async (db) => {
+    helper.dbTest('single worker, capacity > 1', async db => {
       await create_worker_pool(db);
       await create_worker(db, { capacity: 64, state: 'running' });
       const row = (await db.fns.get_worker_pool_counts_and_capacity('wp/id'))[0];
@@ -1291,7 +1470,7 @@ suite(testing.suiteName(), () => {
       assert.equal(row.stopping_capacity, 0);
       assert.equal(row.stopped_capacity, 0);
     });
-    helper.dbTest('multiple workers, capacity 1', async (db) => {
+    helper.dbTest('multiple workers, capacity 1', async db => {
       await create_worker_pool(db);
       await create_worker(db, { worker_id: 'foo1', capacity: 1, state: 'running' });
       await create_worker(db, { worker_id: 'foo2', capacity: 1, state: 'running' });
@@ -1308,7 +1487,7 @@ suite(testing.suiteName(), () => {
       assert.equal(row.stopping_capacity, 0);
       assert.equal(row.stopped_capacity, 0);
     });
-    helper.dbTest('multiple workers, capacity > 1', async (db) => {
+    helper.dbTest('multiple workers, capacity > 1', async db => {
       await create_worker_pool(db);
       await create_worker(db, { worker_id: 'foo1', capacity: 32, state: 'running' });
       await create_worker(db, { worker_id: 'foo2', capacity: 64, state: 'running' });
@@ -1325,7 +1504,7 @@ suite(testing.suiteName(), () => {
       assert.equal(row.stopping_capacity, 0);
       assert.equal(row.stopped_capacity, 0);
     });
-    helper.dbTest('multiple workers, multiple states', async (db) => {
+    helper.dbTest('multiple workers, multiple states', async db => {
       await create_worker_pool(db);
       await create_worker(db, { worker_id: 'foo1', capacity: 32, state: 'running' });
       await create_worker(db, { worker_id: 'foo2', capacity: 64, state: 'stopped' });
@@ -1342,14 +1521,14 @@ suite(testing.suiteName(), () => {
       assert.equal(row.stopping_capacity, 0);
       assert.equal(row.stopped_capacity, 64);
     });
-    helper.dbTest('no workers (multiple pools)', async (db) => {
+    helper.dbTest('no workers (multiple pools)', async db => {
       await create_worker_pool(db);
       await create_worker_pool(db, { worker_pool_id: 'ff/tt' });
       const pools = (await db.fns.get_worker_pools_counts_and_capacity(null, null)).sort();
       assert.equal(pools[0].current_capacity, 0);
       assert.equal(pools[1].current_capacity, 0);
     });
-    helper.dbTest('single worker (multiple pools)', async (db) => {
+    helper.dbTest('single worker (multiple pools)', async db => {
       await create_worker_pool(db);
       await create_worker_pool(db, { worker_pool_id: 'ff/tt' });
       await create_worker(db, { capacity: 4, state: 'running' });
@@ -1359,7 +1538,7 @@ suite(testing.suiteName(), () => {
       assert.equal(pools[0].current_capacity, 0);
       assert.equal(pools[1].current_capacity, 4);
     });
-    helper.dbTest('multiple workers (multiple pools)', async (db) => {
+    helper.dbTest('multiple workers (multiple pools)', async db => {
       await create_worker_pool(db);
       await create_worker_pool(db, { worker_pool_id: 'ff/tt' });
       await create_worker(db, { worker_id: 'foo1', capacity: 4, state: 'running' });
@@ -1375,14 +1554,50 @@ suite(testing.suiteName(), () => {
     });
 
     suite('launch configs', () => {
-      helper.dbTest('launch configs statistics for a worker pool', async (db) => {
+      helper.dbTest('launch configs statistics for a worker pool', async db => {
         await create_worker_pool(db, { worker_pool_id: 'll/cc' });
-        await create_worker(db, { worker_id: 'foo1', capacity: 4, worker_pool_id: 'll/cc', state: 'running', launch_config_id: 'lc1' });
-        await create_worker(db, { worker_id: 'foo2', capacity: 1, worker_pool_id: 'll/cc', state: 'running', launch_config_id: 'lc1' });
-        await create_worker(db, { worker_id: 'foo3', capacity: 3, worker_pool_id: 'll/cc', state: 'stopping', launch_config_id: 'lc1' });
-        await create_worker(db, { worker_id: 'foo4', capacity: 1, worker_pool_id: 'll/cc', state: 'requested', launch_config_id: 'lc1' });
-        await create_worker(db, { worker_id: 'foo5', capacity: 3, worker_pool_id: 'll/cc', state: 'stopped', launch_config_id: 'lc3' });
-        await create_worker(db, { worker_id: 'foo6', capacity: 7, worker_pool_id: 'll/cc', state: 'stopped', launch_config_id: 'lc3' });
+        await create_worker(db, {
+          worker_id: 'foo1',
+          capacity: 4,
+          worker_pool_id: 'll/cc',
+          state: 'running',
+          launch_config_id: 'lc1',
+        });
+        await create_worker(db, {
+          worker_id: 'foo2',
+          capacity: 1,
+          worker_pool_id: 'll/cc',
+          state: 'running',
+          launch_config_id: 'lc1',
+        });
+        await create_worker(db, {
+          worker_id: 'foo3',
+          capacity: 3,
+          worker_pool_id: 'll/cc',
+          state: 'stopping',
+          launch_config_id: 'lc1',
+        });
+        await create_worker(db, {
+          worker_id: 'foo4',
+          capacity: 1,
+          worker_pool_id: 'll/cc',
+          state: 'requested',
+          launch_config_id: 'lc1',
+        });
+        await create_worker(db, {
+          worker_id: 'foo5',
+          capacity: 3,
+          worker_pool_id: 'll/cc',
+          state: 'stopped',
+          launch_config_id: 'lc3',
+        });
+        await create_worker(db, {
+          worker_id: 'foo6',
+          capacity: 7,
+          worker_pool_id: 'll/cc',
+          state: 'stopped',
+          launch_config_id: 'lc3',
+        });
 
         const stats = await db.fns.get_worker_pool_counts_and_capacity_lc('ll/cc', null);
         const lc1 = stats.filter(lc => lc.launch_config_id === 'lc1');
@@ -1413,12 +1628,12 @@ suite(testing.suiteName(), () => {
   });
 
   suite(`${testing.suiteName()} - TaskQueue`, () => {
-    helper.dbTest('no such task queue', async (db) => {
+    helper.dbTest('no such task queue', async db => {
       const res = await db.fns.get_task_queue_wm_2('prov/wt', new Date());
       assert.deepEqual(res, []);
     });
 
-    helper.dbTest('get_task_queues_wm empty', async (db) => {
+    helper.dbTest('get_task_queues_wm empty', async db => {
       const res = await db.fns.get_task_queues_wm(null, null, null, null);
       assert.deepEqual(res, []);
     });
@@ -1431,33 +1646,46 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(arr1, arr2);
     };
 
-    helper.dbTest('create_worker_pool_launch_config/get_worker_pool_launch_configs', async (db) => {
+    helper.dbTest('create_worker_pool_launch_config/get_worker_pool_launch_configs', async db => {
       const wpId = 'w/i1';
       await db.fns.create_worker_pool_launch_config('lc1', wpId, false, { config: '1' }, fromNow('0s'), fromNow('0s'));
-      await db.fns.create_worker_pool_launch_config('lc2', wpId, false, {
-        config: '2',
-        workerManager: { maxCapacity: 2 },
-      }, fromNow('0s'), fromNow('0s'));
+      await db.fns.create_worker_pool_launch_config(
+        'lc2',
+        wpId,
+        false,
+        {
+          config: '2',
+          workerManager: { maxCapacity: 2 },
+        },
+        fromNow('0s'),
+        fromNow('0s')
+      );
 
       const configs = await db.fns.get_worker_pool_launch_configs(wpId, null, null, null);
       assert.equal(configs.length, 2);
-      assertEqualSorted(configs.map(c => c.launch_config_id), ['lc1', 'lc2']);
+      assertEqualSorted(
+        configs.map(c => c.launch_config_id),
+        ['lc1', 'lc2']
+      );
 
       const res = await db.fns.collect_launch_configs_if_exist({ max: 9 }, wpId);
       // rows should include launchConfigIds inside of workerManager
       assert.deepEqual(res[0].collect_launch_configs_if_exist, {
         max: 9,
-        launchConfigs: [{
-          workerManager: { launchConfigId: 'lc1' },
-          config: '1',
-        }, {
-          workerManager: { launchConfigId: 'lc2', maxCapacity: 2 },
-          config: '2',
-        }],
+        launchConfigs: [
+          {
+            workerManager: { launchConfigId: 'lc1' },
+            config: '1',
+          },
+          {
+            workerManager: { launchConfigId: 'lc2', maxCapacity: 2 },
+            config: '2',
+          },
+        ],
       });
     });
 
-    helper.dbTest('upsert_worker_pool_launch_configs returns expected ids', async (db) => {
+    helper.dbTest('upsert_worker_pool_launch_configs returns expected ids', async db => {
       const launchConfigs = [
         { cfg: 'c1', workerManager: { maxCapacity: 5 } },
         { cfg: 'c2', workerManager: { maxCapacity: 5 } },
@@ -1512,14 +1740,28 @@ suite(testing.suiteName(), () => {
       assert.equal(res5.archived_launch_configs.length, 2);
     });
 
-    helper.dbTest('expire_worker_pool_launch_configs', async (db) => {
+    helper.dbTest('expire_worker_pool_launch_configs', async db => {
       // make sure all previous launch configs are expired
       await db.fns.expire_worker_pool_launch_configs();
 
       const wpId = 'w/i2';
       const isArchived = true;
-      await db.fns.create_worker_pool_launch_config('lc1', wpId, isArchived, { config: '1' }, fromNow('0s'), fromNow('0s'));
-      await db.fns.create_worker_pool_launch_config('lc2', wpId, isArchived, { config: '2' }, fromNow('0s'), fromNow('0s'));
+      await db.fns.create_worker_pool_launch_config(
+        'lc1',
+        wpId,
+        isArchived,
+        { config: '1' },
+        fromNow('0s'),
+        fromNow('0s')
+      );
+      await db.fns.create_worker_pool_launch_config(
+        'lc2',
+        wpId,
+        isArchived,
+        { config: '2' },
+        fromNow('0s'),
+        fromNow('0s')
+      );
       await create_worker(db, {
         worker_id: 'f1',
         worker_pool_id: wpId,
@@ -1532,9 +1774,8 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(await db.fns.expire_worker_pool_launch_configs(), [{ launch_config_id: 'lc2' }]);
     });
 
-    helper.dbTest('get_worker_pool_launch_config_stats', async (_db) => {
+    helper.dbTest('get_worker_pool_launch_config_stats', async _db => {
       // test stats are being returned for workers groupped by state
     });
-
   });
 });

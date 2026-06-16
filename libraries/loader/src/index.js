@@ -41,8 +41,10 @@ function loader(componentDirectory, virtualComponents = {}) {
     }, {});
   }
   const virtualKeys = Object.keys(virtualComponents);
-  assert(Object.keys(componentDirectory).every(k => !virtualKeys.includes(k)),
-    'virtual keys must not have definitions in the loader');
+  assert(
+    Object.keys(componentDirectory).every(k => !virtualKeys.includes(k)),
+    'virtual keys must not have definitions in the loader'
+  );
   componentDirectory = Object.assign({}, componentDirectory);
 
   // Check for undefined components
@@ -111,7 +113,7 @@ function loader(componentDirectory, virtualComponents = {}) {
             } catch (err) {
               reject(err);
             }
-          }).catch((err) => {
+          }).catch(err => {
             debug(`error while loading component '${target}': ${err}`);
             throw err;
           });
@@ -123,7 +125,7 @@ function loader(componentDirectory, virtualComponents = {}) {
     return recursiveLoad(target);
   };
 
-  load.crashOnError = (target) => {
+  load.crashOnError = target => {
     load(target).catch(err => {
       console.log(err.stack);
       process.exit(1);

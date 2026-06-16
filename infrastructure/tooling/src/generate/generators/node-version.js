@@ -1,10 +1,4 @@
-import {
-  readRepoJSON,
-  modifyRepoFile,
-  writeRepoFile,
-  modifyRepoJSON,
-  modifyRepoYAML,
-} from '../../utils/index.js';
+import { readRepoJSON, modifyRepoFile, writeRepoFile, modifyRepoJSON, modifyRepoYAML } from '../../utils/index.js';
 
 export const tasks = [];
 
@@ -23,10 +17,9 @@ tasks.push({
     utils.step({ title: `Setting node version ${nodeVersion}` });
 
     utils.status({ message: '.taskcluster.yml' });
-    await modifyRepoFile('.taskcluster.yml',
-      contents => contents.replace(
-        /^( *node: ')[0-9.]+(')$/m,
-        `$1${nodeVersion}$2`));
+    await modifyRepoFile('.taskcluster.yml', contents =>
+      contents.replace(/^( *node: ')[0-9.]+(')$/m, `$1${nodeVersion}$2`)
+    );
 
     for (const file of [
       'Dockerfile',
@@ -36,46 +29,37 @@ tasks.push({
       'taskcluster/docker/rabbit-test/Dockerfile',
     ]) {
       utils.status({ message: file });
-      await modifyRepoFile(file,
-        contents => contents.replace(
-          /^FROM node:[0-9.]+(.*)$/gm,
-          `FROM node:${nodeVersion}$1`));
+      await modifyRepoFile(file, contents =>
+        contents.replace(/^FROM node:[0-9.]+(.*)$/gm, `FROM node:${nodeVersion}$1`)
+      );
     }
 
     utils.status({ message: '.nvmrc' });
     await writeRepoFile('.nvmrc', `${nodeVersion}\n`);
 
     utils.status({ message: 'dev-docs/development-process.md' });
-    await modifyRepoFile('dev-docs/development-process.md',
-      contents => contents.replace(
-        /Node version [0-9.]+/,
-        `Node version ${nodeVersion}`));
+    await modifyRepoFile('dev-docs/development-process.md', contents =>
+      contents.replace(/Node version [0-9.]+/, `Node version ${nodeVersion}`)
+    );
 
     utils.status({ message: 'netlify.toml' });
-    await modifyRepoFile('netlify.toml',
-      contents => contents.replace(
-        /^( *NODE_VERSION *= *")[0-9.]+(")$/m,
-        `$1${nodeVersion}$2`));
+    await modifyRepoFile('netlify.toml', contents =>
+      contents.replace(/^( *NODE_VERSION *= *")[0-9.]+(")$/m, `$1${nodeVersion}$2`)
+    );
 
-    for (const file of [
-      'ui/package.json',
-      'clients/client/package.json',
-      'clients/client-test/package.json',
-    ]) {
+    for (const file of ['ui/package.json', 'clients/client/package.json', 'clients/client-test/package.json']) {
       utils.status({ message: file });
-      await modifyRepoJSON(file,
-        contents => {
-          contents.engines.node = nodeVersion;
-          return contents;
-        });
+      await modifyRepoJSON(file, contents => {
+        contents.engines.node = nodeVersion;
+        return contents;
+      });
     }
 
     utils.status({ message: 'cloudbuild.yaml' });
-    await modifyRepoYAML('cloudbuild.yaml',
-      contents => {
-        contents.substitutions._NODE_VERSION = nodeVersion;
-        return contents;
-      });
+    await modifyRepoYAML('cloudbuild.yaml', contents => {
+      contents.substitutions._NODE_VERSION = nodeVersion;
+      return contents;
+    });
   },
 });
 
@@ -93,15 +77,12 @@ tasks.push({
     }
     utils.step({ title: `Setting yarn version ${yarnVersion}` });
 
-    for (const file of [
-      'ui/package.json',
-    ]) {
+    for (const file of ['ui/package.json']) {
       utils.status({ message: file });
-      await modifyRepoJSON(file,
-        contents => {
-          contents.packageManager = yarnVersion;
-          return contents;
-        });
+      await modifyRepoJSON(file, contents => {
+        contents.packageManager = yarnVersion;
+        return contents;
+      });
     }
   },
 });

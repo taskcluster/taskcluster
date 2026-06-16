@@ -27,9 +27,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assume(count).to.equal(1);
 
     const caches = await helper.db.fns.all_purge_requests_wpid(5, 0);
-    assume(
-      caches.find(cache => cache.worker_pool_id === wpid && cache.cache_name === 'a'),
-    ).to.equal(undefined);
+    assume(caches.find(cache => cache.worker_pool_id === wpid && cache.cache_name === 'a')).to.equal(undefined);
     assume(caches.find(cache => cache.worker_pool_id === wpid && cache.cache_name === 'b'));
   });
 });

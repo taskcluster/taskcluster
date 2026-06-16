@@ -20,11 +20,10 @@ import { consume } from '@taskcluster/lib-pulse';
  *   db:                 // db instance
  * }
  */
-const Handlers = function(options) {
+const Handlers = function (options) {
   // Validate options
   assert(options.queue, 'An instance of taskcluster.Queue is required');
-  assert(options.queueEvents instanceof taskcluster.QueueEvents,
-    'An instance of taskcluster.QueueEvents is required');
+  assert(options.queueEvents instanceof taskcluster.QueueEvents, 'An instance of taskcluster.QueueEvents is required');
   assert(options.credentials, 'credentials must be provided');
   assert(options.routePrefix, 'routePrefix is required');
   assert(options.monitor, 'monitor is required for statistics');
@@ -43,7 +42,7 @@ const Handlers = function(options) {
 };
 
 /** Setup handlers and start listening */
-Handlers.prototype.setup = async function() {
+Handlers.prototype.setup = async function () {
   assert(this.pq === null, 'Cannot setup twice!');
 
   // Create regular expression for parsing routes
@@ -55,13 +54,13 @@ Handlers.prototype.setup = async function() {
       bindings: [this.binding],
       queueName: this.queueName,
     },
-    this.monitor.timedHandler('listener', this.messageHandler.bind(this)),
+    this.monitor.timedHandler('listener', this.messageHandler.bind(this))
   );
 
   debug('Handler listening for pulse messages');
 };
 
-Handlers.prototype.terminate = async function() {
+Handlers.prototype.terminate = async function () {
   debug('Terminating handlers...');
   if (this.pq) {
     await this.pq.stop();
@@ -70,23 +69,21 @@ Handlers.prototype.terminate = async function() {
 };
 
 /** Handle notifications of completed messages */
-Handlers.prototype.completed = function(message) {
-
+Handlers.prototype.completed = function (message) {
   // Find namespaces to index under
   const namespaces = message.routes
-    .filter((route) => this.routeRegexp.test(route))
-    .map((route) => this.routeRegexp.exec(route)[1])
-    .filter((namespace) => helpers.namespaceFormat.test(namespace));
+    .filter(route => this.routeRegexp.test(route))
+    .map(route => this.routeRegexp.exec(route)[1])
+    .filter(namespace => helpers.namespaceFormat.test(namespace));
 
   // If there is no namespace we better log this
   if (namespaces.length === 0) {
-    debug('Didn\'t find any valid namespaces for message: %j', message);
+    debug("Didn't find any valid namespaces for message: %j", message);
     return;
   }
 
   // Get task definition
-  return this.queue.task(message.payload.status.taskId).then((task) => {
-
+  return this.queue.task(message.payload.status.taskId).then(task => {
     // Create default expiration date
     let expires;
     if (task.expires) {
@@ -108,39 +105,39 @@ Handlers.prototype.completed = function(message) {
 
     // Check that we have a number
     if (typeof options.rank !== 'number') {
-      debug('Expected number from task.extra.index.rank, failing on %j',
-        message);
+      debug('Expected number from task.extra.index.rank, failing on %j', message);
       return;
     }
 
     // Check that data is an object
     if (typeof options.data !== 'object') {
-      debug('Expected object from task.extra.index.data, failed on %j',
-        message);
+      debug('Expected object from task.extra.index.data, failed on %j', message);
       return;
     }
 
     // Insert everything into the index
-    return Promise.all(namespaces.map((namespace) => helpers.taskUtils.insertTask(this.db, namespace, {
-      taskId: message.payload.status.taskId,
-      data: options.data,
-      expires: expires,
-      rank: options.rank,
-    }))).then(() => {
+    return Promise.all(
+      namespaces.map(namespace =>
+        helpers.taskUtils.insertTask(this.db, namespace, {
+          taskId: message.payload.status.taskId,
+          data: options.data,
+          expires: expires,
+          rank: options.rank,
+        })
+      )
+    ).then(() => {
       debug('Indexed: %s', message.payload.status.taskId);
     });
   });
 };
 
 /** Message handler **/
-Handlers.prototype.messageHandler = function(message) {
+Handlers.prototype.messageHandler = function (message) {
   if (message.exchange === this.binding.exchange) {
     return this.completed(message);
   }
-  debug('WARNING: received message from unexpected exchange: %s, message: %j',
-    message.exchange, message);
-  throw new Error('Got message from unexpected exchange: ' +
-    message.exchange);
+  debug('WARNING: received message from unexpected exchange: %s, message: %j', message.exchange, message);
+  throw new Error('Got message from unexpected exchange: ' + message.exchange);
 };
 
 // Export Handlers

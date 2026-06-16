@@ -19,18 +19,14 @@ suite(testing.suiteName(), () => {
   };
 
   const validate = async content => {
-    (await getAjv()).validate(
-      'https://tc-tests.example.com/schemas/common/action-schema-v1.json#',
-      content);
+    (await getAjv()).validate('https://tc-tests.example.com/schemas/common/action-schema-v1.json#', content);
     if (ajv.errors) {
       throw new Error(ajv.errorsText(ajv.errors));
     }
   };
 
   const validateFails = async content => {
-    (await getAjv()).validate(
-      'https://tc-tests.example.com/schemas/common/action-schema-v1.json#',
-      content);
+    (await getAjv()).validate('https://tc-tests.example.com/schemas/common/action-schema-v1.json#', content);
     if (!ajv.errors) {
       throw new Error('no errors');
     }
@@ -48,9 +44,11 @@ suite(testing.suiteName(), () => {
     await validateFails({
       version: 1,
       variables: {},
-      actions: [{
-        kind: 'bogus',
-      }],
+      actions: [
+        {
+          kind: 'bogus',
+        },
+      ],
     });
   });
 
@@ -58,15 +56,17 @@ suite(testing.suiteName(), () => {
     await validate({
       version: 1,
       variables: {},
-      actions: [{
-        kind: 'task',
-        name: 'act',
-        title: 'Act',
-        description: 'Acts.',
-        context: [],
-        schema: {},
-        task: {},
-      }],
+      actions: [
+        {
+          kind: 'task',
+          name: 'act',
+          title: 'Act',
+          description: 'Acts.',
+          context: [],
+          schema: {},
+          task: {},
+        },
+      ],
     });
   });
 
@@ -74,17 +74,19 @@ suite(testing.suiteName(), () => {
     await validate({
       version: 1,
       variables: {},
-      actions: [{
-        kind: 'hook',
-        name: 'act',
-        title: 'Act',
-        description: 'Acts.',
-        context: [],
-        schema: {},
-        hookGroupId: 'hgid',
-        hookId: 'hid',
-        hookPayload: {},
-      }],
+      actions: [
+        {
+          kind: 'hook',
+          name: 'act',
+          title: 'Act',
+          description: 'Acts.',
+          context: [],
+          schema: {},
+          hookGroupId: 'hgid',
+          hookId: 'hid',
+          hookPayload: {},
+        },
+      ],
     });
   });
 
@@ -92,21 +94,22 @@ suite(testing.suiteName(), () => {
     await validate({
       version: 1,
       variables: {},
-      actions: [{
-        kind: 'hook',
-        name: 'act',
-        title: 'Act',
-        description: 'Acts.',
-        context: [],
-        schema: {},
-        hookGroupId: 'hgid',
-        hookId: 'hid',
-        hookPayload: {},
-        extra: {
-          mystuff: true,
+      actions: [
+        {
+          kind: 'hook',
+          name: 'act',
+          title: 'Act',
+          description: 'Acts.',
+          context: [],
+          schema: {},
+          hookGroupId: 'hgid',
+          hookId: 'hid',
+          hookPayload: {},
+          extra: {
+            mystuff: true,
+          },
         },
-      }],
+      ],
     });
   });
-
 });

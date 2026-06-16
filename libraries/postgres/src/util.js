@@ -59,13 +59,11 @@ export const annotateError = (query, err) => {
       line++;
     }
     if (line < queryLines.length) {
-      const caret = `${" ".repeat(position)}^`;
+      const caret = `${' '.repeat(position)}^`;
       queryLines.splice(line + 1, 0, caret);
     }
 
-    err.message = [msgLines[0]]
-      .concat(queryLines)
-      .concat(msgLines.slice(1)).join('\n');
+    err.message = [msgLines[0]].concat(queryLines).concat(msgLines.slice(1)).join('\n');
   }
 
   // show hints or details from this error in the debug log, to help

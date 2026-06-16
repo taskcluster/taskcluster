@@ -21,8 +21,7 @@ testing.withMonitor(helper);
 
 helper.secrets = new testing.Secrets({
   load: helper.load,
-  secrets: {
-  },
+  secrets: {},
 });
 
 helper.withDb = (mock, skipping) => {
@@ -76,9 +75,12 @@ helper.withServer = skipping => {
     await helper.load('cfg');
 
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl }
+    );
 
     // Create client for working with API
     helper.Hooks = taskcluster.createClient(builder.reference());
@@ -117,10 +119,6 @@ helper.withServer = skipping => {
 
 helper.resetTables = () => {
   setup('reset tables', async () => {
-    await testing.resetTables({ tableNames: [
-      'hooks',
-      'hooks_queues',
-      'hooks_last_fires',
-    ] });
+    await testing.resetTables({ tableNames: ['hooks', 'hooks_queues', 'hooks_last_fires'] });
   });
 };

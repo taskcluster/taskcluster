@@ -152,7 +152,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     helper.scopes('queue:rerun-task-in-project:WRONG-PROJECT');
     await assert.rejects(
       () => helper.queue.rerunTask(taskId),
-      err => err.statusCode === 403);
+      err => err.statusCode === 403
+    );
 
     helper.clearPulseMessages();
   });
@@ -165,6 +166,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
         if (err.code !== 'ResourceNotFound') {
           throw err;
         }
-      });
+      }
+    );
   });
 });

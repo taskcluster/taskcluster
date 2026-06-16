@@ -32,17 +32,17 @@ export const syncStaticClients = async (db, clients = []) => {
     } else {
       assert(Array.isArray(client.scopes), 'expected scopes to be an array of strings');
       assert(typeof client.description === 'string', 'expected description to be a string');
-      assert(client.scopes.every(s => typeof s === 'string'), 'scopes must be strings');
+      assert(
+        client.scopes.every(s => typeof s === 'string'),
+        'scopes must be strings'
+      );
     }
   }
 
   // check that we have all of the expected static/taskcluster clients, and no more.  The staticClients
   // are generated from `services/*/scopes.yml` for all of the other services.
-  const seenTCClients = clients
-    .map(({ clientId }) => clientId)
-    .filter(c => c.startsWith('static/taskcluster/'));
-  const expectedTCClients = staticScopes
-    .map(({ clientId }) => clientId);
+  const seenTCClients = clients.map(({ clientId }) => clientId).filter(c => c.startsWith('static/taskcluster/'));
+  const expectedTCClients = staticScopes.map(({ clientId }) => clientId);
   const extraTCClients = _.difference(seenTCClients, expectedTCClients);
   const missingTCClients = _.difference(expectedTCClients, seenTCClients);
 
@@ -107,7 +107,7 @@ export const syncStaticClients = async (db, clients = []) => {
         null, // expires
         null, // disabled
         JSON.stringify(target.scopes),
-        null, // delete_on_expiration
+        null // delete_on_expiration
       );
     }
 
@@ -128,7 +128,7 @@ export const syncStaticClients = async (db, clients = []) => {
         taskcluster.fromNow('1000 year'), // expires never, basically
         false, // not disabled
         JSON.stringify(target.scopes),
-        false, // do not delete on expiration
+        false // do not delete on expiration
       );
     } catch (err) {
       // when lots of instances of this service start at once, conflict is not

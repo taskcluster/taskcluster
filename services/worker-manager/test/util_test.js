@@ -5,8 +5,7 @@ import testing from '@taskcluster/lib-testing';
 suite(testing.suiteName(), () => {
   suite('workerPoolId', () => {
     test('splitWorkerPoolId for valid workerPoolId', () => {
-      assert.deepEqual(util.splitWorkerPoolId('provFoo/wtFoo'),
-        { provisionerId: 'provFoo', workerType: 'wtFoo' });
+      assert.deepEqual(util.splitWorkerPoolId('provFoo/wtFoo'), { provisionerId: 'provFoo', workerType: 'wtFoo' });
     });
 
     test('splitWorkerPoolId for invalid workerPoolId', () => {
@@ -33,9 +32,18 @@ suite(testing.suiteName(), () => {
   suite('sanitizeRegisterWorkerPayload', () => {
     const testPairs = [
       [{}, {}],
-      [{ one: 1, two: '2', arr: [] }, { one: 1, two: '2', arr: [] }],
-      [{ one: 1, two: '2', arr: ['secret'] }, { one: 1, two: '2', arr: ['secret'] }],
-      [{ workerId: 'mac-m1', workerIdentityProof: { secret: 'noway' } }, { workerId: 'mac-m1', workerIdentityProof: '*' }],
+      [
+        { one: 1, two: '2', arr: [] },
+        { one: 1, two: '2', arr: [] },
+      ],
+      [
+        { one: 1, two: '2', arr: ['secret'] },
+        { one: 1, two: '2', arr: ['secret'] },
+      ],
+      [
+        { workerId: 'mac-m1', workerIdentityProof: { secret: 'noway' } },
+        { workerId: 'mac-m1', workerIdentityProof: '*' },
+      ],
       [{ inner: { workerIdentityProof: 'noway' } }, { inner: { workerIdentityProof: 'noway' } }],
     ];
     testPairs.forEach((pair, _i) => {

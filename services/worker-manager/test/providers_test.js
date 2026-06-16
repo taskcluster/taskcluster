@@ -27,8 +27,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     teardown(() => {
       // check for and flush the errors about the provider starting up
       assert(
-        monitor.manager.messages.every(
-          msg => msg.Type === 'monitor.error' && msg.Fields.message === 'setup failure'));
+        monitor.manager.messages.every(msg => msg.Type === 'monitor.error' && msg.Fields.message === 'setup failure')
+      );
       monitor.manager.reset();
     });
 

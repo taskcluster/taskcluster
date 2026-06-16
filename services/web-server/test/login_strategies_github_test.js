@@ -9,10 +9,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.resetTables();
 
   suite(testing.suiteName(), () => {
-    const makeUser = (userId) => {
+    const makeUser = userId => {
       return helper.db.fns.add_github_access_token(
         userId,
-        helper.db.encrypt({ value: Buffer.from('qwerty', 'utf8') }), // access token
+        helper.db.encrypt({ value: Buffer.from('qwerty', 'utf8') }) // access token
       );
     };
 
@@ -45,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const strategy = getStrategy();
       await makeUser(userId);
       const user = await strategy.userFromIdentity(`github/${userId}|octocat`);
-      assert(user, "returned undefined");
+      assert(user, 'returned undefined');
       assert.equal(user.identity, `github/${userId}|octocat`);
     });
 
@@ -54,7 +54,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const strategy = getStrategy();
       await makeUser(userId);
       const user = await strategy.userFromIdentity('github/999|octocat');
-      assert(!user, "did not return undefined");
+      assert(!user, 'did not return undefined');
     });
 
     test('userFromIdentity with encoded userId', async () => {
@@ -62,7 +62,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const strategy = getStrategy();
       await makeUser(userId);
       const user = await strategy.userFromIdentity(`github/${userId}|a!2Fc`);
-      assert(user, "returned undefined");
+      assert(user, 'returned undefined');
       assert.equal(user.identity, `github/${userId}|a!2Fc`);
     });
 
@@ -70,7 +70,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const strategy = getStrategy();
       await makeUser('99');
       const user = await strategy.userFromIdentity('github/20|NOSUCH');
-      assert(!user, "did not return undefined");
+      assert(!user, 'did not return undefined');
     });
 
     test('userFromIdentity with GitHub failure', async () => {
@@ -87,7 +87,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const strategy = getStrategy();
       await makeUser(userId);
       const user = await strategy.userFromIdentity(`github/${userId}|taskcluster`);
-      assert.deepEqual(user.roles.sort(), ['github-team:neutrinojs/team-1', 'github-team:taskcluster/team-3', 'github-org-admin:taskcluster', 'github-org-admin:neutrinojs'].sort());
+      assert.deepEqual(
+        user.roles.sort(),
+        [
+          'github-team:neutrinojs/team-1',
+          'github-team:taskcluster/team-3',
+          'github-org-admin:taskcluster',
+          'github-org-admin:neutrinojs',
+        ].sort()
+      );
     });
 
     test('userFromIdentity user with empty roles', async () => {
@@ -106,7 +114,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // First make sure the user is not an admin in all of the orgs they are apart of
       assert(helper.githubFixtures.orgs.octocat.some(org => org.role !== 'admin'));
-      assert.deepEqual(user.roles.filter(role => role.startsWith('github-org-')), ['github-org-admin:taskcluster'].sort());
+      assert.deepEqual(
+        user.roles.filter(role => role.startsWith('github-org-')),
+        ['github-org-admin:taskcluster'].sort()
+      );
     });
   });
 });

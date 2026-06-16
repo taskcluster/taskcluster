@@ -86,7 +86,7 @@ const forAllRefs = (content, cb) => {
   }
 };
 
-export const validate = (references) => {
+export const validate = references => {
   const problems = [];
 
   // first check for some basic structural issues that will cause Ajv to
@@ -99,14 +99,17 @@ export const validate = (references) => {
     if (!content.$id) {
       problems.push(`schema ${filename} has no $id`);
     } else if (!schemaPattern.test(content.$id)) {
-      problems.push(`schema ${filename} has an invalid $id '${content.$id}' ` +
-        '(expected \'/schemas/<something>/something>.json#\'');
+      problems.push(
+        `schema ${filename} has an invalid $id '${content.$id}' ` + "(expected '/schemas/<something>/something>.json#'"
+      );
     }
 
     if (!content.$schema) {
       problems.push(`schema ${filename} has no $schema`);
-    } else if (!content.$schema.startsWith('http://json-schema.org') &&
-      !references.getSchema(content.$schema, { skipValidation: true })) {
+    } else if (
+      !content.$schema.startsWith('http://json-schema.org') &&
+      !references.getSchema(content.$schema, { skipValidation: true })
+    ) {
       problems.push(`schema ${filename} has invalid $schema (must be defined here or be on at json-schema.org)`);
     }
   }
@@ -120,8 +123,9 @@ export const validate = (references) => {
     } else {
       const schema = references.getSchema(content.$schema, { skipValidation: true });
       if (schema.$schema !== metadataMetaschema) {
-        problems.push(`reference ${filename} has schema '${content.$schema}' which does not have ` +
-          'the metadata metaschema');
+        problems.push(
+          `reference ${filename} has schema '${content.$schema}' which does not have ` + 'the metadata metaschema'
+        );
       }
     }
   }
@@ -285,7 +289,7 @@ export const validate = (references) => {
   if (!problems.length) {
     const seen = new Set();
 
-    const recurse = (schemaId) => {
+    const recurse = schemaId => {
       // strip a hash path, but keep the hash since $id always has one
       const schemaDoc = schemaId.replace(/#.*$/, '#');
       if (seen.has(schemaDoc)) {

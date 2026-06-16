@@ -47,7 +47,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     await helper.load('expire');
 
     const res = await helper.db.fns.get_object_with_upload({ name_in: 'test-obj' });
-    assert.deepEqual(res.map(obj => obj.name), ['test-obj']);
+    assert.deepEqual(
+      res.map(obj => obj.name),
+      ['test-obj']
+    );
   });
 
   test('expiration does not fail row when backend fails', async () => {
@@ -64,14 +67,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     await helper.load('expire');
 
     const res = await helper.db.fns.get_object_with_upload({ name_in: 'test-obj' });
-    assert.deepEqual(res.map(obj => obj.name), ['test-obj']);
+    assert.deepEqual(
+      res.map(obj => obj.name),
+      ['test-obj']
+    );
 
     const monitor = await helper.load('monitor');
     assert.equal(
-      monitor.manager.messages.filter(
-        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-      ).length,
-      1);
+      monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+        .length,
+      1
+    );
     monitor.manager.reset();
   });
 
@@ -89,14 +95,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     await helper.load('expire');
 
     const res = await helper.db.fns.get_object_with_upload({ name_in: 'test-obj' });
-    assert.deepEqual(res.map(obj => obj.name), ['test-obj']);
+    assert.deepEqual(
+      res.map(obj => obj.name),
+      ['test-obj']
+    );
 
     const monitor = await helper.load('monitor');
     assert.equal(
       monitor.manager.messages.filter(
-        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'object has unknown backend_id nosuch',
+        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'object has unknown backend_id nosuch'
       ).length,
-      1);
+      1
+    );
     monitor.manager.reset();
   });
 });

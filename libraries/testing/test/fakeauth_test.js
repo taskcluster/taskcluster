@@ -31,25 +31,28 @@ const builder = new APIBuilder({
   apiVersion: 'v1',
 });
 
-builder.declare({
-  method: 'get',
-  route: '/test',
-  name: 'test',
-  scopes: 'test.scope',
-  title: 'Test function',
-  description: 'for testing',
-  category: 'Testing library',
-}, async (req, res) => {
-  try {
-    await req.authorize();
-    return res.reply({ hasTestScope: true });
-  } catch (err) {
-    if (err.code !== 'InsufficientScopes') {
-      throw err;
+builder.declare(
+  {
+    method: 'get',
+    route: '/test',
+    name: 'test',
+    scopes: 'test.scope',
+    title: 'Test function',
+    description: 'for testing',
+    category: 'Testing library',
+  },
+  async (req, res) => {
+    try {
+      await req.authorize();
+      return res.reply({ hasTestScope: true });
+    } catch (err) {
+      if (err.code !== 'InsufficientScopes') {
+        throw err;
+      }
+      return res.reply({ hasTestScope: false });
     }
-    return res.reply({ hasTestScope: false });
   }
-});
+);
 
 suite(testing.suiteName(), () => {
   const rootUrl = 'http://localhost:1208';
@@ -114,22 +117,20 @@ suite(testing.suiteName(), () => {
       request
         .get(reqUrl)
         .set('Authorization', header)
-        .then((res) => {
+        .then(res => {
           debug(res.body);
           return res;
         }),
-      request
-        .get(bewitUrl)
-        .then((res) => {
-          debug(res.body);
-          return res;
-        }),
+      request.get(bewitUrl).then(res => {
+        debug(res.body);
+        return res;
+      }),
     ]);
   };
 
   test('using a rawClientId', () => {
     fakeauth.start({ client1: ['test.scope'] }, { rootUrl });
-    return callApi('client1').then((responses) => {
+    return callApi('client1').then(responses => {
       for (const res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
@@ -139,8 +140,10 @@ suite(testing.suiteName(), () => {
   test('using an unconfigured rawClientId', () => {
     fakeauth.start({ client1: ['test.scope'] }, { rootUrl });
     return callApi('unconfiguredClient')
-      .then(() => {assert(false, 'should have failed');})
-      .catch((err) => {
+      .then(() => {
+        assert(false, 'should have failed');
+      })
+      .catch(err => {
         assert.equal(err.status, 401, 'wrong error code returned');
       });
   });
@@ -149,7 +152,7 @@ suite(testing.suiteName(), () => {
     fakeauth.start({ client1: ['some.other.scope'] }, { rootUrl });
     return callApi('client1', {
       authorizedScopes: ['test.scope'],
-    }).then((responses) => {
+    }).then(responses => {
       for (const res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }
@@ -168,7 +171,7 @@ suite(testing.suiteName(), () => {
     });
     return callApi('client1', {
       certificate: JSON.parse(tempCreds.certificate),
-    }).then((responses) => {
+    }).then(responses => {
       for (const res of responses) {
         assert(res.ok && res.body.hasTestScope, 'Request failed');
       }

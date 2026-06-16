@@ -51,7 +51,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         await client.query({
           query: gql`
             query {
-              ${ Array(20).fill('').reduce((child, _) => `a { ${child} }`, 'a') }
+              ${Array(20)
+                .fill('')
+                .reduce((child, _) => `a { ${child} }`, 'a')}
             }
           `,
         });
@@ -93,7 +95,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         const { errors } = err.networkError.result || {};
         assert.ok(
           Array.isArray(errors) && errors.length > 0,
-          `unexpected validation error payload: ${JSON.stringify(err.networkError.result)}`,
+          `unexpected validation error payload: ${JSON.stringify(err.networkError.result)}`
         );
       }
     });

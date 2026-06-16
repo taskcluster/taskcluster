@@ -15,7 +15,7 @@ export default async ({ retries, delayFactor, randomizationFactor, maxDelay }, f
 
     let retriableError = null;
 
-    const rv = await func(err => retriableError = err, attempt);
+    const rv = await func(err => (retriableError = err), attempt);
     if (!retriableError) {
       // success!
       return rv;

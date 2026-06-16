@@ -1,26 +1,22 @@
 import ConnectionLoader from '../ConnectionLoader.js';
 
 export default ({ index }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
-  const namespaces = new ConnectionLoader(
-    async ({ namespace, options }) => {
-      const raw = await index.listNamespaces(namespace, options);
+  const namespaces = new ConnectionLoader(async ({ namespace, options }) => {
+    const raw = await index.listNamespaces(namespace, options);
 
-      return {
-        ...raw,
-        items: raw.namespaces,
-      };
-    },
-  );
-  const taskNamespace = new ConnectionLoader(
-    async ({ namespace, options }) => {
-      const raw = await index.listTasks(namespace, options);
+    return {
+      ...raw,
+      items: raw.namespaces,
+    };
+  });
+  const taskNamespace = new ConnectionLoader(async ({ namespace, options }) => {
+    const raw = await index.listTasks(namespace, options);
 
-      return {
-        ...raw,
-        items: raw.tasks,
-      };
-    },
-  );
+    return {
+      ...raw,
+      items: raw.tasks,
+    };
+  });
 
   return {
     namespaces,

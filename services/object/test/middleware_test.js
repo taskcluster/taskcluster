@@ -4,15 +4,15 @@ import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (_mock, skipping) => {
   helper.withMiddleware(skipping, [
-    { 'middlewareType': 'test', startDownload: { intercept: 'dl' } },
-    { 'middlewareType': 'test', download: { intercept: 'simple' } },
+    { middlewareType: 'test', startDownload: { intercept: 'dl' } },
+    { middlewareType: 'test', download: { intercept: 'simple' } },
   ]);
 
   test('calls middleware for startDownloadRequest', async () => {
     const middleware = await helper.load('middleware');
 
     let reply;
-    const res = { reply: x => reply = x };
+    const res = { reply: x => (reply = x) };
     const object = { name: 'dl/intercept' };
 
     assert(!(await middleware.startDownloadRequest({}, res, object, 'meth', {})));
@@ -23,7 +23,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (_mock, skipping) => {
     const middleware = await helper.load('middleware');
 
     let redirect;
-    const res = { redirect: (x, y) => redirect = [x, y] };
+    const res = { redirect: (x, y) => (redirect = [x, y]) };
     const object = { name: 'simple/intercept' };
 
     assert(!(await middleware.downloadRequest({}, res, object)));

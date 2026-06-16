@@ -4,21 +4,20 @@ import testing from '@taskcluster/lib-testing';
 import { strict as assert } from 'node:assert';
 import * as hugeBufs from './fixtures/huge_bufs.js';
 
-const ASCII = _.range(1, 128).map(i => String.fromCharCode(i)).join(' ');
+const ASCII = _.range(1, 128)
+  .map(i => String.fromCharCode(i))
+  .join(' ');
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
 // (copied from azure-entities)
-const encodeStringKey = (str) => {
+const encodeStringKey = str => {
   if (str === '') {
     return '!';
   }
-  return encodeURIComponent(str)
-    .replace(/!/g, '%21')
-    .replace(/~/g, '%7e')
-    .replace(/%/g, '!');
+  return encodeURIComponent(str).replace(/!/g, '%21').replace(/~/g, '%7e').replace(/%/g, '!');
 };
 
-const decodeStringKey = (str) => {
+const decodeStringKey = str => {
   if (str === '!') {
     return '';
   }
@@ -31,7 +30,7 @@ const decodeStringKey = (str) => {
 
 const encodeCompositeKey = (key1, key2) => `${encodeStringKey(key1)}~${encodeStringKey(key2)}`;
 
-const decodeCompositeKey = (key) => key.split('~').map(decodeStringKey);
+const decodeCompositeKey = key => key.split('~').map(decodeStringKey);
 
 // (this is used by 0010_test.js, too)
 export let entityBufDecodeTest = null;
@@ -49,9 +48,12 @@ suite(testing.suiteName(), () => {
   entityBufDecodeTest = (name, encoded, expected, xfail) => {
     test(`entity_buf_decode: ${name}${xfail && ' (XFAIL)'}`, async () => {
       await helper.withDbClient(async client => {
-        const t = await client.query(`
+        const t = await client.query(
+          `
           select entity_buf_decode($1, 'val') as decoded
-        `, [encoded]);
+        `,
+          [encoded]
+        );
         if (!xfail) {
           assert.equal(t.rows[0].decoded, expected);
         } else {
@@ -71,9 +73,12 @@ suite(testing.suiteName(), () => {
   const entityBufEncodeTest = (name, value) => {
     test(`entity_buf_encode: ${name}`, async () => {
       await helper.withDbClient(async client => {
-        const t = await client.query(`
+        const t = await client.query(
+          `
           select entity_buf_encode('{}'::jsonb, 'val', $1) as encoded
-        `, [value]);
+        `,
+          [value]
+        );
         assert.equal(t.rows[0].encoded.__bufchunks_val, 1);
         assert.equal(t.rows[0].encoded.__buf0_val, b64(value));
       });
@@ -88,27 +93,28 @@ suite(testing.suiteName(), () => {
   const entityBufRoundTrip = (name, value) => {
     test(`entity_buf_en/decode round-trip: ${name}`, async () => {
       await helper.withDbClient(async client => {
-        const res = await client.query(`
+        const res = await client.query(
+          `
           select entity_buf_decode(
             entity_buf_encode('{}'::jsonb, 'val', $1),
             'val') as output
-        `, [value]);
+        `,
+          [value]
+        );
         assert.deepEqual(res.rows[0].output, value);
       });
     });
   };
 
-  entityBufRoundTrip('simple string', "hello");
-  entityBufRoundTrip('json array', JSON.stringify([1, 2, "three"]));
-  entityBufRoundTrip('string with backslashes', "back\\slash");
-  entityBufRoundTrip('json with backslashes', JSON.stringify(["back\\slash"]));
+  entityBufRoundTrip('simple string', 'hello');
+  entityBufRoundTrip('json array', JSON.stringify([1, 2, 'three']));
+  entityBufRoundTrip('string with backslashes', 'back\\slash');
+  entityBufRoundTrip('json with backslashes', JSON.stringify(['back\\slash']));
 
   const encodeStringKeyTest = (name, input) => {
     test(`encode_string_key: ${name}`, async () => {
       await helper.withDbClient(async client => {
-        const res = await client.query(
-          'select encode_string_key($1) as output',
-          [input]);
+        const res = await client.query('select encode_string_key($1) as output', [input]);
         assert.equal(res.rows[0].output, encodeStringKey(input));
       });
     });
@@ -121,9 +127,7 @@ suite(testing.suiteName(), () => {
   const decodeStringKeyTest = (name, input) => {
     test(`decode_string_key: ${name}`, async () => {
       await helper.withDbClient(async client => {
-        const res = await client.query(
-          'select decode_string_key($1) as output',
-          [input]);
+        const res = await client.query('select decode_string_key($1) as output', [input]);
         assert.equal(res.rows[0].output, decodeStringKey(input));
       });
     });
@@ -145,9 +149,7 @@ suite(testing.suiteName(), () => {
   const encodeDecodeRoundTrip = (name, value) => {
     test(`en/decode_string_key: ${name}`, async () => {
       await helper.withDbClient(async client => {
-        const res = await client.query(
-          'select decode_string_key(encode_string_key($1)) as output',
-          [value]);
+        const res = await client.query('select decode_string_key(encode_string_key($1)) as output', [value]);
         assert.equal(res.rows[0].output, value);
       });
     });
@@ -161,9 +163,7 @@ suite(testing.suiteName(), () => {
   const encodeCompositeKeyTest = (name, input) => {
     test(`decode_composite_key: ${name}`, async () => {
       await helper.withDbClient(async client => {
-        const res = await client.query(
-          'select encode_composite_key($1, $2) as output',
-          [input[0], input[1]]);
+        const res = await client.query('select encode_composite_key($1, $2) as output', [input[0], input[1]]);
         assert.equal(res.rows[0].output, encodeCompositeKey(...input));
       });
     });
@@ -178,9 +178,7 @@ suite(testing.suiteName(), () => {
   const decodeCompositeKeyTest = (name, input) => {
     test(`decode_composite_key: ${name}`, async () => {
       await helper.withDbClient(async client => {
-        const res = await client.query(
-          'select decode_composite_key($1) as output',
-          [input]);
+        const res = await client.query('select decode_composite_key($1) as output', [input]);
         assert.deepEqual(res.rows[0].output, decodeCompositeKey(input));
       });
     });
@@ -193,9 +191,10 @@ suite(testing.suiteName(), () => {
   const compositeKeyRoundTripTest = (name, value) => {
     test(`en/decode_composite_key: ${name}`, async () => {
       await helper.withDbClient(async client => {
-        const res = await client.query(
-          'select decode_composite_key(encode_composite_key($1, $2)) as output',
-          [value[0], value[1]]);
+        const res = await client.query('select decode_composite_key(encode_composite_key($1, $2)) as output', [
+          value[0],
+          value[1],
+        ]);
         assert.deepEqual(res.rows[0].output, value);
       });
     });

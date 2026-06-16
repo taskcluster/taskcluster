@@ -64,16 +64,25 @@ suite(testing.suiteName(), () => {
     },
     startCheck: async client => {
       const res = await client.query('select task_id from tasks');
-      assert.deepEqual(res.rows.map(row => row.task_id), [taskId]);
+      assert.deepEqual(
+        res.rows.map(row => row.task_id),
+        [taskId]
+      );
       await helper.assertNoTableColumn('tasks', 'project_id');
     },
     concurrentCheck: async client => {
       const res = await client.query('select task_id from tasks');
-      assert.deepEqual(res.rows.map(row => row.task_id), [taskId]);
+      assert.deepEqual(
+        res.rows.map(row => row.task_id),
+        [taskId]
+      );
     },
     finishedCheck: async client => {
       const res = await client.query('select task_id, project_id from tasks');
-      assert.deepEqual(res.rows.map(row => [row.task_id, row.project_id]), [[taskId, null]]);
+      assert.deepEqual(
+        res.rows.map(row => [row.task_id, row.project_id]),
+        [[taskId, null]]
+      );
       await helper.assertTableColumn('tasks', 'project_id');
     },
   });

@@ -47,10 +47,11 @@ const load = loader(
   {
     cfg: {
       requires: ['profile'],
-      setup: ({ profile }) => config({
-        profile,
-        serviceName: 'web-server',
-      }),
+      setup: ({ profile }) =>
+        config({
+          profile,
+          serviceName: 'web-server',
+        }),
     },
 
     monitor: {
@@ -68,10 +69,7 @@ const load = loader(
       requires: ['cfg', 'monitor'],
       setup: ({ cfg, monitor }) => {
         if (!cfg.pulse.username) {
-          assert(
-            process.env.NODE_ENV !== 'production',
-            'pulse credentials are required in production',
-          );
+          assert(process.env.NODE_ENV !== 'production', 'pulse credentials are required in production');
 
           return null;
         }
@@ -125,27 +123,36 @@ const load = loader(
 
     schemaset: {
       requires: [],
-      setup: () => new SchemaSet({
-        serviceName: 'web-server',
-      }),
+      setup: () =>
+        new SchemaSet({
+          serviceName: 'web-server',
+        }),
     },
 
     api: {
       requires: ['cfg', 'clients', 'schemaset', 'monitor'],
-      setup: ({ cfg, clients, schemaset, monitor }) => builder.build({
-        rootUrl: cfg.taskcluster.rootUrl,
-        context: { clients, rootUrl: cfg.taskcluster.rootUrl },
-        schemaset,
-        monitor: monitor.childMonitor('api'),
-      }),
+      setup: ({ cfg, clients, schemaset, monitor }) =>
+        builder.build({
+          rootUrl: cfg.taskcluster.rootUrl,
+          context: { clients, rootUrl: cfg.taskcluster.rootUrl },
+          schemaset,
+          monitor: monitor.childMonitor('api'),
+        }),
     },
 
     generateReferences: {
       requires: ['schemaset'],
-      setup: async ({ schemaset }) => libReferences.fromService({
-        schemaset,
-        references: [builder.reference(), MonitorManager.reference('web-server'), MonitorManager.metricsReference('web-server')],
-      }).then(ref => ref.generateReferences()),
+      setup: async ({ schemaset }) =>
+        libReferences
+          .fromService({
+            schemaset,
+            references: [
+              builder.reference(),
+              MonitorManager.reference('web-server'),
+              MonitorManager.metricsReference('web-server'),
+            ],
+          })
+          .then(ref => ref.generateReferences()),
     },
 
     app: {
@@ -157,10 +164,11 @@ const load = loader(
     authFactory: {
       requires: ['cfg'],
       setup: ({ cfg }) => {
-        return ({ credentials }) => new taskcluster.Auth({
-          credentials,
-          rootUrl: cfg.taskcluster.rootUrl,
-        });
+        return ({ credentials }) =>
+          new taskcluster.Auth({
+            credentials,
+            rootUrl: cfg.taskcluster.rootUrl,
+          });
       },
     },
 
@@ -177,12 +185,7 @@ const load = loader(
           parseOptions: {
             maxTokens: 100000,
           },
-          validationRules: [
-            NoFragmentCyclesRule,
-            queryLimit(1000),
-            depthLimit(10),
-            createComplexityLimitRule(4500),
-          ],
+          validationRules: [NoFragmentCyclesRule, queryLimit(1000), depthLimit(10), createComplexityLimitRule(4500)],
         });
         await server.start();
         monitor.exposeMetrics('default');
@@ -193,7 +196,7 @@ const load = loader(
           compression(),
           expressMiddleware(server, {
             context,
-          }),
+          })
         );
 
         createSubscriptionServer({
@@ -215,7 +218,7 @@ const load = loader(
       setup: ({ cfg, monitor, db }) => {
         const strategies = {};
 
-        Object.keys(cfg.login.strategies || {}).forEach((name) => {
+        Object.keys(cfg.login.strategies || {}).forEach(name => {
           const Strategy = loginStrategies[name];
           const options = { name, cfg, monitor, db };
 
@@ -244,15 +247,16 @@ const load = loader(
 
     db: {
       requires: ['cfg', 'process', 'monitor'],
-      setup: ({ cfg, process, monitor }) => tcdb.setup({
-        readDbUrl: cfg.postgres.readDbUrl,
-        writeDbUrl: cfg.postgres.writeDbUrl,
-        serviceName: 'web_server',
-        monitor: monitor.childMonitor('db'),
-        statementTimeout: process === 'server' ? 30000 : 0,
-        azureCryptoKey: cfg.azure.cryptoKey,
-        dbCryptoKeys: cfg.postgres.dbCryptoKeys,
-      }),
+      setup: ({ cfg, process, monitor }) =>
+        tcdb.setup({
+          readDbUrl: cfg.postgres.readDbUrl,
+          writeDbUrl: cfg.postgres.writeDbUrl,
+          serviceName: 'web_server',
+          monitor: monitor.childMonitor('db'),
+          statementTimeout: process === 'server' ? 30000 : 0,
+          azureCryptoKey: cfg.azure.cryptoKey,
+          dbCryptoKeys: cfg.postgres.dbCryptoKeys,
+        }),
     },
 
     'cleanup-expire-auth-codes': {
@@ -299,10 +303,7 @@ const load = loader(
       setup: async ({ cfg, httpServer }) => {
         // apply some sanity-checks
         assert(cfg.server.port, 'config server.port is required');
-        assert(
-          cfg.taskcluster.rootUrl,
-          'config taskcluster.rootUrl is required',
-        );
+        assert(cfg.taskcluster.rootUrl, 'config taskcluster.rootUrl is required');
 
         await new Promise(resolve => httpServer.listen(cfg.server.port, resolve));
 
@@ -311,13 +312,11 @@ const load = loader(
         if (cfg.app.playground) {
           console.log(
             `\nOpen the interactive GraphQL Playground and schema explorer in your browser at:
-          http://localhost:${cfg.server.port}/playground\n`,
+          http://localhost:${cfg.server.port}/playground\n`
           );
         }
         if (!cfg.pulse.namespace) {
-          console.log(
-            `\nNo Pulse namespace defined; no Pulse messages will be received.\n`,
-          );
+          console.log(`\nNo Pulse namespace defined; no Pulse messages will be received.\n`);
         }
         /* eslint-enable no-console */
       },
@@ -335,7 +334,7 @@ const load = loader(
     // when running in development mode
     profile: process.env.NODE_ENV || 'development',
     process: process.argv[2] || 'devServer',
-  },
+  }
 );
 
 // If this file is executed launch component from first argument

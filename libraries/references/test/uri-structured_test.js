@@ -41,37 +41,43 @@ suite(testing.suiteName(), () => {
       '/data/references/something/bar.json': '{"bar": "true"}',
     });
     const files = await readUriStructured({ directory: '/data' });
-    assert.deepEqual(files.sort(), [{
-      filename: 'references/something/bar.json',
-      content: { bar: 'true' },
-    }, {
-      filename: 'schemas/common/foo.json',
-      content: { foo: 'true' },
-    }]);
+    assert.deepEqual(files.sort(), [
+      {
+        filename: 'references/something/bar.json',
+        content: { bar: 'true' },
+      },
+      {
+        filename: 'schemas/common/foo.json',
+        content: { foo: 'true' },
+      },
+    ]);
   });
 
   test('fromUriStructured', async () => {
     mockFs({
       '/data/schemas/common/foo.json':
         '{"foo": "true", "$id": "/schemas/common/foo.json", "$schema": "http://json-schema.org/draft-06/schema#"}',
-      '/data/references/something/bar.json':
-        '{"bar": "true", "$schema": "/schemas/common/foo.json#"}',
+      '/data/references/something/bar.json': '{"bar": "true", "$schema": "/schemas/common/foo.json#"}',
     });
     const references = await References.fromUriStructured({ directory: '/data' });
-    assert.deepEqual(references.references, [{
-      filename: 'references/something/bar.json',
-      content: {
-        $schema: '/schemas/common/foo.json#',
-        bar: 'true',
+    assert.deepEqual(references.references, [
+      {
+        filename: 'references/something/bar.json',
+        content: {
+          $schema: '/schemas/common/foo.json#',
+          bar: 'true',
+        },
       },
-    }]);
-    assert.deepEqual(references.schemas, [{
-      filename: 'schemas/common/foo.json',
-      content: {
-        $id: '/schemas/common/foo.json',
-        $schema: 'http://json-schema.org/draft-06/schema#',
-        foo: 'true',
+    ]);
+    assert.deepEqual(references.schemas, [
+      {
+        filename: 'schemas/common/foo.json',
+        content: {
+          $id: '/schemas/common/foo.json',
+          $schema: 'http://json-schema.org/draft-06/schema#',
+          foo: 'true',
+        },
       },
-    }]);
+    ]);
   });
 });

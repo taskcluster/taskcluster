@@ -17,14 +17,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const client = new helper.PurgeCacheClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
       () => client.allPurgeRequests(),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('purgeRequests without scopes', async () => {
     const client = new helper.PurgeCacheClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
       () => client.purgeRequests('dummy-provisioner-extended-extended-2/dummy-worker-extended-extended'),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('Publish purge-cache requests', async () => {
@@ -72,7 +74,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     openRequests = await helper.apiClient.allPurgeRequests();
     assume(openRequests.requests.length).equals(4);
 
-    let spec = await helper.apiClient.purgeRequests('dummy-provisioner-extended-extended-2/dummy-worker-extended-extended');
+    let spec = await helper.apiClient.purgeRequests(
+      'dummy-provisioner-extended-extended-2/dummy-worker-extended-extended'
+    );
     assume(spec.requests.length).equals(1);
     spec = await helper.apiClient.purgeRequests('dummy-provisioner-extended-extended/dummy-worker-extended-extended-2');
     assume(spec.requests.length).equals(1);
@@ -80,20 +84,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assume(spec.requests.length).equals(2);
 
     // Finally we try with since included
-    spec = await helper.apiClient.purgeRequests(
-      'dummy-provisioner-extended-extended/dummy-worker-extended-extended',
-      { since: spec.requests[0].before },
-    );
+    spec = await helper.apiClient.purgeRequests('dummy-provisioner-extended-extended/dummy-worker-extended-extended', {
+      since: spec.requests[0].before,
+    });
     assume(spec.requests.length).equals(2);
-    spec = await helper.apiClient.purgeRequests(
-      'dummy-provisioner-extended-extended/dummy-worker-extended-extended',
-      { since: spec.requests[1].before },
-    );
+    spec = await helper.apiClient.purgeRequests('dummy-provisioner-extended-extended/dummy-worker-extended-extended', {
+      since: spec.requests[1].before,
+    });
     assume(spec.requests.length).equals(1);
-    spec = await helper.apiClient.purgeRequests(
-      'dummy-provisioner-extended-extended/dummy-worker-extended-extended',
-      { since: new Date().toJSON() },
-    );
+    spec = await helper.apiClient.purgeRequests('dummy-provisioner-extended-extended/dummy-worker-extended-extended', {
+      since: new Date().toJSON(),
+    });
     assume(spec.requests.length).equals(0);
   });
 
@@ -117,9 +118,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     // client retries could confuse the picture here, so don't do them
     const client = helper.apiClient.use({ retries: 0 });
 
-    sinon.stub(helper.db.fns, 'purge_requests_wpid')
-      .onFirstCall().throws(new Error('uhoh'))
-      .onSecondCall().callsFake(async () => []);
+    sinon
+      .stub(helper.db.fns, 'purge_requests_wpid')
+      .onFirstCall()
+      .throws(new Error('uhoh'))
+      .onSecondCall()
+      .callsFake(async () => []);
     try {
       const since = taskcluster.fromNow('-1 hour').toString();
       await assert.rejects(() => client.purgeRequests('pp/wt', { since }));

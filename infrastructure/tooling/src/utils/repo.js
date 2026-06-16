@@ -23,9 +23,7 @@ export const REPO_ROOT = path.join(__dirname, '../../../../');
 export const listServices = ({ repoDir } = {}) => {
   // look for package.json's, so that we're not fooled by any
   // stray empty or gitignore'd directories
-  const packageJsons = glob.sync(
-    'services/*/package.json',
-    { cwd: repoDir || REPO_ROOT });
+  const packageJsons = glob.sync('services/*/package.json', { cwd: repoDir || REPO_ROOT });
   return packageJsons.map(filename => filename.split('/')[1]);
 };
 
@@ -33,9 +31,7 @@ export const listServices = ({ repoDir } = {}) => {
  * Asynchronously read a file (relative to REPO_ROOT) and return its contents as a utf8 string
  */
 export const readRepoFile = async filename => {
-  return await readFile(
-    path.join(REPO_ROOT, filename),
-    { encoding: 'utf8' });
+  return await readFile(path.join(REPO_ROOT, filename), { encoding: 'utf8' });
 };
 
 /**
@@ -67,9 +63,7 @@ export const writeRepoJSON = async (filename, data) => {
  */
 const modifySync = pSynchronize();
 export const modifyRepoFile = modifySync(async (filename, modifier) => {
-  const contents = await readFile(
-    path.join(REPO_ROOT, filename),
-    { encoding: 'utf8' });
+  const contents = await readFile(path.join(REPO_ROOT, filename), { encoding: 'utf8' });
   const modified = await modifier(contents);
   await writeFile(filename, modified, { encoding: 'utf8' });
 });
@@ -77,7 +71,7 @@ export const modifyRepoFile = modifySync(async (filename, modifier) => {
 /**
  * Remove a file from the repo
  */
-export const removeRepoFile = async (filename) => {
+export const removeRepoFile = async filename => {
   await unlink(filename);
 };
 
@@ -110,8 +104,8 @@ export const modifyRepoYAML = async (filename, modifier) => {
  */
 export const gitLsFiles = async ({ patterns } = {}) => {
   const opts = { cwd: REPO_ROOT };
-  const files = (await exec('git', ['ls-files', '-z'].concat(patterns || []), opts))
-    .stdout.split(/\0/)
+  const files = (await exec('git', ['ls-files', '-z'].concat(patterns || []), opts)).stdout
+    .split(/\0/)
     .filter(v => v !== '');
   return files;
 };

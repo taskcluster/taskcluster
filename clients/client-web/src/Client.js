@@ -28,17 +28,12 @@ export default class Client {
       throw new Error('Missing required option "rootUrl"');
     }
 
-    if (
-      this.options.randomizationFactor < 0 ||
-      this.options.randomizationFactor >= 1
-    ) {
+    if (this.options.randomizationFactor < 0 || this.options.randomizationFactor >= 1) {
       throw new Error('options.randomizationFactor must be between 0 and 1');
     }
 
     if (this.options.accessToken) {
-      throw new Error(
-        'options.accessToken is no longer supported; use options.credentials',
-      );
+      throw new Error('options.accessToken is no longer supported; use options.credentials');
     }
 
     const { reference } = options;
@@ -60,7 +55,7 @@ export default class Client {
         reference.entries.forEach(entry => {
           if (entry.type === 'function') {
             // eslint-disable-next-line func-names
-            this[entry.name] = function(...args) {
+            this[entry.name] = function (...args) {
               this.validate(entry, args);
 
               return this.request(entry, args);
@@ -71,7 +66,7 @@ export default class Client {
 
           if (entry.type === 'topic-exchange') {
             // eslint-disable-next-line func-names
-            this[entry.name] = function(pattern) {
+            this[entry.name] = function (pattern) {
               return this.normalizePattern(entry, pattern);
             };
           }
@@ -108,8 +103,7 @@ export default class Client {
     // If there is a certificate we have temporary credentials, and we
     // must provide the certificate
     if (certificate) {
-      extra.certificate =
-        typeof certificate === 'string' ? JSON.parse(certificate) : certificate;
+      extra.certificate = typeof certificate === 'string' ? JSON.parse(certificate) : certificate;
     }
 
     // If set of authorized scopes is provided, we'll restrict the request
@@ -138,9 +132,7 @@ export default class Client {
       const type = typeof param;
 
       if (type !== 'string' && type !== 'number') {
-        throw new Error(
-          `URL parameter \`${arg}\` expected a string but was provided type "${type}"`,
-        );
+        throw new Error(`URL parameter \`${arg}\` expected a string but was provided type "${type}"`);
       }
 
       return encodeURIComponent(param);
@@ -158,9 +150,7 @@ export default class Client {
     // TODO: use optional chaining once this package is no longer parsed by webpack 4
     // biome-ignore lint/complexity/useOptionalChain: optional chaining is not supported by webpack 4
     if (!entry || entry.type !== 'function') {
-      throw new Error(
-        'Method in buildUrl must be an API method from the same object',
-      );
+      throw new Error('Method in buildUrl must be an API method from the same object');
     }
 
     // Get the query string options taken
@@ -168,13 +158,9 @@ export default class Client {
     const supportsOptions = optionKeys.length !== 0;
     const arity = entry.args.length;
 
-    if (
-      args.length !== arity &&
-      (!supportsOptions || args.length !== arity + 1)
-    ) {
+    if (args.length !== arity && (!supportsOptions || args.length !== arity + 1)) {
       throw new Error(
-        `Method \`${entry.name}.buildUrl\` expected ${arity +
-          1} argument(s) but received ${args.length + 1}`,
+        `Method \`${entry.name}.buildUrl\` expected ${arity + 1} argument(s) but received ${args.length + 1}`
       );
     }
 
@@ -183,11 +169,7 @@ export default class Client {
     if (args[arity]) {
       Object.keys(args[arity]).forEach(key => {
         if (!optionKeys.includes(key)) {
-          throw new Error(
-            `Method \`${entry.name}\` expected options ${optionKeys.join(
-              ', ',
-            )} but received ${key}`,
-          );
+          throw new Error(`Method \`${entry.name}\` expected options ${optionKeys.join(', ')} but received ${key}`);
         }
       });
     }
@@ -198,7 +180,7 @@ export default class Client {
     return withRootUrl(this.options.rootUrl).api(
       this.options.serviceName,
       this.options.serviceVersion,
-      `${endpoint}${query}`,
+      `${endpoint}${query}`
     );
   }
 
@@ -262,9 +244,7 @@ export default class Client {
     }
 
     if (!accessToken) {
-      throw new Error(
-        'buildSignedUrl missing required credentials accessToken',
-      );
+      throw new Error('buildSignedUrl missing required credentials accessToken');
     }
 
     const bewit = hawk.uri.getBewit(url, {
@@ -277,9 +257,7 @@ export default class Client {
       ext: this.buildExtraData(credentials),
     });
 
-    return url.includes('?')
-      ? `${url}&bewit=${bewit}`
-      : `${url}?bewit=${bewit}`;
+    return url.includes('?') ? `${url}&bewit=${bewit}` : `${url}?bewit=${bewit}`;
   }
 
   validate(entry, args = []) {
@@ -287,15 +265,8 @@ export default class Client {
     const queryOptions = entry.query || [];
     const arity = args.length;
 
-    if (
-      arity !== expectedArity &&
-      (queryOptions.length === 0 || arity !== expectedArity + 1)
-    ) {
-      throw new Error(
-        `${
-          entry.name
-        } expected ${expectedArity} arguments but only received ${arity}`,
-      );
+    if (arity !== expectedArity && (queryOptions.length === 0 || arity !== expectedArity + 1)) {
+      throw new Error(`${entry.name} expected ${expectedArity} arguments but only received ${arity}`);
     }
 
     Object.keys(args[expectedArity] || {}).forEach(key => {
@@ -324,9 +295,7 @@ export default class Client {
         if (typeof value === 'string') {
           if (value.includes('.') && !key.multipleWords) {
             throw new Error(
-              `routingKeyPattern "${value}" for ${
-                key.name
-              } cannot contain dots since it does not hold multiple words`,
+              `routingKeyPattern "${value}" for ${key.name} cannot contain dots since it does not hold multiple words`
             );
           }
 
@@ -334,9 +303,7 @@ export default class Client {
         }
 
         if (value != null) {
-          throw new Error(
-            `routingKey value "${value}" is not a valid pattern for ${key.name}`,
-          );
+          throw new Error(`routingKey value "${value}" is not a valid pattern for ${key.name}`);
         }
 
         return key.multipleWords ? '#' : '*';
@@ -353,13 +320,11 @@ export default class Client {
   async request(entry, args) {
     const expectedArity = this.getMethodExpectedArity(entry);
     const endpoint = this.buildEndpoint(entry, args);
-    const query = args[expectedArity]
-      ? `?${stringify(args[expectedArity])}`
-      : '';
+    const query = args[expectedArity] ? `?${stringify(args[expectedArity])}` : '';
     const url = withRootUrl(this.options.rootUrl).api(
       this.options.serviceName,
       this.options.serviceVersion,
-      `${endpoint}${query}`,
+      `${endpoint}${query}`
     );
     const options = { method: entry.method };
     const credentials = this.options.credentialAgent
@@ -379,7 +344,7 @@ export default class Client {
   }
 }
 
-Client.create = (reference) =>
+Client.create = reference =>
   class extends Client {
     constructor(options) {
       super({ ...options, reference });

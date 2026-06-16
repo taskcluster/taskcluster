@@ -21,7 +21,9 @@ suite(testing.suiteName(), () => {
     });
 
     test('returns false when cache throws', async () => {
-      const cache = async () => { throw new Error('auth failure'); };
+      const cache = async () => {
+        throw new Error('auth failure');
+      };
       assert.equal(await _satisfiesArtifactScope(cache, 'public/foo.zip'), false);
     });
 

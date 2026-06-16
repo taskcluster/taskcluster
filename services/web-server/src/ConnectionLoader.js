@@ -15,19 +15,9 @@ export default class ConnectionLoader {
     return new DataLoader(connections =>
       Promise.all(
         connections.map(async ({ connection, ...props }) => {
-          const limit =
-            connection?.limit
-              ? connection.limit > LIMIT
-                ? LIMIT
-                : connection.limit
-              : LIMIT;
-          const continuationToken =
-            connection && connection.cursor !== FIRST
-              ? connection.cursor
-              : null;
-          const options = continuationToken
-            ? { limit, continuationToken }
-            : { limit };
+          const limit = connection?.limit ? (connection.limit > LIMIT ? LIMIT : connection.limit) : LIMIT;
+          const continuationToken = connection && connection.cursor !== FIRST ? connection.cursor : null;
+          const options = continuationToken ? { limit, continuationToken } : { limit };
           const result = connection
             ? await fetch({ ...props, connection, options })
             : await fetch({ ...props, options });
@@ -37,8 +27,8 @@ export default class ConnectionLoader {
           });
 
           return pageConnection;
-        }),
-      ),
+        })
+      )
     );
   }
 

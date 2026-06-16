@@ -17,56 +17,63 @@ const exchanges = new Exchanges({
 
 export default exchanges;
 
-const buildCommonRoutingKey = (options) => {
+const buildCommonRoutingKey = options => {
   return [
     {
       name: 'routingKeyKind',
-      summary: 'Identifier for the routing-key kind. This is ' +
-                        'always `\'primary\'` for the formalized routing key.',
+      summary: 'Identifier for the routing-key kind. This is ' + "always `'primary'` for the formalized routing key.",
       constant: 'primary',
       required: true,
-    }, {
+    },
+    {
       name: 'providerId',
       summary: 'Provider.',
       required: options?.hasWorker || false,
       maxSize: 38,
-    }, {
+    },
+    {
       name: 'provisionerId',
       summary: 'First part of the workerPoolId.',
       required: options?.hasWorker || false,
       maxSize: 38,
-    }, {
+    },
+    {
       name: 'workerType',
       summary: 'Second part of the workerPoolId.',
       required: options?.hasWorker || false,
       maxSize: 38,
-    }, {
+    },
+    {
       name: 'workerGroup',
       summary: 'Worker group of the worker (region or location)',
       required: options?.hasWorker || false,
       maxSize: 38,
-    }, {
+    },
+    {
       name: 'workerId',
       summary: 'Worker ID',
       required: options?.hasWorker || false,
       maxSize: 38,
-    }, {
+    },
+    {
       name: 'launchConfigId',
       summary: 'ID of the launch configuration',
       required: false,
       maxSize: 38,
-    }, {
+    },
+    {
       name: 'reserved',
-      summary: 'Space reserved for future routing-key entries, you ' +
-                        'should always match this entry with `#`. As ' +
-                        'automatically done by our tooling, if not specified.',
+      summary:
+        'Space reserved for future routing-key entries, you ' +
+        'should always match this entry with `#`. As ' +
+        'automatically done by our tooling, if not specified.',
       multipleWords: true,
       maxSize: 1,
     },
   ];
 };
 
-const commonMessageBuilder = (message) => message;
+const commonMessageBuilder = message => message;
 
 const commonRoutingKeyBuilder = (message, _routing) => {
   const mapping = {
@@ -142,10 +149,7 @@ exchanges.declare({
   exchange: 'worker-requested',
   name: 'workerRequested',
   title: 'Worker Requested Messages',
-  description: [
-    'Whenever a worker is requested, a message is posted',
-    'to this exchange.',
-  ].join('\n'),
+  description: ['Whenever a worker is requested, a message is posted', 'to this exchange.'].join('\n'),
   schema: 'pulse-worker-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKey: buildCommonRoutingKey({ hasWorker: true }),

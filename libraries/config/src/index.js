@@ -59,8 +59,7 @@ const config = ({
 
     // Add defaults to list of configurations if present
     if (data.defaults) {
-      assert(typeof data.defaults === 'object',
-        '\'defaults\' must be an object');
+      assert(typeof data.defaults === 'object', "'defaults' must be an object");
       cfgs.unshift(data.defaults);
     }
 

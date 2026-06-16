@@ -7,7 +7,7 @@
  * @param {string} route
  * @returns {[string, string[], string[]]}
  */
-export const cleanRouteAndParams = (route) => {
+export const cleanRouteAndParams = route => {
   // Find parameters for entry
   /** @type {string[]} */
   const params = [];

@@ -85,14 +85,15 @@ helper.withFakeGithub = () => {
  * Set the `queueClient` loader component to a fake version.
  */
 helper.withFakeQueue = () => {
-  const fakeQueueClient = () => new taskcluster.Queue({
-    rootUrl: 'https://tc.example.com',
-    fake: {
-      sealTaskGroup: sinon.stub(),
-      cancelTaskGroup: sinon.stub(),
-      listArtifacts: sinon.stub(),
-    },
-  });
+  const fakeQueueClient = () =>
+    new taskcluster.Queue({
+      rootUrl: 'https://tc.example.com',
+      fake: {
+        sealTaskGroup: sinon.stub(),
+        cancelTaskGroup: sinon.stub(),
+        listArtifacts: sinon.stub(),
+      },
+    });
 
   suiteSetup(() => {
     load.inject('queueClient', fakeQueueClient());
@@ -122,9 +123,12 @@ helper.withServer = skipping => {
     load.cfg('taskcluster.clientId', null);
     load.cfg('taskcluster.accessToken', null);
 
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl }
+    );
 
     helper.GithubClient = taskcluster.createClient(builder.reference());
 
@@ -151,10 +155,6 @@ helper.withServer = skipping => {
 
 helper.resetTables = () => {
   setup('reset tables', async () => {
-    await testing.resetTables({ tableNames: [
-      'github_builds',
-      'github_checks',
-      'github_integrations',
-    ] });
+    await testing.resetTables({ tableNames: ['github_builds', 'github_checks', 'github_integrations'] });
   });
 };

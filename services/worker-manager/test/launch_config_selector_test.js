@@ -114,8 +114,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.ok(counts.lc1 > counts.lc2, 'lc1 should be chosen more often than lc2');
     assert.ok(counts.lc2 > counts.lc3, 'lc2 should be chosen more often than lc3');
     assert.ok(counts.unknown === undefined);
-    await assertDebugMessage(wp.workerPoolId, { lc1: 1, lc2: 0.5, lc3: 0.1 },
-      { lc1: maxCapacity, lc2: maxCapacity, lc3: maxCapacity });
+    await assertDebugMessage(
+      wp.workerPoolId,
+      { lc1: 1, lc2: 0.5, lc3: 0.1 },
+      { lc1: maxCapacity, lc2: maxCapacity, lc3: maxCapacity }
+    );
   });
 
   test('selectCapacity', async () => {
@@ -178,8 +181,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const wrc = await launchConfigSelector.forWorkerPool(wp, workerPoolStats);
     const counts = getDistribution(wrc, 5);
     assert.equal(counts.lc2, 5);
-    await assertDebugMessage(wp.workerPoolId, { lc1: 0, lc2: 0.5, lc3: 0 },
-      { lc1: 0, lc2: 5, lc3: 0 });
+    await assertDebugMessage(wp.workerPoolId, { lc1: 0, lc2: 0.5, lc3: 0 }, { lc1: 0, lc2: 5, lc3: 0 });
   });
 
   test('using workerPoolStats to respect errors by LC', async () => {
@@ -249,9 +251,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.equal(configs.length, 10, 'Should provision 10 workers');
     assert.equal(configs[0].launchConfigId, 'lc1', 'Should select lc1');
 
-    await assertDebugMessage(wp.workerPoolId,
-      { lc1: 0.01 },
-      { lc1: 40 },
-    );
+    await assertDebugMessage(wp.workerPoolId, { lc1: 0.01 }, { lc1: 40 });
   });
 });

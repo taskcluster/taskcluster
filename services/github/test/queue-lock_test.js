@@ -10,19 +10,14 @@ suite(testing.suiteName(), () => {
       let counter = 0;
       const coroutine = async () => {
         const release = await lock.acquire('t1');
-        counter ++;
+        counter++;
         release();
       };
 
       await coroutine();
       assert.equal(1, counter);
 
-      const more = [
-        coroutine(),
-        coroutine(),
-        coroutine(),
-        coroutine(),
-      ];
+      const more = [coroutine(), coroutine(), coroutine(), coroutine()];
 
       assert.equal(1, counter);
       await Promise.all(more);
@@ -62,7 +57,7 @@ suite(testing.suiteName(), () => {
     test('should auto release after given timeout', async () => {
       const lock = new QueueLock({ maxLockTimeMs: 1 });
 
-      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
       let counter = 0;
       const coroutine = async () => {
@@ -75,12 +70,7 @@ suite(testing.suiteName(), () => {
       await coroutine();
       assert.equal(1, counter);
 
-      const more = [
-        coroutine(),
-        coroutine(),
-        coroutine(),
-        coroutine(),
-      ];
+      const more = [coroutine(), coroutine(), coroutine(), coroutine()];
 
       assert.equal(1, counter);
       await Promise.all(more);

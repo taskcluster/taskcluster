@@ -28,8 +28,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       'index.my-ns.slash/things-are-ignored',
     ],
     retries: 3,
-    created: (new Date()).toJSON(),
-    deadline: (new Date()).toJSON(),
+    created: new Date().toJSON(),
+    deadline: new Date().toJSON(),
     expires: taskcluster.fromNow('1 day'),
     payload: {},
     metadata: {
@@ -88,24 +88,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       debug('### List task in namespace');
       result = await helper.index.listTasks('my-ns', {});
       assert.equal(result.tasks.length, 2, 'Expected 2 tasks');
-      result.tasks.forEach((task) => {
+      result.tasks.forEach(task => {
         assert.equal(task.taskId, taskId, 'Wrong taskId');
       });
 
       debug('### List namespaces in namespace');
       result = await helper.index.listNamespaces('my-ns', {});
       assert.equal(result.namespaces.length, 2, 'Expected 2 namespaces');
-      assert(result.namespaces.some((ns) => ns.name === 'one-ns'), 'Expected to find one-ns');
-      assert(result.namespaces.some((ns) => ns.name === 'another-ns'), 'Expected to find another-ns');
+      assert(
+        result.namespaces.some(ns => ns.name === 'one-ns'),
+        'Expected to find one-ns'
+      );
+      assert(
+        result.namespaces.some(ns => ns.name === 'another-ns'),
+        'Expected to find another-ns'
+      );
 
       debug('### Find task in index');
-      await helper.index.findTask(
-        'my-ns.slash/things-are-ignored',
-      ).then(() => {
-        assert(false, 'Expected ill formated namespaces to be ignored!');
-      }, (err) => {
-        assert.equal(err.statusCode, 400, 'Expected 400');
-      });
+      await helper.index.findTask('my-ns.slash/things-are-ignored').then(
+        () => {
+          assert(false, 'Expected ill formated namespaces to be ignored!');
+        },
+        err => {
+          assert.equal(err.statusCode, 400, 'Expected 400');
+        }
+      );
     });
   });
 
@@ -188,8 +195,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
     }
-    assert(false, 'This shouldn\'t have worked');
-
+    assert(false, "This shouldn't have worked");
   });
 
   test('Expiring Namespace', async () => {
@@ -230,11 +236,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     result = await helper.index.listNamespaces(myns, {});
     assert.equal(result.namespaces.length, 1, 'Expected 1 namespace');
-    assert(result.namespaces.some((ns) => ns.name === 'one-ns'), 'Expected to find one-ns');
-
+    assert(
+      result.namespaces.some(ns => ns.name === 'one-ns'),
+      'Expected to find one-ns'
+    );
   });
 
-  const insert10Tasks = async (myns) => {
+  const insert10Tasks = async myns => {
     const expiry = new Date();
     expiry.setDate(expiry.getDate() + 10);
     const res = [];
@@ -271,14 +279,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const obj = result.namespaces[0];
       debug('listNamespaces entries match the namespace regex');
       assert.equal(
-        new RegExp(`${myns}.my-task`).test(obj.namespace) &&
-        /my-task/.test(obj.name),
-        true, 'Expect namespace to match regex');
+        new RegExp(`${myns}.my-task`).test(obj.namespace) && /my-task/.test(obj.name),
+        true,
+        'Expect namespace to match regex'
+      );
       continuationToken = result.continuationToken;
-      i ++;
-    }
-    while (!_.isUndefined(continuationToken));
+      i++;
+    } while (!_.isUndefined(continuationToken));
     assert(i >= 10, 'continuationToken is valid till 10 listNamespaces');
   });
-
 });

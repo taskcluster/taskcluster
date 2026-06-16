@@ -13,7 +13,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   helper.withPulse(skipping);
   helper.withServers(skipping);
 
-  const sorted = (arr) => {
+  const sorted = arr => {
     arr.sort();
     return arr;
   };
@@ -21,7 +21,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   // Setup a clientId we can play with
   let clientId, accessToken;
   clientId = slugid.v4();
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       this.skip();
     }
@@ -40,9 +40,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     });
     assume(role.description).equals('test role');
     assume(new Date(role.created).getTime()).is.atmost(Date.now());
-    assume(sorted(role.scopes)).deep.equals(sorted([
-      'dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2',
-    ]));
+    assume(sorted(role.scopes)).deep.equals(sorted(['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2']));
     assume(role.expandedScopes).contains('dummy-scope-1');
     assume(role.expandedScopes).contains('auth:create-role:*');
 
@@ -56,9 +54,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     helper.assertPulseMessage('role-created', m => m.payload.roleId === `thing-id:${clientId}`);
 
     const client = await helper.apiClient.client(clientId);
-    assume(client.expandedScopes.sort()).deep.equals(
-      role.expandedScopes.sort(),
-    );
+    assume(client.expandedScopes.sort()).deep.equals(role.expandedScopes.sort());
   });
 
   test('createRole (prefix)', async () => {
@@ -106,21 +102,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     });
     assume(role.roleId).equals('test*');
 
-    await helper.apiClient.createRole('other*', {
-      description: 'other*',
-      scopes: ['assume:te<..>'],
-    }).then(() => assert(false, 'Expected error'),
-      err => assert(err.statusCode === 400, 'Expected 400'));
+    await helper.apiClient
+      .createRole('other*', {
+        description: 'other*',
+        scopes: ['assume:te<..>'],
+      })
+      .then(
+        () => assert(false, 'Expected error'),
+        err => assert(err.statusCode === 400, 'Expected 400')
+      );
 
     await helper.apiClient.deleteRole('test*');
   });
 
   test('createRole with a **-scope', async () => {
-    await helper.apiClient.createRole('other', {
-      description: 'other',
-      scopes: ['foo:***'],
-    }).then(() => assert(false, 'Expected error'),
-      err => assert(err.statusCode === 400, 'Expected 400'));
+    await helper.apiClient
+      .createRole('other', {
+        description: 'other',
+        scopes: ['foo:***'],
+      })
+      .then(
+        () => assert(false, 'Expected error'),
+        err => assert(err.statusCode === 400, 'Expected 400')
+      );
   });
 
   test('createRole twice with identical roles', async () => {
@@ -133,8 +137,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       scopes: ['foo'],
     });
 
-    const matchingRoles = (await helper.apiClient.listRoles())
-      .filter(r => r.roleId === 'double');
+    const matchingRoles = (await helper.apiClient.listRoles()).filter(r => r.roleId === 'double');
     assert.equal(matchingRoles.length, 1);
 
     await helper.apiClient.deleteRole('double');
@@ -145,18 +148,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       throw new Error('uhoh');
     });
     const apiClient = helper.apiClient.use({ retries: 0 });
-    await assert.rejects(() => apiClient.createRole('no-publish', {
-      description: 'no-pulse-message',
-      scopes: ['foo'],
-    }),
-    err => err.statusCode === 500);
+    await assert.rejects(
+      () =>
+        apiClient.createRole('no-publish', {
+          description: 'no-pulse-message',
+          scopes: ['foo'],
+        }),
+      err => err.statusCode === 500
+    );
 
     const monitor = await helper.load('monitor');
     assert.equal(
-      monitor.manager.messages.filter(
-        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-      ).length,
-      1);
+      monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+        .length,
+      1
+    );
     monitor.manager.reset();
 
     helper.onPulsePublish(); // don't fail to publish this time
@@ -185,8 +191,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       }
     }
 
-    const matchingRoles = (await helper.apiClient.listRoles())
-      .filter(r => r.roleId === 'double');
+    const matchingRoles = (await helper.apiClient.listRoles()).filter(r => r.roleId === 'double');
     assert.equal(matchingRoles.length, 1);
 
     await helper.apiClient.deleteRole('double');
@@ -204,8 +209,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       }),
     ]);
 
-    const matchingRoles = (await helper.apiClient.listRoles())
-      .filter(r => r.roleId === 'double');
+    const matchingRoles = (await helper.apiClient.listRoles()).filter(r => r.roleId === 'double');
     assert.equal(matchingRoles.length, 1);
 
     await helper.apiClient.deleteRole('double');
@@ -213,19 +217,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
 
   test('getRole', async () => {
     const role = await helper.apiClient.role(`thing-id:${clientId}`);
-    assume(role.expandedScopes.sort()).deep.equals([
-      `assume:thing-id:${clientId}`,
-      'dummy-scope-1',
-      'auth:create-role:*',
-      'dummy-scope-2',
-    ].sort());
+    assume(role.expandedScopes.sort()).deep.equals(
+      [`assume:thing-id:${clientId}`, 'dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'].sort()
+    );
   });
 
   test('getRole without scopes', async () => {
     helper.setupScopes('none');
     assert.rejects(
       () => helper.apiClient.role(`thing-id:${clientId}`),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('listRoles', async () => {
@@ -237,7 +239,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     helper.setupScopes('none');
     assert.rejects(
       () => helper.apiClient.listRoles(),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('listRoleIds', async () => {
@@ -249,7 +252,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
-    for (let i = 0;i < 3;i++) {
+    for (let i = 0; i < 3; i++) {
       const tempRoleId = `${clientId}${i}`;
       await helper.apiClient.createRole(tempRoleId, {
         description: 'test role',
@@ -267,7 +270,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     helper.setupScopes('none');
     assert.rejects(
       () => helper.apiClient.listRoleIds(),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('listRoleIds (limit, [continuationToken])', async () => {
@@ -296,15 +300,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     query.limit = 1;
     query.continuationToken = 'FOOBAR';
 
-    await helper.apiClient.listRoleIds(query)
-      .then(() => assert(false, 'Expected error'),
-        err => assert(err.statusCode === 400, 'Expected 400'));
+    await helper.apiClient.listRoleIds(query).then(
+      () => assert(false, 'Expected error'),
+      err => assert(err.statusCode === 400, 'Expected 400')
+    );
 
     // testing unexpected characters that make hashids.decode throw error
     query.continuationToken = '@@something##';
-    await helper.apiClient.listRoleIds(query)
-      .then(() => assert(false, 'Expected error'),
-        err => assert(err.statusCode === 400, 'Expected 400'));
+    await helper.apiClient.listRoleIds(query).then(
+      () => assert(false, 'Expected error'),
+      err => assert(err.statusCode === 400, 'Expected 400')
+    );
   });
 
   test('listRoles2', async () => {
@@ -316,7 +322,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       description: 'test role',
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'],
     });
-    for (let i = 0;i < 3;i++) {
+    for (let i = 0; i < 3; i++) {
       const tempRoleId = `${clientId}${i}`;
       await helper.apiClient.createRole(tempRoleId, {
         description: 'test role',
@@ -328,7 +334,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
 
     assert(result.roles.some(role => role.roleId === `thing-id:${clientId}`));
     assert(result.roles.some(role => role.description === 'test role'));
-    assert(result.roles.some(role => _.isEqual(role.scopes.sort(), ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'].sort())));
+    assert(
+      result.roles.some(role =>
+        _.isEqual(role.scopes.sort(), ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-2'].sort())
+      )
+    );
     assert(result.roles.length === 4);
   });
 
@@ -358,17 +368,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     query.limit = 1;
     query.continuationToken = 'FOOBAR';
 
-    await helper.apiClient.listRoles2(query)
-      .then(() => assert(false, 'Expected error'),
-        err => assert(err.statusCode === 400, 'Expected 400'));
+    await helper.apiClient.listRoles2(query).then(
+      () => assert(false, 'Expected error'),
+      err => assert(err.statusCode === 400, 'Expected 400')
+    );
   });
 
   test('updateRole with a **-scope', async () => {
-    await helper.apiClient.updateRole(`thing-id:${clientId}`, {
-      description: 'other',
-      scopes: ['foo:***'],
-    }).then(() => assert(false, 'Expected error'),
-      err => assert(err.statusCode === 400, 'Expected 400'));
+    await helper.apiClient
+      .updateRole(`thing-id:${clientId}`, {
+        description: 'other',
+        scopes: ['foo:***'],
+      })
+      .then(
+        () => assert(false, 'Expected error'),
+        err => assert(err.statusCode === 400, 'Expected 400')
+      );
   });
 
   test('updateRole (add scope)', async () => {
@@ -394,19 +409,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       scopes: ['dummy-scope-1', 'auth:create-role:*', 'dummy-scope-3'],
     });
 
-    assume(new Date(r2.lastModified).getTime()).greaterThan(
-      new Date(r1.lastModified).getTime(),
-    );
+    assume(new Date(r2.lastModified).getTime()).greaterThan(new Date(r1.lastModified).getTime());
     helper.assertPulseMessage('role-updated', m => m.payload.roleId === `thing-id:${clientId}`);
 
     const role = await helper.apiClient.role(`thing-id:${clientId}`);
-    assume(role.expandedScopes.sort()).deep.equals([
-      `assume:thing-id:${clientId}`,
-      'dummy-scope-1',
-      'auth:create-role:*',
-      'dummy-scope-2', // from role thing-id:<clientId[:11]>*
-      'dummy-scope-3',
-    ].sort());
+    assume(role.expandedScopes.sort()).deep.equals(
+      [
+        `assume:thing-id:${clientId}`,
+        'dummy-scope-1',
+        'auth:create-role:*',
+        'dummy-scope-2', // from role thing-id:<clientId[:11]>*
+        'dummy-scope-3',
+      ].sort()
+    );
   });
 
   test('deleteRole where pulse publish fails', async () => {
@@ -418,10 +433,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
 
     const monitor = await helper.load('monitor');
     assert.equal(
-      monitor.manager.messages.filter(
-        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-      ).length,
-      1);
+      monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+        .length,
+      1
+    );
     monitor.manager.reset();
   });
 
@@ -431,9 +446,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     const roleId = `thing-id:${clientId.slice(0, 11)}*`;
     await helper.apiClient.deleteRole(roleId);
 
-    await helper.apiClient.role(`thing-id:${clientId}`).then(() => {
-      assert(false, 'Expected error');
-    }, err => assert(err.statusCode === 404, 'Expected 404'));
+    await helper.apiClient.role(`thing-id:${clientId}`).then(
+      () => {
+        assert(false, 'Expected error');
+      },
+      err => assert(err.statusCode === 404, 'Expected 404')
+    );
 
     // At least one of them should trigger this message
     helper.assertPulseMessage('role-deleted', m => m.payload.roleId === `thing-id:${clientId}`);
@@ -444,18 +462,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       description: 'a*',
       scopes: ['assume:b<..>'],
     });
-    await helper.apiClient.createRole('b*', {
-      description: 'b*',
-      scopes: ['assume:a<..>x'],
-    }).then(() => assert(false, 'Expected an error'),
-      err => assert.equal(err.statusCode, 400));
+    await helper.apiClient
+      .createRole('b*', {
+        description: 'b*',
+        scopes: ['assume:a<..>x'],
+      })
+      .then(
+        () => assert(false, 'Expected an error'),
+        err => assert.equal(err.statusCode, 400)
+      );
   });
 
   test('update a role introducing a parameter cycle', async () => {
-    await Promise.all([
-      await helper.apiClient.deleteRole('test-1:*'),
-      await helper.apiClient.deleteRole('test-2:*'),
-    ]);
+    await Promise.all([await helper.apiClient.deleteRole('test-1:*'), await helper.apiClient.deleteRole('test-2:*')]);
 
     await helper.apiClient.createRole('test-1:*', {
       description: 'test role 1',
@@ -467,13 +486,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       scopes: ['plain-scope'],
     });
 
-    await helper.apiClient.updateRole('test-2:*', {
-      description: 'test role 2 (updated)',
-      scopes: ['assume:test-1:prefix/<..>#some-suffix'],
-    }).then(
-      () => assert(false, 'Expected an error'),
-      err => assert.equal(err.statusCode, 400),
-    );
+    await helper.apiClient
+      .updateRole('test-2:*', {
+        description: 'test role 2 (updated)',
+        scopes: ['assume:test-1:prefix/<..>#some-suffix'],
+      })
+      .then(
+        () => assert(false, 'Expected an error'),
+        err => assert.equal(err.statusCode, 400)
+      );
   });
 
   suite('updateRole', () => {
@@ -481,7 +502,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     const roleId2 = `sub-thing:${clientId}`;
     let auth;
 
-    suiteSetup(async function() {
+    suiteSetup(async function () {
       if (skipping()) {
         this.skip();
       }
@@ -494,12 +515,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
           clientId: 'static/taskcluster/root',
           accessToken: helper.rootAccessToken,
         },
-        authorizedScopes: [
-          'auth:update-role:*',
-          'scope:role-has:a',
-          'scope:caller-has:a',
-          'scope:caller-has:b*',
-        ],
+        authorizedScopes: ['auth:update-role:*', 'scope:role-has:a', 'scope:caller-has:a', 'scope:caller-has:b*'],
       });
       // clear stuff out
       await modifyRoles(helper.db, ({ roles }) => roles.splice(0));
@@ -545,17 +561,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
         throw new Error('uhoh');
       });
       const apiClient = auth.use({ retries: 0 });
-      await assert.rejects(() => apiClient.updateRole(roleId, {
-        description: 'test role',
-        scopes: ['scope:role-has:*'],
-      }));
+      await assert.rejects(() =>
+        apiClient.updateRole(roleId, {
+          description: 'test role',
+          scopes: ['scope:role-has:*'],
+        })
+      );
 
       const monitor = await helper.load('monitor');
       assert.equal(
-        monitor.manager.messages.filter(
-          ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-        ).length,
-        1);
+        monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+          .length,
+        1
+      );
       monitor.manager.reset();
     });
 
@@ -576,11 +594,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     });
 
     test('caller does not have new scope', async () => {
-      await auth.updateRole(roleId, {
-        description: 'test role',
-        scopes: ['nobody-has-this'],
-      }).then(() => assert(false, 'Expected an error'),
-        err => assert(err.statusCode === 403));
+      await auth
+        .updateRole(roleId, {
+          description: 'test role',
+          scopes: ['nobody-has-this'],
+        })
+        .then(
+          () => assert(false, 'Expected an error'),
+          err => assert(err.statusCode === 403)
+        );
     });
 
     test('remove a scope the caller does not posess', async () => {

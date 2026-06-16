@@ -18,7 +18,7 @@ class MatrixBot {
 
   async start() {
     this._client.on('RoomMember.membership', async (_event, member) => {
-      if (member.membership === "invite" && member.userId === this._userId) {
+      if (member.membership === 'invite' && member.userId === this._userId) {
         await this._client.joinRoom(member.roomId);
       }
     });
@@ -26,7 +26,12 @@ class MatrixBot {
   }
 
   async sendMessage({ roomId, format, formattedBody, body, msgtype }) {
-    await this._client.sendEvent(roomId, 'm.room.message', { formatted_body: formattedBody, body, msgtype, format }, '');
+    await this._client.sendEvent(
+      roomId,
+      'm.room.message',
+      { formatted_body: formattedBody, body, msgtype, format },
+      ''
+    );
   }
 }
 

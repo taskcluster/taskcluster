@@ -30,12 +30,15 @@ suite(testing.suiteName(), () => {
       const engine = new FakePulseEngine();
       const pi = new PulseIterator(engine, []);
 
-      assert.equal(engine.subscribed, true, "should have subscribed");
+      assert.equal(engine.subscribed, true, 'should have subscribed');
 
       // first push a bunch of messages..
       const sent = [];
-      ['M1', 'M2', 'M3'].forEach((msg) => {
-        engine.handleMessage(msg).then(() => sent.push(msg), err => sent.push(err));
+      ['M1', 'M2', 'M3'].forEach(msg => {
+        engine.handleMessage(msg).then(
+          () => sent.push(msg),
+          err => sent.push(err)
+        );
       });
 
       // messages aren't sent yet..
@@ -51,7 +54,7 @@ suite(testing.suiteName(), () => {
         }
       }
 
-      assert.equal(engine.subscribed, false, "should have been unsubscribed");
+      assert.equal(engine.subscribed, false, 'should have been unsubscribed');
       assert.deepEqual(sent, ['M1', 'M2', 'M3']);
       assert.deepEqual(received, ['M1', 'M2', 'M3']);
     });
@@ -88,7 +91,7 @@ suite(testing.suiteName(), () => {
 
       await finished;
 
-      assert.equal(engine.subscribed, false, "should have been unsubscribed");
+      assert.equal(engine.subscribed, false, 'should have been unsubscribed');
     });
 
     test('throws errors into the iterator', async () => {
@@ -102,8 +105,11 @@ suite(testing.suiteName(), () => {
       assert.deepEqual(sent, ['M1']);
 
       // an unsent M2 will error out after handleError is called
-      engine.handleMessage('M2')
-        .then(() => { throw new Error('unexpected success'); })
+      engine
+        .handleMessage('M2')
+        .then(() => {
+          throw new Error('unexpected success');
+        })
         .catch(err => sent.push(err.toString()));
       assert.deepEqual(sent, ['M1']);
 
@@ -116,7 +122,7 @@ suite(testing.suiteName(), () => {
       for (let i = 0; i < 3; i++) {
         try {
           await pi.next();
-          assert(false, "should have failed");
+          assert(false, 'should have failed');
         } catch (err) {
           // expected an 'uhoh' error..
           if (!err.toString().match(/uhoh/)) {
@@ -125,12 +131,12 @@ suite(testing.suiteName(), () => {
         }
       }
 
-      assert.equal(engine.subscribed, false, "should have been unsubscribed");
+      assert.equal(engine.subscribed, false, 'should have been unsubscribed');
 
       // sending further messages fails
       try {
         await engine.handleMessage('M3');
-        assert(false, "should have failed");
+        assert(false, 'should have failed');
       } catch (err) {
         if (!err.toString().match(/iterator cancelled/)) {
           throw err;

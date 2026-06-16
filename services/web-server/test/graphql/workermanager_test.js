@@ -30,7 +30,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('get single workerpool', async () => {
-    helper.fakes.makeWorkerPool('baz/bing', { owner: 'foo@example.com', currentCapacity: 4, requestedCount: 0, runningCount: 1, stoppingCount: 0, stoppedCount: 0, requestedCapacity: 0, runningCapacity: 1, stoppingCapacity: 0, stoppedCapacity: 0 });
+    helper.fakes.makeWorkerPool('baz/bing', {
+      owner: 'foo@example.com',
+      currentCapacity: 4,
+      requestedCount: 0,
+      runningCount: 1,
+      stoppingCount: 0,
+      stoppedCount: 0,
+      requestedCapacity: 0,
+      runningCapacity: 1,
+      stoppingCapacity: 0,
+      stoppedCapacity: 0,
+    });
     const client = helper.getHttpClient();
     const workerPoolQuery = await helper.loadFixture('workerPool.graphql');
     const single = await client.query({
@@ -54,8 +65,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('list workerpools', async () => {
-    helper.fakes.makeWorkerPool('foo/bar', { providerId: 'baz', currentCapacity: 0, requestedCount: 0, runningCount: 0, stoppingCount: 0, stoppedCount: 0, requestedCapacity: 0, runningCapacity: 0, stoppingCapacity: 0, stoppedCapacity: 0 });
-    helper.fakes.makeWorkerPool('baz/bing', { providerId: 'wow', currentCapacity: 2, requestedCount: 1, runningCount: 0, stoppingCount: 1, stoppedCount: 0, requestedCapacity: 1, runningCapacity: 0, stoppingCapacity: 1, stoppedCapacity: 0 });
+    helper.fakes.makeWorkerPool('foo/bar', {
+      providerId: 'baz',
+      currentCapacity: 0,
+      requestedCount: 0,
+      runningCount: 0,
+      stoppingCount: 0,
+      stoppedCount: 0,
+      requestedCapacity: 0,
+      runningCapacity: 0,
+      stoppingCapacity: 0,
+      stoppedCapacity: 0,
+    });
+    helper.fakes.makeWorkerPool('baz/bing', {
+      providerId: 'wow',
+      currentCapacity: 2,
+      requestedCount: 1,
+      runningCount: 0,
+      stoppingCount: 1,
+      stoppedCount: 0,
+      requestedCapacity: 1,
+      runningCapacity: 0,
+      stoppingCapacity: 1,
+      stoppedCapacity: 0,
+    });
     const client = helper.getHttpClient();
     const workerPoolsQuery = await helper.loadFixture('workerPools.graphql');
     const response = await client.query({

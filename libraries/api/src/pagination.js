@@ -15,8 +15,8 @@ import { ErrorReply } from './error-reply.js';
  * @returns {Promise<PaginateResultsResponse>} Paginated results.
  */
 export const paginateResults = async ({ query, fetch, indexColumns, maxLimit = 1000 }) => {
-  assert(query, "req.query must be provided");
-  assert(fetch, "fetch function must be provided");
+  assert(query, 'req.query must be provided');
+  assert(fetch, 'fetch function must be provided');
 
   const { continuationToken, limit } = query;
   const pageSize = Math.min(parseInt(limit || String(maxLimit), 10), maxLimit);

@@ -19,23 +19,33 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   test('fails when unknown backend type is given', async () => {
     await assert.rejects(
-      () => new Backends().setup({ cfg: {
-        ...cfg,
-        backends: {
-          test: { backendType: 'no-such' },
-        },
-      }, db, monitor }),
-      /Unknown backendType/);
+      () =>
+        new Backends().setup({
+          cfg: {
+            ...cfg,
+            backends: {
+              test: { backendType: 'no-such' },
+            },
+          },
+          db,
+          monitor,
+        }),
+      /Unknown backendType/
+    );
   });
 
   test('sets up multiple backends with the same type', async () => {
-    const backends = await new Backends().setup({ cfg: {
-      ...cfg,
-      backends: {
-        test1: { backendType: 'test', number: 1 },
-        test2: { backendType: 'test', number: 2 },
+    const backends = await new Backends().setup({
+      cfg: {
+        ...cfg,
+        backends: {
+          test1: { backendType: 'test', number: 1 },
+          test2: { backendType: 'test', number: 2 },
+        },
       },
-    }, db, monitor });
+      db,
+      monitor,
+    });
     assert(backends.get('test1') instanceof TestBackend);
     assert.equal(backends.get('test1').backendId, 'test1');
     assert(backends.get('test2') instanceof TestBackend);
@@ -43,18 +53,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   test('get returns undefined for unknown backends', async () => {
-    const backends = await new Backends().setup({ cfg: {
-      ...cfg,
-      backends: [],
-    }, db, monitor });
+    const backends = await new Backends().setup({
+      cfg: {
+        ...cfg,
+        backends: [],
+      },
+      db,
+      monitor,
+    });
     assert.deepEqual(backends.get('nosuch'), undefined);
   });
 
   test('backendMap can be an empty object', async () => {
-    await new Backends().setup({ cfg: {
-      ...cfg,
-      backendMap: {},
-    }, db, monitor });
+    await new Backends().setup({
+      cfg: {
+        ...cfg,
+        backendMap: {},
+      },
+      db,
+      monitor,
+    });
     // doesn't throw..
   });
 
@@ -66,11 +84,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         t3: { backendType: 'test' },
       };
 
-      const setup = () => new Backends().setup({
-        cfg: { ...cfg, backends, backendMap },
-        db,
-        monitor,
-      });
+      const setup = () =>
+        new Backends().setup({
+          cfg: { ...cfg, backends, backendMap },
+          db,
+          monitor,
+        });
 
       if (rejects) {
         await assert.rejects(setup, rejects);
@@ -88,37 +107,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   testBackendMap('fails when a match expr is missing backendId', {
-    backendMap: [
-      { when: { name: 'foo' } },
-    ],
+    backendMap: [{ when: { name: 'foo' } }],
     rejects: /backendMap\[0\] is missing backendId or when/,
   });
 
   testBackendMap('fails when a match expr is missing when', {
-    backendMap: [
-      { backendId: 't2' },
-    ],
+    backendMap: [{ backendId: 't2' }],
     rejects: /backendMap\[0\] is missing backendId or when/,
   });
 
   testBackendMap('fails when a match expr specifies unknown backendId', {
-    backendMap: [
-      { backendId: 'nosuch', when: 'all' },
-    ],
+    backendMap: [{ backendId: 'nosuch', when: 'all' }],
     rejects: /backendMap\[0\] has invalid backendId nosuch/,
   });
 
   testBackendMap('fails when a match expr has invalid parameter', {
-    backendMap: [
-      { backendId: 't1', when: { flavor: { is: 'purple' } } },
-    ],
+    backendMap: [{ backendId: 't1', when: { flavor: { is: 'purple' } } }],
     rejects: /backendMap\[0\] has invalid match parameter flavor/,
   });
 
   testBackendMap('fails when a match expr has invalid pattern', {
-    backendMap: [
-      { backendId: 't1', when: { projectId: { random: 0.05 } } },
-    ],
+    backendMap: [{ backendId: 't1', when: { projectId: { random: 0.05 } } }],
     rejects: /backendMap\[0\] has invalid pattern {"random":0\.05}/,
   });
 
@@ -150,9 +159,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   testBackendMap('find backend by name and projectId', {
-    backendMap: [
-      { backendId: 't1', when: { name: { regexp: 'proj1/.*' }, projectId: 'proj1' } },
-    ],
+    backendMap: [{ backendId: 't1', when: { name: { regexp: 'proj1/.*' }, projectId: 'proj1' } }],
     check: backends => {
       assert.equal(backends.forUpload({ name: 'proj1/foo', projectId: 'proj1' }).backendId, 't1');
       assert.equal(backends.forUpload({ name: 'proj1/foo', projectId: 'nomatch' }), undefined);

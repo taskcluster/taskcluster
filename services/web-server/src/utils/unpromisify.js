@@ -10,7 +10,8 @@ export default (fn, { returnsArray } = {}) => {
     const done = args.pop();
     Promise.resolve(fn.apply(self, args)).then(
       returnsArray ? res => done.call(null, null, ...res) : res => done.call(null, null, res),
-      err => done.call(null, err));
+      err => done.call(null, err)
+    );
   };
 
   // preserve arity by generating code..

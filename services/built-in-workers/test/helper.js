@@ -32,7 +32,7 @@ helper.withFakeQueue = () => {
  * make a queue object with the `task` method stubbed out, and with
  * an `addTask` method to add fake tasks.
  */
-const stubbedQueue = (fakeQueue) => {
+const stubbedQueue = fakeQueue => {
   const tasks = {};
 
   // responses from claimWork
@@ -52,7 +52,7 @@ const stubbedQueue = (fakeQueue) => {
       accessToken: 'none',
     },
     fake: {
-      task: async (taskId) => {
+      task: async taskId => {
         const task = tasks[taskId];
         assert(task, `fake queue has no task ${taskId}`);
         return task;
@@ -60,10 +60,13 @@ const stubbedQueue = (fakeQueue) => {
       claimWork: async function (_taskQueueId, payload) {
         assert.equal(this._options.credentials.clientId, 'built-in-workers');
         const work = fakeQueue.claimableWork.pop();
-        work.tasks.map(task => task.credentials = {
-          clientId: 'task-creds',
-          accessToken: 'none',
-        });
+        work.tasks.map(
+          task =>
+            (task.credentials = {
+              clientId: 'task-creds',
+              accessToken: 'none',
+            })
+        );
         work.workerGroup = payload.workerGroup;
         work.workerId = payload.workerId;
         return work;

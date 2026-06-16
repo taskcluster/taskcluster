@@ -23,15 +23,10 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, _skipping) => {
     const unique = Date.now().toString();
     const exchangeName = `exchanges/test/${unique}`;
     const routingKey = 'greetings.earthling.foo.bar.bing';
-    const routingKeyReference = [
-      { name: 'verb' },
-      { name: 'object' },
-      { name: 'remainder', multipleWords: true },
-    ];
+    const routingKeyReference = [{ name: 'verb' }, { name: 'object' }, { name: 'remainder', multipleWords: true }];
     const debug = debugModule('test');
 
     suiteSetup(async () => {
-
       // otherwise, set up the exchange
       const conn = await amqplib.connect(connectionString);
       const chan = await conn.createChannel();
@@ -79,36 +74,41 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, _skipping) => {
       });
       const got = [];
 
-      const pq = await consume({
-        client,
-        queueName: unique,
-        bindings: [{
-          exchange: exchangeName,
-          routingKeyPattern: '#',
-          routingKeyReference,
-        }],
-        prefetch: 2,
-      }, async message => {
-        debug(`handling message ${message.payload.i}`);
-        // message three gets retried once and then discarded.
-        if (message.payload.i === 3) {
-          // inject an error to test retrying
-          throw new Error('uhoh');
-        }
+      const pq = await consume(
+        {
+          client,
+          queueName: unique,
+          bindings: [
+            {
+              exchange: exchangeName,
+              routingKeyPattern: '#',
+              routingKeyReference,
+            },
+          ],
+          prefetch: 2,
+        },
+        async message => {
+          debug(`handling message ${message.payload.i}`);
+          // message three gets retried once and then discarded.
+          if (message.payload.i === 3) {
+            // inject an error to test retrying
+            throw new Error('uhoh');
+          }
 
-        // recycle the client after we've had a few messages, just for exercise.
-        // Note that we continue to process this message here
-        if (got.length === 4) {
-          client.recycle();
+          // recycle the client after we've had a few messages, just for exercise.
+          // Note that we continue to process this message here
+          if (got.length === 4) {
+            client.recycle();
+          }
+          got.push(message);
+          if (got.length === 9) {
+            // stop the pq, but don't wait for its Promise to resolve; this exercises
+            // the code that waits for message handling to finish before closing.  If
+            // there is an issue, Mocha will catch the unhandled rejection.
+            pq.stop();
+          }
         }
-        got.push(message);
-        if (got.length === 9) {
-          // stop the pq, but don't wait for its Promise to resolve; this exercises
-          // the code that waits for message handling to finish before closing.  If
-          // there is an issue, Mocha will catch the unhandled rejection.
-          pq.stop();
-        }
-      });
+      );
 
       await publishUntilStopped(pq);
 
@@ -133,8 +133,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, _skipping) => {
       assume(numbers).to.deeply.equal([0, 1, 2, 4, 5, 6, 7, 8, 9]);
 
       // check that we logged the 'uhoh' error
-      const errors = monitor.manager.messages
-        .filter(({ Fields: { message } }) => message === 'uhoh');
+      const errors = monitor.manager.messages.filter(({ Fields: { message } }) => message === 'uhoh');
       assert.equal(errors.length, 1);
       monitor.manager.messages = [];
     });
@@ -149,32 +148,37 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, _skipping) => {
       });
       const got = [];
 
-      const pq = await consume({
-        client,
-        queueName: unique,
-        bindings: [{
-          exchange: exchangeName,
-          routingKeyPattern: '#',
-          routingKeyReference,
-        }],
-        prefetch: 1,
-      }, async message => {
-        debug(`handling message ${message.payload.i}`);
+      const pq = await consume(
+        {
+          client,
+          queueName: unique,
+          bindings: [
+            {
+              exchange: exchangeName,
+              routingKeyPattern: '#',
+              routingKeyReference,
+            },
+          ],
+          prefetch: 1,
+        },
+        async message => {
+          debug(`handling message ${message.payload.i}`);
 
-        // Foricibly kill the connection after the first message
-        if (got.length === 1) {
-          // This is not pretty, but works for now.  If this breaks, try to find
-          // another way to access the file descriptor for a socket.
-          const fd = client.connections[0].amqp.connection.stream._handle.fd;
-          debug(`closing pulse socket, file descriptor ${fd}`);
-          fs.closeSync(fd);
-        }
+          // Foricibly kill the connection after the first message
+          if (got.length === 1) {
+            // This is not pretty, but works for now.  If this breaks, try to find
+            // another way to access the file descriptor for a socket.
+            const fd = client.connections[0].amqp.connection.stream._handle.fd;
+            debug(`closing pulse socket, file descriptor ${fd}`);
+            fs.closeSync(fd);
+          }
 
-        got.push(message);
-        if (got.length === 11) {
-          pq.stop();
+          got.push(message);
+          if (got.length === 11) {
+            pq.stop();
+          }
         }
-      });
+      );
 
       await publishUntilStopped(pq);
 
@@ -199,11 +203,13 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, _skipping) => {
       const pq = await consume({
         ephemeral: true,
         client,
-        bindings: [{
-          exchange: exchangeName,
-          routingKeyPattern: '#',
-          routingKeyReference,
-        }],
+        bindings: [
+          {
+            exchange: exchangeName,
+            routingKeyPattern: '#',
+            routingKeyReference,
+          },
+        ],
         prefetch: 1,
         onConnected: async () => {
           debug('onConnected');
@@ -266,14 +272,13 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, _skipping) => {
         assume(msg.routes).to.deeply.equal([]);
       });
 
-      const numbers = got.map(msg => msg.connected ? 'connected' : 'msg');
+      const numbers = got.map(msg => (msg.connected ? 'connected' : 'msg'));
       // note that order is not guaranteed here, so just assert that we connected, got
       // four messages, reconnected, and then saw nothing.
       assume(numbers).to.deeply.equal(['connected', 'msg', 'msg', 'msg', 'msg', 'connected']);
 
       // check that we logged the 'uhoh' error
-      const errors = monitor.manager.messages
-        .filter(({ Fields: { message } }) => message === 'uhoh');
+      const errors = monitor.manager.messages.filter(({ Fields: { message } }) => message === 'uhoh');
       assert.equal(errors.length, 1);
       monitor.manager.messages = [];
     });

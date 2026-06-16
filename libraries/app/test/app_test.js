@@ -11,7 +11,6 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = path.join(__dirname, '../../../');
 
 suite(testing.suiteName(), () => {
-
   // Test app creation
   suite('app({port: 1459})', () => {
     let server;
@@ -29,9 +28,11 @@ suite(testing.suiteName(), () => {
             res.status(200).send('Okay this works');
           });
           router.get('/req-id', (req, res) => {
-            res.status(200).send(JSON.stringify({
-              valueSet: req.traceId,
-            }));
+            res.status(200).send(
+              JSON.stringify({
+                valueSet: req.traceId,
+              })
+            );
           });
           app.use('/api/test/v1', router);
         },
@@ -70,9 +71,7 @@ suite(testing.suiteName(), () => {
     });
 
     test('trace ids (created when none passed in)', async () => {
-      const res = await request
-        .get('http://localhost:1459/api/test/v1/req-id')
-        .buffer();
+      const res = await request.get('http://localhost:1459/api/test/v1/req-id').buffer();
       const body = JSON.parse(res.text);
       assert(isUUID.v4(res.headers['x-for-trace-id']));
       assert(isUUID.v4(res.headers['x-for-request-id']));
@@ -106,20 +105,23 @@ suite(testing.suiteName(), () => {
       } catch (err) {
         assert.equal(err.status, 404, 'Status code is 404');
         assert.equal(err.response.body.error, 'Not found', 'Response message is correct');
-        assert.equal(err.response.headers['content-type'], 'application/json; charset=utf-8',
-          'Correct content-type is set to headers');
+        assert.equal(
+          err.response.headers['content-type'],
+          'application/json; charset=utf-8',
+          'Correct content-type is set to headers'
+        );
         assert.equal(
           err.response.headers['content-security-policy'],
-          'report-uri /__cspreport__;default-src \'none\';frame-ancestors \'none\';',
-          'Correct CSP is set in headers');
+          "report-uri /__cspreport__;default-src 'none';frame-ancestors 'none';",
+          'Correct CSP is set in headers'
+        );
         return;
       }
       throw new Error('expected exception not seen');
     });
 
     test('graceful shutdown', async () => {
-      const conn = request.get('http://localhost:1459/__heartbeat__')
-        .set('Connection', 'keep-alive');
+      const conn = request.get('http://localhost:1459/__heartbeat__').set('Connection', 'keep-alive');
 
       // test sigterm signal stops accepting new connections
       await server.terminate();

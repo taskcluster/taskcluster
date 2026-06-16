@@ -27,7 +27,8 @@ const poll = async (doPoll, iterations, delay) => {
       if (iterations !== undefined && iterations <= 0) {
         const err = new Error(
           'Polling iterations exceeded.  Errors ignored during polling:\n' +
-          errors.map(({ err, when }) => `${when}ms from start: ${err}`.trim()).join('\n---\n'));
+            errors.map(({ err, when }) => `${when}ms from start: ${err}`.trim()).join('\n---\n')
+        );
         throw err;
       }
       iterations--;

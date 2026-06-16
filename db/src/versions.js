@@ -5,8 +5,8 @@ import yaml from 'js-yaml';
 
 const dbDir = new URL('..', import.meta.url).pathname;
 
-const filePath = /** @param {string} file */(file) => path.join(dbDir, 'versions', file);
-const testPath = /** @param {string} file */(file) => path.join(dbDir, 'test/versions', file);
+const filePath = /** @param {string} file */ file => path.join(dbDir, 'versions', file);
+const testPath = /** @param {string} file */ file => path.join(dbDir, 'test/versions', file);
 
 /**
  * @param {string[]} command
@@ -33,7 +33,7 @@ const run = async command => {
  * @param {number|string} fromVersion
  * @param {number|string} toVersion
  * @param {Partial<{ runGit: boolean }>} opts
-*/
+ */
 export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
   const options = {
     runGit: true,
@@ -59,19 +59,19 @@ export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
   if (version.migrationScript && !version.migrationScript.includes('\n')) {
     const newMigrationScript = version.migrationScript.replace(fromVersion, toVersion);
     console.log(newMigrationScript);
-    renames.push([
-      filePath(`${version.migrationScript}`),
-      filePath(`${newMigrationScript}`),
-    ]);
-    versionContent = versionContent.replace(`migrationScript: ${version.migrationScript}`, `migrationScript: ${newMigrationScript}`);
+    renames.push([filePath(`${version.migrationScript}`), filePath(`${newMigrationScript}`)]);
+    versionContent = versionContent.replace(
+      `migrationScript: ${version.migrationScript}`,
+      `migrationScript: ${newMigrationScript}`
+    );
   }
   if (version.downgradeScript && !version.downgradeScript.includes('\n')) {
     const newDowngradeScript = version.downgradeScript.replace(fromVersion, toVersion);
-    renames.push([
-      filePath(`${version.downgradeScript}`),
-      filePath(`${newDowngradeScript}`),
-    ]);
-    versionContent = versionContent.replace(`downgradeScript: ${version.downgradeScript}`, `downgradeScript: ${newDowngradeScript}`);
+    renames.push([filePath(`${version.downgradeScript}`), filePath(`${newDowngradeScript}`)]);
+    versionContent = versionContent.replace(
+      `downgradeScript: ${version.downgradeScript}`,
+      `downgradeScript: ${newDowngradeScript}`
+    );
   }
 
   const fromTestFile = testPath(`${fromVersion}_test.js`);
@@ -97,7 +97,6 @@ export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
   } catch (err) {
     throw new Error(`Cannot write file ${toVersionFile}: ${err}}`);
   }
-
 };
 
 /**
@@ -144,7 +143,11 @@ suite(testing.suiteName(), function() {
 export const newVersion = async (options = { runGit: true }) => {
   // find latest version
   const versions = fs.readdirSync(filePath(''));
-  const latestVersion = versions.filter(name => name.endsWith('.yml')).sort().pop()?.replace(/\.yml$/, '');
+  const latestVersion = versions
+    .filter(name => name.endsWith('.yml'))
+    .sort()
+    .pop()
+    ?.replace(/\.yml$/, '');
   const nextVersion = parseInt(latestVersion || '0', 10) + 1;
   const newVersion = nextVersion.toString().padStart(4, '0');
 

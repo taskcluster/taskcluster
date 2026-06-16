@@ -13,19 +13,17 @@ helper.secrets.mockSuite('audit', ['gcp'], (mock, skipping) => {
 
   let clientId;
   clientId = slugid.v4();
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       this.skip();
     }
   });
 
   setup(async () => {
-    await testing.resetTables({ tableNames: [
-      'audit_history',
-    ] });
+    await testing.resetTables({ tableNames: ['audit_history'] });
   });
 
-  test('get audit history', async() => {
+  test('get audit history', async () => {
     const entityType = 'client';
 
     await helper.apiClient.createClient(clientId, {
@@ -62,8 +60,7 @@ helper.secrets.mockSuite('audit', ['gcp'], (mock, skipping) => {
     assert.equal(audit_history_long.auditHistory[0].actionType, 'created');
   });
 
-  test('list client audit history', async() => {
-
+  test('list client audit history', async () => {
     await helper.apiClient.createClient(clientId, {
       expires: taskcluster.fromNowJSON('1 day'),
       description: 'test client...',

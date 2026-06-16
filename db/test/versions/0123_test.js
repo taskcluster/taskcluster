@@ -22,18 +22,17 @@ suite(testing.suiteName(), () => {
           `insert into queue_task_deadlines
              (task_group_id, task_id, scheduler_id, created, deadline, visible)
            values ($1, $2, $3, now() + ($4 || ' microseconds')::interval, $5, $6)`,
-          ['tg', 't1', 's', i, deadline, visible],
+          ['tg', 't1', 's', i, deadline, visible]
         );
       }
       await client.query(
         `insert into queue_task_deadlines
            (task_group_id, task_id, scheduler_id, created, deadline, visible)
          values ($1, $2, $3, now(), $4, $5)`,
-        ['tg', 't2', 's', deadline, visible],
+        ['tg', 't2', 's', deadline, visible]
       );
 
-      const { rows: before } = await client.query(
-        'select task_id from queue_task_deadlines order by task_id, created');
+      const { rows: before } = await client.query('select task_id from queue_task_deadlines order by task_id, created');
       assert.equal(before.filter(r => r.task_id === 't1').length, 3);
       assert.equal(before.filter(r => r.task_id === 't2').length, 1);
     });
@@ -41,18 +40,21 @@ suite(testing.suiteName(), () => {
     await helper.upgradeTo(THIS_VERSION);
 
     await helper.withDbClient(async client => {
-      const { rows } = await client.query(
-        'select task_id from queue_task_deadlines order by task_id');
-      assert.deepEqual(rows.map(r => r.task_id), ['t1', 't2']);
+      const { rows } = await client.query('select task_id from queue_task_deadlines order by task_id');
+      assert.deepEqual(
+        rows.map(r => r.task_id),
+        ['t1', 't2']
+      );
 
       await assert.rejects(
-        () => client.query(
-          `insert into queue_task_deadlines
+        () =>
+          client.query(
+            `insert into queue_task_deadlines
              (task_group_id, task_id, scheduler_id, created, deadline, visible)
            values ($1, $2, $3, now(), $4, $5)`,
-          ['tg', 't1', 's', deadline, visible],
-        ),
-        err => err.code === '23505',
+            ['tg', 't1', 's', deadline, visible]
+          ),
+        err => err.code === '23505'
       );
     });
   });
@@ -68,38 +70,39 @@ suite(testing.suiteName(), () => {
     await helper.withDbClient(async client => {
       // Temporarily drop the existing PK so we can seed identical-tuple rows;
       // the 0123 migration rewrites the primary key anyway.
-      await client.query(
-        'alter table queue_task_deadlines drop constraint queue_task_deadlines_pkey');
+      await client.query('alter table queue_task_deadlines drop constraint queue_task_deadlines_pkey');
 
       for (let i = 0; i < 3; i++) {
         await client.query(
           `insert into queue_task_deadlines
              (task_group_id, task_id, scheduler_id, created, deadline, visible)
            values ($1, $2, $3, $4, $5, $6)`,
-          ['tg', 't1', 's', created, deadline, visible],
+          ['tg', 't1', 's', created, deadline, visible]
         );
       }
 
-      const { rows: before } = await client.query(
-        'select task_id from queue_task_deadlines');
+      const { rows: before } = await client.query('select task_id from queue_task_deadlines');
       assert.equal(before.length, 3);
     });
 
     await helper.upgradeTo(THIS_VERSION);
 
     await helper.withDbClient(async client => {
-      const { rows } = await client.query(
-        'select task_id from queue_task_deadlines');
-      assert.deepEqual(rows.map(r => r.task_id), ['t1']);
+      const { rows } = await client.query('select task_id from queue_task_deadlines');
+      assert.deepEqual(
+        rows.map(r => r.task_id),
+        ['t1']
+      );
 
       await assert.rejects(
-        () => client.query(
-          `insert into queue_task_deadlines
+        () =>
+          client.query(
+            `insert into queue_task_deadlines
              (task_group_id, task_id, scheduler_id, created, deadline, visible)
            values ($1, $2, $3, now(), $4, $5)`,
-          ['tg', 't1', 's', deadline, visible],
-        ),
-        err => err.code === '23505',
+            ['tg', 't1', 's', deadline, visible]
+          ),
+        err => err.code === '23505'
       );
     });
   });
@@ -119,11 +122,10 @@ suite(testing.suiteName(), () => {
           `insert into queue_task_deadlines
              (task_group_id, task_id, scheduler_id, created, deadline, visible)
            values ($1, $2, $3, now() + ($4 || ' microseconds')::interval, $5, $6)`,
-          ['tg', 't1', 's', i, deadline, visible],
+          ['tg', 't1', 's', i, deadline, visible]
         );
       }
-      const { rows } = await client.query(
-        'select task_id from queue_task_deadlines where task_id = $1', ['t1']);
+      const { rows } = await client.query('select task_id from queue_task_deadlines where task_id = $1', ['t1']);
       assert.equal(rows.length, 2);
     });
   });

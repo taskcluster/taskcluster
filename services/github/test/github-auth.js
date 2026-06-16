@@ -97,9 +97,9 @@ class FakeGithub {
         assert.equal(path, '.taskcluster.yml');
         const key = `${owner}/${repo}@${ref}`;
         if (this._taskcluster_yml_files[key]) {
-          return { data: { content: Buffer.from(
-            JSON.stringify(this._taskcluster_yml_files[key]),
-          ).toString('base64') } };
+          return {
+            data: { content: Buffer.from(JSON.stringify(this._taskcluster_yml_files[key])).toString('base64') },
+          };
         } else {
           throwError(404);
         }
@@ -210,14 +210,14 @@ class FakeGithub {
       }
 
       const atom = atoms.shift();
-      obj[atom] = sinon.spy(async (options) => {
+      obj[atom] = sinon.spy(async options => {
         debug(`inst(${installation_id}).${name}(${JSON.stringify(options)})`);
         return await (implementation || (() => {}))(options);
       });
     });
     // super-hacky version of the pagination plugin.  See https://github.com/taskcluster/taskcluster/issues/3985
     this.paginate = {
-      iterator: async function*(stub, options) {
+      iterator: async function* (stub, options) {
         const response = await stub(options);
         // ugh, seriously?
         // see https://github.com/octokit/plugin-paginate-rest.js/blob/master/src/normalize-paginated-list-response.ts
@@ -268,7 +268,9 @@ class FakeGithub {
 
   setRepositories(...repoNames) {
     // This function accepts 1 to n strings
-    this._repositories.repositories = [...repoNames].map(repo => {return { name: repo };});
+    this._repositories.repositories = [...repoNames].map(repo => {
+      return { name: repo };
+    });
     this._repositories.total_count = this._repositories.repositories.length;
   }
 
@@ -335,10 +337,12 @@ class FakeGithubAuth {
     return {
       apps: {
         listInstallations: async () => {
-          return { data: _.map(this.installations, (install, id) => ({
-            id: parseInt(id, 10),
-            account: { login: install._installedOn },
-          })) };
+          return {
+            data: _.map(this.installations, (install, id) => ({
+              id: parseInt(id, 10),
+              account: { login: install._installedOn },
+            })),
+          };
         },
       },
     };

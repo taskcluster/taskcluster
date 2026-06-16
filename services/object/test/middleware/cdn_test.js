@@ -10,7 +10,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.resetTables();
   helper.withBackends(skipping);
   helper.withMiddleware(skipping, [
-    { 'middlewareType': 'cdn', regexp: "^public/.*", baseUrl: "https://cdn.example.com/" },
+    { middlewareType: 'cdn', regexp: '^public/.*', baseUrl: 'https://cdn.example.com/' },
   ]);
   helper.withServer(skipping);
 
@@ -36,16 +36,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   test('intercepts matching simple downloads', async () => {
     await makeObject('public/foo/bar');
     const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'public/foo/bar');
-    const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
+    const res = await request
+      .get(downloadUrl)
+      .redirects(0)
+      .ok(res => res.status < 400);
     assert.equal(res.statusCode, 303);
-    assert.equal(res.headers.location, "https://cdn.example.com/public/foo/bar");
+    assert.equal(res.headers.location, 'https://cdn.example.com/public/foo/bar');
   });
 
   test('ignores non-matching simple downloads', async () => {
     await makeObject('private/foo/bar');
     const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'private/foo/bar');
-    const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
+    const res = await request
+      .get(downloadUrl)
+      .redirects(0)
+      .ok(res => res.status < 400);
     assert.equal(res.statusCode, 303);
-    assert(!res.headers.location.startsWith("https://cdn"));
+    assert(!res.headers.location.startsWith('https://cdn'));
   });
 });

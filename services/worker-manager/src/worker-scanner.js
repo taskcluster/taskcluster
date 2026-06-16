@@ -9,16 +9,7 @@ import { withTimeout } from './util.js';
  * to accurately inform provisioning logic.
  */
 export class WorkerScanner {
-  constructor({
-    ownName,
-    WorkerPool,
-    providers,
-    monitor,
-    iterateConf = {},
-    db,
-    providersFilter = {},
-    estimator,
-  }) {
+  constructor({ ownName, WorkerPool, providers, monitor, iterateConf = {}, db, providersFilter = {}, estimator }) {
     this.WorkerPool = WorkerPool;
     this.providers = providers;
     this.monitor = monitor;
@@ -100,14 +91,15 @@ export class WorkerScanner {
           await withTimeout(
             provider.checkWorker({ worker }),
             60_000, // 1 minute
-            `checkWorker timed out for ${worker.workerPoolId}/${worker.workerId}`,
+            `checkWorker timed out for ${worker.workerPoolId}/${worker.workerId}`
           );
         } catch (err) {
           this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
         }
       } else {
         this.monitor.info(
-          `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`);
+          `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`
+        );
       }
 
       // If the worker will be expired soon but it still exists,
@@ -133,7 +125,6 @@ export class WorkerScanner {
           poolCandidates.get(poolId).push(worker);
         }
       }
-
     }
 
     await this.providers.forAll(p => p.scanCleanup());
@@ -151,9 +142,7 @@ export class WorkerScanner {
         }
 
         const allConfigs = await this.db.fns.get_worker_pool_launch_configs(poolId, null, null, null);
-        const archivedConfigIds = new Set(
-          allConfigs.filter(c => c.is_archived).map(c => c.launch_config_id),
-        );
+        const archivedConfigIds = new Set(allConfigs.filter(c => c.is_archived).map(c => c.launch_config_id));
 
         const targetCapacity = await this.estimator.targetCapacity({
           workerPoolId: poolId,
@@ -201,14 +190,14 @@ export class WorkerScanner {
   }
 
   /**
-    * Pure logic for determining worker lifecycle.
-    * Sorting logic: We want to keep the NEWEST workers when over capacity.
-    *
-    * @param {Worker[]} candidates - List of workers to evaluate.
-    * @param {Set<string>} archivedConfigIds - Set of archived config IDs.
-    * @param {number} desiredCapacity - Desired capacity of the pool.
-    * @returns {Map<Worker, { terminate: boolean, reason: string }>} Decisions for each worker.
-    */
+   * Pure logic for determining worker lifecycle.
+   * Sorting logic: We want to keep the NEWEST workers when over capacity.
+   *
+   * @param {Worker[]} candidates - List of workers to evaluate.
+   * @param {Set<string>} archivedConfigIds - Set of archived config IDs.
+   * @param {number} desiredCapacity - Desired capacity of the pool.
+   * @returns {Map<Worker, { terminate: boolean, reason: string }>} Decisions for each worker.
+   */
   #evaluatePolicies(candidates, archivedConfigIds, desiredCapacity) {
     const decisions = new Map();
 
@@ -223,9 +212,7 @@ export class WorkerScanner {
     // Policy 2: Capacity Management
     // We sort by 'created' DESC (newest first) to ensure we fill our capacity
     // with the most recent (and presumably most stable/configured) workers.
-    const undecided = candidates
-      .filter(w => !decisions.has(w))
-      .sort((a, b) => b.created - a.created);
+    const undecided = candidates.filter(w => !decisions.has(w)).sort((a, b) => b.created - a.created);
 
     let capacityToFill = desiredCapacity;
 

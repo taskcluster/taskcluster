@@ -43,12 +43,23 @@ export const artifactUtils = {
    * Not all S3-compatible storage providers support bulk delete, so we
    * need to handle that case.
    */
-  async expire({ db, publicBucket, privateBucket, ignoreError, monitor,
-    expires, useBulkDelete, expireArtifactsBatchSize }) {
+  async expire({
+    db,
+    publicBucket,
+    privateBucket,
+    ignoreError,
+    monitor,
+    expires,
+    useBulkDelete,
+    expireArtifactsBatchSize,
+  }) {
     let count = 0;
     let errorsCount = 0;
 
-    assert(!useBulkDelete || expireArtifactsBatchSize <= 1000, 'expireArtifactsBatchSize must be <= 1000 when useBulkDelete is true');
+    assert(
+      !useBulkDelete || expireArtifactsBatchSize <= 1000,
+      'expireArtifactsBatchSize must be <= 1000 when useBulkDelete is true'
+    );
 
     // Fetch all expired artifacts and batch delete the S3 ones
     // then remove the entity from the database
@@ -74,8 +85,9 @@ export const artifactUtils = {
           } else if (entry.details.bucket === privateBucket.bucket) {
             s3private.push(entry);
           } else {
-            const err = new Error('Expiring artifact with bucket which isn\'t ' +
-              'configured for use. Please investigate!');
+            const err = new Error(
+              "Expiring artifact with bucket which isn't " + 'configured for use. Please investigate!'
+            );
             err.bucket = entry.details.bucket;
             err.taskId = entry.taskId;
             err.runId = entry.runId;
@@ -88,13 +100,18 @@ export const artifactUtils = {
       const deleteObjects = async (bucket, entries) => {
         if (entries.length) {
           try {
-            const response = await bucket.deleteObjects(entries.map(entry => entry.details.prefix), true);
+            const response = await bucket.deleteObjects(
+              entries.map(entry => entry.details.prefix),
+              true
+            );
             if (response.Errors?.length) {
-              errors.push(response.Errors.map(obj => ({
-                code: obj.Code,
-                message: obj.Message,
-                prefix: obj.Key,
-              })));
+              errors.push(
+                response.Errors.map(obj => ({
+                  code: obj.Code,
+                  message: obj.Message,
+                  prefix: obj.Key,
+                }))
+              );
               errorsCount += response.Errors.length;
 
               // this will likely be a soft error, so we'll just log it
@@ -123,7 +140,9 @@ export const artifactUtils = {
           if (`${err.code} ${err.name} ${err.message}`.includes('NoSuchKey')) {
             monitor.debug(
               'WARNING: Failed to delete missing S3 object: %s:%s %j',
-              bucket.bucket, entry.details.prefix, err,
+              bucket.bucket,
+              entry.details.prefix,
+              err
             );
           } else {
             throw err;
@@ -141,10 +160,7 @@ export const artifactUtils = {
       // 'object' artifacts are deleted at expiration by the object service
       // if this fails, we stop and don't delete the db entry
       if (useBulkDelete) {
-        await Promise.all([
-          deleteObjects(publicBucket, s3public),
-          deleteObjects(privateBucket, s3private),
-        ]);
+        await Promise.all([deleteObjects(publicBucket, s3public), deleteObjects(privateBucket, s3private)]);
       } else {
         await Promise.allSettled(s3public.map(entry => deleteSingleObject(publicBucket, entry)));
         await Promise.allSettled(s3private.map(entry => deleteSingleObject(privateBucket, entry)));
@@ -158,8 +174,7 @@ export const artifactUtils = {
       try {
         // delete all the artifacts from the db
         await db.fns.delete_queue_artifacts(
-          JSON.stringify(entries.map(({ taskId: task_id, runId: run_id, name }) =>
-            ({ task_id, run_id, name }))),
+          JSON.stringify(entries.map(({ taskId: task_id, runId: run_id, name }) => ({ task_id, run_id, name })))
         );
 
         count += entries.length;
@@ -208,7 +223,7 @@ export const joinTaskQueueId = (provisionerId, workerType) => {
  * Add the provisionerId, workerType fields to an object that has a
  * taskQueueId field to maintain public interface compatibility
  */
-export const addSplitFields = (obj) => {
+export const addSplitFields = obj => {
   assert(Object.hasOwn(obj, 'taskQueueId'), 'object is missing property `taskQueueId`');
   const { provisionerId, workerType } = splitTaskQueueId(obj.taskQueueId);
   obj.provisionerId = provisionerId;
@@ -219,7 +234,7 @@ export const addSplitFields = (obj) => {
  * Replace provisionerId and workerType fields in an object with the
  * equivalent taskQueueId.
  */
-export const useOnlyTaskQueueId = (obj) => {
+export const useOnlyTaskQueueId = obj => {
   assert(Object.hasOwn(obj, 'provisionerId'), 'object is missing property `provisionerId`');
   assert(Object.hasOwn(obj, 'workerType'), 'object is missing property `workerType`');
   const taskQueueId = joinTaskQueueId(obj.provisionerId, obj.workerType);
@@ -229,6 +244,6 @@ export const useOnlyTaskQueueId = (obj) => {
 };
 
 /** Sleep for `delay` ms, returns a promise */
-export const sleep = (delay) => new Promise((accept) => setTimeout(accept, delay));
+export const sleep = delay => new Promise(accept => setTimeout(accept, delay));
 
 export default { artifactUtils, splitTaskQueueId, joinTaskQueueId, addSplitFields, useOnlyTaskQueueId, sleep };

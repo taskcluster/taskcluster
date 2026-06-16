@@ -8,12 +8,13 @@ const __dirname = new URL('.', import.meta.url).pathname;
  * argument.
  */
 
-export const generateTasks = async (options) => {
+export const generateTasks = async options => {
   const files = enumFiles(__dirname);
 
-  await Promise.all(files.map(async (file) => {
-    const { default: gen } = await import(path.join(__dirname, file));
-    gen(options);
-  }));
-
+  await Promise.all(
+    files.map(async file => {
+      const { default: gen } = await import(path.join(__dirname, file));
+      gen(options);
+    })
+  );
 };

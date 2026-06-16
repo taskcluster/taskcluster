@@ -1,21 +1,14 @@
 import taskcluster from '@taskcluster/client';
 
 export const scopeExpression = {
-  AllOf: [
-    'queue:create-task:highest:built-in/succeed',
-    'queue:scheduler-id:smoketest',
-  ],
+  AllOf: ['queue:create-task:highest:built-in/succeed', 'queue:scheduler-id:smoketest'],
 };
 
 export const tasks = [];
 tasks.push({
   title: 'Check dependencies',
-  requires: [
-    'ping-queue',
-  ],
-  provides: [
-    'target-dependencies',
-  ],
+  requires: ['ping-queue'],
+  provides: ['target-dependencies'],
   run: async (_requirements, utils) => {
     const taskCount = 3;
     const taskIds = [];
@@ -24,7 +17,7 @@ tasks.push({
       const task = {
         provisionerId: 'built-in',
         workerType: 'succeed',
-        created: (new Date()).toJSON(),
+        created: new Date().toJSON(),
         schedulerId: 'smoketest',
         deadline: taskcluster.fromNowJSON('2 minutes'),
         metadata: {
@@ -52,13 +45,12 @@ tasks.push({
             if (taskStatus.status.runs) {
               const scheduledDate = new Date(taskStatus.status.runs[taskStatus.status.runs.length - 1].scheduled);
               const previousTaskCompletion = new Date(
-                statuses[i - 1].status.runs[statuses[i - 1].status.runs.length - 1].resolved,
+                statuses[i - 1].status.runs[statuses[i - 1].status.runs.length - 1].resolved
               );
               if (scheduledDate < previousTaskCompletion) {
                 throw new Error(`Task ${taskIds[i]} scheduled before completion of task ${taskIds[i - 1]}`);
               }
             }
-
           }
         }
         statuses.push(taskStatus);

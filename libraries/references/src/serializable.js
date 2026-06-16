@@ -33,19 +33,25 @@ export const makeSerializable = ({ references }) => {
 
   const manifest = {
     $schema: urls.schema('common', 'manifest-v3.json#'),
-    references: namedReferences.map(({ filename }) => {
-      if (references.rootUrl) {
-        return `${references.rootUrl}/${filename}`;
-      } else {
-        return `/${filename}`;
-      }
-    }).sort(),
+    references: namedReferences
+      .map(({ filename }) => {
+        if (references.rootUrl) {
+          return `${references.rootUrl}/${filename}`;
+        } else {
+          return `/${filename}`;
+        }
+      })
+      .sort(),
   };
 
-  return [{
-    filename: 'references/manifest.json',
-    content: manifest,
-  }].concat(namedSchemas).concat(namedReferences);
+  return [
+    {
+      filename: 'references/manifest.json',
+      content: manifest,
+    },
+  ]
+    .concat(namedSchemas)
+    .concat(namedReferences);
 };
 
 export const fromSerializable = ({ serializable }) => {

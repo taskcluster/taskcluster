@@ -48,7 +48,6 @@ const main = async () => {
     default:
       throw new Error('invalid subcommand for db/src/main.js');
   }
-
 };
 
 main().catch(err => {

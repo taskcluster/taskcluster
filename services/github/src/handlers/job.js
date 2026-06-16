@@ -25,7 +25,9 @@ async function createGithubBuildRecord({
   debug,
 }) {
   try {
-    debug(`Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) with taskGroupId=${taskGroupId}`);
+    debug(
+      `Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) with taskGroupId=${taskGroupId}`
+    );
     const now = new Date();
     await context.db.fns.create_github_build_pr(
       organization,
@@ -38,7 +40,7 @@ async function createGithubBuildRecord({
       installationId,
       eventType,
       eventId,
-      pullNumber,
+      pullNumber
     );
     debug(`Created github_build_pr record with taskGroupId=${taskGroupId}`);
     return {
@@ -56,8 +58,12 @@ async function createGithubBuildRecord({
     }
     debug(`github_build_pr record already exists for taskGroupId ${taskGroupId}`);
     const [build] = await context.db.fns.get_github_build_pr(taskGroupId);
-    assert.equal(build.state, groupState, `State for ${organization}/${repository}@${sha}
-      already exists but is set to ${build.state} instead of ${groupState}!`);
+    assert.equal(
+      build.state,
+      groupState,
+      `State for ${organization}/${repository}@${sha}
+      already exists but is set to ${build.state} instead of ${groupState}!`
+    );
     assert.equal(build.organization, organization);
     assert.equal(build.repository, repository);
     assert.equal(build.sha, sha);
@@ -108,7 +114,7 @@ export async function jobHandler(message) {
       sha = commitInfo.data;
     } else if (message.payload.details['event.type'].startsWith('issue_comment')) {
       debug.refine({ comment: JSON.stringify(message.payload.body.comment.body) })(
-        `Trying to pull request details for comment: ${message.payload.details.taskcluster_comment}`,
+        `Trying to pull request details for comment: ${message.payload.details.taskcluster_comment}`
       );
       const pr = await instGithub.pulls.get({
         owner: organization,
@@ -129,9 +135,7 @@ export async function jobHandler(message) {
     }
   }
 
-  const defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository }))
-    .data
-    .default_branch;
+  const defaultBranch = (await instGithub.repos.get({ owner: organization, repo: repository })).data.default_branch;
 
   // Try to fetch a .taskcluster.yml file for every request
   debug(`Trying to fetch the YML for ${organization}/${repository}@${sha}`);
@@ -195,16 +199,24 @@ export async function jobHandler(message) {
     const opener = evt.pull_request.user.login;
     const openerIsCollaborator = await isCollaborator(instGithub, organization, repository, opener);
     const head = evt.pull_request.head.user.login;
-    const headIsCollaborator = head === opener ? openerIsCollaborator :
-      await isCollaborator(instGithub, organization, repository, head);
+    const headIsCollaborator =
+      head === opener ? openerIsCollaborator : await isCollaborator(instGithub, organization, repository, head);
     const headIsBase = evt.pull_request.head.user.login === evt.pull_request.base.user.login;
     const isPullRequestTrusted = openerIsCollaborator && (headIsCollaborator || headIsBase);
 
     if (!isPullRequestTrusted) {
       if (repoPolicy.startsWith(POLICIES.COLLABORATORS)) {
-        if (message.payload.details['event.type'].startsWith('pull_request.opened') && (repoPolicy !== POLICIES.COLLABORATORS_QUIET)) {
+        if (
+          message.payload.details['event.type'].startsWith('pull_request.opened') &&
+          repoPolicy !== POLICIES.COLLABORATORS_QUIET
+        ) {
           await this.createComment({
-            instGithub, organization, repository, pullNumber, sha, debug,
+            instGithub,
+            organization,
+            repository,
+            pullNumber,
+            sha,
+            debug,
             body: {
               summary: 'No Taskcluster jobs started for this pull request',
               details: [
@@ -229,7 +241,10 @@ export async function jobHandler(message) {
     debug(`Checking comment permission for ${organization}/${repository}@${sha}...`);
 
     const defaultBranchYml = await this.getYml({
-      instGithub, owner: organization, repo: repository, ref: defaultBranch,
+      instGithub,
+      owner: organization,
+      repo: repository,
+      ref: defaultBranch,
     });
     if (!defaultBranchYml) {
       debug(`${organization}/${repository} has no '.taskcluster.yml' at ${defaultBranch}. Skipping.`);
@@ -239,9 +254,16 @@ export async function jobHandler(message) {
 
     const validCommentPolicies = Object.values(ALLOW_COMMENT_POLICIES);
     if (!validCommentPolicies.includes(allowCommentsPolicy)) {
-      debug(`allowComments: "${allowCommentsPolicy}" policy does not allow comments. Allowed: ${validCommentPolicies}. Skipping.`);
+      debug(
+        `allowComments: "${allowCommentsPolicy}" policy does not allow comments. Allowed: ${validCommentPolicies}. Skipping.`
+      );
       await this.createComment({
-        instGithub, organization, repository, pullNumber, sha, debug,
+        instGithub,
+        organization,
+        repository,
+        pullNumber,
+        sha,
+        debug,
         body: {
           summary: 'No Taskcluster jobs started for comment',
           details: [
@@ -252,7 +274,9 @@ export async function jobHandler(message) {
         },
       });
       await this.addCommentReaction({
-        instGithub, organization, repository,
+        instGithub,
+        organization,
+        repository,
         commentId: message.payload.body.comment.id,
         reaction: 'confused',
       });
@@ -265,14 +289,21 @@ export async function jobHandler(message) {
     if (!commenterIsCollaborator) {
       debug(`User ${commenterName} is not a collaborator on ${organization}/${repository}. Skipping.`);
       await this.createComment({
-        instGithub, organization, repository, pullNumber, sha, debug,
+        instGithub,
+        organization,
+        repository,
+        pullNumber,
+        sha,
+        debug,
         body: {
           summary: 'No Taskcluster jobs started for this pull request',
           details: `Cannot create tasks from comments. User "${commenterName}" is not a collaborator.`,
         },
       });
       await this.addCommentReaction({
-        instGithub, organization, repository,
+        instGithub,
+        organization,
+        repository,
         commentId: message.payload.body.comment.id,
         reaction: 'eyes',
       });
@@ -311,7 +342,12 @@ export async function jobHandler(message) {
       // If triggered by a comment, let everyone know we couldn't create tasks
       if (message.payload.details['event.type'].startsWith('issue_comment')) {
         await this.createComment({
-          instGithub, organization, repository, pullNumber, sha, debug,
+          instGithub,
+          organization,
+          repository,
+          pullNumber,
+          sha,
+          debug,
           body: {
             summary: 'No Taskcluster jobs started for this command',
             details: 'Task graph produced empty list of tasks and hooks',
@@ -332,64 +368,70 @@ export async function jobHandler(message) {
   if (graphConfig.hooks && graphConfig.hooks.length > 0) {
     debug('Triggering hooks from .taskcluster.yml');
 
-    await Promise.all(graphConfig.hooks.map(async hook => {
-      // Pre-allocate taskId to use as taskGroupId for the hook
-      // This eliminates the race condition where task status events arrive before the record exists
-      const taskGroupId = taskcluster.slugid();
+    await Promise.all(
+      graphConfig.hooks.map(async hook => {
+        // Pre-allocate taskId to use as taskGroupId for the hook
+        // This eliminates the race condition where task status events arrive before the record exists
+        const taskGroupId = taskcluster.slugid();
 
-      const build = await createGithubBuildRecord({
-        context,
-        organization,
-        repository,
-        sha,
-        taskGroupId,
-        groupState,
-        installationId: message.payload.installationId,
-        eventType: message.payload.details['event.type'],
-        eventId: message.payload.eventId,
-        pullNumber,
-        debug,
-      });
-
-      try {
-        const payload = {
-          context: hook.context || {},
-          event: message.payload.body,
-          now,
-          taskcluster_root_url: context.cfg.taskcluster.rootUrl,
-          tasks_for: message.payload.tasks_for,
-          taskId: taskGroupId,
-        };
-
-        const returnedTaskId = await this.triggerHook({
-          scopes: graphConfig.scopes,
-          name: hook.name,
-          payload,
+        const build = await createGithubBuildRecord({
+          context,
+          organization,
+          repository,
+          sha,
+          taskGroupId,
+          groupState,
+          installationId: message.payload.installationId,
+          eventType: message.payload.details['event.type'],
+          eventId: message.payload.eventId,
+          pullNumber,
+          debug,
         });
 
-        if (returnedTaskId) {
-          debug.refine({ taskId: returnedTaskId })(`Hook ${hook.name} triggered successfully, taskId: ${returnedTaskId}`);
-          if (graphConfig.autoCancelPreviousChecks !== false) {
-            if (pullNumber || message.payload.body.ref !== defaultBranch) {
-              await this.cancelPreviousTaskGroups({ instGithub, debug, newBuild: build });
+        try {
+          const payload = {
+            context: hook.context || {},
+            event: message.payload.body,
+            now,
+            taskcluster_root_url: context.cfg.taskcluster.rootUrl,
+            tasks_for: message.payload.tasks_for,
+            taskId: taskGroupId,
+          };
+
+          const returnedTaskId = await this.triggerHook({
+            scopes: graphConfig.scopes,
+            name: hook.name,
+            payload,
+          });
+
+          if (returnedTaskId) {
+            debug.refine({ taskId: returnedTaskId })(
+              `Hook ${hook.name} triggered successfully, taskId: ${returnedTaskId}`
+            );
+            if (graphConfig.autoCancelPreviousChecks !== false) {
+              if (pullNumber || message.payload.body.ref !== defaultBranch) {
+                await this.cancelPreviousTaskGroups({ instGithub, debug, newBuild: build });
+              }
             }
           }
-        }
 
-        if (!returnedTaskId) {
-          // Hook rendered to null (no task created) - clean up the github_build record
-          debug(`Hook ${hook.name} rendered to null, no task created - cleaning up github_build record`);
+          if (!returnedTaskId) {
+            // Hook rendered to null (no task created) - clean up the github_build record
+            debug(`Hook ${hook.name} rendered to null, no task created - cleaning up github_build record`);
+            await context.db.fns.delete_github_build(taskGroupId);
+            debug(`Deleted github_build record for taskGroupId ${taskGroupId}`);
+          }
+        } catch (e) {
+          hasHookFailures = true;
+          debug(
+            `Triggering hook ${hook.name} for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`
+          );
           await context.db.fns.delete_github_build(taskGroupId);
           debug(`Deleted github_build record for taskGroupId ${taskGroupId}`);
+          await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e, pullNumber });
         }
-      } catch (e) {
-        hasHookFailures = true;
-        debug(`Triggering hook ${hook.name} for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`);
-        await context.db.fns.delete_github_build(taskGroupId);
-        debug(`Deleted github_build record for taskGroupId ${taskGroupId}`);
-        await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e, pullNumber });
-      }
-    }));
+      })
+    );
   }
 
   // Create tasks (if present)
@@ -436,11 +478,14 @@ export async function jobHandler(message) {
 
     try {
       debug(`Publishing status exchange for ${organization}/${repository}@${sha} (${groupState})`);
-      await context.publisher.taskGroupCreationRequested({
-        taskGroupId,
-        organization: organization.replace(/\./g, '%'),
-        repository: repository.replace(/\./g, '%'),
-      }, routes);
+      await context.publisher.taskGroupCreationRequested(
+        {
+          taskGroupId,
+          organization: organization.replace(/\./g, '%'),
+          repository: repository.replace(/\./g, '%'),
+        },
+        routes
+      );
     } catch (e) {
       debug(`Failed to publish to taskGroupCreationRequested exchange.
       Parameters: ${taskGroupId}, ${organization}, ${repository}, ${routes}`);
@@ -452,7 +497,7 @@ export async function jobHandler(message) {
 
   if (message.payload.details['event.type'].startsWith('issue_comment')) {
     // let them know we are doing something
-    const reaction = hasHookFailures ? "confused" : "+1";
+    const reaction = hasHookFailures ? 'confused' : '+1';
     await this.addCommentReaction({
       instGithub,
       organization,

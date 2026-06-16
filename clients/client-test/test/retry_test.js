@@ -20,81 +20,85 @@ suite(testing.suiteName(), () => {
   });
 
   let getInternalErrorCount = 0;
-  builder.declare({
-    method: 'get',
-    route: '/internal-error',
-    name: 'getInternalError',
-    title: 'Test End-Point',
-    scopes: 'test:internal-error',
-    category: 'Taskcluster Client',
-    description: 'Place we can call to test something',
-  }, (_req, res) => {
-    getInternalErrorCount += 1;
-    res
-      .status(500)
-      .json({
+  builder.declare(
+    {
+      method: 'get',
+      route: '/internal-error',
+      name: 'getInternalError',
+      title: 'Test End-Point',
+      scopes: 'test:internal-error',
+      category: 'Taskcluster Client',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      getInternalErrorCount += 1;
+      res.status(500).json({
         message: 'Internal error of sorts',
       });
-  });
+    }
+  );
 
   let getOccasionalInternalErrorCount = 0;
-  builder.declare({
-    method: 'delete', // Just to ensure that delete works :)
-    route: '/internal-error-sometimes',
-    name: 'getOccasionalInternalError',
-    title: 'Test End-Point',
-    category: 'Taskcluster Client',
-    scopes: 'test:internal-error',
-    description: 'Place we can call to test something',
-  }, (_req, res) => {
-    getOccasionalInternalErrorCount += 1;
-    if (getOccasionalInternalErrorCount > 3) {
-      res
-        .status(200)
-        .json({
+  builder.declare(
+    {
+      method: 'delete', // Just to ensure that delete works :)
+      route: '/internal-error-sometimes',
+      name: 'getOccasionalInternalError',
+      title: 'Test End-Point',
+      category: 'Taskcluster Client',
+      scopes: 'test:internal-error',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      getOccasionalInternalErrorCount += 1;
+      if (getOccasionalInternalErrorCount > 3) {
+        res.status(200).json({
           message: 'it worked this time!',
         });
-    } else {
-      res
-        .status(500)
-        .json({
+      } else {
+        res.status(500).json({
           message: 'Internal error of sorts',
         });
+      }
     }
-  });
+  );
 
   let getUserErrorCount = 0;
-  builder.declare({
-    method: 'get',
-    route: '/user-error',
-    name: 'getUserError',
-    title: 'Test End-Point',
-    category: 'Taskcluster Client',
-    scopes: 'test:internal-error',
-    description: 'Place we can call to test something',
-  }, (_req, res) => {
-    getUserErrorCount += 1;
-    res
-      .status(409)
-      .json({
+  builder.declare(
+    {
+      method: 'get',
+      route: '/user-error',
+      name: 'getUserError',
+      title: 'Test End-Point',
+      category: 'Taskcluster Client',
+      scopes: 'test:internal-error',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      getUserErrorCount += 1;
+      res.status(409).json({
         message: 'User error of sorts',
       });
-  });
+    }
+  );
 
   let getConnectionErrorCount = 0;
-  builder.declare({
-    method: 'get',
-    route: '/connection-error',
-    name: 'getConnectionError',
-    title: 'Test End-Point',
-    scopes: 'test:internal-error',
-    category: 'Taskcluster Client',
-    description: 'Place we can call to test something',
-  }, (req, _res) => {
-    getConnectionErrorCount += 1;
-    // Close underlying connection
-    req.connection.end();
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/connection-error',
+      name: 'getConnectionError',
+      title: 'Test End-Point',
+      scopes: 'test:internal-error',
+      category: 'Taskcluster Client',
+      description: 'Place we can call to test something',
+    },
+    (req, _res) => {
+      getConnectionErrorCount += 1;
+      // Close underlying connection
+      req.connection.end();
+    }
+  );
 
   // Reference for test api server
   let _apiServer = null;
@@ -104,9 +108,12 @@ suite(testing.suiteName(), () => {
 
   setup(async () => {
     assert(_apiServer === null, '_apiServer must be null');
-    testing.fakeauth.start({
-      'test-client': ['auth:credentials', 'test:internal-error'],
-    }, { rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['auth:credentials', 'test:internal-error'],
+      },
+      { rootUrl }
+    );
 
     // Create server for api
     const schemaset = new SchemaSet({
@@ -143,7 +150,7 @@ suite(testing.suiteName(), () => {
   teardown(() => {
     monitorManager.reset();
     testing.fakeauth.stop();
-    assert(_apiServer, '_apiServer doesn\'t exist');
+    assert(_apiServer, "_apiServer doesn't exist");
     if (proxier) {
       proxier.close();
       proxier = null;
@@ -160,15 +167,18 @@ suite(testing.suiteName(), () => {
   test('tries 6 times, delayed', () => {
     getInternalErrorCount = 0;
     setTimeout(() => {
-      assert(getInternalErrorCount > 0, 'Haven\'t done retries in 1s!');
-      assert(getInternalErrorCount < 6, 'Shouldn\'t have completed 6 yet!');
+      assert(getInternalErrorCount > 0, "Haven't done retries in 1s!");
+      assert(getInternalErrorCount < 6, "Shouldn't have completed 6 yet!");
     }, 1000);
-    return server.getInternalError().then(() => {
-      assert(false, 'Expected an error');
-    }, (err) => {
-      assert(err.statusCode === 500);
-      assert(getInternalErrorCount === 6, 'expected 6 retries');
-    });
+    return server.getInternalError().then(
+      () => {
+        assert(false, 'Expected an error');
+      },
+      err => {
+        assert(err.statusCode === 500);
+        assert(getInternalErrorCount === 6, 'expected 6 retries');
+      }
+    );
   });
 
   test('Can succeed after 3 attempts', () => {
@@ -203,12 +213,15 @@ suite(testing.suiteName(), () => {
       retries: 0,
     });
     getInternalErrorCount = 0;
-    return server2.getInternalError().then(() => {
-      assert(false, 'Expected an error');
-    }, (err) => {
-      assert(err.statusCode === 500);
-      assert(getInternalErrorCount === 1, 'expected 1 attempt only!');
-    });
+    return server2.getInternalError().then(
+      () => {
+        assert(false, 'Expected an error');
+      },
+      err => {
+        assert(err.statusCode === 500);
+        assert(getInternalErrorCount === 1, 'expected 1 attempt only!');
+      }
+    );
   });
 
   test('Can set retries = 1', () => {
@@ -221,36 +234,45 @@ suite(testing.suiteName(), () => {
       retries: 1,
     });
     getInternalErrorCount = 0;
-    return server2.getInternalError().then(() => {
-      assert(false, 'Expected an error');
-    }, (err) => {
-      assert(err.statusCode === 500);
-      assert(getInternalErrorCount === 2, 'expected 2 attempts');
-    });
+    return server2.getInternalError().then(
+      () => {
+        assert(false, 'Expected an error');
+      },
+      err => {
+        assert(err.statusCode === 500);
+        assert(getInternalErrorCount === 2, 'expected 2 attempts');
+      }
+    );
   });
 
-  test('Doesn\'t retry 4xx errors', () => {
+  test("Doesn't retry 4xx errors", () => {
     getUserErrorCount = 0;
-    return server.getUserError().then(() => {
-      assert(false, 'Expected user error');
-    }, (err) => {
-      assert(err.statusCode === 409, 'Expect a user error');
-      assert(getUserErrorCount === 1, 'only one attempt!');
-    });
+    return server.getUserError().then(
+      () => {
+        assert(false, 'Expected user error');
+      },
+      err => {
+        assert(err.statusCode === 409, 'Expect a user error');
+        assert(getUserErrorCount === 1, 'only one attempt!');
+      }
+    );
   });
 
   test('retries connection errors', () => {
     getConnectionErrorCount = 0;
     setTimeout(() => {
-      assert(getConnectionErrorCount > 0, 'Haven\'t done retries in 1s!');
-      assert(getConnectionErrorCount < 6, 'Shouldn\'t have completed 6 yet!');
+      assert(getConnectionErrorCount > 0, "Haven't done retries in 1s!");
+      assert(getConnectionErrorCount < 6, "Shouldn't have completed 6 yet!");
     }, 1000);
-    return server.getConnectionError().then(() => {
-      assert(false, 'Expected an error');
-    }, (err) => {
-      assert(err.code === 'ECONNRESET', 'Expect ECONNRESET error');
-      assert(getConnectionErrorCount === 6, 'expected 6 retries');
-      assert(monitorManager.messages.length > 0);
-    });
+    return server.getConnectionError().then(
+      () => {
+        assert(false, 'Expected an error');
+      },
+      err => {
+        assert(err.code === 'ECONNRESET', 'Expect ECONNRESET error');
+        assert(getConnectionErrorCount === 6, 'expected 6 retries');
+        assert(monitorManager.messages.length > 0);
+      }
+    );
   });
 });

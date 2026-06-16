@@ -26,13 +26,8 @@ export default ({ tasks }) => {
 
   ensureTask(tasks, {
     title: 'Worker-Runner Complete',
-    requires: [
-      'clean-artifacts-dir',
-      'worker-runner-artifacts',
-    ],
-    provides: [
-      'target-worker-runner',
-    ],
+    requires: ['clean-artifacts-dir', 'worker-runner-artifacts'],
+    provides: ['target-worker-runner'],
     run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {

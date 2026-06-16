@@ -28,7 +28,7 @@ suiteSetup(async () => {
 withMonitor(helper);
 
 /** @param {string} errorCode */
-helper.expectMonitorError = async (errorCode) => {
+helper.expectMonitorError = async errorCode => {
   const monitor = await helper.load('monitor');
   const errorMessage = monitor.manager.messages.find(msg => {
     const Fields = msg.Fields;
@@ -44,8 +44,7 @@ helper.rootUrl = libUrls.testRootUrl();
 
 // set up the testing secrets
 helper.secrets = new Secrets({
-  secrets: {
-  },
+  secrets: {},
   load: helper.load,
 });
 
@@ -61,7 +60,7 @@ helper.withMockedEventIterator = () => {
   const PulseEngineCopy = Object.assign({}, PulseEngine);
 
   PulseEngineCopy.NextAsyncIterator = null;
-  helper.setNextAsyncIterator = (asyncIterator) => {
+  helper.setNextAsyncIterator = asyncIterator => {
     PulseEngineCopy.NextAsyncIterator = asyncIterator;
   };
 
@@ -166,27 +165,27 @@ helper.withServer = skipping => {
 
 helper.githubFixtures = {
   users: {
-    'octocat': 10,
-    'taskcluster': 20,
+    octocat: 10,
+    taskcluster: 20,
     'a/c': 30,
   },
   teams: {
-    'octocat': [
+    octocat: [
       { slug: 'team-1', organization: { login: 'taskcluster' } },
       { slug: 'team-2', organization: { login: 'neutrinojs' } },
     ],
-    'taskcluster': [
+    taskcluster: [
       { slug: 'team-3', organization: { login: 'taskcluster' } },
       { slug: 'team-1', organization: { login: 'neutrinojs' } },
     ],
     'a/c': [],
   },
   orgs: {
-    'octocat': [
+    octocat: [
       { role: 'admin', organization: { login: 'taskcluster' } },
       { role: 'member', organization: { login: 'neutrinojs' } },
     ],
-    'taskcluster': [
+    taskcluster: [
       { role: 'admin', organization: { login: 'taskcluster' } },
       { role: 'admin', organization: { login: 'neutrinojs' } },
     ],
@@ -194,32 +193,36 @@ helper.githubFixtures = {
   },
 };
 
-helper.makeTaskDefinition = (options = {}) => merge({
-  provisionerId: "no-provisioner-extended-extended",
-  workerType: "test-worker-extended-extended",
-  schedulerId: "my-scheduler-extended-extended",
-  taskGroupId: "dSlITZ4yQgmvxxAi4A8fHQ",
-  dependencies: [],
-  requires: 'ALL_COMPLETED',
-  routes: [],
-  priority: 'LOWEST',
-  retries: 5,
-  created: taskcluster.fromNowJSON(),
-  deadline: taskcluster.fromNowJSON('3 days'),
-  expires: taskcluster.fromNowJSON('3 days'),
-  scopes: [],
-  payload: {},
-  metadata: {
-    name: "Testing task",
-    description: "Task created during tests",
-    owner: "haali@mozilla.com",
-    source: "https://github.com/taskcluster/taskcluster",
-  },
-  tags: {
-    purpose: "taskcluster-testing",
-  },
-  extra: {},
-}, options);
+helper.makeTaskDefinition = (options = {}) =>
+  merge(
+    {
+      provisionerId: 'no-provisioner-extended-extended',
+      workerType: 'test-worker-extended-extended',
+      schedulerId: 'my-scheduler-extended-extended',
+      taskGroupId: 'dSlITZ4yQgmvxxAi4A8fHQ',
+      dependencies: [],
+      requires: 'ALL_COMPLETED',
+      routes: [],
+      priority: 'LOWEST',
+      retries: 5,
+      created: taskcluster.fromNowJSON(),
+      deadline: taskcluster.fromNowJSON('3 days'),
+      expires: taskcluster.fromNowJSON('3 days'),
+      scopes: [],
+      payload: {},
+      metadata: {
+        name: 'Testing task',
+        description: 'Task created during tests',
+        owner: 'haali@mozilla.com',
+        source: 'https://github.com/taskcluster/taskcluster',
+      },
+      tags: {
+        purpose: 'taskcluster-testing',
+      },
+      extra: {},
+    },
+    options
+  );
 
 helper.withGithubClient = () => {
   function githubClient() {
@@ -264,7 +267,7 @@ helper.withGithubClient = () => {
     };
   }
 
-  suiteSetup(function() {
+  suiteSetup(function () {
     this.stubbedGithuClient = {};
 
     Object.entries(githubClient()).forEach(([name, value]) => {
@@ -272,7 +275,7 @@ helper.withGithubClient = () => {
     });
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(function () {
     Object.values(this.stubbedGithuClient).map(stub => stub.restore());
   });
 };
@@ -324,7 +327,7 @@ helper.getHttpClient = (clientOptions = {}) => {
   return new ApolloClient({ cache, link: httpLink });
 };
 
-helper.getWebsocketClient = (subscriptionClient) => {
+helper.getWebsocketClient = subscriptionClient => {
   const cache = new InMemoryCache();
   const link = new WebSocketLink(subscriptionClient);
 
@@ -334,7 +337,6 @@ helper.getWebsocketClient = (subscriptionClient) => {
 // If a subscription client is created for a test, it also needs to be closed.
 // Otherwise, the tests will just hang and timeout
 helper.createSubscriptionClient = async () => {
-
   const credentials = {
     clientId: 'testing',
     accessToken: 'testing',
@@ -351,12 +353,12 @@ helper.createSubscriptionClient = async () => {
           };
         },
       },
-      WebSocket,
+      WebSocket
     );
     subscriptionClient.onConnected(() => {
       resolve(subscriptionClient);
     });
-    subscriptionClient.onError((err) => {
+    subscriptionClient.onError(err => {
       reject(err);
     });
   });
@@ -386,12 +388,13 @@ const stubbedAuth = () => {
 };
 
 const stubbedAuthFactory = () => {
-  return () => new taskcluster.Auth({
-    rootUrl: helper.rootUrl,
-    fake: {
-      currentScopes: async () => ({ scopes: ['web:read-pulse'] }),
-    },
-  });
+  return () =>
+    new taskcluster.Auth({
+      rootUrl: helper.rootUrl,
+      fake: {
+        currentScopes: async () => ({ scopes: ['web:read-pulse'] }),
+      },
+    });
 };
 
 const stubbedClients = () => {
@@ -469,7 +472,8 @@ const stubbedClients = () => {
         workerPool: async workerPoolId => workerPools.get(workerPoolId),
         listWorkerPools: async ({ limit = 1000 }) => ({ workerPools: [...workerPools.values()].slice(0, limit) }),
         listWorkerPoolsStats: async ({ limit = 1000 }) => ({
-          workerPoolsStats: [...workerPools.values()].slice(0, limit) }),
+          workerPoolsStats: [...workerPools.values()].slice(0, limit),
+        }),
         deleteWorkerPool: async workerPoolId => {
           if (!workerPools.has(workerPoolId)) {
             throw new Error(`No such worker pool ${workerPoolId}`);
@@ -492,12 +496,10 @@ const stubbedClients = () => {
           const roleIds = Array.from(roles.keys());
           return Promise.resolve({ roleIds });
         },
-        role: async (roleId) => {
+        role: async roleId => {
           const role = roles.get(roleId);
 
-          return role
-            ? Promise.resolve(role)
-            : Promise.reject(new Error('role not found'));
+          return role ? Promise.resolve(role) : Promise.reject(new Error('role not found'));
         },
         createRole: async (roleId, role) => {
           const newRole = {
@@ -527,7 +529,7 @@ const stubbedClients = () => {
           roles.set(roleId, updatedRole);
           return Promise.resolve(updatedRole);
         },
-        deleteRole: async (roleId) => {
+        deleteRole: async roleId => {
           if (!roles.has(roleId)) {
             return Promise.reject('role not found');
           }
@@ -539,14 +541,14 @@ const stubbedClients = () => {
     queue: new taskcluster.Queue({
       ...options,
       fake: {
-        task: async (taskId) => {
+        task: async taskId => {
           const taskDef = tasks.get(taskId);
 
           return taskDef
             ? Promise.resolve({
-              taskId,
-              ...taskDef,
-            })
+                taskId,
+                ...taskDef,
+              })
             : Promise.reject(new Error('task not found'));
         },
         createTask: async (taskId, taskDef) => {
@@ -582,7 +584,7 @@ const stubbedClients = () => {
           return Promise.resolve(artifact);
         },
         listArtifacts: async (taskId, runId, _options) => {
-          const artifacts = ["1", "2", "3"].map(artifactSuffix => {
+          const artifacts = ['1', '2', '3'].map(artifactSuffix => {
             return {
               taskId,
               runId,
@@ -592,7 +594,7 @@ const stubbedClients = () => {
           return Promise.resolve({ artifacts });
         },
         listLatestArtifacts: async (taskId, _options) => {
-          const artifacts = ["1", "2", "3"].map(artifactSuffix => {
+          const artifacts = ['1', '2', '3'].map(artifactSuffix => {
             return {
               taskId,
               name: `artifact-${artifactSuffix}`,
@@ -600,7 +602,7 @@ const stubbedClients = () => {
           });
           return Promise.resolve({ artifacts });
         },
-        pendingTasks: async (_taskQueueId) => 0,
+        pendingTasks: async _taskQueueId => 0,
       },
     }),
   });
@@ -608,23 +610,15 @@ const stubbedClients = () => {
 
 helper.resetTables = () => {
   setup('reset tables', async () => {
-    await resetTables({ tableNames: [
-      'authorization_codes',
-      'access_tokens',
-      'sessions',
-      'github_access_tokens',
-    ] });
+    await resetTables({ tableNames: ['authorization_codes', 'access_tokens', 'sessions', 'github_access_tokens'] });
   });
 };
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const fixturesCache = new Map();
-helper.loadFixture = async (name) => {
+helper.loadFixture = async name => {
   if (!fixturesCache.has(name)) {
-    fixturesCache.set(
-      name,
-      await fs.readFile(path.resolve(__dirname, 'fixtures', name), 'utf8'),
-    );
+    fixturesCache.set(name, await fs.readFile(path.resolve(__dirname, 'fixtures', name), 'utf8'));
   }
   return fixturesCache.get(name);
 };

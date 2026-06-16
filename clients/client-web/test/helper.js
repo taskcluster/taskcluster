@@ -6,7 +6,7 @@
  * it will not be set yet.
  */
 exports.withRootUrl = () => {
-  before(function() {
+  before(function () {
     // the rootUrl is passed in via `.neutrinorc.js`
     exports.rootUrl = __karma__.config.args[0];
     if (!exports.rootUrl) {

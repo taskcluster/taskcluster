@@ -74,7 +74,7 @@ export class Task {
     for (const taskId of taskIds) {
       assert(_.isString(taskId), 'taskId must be a String');
     }
-    const fetchResults = async (continuation) => {
+    const fetchResults = async continuation => {
       const q = query;
 
       if (continuation) {
@@ -83,11 +83,7 @@ export class Task {
 
       const { continuationToken, rows } = await paginateResults({
         query: q,
-        fetch: (size, offset) => db.fns.get_multiple_tasks(
-          JSON.stringify(taskIds),
-          size,
-          offset,
-        ),
+        fetch: (size, offset) => db.fns.get_multiple_tasks(JSON.stringify(taskIds), size, offset),
       });
       const tasks = rows.map(Task.fromDb);
       return { tasks, continuationToken };
@@ -128,7 +124,7 @@ export class Task {
         this.metadata,
         arr(this.tags),
         this.extra,
-        deadlineDelaySeconds,
+        deadlineDelaySeconds
       );
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
@@ -179,7 +175,7 @@ export class Task {
     // in a JSON object in the DB, they are not automatically converted to Date objects
     // when returned from a DB query. So, we reformat those timestamps here
     // to ensure a uniform structure.
-    const ts = s => s ? new Date(s).toJSON() : s;
+    const ts = s => (s ? new Date(s).toJSON() : s);
 
     const { provisionerId, workerType } = splitTaskQueueId(this.taskQueueId);
     return {
@@ -247,9 +243,7 @@ export class Task {
 
   // Compare "important" fields to another task (used to check idempotency)
   equals(other) {
-    return _.isEqual(
-      _.omit(other, STATUS_FIELDS),
-      _.omit(this, STATUS_FIELDS));
+    return _.isEqual(_.omit(other, STATUS_FIELDS), _.omit(this, STATUS_FIELDS));
   }
 }
 
@@ -279,7 +273,7 @@ export class Provisioner {
   static async get(db, provisionerId, _expires) {
     const allTaskQueues = await TaskQueue.getAllTaskQueues(db, new Date());
     const taskQueuesForProvisioner = allTaskQueues.filter(
-      tq => (provisionerId === splitTaskQueueId(tq.taskQueueId).provisionerId),
+      tq => provisionerId === splitTaskQueueId(tq.taskQueueId).provisionerId
     );
     let provisioner;
     taskQueuesForProvisioner.forEach(tq => {
@@ -307,13 +301,7 @@ export class Provisioner {
   // `rows` field set to an empty array.
   // There is no longer a queue_provisioners table, so this function
   // is emulated by using the data from the task_queues table
-  static async getProvisioners(
-    db,
-    _options,
-    {
-      query,
-    } = {},
-  ) {
+  static async getProvisioners(db, _options, { query } = {}) {
     const allTaskQueues = await TaskQueue.getAllTaskQueues(db, new Date());
     let allProvisioners = new Map();
     allTaskQueues.forEach(tq => {
@@ -327,12 +315,15 @@ export class Provisioner {
           prov.lastDateActive = tq.lastDateActive;
         }
       } else {
-        allProvisioners.set(provisionerId, Provisioner.fromApi(provisionerId, {
-          expires: tq.expires,
-          lastDateActive: tq.lastDateActive,
-          description: '',
-          stability: 'experimental',
-        }));
+        allProvisioners.set(
+          provisionerId,
+          Provisioner.fromApi(provisionerId, {
+            expires: tq.expires,
+            lastDateActive: tq.lastDateActive,
+            description: '',
+            stability: 'experimental',
+          })
+        );
       }
     });
     allProvisioners = Array.from(allProvisioners.values());
@@ -409,25 +400,11 @@ export class TaskQueue {
   // The response will be of the form { rows, continationToken }.
   // If there are no worker types to show, the response will have the
   // `rows` field set to an empty array.
-  static async getTaskQueues(
-    db,
-    {
-      taskQueueId,
-      expires,
-    },
-    {
-      query,
-    } = {},
-  ) {
-    const fetchResults = async (query) => {
+  static async getTaskQueues(db, { taskQueueId, expires }, { query } = {}) {
+    const fetchResults = async query => {
       const { continuationToken, rows } = await paginateResults({
         query,
-        fetch: (size, offset) => db.fns.get_task_queues(
-          taskQueueId || null,
-          expires || null,
-          size,
-          offset,
-        ),
+        fetch: (size, offset) => db.fns.get_task_queues(taskQueueId || null, expires || null, size, offset),
       });
       const entries = rows.map(TaskQueue.fromDb);
 
@@ -441,12 +418,7 @@ export class TaskQueue {
   // Get a list with all the task queues in the DB, possibly filtered
   // by `expires`, without pagination.
   static async getAllTaskQueues(db, expires) {
-    return (await db.fns.get_task_queues(
-      null,
-      expires || null,
-      null,
-      null,
-    )).map(TaskQueue.fromDb);
+    return (await db.fns.get_task_queues(null, expires || null, null, null)).map(TaskQueue.fromDb);
   }
 
   // return the serialization of this task queue
@@ -517,12 +489,7 @@ export class Worker {
   // Get a worker from the DB, or undefined
   static async get(db, taskQueueId, workerGroup, workerId, expires) {
     return Worker.fromDbRows(
-      await db.deprecatedFns.get_queue_worker_tqid_with_last_date_active(
-        taskQueueId,
-        workerGroup,
-        workerId,
-        expires,
-      ),
+      await db.deprecatedFns.get_queue_worker_tqid_with_last_date_active(taskQueueId, workerGroup, workerId, expires)
     );
   }
 
@@ -531,7 +498,7 @@ export class Worker {
   // If there are no workers to show, the response will have the
   // `rows` field set to an empty array.
   static async getWorkers(db, { taskQueueId, expires }, { query } = {}) {
-    const fetchResults = async (query) => {
+    const fetchResults = async query => {
       const { continuationToken, rows } = await paginateResults({
         query,
         fetch: (size, offset) =>
@@ -539,7 +506,7 @@ export class Worker {
             taskQueueId || null,
             expires || null,
             size,
-            offset,
+            offset
           ),
       });
 
@@ -593,9 +560,7 @@ export class TaskGroup {
   }
 
   static async get(db, taskGroupId) {
-    return TaskGroup.fromDbRows(
-      await db.fns.get_task_group2(taskGroupId),
-    );
+    return TaskGroup.fromDbRows(await db.fns.get_task_group2(taskGroupId));
   }
 
   serialize() {
@@ -603,9 +568,11 @@ export class TaskGroup {
       taskGroupId: this.taskGroupId,
       schedulerId: this.schedulerId,
       expires: this.expires.toJSON(),
-      ...(this.sealed ? {
-        sealed: this.sealed.toJSON(),
-      } : {}),
+      ...(this.sealed
+        ? {
+            sealed: this.sealed.toJSON(),
+          }
+        : {}),
     };
   }
 }

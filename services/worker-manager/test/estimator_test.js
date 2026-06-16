@@ -178,7 +178,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (_mock, skipping) => {
     assert.strictEqual(estimate, 0);
     assert.strictEqual(monitor.manager.messages.length, 2);
     assert(monitor.manager.messages.some(({ Type, Severity }) => Type === 'simple-estimate' && Severity === 3));
-    assert(monitor.manager.messages.some(({ Type, Fields }) => Type === 'monitor.error' && Fields.existingCapacity === 50));
+    assert(
+      monitor.manager.messages.some(({ Type, Fields }) => Type === 'monitor.error' && Fields.existingCapacity === 50)
+    );
     monitor.manager.reset();
   });
 
@@ -396,7 +398,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (_mock, skipping) => {
       helper.queue.setPending('foo/bar', 0);
       helper.queue.setClaimed('foo/bar', 0);
       const result = await estimator.targetCapacity({
-        workerPoolId: 'foo/bar', minCapacity: 3, maxCapacity: 10,
+        workerPoolId: 'foo/bar',
+        minCapacity: 3,
+        maxCapacity: 10,
       });
       assert.strictEqual(result, 3);
     });
@@ -405,7 +409,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (_mock, skipping) => {
       helper.queue.setPending('foo/bar', 2);
       helper.queue.setClaimed('foo/bar', 3);
       const result = await estimator.targetCapacity({
-        workerPoolId: 'foo/bar', minCapacity: 0, maxCapacity: 100,
+        workerPoolId: 'foo/bar',
+        minCapacity: 0,
+        maxCapacity: 100,
       });
       // (2 + 3) * 1.0 = 5
       assert.strictEqual(result, 5);
@@ -415,7 +421,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (_mock, skipping) => {
       helper.queue.setPending('foo/bar', 50);
       helper.queue.setClaimed('foo/bar', 50);
       const result = await estimator.targetCapacity({
-        workerPoolId: 'foo/bar', minCapacity: 0, maxCapacity: 10,
+        workerPoolId: 'foo/bar',
+        minCapacity: 0,
+        maxCapacity: 10,
       });
       assert.strictEqual(result, 10);
     });
@@ -424,7 +432,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (_mock, skipping) => {
       helper.queue.setPending('foo/bar', 10);
       helper.queue.setClaimed('foo/bar', 0);
       const result = await estimator.targetCapacity({
-        workerPoolId: 'foo/bar', minCapacity: 0, maxCapacity: 100, scalingRatio: 0.5,
+        workerPoolId: 'foo/bar',
+        minCapacity: 0,
+        maxCapacity: 100,
+        scalingRatio: 0.5,
       });
       // 10 * 0.5 = 5
       assert.strictEqual(result, 5);
@@ -434,7 +445,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (_mock, skipping) => {
       helper.queue.setPending('foo/bar', 0);
       helper.queue.setClaimed('foo/bar', 0);
       const result = await estimator.targetCapacity({
-        workerPoolId: 'foo/bar', minCapacity: 5, maxCapacity: 100,
+        workerPoolId: 'foo/bar',
+        minCapacity: 5,
+        maxCapacity: 100,
       });
       assert.strictEqual(result, 5);
     });

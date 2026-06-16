@@ -23,14 +23,15 @@ suite(testing.suiteName(), () => {
     const testAuth = (name, { config, requiredScopes, clientScopes, errorCode }) => {
       test(name, async () => {
         const auth = new helper.AuthClient(config);
-        await auth.testAuthenticate({ requiredScopes, clientScopes }).then(() => {
-          assert(!errorCode, 'Request was successful, but expected an error ' +
-                             'with code: ' + errorCode);
-        }, err => {
-          assert(errorCode, 'Request failed!');
-          assert(err.code === errorCode, 'Expected error with code: ' +
-                                         errorCode + ' but got: ' + err.code);
-        });
+        await auth.testAuthenticate({ requiredScopes, clientScopes }).then(
+          () => {
+            assert(!errorCode, 'Request was successful, but expected an error ' + 'with code: ' + errorCode);
+          },
+          err => {
+            assert(errorCode, 'Request failed!');
+            assert(err.code === errorCode, 'Expected error with code: ' + errorCode + ' but got: ' + err.code);
+          }
+        );
       });
     };
 
@@ -110,14 +111,15 @@ suite(testing.suiteName(), () => {
     const testAuthGet = (name, { config, errorCode }) => {
       test(name, async () => {
         const auth = new helper.AuthClient(config);
-        await auth.testAuthenticateGet().then(() => {
-          assert(!errorCode, 'Request was successful, but expected an error ' +
-                             'with code: ' + errorCode);
-        }, err => {
-          assert(errorCode, 'Request failed!');
-          assert(err.code === errorCode, 'Expected error with code: ' +
-                                         errorCode + ' but got: ' + err.code);
-        });
+        await auth.testAuthenticateGet().then(
+          () => {
+            assert(!errorCode, 'Request was successful, but expected an error ' + 'with code: ' + errorCode);
+          },
+          err => {
+            assert(errorCode, 'Request failed!');
+            assert(err.code === errorCode, 'Expected error with code: ' + errorCode + ' but got: ' + err.code);
+          }
+        );
       });
     };
 

@@ -26,13 +26,8 @@ export default ({ tasks }) => {
 
   ensureTask(tasks, {
     title: 'Generic-Worker Complete',
-    requires: [
-      'clean-artifacts-dir',
-      'generic-worker-artifacts',
-    ],
-    provides: [
-      'target-generic-worker',
-    ],
+    requires: ['clean-artifacts-dir', 'generic-worker-artifacts'],
+    provides: ['target-generic-worker'],
     run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {

@@ -41,12 +41,14 @@ const launch = () => {
 // If is executed run launch
 // If this file is executed launch component from first argument
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  launch().then(() => {
-    debug('Launched app.js successfully');
-  }).catch((err) => {
-    debug('Failed to start app.js, err: %s, as JSON: %j', err, err, err.stack);
-    process.exit(1);
-  });
+  launch()
+    .then(() => {
+      debug('Launched app.js successfully');
+    })
+    .catch(err => {
+      debug('Failed to start app.js, err: %s, as JSON: %j', err, err, err.stack);
+      process.exit(1);
+    });
 }
 
 // Export launch in-case anybody cares

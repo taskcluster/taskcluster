@@ -51,7 +51,7 @@ suite(testing.suiteName(), () => {
     userFromIdentity(identity) {
       const userId = identity.split('/')[1];
       // as a special case, there's no user NOSUCH
-      if (userId === "NOSUCH") {
+      if (userId === 'NOSUCH') {
         return;
       }
       const user = new User();
@@ -100,5 +100,4 @@ suite(testing.suiteName(), () => {
     await scan(auth, strategies);
     assert.equal(clients['test/user1/'].disabled, true);
   });
-
 });

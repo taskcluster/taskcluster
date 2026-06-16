@@ -22,8 +22,7 @@ suite(testing.suiteName(), () => {
     });
     monitorManager = monitor.manager;
     // modify _handleMessage to log the *entire* message
-    monitorManager._handleMessage =
-      message => monitorManager.messages.push(message);
+    monitorManager._handleMessage = message => monitorManager.messages.push(message);
   });
 
   teardown(async () => {
@@ -144,16 +143,7 @@ suite(testing.suiteName(), () => {
   });
 
   test('all logging levels represented', () => {
-    const levels = [
-      'emerg',
-      'alert',
-      'crit',
-      'err',
-      'warning',
-      'notice',
-      'info',
-      'debug',
-    ];
+    const levels = ['emerg', 'alert', 'crit', 'err', 'warning', 'notice', 'info', 'debug'];
     levels.forEach((level, i) => {
       monitor[level](`something.${level}`, { bar: i });
     });

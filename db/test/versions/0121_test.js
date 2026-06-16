@@ -20,9 +20,15 @@ suite(testing.suiteName(), () => {
 
     // New create function with content_length
     const [created] = await db.fns.create_queue_artifact_2(
-      'task-id', 0, 'public/test.log', 's3', 'text/plain',
-      JSON.stringify({ bucket: 'b', prefix: 'p' }), true,
-      new Date(Date.now() + 100000), 12345,
+      'task-id',
+      0,
+      'public/test.log',
+      's3',
+      'text/plain',
+      JSON.stringify({ bucket: 'b', prefix: 'p' }),
+      true,
+      new Date(Date.now() + 100000),
+      12345
     );
     assert.equal(created.content_length, 12345);
 
@@ -32,9 +38,14 @@ suite(testing.suiteName(), () => {
 
     // Old create function still works (no content_length param)
     const [oldCreated] = await db.deprecatedFns.create_queue_artifact(
-      'task-id-2', 0, 'public/old.log', 's3', 'text/plain',
-      JSON.stringify({ bucket: 'b', prefix: 'p2' }), true,
-      new Date(Date.now() + 100000),
+      'task-id-2',
+      0,
+      'public/old.log',
+      's3',
+      'text/plain',
+      JSON.stringify({ bucket: 'b', prefix: 'p2' }),
+      true,
+      new Date(Date.now() + 100000)
     );
     assert.equal(oldCreated.content_length, undefined); // old fn doesn't return it
 
@@ -43,17 +54,21 @@ suite(testing.suiteName(), () => {
     assert.equal(oldFetched.content_length, undefined); // old fn doesn't return it
 
     // Paginated function returns content_length
-    const paginated = await db.fns.get_queue_artifacts_paginated_2(
-      'task-id', 0, null, 100, null, null, null,
-    );
+    const paginated = await db.fns.get_queue_artifacts_paginated_2('task-id', 0, null, 100, null, null, null);
     assert.equal(paginated.length, 1);
     assert.equal(paginated[0].content_length, 12345);
 
     // Expired artifacts function returns content_length
     await db.fns.create_queue_artifact_2(
-      'task-id-exp', 0, 'public/exp.log', 's3', 'text/plain',
-      JSON.stringify({ bucket: 'b', prefix: 'p3' }), true,
-      new Date(Date.now() - 100000), 99999,
+      'task-id-exp',
+      0,
+      'public/exp.log',
+      's3',
+      'text/plain',
+      JSON.stringify({ bucket: 'b', prefix: 'p3' }),
+      true,
+      new Date(Date.now() - 100000),
+      99999
     );
     const expired = await db.fns.get_expired_artifacts_for_deletion_2(new Date(), 100);
     assert(expired.length >= 1);

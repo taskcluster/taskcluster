@@ -10,7 +10,7 @@ import crypto from 'node:crypto';
  * Normalize clientIds to avoid storing every id possible
  * @param {string} clientId
  */
-export const normalizeClientId = (clientId) => {
+export const normalizeClientId = clientId => {
   if (clientId.startsWith('task-client/')) {
     return 'task-client/*';
   } else if (clientId.startsWith('worker/')) {
@@ -23,7 +23,7 @@ export const normalizeClientId = (clientId) => {
  * Categorize authentication failure reasons for metrics
  * @param {string} message
  */
-export const categorizeFailureReason = (message) => {
+export const categorizeFailureReason = message => {
   if (message.includes('client') && message.includes('not found')) {
     return 'client_not_found';
   }
@@ -46,7 +46,7 @@ export const categorizeFailureReason = (message) => {
  * Determine authentication scheme from request
  * @param {Object} req
  */
-export const determineSchemeFromRequest = (req) => {
+export const determineSchemeFromRequest = req => {
   if (req.authorization) {
     return 'hawk';
   }
@@ -63,7 +63,7 @@ export const determineSchemeFromRequest = (req) => {
  * applies scope restrictions, certificate validation and returns a clone if
  * modified (otherwise it returns the original).
  */
-const parseExt = (ext) => {
+const parseExt = ext => {
   // Attempt to parse ext
   try {
     ext = JSON.parse(Buffer.from(ext, 'base64').toString('utf-8'));
@@ -81,8 +81,7 @@ const parseExt = (ext) => {
  * applies scope restrictions, certificate validation and returns a clone if
  * modified (otherwise it returns the original).
  */
-const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes,
-  expires, ext, expandScopes) => {
+const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes, expires, ext, expandScopes) => {
   const issuingScopes = scopes;
   const res = { scopes, expires, accessToken };
 
@@ -132,8 +131,9 @@ const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes
     if (issuingClientId !== credentialName) {
       const createScope = `auth:create-client:${credentialName}`;
       if (!utils.satisfiesExpression(issuingScopes, createScope)) {
-        throw new Error('ext.certificate issuer `' + issuingClientId +
-                        '` doesn\'t have `' + createScope + '` for supplied clientId.');
+        throw new Error(
+          'ext.certificate issuer `' + issuingClientId + "` doesn't have `" + createScope + '` for supplied clientId.'
+        );
       }
     } else if ('clientId' in cert) {
       throw new Error('ext.certificate.clientId must only be used with ext.certificate.issuer');
@@ -141,10 +141,14 @@ const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes
 
     // Validate certificate scopes are subset of client
     if (!utils.satisfiesExpression(scopes, { AllOf: cert.scopes })) {
-      throw new Error('ext.certificate issuer `' + issuingClientId +
-                      '` doesn\'t satisfy all certificate scopes ' +
-                      cert.scopes.join(', ') + '.  The temporary ' +
-                      'credentials were not generated correctly.');
+      throw new Error(
+        'ext.certificate issuer `' +
+          issuingClientId +
+          "` doesn't satisfy all certificate scopes " +
+          cert.scopes.join(', ') +
+          '.  The temporary ' +
+          'credentials were not generated correctly.'
+      );
     }
 
     // Generate certificate signature
@@ -159,13 +163,13 @@ const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes
     sigContent.push(`expiry:${cert.expiry}`);
     sigContent.push('scopes:');
     sigContent = sigContent.concat(cert.scopes);
-    const signature = crypto.createHmac('sha256', accessToken)
-      .update(sigContent.join('\n'))
-      .digest('base64');
+    const signature = crypto.createHmac('sha256', accessToken).update(sigContent.join('\n')).digest('base64');
 
     // Validate signature
-    if (typeof cert.signature !== 'string' ||
-        !crypto.timingSafeEqual(Buffer.from(cert.signature), Buffer.from(signature))) {
+    if (
+      typeof cert.signature !== 'string' ||
+      !crypto.timingSafeEqual(Buffer.from(cert.signature), Buffer.from(signature))
+    ) {
       if (cert.issuer) {
         throw new Error('ext.certificate.signature is not valid, or wrong clientId provided');
       } else {
@@ -174,7 +178,8 @@ const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes
     }
 
     // Regenerate temporary key
-    const temporaryKey = crypto.createHmac('sha256', accessToken)
+    const temporaryKey = crypto
+      .createHmac('sha256', accessToken)
       .update(cert.seed)
       .digest('base64')
       .replace(/\+/g, '-') // Replace + with - (see RFC 4648, sec. 5)
@@ -211,19 +216,21 @@ const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes
 
     // Validate authorizedScopes scopes are satisfied by client (or temp) scopes
     if (!utils.satisfiesExpression(res.scopes, { AllOf: ext.authorizedScopes })) {
-      throw new Error([
-        'Supplied credentials do not satisfy authorizedScopes; credentials have scopes:',
-        '',
-        '```',
-        res.scopes.join('\n'),
-        '```',
-        '',
-        'authorizedScopes are:',
-        '',
-        '```',
-        ext.authorizedScopes.join('\n'),
-        '```',
-      ].join('\n'));
+      throw new Error(
+        [
+          'Supplied credentials do not satisfy authorizedScopes; credentials have scopes:',
+          '',
+          '```',
+          res.scopes.join('\n'),
+          '```',
+          '',
+          'authorizedScopes are:',
+          '',
+          '```',
+          ext.authorizedScopes.join('\n'),
+          '```',
+        ].join('\n')
+      );
     }
 
     res.scopes = scopes = ext.authorizedScopes;
@@ -256,16 +263,14 @@ const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes
  * The method returned by this function works as `signatureValidator` for
  * `remoteAuthentication`.
  */
-const createSignatureValidator = (options) => {
+const createSignatureValidator = options => {
   assert(typeof options === 'object', 'options must be an object');
-  assert(options.clientLoader instanceof Function,
-    'options.clientLoader must be a function');
+  assert(options.clientLoader instanceof Function, 'options.clientLoader must be a function');
   if (!options.expandScopes) {
     // Default to the identity function
-    options.expandScopes = (scopes) => scopes;
+    options.expandScopes = scopes => scopes;
   }
-  assert(options.expandScopes instanceof Function,
-    'options.expandScopes must be a function');
+  assert(options.expandScopes instanceof Function, 'options.expandScopes must be a function');
   assert(options.monitor, 'options.monitor must be provided');
 
   const loadCredentials = async (clientId, ext) => {
@@ -295,8 +300,14 @@ const createSignatureValidator = (options) => {
     // apply restrictions based on the ext field
     if (ext) {
       ({ scopes, expires, accessToken } = limitClientWithExt(
-        credentialName, issuingClientId, accessToken,
-        scopes, expires, ext, options.expandScopes));
+        credentialName,
+        issuingClientId,
+        accessToken,
+        scopes,
+        expires,
+        ext,
+        options.expandScopes
+      ));
     }
 
     // Implicitly grant all clients the anonymous role a second time.
@@ -314,83 +325,88 @@ const createSignatureValidator = (options) => {
     };
   };
 
-  return async (req) => {
+  return async req => {
     let credentials, attributes, result, authResult, scheme;
 
     try {
       if (req.authorization) {
         scheme = 'hawk';
-        authResult = await hawk.server.authenticate({
-          method: req.method.toUpperCase(),
-          url: req.resource,
-          host: req.host,
-          port: req.port,
-          authorization: req.authorization,
-        }, async (clientId) => {
-          let ext;
+        authResult = await hawk.server.authenticate(
+          {
+            method: req.method.toUpperCase(),
+            url: req.resource,
+            host: req.host,
+            port: req.port,
+            authorization: req.authorization,
+          },
+          async clientId => {
+            let ext;
 
-          // Parse authorization header for ext
-          const attrs = hawk.utils.parseAuthorizationHeader(
-            req.authorization,
-          );
-          // Extra ext
-          if (!(attrs instanceof Error)) {
-            ext = attrs.ext;
+            // Parse authorization header for ext
+            const attrs = hawk.utils.parseAuthorizationHeader(req.authorization);
+            // Extra ext
+            if (!(attrs instanceof Error)) {
+              ext = attrs.ext;
+            }
+
+            // Get credentials with ext
+            return loadCredentials(clientId, ext);
+          },
+          {
+            // Not sure if JSON stringify is not deterministic by specification.
+            // I suspect not, so we'll postpone this till we're sure we want to do
+            // payload validation and how we want to do it.
+            //payload:      JSON.stringify(req.body),
+
+            // We found that clients often have time skew (particularly on OSX)
+            // since all our services require https we hardcode the allowed skew
+            // to a very high number (15 min) similar to AWS.
+            timestampSkewSec: 15 * 60,
           }
-
-          // Get credentials with ext
-          return loadCredentials(clientId, ext);
-        }, {
-          // Not sure if JSON stringify is not deterministic by specification.
-          // I suspect not, so we'll postpone this till we're sure we want to do
-          // payload validation and how we want to do it.
-          //payload:      JSON.stringify(req.body),
-
-          // We found that clients often have time skew (particularly on OSX)
-          // since all our services require https we hardcode the allowed skew
-          // to a very high number (15 min) similar to AWS.
-          timestampSkewSec: 15 * 60,
-        });
+        );
 
         credentials = authResult.credentials;
         attributes = authResult.artifacts; // Hawk uses "artifacts" and "attributes"
-      } else if (/^\/.*[?&]bewit=/.test(req.resource)) { // using regex because query parsing is disabled
+      } else if (/^\/.*[?&]bewit=/.test(req.resource)) {
+        // using regex because query parsing is disabled
         scheme = 'bewit';
         // Bewit present
-        authResult = await hawk.uri.authenticate({
-          method: req.method.toUpperCase(),
-          url: req.resource,
-          host: req.host,
-          port: req.port,
-        }, async (clientId) => {
-          let ext;
+        authResult = await hawk.uri.authenticate(
+          {
+            method: req.method.toUpperCase(),
+            url: req.resource,
+            host: req.host,
+            port: req.port,
+          },
+          async clientId => {
+            let ext;
 
-          // Get bewit string (stolen from hawk)
-          const parts = req.resource.match(
-            /^(\/.*)([?&])bewit=([^&$]*)(?:&(.+))?$/,
-          );
+            // Get bewit string (stolen from hawk)
+            const parts = req.resource.match(/^(\/.*)([?&])bewit=([^&$]*)(?:&(.+))?$/);
 
-          let bewitString;
-          try {
-            if (!/^[\w-]*$/.test(parts[3])) {
-              throw new Error('invalid character in bewit');
+            let bewitString;
+            try {
+              if (!/^[\w-]*$/.test(parts[3])) {
+                throw new Error('invalid character in bewit');
+              }
+              bewitString = Buffer.from(parts[3], 'base64').toString('binary');
+            } catch (err) {
+              bewitString = err;
             }
-            bewitString = Buffer.from(parts[3], 'base64').toString('binary');
-          } catch (err) {
-            bewitString = err;
-          }
 
-          if (!(bewitString instanceof Error)) {
-            // Split string as hawk does it
-            const parts = bewitString.split('\\');
-            if (parts.length === 4 && parts[3]) {
-              ext = parts[3];
+            if (!(bewitString instanceof Error)) {
+              // Split string as hawk does it
+              const parts = bewitString.split('\\');
+              if (parts.length === 4 && parts[3]) {
+                ext = parts[3];
+              }
             }
-          }
 
-          // Get credentials with ext
-          return loadCredentials(clientId, ext);
-        }, {});
+            // Get credentials with ext
+            return loadCredentials(clientId, ext);
+          },
+          {}
+        );
 
         credentials = authResult.credentials;
         attributes = authResult.attributes;

@@ -35,20 +35,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
   });
 
   test('bewit auth (root creds)', async () => {
-    const signedUrl = helper.testClient.buildSignedUrl(
-      helper.testClient.resource,
-    );
+    const signedUrl = helper.testClient.buildSignedUrl(helper.testClient.resource);
     const res = await request.get(signedUrl);
     assert(res.body.message === 'Hello World');
   });
 
   test('header auth (no creds)', async () => {
     const myClient2 = new helper.TestClient({ rootUrl: helper.rootUrl, credentials: {} });
-    await myClient2.resource().then(() => {
-      assert(false, 'expected an error!');
-    }, err => {
-      assert.equal(err.statusCode, 403, 'expected 403');
-    });
+    await myClient2.resource().then(
+      () => {
+        assert(false, 'expected an error!');
+      },
+      err => {
+        assert.equal(err.statusCode, 403, 'expected 403');
+      }
+    );
   });
 
   test('header auth (wrong creds)', async () => {
@@ -59,11 +60,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
         accessToken: 'nicetry',
       },
     });
-    await myClient2.resource().then(() => {
-      assert(false, 'expected an error!');
-    }, err => {
-      assert(err.statusCode === 401, 'expected 401');
-    });
+    await myClient2.resource().then(
+      () => {
+        assert(false, 'expected an error!');
+      },
+      err => {
+        assert(err.statusCode === 401, 'expected 401');
+      }
+    );
   });
 
   test('header auth (wrong accessToken)', async () => {
@@ -74,11 +78,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
         accessToken: 'nicetry',
       },
     });
-    await myClient2.resource().then(() => {
-      assert(false, 'expected an error!');
-    }, err => {
-      assert(err.statusCode === 401, 'expected 401');
-    });
+    await myClient2.resource().then(
+      () => {
+        assert(false, 'expected an error!');
+      },
+      err => {
+        assert(err.statusCode === 401, 'expected 401');
+      }
+    );
   });
 
   test('header auth (temp creds)', async () => {
@@ -103,11 +110,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
         credentials: rootCredentials,
       }),
     });
-    await myClient2.resource().then(() => {
-      assert(false, 'expected an error!');
-    }, err => {
-      assert(err.statusCode === 403, 'expected 403');
-    });
+    await myClient2.resource().then(
+      () => {
+        assert(false, 'expected an error!');
+      },
+      err => {
+        assert(err.statusCode === 403, 'expected 403');
+      }
+    );
   });
 
   test('header auth (temp creds + authorizedScopes)', async () => {
@@ -134,11 +144,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       }),
       authorizedScopes: ['myapi:-'],
     });
-    await myClient2.resource().then(() => {
-      assert(false, 'expected an error!');
-    }, err => {
-      assert(err.statusCode === 403, 'expected 403');
-    });
+    await myClient2.resource().then(
+      () => {
+        assert(false, 'expected an error!');
+      },
+      err => {
+        assert(err.statusCode === 403, 'expected 403');
+      }
+    );
   });
 
   test('header auth (temp creds + overstep authorizedScopes)', async () => {
@@ -151,19 +164,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       }),
       authorizedScopes: ['myapi:*'],
     });
-    await myClient2.resource().then(() => {
-      assert(false, 'expected an error!');
-    }, err => {
-      assert(err.statusCode === 401, 'expected 401');
-    });
+    await myClient2.resource().then(
+      () => {
+        assert(false, 'expected an error!');
+      },
+      err => {
+        assert(err.statusCode === 401, 'expected 401');
+      }
+    );
   });
 
   test('auth with non-root user', async () => {
     const clientId = slugid.v4();
     const result = await helper.apiClient.createClient(clientId, {
       expires: new Date(3000, 1, 1), // far out in the future
-      description: 'Client used by automatic tests, file a bug and delete if' +
-                    ' you ever see this client!',
+      description: 'Client used by automatic tests, file a bug and delete if' + ' you ever see this client!',
       scopes: ['myapi:*'],
     });
 
@@ -181,8 +196,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
     const clientId = slugid.v4();
     const result = await helper.apiClient.createClient(clientId, {
       expires: new Date(1998, 1, 1), // far back in the past
-      description: 'Client used by automatic tests, file a bug and delete if' +
-                    ' you ever see this client!',
+      description: 'Client used by automatic tests, file a bug and delete if' + ' you ever see this client!',
       scopes: ['myapi:*'],
     });
 
@@ -193,10 +207,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
         accessToken: result.accessToken,
       },
     });
-    await myClient.resource().then(() => {
-      assert(false, 'expected an error!');
-    }, err => {
-      assert(err.statusCode === 401, 'expected 401');
-    });
+    await myClient.resource().then(
+      () => {
+        assert(false, 'expected an error!');
+      },
+      err => {
+        assert(err.statusCode === 401, 'expected 401');
+      }
+    );
   });
 });

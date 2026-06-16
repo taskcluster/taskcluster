@@ -3,7 +3,6 @@ import testing from '@taskcluster/lib-testing';
 import MonitorManager from '../src/monitormanager.js';
 
 suite(testing.suiteName(), () => {
-
   suite('sentry', () => {
     let monitor, reported;
     setup(() => {

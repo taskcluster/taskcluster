@@ -63,11 +63,14 @@ suite(testing.suiteName(), () => {
       nock.cleanAll();
     }
 
-    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'monitor.generic'), {
-      Logger: 'taskcluster.test',
-      Type: 'monitor.generic',
-      Fields: { message: 'Failed to download AWS IP ranges (retrying): Error: Internal Server Error' },
-      Severity: LEVELS.warning,
-    });
+    assert.deepEqual(
+      monitor.manager.messages.find(({ Type }) => Type === 'monitor.generic'),
+      {
+        Logger: 'taskcluster.test',
+        Type: 'monitor.generic',
+        Fields: { message: 'Failed to download AWS IP ranges (retrying): Error: Internal Server Error' },
+        Severity: LEVELS.warning,
+      }
+    );
   });
 });

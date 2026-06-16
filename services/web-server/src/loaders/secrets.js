@@ -25,8 +25,8 @@ export default ({ secrets }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
 
   return {

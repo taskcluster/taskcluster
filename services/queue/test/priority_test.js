@@ -73,7 +73,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     helper.scopes(`queue:change-task-priority:${taskId}`);
     await assert.rejects(
       () => helper.queue.changeTaskPriority(taskId, { newPriority: 'very-high' }),
-      err => err.code === 'RequestConflict',
+      err => err.code === 'RequestConflict'
     );
   });
 
@@ -84,7 +84,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
     await assert.rejects(
       () => helper.queue.changeTaskPriority(taskId, { newPriority: 'medium' }),
-      err => err.code === 'InsufficientScopes',
+      err => err.code === 'InsufficientScopes'
     );
   });
 
@@ -106,7 +106,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assert.deepEqual(new Set(response.taskIds).size, tasks.length);
 
     await helper.withDbClient(async client => {
-      const { rows } = await client.query('select distinct priority from queue_pending_tasks where task_id = any($1::text[])', [tasks]);
+      const { rows } = await client.query(
+        'select distinct priority from queue_pending_tasks where task_id = any($1::text[])',
+        [tasks]
+      );
       assert.equal(rows.length, 1);
       assert.equal(rows[0].priority, 6);
     });
@@ -126,7 +129,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     await helper.queue.rerunTask(taskId);
 
     await helper.withDbClient(async client => {
-      const { rows } = await client.query('select priority, run_id from queue_pending_tasks where task_id = $1 order by run_id desc limit 1', [taskId]);
+      const { rows } = await client.query(
+        'select priority, run_id from queue_pending_tasks where task_id = $1 order by run_id desc limit 1',
+        [taskId]
+      );
       assert.equal(rows.length, 1);
       assert.equal(rows[0].priority, 7);
     });

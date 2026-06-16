@@ -6,7 +6,7 @@ MonitorManager.register({
   type: 'worker-pool-provisioned',
   version: 2,
   level: 'info',
-  description: 'A worker pool\'s provisioning run has completed',
+  description: "A worker pool's provisioning run has completed",
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
@@ -549,7 +549,8 @@ MonitorManager.registerMetric('azureArmDeploymentError', {
   name: 'worker_manager_azure_arm_deployment_errors_total',
   type: 'counter',
   title: 'Azure ARM deployment errors',
-  description: 'Count of Azure ARM deployment creation failures and failed deployment operations by worker pool, location, and Azure error details',
+  description:
+    'Count of Azure ARM deployment creation failures and failed deployment operations by worker pool, location, and Azure error details',
   labels: {
     providerId: 'ID of the provider',
     workerPoolId: 'The worker pool ID',

@@ -40,7 +40,7 @@ helper.withProviders = () => {
   const fakeAzure = new FakeAzure();
   fakeAzure.forSuite();
 
-  const fakeGoogle = new FakeGoogle;
+  const fakeGoogle = new FakeGoogle();
   fakeGoogle.forSuite();
 };
 
@@ -161,9 +161,12 @@ helper.withServer = skipping => {
 
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
 
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl }
+    );
 
     // Create client for working with API
     helper.WorkerManager = taskcluster.createClient(builder.reference());
@@ -205,7 +208,7 @@ const stubbedQueue = () => {
       accessToken: 'none',
     },
     fake: {
-      taskQueueCounts: async (taskQueueId) => {
+      taskQueueCounts: async taskQueueId => {
         const [provisionerId, workerType] = taskQueueId.split('/');
         return {
           pendingTasks: pendingCounts[taskQueueId] ?? 0,
@@ -256,23 +259,21 @@ const stubbedNotify = () => {
  * Get all workers
  */
 helper.getWorkers = async () =>
-  Promise.all((await helper.db.fns.get_worker_manager_workers2(null, null, null, null, null, null, null)).map(
-    async r => {
+  Promise.all(
+    (await helper.db.fns.get_worker_manager_workers2(null, null, null, null, null, null, null)).map(async r => {
       const w = Worker.fromDb(r);
       return await Worker.get(helper.db, {
         workerPoolId: w.workerPoolId,
         workerGroup: w.workerGroup,
         workerId: w.workerId,
       });
-    }));
+    })
+  );
 
 helper.resetTables = () => {
   setup('reset tables', async () => {
-    await testing.resetTables({ tableNames: [
-      'workers',
-      'worker_pools',
-      'worker_pool_errors',
-      'worker_pool_launch_configs',
-    ] });
+    await testing.resetTables({
+      tableNames: ['workers', 'worker_pools', 'worker_pool_errors', 'worker_pool_launch_configs'],
+    });
   });
 };

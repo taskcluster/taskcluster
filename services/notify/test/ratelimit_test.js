@@ -21,7 +21,7 @@ suite(testing.suiteName(), () => {
     MockDate.reset();
   });
 
-  const timeFlies = (seconds) => {
+  const timeFlies = seconds => {
     const newTime = new Date();
     newTime.setSeconds(newTime.getSeconds() + seconds);
     MockDate.set(newTime);
@@ -42,8 +42,16 @@ suite(testing.suiteName(), () => {
       return remaining;
     });
     assert.deepEqual(limited, [
-      5, 4, 3, 2, 1, // five not limited
-      0, 0, 0, 0, 0, // remainder limited
+      5,
+      4,
+      3,
+      2,
+      1, // five not limited
+      0,
+      0,
+      0,
+      0,
+      0, // remainder limited
     ]);
   });
 

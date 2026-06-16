@@ -29,9 +29,7 @@ export class Release {
         git: new Lock(8),
       },
       target: staging ? 'target-staging-release' : 'target-release',
-      renderer: process.stdout.isTTY ?
-        new ConsoleRenderer({ elideCompleted: true }) :
-        new LogRenderer(),
+      renderer: process.stdout.isTTY ? new ConsoleRenderer({ elideCompleted: true }) : new LogRenderer(),
     });
     if (this.cmdOptions.dryRun) {
       console.log('Dry run successful.');
@@ -48,12 +46,12 @@ export class Release {
   }
 }
 
-export const release = async (options) => {
+export const release = async options => {
   const release = new Release(options);
   await release.run(false);
 };
 
-export const stagingRelease = async (options) => {
+export const stagingRelease = async options => {
   const release = new Release(options);
   await release.run(true);
 };

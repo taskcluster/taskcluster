@@ -20,6 +20,8 @@ export default (searchTerm, field, array) => {
   const needle = String(searchTerm).toLowerCase();
 
   return array.filter(item =>
-    String(item?.[field] ?? '').toLowerCase().includes(needle),
+    String(item?.[field] ?? '')
+      .toLowerCase()
+      .includes(needle)
   );
 };

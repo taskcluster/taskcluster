@@ -15,10 +15,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
   const taskQueueId = helper.makeTaskQueueId('no-provisioner-extended-extended');
 
-  const makeTask = (retries) => {
+  const makeTask = retries => {
     return {
       taskQueueId,
-      priority: "normal",
+      priority: 'normal',
       retries,
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('30 min'),
@@ -83,14 +83,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     // verify claimed task record was cleaned up
     const db = await helper.load('db');
     const claimed = await db.fns.get_claimed_tasks_by_worker(
-      taskQueueId, 'my-worker-group-extended-extended', 'my-worker-extended-extended');
+      taskQueueId,
+      'my-worker-group-extended-extended',
+      'my-worker-extended-extended'
+    );
     assert.equal(claimed.length, 0);
 
     // verify pulse messages were published
-    helper.assertPulseMessage('task-exception', m =>
-      m.payload.status.taskId === taskId && m.payload.runId === 0);
-    helper.assertPulseMessage('task-pending', m =>
-      m.payload.status.taskId === taskId && m.payload.runId === 1);
+    helper.assertPulseMessage('task-exception', m => m.payload.status.taskId === taskId && m.payload.runId === 0);
+    helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskId && m.payload.runId === 1);
 
     // verify monitor log
     assert.deepEqual(
@@ -108,7 +109,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
           v: 1,
         },
         Severity: LEVELS.notice,
-      },
+      }
     );
 
     await resolver.terminate();
@@ -152,11 +153,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     // verify claimed task record was cleaned up
     const db = await helper.load('db');
     const claimed = await db.fns.get_claimed_tasks_by_worker(
-      taskQueueId, 'my-worker-group-extended-extended', 'my-worker-extended-extended');
+      taskQueueId,
+      'my-worker-group-extended-extended',
+      'my-worker-extended-extended'
+    );
     assert.equal(claimed.length, 0);
 
-    helper.assertPulseMessage('task-exception', m =>
-      m.payload.status.taskId === taskId && m.payload.runId === 0);
+    helper.assertPulseMessage('task-exception', m => m.payload.status.taskId === taskId && m.payload.runId === 0);
 
     await resolver.terminate();
   });
@@ -236,8 +239,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assert.equal(status.status.runs[1].state, 'pending');
 
     // verify reason falls back to 'unknown' in the log
-    const logMsg = monitor.manager.messages.find(
-      ({ Type }) => Type === 'task-resolved-by-worker-removed');
+    const logMsg = monitor.manager.messages.find(({ Type }) => Type === 'task-resolved-by-worker-removed');
     assert.equal(logMsg.Fields.reason, 'unknown');
 
     await resolver.terminate();

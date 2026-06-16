@@ -57,14 +57,16 @@ suite('profiler/routes', () => {
     status: {
       taskId: 'test-task-id',
       state: 'completed',
-      runs: [{
-        runId: 0,
-        state: 'completed',
-        started: '2024-01-01T10:00:00.000Z',
-        resolved: '2024-01-01T10:05:00.000Z',
-        reasonCreated: 'scheduled',
-        reasonResolved: 'completed',
-      }],
+      runs: [
+        {
+          runId: 0,
+          state: 'completed',
+          started: '2024-01-01T10:00:00.000Z',
+          resolved: '2024-01-01T10:05:00.000Z',
+          reasonCreated: 'scheduled',
+          reasonResolved: 'completed',
+        },
+      ],
     },
   };
 
@@ -80,7 +82,7 @@ suite('profiler/routes', () => {
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown((done) => {
+    suiteTeardown(done => {
       server.close(done);
     });
 
@@ -113,35 +115,39 @@ suite('profiler/routes', () => {
       const app = await createTestApp(() => ({
         queue: {
           listTaskGroup: async () => ({
-            tasks: [{
-              task: {
-                schedulerId: 'sched',
-                expires: '2025-01-01T00:00:00.000Z',
-                metadata: { name: 'Running', description: '', owner: '', source: '' },
-                retries: 1,
-                taskGroupId: VALID_SLUGID,
-                dependencies: [],
-              },
-              status: {
-                taskId: 'running-task',
-                state: 'running',
-                runs: [{
-                  runId: 0,
+            tasks: [
+              {
+                task: {
+                  schedulerId: 'sched',
+                  expires: '2025-01-01T00:00:00.000Z',
+                  metadata: { name: 'Running', description: '', owner: '', source: '' },
+                  retries: 1,
+                  taskGroupId: VALID_SLUGID,
+                  dependencies: [],
+                },
+                status: {
+                  taskId: 'running-task',
                   state: 'running',
-                  started: '2024-01-01T10:00:00.000Z',
-                  resolved: null,
-                  reasonCreated: 'scheduled',
-                  reasonResolved: null,
-                }],
+                  runs: [
+                    {
+                      runId: 0,
+                      state: 'running',
+                      started: '2024-01-01T10:00:00.000Z',
+                      resolved: null,
+                      reasonCreated: 'scheduled',
+                      reasonResolved: null,
+                    },
+                  ],
+                },
               },
-            }],
+            ],
           }),
         },
       }));
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown((done) => {
+    suiteTeardown(done => {
       server.close(done);
     });
 
@@ -181,7 +187,7 @@ suite('profiler/routes', () => {
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown((done) => {
+    suiteTeardown(done => {
       server.close(done);
     });
 
@@ -212,7 +218,7 @@ suite('profiler/routes', () => {
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown((done) => {
+    suiteTeardown(done => {
       server.close(done);
     });
 
@@ -240,7 +246,7 @@ suite('profiler/routes', () => {
   // Helper: mock global.fetch for testing artifact downloads
   function mockFetch(responses) {
     const original = global.fetch;
-    global.fetch = async (url) => {
+    global.fetch = async url => {
       for (const [pattern, response] of Object.entries(responses)) {
         if (url.includes(pattern)) {
           if (typeof response === 'function') {
@@ -251,7 +257,9 @@ suite('profiler/routes', () => {
       }
       return { ok: false, status: 404 };
     };
-    return () => { global.fetch = original; };
+    return () => {
+      global.fetch = original;
+    };
   }
 
   suite('task log profile endpoint', () => {
@@ -281,14 +289,13 @@ suite('profiler/routes', () => {
         queue: {
           task: async () => completedTask.task,
           status: async () => ({ status: completedTask.status }),
-          buildUrl: (_method, taskId, name) =>
-            `https://queue.test/task/${taskId}/artifacts/${name}`,
+          buildUrl: (_method, taskId, name) => `https://queue.test/task/${taskId}/artifacts/${name}`,
         },
       }));
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown((done) => {
+    suiteTeardown(done => {
       restoreFetch();
       server.close(done);
     });
@@ -329,7 +336,11 @@ suite('profiler/routes', () => {
         'live.log': () => ({
           ok: true,
           headers: new Headers({ 'content-length': String(300 * 1024 * 1024) }),
-          body: new ReadableStream({ start(controller) { controller.close(); } }),
+          body: new ReadableStream({
+            start(controller) {
+              controller.close();
+            },
+          }),
         }),
       });
 
@@ -337,14 +348,13 @@ suite('profiler/routes', () => {
         queue: {
           task: async () => completedTask.task,
           status: async () => ({ status: completedTask.status }),
-          buildUrl: (_method, taskId, name) =>
-            `https://queue.test/task/${taskId}/artifacts/${name}`,
+          buildUrl: (_method, taskId, name) => `https://queue.test/task/${taskId}/artifacts/${name}`,
         },
       }));
       ({ server, port } = await startServer(app));
     });
 
-    suiteTeardown((done) => {
+    suiteTeardown(done => {
       restoreFetch();
       server.close(done);
     });

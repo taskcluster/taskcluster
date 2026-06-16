@@ -13,7 +13,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   suite('Artifact Queries GraphQL', () => {
     test('artifacts query works', async () => {
       const client = helper.getHttpClient();
-      const taskId = "artifact-id";
+      const taskId = 'artifact-id';
       const runId = 123456;
       const getArtifacts = await helper.loadFixture('artifacts.graphql');
 
@@ -32,7 +32,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     test('latest artifacts query works', async () => {
       const client = helper.getHttpClient();
-      const taskId = "artifact-id";
+      const taskId = 'artifact-id';
       const getLatestArtifacts = await helper.loadFixture('latestArtifacts.graphql');
 
       const response = await client.query({
@@ -59,38 +59,37 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const payload = {
         artifactsCreated: {
           artifact: {
-            name: "name",
+            name: 'name',
           },
         },
       };
 
       const asyncIterator = new Object();
-      asyncIterator[Symbol.asyncIterator] = async function*() {
+      asyncIterator[Symbol.asyncIterator] = async function* () {
         yield payload;
       };
 
       helper.setNextAsyncIterator(asyncIterator);
 
       let subscriptionResult;
-      const subscription = client.subscribe({
-        query: gql`${artifactsCreated}`,
-        variables: {
-          taskGroupId: "groupId",
-        },
-      }).subscribe(
-        (value) => subscriptionResult = value,
-        (error) => console.log(error),
-      );
+      const subscription = client
+        .subscribe({
+          query: gql`${artifactsCreated}`,
+          variables: {
+            taskGroupId: 'groupId',
+          },
+        })
+        .subscribe(
+          value => (subscriptionResult = value),
+          error => console.log(error)
+        );
 
-      await testing.poll(
-        () => assert(subscriptionResult),
-        100, 10);
+      await testing.poll(() => assert(subscriptionResult), 100, 10);
 
-      assert.equal(subscriptionResult.data.artifactsCreated.artifact.name, "name");
+      assert.equal(subscriptionResult.data.artifactsCreated.artifact.name, 'name');
 
       subscription.unsubscribe();
       subscriptionClient.close();
     });
   });
-
 });

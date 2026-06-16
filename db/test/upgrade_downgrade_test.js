@@ -40,7 +40,8 @@ suite(testing.suiteName(), () => {
 
   const assertNoPermissions = async () => {
     await helper.withDbClient(async client => {
-      const res = await client.query(`
+      const res = await client.query(
+        `
         select grantee, table_name, privilege_type
           from information_schema.table_privileges
           where table_schema = 'public'
@@ -53,7 +54,9 @@ suite(testing.suiteName(), () => {
           where table_schema = 'public'
            and grantee like $1 || '\\_%'
            and table_catalog = current_catalog
-           and table_name != 'tcversion'`, ['test']);
+           and table_name != 'tcversion'`,
+        ['test']
+      );
       assert.deepEqual(res.rows, []);
     });
   };

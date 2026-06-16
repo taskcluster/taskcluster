@@ -39,5 +39,5 @@ const loaders = [
 export default (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId, traceId) =>
   Object.assign(
     {},
-    ...loaders.map(loader => loader(clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId, traceId)),
+    ...loaders.map(loader => loader(clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId, traceId))
   );

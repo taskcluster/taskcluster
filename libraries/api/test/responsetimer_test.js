@@ -19,41 +19,50 @@ suite(testing.suiteName(), () => {
     apiVersion: 'v1',
   });
 
-  builder.declare({
-    method: 'get',
-    route: '/single-param/:myparam',
-    name: 'testParam',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-    scopes: null,
-  }, (req, res) => {
-    res.status(200).send(req.params.myparam);
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/single-param/:myparam',
+      name: 'testParam',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      scopes: null,
+    },
+    (req, res) => {
+      res.status(200).send(req.params.myparam);
+    }
+  );
 
-  builder.declare({
-    method: 'get',
-    route: '/slash-param/:name(*)',
-    name: 'testSlashParam',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-    scopes: null,
-  }, (req, res) => {
-    res.status(404).send(req.params.name);
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/slash-param/:name(*)',
+      name: 'testSlashParam',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      scopes: null,
+    },
+    (req, res) => {
+      res.status(404).send(req.params.name);
+    }
+  );
 
-  builder.declare({
-    method: 'get',
-    route: '/another-param/:name(*)',
-    name: 'testAnotherParam',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-    scopes: null,
-  }, (req, res) => {
-    res.status(500).send(req.params.name);
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/another-param/:name(*)',
+      name: 'testAnotherParam',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+      scopes: null,
+    },
+    (req, res) => {
+      res.status(500).send(req.params.name);
+    }
+  );
 
   test('single parameter', async () => {
     const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);

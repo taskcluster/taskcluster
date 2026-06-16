@@ -32,7 +32,12 @@ suite(path.basename(__filename), () => {
         }
 
         assert.deepEqual(got, range(1000));
-        assert.deepEqual(calls, range(0, 1000, 13).map(i => [13, i]).concat([[13, 1000]]));
+        assert.deepEqual(
+          calls,
+          range(0, 1000, 13)
+            .map(i => [13, i])
+            .concat([[13, 1000]])
+        );
       });
 
       test('batch size smaller than requested', async () => {
@@ -75,10 +80,10 @@ suite(path.basename(__filename), () => {
           if (maxSize) {
             size = Math.min(size, maxSize);
           }
-          const filtered = data(A, B)
-            .filter(({ a, b }) =>
-              after.after_a_in === null ||
-              a > after.after_a_in || (a === after.after_a_in && b > after.after_b_in));
+          const filtered = data(A, B).filter(
+            ({ a, b }) =>
+              after.after_a_in === null || a > after.after_a_in || (a === after.after_a_in && b > after.after_b_in)
+          );
           return filtered.slice(0, size);
         };
       };
@@ -134,7 +139,9 @@ suite(path.basename(__filename), () => {
         assert.rejects(async () => {
           for await (const _ of paginatedIterator({
             indexColumns,
-            fetch: async () => { throw new Error('uhoh'); },
+            fetch: async () => {
+              throw new Error('uhoh');
+            },
           })) {
             assert(false); // never gets here..
           }

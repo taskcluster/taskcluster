@@ -49,7 +49,8 @@ export class References {
     return new References({
       rootUrl: undefined,
       references,
-      schemas });
+      schemas,
+    });
   }
 
   /**
@@ -213,8 +214,7 @@ export class References {
     }
 
     if (!this._schemasById) {
-      this._schemasById = this.schemas.reduce(
-        (schemas, { content }) => schemas.set(content.$id, content), new Map());
+      this._schemasById = this.schemas.reduce((schemas, { content }) => schemas.set(content.$id, content), new Map());
     }
 
     return this._schemasById.get($id);
@@ -253,7 +253,7 @@ export class References {
       return this.asAbstract().asAbsolute(rootUrl);
     }
 
-    const withRootUrl = uri => uri[0] === '/' ? rootUrl + uri : uri;
+    const withRootUrl = uri => (uri[0] === '/' ? rootUrl + uri : uri);
 
     return new References({
       rootUrl,
@@ -263,23 +263,21 @@ export class References {
 
   _withRewrittenUrls(rewrite) {
     return {
-      references:
-        this.references.map(({ content, filename }) => ({
-          content: {
-            ...content,
-            $schema: content.$schema && rewrite(content.$schema),
-          },
-          filename,
-        })),
-      schemas:
-        this.schemas.map(({ content, filename }) => ({
-          content: {
-            ...content,
-            $schema: content.$schema && rewrite(content.$schema),
-            $id: content.$id && rewrite(content.$id),
-          },
-          filename,
-        })),
+      references: this.references.map(({ content, filename }) => ({
+        content: {
+          ...content,
+          $schema: content.$schema && rewrite(content.$schema),
+        },
+        filename,
+      })),
+      schemas: this.schemas.map(({ content, filename }) => ({
+        content: {
+          ...content,
+          $schema: content.$schema && rewrite(content.$schema),
+          $id: content.$id && rewrite(content.$id),
+        },
+        filename,
+      })),
     };
   }
 }

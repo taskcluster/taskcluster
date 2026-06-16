@@ -70,14 +70,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
       monitor,
       publisher,
       queueService: {
-        pollPendingQueue: (_taskQueueId) => () => [{
-          taskId,
-          runId: 0,
-          hintId: 'hint1',
-          release: async () => { },
-          remove: async () => { },
-        }],
-        putClaimMessage: () => { },
+        pollPendingQueue: _taskQueueId => () => [
+          {
+            taskId,
+            runId: 0,
+            hintId: 'hint1',
+            release: async () => {},
+            remove: async () => {},
+          },
+        ],
+        putClaimMessage: () => {},
       },
       claimTimeout: 1000,
       credentials: cfg.taskcluster.credentials,
@@ -107,14 +109,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
       monitor,
       publisher,
       queueService: {
-        pollPendingQueue: (_taskQueueId) => () => {
+        pollPendingQueue: _taskQueueId => () => {
           calls++;
           if (calls < 3) {
             throw new Error('error');
           }
           return [];
         },
-        putClaimMessage: () => { },
+        putClaimMessage: () => {},
       },
       claimTimeout: 1000,
       credentials: cfg.taskcluster.credentials,
@@ -125,7 +127,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
     const tryCall = async () => {
       try {
-        return await workClaimer.claim('taskQueue/Id', 'workerGroup', 'workerId', 3, new Promise(resolve => setTimeout(resolve, 1000)));
+        return await workClaimer.claim(
+          'taskQueue/Id',
+          'workerGroup',
+          'workerId',
+          3,
+          new Promise(resolve => setTimeout(resolve, 1000))
+        );
       } catch {
         return 0;
       }

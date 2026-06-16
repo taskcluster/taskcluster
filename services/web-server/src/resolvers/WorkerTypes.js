@@ -5,22 +5,14 @@ export default {
     DEPRECATED: 'deprecated',
   },
   WorkerType: {
-    workers(
-      { provisionerId, workerType },
-      { connection },
-      { loaders },
-    ) {
+    workers({ provisionerId, workerType }, { connection }, { loaders }) {
       return loaders.workers.load({
         provisionerId,
         workerType,
         connection,
       });
     },
-    worker(
-      { provisionerId, workerType },
-      { workerGroup, workerId },
-      { loaders },
-    ) {
+    worker({ provisionerId, workerType }, { workerGroup, workerId }, { loaders }) {
       return loaders.worker.load({
         provisionerId,
         workerType,

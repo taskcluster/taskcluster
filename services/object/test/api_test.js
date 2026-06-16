@@ -73,18 +73,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       await helper.setBackendConfig({ backends: {}, backendMap: [] });
       await assert.rejects(
-        () => helper.apiClient.createUpload('public/foo', {
-          projectId: 'x',
-          uploadId,
-          expires: taskcluster.fromNow('1 year'),
-          proposedUploadMethods: {
-            dataInline: {
-              contentType: 'application/binary',
-              objectData: data.toString('base64'),
+        () =>
+          helper.apiClient.createUpload('public/foo', {
+            projectId: 'x',
+            uploadId,
+            expires: taskcluster.fromNow('1 year'),
+            proposedUploadMethods: {
+              dataInline: {
+                contentType: 'application/binary',
+                objectData: data.toString('base64'),
+              },
             },
-          },
-        }),
-        err => err.statusCode === 400);
+          }),
+        err => err.statusCode === 400
+      );
     });
 
     test('should return 409 if object is already uploaded', async () => {
@@ -110,13 +112,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // note that the upload is completed during the call to createUpload, so
       // idempotency doesn't apply
       await assert.rejects(
-        () => helper.apiClient.createUpload('public/foo', {
-          projectId: 'x',
-          uploadId,
-          expires,
-          proposedUploadMethods,
-        }),
-        err => err.code === 'RequestConflict' && err.statusCode === 409,
+        () =>
+          helper.apiClient.createUpload('public/foo', {
+            projectId: 'x',
+            uploadId,
+            expires,
+            proposedUploadMethods,
+          }),
+        err => err.code === 'RequestConflict' && err.statusCode === 409
       );
     });
 
@@ -133,22 +136,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
 
       await assert.rejects(
-        () => helper.apiClient.createUpload('public/foo', {
-          projectId: 'x',
-          uploadId: taskcluster.slugid(),
-          expires,
-          proposedUploadMethods,
-        }),
-        err => err.code === 'RequestConflict' && err.statusCode === 409,
+        () =>
+          helper.apiClient.createUpload('public/foo', {
+            projectId: 'x',
+            uploadId: taskcluster.slugid(),
+            expires,
+            proposedUploadMethods,
+          }),
+        err => err.code === 'RequestConflict' && err.statusCode === 409
       );
       await assert.rejects(
-        () => helper.apiClient.createUpload('public/foo', {
-          projectId: 'x',
-          uploadId,
-          expires: taskcluster.fromNow('2 days'),
-          proposedUploadMethods,
-        }),
-        err => err.code === 'RequestConflict' && err.statusCode === 409,
+        () =>
+          helper.apiClient.createUpload('public/foo', {
+            projectId: 'x',
+            uploadId,
+            expires: taskcluster.fromNow('2 days'),
+            proposedUploadMethods,
+          }),
+        err => err.code === 'RequestConflict' && err.statusCode === 409
       );
     });
 
@@ -242,14 +247,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
 
       await assert.rejects(
-        () => helper.apiClient.createUpload('public/foo', {
-          projectId: 'x',
-          uploadId,
-          expires,
-          hashes: { sha256: sha256b }, // different sha256 hash
-          proposedUploadMethods: {},
-        }),
-        err => err.statusCode === 409);
+        () =>
+          helper.apiClient.createUpload('public/foo', {
+            projectId: 'x',
+            uploadId,
+            expires,
+            hashes: { sha256: sha256b }, // different sha256 hash
+            proposedUploadMethods: {},
+          }),
+        err => err.statusCode === 409
+      );
     });
 
     test('should allow a putUrl method', async () => {
@@ -291,13 +298,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         TestBackend.failUpload = true;
 
         await assert.rejects(
-          () => helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
-            projectId: 'x',
-            uploadId,
-            expires,
-            proposedUploadMethods,
-          }),
-          err => err.statusCode === 500,
+          () =>
+            helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
+              projectId: 'x',
+              uploadId,
+              expires,
+              proposedUploadMethods,
+            }),
+          err => err.statusCode === 500
         );
 
         // switch back to succeeding
@@ -305,24 +313,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
         // should fail with an incorrect uploadId
         await assert.rejects(
-          () => helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
-            projectId: 'x',
-            uploadId: taskcluster.slugid(),
-            expires,
-            proposedUploadMethods,
-          }),
-          err => err.statusCode === 409,
+          () =>
+            helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
+              projectId: 'x',
+              uploadId: taskcluster.slugid(),
+              expires,
+              proposedUploadMethods,
+            }),
+          err => err.statusCode === 409
         );
 
         // should fail with an incorrect expires
         await assert.rejects(
-          () => helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
-            projectId: 'x',
-            uploadId,
-            expires: taskcluster.fromNow('2 days'),
-            proposedUploadMethods,
-          }),
-          err => err.statusCode === 409,
+          () =>
+            helper.apiClient.use({ retries: 0 }).createUpload('public/foo', {
+              projectId: 'x',
+              uploadId,
+              expires: taskcluster.fromNow('2 days'),
+              proposedUploadMethods,
+            }),
+          err => err.statusCode === 409
         );
 
         // should succeed this time..
@@ -332,7 +342,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           expires,
           proposedUploadMethods,
         });
-
       } finally {
         delete TestBackend.failUpload;
       }
@@ -340,10 +349,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // check that the error was logged
       const monitor = await helper.load('monitor');
       assert.equal(
-        monitor.manager.messages.filter(
-          ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-        ).length,
-        1);
+        monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+          .length,
+        1
+      );
       monitor.manager.reset();
     });
   });
@@ -371,21 +380,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const uploadId = taskcluster.slugid();
       await assert.rejects(
         () => helper.apiClient.finishUpload('no/such', { uploadId, projectId }),
-        err => err.statusCode === 404);
+        err => err.statusCode === 404
+      );
     });
 
     test('fails with incorrect uploadId', async () => {
       await makeUpload('foo/bar');
       await assert.rejects(
         () => helper.apiClient.finishUpload('foo/bar', { uploadId: taskcluster.slugid(), projectId }),
-        err => err.statusCode === 409);
+        err => err.statusCode === 409
+      );
     });
 
     test('fails with incorrect projectId', async () => {
       const uploadId = await makeUpload('foo/bar');
       await assert.rejects(
         () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId: 'different' }),
-        err => err.statusCode === 400);
+        err => err.statusCode === 400
+      );
     });
 
     test('completes an upload, including hashes', async () => {
@@ -394,7 +406,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // can't download this object yet..
       assert.rejects(
         () => helper.apiClient.startDownload('foo/bar', { acceptDownloadMethods: { simple: true } }),
-        err => err.stautsCode === 404);
+        err => err.stautsCode === 404
+      );
 
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256 } });
 
@@ -416,7 +429,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
       await assert.rejects(
         () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId: 'nosuch' }),
-        err => err.statusCode === 400);
+        err => err.statusCode === 400
+      );
     });
 
     test('succeeds for an already-completed upload with hashes', async () => {
@@ -430,7 +444,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256 } });
       await assert.rejects(
         () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256, sha512 } }),
-        err => err.statusCode === 409);
+        err => err.statusCode === 409
+      );
     });
 
     test('fails for an already-completed upload with changed hashes', async () => {
@@ -439,16 +454,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const badSha256 = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
       await assert.rejects(
         () => helper.apiClient.finishUpload('foo/bar', { uploadId, projectId, hashes: { sha256: badSha256 } }),
-        err => err.statusCode === 409);
+        err => err.statusCode === 409
+      );
     });
 
     test('completes an upload, even if there are no hashes for the object', async () => {
       const uploadId = await makeUpload('foo/bar');
       await helper.apiClient.finishUpload('foo/bar', { uploadId, projectId });
       const res = await helper.apiClient.object('foo/bar');
-      assert.deepEqual(res.hashes, { });
+      assert.deepEqual(res.hashes, {});
     });
-
   });
 
   suite('object method', () => {
@@ -471,7 +486,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('404s for an object that does not exist', async () => {
       await assert.rejects(
         () => helper.apiClient.object('public/foo'),
-        err => err.statusCode === 404);
+        err => err.statusCode === 404
+      );
     });
   });
 
@@ -479,7 +495,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('startDownload for simple method succeeds', async () => {
       const data = await createTestObject('public/foo');
       const res = await helper.apiClient.startDownload('public/foo', {
-        acceptDownloadMethods: { 'simple': true },
+        acceptDownloadMethods: { simple: true },
       });
       assert.deepEqual(res, {
         method: 'simple',
@@ -491,16 +507,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await createTestObject('public/foo');
       await helper.setBackendConfig({ backends: {}, backendMap: [] });
       await assert.rejects(
-        () => helper.apiClient.startDownload('public/foo', {
-          acceptDownloadMethods: { 'simple': true },
-        }),
-        err => err.statusCode === 400);
+        () =>
+          helper.apiClient.startDownload('public/foo', {
+            acceptDownloadMethods: { simple: true },
+          }),
+        err => err.statusCode === 400
+      );
     });
 
     test('startDownload for a supported method succeeds', async () => {
       const data = await createTestObject('public/foo');
       const res = await helper.apiClient.startDownload('public/foo', {
-        acceptDownloadMethods: { 'simple': true },
+        acceptDownloadMethods: { simple: true },
       });
       assert.deepEqual(res, {
         method: 'simple',
@@ -512,7 +530,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await createTestObject('dl/intercept');
 
       const res = await helper.apiClient.startDownload('dl/intercept', {
-        acceptDownloadMethods: { 'simple': true },
+        acceptDownloadMethods: { simple: true },
       });
 
       assert.deepEqual(res, {
@@ -524,10 +542,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('startDownload for an unsupported method returns 406', async () => {
       await createTestObject('has/no/methods');
       await assert.rejects(
-        () => helper.apiClient.startDownload('has/no/methods', {
-          acceptDownloadMethods: { simple: true },
-        }),
-        err => err.code === 'NoMatchingMethod' && err.statusCode === 406,
+        () =>
+          helper.apiClient.startDownload('has/no/methods', {
+            acceptDownloadMethods: { simple: true },
+          }),
+        err => err.code === 'NoMatchingMethod' && err.statusCode === 406
       );
     });
   });
@@ -536,7 +555,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('simple download redirects to a URL', async () => {
       const data = await createTestObject('foo/bar');
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'foo/bar');
-      const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
+      const res = await request
+        .get(downloadUrl)
+        .redirects(0)
+        .ok(res => res.status < 400);
       assert.equal(res.statusCode, 303);
       assert.equal(res.headers.location, toDataUrl(data));
     });
@@ -544,14 +566,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('simple download handles middleware', async () => {
       await createTestObject('simple/intercept');
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'simple/intercept');
-      const res = await request.get(downloadUrl).redirects(0).ok(res => res.status < 400);
+      const res = await request
+        .get(downloadUrl)
+        .redirects(0)
+        .ok(res => res.status < 400);
       assert.equal(res.statusCode, 303);
       assert.equal(res.headers.location, 'http://intercepted');
     });
 
     test('simple download for missing object returns 404', async () => {
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'no/such');
-      const res = await request.get(downloadUrl).redirects(0).ok(res => res.status === 404);
+      const res = await request
+        .get(downloadUrl)
+        .redirects(0)
+        .ok(res => res.status === 404);
       assert.equal(res.statusCode, 404);
     });
 
@@ -560,13 +588,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await await helper.setBackendConfig({ backends: {}, backendMap: [] });
       await assert.rejects(
         () => helper.apiClient.download('public/foo'),
-        err => err.statusCode === 400);
+        err => err.statusCode === 400
+      );
     });
 
     test('simple download for object that does not support the method returns 406', async () => {
       await createTestObject('has/no/methods');
       const downloadUrl = helper.apiClient.externalBuildSignedUrl(helper.apiClient.download, 'has/no/methods');
-      const res = await request.get(downloadUrl).redirects(0).ok(res => res.status === 406);
+      const res = await request
+        .get(downloadUrl)
+        .redirects(0)
+        .ok(res => res.status === 406);
       assert.equal(res.statusCode, 406);
     });
   });

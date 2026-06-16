@@ -79,14 +79,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
     debug('### Cancel Task 10x at once');
     // allSettled waits for all attempts to finish before returning
-    const res = await Promise.allSettled(_.range(10).map(async () => {
-      const r2 = await helper.queue.cancelTask(taskId);
-      assume(r2.status.state).equals('exception');
-      assume(r2.status.runs.length).equals(1);
-      assume(r2.status.runs[0].state).equals('exception');
-      assume(r2.status.runs[0].reasonCreated).equals('exception');
-      assume(r2.status.runs[0].reasonResolved).equals('canceled');
-    }));
+    const res = await Promise.allSettled(
+      _.range(10).map(async () => {
+        const r2 = await helper.queue.cancelTask(taskId);
+        assume(r2.status.state).equals('exception');
+        assume(r2.status.runs.length).equals(1);
+        assume(r2.status.runs[0].state).equals('exception');
+        assume(r2.status.runs[0].reasonCreated).equals('exception');
+        assume(r2.status.runs[0].reasonResolved).equals('canceled');
+      })
+    );
     // raise any exceptions in any of those calls
     for (const { reason } of res) {
       if (reason) {
@@ -109,14 +111,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
     debug('### Cancel Task 10x at once');
     // allSettled waits for all attempts to finish before returning
-    const res = await Promise.allSettled(_.range(10).map(async () => {
-      const r2 = await helper.queue.cancelTask(taskId);
-      assume(r2.status.state).equals('exception');
-      assume(r2.status.runs.length).equals(1);
-      assume(r2.status.runs[0].state).equals('exception');
-      assume(r2.status.runs[0].reasonCreated).equals('scheduled');
-      assume(r2.status.runs[0].reasonResolved).equals('canceled');
-    }));
+    const res = await Promise.allSettled(
+      _.range(10).map(async () => {
+        const r2 = await helper.queue.cancelTask(taskId);
+        assume(r2.status.state).equals('exception');
+        assume(r2.status.runs.length).equals(1);
+        assume(r2.status.runs[0].state).equals('exception');
+        assume(r2.status.runs[0].reasonCreated).equals('scheduled');
+        assume(r2.status.runs[0].reasonResolved).equals('canceled');
+      })
+    );
     // raise any exceptions in any of those calls
     for (const { reason } of res) {
       if (reason) {
@@ -144,7 +148,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     helper.scopes('queue:cancel-task-in-project:WRONG-PROJECT');
     await assert.rejects(
       () => helper.queue.cancelTask(taskId),
-      err => err.statusCode === 403);
+      err => err.statusCode === 403
+    );
 
     helper.clearPulseMessages();
   });

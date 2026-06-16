@@ -177,18 +177,25 @@ suite(testing.suiteName(), () => {
     // histograms store values in buckets
     assert.equal(histogram.values.filter(({ value }) => value === 33).length, 1);
 
-    assert.ok(metrics.find(({ name }) => name.endsWith('shared_counter')),
-      'expected shared metric in default registry');
+    assert.ok(
+      metrics.find(({ name }) => name.endsWith('shared_counter')),
+      'expected shared metric in default registry'
+    );
 
     // special counter should not be in the default registry
-    assert.equal(metrics.find(({ name }) => name.endsWith('separate_counter')), undefined);
+    assert.equal(
+      metrics.find(({ name }) => name.endsWith('separate_counter')),
+      undefined
+    );
 
     const specialMetrics = await monitor.manager._prometheus.metricsJson('special');
     const specialCounter = specialMetrics.find(({ name }) => name.endsWith('separate_counter'));
     assert.equal(specialCounter.values[0].value, 1);
 
-    assert.ok(specialMetrics.find(({ name }) => name.endsWith('shared_counter')),
-      'expected shared metric in special registry');
+    assert.ok(
+      specialMetrics.find(({ name }) => name.endsWith('shared_counter')),
+      'expected shared metric in special registry'
+    );
   });
 
   test('throws error when invalid metric names are used', async () => {

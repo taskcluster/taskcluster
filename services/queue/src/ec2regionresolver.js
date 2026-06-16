@@ -87,16 +87,17 @@ class EC2RegionResolver {
 
   _setIpRanges(body) {
     // Add ip-ranges to regions
-    this.ipRanges = body.prefixes.filter(prefix => {
-      // Filter ip-ranges we're interested in
-      return prefix.service === 'EC2' &&
-             this.regions.indexOf(prefix.region) !== -1;
-    }).map(prefix => {
-      return {
-        range: new Netmask(prefix.ip_prefix),
-        region: prefix.region,
-      };
-    });
+    this.ipRanges = body.prefixes
+      .filter(prefix => {
+        // Filter ip-ranges we're interested in
+        return prefix.service === 'EC2' && this.regions.indexOf(prefix.region) !== -1;
+      })
+      .map(prefix => {
+        return {
+          range: new Netmask(prefix.ip_prefix),
+          region: prefix.region,
+        };
+      });
   }
 
   /** Get region that request originates from, or null if none */

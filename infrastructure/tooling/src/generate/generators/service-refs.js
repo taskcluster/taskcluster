@@ -54,10 +54,7 @@ tasks.push({
     'generic-worker-schemas',
     'docker-worker-schemas',
   ],
-  provides: [
-    'target-references',
-    'references-json',
-  ],
+  provides: ['target-references', 'references-json'],
   run: async (requirements, _utils) => {
     await mkdirp(genDir);
 
@@ -82,8 +79,7 @@ tasks.push({
     // round-trip that through References to validate and disambiguate
     // everything
     const references = References.fromSerializable({
-      serializable: [...files.entries()].map(
-        ([filename, content]) => ({ filename, content })),
+      serializable: [...files.entries()].map(([filename, content]) => ({ filename, content })),
     });
 
     // sort the serializable output by filename to ensure consistency

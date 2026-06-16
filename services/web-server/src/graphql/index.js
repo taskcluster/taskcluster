@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-const loadGraphql = (filename) => fs.readFileSync(path.join(__dirname, filename), 'utf8');
+const loadGraphql = filename => fs.readFileSync(path.join(__dirname, filename), 'utf8');
 
 const graphqls = [
   // read Root.graphql first

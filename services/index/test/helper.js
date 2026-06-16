@@ -21,8 +21,7 @@ testing.withMonitor(helper);
 
 // set up the testing secrets
 export const secrets = new testing.Secrets({
-  secrets: {
-  },
+  secrets: {},
   load: load,
 });
 helper.secrets = secrets;
@@ -60,7 +59,7 @@ helper.withFakeQueue = withFakeQueue;
 
 let anonymousScopes = [];
 
-helper.setAnonymousScopes = (scopes) => {
+helper.setAnonymousScopes = scopes => {
   anonymousScopes = scopes;
 };
 
@@ -70,7 +69,7 @@ export const withFakeAnonymousScopeCache = skipping => {
       return;
     }
 
-    load.inject('isPublicArtifact', (artifactName) => {
+    load.inject('isPublicArtifact', artifactName => {
       return satisfiesExpression(anonymousScopes, `queue:get-artifact:${artifactName}`);
     });
   });
@@ -104,9 +103,12 @@ export const withServer = skipping => {
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
     load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl }
+    );
 
     helper.Index = taskcluster.createClient(builder.reference());
 
@@ -167,7 +169,7 @@ const stubbedQueue = () => {
       accessToken: 'none',
     },
     fake: {
-      task: async (taskId) => {
+      task: async taskId => {
         const task = tasks[taskId];
         assert(task, `fake queue has no task ${taskId}`);
         return task;
@@ -194,10 +196,7 @@ const stubbedQueue = () => {
 
 export const resetTables = () => {
   setup('reset tables', async () => {
-    await testing.resetTables({ tableNames: [
-      'indexed_tasks',
-      'index_namespaces',
-    ] });
+    await testing.resetTables({ tableNames: ['indexed_tasks', 'index_namespaces'] });
   });
 };
 helper.resetTables = resetTables;

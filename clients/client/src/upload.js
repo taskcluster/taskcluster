@@ -7,7 +7,7 @@ const DATA_INLINE_MAX_SIZE = 8192;
 
 const putUrl = async ({ streamFactory, uploadMethod, retryCfg }) => {
   const { url, headers } = uploadMethod.putUrl;
-  await retry(retryCfg, async (retriableError) => {
+  await retry(retryCfg, async retriableError => {
     try {
       await got.put(url, {
         headers,
@@ -90,7 +90,7 @@ export const upload = async ({
   } else if (res.uploadMethod.putUrl) {
     await putUrl({ streamFactory: hashStreamFactory, uploadMethod: res.uploadMethod, retryCfg });
   } else {
-    throw new Error("Could not negotiate an upload method");
+    throw new Error('Could not negotiate an upload method');
   }
 
   const hashes = hashStream.hashes(contentLength);

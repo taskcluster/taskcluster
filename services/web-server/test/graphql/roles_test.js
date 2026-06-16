@@ -15,8 +15,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
-        scopes: ["scope1"],
-        description: "Test Scope",
+        scopes: ['scope1'],
+        description: 'Test Scope',
       };
 
       const createRoleMutation = await helper.loadFixture('createRole.graphql');
@@ -46,8 +46,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
-        scopes: ["scope1"],
-        description: "Test Scope",
+        scopes: ['scope1'],
+        description: 'Test Scope',
       };
 
       const createRoleMutation = await helper.loadFixture('createRole.graphql');
@@ -75,8 +75,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
-        scopes: ["scope1"],
-        description: "Test Scope 1",
+        scopes: ['scope1'],
+        description: 'Test Scope 1',
       };
       const createRoleMutation = await helper.loadFixture('createRole.graphql');
       const listRoleIdsQuery = await helper.loadFixture('listRoleIds.graphql');
@@ -103,8 +103,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
-        scopes: ["scope1"],
-        description: "Test Scope",
+        scopes: ['scope1'],
+        description: 'Test Scope',
       };
       const createRoleMutation = await helper.loadFixture('createRole.graphql');
 
@@ -124,8 +124,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
-        scopes: ["scope1"],
-        description: "Test Scope",
+        scopes: ['scope1'],
+        description: 'Test Scope',
       };
       const createRoleMutation = await helper.loadFixture('createRole.graphql');
       const roleQuery = await helper.loadFixture('role.graphql');
@@ -141,7 +141,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
 
       // 2. update role
-      role.scopes = ["scope2"];
+      role.scopes = ['scope2'];
 
       await client.mutate({
         mutation: gql`${updateRoleMutation}`,
@@ -167,8 +167,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
-        scopes: ["scope1"],
-        description: "Test Scope",
+        scopes: ['scope1'],
+        description: 'Test Scope',
       };
       const createRoleMutation = await helper.loadFixture('createRole.graphql');
       const deleteRoleMutation = await helper.loadFixture('deleteRole.graphql');

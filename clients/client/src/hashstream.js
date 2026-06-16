@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 
 // The subset of hashes supported by HashStream which are "accepted" as per the
 // object service's schemas.
-export const ACCEPTABLE_HASHES = new Set(["sha256", "sha512"]);
+export const ACCEPTABLE_HASHES = new Set(['sha256', 'sha512']);
 
 /**
  * A stream that hashes the bytes passing through it

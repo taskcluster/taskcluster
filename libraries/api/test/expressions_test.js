@@ -4,7 +4,6 @@ import ScopeExpressionTemplate from '../src/expressions.js';
 import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), () => {
-
   function scenario(expr, params, result, shouldFail = false) {
     return () => {
       try {
@@ -32,11 +31,16 @@ suite(testing.suiteName(), () => {
     [{ if: 'foo', then: { AllOf: ['bar'] }, else: 'test' }, { foo: false }, 'test'],
     [{ if: 'foo', then: { AllOf: ['bar'] } }, { foo: true }, { AllOf: ['bar'] }],
     [{ if: 'foo', then: { AllOf: ['bar:<baz>'] } }, { foo: true, baz: 'hi' }, { AllOf: ['bar:hi'] }],
-    [{ AllOf: [{ for: 'foo', in: 'bar', each: 'aa:<foo>' }] }, { bar: ['aaa', 'bbb'] }, { AllOf: ['aa:aaa', 'aa:bbb'] }],
+    [
+      { AllOf: [{ for: 'foo', in: 'bar', each: 'aa:<foo>' }] },
+      { bar: ['aaa', 'bbb'] },
+      { AllOf: ['aa:aaa', 'aa:bbb'] },
+    ],
     [
       { AllOf: [{ for: 'foo', in: 'bar', each: 'aa:<foo>:<b>' }] },
       { bar: ['aaa', 'bbb'], b: 'q' },
-      { AllOf: ['aa:aaa:q', 'aa:bbb:q'] }],
+      { AllOf: ['aa:aaa:q', 'aa:bbb:q'] },
+    ],
   ].forEach(([e, p, r]) => {
     test(`${JSON.stringify(e)} with ${JSON.stringify(p)} renders correctly`, scenario(e, p, r));
   });

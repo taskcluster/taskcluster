@@ -35,8 +35,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   suite('expireWorkerPools', () => {
     const checkWP = async workerPoolId => {
-      return WorkerPool.fromDbRows(
-        await helper.db.fns.get_worker_pool_with_launch_configs(workerPoolId));
+      return WorkerPool.fromDbRows(await helper.db.fns.get_worker_pool_with_launch_configs(workerPoolId));
     };
 
     setup(() => {
@@ -79,7 +78,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         config,
         new Date(),
         'test@tc.tc',
-        false);
+        false
+      );
     };
 
     setup(() => {
@@ -117,16 +117,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const workerPoolId = 'pp/wt';
       const providerId = 'testing';
 
-      await makeWP({ workerPoolId, providerId, config: {
-        launchConfigs: ['lc1', 'lc2', 'lc3'],
-      } });
+      await makeWP({
+        workerPoolId,
+        providerId,
+        config: {
+          launchConfigs: ['lc1', 'lc2', 'lc3'],
+        },
+      });
 
       const lc1 = (await getWPLCs(workerPoolId, providerId)).filter(c => c.configuration === 'lc1').pop();
 
       await updateWP(workerPoolId, providerId, {
         launchConfigs: ['lc3', 'lc4'],
       });
-      await makeWorker({ workerPoolId, providerId, expires: taskcluster.fromNow('1 hour'), launchConfigId: lc1.launch_config_id });
+      await makeWorker({
+        workerPoolId,
+        providerId,
+        expires: taskcluster.fromNow('1 hour'),
+        launchConfigId: lc1.launch_config_id,
+      });
 
       await helper.load('expireLaunchConfigs');
       const configs2 = (await getWPLCs(workerPoolId, providerId)).map(c => c.configuration).sort();

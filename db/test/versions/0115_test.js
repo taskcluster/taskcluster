@@ -11,11 +11,19 @@ suite(testing.suiteName(), () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
-    await helper.assertNoIndexOnColumn('worker_pool_errors', 'idx_worker_pool_errors_pool_id_extra_code', 'worker_pool_id');
+    await helper.assertNoIndexOnColumn(
+      'worker_pool_errors',
+      'idx_worker_pool_errors_pool_id_extra_code',
+      'worker_pool_id'
+    );
     await helper.assertNoIndexOnColumn('workers', 'idx_workers_pool_id_state_capacity', 'worker_pool_id');
 
     await helper.upgradeTo(THIS_VERSION);
-    await helper.assertIndexOnColumn('worker_pool_errors', 'idx_worker_pool_errors_pool_id_extra_code', 'worker_pool_id');
+    await helper.assertIndexOnColumn(
+      'worker_pool_errors',
+      'idx_worker_pool_errors_pool_id_extra_code',
+      'worker_pool_id'
+    );
     await helper.assertIndexOnColumn('workers', 'idx_workers_pool_id_state_capacity', 'worker_pool_id');
   });
 });

@@ -14,7 +14,7 @@ const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
 
 /** ZeroCache is an LRU cache instance that contains nothing for caching is disabled */
 const ZeroCache = {
-  get: (_k) => null,
+  get: _k => null,
   set: (_k, _v) => null,
 };
 
@@ -31,8 +31,7 @@ class ScopeResolver extends events.EventEmitter {
     });
     this._maxLastUsedDelay = options.maxLastUsedDelay;
     assert(options.monitor, 'expected an instance of @taskcluster/lib-monitor');
-    assert(/^ *-/.test(options.maxLastUsedDelay),
-      'maxLastUsedDelay must be negative');
+    assert(/^ *-/.test(options.maxLastUsedDelay), 'maxLastUsedDelay must be negative');
 
     this._monitor = options.monitor;
     this.db = options.db;
@@ -117,22 +116,14 @@ class ScopeResolver extends events.EventEmitter {
     this._clientPq = await consume({
       client: pulseClient,
       ephemeral: true,
-      bindings: [
-        authEvents.clientCreated(),
-        authEvents.clientUpdated(),
-        authEvents.clientDeleted(),
-      ],
+      bindings: [authEvents.clientCreated(), authEvents.clientUpdated(), authEvents.clientDeleted()],
       onConnected: () => this.reload(),
       handleMessage: m => this.reloadClient(m.payload.clientId),
     });
     this._rolePq = await consume({
       client: pulseClient,
       ephemeral: true,
-      bindings: [
-        authEvents.roleCreated(),
-        authEvents.roleUpdated(),
-        authEvents.roleDeleted(),
-      ],
+      bindings: [authEvents.roleCreated(), authEvents.roleUpdated(), authEvents.roleDeleted()],
       // no need for both _clientPq and _rolePq to call this.reload()
       // for the same reconnection..
       onConnected: () => {},
@@ -267,7 +258,7 @@ class ScopeResolver extends events.EventEmitter {
     // omit all input scopes that doesn't match ASSUME_PREFIX (ie. match 'assume:')
     const lru = this._disableCache ? ZeroCache : new LRU({ maxSize: 10000 });
 
-    return (inputs) => {
+    return inputs => {
       inputs = ScopeSetBuilder.normalizeScopeSet(inputs);
       // Reduce input to the set of scopes starting with 'assume:'
       const queue = inputs.filter(s => ASSUME_PREFIX.test(s));

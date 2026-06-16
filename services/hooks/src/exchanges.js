@@ -23,13 +23,14 @@ const exchanges = new Exchanges({
 export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-const buildCommonRoutingKey = (_options) => {
+const buildCommonRoutingKey = _options => {
   return [
     {
       name: 'reserved',
-      summary: 'Space reserved for future routing-key entries, you ' +
-                        'should always match this entry with `#`. As ' +
-                        'automatically done by our tooling, if not specified.',
+      summary:
+        'Space reserved for future routing-key entries, you ' +
+        'should always match this entry with `#`. As ' +
+        'automatically done by our tooling, if not specified.',
       multipleWords: true,
       maxSize: 10,
     },
@@ -37,7 +38,7 @@ const buildCommonRoutingKey = (_options) => {
 };
 
 /** Build an AMQP compatible message from a message */
-const commonMessageBuilder = (message) => message;
+const commonMessageBuilder = message => message;
 
 /** Build a routingKey from message */
 /** Empty now, might be useful in the future */
