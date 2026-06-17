@@ -63,7 +63,7 @@ RUN /bin/bash -c "\
 # build the final image
 
 FROM node:24.16.0-alpine AS image
-RUN apk --no-cache add --update nginx bash
+RUN apk --no-cache add --update bash nginx nginx-mod-http-brotli
 COPY --from=build --chown=1000:1000 /base/app /app
 ENV HOME=/app
 WORKDIR /app
