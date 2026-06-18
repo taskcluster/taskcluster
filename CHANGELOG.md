@@ -3,6 +3,65 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v100.4.0
+
+### DEPLOYERS
+
+▶ [minor]
+The worker-manager Azure provider now exposes ARM deployment creation failures and failed deployment operations as a Prometheus counter for observability.
+
+New Prometheus metric:
+- `worker_manager_azure_arm_deployment_errors_total` (counter) - incremented once for each ARM deployment creation failure or failed deployment operation, labeled by `providerId`, `workerPoolId`, `workerGroup`, `errorKind`, `errorCode`, `statusCode`, `provisioningState`, `provisioningOperation`, `targetResourceType`, `vmSize`, and `priority`.
+
+This lets deployers chart Azure ARM deployment creation failures and failed operations by worker pool, region, Azure error code, and VM size in Prometheus/Grafana.
+
+▶ [patch] [#8721](https://github.com/taskcluster/taskcluster/issues/8721)
+The UI and references nginx servers now support Brotli compression in addition to gzip, allowing browser requests that prefer Brotli to receive compressed static assets, schemas, and references.
+
+### USERS
+
+▶ [minor] [bug 2045069](http://bugzil.la/2045069)
+Generic-worker: skip gzip compression for artifacts with extensions matching `.pkg` or `.wasm`.
+
+▶ [patch]
+Fake taskcluster clients now properly raise an error when used in a production `NODE_ENV`
+
+▶ [patch] [#8758](https://github.com/taskcluster/taskcluster/issues/8758)
+The hooks service now properly forwards network errors from failures to contact
+the queue service instead of masking it with some serialization error
+
+### DEVELOPERS
+
+▶ [patch] [#8198](https://github.com/taskcluster/taskcluster/issues/8198)
+The API reference pages now show correct example commands for curl and the
+taskcluster CLI. The curl examples previously showed an invalid
+`Authorization: Bearer` header (Taskcluster uses Hawk authentication); they
+now explain that taskcluster-proxy should be used instead. The taskcluster CLI
+examples previously showed path arguments as named flags (`--taskId value`)
+when the CLI actually requires positional arguments; they are now shown
+correctly.
+
+### OTHER
+
+▶ Additional change not described here: [#8595](https://github.com/taskcluster/taskcluster/issues/8595).
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps-dev): bump @babel/core from 7.25.2 to 7.29.6 in /ui (08cfd7fc60)
+* build(deps): bump form-data from 3.0.4 to 3.0.5 in /ui (24d71c8519)
+* build(deps): bump tar from 7.5.11 to 7.5.16 (931e4d2fb3)
+* build(deps): bump markdown-it from 14.1.1 to 14.2.0 in /ui (494ca6d0a7)
+* build(deps): bump nodemailer from 8.0.7 to 8.0.9 (26197cae1c)
+* build(deps): bump form-data from 2.5.5 to 2.5.6 (3e9f0f3875)
+* build(deps): bump protobufjs from 7.5.8 to 7.6.4 (b68a4c924c)
+* build(deps): bump js-yaml from 4.1.1 to 4.2.0 in /ui (2dfe44aa06)
+* build(deps): bump @grpc/grpc-js from 1.13.4 to 1.14.4 (c365bae46f)
+
+</details>
+
 ## v100.3.0
 
 ### GENERAL
