@@ -3,7 +3,7 @@ import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { modifyRoles } from '../src/data.js';
 
-const sorted = (arr) => {
+const sorted = arr => {
   arr.sort();
   return arr;
 };
@@ -30,8 +30,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       });
     });
 
-    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)),
-      sorted(['my-role']));
+    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)), sorted(['my-role']));
   });
 
   test('add a second role', async () => {
@@ -53,7 +52,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
         last_modified: new Date('2017-01-02'),
       });
     });
-    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)),
-      sorted(['my-role', 'second-role']));
+    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)), sorted(['my-role', 'second-role']));
   });
 });

@@ -38,9 +38,13 @@ export default {
       return loaders.hookStatus.load({ hookGroupId, hookId });
     },
     lastFire({ hookGroupId, hookId }, _args, { loaders }) {
-      return loaders.hookLastFires.load({
-        hookGroupId, hookId, connection: { limit: 1 },
-      }).then(({ lastFires }) => lastFires?.[0]);
+      return loaders.hookLastFires
+        .load({
+          hookGroupId,
+          hookId,
+          connection: { limit: 1 },
+        })
+        .then(({ lastFires }) => lastFires?.[0]);
     },
   },
   HookGroup: {
@@ -67,11 +71,7 @@ export default {
   },
   Mutation: {
     async triggerHook(_parent, { hookGroupId, hookId, payload }, { clients }) {
-      const { status } = await clients.hooks.triggerHook(
-        hookGroupId,
-        hookId,
-        payload,
-      );
+      const { status } = await clients.hooks.triggerHook(hookGroupId, hookId, payload);
 
       return status;
     },

@@ -21,7 +21,8 @@ suite(testing.suiteName(), () => {
   test('getSchema', async () => {
     assert.equal(
       (await getReferences()).getSchema('/schemas/common/manifest-v3.json#').$id,
-      '/schemas/common/manifest-v3.json#');
+      '/schemas/common/manifest-v3.json#'
+    );
   });
 
   test('fromService', async () => {
@@ -44,16 +45,15 @@ suite(testing.suiteName(), () => {
           serviceName: 'testy',
           apiVersion: 'v2',
         },
-      ] });
+      ],
+    });
     assert(references.references.some(r => r.content.serviceName === 'testy'));
     assert(references.schemas.some(s => s.content.$id === 'somefile.json#'));
   });
 
   test('makeSerializable', async () => {
     const references = await getReferences();
-    assert.deepEqual(
-      references.makeSerializable(),
-      makeSerializable({ references }));
+    assert.deepEqual(references.makeSerializable(), makeSerializable({ references }));
   });
 
   test('writes uri-structured', async () => {
@@ -68,30 +68,34 @@ suite(testing.suiteName(), () => {
             serviceName: 'test',
             title: 'Test Service',
             description: 'Test Service',
-            entries: [{
-              type: 'function',
-              name: 'foo',
-              title: 'Foo',
-              description: 'Foo-bar',
-              category: 'Foo',
-              method: 'get',
-              input: 'sch.json#',
-              route: '/foo',
-              args: [],
-              stability: 'experimental',
-            }],
+            entries: [
+              {
+                type: 'function',
+                name: 'foo',
+                title: 'Foo',
+                description: 'Foo-bar',
+                category: 'Foo',
+                method: 'get',
+                input: 'sch.json#',
+                route: '/foo',
+                args: [],
+                stability: 'experimental',
+              },
+            ],
           },
         },
       ],
-      schemas: (await getCommonSchemas()).concat([{
-        filename: 'foo.json',
-        content: {
-          $schema: '/schemas/common/metaschema.json#',
-          $id: '/schemas/test/sch.json#',
-          metadata: { name: 'api', version: 1 },
-          type: 'string',
+      schemas: (await getCommonSchemas()).concat([
+        {
+          filename: 'foo.json',
+          content: {
+            $schema: '/schemas/common/metaschema.json#',
+            $id: '/schemas/test/sch.json#',
+            metadata: { name: 'api', version: 1 },
+            type: 'string',
+          },
         },
-      }]),
+      ]),
     });
 
     await references.writeUriStructured({ directory: '/refdata' });
@@ -109,11 +113,7 @@ suite(testing.suiteName(), () => {
   });
 
   test('bogus references fail validation', () => {
-    const references = new References({ references: [], schemas: [
-      { filename: 'bogus.json', content: {} },
-    ] });
-    assert.throws(
-      () => references.validate(),
-      'no $id');
+    const references = new References({ references: [], schemas: [{ filename: 'bogus.json', content: {} }] });
+    assert.throws(() => references.validate(), 'no $id');
   });
 });

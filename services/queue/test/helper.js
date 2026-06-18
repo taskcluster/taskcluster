@@ -33,19 +33,24 @@ testing.withMonitor(helper, { withPrometheus: true });
 
 // set up the testing secrets
 export const secrets = new testing.Secrets({
-  secretName: [
-    'project/taskcluster/testing/taskcluster-queue',
-  ],
+  secretName: ['project/taskcluster/testing/taskcluster-queue'],
   secrets: {
     aws: [
       { env: 'AWS_ACCESS_KEY_ID', cfg: 'aws.accessKeyId', name: 'accessKeyId' },
       { env: 'AWS_SECRET_ACCESS_KEY', cfg: 'aws.secretAccessKey', name: 'secretAccessKey' },
-      { env: 'PUBLIC_ARTIFACT_BUCKET', cfg: 'app.publicArtifactBucket', name: 'publicArtifactBucket',
-        mock: 'fake-public' },
-      { env: 'PRIVATE_ARTIFACT_BUCKET', cfg: 'app.privateArtifactBucket', name: 'privateArtifactBucket',
-        mock: 'fake-private' },
-      { env: 'ARTIFACT_REGION', cfg: 'aws.region', name: 'artifactRegion',
-        mock: 'us-central-7' },
+      {
+        env: 'PUBLIC_ARTIFACT_BUCKET',
+        cfg: 'app.publicArtifactBucket',
+        name: 'publicArtifactBucket',
+        mock: 'fake-public',
+      },
+      {
+        env: 'PRIVATE_ARTIFACT_BUCKET',
+        cfg: 'app.privateArtifactBucket',
+        name: 'privateArtifactBucket',
+        mock: 'fake-private',
+      },
+      { env: 'ARTIFACT_REGION', cfg: 'aws.region', name: 'artifactRegion', mock: 'us-central-7' },
     ],
   },
   load,
@@ -251,7 +256,7 @@ export const withObjectService = () => {
           }
           return { method: 'simple', url: 'https://tc-download.example.com' };
         },
-        object: async (name) => {
+        object: async name => {
           const object = objects.get(name);
           if (!object) {
             throw err404(`No such object ${name}`);
@@ -292,14 +297,16 @@ export const withServer = skipping => {
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
     load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl }
+    );
 
     // the workClaimer needs to use `test-client` too, so feed it the right
     // input..
-    load.cfg('taskcluster.credentials',
-      { clientId: 'test-client', accessToken: 'ignored' });
+    load.cfg('taskcluster.credentials', { clientId: 'test-client', accessToken: 'ignored' });
     await load('workClaimer');
 
     helper.Queue = taskcluster.createClient(builder.reference());
@@ -426,13 +433,13 @@ export const checkDates = ({ status }) => {
     }
   };
 
-  chk(status.deadline, "status.deadline");
-  chk(status.expires, "status.expires");
+  chk(status.deadline, 'status.deadline');
+  chk(status.expires, 'status.expires');
   for (const run of status.runs) {
-    chk(run.takenUntil, "run.takenUntil");
-    chk(run.scheduled, "run.scheduled");
-    chk(run.started, "run.started");
-    chk(run.resolved, "run.resolved");
+    chk(run.takenUntil, 'run.takenUntil');
+    chk(run.scheduled, 'run.scheduled');
+    chk(run.started, 'run.started');
+    chk(run.resolved, 'run.resolved');
   }
   return { status };
 };
@@ -440,14 +447,9 @@ helper.checkDates = checkDates;
 
 export const resetTables = () => {
   setup('reset tables', async () => {
-    await testing.resetTables({ tableNames: [
-      'tasks',
-      'task_groups',
-      'task_dependencies',
-      'queue_pending_tasks',
-      'queue_workers',
-      'task_queues',
-    ] });
+    await testing.resetTables({
+      tableNames: ['tasks', 'task_groups', 'task_dependencies', 'queue_pending_tasks', 'queue_workers', 'task_queues'],
+    });
   });
 };
 helper.resetTables = resetTables;

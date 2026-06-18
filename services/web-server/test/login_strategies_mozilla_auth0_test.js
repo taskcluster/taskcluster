@@ -11,7 +11,7 @@ const stubApi = () => {
     github_id_v3: {
       value: '1234',
     },
-    'firefox_accounts_id': {
+    firefox_accounts_id: {
       value: 'abcdef',
     },
     firefox_accounts_primary_email: {
@@ -32,7 +32,7 @@ const stubApi = () => {
     custom_3_primary_email: null,
   };
 
-  sinon.stub(PersonAPI.prototype, 'getProfileFromUserId').callsFake((userId) => {
+  sinon.stub(PersonAPI.prototype, 'getProfileFromUserId').callsFake(userId => {
     switch (userId) {
       case 'ad|Mozilla-LDAP|tcperson':
         return {
@@ -40,7 +40,7 @@ const stubApi = () => {
           access_information: {
             ldap: {
               values: {
-                'taskcluster': null,
+                taskcluster: null,
               },
             },
           },
@@ -64,7 +64,7 @@ const stubApi = () => {
           access_information: {
             mozilliansorg: {
               values: {
-                'foxy': null,
+                foxy: null,
               },
             },
           },
@@ -132,7 +132,7 @@ suite(testing.suiteName(), () => {
         },
       },
       monitor: {
-        warning: () => { },
+        warning: () => {},
       },
     });
 

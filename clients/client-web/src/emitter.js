@@ -24,10 +24,7 @@ export default class Emitter {
   }
 
   on(eventName, handler) {
-    if (
-      process.env.NODE_ENV !== 'production' &&
-      typeof handler !== 'function'
-    ) {
+    if (process.env.NODE_ENV !== 'production' && typeof handler !== 'function') {
       throw new Error('Listener must be a function');
     }
 
@@ -42,13 +39,14 @@ export default class Emitter {
   off(eventName, handler) {
     const event = this.events[eventName] || [];
 
-    // eslint-disable-next-line no-bitwise
     event.splice(event.indexOf(handler) >>> 0, 1);
   }
 
   emit(eventName, ...args) {
     const handlers = this.events[eventName];
 
+    // TODO: use optional chaining once this package is no longer parsed by webpack 4
+    // biome-ignore lint/complexity/useOptionalChain: optional chaining is not supported by webpack 4
     if (!handlers || !handlers[0]) {
       return;
     }

@@ -37,7 +37,8 @@ suite(testing.suiteName(), () => {
     await db.deprecatedFns.create_object('foo', 'projectId', 'backendId', {}, expires);
     await assert.rejects(
       () => db.deprecatedFns.create_object('foo', 'projectId2', 'backendId', {}, expires),
-      err => err.code === 'P0004');
+      err => err.code === 'P0004'
+    );
 
     await helper.withDbClient(async client => {
       const { rows } = await client.query('select name, data, project_id, backend_id, expires from objects');
@@ -72,7 +73,9 @@ suite(testing.suiteName(), () => {
     await db.fns.create_object_for_upload('foo', 'projectId', 'backendId', uploadId, uploadExpires, {}, expires);
 
     await helper.withDbClient(async client => {
-      const { rows } = await client.query('select name, data, project_id, backend_id, upload_id, upload_expires, expires from objects');
+      const { rows } = await client.query(
+        'select name, data, project_id, backend_id, upload_id, upload_expires, expires from objects'
+      );
       assert.equal(rows.length, 1);
       assert.equal(rows[0].name, 'foo');
       assert.equal(rows[0].project_id, 'projectId');
@@ -101,7 +104,8 @@ suite(testing.suiteName(), () => {
     uploadId = taskcluster.slugid();
     await assert.rejects(
       () => db.fns.create_object_for_upload('foo', 'projectId', 'backendId', uploadId, uploadExpires, {}, expires),
-      err => err.code === UNIQUE_VIOLATION);
+      err => err.code === UNIQUE_VIOLATION
+    );
   });
 
   helper.dbTest('create_object_for_upload fails if two objects use the same uploadId', async (db, _isFake) => {
@@ -112,7 +116,8 @@ suite(testing.suiteName(), () => {
     await db.fns.create_object_for_upload('foo', 'projectId', 'backendId', uploadId, uploadExpires, {}, expires);
     await assert.rejects(
       () => db.fns.create_object_for_upload('bar', 'projectId', 'backendId', uploadId, uploadExpires, {}, expires),
-      err => err.code === UNIQUE_VIOLATION);
+      err => err.code === UNIQUE_VIOLATION
+    );
   });
 
   helper.dbTest('object_upload_complete', async (db, _isFake) => {
@@ -134,15 +139,17 @@ suite(testing.suiteName(), () => {
   const insertData = async samples => {
     await helper.withDbClient(async client => {
       for (const s of samples) {
-        await client.query(`
+        await client.query(
+          `
             insert into objects (name, data, backend_id, project_id, upload_id, upload_expires, expires)
             values ($1, $2, $3, $4, $5, $6, $7)`,
-        [s.name, s.data, s.backend_id, s.project_id, s.upload_id, s.upload_expires, s.expires]);
+          [s.name, s.data, s.backend_id, s.project_id, s.upload_id, s.upload_expires, s.expires]
+        );
       }
     });
   };
 
-  helper.dbTest('get_expired_objects returns only expired rows (including upload_expires)', async (db) => {
+  helper.dbTest('get_expired_objects returns only expired rows (including upload_expires)', async db => {
     const expires = fromNow('-1 day');
     const uploadExpires = fromNow('-2 day');
     const future = fromNow('1 day');
@@ -192,23 +199,27 @@ suite(testing.suiteName(), () => {
     ]);
   });
 
-  helper.dbTest('get_expired_objects pagination', async (db) => {
-    await insertData(_.range(100).flatMap(i => ([{
-      name: `object-${i}-not-expired`,
-      backend_id: 'be-not-expired',
-      project_id: 'prj-not-expired',
-      data: {},
-      expires: fromNow('1 day'),
-    }, {
-      name: `object-${i.toString().padStart(3, '0')}`,
-      backend_id: 'be',
-      project_id: 'prj',
-      data: {},
-      expires: fromNow('-1 day'),
-    }])));
+  helper.dbTest('get_expired_objects pagination', async db => {
+    await insertData(
+      _.range(100).flatMap(i => [
+        {
+          name: `object-${i}-not-expired`,
+          backend_id: 'be-not-expired',
+          project_id: 'prj-not-expired',
+          data: {},
+          expires: fromNow('1 day'),
+        },
+        {
+          name: `object-${i.toString().padStart(3, '0')}`,
+          backend_id: 'be',
+          project_id: 'prj',
+          data: {},
+          expires: fromNow('-1 day'),
+        },
+      ])
+    );
 
-    const expectedNames = _.range(100).map(
-      i => `object-${i.toString().padStart(3, '0')}`);
+    const expectedNames = _.range(100).map(i => `object-${i.toString().padStart(3, '0')}`);
 
     const gotNames = [];
     let startAt = null;
@@ -229,7 +240,7 @@ suite(testing.suiteName(), () => {
     assert.equal(iterations, 11);
   });
 
-  helper.dbTest('get_object', async (db) => {
+  helper.dbTest('get_object', async db => {
     const expires = fromNow('1 day');
     await insertData([
       {
@@ -253,7 +264,7 @@ suite(testing.suiteName(), () => {
     ]);
   });
 
-  helper.dbTest('get_object_with_upload', async (db) => {
+  helper.dbTest('get_object_with_upload', async db => {
     const expires = fromNow('1 day');
     await insertData([
       {
@@ -281,7 +292,7 @@ suite(testing.suiteName(), () => {
     ]);
   });
 
-  helper.dbTest('get_object_with_upload that is still uploading', async (db) => {
+  helper.dbTest('get_object_with_upload that is still uploading', async db => {
     const expires = fromNow('1 day');
     const uploadId = taskcluster.slugid();
     const uploadExpires = fromNow('1 hour');
@@ -311,12 +322,12 @@ suite(testing.suiteName(), () => {
     ]);
   });
 
-  helper.dbTest('get_object_with_upload that does not exist', async (db) => {
+  helper.dbTest('get_object_with_upload that does not exist', async db => {
     const res = await db.fns.get_object_with_upload('nosuch');
     assert.deepEqual(res, []);
   });
 
-  helper.dbTest('delete_object', async (db) => {
+  helper.dbTest('delete_object', async db => {
     const expires = fromNow('1 day');
     await insertData([
       {
@@ -333,13 +344,13 @@ suite(testing.suiteName(), () => {
     assert.deepEqual(res, []);
   });
 
-  helper.dbTest('delete_object that does not exist', async (db) => {
+  helper.dbTest('delete_object that does not exist', async db => {
     await db.fns.delete_object('nosuch');
     const res = await db.fns.get_object_with_upload('nosuch');
     assert.deepEqual(res, []);
   });
 
-  helper.dbTest('delete_object with hashes', async (db) => {
+  helper.dbTest('delete_object with hashes', async db => {
     const expires = fromNow('1 day');
     const uploadId = taskcluster.slugid();
     await insertData([
@@ -353,89 +364,83 @@ suite(testing.suiteName(), () => {
     assert.deepEqual(res, []);
   });
 
-  helper.dbTest('add object hashes simple case', async (db) => {
+  helper.dbTest('add object hashes simple case', async db => {
     const expires = fromNow('1 day');
     const uploadId = taskcluster.slugid();
     await insertData([
       { name: 'object-1', backend_id: 'be', project_id: 'prj', data: {}, expires, upload_id: uploadId },
     ]);
-    await db.fns.add_object_hashes('object-1', JSON.stringify({ 'sha3': '123', 'sha5': 'abcde' }));
-    assert.deepEqual(
-      await db.fns.get_object_hashes('object-1'),
-      [{ algorithm: 'sha3', hash: '123' }, { algorithm: 'sha5', hash: 'abcde' }]);
-  });
-
-  helper.dbTest('add object hashes to a finished object', async (db) => {
-    const expires = fromNow('1 day');
-    await insertData([
-      { name: 'object-1', backend_id: 'be', project_id: 'prj', data: { }, expires, upload_id: null },
+    await db.fns.add_object_hashes('object-1', JSON.stringify({ sha3: '123', sha5: 'abcde' }));
+    assert.deepEqual(await db.fns.get_object_hashes('object-1'), [
+      { algorithm: 'sha3', hash: '123' },
+      { algorithm: 'sha5', hash: 'abcde' },
     ]);
-    await assert.rejects(
-      () => db.fns.add_object_hashes('object-1', JSON.stringify({ 'sha3': '123', 'sha5': 'abcde' })),
-      err => err.code === CHECK_VIOLATION);
-
-    assert.deepEqual(
-      await db.fns.get_object_hashes('object-1'),
-      []);
   });
 
-  helper.dbTest('add and get object hashes add more hashes with different algorithms', async (db) => {
+  helper.dbTest('add object hashes to a finished object', async db => {
+    const expires = fromNow('1 day');
+    await insertData([{ name: 'object-1', backend_id: 'be', project_id: 'prj', data: {}, expires, upload_id: null }]);
+    await assert.rejects(
+      () => db.fns.add_object_hashes('object-1', JSON.stringify({ sha3: '123', sha5: 'abcde' })),
+      err => err.code === CHECK_VIOLATION
+    );
+
+    assert.deepEqual(await db.fns.get_object_hashes('object-1'), []);
+  });
+
+  helper.dbTest('add and get object hashes add more hashes with different algorithms', async db => {
     const expires = fromNow('1 day');
     const uploadId = taskcluster.slugid();
     await insertData([
-      { name: 'object-1', backend_id: 'be', project_id: 'prj', data: { }, expires, upload_id: uploadId },
+      { name: 'object-1', backend_id: 'be', project_id: 'prj', data: {}, expires, upload_id: uploadId },
     ]);
     await db.fns.add_object_hashes('object-1', JSON.stringify({ sha3: '123', sha5: 'abcde' }));
     await db.fns.add_object_hashes('object-1', JSON.stringify({ sha4: '1234', sha6: 'abcdef' }));
-    assert.deepEqual(
-      await db.fns.get_object_hashes('object-1'),
-      [
-        { algorithm: 'sha3', hash: '123' },
-        { algorithm: 'sha4', hash: '1234' },
-        { algorithm: 'sha5', hash: 'abcde' },
-        { algorithm: 'sha6', hash: 'abcdef' },
-      ]);
+    assert.deepEqual(await db.fns.get_object_hashes('object-1'), [
+      { algorithm: 'sha3', hash: '123' },
+      { algorithm: 'sha4', hash: '1234' },
+      { algorithm: 'sha5', hash: 'abcde' },
+      { algorithm: 'sha6', hash: 'abcdef' },
+    ]);
   });
 
-  helper.dbTest('add object hashes add more hashes with overlapping algorithms, same hashes', async (db) => {
+  helper.dbTest('add object hashes add more hashes with overlapping algorithms, same hashes', async db => {
     const expires = fromNow('1 day');
     const uploadId = taskcluster.slugid();
     await insertData([
-      { name: 'object-1', backend_id: 'be', project_id: 'prj', data: { }, expires, upload_id: uploadId },
+      { name: 'object-1', backend_id: 'be', project_id: 'prj', data: {}, expires, upload_id: uploadId },
     ]);
     await db.fns.add_object_hashes('object-1', JSON.stringify({ sha3: '123', sha5: 'abcde' }));
     await db.fns.add_object_hashes('object-1', JSON.stringify({ sha5: 'abcde', sha1: 'f' }));
-    assert.deepEqual(
-      await db.fns.get_object_hashes('object-1'),
-      [
-        { algorithm: 'sha1', hash: 'f' },
-        { algorithm: 'sha3', hash: '123' },
-        { algorithm: 'sha5', hash: 'abcde' },
-      ]);
+    assert.deepEqual(await db.fns.get_object_hashes('object-1'), [
+      { algorithm: 'sha1', hash: 'f' },
+      { algorithm: 'sha3', hash: '123' },
+      { algorithm: 'sha5', hash: 'abcde' },
+    ]);
   });
 
-  helper.dbTest('add object hashes add more hashes with overlapping algorithms, conflicting hashes', async (db) => {
+  helper.dbTest('add object hashes add more hashes with overlapping algorithms, conflicting hashes', async db => {
     const expires = fromNow('1 day');
     const uploadId = taskcluster.slugid();
     await insertData([
-      { name: 'object-1', backend_id: 'be', project_id: 'prj', data: { }, expires, upload_id: uploadId },
+      { name: 'object-1', backend_id: 'be', project_id: 'prj', data: {}, expires, upload_id: uploadId },
     ]);
     await db.fns.add_object_hashes('object-1', JSON.stringify({ sha3: '123', sha4: '1234', sha5: 'abcde' }));
     await assert.rejects(
       () => db.fns.add_object_hashes('object-1', JSON.stringify({ sha4: '1234', sha5: 'XXXX', sha6: 'abcdef' })),
-      err => err.code === UNIQUE_VIOLATION);
-    assert.deepEqual(
-      await db.fns.get_object_hashes('object-1'),
-      [
-        { algorithm: 'sha3', hash: '123' },
-        { algorithm: 'sha4', hash: '1234' },
-        { algorithm: 'sha5', hash: 'abcde' },
-      ]);
+      err => err.code === UNIQUE_VIOLATION
+    );
+    assert.deepEqual(await db.fns.get_object_hashes('object-1'), [
+      { algorithm: 'sha3', hash: '123' },
+      { algorithm: 'sha4', hash: '1234' },
+      { algorithm: 'sha5', hash: 'abcde' },
+    ]);
   });
 
-  helper.dbTest('add object hashes for nonexistent object fails', async (db) => {
+  helper.dbTest('add object hashes for nonexistent object fails', async db => {
     await assert.rejects(
-      () => db.fns.add_object_hashes('foo', JSON.stringify({ 'sha5': 'abcde' })),
-      err => err.code === FOREIGN_KEY_VIOLATION);
+      () => db.fns.add_object_hashes('foo', JSON.stringify({ sha5: 'abcde' })),
+      err => err.code === FOREIGN_KEY_VIOLATION
+    );
   });
 });

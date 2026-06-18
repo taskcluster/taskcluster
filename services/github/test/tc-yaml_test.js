@@ -21,11 +21,16 @@ suite(testing.suiteName(), () => {
         tasks: [{}],
       };
 
-      tcyaml.compileTasks(config, cfg, {
-        organization: 'org',
-        repository: 'repo',
-        details: { 'event.type': 'pull_request.opened' },
-      }, now);
+      tcyaml.compileTasks(
+        config,
+        cfg,
+        {
+          organization: 'org',
+          repository: 'repo',
+          details: { 'event.type': 'pull_request.opened' },
+        },
+        now
+      );
       assume(config.scopes.sort()).to.deeply.equal([
         'assume:repo:github.com/org/repo:pull-request',
         'queue:route:statuses-queue',
@@ -38,11 +43,16 @@ suite(testing.suiteName(), () => {
         tasks: [{}],
       };
 
-      tcyaml.compileTasks(config, cfg, {
-        organization: 'org',
-        repository: 'repo',
-        details: { 'event.type': 'push', 'event.base.repo.branch': 'master' },
-      }, now);
+      tcyaml.compileTasks(
+        config,
+        cfg,
+        {
+          organization: 'org',
+          repository: 'repo',
+          details: { 'event.type': 'push', 'event.base.repo.branch': 'master' },
+        },
+        now
+      );
       assume(config.scopes.sort()).to.deeply.equal([
         'assume:repo:github.com/org/repo:branch:master',
         'queue:route:statuses-queue',
@@ -55,11 +65,16 @@ suite(testing.suiteName(), () => {
         tasks: [{}],
       };
 
-      tcyaml.compileTasks(config, cfg, {
-        organization: 'org',
-        repository: 'repo',
-        details: { 'event.type': 'tag', 'event.head.tag': 'v1.2.3' },
-      }, now);
+      tcyaml.compileTasks(
+        config,
+        cfg,
+        {
+          organization: 'org',
+          repository: 'repo',
+          details: { 'event.type': 'tag', 'event.head.tag': 'v1.2.3' },
+        },
+        now
+      );
       assume(config.scopes.sort()).to.deeply.equal([
         'assume:repo:github.com/org/repo:tag:v1.2.3',
         'queue:route:statuses-queue',
@@ -72,18 +87,22 @@ suite(testing.suiteName(), () => {
         tasks: [{}],
       };
 
-      tcyaml.compileTasks(config, cfg, {
-        organization: 'org',
-        repository: 'repo',
-        details: { 'event.type': 'release' },
-      }, now);
+      tcyaml.compileTasks(
+        config,
+        cfg,
+        {
+          organization: 'org',
+          repository: 'repo',
+          details: { 'event.type': 'release' },
+        },
+        now
+      );
       assume(config.scopes.sort()).to.deeply.equal([
         'assume:repo:github.com/org/repo:release:published',
         'queue:route:statuses-queue',
         'queue:scheduler-id:test-sched',
       ]);
     });
-
   });
 
   suite('VersionOne', () => {
@@ -105,10 +124,7 @@ suite(testing.suiteName(), () => {
       };
       tcyaml.compileTasks(config, cfg, {}, now);
       assume(config.tasks).to.deeply.equal([]);
-      assume(config.scopes.sort()).to.deeply.equal([
-        'queue:route:statuses-queue',
-        'queue:scheduler-id:test-sched',
-      ]);
+      assume(config.scopes.sort()).to.deeply.equal(['queue:route:statuses-queue', 'queue:scheduler-id:test-sched']);
     });
 
     test('compileTasks with one task sets default properties', () => {
@@ -117,33 +133,37 @@ suite(testing.suiteName(), () => {
       };
 
       tcyaml.compileTasks(config, cfg, {}, now);
-      assume(config.tasks).to.deeply.equal([{
-        taskId: config.tasks[0].taskId,
-        task: {
-          created: now,
-          taskGroupId: config.tasks[0].taskId, // matches taskId
-          schedulerId: 'test-sched',
-          routes: ['statuses-queue'],
+      assume(config.tasks).to.deeply.equal([
+        {
+          taskId: config.tasks[0].taskId,
+          task: {
+            created: now,
+            taskGroupId: config.tasks[0].taskId, // matches taskId
+            schedulerId: 'test-sched',
+            routes: ['statuses-queue'],
+          },
         },
-      }]);
-      assume(config.scopes.sort()).to.deeply.equal([
-        'queue:route:statuses-queue',
-        'queue:scheduler-id:test-sched',
       ]);
+      assume(config.scopes.sort()).to.deeply.equal(['queue:route:statuses-queue', 'queue:scheduler-id:test-sched']);
     });
 
     suite('scopes', () => {
       test('compileTasks with collaborators policy for a pull-request sets scopes correctly', () => {
         const config = {
-          policy: { pullRequests: "collaborators" },
+          policy: { pullRequests: 'collaborators' },
           tasks: [{}],
         };
 
-        tcyaml.compileTasks(config, cfg, {
-          tasks_for: 'github-pull-request',
-          organization: 'org',
-          repository: 'repo',
-        }, now);
+        tcyaml.compileTasks(
+          config,
+          cfg,
+          {
+            tasks_for: 'github-pull-request',
+            organization: 'org',
+            repository: 'repo',
+          },
+          now
+        );
         assume(config.scopes.sort()).to.deeply.equal([
           'assume:repo:github.com/org/repo:pull-request',
           'queue:route:statuses-queue',
@@ -153,7 +173,7 @@ suite(testing.suiteName(), () => {
 
       test('compileTasks with public_restricted policy for a untrusted pull-request sets scopes correctly', () => {
         const config = {
-          policy: { pullRequests: "public_restricted" },
+          policy: { pullRequests: 'public_restricted' },
           tasks: [{}],
         };
 
@@ -169,12 +189,12 @@ suite(testing.suiteName(), () => {
           'queue:route:statuses-queue',
           'queue:scheduler-id:test-sched',
         ]);
-        assume(payload.tasks_for).to.deeply.equal("github-pull-request-untrusted");
+        assume(payload.tasks_for).to.deeply.equal('github-pull-request-untrusted');
       });
 
       test('compileTasks with public_restricted policy for a trusted pull-request sets scopes correctly', () => {
         const config = {
-          policy: { pullRequests: "public_restricted" },
+          policy: { pullRequests: 'public_restricted' },
           tasks: [{}],
         };
 
@@ -190,12 +210,12 @@ suite(testing.suiteName(), () => {
           'queue:route:statuses-queue',
           'queue:scheduler-id:test-sched',
         ]);
-        assume(payload.tasks_for).to.deeply.equal("github-pull-request");
+        assume(payload.tasks_for).to.deeply.equal('github-pull-request');
       });
 
       test('compileTasks with public policy for a pull-request sets scopes correctly', () => {
         const config = {
-          policy: { pullRequests: "public" },
+          policy: { pullRequests: 'public' },
           tasks: [{}],
         };
 
@@ -211,21 +231,26 @@ suite(testing.suiteName(), () => {
           'queue:route:statuses-queue',
           'queue:scheduler-id:test-sched',
         ]);
-        assume(payload.tasks_for).to.deeply.equal("github-pull-request");
+        assume(payload.tasks_for).to.deeply.equal('github-pull-request');
       });
 
       test('compileTasks for a pull-request with checks sets scopes correctly', () => {
         const config = {
-          policy: { pullRequests: "collaborators" },
+          policy: { pullRequests: 'collaborators' },
           tasks: [{}],
           reporting: 'checks',
         };
 
-        tcyaml.compileTasks(config, cfg, {
-          tasks_for: 'github-pull-request',
-          organization: 'org',
-          repository: 'repo',
-        }, now);
+        tcyaml.compileTasks(
+          config,
+          cfg,
+          {
+            tasks_for: 'github-pull-request',
+            organization: 'org',
+            repository: 'repo',
+          },
+          now
+        );
         assume(config.scopes.sort()).to.deeply.equal([
           'assume:repo:github.com/org/repo:pull-request',
           'queue:route:checks-queue',
@@ -238,13 +263,18 @@ suite(testing.suiteName(), () => {
           tasks: [{}],
         };
 
-        tcyaml.compileTasks(config, cfg, {
-          tasks_for: 'github-push',
-          organization: 'org',
-          repository: 'repo',
-          body: { ref: 'refs/heads/master' },
-          details: { 'event.base.repo.branch': 'master' },
-        }, now);
+        tcyaml.compileTasks(
+          config,
+          cfg,
+          {
+            tasks_for: 'github-push',
+            organization: 'org',
+            repository: 'repo',
+            body: { ref: 'refs/heads/master' },
+            details: { 'event.base.repo.branch': 'master' },
+          },
+          now
+        );
         assume(config.scopes.sort()).to.deeply.equal([
           'assume:repo:github.com/org/repo:branch:master',
           'queue:route:statuses-queue',
@@ -257,13 +287,18 @@ suite(testing.suiteName(), () => {
           tasks: [{}],
         };
 
-        tcyaml.compileTasks(config, cfg, {
-          tasks_for: 'github-push',
-          organization: 'org',
-          repository: 'repo',
-          body: { ref: 'refs/tags/v1.2.3' },
-          details: { 'event.head.tag': 'v1.2.3' },
-        }, now);
+        tcyaml.compileTasks(
+          config,
+          cfg,
+          {
+            tasks_for: 'github-push',
+            organization: 'org',
+            repository: 'repo',
+            body: { ref: 'refs/tags/v1.2.3' },
+            details: { 'event.head.tag': 'v1.2.3' },
+          },
+          now
+        );
         assume(config.scopes.sort()).to.deeply.equal([
           'assume:repo:github.com/org/repo:tag:v1.2.3',
           'queue:route:statuses-queue',
@@ -276,12 +311,17 @@ suite(testing.suiteName(), () => {
           tasks: [{}],
         };
 
-        tcyaml.compileTasks(config, cfg, {
-          tasks_for: 'github-release',
-          organization: 'org',
-          repository: 'repo',
-          body: {},
-        }, now);
+        tcyaml.compileTasks(
+          config,
+          cfg,
+          {
+            tasks_for: 'github-release',
+            organization: 'org',
+            repository: 'repo',
+            body: {},
+          },
+          now
+        );
         assume(config.scopes.sort()).to.deeply.equal([
           'assume:repo:github.com/org/repo:release:published',
           'queue:route:statuses-queue',
@@ -294,14 +334,19 @@ suite(testing.suiteName(), () => {
           tasks: [{}],
         };
 
-        tcyaml.compileTasks(config, cfg, {
-          tasks_for: 'github-release',
-          body: {
-            action: 'prereleased',
+        tcyaml.compileTasks(
+          config,
+          cfg,
+          {
+            tasks_for: 'github-release',
+            body: {
+              action: 'prereleased',
+            },
+            organization: 'org',
+            repository: 'repo',
           },
-          organization: 'org',
-          repository: 'repo',
-        }, now);
+          now
+        );
         assume(config.scopes.sort()).to.deeply.equal([
           'assume:repo:github.com/org/repo:release:prereleased',
           'queue:route:statuses-queue',
@@ -311,38 +356,46 @@ suite(testing.suiteName(), () => {
 
       test('compileTasks with one taskId sets taskGroupId', () => {
         const config = {
-          tasks: [{
-            taskId: 'task-1',
-          }],
+          tasks: [
+            {
+              taskId: 'task-1',
+            },
+          ],
         };
         tcyaml.compileTasks(config, cfg, {}, now);
-        assume(config.tasks).to.deeply.equal([{
-          taskId: 'task-1',
-          task: {
-            created: now,
-            taskGroupId: 'task-1',
-            schedulerId: 'test-sched',
-            routes: ['statuses-queue'],
+        assume(config.tasks).to.deeply.equal([
+          {
+            taskId: 'task-1',
+            task: {
+              created: now,
+              taskGroupId: 'task-1',
+              schedulerId: 'test-sched',
+              routes: ['statuses-queue'],
+            },
           },
-        }]);
+        ]);
       });
     });
     test('compileTasks with taskGroupId and one task sets taskId', () => {
       const config = {
-        tasks: [{
-          taskGroupId: 'tgid-1',
-        }],
+        tasks: [
+          {
+            taskGroupId: 'tgid-1',
+          },
+        ],
       };
       tcyaml.compileTasks(config, cfg, {}, now);
-      assume(config.tasks).to.deeply.equal([{
-        taskId: 'tgid-1',
-        task: {
-          created: now,
-          taskGroupId: 'tgid-1',
-          schedulerId: 'test-sched',
-          routes: ['statuses-queue'],
+      assume(config.tasks).to.deeply.equal([
+        {
+          taskId: 'tgid-1',
+          task: {
+            created: now,
+            taskGroupId: 'tgid-1',
+            schedulerId: 'test-sched',
+            routes: ['statuses-queue'],
+          },
         },
-      }]);
+      ]);
     });
 
     test('compileTasks with two tasks sets default properties', () => {
@@ -361,130 +414,156 @@ suite(testing.suiteName(), () => {
 
     test('compileTasks uses user-supplied taskId/taskGroupId/schedulerId', () => {
       const config = {
-        tasks: [{
-          taskId: 'task-1',
-          taskGroupId: 'tgid-1',
-          schedulerId: 'my-scheduler-id',
-        }, {
-          taskId: 'task-2',
-          taskGroupId: 'tgid-2',
-          schedulerId: 'my-scheduler-id',
-        }],
+        tasks: [
+          {
+            taskId: 'task-1',
+            taskGroupId: 'tgid-1',
+            schedulerId: 'my-scheduler-id',
+          },
+          {
+            taskId: 'task-2',
+            taskGroupId: 'tgid-2',
+            schedulerId: 'my-scheduler-id',
+          },
+        ],
       };
       tcyaml.compileTasks(config, cfg, {}, now);
-      assume(config.tasks).to.deeply.equal([{
-        taskId: 'task-1',
-        task: {
-          created: now,
-          taskGroupId: 'tgid-1',
-          schedulerId: 'my-scheduler-id',
-          routes: ['statuses-queue'],
+      assume(config.tasks).to.deeply.equal([
+        {
+          taskId: 'task-1',
+          task: {
+            created: now,
+            taskGroupId: 'tgid-1',
+            schedulerId: 'my-scheduler-id',
+            routes: ['statuses-queue'],
+          },
         },
-      }, {
-        taskId: 'task-2',
-        task: {
-          created: now,
-          taskGroupId: 'tgid-2',
-          schedulerId: 'my-scheduler-id',
-          routes: ['statuses-queue'],
+        {
+          taskId: 'task-2',
+          task: {
+            created: now,
+            taskGroupId: 'tgid-2',
+            schedulerId: 'my-scheduler-id',
+            routes: ['statuses-queue'],
+          },
         },
-      }]);
+      ]);
     });
 
     suite('status/checks routes', () => {
       test('compileTasks sets checks route if we have reporting in the YML', () => {
         const config = {
-          tasks: [{
-            taskId: 'task-1',
-          }],
+          tasks: [
+            {
+              taskId: 'task-1',
+            },
+          ],
           reporting: 'checks-v1',
         };
         tcyaml.compileTasks(config, cfg, {}, now);
-        assume(config.tasks).to.deeply.equal([{
-          taskId: 'task-1',
-          task: {
-            created: now,
-            taskGroupId: 'task-1',
-            schedulerId: 'test-sched',
-            routes: ['checks-queue'],
+        assume(config.tasks).to.deeply.equal([
+          {
+            taskId: 'task-1',
+            task: {
+              created: now,
+              taskGroupId: 'task-1',
+              schedulerId: 'test-sched',
+              routes: ['checks-queue'],
+            },
           },
-        }]);
+        ]);
       });
 
       test('compileTasks sets statuses route by default', () => {
         const config = {
-          tasks: [{
-            taskId: 'task-1',
-          }],
+          tasks: [
+            {
+              taskId: 'task-1',
+            },
+          ],
         };
         tcyaml.compileTasks(config, cfg, {}, now);
-        assume(config.tasks).to.deeply.equal([{
-          taskId: 'task-1',
-          task: {
-            created: now,
-            taskGroupId: 'task-1',
-            schedulerId: 'test-sched',
-            routes: ['statuses-queue'],
+        assume(config.tasks).to.deeply.equal([
+          {
+            taskId: 'task-1',
+            task: {
+              created: now,
+              taskGroupId: 'task-1',
+              schedulerId: 'test-sched',
+              routes: ['statuses-queue'],
+            },
           },
-        }]);
+        ]);
       });
 
       test('compileTasks sets statuses just once', () => {
         const config = {
-          tasks: [{
-            taskId: 'task-1',
-            routes: ['statuses-queue'],
-          }],
+          tasks: [
+            {
+              taskId: 'task-1',
+              routes: ['statuses-queue'],
+            },
+          ],
         };
         tcyaml.compileTasks(config, cfg, {}, now);
-        assume(config.tasks).to.deeply.equal([{
-          taskId: 'task-1',
-          task: {
-            created: now,
-            taskGroupId: 'task-1',
-            schedulerId: 'test-sched',
-            routes: ['statuses-queue'],
+        assume(config.tasks).to.deeply.equal([
+          {
+            taskId: 'task-1',
+            task: {
+              created: now,
+              taskGroupId: 'task-1',
+              schedulerId: 'test-sched',
+              routes: ['statuses-queue'],
+            },
           },
-        }]);
+        ]);
       });
 
       test('compileTasks allows both statuses and checks to be defined', () => {
         const config = {
-          tasks: [{
-            taskId: 'task-1',
-            routes: ['statuses-queue'],
-          }],
+          tasks: [
+            {
+              taskId: 'task-1',
+              routes: ['statuses-queue'],
+            },
+          ],
           reporting: 'checks-v1',
         };
         tcyaml.compileTasks(config, cfg, {}, now);
-        assume(config.tasks).to.deeply.equal([{
-          taskId: 'task-1',
-          task: {
-            created: now,
-            taskGroupId: 'task-1',
-            schedulerId: 'test-sched',
-            routes: ['statuses-queue', 'checks-queue'],
+        assume(config.tasks).to.deeply.equal([
+          {
+            taskId: 'task-1',
+            task: {
+              created: now,
+              taskGroupId: 'task-1',
+              schedulerId: 'test-sched',
+              routes: ['statuses-queue', 'checks-queue'],
+            },
           },
-        }]);
+        ]);
       });
 
       test('compileTasks does not erase existing routes', () => {
         const config = {
-          tasks: [{
-            taskId: 'task-1',
-            routes: ['my-first-route', 'statuses-queue', 'my-second-route'],
-          }],
+          tasks: [
+            {
+              taskId: 'task-1',
+              routes: ['my-first-route', 'statuses-queue', 'my-second-route'],
+            },
+          ],
         };
         tcyaml.compileTasks(config, cfg, {}, now);
-        assume(config.tasks).to.deeply.equal([{
-          taskId: 'task-1',
-          task: {
-            created: now,
-            taskGroupId: 'task-1',
-            schedulerId: 'test-sched',
-            routes: ['my-first-route', 'statuses-queue', 'my-second-route'],
+        assume(config.tasks).to.deeply.equal([
+          {
+            taskId: 'task-1',
+            task: {
+              created: now,
+              taskGroupId: 'task-1',
+              schedulerId: 'test-sched',
+              routes: ['my-first-route', 'statuses-queue', 'my-second-route'],
+            },
           },
-        }]);
+        ]);
       });
     });
   });

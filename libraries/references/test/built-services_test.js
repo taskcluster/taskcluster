@@ -84,7 +84,6 @@ suite(testing.suiteName(), () => {
     });
     const { references, schemas } = await load({ directory: '/test/input' });
     assert.deepEqual(references, []);
-    assert.deepEqual(schemas.map(sch => JSON.stringify(sch.content)).sort(),
-      ['"deeper"', '"root"', '"versioned"']);
+    assert.deepEqual(schemas.map(sch => JSON.stringify(sch.content)).sort(), ['"deeper"', '"root"', '"versioned"']);
   });
 });

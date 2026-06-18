@@ -11,40 +11,25 @@ export default ({ workerManager }, _isAuthed, _rootUrl, _monitor, _strategies, _
         } catch (err) {
           return err;
         }
-      },
-      ),
-    ),
+      })
+    )
   );
-  const workers = new ConnectionLoader(
-    async ({
-      provisionerId,
-      workerType,
-      options,
-      isQuarantined,
-      workerState,
-    }) => {
-      const opts = { ...options };
-      if (typeof isQuarantined === 'boolean') {
-        opts.quarantined = isQuarantined;
-      }
-      if (typeof workerState === 'string') {
-        opts.workerState = workerState;
-      }
-      const raw = await workerManager.listWorkers(
-        provisionerId,
-        workerType,
-        opts,
-      );
-      const workers = raw.workers;
+  const workers = new ConnectionLoader(async ({ provisionerId, workerType, options, isQuarantined, workerState }) => {
+    const opts = { ...options };
+    if (typeof isQuarantined === 'boolean') {
+      opts.quarantined = isQuarantined;
+    }
+    if (typeof workerState === 'string') {
+      opts.workerState = workerState;
+    }
+    const raw = await workerManager.listWorkers(provisionerId, workerType, opts);
+    const workers = raw.workers;
 
-      return {
-        ...raw,
-        items: workers.map(
-          worker => new WorkerCompact(provisionerId, workerType, worker),
-        ),
-      };
-    },
-  );
+    return {
+      ...raw,
+      items: workers.map(worker => new WorkerCompact(provisionerId, workerType, worker)),
+    };
+  });
 
   return {
     worker,

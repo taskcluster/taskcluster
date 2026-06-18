@@ -19,10 +19,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   // Generate random task queue id to use for this test
   const taskQueueId = helper.makeTaskQueueId('no-provisioner-extended-extended');
 
-  const makeTask = (retries) => {
+  const makeTask = retries => {
     return {
       taskQueueId,
-      priority: "normal",
+      priority: 'normal',
       retries,
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('30 min'),
@@ -75,14 +75,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     debug('### Wait for claim expiration');
     await testing.poll(
       async () => {
-        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-pending'), {
-          Logger: 'taskcluster.test.claim-resolver',
-          Type: 'task-pending',
-          Fields: { taskId, runId: 1, v: 1 },
-          Severity: LEVELS.notice,
-        });
+        assert.deepEqual(
+          monitor.manager.messages.find(({ Type }) => Type === 'task-pending'),
+          {
+            Logger: 'taskcluster.test.claim-resolver',
+            Type: 'task-pending',
+            Fields: { taskId, runId: 1, v: 1 },
+            Severity: LEVELS.notice,
+          }
+        );
       },
-      100, 250);
+      100,
+      250
+    );
 
     await helper.stopPollingService();
   });
@@ -112,14 +117,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     debug('### Wait for claim expiration');
     await testing.poll(
       async () => {
-        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-exception'), {
-          Logger: 'taskcluster.test.claim-resolver',
-          Type: 'task-exception',
-          Fields: { taskId, runId: 0, v: 1 },
-          Severity: LEVELS.notice,
-        });
+        assert.deepEqual(
+          monitor.manager.messages.find(({ Type }) => Type === 'task-exception'),
+          {
+            Logger: 'taskcluster.test.claim-resolver',
+            Type: 'task-exception',
+            Fields: { taskId, runId: 0, v: 1 },
+            Severity: LEVELS.notice,
+          }
+        );
       },
-      100, 250);
+      100,
+      250
+    );
 
     await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'claim-expired');
 

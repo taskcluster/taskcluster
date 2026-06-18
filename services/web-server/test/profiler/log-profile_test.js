@@ -14,7 +14,6 @@ const mockTask = {
 };
 
 suite('profiler/log-profile', () => {
-
   suite('lineIterator', () => {
     test('yields complete lines from a stream', async () => {
       const input = 'line one\nline two\nline three\n';
@@ -27,11 +26,7 @@ suite('profiler/log-profile', () => {
     });
 
     test('handles lines split across chunks', async () => {
-      const stream = Readable.from([
-        Buffer.from('partial li'),
-        Buffer.from('ne one\nline t'),
-        Buffer.from('wo\n'),
-      ]);
+      const stream = Readable.from([Buffer.from('partial li'), Buffer.from('ne one\nline t'), Buffer.from('wo\n')]);
       const lines = [];
       for await (const line of lineIterator(stream)) {
         lines.push(line);
@@ -51,7 +46,9 @@ suite('profiler/log-profile', () => {
     test('tracks bytes read via callback', async () => {
       const stream = Readable.from([Buffer.from('hello\nworld\n')]);
       let totalBytes = 0;
-      for await (const _ of lineIterator(stream, (n) => { totalBytes += n; })) {
+      for await (const _ of lineIterator(stream, n => {
+        totalBytes += n;
+      })) {
         // consume
       }
       assert.equal(totalBytes, 12);

@@ -57,9 +57,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       }
     }
     assert(!statusCode, 'did not get expected error');
-    res && Object.keys(res).forEach(key => {
-      assert.deepEqual(gotRes[key], res[key]);
-    });
+    res &&
+      Object.keys(res).forEach(key => {
+        assert.deepEqual(gotRes[key], res[key]);
+      });
   };
 
   test('set allowed key (twice)', async () => {
@@ -159,12 +160,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
-  test('deleting a missing secret "succeeds"', () => makeApiCall({
-    clientName: 'captain-write',
-    apiCall: 'remove',
-    name: SECRET_NAME,
-    res: {},
-  }));
+  test('deleting a missing secret "succeeds"', () =>
+    makeApiCall({
+      clientName: 'captain-write',
+      apiCall: 'remove',
+      name: SECRET_NAME,
+      res: {},
+    }));
 
   test('reading an expired secret is a 410', async () => {
     const client = await helper.client('captain-write');
@@ -260,6 +262,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     await assert.rejects(
       () => client.list(),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 });

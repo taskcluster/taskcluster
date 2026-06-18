@@ -5,14 +5,10 @@ import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), () => {
   test('missing arguments are an error', async () => {
-    assume(() => pulseCredentials({ password: 'pw', hostname: 'h', vhost: 'v' }))
-      .throws(/username/);
-    assume(() => pulseCredentials({ username: 'me', hostname: 'h', vhost: 'v' }))
-      .throws(/password/);
-    assume(() => pulseCredentials({ username: 'me', password: 'pw', vhost: 'v' }))
-      .throws(/hostname/);
-    assume(() => pulseCredentials({ username: 'me', password: 'pw', hostname: 'v' }))
-      .throws(/vhost/);
+    assume(() => pulseCredentials({ password: 'pw', hostname: 'h', vhost: 'v' })).throws(/username/);
+    assume(() => pulseCredentials({ username: 'me', hostname: 'h', vhost: 'v' })).throws(/password/);
+    assume(() => pulseCredentials({ username: 'me', password: 'pw', vhost: 'v' })).throws(/hostname/);
+    assume(() => pulseCredentials({ username: 'me', password: 'pw', hostname: 'v' })).throws(/vhost/);
   });
 
   test('builds a connection string with given host', async () => {
@@ -23,9 +19,7 @@ suite(testing.suiteName(), () => {
       vhost: '/',
     })();
 
-    assert.equal(
-      credentials.connectionString,
-      'amqps://me:letmein@pulse.abc.com:5671/%2F?frameMax=0');
+    assert.equal(credentials.connectionString, 'amqps://me:letmein@pulse.abc.com:5671/%2F?frameMax=0');
   });
 
   test('builds a connection string with urlencoded values', async () => {
@@ -38,6 +32,7 @@ suite(testing.suiteName(), () => {
 
     assert.equal(
       credentials.connectionString,
-      'amqps://ali-escaper%3A%2F%40%5C%7C()%3C%3E%26:bobby-tables%3A%2F%40%5C%7C()%3C%3E%26@pulse.abc.com:5671/%2F?frameMax=0');
+      'amqps://ali-escaper%3A%2F%40%5C%7C()%3C%3E%26:bobby-tables%3A%2F%40%5C%7C()%3C%3E%26@pulse.abc.com:5671/%2F?frameMax=0'
+    );
   });
 });

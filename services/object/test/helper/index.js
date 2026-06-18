@@ -36,9 +36,7 @@ testing.withMonitor(helper);
 
 // set up the testing secrets
 helper.secrets = new testing.Secrets({
-  secretName: [
-    'project/taskcluster/testing/taskcluster-object',
-  ],
+  secretName: ['project/taskcluster/testing/taskcluster-object'],
   secrets: {
     aws,
     google,
@@ -66,9 +64,7 @@ helper.withBackends = skipping => {
   const defaultBackends = {
     testBackend: { backendType: 'test' },
   };
-  const defaultBackendMap = [
-    { backendId: 'testBackend', when: 'all' },
-  ];
+  const defaultBackendMap = [{ backendId: 'testBackend', when: 'all' }];
 
   suiteSetup('withBackends', async () => {
     if (skipping()) {
@@ -81,9 +77,7 @@ helper.withBackends = skipping => {
     BACKEND_TYPES.test = TestBackend;
 
     await load('cfg');
-    load.cfg('middleware', [
-      { middlewareType: 'test' },
-    ]);
+    load.cfg('middleware', [{ middlewareType: 'test' }]);
     load.cfg('backends', defaultBackends);
     load.cfg('backendMap', defaultBackendMap);
 
@@ -127,9 +121,7 @@ helper.withMiddleware = (skipping, config) => {
     MIDDLEWARE_TYPES.test = TestMiddleware;
 
     await load('cfg');
-    load.cfg('middleware', config || [
-      { middlewareType: 'test' },
-    ]);
+    load.cfg('middleware', config || [{ middlewareType: 'test' }]);
   });
 
   suiteTeardown('withMiddleware', async () => {

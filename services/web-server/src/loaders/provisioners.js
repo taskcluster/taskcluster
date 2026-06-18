@@ -10,8 +10,8 @@ export default ({ queue }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cf
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
   const provisioners = new ConnectionLoader(async ({ options }) => {
     const raw = await queue.listProvisioners(options);

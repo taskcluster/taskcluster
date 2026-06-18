@@ -9,15 +9,17 @@
     "src"
   ],
   "scripts": {
-    "lint": "eslint src/*.js test/*.js",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "format": "biome format --write",
     "test": "NODE_OPTIONS='--openssl-legacy-provider --network-family-autoselection=false' karma start --single-run"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@biomejs/biome": "^2.4.15",
     "chai": "^6.2.2",
     "chai-as-promised": "^8.0.2",
     "crypto-js": "^4.2.0",
-    "eslint": "^10.3.0",
     "karma": "^6.4.4",
     "karma-cli": "^2.0.0",
     "karma-coverage": "^2.2.1",

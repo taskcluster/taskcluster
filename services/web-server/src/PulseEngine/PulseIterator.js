@@ -19,7 +19,7 @@ export default class PulseIterator {
     this.subscriptionId = this.pulseEngine.subscribe(
       subscriptions,
       this.pushValue.bind(this),
-      this.pushError.bind(this),
+      this.pushError.bind(this)
     );
   }
 

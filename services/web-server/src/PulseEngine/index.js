@@ -61,7 +61,7 @@ export default class PulseEngine {
         handleError,
         monitor: this.monitor,
         subscriptions,
-      }),
+      })
     );
     this.reconcileSubscriptions();
 
@@ -101,11 +101,7 @@ export default class PulseEngine {
       return;
     }
 
-    await Promise.all(
-      Array.from(this.subscriptions.values()).map(sub =>
-        sub.reconcile(client, connection),
-      ),
-    );
+    await Promise.all(Array.from(this.subscriptions.values()).map(sub => sub.reconcile(client, connection)));
 
     // clean up any garbage
     Array.from(this.subscriptions.values())
@@ -120,10 +116,7 @@ export default class PulseEngine {
    * {payload, exchange, routingKey, redelivered, cc}
    */
   messageIterator(eventName, subscriptions) {
-    return new MessageIterator(
-      new PulseIterator(this, subscriptions),
-      eventName,
-    );
+    return new MessageIterator(new PulseIterator(this, subscriptions), eventName);
   }
 
   /**

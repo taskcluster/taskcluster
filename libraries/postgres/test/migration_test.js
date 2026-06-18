@@ -88,7 +88,7 @@ helper.dbSuite(path.basename(__filename), () => {
     });
 
     setup(() => {
-      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
+      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, admin: helper.dbUrl } });
     });
 
     test('runs upgrade script with multiple statements and $db_user_prefix$', async () => {
@@ -134,7 +134,6 @@ helper.dbSuite(path.basename(__filename), () => {
             usernamePrefix: 'test',
           });
         });
-
       } catch (err) {
         assert.equal(err.code, UNDEFINED_COLUMN);
         assert.equal(await db.currentVersion(), 0);
@@ -149,15 +148,17 @@ helper.dbSuite(path.basename(__filename), () => {
           client,
           version: {
             version: 1,
-            methods: { foo_bar: {
-              name: 'foo_bar',
-              description: 'whatever',
-              mode: 'read',
-              serviceName: 'baz',
-              args: 'foo integer',
-              returns: 'table (bar integer)',
-              body: 'begin end',
-            } },
+            methods: {
+              foo_bar: {
+                name: 'foo_bar',
+                description: 'whatever',
+                mode: 'read',
+                serviceName: 'baz',
+                args: 'foo integer',
+                returns: 'table (bar integer)',
+                body: 'begin end',
+              },
+            },
           },
           showProgress,
           usernamePrefix: 'test',
@@ -194,7 +195,7 @@ helper.dbSuite(path.basename(__filename), () => {
 
     setup(async () => {
       runOnlineBatches.resetHooks();
-      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
+      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, admin: helper.dbUrl } });
       await db._withClient('admin', async client => {
         await client.query('create table tcversion (version int primary key)');
         await client.query('insert into tcversion (version) values (1)');
@@ -222,7 +223,8 @@ helper.dbSuite(path.basename(__filename), () => {
         `create or replace function ${name}(batch_size_in integer, state_in jsonb)
         returns table (count integer, state jsonb)
         as ${dollarQuote(body)}
-        language plpgsql`);
+        language plpgsql`
+      );
     };
 
     const mkIsCompleteFn = async ({ client, name, body }) => {
@@ -230,7 +232,8 @@ helper.dbSuite(path.basename(__filename), () => {
         `create or replace function ${name}()
         returns boolean
         as ${dollarQuote(body)}
-        language plpgsql`);
+        language plpgsql`
+      );
     };
 
     test('does nothing when there is no batch function', async () => {
@@ -323,65 +326,80 @@ helper.dbSuite(path.basename(__filename), () => {
       });
     });
 
-    test('batch function that just does one item per iteration', testing.runWithFakeTime(async () => {
-      let itemsComplete = 0;
-      runOnlineBatches.setHook('runBatch', async (_batchSize, state) => {
-        if (itemsComplete >= 1000) {
-          return { state, count: 0 };
-        }
-        itemsComplete += 1;
-        await testing.sleep(100);
-        return { state, count: 1 };
-      });
-      runOnlineBatches.setHook('isComplete', async () => itemsComplete >= 1000);
+    test(
+      'batch function that just does one item per iteration',
+      testing.runWithFakeTime(
+        async () => {
+          let itemsComplete = 0;
+          runOnlineBatches.setHook('runBatch', async (_batchSize, state) => {
+            if (itemsComplete >= 1000) {
+              return { state, count: 0 };
+            }
+            itemsComplete += 1;
+            await testing.sleep(100);
+            return { state, count: 1 };
+          });
+          runOnlineBatches.setHook('isComplete', async () => itemsComplete >= 1000);
 
-      await runOnlineMigration({ showProgress, version: { version: 1 } });
+          await runOnlineMigration({ showProgress, version: { version: 1 } });
 
-      assert.equal(itemsComplete, 1000);
-    }, { maxTime: Infinity }));
+          assert.equal(itemsComplete, 1000);
+        },
+        { maxTime: Infinity }
+      )
+    );
 
-    test('batch function that returns 0 items early', testing.runWithFakeTime(async () => {
-      let itemsComplete = 0;
-      let isCompleteCalls = 0;
-      runOnlineBatches.setHook('runBatch', async (_batchSize, state) => {
-        state.counter = (state.counter || 0) + 1;
-        if (state.counter === 100 || itemsComplete >= 1000) {
-          // this will trigger an isComplete call, and if not complete, starts over with
-          // a fresh state
-          return { state, count: 0 };
-        }
-        itemsComplete += 1;
-        await testing.sleep(100);
-        return { state, count: 1 };
-      });
-      runOnlineBatches.setHook('isComplete', async () => {
-        isCompleteCalls++;
-        return (itemsComplete >= 1000);
-      });
+    test(
+      'batch function that returns 0 items early',
+      testing.runWithFakeTime(
+        async () => {
+          let itemsComplete = 0;
+          let isCompleteCalls = 0;
+          runOnlineBatches.setHook('runBatch', async (_batchSize, state) => {
+            state.counter = (state.counter || 0) + 1;
+            if (state.counter === 100 || itemsComplete >= 1000) {
+              // this will trigger an isComplete call, and if not complete, starts over with
+              // a fresh state
+              return { state, count: 0 };
+            }
+            itemsComplete += 1;
+            await testing.sleep(100);
+            return { state, count: 1 };
+          });
+          runOnlineBatches.setHook('isComplete', async () => {
+            isCompleteCalls++;
+            return itemsComplete >= 1000;
+          });
 
-      await runOnlineMigration({ showProgress, version: { version: 1 } });
+          await runOnlineMigration({ showProgress, version: { version: 1 } });
 
-      assert.equal(itemsComplete, 1000);
-      assert.equal(isCompleteCalls, 12);
-    }, { maxTime: Infinity }));
+          assert.equal(itemsComplete, 1000);
+          assert.equal(isCompleteCalls, 12);
+        },
+        { maxTime: Infinity }
+      )
+    );
 
-    test('(downgrade) batch function that just does more items than requested per iteration', testing.runWithFakeTime(async () => {
-      let itemsComplete = 0;
-      runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
-        if (itemsComplete >= 1000) {
-          return { state, count: 0 };
-        }
-        batchSize = Math.max(batchSize + 2, 1000 - itemsComplete);
-        itemsComplete += batchSize;
-        await testing.sleep(batchSize * 10); // one item takes 10ms (fake time)
-        return { state, count: batchSize };
-      });
-      runOnlineBatches.setHook('isComplete', async () => itemsComplete >= 1000);
+    test(
+      '(downgrade) batch function that just does more items than requested per iteration',
+      testing.runWithFakeTime(async () => {
+        let itemsComplete = 0;
+        runOnlineBatches.setHook('runBatch', async (batchSize, state) => {
+          if (itemsComplete >= 1000) {
+            return { state, count: 0 };
+          }
+          batchSize = Math.max(batchSize + 2, 1000 - itemsComplete);
+          itemsComplete += batchSize;
+          await testing.sleep(batchSize * 10); // one item takes 10ms (fake time)
+          return { state, count: batchSize };
+        });
+        runOnlineBatches.setHook('isComplete', async () => itemsComplete >= 1000);
 
-      await runOnlineDowngrade({ showProgress, version: { version: 1 } });
+        await runOnlineDowngrade({ showProgress, version: { version: 1 } });
 
-      assert.equal(itemsComplete, 1000);
-    }));
+        assert.equal(itemsComplete, 1000);
+      })
+    );
   });
 
   suite('runDowngrade', () => {
@@ -456,7 +474,7 @@ helper.dbSuite(path.basename(__filename), () => {
     };
 
     setup(async () => {
-      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, 'admin': helper.dbUrl } });
+      db = new Database({ urlsByMode: { [READ]: helper.dbUrl, admin: helper.dbUrl } });
       for (const version of [schema.getVersion(1), schema.getVersion(2), schema.getVersion(3)]) {
         await db._withClient('admin', async client => {
           await runMigration({
@@ -466,7 +484,6 @@ helper.dbSuite(path.basename(__filename), () => {
             usernamePrefix: 'test',
           });
         });
-
       }
     });
 
@@ -484,9 +501,12 @@ helper.dbSuite(path.basename(__filename), () => {
 
       assert.equal(await db.currentVersion(), 2);
       await db._withClient('admin', async client => {
-        await assert.rejects(async () => {
-          await client.query('select * from foo2');
-        }, err => err.code === UNDEFINED_TABLE);
+        await assert.rejects(
+          async () => {
+            await client.query('select * from foo2');
+          },
+          err => err.code === UNDEFINED_TABLE
+        );
         // method is now the v1 method
         await testMethod(client, 1);
       });
@@ -495,20 +515,22 @@ helper.dbSuite(path.basename(__filename), () => {
     test('failure does not modify version', async () => {
       await db._withClient('admin', async client => {
         await assert.rejects(
-          async () => runDowngrade({
-            client,
-            schema,
-            fromVersion: {
-              ...schema.getVersion(3),
-              downgradeScript: `begin
+          async () =>
+            runDowngrade({
+              client,
+              schema,
+              fromVersion: {
+                ...schema.getVersion(3),
+                downgradeScript: `begin
                 drop table NOSUCHTABLE;
               end`,
-            },
-            toVersion: schema.getVersion(2),
-            showProgress,
-            usernamePrefix: 'test',
-          }),
-          err => err.code === UNDEFINED_TABLE);
+              },
+              toVersion: schema.getVersion(2),
+              showProgress,
+              usernamePrefix: 'test',
+            }),
+          err => err.code === UNDEFINED_TABLE
+        );
       });
       assert.equal(await db.currentVersion(), 3);
       await db._withClient('admin', async client => {

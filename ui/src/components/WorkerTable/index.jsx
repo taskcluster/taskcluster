@@ -98,7 +98,9 @@ export default class WorkerTable extends Component {
   componentDidMount() {
     const query = parse(this.props.location.search.slice(1));
 
-    if (query.sortBy) return;
+    if (query.sortBy) {
+      return;
+    }
 
     this.props.history.replace({
       search: stringify(

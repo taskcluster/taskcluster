@@ -7,31 +7,34 @@ import { load, testObjectName } from '../helper/index.js';
  * Test the simple download method on the given backend.  This defines a suite
  * of tests.
  */
-export const testSimpleDownloadMethod = ({
-  // optional title suffix
-  title,
+export const testSimpleDownloadMethod = (
+  {
+    // optional title suffix
+    title,
 
-  // a prefix for object names, so that concurrent runs do not modify the
-  // same objects in the "real" storage backend
-  prefix,
+    // a prefix for object names, so that concurrent runs do not modify the
+    // same objects in the "real" storage backend
+    prefix,
 
-  // the backend to test; this will be loaded from the loader, so its configuration
-  // should be set up in suiteSetup.
-  backendId,
+    // the backend to test; this will be loaded from the loader, so its configuration
+    // should be set up in suiteSetup.
+    backendId,
 
-  // an async function({name, object}) to make an object with the given name
-  // containing the given data, simulating an upload. It's up to the caller to clean
-  // these up in a `teardown` handler.
-  makeObject,
+    // an async function({name, object}) to make an object with the given name
+    // containing the given data, simulating an upload. It's up to the caller to clean
+    // these up in a `teardown` handler.
+    makeObject,
 
-  // an optional async function({name, url}) to verify that the correct URL was
-  // returned for the object with the given name
-  checkUrl = async () => {},
+    // an optional async function({name, url}) to verify that the correct URL was
+    // returned for the object with the given name
+    checkUrl = async () => {},
 
-  // suiteDefinition defines the suite; add suiteSetup, suiteTeardown here, if
-  // necessary, and any extra tests
-}, suiteDefinition) => {
-  suite(`simple download method${title ? `: ${title}` : ''}`, function() {
+    // suiteDefinition defines the suite; add suiteSetup, suiteTeardown here, if
+    // necessary, and any extra tests
+  },
+  suiteDefinition
+) => {
+  suite(`simple download method${title ? `: ${title}` : ''}`, function () {
     (suiteDefinition || (() => {})).call(this);
 
     let backend;

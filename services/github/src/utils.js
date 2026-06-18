@@ -31,13 +31,16 @@ export const throttleRequest = async ({ url, method, response = { status: 0 }, a
 
     if (e.status >= 500) {
       const newDelay = 2 ** attempt * delay;
-      return await setTimeoutPromise(newDelay, throttleRequest({
-        url,
-        method,
-        response: e,
-        attempt: attempt + 1,
-        delay,
-      }));
+      return await setTimeoutPromise(
+        newDelay,
+        throttleRequest({
+          url,
+          method,
+          response: e,
+          attempt: attempt + 1,
+          delay,
+        })
+      );
     }
 
     throw e;
@@ -130,7 +133,7 @@ export const shouldSkipComment = ({ action, comment, issue }) => {
  * @returns string
  * @throws {Error} if no command is found
  */
-export const getTaskclusterCommand = (comment) => {
+export const getTaskclusterCommand = comment => {
   const match = taskclusterCommandRegExp.exec(comment.body);
   if (!match) {
     throw new Error('No taskcluster command found');
@@ -149,8 +152,7 @@ export const getTaskclusterCommand = (comment) => {
  * @param {string} src
  * @returns string
  */
-export const ansi2txt = (src) => {
-  // eslint-disable-next-line no-control-regex
+export const ansi2txt = src => {
   const pattern = [
     '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
     '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))',
@@ -258,7 +260,7 @@ export const extractLog = async (stream, headLines = 20, tailLines = 200, maxPay
   return `${headLog}\n\n...(${finalHiddenLines} lines hidden)...\n\n${finalTail}`;
 };
 
-export const markdownLog = (log) => ['\n---\n\n```bash\n', log, '\n```'].join('');
+export const markdownLog = log => ['\n---\n\n```bash\n', log, '\n```'].join('');
 export const markdownAnchor = (name, url) => `[${name}](${url})`;
 
 /**
@@ -270,10 +272,7 @@ export function generateXHubSignature(secret, payload, algorithm = 'sha1') {
   if (!['sha1', 'sha256'].includes(algorithm)) {
     throw new Error('Invalid algorithm');
   }
-  return [
-    algorithm,
-    crypto.createHmac(algorithm, secret).update(payload).digest('hex'),
-  ].join('=');
+  return [algorithm, crypto.createHmac(algorithm, secret).update(payload).digest('hex')].join('=');
 }
 
 /**

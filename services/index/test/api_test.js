@@ -48,7 +48,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert(err.statusCode === 404, 'Should have returned 404');
       return;
     }
-    assert(false, 'This shouldn\'t have worked');
+    assert(false, "This shouldn't have worked");
   });
 
   test('delete (non-existing)', async () => {
@@ -68,7 +68,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     helper.scopes('none');
     await assert.rejects(
       () => helper.index.findTask(`${myns}.my-task`),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('delete (no scopes)', async () => {
@@ -76,11 +77,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     helper.scopes('none');
     await assert.rejects(
       () => helper.index.deleteTask(ns),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   suite('listing things', () => {
-    suiteSetup(async function() {
+    suiteSetup(async function () {
       if (skipping()) {
         this.skip();
       }
@@ -91,43 +93,35 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         return;
       }
 
-      const paths = [
-        'abc', 'abc.def', 'abc.def2',
-        'bbc',
-        'bbc.def',
-        'cbc',
-        'cbc.def',
-        'dbc.def2',
-      ];
+      const paths = ['abc', 'abc.def', 'abc.def2', 'bbc', 'bbc.def', 'cbc', 'cbc.def', 'dbc.def2'];
 
-      const expiredPaths = [
-        'pqr', 'pqr.stu', 'pqr.stu2',
-        'ppt', 'ppt.stu',
-      ];
+      const expiredPaths = ['pqr', 'pqr.stu', 'pqr.stu2', 'ppt', 'ppt.stu'];
 
       const taskId = slugid.v4();
 
       await Promise.all([
         ...paths.map(path =>
-          helper.index.insertTask(path, { taskId, rank: 13, data: {}, expires: taskcluster.fromNow('1 day') })),
+          helper.index.insertTask(path, { taskId, rank: 13, data: {}, expires: taskcluster.fromNow('1 day') })
+        ),
         ...expiredPaths.map(path =>
-          helper.index.insertTask(path, { taskId, rank: 13, data: {}, expires: taskcluster.fromNow('-1 day') })),
+          helper.index.insertTask(path, { taskId, rank: 13, data: {}, expires: taskcluster.fromNow('-1 day') })
+        ),
       ]);
     });
 
     const testValidNamespaces = (list, VALID_PREFIXES = ['abc', 'bbc', 'cbc']) => {
       const namespaces = [];
       const INVALID_PREFIXES = ['pqr', 'ppt'];
-      list.forEach((ns) => {
+      list.forEach(ns => {
         namespaces.push(ns.namespace);
-        assert(ns.namespace.indexOf('.') === -1, 'shouldn\'t have any dots');
+        assert(ns.namespace.indexOf('.') === -1, "shouldn't have any dots");
       });
 
-      VALID_PREFIXES.forEach((prefix) => {
+      VALID_PREFIXES.forEach(prefix => {
         assume(namespaces).contains(prefix);
       });
 
-      INVALID_PREFIXES.forEach((prefix) => {
+      INVALID_PREFIXES.forEach(prefix => {
         assume(namespaces).not.contains(prefix);
       });
     };
@@ -160,7 +154,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       helper.scopes('none');
       await assert.rejects(
         () => helper.index.listNamespaces('', {}),
-        err => err.code === 'InsufficientScopes');
+        err => err.code === 'InsufficientScopes'
+      );
     });
 
     test('list top-level tasks', async () => {
@@ -194,7 +189,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       helper.scopes('none');
       await assert.rejects(
         () => helper.index.listTasks('', {}),
-        err => err.code === 'InsufficientScopes');
+        err => err.code === 'InsufficientScopes'
+      );
     });
 
     test('findTask throws 404 for expired tasks', async () => {
@@ -217,7 +213,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert(err.statusCode === 404, 'Should have returned 404');
         return;
       }
-      assert(false, "should have caught");
+      assert(false, 'should have caught');
     });
 
     test('findTasksAtIndexes finds tasks', async () => {
@@ -278,37 +274,47 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.deepEqual(results, { tasks: [task1, task3] });
 
       // Continuation tokens are returned if the limit is exceeded
-      results = await helper.index.findTasksAtIndex({
-        indexes: [`${myns}.my-task`, `${myns}.my-task3`],
-      }, { limit: 1 });
+      results = await helper.index.findTasksAtIndex(
+        {
+          indexes: [`${myns}.my-task`, `${myns}.my-task3`],
+        },
+        { limit: 1 }
+      );
 
       assert.deepEqual(results.tasks, [task1]);
       const continuationToken = results.continuationToken;
 
       // No input indexes: empty response
-      results = await helper.index.findTasksAtIndex({
-        indexes: [],
-      }, { limit: 1, continuationToken });
+      results = await helper.index.findTasksAtIndex(
+        {
+          indexes: [],
+        },
+        { limit: 1, continuationToken }
+      );
 
       assert.deepEqual(results, { tasks: [] });
 
       // Different input indexes: empty response
-      results = await helper.index.findTasksAtIndex({
-        indexes: [`${myns}.my-task3`, `${myns}.whatever`],
-      }, { limit: 1, continuationToken });
+      results = await helper.index.findTasksAtIndex(
+        {
+          indexes: [`${myns}.my-task3`, `${myns}.whatever`],
+        },
+        { limit: 1, continuationToken }
+      );
 
       assert.deepEqual(results, { tasks: [] });
 
       // You need to re-send the same input indexes along with the token
       // for it to work
-      results = await helper.index.findTasksAtIndex({
-        indexes: [`${myns}.my-task`, `${myns}.my-task3`],
-      }, { limit: 1, continuationToken });
+      results = await helper.index.findTasksAtIndex(
+        {
+          indexes: [`${myns}.my-task`, `${myns}.my-task3`],
+        },
+        { limit: 1, continuationToken }
+      );
 
       assert.deepEqual(results, { tasks: [task3] });
-
     });
-
   });
 
   test('access artifact using anonymous scopes', async () => {
@@ -327,15 +333,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     debug('### Download xyz artifact using index');
-    const url = helper.index.buildUrl(
-      helper.index.findArtifactFromTask,
-      'my.name.space',
-      'xyz/abc.zip',
-    );
+    const url = helper.index.buildUrl(helper.index.findArtifactFromTask, 'my.name.space', 'xyz/abc.zip');
 
     helper.setAnonymousScopes(['queue:get-artifact:xyz/abc.zip']);
     await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:xyz/abc.zip'], async () => {
-      const res = await request.get(url).redirects(0).catch((err) => err.response);
+      const res = await request
+        .get(url)
+        .redirects(0)
+        .catch(err => err.response);
       assert.equal(res.statusCode, 303, 'Expected 303 redirect');
       const location = res.headers.location;
       assert(!location.includes('bewit='), 'Public artifact URL should not contain bewit');
@@ -354,16 +359,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     debug('### Download private artifact using index');
-    const url = helper.index.buildSignedUrl(
-      helper.index.findArtifactFromTask,
-      'my.name.space',
-      'not-public/abc.zip',
-    );
-    const res = await request.get(url).redirects(0).catch((err) => err.response);
+    const url = helper.index.buildSignedUrl(helper.index.findArtifactFromTask, 'my.name.space', 'not-public/abc.zip');
+    const res = await request
+      .get(url)
+      .redirects(0)
+      .catch(err => err.response);
     assert.equal(res.statusCode, 303, 'Expected 303 redirect');
     const location = res.headers.location.replace(/bewit=.*/, 'bewit=xyz');
-    assert.equal(location,
-      libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/not-public%2Fabc.zip?bewit=xyz`));
+    assert.equal(
+      location,
+      libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/not-public%2Fabc.zip?bewit=xyz`)
+    );
   });
 
   test('access private artifact (with no scopes)', async () => {
@@ -378,12 +384,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     debug('### Download private artifact using index without queue:get-artifact:..');
     helper.scopes('some-scope');
-    const url = helper.index.buildSignedUrl(
-      helper.index.findArtifactFromTask,
-      'my.name.space',
-      'not-public/abc.zip',
-    );
-    const res = await request.get(url).redirects(0).catch((err) => err.response);
+    const url = helper.index.buildSignedUrl(helper.index.findArtifactFromTask, 'my.name.space', 'not-public/abc.zip');
+    const res = await request
+      .get(url)
+      .redirects(0)
+      .catch(err => err.response);
     assert.equal(res.statusCode, 403, 'Expected 403 Forbidden');
   });
 
@@ -402,12 +407,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     helper.setAnonymousScopes(['queue:get-artifact:public/*']);
-    const url = helper.index.buildSignedUrl(
-      helper.index.findArtifactFromTask,
-      'my.name.space',
-      'public/build.zip',
-    );
-    const res = await request.get(url).redirects(0).catch((err) => err.response);
+    const url = helper.index.buildSignedUrl(helper.index.findArtifactFromTask, 'my.name.space', 'public/build.zip');
+    const res = await request
+      .get(url)
+      .redirects(0)
+      .catch(err => err.response);
     assert.equal(res.statusCode, 303, 'Expected 303 redirect');
     const location = res.headers.location;
     assert(!location.includes('bewit='), 'Public artifact URL should not contain bewit');
@@ -427,12 +431,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       throw new Error('scope check failure');
     });
 
-    const url = helper.index.buildSignedUrl(
-      helper.index.findArtifactFromTask,
-      'my.name.space',
-      'public/build.zip',
-    );
-    const res = await request.get(url).redirects(0).catch((err) => err.response);
+    const url = helper.index.buildSignedUrl(helper.index.findArtifactFromTask, 'my.name.space', 'public/build.zip');
+    const res = await request
+      .get(url)
+      .redirects(0)
+      .catch(err => err.response);
     assert.equal(res.statusCode, 303, 'Expected 303 redirect');
     assert(res.headers.location.includes('bewit='), 'Should fall back to signed URL with bewit');
   });
@@ -454,15 +457,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     helper.setAnonymousScopes(['queue:get-artifact:public/*']);
     await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
-      const url = helper.index.buildUrl(
-        helper.index.findArtifactFromTask,
-        'my.name.space',
-        'public/build.zip',
-      );
-      const res = await request.get(url).redirects(0).catch((err) => err.response);
+      const url = helper.index.buildUrl(helper.index.findArtifactFromTask, 'my.name.space', 'public/build.zip');
+      const res = await request
+        .get(url)
+        .redirects(0)
+        .catch(err => err.response);
       assert.equal(res.statusCode, 303, 'Expected 303 redirect');
-      assert.equal(res.headers.location,
-        libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fbuild.zip`));
+      assert.equal(
+        res.headers.location,
+        libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fbuild.zip`)
+      );
     });
   });
 
@@ -479,15 +483,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     helper.setAnonymousScopes(['queue:get-artifact:public/*']);
     await testing.fakeauth.withAnonymousScopes(['queue:get-artifact:public/*'], async () => {
-      const url = helper.index.buildUrl(
-        helper.index.findArtifactFromTask,
-        'my.name.space',
-        'public/build.zip',
-      );
-      const res = await request.get(url).redirects(0).catch((err) => err.response);
+      const url = helper.index.buildUrl(helper.index.findArtifactFromTask, 'my.name.space', 'public/build.zip');
+      const res = await request
+        .get(url)
+        .redirects(0)
+        .catch(err => err.response);
       assert.equal(res.statusCode, 303, 'Expected 303 redirect');
-      assert.equal(res.headers.location,
-        libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fbuild.zip`));
+      assert.equal(
+        res.headers.location,
+        libUrls.api(helper.rootUrl, 'queue', 'v1', `/task/${taskId}/artifacts/public%2Fbuild.zip`)
+      );
     });
   });
 
@@ -508,10 +513,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     await assert.rejects(
       () => helper.index.findTask('some.testing.name.space'),
-      err => err.code === 'ResourceNotFound');
+      err => err.code === 'ResourceNotFound'
+    );
 
     // parent namespace still exists
     const listRes = await helper.index.listNamespaces('some.testing');
-    assert.deepEqual(listRes.namespaces.map(({ name }) => name), ['name']);
+    assert.deepEqual(
+      listRes.namespaces.map(({ name }) => name),
+      ['name']
+    );
   });
 });

@@ -45,10 +45,7 @@ class Notifier {
   }
 
   key(idents) {
-    return crypto
-      .createHash('md5')
-      .update(JSON.stringify(idents))
-      .digest('hex');
+    return crypto.createHash('md5').update(JSON.stringify(idents)).digest('hex');
   }
 
   isDuplicate(...idents) {

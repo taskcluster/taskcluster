@@ -7,8 +7,7 @@ describe('fromNow', () => {
     const date2 = fromNow();
 
     // Allow for 10ms margin
-    expect(date2.getTime())
-      .to.be.closeTo(date1.getTime(), 10);
+    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
   });
 
   it('should generate with hour format', () => {
@@ -19,8 +18,7 @@ describe('fromNow', () => {
     const date2 = fromNow('2 hours');
 
     // Allow for 10ms margin
-    expect(date2.getTime())
-      .to.be.closeTo(date1.getTime(), 10);
+    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
   });
 
   it('should generate with year+month format', () => {
@@ -29,8 +27,7 @@ describe('fromNow', () => {
     const date2 = fromNow('2 years 55mo');
 
     // Allow for 10ms margin
-    expect(date2.getTime())
-      .to.be.closeTo(date1.getTime(), 10);
+    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
   });
 
   it('should generate with month format', () => {
@@ -38,8 +35,7 @@ describe('fromNow', () => {
     const date2 = fromNow('240 months');
 
     // Allow for 10ms margin
-    expect(date2.getTime())
-      .to.be.closeTo(date1.getTime(), 10);
+    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
   });
 
   it('should generate with -month format', () => {
@@ -47,8 +43,7 @@ describe('fromNow', () => {
     const date2 = fromNow('-240 months');
 
     // Allow for 10ms margin
-    expect(date2.getTime())
-      .to.be.closeTo(date1.getTime(), 10);
+    expect(date2.getTime()).to.be.closeTo(date1.getTime(), 10);
   });
 
   it('should generate from object definitions', () => {

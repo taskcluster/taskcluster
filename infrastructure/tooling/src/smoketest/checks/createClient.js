@@ -3,9 +3,9 @@ import { retryAssertionFailures } from '../util.js';
 
 export const scopeExpression = {
   AllOf: [
-    "auth:create-client:project/taskcluster/smoketest/*",
-    "auth:reset-access-token:project/taskcluster/smoketest/*",
-    "project:taskcluster:smoketest:*",
+    'auth:create-client:project/taskcluster/smoketest/*',
+    'auth:reset-access-token:project/taskcluster/smoketest/*',
+    'project:taskcluster:smoketest:*',
   ],
 };
 
@@ -14,19 +14,17 @@ export const tasks = [];
 tasks.push({
   title: 'Create client and use it (--target client)',
   requires: ['ping-auth'],
-  provides: [
-    'target-client',
-  ],
+  provides: ['target-client'],
   run: async (_requirements, utils) => {
     const auth = new taskcluster.Auth(taskcluster.fromEnvVars());
     const randomId = taskcluster.slugid();
 
     const clientId = `project/taskcluster/smoketest/${randomId}`;
     const payload = {
-      "deleteOnExpiration": true,
-      "expires": taskcluster.fromNowJSON('1 hour'),
-      "description": `Create a client and use it ${clientId}`,
-      "scopes": [`auth:reset-access-token:project/taskcluster/smoketest/${randomId}`],
+      deleteOnExpiration: true,
+      expires: taskcluster.fromNowJSON('1 hour'),
+      description: `Create a client and use it ${clientId}`,
+      scopes: [`auth:reset-access-token:project/taskcluster/smoketest/${randomId}`],
     };
     const created = await auth.createClient(clientId, payload);
 

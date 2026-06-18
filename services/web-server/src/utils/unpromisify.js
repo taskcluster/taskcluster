@@ -5,16 +5,17 @@
  * appropriate arity (one more than the input arity, to account for the 'done' argument)
  */
 export default (fn, { returnsArray } = {}) => {
-  // eslint-disable-next-line no-unused-vars
+  // biome-ignore lint/correctness/noUnusedVariables: referenced only inside the eval'd string below, which biome can't see
   const call = (self, args) => {
     const done = args.pop();
     Promise.resolve(fn.apply(self, args)).then(
       returnsArray ? res => done.call(null, null, ...res) : res => done.call(null, null, res),
-      err => done.call(null, err));
+      err => done.call(null, err)
+    );
   };
 
   // preserve arity by generating code..
   const args = [...new Array(fn.length + 1)].map((_, i) => `arg${i}`);
-  // eslint-disable-next-line no-eval
+  // biome-ignore lint/security/noGlobalEval: No user input, args are all generated above and static
   return eval(`const x = function (${args}) { return call(this, [...arguments]); }; x`);
 };

@@ -23,9 +23,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       test('request', async () => {
         try {
-          await request
-            .post(`http://localhost:${helper.serverPort}/graphql`)
-            .set('origin', requestOrigin);
+          await request.post(`http://localhost:${helper.serverPort}/graphql`).set('origin', requestOrigin);
           assert.fail();
         } catch (e) {
           assert.equal(e.response.headers['access-control-allow-origin'], responseOrigin);
@@ -42,9 +40,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   // check that deploy previews are supported..
   makeSuite(
-    ['https://tc.example.com', "/https://deploy-preview-\\d+--taskcluster-web\\.netlify\\.com/"],
+    ['https://tc.example.com', '/https://deploy-preview-\\d+--taskcluster-web\\.netlify\\.com/'],
     'https://deploy-preview-897--taskcluster-web.netlify.com/',
-    'https://deploy-preview-897--taskcluster-web.netlify.com/');
+    'https://deploy-preview-897--taskcluster-web.netlify.com/'
+  );
 
   suite('auth endpoints', () => {
     helper.withServer(skipping);

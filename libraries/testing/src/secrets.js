@@ -121,7 +121,7 @@ class Secrets {
 
     // if no secrets are required, just run this as a regular suite with no "(real)" suffix
     if (secretList.length === 0) {
-      suite(title, function() {
+      suite(title, function () {
         suiteSetup(async () => {
           if (that.load) {
             that.load.save();
@@ -139,11 +139,11 @@ class Secrets {
       return;
     }
 
-    if (secretList.some(n => ! this.secrets[n])) {
+    if (secretList.some(n => !this.secrets[n])) {
       throw new Error(`Unknown secrets in ${JSON.stringify(secretList)}`);
     }
 
-    suite(`${title} (mock)`, function() {
+    suite(`${title} (mock)`, function () {
       suiteSetup(async () => {
         skipping = false;
         await that.setup();
@@ -170,9 +170,9 @@ class Secrets {
       });
     });
 
-    suite(`${title} (real)`, function() {
+    suite(`${title} (real)`, function () {
       let saveOccured = false;
-      suiteSetup(async function() {
+      suiteSetup(async function () {
         await that.setup();
         const missing = secretList.filter(name => !that.have(name));
         if (missing.length) {

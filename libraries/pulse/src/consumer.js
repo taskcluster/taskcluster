@@ -148,7 +148,8 @@ export class PulseConsumer {
       'queue',
       // for ephemeral queues, generate a new queueName on every connection,
       // as autodelete is not an immediate operation
-      this.ephemeral ? slugid.nice() : this.queueName);
+      this.ephemeral ? slugid.nice() : this.queueName
+    );
     await channel.assertQueue(queueName, {
       exclusive: this.ephemeral,
       durable: true,
@@ -190,7 +191,7 @@ export class PulseConsumer {
       // NOTE: channel.consume is not async!  In fact, await'ing it can
       // result in a message arriving before the onConnected callback is
       // invoked.
-      const consumer = channel.consume(queueName, async (msg) => {
+      const consumer = channel.consume(queueName, async msg => {
         // If the consumer is cancelled by RabbitMQ, the message callback will
         // be invoked with null.  This might happen if the queue is deleted, in
         // which case we probably want to reconnect and redeclare everything.
@@ -271,10 +272,10 @@ export class PulseConsumer {
 
     // Find CC'ed routes
     if (msg.properties?.headers && Array.isArray(msg.properties.headers.CC)) {
-      message.routes = msg.properties.headers.CC.filter((route) => {
+      message.routes = msg.properties.headers.CC.filter(route => {
         // Only return the CC'ed routes that starts with "route."
         return /^route\.(.*)$/.test(route);
-      }).map((route) => {
+      }).map(route => {
         // Remove the "route."
         return /^route\.(.*)$/.exec(route)[1];
       });
@@ -312,7 +313,7 @@ export class PulseConsumer {
           routing[ref.name] = keys.pop();
         }
         // Check that we only have one multiWord routing key
-        assert(i === j, 'i != j really shouldn\'t be the case');
+        assert(i === j, "i != j really shouldn't be the case");
         routing[routingKeyReference[i].name] = keys.join('.');
       }
 

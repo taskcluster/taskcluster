@@ -57,7 +57,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // user consents and UI dialog POSTs back to
       // /login/oauth/authorize/decision
 
-      const res = await request.post(url('/login/oauth/authorize/decision'))
+      const res = await request
+        .post(url('/login/oauth/authorize/decision'))
         .send(formData)
         .redirects(0)
         .ok(res => res.status === 302);
@@ -69,15 +70,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query arg
 
-      const [err, res] = await tryCatch(agent.get(url('/login/oauth/authorize' +
-        '?response_type=token' +
-        `&client_id=test-token` +
-        `&redirect_uri=bad` +
-        '&scope=tags:get:*' +
-        '&state=abc123' +
-        '&expires=3+days'))
-        .redirects(0)
-        .ok(res => res.status === 302));
+      const [err, res] = await tryCatch(
+        agent
+          .get(
+            url(
+              '/login/oauth/authorize' +
+                '?response_type=token' +
+                `&client_id=test-token` +
+                `&redirect_uri=bad` +
+                '&scope=tags:get:*' +
+                '&state=abc123' +
+                '&expires=3+days'
+            )
+          )
+          .redirects(0)
+          .ok(res => res.status === 302)
+      );
 
       assert.equal(err.response.body.code, 'unauthorized_client');
       assert(!res);
@@ -90,15 +98,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query arg
 
-      const [err, res] = await tryCatch(agent.get(url('/login/oauth/authorize' +
-        '?response_type=token' +
-        `&client_id=qwerty` +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        '&scope=tags:get:*' +
-        '&state=abc123' +
-        '&expires=3+days'))
-        .redirects(0)
-        .ok(res => res.status === 302));
+      const [err, res] = await tryCatch(
+        agent
+          .get(
+            url(
+              '/login/oauth/authorize' +
+                '?response_type=token' +
+                `&client_id=qwerty` +
+                `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+                '&scope=tags:get:*' +
+                '&state=abc123' +
+                '&expires=3+days'
+            )
+          )
+          .redirects(0)
+          .ok(res => res.status === 302)
+      );
 
       assert.equal(err.response.body.code, 'unauthorized_client');
       assert(!res);
@@ -131,7 +146,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           agent
             .get(url(`/login/oauth/authorize?${params.toString()}`))
             .redirects(0)
-            .ok(res => res.status === 302));
+            .ok(res => res.status === 302)
+        );
 
         assert.equal(err.response.body.code, 'invalid_request');
         assert(!res);
@@ -147,14 +163,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query arg
 
-      let res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=token' +
-        `&client_id=${registeredClientId}` +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        // invalid scope
-        '&scope=test' +
-        `&state=${state}` +
-        '&expires=3+days'))
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=token' +
+              `&client_id=${registeredClientId}` +
+              `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+              // invalid scope
+              '&scope=test' +
+              `&state=${state}` +
+              '&expires=3+days'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -170,7 +191,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // user consents and UI dialog POSTs back to
       // /login/oauth/authorize/decision
 
-      res = await agent.post(url('/login/oauth/authorize/decision'))
+      res = await agent
+        .post(url('/login/oauth/authorize/decision'))
         .send(formData)
         .redirects(0)
         .ok(res => res.status === 302);
@@ -188,14 +210,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query arg
 
-      let res = await agent.get(url('/login/oauth/authorize' +
-        // invalid response_type; should have been `token`
-        '?response_type=code' +
-        `&client_id=${registeredClientId}` +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        '&scope=tags:get:*' +
-        `&state=${state}` +
-        '&expires=3+days'))
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              // invalid response_type; should have been `token`
+              '?response_type=code' +
+              `&client_id=${registeredClientId}` +
+              `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+              '&scope=tags:get:*' +
+              `&state=${state}` +
+              '&expires=3+days'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -211,7 +238,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // user consents and UI dialog POSTs back to
       // /login/oauth/authorize/decision
 
-      res = await agent.post(url('/login/oauth/authorize/decision'))
+      res = await agent
+        .post(url('/login/oauth/authorize/decision'))
         .send(formData)
         .redirects(0)
         .ok(res => res.status === 302);
@@ -229,13 +257,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query arg
 
-      const res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=code' +
-        `&client_id=${registeredClientId}` +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        '&scope=tags:get:*' +
-        `&state=${state}` +
-        '&expires=3+days'))
+      const res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=code' +
+              `&client_id=${registeredClientId}` +
+              `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+              '&scope=tags:get:*' +
+              `&state=${state}` +
+              '&expires=3+days'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -251,10 +284,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // user consents and UI dialog POSTs back to
       // /login/oauth/authorize/decision
 
-      const [error] = await tryCatch(agent.post(url('/login/oauth/authorize/decision'))
-        .send(formData)
-        .redirects(0)
-        .ok(res => res.status === 302));
+      const [error] = await tryCatch(
+        agent
+          .post(url('/login/oauth/authorize/decision'))
+          .send(formData)
+          .redirects(0)
+          .ok(res => res.status === 302)
+      );
 
       assert.equal(error.response.body.name, 'ForbiddenError');
 
@@ -266,12 +302,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query arg
 
-      let res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=token' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
-        '&scope=tags:get:*' +
-        '&state=abc123'))
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=token' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent('https://test.example.com/cb') +
+              '&scope=tags:get:*' +
+              '&state=abc123'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -280,7 +322,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // user consents and UI dialog POSTs back to
       // /login/oauth/authorize/decision
 
-      res = await agent.post(url('/login/oauth/authorize/decision'))
+      res = await agent
+        .post(url('/login/oauth/authorize/decision'))
         .send(`clientId=${query.get('clientId')}`)
         .send(`transaction_id=${query.get('transactionID')}`)
         .send(`scope=${query.get('scope')}`)
@@ -291,7 +334,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       query = getQuery(res.header.location, '#');
 
-      res = await agent.get(url('/login/oauth/credentials'))
+      res = await agent
+        .get(url('/login/oauth/credentials'))
         .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`);
 
       assert(new Date(res.body.expires) < taskcluster.fromNow('1 year'));
@@ -304,13 +348,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query arg
 
-      let res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=code' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent(redirectUri) +
-        '&expires=' + encodeURIComponent(fifteenMinutes) +
-        '&scope=tags:get:*' +
-        '&state=abc123'))
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=code' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent(redirectUri) +
+              '&expires=' +
+              encodeURIComponent(fifteenMinutes) +
+              '&scope=tags:get:*' +
+              '&state=abc123'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -318,7 +369,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user calls /login/oauth/token
 
-      res = await agent.post(url('/login/oauth/token'))
+      res = await agent
+        .post(url('/login/oauth/token'))
         .set('Content-Type', 'application/x-www-form-urlencoded')
         .send('grant_type=authorization_code')
         .send(`code=${query.get('code')}`)
@@ -327,7 +379,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user calls /login/oauth/credentials to get TC credentials
 
-      res = await agent.get(url('/login/oauth/credentials'))
+      res = await agent
+        .get(url('/login/oauth/credentials'))
         .set('authorization', `${res.body.token_type} ${res.body.access_token}`);
 
       assert(new Date(res.body.expires) < taskcluster.fromNow(fifteenMinutes));
@@ -338,12 +391,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query args
 
-      const res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=code' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
-        '&scope=tags:get:*' +
-        '&state=abc123'))
+      const res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=code' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent('https://test.example.com/cb') +
+              '&scope=tags:get:*' +
+              '&state=abc123'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -358,23 +417,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query args
 
-      await agent.get(url('/login/oauth/authorize' +
-        '?response_type=code' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
-        '&scope=tags:get:*' +
-        '&state=abc123'))
+      await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=code' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent('https://test.example.com/cb') +
+              '&scope=tags:get:*' +
+              '&state=abc123'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
       // user calls /login/oauth/token
 
-      const [error, response] = await tryCatch(agent.post(url('/login/oauth/token'))
-        .set('Content-Type', 'application/x-www-form-urlencoded')
-        .send('grant_type=authorization_code')
-        .send(`code=bad`)
-        .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
-        .send(`client_id=${registeredClientId}`));
+      const [error, response] = await tryCatch(
+        agent
+          .post(url('/login/oauth/token'))
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .send('grant_type=authorization_code')
+          .send(`code=bad`)
+          .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+          .send(`client_id=${registeredClientId}`)
+      );
 
       assert.equal(error.response.body.error, 'invalid_grant');
       assert(!response);
@@ -386,19 +454,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query args
 
-      const res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=code' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent(redirectUri) +
-        '&scope=tags:get:*' +
-        '&state=abc123'))
+      const res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=code' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent(redirectUri) +
+              '&scope=tags:get:*' +
+              '&state=abc123'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
       const code = getQuery(res.header.location).get('code');
       assert(code && code.length > 0, 'expected to receive an authorization code');
 
-      const firstExchange = await agent.post(url('/login/oauth/token'))
+      const firstExchange = await agent
+        .post(url('/login/oauth/token'))
         .set('Content-Type', 'application/x-www-form-urlencoded')
         .send('grant_type=authorization_code')
         .send(`code=${code}`)
@@ -408,15 +483,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(firstExchange.status, 200);
       assert(firstExchange.body.access_token, 'first exchange must return an access_token');
 
-      const [error, response] = await tryCatch(agent.post(url('/login/oauth/token'))
-        .set('Content-Type', 'application/x-www-form-urlencoded')
-        .send('grant_type=authorization_code')
-        .send(`code=${code}`)
-        .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
-        .send(`client_id=${registeredClientId}`));
+      const [error, response] = await tryCatch(
+        agent
+          .post(url('/login/oauth/token'))
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .send('grant_type=authorization_code')
+          .send(`code=${code}`)
+          .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+          .send(`client_id=${registeredClientId}`)
+      );
 
-      assert(!response,
-        `expected code replay to be rejected, but exchange succeeded with status ${response?.status}`);
+      assert(!response, `expected code replay to be rejected, but exchange succeeded with status ${response?.status}`);
       assert.equal(error.response.body.error, 'invalid_grant');
     });
     test('invalid_grant - authorization code past its lifetime cannot be exchanged', async () => {
@@ -426,12 +503,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query args
 
-      const res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=code' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent(redirectUri) +
-        '&scope=tags:get:*' +
-        '&state=abc123'))
+      const res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=code' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent(redirectUri) +
+              '&scope=tags:get:*' +
+              '&state=abc123'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -441,21 +524,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // Simulate the code aging past its lifetime by moving the
       // authorization_codes row's `expires` column into the past.
       await helper.withDbClient(async client => {
-        await client.query(
-          `update authorization_codes set expires = now() - interval '1 minute' where code = $1`,
-          [code],
-        );
+        await client.query(`update authorization_codes set expires = now() - interval '1 minute' where code = $1`, [
+          code,
+        ]);
       });
 
-      const [error, response] = await tryCatch(agent.post(url('/login/oauth/token'))
-        .set('Content-Type', 'application/x-www-form-urlencoded')
-        .send('grant_type=authorization_code')
-        .send(`code=${code}`)
-        .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
-        .send(`client_id=${registeredClientId}`));
+      const [error, response] = await tryCatch(
+        agent
+          .post(url('/login/oauth/token'))
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .send('grant_type=authorization_code')
+          .send(`code=${code}`)
+          .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+          .send(`client_id=${registeredClientId}`)
+      );
 
-      assert(!response,
-        `expected expired code to be rejected, but exchange succeeded with status ${response?.status}`);
+      assert(!response, `expected expired code to be rejected, but exchange succeeded with status ${response?.status}`);
       assert.equal(error.response.body.error, 'invalid_grant');
     });
     test('InputError when trying to get credentials of an expired client', async () => {
@@ -464,12 +548,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query arg
 
-      let res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=token' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
-        '&scope=tags:get:*' +
-        '&state=abc123'))
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=token' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent('https://test.example.com/cb') +
+              '&scope=tags:get:*' +
+              '&state=abc123'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -479,7 +569,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // user consents and UI dialog POSTs back to
       // /login/oauth/authorize/decision
 
-      res = await agent.post(url('/login/oauth/authorize/decision'))
+      res = await agent
+        .post(url('/login/oauth/authorize/decision'))
         .send(`clientId=${query.get('clientId')}`)
         .send(`transaction_id=${query.get('transactionID')}`)
         .send(`scope=${scope}`)
@@ -490,8 +581,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       query = getQuery(res.header.location, '#');
 
-      const [error] = await tryCatch(agent.get(url('/login/oauth/credentials'))
-        .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`));
+      const [error] = await tryCatch(
+        agent
+          .get(url('/login/oauth/credentials'))
+          .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`)
+      );
 
       assert.equal(error.response.body.name, 'InputError');
       assert.equal(error.response.body.message, 'Could not generate credentials for this access token');
@@ -502,13 +596,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const agent = await helper.signedInAgent();
       const registeredClientId = 'test-token';
 
-      let res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=token' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
-        '&scope=tags:get:*' +
-        '&state=abc123' +
-        '&expires=3+days'))
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=token' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent('https://test.example.com/cb') +
+              '&scope=tags:get:*' +
+              '&state=abc123' +
+              '&expires=3+days'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -517,7 +617,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const expiry = moment(new Date()).startOf('day').add(3, 'days').format('YYYY/MM/DD');
 
-      res = await agent.post(url('/login/oauth/authorize/decision'))
+      res = await agent
+        .post(url('/login/oauth/authorize/decision'))
         .send(`clientId=${query.get('clientId')}`)
         .send(`transaction_id=${query.get('transactionID')}`)
         .send(`scope=${scope}`)
@@ -532,12 +633,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await helper.withDbClient(async client => {
         await client.query(
           `update access_tokens set expires = now() - interval '1 minute' where hashed_access_token = $1`,
-          [hash(accessToken)],
+          [hash(accessToken)]
         );
       });
 
-      const [error] = await tryCatch(agent.get(url('/login/oauth/credentials'))
-        .set('authorization', `${query.get('token_type')} ${accessToken}`));
+      const [error] = await tryCatch(
+        agent.get(url('/login/oauth/credentials')).set('authorization', `${query.get('token_type')} ${accessToken}`)
+      );
 
       assert(error, 'expected an expired access token to be rejected');
       assert.equal(error.response.body.name, 'InputError');
@@ -554,13 +656,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query args
 
-      let res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=token' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
-        '&scope=tags:get:*' +
-        `&state=${state}` +
-        '&expires=3+days'))
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=token' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent('https://test.example.com/cb') +
+              '&scope=tags:get:*' +
+              `&state=${state}` +
+              '&expires=3+days'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -570,7 +678,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // than the registered client allows
       const expiry = moment(new Date()).startOf('day').add(3, 'days').format('YYYY/MM/DD');
 
-      res = await agent.post(url('/login/oauth/authorize/decision'))
+      res = await agent
+        .post(url('/login/oauth/authorize/decision'))
         .send(`clientId=${query.get('clientId')}`)
         .send(`transaction_id=${query.get('transactionID')}`)
         .send(`scope=assume:* queue:* auth:*`)
@@ -592,13 +701,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query args
 
-      let res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=code' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent(redirectUri) +
-        '&scope=tags:get:*' +
-        `&state=${state}` +
-        '&expires=3+days'))
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=code' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent(redirectUri) +
+              '&scope=tags:get:*' +
+              `&state=${state}` +
+              '&expires=3+days'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -607,7 +722,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // Tamper with the scope in the decision POST
       const expiry = moment(new Date()).startOf('day').add(3, 'days').format('YYYY/MM/DD');
 
-      res = await agent.post(url('/login/oauth/authorize/decision'))
+      res = await agent
+        .post(url('/login/oauth/authorize/decision'))
         .send(`clientId=${query.get('clientId')}`)
         .send(`transaction_id=${query.get('transactionID')}`)
         .send(`scope=assume:* queue:* auth:*`)
@@ -629,13 +745,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query args
 
-      let res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=token' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent('https://test.example.com/cb') +
-        '&scope=tags:get:*' +
-        '&state=abc123' +
-        '&expires=3+days'))
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=token' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent('https://test.example.com/cb') +
+              '&scope=tags:get:*' +
+              '&state=abc123' +
+              '&expires=3+days'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -657,7 +779,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       const expiry = moment(new Date()).startOf('day').add(3, 'days').format('YYYY/MM/DD');
 
-      res = await agent.post(url('/login/oauth/authorize/decision'))
+      res = await agent
+        .post(url('/login/oauth/authorize/decision'))
         .send(`clientId=${clientId}`)
         .send(`transaction_id=${transactionId}`)
         .send(`scope=${scope}`)
@@ -680,7 +803,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user calls /login/oauth/credentials to get TC credentials
 
-      res = await agent.get(url('/login/oauth/credentials'))
+      res = await agent
+        .get(url('/login/oauth/credentials'))
         .set('authorization', `${query.get('token_type')} ${query.get('access_token')}`);
 
       const thirtySecondsBefore = new Date(expiry).setSeconds(new Date(expiry).getSeconds() - 30);
@@ -699,13 +823,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user sent to /login/oauth/authorize with query args
 
-      let res = await agent.get(url('/login/oauth/authorize' +
-        '?response_type=code' +
-        `&client_id=${registeredClientId}` +
-        '&redirect_uri=' + encodeURIComponent(redirectUri) +
-        '&scope=tags:get:*' +
-        `&state=${state}` +
-        '&expires=3+days'))
+      let res = await agent
+        .get(
+          url(
+            '/login/oauth/authorize' +
+              '?response_type=code' +
+              `&client_id=${registeredClientId}` +
+              '&redirect_uri=' +
+              encodeURIComponent(redirectUri) +
+              '&scope=tags:get:*' +
+              `&state=${state}` +
+              '&expires=3+days'
+          )
+        )
         .redirects(0)
         .ok(res => res.status === 302);
 
@@ -727,7 +857,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // user consents and UI dialog POSTs back to
       // /login/oauth/authorize/decision
 
-      res = await agent.post(url('/login/oauth/authorize/decision'))
+      res = await agent
+        .post(url('/login/oauth/authorize/decision'))
         .send(`clientId=${query.get('clientId')}`)
         .send(`transaction_id=${transactionId}`)
         .send(`scope=${scope}`)
@@ -749,7 +880,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user calls /login/oauth/token
 
-      res = await agent.post(url('/login/oauth/token'))
+      res = await agent
+        .post(url('/login/oauth/token'))
         .set('Content-Type', 'application/x-www-form-urlencoded')
         .send('grant_type=authorization_code')
         .send(`code=${query.get('code')}`)
@@ -761,7 +893,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // user calls /login/oauth/credentials to get TC credentials
 
-      res = await agent.get(url('/login/oauth/credentials'))
+      res = await agent
+        .get(url('/login/oauth/credentials'))
         .set('authorization', `${res.body.token_type} ${res.body.access_token}`);
 
       const thirtySecondsBefore = new Date(expiry).setSeconds(new Date(expiry).getSeconds() - 30);

@@ -99,9 +99,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       created: new Date(),
       lastModified: new Date(),
       config: {
-        launchConfigs: [
-          defaultLaunchConfig,
-        ],
+        launchConfigs: [defaultLaunchConfig],
         minCapacity: 1,
         maxCapacity: 1,
         scalingRatio: 1,
@@ -143,104 +141,57 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
     };
 
-    provisionTest('no launch configs', {
-      config: {
-        minCapacity: 1,
-        maxCapacity: 1,
-        scalingRatio: 1,
-        lifecycle: {
-          registrationTimeout: 6000,
-        },
-      },
-      expectedWorkers: 0,
-    }, async (workers) => {
-      assert.equal(workers.length, 0);
-    });
-
-    provisionTest('simple launchConfig, single worker', {
-      config: {
-        launchConfigs: [defaultLaunchConfig],
-        minCapacity: 1,
-        maxCapacity: 1,
-        scalingRatio: 1,
-        lifecycle: {
-          registrationTimeout: 6000,
-        },
-      },
-      expectedWorkers: 1,
-    }, async (workers) => {
-      const now = Date.now();
-      workers.forEach(w => {
-        assert.strictEqual(w.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
-        assert.strictEqual(w.workerGroup, 'us-west-2', 'Worker group should be az');
-        assert.strictEqual(w.state, Worker.states.REQUESTED, 'Worker should be marked as requested');
-        assert.strictEqual(w.providerData.region, defaultLaunchConfig.region, 'Region should come from the chosen config');
-        // Check that this is setting times correctly to within a second or so to allow for some time
-        // for the provisioning loop
-        assert(workers[0].providerData.terminateAfter - now - (6000 * 1000) < 5000);
-      });
-      assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({ MinCount }) => MinCount), [1]);
-      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'CreatedBy', 'taskcluster-wm-aws');
-      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Owner', 'whatever@example.com');
-      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'ManagedBy', 'taskcluster');
-      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Name', 'foo/bar');
-      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'WorkerPoolId', 'foo/bar');
-      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'CreatedBy', 'taskcluster-wm-aws');
-      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Owner', 'whatever@example.com');
-      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'ManagedBy', 'taskcluster');
-      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Name', 'foo/bar');
-      assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'WorkerPoolId', 'foo/bar');
-    });
-
-    provisionTest('spawns instances from across launch configs', {
-      config: {
-        // launch configs needs to be unique
-        launchConfigs: Array.from({ length: 5 }).map((_, i) => ({
-          ...defaultLaunchConfig,
-          launchConfig: {
-            ...defaultLaunchConfig.launchConfig,
-            TagSpecifications: [
-              { ResourceType: 'instance', Tags: [{ Key: 'uniqueKey', Value: `v${i}` }] },
-            ],
-          },
-          workerManager: {
-            capacityPerInstance: 6,
-          },
-        })),
-        minCapacity: 34, // not a multiple of number of configs or capPerInstance
-        maxCapacity: 34,
-        scalingRatio: 1,
-      },
-      // capacity 34 at 6 per instance should be 6 instances..
-      expectedWorkers: 6,
-    }, async (_workers) => {
-      // spawn two each in three launchConfigs; spawning one each would only get us 5 instances since there
-      // are only 5 launchConfigs
-      assert.deepEqual(fake.rgn('us-west-2').runInstancesCalls.map(({ MinCount }) => MinCount), [2, 2, 2]);
-    });
-
-    for (const ResourceType of ['instance', 'volume', 'launch-template']) {
-      provisionTest(`${ResourceType} tags in launch spec - should merge them`, {
+    provisionTest(
+      'no launch configs',
+      {
         config: {
-          launchConfigs: [
-            {
-              ...defaultLaunchConfig,
-              launchConfig: {
-                ...defaultLaunchConfig.launchConfig,
-                TagSpecifications: [
-                  { ResourceType, Tags: [{ Key: 'mytag', Value: 'testy' }] },
-                ],
-              },
-            },
-          ],
           minCapacity: 1,
           maxCapacity: 1,
           scalingRatio: 1,
+          lifecycle: {
+            registrationTimeout: 6000,
+          },
+        },
+        expectedWorkers: 0,
+      },
+      async workers => {
+        assert.equal(workers.length, 0);
+      }
+    );
+
+    provisionTest(
+      'simple launchConfig, single worker',
+      {
+        config: {
+          launchConfigs: [defaultLaunchConfig],
+          minCapacity: 1,
+          maxCapacity: 1,
+          scalingRatio: 1,
+          lifecycle: {
+            registrationTimeout: 6000,
+          },
         },
         expectedWorkers: 1,
-      }, async (_workers) => {
-        assert.equal(fake.rgn('us-west-2').runInstancesCalls.length, 1);
-        assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], ResourceType, 'mytag', 'testy');
+      },
+      async workers => {
+        const now = Date.now();
+        workers.forEach(w => {
+          assert.strictEqual(w.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
+          assert.strictEqual(w.workerGroup, 'us-west-2', 'Worker group should be az');
+          assert.strictEqual(w.state, Worker.states.REQUESTED, 'Worker should be marked as requested');
+          assert.strictEqual(
+            w.providerData.region,
+            defaultLaunchConfig.region,
+            'Region should come from the chosen config'
+          );
+          // Check that this is setting times correctly to within a second or so to allow for some time
+          // for the provisioning loop
+          assert(workers[0].providerData.terminateAfter - now - 6000 * 1000 < 5000);
+        });
+        assert.deepEqual(
+          fake.rgn('us-west-2').runInstancesCalls.map(({ MinCount }) => MinCount),
+          [1]
+        );
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'CreatedBy', 'taskcluster-wm-aws');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Owner', 'whatever@example.com');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'ManagedBy', 'taskcluster');
@@ -251,55 +202,126 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'ManagedBy', 'taskcluster');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Name', 'foo/bar');
         assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'WorkerPoolId', 'foo/bar');
-      });
+      }
+    );
+
+    provisionTest(
+      'spawns instances from across launch configs',
+      {
+        config: {
+          // launch configs needs to be unique
+          launchConfigs: Array.from({ length: 5 }).map((_, i) => ({
+            ...defaultLaunchConfig,
+            launchConfig: {
+              ...defaultLaunchConfig.launchConfig,
+              TagSpecifications: [{ ResourceType: 'instance', Tags: [{ Key: 'uniqueKey', Value: `v${i}` }] }],
+            },
+            workerManager: {
+              capacityPerInstance: 6,
+            },
+          })),
+          minCapacity: 34, // not a multiple of number of configs or capPerInstance
+          maxCapacity: 34,
+          scalingRatio: 1,
+        },
+        // capacity 34 at 6 per instance should be 6 instances..
+        expectedWorkers: 6,
+      },
+      async _workers => {
+        // spawn two each in three launchConfigs; spawning one each would only get us 5 instances since there
+        // are only 5 launchConfigs
+        assert.deepEqual(
+          fake.rgn('us-west-2').runInstancesCalls.map(({ MinCount }) => MinCount),
+          [2, 2, 2]
+        );
+      }
+    );
+
+    for (const ResourceType of ['instance', 'volume', 'launch-template']) {
+      provisionTest(
+        `${ResourceType} tags in launch spec - should merge them`,
+        {
+          config: {
+            launchConfigs: [
+              {
+                ...defaultLaunchConfig,
+                launchConfig: {
+                  ...defaultLaunchConfig.launchConfig,
+                  TagSpecifications: [{ ResourceType, Tags: [{ Key: 'mytag', Value: 'testy' }] }],
+                },
+              },
+            ],
+            minCapacity: 1,
+            maxCapacity: 1,
+            scalingRatio: 1,
+          },
+          expectedWorkers: 1,
+        },
+        async _workers => {
+          assert.equal(fake.rgn('us-west-2').runInstancesCalls.length, 1);
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], ResourceType, 'mytag', 'testy');
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'CreatedBy', 'taskcluster-wm-aws');
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Owner', 'whatever@example.com');
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'ManagedBy', 'taskcluster');
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'Name', 'foo/bar');
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'instance', 'WorkerPoolId', 'foo/bar');
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'CreatedBy', 'taskcluster-wm-aws');
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Owner', 'whatever@example.com');
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'ManagedBy', 'taskcluster');
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'Name', 'foo/bar');
+          assertHasTag(fake.rgn('us-west-2').runInstancesCalls[0], 'volume', 'WorkerPoolId', 'foo/bar');
+        }
+      );
     }
 
-    provisionTest('UserData contains additionalUserData, workerConfig, etc.', {
-      config: {
-        launchConfigs: [
-          {
-            ...defaultLaunchConfig,
-            workerConfig: { foo: 5 },
-            additionalUserData: {
-              somethingImportant: "apple",
+    provisionTest(
+      'UserData contains additionalUserData, workerConfig, etc.',
+      {
+        config: {
+          launchConfigs: [
+            {
+              ...defaultLaunchConfig,
+              workerConfig: { foo: 5 },
+              additionalUserData: {
+                somethingImportant: 'apple',
+              },
             },
-          },
-        ],
-        minCapacity: 1,
-        maxCapacity: 1,
-        scalingRatio: 1,
+          ],
+          minCapacity: 1,
+          maxCapacity: 1,
+          scalingRatio: 1,
+        },
+        expectedWorkers: 1,
       },
-      expectedWorkers: 1,
-    }, async (workers) => {
-      const decoded = JSON.parse(Buffer.from(
-        fake.rgn('us-west-2').runInstancesCalls[0].UserData,
-        'base64',
-      ).toString());
-      const launchConfigId = workers[0].launchConfigId;
-      assert.deepStrictEqual(decoded, {
-        somethingImportant: 'apple',
-        rootUrl: provider.rootUrl,
-        workerPoolId: workerPoolId,
-        providerId: provider.providerId,
-        workerGroup: 'us-west-2',
-        workerConfig: { foo: 5 },
-        launchConfigId: launchConfigId,
-      });
-    });
+      async workers => {
+        const decoded = JSON.parse(
+          Buffer.from(fake.rgn('us-west-2').runInstancesCalls[0].UserData, 'base64').toString()
+        );
+        const launchConfigId = workers[0].launchConfigId;
+        assert.deepStrictEqual(decoded, {
+          somethingImportant: 'apple',
+          rootUrl: provider.rootUrl,
+          workerPoolId: workerPoolId,
+          providerId: provider.providerId,
+          workerGroup: 'us-west-2',
+          workerConfig: { foo: 5 },
+          launchConfigId: launchConfigId,
+        });
+      }
+    );
   });
 
   suite('[UNIT] AWS provider - registerWorker', () => {
-
     test('registerWorker - verifyInstanceIdentityDocument - document is not string', async () => {
       const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
-        "document": { 'instanceId': 'abc' },
-        "signature": 'abcd',
+        document: { instanceId: 'abc' },
+        signature: 'abcd',
       };
 
       await assert.rejects(
         () => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
-        new ApiError('Request must include both a document (string) and a signature'),
+        new ApiError('Request must include both a document (string) and a signature')
       );
       helper.assertNoPulseMessage('worker-running');
     });
@@ -307,14 +329,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('registerWorker - verifyInstanceIdentityDocument - bad document', async () => {
       const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
-        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT_bad')).toString(),
-        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+        document: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT_bad')).toString(),
+        signature: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
       };
 
       await assert.rejects(
         () => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
         new ApiError('Instance identity document validation error'),
-        'Should fail to verify iid (the document has been edited)',
+        'Should fail to verify iid (the document has been edited)'
       );
       helper.assertNoPulseMessage('worker-running');
     });
@@ -322,13 +344,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('registerWorker - verifyInstanceIdentityDocument - signature was produced with a wrong key', async () => {
       const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
-        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
-        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badKey')).toString(),
+        document: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        signature: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badKey')).toString(),
       };
 
-      await assert.rejects(() => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
+      await assert.rejects(
+        () => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
         new ApiError('Instance identity document validation error'),
-        'Should fail to verify iid (the signature was produced with a wrong key)',
+        'Should fail to verify iid (the signature was produced with a wrong key)'
       );
       helper.assertNoPulseMessage('worker-running');
     });
@@ -336,13 +359,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('registerWorker - verifyInstanceIdentityDocument - signature is wrong', async () => {
       const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
-        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
-        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badSignature')).toString(),
+        document: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        signature: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE_badSignature')).toString(),
       };
 
-      await assert.rejects(() => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
+      await assert.rejects(
+        () => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
         new ApiError('Instance identity document validation error'),
-        'Should fail to verify iid (the signature is wrong)',
+        'Should fail to verify iid (the signature is wrong)'
       );
       helper.assertNoPulseMessage('worker-running');
     });
@@ -364,14 +388,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       };
 
       const workerIdentityProof = {
-        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
-        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+        document: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        signature: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
       };
 
       await assert.rejects(
         () => provider.registerWorker({ worker: differentWorkerInDB, workerPool, workerIdentityProof }),
         new ApiError('Instance validation error'),
-        'Should fail to verify worker (info from the signature and info from our DB differ)',
+        'Should fail to verify worker (info from the signature and info from our DB differ)'
       );
       helper.assertNoPulseMessage('worker-running');
     });
@@ -379,12 +403,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('registerWorker - no signature', async () => {
       const workerPool = await makeWorkerPool();
       const workerIdentityProof = {
-        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
-        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_EMPTYFILE')).toString(),
+        document: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        signature: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_EMPTYFILE')).toString(),
       };
 
-      await assert.rejects(() => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
-        new ApiError('Request must include both a document (string) and a signature'),
+      await assert.rejects(
+        () => provider.registerWorker({ worker: workerInDB, workerPool, workerIdentityProof }),
+        new ApiError('Request must include both a document (string) and a signature')
       );
       helper.assertNoPulseMessage('worker-running');
     });
@@ -397,14 +422,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       };
 
       const workerIdentityProof = {
-        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
-        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+        document: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        signature: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
       };
 
       await assert.rejects(
         () => provider.registerWorker({ worker: runningWorker, workerPool, workerIdentityProof }),
         new ApiError('This worker is either stopped or running. No need to register'),
-        'Should fail because the worker is already running',
+        'Should fail because the worker is already running'
       );
       helper.assertNoPulseMessage('worker-running');
     });
@@ -423,15 +448,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           privateIp: '172.31.23.159',
           owner: actualWorkerIid.accountId,
           workerConfig: {
-            "someConfig": "someConfigValue",
+            someConfig: 'someConfigValue',
           },
         },
       });
       await runningWorker.create(helper.db);
 
       const workerIdentityProof = {
-        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
-        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+        document: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        signature: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
       };
 
       const resp = await provider.registerWorker({ worker: runningWorker, workerPool, workerIdentityProof });
@@ -457,15 +482,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           privateIp: '172.31.23.159',
           owner: actualWorkerIid.accountId,
           workerConfig: {
-            'someKey': 'someValue',
+            someKey: 'someValue',
           },
         },
       });
       await runningWorker.create(helper.db);
 
       const workerIdentityProof = {
-        "document": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
-        "signature": fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
+        document: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_DOCUMENT')).toString(),
+        signature: fs.readFileSync(path.resolve(__dirname, 'fixtures/aws_iid_SIGNATURE')).toString(),
       };
 
       const resp = await provider.registerWorker({ worker: runningWorker, workerPool, workerIdentityProof });
@@ -478,7 +503,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   suite('AWS provider - checkWorker', () => {
-
     test('stopped instances - should be marked as STOPPED in DB, should not add to seen', async () => {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'stopped';
       const worker = await Worker.fromApi({
@@ -591,7 +615,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
     });
 
-    test('don\'t remove unregistered workers that are new', async () => {
+    test("don't remove unregistered workers that are new", async () => {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
       const worker = Worker.fromApi({
         ...workerInDB,
@@ -645,11 +669,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await worker.create(helper.db);
       await provider.checkWorker({ worker: worker });
       assert.deepEqual(fake.rgn('us-west-2').terminatedInstances, ['i-123']);
-      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId &&
-        m.payload.reason === 'terminateAfter time exceeded');
+      helper.assertPulseMessage(
+        'worker-removed',
+        m => m.payload.workerId === worker.workerId && m.payload.reason === 'terminateAfter time exceeded'
+      );
     });
 
-    test('don\'t remove current workers', async () => {
+    test("don't remove current workers", async () => {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
       const worker = Worker.fromApi({
         ...workerInDB,
@@ -709,7 +735,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
       helper.assertPulseMessage('worker-removed', m => m.payload.launchConfigId === worker.launchConfigId);
     });
-    test('don\'t remove zombie workers that were active recently', async () => {
+    test("don't remove zombie workers that were active recently", async () => {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
       const worker = Worker.fromApi({
         ...workerInDB,
@@ -733,7 +759,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   suite('AWS provider - removeWorker', () => {
-
     test('successfully terminated instance', async () => {
       const worker = Worker.fromApi({
         ...workerInDB,
@@ -748,7 +773,5 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
       assert.equal(worker.state, Worker.states.STOPPING);
     });
-
   });
-
 });

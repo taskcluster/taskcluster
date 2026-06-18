@@ -23,7 +23,7 @@ suite(testing.suiteName(), () => {
       t.rank || 1,
       t.taskId || slug.nice(),
       t.data || { data: true },
-      t.expires || fromNow('1 day'),
+      t.expires || fromNow('1 day')
     );
   };
   const update_indexed_task = async (db, t = {}) => {
@@ -33,16 +33,12 @@ suite(testing.suiteName(), () => {
       t.rank || 1,
       t.taskId || slug.nice(),
       t.data || { data: true },
-      t.expires || new Date(),
+      t.expires || new Date()
     );
   };
 
   const create_index_namespace = async (db, ns = {}) => {
-    await db.fns.create_index_namespace(
-      ns.parent || 'par/ent',
-      ns.name || 'name',
-      ns.expires || fromNow('1 day'),
-    );
+    await db.fns.create_index_namespace(ns.parent || 'par/ent', ns.name || 'name', ns.expires || fromNow('1 day'));
   };
 
   suite(`${testing.suiteName()} - index_namespaces`, () => {
@@ -85,13 +81,15 @@ suite(testing.suiteName(), () => {
       let rows = await db.fns.get_index_namespaces(null, null, null, null);
       assert.deepEqual(
         rows.map(r => ({ parent: r.parent, name: r.name })),
-        _.range(10).map(i => ({ parent: `parent/${i}`, name: `name/${i}` })));
+        _.range(10).map(i => ({ parent: `parent/${i}`, name: `name/${i}` }))
+      );
       assert.deepEqual(rows[0].expires, oneDay);
 
       rows = await db.fns.get_index_namespaces(null, null, 2, 4);
       assert.deepEqual(
         rows.map(r => ({ parent: r.parent, name: r.name })),
-        [4, 5].map(i => ({ parent: `parent/${i}`, name: `name/${i}` })));
+        [4, 5].map(i => ({ parent: `parent/${i}`, name: `name/${i}` }))
+      );
     });
 
     helper.dbTest('get_index_namespaces only returns non expired tasks', async (db, _isFake) => {
@@ -127,11 +125,7 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('update_index_namespace, change to a single field', async (db, _isFake) => {
       await create_index_namespace(db);
-      await db.fns.update_index_namespace(
-        'par/ent',
-        'name',
-        new Date(1),
-      );
+      await db.fns.update_index_namespace('par/ent', 'name', new Date(1));
 
       const rows = await db.fns.get_index_namespace('par/ent', 'name');
       assert.equal(rows[0].parent, 'par/ent');
@@ -141,11 +135,7 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('update_index_namespace, no changes', async (db, _isFake) => {
       await create_index_namespace(db);
-      const updated = await db.fns.update_index_namespace(
-        'par/ent',
-        'name',
-        null,
-      );
+      const updated = await db.fns.update_index_namespace('par/ent', 'name', null);
       // this is not 0 because there was a row that matched even though there was no change
       assert.equal(updated.length, 1);
 
@@ -159,16 +149,9 @@ suite(testing.suiteName(), () => {
     helper.dbTest('update_index_namespace, throws when row does not exist', async (db, _isFake) => {
       await create_index_namespace(db);
 
-      await assert.rejects(
-        async () => {
-          await db.fns.update_index_namespace(
-            'does-not-exist',
-            'name',
-            null,
-          );
-        },
-        /no such row/,
-      );
+      await assert.rejects(async () => {
+        await db.fns.update_index_namespace('does-not-exist', 'name', null);
+      }, /no such row/);
     });
   });
 
@@ -231,7 +214,7 @@ suite(testing.suiteName(), () => {
           name: `name/${i}`,
           expires: oneDay,
           taskId: slug.nice(),
-          data: { data: "testing" },
+          data: { data: 'testing' },
           rank: 1,
         };
         await create_indexed_task(db, data);
@@ -254,7 +237,10 @@ suite(testing.suiteName(), () => {
       assert.deepStrictEqual(rows, expectedTasks.slice(2, 5));
 
       rows = await db.fns.get_tasks_from_indexes_and_namespaces(
-        JSON.stringify(expectedIndexes), 2, expectedIndexes.length);
+        JSON.stringify(expectedIndexes),
+        2,
+        expectedIndexes.length
+      );
       assert.equal(rows.length, 0);
     });
 
@@ -271,13 +257,15 @@ suite(testing.suiteName(), () => {
       let rows = await db.fns.get_indexed_tasks(null, null, null, null);
       assert.deepEqual(
         rows.map(r => ({ namespace: r.namespace, name: r.name })),
-        _.range(10).map(i => ({ namespace: `namespace/${i}`, name: `name/${i}` })));
+        _.range(10).map(i => ({ namespace: `namespace/${i}`, name: `name/${i}` }))
+      );
       assert.deepEqual(rows[0].expires, oneDay);
 
       rows = await db.fns.get_indexed_tasks(null, null, 2, 4);
       assert.deepEqual(
         rows.map(r => ({ namespace: r.namespace, name: r.name })),
-        [4, 5].map(i => ({ namespace: `namespace/${i}`, name: `name/${i}` })));
+        [4, 5].map(i => ({ namespace: `namespace/${i}`, name: `name/${i}` }))
+      );
     });
 
     helper.dbTest('get_indexed_tasks only returns non expired tasks', async (db, _isFake) => {
@@ -317,14 +305,7 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('update_indexed_task, change to a single field', async (db, _isFake) => {
       await create_indexed_task(db);
-      await db.fns.update_indexed_task(
-        'name/space',
-        'name',
-        2,
-        null,
-        null,
-        null,
-      );
+      await db.fns.update_indexed_task('name/space', 'name', 2, null, null, null);
 
       const rows = await db.fns.get_indexed_task('name/space', 'name');
       assert.equal(rows[0].namespace, 'name/space');
@@ -337,14 +318,7 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('update_indexed_task, change to a multiple fields', async (db, _isFake) => {
       await create_indexed_task(db);
-      const updated = await db.fns.update_indexed_task(
-        'name/space',
-        'name',
-        2,
-        null,
-        { data: 'updated' },
-        null,
-      );
+      const updated = await db.fns.update_indexed_task('name/space', 'name', 2, null, { data: 'updated' }, null);
 
       const rows = await db.fns.get_indexed_task('name/space', 'name');
 
@@ -359,14 +333,7 @@ suite(testing.suiteName(), () => {
 
     helper.dbTest('update_indexed_task, no changes', async (db, _isFake) => {
       await create_indexed_task(db);
-      const updated = await db.fns.update_indexed_task(
-        'name/space',
-        'name',
-        null,
-        null,
-        null,
-        null,
-      );
+      const updated = await db.fns.update_indexed_task('name/space', 'name', null, null, null, null);
       // this is not 0 because there was a row that matched even though there was no change
       assert.equal(updated.length, 1);
 
@@ -379,33 +346,20 @@ suite(testing.suiteName(), () => {
       assert(rows[0].expires instanceof Date);
     });
 
-    helper.dbTest('update_indexed_task, indexed task doesn\'t exist', async (db, _isFake) => {
+    helper.dbTest("update_indexed_task, indexed task doesn't exist", async (db, _isFake) => {
       await create_indexed_task(db);
 
-      await assert.rejects(
-        async () => {
-          await update_indexed_task(db, { namespace: 'does-not-exist' });
-        },
-        /no such row/,
-      );
+      await assert.rejects(async () => {
+        await update_indexed_task(db, { namespace: 'does-not-exist' });
+      }, /no such row/);
     });
 
     helper.dbTest('update_indexed_task, throws when row does not exist', async (db, _isFake) => {
       await create_indexed_task(db);
 
-      await assert.rejects(
-        async () => {
-          await db.fns.update_indexed_task(
-            'does-not-exist',
-            'name',
-            2, /* rank */
-            null,
-            null,
-            null,
-          );
-        },
-        /no such row/,
-      );
+      await assert.rejects(async () => {
+        await db.fns.update_indexed_task('does-not-exist', 'name', 2 /* rank */, null, null, null);
+      }, /no such row/);
     });
 
     helper.dbTest('delete_indexed_task', async (db, _isFake) => {
@@ -418,6 +372,5 @@ suite(testing.suiteName(), () => {
       rows = await db.fns.get_indexed_task('name/space', 'name');
       assert.equal(rows.length, 0);
     });
-
   });
 });

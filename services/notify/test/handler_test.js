@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noTemplateCurlyInString: notify substitutes ${...} placeholders in message templates
 import _ from 'lodash';
 import assert from 'node:assert';
 import helper from './helper.js';
@@ -17,7 +18,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   const deadline = new Date();
   deadline.setMinutes(deadline.getMinutes() + 25);
 
-  const makeTask = (routes) => ({
+  const makeTask = routes => ({
     provisionerId: 'dummy-test-provisioner',
     workerType: 'dummy-test-worker-type',
     scopes: [],
@@ -165,7 +166,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   test('matrix', async () => {
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
-    task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${rootUrl}/tasks/${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>', matrixMsgtype: 'm.text' } };
+    task.extra = {
+      notify: {
+        matrixFormat: 'matrix.foo',
+        matrixBody: '${rootUrl}/tasks/${taskId}',
+        matrixFormattedBody: '<h1>${taskId}</h1>',
+        matrixMsgtype: 'm.text',
+      },
+    };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {
@@ -188,7 +196,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   test('matrix (default notice)', async () => {
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
-    task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>' } };
+    task.extra = {
+      notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>' },
+    };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {
@@ -228,7 +238,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   test('slack', async () => {
     const route = 'test-notify.slack-channel.C123456.on-transition';
     const task = makeTask([route]);
-    task.extra = { notify: { slackText: 'hey hey ${rootUrl}/tasks/${taskId}', slackBlocks: [{}], slackAttachments: [{}, {}] } };
+    task.extra = {
+      notify: { slackText: 'hey hey ${rootUrl}/tasks/${taskId}', slackBlocks: [{}], slackAttachments: [{}, {}] },
+    };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {

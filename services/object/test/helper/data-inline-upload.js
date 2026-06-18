@@ -3,35 +3,39 @@ import crypto from 'node:crypto';
 import assert from 'node:assert';
 import helper from '../helper/index.js';
 
-const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-upload-response.json#/properties/uploadMethod';
+const responseSchema =
+  'https://tc-testing.example.com/schemas/object/v1/create-upload-response.json#/properties/uploadMethod';
 
 /**
  * Test the data-inline upload method on the given backend.  This defines a suite
  * of tests.
  */
-export const testDataInlineUpload = ({
-  // optional title suffix
-  title,
+export const testDataInlineUpload = (
+  {
+    // optional title suffix
+    title,
 
-  // a prefix for object names, so that concurrent runs do not modify the
-  // same objects in the "real" storage backend
-  prefix,
+    // a prefix for object names, so that concurrent runs do not modify the
+    // same objects in the "real" storage backend
+    prefix,
 
-  // the backend to test; this will be loaded from the loader, so its configuration
-  // should be set up in suiteSetup.
-  backendId,
+    // the backend to test; this will be loaded from the loader, so its configuration
+    // should be set up in suiteSetup.
+    backendId,
 
-  // an async function({ name }) to get { data, contentType, contentDisposition }
-  getObjectContent,
+    // an async function({ name }) to get { data, contentType, contentDisposition }
+    getObjectContent,
 
-  // omit testing certain functionality that's not supported on this backend; options:
-  // - htmlContentDisposition -- enforcing content-disposition for text/html objects
-  omit = [],
+    // omit testing certain functionality that's not supported on this backend; options:
+    // - htmlContentDisposition -- enforcing content-disposition for text/html objects
+    omit = [],
 
-  // suiteDefinition defines the suite; add suiteSetup, suiteTeardown here, if
-  // necessary, and any extra tests
-}, suiteDefinition) => {
-  suite(`data-inline upload method API${title ? `: ${title}` : ''}`, function() {
+    // suiteDefinition defines the suite; add suiteSetup, suiteTeardown here, if
+    // necessary, and any extra tests
+  },
+  suiteDefinition
+) => {
+  suite(`data-inline upload method API${title ? `: ${title}` : ''}`, function () {
     (suiteDefinition || (() => {})).call(this);
 
     let backend;
@@ -56,7 +60,8 @@ export const testDataInlineUpload = ({
         const name = helper.testObjectName(prefix);
 
         const res = await createUpload({
-          name, data,
+          name,
+          data,
           proposedUploadMethods: {
             dataInline: { contentType: 'application/random-bytes', objectData: data.toString('base64') },
           },
@@ -79,7 +84,8 @@ export const testDataInlineUpload = ({
         const name = helper.testObjectName(prefix);
 
         const res = await createUpload({
-          name, data,
+          name,
+          data,
           proposedUploadMethods: {
             dataInline: { contentType: 'text/html; charset=latin-1', objectData: data.toString('base64') },
           },

@@ -9,19 +9,22 @@ suite(path.basename(__filename), () => {
     test('version field required', () => {
       assert.throws(
         () => Version._checkContent({ migrationScript: 'yup', downgradeScript: 'check', methods: {} }, '0001.yml'),
-        /version field missing/);
+        /version field missing/
+      );
     });
 
     test('downgradeScript field required if migrationScript present', () => {
       assert.throws(
         () => Version._checkContent({ version: 1, methods: {}, migrationScript: 'yep' }, '0001.yml'),
-        /Cannot specify just one of/);
+        /Cannot specify just one of/
+      );
     });
 
     test('migrationScript field required if downgradeScript present', () => {
       assert.throws(
         () => Version._checkContent({ version: 1, methods: {}, downgradeScript: 'yep' }, '0001.yml'),
-        /Cannot specify just one of/);
+        /Cannot specify just one of/
+      );
     });
 
     test('missing migrationScript and downgradeScript is OK', () => {
@@ -31,13 +34,19 @@ suite(path.basename(__filename), () => {
     test('methods field required', () => {
       assert.throws(
         () => Version._checkContent({ version: 1, migrationScript: 'yep', downgradeScript: 'check' }, '0001.yml'),
-        /methods field missing/);
+        /methods field missing/
+      );
     });
 
     test('version does not match filename', () => {
       assert.throws(
-        () => Version._checkContent({ version: 2, migrationScript: 'yep', downgradeScript: 'check', methods: {} }, '0001.yml'),
-        /must match version/);
+        () =>
+          Version._checkContent(
+            { version: 2, migrationScript: 'yep', downgradeScript: 'check', methods: {} },
+            '0001.yml'
+          ),
+        /must match version/
+      );
     });
   });
 });

@@ -19,52 +19,61 @@ suite(testing.suiteName(), () => {
   });
 
   // Endpoint returning a payload large enough to exceed the 1024-byte threshold
-  builder.declare({
-    method: 'get',
-    route: '/large-payload',
-    name: 'largePayload',
-    scopes: null,
-    title: 'Large Payload',
-    category: 'API Library',
-    stability: APIBuilder.stability.stable,
-    description: 'Returns a large JSON payload',
-  }, (_req, res) => {
-    res.reply({ data: 'x'.repeat(2000) });
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/large-payload',
+      name: 'largePayload',
+      scopes: null,
+      title: 'Large Payload',
+      category: 'API Library',
+      stability: APIBuilder.stability.stable,
+      description: 'Returns a large JSON payload',
+    },
+    (_req, res) => {
+      res.reply({ data: 'x'.repeat(2000) });
+    }
+  );
 
   // Endpoint returning a payload below the 1024-byte threshold
-  builder.declare({
-    method: 'get',
-    route: '/small-payload',
-    name: 'smallPayload',
-    scopes: null,
-    title: 'Small Payload',
-    category: 'API Library',
-    stability: APIBuilder.stability.stable,
-    description: 'Returns a small JSON payload',
-  }, (_req, res) => {
-    res.reply({ ok: true });
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/small-payload',
+      name: 'smallPayload',
+      scopes: null,
+      title: 'Small Payload',
+      category: 'API Library',
+      stability: APIBuilder.stability.stable,
+      description: 'Returns a small JSON payload',
+    },
+    (_req, res) => {
+      res.reply({ ok: true });
+    }
+  );
 
   // Endpoint that sets Content-Encoding itself before sending a body.
   // Mirrors services/web-server/src/api.js profile which returns
   // pre-gzipped bytes; the middleware must leave that response alone.
-  builder.declare({
-    method: 'get',
-    route: '/pre-encoded',
-    name: 'preEncoded',
-    scopes: null,
-    title: 'Pre-encoded Payload',
-    category: 'API Library',
-    stability: APIBuilder.stability.stable,
-    description: 'Returns a pre-gzipped payload',
-  }, (_req, res) => {
-    const payload = Buffer.from('y'.repeat(2000));
-    const gzipped = gzipSync(payload);
-    res.set('Content-Type', 'application/json');
-    res.set('Content-Encoding', 'gzip');
-    res.send(gzipped);
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/pre-encoded',
+      name: 'preEncoded',
+      scopes: null,
+      title: 'Pre-encoded Payload',
+      category: 'API Library',
+      stability: APIBuilder.stability.stable,
+      description: 'Returns a pre-gzipped payload',
+    },
+    (_req, res) => {
+      const payload = Buffer.from('y'.repeat(2000));
+      const gzipped = gzipSync(payload);
+      res.set('Content-Type', 'application/json');
+      res.set('Content-Encoding', 'gzip');
+      res.send(gzipped);
+    }
+  );
 
   suiteSetup(async () => {
     await helper.setupServer({ builder, context: {} });
@@ -75,29 +84,20 @@ suite(testing.suiteName(), () => {
   });
 
   test('large response is gzip-compressed when client accepts gzip', async () => {
-    const res = await request
-      .get(u('/large-payload'))
-      .set('Accept-Encoding', 'gzip');
-    assert.strictEqual(res.headers['content-encoding'], 'gzip',
-      'Expected Content-Encoding: gzip for large payload');
+    const res = await request.get(u('/large-payload')).set('Accept-Encoding', 'gzip');
+    assert.strictEqual(res.headers['content-encoding'], 'gzip', 'Expected Content-Encoding: gzip for large payload');
     // superagent transparently decodes gzip; verify the body round-trips intact.
     assert.strictEqual(res.body.data.length, 2000);
   });
 
   test('small response is not compressed (below 1024-byte threshold)', async () => {
-    const res = await request
-      .get(u('/small-payload'))
-      .set('Accept-Encoding', 'gzip');
-    assert(!res.headers['content-encoding'],
-      'Expected no Content-Encoding for small payload below threshold');
+    const res = await request.get(u('/small-payload')).set('Accept-Encoding', 'gzip');
+    assert(!res.headers['content-encoding'], 'Expected no Content-Encoding for small payload below threshold');
   });
 
   test('response is not compressed when client does not accept gzip', async () => {
-    const res = await request
-      .get(u('/large-payload'))
-      .set('Accept-Encoding', 'identity');
-    assert(!res.headers['content-encoding'],
-      'Expected no Content-Encoding when client does not accept gzip');
+    const res = await request.get(u('/large-payload')).set('Accept-Encoding', 'identity');
+    assert(!res.headers['content-encoding'], 'Expected no Content-Encoding when client does not accept gzip');
     assert.strictEqual(res.body.data.length, 2000);
   });
 
@@ -106,12 +106,14 @@ suite(testing.suiteName(), () => {
     // middleware had re-gzipped, gunzipping once would yield still-gzipped
     // bytes (starting with 0x1f 0x8b) instead of the plaintext body.
     const { headers, body } = await new Promise((resolve, reject) => {
-      http.get(u('/pre-encoded'), { headers: { 'Accept-Encoding': 'gzip' } }, res => {
-        const chunks = [];
-        res.on('data', c => chunks.push(c));
-        res.on('end', () => resolve({ headers: res.headers, body: Buffer.concat(chunks) }));
-        res.on('error', reject);
-      }).on('error', reject);
+      http
+        .get(u('/pre-encoded'), { headers: { 'Accept-Encoding': 'gzip' } }, res => {
+          const chunks = [];
+          res.on('data', c => chunks.push(c));
+          res.on('end', () => resolve({ headers: res.headers, body: Buffer.concat(chunks) }));
+          res.on('error', reject);
+        })
+        .on('error', reject);
     });
     assert.strictEqual(headers['content-encoding'], 'gzip');
     const decoded = gunzipSync(body).toString();

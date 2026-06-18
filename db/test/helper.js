@@ -10,7 +10,7 @@ const debug = debugFactory('db-helper');
 import { UNDEFINED_TABLE, UNDEFINED_COLUMN, runOnlineBatches } from '@taskcluster/lib-postgres';
 
 export const dbUrl = process.env.TEST_DB_URL;
-assert(dbUrl, "TEST_DB_URL must be set to run db/ tests - see dev-docs/development-process.md for more information");
+assert(dbUrl, 'TEST_DB_URL must be set to run db/ tests - see dev-docs/development-process.md for more information');
 
 // helper will be dynamically populated by withDbForVersion and withDbForProcs methods
 const helper = { dbUrl, resetDb };
@@ -40,7 +40,7 @@ helper.withDbForVersion = () => {
   suiteSetup('setup database', async () => {
     pool = new Pool({ connectionString: dbUrl });
 
-    helper.withDbClient = async (cb) => {
+    helper.withDbClient = async cb => {
       const client = await pool.connect();
       try {
         try {
@@ -84,7 +84,7 @@ helper.withDbForVersion = () => {
       return db;
     };
 
-    helper.upgradeTo = async (toVersion) => {
+    helper.upgradeTo = async toVersion => {
       await tcdb.upgrade({
         adminDbUrl: dbUrl,
         toVersion,
@@ -94,7 +94,7 @@ helper.withDbForVersion = () => {
       });
     };
 
-    helper.downgradeTo = async (toVersion) => {
+    helper.downgradeTo = async toVersion => {
       await tcdb.downgrade({
         adminDbUrl: dbUrl,
         toVersion,
@@ -104,7 +104,7 @@ helper.withDbForVersion = () => {
       });
     };
 
-    helper.toDbVersion = async (toVersion) => {
+    helper.toDbVersion = async toVersion => {
       await tcdb.upgrade({
         adminDbUrl: dbUrl,
         toVersion,
@@ -222,7 +222,10 @@ helper.assertTableColumn = async (table, column) => {
  */
 helper.assertNoTable = async name => {
   await helper.withDbClient(async client => {
-    await assert.rejects(() => client.query(`select * from ${name}`), err => err.code === UNDEFINED_TABLE);
+    await assert.rejects(
+      () => client.query(`select * from ${name}`),
+      err => err.code === UNDEFINED_TABLE
+    );
   });
 };
 
@@ -233,7 +236,8 @@ helper.assertNoTableColumn = async (table, column) => {
   await helper.withDbClient(async client => {
     await assert.rejects(
       () => client.query(`select ${column} from ${table}`),
-      err => err.code === UNDEFINED_COLUMN);
+      err => err.code === UNDEFINED_COLUMN
+    );
   });
 };
 
@@ -303,7 +307,8 @@ helper.dbVersionTest = ({
   // the version being tested
   version,
   // true if there's an online migration / downgrade
-  onlineMigration, onlineDowngrade,
+  onlineMigration,
+  onlineDowngrade,
   // function (taking a client) to create data at the *previous* version
   createData,
   // function (taking a client) to check state at the previous version
@@ -424,7 +429,9 @@ helper.dbVersionTest = ({
       await helper.withDbClient(async client => {
         await startCheck(client);
         await withCheckpoints('up', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('up', {
           start: async () => await concurrentCheck(client),
@@ -434,7 +441,9 @@ helper.dbVersionTest = ({
         });
         await finishedCheck(client);
         await withCheckpoints('down', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('down', {
           start: async () => await concurrentCheck(client),
@@ -451,16 +460,24 @@ helper.dbVersionTest = ({
       await helper.withDbClient(async client => {
         await startCheck(client);
         await withCheckpoints('up', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('down', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('up', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('down', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('up', {
           start: async () => await concurrentCheck(client),
@@ -476,7 +493,9 @@ helper.dbVersionTest = ({
     test('upgrade fails mid-online, downgrade', async () => {
       await helper.withDbClient(async client => {
         await withCheckpoints('up', {
-          midOnline: async () => { throw abort; },
+          midOnline: async () => {
+            throw abort;
+          },
         });
         await withCheckpoints('down', {
           start: async () => await concurrentCheck(client),

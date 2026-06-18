@@ -20,7 +20,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     github = await helper.load('github');
     github.inst(5808).setUser({ id: 14795478, email: 'someuser@github.com', username: 'TaskclusterRobot' });
     github.inst(5808).setUser({ id: 18102552, email: 'anotheruser@github.com', username: 'owlishDeveloper' });
-    github.inst(TC_DEV_INSTALLATION_ID).setUser({ id: 83861, email: 'lotas@users.noreply.github.com', username: 'lotas' });
+    github
+      .inst(TC_DEV_INSTALLATION_ID)
+      .setUser({ id: 83861, email: 'lotas@users.noreply.github.com', username: 'lotas' });
     monitor = await helper.load('monitor');
   });
 
@@ -33,22 +35,28 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(response.statusCode, statusCode);
       response.connection?.destroy();
       if (statusCode < 300) {
-        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'webhook-received'), {
-          Type: 'webhook-received',
-          Logger: 'taskcluster.test.api',
-          Fields: {
-            eventId: request.headers['X-GitHub-Delivery'],
-            eventType: request.headers['X-GitHub-Event'],
-            installationId,
-            v: 1,
-          },
-          Severity: LEVELS.notice,
-        });
+        assert.deepEqual(
+          monitor.manager.messages.find(({ Type }) => Type === 'webhook-received'),
+          {
+            Type: 'webhook-received',
+            Logger: 'taskcluster.test.api',
+            Fields: {
+              eventId: request.headers['X-GitHub-Delivery'],
+              eventType: request.headers['X-GitHub-Event'],
+              installationId,
+              v: 1,
+            },
+            Severity: LEVELS.notice,
+          }
+        );
       } else if (statusCode === 403) {
         const errorEntry = monitor.manager.messages.find(({ Type }) => Type === 'monitor.error');
         assert.equal(errorEntry.Logger, 'taskcluster.test.api');
         assert.equal(errorEntry.Fields.message, 'X-hub-signature does not match');
-        assert.equal(errorEntry.Fields.xHubSignature, request.headers['X-Hub-Signature-256'] || request.headers['X-Hub-Signature']);
+        assert.equal(
+          errorEntry.Fields.xHubSignature,
+          request.headers['X-Hub-Signature-256'] || request.headers['X-Hub-Signature']
+        );
         assert.equal(errorEntry.Fields.event, request.headers['X-GitHub-Event']);
         assert.equal(errorEntry.Fields.eventId, request.headers['X-GitHub-Delivery']);
         assert.equal(errorEntry.Fields.installationId, request.body?.installation?.id);
@@ -112,23 +120,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   statusTest('CheckRun created', 'webhook.check_run.created.json', 403);
 
   // Common field validation tests (for refactored schema)
-  statusTest('Push with missing sender returns 400',
-    'webhook.push.missing_sender.json', 400);
-  statusTest('Push with invalid sender.login returns 400',
-    'webhook.push.invalid_sender.json', 400);
+  statusTest('Push with missing sender returns 400', 'webhook.push.missing_sender.json', 400);
+  statusTest('Push with invalid sender.login returns 400', 'webhook.push.invalid_sender.json', 400);
 
   // Webhook Payload Validation Tests
-  statusTest('PR with missing head.repo returns 400',
-    'webhook.pull_request.missing_head_repo.json', 400);
+  statusTest('PR with missing head.repo returns 400', 'webhook.pull_request.missing_head_repo.json', 400);
 
-  statusTest('PR with invalid SHA returns 400',
-    'webhook.pull_request.invalid_sha.json', 400);
+  statusTest('PR with invalid SHA returns 400', 'webhook.pull_request.invalid_sha.json', 400);
 
-  statusTest('Push with missing repository returns 400',
-    'webhook.push.missing_repository.json', 400);
+  statusTest('Push with missing repository returns 400', 'webhook.push.missing_repository.json', 400);
 
-  statusTest('Push with invalid ref pattern returns 400',
-    'webhook.push.invalid_ref.json', 400);
+  statusTest('Push with invalid ref pattern returns 400', 'webhook.push.invalid_ref.json', 400);
 
   // Test that OneOf pattern correctly validates different event types
   test('OneOf schema validates all supported webhook event types', async () => {
@@ -144,8 +146,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     for (const { file, eventType } of validEvents) {
       const response = await helper.jsonHttpRequest(`./test/data/webhooks/${file}`);
       // Should pass validation (200 or 204 status)
-      assert.ok(response.statusCode < 400,
-        `${eventType} event should pass validation, got ${response.statusCode}`);
+      assert.ok(response.statusCode < 400, `${eventType} event should pass validation, got ${response.statusCode}`);
       response.connection?.destroy();
     }
   });
@@ -161,8 +162,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     for (const { file, reason } of invalidEvents) {
       const response = await helper.jsonHttpRequest(`./test/data/webhooks/${file}`);
-      assert.equal(response.statusCode, 400,
-        `Should reject payload with ${reason}`);
+      assert.equal(response.statusCode, 400, `Should reject payload with ${reason}`);
       response.connection?.destroy();
     }
   });
@@ -220,8 +220,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // Verify event-specific fields
       for (const field of specificFields) {
-        assert.ok(Object.hasOwn(payload.body, field),
-          `${file} should have event-specific field: ${field}`);
+        assert.ok(Object.hasOwn(payload.body, field), `${file} should have event-specific field: ${field}`);
       }
     }
   });
@@ -242,16 +241,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       if (hasAction) {
         assert.ok(payload.body.action, `${file} should have action field`);
       } else {
-        assert.ok(!payload.body.action || payload.body.action === undefined,
-          `${file} should not have action field`);
+        assert.ok(!payload.body.action || payload.body.action === undefined, `${file} should not have action field`);
       }
 
       if (hasPushFields) {
         assert.ok(payload.body.ref, `${file} should have ref field`);
         assert.ok(payload.body.commits, `${file} should have commits field`);
       } else {
-        assert.ok(!payload.body.ref || payload.body.ref === undefined,
-          `${file} should not have ref field`);
+        assert.ok(!payload.body.ref || payload.body.ref === undefined, `${file} should not have ref field`);
       }
     }
   });

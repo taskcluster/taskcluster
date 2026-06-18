@@ -23,41 +23,42 @@ suite(testing.suiteName(), () => {
     throw new Error(`filename ${filename} not found`);
   };
 
-  const getReferences = async () => new References({
-    schemas: await getCommonSchemas(),
-    references: [{
-      filename: 'test-ref.json',
-      content: {
-        $schema: '/schemas/common/api-reference-v0.json#',
-        title: 'test',
-        description: 'test',
-        serviceName: 'test',
-        apiVersion: 'v1',
-        entries: [],
-      },
-    }, {
-      filename: 'test2-ref.json',
-      content: {
-        $schema: '/schemas/common/exchanges-reference-v0.json#',
-        serviceName: 'test2',
-        apiVersion: 'v2',
-        title: 'test',
-        description: 'test',
-        exchangePrefix: 'x',
-        entries: [],
-      },
-    }],
-  });
+  const getReferences = async () =>
+    new References({
+      schemas: await getCommonSchemas(),
+      references: [
+        {
+          filename: 'test-ref.json',
+          content: {
+            $schema: '/schemas/common/api-reference-v0.json#',
+            title: 'test',
+            description: 'test',
+            serviceName: 'test',
+            apiVersion: 'v1',
+            entries: [],
+          },
+        },
+        {
+          filename: 'test2-ref.json',
+          content: {
+            $schema: '/schemas/common/exchanges-reference-v0.json#',
+            serviceName: 'test2',
+            apiVersion: 'v2',
+            title: 'test',
+            description: 'test',
+            exchangePrefix: 'x',
+            entries: [],
+          },
+        },
+      ],
+    });
 
   test('generates an abstract manifest', async () => {
     const references = await getReferences();
     const serializable = makeSerializable({ references });
     assert_file(serializable, 'references/manifest.json', {
       $schema: '/schemas/common/manifest-v3.json#',
-      references: [
-        '/references/test/v1/api.json',
-        '/references/test2/v2/exchanges.json',
-      ],
+      references: ['/references/test/v1/api.json', '/references/test2/v2/exchanges.json'],
     });
   });
 
@@ -66,10 +67,7 @@ suite(testing.suiteName(), () => {
     const serializable = makeSerializable({ references: references.asAbsolute(rootUrl) });
     assert_file(serializable, 'references/manifest.json', {
       $schema: `${rootUrl}/schemas/common/manifest-v3.json#`,
-      references: [
-        `${rootUrl}/references/test/v1/api.json`,
-        `${rootUrl}/references/test2/v2/exchanges.json`,
-      ],
+      references: [`${rootUrl}/references/test/v1/api.json`, `${rootUrl}/references/test2/v2/exchanges.json`],
     });
   });
 
@@ -120,12 +118,14 @@ suite(testing.suiteName(), () => {
 
   test('References.fromSerializable', () => {
     References.fromSerializable({
-      serializable: [{
-        filename: 'schemas/common/foo.json',
-        content: {
-          $id: '/schemas/common/foo.json#',
+      serializable: [
+        {
+          filename: 'schemas/common/foo.json',
+          content: {
+            $id: '/schemas/common/foo.json#',
+          },
         },
-      }],
+      ],
     });
   });
 });

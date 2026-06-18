@@ -31,7 +31,7 @@ const repr = v => {
 
 const cleanDocstring = (docstring, indent) => {
   const lines = docstring
-    .replace('\'\'\'', '\\\'\\\'\\\'')
+    .replace("'''", "\\'\\'\\'")
     .replace('```js', '```')
     .replace('```javascript', '```')
     .split('\n')
@@ -41,9 +41,7 @@ const cleanDocstring = (docstring, indent) => {
   lines.push('');
 
   const prefix = ' '.repeat(indent);
-  return lines
-    .map(line => line.trim().length > 0 ? (prefix + line) : line)
-    .join('\n');
+  return lines.map(line => (line.trim().length > 0 ? prefix + line : line)).join('\n');
 };
 
 const generateStaticClient = async (className, reference, filename, genAsync) => {
@@ -126,7 +124,8 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
       lines.push(docstring);
       lines.push(
         `        return ${genAsync ? 'await ' : ''}self._makeApiCall(` +
-        `self.funcinfo["${entry.name}"], *args, **kwargs)`);
+          `self.funcinfo["${entry.name}"], *args, **kwargs)`
+      );
       lines.push('');
     } else if (entry.type === 'topic-exchange') {
       const exRef = {
@@ -160,7 +159,7 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
       lines.push(`        ref = {`);
       for (const [refK, refV] of Object.entries(exRef).sort()) {
         if (refK === 'routingKey') {
-          lines.push('            \'routingKey\': [');
+          lines.push("            'routingKey': [");
           for (const routingKey of refV) {
             lines.push('                {');
             for (const routingK of ['constant', 'multipleWords', 'name']) {
@@ -206,53 +205,49 @@ const generateStaticClient = async (className, reference, filename, genAsync) =>
   await writePyFile(filename, lines.join('\n'));
 };
 
-export const tasks = [{
-  title: 'Generate Taskcluster-Client-Py',
-  requires: ['apis'],
-  provides: ['target-taskcluster-client-py'],
-  run: async (requirements, utils) => {
-    const apis = requirements.apis;
-    const moduleDir = path.join(REPO_ROOT, 'clients', 'client-py', 'taskcluster', 'generated');
+export const tasks = [
+  {
+    title: 'Generate Taskcluster-Client-Py',
+    requires: ['apis'],
+    provides: ['target-taskcluster-client-py'],
+    run: async (requirements, utils) => {
+      const apis = requirements.apis;
+      const moduleDir = path.join(REPO_ROOT, 'clients', 'client-py', 'taskcluster', 'generated');
 
-    // clean up the clients directory to eliminate any "leftovers"
-    utils.status({ message: 'cleanup' });
-    await rimraf(moduleDir);
-    await mkdirp(moduleDir);
-    await mkdirp(path.join(moduleDir, 'aio'));
+      // clean up the clients directory to eliminate any "leftovers"
+      utils.status({ message: 'cleanup' });
+      await rimraf(moduleDir);
+      await mkdirp(moduleDir);
+      await mkdirp(path.join(moduleDir, 'aio'));
 
-    // generate Python package semaphore files
-    await writeRepoFile(path.join(moduleDir, '__init__.py'), '');
-    await writeRepoFile(path.join(moduleDir, 'aio', '__init__.py'), '');
+      // generate Python package semaphore files
+      await writeRepoFile(path.join(moduleDir, '__init__.py'), '');
+      await writeRepoFile(path.join(moduleDir, 'aio', '__init__.py'), '');
 
-    const clientImporter = [];
+      const clientImporter = [];
 
-    for (const [className, { reference }] of Object.entries(apis)) {
-      const moduleName = className.toLowerCase();
+      for (const [className, { reference }] of Object.entries(apis)) {
+        const moduleName = className.toLowerCase();
 
-      utils.status({ message: `${className}` });
-      clientImporter.push(`from .${moduleName} import ${className}  # noqa: F401`);
-      await generateStaticClient(
-        className, reference,
-        path.join(moduleDir, `${moduleName}.py`),
-        false);
-      await generateStaticClient(
-        className, reference,
-        path.join(moduleDir, 'aio', `${moduleName}.py`),
-        true);
-    }
+        utils.status({ message: `${className}` });
+        clientImporter.push(`from .${moduleName} import ${className}  # noqa: F401`);
+        await generateStaticClient(className, reference, path.join(moduleDir, `${moduleName}.py`), false);
+        await generateStaticClient(className, reference, path.join(moduleDir, 'aio', `${moduleName}.py`), true);
+      }
 
-    utils.status({ message: 'client importers' });
-    const clientImporterString = clientImporter.sort().join('\n');
-    await writePyFile(path.join(moduleDir, '_client_importer.py'), clientImporterString);
-    await writePyFile(path.join(moduleDir, 'aio', '_client_importer.py'), clientImporterString);
+      utils.status({ message: 'client importers' });
+      const clientImporterString = clientImporter.sort().join('\n');
+      await writePyFile(path.join(moduleDir, '_client_importer.py'), clientImporterString);
+      await writePyFile(path.join(moduleDir, 'aio', '_client_importer.py'), clientImporterString);
 
-    // Format the generated code with ruff
-    utils.status({ message: 'formatting generated code' });
-    const clientPyDir = path.join(REPO_ROOT, 'clients', 'client-py');
-    await execCommand({
-      command: ['uv', 'run', 'ruff', 'format', 'taskcluster/generated'],
-      dir: clientPyDir,
-      utils,
-    });
+      // Format the generated code with ruff
+      utils.status({ message: 'formatting generated code' });
+      const clientPyDir = path.join(REPO_ROOT, 'clients', 'client-py');
+      await execCommand({
+        command: ['uv', 'run', 'ruff', 'format', 'taskcluster/generated'],
+        dir: clientPyDir,
+        utils,
+      });
+    },
   },
-}];
+];

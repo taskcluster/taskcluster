@@ -14,12 +14,16 @@ class Iterate extends events.EventEmitter {
     events.EventEmitter.call(this);
 
     // Set default values
-    opts = Object.assign({}, {
-      watchdogTime: 0,
-      maxFailures: 0,
-      maxIterations: 0,
-      minIterationTime: 0,
-    }, opts);
+    opts = Object.assign(
+      {},
+      {
+        watchdogTime: 0,
+        maxFailures: 0,
+        maxIterations: 0,
+        minIterationTime: 0,
+      },
+      opts
+    );
 
     if (!opts.name) {
       throw new Error('Must provide a name to iterate');
@@ -101,10 +105,7 @@ class Iterate extends events.EventEmitter {
 
     try {
       watchdog.start();
-      await Promise.race([
-        timeoutRejector,
-        Promise.resolve(this.handler(watchdog)),
-      ]);
+      await Promise.race([timeoutRejector, Promise.resolve(this.handler(watchdog))]);
     } finally {
       // stop the timers regardless of success or failure
       clearTimeout(maxIterationTimeTimer);
@@ -141,11 +142,14 @@ class Iterate extends events.EventEmitter {
 
       this.emit(iterError ? 'iteration-failure' : 'iteration-success');
 
-      this.monitor.log.periodic({
-        name: this.name,
-        duration,
-        status: iterError ? 'exception' : 'success',
-      }, { level: iterError ? 'err' : 'notice' });
+      this.monitor.log.periodic(
+        {
+          name: this.name,
+          duration,
+          status: iterError ? 'exception' : 'success',
+        },
+        { level: iterError ? 'err' : 'notice' }
+      );
 
       this.monitor.metric.iterateDuration(duration / 1000, {
         name: this.name,

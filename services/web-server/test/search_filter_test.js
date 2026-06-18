@@ -21,10 +21,9 @@ suite(testing.suiteName(), () => {
   });
 
   test('matches a case-insensitive substring on the named field', () => {
-    assert.deepEqual(
-      substringFilter('RELENG', 'clientId', clients),
-      [{ clientId: 'project/releng/fxci-config/apply' }],
-    );
+    assert.deepEqual(substringFilter('RELENG', 'clientId', clients), [
+      { clientId: 'project/releng/fxci-config/apply' },
+    ]);
   });
 
   test('returns all rows whose field contains the term', () => {

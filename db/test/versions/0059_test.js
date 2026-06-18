@@ -7,9 +7,8 @@ import { UNDEFINED_COLUMN } from '@taskcluster/lib-postgres';
 const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
 suite(testing.suiteName(), () => {
-
   // A helper to make it easier to create tasks with dummy values within queries
-  const makeFieldsForCreation = (opts) => {
+  const makeFieldsForCreation = opts => {
     let result = `${opts.taskId || `'tid'`}, ${opts.provisionerId || `'pp'`}, ${opts.workerType || `'wt'`},
             'sid', 'tgid', '{}'::jsonb, 'all-completed',
             '{}'::jsonb, 'normal', 0, now(), now(), now(), '{}'::jsonb,
@@ -64,9 +63,19 @@ suite(testing.suiteName(), () => {
       const pps = res.rows.map(({ provisioner_id }) => provisioner_id);
       assert.deepEqual(new Set(pps), new Set(['pp']));
       const wts = res.rows.map(({ worker_type }) => worker_type).sort();
-      assert.deepEqual(wts, _.range(1, nextTaskId).map(i => `wt-${i}`).sort());
+      assert.deepEqual(
+        wts,
+        _.range(1, nextTaskId)
+          .map(i => `wt-${i}`)
+          .sort()
+      );
       const tids = res.rows.map(({ task_id }) => task_id).sort();
-      assert.deepEqual(tids, _.range(1, nextTaskId).map(i => `tid-${i}`).sort());
+      assert.deepEqual(
+        tids,
+        _.range(1, nextTaskId)
+          .map(i => `tid-${i}`)
+          .sort()
+      );
 
       // check the schema
       // we start with no task_queue_id column
@@ -94,8 +103,10 @@ suite(testing.suiteName(), () => {
       if (res && res.rows.length > 0) {
         res = await client.query(`
           select task_id, provisioner_id, worker_type from get_task('${res.rows[0].task_id}')`);
-        assert(res.rows[0].provisioner_id && res.rows[0].worker_type,
-          'get_task returned a task without provisioner_id or worker_type');
+        assert(
+          res.rows[0].provisioner_id && res.rows[0].worker_type,
+          'get_task returned a task without provisioner_id or worker_type'
+        );
       }
 
       // check that get_task_by_task_groups works during upgrade, downgrade
@@ -105,7 +116,12 @@ suite(testing.suiteName(), () => {
       const pps = res.rows.map(({ provisioner_id }) => provisioner_id);
       assert.deepEqual(new Set(pps), new Set(['pp']));
       const wts = res.rows.map(({ worker_type }) => worker_type).sort();
-      assert.deepEqual(wts, _.range(1, nextTaskId).map(i => `wt-${i}`).sort());
+      assert.deepEqual(
+        wts,
+        _.range(1, nextTaskId)
+          .map(i => `wt-${i}`)
+          .sort()
+      );
 
       // check that create_task works as expected
       const taskOpts = {
@@ -124,8 +140,11 @@ suite(testing.suiteName(), () => {
         provisioner_id: 'pp',
         worker_type: `wt-${nextTaskId}`,
       };
-      assert.deepEqual(taskRes.rows[0], expectedTask,
-        'the last task created with create_task could not be retrieved with get_task');
+      assert.deepEqual(
+        taskRes.rows[0],
+        expectedTask,
+        'the last task created with create_task could not be retrieved with get_task'
+      );
     },
     finishedCheck: async client => {
       // check that all tasks have a task_queue_id that is not null

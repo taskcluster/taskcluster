@@ -64,8 +64,8 @@ MonitorManager.register({
   version: 1,
   description: 'Metrics of a node process.',
   fields: {
-    lastCpuUsage: 'The output of node\'s process.cpuUsage',
-    lastMemoryUsage: 'The output of node\'s process.memoryUsage',
+    lastCpuUsage: "The output of node's process.cpuUsage",
+    lastMemoryUsage: "The output of node's process.memoryUsage",
   },
 });
 

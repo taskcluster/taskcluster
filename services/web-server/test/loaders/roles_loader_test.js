@@ -16,8 +16,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
-        scopes: ["scope1"],
-        description: "Test Scope",
+        scopes: ['scope1'],
+        description: 'Test Scope',
       };
 
       const createRoleMutation = await helper.loadFixture('createRole.graphql');
@@ -49,8 +49,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const client = helper.getHttpClient();
       const roleId = taskcluster.slugid();
       const role = {
-        scopes: ["scope1"],
-        description: "Test Scope",
+        scopes: ['scope1'],
+        description: 'Test Scope',
       };
       const createRoleMutation = await helper.loadFixture('createRole.graphql');
 
@@ -66,9 +66,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const roleLoaders = loader({ auth: helper.clients().auth }).roles;
 
       // 2. get roles
-      const [roles] = await Promise.allSettled([
-        roleLoaders.load({}),
-      ]);
+      const [roles] = await Promise.allSettled([roleLoaders.load({})]);
 
       assert.equal(roles.status, 'fulfilled');
       assert.equal(roles.value[0].roleId, roleId);

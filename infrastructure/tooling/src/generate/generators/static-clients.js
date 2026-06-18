@@ -7,9 +7,7 @@ export const tasks = [];
 
 tasks.push({
   title: 'Assemble static clients',
-  requires: [
-    ...SERVICES.map(name => `scopes-${name}`),
-  ],
+  requires: [...SERVICES.map(name => `scopes-${name}`)],
   provides: ['static-clients'],
   run: async (requirements, _utils) => {
     const staticClients = [];

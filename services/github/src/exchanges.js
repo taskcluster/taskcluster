@@ -4,29 +4,32 @@ import assert from 'node:assert';
 import { PUBLISHERS } from './constants.js';
 
 /** Build common routing key construct for `exchanges.declare` */
-const commonRoutingKey = (options) => {
+const commonRoutingKey = options => {
   options = options || {};
   const routingKey = [
     {
       name: 'routingKeyKind',
-      summary: 'Identifier for the routing-key kind. This is ' +
-                        'always `"primary"` for the formalized routing key.',
+      summary: 'Identifier for the routing-key kind. This is ' + 'always `"primary"` for the formalized routing key.',
       constant: 'primary',
       required: true,
-    }, {
+    },
+    {
       name: 'organization',
-      summary: 'The GitHub `organization` which had an event. ' +
-                        'All periods have been replaced by % - such that ' +
-                        'foo.bar becomes foo%bar - and all other special ' +
-                        'characters aside from - and _ have been stripped.',
+      summary:
+        'The GitHub `organization` which had an event. ' +
+        'All periods have been replaced by % - such that ' +
+        'foo.bar becomes foo%bar - and all other special ' +
+        'characters aside from - and _ have been stripped.',
       maxSize: 100,
       required: true,
-    }, {
+    },
+    {
       name: 'repository',
-      summary: 'The GitHub `repository` which had an event.' +
-                        'All periods have been replaced by % - such that ' +
-                        'foo.bar becomes foo%bar - and all other special ' +
-                        'characters aside from - and _ have been stripped.',
+      summary:
+        'The GitHub `repository` which had an event.' +
+        'All periods have been replaced by % - such that ' +
+        'foo.bar becomes foo%bar - and all other special ' +
+        'characters aside from - and _ have been stripped.',
       maxSize: 100,
       required: true,
     },
@@ -34,9 +37,10 @@ const commonRoutingKey = (options) => {
   if (options.hasActions) {
     routingKey.push({
       name: 'action',
-      summary: 'The GitHub `action` which triggered an event. ' +
-                        'See for possible values see the payload actions ' +
-                        'property.',
+      summary:
+        'The GitHub `action` which triggered an event. ' +
+        'See for possible values see the payload actions ' +
+        'property.',
       maxSize: 22,
       required: true,
     });
@@ -44,7 +48,7 @@ const commonRoutingKey = (options) => {
   return routingKey;
 };
 
-const commonMessageBuilder = (msg) => {
+const commonMessageBuilder = msg => {
   msg.version = 1;
   return msg;
 };

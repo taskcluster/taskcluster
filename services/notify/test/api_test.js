@@ -14,12 +14,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
   // Dummy address for denylist tests
   const dummyAddress1 = {
-    notificationType: "email",
-    notificationAddress: "name1@name.com",
+    notificationType: 'email',
+    notificationAddress: 'name1@name.com',
   };
   const dummyAddress2 = {
-    notificationType: "matrix-room",
-    notificationAddress: "username",
+    notificationType: 'matrix-room',
+    notificationAddress: 'username',
   };
 
   setup('reset notifier', async () => {
@@ -33,9 +33,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
   test('pulse', async () => {
     await helper.apiClient.pulse({ routingKey: 'notify-test', message: { test: 123 } });
-    helper.assertPulseMessage('notification', m => (
-      _.isEqual(m.payload.message, { test: 123 }) &&
-      _.isEqual(m.CCs, ['route.notify-test'])));
+    helper.assertPulseMessage(
+      'notification',
+      m => _.isEqual(m.payload.message, { test: 123 }) && _.isEqual(m.CCs, ['route.notify-test'])
+    );
   });
 
   test('pulse() fails if pulse publish fails', async () => {
@@ -45,14 +46,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     const apiClient = helper.apiClient.use({ retries: 0 });
     await assert.rejects(
       () => apiClient.pulse({ routingKey: 'notify-test', message: { test: 456 } }),
-      err => err.statusCode === 500);
+      err => err.statusCode === 500
+    );
 
     const monitor = await helper.load('monitor');
     assert.equal(
-      monitor.manager.messages.filter(
-        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-      ).length,
-      1);
+      monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+        .length,
+      1
+    );
     monitor.manager.reset();
   });
 
@@ -100,7 +102,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
         link: { text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ' },
       });
     } catch (e) {
-      if (e.code !== "DenylistedAddress") {
+      if (e.code !== 'DenylistedAddress') {
         throw e;
       }
       return;
@@ -208,13 +210,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     await helper.apiClient.addDenylistAddress(dummyAddress1);
 
     // Check that the address was successfully added
-    await helper.db.fns.add_denylist_address(
-      dummyAddress1.notificationType,
-      dummyAddress1.notificationAddress,
-    );
+    await helper.db.fns.add_denylist_address(dummyAddress1.notificationType, dummyAddress1.notificationAddress);
     const existsTable = await helper.db.fns.exists_denylist_address(
       dummyAddress1.notificationType,
-      dummyAddress1.notificationAddress,
+      dummyAddress1.notificationAddress
     );
     const exists = existsTable[0].exists_denylist_address;
 

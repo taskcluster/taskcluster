@@ -36,8 +36,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     // Now loop over the existing workers as we do in scanworker
     // we do an initial comparison to ensure they make sense up to this point
-    const fetched = Worker.fromDbRows(await helper.db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
-      null, null, null, null, null, 10, null, null, null));
+    const fetched = Worker.fromDbRows(
+      await helper.db.fns.get_non_stopped_workers_with_launch_config_scanner_after(
+        null,
+        null,
+        null,
+        null,
+        null,
+        10,
+        null,
+        null,
+        null
+      )
+    );
 
     assert.deepEqual(fetched.serializable(), w.serializable());
 
@@ -100,25 +111,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   test('WorkerPoolStats', async () => {
     const wps = new WorkerPoolStats('wp/id', {});
 
-    wps.updateFromWorker(new Worker({
-      capacity: 1,
-      state: Worker.states.REQUESTED,
-      launchConfigId: 'lc-1',
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 1,
+        state: Worker.states.REQUESTED,
+        launchConfigId: 'lc-1',
+      })
+    );
 
     assert.equal(wps.existingCapacity, 1);
     assert.equal(wps.requestedCapacity, 1);
 
-    wps.updateFromWorker(new Worker({
-      capacity: 5,
-      state: Worker.states.RUNNING,
-      launchConfigId: 'lc-2',
-    }));
-    wps.updateFromWorker(new Worker({
-      capacity: 1,
-      state: Worker.states.STOPPING,
-      launchConfigId: 'lc-3',
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 5,
+        state: Worker.states.RUNNING,
+        launchConfigId: 'lc-2',
+      })
+    );
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 1,
+        state: Worker.states.STOPPING,
+        launchConfigId: 'lc-3',
+      })
+    );
 
     assert.equal(wps.existingCapacity, 6);
     assert.equal(wps.requestedCapacity, 1);
@@ -139,32 +156,40 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const wps = new WorkerPoolStats('wp/id', {});
 
     // Add workers in us-west-2
-    wps.updateFromWorker(new Worker({
-      capacity: 2,
-      state: Worker.states.REQUESTED,
-      workerGroup: 'us-west-2',
-      launchConfigId: 'lc-1',
-    }));
-    wps.updateFromWorker(new Worker({
-      capacity: 3,
-      state: Worker.states.RUNNING,
-      workerGroup: 'us-west-2',
-      launchConfigId: 'lc-1',
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 2,
+        state: Worker.states.REQUESTED,
+        workerGroup: 'us-west-2',
+        launchConfigId: 'lc-1',
+      })
+    );
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 3,
+        state: Worker.states.RUNNING,
+        workerGroup: 'us-west-2',
+        launchConfigId: 'lc-1',
+      })
+    );
 
     // Add workers in us-east-1
-    wps.updateFromWorker(new Worker({
-      capacity: 1,
-      state: Worker.states.RUNNING,
-      workerGroup: 'us-east-1',
-      launchConfigId: 'lc-2',
-    }));
-    wps.updateFromWorker(new Worker({
-      capacity: 4,
-      state: Worker.states.STOPPING,
-      workerGroup: 'us-east-1',
-      launchConfigId: 'lc-2',
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 1,
+        state: Worker.states.RUNNING,
+        workerGroup: 'us-east-1',
+        launchConfigId: 'lc-2',
+      })
+    );
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 4,
+        state: Worker.states.STOPPING,
+        workerGroup: 'us-east-1',
+        launchConfigId: 'lc-2',
+      })
+    );
 
     // Verify pool-level stats
     assert.equal(wps.existingCapacity, 6);
@@ -194,19 +219,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const wps = new WorkerPoolStats('wp/id', {});
 
     // Add a quarantined worker
-    wps.updateFromWorker(new Worker({
-      capacity: 5,
-      state: Worker.states.RUNNING,
-      workerGroup: 'us-west-2',
-      quarantineUntil: new Date(Date.now() + 3600000), // 1 hour from now
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 5,
+        state: Worker.states.RUNNING,
+        workerGroup: 'us-west-2',
+        quarantineUntil: new Date(Date.now() + 3600000), // 1 hour from now
+      })
+    );
 
     // Add a non-quarantined worker in same region
-    wps.updateFromWorker(new Worker({
-      capacity: 3,
-      state: Worker.states.RUNNING,
-      workerGroup: 'us-west-2',
-    }));
+    wps.updateFromWorker(
+      new Worker({
+        capacity: 3,
+        state: Worker.states.RUNNING,
+        workerGroup: 'us-west-2',
+      })
+    );
 
     // Pool-level: quarantined workers don't count toward existing capacity
     assert.equal(wps.existingCapacity, 3);

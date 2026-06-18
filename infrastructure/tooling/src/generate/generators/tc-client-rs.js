@@ -42,7 +42,7 @@ const without_payload = args => args.filter(({ name }) => name !== 'payload');
 const with_ttl = args => args.concat([{ name: 'ttl', type: 'Duration' }]);
 const with_lifetimes = args => args.map(({ name, type }) => ({ name, type: type.replace(/&str/g, "&'a str") }));
 const call_args = args => args.map(({ name }) => name).join(', ');
-const define_args = args => args.map(({ name, type }) => name === '&self' ? name : `${name}: ${type}`).join(', ');
+const define_args = args => args.map(({ name, type }) => (name === '&self' ? name : `${name}: ${type}`)).join(', ');
 
 const QUERY_TEMPLATE = t => `\
     if let Some(q) = ${t.name} {
@@ -53,12 +53,16 @@ const DETAILS_FUNC_TEMPLATE = t => `\
 /// Determine the HTTP request details for ${t.name}
 fn ${t.name}_details<'a>(${define_args(with_lifetimes(without_payload(t.args)))}) -> (${t.staticPath ? "&'static str" : 'String'}, Option<Vec<(&'static str, &'a str)>>) {
     let path = ${t.path};
-${t.hasQuery ? `\
+${
+  t.hasQuery
+    ? `\
     let mut query = None;
 ${t.query.map(name => QUERY_TEMPLATE({ name })).join('\n')}\
-` : `\
+`
+    : `\
     let query = None;\
-`}
+`
+}
 
     (path, query)
 }
@@ -70,11 +74,15 @@ ${t.doc}pub async fn ${t.name}(${define_args(with_self(t.args))}) -> Result<${t.
     let (path, query) = Self::${t.name}_details(${call_args(without_payload(t.args))});
     let body = ${t.input ? 'Some(payload)' : 'None'};
     let resp = self.client.request(method, ${t.staticPath ? 'path' : '&path'}, query, body).await?;
-${t.output ? `\
+${
+  t.output
+    ? `\
     Ok(resp.json().await?)\
-` : `\
+`
+    : `\
     resp.bytes().await?;
-    Ok(())`}
+    Ok(())`
+}
 }
 `;
 
@@ -189,16 +197,17 @@ const generateServiceClient = (className, reference) => {
         ds.unshift('');
         ds.unshift(entry.title);
       }
-      t.doc = `${ds.map(l => l ? `/// ${l}` : '///').join('\n')}\n`;
+      t.doc = `${ds.map(l => (l ? `/// ${l}` : '///')).join('\n')}\n`;
     } else {
       t.doc = '';
     }
 
-    const indent = s => s
-      .trim()
-      .split('\n')
-      .map(l => l.length > 0 ? `    ${l}` : l)
-      .join('\n');
+    const indent = s =>
+      s
+        .trim()
+        .split('\n')
+        .map(l => (l.length > 0 ? `    ${l}` : l))
+        .join('\n');
 
     methods.push(`\n\n${indent(REQ_FUNC_TEMPLATE(t))}`);
 
@@ -241,30 +250,32 @@ const generateModFile = apis => {
   return `${mods.sort().join('\n')}\n\n${uses.sort().join('\n')}\n`;
 };
 
-export const tasks = [{
-  title: 'Generate Taskcluster-Client-Rust',
-  requires: ['apis'],
-  provides: ['target-taskcluster-client-rust'],
-  run: async (requirements, utils) => {
-    const apis = requirements.apis;
-    const moduleDir = path.join(REPO_ROOT, 'clients', 'client-rust', 'client', 'src', 'generated');
+export const tasks = [
+  {
+    title: 'Generate Taskcluster-Client-Rust',
+    requires: ['apis'],
+    provides: ['target-taskcluster-client-rust'],
+    run: async (requirements, utils) => {
+      const apis = requirements.apis;
+      const moduleDir = path.join(REPO_ROOT, 'clients', 'client-rust', 'client', 'src', 'generated');
 
-    // clean up the clients directory to eliminate any "leftovers"
-    utils.status({ message: 'cleanup' });
-    await rimraf(moduleDir);
-    await mkdirp(moduleDir);
+      // clean up the clients directory to eliminate any "leftovers"
+      utils.status({ message: 'cleanup' });
+      await rimraf(moduleDir);
+      await mkdirp(moduleDir);
 
-    utils.status({ message: 'mod.rs' });
-    await writeRsFile(path.join(moduleDir, 'mod.rs'), generateModFile(apis));
+      utils.status({ message: 'mod.rs' });
+      await writeRsFile(path.join(moduleDir, 'mod.rs'), generateModFile(apis));
 
-    for (const [className, { reference, referenceKind }] of Object.entries(apis)) {
-      if (referenceKind !== 'api') {
-        continue;
+      for (const [className, { reference, referenceKind }] of Object.entries(apis)) {
+        if (referenceKind !== 'api') {
+          continue;
+        }
+        const moduleName = className.toLowerCase();
+
+        utils.status({ message: `${moduleName}.rs` });
+        await writeRsFile(path.join(moduleDir, `${moduleName}.rs`), generateServiceClient(className, reference));
       }
-      const moduleName = className.toLowerCase();
-
-      utils.status({ message: `${moduleName}.rs` });
-      await writeRsFile(path.join(moduleDir, `${moduleName}.rs`), generateServiceClient(className, reference));
-    }
+    },
   },
-}];
+];

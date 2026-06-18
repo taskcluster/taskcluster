@@ -17,7 +17,7 @@ suite(testing.suiteName(), () => {
       await client.query('delete from cache_purges');
       await client.query(
         `insert into cache_purges (worker_pool_id, cache_name, before, expires) values ($1, $2, $3, $4), ($5, $6, $7, $8)`,
-        samples.flatMap(s => [`${s.worker_pool_id}`, `${s.cache_name}`, s.before, s.expires]),
+        samples.flatMap(s => [`${s.worker_pool_id}`, `${s.cache_name}`, s.before, s.expires])
       );
     });
   });
@@ -43,12 +43,12 @@ suite(testing.suiteName(), () => {
     }
   }
 
-  helper.dbTest('all_purge_requests_wpid', async (db) => {
+  helper.dbTest('all_purge_requests_wpid', async db => {
     const caches = await db.fns.all_purge_requests_wpid(5, 0);
     compare(caches, samples);
   });
 
-  helper.dbTest('all_purge_requests_wpid in pages', async (db) => {
+  helper.dbTest('all_purge_requests_wpid in pages', async db => {
     const size = 1;
     let offset = 0;
     let caches = await db.fns.all_purge_requests_wpid(size, offset);
@@ -62,18 +62,18 @@ suite(testing.suiteName(), () => {
     compare(caches[0], samples[1]);
   });
 
-  helper.dbTest('purge_cache (create)', async (db) => {
-    const sample = { worker_pool_id: 'prov-3/wt-3', cache_name: 'cache-3', before: fromNow('0 seconds'), expires: fromNow('1 day') };
+  helper.dbTest('purge_cache (create)', async db => {
+    const sample = {
+      worker_pool_id: 'prov-3/wt-3',
+      cache_name: 'cache-3',
+      before: fromNow('0 seconds'),
+      expires: fromNow('1 day'),
+    };
 
-    await db.fns.purge_cache_wpid(
-      sample.worker_pool_id,
-      sample.cache_name,
-      sample.before, sample.expires,
+    await db.fns.purge_cache_wpid(sample.worker_pool_id, sample.cache_name, sample.before, sample.expires);
+    const cache = (await db.fns.all_purge_requests_wpid(5, 0)).find(
+      ({ worker_pool_id, cache_name }) => worker_pool_id === sample.worker_pool_id && cache_name === sample.cache_name
     );
-    const cache = (await db.fns.all_purge_requests_wpid(5, 0))
-      .find(({ worker_pool_id, cache_name }) =>
-        worker_pool_id === sample.worker_pool_id &&
-        cache_name === sample.cache_name);
 
     assert.equal(cache.worker_pool_id, sample.worker_pool_id);
     assert.equal(cache.cache_name, sample.cache_name);
@@ -82,19 +82,17 @@ suite(testing.suiteName(), () => {
     assert(!cache.etag);
   });
 
-  helper.dbTest('purge_cache (upsert)', async (db) => {
+  helper.dbTest('purge_cache (upsert)', async db => {
     const sample = { worker_pool_id: 'prov-3/wt-3', cache_name: 'cache-3' };
 
     await db.fns.purge_cache_wpid(sample.worker_pool_id, sample.cache_name, fromNow('10 seconds'), fromNow('1 day'));
-    const cache = (await db.fns.all_purge_requests_wpid(5, 0))
-      .find(({ worker_pool_id, cache_name }) =>
-        worker_pool_id === sample.worker_pool_id &&
-        cache_name === sample.cache_name);
+    const cache = (await db.fns.all_purge_requests_wpid(5, 0)).find(
+      ({ worker_pool_id, cache_name }) => worker_pool_id === sample.worker_pool_id && cache_name === sample.cache_name
+    );
     await db.fns.purge_cache_wpid(sample.worker_pool_id, sample.cache_name, fromNow('5 seconds'), fromNow('2 day'));
-    const cache2 = (await db.fns.all_purge_requests_wpid(5, 0))
-      .find(({ worker_pool_id, cache_name }) =>
-        worker_pool_id === sample.worker_pool_id &&
-        cache_name === sample.cache_name);
+    const cache2 = (await db.fns.all_purge_requests_wpid(5, 0)).find(
+      ({ worker_pool_id, cache_name }) => worker_pool_id === sample.worker_pool_id && cache_name === sample.cache_name
+    );
 
     assert.equal(cache.worker_pool_id, cache2.worker_pool_id);
     assert.equal(cache.cache_name, cache2.cache_name);
@@ -106,7 +104,7 @@ suite(testing.suiteName(), () => {
     assert(cache2.before.getTime());
   });
 
-  helper.dbTest('purge_requests', async (db) => {
+  helper.dbTest('purge_requests', async db => {
     const samples = [
       { worker_pool_id: 'prov-3/wt-3', cache_name: 'cache-3', before: fromNow('4 days'), expires: fromNow('1 day') },
       { worker_pool_id: 'prov-3/wt-3', cache_name: 'cache-4', before: fromNow('6 days'), expires: fromNow('1 day') },
@@ -118,16 +116,16 @@ suite(testing.suiteName(), () => {
         samples[i].worker_pool_id,
         samples[i].cache_name,
         samples[i].before,
-        samples[i].expires,
+        samples[i].expires
       );
     }
 
-    const entries = await db.fns.purge_requests_wpid("prov-3/wt-3");
+    const entries = await db.fns.purge_requests_wpid('prov-3/wt-3');
     assert.equal(entries.length, 3);
     compare(entries, samples);
   });
 
-  helper.dbTest('expire_cache_purges', async (db) => {
+  helper.dbTest('expire_cache_purges', async db => {
     const samples = [
       { worker_pool_id: 'prov-3/wt-3', cache_name: 'cache-3', before: fromNow('4 days'), expires: fromNow('- 1 day') },
       { worker_pool_id: 'prov-3/wt-3', cache_name: 'cache-4', before: fromNow('6 days'), expires: fromNow('- 2 days') },
@@ -139,7 +137,7 @@ suite(testing.suiteName(), () => {
         samples[i].worker_pool_id,
         samples[i].cache_name,
         samples[i].before,
-        samples[i].expires,
+        samples[i].expires
       );
     }
 

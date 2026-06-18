@@ -3,14 +3,7 @@ import fs from 'node:fs';
 import util from 'node:util';
 import path from 'node:path';
 
-import {
-  ensureTask,
-  cargoPublish,
-  execCommand,
-  pyClientRelease,
-  readRepoFile,
-  REPO_ROOT,
-} from '../../utils/index.js';
+import { ensureTask, cargoPublish, execCommand, pyClientRelease, readRepoFile, REPO_ROOT } from '../../utils/index.js';
 
 const readFile = util.promisify(fs.readFile);
 
@@ -18,9 +11,7 @@ export default ({ tasks, cmdOptions, credentials, logsDir }) => {
   ensureTask(tasks, {
     title: 'Get ChangeLog',
     requires: ['release-version'],
-    provides: [
-      'changelog-text',
-    ],
+    provides: ['changelog-text'],
     run: async (requirements, _utils) => {
       if (cmdOptions.staging) {
         return {
@@ -65,9 +56,7 @@ export default ({ tasks, cmdOptions, credentials, logsDir }) => {
       'npm-client-artifact',
       'npm-client-web-artifact',
     ],
-    provides: [
-      'github-release',
-    ],
+    provides: ['github-release'],
     run: async (requirements, utils) => {
       const octokit = new Octokit({ auth: `token ${credentials.ghToken}` });
       const artifactsDir = requirements['clean-artifacts-dir'];
@@ -130,12 +119,8 @@ export default ({ tasks, cmdOptions, credentials, logsDir }) => {
 
   ensureTask(tasks, {
     title: `Pack clients/client for npm`,
-    requires: [
-      'clean-artifacts-dir',
-    ],
-    provides: [
-      'npm-client-artifact',
-    ],
+    requires: ['clean-artifacts-dir'],
+    provides: ['npm-client-artifact'],
     run: async (requirements, utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       const dir = path.join(REPO_ROOT, 'clients/client');
@@ -162,12 +147,8 @@ export default ({ tasks, cmdOptions, credentials, logsDir }) => {
 
   ensureTask(tasks, {
     title: `Pack clients/client-web for npm`,
-    requires: [
-      'clean-artifacts-dir',
-    ],
-    provides: [
-      'npm-client-web-artifact',
-    ],
+    requires: ['clean-artifacts-dir'],
+    provides: ['npm-client-web-artifact'],
     run: async (requirements, utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       const dir = path.join(REPO_ROOT, 'clients/client-web');
@@ -204,9 +185,7 @@ export default ({ tasks, cmdOptions, credentials, logsDir }) => {
     requires: [
       'github-release', // to make sure the release finishes first..
     ],
-    provides: [
-      `publish-clients/client-py`,
-    ],
+    provides: [`publish-clients/client-py`],
     run: async (_requirements, utils) => {
       if (cmdOptions.staging || !cmdOptions.push) {
         return utils.skip();
@@ -217,7 +196,8 @@ export default ({ tasks, cmdOptions, credentials, logsDir }) => {
         username: credentials.pypiUsername,
         password: credentials.pypiPassword,
         logfile: path.join(logsDir, 'publish-client-py.log'),
-        utils });
+        utils,
+      });
     },
   });
 
@@ -226,9 +206,7 @@ export default ({ tasks, cmdOptions, credentials, logsDir }) => {
     requires: [
       'github-release', // to make sure the release finishes first..
     ],
-    provides: [
-      `publish-clients/client-rust`,
-    ],
+    provides: [`publish-clients/client-rust`],
     run: async (_requirements, utils) => {
       // upload each of the individual crates, in dependency order; note that
       // integration-tests does not get published!
@@ -238,7 +216,8 @@ export default ({ tasks, cmdOptions, credentials, logsDir }) => {
           token: credentials.cratesioToken,
           push: cmdOptions.push && !cmdOptions.staging,
           logfile: path.join(logsDir, `publish-client-${dir}-rust.log`),
-          utils });
+          utils,
+        });
       }
     },
   });
@@ -252,9 +231,7 @@ export default ({ tasks, cmdOptions, credentials, logsDir }) => {
       'publish-clients/client-py',
       'publish-clients/client-rust',
     ],
-    provides: [
-      'target-publish',
-    ],
+    provides: ['target-publish'],
     run: async (requirements, _utils) => {
       return {
         'target-publish': [

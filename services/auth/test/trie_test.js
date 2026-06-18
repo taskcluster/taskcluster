@@ -14,12 +14,11 @@ import testing from '@taskcluster/lib-testing';
 const FULL_TESTS = !!process.env.FULL_TESTS;
 
 suite(testing.suiteName(), () => {
-
   /**
    * Return scope without kleene '*' at the end if scope ends with kleene, otherwise
    * this just returns the scope given. Notice, this doesn't recursively strip '*'
    */
-  const withoutKleene = (scope) => scope.endsWith('*') ? scope.slice(0, -1) : scope;
+  const withoutKleene = scope => (scope.endsWith('*') ? scope.slice(0, -1) : scope);
 
   const patternMatch = (pattern, scope) => {
     if (scope === pattern) {
@@ -33,23 +32,24 @@ suite(testing.suiteName(), () => {
 
   suite('dependencyOrdering', () => {
     [
+      [{ pattern: 'a', scopes: ['b'] }],
+      [{ pattern: 'a*', scopes: ['b'] }],
       [
         { pattern: 'a', scopes: ['b'] },
-      ], [
-        { pattern: 'a*', scopes: ['b'] },
-      ], [
-        { pattern: 'a', scopes: ['b'] },
         { pattern: 'c', scopes: ['d'] },
-      ], [
+      ],
+      [
         { pattern: 'a*', scopes: ['b*'] },
         { pattern: 'c*', scopes: ['d*'] },
-      ], [
+      ],
+      [
         { pattern: 'a*', scopes: ['b<..>z'] },
         { pattern: 'c*', scopes: ['d<..>'] },
       ],
     ].forEach((rules, index) => {
       test(`independent rules (${index + 1})`, () => {
-        _.range(50).forEach(() => { // run 50 times with different shuffling
+        _.range(50).forEach(() => {
+          // run 50 times with different shuffling
           const ordering = trie.dependencyOrdering(_.shuffle(rules));
           assume(ordering).has.length(rules.length);
           for (const { pattern } of rules) {
@@ -59,32 +59,39 @@ suite(testing.suiteName(), () => {
       });
     });
 
-    [ // rules must be strictly dependent and ordered by dependency
+    [
+      // rules must be strictly dependent and ordered by dependency
       [
         { pattern: 'c', scopes: ['nothing'] },
         { pattern: 'b', scopes: ['c'] },
         { pattern: 'a', scopes: ['b'] },
-      ], [
+      ],
+      [
         { pattern: 'c', scopes: ['nothing'] },
         { pattern: 'b', scopes: ['c'] },
         { pattern: 'a', scopes: ['b'] },
-      ], [
+      ],
+      [
         { pattern: 'ccc', scopes: ['nothing'] },
         { pattern: 'b', scopes: ['c*'] },
         { pattern: 'a', scopes: ['b'] },
-      ], [
+      ],
+      [
         { pattern: 'c*', scopes: ['nothing'] },
         { pattern: 'b', scopes: ['cb'] },
         { pattern: 'a', scopes: ['b'] },
-      ], [
+      ],
+      [
         { pattern: 'c*', scopes: ['nothing'] },
         { pattern: 'bbb', scopes: ['cb'] },
         { pattern: 'a*', scopes: ['b<..>'] },
-      ], [
+      ],
+      [
         { pattern: 'c*', scopes: ['nothing'] },
         { pattern: 'bbb', scopes: ['cb'] },
         { pattern: 'a*', scopes: ['b<..>c'] },
-      ], [
+      ],
+      [
         { pattern: 'ettt', scopes: ['nothing'] },
         { pattern: 'd*', scopes: ['e<..>z'] },
         { pattern: 'c*', scopes: ['dd<..>'] },
@@ -93,7 +100,8 @@ suite(testing.suiteName(), () => {
       ],
     ].forEach((rules, index) => {
       test(`acyclic rules (${index + 1})`, () => {
-        _.range(50).forEach(() => { // run 50 times with different shuffling
+        _.range(50).forEach(() => {
+          // run 50 times with different shuffling
           const ordering = trie.dependencyOrdering(_.shuffle(rules));
           assume(ordering.map(r => r.pattern)).eql(rules.map(r => r.pattern));
         });
@@ -101,33 +109,35 @@ suite(testing.suiteName(), () => {
     });
 
     [
+      [{ pattern: 'a', scopes: ['a'] }],
+      [{ pattern: 'ab', scopes: ['a*'] }],
+      [{ pattern: 'a*', scopes: ['ab'] }],
       [
-        { pattern: 'a', scopes: ['a'] },
-      ], [
-        { pattern: 'ab', scopes: ['a*'] },
-      ], [
-        { pattern: 'a*', scopes: ['ab'] },
-      ], [
         { pattern: 'c', scopes: ['a'] },
         { pattern: 'b', scopes: ['c'] },
         { pattern: 'a', scopes: ['b'] },
-      ], [
+      ],
+      [
         { pattern: 'c', scopes: ['a*'] },
         { pattern: 'b', scopes: ['c'] },
         { pattern: 'aa', scopes: ['b'] },
-      ], [
+      ],
+      [
         { pattern: 'c', scopes: ['aa'] },
         { pattern: 'b', scopes: ['c'] },
         { pattern: 'a*', scopes: ['b'] },
-      ], [
+      ],
+      [
         { pattern: 'c', scopes: ['aa'] },
         { pattern: 'b', scopes: ['c'] },
         { pattern: 'a*', scopes: ['b<..>'] },
-      ], [
+      ],
+      [
         { pattern: 'c', scopes: ['aa'] },
         { pattern: 'b', scopes: ['c'] },
         { pattern: 'a*', scopes: ['b<..>c'] },
-      ], [
+      ],
+      [
         // one could argue we should allow cycles like this, because it's just
         // repeated rule application, but as far as I can see this can be used
         // create degenerate patterns that explode the size of the trie.
@@ -147,17 +157,11 @@ suite(testing.suiteName(), () => {
     });
 
     [
-      [
-        { pattern: 'a*', scopes: ['b<..>c<..>'] },
-      ], [
-        { pattern: 'a*', scopes: ['b<..>c<..>d'] },
-      ], [
-        { pattern: 'a*', scopes: ['b<..>c<..>d<..>'] },
-      ], [
-        { pattern: 'a*', scopes: ['b*<..>'] },
-      ], [
-        { pattern: 'a*', scopes: ['bc*<..>'] },
-      ],
+      [{ pattern: 'a*', scopes: ['b<..>c<..>'] }],
+      [{ pattern: 'a*', scopes: ['b<..>c<..>d'] }],
+      [{ pattern: 'a*', scopes: ['b<..>c<..>d<..>'] }],
+      [{ pattern: 'a*', scopes: ['b*<..>'] }],
+      [{ pattern: 'a*', scopes: ['bc*<..>'] }],
     ].forEach((rules, index) => {
       test(`illegal scopes (${index + 1})`, () => {
         assume(() => {
@@ -178,42 +182,43 @@ suite(testing.suiteName(), () => {
    * characters to one or more characters, hence, allowing slices that would
    * otherwise not have been possible.
    */
-  const caseMapper = (titleSuffix, mapChar) => ({ title, rules, hasIndirctResults, results }) => {
-    // Helper method to map a pattern
-    const mapP = (p) => p.split('').map(mapChar).join('');
-    // Helper method to apply mapP while respecting kleene
-    const mapPWithKleene = (p) => p.endsWith('*')
-      ? `${mapP(p.slice(0, -1))}*`
-      : mapP(p);
+  const caseMapper =
+    (titleSuffix, mapChar) =>
+    ({ title, rules, hasIndirctResults, results }) => {
+      // Helper method to map a pattern
+      const mapP = p => p.split('').map(mapChar).join('');
+      // Helper method to apply mapP while respecting kleene
+      const mapPWithKleene = p => (p.endsWith('*') ? `${mapP(p.slice(0, -1))}*` : mapP(p));
 
-    //console.log(JSON.stringify(rules, null, 2));
-    // map rules, notice that we have to handle the space case where <..> is
-    // interpreted as a parameter, otherwise we just pass through mapPWithKleene
-    rules = rules.map(({ pattern, scopes }) => {
-      if (!pattern.endsWith('*')) {
-        scopes = scopes.map(mapPWithKleene);
-      } else {
-        scopes = [
-          ...scopes
-            .filter(s => !s.includes('<..>'))
-            .map(mapPWithKleene),
-          ...scopes
-            .filter(s => s.includes('<..>'))
-            .map(s => s.split('<..>'))
-            .map(([A, B]) => `${mapP(A)}<..>${mapPWithKleene(B)}`),
-        ];
-      }
-      return { pattern: mapPWithKleene(pattern), scopes };
-    });
+      //console.log(JSON.stringify(rules, null, 2));
+      // map rules, notice that we have to handle the space case where <..> is
+      // interpreted as a parameter, otherwise we just pass through mapPWithKleene
+      rules = rules.map(({ pattern, scopes }) => {
+        if (!pattern.endsWith('*')) {
+          scopes = scopes.map(mapPWithKleene);
+        } else {
+          scopes = [
+            ...scopes.filter(s => !s.includes('<..>')).map(mapPWithKleene),
+            ...scopes
+              .filter(s => s.includes('<..>'))
+              .map(s => s.split('<..>'))
+              .map(([A, B]) => `${mapP(A)}<..>${mapPWithKleene(B)}`),
+          ];
+        }
+        return { pattern: mapPWithKleene(pattern), scopes };
+      });
 
-    // For results, we just map through mapPWithKleene
-    results = Object.assign({}, ...Object.entries(results).map(([input, scopes]) => ({
-      [mapPWithKleene(input)]: scopes.map(mapPWithKleene),
-    })));
-    //console.log(JSON.stringify(rules, null, 2));
+      // For results, we just map through mapPWithKleene
+      results = Object.assign(
+        {},
+        ...Object.entries(results).map(([input, scopes]) => ({
+          [mapPWithKleene(input)]: scopes.map(mapPWithKleene),
+        }))
+      );
+      //console.log(JSON.stringify(rules, null, 2));
 
-    return { title: `${title} (${titleSuffix})`, rules, hasIndirctResults, results };
-  };
+      return { title: `${title} (${titleSuffix})`, rules, hasIndirctResults, results };
+    };
 
   /**
    * Simple implementation of the semantics that is expected to be correct
@@ -247,7 +252,7 @@ suite(testing.suiteName(), () => {
   };
 
   /** generate all sets of two different elements from the set */
-  const allSetsOfTwo = (set) => {
+  const allSetsOfTwo = set => {
     const result = [];
     for (let i = 0; i < set.length; i++) {
       for (let j = i + 1; j < set.length; j++) {
@@ -290,10 +295,12 @@ suite(testing.suiteName(), () => {
 
     // Take input examples from both and derive new results using
     // evalRulesRecursively
-    const results = Object.assign({}, ..._.uniq([
-      ...Object.keys(A.results),
-      ...Object.keys(B.results),
-    ]).map(input => ({ [input]: evalRulesRecursively(rules, input) })));
+    const results = Object.assign(
+      {},
+      ..._.uniq([...Object.keys(A.results), ...Object.keys(B.results)]).map(input => ({
+        [input]: evalRulesRecursively(rules, input),
+      }))
+    );
 
     return {
       title: `${A.title} X ${B.title}`,
@@ -303,28 +310,26 @@ suite(testing.suiteName(), () => {
     };
   };
 
-  const testCases = FULL_TESTS ? [
-    // All test cases as is
-    ...trietestcases,
-    // All test cases with characters mapped to [<hex>] excluding '*'
-    ...trietestcases.map(caseMapper('[XX]+*', c => c === '*' ? '*' :
-      `[${c.codePointAt(0).toString(16).padStart(2, '0')}]`,
-    )),
-    // All test cases with characters mapped to [<hex>] including '*'
-    ...trietestcases.map(caseMapper('[XX]', c =>
-      `[${c.codePointAt(0).toString(16).padStart(2, '0')}]`,
-    )),
-    // All test cases with characters mapped to *<hex>*! excluding '*' (injecting more stars)
-    ...trietestcases.map(caseMapper('*XX*!', c => c === '*' ? '*' :
-      `*${c.codePointAt(0).toString(16).padStart(2, '0')}*!`,
-    )),
-    ...allSetsOfTwo(trietestcases).map(mergeTestCases),
-  ] : [
-    ...trietestcases,
-  ];
+  const testCases = FULL_TESTS
+    ? [
+        // All test cases as is
+        ...trietestcases,
+        // All test cases with characters mapped to [<hex>] excluding '*'
+        ...trietestcases.map(
+          caseMapper('[XX]+*', c => (c === '*' ? '*' : `[${c.codePointAt(0).toString(16).padStart(2, '0')}]`))
+        ),
+        // All test cases with characters mapped to [<hex>] including '*'
+        ...trietestcases.map(caseMapper('[XX]', c => `[${c.codePointAt(0).toString(16).padStart(2, '0')}]`)),
+        // All test cases with characters mapped to *<hex>*! excluding '*' (injecting more stars)
+        ...trietestcases.map(
+          caseMapper('*XX*!', c => (c === '*' ? '*' : `*${c.codePointAt(0).toString(16).padStart(2, '0')}*!`))
+        ),
+        ...allSetsOfTwo(trietestcases).map(mergeTestCases),
+      ]
+    : [...trietestcases];
 
   /** Function for building a trie that only supports direct matches */
-  const buildDirectMatchOnlyTrie = (rules) => {
+  const buildDirectMatchOnlyTrie = rules => {
     const Node = trie.Node;
     const t = new Node();
     for (const { pattern, matched, paramed } of trie.dependencyOrdering(rules)) {
@@ -359,27 +364,31 @@ suite(testing.suiteName(), () => {
   });
 
   /** Get all pairs [prefix, suffix] such that prefix + suffix = input */
-  const allSplits = (input) => _.range(input.length + 1).map(i => [input.slice(0, i), input.slice(i)]);
+  const allSplits = input => _.range(input.length + 1).map(i => [input.slice(0, i), input.slice(i)]);
 
   /** Get all pairs [prefix, suffix] such that prefix + suffix = input and works in withPrefix */
-  const allPrefixSplits = (input) => allSplits(input).filter(([prefix, remaining]) =>
-    // prefixes ending with kleene won't work in withPrefix, this is documented
-    // Nor is it desired if we parse 'prefix<..>suffix', then '*' cannot
-    // be interpreted as kleene in the prefix. If suffix is '', then
-    // prefix is not allowed to end with '*' because it would ambiguous.
-    // This is also forbidden in transformRules(). Hence, we filter out such splits
-    !prefix.endsWith('*') || remaining !== '',
-  );
+  const allPrefixSplits = input =>
+    allSplits(input).filter(
+      ([prefix, remaining]) =>
+        // prefixes ending with kleene won't work in withPrefix, this is documented
+        // Nor is it desired if we parse 'prefix<..>suffix', then '*' cannot
+        // be interpreted as kleene in the prefix. If suffix is '', then
+        // prefix is not allowed to end with '*' because it would ambiguous.
+        // This is also forbidden in transformRules(). Hence, we filter out such splits
+        !prefix.endsWith('*') || remaining !== ''
+    );
 
   /** Get all pairs [prefix, suffix] such that prefix + suffix = input and works in withSuffix */
-  const allSuffixSplits = (input) => allSplits(input).filter(([remaining, suffix]) =>
-    // if the remaining input ends with '*' this will be interpreted as
-    // kleene, which is different from the original input. Hence, we
-    // we get the result from '<remaining>*' and not the result from
-    // '<remaining>*<suffix>', thus, we must skip this test case.
-    // This behavior is both desired and documented in withSuffix()
-    !remaining.endsWith('*') || suffix === '',
-  );
+  const allSuffixSplits = input =>
+    allSplits(input).filter(
+      ([remaining, suffix]) =>
+        // if the remaining input ends with '*' this will be interpreted as
+        // kleene, which is different from the original input. Hence, we
+        // we get the result from '<remaining>*' and not the result from
+        // '<remaining>*<suffix>', thus, we must skip this test case.
+        // This behavior is both desired and documented in withSuffix()
+        !remaining.endsWith('*') || suffix === ''
+    );
 
   suite('withPrefix (direct only) for all splits', () => {
     for (const { title, rules, results } of testCases.filter(c => !c.hasIndirctResults)) {
@@ -389,7 +398,7 @@ suite(testing.suiteName(), () => {
             const t = trie.withPrefix(buildDirectMatchOnlyTrie(rules), prefix);
             assume(trie.execute(t, remaining).scopes()).eql(
               ScopeSetBuilder.normalizeScopeSet(scopes),
-              `failed withPrefix on split "${prefix}|${remaining}"`,
+              `failed withPrefix on split "${prefix}|${remaining}"`
             );
           }
         }
@@ -405,7 +414,7 @@ suite(testing.suiteName(), () => {
             const t = trie.withSuffix(buildDirectMatchOnlyTrie(rules), suffix);
             assume(trie.execute(t, remaining).scopes()).eql(
               ScopeSetBuilder.normalizeScopeSet(scopes),
-              `failed withSuffix on split "${remaining}|${suffix}"`,
+              `failed withSuffix on split "${remaining}|${suffix}"`
             );
           }
         }
@@ -422,7 +431,7 @@ suite(testing.suiteName(), () => {
               const t = trie.withPrefix(trie.withSuffix(buildDirectMatchOnlyTrie(rules), suffix), prefix);
               assume(trie.execute(t, param).scopes()).eql(
                 ScopeSetBuilder.normalizeScopeSet(scopes),
-                `failed withPrefix + withSuffix on split "${prefix}|${param}|${suffix}"`,
+                `failed withPrefix + withSuffix on split "${prefix}|${param}|${suffix}"`
               );
             }
           }
@@ -440,7 +449,7 @@ suite(testing.suiteName(), () => {
               const t = trie.withSuffix(trie.withPrefix(buildDirectMatchOnlyTrie(rules), prefix), suffix);
               assume(trie.execute(t, param).scopes()).eql(
                 ScopeSetBuilder.normalizeScopeSet(scopes),
-                `failed withSuffix + withPrefix on split "${prefix}|${param}|${suffix}"`,
+                `failed withSuffix + withPrefix on split "${prefix}|${param}|${suffix}"`
               );
             }
           }
@@ -468,7 +477,7 @@ suite(testing.suiteName(), () => {
             const t = trie.withPrefix(trie.build(rules), prefix);
             assume(trie.execute(t, remaining).scopes()).eql(
               ScopeSetBuilder.normalizeScopeSet(scopes),
-              `failed withPrefix on split "${prefix}|${remaining}"`,
+              `failed withPrefix on split "${prefix}|${remaining}"`
             );
           }
         }
@@ -484,7 +493,7 @@ suite(testing.suiteName(), () => {
             const t = trie.withSuffix(trie.build(rules), suffix);
             assume(trie.execute(t, remaining).scopes()).eql(
               ScopeSetBuilder.normalizeScopeSet(scopes),
-              `failed withSuffix on split "${remaining}|${suffix}"`,
+              `failed withSuffix on split "${remaining}|${suffix}"`
             );
           }
         }
@@ -501,7 +510,7 @@ suite(testing.suiteName(), () => {
               const t = trie.withPrefix(trie.withSuffix(trie.build(rules), suffix), prefix);
               assume(trie.execute(t, param).scopes()).eql(
                 ScopeSetBuilder.normalizeScopeSet(scopes),
-                `failed withPrefix + withSuffix on split "${prefix}|${param}|${suffix}"`,
+                `failed withPrefix + withSuffix on split "${prefix}|${param}|${suffix}"`
               );
             }
           }
@@ -519,7 +528,7 @@ suite(testing.suiteName(), () => {
               const t = trie.withSuffix(trie.withPrefix(trie.build(rules), prefix), suffix);
               assume(trie.execute(t, param).scopes()).eql(
                 ScopeSetBuilder.normalizeScopeSet(scopes),
-                `failed withSuffix + withPrefix on split "${prefix}|${param}|${suffix}"`,
+                `failed withSuffix + withPrefix on split "${prefix}|${param}|${suffix}"`
               );
             }
           }
@@ -537,7 +546,7 @@ suite(testing.suiteName(), () => {
   };
 
   /** Create all pairs consistent of two entries from elements */
-  const allPairs = (elements) => _.flatten(elements.map(a => elements.map(b => [a, b])));
+  const allPairs = elements => _.flatten(elements.map(a => elements.map(b => [a, b])));
 
   suite('build + execute (for all walks)', () => {
     // In this suite we walk the generated trie, to find all paths in the trie.
@@ -549,18 +558,31 @@ suite(testing.suiteName(), () => {
     for (const { title, rules } of testCases) {
       test(title, () => {
         const t = trie.build(rules);
-        const suffixes = _.uniq(allPairs(_.uniq([
-          '', '*', '**', // these suffixes are always interesting
-          '$', '@', '-', // a few letters probably not used in any of the rules
-          '<', '>', '.',
-          ...rules.map(r => r.pattern).join('').split(''),
-        ])).map(p => p.join('')));
+        const suffixes = _.uniq(
+          allPairs(
+            _.uniq([
+              '',
+              '*',
+              '**', // these suffixes are always interesting
+              '$',
+              '@',
+              '-', // a few letters probably not used in any of the rules
+              '<',
+              '>',
+              '.',
+              ...rules
+                .map(r => r.pattern)
+                .join('')
+                .split(''),
+            ])
+          ).map(p => p.join(''))
+        );
         walk(t, path => {
           for (const suffix of suffixes) {
             const input = path + suffix;
             assume(trie.execute(t, input).scopes()).eql(
               evalRulesRecursively(rules, input),
-              `expected execute(trie, "${input}") == evalRulesRecursively(rules, "${input}")`,
+              `expected execute(trie, "${input}") == evalRulesRecursively(rules, "${input}")`
             );
           }
         });

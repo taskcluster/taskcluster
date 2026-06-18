@@ -15,7 +15,7 @@ import {
 } from '../src/utils.js';
 
 /** Create a readable stream from a string */
-const toStream = (str) => Readable.from([Buffer.from(str)]);
+const toStream = str => Readable.from([Buffer.from(str)]);
 
 suite(testing.suiteName(), () => {
   suite('throttleRequest', () => {
@@ -98,7 +98,8 @@ suite(testing.suiteName(), () => {
 
       await assert.rejects(
         () => throttleRequest({ url: 'https://foo', method: 'GET', delay: 10 }),
-        err => err.code === 'ECONNREFUSED');
+        err => err.code === 'ECONNREFUSED'
+      );
     });
   });
   suite('shouldSkipCommit', () => {
@@ -110,166 +111,235 @@ suite(testing.suiteName(), () => {
     ];
 
     test('should not skip commit', () => {
-      assert.equal(false, shouldSkipCommit({
-        commits: [{
-          message: 'first commit',
-        }, {
-          message: 'more than one commit, do not skip',
-        }],
-      }));
-      assert.equal(false, shouldSkipCommit({
-        commits: [{
-          message: 'first commit with normal message, no ci skip present',
-        }],
-      }));
-      assert.equal(false, shouldSkipCommit({
-        _extra: 'should not skip because skip commit is not the latest commit',
-        commits: [{
-          message: 'first commit',
-        }, {
-          message: 'second commit [ci skip] please',
-        }, {
-          message: 'third commit, no skip',
-        }],
-      }));
-      assert.equal(false, shouldSkipCommit({
-        _extra: 'this is not even a valid payload',
-        commits: [],
-      }));
-      assert.equal(false, shouldSkipCommit({
-        _extra: 'this has only a head_commit',
-        commits: [],
-        head_commit: {
-          message: 'just a regular commit',
-        },
-      }));
+      assert.equal(
+        false,
+        shouldSkipCommit({
+          commits: [
+            {
+              message: 'first commit',
+            },
+            {
+              message: 'more than one commit, do not skip',
+            },
+          ],
+        })
+      );
+      assert.equal(
+        false,
+        shouldSkipCommit({
+          commits: [
+            {
+              message: 'first commit with normal message, no ci skip present',
+            },
+          ],
+        })
+      );
+      assert.equal(
+        false,
+        shouldSkipCommit({
+          _extra: 'should not skip because skip commit is not the latest commit',
+          commits: [
+            {
+              message: 'first commit',
+            },
+            {
+              message: 'second commit [ci skip] please',
+            },
+            {
+              message: 'third commit, no skip',
+            },
+          ],
+        })
+      );
+      assert.equal(
+        false,
+        shouldSkipCommit({
+          _extra: 'this is not even a valid payload',
+          commits: [],
+        })
+      );
+      assert.equal(
+        false,
+        shouldSkipCommit({
+          _extra: 'this has only a head_commit',
+          commits: [],
+          head_commit: {
+            message: 'just a regular commit',
+          },
+        })
+      );
       // should not skip as this is not present in latest commit
       skipMessages.forEach(message => {
-        assert.equal(false, shouldSkipCommit({
-          commits: [{ message }, { message: 'this commit is the last' }],
-        }));
+        assert.equal(
+          false,
+          shouldSkipCommit({
+            commits: [{ message }, { message: 'this commit is the last' }],
+          })
+        );
       });
     });
     test('should skip commit', () => {
       skipMessages.forEach(message => {
-        assert.equal(true, shouldSkipCommit({
-          commits: [{ message: 'this commit is the first' }, { message }],
-        }));
+        assert.equal(
+          true,
+          shouldSkipCommit({
+            commits: [{ message: 'this commit is the first' }, { message }],
+          })
+        );
       });
 
       skipMessages.forEach(message => {
-        assert.equal(true, shouldSkipCommit({
-          head_commit: { message },
-        }));
+        assert.equal(
+          true,
+          shouldSkipCommit({
+            head_commit: { message },
+          })
+        );
       });
     });
   });
   suite('shouldSkipPullRequest', () => {
     test('should not skip pull request', () => {
-      assert.equal(false, shouldSkipPullRequest({
-        pull_request: {
-          title: 'Regular pr title',
-        },
-      }));
-      assert.equal(false, shouldSkipPullRequest({
-        something: 'This one does not include pull_request for some reason',
-      }));
+      assert.equal(
+        false,
+        shouldSkipPullRequest({
+          pull_request: {
+            title: 'Regular pr title',
+          },
+        })
+      );
+      assert.equal(
+        false,
+        shouldSkipPullRequest({
+          something: 'This one does not include pull_request for some reason',
+        })
+      );
     });
     test('should skip pull request', () => {
-      const skipMessages = [
-        'PR: [CI Skip] this is not ready',
-        'PR: this is WIP [skip ci]',
-      ];
+      const skipMessages = ['PR: [CI Skip] this is not ready', 'PR: this is WIP [skip ci]'];
       skipMessages.forEach(title => {
-        assert.equal(true, shouldSkipPullRequest({
-          pull_request: { title },
-        }));
+        assert.equal(
+          true,
+          shouldSkipPullRequest({
+            pull_request: { title },
+          })
+        );
       });
       skipMessages.forEach(body => {
-        assert.equal(false, shouldSkipPullRequest({
-          pull_request: { title: 'regular title', body },
-        }));
+        assert.equal(
+          false,
+          shouldSkipPullRequest({
+            pull_request: { title: 'regular title', body },
+          })
+        );
       });
     });
   });
 
   suite('shouldSkipComment', () => {
     test('should not skip comment', () => {
-      assert.equal(false, shouldSkipComment({
-        action: 'created',
-        comment: {
-          body: ' /taskcluster cmd1 ',
-        },
-        issue: {
-          state: 'open',
-          pull_request: {},
-        },
-      }));
-      assert.equal(false, shouldSkipComment({
-        action: 'edited',
-        comment: {
-          body: `multi-line
+      assert.equal(
+        false,
+        shouldSkipComment({
+          action: 'created',
+          comment: {
+            body: ' /taskcluster cmd1 ',
+          },
+          issue: {
+            state: 'open',
+            pull_request: {},
+          },
+        })
+      );
+      assert.equal(
+        false,
+        shouldSkipComment({
+          action: 'edited',
+          comment: {
+            body: `multi-line
           comment
           with
           /taskcluster cmd2
           inside`,
-        },
-        issue: {
-          state: 'open',
-          pull_request: {},
-        },
-      }));
+          },
+          issue: {
+            state: 'open',
+            pull_request: {},
+          },
+        })
+      );
     });
     test('should skip comment', () => {
-      assert.equal(true, shouldSkipComment({
-        action: 'deleted',
-        comment: {},
-        issue: { pull_request: {} },
-      }));
-      assert.equal(true, shouldSkipComment({
-        action: 'created',
-        comment: {
-          body: `
+      assert.equal(
+        true,
+        shouldSkipComment({
+          action: 'deleted',
+          comment: {},
+          issue: { pull_request: {} },
+        })
+      );
+      assert.equal(
+        true,
+        shouldSkipComment({
+          action: 'created',
+          comment: {
+            body: `
           just a regular comment with link:
           taskcluster/taskcluster #4123
           `,
-        },
-        issue: { pull_request: {} },
-      }));
-      assert.equal(true, shouldSkipComment({
-        action: 'created',
-        comment: {},
-        issue: { no_pull_request_info: {} },
-      }));
-      assert.equal(true, shouldSkipComment({
-        action: 'created',
-        comment: {
-          body: '/taksluster valid-cmd',
-        },
-        issue: {
-          state: 'closed', // issue is closed
-          pull_request: {},
-        },
-      }));
-      assert.equal(true, shouldSkipComment({
-        action: 'edited',
-        comment: {},
-      }));
+          },
+          issue: { pull_request: {} },
+        })
+      );
+      assert.equal(
+        true,
+        shouldSkipComment({
+          action: 'created',
+          comment: {},
+          issue: { no_pull_request_info: {} },
+        })
+      );
+      assert.equal(
+        true,
+        shouldSkipComment({
+          action: 'created',
+          comment: {
+            body: '/taksluster valid-cmd',
+          },
+          issue: {
+            state: 'closed', // issue is closed
+            pull_request: {},
+          },
+        })
+      );
+      assert.equal(
+        true,
+        shouldSkipComment({
+          action: 'edited',
+          comment: {},
+        })
+      );
     });
   });
 
   suite('getTaskclusterCommand', () => {
     test('should return taskcluster command', () => {
-      assert.equal('cmd-with-dashes1', getTaskclusterCommand({
-        body: ' /taskcluster cmd-with-dashes1 ',
-      }));
-      assert.equal('cmd2', getTaskclusterCommand({
-        body: `multi-line
+      assert.equal(
+        'cmd-with-dashes1',
+        getTaskclusterCommand({
+          body: ' /taskcluster cmd-with-dashes1 ',
+        })
+      );
+      assert.equal(
+        'cmd2',
+        getTaskclusterCommand({
+          body: `multi-line
         comment
         with
         /taskcluster cmd2
         inside`,
-      }));
+        })
+      );
       assert.throws(() => {
         getTaskclusterCommand({
           body: 'no taskcluster command here',
@@ -344,7 +414,7 @@ suite(testing.suiteName(), () => {
     };
 
     /** Generate a log with the given number of lines */
-    const generateLog = (numLines) =>
+    const generateLog = numLines =>
       Array.from({ length: numLines }, (_, i) => `line ${i}: ${'x'.repeat(20)}`).join('\n');
 
     /**
@@ -419,13 +489,13 @@ suite(testing.suiteName(), () => {
     test('supports sha1', () => {
       assert.equal(
         generateXHubSignature('secret', '{payload}', 'sha1'),
-        'sha1=ab20ad67182f5ac039c105be046648f980d60558',
+        'sha1=ab20ad67182f5ac039c105be046648f980d60558'
       );
     });
     test('supports sha256', () => {
       assert.equal(
         generateXHubSignature('secret', '{payload}', 'sha256'),
-        'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be',
+        'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be'
       );
     });
     test('throws on invalid algorithm', () => {
@@ -436,23 +506,28 @@ suite(testing.suiteName(), () => {
   });
   suite('checkGithubSignature', () => {
     test('supports sha1', () => {
-      assert.equal(
-        checkGithubSignature('secret', '{payload}', 'sha1=ab20ad67182f5ac039c105be046648f980d60558'),
-        true,
-      );
+      assert.equal(checkGithubSignature('secret', '{payload}', 'sha1=ab20ad67182f5ac039c105be046648f980d60558'), true);
       assert.equal(
         checkGithubSignature('wrongSecret', '{payload}', 'sha1=ab20ad67182f5ac039c105be046648f980d60558'),
-        false,
+        false
       );
     });
     test('supports sha256', () => {
       assert.equal(
-        checkGithubSignature('secret', '{payload}', 'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be'),
-        true,
+        checkGithubSignature(
+          'secret',
+          '{payload}',
+          'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be'
+        ),
+        true
       );
       assert.equal(
-        checkGithubSignature('wrongSecret', '{payload}', 'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be'),
-        false,
+        checkGithubSignature(
+          'wrongSecret',
+          '{payload}',
+          'sha256=f3529481beccfe73834584412ff46b39f067c6664ab34a409f4ef4b3790a80be'
+        ),
+        false
       );
     });
   });

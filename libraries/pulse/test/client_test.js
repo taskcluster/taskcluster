@@ -53,7 +53,9 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, skipping) => {
       monitor,
       namespace: 'guest',
     });
-    client.on('connected', () => { gotConnection = true; });
+    client.on('connected', () => {
+      gotConnection = true;
+    });
     await client.stop();
     assume(gotConnection).to.equal(false);
   });
@@ -177,8 +179,13 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, skipping) => {
 
     let gotConnection = false;
     let finishedWithConnection = false;
-    client.withConnection(() => { gotConnection = true; })
-      .then(() => { finishedWithConnection = true; });
+    client
+      .withConnection(() => {
+        gotConnection = true;
+      })
+      .then(() => {
+        finishedWithConnection = true;
+      });
 
     assume(finishedWithConnection).to.equal(false);
     await new Promise((resolve, reject) => {
@@ -301,9 +308,8 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, skipping) => {
     let messageReceived = 0;
 
     try {
-
       await new Promise((resolve, reject) => {
-        client.on('connected', async (conn) => {
+        client.on('connected', async conn => {
           let chan, consumer;
 
           // do the per-connection setup we expect a user to do
@@ -320,7 +326,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, skipping) => {
               throw new Error('uhoh');
             }
 
-            consumer = chan.consume(queueName, (msg) => {
+            consumer = chan.consume(queueName, msg => {
               try {
                 assume(msg.content).to.deeply.equal(message);
                 messageReceived++;

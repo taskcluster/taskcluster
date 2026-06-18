@@ -1,0 +1,69 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
+  "root": true,
+  "files": {
+    "includes": [
+      "{libraries,services,infrastructure,db,clients/client,clients/client-web,clients/client-test}/**/{src,test}/**/*.js",
+      "test/**/*.js",
+      "ui/src/**/*.{js,jsx}",
+      "!**/clients/client-web/src/clients",
+      "!**/clients/client/src/apis.js",
+      "!**/static/env.js"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "trailingCommas": "es5",
+      "semicolons": "always",
+      "bracketSpacing": true,
+      "bracketSameLine": true,
+      "arrowParentheses": "asNeeded"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "style": {
+        "useBlockStatements": "error"
+      }
+    }
+  },
+  "assist": {
+    "enabled": false
+  },
+  "overrides": [
+    {
+      "includes": ["ui/**"],
+      "formatter": {
+        "lineWidth": 80
+      },
+      "javascript": {
+        "jsxRuntime": "reactClassic"
+      },
+      "css": {
+        "formatter": {
+          "enabled": false
+        }
+      },
+      "linter": {
+        "rules": {
+          "style": {
+            "useNodejsImportProtocol": "off"
+          },
+          "suspicious": {
+            "noConsole": "error"
+          }
+        }
+      }
+    }
+  ]
+}

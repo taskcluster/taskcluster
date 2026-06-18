@@ -105,5 +105,4 @@ suite(testing.suiteName(), () => {
       assert.equal(res.rows[0].provisioner_id, 'pp');
     });
   });
-
 });

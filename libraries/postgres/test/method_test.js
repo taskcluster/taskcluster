@@ -19,57 +19,57 @@ suite(path.basename(__filename), () => {
     };
 
     test('name must be lowercase', () => {
-      assert.throws(
-        () => Method.fromYamlFileContent('tEsTmEthOd', method, 'file.yml'),
-        /has capital letters/);
+      assert.throws(() => Method.fromYamlFileContent('tEsTmEthOd', method, 'file.yml'), /has capital letters/);
     });
 
     test('description must exist', () => {
       assert.throws(
         () => Method.fromYamlFileContent('testmethod', omit(method, ['description']), 'file.yml'),
-        /is missing description/);
+        /is missing description/
+      );
     });
 
     test('mode must exist', () => {
       assert.throws(
         () => Method.fromYamlFileContent('testmethod', omit(method, ['mode']), 'file.yml'),
-        /missing or bad mode/);
+        /missing or bad mode/
+      );
     });
 
     test('mode must be valid', () => {
       assert.throws(
         () => Method.fromYamlFileContent('testmethod', { ...omit(method, ['mode']), mode: 'admin' }, 'file.yml'),
-        /missing or bad mode/);
+        /missing or bad mode/
+      );
     });
 
     test('serviceName must exist', () => {
       assert.throws(
         () => Method.fromYamlFileContent('testmethod', omit(method, ['serviceName']), 'file.yml'),
-        /missing serviceName/);
+        /missing serviceName/
+      );
     });
 
     test('args must exist', () => {
-      assert.throws(
-        () => Method.fromYamlFileContent('testmethod', omit(method, ['args']), 'file.yml'),
-        /missing args/);
+      assert.throws(() => Method.fromYamlFileContent('testmethod', omit(method, ['args']), 'file.yml'), /missing args/);
     });
 
     test('returns must exist', () => {
       assert.throws(
         () => Method.fromYamlFileContent('testmethod', omit(method, ['returns']), 'file.yml'),
-        /missing returns/);
+        /missing returns/
+      );
     });
 
     test('body must exist', () => {
-      assert.throws(
-        () => Method.fromYamlFileContent('testmethod', omit(method, ['body']), 'file.yml'),
-        /missing body/);
+      assert.throws(() => Method.fromYamlFileContent('testmethod', omit(method, ['body']), 'file.yml'), /missing body/);
     });
 
     test('extra props forbidden', () => {
       assert.throws(
         () => Method.fromYamlFileContent('testmethod', { ...method, uhoh: 10 }, 'file.yml'),
-        /unexpected properties/);
+        /unexpected properties/
+      );
     });
   });
 });

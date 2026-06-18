@@ -71,10 +71,16 @@ export const start = (clients, { rootUrl } = {}) => {
         scopes = ext.certificate.scopes;
         from = 'ext.certificate.scopes';
       }
-      debug('authenticating access to ' + body.resource +
-          ' by ' + clientId +
-          ' with scopes ' + scopes.join(', ') +
-          ' from ' + from);
+      debug(
+        'authenticating access to ' +
+          body.resource +
+          ' by ' +
+          clientId +
+          ' with scopes ' +
+          scopes.join(', ') +
+          ' from ' +
+          from
+      );
       const expires = taskcluster.fromNow('2 minutes');
       return { status: 'auth-success', scheme: 'hawk', scopes, clientId, expires };
     });

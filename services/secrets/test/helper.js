@@ -17,8 +17,7 @@ testing.withMonitor(helper);
 
 // set up the testing secrets
 helper.secrets = new testing.Secrets({
-  secrets: {
-  },
+  secrets: {},
   load,
 });
 
@@ -34,7 +33,7 @@ const testClients = {
   'captain-read': ['secrets:get:captain:*'],
   'captain-read-write': ['secrets:set:captain:*', 'secrets:get:captain:*', 'secrets:list-secrets'],
   'captain-read-limited': ['secrets:get:captain:limited/*'],
-  'none': [],
+  none: [],
 };
 
 /**

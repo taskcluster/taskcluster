@@ -30,22 +30,27 @@ suite(suiteName(), () => {
   test('includes result in overwrites', async () => {
     await sticky('abc');
     await sticky('def');
-    assert.deepEqual(loads, [{
-      component: 'abc',
-      overwrites: [],
-    }, {
-      component: 'def',
-      overwrites: ['abc'],
-    }]);
+    assert.deepEqual(loads, [
+      {
+        component: 'abc',
+        overwrites: [],
+      },
+      {
+        component: 'def',
+        overwrites: ['abc'],
+      },
+    ]);
   });
 
   test('inject adds to overwrites', async () => {
     await sticky.inject('inj', { inj: true });
     await sticky('inj');
-    assert.deepEqual(loads, [{
-      component: 'inj',
-      overwrites: ['inj'],
-    }]);
+    assert.deepEqual(loads, [
+      {
+        component: 'inj',
+        overwrites: ['inj'],
+      },
+    ]);
   });
 
   test('cfg fails if cfg is not loaded', async () => {

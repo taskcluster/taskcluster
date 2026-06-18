@@ -43,7 +43,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   test('claimWork from empty queue', async () => {
     helper.scopes(
       `queue:claim-work:${taskQueueId}`,
-      'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended'
     );
 
     const started = new Date();
@@ -60,32 +60,33 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     // wrong taskQueueId scope
     helper.scopes(
       `queue:claim-work:${helper.makeTaskQueueId('wrong-provisioner')}`,
-      'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
+      'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended'
     );
-    await helper.queue.claimWork(taskQueueId, {
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker-extended-extended',
-    }).then(
-      () => assert(false, 'Expected error'),
-      err => assert(err.code, err.code),
-    );
+    await helper.queue
+      .claimWork(taskQueueId, {
+        workerGroup: 'my-worker-group-extended-extended',
+        workerId: 'my-worker-extended-extended',
+      })
+      .then(
+        () => assert(false, 'Expected error'),
+        err => assert(err.code, err.code)
+      );
 
     // wrong workerId scope
-    helper.scopes(
-      `queue:claim-work:${taskQueueId}`,
-      'queue:worker-id:my-worker-group/other-worker',
-    );
-    await helper.queue.claimWork(taskQueueId, {
-      workerGroup: 'my-worker-group-extended-extended',
-      workerId: 'my-worker-extended-extended',
-    }).then(
-      () => assert(false, 'Expected error'),
-      err => {
-        if (err.code !== 'InsufficientScopes') {
-          throw err;
+    helper.scopes(`queue:claim-work:${taskQueueId}`, 'queue:worker-id:my-worker-group/other-worker');
+    await helper.queue
+      .claimWork(taskQueueId, {
+        workerGroup: 'my-worker-group-extended-extended',
+        workerId: 'my-worker-extended-extended',
+      })
+      .then(
+        () => assert(false, 'Expected error'),
+        err => {
+          if (err.code !== 'InsufficientScopes') {
+            throw err;
+          }
         }
-      },
-    );
+      );
   });
 
   test('claimWork, reportCompleted', async () => {
@@ -102,7 +103,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
       `queue:claim-work:${taskQueueId}`,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
       `queue:get-task:${taskId}`,
-      `queue:status:${taskId}`,
+      `queue:status:${taskId}`
     );
     const before = new Date();
     const r1 = await helper.queue.claimWork(taskQueueId, {
@@ -119,19 +120,22 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assume(takenUntil.getTime()).is.greaterThan(before.getTime() - 1);
 
     // check that the task was logged
-    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-claimed'), {
-      Type: 'task-claimed',
-      Logger: 'taskcluster.test.api',
-      Fields: {
-        taskQueueId,
-        v: 1,
-        workerGroup: "my-worker-group-extended-extended",
-        workerId: "my-worker-extended-extended",
-        taskId,
-        runId: 0,
-      },
-      Severity: LEVELS.notice,
-    });
+    assert.deepEqual(
+      monitor.manager.messages.find(({ Type }) => Type === 'task-claimed'),
+      {
+        Type: 'task-claimed',
+        Logger: 'taskcluster.test.api',
+        Fields: {
+          taskQueueId,
+          v: 1,
+          workerGroup: 'my-worker-group-extended-extended',
+          workerId: 'my-worker-extended-extended',
+          taskId,
+          runId: 0,
+        },
+        Severity: LEVELS.notice,
+      }
+    );
 
     // Check that task definition is included..
     assume(r1.tasks[0].task).deep.equals(await helper.queue.task(taskId));
@@ -164,7 +168,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
       `queue:claim-work:${taskQueueId}`,
       'queue:worker-id:my-worker-group-extended-extended/my-worker-extended-extended',
       `queue:get-task:${taskId}`,
-      `queue:status:${taskId}`,
+      `queue:status:${taskId}`
     );
     const before = new Date();
     const r1 = await helper.queue.claimWork(taskQueueId, {
@@ -198,18 +202,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assume(takenUntil2.getTime()).is.greaterThan(takenUntil.getTime() - 1);
 
     // check that the task was logged
-    assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-reclaimed'), {
-      Type: 'task-reclaimed',
-      Logger: 'taskcluster.test.api',
-      Fields: {
-        workerGroup: 'my-worker-group-extended-extended',
-        workerId: 'my-worker-extended-extended',
-        taskId,
-        runId: 0,
-        v: 1,
-      },
-      Severity: LEVELS.notice,
-    });
+    assert.deepEqual(
+      monitor.manager.messages.find(({ Type }) => Type === 'task-reclaimed'),
+      {
+        Type: 'task-reclaimed',
+        Logger: 'taskcluster.test.api',
+        Fields: {
+          workerGroup: 'my-worker-group-extended-extended',
+          workerId: 'my-worker-extended-extended',
+          taskId,
+          runId: 0,
+          v: 1,
+        },
+        Severity: LEVELS.notice,
+      }
+    );
 
     debug('### reportCompleted');
     // Report completed with temp creds from reclaimTask

@@ -17,9 +17,7 @@ export default ({ helper, skipping, namespace }) => {
     helper.load.inject('pulseClient', client);
 
     const matchingMessageExists = (exchange, check) =>
-      client.messages.some(message =>
-        (!exchange || message.exchange.endsWith(exchange)) &&
-        (!check || check(message)));
+      client.messages.some(message => (!exchange || message.exchange.endsWith(exchange)) && (!check || check(message)));
 
     helper.onPulsePublish = callback => {
       client._onPublish = callback;
@@ -73,8 +71,11 @@ export default ({ helper, skipping, namespace }) => {
       if (!delivered) {
         debugPulseAssertion(`${client.consumers.length} consumers registered:`);
         client.consumers.forEach(cons => {
-          debugPulseAssertion(`- ${cons.bindings.map(({ exchange, routingKeyPattern }) =>
-            `${exchange} - ${routingKeyPattern}`).join('; ')}`);
+          debugPulseAssertion(
+            `- ${cons.bindings
+              .map(({ exchange, routingKeyPattern }) => `${exchange} - ${routingKeyPattern}`)
+              .join('; ')}`
+          );
         });
 
         throw new Error('Fake message not delivered to any consumers');
@@ -115,7 +116,7 @@ class FakeClient {
     return `${kind}/${this.namespace}/${name}`;
   }
 
-  async stop() { }
+  async stop() {}
   async recycle() {}
   get activeConnection() {
     return undefined;

@@ -17,7 +17,8 @@ export const postgresPrompts = ({ userConfig, prompts }) => {
     type: 'input',
     name: 'meta.dbPrivateIp',
     default: previous => previous.meta?.dbPublicIp || userConfig.meta?.dbPublicIp,
-    message: 'What is the private IP of your Postgres server? (used for access from services, use the public IP if you have not set up private IP access)',
+    message:
+      'What is the private IP of your Postgres server? (used for access from services, use the public IP if you have not set up private IP access)',
   });
 
   prompts.push({
@@ -72,11 +73,13 @@ export const postgresResources = async ({ userConfig, answer, configTmpl }) => {
 
     if (cfg.db_crypto_keys !== undefined) {
       if (!userConfig[name].db_crypto_keys) {
-        userConfig[name].db_crypto_keys = [{
-          id: 'dev-init',
-          algo: 'aes-256',
-          key: crypto.randomBytes(32).toString('base64'),
-        }];
+        userConfig[name].db_crypto_keys = [
+          {
+            id: 'dev-init',
+            algo: 'aes-256',
+            key: crypto.randomBytes(32).toString('base64'),
+          },
+        ];
       }
 
       if (userConfig[name].azure_crypto_key) {
@@ -109,8 +112,11 @@ export const postgresResources = async ({ userConfig, answer, configTmpl }) => {
     return userConfig;
   }
 
-  const { dbAdminUsername, dbAdminPassword, dbName, dbPublicIp, dbPrivateIp } =
-    Object.assign({}, userConfig.meta || {}, answer.meta || {});
+  const { dbAdminUsername, dbAdminPassword, dbName, dbPublicIp, dbPrivateIp } = Object.assign(
+    {},
+    userConfig.meta || {},
+    answer.meta || {}
+  );
 
   const client = new pg.Client({
     host: dbPublicIp,
@@ -129,7 +135,8 @@ export const postgresResources = async ({ userConfig, answer, configTmpl }) => {
       const password = `${slugid.v4()}${slugid.v4()}`;
       const url = makePgUrl({
         hostname: dbPrivateIp,
-        username, password,
+        username,
+        password,
         dbname: dbName,
       });
       console.log(`(Re)creating DB user ${username}`);

@@ -16,7 +16,8 @@ export class TestMiddleware extends Middleware {
         return false;
       }
 
-      default: return true;
+      default:
+        return true;
     }
   }
 
@@ -27,7 +28,8 @@ export class TestMiddleware extends Middleware {
         return false;
       }
 
-      default: return true;
+      default:
+        return true;
     }
   }
 }

@@ -50,35 +50,48 @@ suite(testing.suiteName(), () => {
     const metadata = { name: 'sch', version: 1 };
 
     test('metadata is required', async () => {
-      await validate({
-        $schema,
-      }, f => f.match(/schema must have required property 'metadata'/));
+      await validate(
+        {
+          $schema,
+        },
+        f => f.match(/schema must have required property 'metadata'/)
+      );
     });
 
     test('metadata.name is required', async () => {
-      await validate({
-        $schema,
-        metadata: { version: 0 },
-      }, f => f.match(/schema.metadata must have required property 'name'/));
+      await validate(
+        {
+          $schema,
+          metadata: { version: 0 },
+        },
+        f => f.match(/schema.metadata must have required property 'name'/)
+      );
     });
 
     test('metadata.version is required', async () => {
-      await validate({
-        $schema,
-        metadata: { name: 'foo' },
-      }, f => f.match(/schema.metadata must have required property 'version'/));
+      await validate(
+        {
+          $schema,
+          metadata: { name: 'foo' },
+        },
+        f => f.match(/schema.metadata must have required property 'version'/)
+      );
     });
 
     test('metadata.otherProperty is forbidden', async () => {
-      await validate({
-        $schema,
-        metadata: { name: 'foo', version: 0, otherProperty: 'foo' },
-      }, f => f.match(/schema.metadata must NOT have additional properties/));
+      await validate(
+        {
+          $schema,
+          metadata: { name: 'foo', version: 0, otherProperty: 'foo' },
+        },
+        f => f.match(/schema.metadata must NOT have additional properties/)
+      );
     });
 
     test('fully specified schema is valid', async () => {
       await validate({
-        $schema, metadata,
+        $schema,
+        metadata,
       });
     });
   });

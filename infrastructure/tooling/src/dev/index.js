@@ -5,12 +5,7 @@ import { readRepoYAML, writeRepoYAML } from '../utils/index.js';
 import inquirer from 'inquirer';
 import commonPrompts from './common.js';
 
-import {
-  rabbitPrompts,
-  rabbitResources,
-  rabbitAdminPasswordPrompt,
-  rabbitEnsureResources,
-} from './rabbit.js';
+import { rabbitPrompts, rabbitResources, rabbitAdminPasswordPrompt, rabbitEnsureResources } from './rabbit.js';
 
 import { azureResources } from './azure.js';
 import { postgresPrompts, postgresResources, postgresEnsureDb } from './postgres.js';
@@ -35,7 +30,7 @@ export const readUserConfig = async () => {
   return userConfig;
 };
 
-export const init = async (_options) => {
+export const init = async _options => {
   const configTmpl = await readRepoYAML(path.join('dev-docs', 'dev-config-example.yml'));
   let userConfig = await readUserConfig();
 
@@ -57,7 +52,7 @@ export const init = async (_options) => {
   await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
 };
 
-export const dbParams = (meta) => {
+export const dbParams = meta => {
   return {
     adminDbUrl: makePgUrl({
       hostname: meta.dbPublicIp,
@@ -69,7 +64,7 @@ export const dbParams = (meta) => {
   };
 };
 
-export const dbUpgrade = async (options) => {
+export const dbUpgrade = async options => {
   const userConfig = await readUserConfig();
   const meta = userConfig.meta || {};
 
@@ -84,7 +79,7 @@ export const dbUpgrade = async (options) => {
   await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
 };
 
-export const dbDowngrade = async (options) => {
+export const dbDowngrade = async options => {
   const userConfig = await readUserConfig();
   const meta = userConfig.meta || {};
 
@@ -102,25 +97,25 @@ export const dbDowngrade = async (options) => {
   await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
 };
 
-export const apply = async (_options) => {
+export const apply = async _options => {
   await helm('apply');
 };
 
-export const verify = async (_options) => {
+export const verify = async _options => {
   await helm('verify');
 };
 
-export const templates = async (_options) => {
+export const templates = async _options => {
   const templates = await helm('dump-templates');
   return templates;
 };
 
-export const ensureDb = async (_options) => {
+export const ensureDb = async _options => {
   const userConfig = await readUserConfig();
   await postgresEnsureDb({ userConfig });
 };
 
-export const ensureRabbit = async (_options) => {
+export const ensureRabbit = async _options => {
   const userConfig = await readUserConfig();
   const prompts = [];
 
@@ -130,11 +125,18 @@ export const ensureRabbit = async (_options) => {
   await rabbitEnsureResources({ userConfig, answer });
 };
 
-export const delete_ = async (_options) => {
+export const delete_ = async _options => {
   await helm('delete');
 };
 
 export default {
-  init, apply, verify, templates,
-  ensureDb, ensureRabbit, delete_, dbUpgrade, dbDowngrade,
+  init,
+  apply,
+  verify,
+  templates,
+  ensureDb,
+  ensureRabbit,
+  delete_,
+  dbUpgrade,
+  dbDowngrade,
 };

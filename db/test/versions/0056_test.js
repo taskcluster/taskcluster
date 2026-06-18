@@ -13,9 +13,12 @@ suite(testing.suiteName(), () => {
     onlineMigration: false,
     onlineDowngrade: false,
     createData: async client => {
-      await client.query(`
+      await client.query(
+        `
         insert into objects (name, project_id, backend_id, data, expires)
-        values ('public/foo', 'p', 'b', '{}', $1)`, [expires]);
+        values ('public/foo', 'p', 'b', '{}', $1)`,
+        [expires]
+      );
     },
     startCheck: async _client => {
       await helper.assertNoTableColumn('objects', 'upload_id');

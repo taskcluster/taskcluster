@@ -62,7 +62,7 @@ export const createTemporaryCredentials = opts => {
   if (options.credentials.certificate != null) {
     throw new Error(
       `Temporary credentials cannot be used to make new temporary credentials.
-      Ensure that options.credentials.certificate is null.`,
+      Ensure that options.credentials.certificate is null.`
     );
   }
 
@@ -172,7 +172,6 @@ export const credentialInformation = async (credentials, rootUrl) => {
     result.expiry = new Date(certificate.expiry);
 
     if (certificate.issuer) {
-      // eslint-disable-next-line prefer-destructuring
       issuer = certificate.issuer;
     }
   } else {

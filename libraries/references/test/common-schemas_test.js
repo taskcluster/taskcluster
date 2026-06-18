@@ -5,9 +5,7 @@ import testing from '@taskcluster/lib-testing';
 suite(testing.suiteName(), () => {
   test('loads common schemas', async () => {
     const schemas = await getCommonSchemas();
-    assert(schemas.some(
-      ({ content }) => content.$id === '/schemas/common/api-reference-v0.json#'));
-    assert(schemas.some(
-      ({ filename }) => filename === 'schemas/metadata-metaschema.yml'));
+    assert(schemas.some(({ content }) => content.$id === '/schemas/common/api-reference-v0.json#'));
+    assert(schemas.some(({ filename }) => filename === 'schemas/metadata-metaschema.yml'));
   });
 });

@@ -1,3 +1,5 @@
+// biome-ignore-all lint/suspicious/noThenProperty: JSON-e $if/then constructs, not thenables
+// biome-ignore-all lint/suspicious/noTemplateCurlyInString: these are JSON-e templates where ${...} is interpolated at render time
 import assert from 'node:assert';
 import assume from 'assume';
 import taskcreator from '../src/taskcreator.js';
@@ -11,7 +13,7 @@ import testing from '@taskcluster/lib-testing';
 import { hookUtils } from '../src/utils.js';
 
 suite(testing.suiteName(), () => {
-  helper.secrets.mockSuite('TaskCreator', [], function(mock, skipping) {
+  helper.secrets.mockSuite('TaskCreator', [], function (mock, skipping) {
     helper.withDb(mock, skipping);
     helper.resetTables();
 
@@ -87,8 +89,8 @@ suite(testing.suiteName(), () => {
           helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
           helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
           hook.nextScheduledDate,
-          hook.triggerSchema,
-        ),
+          hook.triggerSchema
+        )
       );
     };
 
@@ -112,10 +114,11 @@ suite(testing.suiteName(), () => {
             ...fields,
             v: 1,
           },
-          Logger: "taskcluster.test.taskcreator",
+          Logger: 'taskcluster.test.taskcreator',
           Severity: 6,
-          Type: "hook-fire",
-        });
+          Type: 'hook-fire',
+        }
+      );
 
     let monitor;
     suiteSetup(async () => {
@@ -130,7 +133,7 @@ suite(testing.suiteName(), () => {
       await creator.fire(hook, { context: true, firedBy: 'schedule' }, { taskId });
       assume(creator.lastCreateTask.taskId).equals(taskId);
       assume(creator.lastCreateTask.task.workerType).equals(hook.task.then.workerType);
-      assertFireLogged({ firedBy: "schedule", taskId, result: 'success' });
+      assertFireLogged({ firedBy: 'schedule', taskId, result: 'success' });
     });
 
     test('firing a real task with a JSON-e context succeeds', async () => {
@@ -144,11 +147,15 @@ suite(testing.suiteName(), () => {
         },
       });
       const taskId = taskcluster.slugid();
-      await creator.fire(hook, {
-        someValue: 42,
-        numbers: [1, 2, [3, 4], [[5, 6]]],
-        firedBy: 'schedule',
-      }, { taskId });
+      await creator.fire(
+        hook,
+        {
+          someValue: 42,
+          numbers: [1, 2, [3, 4], [[5, 6]]],
+          firedBy: 'schedule',
+        },
+        { taskId }
+      );
       const task = await fetchFiredTask(taskId);
       assume(taskId).equals(task.taskGroupId); // the default
       assume(task.extra).deeply.equals({
@@ -161,7 +168,7 @@ suite(testing.suiteName(), () => {
       });
       assume(new Date(task.deadline) - new Date(task.created)).to.equal(60000);
       assume(new Date(task.expires) - new Date(task.created)).to.equal(120000);
-      assertFireLogged({ firedBy: "schedule", taskId, result: 'success' });
+      assertFireLogged({ firedBy: 'schedule', taskId, result: 'success' });
     });
 
     test('firing a hook where the json-e renders to nothing does nothing', async () => {
@@ -177,12 +184,12 @@ suite(testing.suiteName(), () => {
         helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
         helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
         hook.nextScheduledDate,
-        hook.triggerSchema,
+        hook.triggerSchema
       );
       const taskId = taskcluster.slugid();
       const res = await creator.fire(hook, { firedBy: 'schedule' }, { taskId });
       await assertNoTask();
-      assertFireLogged({ firedBy: "schedule", taskId, result: 'declined' });
+      assertFireLogged({ firedBy: 'schedule', taskId, result: 'declined' });
       assert.ok(!res, `expected falsy return from declined fire(), got ${JSON.stringify(res)}`);
     });
 
@@ -199,7 +206,7 @@ suite(testing.suiteName(), () => {
         helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
         helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
         hook.nextScheduledDate,
-        hook.triggerSchema,
+        hook.triggerSchema
       );
       const taskId = taskcluster.slugid();
 
@@ -210,16 +217,12 @@ suite(testing.suiteName(), () => {
           throw err;
         }
 
-        const [lf] = await helper.db.fns.get_last_fire(
-          hook.hookGroupId,
-          hook.hookId,
-          taskId,
-        );
+        const [lf] = await helper.db.fns.get_last_fire(hook.hookGroupId, hook.hookId, taskId);
         assume(lf.result).to.equal('error');
         assume(lf.error).to.match(/SyntaxError/);
         assume(lf.fired_by).to.equal('me');
 
-        assertFireLogged({ firedBy: "me", taskId, result: 'failure' });
+        assertFireLogged({ firedBy: 'me', taskId, result: 'failure' });
 
         return;
       }
@@ -242,7 +245,9 @@ suite(testing.suiteName(), () => {
 
       creator.fakeCreate = false;
       const realCreateTask = taskcluster.Queue.prototype.createTask;
-      taskcluster.Queue.prototype.createTask = async () => { throw circErr; };
+      taskcluster.Queue.prototype.createTask = async () => {
+        throw circErr;
+      };
 
       let caught;
       try {
@@ -256,11 +261,7 @@ suite(testing.suiteName(), () => {
       assert.ok(caught, 'expected fire() to throw');
       assert.ok(caught === circErr, 'should rethrow the original queue error');
 
-      const [lf] = await helper.db.fns.get_last_fire(
-        hook.hookGroupId,
-        hook.hookId,
-        taskId,
-      );
+      const [lf] = await helper.db.fns.get_last_fire(hook.hookGroupId, hook.hookId, taskId);
       assume(lf.result).to.equal('error');
       assume(lf.error).to.match(/ECONNREFUSED/);
       assume(lf.fired_by).to.equal('me');
@@ -282,7 +283,7 @@ suite(testing.suiteName(), () => {
         helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
         helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
         hook.nextScheduledDate,
-        hook.triggerSchema,
+        hook.triggerSchema
       );
       const taskId = taskcluster.slugid();
       await creator.fire(hook, { firedBy: 'foo' }, { taskId });
@@ -305,7 +306,7 @@ suite(testing.suiteName(), () => {
         helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }),
         helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }),
         hook.nextScheduledDate,
-        hook.triggerSchema,
+        hook.triggerSchema
       );
       const taskId = taskcluster.slugid();
       await creator.fire(hook, { firedBy: 'foo' }, { taskId });
@@ -325,7 +326,7 @@ suite(testing.suiteName(), () => {
         helper.db.encrypt({ value: Buffer.from(defaultHook.triggerToken, 'utf8') }),
         helper.db.encrypt({ value: Buffer.from(defaultHook.nextTaskId, 'utf8') }),
         defaultHook.nextScheduledDate,
-        defaultHook.triggerSchema,
+        defaultHook.triggerSchema
       );
       const now = new Date();
       const taskIdA = taskcluster.slugid();
@@ -349,10 +350,14 @@ suite(testing.suiteName(), () => {
         firedBy: '${firedBy}',
       });
       const taskId = taskcluster.slugid();
-      await creator.fire(hook, {
-        location: 'Belo Horizonte, MG',
-        firedBy: 'schedule',
-      }, { taskId });
+      await creator.fire(
+        hook,
+        {
+          location: 'Belo Horizonte, MG',
+          firedBy: 'schedule',
+        },
+        { taskId }
+      );
 
       const task = await fetchFiredTask(taskId);
       assume(task.extra).deeply.equals({
@@ -362,8 +367,9 @@ suite(testing.suiteName(), () => {
     });
 
     test('adds a taskId if one is not specified', async () => {
-      const hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1'],
-        { context: '${context}' });
+      const hook = await createTestHook(['project:taskcluster:tests:tc-hooks:scope/required/for/task/1'], {
+        context: '${context}',
+      });
       const resp = await creator.fire(hook, { context: true, firedBy: 'foo' });
       const task = await fetchFiredTask(resp.status.taskId);
       assume(task.workerType).equals(hook.task.then.workerType);
@@ -380,23 +386,15 @@ suite(testing.suiteName(), () => {
         taskCreateTime,
         result: 'success',
         error: '',
-      },
-      );
+      });
 
-      const [res] = await helper.db.fns.get_last_fire(
-        hook.hookGroupId,
-        hook.hookId,
-        hook.nextTaskId,
-      );
+      const [res] = await helper.db.fns.get_last_fire(hook.hookGroupId, hook.hookId, hook.nextTaskId);
       assume(res.task_id).equals(hook.nextTaskId);
     });
 
     test('Fetch two appended lastFire rows independently', async () => {
       const hook = _.cloneDeep(defaultHook);
-      const hook2 = _.cloneDeep({ ...defaultHook,
-        hookId: 'tc-test-hook2',
-        nextTaskId: taskcluster.slugid(),
-      });
+      const hook2 = _.cloneDeep({ ...defaultHook, hookId: 'tc-test-hook2', nextTaskId: taskcluster.slugid() });
       const taskCreateTime = new Date();
       await Promise.all([
         creator.appendLastFire({
@@ -407,8 +405,7 @@ suite(testing.suiteName(), () => {
           taskCreateTime,
           result: 'success',
           error: '',
-        },
-        ),
+        }),
         creator.appendLastFire({
           hookId: hook2.hookId,
           hookGroupId: hook2.hookGroupId,
@@ -417,20 +414,12 @@ suite(testing.suiteName(), () => {
           taskCreateTime,
           result: 'success',
           error: '',
-        },
-        )]).catch(() => {});
+        }),
+      ]).catch(() => {});
 
-      const [res] = await helper.db.fns.get_last_fire(
-        hook.hookGroupId,
-        hook.hookId,
-        hook.nextTaskId,
-      );
+      const [res] = await helper.db.fns.get_last_fire(hook.hookGroupId, hook.hookId, hook.nextTaskId);
 
-      const [res2] = await helper.db.fns.get_last_fire(
-        hook2.hookGroupId,
-        hook2.hookId,
-        hook2.nextTaskId,
-      );
+      const [res2] = await helper.db.fns.get_last_fire(hook2.hookGroupId, hook2.hookId, hook2.nextTaskId);
 
       assume(res.task_id).not.equals(res2.task_id);
     });
@@ -447,9 +436,7 @@ suite(testing.suiteName(), () => {
       hook.hookGroupId = 'g';
       hook.hookId = 'h';
       await creator.fire(hook, { p: 1 }, { o: 1 });
-      assume(creator.fireCalls).deep.equals([
-        { hookGroupId: 'g', hookId: 'h', context: { p: 1 }, options: { o: 1 } },
-      ]);
+      assume(creator.fireCalls).deep.equals([{ hookGroupId: 'g', hookId: 'h', context: { p: 1 }, options: { o: 1 } }]);
     });
   });
 });

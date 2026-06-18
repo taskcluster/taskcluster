@@ -24,7 +24,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       };
 
       await client.mutate({
-        mutation: gql`${await helper.loadFixture('createHook.graphql') }`,
+        mutation: gql`${await helper.loadFixture('createHook.graphql')}`,
         variables: {
           hookGroupId,
           hookId,

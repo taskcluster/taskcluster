@@ -11,7 +11,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
   helper.withServers(skipping);
 
   suite('charlene creates permanent credentials for a test runner', () => {
-    suiteSetup(async function() {
+    suiteSetup(async function () {
       if (skipping()) {
         this.skip();
       } else {
@@ -22,10 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
     });
 
     // NOTE: these tests run in order
-    let identityProvider,
-      identityProviderToken,
-      charlene,
-      travisTests;
+    let identityProvider, identityProviderToken, charlene, travisTests;
 
     test('add a client for the identity provider', async () => {
       const idp = await helper.apiClient.createClient('test-users', {
@@ -59,7 +56,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       });
     });
 
-    test('create temporary credentials for charlene\'s browser login', async () => {
+    test("create temporary credentials for charlene's browser login", async () => {
       charlene = new helper.AuthClient({
         rootUrl: helper.rootUrl,
         credentials: taskcluster.createTemporaryCredentials({
@@ -86,9 +83,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       const travisClient = await charlene.createClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'), // N.B. longer than temp creds
-        scopes: [
-          'assume:test-role:role1',
-        ],
+        scopes: ['assume:test-role:role1'],
       });
 
       travisTests = new helper.AuthClient({
@@ -107,10 +102,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
         await charlene.updateClient('test-users/charlene/travis-tests', {
           description: 'Permacred created by test',
           expires: taskcluster.fromNow('3 hours'),
-          scopes: [
-            'assume:test-role:role1',
-            'assume:test-role:role3',
-          ],
+          scopes: ['assume:test-role:role1', 'assume:test-role:role3'],
         });
         throw new Error('did not get expected error');
       } catch (err) {
@@ -122,9 +114,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       const newClient = await charlene.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
-        scopes: [
-          'assume:test-role:role2',
-        ],
+        scopes: ['assume:test-role:role2'],
       });
       assume(newClient.scopes).to.contain('assume:test-role:role2');
     });
@@ -133,10 +123,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
-        scopes: [
-          'assume:test-role:role2',
-          'assume:test-role:role3',
-        ],
+        scopes: ['assume:test-role:role2', 'assume:test-role:role3'],
       });
     });
 
@@ -144,9 +131,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       await charlene.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
-        scopes: [
-          'assume:test-role:role2',
-        ],
+        scopes: ['assume:test-role:role2'],
       });
     });
 
@@ -154,9 +139,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
-        scopes: [
-          'assume:test-role:role3',
-        ],
+        scopes: ['assume:test-role:role3'],
       });
     });
 
@@ -164,20 +147,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       await charlene.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
-        scopes: [
-          'scope3a',
-        ],
+        scopes: ['scope3a'],
       });
     });
 
-    test('A disabled travis-tests client can\'t do things anymore', async () => {
+    test("A disabled travis-tests client can't do things anymore", async () => {
       // give the user a scope we can use as a probe
       await helper.apiClient.updateClient('test-users/charlene/travis-tests', {
         description: 'Permacred created by test',
         expires: taskcluster.fromNow('3 hours'),
-        scopes: [
-          'auth:delete-client:test-users/charlene/travis-tests/*',
-        ],
+        scopes: ['auth:delete-client:test-users/charlene/travis-tests/*'],
       });
 
       // should succeed
@@ -187,11 +166,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       await identityProvider.disableClient('test-users/charlene/travis-tests');
 
       // should fail
-      await travisTests.deleteClient('test-users/charlene/travis-tests/foo').then(() => {
-        assert(false, 'expected an error!');
-      }, err => {
-        assert(err.statusCode === 401, 'expected 401');
-      });
+      await travisTests.deleteClient('test-users/charlene/travis-tests/foo').then(
+        () => {
+          assert(false, 'expected an error!');
+        },
+        err => {
+          assert(err.statusCode === 401, 'expected 401');
+        }
+      );
 
       // enable
       await identityProvider.enableClient('test-users/charlene/travis-tests');
@@ -199,6 +181,5 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
       // should succeed
       await travisTests.deleteClient('test-users/charlene/travis-tests/foo');
     });
-
   });
 });

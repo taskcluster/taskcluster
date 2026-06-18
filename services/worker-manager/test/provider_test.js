@@ -69,47 +69,67 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     test('only queueInactivityTimeout', async () => {
-      assert.equal(4000, Provider.interpretLifecycle({
-        lifecycle: { queueInactivityTimeout: 4 } }).queueInactivityTimeout);
+      assert.equal(
+        4000,
+        Provider.interpretLifecycle({
+          lifecycle: { queueInactivityTimeout: 4 },
+        }).queueInactivityTimeout
+      );
     });
 
     test('only registrationTimeout', async () => {
-      assert.deepEqual({
-        terminateAfter: 10100,
-        reregistrationTimeout: 345600000,
-        queueInactivityTimeout: 7200000,
-      }, Provider.interpretLifecycle({ lifecycle: { registrationTimeout: 10 } }));
+      assert.deepEqual(
+        {
+          terminateAfter: 10100,
+          reregistrationTimeout: 345600000,
+          queueInactivityTimeout: 7200000,
+        },
+        Provider.interpretLifecycle({ lifecycle: { registrationTimeout: 10 } })
+      );
     });
 
     test('only reregistrationTimeout', async () => {
-      assert.deepEqual({
-        terminateAfter: 10100,
-        reregistrationTimeout: 10000,
-        queueInactivityTimeout: 7200000,
-      }, Provider.interpretLifecycle({ lifecycle: { reregistrationTimeout: 10 } }));
+      assert.deepEqual(
+        {
+          terminateAfter: 10100,
+          reregistrationTimeout: 10000,
+          queueInactivityTimeout: 7200000,
+        },
+        Provider.interpretLifecycle({ lifecycle: { reregistrationTimeout: 10 } })
+      );
     });
 
     test('greater registrationTimeout', async () => {
-      assert.deepEqual({
-        terminateAfter: 10100,
-        reregistrationTimeout: 10000,
-        queueInactivityTimeout: 5000,
-      }, Provider.interpretLifecycle({ lifecycle: {
-        registrationTimeout: 100,
-        reregistrationTimeout: 10,
-        queueInactivityTimeout: 5,
-      } }));
+      assert.deepEqual(
+        {
+          terminateAfter: 10100,
+          reregistrationTimeout: 10000,
+          queueInactivityTimeout: 5000,
+        },
+        Provider.interpretLifecycle({
+          lifecycle: {
+            registrationTimeout: 100,
+            reregistrationTimeout: 10,
+            queueInactivityTimeout: 5,
+          },
+        })
+      );
     });
 
     test('greater reregistrationTimeout', async () => {
-      assert.deepEqual({
-        terminateAfter: 10100,
-        reregistrationTimeout: 100000,
-        queueInactivityTimeout: 7200000,
-      }, Provider.interpretLifecycle({ lifecycle: {
-        registrationTimeout: 10,
-        reregistrationTimeout: 100,
-      } }));
+      assert.deepEqual(
+        {
+          terminateAfter: 10100,
+          reregistrationTimeout: 100000,
+          queueInactivityTimeout: 7200000,
+        },
+        Provider.interpretLifecycle({
+          lifecycle: {
+            registrationTimeout: 10,
+            reregistrationTimeout: 100,
+          },
+        })
+      );
     });
   });
 
@@ -290,15 +310,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     test('calc seen total', () => {
       assert.equal(0, Provider.calcSeenTotal());
-      assert.equal(1, Provider.calcSeenTotal({
-        'gecko-t/cpu': 1,
-      }));
-      assert.equal(55, Provider.calcSeenTotal({
-        'gecko-t/win95-sp2': 33,
-        'gecko-t/win98-x64': 20,
-        'gecko-t/win7-gpu': 1,
-        'gecko-t/win7-x64': 1,
-      }));
+      assert.equal(
+        1,
+        Provider.calcSeenTotal({
+          'gecko-t/cpu': 1,
+        })
+      );
+      assert.equal(
+        55,
+        Provider.calcSeenTotal({
+          'gecko-t/win95-sp2': 33,
+          'gecko-t/win98-x64': 20,
+          'gecko-t/win7-gpu': 1,
+          'gecko-t/win7-x64': 1,
+        })
+      );
     });
   });
 
@@ -316,11 +342,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.deepEqual([], configs);
 
       const monitor = await helper.load('monitor');
-      const monitorErrors = monitor.manager.messages.filter(
-        ({ Type }) => Type === 'monitor.generic',
-      ) || [];
+      const monitorErrors = monitor.manager.messages.filter(({ Type }) => Type === 'monitor.generic') || [];
       assert.equal(monitorErrors.length, 1);
-      assert.equal(monitorErrors[0].Fields.message, `No launch configs found for worker pool ${workerPool.workerPoolId}`);
+      assert.equal(
+        monitorErrors[0].Fields.message,
+        `No launch configs found for worker pool ${workerPool.workerPoolId}`
+      );
       monitor.manager.reset();
     });
   });
@@ -355,7 +382,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       let metricRecorded = false;
       const originalMetric = monitor.metric.workerRegistrationDuration;
-      monitor.metric.workerRegistrationDuration = () => { metricRecorded = true; };
+      monitor.metric.workerRegistrationDuration = () => {
+        metricRecorded = true;
+      };
 
       monitor.manager.reset();
       await provider.onWorkerRunning({ worker });
@@ -452,7 +481,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       let metricRecorded = false;
       const originalMetric = monitor.metric.workerLifetime;
-      monitor.metric.workerLifetime = () => { metricRecorded = true; };
+      monitor.metric.workerLifetime = () => {
+        metricRecorded = true;
+      };
 
       await provider.onWorkerStopped({ worker });
       assert.equal(metricRecorded, true);
@@ -465,7 +496,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       let metricRecorded = false;
       const originalMetric = monitor.metric.workerRegistrationFailure;
-      monitor.metric.workerRegistrationFailure = () => { metricRecorded = true; };
+      monitor.metric.workerRegistrationFailure = () => {
+        metricRecorded = true;
+      };
 
       await provider.onWorkerStopped({ worker });
       assert.equal(metricRecorded, true);
@@ -488,7 +521,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       let metricRecorded = false;
       const originalMetric = monitor.metric.workerLifetime;
-      monitor.metric.workerLifetime = () => { metricRecorded = true; };
+      monitor.metric.workerLifetime = () => {
+        metricRecorded = true;
+      };
 
       await provider.onWorkerStopped({ worker });
       assert.equal(metricRecorded, false);

@@ -24,7 +24,7 @@ import path from 'node:path';
  *   basePath:      path.join(__dirname, 'validate')  // basePath test cases
  * }
  */
-const schemas = (options) => {
+const schemas = options => {
   // Validate options
   assert(options.schemasetOptions, 'Options must be given for validator');
   assert(Array.isArray(options.cases), 'Array of cases must be given');
@@ -37,7 +37,7 @@ const schemas = (options) => {
   });
 
   // Create test cases
-  options.cases.forEach((testCase) => {
+  options.cases.forEach(testCase => {
     test(testCase.path, () => {
       // Load test data
       let filePath = testCase.path;
@@ -59,11 +59,9 @@ const schemas = (options) => {
         if (error !== null) {
           debug('Errors: %j', error);
         }
-        assert(error === null,
-          `Schema doesn't match test for ${testCase.path}: ${error}`);
+        assert(error === null, `Schema doesn't match test for ${testCase.path}: ${error}`);
       } else {
-        assert(error !== null,
-          `Schema matches unexpectedly test for ${testCase.path}`);
+        assert(error !== null, `Schema matches unexpectedly test for ${testCase.path}`);
       }
     });
   });

@@ -85,13 +85,9 @@ suite(testing.suiteName(), () => {
   test('server ignores other urls and methods', async () => {
     const monitor = MonitorManager.setup(configDefaults);
     monitor.exposeMetrics();
-    await assert.rejects(
-      async () => await request.post(`http://localhost:${TEST_PORT}/metrics`),
-      /Not Found/);
+    await assert.rejects(async () => await request.post(`http://localhost:${TEST_PORT}/metrics`), /Not Found/);
 
-    await assert.rejects(
-      async () => await request.get(`http://localhost:${TEST_PORT}/other`),
-      /Not Found/);
+    await assert.rejects(async () => await request.get(`http://localhost:${TEST_PORT}/other`), /Not Found/);
 
     await monitor.terminate();
   });
@@ -137,10 +133,10 @@ suite(testing.suiteName(), () => {
 
   test('push gateway successfully sends metrics', async () => {
     const pushGateway = nock('http://push-gateway.test:9091')
-      .put('/metrics/job/push-test-job/instance/test-instance', (body) => {
-        return body.includes('http_requests_total') &&
-               body.includes('label1="push-value"') &&
-               body.includes('label2="test"');
+      .put('/metrics/job/push-test-job/instance/test-instance', body => {
+        return (
+          body.includes('http_requests_total') && body.includes('label1="push-value"') && body.includes('label2="test"')
+        );
       })
       .reply(200, 'OK');
 
@@ -152,5 +148,4 @@ suite(testing.suiteName(), () => {
     assert.ok(pushGateway.isDone(), 'Push gateway received the metrics with correct data');
     await monitor.terminate();
   });
-
 });

@@ -40,9 +40,7 @@ x//0u+zd/R/QRUzLOw4N72/Hu+UG6MNt5iDZFCtapRaKt6OvSBwy8w==
 suite(testing.suiteName(), () => {
   suite('octokit wrapping', () => {
     test('getAppGithub', async () => {
-      nock('https://api.github.com:443')
-        .post('/app/installations/100/access_tokens')
-        .reply(200);
+      nock('https://api.github.com:443').post('/app/installations/100/access_tokens').reply(200);
       const gh = await githubAuth({
         monitor: await helper.load('monitor'),
         cfg: {
@@ -72,11 +70,14 @@ suite(testing.suiteName(), () => {
 
     test('with invalid value', () => {
       const cfg = { github: { credentials: { privatePEM: 'somekey' } } };
-      assert.throws(() => getPrivatePEM(cfg), err => {
-        assert(/must match/.test(err.toString()));
-        assert(!/somekey/.test(err.toString()));
-        return true;
-      });
+      assert.throws(
+        () => getPrivatePEM(cfg),
+        err => {
+          assert(/must match/.test(err.toString()));
+          assert(!/somekey/.test(err.toString()));
+          return true;
+        }
+      );
     });
   });
   suite('getCachedInstallationToken', () => {

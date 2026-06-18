@@ -6,7 +6,7 @@ import taskcluster from '@taskcluster/client';
 import testing from '@taskcluster/lib-testing';
 import { hookUtils } from '../src/utils.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], function (mock, skipping) {
   helper.withDb(mock, skipping);
   helper.withTaskCreator(skipping);
   helper.resetTables();
@@ -15,12 +15,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   setup(() => {
     helper.load.cfg('app.scheduler.pollingDelay', 1);
-    helper.load.inject('notify', new taskcluster.Notify({
-      rootUrl: helper.rootUrl,
-      fake: {
-        email: () => null,
-      },
-    }));
+    helper.load.inject(
+      'notify',
+      new taskcluster.Notify({
+        rootUrl: helper.rootUrl,
+        fake: {
+          email: () => null,
+        },
+      })
+    );
   });
 
   let scheduler = null;
@@ -38,7 +41,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   // work around https://github.com/mochajs/mocha/issues/2819
   const subSkip = () => {
-    suiteSetup(function() {
+    suiteSetup(function () {
       if (skipping()) {
         this.skip();
       }
@@ -47,12 +50,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   test('calls its poll method in a loop when started', async () => {
     let callCount = 0;
-    scheduler.poll = () => { callCount += 1; };
+    scheduler.poll = () => {
+      callCount += 1;
+    };
     scheduler.pollingDelay = 1; // 1 ms
 
     // run for a while..
     scheduler.start();
-    await new Promise(accept => { setTimeout(accept, 5); });
+    await new Promise(accept => {
+      setTimeout(accept, 5);
+    });
 
     // verify it polled
     const newCallCount = callCount;
@@ -61,7 +68,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     // terminate and run for a while longer
     scheduler.terminate();
-    await new Promise(accept => { setTimeout(accept, 5); });
+    await new Promise(accept => {
+      setTimeout(accept, 5);
+    });
 
     // verify it didn't poll any more
     assume(callCount).equals(newCallCount);
@@ -81,23 +90,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       const mkHook = async ({ hookId, nextScheduledDate }) => {
-        const hook = _.defaults({
-          hookId,
-          nextTaskId: taskcluster.slugid(),
-          nextScheduledDate,
-        }, hookParams);
+        const hook = _.defaults(
+          {
+            hookId,
+            nextTaskId: taskcluster.slugid(),
+            nextScheduledDate,
+          },
+          hookParams
+        );
 
         await helper.db.fns.create_hook(
-          hook, /* hook_group_id */
-          hook.hookId, /* hook_id */
-          hook.metadata, /* metadata */
-          hook.task, /* task */
-          JSON.stringify(hook.bindings), /* bindings */
-          JSON.stringify(hook.schedule), /* schedule */
-          helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }), /* encrypted_encrypted_trigger_token */
-          helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }), /* encrypted_next_task_id */
-          nextScheduledDate, /* next_scheduled_date */
-          hook.triggerSchema, /* trigger_schema */
+          hook /* hook_group_id */,
+          hook.hookId /* hook_id */,
+          hook.metadata /* metadata */,
+          hook.task /* task */,
+          JSON.stringify(hook.bindings) /* bindings */,
+          JSON.stringify(hook.schedule) /* schedule */,
+          helper.db.encrypt({ value: Buffer.from(hook.triggerToken, 'utf8') }) /* encrypted_encrypted_trigger_token */,
+          helper.db.encrypt({ value: Buffer.from(hook.nextTaskId, 'utf8') }) /* encrypted_next_task_id */,
+          nextScheduledDate /* next_scheduled_date */,
+          hook.triggerSchema /* trigger_schema */
         );
       };
       await mkHook({ hookId: 'futureHook', nextScheduledDate: new Date(4000, 0, 0, 0, 0, 0, 0) });
@@ -107,7 +119,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('calls handleHook only for past-due hooks', async () => {
       const handled = [];
-      scheduler.handleHook = async function(hook) {
+      scheduler.handleHook = async function (hook) {
         // check that context is set correctly..
         assert.deepEqual(this, scheduler);
         handled.push(hook.hookId);
@@ -125,20 +137,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     setup(async () => {
       hook = hookUtils.fromDbRows(
         await helper.db.fns.create_hook(
-          'tests', /* hook_group_id */
-          'test', /* hook_id */
+          'tests' /* hook_group_id */,
+          'test' /* hook_id */,
           {
             owner: 'example@example.com',
             emailOnError: true,
-          }, /* metadata */
-          {}, /* task */
-          JSON.stringify([]), /* bindings */
-          JSON.stringify(['0 0 0 * * *']), /* schedule */
-          helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_encrypted_trigger_token */
-          helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_next_task_id */
-          new Date(3000, 0, 0, 0, 0, 0, 0), /* next_scheduled_date */
-          {}, /* trigger_schema */
-        ),
+          } /* metadata */,
+          {} /* task */,
+          JSON.stringify([]) /* bindings */,
+          JSON.stringify(['0 0 0 * * *']) /* schedule */,
+          helper.db.encrypt({
+            value: Buffer.from(taskcluster.slugid(), 'utf8'),
+          }) /* encrypted_encrypted_trigger_token */,
+          helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }) /* encrypted_next_task_id */,
+          new Date(3000, 0, 0, 0, 0, 0, 0) /* next_scheduled_date */,
+          {} /* trigger_schema */
+        )
       );
     });
 
@@ -150,16 +164,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const updatedHook = hookUtils.fromDbRows(await helper.db.fns.get_hook('tests', 'test'));
 
-      assume(helper.creator.fireCalls).deep.equals([{
-        hookGroupId: 'tests',
-        hookId: 'test',
-        context: { firedBy: 'schedule' },
-        options: {
-          taskId: helper.db.decrypt({ value: oldTaskId }).toString('utf8'),
-          created: new Date(3000, 0, 0, 0, 0, 0, 0),
-          retry: false,
+      assume(helper.creator.fireCalls).deep.equals([
+        {
+          hookGroupId: 'tests',
+          hookId: 'test',
+          context: { firedBy: 'schedule' },
+          options: {
+            taskId: helper.db.decrypt({ value: oldTaskId }).toString('utf8'),
+            created: new Date(3000, 0, 0, 0, 0, 0, 0),
+            retry: false,
+          },
         },
-      }]);
+      ]);
       assume(updatedHook.nextTaskId).is.not.equal(oldTaskId);
       assume(updatedHook.nextScheduledDate).is.not.equal(oldScheduledDate);
     });
@@ -173,7 +189,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       let emailSent = false;
-      scheduler.sendFailureEmail = async (_hook, _err) => { emailSent = true; };
+      scheduler.sendFailureEmail = async (_hook, _err) => {
+        emailSent = true;
+      };
 
       await scheduler.handleHook(hook);
 
@@ -191,7 +209,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       let emailSent = false;
-      scheduler.sendFailureEmail = async (_hook, _err) => { emailSent = true; throw new Error('uhoh'); };
+      scheduler.sendFailureEmail = async (_hook, _err) => {
+        emailSent = true;
+        throw new Error('uhoh');
+      };
 
       await scheduler.handleHook(hook);
 
@@ -199,10 +220,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const monitor = await helper.load('monitor');
       assert.equal(
-        monitor.manager.messages.filter(
-          ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-        ).length,
-        1);
+        monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+          .length,
+        1
+      );
       monitor.manager.reset();
     });
 
@@ -215,7 +236,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       let emailSent = false;
-      scheduler.sendFailureEmail = async (_hook, _err) => { emailSent = true; };
+      scheduler.sendFailureEmail = async (_hook, _err) => {
+        emailSent = true;
+      };
 
       await scheduler.handleHook(hook);
 
@@ -271,9 +294,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         monitor.manager.messages.filter(
           ({ Type, Fields }) =>
             Type === 'monitor.generic' &&
-            Fields.message === 'Hook failure email rejected: example@example.com is denylisted',
+            Fields.message === 'Hook failure email rejected: example@example.com is denylisted'
         ).length,
-        1);
+        1
+      );
       monitor.manager.reset();
     });
   });

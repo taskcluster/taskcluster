@@ -93,10 +93,12 @@ export class FakeCloud {
         error.message += `: ${JSON.stringify(error.params.additionalProperty)}`;
       }
     }
-    throw new Error([
-      '\nSchema Validation Failed!',
-      `\nSchema Errors (${schemaFile}):\n  * `,
-      this.ajv.errorsText(this.ajv.errors, { separator: '\n  * ' }),
-    ].join(''));
+    throw new Error(
+      [
+        '\nSchema Validation Failed!',
+        `\nSchema Errors (${schemaFile}):\n  * `,
+        this.ajv.errorsText(this.ajv.errors, { separator: '\n  * ' }),
+      ].join('')
+    );
   }
 }

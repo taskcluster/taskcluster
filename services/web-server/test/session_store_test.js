@@ -27,7 +27,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     if (shouldPromisify) {
       Object.getOwnPropertyNames(SessionStore.prototype)
-        .filter(m => m !== 'constructor').forEach(method => {
+        .filter(m => m !== 'constructor')
+        .forEach(method => {
           store[method] = promisify(store[method]);
         });
     }
@@ -49,7 +50,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       val = await store.get('foo');
       assert.equal(val, undefined, 'entry actually deleted');
     });
-    test('it should destroy the specified session and call back', (done) => {
+    test('it should destroy the specified session and call back', done => {
       const store = getStore(false /* shouldPromisify */);
 
       store.set('foo', { cookie: {} }, () => {
@@ -68,7 +69,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       assert.ok(val, 'entry exists');
     });
-    test('it shouldn\'t get the specified session when only the hash matches', async () => {
+    test("it shouldn't get the specified session when only the hash matches", async () => {
       const store = getStore();
 
       const currentSession = 'sessionid1';
@@ -82,7 +83,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       // updates the hash of that session
       await helper.withDbClient(async client => {
-        await client.query('update sessions set hashed_session_id = $1 where hashed_session_id = $2', [newHash, currentHash]);
+        await client.query('update sessions set hashed_session_id = $1 where hashed_session_id = $2', [
+          newHash,
+          currentHash,
+        ]);
       });
 
       // tries to get the new session
@@ -90,14 +94,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       assert.equal(val, undefined);
     });
-    test('it should get the specified session and call back', (done) => {
+    test('it should get the specified session and call back', done => {
       const store = getStore(false /* shouldPromisify */);
 
       store.set('foo', { cookie: {} }, () => {
         store.get('foo', done);
       });
     });
-    test('it should not error when session doesn\'t exist', async () => {
+    test("it should not error when session doesn't exist", async () => {
       const store = getStore();
       const val = await store.get('foo');
 
@@ -116,7 +120,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       assert.deepEqual(val, data);
     });
-    test('it should set the specified session and call back', (done) => {
+    test('it should set the specified session and call back', done => {
       const store = getStore(false /* shouldPromisify */);
 
       store.set('foo', { cookie: {} }, done);
@@ -134,7 +138,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       assert.equal(val.cookie.maxAge, 300, 'entry should be touched');
     });
-    test('it should touch the specified session and call back', (done) => {
+    test('it should touch the specified session and call back', done => {
       const store = getStore(false /* shouldPromisify */);
 
       store.set('foo', { cookie: { maxAge: 50 } }, () => {
@@ -144,10 +148,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('it should error when touching the session', async () => {
       const store = getStore();
 
-      await assert.rejects(
-        store.touch('foo', { cookie: { maxAge: 300 } }),
-        /P0002/,
-      );
+      await assert.rejects(store.touch('foo', { cookie: { maxAge: 300 } }), /P0002/);
     });
   });
 

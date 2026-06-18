@@ -161,7 +161,7 @@ suite(suiteName(), () => {
     });
     const testsRun = [];
 
-    secrets.mockSuite('outer', ['sec'], (mock) => {
+    secrets.mockSuite('outer', ['sec'], mock => {
       test('inner', () => {
         testsRun.push(mock);
       });
@@ -186,7 +186,7 @@ suite(suiteName(), () => {
       sticky.inject('cfg', { sec: 'here' });
     });
 
-    secrets.mockSuite('outer', ['sec'], (secrets) => {
+    secrets.mockSuite('outer', ['sec'], secrets => {
       test('inner', () => {
         testsRun.push(secrets);
       });

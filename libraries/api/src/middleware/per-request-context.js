@@ -15,7 +15,7 @@ export const perRequestContext = ({ entry, context }) => {
     const cache = {};
     req.tcContext = new Proxy(context, {
       get(target, prop) {
-        const val = target[/** @type string */(prop)];
+        const val = target[/** @type string */ (prop)];
         if (val === undefined) {
           return undefined;
         }

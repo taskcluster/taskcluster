@@ -14,15 +14,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     if (skipping()) {
       return;
     }
-    helper.load.inject('authFactory', () =>
-      new taskcluster.Auth({
-        rootUrl: helper.rootUrl,
-        fake: {
-          currentScopes: async () => ({
-            scopes: scopeOverride || ['web:read-pulse'],
-          }),
-        },
-      }),
+    helper.load.inject(
+      'authFactory',
+      () =>
+        new taskcluster.Auth({
+          rootUrl: helper.rootUrl,
+          fake: {
+            currentScopes: async () => ({
+              scopes: scopeOverride || ['web:read-pulse'],
+            }),
+          },
+        })
     );
   });
 
@@ -87,8 +89,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const subscriptionClient = await helper.createSubscriptionClient();
       const client = helper.getWebsocketClient(subscriptionClient);
 
-      const taskId = "subscribe-task-id";
-      const taskGroupId = "subscribe-task-group-id";
+      const taskId = 'subscribe-task-id';
+      const taskGroupId = 'subscribe-task-group-id';
 
       const payload = {
         tasksSubscriptions: {
@@ -100,7 +102,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       };
 
       const asyncIterator = new Object();
-      asyncIterator[Symbol.asyncIterator] = async function*() {
+      asyncIterator[Symbol.asyncIterator] = async function* () {
         yield payload;
       };
 
@@ -109,19 +111,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const subscribeTasks = await helper.loadFixture('tasksSubscriptions.graphql');
 
       let tasksSubscriptionsResult;
-      const taskSubscription = client.subscribe({
-        query: gql`${subscribeTasks}`,
-        variables: {
-          taskGroupId,
-          subscriptions: ['tasksDefined'],
-        },
-      }).subscribe(
-        (value) => tasksSubscriptionsResult = value,
-      );
+      const taskSubscription = client
+        .subscribe({
+          query: gql`${subscribeTasks}`,
+          variables: {
+            taskGroupId,
+            subscriptions: ['tasksDefined'],
+          },
+        })
+        .subscribe(value => (tasksSubscriptionsResult = value));
 
-      await testing.poll(
-        () => assert(tasksSubscriptionsResult),
-        100, 10);
+      await testing.poll(() => assert(tasksSubscriptionsResult), 100, 10);
 
       assert(tasksSubscriptionsResult.data.tasksSubscriptions.taskId, taskId);
       assert(tasksSubscriptionsResult.data.tasksSubscriptions.taskGroupId, taskGroupId);
@@ -139,7 +139,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
             `ws://localhost:${helper.serverPort}/subscription`,
             {
               reconnect: false,
-              connectionCallback: (err) => {
+              connectionCallback: err => {
                 if (err) {
                   resolve(err);
                 } else {
@@ -147,21 +147,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
                 }
               },
               connectionParams: () => ({
-                Authorization: `Bearer ${btoa(JSON.stringify({
-                  clientId: 'testing',
-                  accessToken: 'testing',
-                }))}`,
+                Authorization: `Bearer ${btoa(
+                  JSON.stringify({
+                    clientId: 'testing',
+                    accessToken: 'testing',
+                  })
+                )}`,
               }),
             },
-            WebSocket,
+            WebSocket
           );
         });
 
         const errStr = typeof error === 'object' ? JSON.stringify(error) : String(error);
-        assert(
-          errStr.includes('InsufficientScopes'),
-          `Expected InsufficientScopes error, got: ${errStr}`,
-        );
+        assert(errStr.includes('InsufficientScopes'), `Expected InsufficientScopes error, got: ${errStr}`);
       } finally {
         if (subscriptionClient) {
           subscriptionClient.close();

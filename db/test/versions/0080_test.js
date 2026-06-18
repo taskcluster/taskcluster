@@ -32,19 +32,23 @@ suite(testing.suiteName(), () => {
     }
     // create same worker with multiple queue ids
     const workerPoolIds = ['prov/w/1', 'some/other/pool', 'extra/pool'];
-    await Promise.all(workerPoolIds.map((pool, idx) => wmDb.deprecatedFns.create_worker(
-      pool,
-      `wg-${idx}`,
-      'worker-1',
-      'static',
-      new Date(),
-      new Date(),
-      'state',
-      { providerdata: true },
-      1,
-      new Date(),
-      new Date(),
-    )));
+    await Promise.all(
+      workerPoolIds.map((pool, idx) =>
+        wmDb.deprecatedFns.create_worker(
+          pool,
+          `wg-${idx}`,
+          'worker-1',
+          'static',
+          new Date(),
+          new Date(),
+          'state',
+          { providerdata: true },
+          1,
+          new Date(),
+          new Date()
+        )
+      )
+    );
 
     await helper.upgradeTo(PREV_VERSION);
     const res = await queueDb.deprecatedFns.get_queue_workers_with_wm_join('prov/w/1', null, null, null);

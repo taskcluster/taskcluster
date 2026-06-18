@@ -31,15 +31,7 @@ const PRIORITY_TO_CONSTANT = {
 _.forIn(PRIORITY_TO_CONSTANT, v => assert(typeof v === 'number'));
 
 /** Priority in order of priority from high to low */
-const PRIORITIES = [
-  'highest',
-  'very-high',
-  'high',
-  'medium',
-  'low',
-  'very-low',
-  'lowest',
-];
+const PRIORITIES = ['highest', 'very-high', 'high', 'medium', 'low', 'very-low', 'lowest'];
 assert(_.xor(PRIORITIES, _.keys(PRIORITY_TO_CONSTANT)).length === 0);
 
 const MESSAGE_FREEZE_TIMEOUT = '5 minutes';
@@ -69,8 +61,7 @@ export class QueueService {
     this.deadlineDelay = options.deadlineDelay;
   }
 
-  terminate() {
-  }
+  terminate() {}
 
   /** Enqueue message to become visible when claim has expired */
   async putClaimMessage(taskId, runId, takenUntil, taskQueueId, workerGroup, workerId) {
@@ -82,14 +73,7 @@ export class QueueService {
     assert(takenUntil instanceof Date, 'takenUntil must be a date');
     assert(Number.isFinite(takenUntil.getTime()), 'takenUntil must be a valid date');
 
-    await this.db.fns.queue_claimed_task_put(
-      taskId,
-      runId,
-      takenUntil.toJSON(),
-      taskQueueId,
-      workerGroup,
-      workerId,
-    );
+    await this.db.fns.queue_claimed_task_put(taskId, runId, takenUntil.toJSON(), taskQueueId, workerGroup, workerId);
   }
 
   /**
@@ -116,12 +100,7 @@ export class QueueService {
     const hideUntil = taskcluster.fromNow(MESSAGE_FREEZE_TIMEOUT);
 
     const rows = await this.db.fns.queue_claimed_task_get(hideUntil, count);
-    return rows.map(({
-      task_id: taskId,
-      run_id: runId,
-      taken_until,
-      pop_receipt,
-    }) => ({
+    return rows.map(({ task_id: taskId, run_id: runId, taken_until, pop_receipt }) => ({
       taskId,
       runId,
       takenUntil: new Date(taken_until),
@@ -143,17 +122,13 @@ export class QueueService {
     assert(taskId, 'taskId must be given');
     assert(taskGroupId, 'taskGroupId must be given');
     assert(schedulerId, 'schedulerId must be given');
-    assert(resolution === 'completed' || resolution === 'failed' ||
-      resolution === 'exception',
-    'resolution must be completed, failed or exception');
+    assert(
+      resolution === 'completed' || resolution === 'failed' || resolution === 'exception',
+      'resolution must be completed, failed or exception'
+    );
 
     await Promise.allSettled([
-      this.db.fns.queue_resolved_task_put(
-        taskGroupId,
-        taskId,
-        schedulerId,
-        resolution,
-      ),
+      this.db.fns.queue_resolved_task_put(taskGroupId, taskId, schedulerId, resolution),
       // we no longer need existing claimed queue message
       // because resolved message will trigger dependency resolver
       this.db.fns.queue_claimed_task_resolved(taskId, runId),
@@ -186,19 +161,15 @@ export class QueueService {
     const hideUntil = taskcluster.fromNow(MESSAGE_FREEZE_TIMEOUT);
 
     const rows = await this.db.fns.queue_resolved_task_get(hideUntil, count);
-    return rows.map(({
-      task_id: taskId,
-      task_group_id: taskGroupId,
-      scheduler_id: schedulerId,
-      resolution,
-      pop_receipt,
-    }) => ({
-      taskId,
-      taskGroupId,
-      schedulerId,
-      resolution,
-      remove: async () => this.db.fns.queue_resolved_task_delete(taskId, pop_receipt),
-    }));
+    return rows.map(
+      ({ task_id: taskId, task_group_id: taskGroupId, scheduler_id: schedulerId, resolution, pop_receipt }) => ({
+        taskId,
+        taskGroupId,
+        schedulerId,
+        resolution,
+        remove: async () => this.db.fns.queue_resolved_task_delete(taskId, pop_receipt),
+      })
+    );
   }
 
   /** Enqueue message to become visible when deadline has expired */
@@ -210,8 +181,7 @@ export class QueueService {
     assert(Number.isFinite(deadline.getTime()), 'deadline must be a valid date');
 
     const delay = Math.floor(this.deadlineDelay / 1000);
-    debug('Put deadline message to be visible in %s seconds',
-      secondsTo(deadline) + delay);
+    debug('Put deadline message to be visible in %s seconds', secondsTo(deadline) + delay);
 
     try {
       await this.db.fns.queue_task_deadline_put(
@@ -219,7 +189,7 @@ export class QueueService {
         taskId,
         schedulerId,
         deadline.toJSON(), // this is to be checked against task record if it didn't change
-        taskcluster.fromNow(`${secondsTo(deadline) + delay} seconds`), // this is slightly after deadline
+        taskcluster.fromNow(`${secondsTo(deadline) + delay} seconds`) // this is slightly after deadline
       );
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
@@ -250,19 +220,15 @@ export class QueueService {
     const hideUntil = taskcluster.fromNow(MESSAGE_FREEZE_TIMEOUT);
 
     const rows = await this.db.fns.queue_task_deadline_get(hideUntil, count);
-    return rows.map(({
-      task_id: taskId,
-      task_group_id: taskGroupId,
-      scheduler_id: schedulerId,
-      deadline,
-      pop_receipt,
-    }) => ({
-      taskId,
-      taskGroupId,
-      schedulerId,
-      deadline: new Date(deadline),
-      remove: async () => this.db.fns.queue_task_deadline_delete(taskId, pop_receipt),
-    }));
+    return rows.map(
+      ({ task_id: taskId, task_group_id: taskGroupId, scheduler_id: schedulerId, deadline, pop_receipt }) => ({
+        taskId,
+        taskGroupId,
+        schedulerId,
+        deadline: new Date(deadline),
+        remove: async () => this.db.fns.queue_task_deadline_delete(taskId, pop_receipt),
+      })
+    );
   }
 
   /**
@@ -303,9 +269,11 @@ export class QueueService {
     // being pending.
     if (timeToDeadline === 1) {
       // This should not happen, but if timing is right it is possible.
-      console.log('runId: %s of taskId: %s became pending after deadline, ' +
-                  'skipping pending task publication',
-      runId, task.taskId);
+      console.log(
+        'runId: %s of taskId: %s became pending after deadline, ' + 'skipping pending task publication',
+        runId,
+        task.taskId
+      );
       return;
     }
 
@@ -316,7 +284,7 @@ export class QueueService {
       task.taskId,
       runId,
       slugid.v4(), // hintId
-      taskcluster.fromNow(`${timeToDeadline} seconds`), // expires in
+      taskcluster.fromNow(`${timeToDeadline} seconds`) // expires in
     );
   }
 
@@ -345,18 +313,13 @@ export class QueueService {
    * }
    */
   pollPendingQueue(taskQueueId) {
-    return async (count) => {
+    return async count => {
       const rows = await this.db.fns.queue_pending_tasks_get(
         taskQueueId,
         taskcluster.fromNow(MESSAGE_FREEZE_TIMEOUT), // hide until
-        count,
+        count
       );
-      return rows.map(({
-        task_id: taskId,
-        run_id: runId,
-        hint_id: hintId,
-        pop_receipt,
-      }) => ({
+      return rows.map(({ task_id: taskId, run_id: runId, hint_id: hintId, pop_receipt }) => ({
         taskId,
         runId,
         hintId,

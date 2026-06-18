@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ensureTask } from './tasks.js';
 
-export const enumFiles = (dirname) => {
+export const enumFiles = dirname => {
   const files = [];
-  fs.readdirSync(`${dirname}/`).forEach((file) => {
+  fs.readdirSync(`${dirname}/`).forEach(file => {
     if (file !== 'index.js' && file.match(/\.js$/)) {
       files.push(file);
     }
@@ -19,16 +19,18 @@ export const enumFiles = (dirname) => {
  * The "main" task should provide (in `provides`) a requirement named `target-foo` for
  * some foo.
  */
-export const loadTasks = async (dirname) => {
+export const loadTasks = async dirname => {
   const result = [];
   const files = enumFiles(dirname);
 
-  await Promise.all(files.map(async (file) => {
-    const { tasks } = await import(path.join(dirname, file));
-    tasks.forEach(val => {
-      ensureTask(result, val);
-    });
-  }));
+  await Promise.all(
+    files.map(async file => {
+      const { tasks } = await import(path.join(dirname, file));
+      tasks.forEach(val => {
+        ensureTask(result, val);
+      });
+    })
+  );
 
   return result;
 };

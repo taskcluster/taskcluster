@@ -21,17 +21,20 @@ suite(testing.suiteName(), () => {
       'descr',
       {
         maxCapacity: 8,
-        launchConfigs: [ {
-          name: 'cfg1',
-        }, {
-          name: 'cfg2',
-        }],
+        launchConfigs: [
+          {
+            name: 'cfg1',
+          },
+          {
+            name: 'cfg2',
+          },
+        ],
       },
       new Date(),
       new Date(),
       'me@me.com',
       false,
-      { providerdata: true },
+      { providerdata: true }
     );
 
     await helper.upgradeTo(THIS_VERSION);
@@ -49,11 +52,14 @@ suite(testing.suiteName(), () => {
     const [wp] = await db.deprecatedFns.get_worker_pool_with_capacity('wp/id');
     assert.deepEqual(wp.config, {
       maxCapacity: 8,
-      launchConfigs: [ {
-        name: 'cfg1',
-      }, {
-        name: 'cfg2',
-      }],
+      launchConfigs: [
+        {
+          name: 'cfg1',
+        },
+        {
+          name: 'cfg2',
+        },
+      ],
     });
   });
 });

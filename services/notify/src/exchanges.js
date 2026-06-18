@@ -18,19 +18,18 @@ const exchanges = new Exchanges({
 export default exchanges;
 
 /** Build common routing key construct for `exchanges.declare` */
-const buildCommonRoutingKey = (options) => {
+const buildCommonRoutingKey = options => {
   options = options || {};
   return [
     {
       name: 'routingKeyKind',
-      summary: 'Identifier for the routing-key kind. This is ' +
-                        'always `\'primary\'` for the formalized routing key.',
+      summary: 'Identifier for the routing-key kind. This is ' + "always `'primary'` for the formalized routing key.",
       constant: 'primary',
       required: true,
-    }, {
+    },
+    {
       name: 'topic',
-      summary: 'Custom topic. This is the <topic> portion of the ' +
-                        '`notify.pulse.<topic>.on-<event>` routes.',
+      summary: 'Custom topic. This is the <topic> portion of the ' + '`notify.pulse.<topic>.on-<event>` routes.',
       maxSize: 100,
       multipleWords: true,
       required: true,
@@ -39,7 +38,7 @@ const buildCommonRoutingKey = (options) => {
 };
 
 /** Build an AMQP compatible message from a message */
-const commonMessageBuilder = (message) => {
+const commonMessageBuilder = message => {
   message.version = 1;
   return message;
 };

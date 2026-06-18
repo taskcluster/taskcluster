@@ -13,8 +13,10 @@ suite(testing.suiteName(), () => {
      * 'timestamp with time zone' in tables.yml. */
     for (const [tableName, table] of Object.entries(schema.tables.get())) {
       for (const [columnName, type] of Object.entries(table)) {
-        assert(!/timestamp(?! with time zone)/.test(type),
-          `${tableName}.${columnName} has a timestamp type without a timezone`);
+        assert(
+          !/timestamp(?! with time zone)/.test(type),
+          `${tableName}.${columnName} has a timestamp type without a timezone`
+        );
       }
     }
   });

@@ -55,9 +55,7 @@ class Base {
         git: new Lock(8),
       },
       target,
-      renderer: process.stdout.isTTY ?
-        new ConsoleRenderer({ elideCompleted: true }) :
-        new LogRenderer(),
+      renderer: process.stdout.isTTY ? new ConsoleRenderer({ elideCompleted: true }) : new LogRenderer(),
     });
     if (this.cmdOptions.dryRun) {
       console.log('Dry run successful.');
@@ -96,12 +94,14 @@ class Build extends Base {
     // changes need to be checked in.
     if (!this.cmdOptions.ignoreUncommittedFiles) {
       if (await gitIsDirty({ dir: REPO_ROOT })) {
-        throw new Error([
-          'The current git working copy is not clean. Any non-checked-in files will',
-          'not be reflected in the built image, so this is treatd as an error by default.',
-          'Either check in the dirty files, or run with --ignore-uncommitted-files to',
-          'override this error.  Never check in files containing secrets!',
-        ].join(' '));
+        throw new Error(
+          [
+            'The current git working copy is not clean. Any non-checked-in files will',
+            'not be reflected in the built image, so this is treatd as an error by default.',
+            'Either check in the dirty files, or run with --ignore-uncommitted-files to',
+            'override this error.  Never check in files containing secrets!',
+          ].join(' ')
+        );
       }
     }
 
@@ -200,7 +200,9 @@ class Publish extends Base {
       // branch name, and use a fake revision
       const match = /staging-release\/v(\d+\.\d+\.\d+)$/.exec(this.cmdOptions.staging);
       if (!match) {
-        throw new Error(`Staging releases must have branches named 'staging-release/vX.Y.Z'; got ${this.cmdOptions.staging}`);
+        throw new Error(
+          `Staging releases must have branches named 'staging-release/vX.Y.Z'; got ${this.cmdOptions.staging}`
+        );
       }
       const version = match[1];
 
@@ -214,7 +216,9 @@ class Publish extends Base {
       });
 
       if (!gitDescription.match(/^v\d+\.\d+\.\d+$/)) {
-        throw new Error(`Can only publish releases from git revisions with tags of the form vX.Y.Z, not ${gitDescription}`);
+        throw new Error(
+          `Can only publish releases from git revisions with tags of the form vX.Y.Z, not ${gitDescription}`
+        );
       }
 
       return {
@@ -229,12 +233,12 @@ class Publish extends Base {
   }
 }
 
-export const build = async (options) => {
+export const build = async options => {
   const build = new Build(options);
   await build.run();
 };
 
-export const publish = async (options) => {
+export const publish = async options => {
   const publish = new Publish(options);
   await publish.run();
 };

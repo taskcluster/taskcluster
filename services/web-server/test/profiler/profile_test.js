@@ -1,10 +1,5 @@
 import assert from 'node:assert';
-import {
-  getProfile,
-  getEmptyProfile,
-  getEmptyThread,
-  UniqueStringArray,
-} from '../../src/profiler/profile.js';
+import { getProfile, getEmptyProfile, getEmptyThread, UniqueStringArray } from '../../src/profiler/profile.js';
 
 suite('profiler/profile', () => {
   const mockTaskGroup = {
@@ -101,9 +96,7 @@ suite('profiler/profile', () => {
       const rootUrl = 'https://taskcluster.net';
       const profile = getProfile([mockTaskGroup], rootUrl);
       const thread = profile.threads[0];
-      const taskMarkerData = thread.markers.data.find(
-        d => d.type === 'Task' && d.taskId,
-      );
+      const taskMarkerData = thread.markers.data.find(d => d.type === 'Task' && d.taskId);
       assert(taskMarkerData.taskURL.includes('taskcluster.net'));
     });
 
@@ -111,19 +104,19 @@ suite('profiler/profile', () => {
       const rootUrl = 'https://taskcluster.net';
       const profile = getProfile([mockTaskGroup], rootUrl);
       const thread = profile.threads[0];
-      const taskMarkerData = thread.markers.data.find(
-        d => d.type === 'Task' && d.taskId,
-      );
+      const taskMarkerData = thread.markers.data.find(d => d.type === 'Task' && d.taskId);
       assert(taskMarkerData.taskProfile.includes('/profiler'));
     });
 
     test('handles task groups with no runs', () => {
       const emptyGroup = {
         ...mockTaskGroup,
-        tasks: [{
-          task: mockTaskGroup.tasks[0].task,
-          status: { taskId: 'task-no-runs', runs: [] },
-        }],
+        tasks: [
+          {
+            task: mockTaskGroup.tasks[0].task,
+            status: { taskId: 'task-no-runs', runs: [] },
+          },
+        ],
       };
       const rootUrl = 'https://taskcluster.net';
       const profile = getProfile([emptyGroup], rootUrl);

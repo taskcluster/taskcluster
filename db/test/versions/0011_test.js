@@ -9,10 +9,10 @@ suite(testing.suiteName(), () => {
 
   test('widgets table dropped', async () => {
     await helper.upgradeTo(PREV_VERSION);
-    await helper.assertTable("widgets");
+    await helper.assertTable('widgets');
     await helper.upgradeTo(THIS_VERSION);
-    await helper.assertNoTable("widgets");
+    await helper.assertNoTable('widgets');
     await helper.downgradeTo(PREV_VERSION);
-    await helper.assertTable("widgets");
+    await helper.assertTable('widgets');
   });
 });

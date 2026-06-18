@@ -9,8 +9,8 @@ export default ({ github }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _c
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
 
   const renderTaskclusterYml = new DataLoader(queries =>
@@ -21,8 +21,8 @@ export default ({ github }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _c
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
 
   return {

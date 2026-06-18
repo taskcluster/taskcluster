@@ -5,7 +5,6 @@ import fakeGithubAuth from './github-auth.js';
 import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), () => {
-
   function checkKeys(obj, platonic) {
     const ours = _.filter(Object.keys(obj), k => !k.startsWith('_'));
     const theirs = Object.keys(platonic);

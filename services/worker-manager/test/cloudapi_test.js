@@ -4,7 +4,7 @@ import testing from '@taskcluster/lib-testing';
 import helper from './helper.js';
 import { CloudAPI } from '../src/providers/cloudapi.js';
 
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 suite(testing.suiteName(), () => {
   let cloud;
@@ -20,7 +20,8 @@ suite(testing.suiteName(), () => {
       ...options,
       providerId: 'fake-provider',
       errorHandler: ({ err, tries }) => {
-        if (err.code === 403) { // for testing purposes, 403 = rate limit
+        if (err.code === 403) {
+          // for testing purposes, 403 = rate limit
           return {
             backoff: _backoffDelay * 50,
             reason: 'rateLimit',

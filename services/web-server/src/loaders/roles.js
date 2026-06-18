@@ -13,8 +13,8 @@ export default ({ auth }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
   const roleIds = new ConnectionLoader(async ({ searchTerm, options }) => {
     const raw = await auth.listRoleIds(options);
@@ -28,14 +28,14 @@ export default ({ auth }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg
   });
   const role = new DataLoader(roleIds =>
     Promise.all(
-      roleIds.map(async (roleId) => {
+      roleIds.map(async roleId => {
         try {
           return await auth.role(roleId);
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
 
   return {

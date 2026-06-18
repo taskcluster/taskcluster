@@ -28,7 +28,8 @@ class SentryApiClient {
       },
       deleteKey: (org, project, key) => {
         return this._delete(
-          `projects/${encodeURIComponent(org)}/${encodeURIComponent(project)}/keys/${encodeURIComponent(key)}/`);
+          `projects/${encodeURIComponent(org)}/${encodeURIComponent(project)}/keys/${encodeURIComponent(key)}/`
+        );
       },
     };
     this.teams = {
@@ -108,13 +109,7 @@ const parseKeys = (keys, prefix) => {
 };
 
 const makeSentryManager = options => {
-  const cfgs = [
-    'organization',
-    'hostname',
-    'authToken',
-    'initialTeam',
-    'keyPrefix',
-  ];
+  const cfgs = ['organization', 'hostname', 'authToken', 'initialTeam', 'keyPrefix'];
   if (cfgs.every(c => options[c])) {
     if (!options.sentryClient) {
       options.sentryClient = new SentryApiClient(`https://${options.hostname}`, {
@@ -124,8 +119,7 @@ const makeSentryManager = options => {
     return new SentryManager(options);
   }
   if (cfgs.some(c => options[c])) {
-    throw new Error('If any of the SENTRY_ configuration variables are present, ' +
-                    'all must be present');
+    throw new Error('If any of the SENTRY_ configuration variables are present, ' + 'all must be present');
   }
 
   return new NullSentryManager();
@@ -171,16 +165,12 @@ class SentryManager {
     try {
       keys = await this._sentry.projects.keys(this._organization, project);
     } catch (err) {
-      debug(
-        'Failed to list keys for %s (will create project), err: %s, stack: %s',
-        project, err, err.stack,
-      );
+      debug('Failed to list keys for %s (will create project), err: %s, stack: %s', project, err, err.stack);
       // Ignore error try to create the project, and list keys again.
-      await this._sentry.teams.createProject(
-        this._organization, this._initialTeam, {
-          name: project,
-          slug: project,
-        });
+      await this._sentry.teams.createProject(this._organization, this._initialTeam, {
+        name: project,
+        slug: project,
+      });
       keys = await this._sentry.projects.keys(this._organization, project);
     }
 
@@ -189,10 +179,9 @@ class SentryManager {
     if (!key || key.expires < taskcluster.fromNow('25 hours')) {
       // Create new key that expires in 48 hours
       const expires = taskcluster.fromNow('48 hours');
-      const k = await this._sentry.projects.createKey(
-        this._organization, project, {
-          name: `${this._keyPrefix} managed (expires-at:${expires.toJSON()})`,
-        });
+      const k = await this._sentry.projects.createKey(this._organization, project, {
+        name: `${this._keyPrefix} managed (expires-at:${expires.toJSON()})`,
+      });
       key = {
         id: k.id,
         dsn: k.dsn,
@@ -211,24 +200,26 @@ class SentryManager {
     const projects = await this._sentry.organizations.projects(this._organization);
 
     let deleted = 0;
-    await Promise.all(projects.map(async (p) => {
-      // List all keys for each project
-      const keys = await this._sentry.projects.keys(this._organization, p.slug);
+    await Promise.all(
+      projects.map(async p => {
+        // List all keys for each project
+        const keys = await this._sentry.projects.keys(this._organization, p.slug);
 
-      // Find expired keys
-      const expiredKeys = parseKeys(keys, this._keyPrefix).filter(key => {
-        return key.expires < now;
-      });
+        // Find expired keys
+        const expiredKeys = parseKeys(keys, this._keyPrefix).filter(key => {
+          return key.expires < now;
+        });
 
-      // Delete expired keys
-      await Promise.all(expiredKeys.map(key => {
-        debug('deleting key: %s from project: %s', key.id, p.slug);
-        deleted += 1;
-        return this._sentry.projects.deleteKey(
-          this._organization, p.slug, key.id,
+        // Delete expired keys
+        await Promise.all(
+          expiredKeys.map(key => {
+            debug('deleting key: %s from project: %s', key.id, p.slug);
+            deleted += 1;
+            return this._sentry.projects.deleteKey(this._organization, p.slug, key.id);
+          })
         );
-      }));
-    }));
+      })
+    );
 
     return deleted;
   }

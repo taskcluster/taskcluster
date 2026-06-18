@@ -18,7 +18,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   const workerPoolId = 'foo/bar';
   const project = 'testy';
 
-  const fake = new FakeGoogle;
+  const fake = new FakeGoogle();
   fake.forSuite();
 
   setup(async () => {
@@ -119,9 +119,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       });
     });
   };
-  constructorTest('constructor with creds as object', { "client_id": "fake-creds" });
+  constructorTest('constructor with creds as object', { client_id: 'fake-creds' });
   constructorTest('constructor with creds as string', '{"client_id": "fake-creds"}');
-  constructorTest('constructor with creds as base64', Buffer.from('{"client_id": "fake-creds"}', 'utf8').toString('base64'));
+  constructorTest(
+    'constructor with creds as base64',
+    Buffer.from('{"client_id": "fake-creds"}', 'utf8').toString('base64')
+  );
 
   suite('provisioning', () => {
     const provisionTest = (name, { config, expectedWorkers }, check) => {
@@ -147,272 +150,341 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       launchConfigs: [defaultLaunchConfig],
     };
 
-    provisionTest('no launch configs', {
-      config: { minCapacity: 0, maxCapacity: 1, scalingRatio: 1 },
-      expectedWorkers: 0,
-    }, async workers => {
-      assert.equal(workers.length, 0);
-    });
-
-    provisionTest('simple success', {
-      config,
-      expectedWorkers: 1,
-    }, async workers => {
-      const worker = workers[0];
-
-      assert.equal(worker.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
-      assert.equal(worker.workerGroup, defaultLaunchConfig.zone, 'Worker group should be zone');
-      assert.equal(worker.state, Worker.states.REQUESTED, 'Worker should be marked as requested');
-      assert.equal(worker.providerData.zone, defaultLaunchConfig.zone, 'Zone should come from the chosen config');
-      assert.deepEqual(worker.providerData.workerConfig, {});
-
-      const parameters = fake.compute.instances.insertCalls[0];
-      assert.equal(parameters.project, project);
-      assert.equal(parameters.zone, defaultLaunchConfig.zone);
-      assert.deepEqual(parameters.requestBody.labels, {
-        'created-by': `taskcluster-wm-${providerId}`,
-        'managed-by': 'taskcluster',
-        'worker-pool-id': workerPoolId.replace('/', '-'),
-        'owner': 'whatever-example-com',
-        'launch-config-id': worker.launchConfigId,
-      });
-      assert.equal(parameters.requestBody.description, 'none');
-      assert.deepEqual(parameters.requestBody.disks, []);
-      assert.deepEqual(parameters.requestBody.serviceAccounts, [{
-        email: 'testy-12345@example.com',
-        scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-      }]);
-      assert.deepEqual(parameters.requestBody.scheduling, { automaticRestart: false });
-
-      assert.equal(parameters.requestBody.metadata.items.length, 1);
-      const meta = parameters.requestBody.metadata.items[0];
-      assert.equal(meta.key, 'taskcluster');
-      const tcmeta = JSON.parse(meta.value);
-      assert.deepEqual(tcmeta, {
-        workerPoolId,
-        providerId,
-        workerGroup: defaultLaunchConfig.zone,
-        rootUrl: helper.rootUrl,
-        workerConfig: {},
-      });
-
-      const instanceName = parameters.requestBody.name;
-      assert(fake.compute.zoneOperations.fakeOperationExists(
-        worker.providerData.operation));
-      assert.equal(worker.workerId, `i-${instanceName}`);
-    });
-
-    provisionTest('registrationTimeout', {
-      config: {
-        ...config,
-        lifecycle: {
-          registrationTimeout: 6000,
-        },
+    provisionTest(
+      'no launch configs',
+      {
+        config: { minCapacity: 0, maxCapacity: 1, scalingRatio: 1 },
+        expectedWorkers: 0,
       },
-      expectedWorkers: 1,
-    }, async workers => {
-      const worker = workers[0];
-      // Check that this is setting times correctly to within a second or so to allow for some time
-      // for the provisioning loop
-      assert(worker.providerData.terminateAfter - Date.now() - (6000 * 1000) < 5000);
-    });
+      async workers => {
+        assert.equal(workers.length, 0);
+      }
+    );
 
-    provisionTest('queueInactivityTimeout', {
-      config: {
-        ...config,
-        lifecycle: {
-          queueInactivityTimeout: 600,
-        },
+    provisionTest(
+      'simple success',
+      {
+        config,
+        expectedWorkers: 1,
       },
-      expectedWorkers: 1,
-    }, async workers => {
-      const worker = workers[0];
-      assert.equal(600000, worker.providerData.queueInactivityTimeout);
-    });
+      async workers => {
+        const worker = workers[0];
 
-    provisionTest('labels', {
-      config: {
-        ...config,
-        launchConfigs: [{
-          ...defaultLaunchConfig,
-          labels: {
-            color: 'red',
-            owner: 'ignored',
+        assert.equal(worker.workerPoolId, workerPoolId, 'Worker was created for a wrong worker pool');
+        assert.equal(worker.workerGroup, defaultLaunchConfig.zone, 'Worker group should be zone');
+        assert.equal(worker.state, Worker.states.REQUESTED, 'Worker should be marked as requested');
+        assert.equal(worker.providerData.zone, defaultLaunchConfig.zone, 'Zone should come from the chosen config');
+        assert.deepEqual(worker.providerData.workerConfig, {});
+
+        const parameters = fake.compute.instances.insertCalls[0];
+        assert.equal(parameters.project, project);
+        assert.equal(parameters.zone, defaultLaunchConfig.zone);
+        assert.deepEqual(parameters.requestBody.labels, {
+          'created-by': `taskcluster-wm-${providerId}`,
+          'managed-by': 'taskcluster',
+          'worker-pool-id': workerPoolId.replace('/', '-'),
+          owner: 'whatever-example-com',
+          'launch-config-id': worker.launchConfigId,
+        });
+        assert.equal(parameters.requestBody.description, 'none');
+        assert.deepEqual(parameters.requestBody.disks, []);
+        assert.deepEqual(parameters.requestBody.serviceAccounts, [
+          {
+            email: 'testy-12345@example.com',
+            scopes: ['https://www.googleapis.com/auth/cloud-platform'],
           },
-        }],
-      },
-      expectedWorkers: 1,
-    }, async workers => {
-      const parameters = fake.compute.instances.insertCalls[0];
-      assert.deepEqual(parameters.requestBody.labels, {
-        'created-by': `taskcluster-wm-${providerId}`,
-        'managed-by': 'taskcluster',
-        'worker-pool-id': workerPoolId.replace('/', '-'),
-        'owner': 'whatever-example-com',
-        'color': 'red',
-        'launch-config-id': workers[0].launchConfigId,
-      });
-    });
+        ]);
+        assert.deepEqual(parameters.requestBody.scheduling, { automaticRestart: false });
 
-    provisionTest('disks (persistent)', {
-      config: {
-        ...config,
-        launchConfigs: [{
-          ...defaultLaunchConfig,
-          disks: [{
+        assert.equal(parameters.requestBody.metadata.items.length, 1);
+        const meta = parameters.requestBody.metadata.items[0];
+        assert.equal(meta.key, 'taskcluster');
+        const tcmeta = JSON.parse(meta.value);
+        assert.deepEqual(tcmeta, {
+          workerPoolId,
+          providerId,
+          workerGroup: defaultLaunchConfig.zone,
+          rootUrl: helper.rootUrl,
+          workerConfig: {},
+        });
+
+        const instanceName = parameters.requestBody.name;
+        assert(fake.compute.zoneOperations.fakeOperationExists(worker.providerData.operation));
+        assert.equal(worker.workerId, `i-${instanceName}`);
+      }
+    );
+
+    provisionTest(
+      'registrationTimeout',
+      {
+        config: {
+          ...config,
+          lifecycle: {
+            registrationTimeout: 6000,
+          },
+        },
+        expectedWorkers: 1,
+      },
+      async workers => {
+        const worker = workers[0];
+        // Check that this is setting times correctly to within a second or so to allow for some time
+        // for the provisioning loop
+        assert(worker.providerData.terminateAfter - Date.now() - 6000 * 1000 < 5000);
+      }
+    );
+
+    provisionTest(
+      'queueInactivityTimeout',
+      {
+        config: {
+          ...config,
+          lifecycle: {
+            queueInactivityTimeout: 600,
+          },
+        },
+        expectedWorkers: 1,
+      },
+      async workers => {
+        const worker = workers[0];
+        assert.equal(600000, worker.providerData.queueInactivityTimeout);
+      }
+    );
+
+    provisionTest(
+      'labels',
+      {
+        config: {
+          ...config,
+          launchConfigs: [
+            {
+              ...defaultLaunchConfig,
+              labels: {
+                color: 'red',
+                owner: 'ignored',
+              },
+            },
+          ],
+        },
+        expectedWorkers: 1,
+      },
+      async workers => {
+        const parameters = fake.compute.instances.insertCalls[0];
+        assert.deepEqual(parameters.requestBody.labels, {
+          'created-by': `taskcluster-wm-${providerId}`,
+          'managed-by': 'taskcluster',
+          'worker-pool-id': workerPoolId.replace('/', '-'),
+          owner: 'whatever-example-com',
+          color: 'red',
+          'launch-config-id': workers[0].launchConfigId,
+        });
+      }
+    );
+
+    provisionTest(
+      'disks (persistent)',
+      {
+        config: {
+          ...config,
+          launchConfigs: [
+            {
+              ...defaultLaunchConfig,
+              disks: [
+                {
+                  testProperty: 'bar',
+                  type: 'PERSISTENT',
+                  labels: { color: 'purple' },
+                },
+              ],
+            },
+          ],
+        },
+        expectedWorkers: 1,
+      },
+      async workers => {
+        const parameters = fake.compute.instances.insertCalls[0];
+        assert.deepEqual(parameters.requestBody.disks, [
+          {
             testProperty: 'bar',
             type: 'PERSISTENT',
-            labels: { color: 'purple' },
-          }],
-        }],
-      },
-      expectedWorkers: 1,
-    }, async workers => {
-      const parameters = fake.compute.instances.insertCalls[0];
-      assert.deepEqual(parameters.requestBody.disks, [
-        {
-          testProperty: 'bar',
-          type: 'PERSISTENT',
-          initializeParams: {
-            labels: {
-              'created-by': `taskcluster-wm-${providerId}`,
-              'managed-by': 'taskcluster',
-              'worker-pool-id': workerPoolId.replace('/', '-'),
-              'owner': 'whatever-example-com',
-              'color': 'purple',
-              'launch-config-id': workers[0].launchConfigId,
+            initializeParams: {
+              labels: {
+                'created-by': `taskcluster-wm-${providerId}`,
+                'managed-by': 'taskcluster',
+                'worker-pool-id': workerPoolId.replace('/', '-'),
+                owner: 'whatever-example-com',
+                color: 'purple',
+                'launch-config-id': workers[0].launchConfigId,
+              },
             },
           },
-        },
-      ]);
-    });
+        ]);
+      }
+    );
 
-    provisionTest('disks (scratch)', {
-      config: {
-        ...config,
-        launchConfigs: [{
-          ...defaultLaunchConfig,
-          disks: [{
+    provisionTest(
+      'disks (scratch)',
+      {
+        config: {
+          ...config,
+          launchConfigs: [
+            {
+              ...defaultLaunchConfig,
+              disks: [
+                {
+                  testProperty: 'bar',
+                  type: 'SCRATCH',
+                  labels: { color: 'purple' },
+                },
+              ],
+            },
+          ],
+        },
+        expectedWorkers: 1,
+      },
+      async () => {
+        const parameters = fake.compute.instances.insertCalls[0];
+        assert.deepEqual(parameters.requestBody.disks, [
+          {
             testProperty: 'bar',
             type: 'SCRATCH',
-            labels: { color: 'purple' },
-          }],
-        }],
-      },
-      expectedWorkers: 1,
-    }, async () => {
-      const parameters = fake.compute.instances.insertCalls[0];
-      assert.deepEqual(parameters.requestBody.disks, [
-        {
-          testProperty: 'bar',
-          type: 'SCRATCH',
-        },
-      ]);
-    });
+          },
+        ]);
+      }
+    );
 
-    provisionTest('disk labels preserved', {
-      config: {
-        ...config,
-        launchConfigs: [{
-          ...defaultLaunchConfig,
-          disks: [{
+    provisionTest(
+      'disk labels preserved',
+      {
+        config: {
+          ...config,
+          launchConfigs: [
+            {
+              ...defaultLaunchConfig,
+              disks: [
+                {
+                  testProperty: 'bar',
+                  type: 'PERSISTENT',
+                  initializeParams: { labels: { color: 'purple' } },
+                },
+              ],
+            },
+          ],
+        },
+        expectedWorkers: 1,
+      },
+      async workers => {
+        const parameters = fake.compute.instances.insertCalls[0];
+        assert.deepEqual(parameters.requestBody.disks, [
+          {
             testProperty: 'bar',
             type: 'PERSISTENT',
-            initializeParams: { labels: { color: 'purple' } },
-          }],
-        }],
-      },
-      expectedWorkers: 1,
-    }, async workers => {
-      const parameters = fake.compute.instances.insertCalls[0];
-      assert.deepEqual(parameters.requestBody.disks, [
-        {
-          testProperty: 'bar',
-          type: 'PERSISTENT',
-          initializeParams: {
-            labels: {
-              'created-by': `taskcluster-wm-${providerId}`,
-              'managed-by': 'taskcluster',
-              'worker-pool-id': workerPoolId.replace('/', '-'),
-              'owner': 'whatever-example-com',
-              'color': 'purple',
-              'launch-config-id': workers[0].launchConfigId,
+            initializeParams: {
+              labels: {
+                'created-by': `taskcluster-wm-${providerId}`,
+                'managed-by': 'taskcluster',
+                'worker-pool-id': workerPoolId.replace('/', '-'),
+                owner: 'whatever-example-com',
+                color: 'purple',
+                'launch-config-id': workers[0].launchConfigId,
+              },
             },
           },
+        ]);
+      }
+    );
+
+    provisionTest(
+      'top-level launchConfig property',
+      {
+        config: {
+          ...config,
+          launchConfigs: [
+            {
+              ...defaultLaunchConfig,
+              testProperty: 'foo',
+            },
+          ],
         },
-      ]);
-    });
-
-    provisionTest('top-level launchConfig property', {
-      config: {
-        ...config,
-        launchConfigs: [{
-          ...defaultLaunchConfig,
-          testProperty: 'foo',
-        }],
+        expectedWorkers: 1,
       },
-      expectedWorkers: 1,
-    }, async () => {
-      const parameters = fake.compute.instances.insertCalls[0];
-      assert.equal(parameters.requestBody.testProperty, 'foo');
-    });
+      async () => {
+        const parameters = fake.compute.instances.insertCalls[0];
+        assert.equal(parameters.requestBody.testProperty, 'foo');
+      }
+    );
 
-    provisionTest('scheduling', {
-      config: {
-        ...config,
-        launchConfigs: [{
-          ...defaultLaunchConfig,
-          scheduling: { testProperty: 'foo' },
-        }],
+    provisionTest(
+      'scheduling',
+      {
+        config: {
+          ...config,
+          launchConfigs: [
+            {
+              ...defaultLaunchConfig,
+              scheduling: { testProperty: 'foo' },
+            },
+          ],
+        },
+        expectedWorkers: 1,
       },
-      expectedWorkers: 1,
-    }, async () => {
-      const parameters = fake.compute.instances.insertCalls[0];
-      assert.equal(parameters.requestBody.scheduling.testProperty, 'foo');
-    });
+      async () => {
+        const parameters = fake.compute.instances.insertCalls[0];
+        assert.equal(parameters.requestBody.scheduling.testProperty, 'foo');
+      }
+    );
 
-    provisionTest('extra metadata', {
-      config: {
-        ...config,
-        launchConfigs: [{
-          ...defaultLaunchConfig,
-          metadata: {
-            items: [
-              { key: 'mystuff', value: 'foo' },
-            ],
-          },
-        }],
+    provisionTest(
+      'extra metadata',
+      {
+        config: {
+          ...config,
+          launchConfigs: [
+            {
+              ...defaultLaunchConfig,
+              metadata: {
+                items: [{ key: 'mystuff', value: 'foo' }],
+              },
+            },
+          ],
+        },
+        expectedWorkers: 1,
       },
-      expectedWorkers: 1,
-    }, async () => {
-      const parameters = fake.compute.instances.insertCalls[0];
-      assert.equal(parameters.requestBody.metadata.items.length, 2);
-      const meta = parameters.requestBody.metadata.items[0];
-      assert.equal(meta.key, 'mystuff');
-      assert.equal(meta.value, 'foo');
-    });
+      async () => {
+        const parameters = fake.compute.instances.insertCalls[0];
+        assert.equal(parameters.requestBody.metadata.items.length, 2);
+        const meta = parameters.requestBody.metadata.items[0];
+        assert.equal(meta.key, 'mystuff');
+        assert.equal(meta.value, 'foo');
+      }
+    );
 
-    provisionTest('workerConfig', {
-      config: {
-        ...config,
-        launchConfigs: [{
-          ...defaultLaunchConfig,
-          workerConfig: {
-            slowRollTasks: true,
-          },
-        }],
+    provisionTest(
+      'workerConfig',
+      {
+        config: {
+          ...config,
+          launchConfigs: [
+            {
+              ...defaultLaunchConfig,
+              workerConfig: {
+                slowRollTasks: true,
+              },
+            },
+          ],
+        },
+        expectedWorkers: 1,
       },
-      expectedWorkers: 1,
-    }, async () => {
-      const parameters = fake.compute.instances.insertCalls[0];
-      assert.equal(parameters.requestBody.metadata.items.length, 1);
-      const meta = parameters.requestBody.metadata.items[0];
-      assert.equal(meta.key, 'taskcluster');
-      const tcmeta = JSON.parse(meta.value);
-      assert.deepEqual(tcmeta.workerConfig, {
-        slowRollTasks: true,
-      });
-    });
+      async () => {
+        const parameters = fake.compute.instances.insertCalls[0];
+        assert.equal(parameters.requestBody.metadata.items.length, 1);
+        const meta = parameters.requestBody.metadata.items[0];
+        assert.equal(meta.key, 'taskcluster');
+        const tcmeta = JSON.parse(meta.value);
+        assert.deepEqual(tcmeta.workerConfig, {
+          slowRollTasks: true,
+        });
+      }
+    );
 
     test('failure from compute.insert', async () => {
       const workerPool = await makeWorkerPool();
@@ -486,7 +558,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   suite('checkWorker', () => {
     const workerId = 'wkrid';
-    const suiteMakeWorker = async (overrides) => {
+    const suiteMakeWorker = async overrides => {
       return await makeWorker({
         workerPoolId,
         workerGroup: 'us-east1-a',
@@ -515,9 +587,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('for a still-requested worker', async () => {
       await makeWorkerPool();
       let worker = await suiteMakeWorker({ state: 'requested' });
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'RUNNING');
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'RUNNING');
       worker.created = taskcluster.fromNow('-10 minutes');
       worker = await runCheckWorker(worker);
 
@@ -528,9 +598,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('for a running worker', async () => {
       await makeWorkerPool();
       let worker = await suiteMakeWorker({ state: 'running' });
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'RUNNING');
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'RUNNING');
       worker.created = taskcluster.fromNow('-10 minutes');
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.RUNNING);
@@ -539,9 +607,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('for a terminated instance', async () => {
       await makeWorkerPool();
       let worker = await suiteMakeWorker({ state: 'running' });
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'TERMINATED');
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'TERMINATED');
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
@@ -551,9 +617,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('for a stopped instance', async () => {
       await makeWorkerPool();
       let worker = await suiteMakeWorker({ state: 'running' });
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'STOPPED');
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'STOPPED');
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
@@ -600,9 +664,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('remove unregistered workers after terminateAfter', async () => {
       const terminateAfter = Date.now() - 1000;
       let worker = await suiteMakeWorker({ providerData: { terminateAfter } });
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'RUNNING');
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'RUNNING');
       assert.equal(worker.state, Worker.states.RUNNING);
       worker = await runCheckWorker(worker);
       assert(fake.compute.instances.delete_called);
@@ -611,23 +673,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // until we see it disappear, then stopped
       assert.equal(worker.state, Worker.states.STOPPING);
       helper.assertNoPulseMessage('worker-stopped');
-      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
-        m.payload.reason === 'terminateAfter time exceeded');
+      helper.assertPulseMessage(
+        'worker-removed',
+        m => m.payload.workerId === workerId && m.payload.reason === 'terminateAfter time exceeded'
+      );
 
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
 
-    test('don\'t remove unregistered before terminateAfter', async () => {
+    test("don't remove unregistered before terminateAfter", async () => {
       const terminateAfter = Date.now() + 1000;
       let worker = await suiteMakeWorker({
         created: taskcluster.fromNow('-30 minutes'),
         providerData: { terminateAfter },
       });
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'RUNNING');
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'RUNNING');
       worker = await runCheckWorker(worker);
       assert(!fake.compute.instances.delete_called);
       assert.equal(worker.state, Worker.states.RUNNING);
@@ -639,9 +701,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         created: taskcluster.fromNow('-30 minutes'),
         providerData: { terminateAfter },
       });
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'RUNNING');
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'RUNNING');
 
       worker.reload = function () {
         this.providerData.terminateAfter = Date.now() + 1000;
@@ -654,9 +714,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('remove zombie worker with no queue activity', async () => {
       const queueInactivityTimeout = 1;
       let worker = await suiteMakeWorker({ providerData: { queueInactivityTimeout } });
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'RUNNING');
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'RUNNING');
       worker.firstClaim = null;
       worker.lastDateActive = null;
 
@@ -665,8 +723,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert(fake.compute.instances.delete_called);
       assert.equal(worker.state, Worker.states.STOPPING);
       helper.assertNoPulseMessage('worker-stopped');
-      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
-        m.payload.reason.includes('never claimed work'));
+      helper.assertPulseMessage(
+        'worker-removed',
+        m => m.payload.workerId === workerId && m.payload.reason.includes('never claimed work')
+      );
 
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
@@ -675,9 +735,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('remove zombie worker that was active long ago', async () => {
       const queueInactivityTimeout = 120;
       let worker = await suiteMakeWorker({ providerData: { queueInactivityTimeout } });
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'RUNNING');
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'RUNNING');
 
       worker.created = taskcluster.fromNow('-120 minutes');
       worker.firstClaim = taskcluster.fromNow('-100 minutes');
@@ -688,19 +746,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert(fake.compute.instances.delete_called);
       assert.equal(worker.state, Worker.states.STOPPING);
       helper.assertNoPulseMessage('worker-stopped');
-      helper.assertPulseMessage('worker-removed', m => m.payload.workerId === workerId &&
-        m.payload.reason.includes('worker inactive'));
+      helper.assertPulseMessage(
+        'worker-removed',
+        m => m.payload.workerId === workerId && m.payload.reason.includes('worker inactive')
+      );
 
       worker = await runCheckWorker(worker);
       assert.equal(worker.state, Worker.states.STOPPED);
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === workerId);
     });
-    test('don\'t remove zombie worker that was recently active', async () => {
+    test("don't remove zombie worker that was recently active", async () => {
       const queueInactivityTimeout = 60 * 60 * 4 * 1000; // 4 hours
       let worker = await suiteMakeWorker({ providerData: { queueInactivityTimeout } });
-      fake.compute.instances.setFakeInstanceStatus(
-        project, 'us-east1-a', workerId,
-        'RUNNING');
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'RUNNING');
 
       worker.created = taskcluster.fromNow('-120 minutes');
       worker.firstClaim = taskcluster.fromNow('-100 minutes');
@@ -738,9 +796,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         ...defaultWorker,
       });
       const workerIdentityProof = {};
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /Token validation error/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /Token validation error/
+      );
     });
 
     test('invalid token', async () => {
@@ -749,9 +808,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         ...defaultWorker,
       });
       const workerIdentityProof = { token: 'invalid' };
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /Token validation error/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /Token validation error/
+      );
     });
 
     test('wrong project', async () => {
@@ -760,9 +820,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         ...defaultWorker,
       });
       const workerIdentityProof = { token: 'wrongProject' };
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /Token validation error/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /Token validation error/
+      );
     });
 
     test('wrong sub', async () => {
@@ -771,9 +832,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         ...defaultWorker,
       });
       const workerIdentityProof = { token: 'wrongSub' };
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /Token validation error/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /Token validation error/
+      );
     });
 
     test('wrong instance ID', async () => {
@@ -782,9 +844,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         ...defaultWorker,
       });
       const workerIdentityProof = { token: 'wrongId' };
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /Token validation error/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /Token validation error/
+      );
     });
 
     test('wrong worker state (duplicate call to registerWorker)', async () => {
@@ -794,9 +857,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         state: 'running',
       });
       const workerIdentityProof = { token: 'good' };
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /Token validation error/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /Token validation error/
+      );
       helper.assertNoPulseMessage('worker-running');
     });
 
@@ -806,7 +870,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         ...defaultWorker,
         providerData: {
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
         },
       });
@@ -826,7 +890,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         providerData: {
           reregistrationTimeout: 3600 * 10 * 1000,
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
         },
       });

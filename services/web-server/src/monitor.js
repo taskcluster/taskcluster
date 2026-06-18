@@ -48,7 +48,8 @@ MonitorManager.register({
   type: 'request-received',
   version: 1,
   level: 'notice',
-  description: 'A GraphQL request has been received. The traceId/request is at the top-level of the log message, above these fields.',
+  description:
+    'A GraphQL request has been received. The traceId/request is at the top-level of the log message, above these fields.',
   fields: {
     query: 'The graphQL query string',
     operationName: `

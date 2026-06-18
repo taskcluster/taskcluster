@@ -32,7 +32,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       1,
       'push',
       '26370a80-ed65-11e6-8f4c-80082678482d',
-      null,
+      null
     );
     await helper.db.fns.create_github_build_pr(
       'ghi789',
@@ -45,7 +45,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       1,
       'push',
       '26370a80-ed65-11e6-8f4c-80082678482d',
-      1,
+      1
     );
     await helper.db.fns.create_github_build_pr(
       'abc123',
@@ -58,7 +58,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       1,
       'push',
       '26370a80-ed65-11e6-8f4c-80082678482d',
-      null,
+      null
     );
     await helper.db.fns.create_github_build_pr(
       'abc123',
@@ -71,31 +71,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       1,
       'push',
       'Unknown',
-      2,
+      2
     );
 
-    await helper.db.fns.upsert_github_integration(
-      'abc123',
-      9090,
-    );
+    await helper.db.fns.upsert_github_integration('abc123', 9090);
 
-    await helper.db.fns.upsert_github_integration(
-      'qwerty',
-      9091,
-    );
+    await helper.db.fns.upsert_github_integration('qwerty', 9091);
   });
 
   let github;
 
   setup(async () => {
     github = await helper.load('github');
-    github.inst(9090).setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo', 'nonTCGHRepo', 'checksRepo',
-      'softStatusRepo');
+    github
+      .inst(9090)
+      .setRepositories('coolRepo', 'anotherCoolRepo', 'awesomeRepo', 'nonTCGHRepo', 'checksRepo', 'softStatusRepo');
     github.inst(9090).setStatuses({
       owner: 'abc123',
       repo: 'coolRepo',
       ref: 'master',
-      info: [{ creator: { id: 12345 }, state: 'success' }, { creator: { id: 55555 }, state: 'failure' }],
+      info: [
+        { creator: { id: 12345 }, state: 'success' },
+        { creator: { id: 55555 }, state: 'failure' },
+      ],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
@@ -124,9 +122,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       repo: 'checksRepo',
       ref: 'success',
       info: [
-        { id: 1, name: "check1", conclusion: 'failure', app: { id: 12345 }, html_url: "https://example.com/abc123/checksRepo/runs/1" },
-        { id: 3, name: "check3", conclusion: 'success', app: { id: 66666 }, html_url: "https://example.com/abc123/checksRepo/runs/3" },
-        { id: 2, name: "check2", conclusion: 'success', app: { id: 66666 }, html_url: "https://example.com/abc123/checksRepo/runs/2" },
+        {
+          id: 1,
+          name: 'check1',
+          conclusion: 'failure',
+          app: { id: 12345 },
+          html_url: 'https://example.com/abc123/checksRepo/runs/1',
+        },
+        {
+          id: 3,
+          name: 'check3',
+          conclusion: 'success',
+          app: { id: 66666 },
+          html_url: 'https://example.com/abc123/checksRepo/runs/3',
+        },
+        {
+          id: 2,
+          name: 'check2',
+          conclusion: 'success',
+          app: { id: 66666 },
+          html_url: 'https://example.com/abc123/checksRepo/runs/2',
+        },
       ],
     });
     github.inst(9090).setChecks({
@@ -134,8 +150,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       repo: 'checksRepo',
       ref: 'failure',
       info: [
-        { name: "check1", conclusion: 'success', app: { id: 66666 } },
-        { name: "check2", conclusion: 'failure', app: { id: 66666 } },
+        { name: 'check1', conclusion: 'success', app: { id: 66666 } },
+        { name: 'check2', conclusion: 'failure', app: { id: 66666 } },
       ],
     });
     github.inst(9090).setChecks({
@@ -143,9 +159,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       repo: 'checksRepo',
       ref: 'pending',
       info: [
-        { name: "check1", conclusion: 'success', app: { id: 66666 } },
-        { name: "check2", conclusion: 'pending', app: { id: 66666 } },
-        { name: "check3", conclusion: 'failure', app: { id: 12345 } },
+        { name: 'check1', conclusion: 'success', app: { id: 66666 } },
+        { name: 'check2', conclusion: 'pending', app: { id: 66666 } },
+        { name: 'check3', conclusion: 'failure', app: { id: 12345 } },
       ],
     });
     github.inst(9090).setStatuses({
@@ -162,8 +178,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       repo: 'checksRepo',
       ref: 'combined',
       info: [
-        { name: "check1", conclusion: 'success', app: { id: 66666 } },
-        { name: "check2", conclusion: 'failure', app: { id: 66666 } },
+        { name: 'check1', conclusion: 'success', app: { id: 66666 } },
+        { name: 'check2', conclusion: 'failure', app: { id: 66666 } },
       ],
     });
     github.inst(9090).setStatuses({
@@ -179,9 +195,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       owner: 'abc123',
       repo: 'checksRepo',
       ref: 'combined2',
-      info: [
-        { name: "check1", conclusion: 'success', app: { id: 66666 } },
-      ],
+      info: [{ name: 'check1', conclusion: 'success', app: { id: 66666 } }],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
@@ -193,9 +207,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       owner: 'abc123',
       repo: 'softStatusRepo',
       ref: 'timedout',
-      info: [
-        { name: "check1", conclusion: 'timed_out', app: { id: 66666 } },
-      ],
+      info: [{ name: 'check1', conclusion: 'timed_out', app: { id: 66666 } }],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
@@ -207,9 +219,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       owner: 'abc123',
       repo: 'softStatusRepo',
       ref: 'cancelled',
-      info: [
-        { name: "check1", conclusion: 'cancelled', app: { id: 66666 } },
-      ],
+      info: [{ name: 'check1', conclusion: 'cancelled', app: { id: 66666 } }],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
@@ -221,9 +231,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       owner: 'abc123',
       repo: 'softStatusRepo',
       ref: 'skipped',
-      info: [
-        { name: "check1", conclusion: 'skipped', app: { id: 66666 } },
-      ],
+      info: [{ name: 'check1', conclusion: 'skipped', app: { id: 66666 } }],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
@@ -235,9 +243,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       owner: 'abc123',
       repo: 'softStatusRepo',
       ref: 'stale',
-      info: [
-        { name: "check1", conclusion: 'stale', app: { id: 66666 } },
-      ],
+      info: [{ name: 'check1', conclusion: 'stale', app: { id: 66666 } }],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
@@ -249,9 +255,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       owner: 'abc123',
       repo: 'softStatusRepo',
       ref: 'actionRequired',
-      info: [
-        { name: "check1", conclusion: 'action_required', app: { id: 66666 } },
-      ],
+      info: [{ name: 'check1', conclusion: 'action_required', app: { id: 66666 } }],
     });
     github.inst(9090).setStatuses({
       owner: 'abc123',
@@ -263,9 +267,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       owner: 'abc123',
       repo: 'softStatusRepo',
       ref: 'neutral',
-      info: [
-        { name: "check1", conclusion: 'neutral', app: { id: 66666 } },
-      ],
+      info: [{ name: 'check1', conclusion: 'neutral', app: { id: 66666 } }],
     });
   });
 
@@ -283,7 +285,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
       () => client.builds(),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('org builds', async () => {
@@ -379,15 +382,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
     test('no scopes', async () => {
       const noScopesClient = new helper.GithubClient({ rootUrl: helper.rootUrl });
-      await assert.rejects(async () => {
-        await noScopesClient.cancelBuilds('abc123', 'xyz');
-      }, err => err.code === 'InsufficientScopes');
+      await assert.rejects(
+        async () => {
+          await noScopesClient.cancelBuilds('abc123', 'xyz');
+        },
+        err => err.code === 'InsufficientScopes'
+      );
     });
     test('scopes: wrong org and repo', async () => {
       await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:wrong-org:wrong-repo'], async () => {
         await assert.rejects(
           () => got.post(helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz')),
-          err => err.response.statusCode === 403,
+          err => err.response.statusCode === 403
         );
       });
     });
@@ -395,16 +401,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:abc123:wrong-repo'], async () => {
         await assert.rejects(
           () => got.post(helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz', {})),
-          err => err.response.statusCode === 403,
+          err => err.response.statusCode === 403
         );
       });
     });
     test('scopes: expand scopes works', async () => {
       await testing.fakeauth.withAnonymousScopes(['github:cancel-builds:abc123:*'], async () => {
-        const builds = await got.post(
-          helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz'),
-          { responseType: 'json' },
-        );
+        const builds = await got.post(helper.apiClient.buildUrl(helper.apiClient.cancelBuilds, 'abc123', 'xyz'), {
+          responseType: 'json',
+        });
         assert.equal(builds.body.builds.length, 2);
       });
     });
@@ -423,7 +428,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
       () => client.repository('a', 'b'),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('build badges - status:failure', async () => {
@@ -512,7 +518,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
   test('build badges - checks conclusion - action required', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:get-badge:abc123:*'], async () => {
-      const res = await got(helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'actionRequired'));
+      const res = await got(
+        helper.apiClient.buildUrl(helper.apiClient.badge, 'abc123', 'softStatusRepo', 'actionRequired')
+      );
       assert.equal(res.headers['x-taskcluster-status'], 'action_required');
       assert.equal(res.body.length, 10864);
     });
@@ -550,7 +558,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
       () => client.badge('a', 'b', 'c'),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('link for clickable badges with status', async () => {
@@ -559,9 +568,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
       // check if the function returns a correct link
       try {
-        res = await got(
-          helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'awesomeRepo', 'master'),
-          { followRedirect: false });
+        res = await got(helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'awesomeRepo', 'master'), {
+          followRedirect: false,
+        });
       } catch (e) {
         console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
       }
@@ -575,9 +584,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
       // check if the function returns a correct link
       try {
-        res = await got(
-          helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'checksRepo', 'success'),
-          { followRedirect: false });
+        res = await got(helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'checksRepo', 'success'), {
+          followRedirect: false,
+        });
       } catch (e) {
         console.log(`Test for redirecting to correct page failed. Error: ${JSON.stringify(e)}`);
       }
@@ -587,25 +596,37 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   test('link for clickable badges when no such thing exists', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
-      await assert.rejects(() => got(
-        helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'unknownRepo', 'nosuch'),
-        { followRedirect: false }), err => err.response.statusCode === 404);
+      await assert.rejects(
+        () =>
+          got(helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'unknownRepo', 'nosuch'), {
+            followRedirect: false,
+          }),
+        err => err.response.statusCode === 404
+      );
     });
   });
 
   test('link for clickable badges when no branch exists', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:abc123:*'], async () => {
-      await assert.rejects(() => got(
-        helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'checksRepo', 'noSuchBranch'),
-        { followRedirect: false }), err => err.response.statusCode === 404);
+      await assert.rejects(
+        () =>
+          got(helper.apiClient.buildUrl(helper.apiClient.latest, 'abc123', 'checksRepo', 'noSuchBranch'), {
+            followRedirect: false,
+          }),
+        err => err.response.statusCode === 404
+      );
     });
   });
 
   test('link for clickable badges when no installation exists', async () => {
     await testing.fakeauth.withAnonymousScopes(['github:latest-status:noSuchOwner:*'], async () => {
-      await assert.rejects(() => got(
-        helper.apiClient.buildUrl(helper.apiClient.latest, 'noSuchOwner', 'noSuchRepo', 'noSuchBranch'),
-        { followRedirect: false }), err => err.response.statusCode === 404);
+      await assert.rejects(
+        () =>
+          got(helper.apiClient.buildUrl(helper.apiClient.latest, 'noSuchOwner', 'noSuchRepo', 'noSuchBranch'), {
+            followRedirect: false,
+          }),
+        err => err.response.statusCode === 404
+      );
     });
   });
 
@@ -613,7 +634,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     const client = new helper.GithubClient({ rootUrl: helper.rootUrl });
     await assert.rejects(
       () => client.latest('a', 'b', 'c'),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('simple status creation', async () => {
@@ -621,11 +643,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       state: 'error',
     });
 
-    const status = github.inst(9090).listCommitStatusesForRef({
-      owner: 'abc123',
-      repo: 'awesomeRepo',
-      ref: 'master',
-    }).data.pop();
+    const status = github
+      .inst(9090)
+      .listCommitStatusesForRef({
+        owner: 'abc123',
+        repo: 'awesomeRepo',
+        ref: 'master',
+      })
+      .data.pop();
     assert.equal(status.state, 'error');
     assert.equal(status.target_url, undefined);
     assert.equal(status.description, undefined);
@@ -640,11 +665,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       context: 'customContext',
     });
 
-    const status = github.inst(9090).listCommitStatusesForRef({
-      owner: 'abc123',
-      repo: 'awesomeRepo',
-      ref: 'master',
-    }).data.pop();
+    const status = github
+      .inst(9090)
+      .listCommitStatusesForRef({
+        owner: 'abc123',
+        repo: 'awesomeRepo',
+        ref: 'master',
+      })
+      .data.pop();
     assert.equal(status.state, 'failure');
     assert.equal(status.target_url, 'http://test.com');
     assert.equal(status.description, 'Status title');
@@ -670,11 +698,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       body: 'Task failed here',
     });
 
-    const comment = github.inst(9090).getComments({
-      owner: 'abc123',
-      repo: 'awesomeRepo',
-      number: 1,
-    }).data.pop();
+    const comment = github
+      .inst(9090)
+      .getComments({
+        owner: 'abc123',
+        repo: 'awesomeRepo',
+        number: 1,
+      })
+      .data.pop();
     assert.equal(comment.body, 'Task failed here');
   });
 
@@ -720,14 +751,54 @@ tasks:
 `;
     const eventTypes = [
       { fakeEvent: { type: 'github-push' }, tasksCount: 1, scopesCount: 3, scope: 'branch:main' },
-      { fakeEvent: { type: 'github-push', overrides: { branch: 'stage' } }, tasksCount: 1, scopesCount: 3, scope: 'branch:stage' },
-      { fakeEvent: { type: 'github-push', overrides: { ref: "refs/tags/v1.0.2" } }, tasksCount: 1, scopesCount: 3, scope: 'tag:v1.0.2' },
-      { fakeEvent: { type: 'github-pull-request', action: 'opened' }, tasksCount: 1, scopesCount: 3, scope: 'pull-request' },
-      { fakeEvent: { type: 'github-pull-request', action: 'synchronize' }, tasksCount: 1, scopesCount: 3, scope: 'pull-request' },
-      { fakeEvent: { type: 'github-pull-request', action: 'assigned' }, tasksCount: 0, scopesCount: 3, scope: 'pull-request' },
-      { fakeEvent: { type: 'github-pull-request-untrusted', action: 'opened' }, tasksCount: 0, scopesCount: 3, scope: 'pull-request-untrusted' },
-      { fakeEvent: { type: 'github-release', action: 'published' }, tasksCount: 0, scopesCount: 3, scope: 'release:published' },
-      { fakeEvent: { type: 'github-release', action: 'released' }, tasksCount: 0, scopesCount: 3, scope: 'release:released' },
+      {
+        fakeEvent: { type: 'github-push', overrides: { branch: 'stage' } },
+        tasksCount: 1,
+        scopesCount: 3,
+        scope: 'branch:stage',
+      },
+      {
+        fakeEvent: { type: 'github-push', overrides: { ref: 'refs/tags/v1.0.2' } },
+        tasksCount: 1,
+        scopesCount: 3,
+        scope: 'tag:v1.0.2',
+      },
+      {
+        fakeEvent: { type: 'github-pull-request', action: 'opened' },
+        tasksCount: 1,
+        scopesCount: 3,
+        scope: 'pull-request',
+      },
+      {
+        fakeEvent: { type: 'github-pull-request', action: 'synchronize' },
+        tasksCount: 1,
+        scopesCount: 3,
+        scope: 'pull-request',
+      },
+      {
+        fakeEvent: { type: 'github-pull-request', action: 'assigned' },
+        tasksCount: 0,
+        scopesCount: 3,
+        scope: 'pull-request',
+      },
+      {
+        fakeEvent: { type: 'github-pull-request-untrusted', action: 'opened' },
+        tasksCount: 0,
+        scopesCount: 3,
+        scope: 'pull-request-untrusted',
+      },
+      {
+        fakeEvent: { type: 'github-release', action: 'published' },
+        tasksCount: 0,
+        scopesCount: 3,
+        scope: 'release:published',
+      },
+      {
+        fakeEvent: { type: 'github-release', action: 'released' },
+        tasksCount: 0,
+        scopesCount: 3,
+        scope: 'release:released',
+      },
     ];
     eventTypes.map(({ fakeEvent, tasksCount, scopesCount, scope }) =>
       test(`render .tc.yml for event ${fakeEvent.type} ${fakeEvent.action || ''} ${scope}`, async () => {
@@ -738,14 +809,17 @@ tasks:
           organization: 'org',
         });
         assert.equal(tasks.length, tasksCount);
-        assert.deepEqual(tasks.map(t => t.task.taskQueueId), tasksCount > 0 ? ['proj-misc/tutorial'] : []);
+        assert.deepEqual(
+          tasks.map(t => t.task.taskQueueId),
+          tasksCount > 0 ? ['proj-misc/tutorial'] : []
+        );
         assert.equal(scopes.length, scopesCount);
         assert.deepEqual(scopes, [
           `assume:repo:github.com/org/awesomeRepo:${scope}`,
           'queue:route:checks',
           'queue:scheduler-id:tc-gh-devel',
         ]);
-      }),
+      })
     );
     test('invalid branch name is properly escaped', async () => {
       const tcYaml = `version: 1

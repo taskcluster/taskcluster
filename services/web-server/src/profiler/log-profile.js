@@ -20,17 +20,19 @@ export async function* lineIterator(stream, onBytes) {
   let leftover = new Uint8Array(0);
 
   for await (const chunk of stream) {
-    if (onBytes) {onBytes(chunk.byteLength);}
+    if (onBytes) {
+      onBytes(chunk.byteLength);
+    }
 
     // Combine ONLY the leftover bit from the previous chunk
-    const combined = leftover.length > 0
-      ? Buffer.concat([leftover, chunk])
-      : chunk;
+    const combined = leftover.length > 0 ? Buffer.concat([leftover, chunk]) : chunk;
 
     let start = 0;
     while (true) {
       const idx = combined.indexOf(NEWLINE, start);
-      if (idx === -1) {break;}
+      if (idx === -1) {
+        break;
+      }
 
       yield decoder.decode(combined.subarray(start, idx));
       start = idx + 1;
@@ -86,7 +88,9 @@ export class StreamingProfileBuilder {
   }
 
   addLine(line) {
-    if (!line.trim()) { return; }
+    if (!line.trim()) {
+      return;
+    }
 
     const match = line.match(LOG_PATTERN);
     if (match?.groups) {

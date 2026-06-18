@@ -90,23 +90,28 @@ export class MonitorManager {
    * @param {string} id - internal name for the metric that will be used to change value
    * @param {MetricDefinition} options
    */
-  static registerMetric(id, {
-    name,
-    type,
-    title,
-    description,
-    labels = {},
-    registers = ['default'],
-    buckets = undefined,
-    percentiles = undefined,
-    serviceName = undefined,
-    global = false,
-  }) {
+  static registerMetric(
+    id,
+    {
+      name,
+      type,
+      title,
+      description,
+      labels = {},
+      registers = ['default'],
+      buckets = undefined,
+      percentiles = undefined,
+      serviceName = undefined,
+      global = false,
+    }
+  ) {
     assert(id, `Must provide an internal metric name for this metric ${name}`);
     assert(name, `Must provide a name for this metric ${type} ${title}`);
     assert(/^[a-z][a-zA-Z0-9_]*$/.test(name), `Invalid metric name ${name}`);
-    assert(METRIC_TYPES.includes(type),
-      `Invalid metric type ${type}. Must be one of: counter, gauge, histogram, summary`);
+    assert(
+      METRIC_TYPES.includes(type),
+      `Invalid metric type ${type}. Must be one of: counter, gauge, histogram, summary`
+    );
     assert(title, `Must provide a title for metric ${name}`);
     assert(description, `Must provide a description for metric ${name}`);
     assert(Array.isArray(registers) && registers.length > 0, 'Must provide at least one register');
@@ -115,7 +120,8 @@ export class MonitorManager {
       throw new Error(`Cannot register metric ${id} twice`);
     }
     const registeredNames = Object.values(MonitorManager.#registeredMetrics).find(
-      (registeredMetric) => registeredMetric.name === name);
+      registeredMetric => registeredMetric.name === name
+    );
     assert(!registeredNames, `Cannot register metric ${name} twice`);
 
     Object.keys(labels).forEach(label => {
@@ -132,8 +138,10 @@ export class MonitorManager {
     if (type === 'summary' && percentiles) {
       assert(Array.isArray(percentiles), `Percentiles must be an array for summary ${id}`);
       percentiles.forEach(percentile => {
-        assert(typeof percentile === 'number' && percentile > 0 && percentile < 1,
-          `Percentile values must be numbers between 0 and 1 for summary ${id}`);
+        assert(
+          typeof percentile === 'number' && percentile > 0 && percentile < 1,
+          `Percentile values must be numbers between 0 and 1 for summary ${id}`
+        );
       });
     }
 
@@ -157,16 +165,7 @@ export class MonitorManager {
    * Register a new log message type.
    * @param {LogTypeOptions} options
    */
-  static register({
-    name,
-    type,
-    title,
-    level,
-    version,
-    description,
-    fields = {},
-    serviceName,
-  }) {
+  static register({ name, type, title, level, version, description, fields = {}, serviceName }) {
     assert(title, `Must provide a human readable title for this log type ${name}`);
     assert(/^[a-z][a-zA-Z0-9]*$/.test(name), `Invalid name type ${name}`);
     assert(/^[a-z][a-zA-Z0-9.\-_]*$/.test(type), `Invalid event type ${type}`);
@@ -329,18 +328,20 @@ export class MonitorManager {
    * @param {string} serviceName
    */
   static reference(serviceName) {
-    assert(serviceName, "serviceName is required");
+    assert(serviceName, 'serviceName is required');
     const types = MonitorManager._typesForService(serviceName);
 
     return {
       serviceName: serviceName,
       $schema: '/schemas/common/logs-reference-v0.json#',
-      types: Object.entries(types).map(([name, type]) => {
-        return {
-          name,
-          ..._.omit(type, ['serviceName']),
-        };
-      }).sort((a, b) => a.name.localeCompare(b.name)),
+      types: Object.entries(types)
+        .map(([name, type]) => {
+          return {
+            name,
+            ..._.omit(type, ['serviceName']),
+          };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name)),
     };
   }
 
@@ -349,18 +350,20 @@ export class MonitorManager {
    * @param {string} serviceName
    */
   static metricsReference(serviceName) {
-    assert(serviceName, "serviceName is required");
+    assert(serviceName, 'serviceName is required');
     const metrics = MonitorManager._metricsForService(serviceName);
 
     return {
       serviceName: serviceName,
       $schema: '/schemas/common/metrics-reference-v0.json#',
-      metrics: Object.entries(metrics).map(([name, metric]) => {
-        return {
-          name,
-          ..._.omit(metric, ['serviceName', 'global']),
-        };
-      }).sort((a, b) => a.name.localeCompare(b.name)),
+      metrics: Object.entries(metrics)
+        .map(([name, metric]) => {
+          return {
+            name,
+            ..._.omit(metric, ['serviceName', 'global']),
+          };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name)),
     };
   }
 
@@ -373,7 +376,8 @@ export class MonitorManager {
       {},
       ...Object.entries(MonitorManager.#registeredTypes)
         .filter(([_, { serviceName: sn }]) => !sn || sn === serviceName)
-        .map(([k, v]) => ({ [k]: v })));
+        .map(([k, v]) => ({ [k]: v }))
+    );
   }
 
   /**
@@ -385,7 +389,8 @@ export class MonitorManager {
       {},
       ...Object.entries(MonitorManager.#registeredMetrics)
         .filter(([_, { serviceName: sn }]) => !sn || sn === serviceName)
-        .map(([k, v]) => ({ [k]: v })));
+        .map(([k, v]) => ({ [k]: v }))
+    );
   }
 
   /**
@@ -398,8 +403,10 @@ export class MonitorManager {
     }
     if (this.debug) {
       message = message ? message.toString().replace(/\n/g, '\\n') : '';
-      const extra = Object.keys(Fields).reduce((s, f) =>
-        s + chalk`\n\t{gray ${f}:} ${String(Fields[f]).replace(/\n/g, '\\n')}`, '');
+      const extra = Object.keys(Fields).reduce(
+        (s, f) => s + chalk`\n\t{gray ${f}:} ${String(Fields[f]).replace(/\n/g, '\\n')}`,
+        ''
+      );
       const line = chalk`${LEVELS_REVERSE_COLOR[Severity]}: {gray ${Type}}: ${message}${extra}`;
       Debug(Logger)(line);
     }

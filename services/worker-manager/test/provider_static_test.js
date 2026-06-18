@@ -91,9 +91,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     assert.equal(worker.capacity, 7);
 
     const rows = await helper.db.fns.get_worker_3(workerPoolId, workerGroup, workerId);
-    assert.deepEqual(rows.map(r => [r.worker_id, r.provider_data]), [
-      ['abc123', { staticSecret: 'new-secret' }],
-    ]);
+    assert.deepEqual(
+      rows.map(r => [r.worker_id, r.provider_data]),
+      [['abc123', { staticSecret: 'new-secret' }]]
+    );
   });
 
   test('removeWorker marks the worker as stopped', async () => {
@@ -103,41 +104,44 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     await provider.removeWorker({ worker, reason: 'uhoh' });
 
     const rows = await helper.db.fns.get_worker_3(workerPoolId, workerGroup, workerId);
-    assert.deepEqual(rows.map(({ worker_id, state }) => ([worker_id, state])), [
-      ['abc123', 'stopped'],
-    ]);
+    assert.deepEqual(
+      rows.map(({ worker_id, state }) => [worker_id, state]),
+      [['abc123', 'stopped']]
+    );
   });
 
   suite('registerWorker', () => {
     // create a test worker pool directly in the DB
     const createWorker = overrides => {
-      const worker = Worker.fromApi(
-        { ...defaultWorker, ...overrides });
+      const worker = Worker.fromApi({ ...defaultWorker, ...overrides });
       return worker.create(helper.db);
     };
 
     test('no token', async () => {
       const worker = await createWorker({ state: 'running' });
       const workerIdentityProof = {};
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /missing staticSecret/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /missing staticSecret/
+      );
     });
 
     test('not running', async () => {
       const worker = await createWorker({ state: 'stopped' });
       const workerIdentityProof = { staticSecret: 'good' };
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /worker is not running/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /worker is not running/
+      );
     });
 
     test('invalid token', async () => {
       const worker = await createWorker({ state: 'running' });
       const workerIdentityProof = { staticSecret: 'invalid' };
-      await assert.rejects(() =>
-        provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-      /bad staticSecret/);
+      await assert.rejects(
+        () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+        /bad staticSecret/
+      );
     });
 
     test('successful registration', async () => {
@@ -149,7 +153,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
             reregistrationTimeout: 3600,
           },
           workerConfig: {
-            "someKey": "someValue",
+            someKey: 'someValue',
           },
         },
       });
@@ -165,8 +169,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const res = await provider.registerWorker({ workerPool: pool, worker, workerIdentityProof });
       const expectedExpires = new Date(Date.now() + 3600 * 1000);
       // allow +- 10 seconds since time passes while the test executes
-      assert(Math.abs(res.expires - expectedExpires) < 10000,
-        `${res.expires}, ${expectedExpires}, diff = ${res.expires - expectedExpires} ms`);
+      assert(
+        Math.abs(res.expires - expectedExpires) < 10000,
+        `${res.expires}, ${expectedExpires}, diff = ${res.expires - expectedExpires} ms`
+      );
       assert.equal(res.workerConfig.someKey, 'someValue');
     });
   });

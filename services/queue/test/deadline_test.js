@@ -70,25 +70,35 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     await helper.startPollingService('deadline-resolver');
 
     debug('### Check for task-exception message');
-    await testing.poll(async () => {
-      helper.assertPulseMessage('task-exception', m => (
-        m.payload.status.state === 'exception' &&
-        _.isEqual(m.payload.task.tags, task.tags) &&
-        m.payload.status.runs.length === 1 &&
-        m.payload.status.runs[0].reasonCreated === 'exception' &&
-        m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
+    await testing.poll(
+      async () => {
+        helper.assertPulseMessage(
+          'task-exception',
+          m =>
+            m.payload.status.state === 'exception' &&
+            _.isEqual(m.payload.task.tags, task.tags) &&
+            m.payload.status.runs.length === 1 &&
+            m.payload.status.runs[0].reasonCreated === 'exception' &&
+            m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'
+        );
 
-      assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-exception'), {
-        Type: 'task-exception',
-        Logger: 'taskcluster.test.deadline-resolver',
-        Fields: {
-          v: 1,
-          taskId,
-          runId: 0,
-        },
-        Severity: LEVELS.notice,
-      });
-    }, 100, 250);
+        assert.deepEqual(
+          monitor.manager.messages.find(({ Type }) => Type === 'task-exception'),
+          {
+            Type: 'task-exception',
+            Logger: 'taskcluster.test.deadline-resolver',
+            Fields: {
+              v: 1,
+              taskId,
+              runId: 0,
+            },
+            Severity: LEVELS.notice,
+          }
+        );
+      },
+      100,
+      250
+    );
 
     debug('### Stop deadlineReaper');
     await helper.stopPollingService();
@@ -110,14 +120,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
     debug('### Start deadlineReaper');
     await helper.startPollingService('deadline-resolver');
-    await testing.poll(async () => {
-      helper.assertPulseMessage('task-group-resolved');
-      helper.assertPulseMessage('task-exception', m => (
-        m.payload.status.state === 'exception' &&
-        m.payload.status.runs.length === 1 &&
-        m.payload.status.runs[0].reasonCreated === 'scheduled' &&
-        m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
-    }, 20, 1000);
+    await testing.poll(
+      async () => {
+        helper.assertPulseMessage('task-group-resolved');
+        helper.assertPulseMessage(
+          'task-exception',
+          m =>
+            m.payload.status.state === 'exception' &&
+            m.payload.status.runs.length === 1 &&
+            m.payload.status.runs[0].reasonCreated === 'scheduled' &&
+            m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'
+        );
+      },
+      20,
+      1000
+    );
 
     await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'deadline-exceeded');
 
@@ -152,14 +169,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
     debug('### Start deadlineReaper');
     await helper.startPollingService('deadline-resolver');
-    await testing.poll(async () => {
-      helper.assertPulseMessage('task-group-resolved');
-      helper.assertPulseMessage('task-exception', m => (
-        m.payload.status.state === 'exception' &&
-        m.payload.status.runs.length === 1 &&
-        m.payload.status.runs[0].reasonCreated === 'scheduled' &&
-        m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'));
-    }, 20, 1000);
+    await testing.poll(
+      async () => {
+        helper.assertPulseMessage('task-group-resolved');
+        helper.assertPulseMessage(
+          'task-exception',
+          m =>
+            m.payload.status.state === 'exception' &&
+            m.payload.status.runs.length === 1 &&
+            m.payload.status.runs[0].reasonCreated === 'scheduled' &&
+            m.payload.status.runs[0].reasonResolved === 'deadline-exceeded'
+        );
+      },
+      20,
+      1000
+    );
 
     debug('### Stop deadlineReaper');
     await helper.stopPollingService();

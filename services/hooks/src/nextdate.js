@@ -9,7 +9,7 @@ const nextDate = (schedule, reference) => {
   reference = typeof reference !== 'undefined' ? reference : new Date();
 
   let next;
-  schedule.forEach((pattern) => {
+  schedule.forEach(pattern => {
     const interval = parser.parse(pattern, {
       currentDate: reference,
       utc: true,

@@ -16,17 +16,23 @@ suite(testing.suiteName(), () => {
   });
 
   test('two-line string with all but first indented', () => {
-    assert.equal(cleanupDescription(
-      `hello
-      world`),
-    'hello\nworld');
+    assert.equal(
+      cleanupDescription(
+        `hello
+      world`
+      ),
+      'hello\nworld'
+    );
   });
 
   test('two-line string with all lines indented', () => {
-    assert.equal(cleanupDescription(
-      `
+    assert.equal(
+      cleanupDescription(
+        `
       hello
-      world`),
-    'hello\nworld');
+      world`
+      ),
+      'hello\nworld'
+    );
   });
 });
