@@ -11,7 +11,7 @@ Moreover, dev deployments are difficult and consume substantial resources.
 You will need to have the following
 
 * A running kubernetes cluster with at least 2000 mCPU and 4GB RAM available.
-  * Helm 3 installed
+  * Helm 3 or 4 installed
   * The latest version of kubectl installed, and credentials configured to talk to the cluster
 * A RabbitMQ cluster running the latest available version. (see also [install RabbitMQ](#own-rabbitmq-in-cluster))
   The deployment process requires administrative access (the RabbitMQ management API) and creates multiple users.
@@ -353,7 +353,7 @@ To run `yarn dev:..` commands, you'll need to install the node dependencies, as 
 ### Troubleshooting
 
 * Dev config creation step: `AccessDenied: Access Denied` error with a stack trace pointing at aws-sdk library - make sure to have your aws credentials are fetched and stored in environment variables AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_SESSION_TOKEN.
-* Helm error `Error: stat taskcluster: no such file or directory` - make sure you have helm3 installed.
+* Helm error `Error: stat taskcluster: no such file or directory` - make sure you have helm 3 or 4 installed.
 * Kubectl error: `Error: unknown flag --current` - make sure you run kubectl v1.15.0 or later
 
 ## Apply
