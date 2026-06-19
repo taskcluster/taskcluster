@@ -31,8 +31,8 @@ describe('Auth', function () {
       },
     });
 
-    expect(auth.buildSignedUrl(auth.client, 'test')).to.eventually.match(
-      new RegExp(`^${helper.rootUrl}/auth/v1/clients/test\\?bewit`)
+    return expect(auth.buildSignedUrl(auth.client, 'test')).to.eventually.match(
+      new RegExp(`^${helper.rootUrl}/api/auth/v1/clients/test\\?bewit`)
     );
   });
 
