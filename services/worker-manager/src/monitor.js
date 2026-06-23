@@ -323,6 +323,27 @@ MonitorManager.register({
   },
 });
 
+MonitorManager.register({
+  name: 'azureTeardownMode',
+  title: 'Azure Worker Teardown Mode',
+  type: 'azure-teardown-mode',
+  version: 1,
+  level: 'info',
+  description: `
+    Records how an Azure worker's resources were torn down: 'fast' when the VM's
+    NIC/IP/disks cascade-delete with the VM (so the per-resource GET/delete walk
+    is skipped), or 'slow' for the resource-by-resource walk. Lets us measure the
+    API-call reduction and confirm the fast path engages on cascading ARM pools.
+  `,
+  fields: {
+    providerId: 'Provider ID',
+    workerPoolId: 'Worker Pool ID',
+    launchConfigId: 'Launch Config ID',
+    workerId: 'Worker ID',
+    mode: "Teardown mode: 'fast' (cascade short-circuit) or 'slow' (full walk)",
+  },
+});
+
 const commonLabels = {
   workerPoolId: 'The worker pool ID',
   providerId: 'ID of the provider',
@@ -543,6 +564,20 @@ MonitorManager.registerMetric('azureThrottleCount', {
     operationType: 'HTTP operation category: read, write, or delete',
   },
   registers: ['provision', 'scan'],
+});
+
+MonitorManager.registerMetric('azureTeardownCount', {
+  name: 'worker_manager_azure_teardown_total',
+  type: 'counter',
+  title: 'Azure worker teardowns',
+  description:
+    "Count of Azure worker teardowns by mode: 'fast' (cascade short-circuit) vs 'slow' (per-resource walk), per worker pool",
+  labels: {
+    providerId: 'ID of the provider',
+    workerPoolId: 'The worker pool ID',
+    mode: "Teardown mode: 'fast' or 'slow'",
+  },
+  registers: ['scan'],
 });
 
 MonitorManager.registerMetric('azureArmDeploymentError', {

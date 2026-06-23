@@ -2322,6 +2322,432 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
+  suite('cascade deprovisioning', () => {
+    const workerGroup = 'westus';
+    const rg = 'rgrp';
+    const nicId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Network/networkInterfaces/cascade-nic`;
+    const ipId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Network/publicIPAddresses/cascade-ip`;
+    const diskId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Compute/disks/cascade-disk`;
+
+    const baseCascade = () => ({
+      all: true,
+      nic: true,
+      ip: true,
+      disks: true,
+      vmOwnedNicId: nicId,
+      vmOwnedDiskIds: [diskId],
+      vmOwnedPublicIpId: ipId,
+      detectedAt: new Date().toISOString(),
+      source: 'register',
+    });
+
+    // Builds a STOPPING ARM worker whose tracked nic/ip/disks match a cascading
+    // VM. Pass `cascade: false` for a worker with no cascade field (slow walk),
+    // or override providerData keys (e.g. nic/ip/disks/cascade) directly.
+    const makeStoppingWorker = async ({ cascade, ...pd } = {}) => {
+      const providerData = {
+        ...baseProviderData,
+        deploymentMethod: 'arm-template',
+        vm: { name: 'cascade-vm', id: 'id/cascade-vm' },
+        nic: { name: 'cascade-nic', id: nicId },
+        ip: { name: 'cascade-ip', id: ipId },
+        disks: [{ name: 'cascade-disk', id: diskId }],
+        ...pd,
+      };
+      if (cascade !== false) {
+        providerData.cascade = cascade || baseCascade();
+      }
+      const worker = Worker.fromApi({
+        workerPoolId,
+        workerGroup,
+        workerId: 'cascade-vm',
+        providerId,
+        created: taskcluster.fromNow('0 seconds'),
+        lastModified: taskcluster.fromNow('0 seconds'),
+        lastChecked: taskcluster.fromNow('0 seconds'),
+        capacity: 1,
+        expires: taskcluster.fromNow('1 hour'),
+        state: 'stopping',
+        providerData,
+      });
+      await worker.create(helper.db);
+      provider.errors = provider.errors || {};
+      provider.errors[workerPoolId] = [];
+      return worker;
+    };
+
+    const spyChildClients = sandbox => ({
+      'nic.get': sandbox.spy(fake.networkClient.networkInterfaces, 'get'),
+      'nic.beginDelete': sandbox.spy(fake.networkClient.networkInterfaces, 'beginDelete'),
+      'ip.get': sandbox.spy(fake.networkClient.publicIPAddresses, 'get'),
+      'ip.beginDelete': sandbox.spy(fake.networkClient.publicIPAddresses, 'beginDelete'),
+      'disks.get': sandbox.spy(fake.computeClient.disks, 'get'),
+      'disks.beginDelete': sandbox.spy(fake.computeClient.disks, 'beginDelete'),
+    });
+
+    test('cascade.all short-circuits: VM delete + STOPPED with zero NIC/IP/disk calls', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      monitor.manager.reset();
+      // No fake VM resource: deprovisionResource('vm') GETs a 404 and marks the
+      // VM deleted in a single pass, so the cascade fast path can engage.
+      const worker = await makeStoppingWorker();
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+
+      const [reloaded] = await helper.getWorkers();
+      assert.equal(reloaded.state, 'stopped');
+      assert.equal(reloaded.providerData.nic.deleted, true);
+      assert.equal(reloaded.providerData.nic.id, false);
+      assert.equal(reloaded.providerData.ip.deleted, true);
+      assert.equal(reloaded.providerData.disks[0].deleted, true);
+      for (const [name, spy] of Object.entries(spies)) {
+        assert.equal(spy.callCount, 0, `${name} must not be called on the cascade fast path`);
+      }
+      const teardownLogs = monitor.manager.messages.filter(m => m.Type === 'azure-teardown-mode');
+      assert(
+        teardownLogs.some(m => m.Fields.mode === 'fast' && m.Fields.workerId === 'cascade-vm'),
+        'a fast teardown log should be emitted'
+      );
+      assert.deepEqual(provider.errors[workerPoolId], []);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === reloaded.workerId);
+    });
+
+    test('cascade absent - slow walk (regression guard)', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      monitor.manager.reset();
+      const worker = await makeStoppingWorker({ cascade: false });
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      const [reloaded] = await helper.getWorkers();
+      // With no fake resources the slow walk 404s through every child, reaching STOPPED,
+      // but it must have issued the per-resource pre-flight GETs (fast path skips them).
+      assert.equal(reloaded.state, 'stopped');
+      assert(spies['nic.get'].called, 'slow walk must issue the NIC pre-flight GET');
+      assert(spies['disks.get'].called, 'slow walk must issue the disk pre-flight GET');
+      const teardownLogs = monitor.manager.messages.filter(m => m.Type === 'azure-teardown-mode');
+      assert(teardownLogs.some(m => m.Fields.mode === 'slow'));
+    });
+
+    test('cascade.all but standalone disk not VM-owned - slow walk', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      // tracked disks include a standalone disk the VM does not cascade
+      const worker = await makeStoppingWorker({
+        disks: [
+          { name: 'cascade-disk', id: diskId },
+          { name: 'standalone-disk', id: '/subscriptions/sub/.../disks/standalone-disk' },
+        ],
+      });
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      assert(spies['nic.get'].called, 'identity mismatch must fall back to the slow walk');
+      assert(spies['disks.get'].called, 'the standalone disk must be deleted, not skipped');
+    });
+
+    test('cascade.all but tracked IP not VM-owned - slow walk', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      const worker = await makeStoppingWorker({
+        ip: { name: 'standalone-ip', id: '/subscriptions/sub/.../publicIPAddresses/standalone-ip' },
+      });
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      assert(spies['nic.get'].called, 'a standalone public IP must fall back to the slow walk');
+      assert(spies['ip.get'].called, 'the standalone IP must be deleted, not skipped');
+    });
+
+    test('cascade.all, VM has no public IP but a standalone IP is tracked - slow walk', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      const cascade = baseCascade();
+      cascade.ip = null;
+      cascade.vmOwnedPublicIpId = null;
+      // tracked ip slot still holds a (standalone) public IP
+      const worker = await makeStoppingWorker({ cascade });
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      assert(spies['ip.get'].called, 'a standalone IP with no VM-owned IP must be deleted, not skipped');
+    });
+
+    test('cascade.all matches case-divergent ARM ids - fast path', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      monitor.manager.reset();
+      // ARM resource ids are case-insensitive. The probe (VM model) and the
+      // tracked ids (deployment operations) can come back with different casing
+      // for the same resource; the identity match must not be defeated by that.
+      const cascade = baseCascade();
+      cascade.vmOwnedNicId = nicId.toUpperCase();
+      cascade.vmOwnedPublicIpId = ipId.toUpperCase();
+      cascade.vmOwnedDiskIds = [diskId.toUpperCase()];
+      const worker = await makeStoppingWorker({ cascade });
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      const [reloaded] = await helper.getWorkers();
+      assert.equal(reloaded.state, 'stopped');
+      for (const [name, spy] of Object.entries(spies)) {
+        assert.equal(spy.callCount, 0, `${name} must not be called when ids match case-insensitively`);
+      }
+      const teardownLogs = monitor.manager.messages.filter(m => m.Type === 'azure-teardown-mode');
+      assert(
+        teardownLogs.some(m => m.Fields.mode === 'fast'),
+        'fast teardown should still engage'
+      );
+    });
+
+    test('teardown mode is not recorded unless the worker reaches STOPPED', async () => {
+      const sandbox = sinon.createSandbox({});
+      monitor.manager.reset();
+      const worker = await makeStoppingWorker();
+      // Fail the worker-stopped transition so deprovision never commits STOPPED.
+      // The teardown log/metric must be emitted only after a completed teardown,
+      // so a re-scan can't double-count (or flip the recorded mode).
+      sandbox.stub(provider, 'onWorkerStopped').rejects(new Error('boom'));
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      const [reloaded] = await helper.getWorkers();
+      assert.notEqual(reloaded.state, 'stopped', 'worker should not have reached STOPPED');
+      const teardownLogs = monitor.manager.messages.filter(m => m.Type === 'azure-teardown-mode');
+      assert.equal(teardownLogs.length, 0, 'teardown mode must not be recorded for an incomplete teardown');
+    });
+
+    // ===== register-time cascade probe =====
+
+    const probeNicName = 'probe-nic';
+    const probeNicId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Network/networkInterfaces/${probeNicName}`;
+    const probeIpId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Network/publicIPAddresses/probe-ip`;
+    const probeOsDiskId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Compute/disks/probe-os`;
+    const probeDataDiskId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Compute/disks/probe-data`;
+
+    const cascadingVmModel = () => ({
+      networkProfile: { networkInterfaces: [{ id: probeNicId, deleteOption: 'Delete' }] },
+      storageProfile: {
+        osDisk: { managedDisk: { id: probeOsDiskId }, deleteOption: 'Delete' },
+        dataDisks: [{ managedDisk: { id: probeDataDiskId }, deleteOption: 'Delete' }],
+      },
+    });
+    const cascadingNicModel = () => ({
+      ipConfigurations: [{ publicIPAddress: { id: probeIpId, deleteOption: 'Delete' } }],
+    });
+
+    // Registers an ARM worker after seeding a fake VM (and optionally NIC),
+    // returning the reloaded worker so its providerData.cascade can be asserted.
+    const registerArmWorker = async ({ vmModel, nicModel, nicName = probeNicName } = {}) => {
+      const workerPool = await makeWorkerPool();
+      const { vmId, document } = azureSignatures[0];
+      const worker = Worker.fromApi({
+        workerPoolId,
+        workerGroup,
+        workerId: vmId,
+        providerId,
+        created: taskcluster.fromNow('0 seconds'),
+        lastModified: taskcluster.fromNow('0 seconds'),
+        lastChecked: taskcluster.fromNow('0 seconds'),
+        capacity: 1,
+        expires: taskcluster.fromNow('90 seconds'),
+        state: 'requested',
+        providerData: {
+          ...baseProviderData,
+          deploymentMethod: 'arm-template',
+          vm: { name: 'probe-vm', vmId },
+        },
+      });
+      await worker.create(helper.db);
+      if (vmModel) {
+        fake.computeClient.virtualMachines.makeFakeResource(rg, 'probe-vm', { vmId, ...vmModel });
+      }
+      if (nicModel) {
+        fake.networkClient.networkInterfaces.makeFakeResource(rg, nicName, nicModel);
+      }
+      await provider.registerWorker({ workerPool, worker, workerIdentityProof: { document } });
+      // The cascade probe runs in the background after registration returns;
+      // await its handle so the persisted providerData.cascade is observable.
+      await provider._backgroundCascadeProbe;
+      const [reloaded] = await helper.getWorkers();
+      return reloaded;
+    };
+
+    test('probe: all resources cascade - cascade.all true with VM-owned identities', async () => {
+      const reloaded = await registerArmWorker({ vmModel: cascadingVmModel(), nicModel: cascadingNicModel() });
+      const cascade = reloaded.providerData.cascade;
+      assert(cascade, 'cascade should be recorded');
+      assert.equal(cascade.all, true);
+      assert.equal(cascade.nic, true);
+      assert.equal(cascade.ip, true);
+      assert.equal(cascade.disks, true);
+      assert.equal(cascade.vmOwnedNicId, probeNicId);
+      assert.deepEqual(cascade.vmOwnedDiskIds.sort(), [probeOsDiskId, probeDataDiskId].sort());
+      assert.equal(cascade.vmOwnedPublicIpId, probeIpId);
+      assert.equal(cascade.source, 'register');
+      assert(cascade.detectedAt);
+    });
+
+    test('probe: osDisk Detach - cascade.all false', async () => {
+      const vmModel = cascadingVmModel();
+      vmModel.storageProfile.osDisk.deleteOption = 'Detach';
+      const reloaded = await registerArmWorker({ vmModel, nicModel: cascadingNicModel() });
+      assert.equal(reloaded.providerData.cascade.all, false);
+      assert.equal(reloaded.providerData.cascade.disks, false);
+    });
+
+    test('probe: NIC Detach - cascade.all false', async () => {
+      const vmModel = cascadingVmModel();
+      vmModel.networkProfile.networkInterfaces[0].deleteOption = 'Detach';
+      const reloaded = await registerArmWorker({ vmModel, nicModel: cascadingNicModel() });
+      assert.equal(reloaded.providerData.cascade.all, false);
+      assert.equal(reloaded.providerData.cascade.nic, false);
+    });
+
+    test('probe: no public IP - cascade.ip null, cascade.all true', async () => {
+      const reloaded = await registerArmWorker({
+        vmModel: cascadingVmModel(),
+        nicModel: { ipConfigurations: [{ privateIPAddress: '10.0.0.4' }] },
+      });
+      const cascade = reloaded.providerData.cascade;
+      assert.equal(cascade.ip, null);
+      assert.equal(cascade.vmOwnedPublicIpId, null);
+      assert.equal(cascade.all, true);
+    });
+
+    test('probe: multi-NIC - cascade.all false', async () => {
+      const vmModel = cascadingVmModel();
+      vmModel.networkProfile.networkInterfaces.push({ id: `${probeNicId}-2`, deleteOption: 'Delete' });
+      const reloaded = await registerArmWorker({ vmModel });
+      assert.equal(reloaded.providerData.cascade.all, false);
+    });
+
+    test('probe: multi-public-IP - cascade.all false', async () => {
+      const reloaded = await registerArmWorker({
+        vmModel: cascadingVmModel(),
+        nicModel: {
+          ipConfigurations: [
+            { publicIPAddress: { id: probeIpId, deleteOption: 'Delete' } },
+            { publicIPAddress: { id: `${probeIpId}-2`, deleteOption: 'Delete' } },
+          ],
+        },
+      });
+      assert.equal(reloaded.providerData.cascade.all, false);
+    });
+
+    test('probe: missing networkProfile - cascade.all false, no throw', async () => {
+      const reloaded = await registerArmWorker({
+        vmModel: { storageProfile: { osDisk: { managedDisk: { id: probeOsDiskId }, deleteOption: 'Delete' } } },
+      });
+      assert.equal(reloaded.providerData.cascade.all, false);
+      // registration still succeeded
+      assert.equal(reloaded.state, 'running');
+    });
+
+    test('probe: VM GET failure - cascade.all false, registration still succeeds', async () => {
+      const sandbox = sinon.createSandbox({});
+      sandbox.stub(fake.computeClient.virtualMachines, 'get').rejects(new Error('boom'));
+      let reloaded;
+      try {
+        reloaded = await registerArmWorker({ vmModel: cascadingVmModel(), nicModel: cascadingNicModel() });
+      } finally {
+        sandbox.restore();
+      }
+      assert.equal(reloaded.providerData.cascade.all, false);
+      assert.equal(reloaded.state, 'running');
+      helper.assertPulseMessage('worker-running', m => m.payload.workerId === reloaded.workerId);
+    });
+
+    test('registration does not block on a slow/hung cascade probe', async () => {
+      const sandbox = sinon.createSandbox({});
+      // The probe's VM GET hangs (e.g. a backed-up CloudAPI queue), so if the
+      // probe were on the registration path it would stall registerWorker.
+      let releaseHang;
+      sandbox.stub(fake.computeClient.virtualMachines, 'get').callsFake(
+        () =>
+          new Promise(resolve => {
+            releaseHang = () => resolve({});
+          })
+      );
+
+      const workerPool = await makeWorkerPool();
+      const { vmId, document } = azureSignatures[0];
+      const worker = Worker.fromApi({
+        workerPoolId,
+        workerGroup,
+        workerId: vmId,
+        providerId,
+        created: taskcluster.fromNow('0 seconds'),
+        lastModified: taskcluster.fromNow('0 seconds'),
+        lastChecked: taskcluster.fromNow('0 seconds'),
+        capacity: 1,
+        expires: taskcluster.fromNow('90 seconds'),
+        state: 'requested',
+        providerData: { ...baseProviderData, deploymentMethod: 'arm-template', vm: { name: 'probe-vm', vmId } },
+      });
+      await worker.create(helper.db);
+
+      try {
+        // registration returns promptly despite the hung probe GET
+        const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof: { document } });
+        assert(res.expires, 'registration should complete and return expires');
+
+        const [reloaded] = await helper.getWorkers();
+        assert.equal(reloaded.state, 'running', 'worker should be RUNNING even though the probe has not finished');
+        assert.equal(
+          reloaded.providerData.cascade,
+          undefined,
+          'cascade is not set until the background probe finishes'
+        );
+      } finally {
+        // let the hung GET resolve and drain the background probe so nothing lingers
+        releaseHang?.();
+        await provider._backgroundCascadeProbe;
+        sandbox.restore();
+      }
+    });
+
+    test('probe: timeout aborts the in-flight GET, fails open, registration succeeds', async () => {
+      const sandbox = sinon.createSandbox({});
+      provider.cascadeProbeTimeoutMs = 50;
+      let sawAbortSignal = false;
+      sandbox.stub(fake.computeClient.virtualMachines, 'get').callsFake(
+        (_resourceGroupName, _name, options) =>
+          new Promise((_resolve, reject) => {
+            sawAbortSignal = options?.abortSignal instanceof AbortSignal;
+            options?.abortSignal?.addEventListener('abort', () => reject(new Error('aborted')));
+          })
+      );
+      let reloaded;
+      try {
+        reloaded = await registerArmWorker({ vmModel: cascadingVmModel(), nicModel: cascadingNicModel() });
+      } finally {
+        sandbox.restore();
+        delete provider.cascadeProbeTimeoutMs;
+      }
+      assert(sawAbortSignal, 'the probe GET must receive an abortSignal');
+      assert.equal(reloaded.providerData.cascade.all, false);
+      assert.equal(reloaded.state, 'running');
+    });
+  });
+
   suite('deprovision', () => {
     test('de-provisioning loop', async () => {
       const workerPool = await makeWorkerPool({
