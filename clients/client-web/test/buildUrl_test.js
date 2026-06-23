@@ -26,9 +26,7 @@ const assertRejected = promise => {
     });
 };
 
-describe('Building URLs', function () {
-  this.timeout(30000);
-
+describe('Building URLs', () => {
   const Fake = Client.create(reference);
   const client = new Fake({
     rootUrl: 'https://tc-tests.example.com',

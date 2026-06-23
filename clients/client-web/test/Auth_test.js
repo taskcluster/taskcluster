@@ -5,11 +5,7 @@ import helper from './helper';
 
 use(chaiAsPromised);
 
-describe('Auth', function () {
-  helper.withRootUrl();
-
-  this.timeout(30000);
-
+helper.describe('Auth', () => {
   it('should successfully ping', () => {
     const auth = new Auth({
       rootUrl: helper.rootUrl,
