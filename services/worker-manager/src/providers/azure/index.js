@@ -58,6 +58,24 @@ const InstanceStates = {
 const failProvisioningStates = new Set(['Failed', 'Deleting', 'Canceled', 'Deallocating']);
 
 const DEPLOYMENT_METHOD_ARM = 'arm-template';
+const CASCADE_PROBE_TIMEOUT_MS = 30000;
+
+/**
+ * All identity comparisons normalize ARM-id casing
+ * to avoid VM/NIC model and deployment operations mismatch
+ * @param {String|Object} id
+ */
+const normalizeArmId = id => (typeof id === 'string' ? id.toLowerCase() : id);
+
+/** @param {Record<string, unknown>} resource } */
+const markResourceGone = resource => {
+  if (resource) {
+    resource.operation = undefined;
+    resource.id = false;
+    resource.deleted = true;
+  }
+};
+
 const UNKNOWN_METRIC_LABEL = 'unknown';
 const MAX_METRIC_LABEL_LENGTH = 200;
 const maxInstanceView404Streak = 2;
@@ -1425,6 +1443,10 @@ export class AzureProvider extends Provider {
     });
     await this.onWorkerRunning({ worker });
 
+    // detect resource cascade in the background, to avoid blocking registration
+    // the result is only consumed much later, at deprovision time
+    this._backgroundCascadeProbe = this.#detectCascadeInBackground({ worker, monitor });
+
     const workerConfig = worker.providerData.workerConfig || {};
     return {
       expires,
@@ -1837,6 +1859,133 @@ export class AzureProvider extends Provider {
     return { provisioningState, vmId };
   }
 
+  /**
+   * Run #probeCascade and persist its result to providerData.cascade. Intended
+   * to be called fire-and-forget from registerWorker: it never throws, so it
+   * cannot affect the registration that scheduled it. The persisting update is
+   * etag-safe (worker.update reloads and retries on conflict), so it merges
+   * cleanly with concurrent scanner updates.
+   *
+   * @param {{ worker: Worker, monitor: import('@taskcluster/lib-monitor').Monitor }} opts
+   * @returns {Promise<void>}
+   */
+  async #detectCascadeInBackground({ worker, monitor }) {
+    try {
+      const cascade = await this.#probeCascade(worker, monitor);
+      if (cascade) {
+        await worker.update(this.db, worker => {
+          worker.providerData.cascade = cascade;
+        });
+      }
+    } catch (err) {
+      monitor.debug({ message: 'background cascade detection failed', error: err.message });
+    }
+  }
+
+  /**
+   * Best-effort probe of whether a worker's VM-owned resources (NIC, public IP,
+   * disks) are configured to cascade-delete with the VM (`deleteOption: 'Delete'`).
+   *
+   * Reads `Delete`/`Detach` off the *materialized* resources (the VM model, plus
+   * its single NIC for the public IP), never from template/operator intent. The
+   * returned object is persisted to `providerData.cascade` by the caller and
+   * consumed by `deprovisionResources` to skip the per-resource GET/delete walk
+   * when the whole set provably cascades and the tracked resources match the
+   * VM-owned set.
+   *
+   * @param {Worker} worker
+   * @param {import('@taskcluster/lib-monitor').Monitor} monitor
+   * @returns {Promise<object|null>}
+   */
+  async #probeCascade(worker, monitor) {
+    if (worker.providerData.deploymentMethod !== DEPLOYMENT_METHOD_ARM) {
+      return null;
+    }
+
+    const cascade = {
+      all: false,
+      nic: false,
+      ip: null,
+      disks: false,
+      vmOwnedNicId: null,
+      vmOwnedDiskIds: [],
+      vmOwnedPublicIpId: null,
+      detectedAt: new Date().toISOString(),
+      source: 'register',
+    };
+
+    const abortController = new AbortController();
+    // cascadeProbeTimeoutMs is for tests
+    const timeoutMs = this.cascadeProbeTimeoutMs ?? CASCADE_PROBE_TIMEOUT_MS;
+    const timer = setTimeout(() => abortController.abort(), timeoutMs);
+    const abortSignal = abortController.signal;
+    const resourceGroupName = worker.providerData.resourceGroupName;
+
+    try {
+      const vm = await this._enqueue('get', () =>
+        this.computeClient.virtualMachines.get(resourceGroupName, worker.providerData.vm.name, { abortSignal })
+      );
+
+      // Disk set: osDisk + dataDisks. Collect each managed disk identity and
+      // require every one to cascade.
+      const osDisk = vm.storageProfile?.osDisk;
+      const dataDisks = vm.storageProfile?.dataDisks || [];
+      const allDisks = [osDisk, ...dataDisks].filter(Boolean);
+      let disksCascade = allDisks.length > 0;
+      for (const disk of allDisks) {
+        const diskId = disk.managedDisk?.id;
+        if (diskId) {
+          cascade.vmOwnedDiskIds.push(diskId);
+        }
+        if (disk.deleteOption !== 'Delete') {
+          disksCascade = false;
+        }
+      }
+      cascade.disks = disksCascade;
+
+      // provider tracks single NIC/IP per worker, so if there are none or more than 1
+      // we assume it requires individual deprovision instead
+      const nics = vm.networkProfile?.networkInterfaces || [];
+      if (nics.length !== 1) {
+        return cascade;
+      }
+      const vmNic = nics[0];
+      cascade.vmOwnedNicId = vmNic.id || null;
+      cascade.nic = vmNic.deleteOption === 'Delete';
+
+      // The public IP's cascade is not on the VM model; it lives on the NIC's
+      // ipConfiguration. GET the NIC to read it.
+      const nicName = vmNic.id?.split('/')?.pop();
+      if (!nicName) {
+        return cascade;
+      }
+      const nic = await this._enqueue('get', () =>
+        this.networkClient.networkInterfaces.get(resourceGroupName, nicName, { abortSignal })
+      );
+      const publicIpConfigs = (nic.ipConfigurations || []).filter(c => c.publicIPAddress);
+      if (publicIpConfigs.length > 1) {
+        return cascade;
+      }
+      if (publicIpConfigs.length === 0) {
+        cascade.ip = null;
+        cascade.vmOwnedPublicIpId = null;
+      } else {
+        const publicIp = publicIpConfigs[0].publicIPAddress;
+        cascade.vmOwnedPublicIpId = publicIp.id || null;
+        cascade.ip = publicIp.deleteOption === 'Delete';
+      }
+
+      // cascade only when the NIC and all disks cascade and the public IP either cascades or is absent
+      cascade.all = cascade.nic && cascade.disks && cascade.ip !== false;
+      return cascade;
+    } catch (err) {
+      monitor.debug({ message: 'cascade probe failed; falling back to slow teardown walk', error: err.message });
+      return cascade;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   /** @param {{ worker: Worker }} opts */
   async checkWorker({ worker }) {
     const monitor = this.workerMonitor({
@@ -2143,9 +2292,7 @@ export class AzureProvider extends Provider {
       worker.update(this.db, worker => {
         const resource =
           index !== undefined ? worker.providerData[resourceType][index] : worker.providerData[resourceType];
-        resource.operation = undefined;
-        resource.id = false;
-        resource.deleted = true;
+        markResourceGone(resource);
       });
 
     if (typeData?.deleted === true) {
@@ -2295,6 +2442,49 @@ export class AzureProvider extends Provider {
     }
   }
 
+  /**
+   * Verify that the resources currently tracked in providerData (nic/ip/disks)
+   * are exactly the ones the VM cascade-deletes, as captured by #probeCascade.
+   *
+   * providerData.{disks,ip} can contain resources the VM does NOT own (a
+   * template's standalone disk, or a standalone public IP that landed in the
+   * single `ip` slot). Those are not removed by the VM cascade, so we must only
+   * short-circuit when every tracked resource matches a VM-owned identity;
+   * otherwise we fall through to the slow walk so they still get deleted.
+   *
+   * @param {Worker} worker
+   * @returns {boolean}
+   */
+  #cascadeTrackedMatches(worker) {
+    const cascade = worker.providerData.cascade;
+    if (!cascade) {
+      return false;
+    }
+
+    const trackedNic = worker.providerData.nic;
+    if (!trackedNic || normalizeArmId(trackedNic.id) !== normalizeArmId(cascade.vmOwnedNicId)) {
+      return false;
+    }
+
+    const vmOwnedDiskIds = new Set((cascade.vmOwnedDiskIds || []).map(normalizeArmId));
+    for (const disk of worker.providerData.disks || []) {
+      if (!vmOwnedDiskIds.has(normalizeArmId(disk.id))) {
+        return false;
+      }
+    }
+
+    const trackedIp = worker.providerData.ip;
+    if (cascade.vmOwnedPublicIpId) {
+      if (!trackedIp || normalizeArmId(trackedIp.id) !== normalizeArmId(cascade.vmOwnedPublicIpId)) {
+        return false;
+      }
+    } else if (trackedIp?.id) {
+      return false;
+    }
+
+    return true;
+  }
+
   /*
    * deprovisionResources removes resources corresponding to a VM,
    * while the worker is in the STOPPING state.  Like provisionResources,
@@ -2320,42 +2510,58 @@ export class AzureProvider extends Provider {
       if (!vmDeleted || worker.providerData.vm.id) {
         return;
       }
-      const nicDeleted = await this.deprovisionResource({
-        worker,
-        client: this.networkClient.networkInterfaces,
-        resourceType: 'nic',
-        monitor,
-      });
-      if (!nicDeleted || worker.providerData.nic.id) {
-        return;
-      }
-      const ipDeleted = await this.deprovisionResource({
-        worker,
-        client: this.networkClient.publicIPAddresses,
-        resourceType: 'ip',
-        monitor,
-      });
-      if (!ipDeleted || worker.providerData.ip.id) {
-        return;
-      }
 
-      // handles deleting osDisks and dataDisks
-      let disksDeleted = true;
-      for (let i = 0; i < worker.providerData.disks.length; i++) {
-        const success = await this.deprovisionResource({
-          worker,
-          client: this.computeClient.disks,
-          resourceType: 'disks',
-          monitor,
-          index: i,
+      // Cascade fast path: `deleteOption: 'Delete'` resources will be deleted with the VM.
+      // Skip the per-resource GET/delete walk entirely only when the tracked resources are
+      // exactly the VM-owned set, so a standalone disk/IP still gets deleted
+      const useFastPath = worker.providerData.cascade?.all === true && this.#cascadeTrackedMatches(worker);
+      const teardownMode = useFastPath ? 'fast' : 'slow';
+
+      if (useFastPath) {
+        // Mark the cascaded resource records deleted as we trust cascade delete option
+        await worker.update(this.db, worker => {
+          markResourceGone(worker.providerData.nic);
+          markResourceGone(worker.providerData.ip);
+          (worker.providerData.disks || []).forEach(markResourceGone);
         });
-        if (!success) {
-          disksDeleted = false;
+      } else {
+        const nicDeleted = await this.deprovisionResource({
+          worker,
+          client: this.networkClient.networkInterfaces,
+          resourceType: 'nic',
+          monitor,
+        });
+        if (!nicDeleted || worker.providerData.nic.id) {
+          return;
         }
-      }
-      // check for un-deleted disks
-      if (!disksDeleted || _.some(worker.providerData.disks.map(i => i.id))) {
-        return;
+        const ipDeleted = await this.deprovisionResource({
+          worker,
+          client: this.networkClient.publicIPAddresses,
+          resourceType: 'ip',
+          monitor,
+        });
+        if (!ipDeleted || worker.providerData.ip.id) {
+          return;
+        }
+
+        // handles deleting osDisks and dataDisks
+        let disksDeleted = true;
+        for (let i = 0; i < worker.providerData.disks.length; i++) {
+          const success = await this.deprovisionResource({
+            worker,
+            client: this.computeClient.disks,
+            resourceType: 'disks',
+            monitor,
+            index: i,
+          });
+          if (!success) {
+            disksDeleted = false;
+          }
+        }
+        // check for un-deleted disks
+        if (!disksDeleted || _.some(worker.providerData.disks.map(i => i.id))) {
+          return;
+        }
       }
 
       // If this was an ARM deployment, delete the deployment if it still exists at this point
@@ -2385,6 +2591,19 @@ export class AzureProvider extends Provider {
         worker.lastModified = now;
         worker.lastChecked = now;
         worker.state = Worker.states.STOPPED;
+      });
+
+      this.monitor.log.azureTeardownMode({
+        providerId: this.providerId,
+        workerPoolId: worker.workerPoolId,
+        launchConfigId: worker.launchConfigId,
+        workerId: worker.workerId,
+        mode: teardownMode,
+      });
+      this.monitor.metric.azureTeardownCount(1, {
+        providerId: this.providerId,
+        workerPoolId: worker.workerPoolId,
+        mode: teardownMode,
       });
     } catch (err) {
       // if this is called directly and not via checkWorker may not exist
