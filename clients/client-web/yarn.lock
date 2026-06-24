@@ -387,8 +387,6 @@ __metadata:
     "@biomejs/biome": "npm:^2.4.15"
     "@vitest/browser": "npm:^4.1.9"
     "@vitest/browser-playwright": "npm:^4.1.9"
-    chai: "npm:^6.2.2"
-    chai-as-promised: "npm:^8.0.2"
     crypto-js: "npm:^4.2.0"
     hawk: "npm:^9.0.2"
     playwright: "npm:1.60.0"
@@ -888,28 +886,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chai-as-promised@npm:^8.0.2":
-  version: 8.0.2
-  resolution: "chai-as-promised@npm:8.0.2"
-  dependencies:
-    check-error: "npm:^2.1.1"
-  peerDependencies:
-    chai: ">= 2.1.2 < 7"
-  checksum: 10c0/829bcd98c04f0b108b2f7379efd33c668e53fbf0bda8d460dc63c96a709fd5de79909392aa78b4256de16a4d57640641d7affc516111e371d6e9f6aec1cc6c8a
-  languageName: node
-  linkType: hard
-
 "chai@npm:^6.2.2":
   version: 6.2.2
   resolution: "chai@npm:6.2.2"
   checksum: 10c0/e6c69e5f0c11dffe6ea13d0290936ebb68fcc1ad688b8e952e131df6a6d5797d5e860bc55cef1aca2e950c3e1f96daf79e9d5a70fb7dbaab4e46355e2635ed53
-  languageName: node
-  linkType: hard
-
-"check-error@npm:^2.1.1":
-  version: 2.1.1
-  resolution: "check-error@npm:2.1.1"
-  checksum: 10c0/979f13eccab306cf1785fa10941a590b4e7ea9916ea2a4f8c87f0316fc3eab07eabefb6e587424ef0f88cbcd3805791f172ea739863ca3d7ce2afc54641c7f0e
   languageName: node
   linkType: hard
 

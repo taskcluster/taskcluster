@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { nice, v4 } from '../src';
 
 /**

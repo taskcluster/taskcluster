@@ -1,30 +1,11 @@
-import { expect, use } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
 import { Client } from '../src';
 import reference from './reference-harness';
-
-use(chaiAsPromised);
 
 // This suite exercises the request and response functionality of
 // a client against a fake service defined by this reference
 
 const signed = url =>
   url.includes('?') ? new RegExp(`^${url.replace('?', '\\?')}&bewit=(.*)`) : new RegExp(`^${url}\\?bewit=(.*)`);
-
-// assert that the given promise is rejected; chai-as-promised's
-// .rejected appears not to work
-const assertRejected = promise => {
-  let rejected = false;
-  return promise
-    .catch(() => {
-      rejected = true;
-    })
-    .then(() => {
-      if (!rejected) {
-        throw new Error('expected rejection');
-      }
-    });
-};
 
 describe('Building URLs', () => {
   const Fake = Client.create(reference);
@@ -43,7 +24,7 @@ describe('Building URLs', () => {
   });
 
   it('should build signed URL', () => {
-    return expect(client.buildSignedUrl(client.get)).to.eventually.match(
+    return expect(client.buildSignedUrl(client.get)).resolves.toMatch(
       signed('https://tc-tests\\.example\\.com/api/fake/v1/get-test')
     );
   });
@@ -61,7 +42,7 @@ describe('Building URLs', () => {
   });
 
   it('should build signed URL with parameter', () => {
-    return expect(client.buildSignedUrl(client.param, 'test')).to.eventually.match(
+    return expect(client.buildSignedUrl(client.param, 'test')).resolves.toMatch(
       signed('https://tc-tests\\.example\\.com/api/fake/v1/url-param/test/list')
     );
   });
@@ -73,7 +54,7 @@ describe('Building URLs', () => {
   });
 
   it('should build signed URL with 2 parameters', () => {
-    return expect(client.buildSignedUrl(client.param2, 'test', 'te/st')).to.eventually.match(
+    return expect(client.buildSignedUrl(client.param2, 'test', 'te/st')).resolves.toMatch(
       signed('https://tc-tests\\.example\\.com/api/fake/v1/url-param2/test/te%2Fst/list')
     );
   });
@@ -83,7 +64,7 @@ describe('Building URLs', () => {
   });
 
   it('should not build signed URL with missing parameter', () => {
-    return assertRejected(client.buildSignedUrl(client.param2, 'te/st'));
+    return expect(client.buildSignedUrl(client.param2, 'te/st')).rejects.toThrow();
   });
 
   it('should build URL with query options', () => {
@@ -93,7 +74,7 @@ describe('Building URLs', () => {
   });
 
   it('should build signed URL with query options', () => {
-    return expect(client.buildSignedUrl(client.query, { option: 2 })).to.eventually.match(
+    return expect(client.buildSignedUrl(client.query, { option: 2 })).resolves.toMatch(
       signed('https://tc-tests\\.example\\.com/api/fake/v1/query/test?option=2')
     );
   });
@@ -103,7 +84,7 @@ describe('Building URLs', () => {
   });
 
   it('should build signed URL with empty query options', () => {
-    return expect(client.buildSignedUrl(client.query, {})).to.eventually.match(
+    return expect(client.buildSignedUrl(client.query, {})).resolves.toMatch(
       /^https:\/\/tc-tests\.example\.com\/api\/fake\/v1\/query\/test/
     );
   });
@@ -113,7 +94,7 @@ describe('Building URLs', () => {
   });
 
   it('should not build signed URL with incorrect query option', () => {
-    return assertRejected(client.buildSignedUrl(client.query, { wrongKey: 2 }));
+    return expect(client.buildSignedUrl(client.query, { wrongKey: 2 })).rejects.toThrow();
   });
 
   it('should build URL with parameter and query option', () => {
@@ -123,7 +104,7 @@ describe('Building URLs', () => {
   });
 
   it('should build signed URL with parameter and query option', () => {
-    return expect(client.buildSignedUrl(client.paramQuery, 'test', { option: 2 })).to.eventually.match(
+    return expect(client.buildSignedUrl(client.paramQuery, 'test', { option: 2 })).resolves.toMatch(
       signed('https://tc-tests\\.example\\.com/api/fake/v1/param-query/test?option=2')
     );
   });
@@ -135,7 +116,7 @@ describe('Building URLs', () => {
   });
 
   it('should build signed URL with parameter and empty query options', () => {
-    return expect(client.buildSignedUrl(client.paramQuery, 'test', {})).to.eventually.match(
+    return expect(client.buildSignedUrl(client.paramQuery, 'test', {})).resolves.toMatch(
       signed('https://tc-tests\\.example\\.com/api/fake/v1/param-query/test')
     );
   });
@@ -153,6 +134,6 @@ describe('Building URLs', () => {
   });
 
   it('should not build signed URL for non-existent method', () => {
-    return assertRejected(client.buildSignedUrl('non-existent'));
+    return expect(client.buildSignedUrl('non-existent')).rejects.toThrow();
   });
 });
