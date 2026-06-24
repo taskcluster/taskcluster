@@ -286,8 +286,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assert.equal(status1.status.runs[0].state, 'exception');
     assert.equal(status1.status.runs[0].reasonResolved, 'worker-shutdown');
     assert.equal(status1.status.runs.length, 2);
+    helper.assertPulseMessage('task-exception');
+    helper.clearPulseMessages();
 
-    // second event should be a no-op (no errors, no duplicate runs)
+    // second event should be a no-op (no errors, no duplicate runs, no pulse message)
     await resolver.handleWorkerRemoved(workerRemovedPayload);
 
     const status2 = await helper.queue.status(taskId);
@@ -295,6 +297,56 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assert.equal(status2.status.runs[0].reasonResolved, 'worker-shutdown');
     // still only 2 runs, not 3
     assert.equal(status2.status.runs.length, 2);
+    helper.assertNoPulseMessage('task-exception');
+
+    await resolver.terminate();
+  });
+
+  test('workerRemoved does not re-publish exception for a run already resolved by the worker', async () => {
+    const taskId = slugid.v4();
+    const task = makeTask(1);
+
+    await helper.queue.createTask(taskId, task);
+    await helper.queue.claimWork(taskQueueId, {
+      workerGroup: 'my-worker-group-extended-extended',
+      workerId: 'my-worker-extended-extended',
+      tasks: 1,
+    });
+
+    // The worker itself reports worker-shutdown via the API (the happy path on
+    // a preemption).
+    await helper.queue.reportException(taskId, 0, { reason: 'worker-shutdown' });
+    helper.assertPulseMessage('task-exception');
+    helper.clearPulseMessages();
+
+    const resolver = await helper.load('worker-removed-resolver');
+    helper.load.remove('worker-removed-resolver');
+
+    // worker-manager later reports the instance as removed.
+    await resolver.handleWorkerRemoved({
+      payload: {
+        workerPoolId: taskQueueId,
+        providerId: 'test-provider',
+        workerGroup: 'my-worker-group-extended-extended',
+        workerId: 'my-worker-extended-extended',
+        capacity: 1,
+        reason: 'terminateAfter time exceeded',
+        timestamp: new Date().toISOString(),
+      },
+    });
+
+    // The resolver must **not** re-publish a task-exception.
+    helper.assertNoPulseMessage('task-exception');
+    assert.equal(
+      monitor.manager.messages.filter(({ Type }) => Type === 'task-resolved-by-worker-removed').length,
+      0,
+      'resolver should not claim to have resolved an already-resolved run'
+    );
+
+    // task should be unchanged. run 0 is exception/worker-shutdown, run 1 still pending.
+    const status = await helper.queue.status(taskId);
+    assert.equal(status.status.runs.length, 2);
+    assert.equal(status.status.runs[0].reasonResolved, 'worker-shutdown');
 
     await resolver.terminate();
   });

@@ -71,25 +71,22 @@ class WorkerRemovedResolver {
     }
 
     // resolve as exception/worker-shutdown with retry
-    task.updateStatusWith(await this.db.fns.resolve_task(taskId, runId, 'exception', 'worker-shutdown', 'retry'));
+    const resolved = task.updateStatusWith(
+      await this.db.fns.resolve_task(taskId, runId, 'exception', 'worker-shutdown', 'retry')
+    );
 
-    // we no longer need existing claimed queue message
-    // because we just resolved the task, so remove it to
-    // prevent it from being processed by the claim resolver
+    // we no longer need the existing claimed queue message
+    // because the task has already been resolved, either by us or by the worker,
+    // so remove it if it still exists to prevent it from being processed by the
+    // claim resolver
     await this.db.fns.queue_claimed_task_resolved(taskId, runId);
 
-    const run = task.runs[runId];
-
-    // If run wasn't resolved to exception/worker-shutdown, it was already
-    // resolved by the worker or another mechanism — nothing to do
-    if (
-      !run ||
-      task.runs.length - 1 > runId + 1 ||
-      run.state !== 'exception' ||
-      run.reasonResolved !== 'worker-shutdown'
-    ) {
+    // If the run was already resolved before by the worker, nothing else to do here
+    if (!resolved) {
       return;
     }
+
+    const run = task.runs[runId];
 
     this.monitor.log.taskResolvedByWorkerRemoved({
       taskId,
