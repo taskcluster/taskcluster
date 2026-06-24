@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { Queue } from '../src';
 import helper from './helper';
 

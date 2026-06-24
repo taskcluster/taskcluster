@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { fromNow } from '../src';
 
 describe('fromNow', () => {

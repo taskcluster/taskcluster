@@ -1,9 +1,5 @@
-import { expect, use } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
 import { Auth, createTemporaryCredentials, fromNow, request } from '../src';
 import helper from './helper';
-
-use(chaiAsPromised);
 
 helper.describe('Auth', () => {
   it('should successfully ping', () => {
@@ -27,7 +23,7 @@ helper.describe('Auth', () => {
       },
     });
 
-    return expect(auth.buildSignedUrl(auth.client, 'test')).to.eventually.match(
+    return expect(auth.buildSignedUrl(auth.client, 'test')).resolves.toMatch(
       new RegExp(`^${helper.rootUrl}/api/auth/v1/clients/test\\?bewit`)
     );
   });
