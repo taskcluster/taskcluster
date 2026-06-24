@@ -1,5 +1,5 @@
 import { withRootUrl } from 'taskcluster-lib-urls';
-import { stringify } from 'query-string';
+import queryString from 'query-string';
 import hawk from 'hawk';
 import fetch from './fetch';
 
@@ -170,7 +170,7 @@ export default class Client {
       });
     }
 
-    const queryArgs = args[arity] && stringify(args[arity]);
+    const queryArgs = args[arity] && queryString.stringify(args[arity]);
     const query = queryArgs ? `?${queryArgs}` : '';
 
     return withRootUrl(this.options.rootUrl).api(
@@ -315,7 +315,7 @@ export default class Client {
   async request(entry, args) {
     const expectedArity = this.getMethodExpectedArity(entry);
     const endpoint = this.buildEndpoint(entry, args);
-    const query = args[expectedArity] ? `?${stringify(args[expectedArity])}` : '';
+    const query = args[expectedArity] ? `?${queryString.stringify(args[expectedArity])}` : '';
     const url = withRootUrl(this.options.rootUrl).api(
       this.options.serviceName,
       this.options.serviceVersion,
