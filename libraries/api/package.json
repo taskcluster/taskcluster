@@ -22,7 +22,7 @@
   },
   "types": "./@types/index.d.ts",
   "devDependencies": {
-    "@biomejs/biome": "^2.4.15",
+    "@biomejs/biome": "^2.5.0",
     "c8": "^8.0.1",
     "mocha": "^10.8.2"
   }
