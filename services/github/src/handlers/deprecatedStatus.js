@@ -37,18 +37,28 @@ export async function deprecatedStatusHandler(message) {
       usesChecks = true;
     }
 
+    let hasUnresolvedTask = false;
     const params = {};
     do {
       const group = await this.queueClient.listTaskGroup(message.payload.taskGroupId, params);
       params.continuationToken = group.continuationToken;
 
       for (let i = 0; i < group.tasks.length; i++) {
-        if (['failed', 'exception'].includes(group.tasks[i].status.state)) {
+        const taskState = group.tasks[i].status.state;
+        if (['failed', 'exception'].includes(taskState)) {
           state = GITHUB_BUILD_STATES.FAILURE;
           break; // one failure is enough
         }
+
+        if (['unscheduled', 'pending', 'running'].includes(taskState)) {
+          hasUnresolvedTask = true;
+        }
       }
     } while (params.continuationToken && state === GITHUB_BUILD_STATES.SUCCESS);
+
+    if (state === GITHUB_BUILD_STATES.SUCCESS && hasUnresolvedTask) {
+      state = GITHUB_BUILD_STATES.PENDING;
+    }
   } else if ([exchangeNames.taskException, exchangeNames.taskFailed].includes(message.exchange)) {
     state = GITHUB_BUILD_STATES.FAILURE;
   } else if ([exchangeNames.taskRunning, exchangeNames.taskPending].includes(message.exchange)) {

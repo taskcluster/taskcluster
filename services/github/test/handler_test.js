@@ -1612,6 +1612,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await assertBuildState('failure');
     });
 
+    test('taskgroup resolved while a reran task is still pending does not report success', async () => {
+      await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
+      handlers.queueClient.listTaskGroup = async () => ({
+        tasks: [
+          { status: { taskId: 'finished-task', state: 'completed' } },
+          { status: { taskId: 'reran-task', state: 'pending' } },
+        ],
+      });
+
+      await simulateExchangeMessage({
+        taskGroupId: TASKGROUPID,
+        exchange: 'exchange/taskcluster-queue/v1/task-group-resolved',
+        routingKey: 'primary.foo.tc-gh-devel.foo',
+        taskId: null,
+      });
+
+      await assertStatusUpdate('pending');
+      await assertBuildState('pending');
+    });
+
     test('task exception gets a failure status', async () => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await simulateExchangeMessage({
