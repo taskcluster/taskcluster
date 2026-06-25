@@ -3,6 +3,51 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v100.5.0
+
+### GENERAL
+
+▶ [patch]
+Bump node version to 24.17.0 security release.
+
+### DEPLOYERS
+
+▶ [minor] [#8161](https://github.com/taskcluster/taskcluster/issues/8161)
+The Azure provider now detects if resources will be cascade-deleted with the VM (`deleteOption: 'Delete'`).
+When they provably cascade, deprovisioning skips the per-resource GET/delete walk and just calls VM delete + 404 confirm,
+cutting the redundant Azure API calls.
+Detection is best-effort and fails open: any uncertainty (multi-NIC/IP, `Detach`, missing fields, probe error/timeout, or
+tracked resources that are not VM-owned) falls back to the existing resource-by-resource deletion.
+New log type: `azure-teardown-mode` and `worker_manager_azure_teardown_total` metric record whether each teardown used the fast or slow path.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6561](https://github.com/taskcluster/taskcluster/issues/6561)
+On Windows, generic-worker now transfers ownership of mounts in addition to
+giving the task user full control.
+
+### USERS
+
+▶ [patch]
+Prevent a worker preemption to be reported twice for the same run when the worker had time to report it itself
+
+### DEVELOPERS
+
+▶ [patch] [#8372](https://github.com/taskcluster/taskcluster/issues/8372)
+Switch linting from eslint to biome on all services/libraries
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps-dev): bump ruff (860549cc41)
+* build(deps): bump github/codeql-action in the gh-actions-deps group (aab4bd26ae)
+* build(deps): bump the go-deps group with 5 updates (c16ba8d559)
+* build(deps): bump chrono (0811e0b89a)
+
+</details>
+
 ## v100.4.0
 
 ### DEPLOYERS
