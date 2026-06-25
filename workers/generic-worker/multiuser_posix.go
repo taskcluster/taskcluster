@@ -82,7 +82,7 @@ func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx co
 	var processCmd *process.Command
 	var err error
 
-	env = append(env, "TERM=hterm-256color")
+	env = append(env, "TERM=xterm-256color")
 	taskDir := task.TaskDir()
 
 	if ctx == nil {
