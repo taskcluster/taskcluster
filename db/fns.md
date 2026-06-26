@@ -194,13 +194,13 @@
    * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
    * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
    * [`get_worker_pool_counts_and_capacity_lc`](#get_worker_pool_counts_and_capacity_lc)
-   * [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
+   * [`get_worker_pool_error_codes_2`](#get_worker_pool_error_codes_2)
    * [`get_worker_pool_error_launch_config`](#get_worker_pool_error_launch_config)
-   * [`get_worker_pool_error_launch_configs`](#get_worker_pool_error_launch_configs)
-   * [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
-   * [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
-   * [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
-   * [`get_worker_pool_error_worker_pools`](#get_worker_pool_error_worker_pools)
+   * [`get_worker_pool_error_launch_configs_2`](#get_worker_pool_error_launch_configs_2)
+   * [`get_worker_pool_error_stats_daily`](#get_worker_pool_error_stats_daily)
+   * [`get_worker_pool_error_stats_hourly`](#get_worker_pool_error_stats_hourly)
+   * [`get_worker_pool_error_titles_2`](#get_worker_pool_error_titles_2)
+   * [`get_worker_pool_error_worker_pools_2`](#get_worker_pool_error_worker_pools_2)
    * [`get_worker_pool_errors_for_worker_pool2`](#get_worker_pool_errors_for_worker_pool2)
    * [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
    * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
@@ -7156,13 +7156,13 @@ end
 * [`get_worker_manager_workers2`](#get_worker_manager_workers2)
 * [`get_worker_pool_counts_and_capacity`](#get_worker_pool_counts_and_capacity)
 * [`get_worker_pool_counts_and_capacity_lc`](#get_worker_pool_counts_and_capacity_lc)
-* [`get_worker_pool_error_codes`](#get_worker_pool_error_codes)
+* [`get_worker_pool_error_codes_2`](#get_worker_pool_error_codes_2)
 * [`get_worker_pool_error_launch_config`](#get_worker_pool_error_launch_config)
-* [`get_worker_pool_error_launch_configs`](#get_worker_pool_error_launch_configs)
-* [`get_worker_pool_error_stats_last_24_hours`](#get_worker_pool_error_stats_last_24_hours)
-* [`get_worker_pool_error_stats_last_7_days`](#get_worker_pool_error_stats_last_7_days)
-* [`get_worker_pool_error_titles`](#get_worker_pool_error_titles)
-* [`get_worker_pool_error_worker_pools`](#get_worker_pool_error_worker_pools)
+* [`get_worker_pool_error_launch_configs_2`](#get_worker_pool_error_launch_configs_2)
+* [`get_worker_pool_error_stats_daily`](#get_worker_pool_error_stats_daily)
+* [`get_worker_pool_error_stats_hourly`](#get_worker_pool_error_stats_hourly)
+* [`get_worker_pool_error_titles_2`](#get_worker_pool_error_titles_2)
+* [`get_worker_pool_error_worker_pools_2`](#get_worker_pool_error_worker_pools_2)
 * [`get_worker_pool_errors_for_worker_pool2`](#get_worker_pool_errors_for_worker_pool2)
 * [`get_worker_pool_launch_config_stats`](#get_worker_pool_launch_config_stats)
 * [`get_worker_pool_launch_configs`](#get_worker_pool_launch_configs)
@@ -8115,17 +8115,20 @@ end
 
 </details>
 
-### get_worker_pool_error_codes
+### get_worker_pool_error_codes_2
 
 * *Mode*: read
 * *Arguments*:
   * `worker_pool_id_in text`
+  * `from_in timestamptz`
+  * `to_in timestamptz`
 * *Returns*: `table`
   * `code text`
   * `count integer`
-* *Last defined on version*: 96
+* *Last defined on version*: 127
 
-Returns errors grouped by error code for given worker pool or all worker pools
+Returns errors grouped by error code for given worker pool or all worker pools,
+optionally filtered to the specified time range.
 
 
 <details><summary>Function Body</summary>
@@ -8137,6 +8140,8 @@ begin
   FROM worker_pool_errors
   WHERE
     (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+    and (reported >= from_in or from_in is null)
+    and (reported <= to_in or to_in is null)
   GROUP BY worker_pool_errors.extra->>'code';
 end
 ```
@@ -8185,19 +8190,21 @@ end
 
 </details>
 
-### get_worker_pool_error_launch_configs
+### get_worker_pool_error_launch_configs_2
 
 * *Mode*: read
 * *Arguments*:
   * `worker_pool_id_in text`
-  * `reported_since_in timestamptz`
+  * `from_in timestamptz`
+  * `to_in timestamptz`
 * *Returns*: `table`
   * `worker_pool text`
   * `launch_config_id text`
   * `count integer`
-* *Last defined on version*: 105
+* *Last defined on version*: 127
 
-Returns errors grouped by launch config
+Returns errors grouped by launch config for a given worker pool,
+optionally filtered to the specified time range.
 
 
 <details><summary>Function Body</summary>
@@ -8208,85 +8215,43 @@ begin
   SELECT worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id, count(*)::int
   FROM worker_pool_errors
   WHERE
-    (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null) and
-    (worker_pool_errors.reported > reported_since_in or reported_since_in is null)
+    (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+    and (reported >= from_in or from_in is null)
+    and (reported <= to_in or to_in is null)
   GROUP BY worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id;
 end
 ```
 
 </details>
 
-### get_worker_pool_error_stats_last_24_hours
+### get_worker_pool_error_stats_daily
 
 * *Mode*: read
 * *Arguments*:
   * `worker_pool_id_in text`
-* *Returns*: `table`
-  * `hour timestamptz`
-  * `count integer`
-* *Last defined on version*: 96
-
-Returns total number of errors for given worker pool or all worker pools
-broken down by hour.
-There will be a breakdown for the last 24h even if there are no errors.
-
-
-<details><summary>Function Body</summary>
-
-```
-begin
-  -- fill in missing hours and add zeroes for them
-  RETURN query
-  WITH hours AS (
-    SELECT generate_series(
-      date_trunc('hour', now() - interval '23 hours'),
-      date_trunc('hour', now()), -- including now
-      interval '1 hour'
-    ) as hour
-  )
-  SELECT
-    hours.hour,
-    COALESCE(worker_pool_errors.count, 0)::int
-  FROM hours
-  LEFT JOIN (
-    SELECT
-      date_trunc('hour', reported) as hour,
-      count(*) as count
-    FROM worker_pool_errors
-    WHERE
-      (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
-    GROUP BY hour
-  ) worker_pool_errors ON worker_pool_errors.hour = hours.hour;
-end
-```
-
-</details>
-
-### get_worker_pool_error_stats_last_7_days
-
-* *Mode*: read
-* *Arguments*:
-  * `worker_pool_id_in text`
+  * `from_in timestamptz`
+  * `to_in timestamptz`
 * *Returns*: `table`
   * `day timestamptz`
   * `count integer`
-* *Last defined on version*: 96
+* *Last defined on version*: 127
 
 Returns total number of errors for given worker pool or all worker pools
-broken down by hour.
-There will be a breakdown for the last 7 days even if there are no errors.
+broken down by day within the specified time range.
+There will be a breakdown for every day in the range even if there are no errors.
+With NULL from_in/to_in, returns the last 7 days (identical to the deprecated
+get_worker_pool_error_stats_last_7_days).
 
 
 <details><summary>Function Body</summary>
 
 ```
 begin
-  -- fill in missing hours and add zeroes for them
   RETURN query
   WITH days AS (
     SELECT generate_series(
-      date_trunc('day', now() - interval '6 days'),
-      date_trunc('day', now()), -- including now
+      date_trunc('day', coalesce(from_in, now() - interval '6 days')),
+      date_trunc('day', coalesce(to_in, now())),
       interval '1 day'
     ) as day
   )
@@ -8301,6 +8266,8 @@ begin
     FROM worker_pool_errors
     WHERE
       (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+      and reported >= coalesce(from_in, now() - interval '6 days')
+      and reported <= coalesce(to_in, now())
     GROUP BY day
   ) worker_pool_errors ON worker_pool_errors.day = days.day;
 end
@@ -8308,17 +8275,71 @@ end
 
 </details>
 
-### get_worker_pool_error_titles
+### get_worker_pool_error_stats_hourly
 
 * *Mode*: read
 * *Arguments*:
   * `worker_pool_id_in text`
+  * `from_in timestamptz`
+  * `to_in timestamptz`
+* *Returns*: `table`
+  * `hour timestamptz`
+  * `count integer`
+* *Last defined on version*: 127
+
+Returns total number of errors for given worker pool or all worker pools
+broken down by hour within the specified time range.
+There will be a breakdown for every hour in the range even if there are no errors.
+With NULL from_in/to_in, returns the last 24 hours (identical to the deprecated
+get_worker_pool_error_stats_last_24_hours).
+
+
+<details><summary>Function Body</summary>
+
+```
+begin
+  RETURN query
+  WITH hours AS (
+    SELECT generate_series(
+      date_trunc('hour', coalesce(from_in, now() - interval '23 hours')),
+      date_trunc('hour', coalesce(to_in, now())),
+      interval '1 hour'
+    ) as hour
+  )
+  SELECT
+    hours.hour,
+    COALESCE(worker_pool_errors.count, 0)::int
+  FROM hours
+  LEFT JOIN (
+    SELECT
+      date_trunc('hour', reported) as hour,
+      count(*) as count
+    FROM worker_pool_errors
+    WHERE
+      (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+      and reported >= coalesce(from_in, now() - interval '23 hours')
+      and reported <= coalesce(to_in, now())
+    GROUP BY hour
+  ) worker_pool_errors ON worker_pool_errors.hour = hours.hour;
+end
+```
+
+</details>
+
+### get_worker_pool_error_titles_2
+
+* *Mode*: read
+* *Arguments*:
+  * `worker_pool_id_in text`
+  * `from_in timestamptz`
+  * `to_in timestamptz`
 * *Returns*: `table`
   * `title text`
   * `count integer`
-* *Last defined on version*: 96
+* *Last defined on version*: 127
 
-Returns errors grouped by title for given worker pool or all worker pools
+Returns errors grouped by title for given worker pool or all worker pools,
+optionally filtered to the specified time range.
 
 
 <details><summary>Function Body</summary>
@@ -8330,23 +8351,27 @@ begin
   FROM worker_pool_errors
   WHERE
     (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+    and (reported >= from_in or from_in is null)
+    and (reported <= to_in or to_in is null)
   GROUP BY worker_pool_errors.title;
 end
 ```
 
 </details>
 
-### get_worker_pool_error_worker_pools
+### get_worker_pool_error_worker_pools_2
 
 * *Mode*: read
 * *Arguments*:
   * `worker_pool_id_in text`
+  * `from_in timestamptz`
+  * `to_in timestamptz`
 * *Returns*: `table`
   * `worker_pool text`
   * `count integer`
-* *Last defined on version*: 97
+* *Last defined on version*: 127
 
-Returns errors grouped by worker pool
+Returns errors grouped by worker pool, optionally filtered to the specified time range.
 
 
 <details><summary>Function Body</summary>
@@ -8358,6 +8383,8 @@ begin
   FROM worker_pool_errors
   WHERE
     (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)
+    and (reported >= from_in or from_in is null)
+    and (reported <= to_in or to_in is null)
   GROUP BY worker_pool_errors.worker_pool_id;
 end
 ```
@@ -9052,3 +9079,9 @@ end
 ### deprecated methods
 
 * `get_non_stopped_workers_with_launch_config_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond_in text, providers_filter_value_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v102.0.0)
+* `get_worker_pool_error_codes(worker_pool_id_in text)` (compatibility guaranteed until v102.0.0)
+* `get_worker_pool_error_launch_configs(worker_pool_id_in text, reported_since_in timestamptz)` (compatibility guaranteed until v102.0.0)
+* `get_worker_pool_error_stats_last_24_hours(worker_pool_id_in text)` (compatibility guaranteed until v102.0.0)
+* `get_worker_pool_error_stats_last_7_days(worker_pool_id_in text)` (compatibility guaranteed until v102.0.0)
+* `get_worker_pool_error_titles(worker_pool_id_in text)` (compatibility guaranteed until v102.0.0)
+* `get_worker_pool_error_worker_pools(worker_pool_id_in text)` (compatibility guaranteed until v102.0.0)

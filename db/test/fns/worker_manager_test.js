@@ -419,15 +419,15 @@ suite(testing.suiteName(), () => {
       await create_worker_pool_error(db, { error_id: 'id1', worker_pool_id: 'wp/id1' });
       await create_worker_pool_error(db, { error_id: 'id2', worker_pool_id: 'wp/id2' });
 
-      const res = await db.fns.get_worker_pool_error_stats_last_24_hours(null);
+      const res = await db.deprecatedFns.get_worker_pool_error_stats_last_24_hours(null);
       assert.equal(res.length, 24);
       assert.equal(res[23].count, 2); // latest record is last hour
 
-      const res2 = await db.fns.get_worker_pool_error_stats_last_24_hours('wp/id1');
+      const res2 = await db.deprecatedFns.get_worker_pool_error_stats_last_24_hours('wp/id1');
       assert.equal(res2.length, 24);
       assert.equal(res2[23].count, 1);
 
-      const res3 = await db.fns.get_worker_pool_error_stats_last_24_hours('wp/id2');
+      const res3 = await db.deprecatedFns.get_worker_pool_error_stats_last_24_hours('wp/id2');
       assert.equal(res3.length, 24);
       assert.equal(res3[23].count, 1);
     });
@@ -435,15 +435,15 @@ suite(testing.suiteName(), () => {
       await create_worker_pool_error(db, { error_id: 'id1', worker_pool_id: 'wp/id1' });
       await create_worker_pool_error(db, { error_id: 'id2', worker_pool_id: 'wp/id2' });
 
-      const res = await db.fns.get_worker_pool_error_stats_last_7_days(null);
+      const res = await db.deprecatedFns.get_worker_pool_error_stats_last_7_days(null);
       assert.equal(res.length, 7);
       assert.equal(res[6].count, 2); // latest record is last hour
 
-      const res2 = await db.fns.get_worker_pool_error_stats_last_7_days('wp/id1');
+      const res2 = await db.deprecatedFns.get_worker_pool_error_stats_last_7_days('wp/id1');
       assert.equal(res2.length, 7);
       assert.equal(res2[6].count, 1);
 
-      const res3 = await db.fns.get_worker_pool_error_stats_last_7_days('wp/id2');
+      const res3 = await db.deprecatedFns.get_worker_pool_error_stats_last_7_days('wp/id2');
       assert.equal(res3.length, 7);
       assert.equal(res3[6].count, 1);
     });
@@ -451,7 +451,7 @@ suite(testing.suiteName(), () => {
       await create_worker_pool_error(db, { error_id: 'id1', title: 'title1', worker_pool_id: 'wp/id1' });
       await create_worker_pool_error(db, { error_id: 'id2', title: 'title2', worker_pool_id: 'wp/id2' });
 
-      const res = await db.fns.get_worker_pool_error_titles(null);
+      const res = await db.deprecatedFns.get_worker_pool_error_titles(null);
       assert.equal(res.length, 2);
       assert.equal(res[0].count, 1);
       assert.equal(res[1].count, 1);
@@ -470,10 +470,98 @@ suite(testing.suiteName(), () => {
         extra: { code: 'c2' },
       });
 
-      const res = await db.fns.get_worker_pool_error_codes(null);
+      const res = await db.deprecatedFns.get_worker_pool_error_codes(null);
       assert.equal(res.length, 2);
       assert.equal(res[0].count, 1);
       assert.equal(res[1].count, 1);
+    });
+
+    helper.dbTest('get_worker_pool_error_stats_hourly - null args', async (db) => {
+      await create_worker_pool_error(db, { error_id: 'id1', worker_pool_id: 'wp/id1' });
+      await create_worker_pool_error(db, { error_id: 'id2', worker_pool_id: 'wp/id2' });
+
+      const res = await db.fns.get_worker_pool_error_stats_hourly(null, null, null);
+      assert.equal(res.length, 24);
+      assert.equal(res[23].count, 2);
+
+      const res2 = await db.fns.get_worker_pool_error_stats_hourly('wp/id1', null, null);
+      assert.equal(res2.length, 24);
+      assert.equal(res2[23].count, 1);
+    });
+
+    helper.dbTest('get_worker_pool_error_stats_hourly - explicit range', async (db) => {
+      const inside = new Date();
+      const outside = new Date(inside.getTime() - 5 * 24 * 60 * 60 * 1000); // 5 days ago
+      await create_worker_pool_error(db, { error_id: 'id1', worker_pool_id: 'wp/id1', reported: inside });
+      await create_worker_pool_error(db, { error_id: 'id2', worker_pool_id: 'wp/id1', reported: outside });
+
+      const from = new Date(inside.getTime() - 2 * 60 * 60 * 1000); // 2 hours ago
+      const to = new Date(inside.getTime() + 60 * 60 * 1000); // 1 hour from now
+      const res = await db.fns.get_worker_pool_error_stats_hourly('wp/id1', from, to);
+      const total = res.reduce((acc, row) => acc + row.count, 0);
+      assert.equal(total, 1); // only the "inside" error should be counted
+    });
+
+    helper.dbTest('get_worker_pool_error_stats_daily - null args', async (db) => {
+      await create_worker_pool_error(db, { error_id: 'id1', worker_pool_id: 'wp/id1' });
+      await create_worker_pool_error(db, { error_id: 'id2', worker_pool_id: 'wp/id2' });
+
+      const res = await db.fns.get_worker_pool_error_stats_daily(null, null, null);
+      assert.equal(res.length, 7);
+      assert.equal(res[6].count, 2);
+
+      const res2 = await db.fns.get_worker_pool_error_stats_daily('wp/id1', null, null);
+      assert.equal(res2.length, 7);
+      assert.equal(res2[6].count, 1);
+    });
+
+    helper.dbTest('get_worker_pool_error_stats_daily - explicit range', async (db) => {
+      const inside = new Date();
+      const outside = new Date(inside.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+      await create_worker_pool_error(db, { error_id: 'id1', worker_pool_id: 'wp/id1', reported: inside });
+      await create_worker_pool_error(db, { error_id: 'id2', worker_pool_id: 'wp/id1', reported: outside });
+
+      const from = new Date(inside.getTime() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const to = new Date(inside.getTime() + 24 * 60 * 60 * 1000); // 1 day from now
+      const res = await db.fns.get_worker_pool_error_stats_daily('wp/id1', from, to);
+      const total = res.reduce((acc, row) => acc + row.count, 0);
+      assert.equal(total, 1);
+      // range is 3 days wide so there are 3 or 4 buckets depending on time of day
+      assert(res.length >= 3 && res.length <= 4);
+    });
+
+    helper.dbTest('get_worker_pool_error_titles_2 - null args', async (db) => {
+      await create_worker_pool_error(db, { error_id: 'id1', title: 'title1', worker_pool_id: 'wp/id1' });
+      await create_worker_pool_error(db, { error_id: 'id2', title: 'title2', worker_pool_id: 'wp/id2' });
+
+      const res = await db.fns.get_worker_pool_error_titles_2(null, null, null);
+      assert.equal(res.length, 2);
+    });
+
+    helper.dbTest('get_worker_pool_error_titles_2 - range filtering', async (db) => {
+      const inside = new Date();
+      const outside = new Date(inside.getTime() - 10 * 24 * 60 * 60 * 1000); // 10 days ago
+      await create_worker_pool_error(db, { error_id: 'id1', title: 'inside', reported: inside });
+      await create_worker_pool_error(db, { error_id: 'id2', title: 'outside', reported: outside });
+
+      const from = new Date(inside.getTime() - 24 * 60 * 60 * 1000);
+      const to = new Date(inside.getTime() + 24 * 60 * 60 * 1000);
+      const res = await db.fns.get_worker_pool_error_titles_2(null, from, to);
+      assert.equal(res.length, 1);
+      assert.equal(res[0].title, 'inside');
+    });
+
+    helper.dbTest('get_worker_pool_error_codes_2 - range filtering', async (db) => {
+      const inside = new Date();
+      const outside = new Date(inside.getTime() - 10 * 24 * 60 * 60 * 1000);
+      await create_worker_pool_error(db, { error_id: 'id1', extra: { code: 'c1' }, reported: inside });
+      await create_worker_pool_error(db, { error_id: 'id2', extra: { code: 'c2' }, reported: outside });
+
+      const from = new Date(inside.getTime() - 24 * 60 * 60 * 1000);
+      const to = new Date(inside.getTime() + 24 * 60 * 60 * 1000);
+      const res = await db.fns.get_worker_pool_error_codes_2(null, from, to);
+      assert.equal(res.length, 1);
+      assert.equal(res[0].code, 'c1');
     });
   });
 

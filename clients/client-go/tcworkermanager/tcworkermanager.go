@@ -429,18 +429,31 @@ func (workerManager *WorkerManager) ReportWorkerError(workerPoolId string, paylo
 // Stability: *** EXPERIMENTAL ***
 //
 // Get the list of worker pool errors count.
-// Contains total count of errors for the past 7 days and 24 hours
-// Also includes total counts grouped by titles of error and error code.
+// Contains total count of errors broken down by day and hour.
+// Also includes total counts grouped by title, error code, worker pool, and launch config.
 //
-// # If `workerPoolId` is not specified, it will return the count of all errors
+// If `workerPoolId` is not specified, it will return the count of all errors.
+//
+// The optional `from` and `to` query parameters accept ISO 8601 datetime strings
+// to filter statistics to an arbitrary time range. When omitted, defaults to the
+// last 7 days (daily) and last 24 hours (hourly). When a custom range spans more
+// than 31 days, the hourly breakdown is omitted to bound response size.
+//
+// The `total` field is always the sum over the daily series.
 //
 // Required scopes:
 //
 //	worker-manager:list-worker-pool-errors:<workerPoolId>
 //
 // See #workerPoolErrorStats
-func (workerManager *WorkerManager) WorkerPoolErrorStats(workerPoolId string) (*WorkerPoolErrorStats, error) {
+func (workerManager *WorkerManager) WorkerPoolErrorStats(from, to, workerPoolId string) (*WorkerPoolErrorStats, error) {
 	v := url.Values{}
+	if from != "" {
+		v.Add("from", from)
+	}
+	if to != "" {
+		v.Add("to", to)
+	}
 	if workerPoolId != "" {
 		v.Add("workerPoolId", workerPoolId)
 	}
@@ -456,8 +469,14 @@ func (workerManager *WorkerManager) WorkerPoolErrorStats(workerPoolId string) (*
 //	worker-manager:list-worker-pool-errors:<workerPoolId>
 //
 // See WorkerPoolErrorStats for more details.
-func (workerManager *WorkerManager) WorkerPoolErrorStats_SignedURL(workerPoolId string, duration time.Duration) (*url.URL, error) {
+func (workerManager *WorkerManager) WorkerPoolErrorStats_SignedURL(from, to, workerPoolId string, duration time.Duration) (*url.URL, error) {
 	v := url.Values{}
+	if from != "" {
+		v.Add("from", from)
+	}
+	if to != "" {
+		v.Add("to", to)
+	}
 	if workerPoolId != "" {
 		v.Add("workerPoolId", workerPoolId)
 	}

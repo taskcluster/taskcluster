@@ -121,7 +121,7 @@ export class Provisioner {
 
     // add information about errors in the past 60 minutes
     const lastHour = fromNow('-1 hour');
-    const errorsByLc = await this.db.fns.get_worker_pool_error_launch_configs(workerPoolId, lastHour);
+    const errorsByLc = await this.db.fns.get_worker_pool_error_launch_configs_2(workerPoolId, lastHour, null);
     for (const row of errorsByLc) {
       stats.totalErrors += row.count;
       stats.errorsByLaunchConfig.set(row.launch_config_id, row.count);
