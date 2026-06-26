@@ -27,6 +27,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   const validYamlJson = loadJson('yml/valid-yaml.json');
   const validYamlV1Json = loadJson('yml/valid-yaml-v1.json');
+  const validYamlV1MultiGroupJson = loadJson('yml/valid-yaml-v1-multi-group.json');
   const validYamlCommentsJson = loadJson('yml/valid-yaml-comments.json');
   const invalidTaskJson = loadJson('yml/invalid-task.json');
   const invalidYamlJson = loadJson('yml/invalid-yaml.json');
@@ -474,6 +475,47 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(buildC.state, 'cancelled');
     });
 
+    test('does not cancel sibling task groups from the same event', async () => {
+      // Old build from a previous event
+      await helper.db.fns.create_github_build_pr(
+        'TaskclusterRobot', 'hooks-testing', COMMIT_SHA, 'old-group', 'pending',
+        new Date(), new Date(), 9988, 'pull_request.opened', 'old-event-id', 1,
+      );
+      // Two sibling builds from the current event — share the same event_id
+      await helper.db.fns.create_github_build_pr(
+        'TaskclusterRobot', 'hooks-testing', COMMIT_SHA, 'new-group-a', 'pending',
+        new Date(), new Date(), 9988, 'pull_request.opened', 'new-event-id', 1,
+      );
+      await helper.db.fns.create_github_build_pr(
+        'TaskclusterRobot', 'hooks-testing', COMMIT_SHA, 'new-group-b', 'pending',
+        new Date(), new Date(), 9988, 'pull_request.opened', 'new-event-id', 1,
+      );
+
+      await handlers.realCancelPreviousTaskGroups({
+        instGithub: sinon.stub(),
+        debug: sinon.stub(),
+        newBuild: {
+          sha: COMMIT_SHA,
+          task_group_id: 'new-group-a',
+          organization: 'TaskclusterRobot',
+          repository: 'hooks-testing',
+          pull_number: 1,
+          event_type: 'pull_request.opened',
+          event_id: 'new-event-id',
+        },
+      });
+
+      // Only the old build (different event_id) should be cancelled
+      assert.deepEqual(sealedTaskGroups, ['old-group']);
+      assert.deepEqual(cancelledTaskGroups, ['old-group']);
+
+      // Sibling builds (same event_id) must NOT be cancelled — neither of them
+      const [buildA] = await helper.db.fns.get_github_build_pr('new-group-a');
+      const [buildB] = await helper.db.fns.get_github_build_pr('new-group-b');
+      assert.equal(buildA.state, 'pending');
+      assert.equal(buildB.state, 'pending');
+    });
+
     test('calls queue.sealTaskGroup/cancelTaskGroup for SHA excluding new task group id', async () => {
       await addBuild({ state: 'pending', taskGroupId: 'aa' });
       await addBuild({ state: 'pending', taskGroupId: 'bb' });
@@ -720,6 +762,84 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(build.repository, 'hooks-testing');
       assert.equal(build.sha, COMMIT_SHA);
       assert.equal(build.state, 'pending');
+    });
+
+    test('multi-group yml creates one build record per unique taskGroupId', async () => {
+      const GROUP_A = 'AAAAAAAAAAAAAAAAAAAAAA';
+      const GROUP_B = 'BBBBBBBBBBBBBBBBBBBBBB';
+
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: validYamlV1MultiGroupJson,
+      });
+
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+      assert(handlers.createTasks.calledOnce, 'createTasks should be called once');
+
+      const [buildA] = await helper.db.fns.get_github_build_pr(GROUP_A);
+      const [buildB] = await helper.db.fns.get_github_build_pr(GROUP_B);
+      assert.ok(buildA, 'build record for group A should exist');
+      assert.ok(buildB, 'build record for group B should exist');
+      assert.equal(buildA.state, 'pending');
+      assert.equal(buildB.state, 'pending');
+      assert.equal(buildA.organization, 'TaskclusterRobot');
+      assert.equal(buildB.organization, 'TaskclusterRobot');
+      assert.equal(buildA.sha, COMMIT_SHA);
+      assert.equal(buildB.sha, COMMIT_SHA);
+    });
+
+    test('multi-group yml publishes taskGroupCreationRequested once per unique group', async () => {
+      const GROUP_A = 'AAAAAAAAAAAAAAAAAAAAAA';
+      const GROUP_B = 'BBBBBBBBBBBBBBBBBBBBBB';
+
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: validYamlV1MultiGroupJson,
+      });
+
+      const publishedGroupIds = [];
+      helper.onPulsePublish((exchange, routingKey, payload) => {
+        if (exchange.endsWith('task-group-creation-requested')) {
+          publishedGroupIds.push(JSON.parse(payload).taskGroupId);
+        }
+      });
+
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+      assert.equal(publishedGroupIds.length, 2, 'should publish once per unique taskGroupId');
+      assert(publishedGroupIds.includes(GROUP_A), 'should publish for group A');
+      assert(publishedGroupIds.includes(GROUP_B), 'should publish for group B');
+    });
+
+    test('multi-group yml calls cancelPreviousTaskGroups once for pull_request', async () => {
+      github.inst(INST_ID).setRepoCollaborator({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        username: 'goodBuddy',
+      });
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: validYamlV1MultiGroupJson,
+      });
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development',
+        content: validYamlV1MultiGroupJson,
+      });
+
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
+
+      assert(handlers.createTasks.calledOnce, 'createTasks should be called once');
+      // cancelPreviousTaskGroups should be called exactly once regardless of how many groups exist
+      assert(handlers.cancelPreviousTaskGroups.calledOnce, 'cancelPreviousTaskGroups should be called once');
     });
 
     test('valid pull_request (user is collaborator) creates a taskGroup', async () => {
