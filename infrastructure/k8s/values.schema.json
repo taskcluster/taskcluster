@@ -2819,6 +2819,9 @@
         "taskcluster_client_id": {
           "type": "string"
         },
+        "worker_scanner_concurrency": {
+          "type": "number"
+        },
         "worker_scanner_iterate_config": {
           "oneOf": [
             {
