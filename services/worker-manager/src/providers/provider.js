@@ -198,9 +198,10 @@ export class Provider {
     const created = worker.created?.getTime?.();
     const lifecycle = Provider.getWorkerManagerData(worker);
     const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    const stoppedAtMs = await this._ensureStoppedAt(worker);
     const extraLog = {
       workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
-      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
+      runningDuration: Number.isFinite(registeredAt) ? (stoppedAtMs - registeredAt) / 1000 : null,
     };
     return this._onWorkerEvent({ worker, event: 'workerStopped', extraLog });
   }
@@ -215,10 +216,11 @@ export class Provider {
     const created = worker.created?.getTime?.();
     const lifecycle = Provider.getWorkerManagerData(worker);
     const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    const stoppedAtMs = await this._ensureStoppedAt(worker);
     const extraLog = {
       reason,
       workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
-      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
+      runningDuration: Number.isFinite(registeredAt) ? (stoppedAtMs - registeredAt) / 1000 : null,
     };
     return this._onWorkerEvent({
       worker,
@@ -313,24 +315,26 @@ export class Provider {
    **/
   async _recordWorkerStopped(worker) {
     const lifecycle = Provider.getWorkerManagerData(worker);
-    if (lifecycle?.stoppedAt) {
+    if (lifecycle?.lifetimeRecorded) {
       return; // already recorded
     }
 
-    const now = Date.now();
+    // stoppedAt may already be persisted by _ensureStoppedAt; fall back to now defensively
+    const stoppedAtMs = Provider.timestampToMs(lifecycle?.stoppedAt) ?? Date.now();
     const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
-    const currentState = worker.state; // Capture state before it changes
+    const currentState = lifecycle?.previousState ?? worker.state;
 
     await worker.update(this.db, worker => {
       const lifecycleData = Provider.ensureWorkerManagerData(worker);
       if (!lifecycleData.stoppedAt) {
-        lifecycleData.stoppedAt = new Date(now).toJSON();
+        lifecycleData.stoppedAt = new Date(stoppedAtMs).toJSON();
         lifecycleData.previousState = currentState;
       }
+      lifecycleData.lifetimeRecorded = true;
     });
 
     if (Number.isFinite(registeredAt)) {
-      const durationSeconds = (now - registeredAt) / 1000;
+      const durationSeconds = (stoppedAtMs - registeredAt) / 1000;
       if (durationSeconds >= 0) {
         this.monitor.metric.workerLifetime(durationSeconds, {
           workerPoolId: worker.workerPoolId,
@@ -346,6 +350,31 @@ export class Provider {
         workerGroup: worker.workerGroup,
       });
     }
+  }
+
+  /**
+   * Persist stoppedAt on the first terminal event and return its ms timestamp.
+   * Both terminal log events for a single worker will therefore report the same runningDuration.
+   *
+   * @param {import('../data.js').Worker} worker
+   * @returns {Promise<number>}
+   */
+  async _ensureStoppedAt(worker) {
+    const lifecycle = Provider.getWorkerManagerData(worker);
+    const existing = Provider.timestampToMs(lifecycle?.stoppedAt);
+    if (Number.isFinite(existing)) {
+      return existing;
+    }
+    const now = Date.now();
+    const currentState = worker.state;
+    await worker.update(this.db, worker => {
+      const lifecycleData = Provider.ensureWorkerManagerData(worker);
+      if (!lifecycleData.stoppedAt) {
+        lifecycleData.stoppedAt = new Date(now).toJSON();
+        lifecycleData.previousState = currentState;
+      }
+    });
+    return now;
   }
 
   /**

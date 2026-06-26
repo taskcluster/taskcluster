@@ -515,6 +515,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
             registeredAt: new Date(Date.now() - 60000).toJSON(),
             stoppedAt: new Date().toJSON(),
             previousState: Worker.states.RUNNING,
+            lifetimeRecorded: true,
           },
         },
       });
@@ -527,6 +528,41 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
       await provider.onWorkerStopped({ worker });
       assert.equal(metricRecorded, false);
+
+      monitor.metric.workerLifetime = originalMetric;
+    });
+
+    test('reports same runningDuration on worker-removed and worker-stopped for one worker', async function() {
+      const worker = await createWorker({
+        workerId: 'wi-consistency',
+        state: Worker.states.RUNNING,
+        providerData: {
+          workerManager: {
+            registeredAt: new Date(Date.now() - 50000).toJSON(),
+          },
+        },
+      });
+
+      const originalMetric = monitor.metric.workerLifetime;
+      monitor.metric.workerLifetime = () => {};
+
+      monitor.manager.reset();
+      await provider.onWorkerRemoved({ worker, reason: 'test-reason' });
+
+      // Advance time before the second terminal event
+      Date.now = () => 200;
+      await provider.onWorkerStopped({ worker });
+
+      const removedMsg = monitor.manager.messages.find(m => m.Type === 'worker-removed');
+      const stoppedMsg = monitor.manager.messages.find(m => m.Type === 'worker-stopped');
+      assert.ok(removedMsg, 'worker-removed log event should be emitted');
+      assert.ok(stoppedMsg, 'worker-stopped log event should be emitted');
+      assert.equal(typeof removedMsg.Fields.runningDuration, 'number');
+      assert.equal(
+        removedMsg.Fields.runningDuration,
+        stoppedMsg.Fields.runningDuration,
+        'runningDuration must be identical across both terminal events',
+      );
 
       monitor.metric.workerLifetime = originalMetric;
     });
