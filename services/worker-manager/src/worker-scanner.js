@@ -9,12 +9,23 @@ import { withTimeout } from './util.js';
  * to accurately inform provisioning logic.
  */
 export class WorkerScanner {
-  constructor({ ownName, WorkerPool, providers, monitor, iterateConf = {}, db, providersFilter = {}, estimator }) {
+  constructor({
+    ownName,
+    WorkerPool,
+    providers,
+    monitor,
+    iterateConf = {},
+    db,
+    providersFilter = {},
+    estimator,
+    concurrency = 1,
+  }) {
     this.WorkerPool = WorkerPool;
     this.providers = providers;
     this.monitor = monitor;
     this.providersFilter = providersFilter;
     this.estimator = estimator;
+    this.concurrency = Math.max(1, concurrency);
     this.scanLoopAlive = false;
     this.iterate = new Iterate({
       maxFailures: 10,
@@ -73,13 +84,32 @@ export class WorkerScanner {
         page_size_in,
         ...after,
       });
-    for await (const row of paginatedIterator({
-      fetch,
-      indexColumns: ['worker_pool_id', 'worker_group', 'worker_id'],
-      size: 500,
-    })) {
-      const worker = Worker.fromDb(row);
-      await this.#checkOneWorker(worker);
+
+    // Keep up to `this.concurrency` checkWorker calls in flight while walking the stream.
+    const inFlight = new Set();
+    /** @param {Worker} worker */
+    const launch = worker => {
+      const task = this.#checkOneWorker(worker)
+        // a launched task must never reject, or an in-flight rejection becomes an
+        // unhandled rejection (and crashes the process) before we await it below
+        .catch(err => this.monitor.reportError(err))
+        .finally(() => inFlight.delete(task));
+      inFlight.add(task);
+    };
+
+    try {
+      for await (const row of paginatedIterator({
+        fetch,
+        indexColumns: ['worker_pool_id', 'worker_group', 'worker_id'],
+        size: 500,
+      })) {
+        launch(Worker.fromDb(row));
+        if (inFlight.size >= this.concurrency) {
+          await Promise.race(inFlight);
+        }
+      }
+    } finally {
+      await Promise.all(inFlight);
     }
 
     await this.providers.forAll(p => p.scanCleanup());
@@ -103,7 +133,7 @@ export class WorkerScanner {
           `checkWorker timed out for ${worker.workerPoolId}/${worker.workerId}`
         );
       } catch (err) {
-        this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
+        this.monitor.reportError(err);
       }
     } else {
       this.monitor.info(

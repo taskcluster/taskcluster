@@ -4,6 +4,7 @@ import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 import { LEVELS } from '@taskcluster/lib-monitor';
 import { Worker, WorkerPool } from '../src/data.js';
+import { WorkerScanner } from '../src/worker-scanner.js';
 
 helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
@@ -274,7 +275,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   test('scan loop is not running in parallel', async () => {
     const providers = await helper.load('providers');
     const estimator = await helper.load('estimator');
-    const scanner = new (await import('../src/worker-scanner.js')).WorkerScanner({
+    const scanner = new WorkerScanner({
       ownName: 'test-overlap',
       providers,
       monitor,
@@ -299,6 +300,204 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     monitor.manager.reset();
   });
 
+  test('checkWorker calls run with bounded concurrency', async () => {
+    // REQUESTED workers with a far-future expiry skip the termination and
+    // expires-refresh paths, so checkWorker is the only thing the scan does.
+    const N = 12;
+    const concurrency = 5;
+    await Promise.all(
+      Array.from({ length: N }, (_, i) =>
+        Worker.fromApi({
+          workerPoolId: 'cc/pool',
+          workerGroup: 'wg',
+          workerId: `w-${i}`,
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires: taskcluster.fromNow('8 days'),
+          capacity: 1,
+          state: Worker.states.REQUESTED,
+          providerData: {},
+        }).create(helper.db)
+      )
+    );
+
+    let inFlight = 0;
+    let maxConcurrent = 0;
+    const checkedWorkerIds = [];
+    const fakeProvider = {
+      providerId: 'testing1',
+      providerType: 'testing',
+      setupFailed: false,
+      scanPrepare: async () => {},
+      scanCleanup: async () => {},
+      checkWorker: async ({ worker }) => {
+        inFlight += 1;
+        maxConcurrent = Math.max(maxConcurrent, inFlight);
+        await new Promise(resolve => setTimeout(resolve, 15));
+        checkedWorkerIds.push(worker.workerId);
+        inFlight -= 1;
+      },
+    };
+    const fakeProviders = {
+      forAll: async fn => {
+        await fn(fakeProvider);
+      },
+      get: id => (id === 'testing1' ? fakeProvider : undefined),
+    };
+
+    const scanner = new WorkerScanner({
+      ownName: 'test-concurrency',
+      providers: fakeProviders,
+      monitor,
+      db: helper.db,
+      providersFilter: {},
+      concurrency,
+    });
+
+    await scanner.scan();
+
+    assert(maxConcurrent > 1, `expected concurrent checkWorker calls, but saw max ${maxConcurrent}`);
+    assert(
+      maxConcurrent <= concurrency,
+      `expected at most ${concurrency} concurrent checkWorker calls, but saw ${maxConcurrent}`
+    );
+    assert.strictEqual(checkedWorkerIds.length, N, 'every worker should be checked exactly once');
+    assert.strictEqual(new Set(checkedWorkerIds).size, N, 'no worker should be checked twice');
+  });
+
+  test('a failing checkWorker is reported and does not stall the concurrent scan', async () => {
+    const N = 9;
+    await Promise.all(
+      Array.from({ length: N }, (_, i) =>
+        Worker.fromApi({
+          workerPoolId: 'cc/pool',
+          workerGroup: 'wg',
+          workerId: `w-${i}`,
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          expires: taskcluster.fromNow('8 days'),
+          capacity: 1,
+          state: Worker.states.REQUESTED,
+          providerData: {},
+        }).create(helper.db)
+      )
+    );
+
+    const checked = [];
+    const fakeProvider = {
+      providerId: 'testing1',
+      providerType: 'testing',
+      setupFailed: false,
+      scanPrepare: async () => {},
+      scanCleanup: async () => {},
+      checkWorker: async ({ worker }) => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+        // one worker fails its check; the rest must still be checked
+        if (worker.workerId === 'w-4') {
+          throw new Error('checkWorker boom');
+        }
+        checked.push(worker.workerId);
+      },
+    };
+    const fakeProviders = {
+      forAll: async fn => {
+        await fn(fakeProvider);
+      },
+      get: id => (id === 'testing1' ? fakeProvider : undefined),
+    };
+
+    const scanner = new WorkerScanner({
+      ownName: 'test-drain',
+      providers: fakeProviders,
+      monitor,
+      db: helper.db,
+      providersFilter: {},
+      concurrency: 3,
+    });
+
+    await scanner.scan();
+
+    assert.strictEqual(checked.length, N - 1, 'every healthy worker should still be checked');
+    const reported = monitor.manager.messages.find(({ Type }) => Type === 'monitor.error');
+    assert(reported, 'expected the failing check to be reported');
+    monitor.manager.reset();
+  });
+
+  test('a rejecting worker update is reported, not left as an unhandled rejection', async () => {
+    // The failing worker has a near expiry so the expires-refresh worker.update()
+    // runs (and throws) outside checkWorker's own catch. Under concurrency that
+    // rejection must be caught, not left to crash the process.
+    const N = 6;
+    await Promise.all(
+      Array.from({ length: N }, (_, i) =>
+        Worker.fromApi({
+          workerPoolId: 'cc/pool',
+          workerGroup: 'wg',
+          workerId: `w-${i}`,
+          providerId: 'testing1',
+          created: new Date(),
+          lastModified: new Date(),
+          lastChecked: new Date(),
+          // w-0 expires soon, so its update() runs; the rest are left alone
+          expires: i === 0 ? taskcluster.fromNow('1 day') : taskcluster.fromNow('8 days'),
+          capacity: 1,
+          state: Worker.states.REQUESTED,
+          providerData: {},
+        }).create(helper.db)
+      )
+    );
+
+    const checked = [];
+    const fakeProvider = {
+      providerId: 'testing1',
+      providerType: 'testing',
+      setupFailed: false,
+      scanPrepare: async () => {},
+      scanCleanup: async () => {},
+      checkWorker: async ({ worker }) => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+        checked.push(worker.workerId);
+      },
+    };
+    const fakeProviders = {
+      forAll: async fn => {
+        await fn(fakeProvider);
+      },
+      get: id => (id === 'testing1' ? fakeProvider : undefined),
+    };
+
+    // delegate everything to the real db, but make the expires-refresh update throw
+    const failingDb = {
+      ...helper.db,
+      fns: {
+        ...helper.db.fns,
+        update_worker_3: async () => {
+          throw new Error('update boom');
+        },
+      },
+    };
+
+    const scanner = new WorkerScanner({
+      ownName: 'test-update-reject',
+      providers: fakeProviders,
+      monitor,
+      db: failingDb,
+      providersFilter: {},
+      concurrency: 2,
+    });
+
+    await scanner.scan();
+
+    assert.strictEqual(checked.length, N, 'every worker should still be checked');
+    const reported = monitor.manager.messages.find(({ Type }) => Type === 'monitor.error');
+    assert(reported, 'expected the failing update to be reported');
+    monitor.manager.reset();
+  });
+
   suite('termination decisions', () => {
     let scanner, providers, estimator;
 
@@ -312,7 +511,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     setup(async () => {
       // Create a fresh scanner for each test (no iterate loop, just call scan() directly)
-      scanner = new (await import('../src/worker-scanner.js')).WorkerScanner({
+      scanner = new WorkerScanner({
         ownName: 'test-scanner',
         providers,
         monitor,
