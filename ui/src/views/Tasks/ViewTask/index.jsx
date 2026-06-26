@@ -63,12 +63,21 @@ import pageArtifactsQuery from './pageArtifacts.graphql';
 import createTaskQuery from '../createTask.graphql';
 import { AuthContext } from '../../../utils/Auth';
 
-const updateTaskIdHistory = id => {
+const updateTaskIdHistory = (id, task) => {
   if (!VALID_TASK.test(id)) {
     return;
   }
 
-  db.taskIdsHistory.put({ taskId: id });
+  db.taskIdsHistory.put({
+    taskId: id,
+    name: task?.metadata?.name,
+    source: task?.metadata?.source,
+    taskQueueId: task?.taskQueueId,
+    created: task?.created,
+    deadline: task?.deadline,
+    state: task?.status?.state,
+    viewedAt: Date.now(),
+  });
 };
 
 const taskInContext = (tagSetList, taskTags) =>
@@ -123,7 +132,7 @@ export default class ViewTask extends Component {
     } = props;
 
     if (taskId !== state.previousTaskId && task) {
-      updateTaskIdHistory(taskId);
+      updateTaskIdHistory(taskId, task);
 
       const caches = getCachesFromTask(task);
 

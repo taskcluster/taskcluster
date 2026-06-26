@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import LinkIcon from 'mdi-react/LinkIcon';
 import { withStyles } from '@material-ui/core/styles';
@@ -8,6 +9,8 @@ import Typography from '@material-ui/core/Typography';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import Search from '../../../components/Search';
+import DateDistance from '../../../components/DateDistance';
+import StatusLabel from '../../../components/StatusLabel';
 import db from '../../../utils/db';
 import Link from '../../../utils/Link';
 
@@ -20,6 +23,18 @@ import Link from '../../../utils/Link';
     display: 'flex',
     justifyContent: 'space-between',
   },
+  secondaryLine: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+  },
+  source: {
+    textOverflow: 'ellipsis',
+    overflowX: 'hidden',
+    whiteSpace: 'nowrap',
+    maxWidth: 260,
+    display: 'inline-block',
+  },
 }))
 export default class NoTask extends Component {
   state = {
@@ -27,7 +42,11 @@ export default class NoTask extends Component {
   };
 
   async componentDidMount() {
-    const recentTasks = await db.taskIdsHistory.limit(5).reverse().toArray();
+    const recentTasks = await db.taskIdsHistory
+      .orderBy('viewedAt')
+      .reverse()
+      .limit(20)
+      .toArray();
 
     this.setState({ recentTasks });
   }
@@ -35,6 +54,42 @@ export default class NoTask extends Component {
   handleTaskSearchSubmit = taskId => {
     this.props.history.push(`/tasks/${taskId}`);
   };
+
+  renderSecondary(entry) {
+    const { classes } = this.props;
+    const { taskQueueId, created, source } = entry;
+    const parts = [];
+
+    if (taskQueueId) {
+      parts.push(<span key="queue">{taskQueueId}</span>);
+    }
+
+    if (created) {
+      parts.push(
+        <span key="created">
+          <DateDistance from={created} />
+        </span>
+      );
+    }
+
+    if (source) {
+      parts.push(
+        <span key="source" className={classes.source} title={source}>
+          {source}
+        </span>
+      );
+    }
+
+    if (!parts.length) {
+      return null;
+    }
+
+    return (
+      <span className={classes.secondaryLine}>
+        {parts.flatMap((el, i) => (i === 0 ? [el] : [' · ', el]))}
+      </span>
+    );
+  }
 
   render() {
     const { description, classes } = this.props;
@@ -59,14 +114,31 @@ export default class NoTask extends Component {
             subheader={
               <ListSubheader component="div">Recent Tasks</ListSubheader>
             }>
-            {recentTasks.map(({ taskId }) => (
-              <Link key={taskId} to={`/tasks/${taskId}`}>
-                <ListItem button className={classes.listItemButton}>
-                  {taskId}
-                  <LinkIcon />
-                </ListItem>
-              </Link>
-            ))}
+            {recentTasks.map(entry => {
+              const { taskId, name, state } = entry;
+
+              return (
+                <Link key={taskId} to={`/tasks/${taskId}`}>
+                  <ListItem button className={classes.listItemButton}>
+                    <ListItemText
+                      primary={
+                        <span>
+                          {name || taskId}
+                          {state && (
+                            <>
+                              {' '}
+                              <StatusLabel state={state} />
+                            </>
+                          )}
+                        </span>
+                      }
+                      secondary={this.renderSecondary(entry)}
+                    />
+                    <LinkIcon />
+                  </ListItem>
+                </Link>
+              );
+            })}
           </List>
         )}
       </Dashboard>
