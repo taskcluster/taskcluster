@@ -176,6 +176,23 @@ suite(testing.suiteName(), () => {
     ]);
   });
 
+  test('load !env listing dedupes repeated descriptors', () => {
+    const vars = config({
+      serviceName: 'test',
+      files: [{ path: path.join(__dirname, 'test-env-dupes.yml'), required: true }],
+      env: {},
+      getEnvVars: true,
+    });
+
+    assume(vars).deep.equals([
+      { type: '!env', var: 'DUP_VARIABLE', optional: false, secret: false },
+      { type: '!env:number', var: 'DUP_VARIABLE', optional: false, secret: false },
+      { type: '!env', var: 'DUP_VARIABLE', optional: true, secret: false },
+      { type: '!env', var: 'DUP_OPTIONAL', optional: true, secret: false },
+      { type: '!env', var: 'OTHER_VARIABLE', optional: false, secret: false },
+    ]);
+  });
+
   test('load !env listing with secrets', () => {
     const vars = config({
       serviceName: 'test',
