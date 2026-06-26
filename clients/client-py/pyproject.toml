@@ -44,14 +44,12 @@ dev = [
     "pytest-asyncio",
     "httmock",
     "mock",
-    "flake8",
     "psutil",
     "hypothesis",
     "coverage",
     "aiofiles",
     "httptest",
     "ruff",
-    "grip",
 ]
 
 [project.urls]
