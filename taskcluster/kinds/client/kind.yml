@@ -108,7 +108,8 @@ tasks:
         cd clients/client-py &&
         uv sync --only-dev &&
         uv run pytest --cov=taskcluster --cov-report=term-missing -v &&
-        uv run ./lint.sh
+        uv run ruff check &&
+        uv run ruff format --check
   rust:
     description: rust client tests
     worker:
