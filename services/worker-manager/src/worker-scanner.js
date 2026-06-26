@@ -33,6 +33,7 @@ export class WorkerScanner {
       process.exit(1);
     });
     this.db = db;
+    this.poolCandidates = new Map();
   }
 
   async initiate() {
@@ -49,6 +50,7 @@ export class WorkerScanner {
       throw new Error('scan loop interference');
     }
     this.scanLoopAlive = true;
+    this.poolCandidates = new Map();
     try {
       await this._scanImpl();
     } finally {
@@ -60,9 +62,6 @@ export class WorkerScanner {
     await this.providers.forAll(p => p.scanPrepare());
 
     this.monitor.info(`WorkerScanner providers filter: ${this.providersFilter.cond} ${this.providersFilter.value}`);
-
-    // Phase 1: Check workers and collect termination candidates
-    const poolCandidates = new Map();
 
     const fetch = async (page_size_in, after) =>
       await this.db.fns.get_non_stopped_workers_with_launch_config_scanner_after({
@@ -80,61 +79,65 @@ export class WorkerScanner {
       size: 500,
     })) {
       const worker = Worker.fromDb(row);
-      const provider = this.providers.get(worker.providerId);
-      if (provider) {
-        if (provider.setupFailed) {
-          // if setup has failed for this provider, just do nothing with the worker
-          // until it's up and running
-          continue;
-        }
-        try {
-          await withTimeout(
-            provider.checkWorker({ worker }),
-            60_000, // 1 minute
-            `checkWorker timed out for ${worker.workerPoolId}/${worker.workerId}`
-          );
-        } catch (err) {
-          this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
-        }
-      } else {
-        this.monitor.info(
-          `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`
-        );
-      }
-
-      // If the worker will be expired soon but it still exists,
-      // update it to stick around a while longer. If this doesn't happen,
-      // long-lived instances become orphaned from the provider. We don't update
-      // this on every loop just to avoid the extra work when not needed
-      if (worker.expires < taskcluster.fromNow('1 week')) {
-        await worker.update(this.db, worker => {
-          worker.expires = taskcluster.fromNow('8 days');
-        });
-      }
-
-      // Collect termination candidates, skipping static provider workers
-      if (provider && !provider.setupFailed && provider.providerType !== 'static') {
-        const poolId = worker.workerPoolId;
-
-        // Only RUNNING, non-quarantined workers are candidates for termination decisions
-        const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
-        if (worker.state === Worker.states.RUNNING && !isQuarantined) {
-          if (!poolCandidates.has(poolId)) {
-            poolCandidates.set(poolId, []);
-          }
-          poolCandidates.get(poolId).push(worker);
-        }
-      }
+      await this.#checkOneWorker(worker);
     }
 
     await this.providers.forAll(p => p.scanCleanup());
 
-    // Phase 2: Compute termination decisions
-    await this.#computeTerminationDecisions(poolCandidates);
+    await this.#computeTerminationDecisions();
   }
 
-  async #computeTerminationDecisions(poolCandidates) {
-    for (const [poolId, candidates] of poolCandidates) {
+  /** @param {Worker} worker */
+  async #checkOneWorker(worker) {
+    const provider = this.providers.get(worker.providerId);
+    if (provider) {
+      if (provider.setupFailed) {
+        // if setup has failed for this provider, just do nothing with the worker
+        // until it's up and running
+        return;
+      }
+      try {
+        await withTimeout(
+          provider.checkWorker({ worker }),
+          60_000, // 1 minute
+          `checkWorker timed out for ${worker.workerPoolId}/${worker.workerId}`
+        );
+      } catch (err) {
+        this.monitor.reportError(err); // Just report it and move on so this doesn't block other providers
+      }
+    } else {
+      this.monitor.info(
+        `Worker ${worker.workerGroup}/${worker.workerId} has unknown providerId ${worker.providerId} (ignoring)`
+      );
+    }
+
+    // If the worker will be expired soon but it still exists,
+    // update it to stick around a while longer. If this doesn't happen,
+    // long-lived instances become orphaned from the provider. We don't update
+    // this on every loop just to avoid the extra work when not needed
+    if (worker.expires < taskcluster.fromNow('1 week')) {
+      await worker.update(this.db, worker => {
+        worker.expires = taskcluster.fromNow('8 days');
+      });
+    }
+
+    // Collect termination candidates, skipping static provider workers
+    if (provider && !provider.setupFailed && provider.providerType !== 'static') {
+      const poolId = worker.workerPoolId;
+
+      // Only RUNNING, non-quarantined workers are candidates for termination decisions
+      const isQuarantined = worker.quarantineUntil && worker.quarantineUntil > new Date();
+      if (worker.state === Worker.states.RUNNING && !isQuarantined) {
+        if (!this.poolCandidates.has(poolId)) {
+          this.poolCandidates.set(poolId, []);
+        }
+        this.poolCandidates.get(poolId).push(worker);
+      }
+    }
+  }
+
+  async #computeTerminationDecisions() {
+    for (const [poolId, candidates] of this.poolCandidates) {
       try {
         const pool = await WorkerPool.get(this.db, poolId);
         if (!pool) {
