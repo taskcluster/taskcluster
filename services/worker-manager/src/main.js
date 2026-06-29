@@ -240,6 +240,7 @@ const load = loader(
           providers,
           monitor: scanMonitor,
           iterateConf: cfg.app.workerScannerIterateConfig || {},
+          concurrency: cfg.app.workerScannerConcurrency || 2,
           providersFilter: {
             cond: '<>', // only run for providers that are not Azure
             value: azureProviderIds,
@@ -262,6 +263,7 @@ const load = loader(
           providers,
           monitor: scanMonitor,
           iterateConf: cfg.app.workerScannerIterateConfig || {},
+          concurrency: cfg.app.workerScannerConcurrency || 2,
           providersFilter: {
             cond: '=', // only run for providers that are Azure
             value: azureProviderIds,
