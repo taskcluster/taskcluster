@@ -56,7 +56,36 @@ suite(testing.suiteName(), () => {
       await gh.getAppGithub();
       await gh.getInstallationGithub(100);
     });
+
+    test('secondary rate limits get retried instead of throwing', async () => {
+      nock('https://api.github.com:443')
+        .get('/app')
+        .reply(403, { message: 'secondary rate limit' }, { 'retry-after': '0.001' })
+        .get('/app')
+        .reply(200, { id: 12345 });
+
+      const monitor = await helper.load('monitor');
+      const gh = await githubAuth({
+        monitor,
+        cfg: {
+          github: {
+            credentials: {
+              appId: 12345,
+              privatePEM: FAKE_KEY,
+            },
+          },
+        },
+      });
+      const ghApp = await gh.getAppGithub();
+      const res = await ghApp.apps.getAuthenticated();
+
+      assert.equal(res.status, 200);
+      assert.equal(res.data?.id, 12345);
+      assert.equal(true, nock.isDone());
+      monitor.manager.reset();
+    });
   });
+
   suite('getPrivatePEM', () => {
     test('with actual newlines', () => {
       const cfg = { github: { credentials: { privatePEM: WITH_NEWLINES } } };
