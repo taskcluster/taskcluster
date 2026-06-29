@@ -74,6 +74,7 @@ export default async ({ cfg, monitor }) => {
       },
       onSecondaryRateLimit: (_retryAfter, options, octokit) => {
         octokit.log.warn(`SecondaryRateLimit detected for request ${options.method} ${options.url}`);
+        return true;
       },
     },
     retry: {
