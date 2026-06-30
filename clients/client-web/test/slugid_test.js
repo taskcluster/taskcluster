@@ -1,4 +1,4 @@
-import { nice, v4 } from '../src';
+import { nice, v4 } from '../src/index.js';
 
 /**
  * `spreader` runs a test against the `generator` function, to check that

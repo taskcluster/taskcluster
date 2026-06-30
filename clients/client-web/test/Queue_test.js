@@ -1,5 +1,5 @@
-import { Queue } from '../src';
-import helper from './helper';
+import { Queue } from '../src/index.js';
+import helper from './helper.js';
 
 helper.describe('Queue', () => {
   let queue;
