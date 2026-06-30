@@ -1,0 +1,8 @@
+defaults:
+  text:        !env          DUP_VARIABLE
+  textAgain:   !env          DUP_VARIABLE
+  asNumber:    !env:number   DUP_VARIABLE
+  sameTypeOpt: !env:optional DUP_VARIABLE
+  optionalA:   !env:optional DUP_OPTIONAL
+  optionalB:   !env:optional DUP_OPTIONAL
+  other:       !env          OTHER_VARIABLE

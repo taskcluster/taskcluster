@@ -9,6 +9,19 @@ import buildSchema from './schema.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
+const dedupeEnvVars = vars => {
+  const seen = new Set();
+  return vars.filter(({ type, var: name, optional, secret }) => {
+    // None of the fields can contain a | so this is safe to use as a key
+    const key = `${type}|${name}|${optional}|${secret}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
+
 const REPO_ROOT = path.join(__dirname, '../../../');
 
 const config = ({
@@ -54,7 +67,7 @@ const config = ({
 
     // If the user requested environment variables list, return it and stop
     if (envVars) {
-      return envVars;
+      return dedupeEnvVars(envVars);
     }
 
     // Add defaults to list of configurations if present
