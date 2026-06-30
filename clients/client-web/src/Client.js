@@ -1,7 +1,7 @@
 import { withRootUrl } from 'taskcluster-lib-urls';
 import queryString from 'query-string';
 import hawk from 'hawk';
-import fetch from './fetch';
+import fetch from './fetch.js';
 
 export default class Client {
   constructor(options = {}) {

@@ -1,5 +1,5 @@
-import { Auth, createTemporaryCredentials, fromNow, request } from '../src';
-import helper from './helper';
+import { Auth, createTemporaryCredentials, fromNow, request } from '../src/index.js';
+import helper from './helper.js';
 
 helper.describe('Auth', () => {
   it('should successfully ping', () => {

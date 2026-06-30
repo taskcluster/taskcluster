@@ -1,5 +1,5 @@
-import { Client } from '../src';
-import reference from './reference-harness';
+import { Client } from '../src/index.js';
+import reference from './reference-harness.js';
 
 // This suite exercises the request and response functionality of
 // a client against a fake service defined by this reference
