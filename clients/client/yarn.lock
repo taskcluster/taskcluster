@@ -452,8 +452,8 @@ __metadata:
   linkType: hard
 
 "got@npm:^15.0.3":
-  version: 15.0.5
-  resolution: "got@npm:15.0.5"
+  version: 15.0.7
+  resolution: "got@npm:15.0.7"
   dependencies:
     "@sindresorhus/is": "npm:^8.0.0"
     byte-counter: "npm:^0.1.0"
@@ -467,7 +467,7 @@ __metadata:
     responselike: "npm:^4.0.2"
     type-fest: "npm:^5.6.0"
     uint8array-extras: "npm:^1.5.0"
-  checksum: 10c0/fd5d1e0e402013e8bcb27322657ad9ee0919ce83522e556a5060214fd5e2ba6aa6ca51080bb88f915cae6524102fdee1e52e1627a22329338b332e11d9f350ff
+  checksum: 10c0/d9fee7259a47dc2dbc4c57f9ce8013cfd8ad74bc2f6b4e07c2bf1c801ffeb4d71a9e352e6e0163cc223965d47115463b413dd6aec1f71d28ecfe69a75cf900cc
   languageName: node
   linkType: hard
 
