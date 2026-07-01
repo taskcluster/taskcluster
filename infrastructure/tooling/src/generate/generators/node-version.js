@@ -47,13 +47,20 @@ tasks.push({
       contents.replace(/^( *NODE_VERSION *= *")[0-9.]+(")$/m, `$1${nodeVersion}$2`)
     );
 
-    for (const file of ['ui/package.json', 'clients/client/package.json', 'clients/client-test/package.json']) {
+    for (const file of ['ui/package.json', 'clients/client-test/package.json']) {
       utils.status({ message: file });
       await modifyRepoJSON(file, contents => {
         contents.engines.node = nodeVersion;
         return contents;
       });
     }
+
+    // Relax the engine requirement for published packages
+    utils.status({ message: 'clients/client/package.json' });
+    await modifyRepoJSON('clients/client/package.json', contents => {
+      contents.engines.node = `^${nodeVersion.split('.')[0]}`;
+      return contents;
+    });
 
     utils.status({ message: 'cloudbuild.yaml' });
     await modifyRepoYAML('cloudbuild.yaml', contents => {
