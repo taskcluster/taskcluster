@@ -57,7 +57,6 @@
     "ajv-formats": "^2.1.1",
     "amqplib": "^0.10.8",
     "body-parser": "1.20.3",
-    "body-parser-graphql": "^1.0.0",
     "bottleneck": "^2.15.3",
     "chalk": "^5.6.2",
     "compression": "^1.8.1",
