@@ -11,7 +11,7 @@ require (
 	github.com/dchest/uniuri v1.2.0
 	github.com/deckarep/golang-set v1.8.0
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
-	github.com/elastic/go-sysinfo v1.15.4
+	github.com/elastic/go-sysinfo v1.15.5
 	github.com/fatih/camelcase v1.0.0
 	github.com/getsentry/raven-go v0.2.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
@@ -29,7 +29,7 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
 	github.com/sergi/go-diff v1.4.0
-	github.com/shirou/gopsutil/v4 v4.26.5
+	github.com/shirou/gopsutil/v4 v4.26.6
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
