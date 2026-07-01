@@ -1,6 +1,5 @@
 import bodyParser from 'body-parser';
 import path from 'node:path';
-import bodyParserGraphql from 'body-parser-graphql';
 import session from 'express-session';
 import cors from 'cors';
 import express from 'express';
@@ -85,14 +84,7 @@ export default async ({ cfg, strategies, auth, monitor, db, api }) => {
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
   app.options('/graphql', cors(corsOptions));
-  app.post(
-    '/graphql',
-    cors(corsOptions),
-    credentials(),
-    bodyParserGraphql.graphql({
-      limit: '1mb',
-    })
-  );
+  app.post('/graphql', cors(corsOptions), credentials());
 
   if (cfg.app.playground) {
     app.get(
