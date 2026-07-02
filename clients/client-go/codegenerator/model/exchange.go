@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v100/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v101/tools/jsonschema2go/text"
 )
 
 ////////////////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ func (exchange *Exchange) generateAPICode(exchangeName string) string {
 import (
 	"reflect"
 	"strings"
-	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v101/clients/client-go"
 )
 
 `

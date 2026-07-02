@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcindex"
 )
 
 type Index struct {

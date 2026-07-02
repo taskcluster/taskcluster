@@ -3,6 +3,73 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v101.0.0
+
+### ADMINS
+
+▶ [minor] [#8815](https://github.com/taskcluster/taskcluster/issues/8815)
+The worker-manager worker scanner can now check workers with bounded concurrency instead of strictly one at a time.
+It now checks up to 2 workers at once by default; set the `WORKER_SCANNER_CONCURRENCY` environment variable to tune this.
+The per-provider CloudAPI rate limiter still bounds the actual cloud API call rate, so this only controls how much of that rate budget
+each scan loop uses. Applies to both the Azure scanner and the GCP/AWS scanner.
+
+### USERS
+
+▶ [MAJOR]
+Drop support for `application/graphql` as the request content type on
+`/graphql`. Use `application/json` instead as is specified in the graphql over
+http spec.
+
+▶ [minor] [#8660](https://github.com/taskcluster/taskcluster/issues/8660)
+Relax the required node version for `taskcluster-client` from `24.17.0` to `^24`
+
+▶ [patch] [#8009](https://github.com/taskcluster/taskcluster/issues/8009)
+Fixed a bug where the github status API was marked resolved as `success` before any re-ran tasks were resolved
+
+▶ [patch] [#4585](https://github.com/taskcluster/taskcluster/issues/4585)
+Generic worker interactive shells now set `TERM` to `xterm-256color` instead of
+`hterm-256color` which fixes some whitespace quirks on copy
+
+▶ [patch] [#7773](https://github.com/taskcluster/taskcluster/issues/7773)
+The github service will now respect secondary rate limits and retry those
+requests instead of just commenting that they failed.
+
+### DEVELOPERS
+
+▶ [MAJOR]
+The `@taskcluster/client-web` package is now published as a native ES module.
+Any consumer that was importing the package via CommonJS `require()` must now
+import it as an ES module.
+
+▶ [patch] [#4959](https://github.com/taskcluster/taskcluster/issues/4959)
+Removed the outdated `Makefile` and the `lint.sh`/`test.sh` helper scripts in
+`client-py`. Call `uv` directly instead: `uv run pytest` to test, `uv run
+ruff check` to lint and `uv run ruff format` to format
+
+### OTHER
+
+▶ Additional change not described here: [#8761](https://github.com/taskcluster/taskcluster/issues/8761).
+
+### Automated Package Updates
+
+<details>
+<summary>12 Dependabot updates</summary>
+
+* build(deps-dev): bump ruff (eaabd28637)
+* build(deps): bump the gh-actions-deps group with 2 updates (9a4ac502ca)
+* build(deps): bump the go-deps group with 2 updates (32a49d6b5e)
+* build(deps): bump got in /clients/client in the client-node-deps group (2f68343962)
+* build(deps): bump github.com/sigstore/timestamp-authority/v2 (36ec287715)
+* build(deps): bump the node-deps group across 1 directory with 18 updates (11958fb028)
+* build(deps): bump js-yaml from 4.2.0 to 4.3.0 (367f547b61)
+* build(deps): bump js-yaml from 4.1.1 to 4.3.0 in /clients/client (0ad66d1017)
+* build(deps): bump js-yaml from 4.2.0 to 4.3.0 in /ui (7a9e3763a7)
+* build(deps): bump actions/checkout from 6.0.2 to 7.0.0 (7311e7a88d)
+* build(deps): bump github.com/sigstore/rekor from 1.5.1 to 1.5.2 (909829dc24)
+* build(deps): bump nodemailer from 8.0.9 to 9.0.1 (2b2ffc5b8a)
+
+</details>
+
 ## v100.5.0
 
 ### GENERAL

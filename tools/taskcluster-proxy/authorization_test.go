@@ -15,8 +15,8 @@ import (
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
-	"github.com/taskcluster/taskcluster/v100/internal/testrooturl"
+	tcclient "github.com/taskcluster/taskcluster/v101/clients/client-go"
+	"github.com/taskcluster/taskcluster/v101/internal/testrooturl"
 )
 
 var (
