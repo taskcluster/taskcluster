@@ -431,6 +431,7 @@ tasks.push({
           volumes: [
             './generated:/app/generated',
             '.all-contributorsrc:/app/.all-contributorsrc',
+            './version.json:/app/version.json',
             './ui/package.json:/app/ui/package.json',
             './ui/webpack.config.js:/app/ui/webpack.config.js',
             './ui/src:/app/ui/src',
