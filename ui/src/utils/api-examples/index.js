@@ -14,15 +14,12 @@ import generateRustExample from './rust';
 import generateShellExample from './shell';
 import generatePayloadExample from './payload-generator';
 
-// Import references for schema lookup
-let references = [];
-
-try {
-  // Try to import references - will be available after yarn generate
-  references = require('../../../../generated/references.json');
-} catch (_e) {
-  // References not available - examples will use placeholder payloads
-}
+// References for schema lookup, available after `yarn generate`.
+const referenceModules = import.meta.glob(
+  '../../../../generated/references.json',
+  { eager: true }
+);
+const references = Object.values(referenceModules)[0]?.default ?? [];
 
 /**
  * Get schema content by ID
