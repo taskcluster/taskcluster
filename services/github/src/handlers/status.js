@@ -223,12 +223,17 @@ export async function statusHandler(message) {
 
       // A helper function using native Intl to format bytes (base 1000)
       const formatBytes = (bytes) => {
-        if (!bytes || bytes === 0) {return '0 B';}
-        return new Intl.NumberFormat('en', {
+        if (bytes === null || bytes === undefined || Number.isNaN(bytes)) {
+          return '';
+        }
+        if (bytes < 1) {
+          return `${bytes} B`;
+        }
+        return new Intl.NumberFormat('en-US', {
           notation: 'compact',
           style: 'unit',
           unit: 'byte',
-          unitDisplay: 'narrow',
+          unitDisplay: 'short'
         }).format(bytes);
       };
       artifactList.artifacts.forEach(element => {
