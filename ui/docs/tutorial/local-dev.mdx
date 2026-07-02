@@ -34,7 +34,7 @@ This should start the following services:
 * `localstack` to mimic S3 storage that Taskcluster needs to store [artifacts](/docs/manual/tasks/artifacts)
 * `taskcluster` which is an nginx reverse-proxy that serves all Taskcluster services through a single endpoint
 
-It will need some time to intialize database and start the services, after which everything should be accessible at <http://localhost>
+It will need some time to intialize database and start the services, after which everything should be accessible at [http://localhost](http://localhost)
 
 <Warning>
 Default port for the `taskcluster` service is `80`. If your system doesn't allow you to bind service to this port,
@@ -48,7 +48,7 @@ You will also need to add a custom host entry to your `/etc/hosts` file in order
 echo '127.0.0.1 taskcluster' >> /etc/hosts
 ```
 
-Which will allow you to open <http://taskcluster> in browser.
+Which will allow you to open [http://taskcluster](http://taskcluster) in browser.
 
 ## Authentication
 
@@ -100,7 +100,7 @@ To make sure that timestamps are valid you can click on the `...` menu at the bo
 
 Now click the `Save` button at the bottom of the page to create the task!
 
-UI should redirect you to the newly created task page, i.e. <http://taskcluster/tasks/QiGSm7nTTkOVZKLYBPKjMA>.
+UI should redirect you to the newly created task page, i.e. [http://taskcluster/tasks/QiGSm7nTTkOVZKLYBPKjMA](http://taskcluster/tasks/QiGSm7nTTkOVZKLYBPKjMA).
 
 You should be able to see that this task is `Running` now.
 
