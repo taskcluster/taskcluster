@@ -22,6 +22,8 @@ import docsSearchOptions from '../../../../generated/docs-search.json';
 import ErrorPanel from '../../components/ErrorPanel';
 import PageMeta from './PageMeta';
 
+const docPages = import.meta.glob('../../../docs/**/*.mdx');
+
 @withStyles(
   theme => ({
     documentation: {
@@ -112,19 +114,18 @@ export default class Documentation extends Component {
   }
 
   async readDocFile(path) {
-    try {
-      return await import(
-        /* webpackMode: 'eager' */ `../../../docs/${path}.mdx`
-      );
-    } catch (err) {
-      if (err.code !== 'MODULE_NOT_FOUND') {
-        throw err;
-      }
+    const loader =
+      docPages[`../../../docs/${path}.mdx`] ||
+      docPages[`../../../docs/${path}/README.mdx`];
 
-      return import(
-        /* webpackMode: 'eager' */ `../../../docs/${path}/README.mdx`
-      );
+    if (!loader) {
+      const error = new Error(`Documentation page not found: ${path}`);
+
+      error.code = 'MODULE_NOT_FOUND';
+      throw error;
     }
+
+    return loader();
   }
 
   async load() {
