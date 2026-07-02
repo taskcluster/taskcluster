@@ -30,7 +30,7 @@
     "@mdx-js/react": "^1.0.20",
     "@mdx-js/runtime": "^1.0.20",
     "@sentry/browser": "^10.47.0",
-    "@taskcluster/client-web": "^88.0.1",
+    "@taskcluster/client-web": "^101.0.0",
     "ajv": "^8.18.0",
     "ajv-formats": "^2.1.1",
     "apollo-cache-inmemory": "^1.5.1",
