@@ -618,6 +618,11 @@ http {
   charset utf-8;
   keepalive_timeout  65;
 
+  map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+  }
+
   server {
     listen 80;
     server_name _;
@@ -626,6 +631,10 @@ http {
       set $pass http://ui:${serviceHostPort('ui')};
       proxy_pass $pass;
       ${extraDirectives}
+      # vite HMR websocket
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
     }
     location /references {
       set $pass http://references:${serviceHostPort('references')};
