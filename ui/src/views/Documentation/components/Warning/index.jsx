@@ -9,6 +9,12 @@ const styles = withStyles(theme => ({
     backgroundColor: alpha(theme.palette.warning.main, 0.2),
     padding: `${theme.spacing(1)}px ${theme.spacing(3)}px`,
     margin: `${theme.spacing(3)}px 0`,
+    '& > :first-child': {
+      marginTop: 0,
+    },
+    '& > :last-child': {
+      marginBottom: 0,
+    },
     '& a': {
       ...theme.mixins.link,
     },
