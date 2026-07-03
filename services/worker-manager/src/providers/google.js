@@ -40,9 +40,9 @@ export class GoogleProvider extends Provider {
           // google hands out 403 for rate limiting; back off significantly
           // google's interval is 100 seconds so let's try once optimistically and a second time to get it for sure
           return { backoff: _backoffDelay * 50, reason: 'rateLimit', level: 'notice' };
-        } else if (err.code === 403 || err.code >= 500) {
+        } else if (err.code >= 500) {
           // For 500s, let's take a shorter backoff
-          return { backoff: _backoffDelay * 2 ** tries, reason: 'errors', level: 'warning' };
+          return { backoff: _backoffDelay * 2 ** tries, reason: 'errors', level: tries === 0 ? 'notice' : 'warning' };
         }
         // If we don't want to do anything special here, just throw and let the
         // calling code figure out what to do
