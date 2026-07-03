@@ -1,8 +1,7 @@
 import React from 'react';
-import { string } from 'prop-types';
+import { node } from 'prop-types';
 import { alpha, withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
-import Markdown from '../../../../components/Markdown';
 
 const styles = withStyles(theme => ({
   root: {
@@ -17,12 +16,12 @@ const styles = withStyles(theme => ({
 }));
 const Warning = ({ classes, children }) => (
   <Paper square classes={{ root: classes.root }}>
-    <Markdown>{children}</Markdown>
+    {children}
   </Paper>
 );
 
 Warning.propTypes = {
-  children: string.isRequired,
+  children: node.isRequired,
 };
 
 export default styles(Warning);
