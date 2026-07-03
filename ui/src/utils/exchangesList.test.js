@@ -1,6 +1,6 @@
 describe('exchangesList', () => {
   beforeAll(() => {
-    window.fetch = jest.fn().mockImplementation(url => {
+    window.fetch = vi.fn().mockImplementation(url => {
       return {
         json: () =>
           Promise.resolve({
@@ -17,7 +17,7 @@ describe('exchangesList', () => {
   });
 
   it('should return list of entries', async () => {
-    const fetchList = require('./exchangesList').default;
+    const { default: fetchList } = await import('./exchangesList');
 
     const exchanges = await fetchList();
 
