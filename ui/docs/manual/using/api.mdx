@@ -51,7 +51,7 @@ All of the clients provide functionality that makes this easy:
 The [shell client](https://github.com/taskcluster/taskcluster/tree/main/clients/client-shell) provides an easy way to set the necessary environment variables.
 Begin by setting the `TASKCLUSTER_ROOT_URL` to the root URL for the deployment you are using.
 
-<SiteSpecific>
+<SiteSpecific requires={['root_url']}>
 For this deployment, that means:
 ```shell
 export TASKCLUSTER_ROOT_URL=%root_url%

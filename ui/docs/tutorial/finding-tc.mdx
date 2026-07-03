@@ -8,7 +8,7 @@ import TutorialNavigation from '@taskcluster/ui/views/Documentation/components/T
 This tutorial is most useful if you have a Taskcluster deployment to work with.
 Taskcluster deployments are identified by their [root URL](/docs/manual/using/root-urls).
 
-<SiteSpecific>
+<SiteSpecific requires={['root_url']}>
 The root URL for this deployment is `%root_url%`.
 </SiteSpecific>
 <SiteSpecific showIfNotSet={['root_url']}>
