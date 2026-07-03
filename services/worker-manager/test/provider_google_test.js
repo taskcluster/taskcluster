@@ -904,4 +904,41 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === worker.launchConfigId);
     });
   });
+
+  suite('errorHandler', () => {
+    // _backoffDelay is 1 in test config, so backoffs below are 1 * <multiplier>.
+    const make500 = () => {
+      const err = new Error('Internal error, unknown error code: InternalError');
+      err.code = 500;
+      return err;
+    };
+
+    test('single transient 500 (tries=0) backs off short and logs at notice', () => {
+      const result = provider.cloudApi.errorHandler({ err: make500(), tries: 0 });
+      assert.equal(result.reason, 'errors');
+      assert.equal(result.backoff, 1); // 1 * 2**0
+      assert.equal(result.level, 'notice');
+    });
+
+    test('sustained 500s (tries>0) escalate to warning with growing backoff', () => {
+      const result = provider.cloudApi.errorHandler({ err: make500(), tries: 2 });
+      assert.equal(result.reason, 'errors');
+      assert.equal(result.backoff, 4); // 1 * 2**2
+      assert.equal(result.level, 'warning');
+    });
+
+    test('403 is treated as rateLimit at notice with a long backoff', () => {
+      const err = new Error('Rate Limit Exceeded');
+      err.code = 403;
+      const result = provider.cloudApi.errorHandler({ err, tries: 0 });
+      assert.equal(result.reason, 'rateLimit');
+      assert.equal(result.backoff, 50); // 1 * 50
+      assert.equal(result.level, 'notice');
+    });
+
+    test('non-4xx/5xx errors are rethrown', () => {
+      const err = new Error('nope');
+      assert.throws(() => provider.cloudApi.errorHandler({ err, tries: 0 }), /nope/);
+    });
+  });
 });
