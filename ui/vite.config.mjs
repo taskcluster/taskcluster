@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import mdx from '@mdx-js/rollup';
 import graphql from '@rollup/plugin-graphql';
@@ -162,5 +162,11 @@ export default defineConfig(({ mode }) => ({
         docs: resolve(dir, 'docs.html'),
       },
     },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: resolve(dir, 'vitest.setup.js'),
+    include: ['src/**/*.test.{js,jsx}'],
   },
 }));
