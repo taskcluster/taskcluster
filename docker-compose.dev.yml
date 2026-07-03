@@ -17,7 +17,9 @@ services:
       - .all-contributorsrc:/app/.all-contributorsrc
       - ./version.json:/app/version.json
       - ./ui/package.json:/app/ui/package.json
-      - ./ui/webpack.config.js:/app/ui/webpack.config.js
+      - ./ui/vite.config.mjs:/app/ui/vite.config.mjs
+      - ./ui/index.html:/app/ui/index.html
+      - ./ui/docs.html:/app/ui/docs.html
       - ./ui/src:/app/ui/src
       - ./ui/docs:/app/ui/docs
       - ./CHANGELOG.md:/app/CHANGELOG.md
