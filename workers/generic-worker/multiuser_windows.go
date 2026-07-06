@@ -16,12 +16,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/interactive"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v100/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/interactive"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v101/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
@@ -267,8 +267,20 @@ func install(arguments map[string]any) (err error) {
 }
 
 func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.OSUser) error {
-	// see http://ss64.com/nt/icacls.html
-	return host.Run("icacls", dir, "/grant:r", user.Name+":(OI)(CI)F")
+	// On windows, grant:r or ownership aren't enough on their own. Ownership
+	// doesn't mean it's going to be readable, and ownership is necessary for
+	// programs like git that check that files haven't been tampered with (see #6561)
+
+	// http://ss64.com/nt/icacls.html
+	if err := host.Run("icacls", dir, "/grant:r", user.Name+":(OI)(CI)F"); err != nil {
+		return err
+	}
+
+	setOwnerArgs := []string{dir, "/setowner", user.Name}
+	if recurse {
+		setOwnerArgs = append(setOwnerArgs, "/T")
+	}
+	return host.Run("icacls", setOwnerArgs...)
 }
 
 // The windows implementation of os.Rename(...) doesn't allow renaming files

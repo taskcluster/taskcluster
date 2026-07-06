@@ -1,5 +1,4 @@
-import _ from 'lodash';
-import path from 'path';
+import path from 'node:path';
 import config from '@taskcluster/lib-config';
 import { listServices, readRepoYAML } from '../../utils/index.js';
 
@@ -12,7 +11,7 @@ SERVICES.forEach(name => {
     title: `Fetch service metadata for ${name}`,
     requires: [],
     provides: [`configs-${name}`, `procslist-${name}`, `scopes-${name}`],
-    run: async (requirements, utils) => {
+    run: async (_requirements, _utils) => {
       const envVars = config({
         serviceName: name,
         // only list config.yml, to avoid grabbing information from user-config.yml

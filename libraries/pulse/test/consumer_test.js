@@ -1,37 +1,32 @@
 import { Client, consume, connectionStringCredentials } from '../src/index.js';
 import amqplib from 'amqplib';
 import assume from 'assume';
-import fs from 'fs';
+import fs from 'node:fs';
 import debugModule from 'debug';
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import { suiteName } from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
+helper.secrets.mockSuite(suiteName(), ['pulse'], (mock, _skipping) => {
   if (mock) {
     return; // Only test with real creds
   }
   let connectionString;
   const monitor = helper.monitor;
 
-  setup(async function() {
+  setup(async () => {
     connectionString = helper.secrets.get('pulse').connectionString;
   });
 
-  suite('PulseConsumer', function() {
+  suite('PulseConsumer', () => {
     // use a unique name for each test run, just to ensure nothing interferes
-    const unique = new Date().getTime().toString();
+    const unique = Date.now().toString();
     const exchangeName = `exchanges/test/${unique}`;
     const routingKey = 'greetings.earthling.foo.bar.bing';
-    const routingKeyReference = [
-      { name: 'verb' },
-      { name: 'object' },
-      { name: 'remainder', multipleWords: true },
-    ];
+    const routingKeyReference = [{ name: 'verb' }, { name: 'object' }, { name: 'remainder', multipleWords: true }];
     const debug = debugModule('test');
 
-    suiteSetup(async function() {
-
+    suiteSetup(async () => {
       // otherwise, set up the exchange
       const conn = await amqplib.connect(connectionString);
       const chan = await conn.createChannel();
@@ -56,7 +51,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
 
     // wait until the pq stops
     const waitUntilStopped = pq => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve, _reject) => {
         pq._stoppedCallback = resolve;
       });
     };
@@ -69,7 +64,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       });
     };
 
-    test('consume messages', async function() {
+    test('consume messages', async () => {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,
@@ -79,36 +74,41 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       });
       const got = [];
 
-      const pq = await consume({
-        client,
-        queueName: unique,
-        bindings: [{
-          exchange: exchangeName,
-          routingKeyPattern: '#',
-          routingKeyReference,
-        }],
-        prefetch: 2,
-      }, async message => {
-        debug(`handling message ${message.payload.i}`);
-        // message three gets retried once and then discarded.
-        if (message.payload.i === 3) {
-          // inject an error to test retrying
-          throw new Error('uhoh');
-        }
+      const pq = await consume(
+        {
+          client,
+          queueName: unique,
+          bindings: [
+            {
+              exchange: exchangeName,
+              routingKeyPattern: '#',
+              routingKeyReference,
+            },
+          ],
+          prefetch: 2,
+        },
+        async message => {
+          debug(`handling message ${message.payload.i}`);
+          // message three gets retried once and then discarded.
+          if (message.payload.i === 3) {
+            // inject an error to test retrying
+            throw new Error('uhoh');
+          }
 
-        // recycle the client after we've had a few messages, just for exercise.
-        // Note that we continue to process this message here
-        if (got.length === 4) {
-          client.recycle();
+          // recycle the client after we've had a few messages, just for exercise.
+          // Note that we continue to process this message here
+          if (got.length === 4) {
+            client.recycle();
+          }
+          got.push(message);
+          if (got.length === 9) {
+            // stop the pq, but don't wait for its Promise to resolve; this exercises
+            // the code that waits for message handling to finish before closing.  If
+            // there is an issue, Mocha will catch the unhandled rejection.
+            pq.stop();
+          }
         }
-        got.push(message);
-        if (got.length === 9) {
-          // stop the pq, but don't wait for its Promise to resolve; this exercises
-          // the code that waits for message handling to finish before closing.  If
-          // there is an issue, Mocha will catch the unhandled rejection.
-          pq.stop();
-        }
-      });
+      );
 
       await publishUntilStopped(pq);
 
@@ -133,13 +133,12 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       assume(numbers).to.deeply.equal([0, 1, 2, 4, 5, 6, 7, 8, 9]);
 
       // check that we logged the 'uhoh' error
-      const errors = monitor.manager.messages
-        .filter(({ Fields: { message } }) => message === 'uhoh');
+      const errors = monitor.manager.messages.filter(({ Fields: { message } }) => message === 'uhoh');
       assert.equal(errors.length, 1);
       monitor.manager.messages = [];
     });
 
-    test('handle connection failure during consumption', async function() {
+    test('handle connection failure during consumption', async () => {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,
@@ -149,32 +148,37 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       });
       const got = [];
 
-      const pq = await consume({
-        client,
-        queueName: unique,
-        bindings: [{
-          exchange: exchangeName,
-          routingKeyPattern: '#',
-          routingKeyReference,
-        }],
-        prefetch: 1,
-      }, async message => {
-        debug(`handling message ${message.payload.i}`);
+      const pq = await consume(
+        {
+          client,
+          queueName: unique,
+          bindings: [
+            {
+              exchange: exchangeName,
+              routingKeyPattern: '#',
+              routingKeyReference,
+            },
+          ],
+          prefetch: 1,
+        },
+        async message => {
+          debug(`handling message ${message.payload.i}`);
 
-        // Foricibly kill the connection after the first message
-        if (got.length === 1) {
-          // This is not pretty, but works for now.  If this breaks, try to find
-          // another way to access the file descriptor for a socket.
-          const fd = client.connections[0].amqp.connection.stream._handle.fd;
-          debug(`closing pulse socket, file descriptor ${fd}`);
-          fs.closeSync(fd);
-        }
+          // Foricibly kill the connection after the first message
+          if (got.length === 1) {
+            // This is not pretty, but works for now.  If this breaks, try to find
+            // another way to access the file descriptor for a socket.
+            const fd = client.connections[0].amqp.connection.stream._handle.fd;
+            debug(`closing pulse socket, file descriptor ${fd}`);
+            fs.closeSync(fd);
+          }
 
-        got.push(message);
-        if (got.length === 11) {
-          pq.stop();
+          got.push(message);
+          if (got.length === 11) {
+            pq.stop();
+          }
         }
-      });
+      );
 
       await publishUntilStopped(pq);
 
@@ -185,7 +189,7 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       assume(numbers).to.deeply.equal([0, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
 
-    test('consume messages ephemerally', async function() {
+    test('consume messages ephemerally', async () => {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,
@@ -199,11 +203,13 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
       const pq = await consume({
         ephemeral: true,
         client,
-        bindings: [{
-          exchange: exchangeName,
-          routingKeyPattern: '#',
-          routingKeyReference,
-        }],
+        bindings: [
+          {
+            exchange: exchangeName,
+            routingKeyPattern: '#',
+            routingKeyReference,
+          },
+        ],
         prefetch: 1,
         onConnected: async () => {
           debug('onConnected');
@@ -266,19 +272,18 @@ helper.secrets.mockSuite(suiteName(), ['pulse'], function(mock, skipping) {
         assume(msg.routes).to.deeply.equal([]);
       });
 
-      const numbers = got.map(msg => msg.connected ? 'connected' : 'msg');
+      const numbers = got.map(msg => (msg.connected ? 'connected' : 'msg'));
       // note that order is not guaranteed here, so just assert that we connected, got
       // four messages, reconnected, and then saw nothing.
       assume(numbers).to.deeply.equal(['connected', 'msg', 'msg', 'msg', 'msg', 'connected']);
 
       // check that we logged the 'uhoh' error
-      const errors = monitor.manager.messages
-        .filter(({ Fields: { message } }) => message === 'uhoh');
+      const errors = monitor.manager.messages.filter(({ Fields: { message } }) => message === 'uhoh');
       assert.equal(errors.length, 1);
       monitor.manager.messages = [];
     });
 
-    test('no queueName is an error', async function() {
+    test('no queueName is an error', async () => {
       const client = new Client({
         credentials: connectionStringCredentials(connectionString),
         retirementDelay: 50,

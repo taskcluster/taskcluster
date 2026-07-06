@@ -16,19 +16,19 @@ export default {
     PATCH: 'patch',
   },
   Provisioner: {
-    workerTypes({ provisionerId }, { connection, filter }, { loaders }) {
-      return loaders.workerTypes.load({ provisionerId, connection, filter });
+    workerTypes({ provisionerId }, { connection }, { loaders }) {
+      return loaders.workerTypes.load({ provisionerId, connection });
     },
     workerType({ provisionerId }, { workerType }, { loaders }) {
       return loaders.workerType.load({ provisionerId, workerType });
     },
   },
   Query: {
-    provisioner(parent, { provisionerId }, { loaders }) {
+    provisioner(_parent, { provisionerId }, { loaders }) {
       return loaders.provisioner.load(provisionerId);
     },
-    provisioners(parent, { connection, filter }, { loaders }) {
-      return loaders.provisioners.load({ connection, filter });
+    provisioners(_parent, { connection }, { loaders }) {
+      return loaders.provisioners.load({ connection });
     },
   },
 };

@@ -1,17 +1,10 @@
-import { expect } from 'chai';
-import { Queue } from '../src';
-import helper from './helper';
+import { Queue } from '../src/index.js';
+import helper from './helper.js';
 
-describe('Queue', function() {
-  helper.withRootUrl();
-
-  this.timeout(30000);
-
+helper.describe('Queue', () => {
   let queue;
-  before(function() {
-    if (helper.rootUrl) {
-      queue = new Queue({ rootUrl: helper.rootUrl });
-    }
+  beforeAll(() => {
+    queue = new Queue({ rootUrl: helper.rootUrl });
   });
 
   it('should be loaded', () => {
@@ -19,9 +12,7 @@ describe('Queue', function() {
   });
 
   it('should successfully ping', () => {
-    return queue
-      .ping()
-      .then(({ alive }) => expect(alive).to.be.ok);
+    return queue.ping().then(({ alive }) => expect(alive).to.be.ok);
   });
 
   it('should successfully ping with `.use`', () => {
@@ -34,11 +25,12 @@ describe('Queue', function() {
   it('should handle a 404 correctly', () => {
     return queue
       .task('uTOskJejRr-DFMqUB_bpLw')
-      .then(() => { throw new Error('expected an error'); })
+      .then(() => {
+        throw new Error('expected an error');
+      })
       .catch(err => {
         expect(err.response).to.be.ok;
         expect(err.response.status).to.equal(404);
       });
   });
-
 });

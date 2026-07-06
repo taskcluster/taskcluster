@@ -46,7 +46,6 @@ export async function rerunHandler(message) {
     // Update commit status? or anything else
     debug(`Updating github build state to pending for taskGroupId ${taskGroupId}`);
     await this.context.db.fns.set_github_build_state(taskGroupId, GITHUB_BUILD_STATES.PENDING);
-
   } catch (e) {
     const sha = body?.check_run?.head_sha;
     const pullNumber = body?.check_run?.check_suite?.pull_requests?.[0]?.number;

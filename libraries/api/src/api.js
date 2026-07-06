@@ -1,5 +1,6 @@
+import compression from 'compression';
 import express from 'express';
-import assert from 'assert';
+import assert from 'node:assert';
 import libUrls from 'taskcluster-lib-urls';
 import taskcluster from '@taskcluster/client';
 import { buildReportErrorMethod } from './middleware/errors.js';
@@ -46,43 +47,35 @@ export default class API {
     this.builder = resolvedOptions.builder;
 
     // validate context
-    this.builder.context?.forEach((property) => {
-      assert(resolvedOptions.context[property] !== undefined,
-        'Context must have declared property: \'' + property + '\'');
+    this.builder.context?.forEach(property => {
+      assert(resolvedOptions.context[property] !== undefined, `Context must have declared property: '${property}'`);
     });
 
     Object.keys(resolvedOptions.context).forEach(property => {
-      assert(this.builder.context?.indexOf(property) !== -1,
-        `Context has unexpected property: ${property}`);
+      assert(this.builder.context?.indexOf(property) !== -1, `Context has unexpected property: ${property}`);
     });
 
     // Always make monitor available in context
     resolvedOptions.context.monitor = resolvedOptions.monitor;
 
-    this.entries = [...(this.builder.entries)];
+    this.entries = [...this.builder.entries];
 
     this.options = resolvedOptions;
   }
 
   /**
-    * Create an express router, rooted *after* the apiVersion in the URL path
-    */
+   * Create an express router, rooted *after* the apiVersion in the URL path
+   */
   router() {
-    const {
-      allowedCORSOrigin,
-      rootUrl,
-      inputLimit,
-      signatureValidator,
-      validator,
-      schemaset,
-      context,
-      monitor,
-    } = this.options;
+    const { allowedCORSOrigin, rootUrl, inputLimit, signatureValidator, validator, schemaset, context, monitor } =
+      this.options;
     const { errorCodes, serviceName } = this.builder;
     const absoluteSchemas = schemaset.absoluteSchemas(rootUrl);
 
     // Create router
     const router = express.Router({ caseSensitive: true });
+
+    router.use(compression());
 
     // Allow CORS requests to the API
     if (allowedCORSOrigin) {
@@ -119,7 +112,8 @@ export default class API {
   express(app) {
     // generate the appropriate path for this service, based on the rootUrl
     const path = URL.parse(
-      libUrls.api(this.options.rootUrl, this.builder.serviceName, this.builder.apiVersion, ''))?.pathname;
+      libUrls.api(this.options.rootUrl, this.builder.serviceName, this.builder.apiVersion, '')
+    )?.pathname;
     if (path === null) {
       throw new Error('Failed to parse path');
     }
@@ -133,7 +127,7 @@ export default class API {
  * @returns {import('express').RequestHandler}}
  */
 const cacheHeaders = () => {
-  return (req, res, next) => {
+  return (_req, res, next) => {
     res.header('Cache-Control', 'no-store no-cache must-revalidate');
     next();
   };
@@ -146,28 +140,18 @@ const cacheHeaders = () => {
  * @returns {import('express').RequestHandler}
  */
 const corsHeaders = allowedCORSOrigin => {
-  return (req, res, next) => {
+  return (_req, res, next) => {
     res.header('Access-Control-Allow-Origin', allowedCORSOrigin);
     res.header('Access-Control-Max-Age', '900');
-    res.header('Access-Control-Allow-Methods', [
-      'OPTIONS',
-      'GET',
-      'HEAD',
-      'POST',
-      'PUT',
-      'DELETE',
-      'TRACE',
-      'CONNECT',
-    ].join(','));
+    res.header(
+      'Access-Control-Allow-Methods',
+      ['OPTIONS', 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'TRACE', 'CONNECT'].join(',')
+    );
     res.header('Access-Control-Request-Method', '*');
-    res.header('Access-Control-Allow-Headers', [
-      'X-Requested-With',
-      'Content-Type',
-      'Authorization',
-      'Accept',
-      'Origin',
-      'Cache-Control',
-    ].join(','));
+    res.header(
+      'Access-Control-Allow-Headers',
+      ['X-Requested-With', 'Content-Type', 'Authorization', 'Accept', 'Origin', 'Cache-Control'].join(',')
+    );
     next();
   };
 };
@@ -191,7 +175,7 @@ const corsHeaders = allowedCORSOrigin => {
  * `remoteAuthentication`.
  * @param {{ rootUrl: string }} options
  */
-const createRemoteSignatureValidator = (options) => {
+const createRemoteSignatureValidator = options => {
   assert(options.rootUrl, 'options.rootUrl is required');
   const auth = new taskcluster.Auth({
     rootUrl: options.rootUrl,

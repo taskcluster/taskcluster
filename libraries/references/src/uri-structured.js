@@ -1,7 +1,7 @@
 import mkdirp from 'mkdirp';
 import { rimraf } from 'rimraf';
-import path from 'path';
-import fs from 'fs/promises';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 
 export const writeUriStructured = async ({ directory, serializable }) => {
   // Delete contents of directory rather than the directory itself
@@ -10,7 +10,7 @@ export const writeUriStructured = async ({ directory, serializable }) => {
   await rimraf(path.join(directory, '*'), { glob: true });
 
   const dirs = new Set();
-  for (let { filename, content } of serializable) {
+  for (const { filename, content } of serializable) {
     const pathname = path.join(directory, filename);
     const dirname = path.dirname(pathname);
     if (!dirs.has(dirname)) {
@@ -30,7 +30,7 @@ export const readUriStructured = async ({ directory }) => {
     const fqfilename = path.join(directory, filename);
     if ((await fs.lstat(fqfilename)).isDirectory()) {
       const entries = await fs.readdir(fqfilename);
-      for (let dentry of entries) {
+      for (const dentry of entries) {
         queue.push(path.join(filename, dentry));
       }
     } else {

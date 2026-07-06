@@ -2,8 +2,8 @@
  * Download coverage from previous tasks
  */
 import taskcluster from '@taskcluster/client';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 const COVERAGE_DIR = 'coverage';
 
@@ -26,18 +26,20 @@ const main = async () => {
   const { dependencies } = await queue.task(process.env.TASK_ID);
 
   await fs.mkdir(COVERAGE_DIR);
-  await Promise.all(dependencies.map(async taskId => {
-    try {
-      const coverage = await queue.getLatestArtifact(taskId, 'public/coverage-final.json');
-      const filename = path.join(COVERAGE_DIR, `${taskId}-coverage.json`);
-      console.log(`Writing ${filename}`);
-      await fs.writeFile(filename, JSON.stringify(coverage));
-    } catch (err) {
-      if (err.statusCode !== 404) {
-        throw err;
+  await Promise.all(
+    dependencies.map(async taskId => {
+      try {
+        const coverage = await queue.getLatestArtifact(taskId, 'public/coverage-final.json');
+        const filename = path.join(COVERAGE_DIR, `${taskId}-coverage.json`);
+        console.log(`Writing ${filename}`);
+        await fs.writeFile(filename, JSON.stringify(coverage));
+      } catch (err) {
+        if (err.statusCode !== 404) {
+          throw err;
+        }
       }
-    }
-  }));
+    })
+  );
 };
 
 main().catch(console.error);

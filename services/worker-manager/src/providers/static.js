@@ -31,7 +31,7 @@ export class StaticProvider extends Provider {
       worker = Worker.fromApi(workerData);
       await worker.create(this.db);
     } catch (err) {
-      if (!err || err.code !== 'EntityAlreadyExists') {
+      if (err?.code !== 'EntityAlreadyExists') {
         throw err;
       }
       const existing = await Worker.get(this.db, { workerPoolId, workerGroup, workerId });
@@ -44,7 +44,7 @@ export class StaticProvider extends Provider {
     return worker;
   }
 
-  async updateWorker({ workerPool, worker, input }) {
+  async updateWorker({ worker, input }) {
     await worker.update(this.db, worker => {
       worker.expires = input.expires;
       worker.capacity = input.capacity;

@@ -1,5 +1,5 @@
-query HookLastFires($hookGroupId: ID!, $hookId: ID!, $filter: JSON, $connection: PageConnection) {
-  hookLastFires(hookGroupId: $hookGroupId, hookId: $hookId, filter: $filter, connection: $connection) {
+query HookLastFires($hookGroupId: ID!, $hookId: ID!, $connection: PageConnection) {
+  hookLastFires(hookGroupId: $hookGroupId, hookId: $hookId, connection: $connection) {
     edges {
       node {
         taskId

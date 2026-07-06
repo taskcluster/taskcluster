@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import libUrls from 'taskcluster-lib-urls';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-pulse.publisher');
@@ -35,10 +35,11 @@ export class Exchanges {
 
   declare(entryOptions) {
     const entry = new Entry({ exchanges: this, ...entryOptions });
-    assert(!this.entries.some(e => e.name === entry.name),
-      `entry with name ${entry.name} already declared`);
-    assert(!this.entries.some(e => e.exchange === entry.exchange),
-      `entry with exchange ${entry.exchange} already declared`);
+    assert(!this.entries.some(e => e.name === entry.name), `entry with name ${entry.name} already declared`);
+    assert(
+      !this.entries.some(e => e.exchange === entry.exchange),
+      `entry with exchange ${entry.exchange} already declared`
+    );
     this.entries.push(entry);
   }
 
@@ -122,32 +123,35 @@ export class Entry {
     let firstMultiWordKey = null;
 
     assert(Array.isArray(this.routingKey), 'routingKey must be an Array');
-    for (let key of this.routingKey) {
+    for (const key of this.routingKey) {
       // Check that the key name is unique
-      assert(keyNames.indexOf(key.name) === -1,
-        `Routing key entry named ${key.name} already exists`);
+      assert(keyNames.indexOf(key.name) === -1, `Routing key entry named ${key.name} already exists`);
       keyNames.push(key.name);
 
       // Check that we have a summary
-      assert(typeof key.summary === 'string',
-        `summary of routingKey entry ${key.name} is required.`);
+      assert(typeof key.summary === 'string', `summary of routingKey entry ${key.name} is required.`);
 
       // Check that we only have one multipleWords key in the routing key. If we
       // have more than one then we can't really parse the routing key
       // automatically. And technically, there is probably little need for two
       // multiple word routing key entries.
       if (key.multipleWords) {
-        assert(firstMultiWordKey === null,
-          'Can\'t have two multipleWord entries in a routing key, ' +
-               'here we have both \'' + firstMultiWordKey + '\' and ' +
-               '\'' + key.name + '\'');
+        assert(
+          firstMultiWordKey === null,
+          "Can't have two multipleWord entries in a routing key, " +
+            "here we have both '" +
+            firstMultiWordKey +
+            "' and " +
+            "'" +
+            key.name +
+            "'"
+        );
         firstMultiWordKey = key.name;
       }
 
       if (key.constant) {
         // Check that any constant is indeed a string
-        assert(typeof key.constant === 'string',
-          'constant must be a string, if provided');
+        assert(typeof key.constant === 'string', 'constant must be a string, if provided');
 
         // Set maxSize
         if (!key.maxSize) {
@@ -156,16 +160,17 @@ export class Entry {
       }
 
       // Check that we have a maxSize
-      assert(typeof key.maxSize == 'number' && key.maxSize > 0,
-        `routingKey declaration ${key.name} must have maxSize > 0`);
+      assert(
+        typeof key.maxSize === 'number' && key.maxSize > 0,
+        `routingKey declaration ${key.name} must have maxSize > 0`
+      );
 
       // Check size left in routingKey space
       if (sizeLeft !== 255) {
         sizeLeft -= 1; // Remove one for the joining dot
       }
       sizeLeft -= key.maxSize;
-      assert(sizeLeft >= 0, 'Combined routingKey cannot be larger than 255 ' +
-             'including joining dots');
+      assert(sizeLeft >= 0, 'Combined routingKey cannot be larger than 255 ' + 'including joining dots');
     }
   }
 }
@@ -180,8 +185,7 @@ export class PulsePublisher {
     this.blocked = true;
 
     if (process.env.NODE_ENV === 'production') {
-      assert.equal(client.namespace, exchanges.projectName,
-        'client namespace must match projectName');
+      assert.equal(client.namespace, exchanges.projectName, 'client namespace must match projectName');
     }
 
     this._handleConnection = this._handleConnection.bind(this);
@@ -270,15 +274,17 @@ export class PulsePublisher {
    */
   async _assertExchanges() {
     await this.client.withChannel(async chan => {
-      await Promise.all(this.exchanges.entries.map(async entry => {
-        const exchange = this.exchanges.exchangePrefix + entry.exchange;
-        debug(`asserting exchange ${exchange}`);
-        await chan.assertExchange(exchange, 'topic', {
-          durable: true,
-          internal: false,
-          autoDelete: false,
-        });
-      }));
+      await Promise.all(
+        this.exchanges.entries.map(async entry => {
+          const exchange = this.exchanges.exchangePrefix + entry.exchange;
+          debug(`asserting exchange ${exchange}`);
+          await chan.assertExchange(exchange, 'topic', {
+            durable: true,
+            internal: false,
+            autoDelete: false,
+          });
+        })
+      );
     });
   }
 
@@ -289,25 +295,18 @@ export class PulsePublisher {
   async _declareMethods() {
     const validator = await this.schemaset.validator(this.rootUrl);
 
-    for (let entry of this.exchanges.entries) {
+    for (const entry of this.exchanges.entries) {
       const exchange = this.exchanges.exchangePrefix + entry.exchange;
 
       this[entry.name] = async (...args) => {
         // Construct message and routing key from arguments
         const message = entry.messageBuilder.apply(undefined, args);
-        this._validateMessage(
-          this.rootUrl,
-          this.exchanges.serviceName,
-          validator,
-          entry,
-          message);
+        this._validateMessage(this.rootUrl, this.exchanges.serviceName, validator, entry, message);
 
-        const routingKey = this._routingKeyToString(
-          entry,
-          entry.routingKeyBuilder.apply(undefined, args));
+        const routingKey = this._routingKeyToString(entry, entry.routingKeyBuilder.apply(undefined, args));
 
         const CCs = entry.CCBuilder.apply(undefined, args);
-        assert(CCs instanceof Array, 'CCBuilder must return an array');
+        assert(Array.isArray(CCs), 'CCBuilder must return an array');
 
         // Serialize message to buffer
         const payload = Buffer.from(JSON.stringify(message), 'utf8');
@@ -323,7 +322,6 @@ export class PulsePublisher {
   }
 
   async _send(exchange, routingKey, payload, CCs) {
-
     // channel.publish uses a callback (since we use a confirm channel). The docs
     // specify that it also returns false if the write buffer is full -- but importantly
     // it still buffers the message in this case, reflecting the behavior of
@@ -359,21 +357,31 @@ export class PulsePublisher {
           if (deadlinePassed) {
             return;
           }
-          debug('%s message on exchange %s, routing key %s',
-            tries++ ? `Republishing (${tries})` : 'Publishing', exchange, routingKey);
+          debug(
+            '%s message on exchange %s, routing key %s',
+            tries++ ? `Republishing (${tries})` : 'Publishing',
+            exchange,
+            routingKey
+          );
           await new Promise((resolve, reject) => {
-            channel.publish(exchange, routingKey, payload, {
-              persistent: true,
-              contentType: 'application/json',
-              contentEncoding: 'utf-8',
-              CC: CCs,
-            }, (err) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve();
+            channel.publish(
+              exchange,
+              routingKey,
+              payload,
+              {
+                persistent: true,
+                contentType: 'application/json',
+                contentEncoding: 'utf-8',
+                CC: CCs,
+              },
+              err => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve();
+                }
               }
-            });
+            );
           });
 
           return;
@@ -399,11 +407,10 @@ export class PulsePublisher {
    */
   _validateMessage(rootUrl, serviceName, validator, entry, message) {
     const schema = libUrls.schema(rootUrl, serviceName, entry.schema);
-    let err = validator(message, schema);
+    const err = validator(message, schema);
     if (err) {
-      debug('Failed to validate message: %j against schema: %s, error: %j',
-        message, entry.schema, err);
-      throw new Error('Message validation failed. ' + err);
+      debug('Failed to validate message: %j against schema: %s, error: %j', message, entry.schema, err);
+      throw new Error(`Message validation failed. ${err}`);
     }
   }
 
@@ -411,27 +418,26 @@ export class PulsePublisher {
    * Given the result of entry.rouingKeyBuilder, create a routing key string
    */
   _routingKeyToString(entry, routingKey) {
-    return entry.routingKey.map(key => {
-      let word = routingKey[key.name];
-      if (key.constant) {
-        word = key.constant;
-      }
-      if (!key.required && (word === undefined || word === null)) {
-        word = '_';
-      }
-      // Convert numbers to strings
-      if (typeof word === 'number') {
-        word = word.toString();
-      }
-      assert(typeof word === 'string',
-        `non-string routingKey entry ${key.name}: ${word}`);
-      assert(word.length <= key.maxSize,
-        `routingKey word: ${word} for ${key.name} is longer than ${key.maxSize}`);
-      if (!key.multipleWords) {
-        assert(word.indexOf('.') === -1,
-          `routingKey ${key.name} value ${word} contains '.'`);
-      }
-      return word;
-    }).join('.');
+    return entry.routingKey
+      .map(key => {
+        let word = routingKey[key.name];
+        if (key.constant) {
+          word = key.constant;
+        }
+        if (!key.required && (word === undefined || word === null)) {
+          word = '_';
+        }
+        // Convert numbers to strings
+        if (typeof word === 'number') {
+          word = word.toString();
+        }
+        assert(typeof word === 'string', `non-string routingKey entry ${key.name}: ${word}`);
+        assert(word.length <= key.maxSize, `routingKey word: ${word} for ${key.name} is longer than ${key.maxSize}`);
+        if (!key.multipleWords) {
+          assert(word.indexOf('.') === -1, `routingKey ${key.name} value ${word} contains '.'`);
+        }
+        return word;
+      })
+      .join('.');
   }
 }

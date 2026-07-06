@@ -1,34 +1,33 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift.js';
 import ConnectionLoader from '../ConnectionLoader.js';
 
-export default ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ hooks }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const hookGroups = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({ filter }) => {
+      queries.map(async ({ hookGroupId }) => {
         try {
           const { groups } = await hooks.listHookGroups();
-          const raw = groups.map(hookGroupId => ({ hookGroupId }));
+          const allGroups = groups.map(group => ({ hookGroupId: group }));
 
-          return sift(filter, raw);
+          return hookGroupId ? allGroups.filter(group => group.hookGroupId === hookGroupId) : allGroups;
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
   const hooksForGroup = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({ hookGroupId, filter }) => {
+      queries.map(async ({ hookGroupId }) => {
         try {
           const { hooks: hooksForGroup } = await hooks.listHooks(hookGroupId);
 
-          return sift(filter, hooksForGroup);
+          return hooksForGroup;
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
   const hook = new DataLoader(queries =>
     Promise.all(
@@ -38,8 +37,8 @@ export default ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, req
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
   const hookStatus = new DataLoader(queries =>
     Promise.all(
@@ -49,31 +48,29 @@ export default ({ hooks }, isAuthed, rootUrl, monitor, strategies, req, cfg, req
         } catch (err) {
           return err;
         }
-      },
-      ),
-    ),
+      })
+    )
   );
 
-  const hookLastFires = new ConnectionLoader(
-    async ({ hookGroupId, hookId, filter, options }) => {
-      try {
-        const raw = await hooks.listLastFires(hookGroupId, hookId, options);
+  const hookLastFires = new ConnectionLoader(async ({ hookGroupId, hookId, options }) => {
+    try {
+      const raw = await hooks.listLastFires(hookGroupId, hookId, options);
 
-        return {
-          ...raw,
-          items: raw.lastFires,
-        };
-      } catch (err) {
-        if (err.statusCode === 404) {
-          // hooks last fires will return 404 when there are no last fires yet
-          return { items: [] };
-        } else if (err.statusCode === 424) {
-          return null;
-        }
-
-        return err;
+      return {
+        ...raw,
+        items: raw.lastFires,
+      };
+    } catch (err) {
+      if (err.statusCode === 404) {
+        // hooks last fires will return 404 when there are no last fires yet
+        return { items: [] };
+      } else if (err.statusCode === 424) {
+        return null;
       }
-    });
+
+      return err;
+    }
+  });
 
   return {
     hookGroups,

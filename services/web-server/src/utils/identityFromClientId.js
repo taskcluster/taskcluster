@@ -6,8 +6,8 @@ import { CLIENT_ID_PATTERN } from '../utils/constants.js';
  *    mozilla-auth0/ad|Mozilla-LDAP|haali/ -> mozilla-auth0/ad|Mozilla-LDAP|haali
  *    mozilla-auth0/ad|Mozilla-LDAP|haali -> mozilla-auth0/ad|Mozilla-LDAP|haali
  */
-export default (clientId) => {
+export default clientId => {
   const patternMatch = CLIENT_ID_PATTERN.exec(clientId);
 
-  return patternMatch && patternMatch[1];
+  return patternMatch?.[1];
 };

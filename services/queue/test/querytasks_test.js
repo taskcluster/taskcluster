@@ -1,19 +1,19 @@
 import debugFactory from 'debug';
 const debug = debugFactory('test:query');
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
 import assume from 'assume';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withAmazonIPRanges(mock, skipping);
-  helper.withPulse(mock, skipping);
+  helper.withAmazonIPRanges(skipping);
+  helper.withPulse(skipping);
   helper.withS3(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   const taskDef = {
     taskQueueId: 'no-provisioner-extended-extended/query-test-worker-extended-extended',
@@ -38,9 +38,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
   test('pendingTasks params validation', async () => {
     await assert.rejects(
-      () => helper.queue.pendingTasks(
-        '1/1',
-      ), err => err.code === 'InvalidRequestArguments');
+      () => helper.queue.pendingTasks('1/1'),
+      err => err.code === 'InvalidRequestArguments'
+    );
   });
 
   test('pendingTasks >= 1', async () => {
@@ -48,48 +48,37 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     const taskId2 = slugid.v4();
 
     debug('### Create tasks');
-    await Promise.all([
-      helper.queue.createTask(taskId1, taskDef),
-      helper.queue.createTask(taskId2, taskDef),
-    ]);
+    await Promise.all([helper.queue.createTask(taskId1, taskDef), helper.queue.createTask(taskId2, taskDef)]);
 
-    const r1 = await helper.queue.pendingTasks(
-      'no-provisioner-extended-extended/query-test-worker-extended-extended',
-    );
+    const r1 = await helper.queue.pendingTasks('no-provisioner-extended-extended/query-test-worker-extended-extended');
     assume(r1.pendingTasks).is.greaterThan(1);
 
     const c1 = await helper.queue.taskQueueCounts(
-      'no-provisioner-extended-extended/query-test-worker-extended-extended',
+      'no-provisioner-extended-extended/query-test-worker-extended-extended'
     );
     assume(c1.pendingTasks).is.greaterThan(1);
 
     // Creating same task twice should only result in single entry in pending task queue
     await helper.queue.createTask(taskId1, taskDef);
 
-    const r2 = await helper.queue.pendingTasks(
-      'no-provisioner-extended-extended/query-test-worker-extended-extended',
-    );
+    const r2 = await helper.queue.pendingTasks('no-provisioner-extended-extended/query-test-worker-extended-extended');
     assume(r2.pendingTasks).is.equals(r1.pendingTasks);
   });
 
   test('pendingTasks requires scopes', async () => {
     helper.scopes('none');
     await assert.rejects(
-      () => helper.queue.pendingTasks(
-        'no-provisioner-extended-extended/empty-test-worker-extended-extended',
-      ), err => err.code === 'InsufficientScopes');
+      () => helper.queue.pendingTasks('no-provisioner-extended-extended/empty-test-worker-extended-extended'),
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('pendingTasks == 0', async () => {
     helper.scopes('queue:pending-count:no-provisioner-extended-extended/empty-test-worker-extended-extended');
-    const r1 = await helper.queue.pendingTasks(
-      'no-provisioner-extended-extended/empty-test-worker-extended-extended',
-    );
+    const r1 = await helper.queue.pendingTasks('no-provisioner-extended-extended/empty-test-worker-extended-extended');
     assume(r1.pendingTasks).equals(0);
 
-    const r2 = await helper.queue.pendingTasks(
-      'no-provisioner-extended-extended/empty-test-worker-extended-extended',
-    );
+    const r2 = await helper.queue.pendingTasks('no-provisioner-extended-extended/empty-test-worker-extended-extended');
     assume(r2.pendingTasks).equals(0);
   });
 
@@ -98,7 +87,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       helper.scopes('none');
       await assert.rejects(
         () => helper.queue.listPendingTasks('some/queue'),
-        err => err.code === 'InsufficientScopes',
+        err => err.code === 'InsufficientScopes'
       );
 
       helper.scopes('queue:pending-list:some/queue');
@@ -150,7 +139,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       assume(res1.continuationToken).is.a('string');
 
       const res2 = await helper.queue.listPendingTasks(taskDef.taskQueueId, {
-        continuationToken: res1.continuationToken });
+        continuationToken: res1.continuationToken,
+      });
       assume(res2).is.an('object');
       assume(res2.tasks).is.an('array');
       assume(res2.tasks).has.length(4);
@@ -162,7 +152,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       helper.scopes('none');
       await assert.rejects(
         () => helper.queue.listClaimedTasks('some/queue'),
-        err => err.code === 'InsufficientScopes',
+        err => err.code === 'InsufficientScopes'
       );
 
       helper.scopes('queue:claimed-list:some/queue');
@@ -253,7 +243,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     assume(res1.continuationToken).is.a('string');
 
     const res2 = await helper.queue.listClaimedTasks(taskDef.taskQueueId, {
-      continuationToken: res1.continuationToken });
+      continuationToken: res1.continuationToken,
+    });
     assume(res2).is.an('object');
     assume(res2.tasks).is.an('array');
     assume(res2.tasks).has.length(4);

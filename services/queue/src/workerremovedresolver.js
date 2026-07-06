@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { consume } from '@taskcluster/lib-pulse';
 import { Task } from './data.js';
 import { splitTaskQueueId } from './utils.js';
@@ -36,15 +36,13 @@ class WorkerRemovedResolver {
   }
 
   async start() {
-    this.pq = await consume({
-      client: this.pulseClient,
-      bindings: [
-        this.workerManagerEvents.workerStopped(),
-        this.workerManagerEvents.workerRemoved(),
-      ],
-      queueName: 'queue/worker-removed-resolver',
-    },
-    this.monitor.timedHandler('worker-removed', this.handleWorkerRemoved.bind(this)),
+    this.pq = await consume(
+      {
+        client: this.pulseClient,
+        bindings: [this.workerManagerEvents.workerStopped(), this.workerManagerEvents.workerRemoved()],
+        queueName: 'queue/worker-removed-resolver',
+      },
+      this.monitor.timedHandler('worker-removed', this.handleWorkerRemoved.bind(this))
     );
   }
 
@@ -58,9 +56,7 @@ class WorkerRemovedResolver {
   async handleWorkerRemoved(message) {
     const { workerPoolId, workerGroup, workerId, reason } = message.payload;
 
-    const claimedTasks = await this.db.fns.get_claimed_tasks_by_worker(
-      workerPoolId, workerGroup, workerId,
-    );
+    const claimedTasks = await this.db.fns.get_claimed_tasks_by_worker(workerPoolId, workerGroup, workerId);
 
     for (const { task_id: taskId, run_id: runId } of claimedTasks) {
       await this.resolveTask(taskId, runId, workerPoolId, workerGroup, workerId, reason);
@@ -75,28 +71,30 @@ class WorkerRemovedResolver {
     }
 
     // resolve as exception/worker-shutdown with retry
-    task.updateStatusWith(
-      await this.db.fns.resolve_task(taskId, runId, 'exception', 'worker-shutdown', 'retry'),
+    const resolved = task.updateStatusWith(
+      await this.db.fns.resolve_task(taskId, runId, 'exception', 'worker-shutdown', 'retry')
     );
 
-    // we no longer need existing claimed queue message
-    // because we just resolved the task, so remove it to
-    // prevent it from being processed by the claim resolver
+    // we no longer need the existing claimed queue message
+    // because the task has already been resolved, either by us or by the worker,
+    // so remove it if it still exists to prevent it from being processed by the
+    // claim resolver
     await this.db.fns.queue_claimed_task_resolved(taskId, runId);
 
-    const run = task.runs[runId];
-
-    // If run wasn't resolved to exception/worker-shutdown, it was already
-    // resolved by the worker or another mechanism — nothing to do
-    if (!run ||
-        task.runs.length - 1 > runId + 1 ||
-        run.state !== 'exception' ||
-        run.reasonResolved !== 'worker-shutdown') {
+    // If the run was already resolved before by the worker, nothing else to do here
+    if (!resolved) {
       return;
     }
 
+    const run = task.runs[runId];
+
     this.monitor.log.taskResolvedByWorkerRemoved({
-      taskId, runId, workerPoolId, workerGroup, workerId, reason: removalReason || 'unknown',
+      taskId,
+      runId,
+      workerPoolId,
+      workerGroup,
+      workerId,
+      reason: removalReason || 'unknown',
     });
 
     const status = task.status();
@@ -105,13 +103,16 @@ class WorkerRemovedResolver {
     // this resolver is Pulse-consumer-driven, and a throw triggers NACK +
     // redelivery, preserving at-least-once semantics for downstream
     // taskException / taskPending notifications.
-    await this.publisher.taskException({
-      status,
-      runId,
-      task: { tags: task.tags || {} },
-      workerGroup: run.workerGroup,
-      workerId: run.workerId,
-    }, task.routes);
+    await this.publisher.taskException(
+      {
+        status,
+        runId,
+        task: { tags: task.tags || {} },
+        workerGroup: run.workerGroup,
+        workerId: run.workerId,
+      },
+      task.routes
+    );
     this.monitor.log.taskException({ taskId, runId });
 
     const metricLabels = splitTaskQueueId(task.taskQueueId);
@@ -122,23 +123,26 @@ class WorkerRemovedResolver {
 
     // If a retry run was created, publish pending message
     const newRun = task.runs[runId + 1];
-    if (newRun &&
-        task.runs.length - 1 === runId + 1 &&
-        newRun.state === 'pending' &&
-        newRun.reasonCreated === 'retry') {
+    if (
+      newRun &&
+      task.runs.length - 1 === runId + 1 &&
+      newRun.state === 'pending' &&
+      newRun.reasonCreated === 'retry'
+    ) {
       // queue_pending_tasks insert is now atomic inside resolve_task
       // (db v124). The publish is intentionally NOT wrapped: failing the
       // handler triggers redelivery, preserving at-least-once semantics.
-      await this.publisher.taskPending({
-        status,
-        runId: runId + 1,
-        task: { tags: task.tags || {} },
-      }, task.routes);
+      await this.publisher.taskPending(
+        {
+          status,
+          runId: runId + 1,
+          task: { tags: task.tags || {} },
+        },
+        task.routes
+      );
       this.monitor.log.taskPending({ taskId, runId: runId + 1 });
     } else {
-      await this.dependencyTracker.resolveTask(
-        taskId, task.taskGroupId, task.schedulerId, 'exception',
-      );
+      await this.dependencyTracker.resolveTask(taskId, task.taskGroupId, task.schedulerId, 'exception');
     }
   }
 }

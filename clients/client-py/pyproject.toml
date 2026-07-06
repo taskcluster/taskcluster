@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "taskcluster"
-version = "100.2.0"
+version = "101.0.0"
 description = "Python client for Taskcluster"
 readme = "README.md"
 license = {text = "MPL-2.0"}
@@ -44,14 +44,12 @@ dev = [
     "pytest-asyncio",
     "httmock",
     "mock",
-    "flake8",
     "psutil",
     "hypothesis",
     "coverage",
     "aiofiles",
     "httptest",
     "ruff",
-    "grip",
 ]
 
 [project.urls]

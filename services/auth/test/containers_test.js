@@ -1,25 +1,25 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { modifyRoles } from '../src/data.js';
 
-const sorted = (arr) => {
+const sorted = arr => {
   arr.sort();
   return arr;
 };
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServers(skipping);
+  helper.resetTables();
 
-  test('get when blob is empty', async function() {
+  test('get when blob is empty', async () => {
     assert.deepEqual(await helper.db.fns.get_roles(), []);
   });
 
-  test('first modification of an empty blob', async function() {
+  test('first modification of an empty blob', async () => {
     await modifyRoles(helper.db, ({ roles }) => {
       roles.push({
         role_id: 'my-role',
@@ -30,11 +30,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
       });
     });
 
-    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)),
-      sorted(['my-role']));
+    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)), sorted(['my-role']));
   });
 
-  test('add a second role', async function() {
+  test('add a second role', async () => {
     await modifyRoles(helper.db, ({ roles }) => {
       roles.push({
         role_id: 'my-role',
@@ -53,7 +52,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, s
         last_modified: new Date('2017-01-02'),
       });
     });
-    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)),
-      sorted(['my-role', 'second-role']));
+    assert.deepEqual(sorted((await helper.db.fns.get_roles()).map(r => r.role_id)), sorted(['my-role', 'second-role']));
   });
 });

@@ -5,7 +5,6 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
 import dotProp from 'dot-prop-immutable';
-import escapeStringRegexp from 'escape-string-regexp';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import Search from '../../../components/Search';
@@ -27,15 +26,8 @@ import ErrorPanel from '../../../components/ErrorPanel';
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
-      filter: props.history.location.search
-        ? {
-            clientId: {
-              $regex: escapeStringRegexp(
-                parse(props.history.location.search.slice(1)).search
-              ),
-              $options: 'i',
-            },
-          }
+      searchTerm: props.history.location.search
+        ? parse(props.history.location.search.slice(1)).search
         : null,
     },
   }),
@@ -65,9 +57,7 @@ export default class ViewClients extends PureComponent {
       clientsConnection: {
         limit: VIEW_CLIENTS_PAGE_SIZE,
       },
-      filter: search
-        ? { clientId: { $regex: escapeStringRegexp(search), $options: 'i' } }
-        : null,
+      searchTerm: search || null,
     });
 
     if (search !== searchQuery) {
@@ -131,14 +121,7 @@ export default class ViewClients extends PureComponent {
         clientOptions: null,
         ...(history.location.search
           ? {
-              filter: {
-                clientId: {
-                  $regex: escapeStringRegexp(
-                    parse(history.location.search.slice(1)).search
-                  ),
-                  $options: 'i',
-                },
-              },
+              searchTerm: parse(history.location.search.slice(1)).search,
             }
           : null),
       },

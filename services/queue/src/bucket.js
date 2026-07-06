@@ -10,10 +10,10 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { getEndpointFromInstructions } from '@aws-sdk/middleware-endpoint';
 import _ from 'lodash';
-import path from 'path';
+import path from 'node:path';
 import debugFactory from 'debug';
 const debug = debugFactory('app:bucket');
-import assert from 'assert';
+import assert from 'node:assert';
 
 /**
  * Create S3 bucket wrapper.
@@ -32,17 +32,18 @@ import assert from 'assert';
  *   monitor:            // base.monitor instance
  * }
  */
-let Bucket = function(options) {
+const Bucket = function (options) {
   assert(options, 'options must be given');
   assert(options.bucket, 'bucket must be specified');
   assert(options.awsOptions, 'awsOptions must be specified');
-  assert(!options.bucketCDN || typeof options.bucketCDN === 'string',
-    'Expected bucketCDN to be a hostname or empty string for none');
+  assert(
+    !options.bucketCDN || typeof options.bucketCDN === 'string',
+    'Expected bucketCDN to be a hostname or empty string for none'
+  );
   assert(options.monitor, 'options.monitor is required');
   if (options.bucketCDN) {
     assert(/^https?:\/\//.test(options.bucketCDN), 'bucketCDN must be http(s)');
-    assert(/[^\/]$/.test(options.bucketCDN),
-      'bucketCDN shouldn\'t end with slash');
+    assert(/[^/]$/.test(options.bucketCDN), "bucketCDN shouldn't end with slash");
   }
   // Store the monitor
   this.monitor = options.monitor;
@@ -80,7 +81,7 @@ export default Bucket;
  *   expires:        // Seconds to URL expiry
  * }
  */
-Bucket.prototype.createPutUrl = function(prefix, options) {
+Bucket.prototype.createPutUrl = function (prefix, options) {
   assert(prefix, 'prefix must be given');
   assert(options, 'options must be given');
   assert(options.contentType, 'contentType must be given');
@@ -99,7 +100,7 @@ Bucket.prototype.createPutUrl = function(prefix, options) {
 /**
  * Create an unsigned GET URL
  */
-Bucket.prototype.createGetUrl = async function(prefix, forceS3 = false) {
+Bucket.prototype.createGetUrl = async function (prefix, forceS3 = false) {
   assert(prefix, 'prefix must be given');
   if (this.bucketCDN && !forceS3) {
     return `${this.bucketCDN}/${encodeURI(prefix)}`;
@@ -125,7 +126,7 @@ Bucket.prototype.createGetUrl = async function(prefix, forceS3 = false) {
  *   expires:        // Seconds to URL expiry
  * }
  */
-Bucket.prototype.createSignedGetUrl = function(prefix, options) {
+Bucket.prototype.createSignedGetUrl = function (prefix, options) {
   assert(prefix, 'prefix must be given');
   assert(options, 'options must be given');
   assert(options.expires, 'expires must be given');
@@ -140,35 +141,37 @@ Bucket.prototype.createSignedGetUrl = function(prefix, options) {
 };
 
 /** Delete a object */
-Bucket.prototype.deleteObject = function(prefix) {
+Bucket.prototype.deleteObject = function (prefix) {
   assert(prefix, 'prefix must be provided');
-  return this.s3.send(new DeleteObjectCommand({
-    Bucket: this.bucket,
-    Key: prefix,
-  }));
+  return this.s3.send(
+    new DeleteObjectCommand({
+      Bucket: this.bucket,
+      Key: prefix,
+    })
+  );
 };
 
 /** Delete a list of objects */
-Bucket.prototype.deleteObjects = function(prefixes, quiet = false) {
-  assert(prefixes instanceof Array, 'prefixes must be an array');
+Bucket.prototype.deleteObjects = function (prefixes, quiet = false) {
+  assert(Array.isArray(prefixes), 'prefixes must be an array');
   // S3 API limit: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObjects.html
   assert(prefixes.length <= 1000, 'not more than 1000 prefixes can be deleted');
-  return this.s3.send(new DeleteObjectsCommand({
-    Bucket: this.bucket,
-    Delete: {
-      Objects: prefixes.map(function(prefix) {
-        return {
+  return this.s3.send(
+    new DeleteObjectsCommand({
+      Bucket: this.bucket,
+      Delete: {
+        Objects: prefixes.map(prefix => ({
           Key: prefix,
-        };
-      }),
-      ...(quiet ? { Quiet: true } : {}),
-    },
-  }));
+        })),
+        ...(quiet ? { Quiet: true } : {}),
+      },
+    })
+  );
 };
 
 /** Setup CORS policy, so it can opened from a browser, when authenticated */
-Bucket.prototype.setupCORSIfNecessary = async function() {
-  let rules = [
+Bucket.prototype.setupCORSIfNecessary = async function () {
+  const rules = [
     {
       AllowedOrigins: ['*'],
       AllowedMethods: ['GET', 'PUT', 'HEAD', 'POST', 'DELETE'],
@@ -184,9 +187,11 @@ Bucket.prototype.setupCORSIfNecessary = async function() {
   }
   try {
     // Fetch CORS to see if they as expected already
-    let req = await this.s3.send(new GetBucketCorsCommand({
-      Bucket: this.bucket,
-    }));
+    const req = await this.s3.send(
+      new GetBucketCorsCommand({
+        Bucket: this.bucket,
+      })
+    );
     if (_.isEqual(req.CORSRules, rules)) {
       debug('CORS already set for bucket: %s', this.bucket);
       return;
@@ -198,10 +203,12 @@ Bucket.prototype.setupCORSIfNecessary = async function() {
   }
 
   // Set CORS
-  return this.s3.send(new PutBucketCorsCommand({
-    Bucket: this.bucket,
-    CORSConfiguration: {
-      CORSRules: rules,
-    },
-  }));
+  return this.s3.send(
+    new PutBucketCorsCommand({
+      Bucket: this.bucket,
+      CORSConfiguration: {
+        CORSRules: rules,
+      },
+    })
+  );
 };

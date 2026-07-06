@@ -1,10 +1,10 @@
-import path from 'path';
-import assert from 'assert';
+import path from 'node:path';
+import assert from 'node:assert';
 import pg from 'pg';
 const { Client } = pg;
 import { Schema, ignorePgErrors, UNDEFINED_OBJECT, UNDEFINED_TABLE } from '@taskcluster/lib-postgres';
 import tcdb from '@taskcluster/db';
-import { URL } from 'url';
+import { URL } from 'node:url';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 const testDbUrl = process.env.TEST_DB_URL;
@@ -28,7 +28,7 @@ export const resetDb = async () => {
     const schema = Schema.fromDbDirectory(path.join(__dirname, '../../../db'));
 
     // and reset/create a user for each one..
-    for (let serviceName of schema.access.serviceNames()) {
+    for (const serviceName of schema.access.serviceNames()) {
       const serviceUsername = `test_${serviceName.replace(/-/g, '_')}`;
       await ignorePgErrors(client.query(`drop owned by ${serviceUsername}`), UNDEFINED_OBJECT);
       await ignorePgErrors(client.query(`drop user ${serviceUsername}`), UNDEFINED_OBJECT);
@@ -61,11 +61,13 @@ export const resetTables = async ({ tableNames }) => {
  *
  * It's up to the caller to set up and clear any data between test cases.
  */
-export const withDb = (mock, skipping, helper, serviceName) => {
-  assert(testDbUrl,
-    "TEST_DB_URL must be set to run these tests - see dev-docs/development-process.md for more information");
+export const withDb = (_mock, skipping, helper, serviceName) => {
+  assert(
+    testDbUrl,
+    'TEST_DB_URL must be set to run these tests - see dev-docs/development-process.md for more information'
+  );
 
-  suiteSetup('withDb', async function() {
+  suiteSetup('withDb', async () => {
     if (skipping()) {
       return;
     }
@@ -116,7 +118,7 @@ export const withDb = (mock, skipping, helper, serviceName) => {
     }
   });
 
-  suiteTeardown('withDb', async function() {
+  suiteTeardown('withDb', async () => {
     if (skipping()) {
       return;
     }

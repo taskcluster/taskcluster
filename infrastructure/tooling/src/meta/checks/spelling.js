@@ -1,33 +1,34 @@
-import util from 'util';
-import { execFile } from 'child_process';
+import util from 'node:util';
+import { execFile } from 'node:child_process';
 const execFileAsync = util.promisify(execFile);
-import _ from 'lodash';
 
-export const tasks = [{
-  title: 'Proper spelling and capitalization of Taskcluster',
-  requires: [],
-  provides: [],
-  run: async () => {
-    const Taskcluster = [
-      "Task[C]luster",
-      "Task [c]luster",
-      "Task [C]luster",
-      "[tT]skclsuter",
-      "[tT]askclsuter",
-      "[tT]asksluter",
-    ];
-    for (let pattern of Taskcluster) {
-      try {
-        const res = await execFileAsync('git', ['grep', pattern, '--', './*', ':!.yarn']);
-        // if the grep succeeded, then something matched
-        throw new Error(`misspellings found: ${res.stdout}`);
-      } catch (err) {
-        if (err.code === 1) {
-          // git grep found nothing
-          continue;
+export const tasks = [
+  {
+    title: 'Proper spelling and capitalization of Taskcluster',
+    requires: [],
+    provides: [],
+    run: async () => {
+      const Taskcluster = [
+        'Task[C]luster',
+        'Task [c]luster',
+        'Task [C]luster',
+        '[tT]skclsuter',
+        '[tT]askclsuter',
+        '[tT]asksluter',
+      ];
+      for (const pattern of Taskcluster) {
+        try {
+          const res = await execFileAsync('git', ['grep', pattern, '--', './*', ':!.yarn']);
+          // if the grep succeeded, then something matched
+          throw new Error(`misspellings found: ${res.stdout}`);
+        } catch (err) {
+          if (err.code === 1) {
+            // git grep found nothing
+            continue;
+          }
+          throw err;
         }
-        throw err;
       }
-    }
+    },
   },
-}];
+];

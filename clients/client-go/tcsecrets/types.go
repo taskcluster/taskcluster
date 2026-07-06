@@ -5,7 +5,7 @@ package tcsecrets
 import (
 	"encoding/json"
 
-	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v101/clients/client-go"
 )
 
 type (
@@ -25,7 +25,7 @@ type (
 	SecretsList struct {
 
 		// Opaque `continuationToken` to be given as query-string option to get the
-		// next set of provisioners.
+		// next set of secrets.
 		// This property is only present if another request is necessary to fetch all
 		// results. In practice the next request with a `continuationToken` may not
 		// return additional results, but it can. Thus, you can only be sure to have

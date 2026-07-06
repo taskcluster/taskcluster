@@ -1,15 +1,15 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function () {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
-  test('queue worker quarantine details', async function () {
+  test('queue worker quarantine details', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
@@ -21,7 +21,7 @@ suite(testing.suiteName(), function () {
     await helper.assertTableColumn('queue_workers', 'quarantine_details');
   });
 
-  test('quarantine details function', async function () {
+  test('quarantine details function', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     const db = await helper.setupDb('queue');
@@ -33,14 +33,28 @@ suite(testing.suiteName(), function () {
       expires_in: taskcluster.fromNow('1 day'),
     });
 
-    let worker = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', taskcluster.fromNow('1 hour'));
+    let worker = await db.deprecatedFns.get_queue_worker_with_wm_join_2(
+      'prov/wt',
+      'wg',
+      'wi',
+      taskcluster.fromNow('1 hour')
+    );
     assert.equal(worker[0].quarantine_details, null);
 
     await db.fns.quarantine_queue_worker_with_last_date_active_and_details(
-      'prov/wt', 'wg', 'wi', taskcluster.fromNow('1 day'),
-      { clientId: 'c1', updateAt: 'now', quarantineUntil: 'tomorrow', quarantineInfo: 'details' });
+      'prov/wt',
+      'wg',
+      'wi',
+      taskcluster.fromNow('1 day'),
+      { clientId: 'c1', updateAt: 'now', quarantineUntil: 'tomorrow', quarantineInfo: 'details' }
+    );
 
-    worker = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', taskcluster.fromNow('1 hour'));
+    worker = await db.deprecatedFns.get_queue_worker_with_wm_join_2(
+      'prov/wt',
+      'wg',
+      'wi',
+      taskcluster.fromNow('1 hour')
+    );
     assert.equal(worker[0].quarantine_details.length, 1);
     assert.equal(worker[0].quarantine_details[0].clientId, 'c1');
     assert.equal(worker[0].quarantine_details[0].updateAt, 'now');
@@ -49,10 +63,19 @@ suite(testing.suiteName(), function () {
 
     // records should be appended
     await db.fns.quarantine_queue_worker_with_last_date_active_and_details(
-      'prov/wt', 'wg', 'wi', taskcluster.fromNow('5 days'),
-      { clientId: 'c2', updateAt: 'now+1', quarantineUntil: 'tomorrow+1', quarantineInfo: 'details+1' });
+      'prov/wt',
+      'wg',
+      'wi',
+      taskcluster.fromNow('5 days'),
+      { clientId: 'c2', updateAt: 'now+1', quarantineUntil: 'tomorrow+1', quarantineInfo: 'details+1' }
+    );
 
-    worker = await db.deprecatedFns.get_queue_worker_with_wm_join_2('prov/wt', 'wg', 'wi', taskcluster.fromNow('1 hour'));
+    worker = await db.deprecatedFns.get_queue_worker_with_wm_join_2(
+      'prov/wt',
+      'wg',
+      'wi',
+      taskcluster.fromNow('1 hour')
+    );
     assert.equal(worker[0].quarantine_details.length, 2);
     assert.equal(worker[0].quarantine_details[0].clientId, 'c1');
     assert.equal(worker[0].quarantine_details[1].clientId, 'c2');

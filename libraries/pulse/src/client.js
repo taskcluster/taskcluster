@@ -1,8 +1,8 @@
-import events from 'events';
+import events from 'node:events';
 import amqplib from 'amqplib';
-import assert from 'assert';
+import assert from 'node:assert';
 import { MonitorManager } from '@taskcluster/lib-monitor';
-import URL from 'url';
+import URL from 'node:url';
 
 let clientCounter = 0;
 
@@ -60,8 +60,19 @@ MonitorManager.register({
  * The pulse namespace for this user is available as `client.namespace`.
  */
 export class Client extends events.EventEmitter {
-  constructor({ namespace, recycleInterval, retirementDelay, minReconnectionInterval, monitor, credentials,
-    username, password, hostname, vhost, connectionString }) {
+  constructor({
+    namespace,
+    recycleInterval,
+    retirementDelay,
+    minReconnectionInterval,
+    monitor,
+    credentials,
+    username,
+    password,
+    hostname,
+    vhost,
+    connectionString,
+  }) {
     super();
 
     assert(!username, 'username is deprecated');
@@ -92,9 +103,7 @@ export class Client extends events.EventEmitter {
     this.running = true;
     this.recycle();
 
-    this._recycleInterval = setInterval(
-      () => this.recycle(),
-      recycleInterval || 3600 * 1000);
+    this._recycleInterval = setInterval(() => this.recycle(), recycleInterval || 3600 * 1000);
   }
 
   async stop() {
@@ -108,8 +117,14 @@ export class Client extends events.EventEmitter {
     // wait until all existing connections are finished
     const unfinished = this.connections.filter(conn => conn.state !== 'finished');
     if (unfinished.length > 0) {
-      await Promise.all(unfinished.map(
-        conn => new Promise(resolve => { conn.once('finished', resolve); })));
+      await Promise.all(
+        unfinished.map(
+          conn =>
+            new Promise(resolve => {
+              conn.once('finished', resolve);
+            })
+        )
+      );
     }
   }
 
@@ -153,32 +168,35 @@ export class Client extends events.EventEmitter {
 
     // don't actually start connecting until at least minReconnectionInterval has passed
     const earliestConnectionTime = this.lastConnectionTime + this._minReconnectionInterval;
-    const now = new Date().getTime();
-    setTimeout(async () => {
-      if (newConn.state !== 'waiting') {
-        // the connection is no longer waiting, so don't proceed with
-        // connecting (this is rare, but can occur if the recycle timer
-        // occurs at just the wrong moment)
-        return;
-      }
+    const now = Date.now();
+    setTimeout(
+      async () => {
+        if (newConn.state !== 'waiting') {
+          // the connection is no longer waiting, so don't proceed with
+          // connecting (this is rare, but can occur if the recycle timer
+          // occurs at just the wrong moment)
+          return;
+        }
 
-      try {
-        this.lastConnectionTime = new Date().getTime();
-        const { connectionString } = await this.credentials();
-        newConn.connect(connectionString).catch(err => {
-          // .connect should be infallible, but just in case..
+        try {
+          this.lastConnectionTime = Date.now();
+          const { connectionString } = await this.credentials();
+          newConn.connect(connectionString).catch(err => {
+            // .connect should be infallible, but just in case..
+            this.monitor.log.pulseDisconnected({
+              error: `Error in Connection.connect: ${err}`,
+            });
+            newConn.failed();
+          });
+        } catch (err) {
           this.monitor.log.pulseDisconnected({
-            error: `Error in Connection.connect: ${err}`,
+            error: `Error while fetching credentials: ${err}`,
           });
           newConn.failed();
-        });
-      } catch (err) {
-        this.monitor.log.pulseDisconnected({
-          error: `Error while fetching credentials: ${err}`,
-        });
-        newConn.failed();
-      }
-    }, now < earliestConnectionTime ? earliestConnectionTime - now : 0);
+        }
+      },
+      now < earliestConnectionTime ? earliestConnectionTime - now : 0
+    );
 
     return newConn;
   }
@@ -363,7 +381,7 @@ export class Connection extends events.EventEmitter {
         }
       });
 
-      amqp.on('close', err => {
+      amqp.on('close', () => {
         if (this.state === 'connected') {
           this.monitor.log.pulseDisconnected({ error: 'connection closed unexpectedly' });
           this.failed();
@@ -373,8 +391,12 @@ export class Connection extends events.EventEmitter {
       // pass on blocked/unblocked messages; see
       // https://www.rabbitmq.com/connection-blocked.html#capabilities. Amqplib
       // includes 'connection.blocked' in the client properties for us
-      amqp.on('blocked', () => { this.emit('blocked'); });
-      amqp.on('unblocked', () => { this.emit('unblocked'); });
+      amqp.on('blocked', () => {
+        this.emit('blocked');
+      });
+      amqp.on('unblocked', () => {
+        this.emit('unblocked');
+      });
 
       this.monitor.log.pulseConnected();
       this.state = 'connected';
@@ -402,7 +424,7 @@ export class Connection extends events.EventEmitter {
     setTimeout(() => {
       if (this.amqp) {
         // ignore errors in close
-        this.amqp.close().catch(err => {});
+        this.amqp.close().catch(() => {});
       }
       this.amqp = null;
       this.state = 'finished';

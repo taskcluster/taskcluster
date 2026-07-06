@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
@@ -12,25 +12,26 @@ const badcreds = {
   accessToken: 'wrong',
 };
 
-suite(testing.suiteName(), function() {
-  helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], function(mock, skipping) {
+suite(testing.suiteName(), () => {
+  helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
-    helper.withPulse(mock, skipping);
-    helper.withServers(mock, skipping);
-    helper.resetTables(mock, skipping);
+    helper.withPulse(skipping);
+    helper.withServers(skipping);
+    helper.resetTables();
 
-    let testAuth = (name, { config, requiredScopes, clientScopes, errorCode }) => {
+    const testAuth = (name, { config, requiredScopes, clientScopes, errorCode }) => {
       test(name, async () => {
-        let auth = new helper.AuthClient(config);
-        await auth.testAuthenticate({ requiredScopes, clientScopes }).then(() => {
-          assert(!errorCode, 'Request was successful, but expected an error ' +
-                             'with code: ' + errorCode);
-        }, err => {
-          assert(errorCode, 'Request failed!');
-          assert(err.code === errorCode, 'Expected error with code: ' +
-                                         errorCode + ' but got: ' + err.code);
-        });
+        const auth = new helper.AuthClient(config);
+        await auth.testAuthenticate({ requiredScopes, clientScopes }).then(
+          () => {
+            assert(!errorCode, `Request was successful, but expected an error with code: ${errorCode}`);
+          },
+          err => {
+            assert(errorCode, 'Request failed!');
+            assert(err.code === errorCode, `Expected error with code: ${errorCode} but got: ${err.code}`);
+          }
+        );
       });
     };
 
@@ -100,24 +101,25 @@ suite(testing.suiteName(), function() {
     });
   });
 
-  helper.secrets.mockSuite('testAuthGet', ['azure', 'gcp'], function(mock, skipping) {
+  helper.secrets.mockSuite('testAuthGet', ['azure', 'gcp'], (mock, skipping) => {
     helper.withDb(mock, skipping);
     helper.withCfg(mock, skipping);
-    helper.withPulse(mock, skipping);
-    helper.withServers(mock, skipping);
-    helper.resetTables(mock, skipping);
+    helper.withPulse(skipping);
+    helper.withServers(skipping);
+    helper.resetTables();
 
-    let testAuthGet = (name, { config, errorCode }) => {
+    const testAuthGet = (name, { config, errorCode }) => {
       test(name, async () => {
-        let auth = new helper.AuthClient(config);
-        await auth.testAuthenticateGet().then(() => {
-          assert(!errorCode, 'Request was successful, but expected an error ' +
-                             'with code: ' + errorCode);
-        }, err => {
-          assert(errorCode, 'Request failed!');
-          assert(err.code === errorCode, 'Expected error with code: ' +
-                                         errorCode + ' but got: ' + err.code);
-        });
+        const auth = new helper.AuthClient(config);
+        await auth.testAuthenticateGet().then(
+          () => {
+            assert(!errorCode, `Request was successful, but expected an error with code: ${errorCode}`);
+          },
+          err => {
+            assert(errorCode, 'Request failed!');
+            assert(err.code === errorCode, `Expected error with code: ${errorCode} but got: ${err.code}`);
+          }
+        );
       });
     };
 

@@ -1,17 +1,17 @@
 import slugid from 'slugid';
-import assert from 'assert';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import assume from 'assume';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withAmazonIPRanges(mock, skipping);
-  helper.withPulse(mock, skipping);
+  helper.withAmazonIPRanges(skipping);
+  helper.withPulse(skipping);
   helper.withS3(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   const taskDef = {
     taskQueueId: 'no-provisioner-extended-extended/test-worker-extended-extended',
@@ -42,7 +42,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
   let taskId;
 
-  const makeTask = (expiration) => {
+  const makeTask = expiration => {
     const task = {
       taskQueueId: 'no-provisioner-extended-extended/test-worker-extended-extended',
       created: taskcluster.fromNowJSON(),
@@ -62,7 +62,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     return { taskId: slugid.v4(), task };
   };
 
-  setup(async function () {
+  setup(async () => {
     taskId = slugid.v4();
     await helper.queue.createTask(taskId, taskDef);
   });
@@ -87,7 +87,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     await helper.queue.createTask(taskId4, task4);
     task4 = await helper.queue.task(taskId4);
 
-    let res = await helper.queue.tasks({ taskIds: [taskId2, taskId3, taskId4] });
+    const res = await helper.queue.tasks({ taskIds: [taskId2, taskId3, taskId4] });
     let tasks = res.tasks;
 
     // Convert to object for easy comparison. See `tasks-response.yml`
@@ -106,7 +106,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     for (const [currentId, def] of Object.entries(expectedTasks)) {
       assert.deepStrictEqual(tasks[currentId], def);
     }
-
   });
 
   test('tasks is correct for a single task', async () => {
@@ -125,7 +124,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     await assert.rejects(
       () => helper.queue.tasks({ taskIds: [taskId] }),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('task(taskId) requires scopes', async () => {
@@ -133,7 +133,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     await assert.rejects(
       () => helper.queue.task(taskId),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
   });
 
   test('statuses is correct for multiple tasks', async () => {
@@ -147,7 +148,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
     await helper.queue.createTask(taskId4, task4);
     task4 = await helper.queue.status(taskId4);
 
-    let res = await helper.queue.statuses({ taskIds: [taskId2, taskId3, taskId4] });
+    const res = await helper.queue.statuses({ taskIds: [taskId2, taskId3, taskId4] });
     let statuses = res.statuses;
 
     // Convert to object for easy comparison. See `tasks-statuses-response.yml`
@@ -181,7 +182,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     await assert.rejects(
       () => helper.queue.statuses({ taskIds: [taskId] }),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
 
     helper.scopes(`queue:status:${taskId}`);
     await helper.queue.statuses({ taskIds: [taskId] }); // doesn't fail..
@@ -192,10 +194,10 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     await assert.rejects(
       () => helper.queue.status(taskId),
-      err => err.code === 'InsufficientScopes');
+      err => err.code === 'InsufficientScopes'
+    );
 
     helper.scopes(`queue:status:${taskId}`);
     await helper.queue.status(taskId); // doesn't fail..
   });
-
 });

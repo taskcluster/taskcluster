@@ -1,8 +1,7 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift.js';
 import ConnectionLoader from '../ConnectionLoader.js';
 
-export default ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ queue }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const provisioner = new DataLoader(provisionerIds =>
     Promise.all(
       provisionerIds.map(async provisionerId => {
@@ -11,14 +10,13 @@ export default ({ queue }, isAuthed, rootUrl, monitor, strategies, req, cfg, req
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
-  const provisioners = new ConnectionLoader(async ({ options, filter }) => {
+  const provisioners = new ConnectionLoader(async ({ options }) => {
     const raw = await queue.listProvisioners(options);
-    const provisioners = sift(filter, raw.provisioners);
 
-    return { ...raw, items: provisioners };
+    return { ...raw, items: raw.provisioners };
   });
 
   return {

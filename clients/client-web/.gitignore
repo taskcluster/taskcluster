@@ -41,3 +41,7 @@ node_modules
 _book
 /.vscode
 *.tgz
+
+# Vitest artifacts
+.vitest-attachments
+__screenshots__

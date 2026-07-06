@@ -1,25 +1,25 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift.js';
+import substringFilter from '../utils/searchFilter.js';
 import ConnectionLoader from '../ConnectionLoader.js';
 
-export default ({ auth }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ auth }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const roles = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({ filter }) => {
+      queries.map(async ({ searchTerm }) => {
         try {
           const roles = await auth.listRoles();
 
-          return sift(filter, roles);
+          return substringFilter(searchTerm, 'roleId', roles);
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
-  const roleIds = new ConnectionLoader(async ({ filter, options }) => {
+  const roleIds = new ConnectionLoader(async ({ searchTerm, options }) => {
     const raw = await auth.listRoleIds(options);
     const roleIds = raw.roleIds.map(roleId => ({ roleId }));
-    const roles = sift(filter, roleIds);
+    const roles = substringFilter(searchTerm, 'roleId', roleIds);
 
     return {
       ...raw,
@@ -28,14 +28,14 @@ export default ({ auth }, isAuthed, rootUrl, monitor, strategies, req, cfg, requ
   });
   const role = new DataLoader(roleIds =>
     Promise.all(
-      roleIds.map(async (roleId) => {
+      roleIds.map(async roleId => {
         try {
           return await auth.role(roleId);
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
 
   return {

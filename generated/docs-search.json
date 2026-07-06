@@ -777,13 +777,6 @@
     "title": "Worker Manager Configuration"
   },
   {
-    "element": "h3",
-    "id": "resource-groups",
-    "path": "/manual/deploying/worker-manager-config",
-    "subtitle": "Resource Groups",
-    "title": "Worker Manager Configuration"
-  },
-  {
     "element": "h4",
     "id": "service-accounts",
     "path": "/manual/deploying/worker-manager-config",
@@ -2324,6 +2317,13 @@
     "title": "Azure Provider Type"
   },
   {
+    "element": "h3",
+    "id": "per-launch-configuration-resource-groups-armdeploymentresourcegroup",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Per-launch-configuration resource groups (`armDeploymentResourceGroup`)",
+    "title": "Azure Provider Type"
+  },
+  {
     "element": "h2",
     "id": "provisioning-modes",
     "path": "/reference/core/worker-manager/azure",
@@ -2335,6 +2335,20 @@
     "id": "removing-workers",
     "path": "/reference/core/worker-manager/azure",
     "subtitle": "Removing Workers",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h2",
+    "id": "resource-group-strategy",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Resource Group Strategy",
+    "title": "Azure Provider Type"
+  },
+  {
+    "element": "h3",
+    "id": "single-shared-resource-group-default",
+    "path": "/reference/core/worker-manager/azure",
+    "subtitle": "Single shared resource group (default)",
     "title": "Azure Provider Type"
   },
   {

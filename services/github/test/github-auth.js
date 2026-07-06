@@ -1,7 +1,7 @@
 import Debug from 'debug';
 import sinon from 'sinon';
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 
 class FakeGithub {
   constructor(installation_id) {
@@ -22,7 +22,7 @@ class FakeGithub {
     this._commits = {};
 
     const throwError = code => {
-      let err = new Error();
+      const err = new Error();
       err.status = code;
       err.code = code;
       throw err;
@@ -63,7 +63,7 @@ class FakeGithub {
       },
       'repos.createCommitComment': () => {},
       'repos.getCommit': async ({ owner, repo, ref, headers }) => {
-        assert.equal(headers && headers.accept, 'application/vnd.github.3.sha');
+        assert.equal(headers?.accept, 'application/vnd.github.3.sha');
         assert(ref.startsWith('refs/'), 'repos.getCommit requires a full ref path');
         const key = `${owner}/${repo}@${ref}`;
         if (!this._commits[key]) {
@@ -76,7 +76,7 @@ class FakeGithub {
       },
       'repos.checkCollaborator': async ({ owner, repo, username }) => {
         const key = `${owner}/${repo}`;
-        if (this._repo_collaborators[key] && this._repo_collaborators[key].has(username)) {
+        if (this._repo_collaborators[key]?.has(username)) {
           return {};
         } else {
           throwError(404);
@@ -97,15 +97,15 @@ class FakeGithub {
         assert.equal(path, '.taskcluster.yml');
         const key = `${owner}/${repo}@${ref}`;
         if (this._taskcluster_yml_files[key]) {
-          return { data: { content: Buffer.from(
-            JSON.stringify(this._taskcluster_yml_files[key]),
-          ).toString('base64') } };
+          return {
+            data: { content: Buffer.from(JSON.stringify(this._taskcluster_yml_files[key])).toString('base64') },
+          };
         } else {
           throwError(404);
         }
       },
       'users.getByUsername': async ({ username }) => {
-        let user = _.find(this._github_users, { username });
+        const user = _.find(this._github_users, { username });
         if (user) {
           return { data: user };
         } else {
@@ -124,7 +124,7 @@ class FakeGithub {
       'repos.listCommitStatusesForRef': async ({ owner, repo, ref }) => {
         const key = `${owner}/${repo}@${ref}`;
         const info = this._statuses[key];
-        if (info && info.errorStatus) {
+        if (info?.errorStatus) {
           throwError(info.errorStatus);
         }
         if (info) {
@@ -133,7 +133,7 @@ class FakeGithub {
           throwError(404);
         }
       },
-      'checks.create': async ({ owner, repo, name, head_sha, output, details_url, actions, status, conclusion }) => {
+      'checks.create': async ({ owner, repo, name, head_sha, status, conclusion }) => {
         if (repo === 'no-permission') {
           throwError(403);
         }
@@ -189,7 +189,7 @@ class FakeGithub {
           throwError(404);
         }
       },
-      'reactions.createForIssueComment': async ({ owner, repo, commentId, body }) => {
+      'reactions.createForIssueComment': async ({ repo }) => {
         if (repo === 'no-permission') {
           throwError(403);
         }
@@ -199,8 +199,8 @@ class FakeGithub {
 
     const debug = Debug('FakeGithub');
     _.forEach(stubs, (implementation, name) => {
-      let atoms = name.split(/\./);
-      let obj = this; // eslint-disable-line consistent-this
+      const atoms = name.split(/\./);
+      let obj = this;
       while (atoms.length > 1) {
         const atom = atoms.shift();
         if (!obj[atom]) {
@@ -210,14 +210,14 @@ class FakeGithub {
       }
 
       const atom = atoms.shift();
-      obj[atom] = sinon.spy(async (options) => {
+      obj[atom] = sinon.spy(async options => {
         debug(`inst(${installation_id}).${name}(${JSON.stringify(options)})`);
         return await (implementation || (() => {}))(options);
       });
     });
     // super-hacky version of the pagination plugin.  See https://github.com/taskcluster/taskcluster/issues/3985
     this.paginate = {
-      iterator: async function*(stub, options) {
+      iterator: async function* (stub, options) {
         const response = await stub(options);
         // ugh, seriously?
         // see https://github.com/octokit/plugin-paginate-rest.js/blob/master/src/normalize-paginated-list-response.ts
@@ -268,7 +268,9 @@ class FakeGithub {
 
   setRepositories(...repoNames) {
     // This function accepts 1 to n strings
-    this._repositories.repositories = [...repoNames].map(repo => {return { name: repo };});
+    this._repositories.repositories = [...repoNames].map(repo => {
+      return { name: repo };
+    });
     this._repositories.total_count = this._repositories.repositories.length;
   }
 
@@ -325,7 +327,7 @@ class FakeGithubAuth {
 
   // For testing purposes, insert a new install
   createInstall(installation_id, owner, repos) {
-    let installation = new FakeGithub(installation_id);
+    const installation = new FakeGithub(installation_id);
     installation._installedOn = owner;
     installation.setRepositories(...repos);
     this.installations[installation_id] = installation;
@@ -335,10 +337,12 @@ class FakeGithubAuth {
     return {
       apps: {
         listInstallations: async () => {
-          return { data: _.map(this.installations, (install, id) => ({
-            id: parseInt(id, 10),
-            account: { login: install._installedOn },
-          })) };
+          return {
+            data: _.map(this.installations, (install, id) => ({
+              id: parseInt(id, 10),
+              account: { login: install._installedOn },
+            })),
+          };
         },
       },
     };

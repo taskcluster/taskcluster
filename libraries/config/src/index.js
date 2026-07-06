@@ -1,13 +1,26 @@
 import _ from 'lodash';
-import path from 'path';
+import path from 'node:path';
 import yaml from 'js-yaml';
-import fs from 'fs';
+import fs from 'node:fs';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-config');
-import assert from 'assert';
+import assert from 'node:assert';
 import buildSchema from './schema.js';
 
 const __dirname = new URL('.', import.meta.url).pathname;
+
+const dedupeEnvVars = vars => {
+  const seen = new Set();
+  return vars.filter(({ type, var: name, optional, secret }) => {
+    // None of the fields can contain a | so this is safe to use as a key
+    const key = `${type}|${name}|${optional}|${secret}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
 
 const REPO_ROOT = path.join(__dirname, '../../../');
 
@@ -21,7 +34,7 @@ const config = ({
   serviceName,
   getEnvVars = false,
 }) => {
-  assert(files instanceof Array, 'Expected an array of files');
+  assert(Array.isArray(files), 'Expected an array of files');
   assert(typeof env === 'object', 'Expected env to be an object');
   assert(serviceName, 'serviceName is required');
 
@@ -54,19 +67,18 @@ const config = ({
 
     // If the user requested environment variables list, return it and stop
     if (envVars) {
-      return envVars;
+      return dedupeEnvVars(envVars);
     }
 
     // Add defaults to list of configurations if present
     if (data.defaults) {
-      assert(typeof data.defaults === 'object',
-        '\'defaults\' must be an object');
+      assert(typeof data.defaults === 'object', "'defaults' must be an object");
       cfgs.unshift(data.defaults);
     }
 
     // Add profile to list of configurations, if it is given
     if (profile && data[profile]) {
-      let prof = data[profile];
+      const prof = data[profile];
       assert(typeof prof === 'object', 'profile must be an object');
       cfgs.unshift(prof);
     }

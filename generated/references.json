@@ -3017,7 +3017,7 @@
       "description": "Message containing a list of secret names\n",
       "properties": {
         "continuationToken": {
-          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of provisioners.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called with `continuationToken` until you get a\nresult without a `continuationToken`.\n",
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of secrets.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called with `continuationToken` until you get a\nresult without a `continuationToken`.\n",
           "title": "Continuation Token",
           "type": "string"
         },
@@ -10757,7 +10757,7 @@
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* npz\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* aab\n* apk\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jar\n* jpeg\n* jpg\n* npz\n* pkg\n* png\n* swf\n* tbz\n* tgz\n* wasm\n* webp\n* whl\n* woff\n* woff2\n* xpi\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -11302,7 +11302,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "contentEncoding": {
-                    "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* npz\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                    "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* aab\n* apk\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jar\n* jpeg\n* jpg\n* npz\n* pkg\n* png\n* swf\n* tbz\n* tgz\n* wasm\n* webp\n* whl\n* woff\n* woff2\n* xpi\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                     "enum": [
                       "identity",
                       "gzip"
@@ -12123,7 +12123,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "contentEncoding": {
-                    "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* npz\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                    "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* aab\n* apk\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jar\n* jpeg\n* jpg\n* npz\n* pkg\n* png\n* swf\n* tbz\n* tgz\n* wasm\n* webp\n* whl\n* woff\n* woff2\n* xpi\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                     "enum": [
                       "identity",
                       "gzip"
@@ -15762,6 +15762,9 @@
             "taskcluster_client_id": {
               "type": "string"
             },
+            "worker_scanner_concurrency": {
+              "type": "number"
+            },
             "worker_scanner_iterate_config": {
               "oneOf": [
                 {
@@ -18065,6 +18068,29 @@
           "type": "gauge"
         },
         {
+          "description": "Count of Azure ARM deployment creation failures and failed deployment operations by worker pool, location, and Azure error details",
+          "labels": {
+            "errorCode": "Azure error code",
+            "errorKind": "Worker-manager error kind",
+            "priority": "Azure VM priority",
+            "providerId": "ID of the provider",
+            "provisioningOperation": "Azure provisioning operation",
+            "provisioningState": "Azure provisioning state",
+            "statusCode": "Operation status code from the resource provider",
+            "targetResourceType": "Azure target resource type",
+            "vmSize": "Azure VM size",
+            "workerGroup": "Worker group (region/zone/location)",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_azure_arm_deployment_errors_total",
+          "registers": [
+            "provision",
+            "scan"
+          ],
+          "title": "Azure ARM deployment errors",
+          "type": "counter"
+        },
+        {
           "description": "Most recently observed value of Azure x-ms-ratelimit-remaining-subscription-* headers",
           "labels": {
             "limitType": "Rate limit category: reads, writes, or deletes",
@@ -18077,6 +18103,20 @@
           ],
           "title": "Azure rate limit remaining quota",
           "type": "gauge"
+        },
+        {
+          "description": "Count of Azure worker teardowns by mode: 'fast' (cascade short-circuit) vs 'slow' (per-resource walk), per worker pool",
+          "labels": {
+            "mode": "Teardown mode: 'fast' or 'slow'",
+            "providerId": "ID of the provider",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_azure_teardown_total",
+          "registers": [
+            "scan"
+          ],
+          "title": "Azure worker teardowns",
+          "type": "counter"
         },
         {
           "description": "Count of HTTP 429 responses from Azure ARM API",
@@ -18466,6 +18506,21 @@
           "name": "azureResourceGroupEnsured",
           "title": "Azure Resource Group Create or Update Information",
           "type": "azure-resource-group-ensure",
+          "version": 1
+        },
+        {
+          "description": "Records how an Azure worker's resources were torn down: 'fast' when the VM's\nNIC/IP/disks cascade-delete with the VM (so the per-resource GET/delete walk\nis skipped), or 'slow' for the resource-by-resource walk. Lets us measure the\nAPI-call reduction and confirm the fast path engages on cascading ARM pools.",
+          "fields": {
+            "launchConfigId": "Launch Config ID",
+            "mode": "Teardown mode: 'fast' (cascade short-circuit) or 'slow' (full walk)",
+            "providerId": "Provider ID",
+            "workerId": "Worker ID",
+            "workerPoolId": "Worker Pool ID"
+          },
+          "level": "info",
+          "name": "azureTeardownMode",
+          "title": "Azure Worker Teardown Mode",
+          "type": "azure-teardown-mode",
           "version": 1
         },
         {
@@ -20845,7 +20900,7 @@
           "args": [
           ],
           "category": "Secrets Service",
-          "description": "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
+          "description": "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more secrets are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `list` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "list",
           "output": "v1/secret-list.json#",
@@ -25861,7 +25916,7 @@
             "hookId"
           ],
           "category": "Hooks",
-          "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
+          "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hook's `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHook",
@@ -25917,7 +25972,7 @@
             "token"
           ],
           "category": "Hooks",
-          "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
+          "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hook's `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHookWithToken",
@@ -27963,7 +28018,7 @@
             "wstClient"
           ],
           "category": "Websocktunnel Credentials",
-          "description": "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
+          "description": "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the caller's responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
           "method": "get",
           "name": "websocktunnelToken",
           "output": "v1/websocktunnel-token-response.json#",

@@ -1,5 +1,5 @@
-query ListWorkerPools($connection: PageConnection, $filter: JSON){
-  WorkerManagerWorkerPoolSummaries(connection: $connection, filter: $filter){
+query ListWorkerPools($connection: PageConnection){
+  WorkerManagerWorkerPoolSummaries(connection: $connection){
     edges{
       node{
         workerPoolId

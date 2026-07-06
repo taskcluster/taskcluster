@@ -1,8 +1,8 @@
 import debugFactory from 'debug';
 const debug = debugFactory('notify');
 import _ from 'lodash';
-import path from 'path';
-import crypto from 'crypto';
+import path from 'node:path';
+import crypto from 'node:crypto';
 import sanitizeHtml from 'sanitize-html';
 import { marked } from 'marked';
 import Email from 'email-templates';
@@ -45,10 +45,7 @@ class Notifier {
   }
 
   key(idents) {
-    return crypto
-      .createHash('md5')
-      .update(JSON.stringify(idents))
-      .digest('hex');
+    return crypto.createHash('md5').update(JSON.stringify(idents)).digest('hex');
   }
 
   isDuplicate(...idents) {
@@ -122,7 +119,7 @@ class Notifier {
     return true;
   }
 
-  async matrix({ roomId, format, formattedBody, body, notice, msgtype }) {
+  async matrix({ roomId, format, formattedBody, body, msgtype }) {
     if (this.isDuplicate(roomId, format, formattedBody, body, msgtype)) {
       debug('Duplicate matrix send detected. Not attempting resend.');
       return false;
@@ -133,7 +130,7 @@ class Notifier {
       return false;
     }
 
-    await this._matrix.sendMessage({ roomId, format, formattedBody, body, notice, msgtype });
+    await this._matrix.sendMessage({ roomId, format, formattedBody, body, msgtype });
     this.markSent(roomId, format, formattedBody, body, msgtype);
     this.monitor.log.matrix({ dest: roomId });
     return true;

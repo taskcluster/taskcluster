@@ -1,4 +1,4 @@
-import { globalAgent } from 'http';
+import { globalAgent } from 'node:http';
 import taskcluster from '@taskcluster/client';
 import taskcreator from '../src/taskcreator.js';
 
@@ -21,8 +21,7 @@ testing.withMonitor(helper);
 
 helper.secrets = new testing.Secrets({
   load: helper.load,
-  secrets: {
-  },
+  secrets: {},
 });
 
 helper.withDb = (mock, skipping) => {
@@ -35,7 +34,7 @@ helper.withDb = (mock, skipping) => {
  * helper.creator.shouldFail to make the TaskCreator fail.
  * Call this before withServer.
  */
-helper.withTaskCreator = function(mock, skipping) {
+helper.withTaskCreator = skipping => {
   suiteSetup(async () => {
     if (skipping()) {
       return;
@@ -47,14 +46,14 @@ helper.withTaskCreator = function(mock, skipping) {
     helper.load.inject('taskcreator', helper.creator);
   });
 
-  setup(function() {
+  setup(() => {
     helper.creator.fireCalls = [];
     helper.creator.shouldFail = false;
     helper.creator.shouldNotProduceTask = false;
   });
 };
 
-helper.withPulse = (mock, skipping) => {
+helper.withPulse = skipping => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-hooks' });
 };
 
@@ -65,10 +64,10 @@ helper.withPulse = (mock, skipping) => {
  * This also sets up helper.hooks as an API client, using scopes configurable
  * with helper.scopes([..]); and configures fakeAuth to support that.
  */
-helper.withServer = (mock, skipping) => {
+helper.withServer = skipping => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -76,9 +75,12 @@ helper.withServer = (mock, skipping) => {
     await helper.load('cfg');
 
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl }
+    );
 
     // Create client for working with API
     helper.Hooks = taskcluster.createClient(builder.reference());
@@ -103,11 +105,11 @@ helper.withServer = (mock, skipping) => {
     webServer = await helper.load('server');
   });
 
-  setup(function() {
+  setup(() => {
     helper.scopes();
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (webServer) {
       await webServer.terminate();
       webServer = null;
@@ -115,12 +117,8 @@ helper.withServer = (mock, skipping) => {
   });
 };
 
-helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
-    await testing.resetTables({ tableNames: [
-      'hooks',
-      'hooks_queues',
-      'hooks_last_fires',
-    ] });
+helper.resetTables = () => {
+  setup('reset tables', async () => {
+    await testing.resetTables({ tableNames: ['hooks', 'hooks_queues', 'hooks_last_fires'] });
   });
 };

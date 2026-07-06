@@ -1,6 +1,6 @@
 import DataLoader from 'dataloader';
 
-export default ({ github }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ github }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const githubRepository = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ owner, repo }) => {
@@ -9,8 +9,8 @@ export default ({ github }, isAuthed, rootUrl, monitor, strategies, req, cfg, re
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
 
   const renderTaskclusterYml = new DataLoader(queries =>
@@ -21,8 +21,8 @@ export default ({ github }, isAuthed, rootUrl, monitor, strategies, req, cfg, re
         } catch (err) {
           return err;
         }
-      }),
-    ),
+      })
+    )
   );
 
   return {

@@ -1,17 +1,19 @@
 {
   "name": "@taskcluster/db",
   "private": true,
-  "version": "100.2.0",
+  "version": "101.0.0",
   "license": "MPL-2.0",
   "type": "module",
   "scripts": {
     "test": "mocha test/*_test.js test/**/*_test.js",
-    "lint": "eslint src/*.js src/**/*.js test/*_test.js test/**/*.js"
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "format": "biome format --write"
   },
   "exports": "./src/index.js",
   "devDependencies": {
+    "@biomejs/biome": "^2.5.1",
     "c8": "^8.0.1",
-    "eslint": "^8.57.0",
     "mocha": "^10.8.2"
   }
 }

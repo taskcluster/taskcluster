@@ -1,5 +1,5 @@
 import helper from './helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import nock from 'nock';
 import githubAuth, { getCachedInstallationToken, getPrivatePEM } from '../src/github-auth.js';
 import testing from '@taskcluster/lib-testing';
@@ -37,12 +37,10 @@ ZcJjRIt8w8g/s4X6MhKasBYm9s3owALzCuJjGzUKcDHiO2DKu1xXAb0SzRcTzUCn
 x//0u+zd/R/QRUzLOw4N72/Hu+UG6MNt5iDZFCtapRaKt6OvSBwy8w==
 -----END RSA PRIVATE KEY-----`;
 
-suite(testing.suiteName(), function() {
-  suite('octokit wrapping', function() {
-    test('getAppGithub', async function() {
-      nock('https://api.github.com:443')
-        .post('/app/installations/100/access_tokens')
-        .reply(200);
+suite(testing.suiteName(), () => {
+  suite('octokit wrapping', () => {
+    test('getAppGithub', async () => {
+      nock('https://api.github.com:443').post('/app/installations/100/access_tokens').reply(200);
       const gh = await githubAuth({
         monitor: await helper.load('monitor'),
         cfg: {
@@ -58,28 +56,60 @@ suite(testing.suiteName(), function() {
       await gh.getAppGithub();
       await gh.getInstallationGithub(100);
     });
+
+    test('secondary rate limits get retried instead of throwing', async () => {
+      nock('https://api.github.com:443')
+        .get('/app')
+        .reply(403, { message: 'secondary rate limit' }, { 'retry-after': '0.001' })
+        .get('/app')
+        .reply(200, { id: 12345 });
+
+      const monitor = await helper.load('monitor');
+      const gh = await githubAuth({
+        monitor,
+        cfg: {
+          github: {
+            credentials: {
+              appId: 12345,
+              privatePEM: FAKE_KEY,
+            },
+          },
+        },
+      });
+      const ghApp = await gh.getAppGithub();
+      const res = await ghApp.apps.getAuthenticated();
+
+      assert.equal(res.status, 200);
+      assert.equal(res.data?.id, 12345);
+      assert.equal(true, nock.isDone());
+      monitor.manager.reset();
+    });
   });
-  suite('getPrivatePEM', function() {
-    test('with actual newlines', function() {
+
+  suite('getPrivatePEM', () => {
+    test('with actual newlines', () => {
       const cfg = { github: { credentials: { privatePEM: WITH_NEWLINES } } };
       assert.equal(getPrivatePEM(cfg), WITH_NEWLINES);
     });
 
-    test('with escaped newlines', function() {
+    test('with escaped newlines', () => {
       const cfg = { github: { credentials: { privatePEM: WITH_ESCAPED_NEWLINES } } };
       assert.equal(getPrivatePEM(cfg), WITH_NEWLINES);
     });
 
-    test('with invalid value', function() {
+    test('with invalid value', () => {
       const cfg = { github: { credentials: { privatePEM: 'somekey' } } };
-      assert.throws(() => getPrivatePEM(cfg), err => {
-        assert(/must match/.test(err.toString()));
-        assert(!/somekey/.test(err.toString()));
-        return true;
-      });
+      assert.throws(
+        () => getPrivatePEM(cfg),
+        err => {
+          assert(/must match/.test(err.toString()));
+          assert(!/somekey/.test(err.toString()));
+          return true;
+        }
+      );
     });
   });
-  suite('getCachedInstallationToken', function () {
+  suite('getCachedInstallationToken', () => {
     const getGh = async () => {
       const gh = await githubAuth({
         monitor: await helper.load('monitor'),
@@ -95,7 +125,7 @@ suite(testing.suiteName(), function() {
       return gh.getAppGithub();
     };
 
-    test('cache responses', async function() {
+    test('cache responses', async () => {
       nock('https://api.github.com:443')
         .post('/app/installations/500/access_tokens')
         .reply(200, { expires_at: new Date('3000-01-01T00:00:00Z'), token: 'abc' });
@@ -110,7 +140,7 @@ suite(testing.suiteName(), function() {
       assert.equal(true, nock.isDone());
     });
 
-    test('cache responses and checks expiration dates', async function() {
+    test('cache responses and checks expiration dates', async () => {
       nock('https://api.github.com:443')
         .post('/app/installations/505/access_tokens')
         .times(2)

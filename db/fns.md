@@ -6514,10 +6514,6 @@ end
 
 </details>
 
-### deprecated methods
-
-* `create_task_projid(task_id text, task_queue_id text, scheduler_id text, project_id text, task_group_id text, dependencies jsonb, requires task_requires, routes jsonb, priority task_priority, retries integer, created timestamptz, deadline timestamptz, expires timestamptz, scopes jsonb, payload jsonb, metadata jsonb, tags jsonb, extra jsonb)` (compatibility guaranteed until v101.0.0)
-
 ## secrets
 
 * [`delete_secret`](#delete_secret)

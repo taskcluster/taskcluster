@@ -2,7 +2,7 @@
 
 package main
 
-import "github.com/taskcluster/taskcluster/v100/workers/generic-worker/process"
+import "github.com/taskcluster/taskcluster/v101/workers/generic-worker/process"
 
 func gwCopyToTempFile(filePath string, pd *process.PlatformData, taskDir string) (string, error) {
 	return filePath, nil

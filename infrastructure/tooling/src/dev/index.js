@@ -1,16 +1,11 @@
 import chalk from 'chalk';
-import path from 'path';
+import path from 'node:path';
 import _ from 'lodash';
 import { readRepoYAML, writeRepoYAML } from '../utils/index.js';
 import inquirer from 'inquirer';
 import commonPrompts from './common.js';
 
-import {
-  rabbitPrompts,
-  rabbitResources,
-  rabbitAdminPasswordPrompt,
-  rabbitEnsureResources,
-} from './rabbit.js';
+import { rabbitPrompts, rabbitResources, rabbitAdminPasswordPrompt, rabbitEnsureResources } from './rabbit.js';
 
 import { azureResources } from './azure.js';
 import { postgresPrompts, postgresResources, postgresEnsureDb } from './postgres.js';
@@ -35,8 +30,8 @@ export const readUserConfig = async () => {
   return userConfig;
 };
 
-export const init = async (options) => {
-  let configTmpl = await readRepoYAML(path.join('dev-docs', 'dev-config-example.yml'));
+export const init = async _options => {
+  const configTmpl = await readRepoYAML(path.join('dev-docs', 'dev-config-example.yml'));
   let userConfig = await readUserConfig();
 
   const prompts = [];
@@ -45,7 +40,7 @@ export const init = async (options) => {
   await rabbitPrompts({ userConfig, prompts, configTmpl });
   await postgresPrompts({ userConfig, prompts, configTmpl });
 
-  let answer = await inquirer.prompt(prompts);
+  const answer = await inquirer.prompt(prompts);
 
   userConfig = await awsResources({ userConfig, answer, configTmpl });
   userConfig = await taskclusterResources({ userConfig, answer, configTmpl });
@@ -57,7 +52,7 @@ export const init = async (options) => {
   await writeRepoYAML(USER_CONF_FILE, _.merge(userConfig, answer));
 };
 
-export const dbParams = (meta) => {
+export const dbParams = meta => {
   return {
     adminDbUrl: makePgUrl({
       hostname: meta.dbPublicIp,
@@ -69,12 +64,12 @@ export const dbParams = (meta) => {
   };
 };
 
-export const dbUpgrade = async (options) => {
+export const dbUpgrade = async options => {
   const userConfig = await readUserConfig();
   const meta = userConfig.meta || {};
 
   const { dbVersion } = options;
-  const toVersion = dbVersion ? parseInt(dbVersion) : undefined;
+  const toVersion = dbVersion ? parseInt(dbVersion, 10) : undefined;
 
   const { adminDbUrl, usernamePrefix } = dbParams(meta);
   const showProgress = message => {
@@ -84,13 +79,13 @@ export const dbUpgrade = async (options) => {
   await upgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
 };
 
-export const dbDowngrade = async (options) => {
+export const dbDowngrade = async options => {
   const userConfig = await readUserConfig();
   const meta = userConfig.meta || {};
 
   const { dbVersion } = options;
-  const toVersion = parseInt(dbVersion);
-  if (!dbVersion.match(/^[0-9]+$/) || isNaN(toVersion)) {
+  const toVersion = parseInt(dbVersion, 10);
+  if (!dbVersion.match(/^[0-9]+$/) || Number.isNaN(toVersion)) {
     throw new Error('Missing or invalid --db-version');
   }
 
@@ -102,25 +97,25 @@ export const dbDowngrade = async (options) => {
   await downgrade({ showProgress, adminDbUrl, usernamePrefix, toVersion });
 };
 
-export const apply = async (options) => {
+export const apply = async _options => {
   await helm('apply');
 };
 
-export const verify = async (options) => {
+export const verify = async _options => {
   await helm('verify');
 };
 
-export const templates = async (options) => {
+export const templates = async _options => {
   const templates = await helm('dump-templates');
   return templates;
 };
 
-export const ensureDb = async (options) => {
+export const ensureDb = async _options => {
   const userConfig = await readUserConfig();
   await postgresEnsureDb({ userConfig });
 };
 
-export const ensureRabbit = async (options) => {
+export const ensureRabbit = async _options => {
   const userConfig = await readUserConfig();
   const prompts = [];
 
@@ -130,11 +125,18 @@ export const ensureRabbit = async (options) => {
   await rabbitEnsureResources({ userConfig, answer });
 };
 
-export const delete_ = async (options) => {
+export const delete_ = async _options => {
   await helm('delete');
 };
 
 export default {
-  init, apply, verify, templates,
-  ensureDb, ensureRabbit, delete_, dbUpgrade, dbDowngrade,
+  init,
+  apply,
+  verify,
+  templates,
+  ensureDb,
+  ensureRabbit,
+  delete_,
+  dbUpgrade,
+  dbDowngrade,
 };

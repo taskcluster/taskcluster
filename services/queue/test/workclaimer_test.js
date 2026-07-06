@@ -5,12 +5,12 @@ import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 import WorkClaimer from '../src/workclaimer.js';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
+  helper.withPulse(skipping);
   helper.withS3(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   const taskDef = () => ({
     taskGroupId: slugid.v4(),
@@ -70,14 +70,16 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       monitor,
       publisher,
       queueService: {
-        pollPendingQueue: (taskQueueId) => () => [{
-          taskId,
-          runId: 0,
-          hintId: 'hint1',
-          release: async () => { },
-          remove: async () => { },
-        }],
-        putClaimMessage: () => { },
+        pollPendingQueue: _taskQueueId => () => [
+          {
+            taskId,
+            runId: 0,
+            hintId: 'hint1',
+            release: async () => {},
+            remove: async () => {},
+          },
+        ],
+        putClaimMessage: () => {},
       },
       claimTimeout: 1000,
       credentials: cfg.taskcluster.credentials,
@@ -107,14 +109,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
       monitor,
       publisher,
       queueService: {
-        pollPendingQueue: (taskQueueId) => () => {
+        pollPendingQueue: _taskQueueId => () => {
           calls++;
           if (calls < 3) {
             throw new Error('error');
           }
           return [];
         },
-        putClaimMessage: () => { },
+        putClaimMessage: () => {},
       },
       claimTimeout: 1000,
       credentials: cfg.taskcluster.credentials,
@@ -125,8 +127,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function (mock, skipping)
 
     const tryCall = async () => {
       try {
-        return await workClaimer.claim('taskQueue/Id', 'workerGroup', 'workerId', 3, new Promise(resolve => setTimeout(resolve, 1000)));
-      } catch (err) {
+        return await workClaimer.claim(
+          'taskQueue/Id',
+          'workerGroup',
+          'workerId',
+          3,
+          new Promise(resolve => setTimeout(resolve, 1000))
+        );
+      } catch {
         return 0;
       }
     };

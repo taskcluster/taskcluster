@@ -1,9 +1,6 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 // Create a sha512 hash
 export default t => {
-  return crypto
-    .createHash('sha512')
-    .update(t, 'utf8')
-    .digest('hex');
+  return crypto.createHash('sha512').update(t, 'utf8').digest('hex');
 };

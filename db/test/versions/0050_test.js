@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import helper from '../helper.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
   helper.dbVersionTest({
@@ -30,7 +30,12 @@ suite(testing.suiteName(), function() {
       // check that the data is as we inserted it (even after migration+downgrade)
       const res = await client.query('select cache_name from cache_purges');
       const got = res.rows.map(({ cache_name }) => cache_name).sort();
-      assert.deepEqual(got, _.range(1, 100).map(i => `cc-${i}`).sort());
+      assert.deepEqual(
+        got,
+        _.range(1, 100)
+          .map(i => `cc-${i}`)
+          .sort()
+      );
 
       // and check the schema
       await helper.assertTableColumn('cache_purges', 'provisioner_id');
@@ -41,14 +46,18 @@ suite(testing.suiteName(), function() {
       // check that the existing all_purge_requests function still works
       const res = await client.query('select * from all_purge_requests(NULL, NULL)');
       const got = res.rows.map(({ cache_name, worker_type }) => `${cache_name} ${worker_type}`).sort();
-      const exp = _.range(1, 100).map(i => `cc-${i} wt-${i}`).sort();
+      const exp = _.range(1, 100)
+        .map(i => `cc-${i} wt-${i}`)
+        .sort();
       assert.deepEqual(got, exp);
     },
     finishedCheck: async client => {
       // check that the new _wpid function works
       const res = await client.query('select * from all_purge_requests_wpid(NULL, NULL)');
       const got = res.rows.map(({ cache_name, worker_pool_id }) => `${cache_name} ${worker_pool_id}`).sort();
-      const exp = _.range(1, 100).map(i => `cc-${i} pp/wt-${i}`).sort();
+      const exp = _.range(1, 100)
+        .map(i => `cc-${i} pp/wt-${i}`)
+        .sort();
       assert.deepEqual(got, exp);
 
       // and check the schema

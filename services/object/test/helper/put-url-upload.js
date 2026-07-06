@@ -1,45 +1,47 @@
 import taskcluster from '@taskcluster/client';
 import request from 'superagent';
-import crypto from 'crypto';
-import assert from 'assert';
+import crypto from 'node:crypto';
+import assert from 'node:assert';
 import helper from '../helper/index.js';
 
-const responseSchema = 'https://tc-testing.example.com/schemas/object/v1/create-upload-response.json#/properties/uploadMethod';
+const responseSchema =
+  'https://tc-testing.example.com/schemas/object/v1/create-upload-response.json#/properties/uploadMethod';
 
 /**
  * Test the put-url upload method on the given backend.  This defines a suite
  * of tests.
  */
-export const testPutUrlUpload = ({
-  mock, skipping,
+export const testPutUrlUpload = (
+  {
+    // optional title suffix
+    title,
 
-  // optional title suffix
-  title,
+    // a prefix for object names, so that concurrent runs do not modify the
+    // same objects in the "real" storage backend
+    prefix,
 
-  // a prefix for object names, so that concurrent runs do not modify the
-  // same objects in the "real" storage backend
-  prefix,
+    // the backend to test; this will be loaded from the loader, so its configuration
+    // should be set up in suiteSetup.
+    backendId,
 
-  // the backend to test; this will be loaded from the loader, so its configuration
-  // should be set up in suiteSetup.
-  backendId,
+    // an async function({name}) to get the data for a given object, returning {
+    // data, contentType, contentDisposition }.
+    getObjectContent,
 
-  // an async function({name}) to get the data for a given object, returning {
-  // data, contentType, contentDisposition }.
-  getObjectContent,
+    // omit testing certain functionality that's not supported on this backend; options:
+    // - htmlContentDisposition -- enforcing content-disposition for text/html objects
+    omit = [],
 
-  // omit testing certain functionality that's not supported on this backend; options:
-  // - htmlContentDisposition -- enforcing content-disposition for text/html objects
-  omit = [],
-
-  // suiteDefinition defines the suite; add suiteSetup, suiteTeardown here, if
-  // necessary, and any extra tests
-}, suiteDefinition) => {
-  suite(`put-url upload method API${title ? `: ${title}` : ''}`, function() {
+    // suiteDefinition defines the suite; add suiteSetup, suiteTeardown here, if
+    // necessary, and any extra tests
+  },
+  suiteDefinition
+) => {
+  suite(`put-url upload method API${title ? `: ${title}` : ''}`, function () {
     (suiteDefinition || (() => {})).call(this);
 
     let backend;
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       const backends = await helper.load('backends');
       backend = backends.get(backendId);
     });
@@ -62,11 +64,11 @@ export const testPutUrlUpload = ({
       return { name, data, res, uploadId, object };
     };
 
-    const performUpload = async ({ name, data, res, uploadId }) => {
+    const performUpload = async ({ data, res }) => {
       assert(new Date(res.putUrl.expires) > new Date());
 
       let req = request.put(res.putUrl.url);
-      for (let [h, v] of Object.entries(res.putUrl.headers)) {
+      for (const [h, v] of Object.entries(res.putUrl.headers)) {
         req = req.set(h, v);
       }
       const putRes = await req.send(data);
@@ -79,7 +81,7 @@ export const testPutUrlUpload = ({
     };
 
     for (const length of [0, 1024]) {
-      test(`upload an object (length=${length})`, async function() {
+      test(`upload an object (length=${length})`, async () => {
         const { name, data, res, object, uploadId } = await makeUpload({ length });
         await performUpload({ name, data, res, uploadId });
         await finishUpload({ name, uploadId, object });
@@ -90,11 +92,11 @@ export const testPutUrlUpload = ({
       });
     }
 
-    test('upload an object with a bad Content-Type', async function() {
+    test('upload an object with a bad Content-Type', async () => {
       const { data, res } = await makeUpload();
 
       let req = request.put(res.putUrl.url);
-      for (let [h, v] of Object.entries(res.putUrl.headers)) {
+      for (const [h, v] of Object.entries(res.putUrl.headers)) {
         req = req.set(h, v);
       }
       req.set('Content-Type', 'some-other/content-type');
@@ -106,7 +108,7 @@ export const testPutUrlUpload = ({
     });
 
     if (!omit.includes('htmlContentDisposition')) {
-      test(`upload of type text/html has attachment disposition`, async function() {
+      test(`upload of type text/html has attachment disposition`, async () => {
         const { name, data, res, object, uploadId } = await makeUpload({ contentType: 'text/html' });
 
         await performUpload({ name, data, res, uploadId });

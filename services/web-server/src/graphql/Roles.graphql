@@ -29,9 +29,9 @@ input RoleInput {
 extend type Query {
   # Get a list of all roles, each role object also includes the list of
   # scopes it expands to.
-  roles(filter: JSON): [Role]
+  roles(searchTerm: String): [Role]
   # List Role IDs
-  listRoleIds(connection: PageConnection, filter: JSON): RolesConnection
+  listRoleIds(connection: PageConnection, searchTerm: String): RolesConnection
   # Get information about a single role, including the set of scopes that the
   # role expands to.
   role(roleId: ID!): Role

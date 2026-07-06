@@ -1,5 +1,5 @@
-import { execSync } from 'child_process';
-import fs from 'fs';
+import { execSync } from 'node:child_process';
+import fs from 'node:fs';
 
 const readmePath = './README.md';
 const certsPath = './certificates.json';
@@ -23,7 +23,7 @@ certificates.forEach(({ filename, url }) => {
     try {
       const fileContent = fs.readFileSync(tempFilename, 'utf8');
       isPEM = fileContent.includes('-----BEGIN CERTIFICATE-----');
-    } catch (e) {
+    } catch {
       isPEM = false;
     }
 
@@ -34,7 +34,7 @@ certificates.forEach(({ filename, url }) => {
       console.log(`Converting ${tempFilename} from DER to PEM format`);
       try {
         execSync(`openssl x509 -inform DER -in "${tempFilename}" -out "${filename}"`);
-      } catch (e) {
+      } catch {
         console.log(`DER conversion failed, trying auto-detection with openssl`);
         execSync(`openssl x509 -in "${tempFilename}" -out "${filename}"`);
       }
@@ -44,7 +44,10 @@ certificates.forEach(({ filename, url }) => {
       throw new Error(`Failed to create PEM file ${filename}`);
     }
 
-    const expiryDate = execSync(`openssl x509 -noout -enddate -in "${filename}"`).toString().trim().replace('notAfter=', '');
+    const expiryDate = execSync(`openssl x509 -noout -enddate -in "${filename}"`)
+      .toString()
+      .trim()
+      .replace('notAfter=', '');
     console.log(`Certificate ${filename} expires on ${expiryDate}`);
     output.push({ filename, url, expiryDate });
 
@@ -69,7 +72,7 @@ output.forEach(cert => {
 if (readmeContent.includes('<!-- CERTIFICATES -->')) {
   readmeContent = readmeContent.replace(/<!-- CERTIFICATES -->[\s\S]*$/, certificatesTable);
 } else {
-  readmeContent += '\n\n## List of downloaded certificates\n\n' + certificatesTable;
+  readmeContent += `\n\n## List of downloaded certificates\n\n${certificatesTable}`;
 }
 
 fs.writeFileSync(readmePath, readmeContent);

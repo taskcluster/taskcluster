@@ -1,7 +1,7 @@
-import fs from 'fs';
-import { promisify } from 'util';
-import { spawn, execFile } from 'child_process';
-import { Transform } from 'stream';
+import fs from 'node:fs';
+import { promisify } from 'node:util';
+import { spawn, execFile } from 'node:child_process';
+import { Transform } from 'node:stream';
 
 const execFileAsync = promisify(execFile);
 
@@ -69,11 +69,11 @@ export const execCommand = async ({
   }
 
   const stream = new Transform({
-    transform: (chunk, encoding, callback) => {
+    transform: (chunk, _encoding, callback) => {
       if (keepAllOutput) {
         output += chunk.toString();
       } else {
-        output = '...\n' + chunk.toString();
+        output = `...\n${chunk.toString()}`;
       }
       callback(null, chunk);
     },
@@ -111,8 +111,7 @@ export const execCommand = async ({
       if (code === 0 || ignoreReturn) {
         resolve(output);
       } else {
-        reject(new Error(`Nonzero exit status ${code}; ` +
-          (logfile ? `see ${logfile} for details` : `\n${output}`)));
+        reject(new Error(`Nonzero exit status ${code}; ${logfile ? `see ${logfile} for details` : `\n${output}`}`));
       }
     });
     cp.once('error', reject);
@@ -122,12 +121,7 @@ export const execCommand = async ({
 /**
  * Run a command from code that is not inside a taskgraph task, inheriting stdio.
  */
-export const execCommandVisible = async ({
-  dir,
-  command,
-  env = process.env,
-  ignoreReturn = false,
-}) => {
+export const execCommandVisible = async ({ dir, command, env = process.env, ignoreReturn = false }) => {
   const cp = spawn(command[0], command.slice(1), {
     cwd: dir,
     env,
@@ -151,12 +145,7 @@ export const execCommandVisible = async ({
 /**
  * Run a command from code that is not inside a taskgraph task, returning stdout.
  */
-export const execCommandOutput = async ({
-  dir,
-  command,
-  env = process.env,
-  ignoreReturn = false,
-}) => {
+export const execCommandOutput = async ({ dir, command, env = process.env, ignoreReturn = false }) => {
   const cp = spawn(command[0], command.slice(1), {
     cwd: dir,
     env,
@@ -187,12 +176,12 @@ export const execCommandOutput = async ({
   });
 };
 
-export const checkExecutableExists = async (executable) => {
+export const checkExecutableExists = async executable => {
   const command = process.platform === 'win32' ? 'where' : 'which';
   try {
     await execFileAsync(command, [executable]);
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 };

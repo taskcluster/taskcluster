@@ -196,7 +196,7 @@ the `extend type Query|Mutation|Subscription` blocks. Refer to the docs on
 +}
 +
  extend type Query {
-   listDenylistAddresses(filter: JSON, connection: PageConnection): NotificationAddressConnection
+   listDenylistAddresses(searchTerm: String, connection: PageConnection): NotificationAddressConnection
 +  # "!" means graphql will enforce that a widgetId is provided, otherwise it won't go through to the resolver.
 +  widgets(widgetId: ID!): Widget
  }
@@ -235,8 +235,8 @@ index 77a966ca4..87e05414e 100644
 +++ b/services/web-server/src/resolvers/Notify.js
 @@ -6,10 +6,17 @@ module.exports = {
    Query: {
-     listDenylistAddresses(parent, { connection, filter }, { loaders }) {
-       return loaders.listDenylistAddresses.load({ connection, filter });
+     listDenylistAddresses(parent, { connection, searchTerm }, { loaders }) {
+       return loaders.listDenylistAddresses.load({ connection, searchTerm });
      },
 +    widgets(parent, { widget }, { loaders }) {
 +      return loaders.widget.load(widget);
@@ -249,7 +249,7 @@ index 23655e845..8e0d4d69b 100644
 --- a/services/web-server/src/loaders/notify.js
 +++ b/services/web-server/src/loaders/notify.js
 @@ -16,8 +16,20 @@ module.exports = ({ notify }, isAuthed, rootUrl, monitor, strategies, req, cfg,
-       items: sift(filter, addresses),
+       items: addresses,
      };
    });
 +  const widget = new DataLoader(widgetIds =>

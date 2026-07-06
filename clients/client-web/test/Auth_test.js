@@ -1,15 +1,7 @@
-import { expect, use } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import { Auth, createTemporaryCredentials, fromNow, request } from '../src';
-import helper from './helper';
+import { Auth, createTemporaryCredentials, fromNow, request } from '../src/index.js';
+import helper from './helper.js';
 
-use(chaiAsPromised);
-
-describe('Auth', function() {
-  helper.withRootUrl();
-
-  this.timeout(30000);
-
+helper.describe('Auth', () => {
   it('should successfully ping', () => {
     const auth = new Auth({
       rootUrl: helper.rootUrl,
@@ -19,9 +11,7 @@ describe('Auth', function() {
       },
     });
 
-    return auth
-      .ping()
-      .then(({ alive }) => expect(alive).to.be.ok);
+    return auth.ping().then(({ alive }) => expect(alive).to.be.ok);
   });
 
   it('should build signed URL', () => {
@@ -33,8 +23,9 @@ describe('Auth', function() {
       },
     });
 
-    expect(auth.buildSignedUrl(auth.client, 'test'))
-      .to.eventually.match(new RegExp(`^${helper.rootUrl}/auth/v1/clients/test\\?bewit`));
+    return expect(auth.buildSignedUrl(auth.client, 'test')).resolves.toMatch(
+      new RegExp(`^${helper.rootUrl}/api/auth/v1/clients/test\\?bewit`)
+    );
   });
 
   it('should request from signed URL', () => {
@@ -46,8 +37,7 @@ describe('Auth', function() {
       },
     });
 
-    return auth.buildSignedUrl(auth.testAuthenticateGet)
-      .then(url => request(url));
+    return auth.buildSignedUrl(auth.testAuthenticateGet).then(url => request(url));
   });
 
   it('should fetch from signed URL with authorized scopes', () => {
@@ -99,9 +89,7 @@ describe('Auth', function() {
         },
       }),
     });
-    return auth
-      .buildSignedUrl(auth.testAuthenticateGet, { expiration: 600 })
-      .then(url => request(url));
+    return auth.buildSignedUrl(auth.testAuthenticateGet, { expiration: 600 }).then(url => request(url));
   });
 
   it('should fetch from signed URL with temporary credentials and authorized scopes', () => {
@@ -142,10 +130,10 @@ describe('Auth', function() {
       .then(url => request(url))
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => {
+        err => {
           expect(err).to.be.an('error');
           expect(err.response.status).to.equal(401);
-        },
+        }
       );
   });
 
@@ -163,10 +151,10 @@ describe('Auth', function() {
       .then(url => request(url))
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => {
+        err => {
           expect(err).to.be.an('error');
           expect(err.response.status).to.equal(403);
-        },
+        }
       );
   });
 
@@ -195,9 +183,7 @@ describe('Auth', function() {
       rootUrl: helper.rootUrl,
     });
 
-    return auth
-      .listClients({ prefix: 'abc' })
-      .then(clients => expect(clients).to.deep.equal({ clients: [] }));
+    return auth.listClients({ prefix: 'abc' }).then(clients => expect(clients).to.deep.equal({ clients: [] }));
   });
 
   it('should fetch using authorized scopes', () => {
@@ -238,7 +224,7 @@ describe('Auth', function() {
       })
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => expect(err).to.be.an('error'),
+        err => expect(err).to.be.an('error')
       );
   });
 
@@ -259,10 +245,10 @@ describe('Auth', function() {
       })
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => {
+        err => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('InsufficientScopes');
-        },
+        }
       );
   });
 
@@ -310,10 +296,10 @@ describe('Auth', function() {
       })
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => {
+        err => {
           expect(err).to.be.an('error');
           expect(err.response.status).to.equal(401);
-        },
+        }
       );
   });
 
@@ -337,10 +323,10 @@ describe('Auth', function() {
       })
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => {
+        err => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('InsufficientScopes');
-        },
+        }
       );
   });
 
@@ -446,10 +432,10 @@ describe('Auth', function() {
       })
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => {
+        err => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('InsufficientScopes');
-        },
+        }
       );
   });
 
@@ -474,10 +460,10 @@ describe('Auth', function() {
       })
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => {
+        err => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('AuthenticationFailed');
-        },
+        }
       );
   });
 
@@ -497,10 +483,10 @@ describe('Auth', function() {
       })
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => {
+        err => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('AuthenticationFailed');
-        },
+        }
       );
   });
 
@@ -520,10 +506,10 @@ describe('Auth', function() {
       })
       .then(
         () => expect.fail('Expected request to fail'),
-        (err) => {
+        err => {
           expect(err).to.be.an('error');
           expect(err.body.code).to.equal('InsufficientScopes');
-        },
+        }
       );
   });
 });

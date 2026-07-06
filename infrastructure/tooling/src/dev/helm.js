@@ -1,25 +1,14 @@
-import os from 'os';
-import path from 'path';
+import os from 'node:os';
+import path from 'node:path';
 import { REPO_ROOT, readRepoYAML, writeRepoFile, execCommand } from '../utils/index.js';
 import { TaskGraph } from 'console-taskgraph';
 
-const resourceTypes = [
-  'cronjob',
-  'deployment',
-  'ingress',
-  'secret',
-  'serviceaccount',
-  'service',
-];
+const resourceTypes = ['cronjob', 'deployment', 'ingress', 'secret', 'serviceaccount', 'service'];
 
 // Resource types whose CRDs may not be installed on a given cluster (e.g. an
 // Ingress-only deployment that hasn't installed the Gateway API CRDs). Deleted
 // in a separate kubectl call so a missing CRD doesn't abort the whole cleanup.
-const optionalResourceTypes = [
-  'gateway',
-  'httproute',
-  'healthcheckpolicy',
-];
+const optionalResourceTypes = ['gateway', 'httproute', 'healthcheckpolicy'];
 
 const dumpFileLocation = path.join(os.tmpdir(), 'taskcluster.k8s.yml');
 
@@ -28,17 +17,27 @@ const actions = [
     title: 'Check dev-config.yml',
     requires: [],
     provides: ['dev-config'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, _utils) => {
       const config = await readRepoYAML('dev-config.yml');
       if (!config.meta?.deploymentPrefix) {
         throw new Error('Must have configured dev-config.yml to deploy.');
       }
 
-      if (config.auth && config.auth.static_clients) {
-        if (config.auth.static_clients.some(({ clientId, scopes }) => clientId.startsWith('static/taskcluster/') && scopes)) {
-          throw new Error('`static/taskcluster/..` clients in auth.static_clients in `dev-config.yml` should not contain scopes');
+      if (config.auth?.static_clients) {
+        if (
+          config.auth.static_clients.some(
+            ({ clientId, scopes }) => clientId.startsWith('static/taskcluster/') && scopes
+          )
+        ) {
+          throw new Error(
+            '`static/taskcluster/..` clients in auth.static_clients in `dev-config.yml` should not contain scopes'
+          );
         }
-        if (config.auth.static_clients.some(({ clientId, scopes }) => !clientId.startsWith('static/taskcluster/') && !scopes)) {
+        if (
+          config.auth.static_clients.some(
+            ({ clientId, scopes }) => !clientId.startsWith('static/taskcluster/') && !scopes
+          )
+        ) {
           throw new Error('non-taskcluster static clients in auth.static_clients in `dev-config.yml` should scopes');
         }
       }
@@ -49,7 +48,7 @@ const actions = [
     title: 'Helm version detection',
     requires: [],
     provides: ['helm-version'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       const res = await execCommand({
         command: ['helm', 'version'],
         dir: REPO_ROOT,
@@ -136,7 +135,7 @@ const actions = [
     title: `Dump kubernetes templates to ${dumpFileLocation}`,
     requires: ['target-templates'],
     provides: ['target-dump-templates'],
-    run: async (requirements, utils) => {
+    run: async (requirements, _utils) => {
       await writeRepoFile(dumpFileLocation, requirements['target-templates']);
       return { 'target-dump-templates': dumpFileLocation };
     },
@@ -159,7 +158,7 @@ const actions = [
     title: 'Delete Your Deployment',
     requires: ['namespace-switch'],
     provides: ['target-delete'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       const coreOutput = await execCommand({
         command: ['kubectl', 'delete', resourceTypes.join(','), '-l', 'app.kubernetes.io/part-of=taskcluster'],
         dir: REPO_ROOT,

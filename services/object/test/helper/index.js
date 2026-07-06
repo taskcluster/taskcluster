@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import loadMain from '../../src/main.js';
 import builder from '../../src/api.js';
@@ -27,7 +27,7 @@ const helper = {
   testPutUrlUpload,
 };
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -36,9 +36,7 @@ testing.withMonitor(helper);
 
 // set up the testing secrets
 helper.secrets = new testing.Secrets({
-  secretName: [
-    'project/taskcluster/testing/taskcluster-object',
-  ],
+  secretName: ['project/taskcluster/testing/taskcluster-object'],
   secrets: {
     aws,
     google,
@@ -61,16 +59,14 @@ const testclients = {
  *  helper.setBackendConfig({ backends, backendMap }) - set and activate the backends config,
  *    or if no args then reset it to the default.
  */
-helper.withBackends = (mock, skipping) => {
+helper.withBackends = skipping => {
   let _backends;
   const defaultBackends = {
     testBackend: { backendType: 'test' },
   };
-  const defaultBackendMap = [
-    { backendId: 'testBackend', when: 'all' },
-  ];
+  const defaultBackendMap = [{ backendId: 'testBackend', when: 'all' }];
 
-  suiteSetup('withBackends', async function() {
+  suiteSetup('withBackends', async () => {
     if (skipping()) {
       return;
     }
@@ -78,12 +74,10 @@ helper.withBackends = (mock, skipping) => {
     load.save();
 
     // add the 'test' backend type only for testing
-    BACKEND_TYPES['test'] = TestBackend;
+    BACKEND_TYPES.test = TestBackend;
 
     await load('cfg');
-    load.cfg('middleware', [
-      { middlewareType: 'test' },
-    ]);
+    load.cfg('middleware', [{ middlewareType: 'test' }]);
     load.cfg('backends', defaultBackends);
     load.cfg('backendMap', defaultBackendMap);
 
@@ -100,47 +94,45 @@ helper.withBackends = (mock, skipping) => {
     };
   });
 
-  setup('withBackends', async function() {
+  setup('withBackends', async () => {
     // reset to default
     await helper.setBackendConfig();
   });
 
-  suiteTeardown('withBackends', async function() {
+  suiteTeardown('withBackends', async () => {
     if (skipping()) {
       return;
     }
 
     load.restore();
-    delete BACKEND_TYPES['test'];
+    delete BACKEND_TYPES.test;
     delete helper.setBackendConfig;
     _backends = null;
   });
 };
 
-helper.withMiddleware = (mock, skipping, config) => {
-  suiteSetup('withMiddleware', async function() {
+helper.withMiddleware = (skipping, config) => {
+  suiteSetup('withMiddleware', async () => {
     if (skipping()) {
       return;
     }
 
     // add the 'test' middleware type only for testing
-    MIDDLEWARE_TYPES['test'] = TestMiddleware;
+    MIDDLEWARE_TYPES.test = TestMiddleware;
 
     await load('cfg');
-    load.cfg('middleware', config || [
-      { middlewareType: 'test' },
-    ]);
+    load.cfg('middleware', config || [{ middlewareType: 'test' }]);
   });
 
-  suiteTeardown('withMiddleware', async function() {
-    delete MIDDLEWARE_TYPES['test'];
+  suiteTeardown('withMiddleware', async () => {
+    delete MIDDLEWARE_TYPES.test;
   });
 };
 
-helper.withServer = (mock, skipping) => {
+helper.withServer = skipping => {
   let webServer;
 
-  suiteSetup('withServer', async function() {
+  suiteSetup('withServer', async () => {
     if (skipping()) {
       return;
     }
@@ -172,7 +164,7 @@ helper.withServer = (mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -188,8 +180,8 @@ helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'object');
 };
 
-helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
+helper.resetTables = () => {
+  setup('reset tables', async () => {
     await testing.resetTables({
       tableNames: ['objects', 'object_hashes'],
     });
@@ -206,7 +198,7 @@ helper.assertSatisfiesSchema = async (data, id) => {
 
   const validator_error = validator(data, id);
   if (validator_error) {
-    assert(false, "validation error:\n" + validator_error);
+    assert(false, `validation error:\n${validator_error}`);
   }
 };
 

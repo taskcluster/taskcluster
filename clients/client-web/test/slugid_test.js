@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { nice, v4 } from '../src';
+import { nice, v4 } from '../src/index.js';
 
 /**
  * `spreader` runs a test against the `generator` function, to check that
@@ -8,7 +7,7 @@ import { nice, v4 } from '../src';
  * string of all possible characters that should appear in that position in the
  * string, at least once in the sample of 64*40 responses from the `generator`
  * function */
-const spreader = (generator) => {
+const spreader = generator => {
   // k records which characters were found at which positions. It has one entry
   // per slugid character, therefore 22 entries. Each entry is an object with
   // a property for each character found, where the value of that property is
@@ -55,8 +54,7 @@ const spreader = (generator) => {
   return actual;
 };
 
-describe('slugs', function() {
-
+describe('slugs', () => {
   it('should spread v4 slugs', () => {
     const charsAll = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'.split('').sort().join('');
     // 16, 17, 18, 19: 0b0100xx
@@ -66,10 +64,28 @@ describe('slugs', function() {
     // 0, 16, 32, 48: 0bxx0000
     const charsF = 'AQgw'.split('').sort().join('');
     const expected = [
-      charsAll, charsAll, charsAll, charsAll, charsAll, charsAll,
-      charsAll, charsAll, charsD, charsAll, charsE, charsAll, charsAll,
-      charsAll, charsAll, charsAll, charsAll, charsAll, charsAll,
-      charsAll, charsAll, charsF,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsD,
+      charsAll,
+      charsE,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsF,
     ];
     const actual = spreader(v4);
 
@@ -87,10 +103,28 @@ describe('slugs', function() {
     // 0, 16, 32, 48: 0bxx0000
     const charsF = 'AQgw'.split('').sort().join('');
     const expected = [
-      charsC, charsAll, charsAll, charsAll, charsAll,
-      charsAll, charsAll, charsAll, charsD, charsAll, charsE, charsAll,
-      charsAll, charsAll, charsAll, charsAll, charsAll, charsAll, charsAll,
-      charsAll, charsAll, charsF,
+      charsC,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsD,
+      charsAll,
+      charsE,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsAll,
+      charsF,
     ];
     const actual = spreader(nice);
 

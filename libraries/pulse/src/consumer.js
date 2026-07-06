@@ -1,6 +1,6 @@
 import debug from 'debug';
 import amqplib from 'amqplib';
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 
 /**
@@ -148,7 +148,8 @@ export class PulseConsumer {
       'queue',
       // for ephemeral queues, generate a new queueName on every connection,
       // as autodelete is not an immediate operation
-      this.ephemeral ? slugid.nice() : this.queueName);
+      this.ephemeral ? slugid.nice() : this.queueName
+    );
     await channel.assertQueue(queueName, {
       exclusive: this.ephemeral,
       durable: true,
@@ -160,7 +161,7 @@ export class PulseConsumer {
       },
     });
 
-    for (let { exchange, routingKeyPattern } of this.bindings) {
+    for (const { exchange, routingKeyPattern } of this.bindings) {
       await channel.bindQueue(queueName, exchange, routingKeyPattern);
     }
 
@@ -190,7 +191,7 @@ export class PulseConsumer {
       // NOTE: channel.consume is not async!  In fact, await'ing it can
       // result in a message arriving before the onConnected callback is
       // invoked.
-      const consumer = channel.consume(queueName, async (msg) => {
+      const consumer = channel.consume(queueName, async msg => {
         // If the consumer is cancelled by RabbitMQ, the message callback will
         // be invoked with null.  This might happen if the queue is deleted, in
         // which case we probably want to reconnect and redeclare everything.
@@ -261,7 +262,7 @@ export class PulseConsumer {
 
   async _handleMessage(msg) {
     // Construct message
-    let message = {
+    const message = {
       payload: JSON.parse(msg.content.toString('utf8')),
       exchange: msg.fields.exchange,
       routingKey: msg.fields.routingKey,
@@ -270,12 +271,11 @@ export class PulseConsumer {
     };
 
     // Find CC'ed routes
-    if (msg.properties && msg.properties.headers &&
-        msg.properties.headers.CC instanceof Array) {
-      message.routes = msg.properties.headers.CC.filter(function(route) {
+    if (msg.properties?.headers && Array.isArray(msg.properties.headers.CC)) {
+      message.routes = msg.properties.headers.CC.filter(route => {
         // Only return the CC'ed routes that starts with "route."
         return /^route\.(.*)$/.test(route);
-      }).map(function(route) {
+      }).map(route => {
         // Remove the "route."
         return /^route\.(.*)$/.exec(route)[1];
       });
@@ -292,11 +292,11 @@ export class PulseConsumer {
     // If we have a routing key reference we can parse the routing key
     if (routingKeyReference) {
       let i, j;
-      let routing = {};
-      let keys = message.routingKey.split('.');
+      const routing = {};
+      const keys = message.routingKey.split('.');
       // first handle non-multi keys from the beginning
       for (i = 0; i < routingKeyReference.length; i++) {
-        let ref = routingKeyReference[i];
+        const ref = routingKeyReference[i];
         if (ref.multipleWords) {
           break;
         }
@@ -306,14 +306,14 @@ export class PulseConsumer {
       if (i < routingKeyReference.length) {
         // then handle non-multi keys from the end
         for (j = routingKeyReference.length - 1; j > i; j--) {
-          let ref = routingKeyReference[j];
+          const ref = routingKeyReference[j];
           if (ref.multipleWords) {
             break;
           }
           routing[ref.name] = keys.pop();
         }
         // Check that we only have one multiWord routing key
-        assert(i === j, 'i != j really shouldn\'t be the case');
+        assert(i === j, "i != j really shouldn't be the case");
         routing[routingKeyReference[i].name] = keys.join('.');
       }
 

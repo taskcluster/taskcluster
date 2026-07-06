@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import url from 'url';
+import url from 'node:url';
 import libUrls from 'taskcluster-lib-urls';
 import typeis from 'type-is';
 import Debug from 'debug';
@@ -37,9 +37,12 @@ const debug = Debug('api:schema');
  */
 export const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceName, entry }) => {
   // convert relative schema references to id's
-  const input = entry.input && !entry.skipInputValidation &&
-    url.resolve(libUrls.schema(rootUrl, serviceName, ''), entry.input);
-  const output = entry.output && entry.output !== 'blob' && !entry.skipOutputValidation &&
+  const input =
+    entry.input && !entry.skipInputValidation && url.resolve(libUrls.schema(rootUrl, serviceName, ''), entry.input);
+  const output =
+    entry.output &&
+    entry.output !== 'blob' &&
+    !entry.skipOutputValidation &&
     url.resolve(libUrls.schema(rootUrl, serviceName, ''), entry.output);
 
   // double-check that the schema exists
@@ -57,18 +60,16 @@ export const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceNa
       if (!typeis(req, 'application/json')) {
         return res.reportError(
           'MalformedPayload',
-          'Payload must be JSON with content-type: application/json ' +
-          'got content-type: {{contentType}}', {
+          'Payload must be JSON with content-type: application/json ' + 'got content-type: {{contentType}}',
+          {
             contentType: req.headers['content-type'] || null,
-          });
+          }
+        );
       }
       const error = validator(req.body, input);
       if (error) {
-        debug('Input schema validation error: ' + error);
-        return res.reportError(
-          'InputValidationError',
-          error,
-          { schema: libUrls.schema(rootUrl, serviceName, input) });
+        debug(`Input schema validation error: ${error}`);
+        return res.reportError('InputValidationError', error, { schema: libUrls.schema(rootUrl, serviceName, input) });
       }
     }
     // Add a reply method sending JSON replies.
@@ -85,9 +86,9 @@ export const validateSchemas = ({ validator, absoluteSchemas, rootUrl, serviceNa
       if (output) {
         const error = validator(json, output);
         if (error) {
-          debug('Output schema validation error: ' + error);
+          debug(`Output schema validation error: ${error}`);
           /** @type {Error & Record<string, any>} */
-          const err = new Error('Output schema validation error: ' + error);
+          const err = new Error(`Output schema validation error: ${error}`);
           err.schema = libUrls.schema(rootUrl, serviceName, output);
           err.url = req.url;
           err.payload = json;

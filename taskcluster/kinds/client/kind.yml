@@ -86,9 +86,7 @@ tasks:
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
         cd clients/client-web &&
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
-        {{ Xvfb :99 -screen 0 640x480x8 -nolisten tcp & }} &&
-        sleep 2 &&
-        CHROME_BIN=firefox DISPLAY=:99 corepack yarn test
+        corepack yarn test
   py:
     description: python{matrix[python]} client tests
     matrix:
@@ -110,7 +108,8 @@ tasks:
         cd clients/client-py &&
         uv sync --only-dev &&
         uv run pytest --cov=taskcluster --cov-report=term-missing -v &&
-        uv run ./lint.sh
+        uv run ruff check &&
+        uv run ruff format --check
   rust:
     description: rust client tests
     worker:

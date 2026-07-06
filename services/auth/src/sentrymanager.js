@@ -2,7 +2,7 @@ import _ from 'lodash';
 import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
 const debug = debugFactory('app:sentry');
-import assert from 'assert';
+import assert from 'node:assert';
 import got from 'got';
 
 class SentryApiClient {
@@ -28,7 +28,8 @@ class SentryApiClient {
       },
       deleteKey: (org, project, key) => {
         return this._delete(
-          `projects/${encodeURIComponent(org)}/${encodeURIComponent(project)}/keys/${encodeURIComponent(key)}/`);
+          `projects/${encodeURIComponent(org)}/${encodeURIComponent(project)}/keys/${encodeURIComponent(key)}/`
+        );
       },
     };
     this.teams = {
@@ -85,17 +86,17 @@ class SentryApiClient {
 
 const pattern = /^ managed \(expires-at:([0-9TZ:.-]+)\)$/;
 const parseKeys = (keys, prefix) => {
-  let results = [];
-  for (let k of keys) {
+  const results = [];
+  for (const k of keys) {
     if (!_.startsWith(k.label, prefix)) {
       continue;
     }
-    let match = pattern.exec(k.label.substring(prefix.length));
+    const match = pattern.exec(k.label.substring(prefix.length));
     if (!match) {
       continue;
     }
-    let expires = new Date(match[1]);
-    if (isNaN(expires)) {
+    const expires = new Date(match[1]);
+    if (Number.isNaN(expires.getTime())) {
       continue;
     }
     results.push({
@@ -108,13 +109,7 @@ const parseKeys = (keys, prefix) => {
 };
 
 const makeSentryManager = options => {
-  const cfgs = [
-    'organization',
-    'hostname',
-    'authToken',
-    'initialTeam',
-    'keyPrefix',
-  ];
+  const cfgs = ['organization', 'hostname', 'authToken', 'initialTeam', 'keyPrefix'];
   if (cfgs.every(c => options[c])) {
     if (!options.sentryClient) {
       options.sentryClient = new SentryApiClient(`https://${options.hostname}`, {
@@ -124,8 +119,7 @@ const makeSentryManager = options => {
     return new SentryManager(options);
   }
   if (cfgs.some(c => options[c])) {
-    throw new Error('If any of the SENTRY_ configuration variables are present, ' +
-                    'all must be present');
+    throw new Error('If any of the SENTRY_ configuration variables are present, ' + 'all must be present');
   }
 
   return new NullSentryManager();
@@ -171,16 +165,12 @@ class SentryManager {
     try {
       keys = await this._sentry.projects.keys(this._organization, project);
     } catch (err) {
-      debug(
-        'Failed to list keys for %s (will create project), err: %s, stack: %s',
-        project, err, err.stack,
-      );
+      debug('Failed to list keys for %s (will create project), err: %s, stack: %s', project, err, err.stack);
       // Ignore error try to create the project, and list keys again.
-      await this._sentry.teams.createProject(
-        this._organization, this._initialTeam, {
-          name: project,
-          slug: project,
-        });
+      await this._sentry.teams.createProject(this._organization, this._initialTeam, {
+        name: project,
+        slug: project,
+      });
       keys = await this._sentry.projects.keys(this._organization, project);
     }
 
@@ -188,11 +178,10 @@ class SentryManager {
     key = _.last(parseKeys(keys, this._keyPrefix)); // last is most recent
     if (!key || key.expires < taskcluster.fromNow('25 hours')) {
       // Create new key that expires in 48 hours
-      let expires = taskcluster.fromNow('48 hours');
-      let k = await this._sentry.projects.createKey(
-        this._organization, project, {
-          name: this._keyPrefix + ` managed (expires-at:${expires.toJSON()})`,
-        });
+      const expires = taskcluster.fromNow('48 hours');
+      const k = await this._sentry.projects.createKey(this._organization, project, {
+        name: `${this._keyPrefix} managed (expires-at:${expires.toJSON()})`,
+      });
       key = {
         id: k.id,
         dsn: k.dsn,
@@ -201,44 +190,47 @@ class SentryManager {
     }
 
     // Save to cache and return
-    return this._projectDSNCache[project] = key;
+    this._projectDSNCache[project] = key;
+    return key;
   }
 
   /** Remove old expired keys, returns number of keys deleted */
   async purgeExpiredKeys(now = new Date()) {
     // Get a list of all projects from this organization
-    let projects = await this._sentry.organizations.projects(this._organization);
+    const projects = await this._sentry.organizations.projects(this._organization);
 
     let deleted = 0;
-    await Promise.all(projects.map(async (p) => {
-      // List all keys for each project
-      let keys = await this._sentry.projects.keys(this._organization, p.slug);
+    await Promise.all(
+      projects.map(async p => {
+        // List all keys for each project
+        const keys = await this._sentry.projects.keys(this._organization, p.slug);
 
-      // Find expired keys
-      let expiredKeys = parseKeys(keys, this._keyPrefix).filter(key => {
-        return key.expires < now;
-      });
+        // Find expired keys
+        const expiredKeys = parseKeys(keys, this._keyPrefix).filter(key => {
+          return key.expires < now;
+        });
 
-      // Delete expired keys
-      await Promise.all(expiredKeys.map(key => {
-        debug('deleting key: %s from project: %s', key.id, p.slug);
-        deleted += 1;
-        return this._sentry.projects.deleteKey(
-          this._organization, p.slug, key.id,
+        // Delete expired keys
+        await Promise.all(
+          expiredKeys.map(key => {
+            debug('deleting key: %s from project: %s', key.id, p.slug);
+            deleted += 1;
+            return this._sentry.projects.deleteKey(this._organization, p.slug, key.id);
+          })
         );
-      }));
-    }));
+      })
+    );
 
     return deleted;
   }
 }
 
 class NullSentryManager {
-  async projectDSN(project) {
+  async projectDSN(_project) {
     return null;
   }
 
-  async purgeExpiredKeys(now) {
+  async purgeExpiredKeys(_now) {
     return 0;
   }
 }

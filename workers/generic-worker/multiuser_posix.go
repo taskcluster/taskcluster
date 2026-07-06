@@ -15,10 +15,10 @@ import (
 	"maps"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v100/tools/d2g"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v100/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v101/tools/d2g"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v101/workers/generic-worker/runtime"
 )
 
 func (task *TaskRun) formatCommand(index int) string {
@@ -82,7 +82,7 @@ func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx co
 	var processCmd *process.Command
 	var err error
 
-	env = append(env, "TERM=hterm-256color")
+	env = append(env, "TERM=xterm-256color")
 	taskDir := task.TaskDir()
 
 	if ctx == nil {

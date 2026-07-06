@@ -1,7 +1,7 @@
 import hawk from 'hawk';
-import assert from 'assert';
+import assert from 'node:assert';
 import scopes from 'taskcluster-lib-scopes';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import { cleanRouteAndParams } from '../utils.js';
 import ScopeExpressionTemplate from '../expressions.js';
 import { ErrorReply } from '../error-reply.js';
@@ -121,26 +121,25 @@ import { ErrorReply } from '../error-reply.js';
  * @returns {APIRequestHandler<TContext>}
  */
 export const remoteAuthentication = ({ signatureValidator, entry }) => {
-  assert(signatureValidator instanceof Function,
-    'Expected signatureValidator to be a function!');
+  assert(signatureValidator instanceof Function, 'Expected signatureValidator to be a function!');
 
   // Returns promise for object on the form:
   //   {status, message, scopes, scheme, hash}
   // scopes, scheme, hash are only present if status isn't auth-failed
   /** @param {APIRequest} req */
-  const authenticate = async (req) => {
+  const authenticate = async req => {
     // Check that we're not using two authentication schemes, we could
     // technically allow two. There are cases where we redirect and it would be
     // smart to let bewit overwrite header authentication.
     // But neither Azure or AWS tolerates two authentication schemes,
     // so this is probably a fair policy for now. We can always allow more.
-    if (req.headers && req.headers.authorization &&
-        req.query && req.query.bewit) {
+    if (req.headers?.authorization && req.query?.bewit) {
       return {
         status: 'auth-failed',
-        message: 'Cannot use two authentication schemes at once ' +
-                  'this request has both bewit in querystring and ' +
-                  '\'authorization\' header',
+        message:
+          'Cannot use two authentication schemes at once ' +
+          'this request has both bewit in querystring and ' +
+          "'authorization' header",
       };
     }
 
@@ -159,27 +158,28 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
     }
 
     // Send input to signatureValidator (auth server or local validator)
-    let result = await Promise.resolve(signatureValidator({
-      method: req.method.toLowerCase(),
-      resource: req.originalUrl,
-      host: host.name,
-      port: parseInt(port, 10),
-      authorization: req.headers.authorization,
-      sourceIp: req.ip,
-    }, { traceId: req.traceId, requestId: req.requestId }));
+    let result = await Promise.resolve(
+      signatureValidator(
+        {
+          method: req.method.toLowerCase(),
+          resource: req.originalUrl,
+          host: host.name,
+          port: parseInt(port, 10),
+          authorization: req.headers.authorization,
+          sourceIp: req.ip,
+        },
+        { traceId: req.traceId, requestId: req.requestId }
+      )
+    );
 
     // Validate request hash if one is provided
-    if (result.status === 'auth-success'
-      && typeof result.hash === 'string' && result.scheme === 'hawk') {
+    if (result.status === 'auth-success' && typeof result.hash === 'string' && result.scheme === 'hawk') {
       const hash = hawk.crypto.calculatePayloadHash(
         Buffer.from(req.text ?? '', 'utf-8'),
         'sha256',
-        req.headers['content-type'],
+        req.headers['content-type']
       );
-      if (!crypto.timingSafeEqual(
-        new Uint8Array(Buffer.from(result.hash)),
-        new Uint8Array(Buffer.from(hash)))
-      ) {
+      if (!crypto.timingSafeEqual(new Uint8Array(Buffer.from(result.hash)), new Uint8Array(Buffer.from(hash)))) {
         // create a fake auth-failed result with the failed hash
         result = {
           status: 'auth-failed',
@@ -187,7 +187,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
             'Invalid payload hash: {{hash}}\n' +
             'Computed payload hash: {{computedHash}}\n' +
             'This happens when your request carries a signed hash of the ' +
-            'payload and the hash doesn\'t match the hash we\'ve computed ' +
+            "payload and the hash doesn't match the hash we've computed " +
             'on the server-side.',
           computedHash: hash,
         };
@@ -221,8 +221,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
     try {
       /** Create method that returns list of scopes the caller has */
       req.scopes = async () => {
-        // This lint can be disabled because authenticate() will always return the same value
-        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
+        result = await (result || authenticate(req));
         if (result.status === 'auth-failed') {
           return [];
         }
@@ -230,17 +229,15 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
       };
 
       req.clientId = async () => {
-        // This lint can be disabled because authenticate() will always return the same value
-        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
+        result = await (result || authenticate(req));
         if (result.status === 'auth-success') {
           return result.clientId || 'unknown-clientId';
         }
-        return 'auth-failed:' + result.status;
+        return `auth-failed:${result.status}`;
       };
 
       req.expires = async () => {
-        // This lint can be disabled because authenticate() will always return the same value
-        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
+        result = await (result || authenticate(req));
         if (result.status === 'auth-success') {
           return new Date(result.expires);
         }
@@ -257,7 +254,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
        * Return true, if successful and if unsuccessful it throws an Error with
        * code = 'AuthenticationFailed'.
        */
-      req.authorize = async (params) => {
+      req.authorize = async params => {
         // Render the scope expression template
         const scopeExpression = scopeTemplate.render(params);
 
@@ -268,8 +265,7 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
           return;
         }
 
-        // This lint can be disabled because authenticate() will always return the same value
-        result = await (result || authenticate(req)); // eslint-disable-line require-atomic-updates
+        result = await (result || authenticate(req));
 
         // If authentication failed
         if (result.status === 'auth-failed') {
@@ -289,25 +285,29 @@ export const remoteAuthentication = ({ signatureValidator, entry }) => {
           const clientId = await req.clientId();
 
           const gotCreds = result.status === 'auth-success';
-          const message = (gotCreds ? [
-            'Client ID ' + clientId + ' does not have sufficient scopes and is missing the following scopes:',
-            '',
-            '```',
-            '{{unsatisfied}}',
-            '```',
-            '',
-            'This request requires the client to satisfy the following scope expression:',
-            '',
-            '```',
-            '{{required}}',
-            '```',
-          ] : [
-            'This request requires Taskcluster credentials that satisfy the following scope expression:',
-            '',
-            '```',
-            '{{required}}',
-            '```',
-          ]).join('\n');
+          const message = (
+            gotCreds
+              ? [
+                  `Client ID ${clientId} does not have sufficient scopes and is missing the following scopes:`,
+                  '',
+                  '```',
+                  '{{unsatisfied}}',
+                  '```',
+                  '',
+                  'This request requires the client to satisfy the following scope expression:',
+                  '',
+                  '```',
+                  '{{required}}',
+                  '```',
+                ]
+              : [
+                  'This request requires Taskcluster credentials that satisfy the following scope expression:',
+                  '',
+                  '```',
+                  '{{required}}',
+                  '```',
+                ]
+          ).join('\n');
           throw new ErrorReply({
             code: 'InsufficientScopes',
             message,

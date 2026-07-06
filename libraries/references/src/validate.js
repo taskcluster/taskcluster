@@ -1,5 +1,5 @@
 import regexEscape from 'regex-escape';
-import { URL } from 'url';
+import { URL } from 'node:url';
 import libUrls from 'taskcluster-lib-urls';
 
 /**
@@ -53,10 +53,14 @@ const recurseJSON = (content, callbacks) => {
   const recurse = (value, path) => {
     if (Array.isArray(value)) {
       callbacks.array(value, path);
-      value.forEach((v, i) => recurse(v, `${path}[${i}]`));
+      value.forEach((v, i) => {
+        recurse(v, `${path}[${i}]`);
+      });
     } else if (typeof value === 'object') {
       callbacks.object(value, path);
-      Object.entries(value).forEach(([k, v]) => recurse(v, `${path}.${k}`));
+      Object.entries(value).forEach(([k, v]) => {
+        recurse(v, `${path}.${k}`);
+      });
     } else {
       callbacks.scalar(value, path);
     }
@@ -82,33 +86,36 @@ const forAllRefs = (content, cb) => {
   }
 };
 
-export const validate = (references) => {
+export const validate = references => {
   const problems = [];
 
   // first check for some basic structural issues that will cause Ajv to
   // be sad..
 
   // (capture group 1 === prefix up to and including service name)
-  const schemaPattern = new RegExp(`(^${regexEscape(references.rootUrl)}\/schemas\/[^\/]*\/).*\\.json#`);
+  const schemaPattern = new RegExp(`(^${regexEscape(references.rootUrl)}/schemas/[^/]*/).*\\.json#`);
 
-  for (let { filename, content } of references.schemas) {
+  for (const { filename, content } of references.schemas) {
     if (!content.$id) {
       problems.push(`schema ${filename} has no $id`);
     } else if (!schemaPattern.test(content.$id)) {
-      problems.push(`schema ${filename} has an invalid $id '${content.$id}' ` +
-        '(expected \'/schemas/<something>/something>.json#\'');
+      problems.push(
+        `schema ${filename} has an invalid $id '${content.$id}' (expected '/schemas/<something>/something>.json#'`
+      );
     }
 
     if (!content.$schema) {
       problems.push(`schema ${filename} has no $schema`);
-    } else if (!content.$schema.startsWith('http://json-schema.org') &&
-      !references.getSchema(content.$schema, { skipValidation: true })) {
+    } else if (
+      !content.$schema.startsWith('http://json-schema.org') &&
+      !references.getSchema(content.$schema, { skipValidation: true })
+    ) {
       problems.push(`schema ${filename} has invalid $schema (must be defined here or be on at json-schema.org)`);
     }
   }
 
   const metadataMetaschema = libUrls.schema(references.rootUrl, 'common', 'metadata-metaschema.json#');
-  for (let { filename, content } of references.references) {
+  for (const { filename, content } of references.references) {
     if (!content.$schema) {
       problems.push(`reference ${filename} has no $schema`);
     } else if (!references.getSchema(content.$schema, { skipValidation: true })) {
@@ -116,8 +123,9 @@ export const validate = (references) => {
     } else {
       const schema = references.getSchema(content.$schema, { skipValidation: true });
       if (schema.$schema !== metadataMetaschema) {
-        problems.push(`reference ${filename} has schema '${content.$schema}' which does not have ` +
-          'the metadata metaschema');
+        problems.push(
+          `reference ${filename} has schema '${content.$schema}' which does not have the metadata metaschema`
+        );
       }
     }
   }
@@ -125,7 +133,7 @@ export const validate = (references) => {
   // if that was OK, check references in all schemas
 
   if (!problems.length) {
-    for (let { filename, content } of references.schemas) {
+    for (const { filename, content } of references.schemas) {
       const idUrl = new URL(content.$id, references.rootUrl);
 
       const match = schemaPattern.exec(content.$id);
@@ -156,7 +164,7 @@ export const validate = (references) => {
   if (!problems.length) {
     const ajv = references.makeAjv({ skipValidation: true });
 
-    for (let { filename, content } of references.schemas) {
+    for (const { filename, content } of references.schemas) {
       try {
         ajv.validateSchema(content);
       } catch (err) {
@@ -167,11 +175,13 @@ export const validate = (references) => {
         ajv
           .errorsText(ajv.errors, { separator: '%%/%%', dataVar: 'schema' })
           .split('%%/%%')
-          .forEach(err => problems.push(`${filename}: ${err}`));
+          .forEach(err => {
+            problems.push(`${filename}: ${err}`);
+          });
       }
     }
 
-    for (let { filename, content } of references.references) {
+    for (const { filename, content } of references.references) {
       try {
         ajv.validate(content.$schema, content);
       } catch (err) {
@@ -182,7 +192,9 @@ export const validate = (references) => {
         ajv
           .errorsText(ajv.errors, { separator: '%%/%%', dataVar: 'reference' })
           .split('%%/%%')
-          .forEach(err => problems.push(`${filename}: ${err}`));
+          .forEach(err => {
+            problems.push(`${filename}: ${err}`);
+          });
       }
     }
   }
@@ -190,7 +202,7 @@ export const validate = (references) => {
   // Check for some common errors in schemas
 
   if (!problems.length) {
-    for (let { filename, content } of references.schemas) {
+    for (const { filename, content } of references.schemas) {
       recurseJSON(content, {
         object: (value, path) => {
           // ignore this for objects named `properties` (as api-reference-v0.yml, for
@@ -225,7 +237,7 @@ export const validate = (references) => {
   if (!problems.length) {
     const metaschemaUrl = libUrls.schema(references.rootUrl, 'common', 'metaschema.json#');
     // check that a schema link is relative to the service
-    for (let { filename, content } of references.references) {
+    for (const { filename, content } of references.references) {
       const checkRelativeSchema = (name, serviceName, schemaName, i) => {
         if (schemaName.match(/^\/|^[a-z]*:|^\.\./)) {
           problems.push(`${filename}: entries[${i}].${name} is not relative to the service`);
@@ -277,7 +289,7 @@ export const validate = (references) => {
   if (!problems.length) {
     const seen = new Set();
 
-    const recurse = (schemaId) => {
+    const recurse = schemaId => {
       // strip a hash path, but keep the hash since $id always has one
       const schemaDoc = schemaId.replace(/#.*$/, '#');
       if (seen.has(schemaDoc)) {
@@ -286,13 +298,13 @@ export const validate = (references) => {
       seen.add(schemaDoc);
       const schema = references.getSchema(schemaId, { skipValidation: true });
 
-      forAllRefs(schema, (ref, path) => {
+      forAllRefs(schema, (ref, _path) => {
         const refId = new URL(ref, schemaId).toString();
         recurse(refId);
       });
     };
 
-    for (let { content } of references.references) {
+    for (const { content } of references.references) {
       const metadata = references.getSchema(content.$schema, { skipValidation: true }).metadata;
       if (metadata.name === 'api') {
         content.entries.forEach(({ input, output }) => {
@@ -317,13 +329,13 @@ export const validate = (references) => {
 
     // allow some un-referenced schemas that may be referenced from documentation or
     // kept for historical purposes
-    for (let { service, schema } of UNREFERENCED_SCHEMAS) {
+    for (const { service, schema } of UNREFERENCED_SCHEMAS) {
       recurse(libUrls.schema(references.rootUrl, service, schema));
     }
 
     // look for schemas that were not seen..
     const commonPrefix = libUrls.schema(references.rootUrl, 'common', '');
-    for (let { content } of references.schemas) {
+    for (const { content } of references.schemas) {
       if (content.$id.startsWith(commonPrefix)) {
         continue;
       }

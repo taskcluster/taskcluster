@@ -47,7 +47,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v101/clients/client-go"
 )
 
 type Secrets tcclient.Client
@@ -188,10 +188,10 @@ func (secrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url
 // List the names of all secrets.
 //
 // By default this end-point will try to return up to 1000 secret names in one
-// request. But it **may return less**, even if more tasks are available.
+// request. But it **may return less**, even if more secrets are available.
 // It may also return a `continuationToken` even though there are no more
 // results. However, you can only be sure to have seen all results if you
-// keep calling `listTaskGroup` with the last `continuationToken` until you
+// keep calling `list` with the last `continuationToken` until you
 // get a result without a `continuationToken`.
 //
 // If you are not interested in listing all the members at once, you may

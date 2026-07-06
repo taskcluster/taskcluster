@@ -1,28 +1,28 @@
 import debugFactory from 'debug';
 const debug = debugFactory('test:claim-work');
-import assert from 'assert';
+import assert from 'node:assert';
 import slugid from 'slugid';
 import taskcluster from '@taskcluster/client';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 import { LEVELS } from '@taskcluster/lib-monitor';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withAmazonIPRanges(mock, skipping);
-  helper.withPollingServices(mock, skipping);
-  helper.withPulse(mock, skipping);
+  helper.withAmazonIPRanges(skipping);
+  helper.withPollingServices(skipping);
+  helper.withPulse(skipping);
   helper.withS3(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   // Generate random task queue id to use for this test
   const taskQueueId = helper.makeTaskQueueId('no-provisioner-extended-extended');
 
-  const makeTask = (retries) => {
+  const makeTask = retries => {
     return {
       taskQueueId,
-      priority: "normal",
+      priority: 'normal',
       retries,
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('30 min'),
@@ -37,7 +37,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   let monitor;
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     monitor = await helper.load('monitor');
   });
 
@@ -51,8 +51,8 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   };
 
   test('createTask , claimWork, claim expires, retried', async () => {
-    let taskId = slugid.v4();
-    let task = makeTask(1);
+    const taskId = slugid.v4();
+    const task = makeTask(1);
 
     await helper.startPollingService('claim-resolver');
 
@@ -64,7 +64,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     monitor.manager.reset(); // clear the first task-pending message
 
     debug('### Claim task');
-    let r1 = await helper.queue.claimWork(taskQueueId, {
+    const r1 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
       tasks: 2,
@@ -75,21 +75,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Wait for claim expiration');
     await testing.poll(
       async () => {
-        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-pending'), {
-          Logger: 'taskcluster.test.claim-resolver',
-          Type: 'task-pending',
-          Fields: { taskId, runId: 1, v: 1 },
-          Severity: LEVELS.notice,
-        });
+        assert.deepEqual(
+          monitor.manager.messages.find(({ Type }) => Type === 'task-pending'),
+          {
+            Logger: 'taskcluster.test.claim-resolver',
+            Type: 'task-pending',
+            Fields: { taskId, runId: 1, v: 1 },
+            Severity: LEVELS.notice,
+          }
+        );
       },
-      100, 250);
+      100,
+      250
+    );
 
     await helper.stopPollingService();
   });
 
   test('createTask , claimWork, claim expires, resolve exception', async () => {
-    let taskId = slugid.v4();
-    let task = makeTask(0);
+    const taskId = slugid.v4();
+    const task = makeTask(0);
 
     await helper.startPollingService('claim-resolver');
 
@@ -101,7 +106,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     monitor.manager.reset(); // clear the first task-pending message
 
     debug('### Claim task');
-    let r1 = await helper.queue.claimWork(taskQueueId, {
+    const r1 = await helper.queue.claimWork(taskQueueId, {
       workerGroup: 'my-worker-group-extended-extended',
       workerId: 'my-worker-extended-extended',
       tasks: 2,
@@ -112,14 +117,19 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     debug('### Wait for claim expiration');
     await testing.poll(
       async () => {
-        assert.deepEqual(monitor.manager.messages.find(({ Type }) => Type === 'task-exception'), {
-          Logger: 'taskcluster.test.claim-resolver',
-          Type: 'task-exception',
-          Fields: { taskId, runId: 0, v: 1 },
-          Severity: LEVELS.notice,
-        });
+        assert.deepEqual(
+          monitor.manager.messages.find(({ Type }) => Type === 'task-exception'),
+          {
+            Logger: 'taskcluster.test.claim-resolver',
+            Type: 'task-exception',
+            Fields: { taskId, runId: 0, v: 1 },
+            Severity: LEVELS.notice,
+          }
+        );
       },
-      100, 250);
+      100,
+      250
+    );
 
     await checkMetricExists('queue_exception_tasks', 'reasonResolved', 'claim-expired');
 

@@ -1,5 +1,5 @@
-import http from 'http';
-import fs from 'fs';
+import http from 'node:http';
+import fs from 'node:fs';
 import _ from 'lodash';
 import sinon from 'sinon';
 import builder from '../src/api.js';
@@ -17,7 +17,7 @@ const helper = {
 };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -32,20 +32,20 @@ helper.secrets = new testing.Secrets({
 
 // Build an http request from a json file with fields describing
 // headers and a body
-helper.jsonHttpRequest = function(jsonFile, options) {
-  let defaultOptions = {
+helper.jsonHttpRequest = (jsonFile, options) => {
+  const defaultOptions = {
     hostname: 'localhost',
     port: 60415,
     path: '/api/github/v1/github',
     method: 'POST',
   };
   options = _.defaultsDeep(options, defaultOptions);
-  let jsonData = JSON.parse(fs.readFileSync(jsonFile));
+  const jsonData = JSON.parse(fs.readFileSync(jsonFile));
   options.headers = jsonData.headers;
 
-  return new Promise(function(accept, reject) {
+  return new Promise((accept, reject) => {
     try {
-      let req = http.request(options, accept);
+      const req = http.request(options, accept);
       req.write(JSON.stringify(jsonData.body));
       req.end();
     } catch (e) {
@@ -58,7 +58,7 @@ helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'github');
 };
 
-helper.withPulse = (mock, skipping) => {
+helper.withPulse = skipping => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-github' });
 };
 
@@ -66,17 +66,17 @@ helper.withPulse = (mock, skipping) => {
  * Set the `github` loader component to a fake version.
  * This is reset before each test.  Call this before withServer.
  */
-helper.withFakeGithub = (mock, skipping) => {
-  suiteSetup(function() {
+helper.withFakeGithub = () => {
+  suiteSetup(() => {
     load.inject('github', fakeGithubAuth());
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(() => {
     load.remove('github');
   });
 
-  setup(async function() {
-    let fakeGithub = await load('github');
+  setup(async () => {
+    const fakeGithub = await load('github');
     fakeGithub.resetStubs();
   });
 };
@@ -84,21 +84,22 @@ helper.withFakeGithub = (mock, skipping) => {
 /**
  * Set the `queueClient` loader component to a fake version.
  */
-helper.withFakeQueue = (mock, skipping) => {
-  const fakeQueueClient = () => new taskcluster.Queue({
-    rootUrl: 'https://tc.example.com',
-    fake: {
-      sealTaskGroup: sinon.stub(),
-      cancelTaskGroup: sinon.stub(),
-      listArtifacts: sinon.stub(),
-    },
-  });
+helper.withFakeQueue = () => {
+  const fakeQueueClient = () =>
+    new taskcluster.Queue({
+      rootUrl: 'https://tc.example.com',
+      fake: {
+        sealTaskGroup: sinon.stub(),
+        cancelTaskGroup: sinon.stub(),
+        listArtifacts: sinon.stub(),
+      },
+    });
 
-  suiteSetup(function() {
+  suiteSetup(() => {
     load.inject('queueClient', fakeQueueClient());
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(() => {
     load.remove('queueClient');
   });
 };
@@ -109,10 +110,10 @@ helper.withFakeQueue = (mock, skipping) => {
  *
  * This also sets up helper.apiClient as a client of the service API.
  */
-helper.withServer = (mock, skipping) => {
+helper.withServer = skipping => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -122,9 +123,12 @@ helper.withServer = (mock, skipping) => {
     load.cfg('taskcluster.clientId', null);
     load.cfg('taskcluster.accessToken', null);
 
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl }
+    );
 
     helper.GithubClient = taskcluster.createClient(builder.reference());
 
@@ -137,7 +141,7 @@ helper.withServer = (mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -149,12 +153,8 @@ helper.withServer = (mock, skipping) => {
   });
 };
 
-helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
-    await testing.resetTables({ tableNames: [
-      'github_builds',
-      'github_checks',
-      'github_integrations',
-    ] });
+helper.resetTables = () => {
+  setup('reset tables', async () => {
+    await testing.resetTables({ tableNames: ['github_builds', 'github_checks', 'github_integrations'] });
   });
 };

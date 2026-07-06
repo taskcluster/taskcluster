@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v100/internal/scopes"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v101/internal/scopes"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/process"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -346,27 +346,33 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 		SkipCompressionExtensions := map[string]bool{
 			".7z":    true,
 			".br":    true,
+			".aab":   true,
+			".apk":   true,
 			".bz2":   true,
 			".deb":   true,
 			".dmg":   true,
 			".flv":   true,
 			".gif":   true,
 			".gz":    true,
+			".jar":   true,
 			".jpeg":  true,
 			".jpg":   true,
 			".lz":    true,
 			".lz4":   true,
 			".mz":    true,
 			".npz":   true,
+			".pkg":   true,
 			".png":   true,
 			".swf":   true,
 			".sz":    true,
 			".tbz":   true,
 			".tgz":   true,
+			".wasm":  true,
 			".webp":  true,
 			".whl":   true, // Python wheel are already zip file
 			".woff":  true,
 			".woff2": true,
+			".xpi":   true,
 			".xz":    true,
 			".zip":   true,
 			".zst":   true,

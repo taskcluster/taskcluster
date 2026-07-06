@@ -1,15 +1,15 @@
 import request from 'superagent';
-import assert from 'assert';
+import assert from 'node:assert';
 import { APIBuilder } from '../src/index.js';
 import helper, { monitor, monitorManager } from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
-import path from 'path';
+import path from 'node:path';
 import SchemaSet from '@taskcluster/lib-validate';
 import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const u = path => libUrls.api(helper.rootUrl, 'test', 'v1', path);
 
   setup(async () => {
@@ -28,187 +28,215 @@ suite(testing.suiteName(), function() {
   });
 
   // Declare a method we can test input with
-  builder.declare({
-    method: 'post',
-    route: '/test-input',
-    name: 'testInputValidate',
-    scopes: null,
-    input: 'test-schema.yml',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, function(req, res) {
-    res.status(200).send('Hello World');
-  });
+  builder.declare(
+    {
+      method: 'post',
+      route: '/test-input',
+      name: 'testInputValidate',
+      scopes: null,
+      input: 'test-schema.yml',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      res.status(200).send('Hello World');
+    }
+  );
 
   // Declare a method we can use to test valid output
-  builder.declare({
-    method: 'get',
-    route: '/test-output',
-    name: 'testInputValidOutputValidate',
-    scopes: null,
-    output: 'test-schema.yml',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, function(req, res) {
-    res.reply({ value: 4 });
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/test-output',
+      name: 'testInputValidOutputValidate',
+      scopes: null,
+      output: 'test-schema.yml',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      res.reply({ value: 4 });
+    }
+  );
 
   // Declare a method we can use to test invalid output
-  builder.declare({
-    method: 'get',
-    route: '/test-invalid-output',
-    name: 'testInputInvalidOutputValidate',
-    scopes: null,
-    output: 'test-schema.yml',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, function(req, res) {
-    res.reply({ value: 12 });
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/test-invalid-output',
+      name: 'testInputInvalidOutputValidate',
+      scopes: null,
+      output: 'test-schema.yml',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      res.reply({ value: 12 });
+    }
+  );
 
   // Declare a method we can test input validation skipping on
-  builder.declare({
-    method: 'post',
-    route: '/test-skip-input-validation',
-    name: 'testInputSkipInputValidation',
-    scopes: null,
-    input: 'test-schema.yml',
-    skipInputValidation: true,
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, function(req, res) {
-    res.status(200).send('Hello World');
-  });
+  builder.declare(
+    {
+      method: 'post',
+      route: '/test-skip-input-validation',
+      name: 'testInputSkipInputValidation',
+      scopes: null,
+      input: 'test-schema.yml',
+      skipInputValidation: true,
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      res.status(200).send('Hello World');
+    }
+  );
 
   // Declare a method we can test output validation skipping on
-  builder.declare({
-    method: 'get',
-    route: '/test-skip-output-validation',
-    name: 'testOutputSkipOutputValidation',
-    scopes: null,
-    output: 'test-schema.yml',
-    skipOutputValidation: true,
-    category: 'API Library',
-    title: 'Test End-Point',
-    description: 'Place we can call to test something',
-  }, function(req, res) {
-    res.reply({ value: 12 });
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/test-skip-output-validation',
+      name: 'testOutputSkipOutputValidation',
+      scopes: null,
+      output: 'test-schema.yml',
+      skipOutputValidation: true,
+      category: 'API Library',
+      title: 'Test End-Point',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      res.reply({ value: 12 });
+    }
+  );
 
   // Declare a method we can test blob output on
-  builder.declare({
-    method: 'get',
-    route: '/test-blob-output',
-    name: 'testBlobOutput',
-    scopes: null,
-    output: 'blob',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, function(req, res) {
-    res.reply({ value: 'Hello World' });
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/test-blob-output',
+      name: 'testBlobOutput',
+      scopes: null,
+      output: 'blob',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      res.reply({ value: 'Hello World' });
+    }
+  );
 
   // Declare a method we can use to test res.reply with empty body
-  builder.declare({
-    method: 'get',
-    route: '/test-res-reply',
-    name: 'testResReplyGet',
-    scopes: null,
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, function(req, res) {
-    res.reply();
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/test-res-reply',
+      name: 'testResReplyGet',
+      scopes: null,
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      res.reply();
+    }
+  );
 
-  builder.declare({
-    method: 'post',
-    route: '/test-res-reply-post',
-    name: 'testResReplyPost',
-    scopes: null,
-    output: 'test-schema.yml',
-    title: 'Test End-Point',
-    category: 'API Library',
-    description: 'Place we can call to test something',
-  }, function(req, res) {
-    res.reply();
-  });
+  builder.declare(
+    {
+      method: 'post',
+      route: '/test-res-reply-post',
+      name: 'testResReplyPost',
+      scopes: null,
+      output: 'test-schema.yml',
+      title: 'Test End-Point',
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (_req, res) => {
+      res.reply();
+    }
+  );
 
-  builder.declare({
-    method: 'get',
-    route: '/test-double-json-send',
-    name: 'testDoubleJsonSend',
-    scopes: null,
-    output: 'test-schema.yml',
-    category: 'API Library',
-    title: 'Test End-Point',
-    description: 'place to call to trigger a double send',
-  }, function(req, res) {
-    res.status(400).json({ error: 'yep' });
-    res.status(200).reply({ value: 1 });
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/test-double-json-send',
+      name: 'testDoubleJsonSend',
+      scopes: null,
+      output: 'test-schema.yml',
+      category: 'API Library',
+      title: 'Test End-Point',
+      description: 'place to call to trigger a double send',
+    },
+    (_req, res) => {
+      res.status(400).json({ error: 'yep' });
+      res.status(200).reply({ value: 1 });
+    }
+  );
 
-  builder.declare({
-    method: 'get',
-    route: '/test-double-error-send',
-    name: 'testDoubleErrorSend',
-    scopes: null,
-    output: 'test-schema.yml',
-    category: 'API Library',
-    title: 'Test End-Point',
-    description: 'place to call to trigger a double send',
-  }, function(req, res) {
-    res.status(400).reply({ value: 1 });
-    res.reportError('InputError', 'uhoh', {});
-  });
+  builder.declare(
+    {
+      method: 'get',
+      route: '/test-double-error-send',
+      name: 'testDoubleErrorSend',
+      scopes: null,
+      output: 'test-schema.yml',
+      category: 'API Library',
+      title: 'Test End-Point',
+      description: 'place to call to trigger a double send',
+    },
+    (_req, res) => {
+      res.status(400).reply({ value: 1 });
+      res.reportError('InputError', 'uhoh', {});
+    }
+  );
 
   // Test valid input
-  test('input (valid)', function() {
+  test('input (valid)', () => {
     const url = u('/test-input');
     return request
       .post(url)
       .send({ value: 5 })
-      .then(function(res) {
+      .then(res => {
         assert(res.ok, 'Request failed');
         assert(res.text === 'Hello World', 'Got wrong value');
       });
   });
 
   // Test invalid input
-  test('input (invalid)', function() {
+  test('input (invalid)', () => {
     const url = u('/test-input');
     return request
       .post(url)
       .send({ value: 11 })
-      .then(res => assert(false, 'should have failed!'))
-      .catch(function(err) {
-        assert(err.status === 400, 'Request wasn\'t rejected');
+      .then(() => assert(false, 'should have failed!'))
+      .catch(err => {
+        assert(err.status === 400, "Request wasn't rejected");
       });
   });
 
   // Test valid output
-  test('output (valid)', function() {
+  test('output (valid)', () => {
     const url = u('/test-output');
-    return request
-      .get(url)
-      .then(function(res) {
-        assert(res.ok, 'Request okay');
-        assert(res.body.value === 4, 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request okay');
+      assert(res.body.value === 4, 'Got wrong value');
+    });
   });
 
   // test invalid output
-  test('output (invalid)', function() {
+  test('output (invalid)', () => {
     const url = u('/test-invalid-output');
     return request
       .get(url)
-      .then(res => assert(false, 'should have failed!'))
-      .catch(function(err) {
+      .then(() => assert(false, 'should have failed!'))
+      .catch(err => {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data.value must be/));
@@ -218,80 +246,75 @@ suite(testing.suiteName(), function() {
   });
 
   // test skipping input validation
-  test('skip input validation', function() {
+  test('skip input validation', () => {
     const url = u('/test-skip-input-validation');
     return request
       .post(url)
       .send({ value: 100 })
-      .then(function(res) {
+      .then(res => {
         assert(res.ok, 'Request failed');
         assert(res.text === 'Hello World', 'Got wrong value');
       });
   });
 
   // test skipping output validation
-  test('skip output validation', function() {
+  test('skip output validation', () => {
     const url = u('/test-skip-output-validation');
-    return request
-      .get(url)
-      .then(function(res) {
-        assert(res.ok, 'Request failed');
-        assert(res.body.value === 12, 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert(res.body.value === 12, 'Got wrong value');
+    });
   });
 
   // test blob output
-  test('blob output', function() {
+  test('blob output', () => {
     const url = u('/test-blob-output');
-    return request
-      .get(url)
-      .then(function(res) {
-        assert(res.ok, 'Request failed');
-        assert(res.body.value === 'Hello World', 'Got wrong value');
-      });
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert(res.body.value === 'Hello World', 'Got wrong value');
+    });
   });
 
-  test('input (correct content-type)', function() {
+  test('input (correct content-type)', () => {
     const url = u('/test-input');
     return request
       .post(url)
       .send(JSON.stringify({ value: 5 }))
       .set('content-type', 'application/json')
-      .then(function(res) {
+      .then(res => {
         assert(res.status === 200, 'Request rejected');
       });
   });
 
-  test('input (wrong content-type)', function() {
+  test('input (wrong content-type)', () => {
     const url = u('/test-input');
     return request
       .post(url)
       .send(JSON.stringify({ value: 5 }))
       .set('content-type', 'text/x-json')
-      .then(res => assert(false, 'should have failed!'))
-      .catch(function(err) {
-        assert(err.status === 400, 'Request wasn\'t rejected');
+      .then(() => assert(false, 'should have failed!'))
+      .catch(err => {
+        assert(err.status === 400, "Request wasn't rejected");
       });
   });
 
   // Test res.reply with empty body for get request
-  test('res reply with empty body get request without output schema', function() {
+  test('res reply with empty body get request without output schema', () => {
     const url = u('/test-res-reply');
-    return request
-      .get(url)
-      .then(function(res) {
-        assert(res.status === 204, 'Got 204 status code with empty body');
-      });
+    return request.get(url).then(res => {
+      assert(res.status === 204, 'Got 204 status code with empty body');
+    });
   });
 
   // Test res.reply with empty body for post request
-  test('res reply with empty body post request with output schema', function() {
+  test('res reply with empty body post request with output schema', () => {
     const url = u('/test-res-reply-post');
     return request
       .post(url)
-      .then(function(res) {
+      .then(_res => {
         assert(false, 'Request validation failed');
-      }).catch(function(err) {
+      })
+      .catch(err => {
         assert.equal(err.status, 500);
         // the HTTP error should not contain details
         assert(!err.toString().match(/data must be object/));
@@ -300,7 +323,7 @@ suite(testing.suiteName(), function() {
       });
   });
 
-  test('nonexistent schemas are caught at setup time', async function() {
+  test('nonexistent schemas are caught at setup time', async () => {
     const builder = new APIBuilder({
       title: 'Test Api',
       description: 'Another test api',
@@ -308,16 +331,19 @@ suite(testing.suiteName(), function() {
       apiVersion: 'v1',
     });
 
-    builder.declare({
-      method: 'post',
-      route: '/test-input',
-      name: 'testInputValidate',
-      scopes: null,
-      input: 'no-such-schema.yml',
-      category: 'API Library',
-      title: 'Test End-Point',
-      description: '..',
-    }, function(req, res) {});
+    builder.declare(
+      {
+        method: 'post',
+        route: '/test-input',
+        name: 'testInputValidate',
+        scopes: null,
+        input: 'no-such-schema.yml',
+        category: 'API Library',
+        title: 'Test End-Point',
+        description: '..',
+      },
+      (_req, _res) => {}
+    );
 
     const schemaset = new SchemaSet({
       serviceName: 'test',

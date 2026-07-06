@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import debugFactory from 'debug';
 const debug = debugFactory('queue-lock');
 
@@ -76,7 +76,9 @@ class QueueLock {
     let autoRelease;
     let alreadyReleased = false;
 
-    const promise = new Promise((resolve) => { resolver = resolve; });
+    const promise = new Promise(resolve => {
+      resolver = resolve;
+    });
     const release = () => {
       if (alreadyReleased) {
         return;

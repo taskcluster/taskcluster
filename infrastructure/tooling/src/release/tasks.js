@@ -1,5 +1,5 @@
 import semver from 'semver';
-import path from 'path';
+import path from 'node:path';
 import { ChangeLog } from '../changelog/index.js';
 
 import {
@@ -29,16 +29,12 @@ import { schema as readSchema } from '@taskcluster/db';
 
 const UPSTREAM_REMOTE = 'git@github.com:taskcluster/taskcluster';
 
-export default ({ tasks, cmdOptions, credentials }) => {
+export default ({ tasks, cmdOptions }) => {
   ensureTask(tasks, {
     title: 'Get Changelog',
-    requires: [
-      'repo-clean',
-    ],
-    provides: [
-      'changelog',
-    ],
-    run: async (requirements, utils) => {
+    requires: ['repo-clean'],
+    provides: ['changelog'],
+    run: async (_requirements, _utils) => {
       const changelog = new ChangeLog();
       await changelog.load();
       return { changelog };
@@ -47,19 +43,15 @@ export default ({ tasks, cmdOptions, credentials }) => {
 
   ensureTask(tasks, {
     title: 'Calculate Next Version',
-    requires: [
-      'changelog',
-    ],
-    provides: [
-      'release-version',
-    ],
-    run: async (requirements, utils) => {
+    requires: ['changelog'],
+    provides: ['release-version'],
+    run: async (requirements, _utils) => {
       const pkgJson = await readRepoJSON('package.json');
       if (!semver.valid(pkgJson.version)) {
         throw new Error(`Version ${pkgJson.version} in package.json is not valid`);
       }
 
-      const level = requirements['changelog'].level();
+      const level = requirements.changelog.level();
 
       return {
         'release-version': semver.inc(pkgJson.version, level),
@@ -70,16 +62,15 @@ export default ({ tasks, cmdOptions, credentials }) => {
   ensureTask(tasks, {
     title: 'Check Repo is Clean',
     requires: [],
-    provides: [
-      'repo-clean',
-    ],
+    provides: ['repo-clean'],
     locks: ['git'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, _utils) => {
       if (await gitIsDirty({ dir: REPO_ROOT })) {
-        throw new Error([
-          'The current git working copy is not clean.  Releases can only be made from a clean',
-          'working copy.',
-        ].join(' '));
+        throw new Error(
+          ['The current git working copy is not clean.  Releases can only be made from a clean', 'working copy.'].join(
+            ' '
+          )
+        );
       }
     },
   });
@@ -87,11 +78,9 @@ export default ({ tasks, cmdOptions, credentials }) => {
   ensureTask(tasks, {
     title: 'Check Repo is Up To Date with Upstream main',
     requires: [],
-    provides: [
-      'repo-up-to-date',
-    ],
+    provides: ['repo-up-to-date'],
     locks: ['git'],
-    run: async (requirements, utils) => {
+    run: async (_requirements, utils) => {
       const { revision: localRevision } = await gitDescribe({ dir: REPO_ROOT, utils });
       const { revision: remoteRevision } = await gitRemoteRev({
         dir: REPO_ROOT,
@@ -100,29 +89,25 @@ export default ({ tasks, cmdOptions, credentials }) => {
         utils,
       });
       if (localRevision !== remoteRevision) {
-        throw new Error([
-          `The current git working copy (${localRevision}) is not up to date with the upstream ` +
-          `repo (${remoteRevision}). Pull the latest changes and try again.`,
-        ].join(' '));
+        throw new Error(
+          [
+            `The current git working copy (${localRevision}) is not up to date with the upstream ` +
+              `repo (${remoteRevision}). Pull the latest changes and try again.`,
+          ].join(' ')
+        );
       }
     },
   });
 
   ensureTask(tasks, {
     title: 'Update Version in Repo',
-    requires: [
-      'release-version',
-      'repo-clean',
-      'repo-up-to-date',
-    ],
-    provides: [
-      'version-updated',
-    ],
+    requires: ['release-version', 'repo-clean', 'repo-up-to-date'],
+    provides: ['version-updated'],
     locks: ['git'],
     run: async (requirements, utils) => {
       const changed = [];
 
-      for (let file of await gitLsFiles({ patterns: ['**/package.json', 'package.json'] })) {
+      for (const file of await gitLsFiles({ patterns: ['**/package.json', 'package.json'] })) {
         utils.status({ message: `Update ${file}` });
         await modifyRepoJSON(file, contents => {
           contents.version = requirements['release-version'];
@@ -140,21 +125,22 @@ export default ({ tasks, cmdOptions, credentials }) => {
 
       const valuesYaml = 'infrastructure/k8s/values.yaml';
       utils.status({ message: `Update ${valuesYaml}` });
-      await modifyRepoFile(valuesYaml, contents =>
-        contents.replace(/dockerImage: .*/, `dockerImage: ${releaseImage}`));
+      await modifyRepoFile(valuesYaml, contents => contents.replace(/dockerImage: .*/, `dockerImage: ${releaseImage}`));
       changed.push(valuesYaml);
 
       const helmchart = 'infrastructure/k8s/Chart.yaml';
       utils.status({ message: `Update ${helmchart}` });
       await modifyRepoFile(helmchart, contents =>
-        contents.replace(/appVersion: .*/, `appVersion: '${requirements['release-version']}'`));
+        contents.replace(/appVersion: .*/, `appVersion: '${requirements['release-version']}'`)
+      );
       changed.push(helmchart);
 
       const pyClientDir = path.join('clients', 'client-py');
       const pyClientPyprojectToml = path.join(pyClientDir, 'pyproject.toml');
       utils.status({ message: `Update ${pyClientPyprojectToml}` });
       await modifyRepoFile(pyClientPyprojectToml, contents =>
-        contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`));
+        contents.replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`)
+      );
       changed.push(pyClientPyprojectToml);
 
       const pyClientUvLock = path.join(pyClientDir, 'uv.lock');
@@ -172,7 +158,11 @@ export default ({ tasks, cmdOptions, credentials }) => {
         await modifyRepoFile(rsclient, contents =>
           contents
             .replace(/^version = ".*"$/m, `version = "${requirements['release-version']}"`)
-            .replace(/^taskcluster = .*$/m, `taskcluster = { version = "${requirements['release-version']}", path = "../client" }`));
+            .replace(
+              /^taskcluster = .*$/m,
+              `taskcluster = { version = "${requirements['release-version']}", path = "../client" }`
+            )
+        );
         changed.push(rsclient);
       }
 
@@ -180,32 +170,41 @@ export default ({ tasks, cmdOptions, credentials }) => {
       utils.status({ message: `Update ${rslock}` });
       await modifyRepoFile(rslock, contents =>
         contents.replace(
-          /^(name = "taskcluster[a-z-]*"\n)version = ".*"$/mg,
-          `$1version = "${requirements['release-version']}"`));
+          /^(name = "taskcluster[a-z-]*"\n)version = ".*"$/gm,
+          `$1version = "${requirements['release-version']}"`
+        )
+      );
       changed.push(rslock);
 
       const shellclient = 'clients/client-shell/cmds/version/version.go';
       utils.status({ message: `Update ${shellclient}` });
       await modifyRepoFile(shellclient, contents =>
-        contents.replace(/VersionNumber = .*/, `VersionNumber = "${requirements['release-version']}"`));
+        contents.replace(/VersionNumber = .*/, `VersionNumber = "${requirements['release-version']}"`)
+      );
       changed.push(shellclient);
 
       const shellreadme = 'clients/client-shell/README.md';
       utils.status({ message: `Update ${shellreadme}` });
       await modifyRepoFile(shellreadme, contents =>
-        contents.replace(/download\/v[0-9.]*\/taskcluster-/g, `download/v${requirements['release-version']}/taskcluster-`));
+        contents.replace(
+          /download\/v[0-9.]*\/taskcluster-/g,
+          `download/v${requirements['release-version']}/taskcluster-`
+        )
+      );
       changed.push(shellreadme);
 
       const installingMdx = 'ui/docs/reference/workers/generic-worker/installing.mdx';
       utils.status({ message: `Update ${installingMdx}` });
       await modifyRepoFile(installingMdx, contents =>
-        contents.replace(/download\/v[0-9.]+\//g, `download/v${requirements['release-version']}/`));
+        contents.replace(/download\/v[0-9.]+\//g, `download/v${requirements['release-version']}/`)
+      );
       changed.push(installingMdx);
 
       const internalVersion = 'internal/version.go';
       utils.status({ message: `Update ${internalVersion}` });
       await modifyRepoFile(internalVersion, contents =>
-        contents.replace(/^(\s*Version\s*=\s*).*/m, `$1"${requirements['release-version']}"`));
+        contents.replace(/^(\s*Version\s*=\s*).*/m, `$1"${requirements['release-version']}"`)
+      );
       changed.push(internalVersion);
 
       // The go libraries require the major version number in their package
@@ -231,31 +230,31 @@ export default ({ tasks, cmdOptions, credentials }) => {
         'workers/generic-worker/**.sh',
         'workers/generic-worker/**.cmd',
       ];
-      for (let file of await gitLsFiles({ patterns: goFiles })) {
+      for (const file of await gitLsFiles({ patterns: goFiles })) {
         await modifyRepoFile(file, contents =>
-          contents.replace(/(github.com\/taskcluster\/taskcluster\/v)\d+/g, `$1${major}`));
+          contents.replace(/(github.com\/taskcluster\/taskcluster\/v)\d+/g, `$1${major}`)
+        );
         changed.push(file);
       }
 
       utils.status({ message: 'Update Dockerfile' });
-      await modifyRepoFile('Dockerfile',
-        contents => contents.replace(
-          /\\"version\\":\s*\\"[0-9.]*/gm,
-          `\\"version\\": \\"${requirements['release-version']}`));
+      await modifyRepoFile('Dockerfile', contents =>
+        contents.replace(/\\"version\\":\s*\\"[0-9.]*/gm, `\\"version\\": \\"${requirements['release-version']}`)
+      );
       changed.push('Dockerfile');
 
       utils.status({ message: 'Update generic-worker.Dockerfile' });
-      await modifyRepoFile('generic-worker.Dockerfile',
-        contents => contents.replace(
-          /\\"version\\":\s*\\"[0-9.]*/gm,
-          `\\"version\\": \\"${requirements['release-version']}`));
+      await modifyRepoFile('generic-worker.Dockerfile', contents =>
+        contents.replace(/\\"version\\":\s*\\"[0-9.]*/gm, `\\"version\\": \\"${requirements['release-version']}`)
+      );
       changed.push('generic-worker.Dockerfile');
 
       const dockerEnv = '.env';
       utils.status({ message: `Update ${dockerEnv}` });
       await modifyRepoFile(dockerEnv, contents =>
-        contents.replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage)
-          .replace(/taskcluster\/generic-worker:v[0-9.]*/g, releaseImageGenericWorker),
+        contents
+          .replace(/taskcluster\/taskcluster:v[0-9.]*/g, releaseImage)
+          .replace(/taskcluster\/generic-worker:v[0-9.]*/g, releaseImageGenericWorker)
       );
       changed.push(dockerEnv);
 
@@ -265,24 +264,16 @@ export default ({ tasks, cmdOptions, credentials }) => {
 
   ensureTask(tasks, {
     title: 'Update DB Release Mapping',
-    requires: [
-      'release-version',
-      'repo-clean',
-      'repo-up-to-date',
-    ],
-    provides: [
-      'db-releases',
-      'db-releases-txt',
-    ],
-    run: async (requirements, utils) => {
+    requires: ['release-version', 'repo-clean', 'repo-up-to-date'],
+    provides: ['db-releases', 'db-releases-txt'],
+    run: async (requirements, _utils) => {
       const schema = await readSchema();
       const tcVersion = `v${requirements['release-version']}`;
       const dbVersion = schema.latestVersion().version;
       const releasesFile = path.join('db', 'releases.txt');
 
       // append this TC release version and DB version to the list of releases
-      await modifyRepoFile(releasesFile,
-        content => content.trim() + `\n${tcVersion}: ${dbVersion}\n`);
+      await modifyRepoFile(releasesFile, content => `${content.trim()}\n${tcVersion}: ${dbVersion}\n`);
 
       return {
         // load the whole txt file into `db-releases`
@@ -294,16 +285,9 @@ export default ({ tasks, cmdOptions, credentials }) => {
 
   ensureTask(tasks, {
     title: 'Update DB Version README',
-    requires: [
-      'release-version',
-      'repo-clean',
-      'repo-up-to-date',
-      'db-releases',
-    ],
-    provides: [
-      'db-version-updated',
-    ],
-    run: async (requirements, utils) => {
+    requires: ['release-version', 'repo-clean', 'repo-up-to-date', 'db-releases'],
+    provides: ['db-version-updated'],
+    run: async (requirements, _utils) => {
       const schema = await readSchema();
 
       // then, regenerate the versions reference
@@ -318,16 +302,9 @@ export default ({ tasks, cmdOptions, credentials }) => {
 
   ensureTask(tasks, {
     title: 'Update DB Functions with new version',
-    requires: [
-      'release-version',
-      'repo-clean',
-      'repo-up-to-date',
-      'db-releases',
-    ],
-    provides: [
-      'db-fns-updated',
-    ],
-    run: async (requirements, utils) => {
+    requires: ['release-version', 'repo-clean', 'repo-up-to-date', 'db-releases'],
+    provides: ['db-fns-updated'],
+    run: async (requirements, _utils) => {
       const schema = await readSchema();
 
       // then, regenerate the versions reference
@@ -343,16 +320,9 @@ export default ({ tasks, cmdOptions, credentials }) => {
 
   ensureTask(tasks, {
     title: 'Update Changelog',
-    requires: [
-      'changelog',
-      'release-version',
-      'repo-clean',
-      'repo-up-to-date',
-    ],
-    provides: [
-      'changed-files',
-    ],
-    run: async (requirements, utils) => {
+    requires: ['changelog', 'release-version', 'repo-clean', 'repo-up-to-date'],
+    provides: ['changed-files'],
+    run: async (requirements, _utils) => {
       const changed = [];
 
       const marker = '<!-- NEXT RELEASE HERE -->\n';
@@ -364,15 +334,17 @@ export default ({ tasks, cmdOptions, credentials }) => {
         throw new Error('CHANGELOG.md does not contain the appropriate marker');
       }
 
-      await writeRepoFile('CHANGELOG.md',
+      await writeRepoFile(
+        'CHANGELOG.md',
         oldCL.slice(0, breakpoint) +
           `\n## v${requirements['release-version']}\n\n` +
-          (await requirements['changelog'].format()) +
+          (await requirements.changelog.format()) +
           '\n' +
-          oldCL.slice(breakpoint));
+          oldCL.slice(breakpoint)
+      );
       changed.push('CHANGELOG.md');
 
-      for (let filename of requirements['changelog'].filenames()) {
+      for (const filename of requirements.changelog.filenames()) {
         await removeRepoFile(filename);
         changed.push(filename);
       }
@@ -391,9 +363,7 @@ export default ({ tasks, cmdOptions, credentials }) => {
       'release-version',
       'changed-files',
     ],
-    provides: [
-      'updates-committed',
-    ],
+    provides: ['updates-committed'],
     run: async (requirements, utils) => {
       const files = []
         .concat(requirements['db-releases-txt'])
@@ -413,14 +383,8 @@ export default ({ tasks, cmdOptions, credentials }) => {
 
   ensureTask(tasks, {
     title: 'Tag Repo',
-    requires: [
-      'updates-committed',
-      'release-version',
-    ],
-    provides: [
-      'build-can-start',
-      'repo-tagged',
-    ],
+    requires: ['updates-committed', 'release-version'],
+    provides: ['build-can-start', 'repo-tagged'],
     run: async (requirements, utils) => {
       const tag = `v${requirements['release-version']}`;
       await gitTag({
@@ -439,12 +403,8 @@ export default ({ tasks, cmdOptions, credentials }) => {
 
   ensureTask(tasks, {
     title: 'Push Tag',
-    requires: [
-      'repo-tagged',
-    ],
-    provides: [
-      'target-release',
-    ],
+    requires: ['repo-tagged'],
+    provides: ['target-release'],
     run: async (requirements, utils) => {
       if (!cmdOptions.push) {
         return utils.skip({});
@@ -462,12 +422,8 @@ export default ({ tasks, cmdOptions, credentials }) => {
 
   ensureTask(tasks, {
     title: 'Push Staging Release',
-    requires: [
-      'release-version',
-    ],
-    provides: [
-      'target-staging-release',
-    ],
+    requires: ['release-version'],
+    provides: ['target-staging-release'],
     run: async (requirements, utils) => {
       const version = requirements['release-version'];
       await gitPush({

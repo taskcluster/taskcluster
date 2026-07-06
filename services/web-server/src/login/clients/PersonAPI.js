@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import request from 'superagent';
 import Debug from 'debug';
 
@@ -31,9 +31,7 @@ export default class PersonAPI {
   }
 
   async getProfileFromUUID(uuid) {
-    const { body: profile } = await request
-      .get(`${baseUrl}/user/uuid/${uuid}`)
-      .set('Authorization', this.accessToken);
+    const { body: profile } = await request.get(`${baseUrl}/user/uuid/${uuid}`).set('Authorization', this.accessToken);
 
     if (!profile) {
       debug(`profile for uuid ${uuid} not found`);

@@ -1,4 +1,4 @@
-import readline from 'readline/promises';
+import readline from 'node:readline/promises';
 import {
   execCommandOutput,
   execCommandVisible,
@@ -32,10 +32,11 @@ const run = async (command, args, { dryRun = false, ignoreReturn = false } = {})
   });
 };
 
-const commandOutput = async (command, args) => await execCommandOutput({
-  dir: REPO_ROOT,
-  command: [command, ...args],
-});
+const commandOutput = async (command, args) =>
+  await execCommandOutput({
+    dir: REPO_ROOT,
+    command: [command, ...args],
+  });
 
 const fetchJSON = async url => {
   const res = await fetch(url);
@@ -55,12 +56,13 @@ const normalizeVersion = ({ version, label, prefix = '', stripPrefix = /^v/ }) =
 
 export const normalizeNodeVersion = version => normalizeVersion({ version, label: 'Node.js' });
 
-export const normalizeGoVersion = version => normalizeVersion({
-  version,
-  label: 'Go',
-  prefix: 'go',
-  stripPrefix: /^go/,
-});
+export const normalizeGoVersion = version =>
+  normalizeVersion({
+    version,
+    label: 'Go',
+    prefix: 'go',
+    stripPrefix: /^go/,
+  });
 
 export const normalizeToolVersion = version => {
   version = version.replace(/^v/, '');
@@ -75,9 +77,7 @@ const runtimeChangelogHeader = 'audience: general\nlevel: patch\n---\n';
 export const nodeChangelogBody = target => `${runtimeChangelogHeader}Upgrades to Node.js v${target}.\n`;
 
 export const goChangelogBody = ({ targetGo, targetGolangciLint, golangciLintChanged }) => {
-  const golangciLintSuffix = golangciLintChanged ?
-    ` and golangci-lint v${targetGolangciLint}` :
-    '';
+  const golangciLintSuffix = golangciLintChanged ? ` and golangci-lint v${targetGolangciLint}` : '';
 
   return `${runtimeChangelogHeader}Upgrades to ${targetGo}${golangciLintSuffix}.\n\nRelease notes [here](https://go.dev/doc/devel/release#${targetGo}).\n`;
 };
@@ -216,7 +216,9 @@ const ensureGoVersion = async expected => {
   const actual = match[1];
   if (actual !== expected) {
     const goPath = (await commandOutput('which', ['go'])).trim();
-    throw new Error(`Found ${actual} at ${goPath}. Expected ${expected} after 'gvm use ${expected}'. The gvm install for ${expected} may be stale; run 'gvm uninstall ${expected}' and rerun this script.`);
+    throw new Error(
+      `Found ${actual} at ${goPath}. Expected ${expected} after 'gvm use ${expected}'. The gvm install for ${expected} may be stale; run 'gvm uninstall ${expected}' and rerun this script.`
+    );
   }
 };
 
@@ -312,9 +314,8 @@ export const prepareGoShell = async options => {
 
 export const applyGo = async options => {
   const targetGo = normalizeGoVersion(options.targetGo);
-  const targetGolangciLint = options.targetGolangciLint === 'skip' ?
-    'skip' :
-    normalizeToolVersion(options.targetGolangciLint);
+  const targetGolangciLint =
+    options.targetGolangciLint === 'skip' ? 'skip' : normalizeToolVersion(options.targetGolangciLint);
   const dryRun = Boolean(options.dryRun);
   const goChanged = Boolean(options.goChanged);
   const golangciLintChanged = Boolean(options.golangciLintChanged);

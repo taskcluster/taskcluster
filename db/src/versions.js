@@ -1,12 +1,12 @@
-import fs from 'fs';
-import path from 'path';
-import child_process from 'child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import child_process from 'node:child_process';
 import yaml from 'js-yaml';
 
 const dbDir = new URL('..', import.meta.url).pathname;
 
-const filePath = /** @param {string} file */(file) => path.join(dbDir, 'versions', file);
-const testPath = /** @param {string} file */(file) => path.join(dbDir, 'test/versions', file);
+const filePath = /** @param {string} file */ file => path.join(dbDir, 'versions', file);
+const testPath = /** @param {string} file */ file => path.join(dbDir, 'test/versions', file);
 
 /**
  * @param {string[]} command
@@ -33,7 +33,7 @@ const run = async command => {
  * @param {number|string} fromVersion
  * @param {number|string} toVersion
  * @param {Partial<{ runGit: boolean }>} opts
-*/
+ */
 export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
   const options = {
     runGit: true,
@@ -54,24 +54,24 @@ export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
   let versionContent = fs.readFileSync(fromVersionFile, 'utf8');
   const version = yaml.load(versionContent);
 
-  versionContent = versionContent.replace(/^version: \d+/, `version: ${parseInt(toVersion)}`);
+  versionContent = versionContent.replace(/^version: \d+/, `version: ${parseInt(toVersion, 10)}`);
 
   if (version.migrationScript && !version.migrationScript.includes('\n')) {
     const newMigrationScript = version.migrationScript.replace(fromVersion, toVersion);
     console.log(newMigrationScript);
-    renames.push([
-      filePath(`${version.migrationScript}`),
-      filePath(`${newMigrationScript}`),
-    ]);
-    versionContent = versionContent.replace(`migrationScript: ${version.migrationScript}`, `migrationScript: ${newMigrationScript}`);
+    renames.push([filePath(`${version.migrationScript}`), filePath(`${newMigrationScript}`)]);
+    versionContent = versionContent.replace(
+      `migrationScript: ${version.migrationScript}`,
+      `migrationScript: ${newMigrationScript}`
+    );
   }
   if (version.downgradeScript && !version.downgradeScript.includes('\n')) {
     const newDowngradeScript = version.downgradeScript.replace(fromVersion, toVersion);
-    renames.push([
-      filePath(`${version.downgradeScript}`),
-      filePath(`${newDowngradeScript}`),
-    ]);
-    versionContent = versionContent.replace(`downgradeScript: ${version.downgradeScript}`, `downgradeScript: ${newDowngradeScript}`);
+    renames.push([filePath(`${version.downgradeScript}`), filePath(`${newDowngradeScript}`)]);
+    versionContent = versionContent.replace(
+      `downgradeScript: ${version.downgradeScript}`,
+      `downgradeScript: ${newDowngradeScript}`
+    );
   }
 
   const fromTestFile = testPath(`${fromVersion}_test.js`);
@@ -79,7 +79,7 @@ export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
     renames.push([fromTestFile, fromTestFile.replace(fromVersion, toVersion)]);
   }
 
-  for (let [s, d] of renames) {
+  for (const [s, d] of renames) {
     console.log(`${s} -> ${d}`);
     if (options.runGit) {
       await run(['git', 'mv', s, d]);
@@ -97,7 +97,6 @@ export const renumberVersions = async (fromVersion, toVersion, opts = {}) => {
   } catch (err) {
     throw new Error(`Cannot write file ${toVersionFile}: ${err}}`);
   }
-
 };
 
 /**
@@ -130,9 +129,8 @@ methods:
 
 /**
  * test for new migration
- * @param {number} version
  */
-const testTemplate = version => `import testing from '@taskcluster/lib-testing';
+const testTemplate = () => `import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), function() {
   // add tests if necessary
@@ -145,8 +143,12 @@ suite(testing.suiteName(), function() {
 export const newVersion = async (options = { runGit: true }) => {
   // find latest version
   const versions = fs.readdirSync(filePath(''));
-  const latestVersion = versions.filter(name => name.endsWith('.yml')).sort().pop()?.replace(/\.yml$/, '');
-  const nextVersion = parseInt(latestVersion || '0') + 1;
+  const latestVersion = versions
+    .filter(name => name.endsWith('.yml'))
+    .sort()
+    .pop()
+    ?.replace(/\.yml$/, '');
+  const nextVersion = parseInt(latestVersion || '0', 10) + 1;
   const newVersion = nextVersion.toString().padStart(4, '0');
 
   const newVersionFile = filePath(`${newVersion}.yml`);
@@ -164,7 +166,7 @@ export const newVersion = async (options = { runGit: true }) => {
 
   try {
     const fd = fs.openSync(newTestFile, 'wx');
-    fs.writeFileSync(fd, testTemplate(nextVersion), 'utf8');
+    fs.writeFileSync(fd, testTemplate(), 'utf8');
     fs.closeSync(fd);
     console.log(`${newVersion}_test.js written`);
   } catch (err) {

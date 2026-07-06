@@ -13,7 +13,7 @@ const makeRetryCfg = ({ retries, delayFactor, randomizationFactor, maxDelay }) =
 });
 
 const s3 = async ({ url, streamFactory, retryCfg }) => {
-  return await retry(retryCfg, async (retriableError, attempt) => {
+  return await retry(retryCfg, async retriableError => {
     let contentType = 'application/binary';
     try {
       const src = got.stream(url, { retry: { limit: 0 } });
@@ -38,7 +38,7 @@ const getUrl = async ({ object, name, resp, streamFactory, retryCfg }) => {
   let hashStream;
   let contentType = 'application/binary';
 
-  await retry(retryCfg, async (retriableError, attempt) => {
+  await retry(retryCfg, async retriableError => {
     // renew the download URL if necessary (note that we assume the object-sevice
     // credentials are good for long enough)
     if (responseUsed && new Date(resp.expires) < new Date()) {
@@ -78,7 +78,7 @@ const getUrl = async ({ object, name, resp, streamFactory, retryCfg }) => {
 // "acceptable" hash algorithm.  Throws an exception on verification failure.
 const verifyHashes = (observedHashes, expectedHashes) => {
   let someValidAcceptableHash = false;
-  for (let algo of Object.keys(expectedHashes)) {
+  for (const algo of Object.keys(expectedHashes)) {
     const computed = observedHashes[algo];
     if (!computed) {
       // ignore unknown hash algorithms
@@ -94,12 +94,19 @@ const verifyHashes = (observedHashes, expectedHashes) => {
   }
 
   if (!someValidAcceptableHash) {
-    throw new Error("No acceptable hash algorithm found");
+    throw new Error('No acceptable hash algorithm found');
   }
 };
 
-export const download = async ({ name, object, streamFactory,
-  retries, delayFactor, randomizationFactor, maxDelay }) => {
+export const download = async ({
+  name,
+  object,
+  streamFactory,
+  retries,
+  delayFactor,
+  randomizationFactor,
+  maxDelay,
+}) => {
   const retryCfg = makeRetryCfg({ retries, delayFactor, randomizationFactor, maxDelay });
 
   const acceptDownloadMethods = {
@@ -111,24 +118,34 @@ export const download = async ({ name, object, streamFactory,
   if (resp.method === 'getUrl') {
     return await getUrl({ object, name, resp, streamFactory, retryCfg });
   } else {
-    throw new Error("Could not negotiate a download method");
+    throw new Error('Could not negotiate a download method');
   }
 };
 
 export const downloadArtifact = async ({
-  taskId, runId, name, queue, streamFactory, retries, delayFactor, randomizationFactor, maxDelay,
+  taskId,
+  runId,
+  name,
+  queue,
+  streamFactory,
+  retries,
+  delayFactor,
+  randomizationFactor,
+  maxDelay,
 }) => {
   const retryCfg = makeRetryCfg({ retries, delayFactor, randomizationFactor, maxDelay });
 
-  let artifact = await (runId === undefined ? queue.latestArtifact(taskId, name) : queue.artifact(taskId, runId, name));
+  const artifact = await (runId === undefined
+    ? queue.latestArtifact(taskId, name)
+    : queue.artifact(taskId, runId, name));
 
   switch (artifact.storageType) {
-    case "reference":
-    case "s3": {
+    case 'reference':
+    case 's3': {
       return await s3({ url: artifact.url, streamFactory, retryCfg });
     }
 
-    case "object": {
+    case 'object': {
       const object = new clients.Object({
         rootUrl: queue._options._trueRootUrl,
         credentials: artifact.credentials,
@@ -136,7 +153,7 @@ export const downloadArtifact = async ({
       return await download({ name: artifact.name, object, streamFactory, ...retryCfg });
     }
 
-    case "error": {
+    case 'error': {
       const err = new Error(artifact.message);
       err.reason = artifact.reason;
       throw err;

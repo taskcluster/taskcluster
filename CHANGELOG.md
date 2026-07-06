@@ -3,6 +3,230 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v101.0.0
+
+### ADMINS
+
+▶ [minor] [#8815](https://github.com/taskcluster/taskcluster/issues/8815)
+The worker-manager worker scanner can now check workers with bounded concurrency instead of strictly one at a time.
+It now checks up to 2 workers at once by default; set the `WORKER_SCANNER_CONCURRENCY` environment variable to tune this.
+The per-provider CloudAPI rate limiter still bounds the actual cloud API call rate, so this only controls how much of that rate budget
+each scan loop uses. Applies to both the Azure scanner and the GCP/AWS scanner.
+
+### USERS
+
+▶ [MAJOR]
+Drop support for `application/graphql` as the request content type on
+`/graphql`. Use `application/json` instead as is specified in the graphql over
+http spec.
+
+▶ [minor] [#8660](https://github.com/taskcluster/taskcluster/issues/8660)
+Relax the required node version for `taskcluster-client` from `24.17.0` to `^24`
+
+▶ [patch] [#8009](https://github.com/taskcluster/taskcluster/issues/8009)
+Fixed a bug where the github status API was marked resolved as `success` before any re-ran tasks were resolved
+
+▶ [patch] [#4585](https://github.com/taskcluster/taskcluster/issues/4585)
+Generic worker interactive shells now set `TERM` to `xterm-256color` instead of
+`hterm-256color` which fixes some whitespace quirks on copy
+
+▶ [patch] [#7773](https://github.com/taskcluster/taskcluster/issues/7773)
+The github service will now respect secondary rate limits and retry those
+requests instead of just commenting that they failed.
+
+### DEVELOPERS
+
+▶ [MAJOR]
+The `@taskcluster/client-web` package is now published as a native ES module.
+Any consumer that was importing the package via CommonJS `require()` must now
+import it as an ES module.
+
+▶ [patch] [#4959](https://github.com/taskcluster/taskcluster/issues/4959)
+Removed the outdated `Makefile` and the `lint.sh`/`test.sh` helper scripts in
+`client-py`. Call `uv` directly instead: `uv run pytest` to test, `uv run
+ruff check` to lint and `uv run ruff format` to format
+
+### OTHER
+
+▶ Additional change not described here: [#8761](https://github.com/taskcluster/taskcluster/issues/8761).
+
+### Automated Package Updates
+
+<details>
+<summary>12 Dependabot updates</summary>
+
+* build(deps-dev): bump ruff (eaabd28637)
+* build(deps): bump the gh-actions-deps group with 2 updates (9a4ac502ca)
+* build(deps): bump the go-deps group with 2 updates (32a49d6b5e)
+* build(deps): bump got in /clients/client in the client-node-deps group (2f68343962)
+* build(deps): bump github.com/sigstore/timestamp-authority/v2 (36ec287715)
+* build(deps): bump the node-deps group across 1 directory with 18 updates (11958fb028)
+* build(deps): bump js-yaml from 4.2.0 to 4.3.0 (367f547b61)
+* build(deps): bump js-yaml from 4.1.1 to 4.3.0 in /clients/client (0ad66d1017)
+* build(deps): bump js-yaml from 4.2.0 to 4.3.0 in /ui (7a9e3763a7)
+* build(deps): bump actions/checkout from 6.0.2 to 7.0.0 (7311e7a88d)
+* build(deps): bump github.com/sigstore/rekor from 1.5.1 to 1.5.2 (909829dc24)
+* build(deps): bump nodemailer from 8.0.9 to 9.0.1 (2b2ffc5b8a)
+
+</details>
+
+## v100.5.0
+
+### GENERAL
+
+▶ [patch]
+Bump node version to 24.17.0 security release.
+
+### DEPLOYERS
+
+▶ [minor] [#8161](https://github.com/taskcluster/taskcluster/issues/8161)
+The Azure provider now detects if resources will be cascade-deleted with the VM (`deleteOption: 'Delete'`).
+When they provably cascade, deprovisioning skips the per-resource GET/delete walk and just calls VM delete + 404 confirm,
+cutting the redundant Azure API calls.
+Detection is best-effort and fails open: any uncertainty (multi-NIC/IP, `Detach`, missing fields, probe error/timeout, or
+tracked resources that are not VM-owned) falls back to the existing resource-by-resource deletion.
+New log type: `azure-teardown-mode` and `worker_manager_azure_teardown_total` metric record whether each teardown used the fast or slow path.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#6561](https://github.com/taskcluster/taskcluster/issues/6561)
+On Windows, generic-worker now transfers ownership of mounts in addition to
+giving the task user full control.
+
+### USERS
+
+▶ [patch]
+Prevent a worker preemption to be reported twice for the same run when the worker had time to report it itself
+
+### DEVELOPERS
+
+▶ [patch] [#8372](https://github.com/taskcluster/taskcluster/issues/8372)
+Switch linting from eslint to biome on all services/libraries
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps-dev): bump ruff (860549cc41)
+* build(deps): bump github/codeql-action in the gh-actions-deps group (aab4bd26ae)
+* build(deps): bump the go-deps group with 5 updates (c16ba8d559)
+* build(deps): bump chrono (0811e0b89a)
+
+</details>
+
+## v100.4.0
+
+### DEPLOYERS
+
+▶ [minor]
+The worker-manager Azure provider now exposes ARM deployment creation failures and failed deployment operations as a Prometheus counter for observability.
+
+New Prometheus metric:
+- `worker_manager_azure_arm_deployment_errors_total` (counter) - incremented once for each ARM deployment creation failure or failed deployment operation, labeled by `providerId`, `workerPoolId`, `workerGroup`, `errorKind`, `errorCode`, `statusCode`, `provisioningState`, `provisioningOperation`, `targetResourceType`, `vmSize`, and `priority`.
+
+This lets deployers chart Azure ARM deployment creation failures and failed operations by worker pool, region, Azure error code, and VM size in Prometheus/Grafana.
+
+▶ [patch] [#8721](https://github.com/taskcluster/taskcluster/issues/8721)
+The UI and references nginx servers now support Brotli compression in addition to gzip, allowing browser requests that prefer Brotli to receive compressed static assets, schemas, and references.
+
+### USERS
+
+▶ [minor] [bug 2045069](http://bugzil.la/2045069)
+Generic-worker: skip gzip compression for artifacts with extensions matching `.pkg` or `.wasm`.
+
+▶ [patch]
+Fake taskcluster clients now properly raise an error when used in a production `NODE_ENV`
+
+▶ [patch] [#8758](https://github.com/taskcluster/taskcluster/issues/8758)
+The hooks service now properly forwards network errors from failures to contact
+the queue service instead of masking it with some serialization error
+
+### DEVELOPERS
+
+▶ [patch] [#8198](https://github.com/taskcluster/taskcluster/issues/8198)
+The API reference pages now show correct example commands for curl and the
+taskcluster CLI. The curl examples previously showed an invalid
+`Authorization: Bearer` header (Taskcluster uses Hawk authentication); they
+now explain that taskcluster-proxy should be used instead. The taskcluster CLI
+examples previously showed path arguments as named flags (`--taskId value`)
+when the CLI actually requires positional arguments; they are now shown
+correctly.
+
+### OTHER
+
+▶ Additional change not described here: [#8595](https://github.com/taskcluster/taskcluster/issues/8595).
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps-dev): bump @babel/core from 7.25.2 to 7.29.6 in /ui (08cfd7fc60)
+* build(deps): bump form-data from 3.0.4 to 3.0.5 in /ui (24d71c8519)
+* build(deps): bump tar from 7.5.11 to 7.5.16 (931e4d2fb3)
+* build(deps): bump markdown-it from 14.1.1 to 14.2.0 in /ui (494ca6d0a7)
+* build(deps): bump nodemailer from 8.0.7 to 8.0.9 (26197cae1c)
+* build(deps): bump form-data from 2.5.5 to 2.5.6 (3e9f0f3875)
+* build(deps): bump protobufjs from 7.5.8 to 7.6.4 (b68a4c924c)
+* build(deps): bump js-yaml from 4.1.1 to 4.2.0 in /ui (2dfe44aa06)
+* build(deps): bump @grpc/grpc-js from 1.13.4 to 1.14.4 (c365bae46f)
+
+</details>
+
+## v100.3.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.26.4.
+
+Release notes [here](https://go.dev/doc/devel/release#go1.26.4).
+
+### DEPLOYERS
+
+▶ [minor] [#8347](https://github.com/taskcluster/taskcluster/issues/8347)
+HTTP responses from Taskcluster API services are now gzip-compressed when the client sends `Accept-Encoding: gzip`. Compression is applied at the `@taskcluster/lib-api` router level with a 1 KB threshold, so small payloads are sent uncompressed.
+
+▶ [minor] [#8716](https://github.com/taskcluster/taskcluster/issues/8716)
+Removed the `sift` dependency from the web-server. The GraphQL `filter: JSON` argument was only ever used for simple case-insensitive substring search, so it has been replaced with a typed `searchTerm: String` argument on the list queries that support search (clients, roles, secrets, worker pools, denylist addresses). Task-action filtering is now applied server-side, and the unused `filter` argument has been removed from the remaining GraphQL queries.
+
+### USERS
+
+▶ [minor] [bug 2045069](http://bugzil.la/2045069)
+Generic-worker: skip gzip compression for artifacts with extensions matching `.aab`, `.apk`, `.jar`, `.xpi`.
+
+▶ [patch] [bug 2042324](http://bugzil.la/2042324)
+Enforce oauth2 access token lifetimes when issuing Taskcluster credentials
+
+▶ [patch] [#8688](https://github.com/taskcluster/taskcluster/issues/8688)
+Fix the changelog page so it doesn't ignore URL parameters anymore
+
+▶ [patch] [#8689](https://github.com/taskcluster/taskcluster/issues/8689)
+Fixed `on-defined` route notifications not firing
+
+### DEVELOPERS
+
+▶ [patch]
+Bump node version to `24.16.0`
+
+### Automated Package Updates
+
+<details>
+<summary>9 Dependabot updates</summary>
+
+* build(deps-dev): bump cross-env from 7.0.3 to 10.1.0 (8c1e820c6a)
+* build(deps-dev): bump ws from 7.5.10 to 7.5.11 (0527b3b0bd)
+* build(deps-dev): bump webpack-cli in /clients/client-web (38302b5df4)
+* build(deps-dev): bump ruff (d8976dbd9b)
+* build(deps): bump the gh-actions-deps group with 2 updates (63b8632402)
+* build(deps): bump the client-rust-deps group (8076548b56)
+* build(deps): bump the go-deps group with 2 updates (c138c12727)
+* build(deps-dev): bump @babel/core (b4b057e4a6)
+* build(deps-dev): bump mocha (2acb267838)
+
+</details>
+
 ## v100.2.0
 
 ### DEPLOYERS

@@ -1,5 +1,5 @@
 export class Middleware {
-  constructor({ monitor, rootUrl, config }) {
+  constructor({ monitor, rootUrl }) {
     this.monitor = monitor;
     this.rootUrl = rootUrl;
   }
@@ -9,8 +9,7 @@ export class Middleware {
    *
    * Subclasses should override this, if necessary
    */
-  async setup() {
-  }
+  async setup() {}
 
   /**
    * Intercept the startDownload API method.
@@ -26,14 +25,14 @@ export class Middleware {
    *
    * Subclasses may override this method; the default does nothing.
    */
-  async startDownloadRequest(req, res, object, method, params) {
+  async startDownloadRequest(_req, _res, _object, _method, _params) {
     return true;
   }
 
   /**
    * Similar to startDownloadRequest, but for the simple-download API.
    */
-  async downloadRequest(req, res, object) {
+  async downloadRequest(_req, _res, _object) {
     return true;
   }
 }

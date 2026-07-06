@@ -6,7 +6,7 @@ MonitorManager.register({
   type: 'worker-pool-provisioned',
   version: 2,
   level: 'info',
-  description: 'A worker pool\'s provisioning run has completed',
+  description: "A worker pool's provisioning run has completed",
   fields: {
     workerPoolId: 'The worker pool ID',
     providerId: 'The provider that did the work for this worker pool.',
@@ -323,6 +323,27 @@ MonitorManager.register({
   },
 });
 
+MonitorManager.register({
+  name: 'azureTeardownMode',
+  title: 'Azure Worker Teardown Mode',
+  type: 'azure-teardown-mode',
+  version: 1,
+  level: 'info',
+  description: `
+    Records how an Azure worker's resources were torn down: 'fast' when the VM's
+    NIC/IP/disks cascade-delete with the VM (so the per-resource GET/delete walk
+    is skipped), or 'slow' for the resource-by-resource walk. Lets us measure the
+    API-call reduction and confirm the fast path engages on cascading ARM pools.
+  `,
+  fields: {
+    providerId: 'Provider ID',
+    workerPoolId: 'Worker Pool ID',
+    launchConfigId: 'Launch Config ID',
+    workerId: 'Worker ID',
+    mode: "Teardown mode: 'fast' (cascade short-circuit) or 'slow' (full walk)",
+  },
+});
+
 const commonLabels = {
   workerPoolId: 'The worker pool ID',
   providerId: 'ID of the provider',
@@ -541,6 +562,42 @@ MonitorManager.registerMetric('azureThrottleCount', {
   labels: {
     providerId: 'ID of the provider',
     operationType: 'HTTP operation category: read, write, or delete',
+  },
+  registers: ['provision', 'scan'],
+});
+
+MonitorManager.registerMetric('azureTeardownCount', {
+  name: 'worker_manager_azure_teardown_total',
+  type: 'counter',
+  title: 'Azure worker teardowns',
+  description:
+    "Count of Azure worker teardowns by mode: 'fast' (cascade short-circuit) vs 'slow' (per-resource walk), per worker pool",
+  labels: {
+    providerId: 'ID of the provider',
+    workerPoolId: 'The worker pool ID',
+    mode: "Teardown mode: 'fast' or 'slow'",
+  },
+  registers: ['scan'],
+});
+
+MonitorManager.registerMetric('azureArmDeploymentError', {
+  name: 'worker_manager_azure_arm_deployment_errors_total',
+  type: 'counter',
+  title: 'Azure ARM deployment errors',
+  description:
+    'Count of Azure ARM deployment creation failures and failed deployment operations by worker pool, location, and Azure error details',
+  labels: {
+    providerId: 'ID of the provider',
+    workerPoolId: 'The worker pool ID',
+    workerGroup: 'Worker group (region/zone/location)',
+    errorKind: 'Worker-manager error kind',
+    errorCode: 'Azure error code',
+    statusCode: 'Operation status code from the resource provider',
+    provisioningState: 'Azure provisioning state',
+    provisioningOperation: 'Azure provisioning operation',
+    targetResourceType: 'Azure target resource type',
+    vmSize: 'Azure VM size',
+    priority: 'Azure VM priority',
   },
   registers: ['provision', 'scan'],
 });

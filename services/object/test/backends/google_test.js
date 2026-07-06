@@ -1,5 +1,5 @@
 import helper from '../helper/index.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -10,13 +10,13 @@ import {
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 import { AwsBackend } from '../../src/backends/aws.js';
-import { promisify } from 'util';
-import zlib from 'zlib';
+import { promisify } from 'node:util';
+import zlib from 'node:zlib';
 import { toEndpointV1 } from '@aws-sdk/middleware-endpoint';
 
 const gzip = promisify(zlib.gzip);
 
-helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['google'], (mock, skipping) => {
   if (mock) {
     // tests for this backend require real google cloud storage access, and
     // aren't even defined for the mock case
@@ -24,14 +24,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
   }
 
   helper.withDb(mock, skipping);
-  helper.withBackends(mock, skipping);
+  helper.withBackends(skipping);
 
   let secret, s3;
 
   // unique object name prefix for this test run
-  const prefix = taskcluster.slugid() + '/';
+  const prefix = `${taskcluster.slugid()}/`;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     await helper.load('cfg');
 
     secret = helper.secrets.get('google');
@@ -51,7 +51,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     });
   });
 
-  setup(async function() {
+  setup(async () => {
     // set up a backend with a public bucket, and separately with a private
     // bucket; these are in fact the same bucket, and we'll just check that the
     // URLs have a signature for the non-public version.  S3 verifies
@@ -81,7 +81,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
 
   const projectId = 'test-proj';
 
-  const makeObject = async ({ name, data, hashes, gzipped }) => {
+  const makeObject = async ({ name, data, hashes }) => {
     const expires = taskcluster.fromNow('1 hour');
     const uploadId = taskcluster.slugid();
 
@@ -91,12 +91,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     // ignore 'gzipped' and always upload gzipped data -- GCS supports
     // "transcoding" gzip to identity on downloda.
     const compressedData = await gzip(data);
-    await s3.send(new PutObjectCommand({
-      Bucket: secret.testBucket,
-      Key: name,
-      Body: compressedData,
-      ContentEncoding: "gzip",
-    }));
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: secret.testBucket,
+        Key: name,
+        Body: compressedData,
+        ContentEncoding: 'gzip',
+      })
+    );
 
     if (hashes) {
       await helper.db.fns.add_object_hashes({ name_in: name, hashes_in: hashes });
@@ -111,22 +113,26 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
     await helper.resetTables();
 
     // delete all objects with this prefix
-    const objects = await s3.send(new ListObjectsCommand({
-      Bucket: secret.testBucket,
-      Prefix: prefix,
-    }));
+    const objects = await s3.send(
+      new ListObjectsCommand({
+        Bucket: secret.testBucket,
+        Prefix: prefix,
+      })
+    );
     if (objects.Contents?.length > 0) {
-      for (let obj of objects.Contents) {
-        await s3.send(new DeleteObjectCommand({
-          Bucket: secret.testBucket,
-          Key: obj.Key,
-        }));
+      for (const obj of objects.Contents) {
+        await s3.send(
+          new DeleteObjectCommand({
+            Bucket: secret.testBucket,
+            Key: obj.Key,
+          })
+        );
       }
     }
   };
 
-  suite('setup', function() {
-    test('any tags are rejected', async function() {
+  suite('setup', () => {
+    test('any tags are rejected', async () => {
       const backend = new AwsBackend({
         backendId: 'broken',
         db: helper.db,
@@ -142,102 +148,134 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
           tags: { Extra: 'value' },
         },
       });
-      await assert.rejects(
-        () => backend.setup(),
-        /tags are only supported on the real AWS S3/);
+      await assert.rejects(() => backend.setup(), /tags are only supported on the real AWS S3/);
     });
   });
 
-  helper.testBackend({
-    mock, skipping, prefix,
-    backendId: 'googlePublic',
-    makeObject,
-  }, async function() {
-    teardown(cleanup);
-  });
-
-  helper.testSimpleDownloadMethod({
-    mock, skipping, prefix,
-    title: 'public bucket',
-    backendId: 'googlePublic',
-    makeObject,
-    async checkUrl({ name, url }) {
-      // *not* signed
-      assert(!url.match(/X-Amz-Credential=/), `got ${url}`);
-      assert(!url.match(/X-Amz-Signature=/), `got ${url}`);
+  helper.testBackend(
+    {
+      mock,
+      skipping,
+      prefix,
+      backendId: 'googlePublic',
+      makeObject,
     },
-  }, async function() {
-    teardown(cleanup);
-  });
+    async () => {
+      teardown(cleanup);
+    }
+  );
 
-  helper.testSimpleDownloadMethod({
-    mock, skipping, prefix,
-    title: 'private bucket',
-    backendId: 'googlePrivate',
-    makeObject,
-    async checkUrl({ name, url }) {
-      // ..contains S3 signature query args (note that testSimpleDownloadMethod
-      // will verify that the URL actually works; this just verifies that it
-      // is not un-signed).
-      assert(url.match(/X-Amz-Credential=/), `got ${url}`);
-      assert(url.match(/X-Amz-Signature=/), `got ${url}`);
+  helper.testSimpleDownloadMethod(
+    {
+      mock,
+      skipping,
+      prefix,
+      title: 'public bucket',
+      backendId: 'googlePublic',
+      makeObject,
+      async checkUrl({ url }) {
+        // *not* signed
+        assert(!url.match(/X-Amz-Credential=/), `got ${url}`);
+        assert(!url.match(/X-Amz-Signature=/), `got ${url}`);
+      },
     },
-  }, async function() {
-    teardown(cleanup);
-  });
+    async () => {
+      teardown(cleanup);
+    }
+  );
 
-  helper.testGetUrlDownloadMethod({
-    mock, skipping, prefix,
-    backendId: 'googlePrivate',
-    makeObject,
-    async checkUrl({ name, url }) {
-      assert(url.match(/X-Amz-Credential=/), `got ${url}`);
-      assert(url.match(/X-Amz-Signature=/), `got ${url}`);
+  helper.testSimpleDownloadMethod(
+    {
+      mock,
+      skipping,
+      prefix,
+      title: 'private bucket',
+      backendId: 'googlePrivate',
+      makeObject,
+      async checkUrl({ url }) {
+        // ..contains S3 signature query args (note that testSimpleDownloadMethod
+        // will verify that the URL actually works; this just verifies that it
+        // is not un-signed).
+        assert(url.match(/X-Amz-Credential=/), `got ${url}`);
+        assert(url.match(/X-Amz-Signature=/), `got ${url}`);
+      },
     },
-  }, async function() {
-    teardown(cleanup);
-  });
+    async () => {
+      teardown(cleanup);
+    }
+  );
 
-  helper.testDataInlineUpload({
-    mock, skipping, prefix,
-    backendId: 'googlePrivate',
-    omit: [
-      // see https://github.com/taskcluster/taskcluster/issues/4748
-      'htmlContentDisposition',
-    ],
-    async getObjectContent({ name }) {
-      const res = await s3.send(new GetObjectCommand({
-        Bucket: secret.testBucket,
-        Key: name,
-      }));
-      return { data: await res.Body.transformToByteArray(), contentType: res.ContentType };
+  helper.testGetUrlDownloadMethod(
+    {
+      mock,
+      skipping,
+      prefix,
+      backendId: 'googlePrivate',
+      makeObject,
+      async checkUrl({ url }) {
+        assert(url.match(/X-Amz-Credential=/), `got ${url}`);
+        assert(url.match(/X-Amz-Signature=/), `got ${url}`);
+      },
     },
-  }, async function() {
-    teardown(cleanup);
-  });
+    async () => {
+      teardown(cleanup);
+    }
+  );
 
-  helper.testPutUrlUpload({
-    mock, skipping, prefix,
-    backendId: 'googlePrivate',
-    omit: [
-      // see https://github.com/taskcluster/taskcluster/issues/4748
-      'htmlContentDisposition',
-    ],
-    async getObjectContent({ name }) {
-      const res = await s3.send(new GetObjectCommand({
-        Bucket: secret.testBucket,
-        Key: name,
-      }));
-      return { data: await res.Body.transformToByteArray(), contentType: res.ContentType };
+  helper.testDataInlineUpload(
+    {
+      mock,
+      skipping,
+      prefix,
+      backendId: 'googlePrivate',
+      omit: [
+        // see https://github.com/taskcluster/taskcluster/issues/4748
+        'htmlContentDisposition',
+      ],
+      async getObjectContent({ name }) {
+        const res = await s3.send(
+          new GetObjectCommand({
+            Bucket: secret.testBucket,
+            Key: name,
+          })
+        );
+        return { data: await res.Body.transformToByteArray(), contentType: res.ContentType };
+      },
     },
-  }, async function() {
-    teardown(cleanup);
-  });
+    async () => {
+      teardown(cleanup);
+    }
+  );
 
-  suite('expireObject', function() {
+  helper.testPutUrlUpload(
+    {
+      mock,
+      skipping,
+      prefix,
+      backendId: 'googlePrivate',
+      omit: [
+        // see https://github.com/taskcluster/taskcluster/issues/4748
+        'htmlContentDisposition',
+      ],
+      async getObjectContent({ name }) {
+        const res = await s3.send(
+          new GetObjectCommand({
+            Bucket: secret.testBucket,
+            Key: name,
+          })
+        );
+        return { data: await res.Body.transformToByteArray(), contentType: res.ContentType };
+      },
+    },
+    async () => {
+      teardown(cleanup);
+    }
+  );
+
+  suite('expireObject', () => {
     teardown(cleanup);
 
-    test('expires an object', async function() {
+    test('expires an object', async () => {
       const name = 'some/object';
       const object = await makeObject({ name, data: Buffer.from('abc') });
 
@@ -247,19 +285,30 @@ helper.secrets.mockSuite(testing.suiteName(), ['google'], function(mock, skippin
       assert(await backend.expireObject(object));
 
       // object should now be gone
-      await assert.rejects(() => s3.send(new GetObjectCommand({
-        Bucket: secret.testBucket,
-        Key: name,
-      })),
-      err => err.Code === 'NoSuchKey');
+      await assert.rejects(
+        () =>
+          s3.send(
+            new GetObjectCommand({
+              Bucket: secret.testBucket,
+              Key: name,
+            })
+          ),
+        err => err.Code === 'NoSuchKey'
+      );
     });
 
-    test('succeeds for an object that no longer exists', async function() {
+    test('succeeds for an object that no longer exists', async () => {
       const name = 'some/object';
       const uploadId = taskcluster.slugid();
       await helper.db.fns.create_object_for_upload(
-        name, 'test-proj', 'google', uploadId,
-        taskcluster.fromNow('1 hour'), {}, taskcluster.fromNow('1 hour'));
+        name,
+        'test-proj',
+        'google',
+        uploadId,
+        taskcluster.fromNow('1 hour'),
+        {},
+        taskcluster.fromNow('1 hour')
+      );
       await helper.db.fns.object_upload_complete(name, uploadId);
       const [object] = await helper.db.fns.get_object_with_upload(name);
 

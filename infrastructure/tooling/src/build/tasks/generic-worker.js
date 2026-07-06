@@ -1,8 +1,8 @@
 import glob from 'glob';
-import path from 'path';
+import path from 'node:path';
 import { ensureTask, execCommand, REPO_ROOT } from '../../utils/index.js';
 
-export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
+export default ({ tasks }) => {
   ensureTask(tasks, {
     title: 'Build generic-worker artifacts',
     requires: ['clean-artifacts-dir'],
@@ -26,14 +26,9 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Generic-Worker Complete',
-    requires: [
-      'clean-artifacts-dir',
-      'generic-worker-artifacts',
-    ],
-    provides: [
-      'target-generic-worker',
-    ],
-    run: async (requirements, utils) => {
+    requires: ['clean-artifacts-dir', 'generic-worker-artifacts'],
+    provides: ['target-generic-worker'],
+    run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {
         'target-generic-worker': [

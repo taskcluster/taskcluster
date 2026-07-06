@@ -1,6 +1,6 @@
-import assert from 'assert';
-import path from 'path';
-import fs from 'fs/promises';
+import assert from 'node:assert';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import testing from '@taskcluster/lib-testing';
@@ -14,16 +14,16 @@ const loadWebhookJson = async filename => {
 // https://github.com/organizations/taskcluster/settings/apps/community-tc-integration/advanced
 // It keeps list of recent webhooks
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withFakeGithub(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withFakeGithub();
+  helper.withServer(skipping);
+  helper.resetTables();
 
   let github = null;
 
-  setup(async function() {
+  setup(async () => {
     await helper.load('cfg');
     helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
 
@@ -46,9 +46,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
    *  branch:       'the head branch name; for v1'
    **/
   function pulseTest(params) {
-    test(params.testName, async function() {
+    test(params.testName, async () => {
       // Trigger a pull-request message
-      let res = await helper.jsonHttpRequest('./test/data/webhooks/' + params.jsonFile);
+      const res = await helper.jsonHttpRequest(`./test/data/webhooks/${params.jsonFile}`);
       res.connection?.destroy();
 
       const webhook = await loadWebhookJson(params.jsonFile);

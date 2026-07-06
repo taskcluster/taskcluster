@@ -46,10 +46,13 @@ export default function generateCurlExample(
   let example = `# ${entry.title}\n`;
 
   if (requiresAuth(entry)) {
-    example += `# This endpoint requires authentication\n`;
-    example += `# Set your credentials in environment variables:\n`;
-    example += `#   TASKCLUSTER_CLIENT_ID=your-client-id\n`;
-    example += `#   TASKCLUSTER_ACCESS_TOKEN=your-access-token\n\n`;
+    example += `# This endpoint requires Hawk authentication (not Bearer tokens).\n`;
+    example += `# The easiest way to call this with curl is inside a Taskcluster task\n`;
+    example += `# using taskcluster-proxy, which handles auth automatically:\n`;
+    example += `#\n`;
+    example += `#   export TASKCLUSTER_ROOT_URL=$TASKCLUSTER_PROXY_URL\n`;
+    example += `#\n`;
+    example += `# For other environments, use the taskcluster CLI or a language client.\n\n`;
   }
 
   let command = `curl`;
@@ -57,11 +60,6 @@ export default function generateCurlExample(
   // Add method if not GET
   if (method.toUpperCase() !== 'GET') {
     command += ` -X ${method.toUpperCase()}`;
-  }
-
-  // Add headers
-  if (requiresAuth(entry)) {
-    command += ` \\\n  -H "Authorization: Bearer \${TASKCLUSTER_ACCESS_TOKEN}"`;
   }
 
   // Add request body for methods that typically have one

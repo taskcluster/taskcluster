@@ -1,7 +1,7 @@
 import yaml from 'js-yaml';
-import path from 'path';
-import fs from 'fs/promises';
-import assert from 'assert';
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import assert from 'node:assert';
 
 let _commonSchemas;
 
@@ -22,7 +22,7 @@ export const getCommonSchemas = async () => {
   _commonSchemas = [];
   const dir = path.join(__dirname, '..', 'schemas');
 
-  for (let dentry of await fs.readdir(dir)) {
+  for (const dentry of await fs.readdir(dir)) {
     if (!dentry.endsWith('.yml')) {
       continue;
     }

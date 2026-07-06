@@ -1,4 +1,4 @@
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import { dollarQuote, ETA } from './util.js';
 import { UNDEFINED_FUNCTION } from './constants.js';
 
@@ -77,7 +77,7 @@ export const runMigration = async ({ client, version, showProgress, usernamePref
     }
 
     showProgress('..defining methods');
-    for (let method of Object.values(version.methods)) {
+    for (const method of Object.values(version.methods)) {
       if (method.deprecated && !method.args && !method.returns && !method.body) {
         continue; // This allows just deprecating without changing a method
       }
@@ -102,7 +102,7 @@ export const runDowngrade = async ({ client, schema, fromVersion, toVersion, sho
     // either find the most recent definition of each function,
     // or drop the function if it was not defined before fromVersion
     showProgress('..redefining methods');
-    for (let [methodName, { args }] of Object.entries(fromVersion.methods)) {
+    for (const [methodName, { args }] of Object.entries(fromVersion.methods)) {
       let foundMethod = false;
       for (let ver = toVersion.version; ver > 0; ver--) {
         const version = schema.getVersion(ver);
@@ -138,29 +138,30 @@ export const runOnlineBatches = async ({ client, showProgress, versionNum, kind 
   const batchFn = `online_${kind}_v${versionNum}_batch`;
   const isCompleteFn = `online_${kind}_v${versionNum}_is_complete`;
 
-  const runBatch = hooks['runBatch'] || (async (batchSize, state) => {
-    let res;
-    // expect the version to already be incremented (migration) or decremented (downgrade)
-    const expectedVersion = kind === 'migration' ? versionNum : versionNum - 1;
+  const runBatch =
+    hooks.runBatch ||
+    (async (batchSize, state) => {
+      let res;
+      // expect the version to already be incremented (migration) or decremented (downgrade)
+      const expectedVersion = kind === 'migration' ? versionNum : versionNum - 1;
 
-    await inTransaction(client, async () => {
-      await lockVersionTable({ client, expectedVersion });
-      res = await client.query(
-        `select * from ${batchFn}($1, $2)`,
-        [batchSize, state]);
+      await inTransaction(client, async () => {
+        await lockVersionTable({ client, expectedVersion });
+        res = await client.query(`select * from ${batchFn}($1, $2)`, [batchSize, state]);
+      });
+      assert(res.rows.length === 1);
+      return { state: res.rows[0].state, count: res.rows[0].count };
     });
-    assert(res.rows.length === 1);
-    return { state: res.rows[0].state, count: res.rows[0].count };
-  });
 
-  const isComplete = hooks['isComplete'] || (async () => {
-    const res = await client.query(
-      `select * from ${isCompleteFn}()`);
-    return res.rows[0][isCompleteFn];
-  });
+  const isComplete =
+    hooks.isComplete ||
+    (async () => {
+      const res = await client.query(`select * from ${isCompleteFn}()`);
+      return res.rows[0][isCompleteFn];
+    });
 
   // if there is no online-migration function, there's nothing to do
-  if (!hooks['runBatch'] && !(await fnExists({ client, name: batchFn }))) {
+  if (!hooks.runBatch && !(await fnExists({ client, name: batchFn }))) {
     return;
   }
 
@@ -185,8 +186,8 @@ export const runOnlineBatches = async ({ client, showProgress, versionNum, kind 
 
     eta.measurement(0);
     while (true) {
-      if (hooks['preBatch']) {
-        await hooks['preBatch'](outerCount, count);
+      if (hooks.preBatch) {
+        await hooks.preBatch(outerCount, count);
       }
       const res = await runBatch(batchSize, state);
       state = res.state;
@@ -200,11 +201,11 @@ export const runOnlineBatches = async ({ client, showProgress, versionNum, kind 
 
       // update the batch size to try to get to batchTime (but minimum of one)
       const rate = eta.rate();
-      if (!isNaN(rate)) {
+      if (!Number.isNaN(rate)) {
         batchSize = Math.round(Math.max(1, rate * batchTime));
       }
-      if (hooks['batchSize']) {
-        batchSize = await hooks['batchSize'](batchSize);
+      if (hooks.batchSize) {
+        batchSize = await hooks.batchSize(batchSize);
       }
 
       if (nextReport <= Date.now()) {

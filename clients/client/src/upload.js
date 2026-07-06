@@ -5,9 +5,9 @@ import { HashStream } from './hashstream.js';
 
 const DATA_INLINE_MAX_SIZE = 8192;
 
-const putUrl = async ({ streamFactory, contentLength, uploadMethod, retryCfg }) => {
+const putUrl = async ({ streamFactory, uploadMethod, retryCfg }) => {
   const { url, headers } = uploadMethod.putUrl;
-  await retry(retryCfg, async (retriableError, attempt) => {
+  await retry(retryCfg, async retriableError => {
     try {
       await got.put(url, {
         headers,
@@ -88,9 +88,9 @@ export const upload = async ({
   if (res.uploadMethod.dataInline) {
     // nothing to do
   } else if (res.uploadMethod.putUrl) {
-    await putUrl({ streamFactory: hashStreamFactory, contentLength, uploadMethod: res.uploadMethod, retryCfg });
+    await putUrl({ streamFactory: hashStreamFactory, uploadMethod: res.uploadMethod, retryCfg });
   } else {
-    throw new Error("Could not negotiate an upload method");
+    throw new Error('Could not negotiate an upload method');
   }
 
   const hashes = hashStream.hashes(contentLength);

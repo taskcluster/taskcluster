@@ -7,7 +7,7 @@
  * @param {string} route
  * @returns {[string, string[], string[]]}
  */
-export const cleanRouteAndParams = (route) => {
+export const cleanRouteAndParams = route => {
   // Find parameters for entry
   /** @type {string[]} */
   const params = [];
@@ -22,7 +22,7 @@ export const cleanRouteAndParams = (route) => {
     if (match.endsWith('?')) {
       optionalParams.push(param);
     }
-    return '/<' + param + '>';
+    return `/<${param}>`;
   });
   return [route, params, optionalParams];
 };

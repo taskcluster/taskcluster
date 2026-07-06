@@ -1,28 +1,26 @@
 export default {
   LatestTask: {
-    async run(parent, args, { loaders }) {
+    async run(parent, _args, { loaders }) {
       const status = await loaders.status.load(parent.taskId);
 
       return status.runs[parent.runId];
     },
   },
   Worker: {
-    latestTasks(parent, args, { loaders }) {
-      return Promise.all(parent.recentTasks.map(async ({ taskId }) => {
-        try {
-          return await loaders.task.load(taskId);
-        } catch (e) {
-          return e;
-        }
-      }));
+    latestTasks(parent, _args, { loaders }) {
+      return Promise.all(
+        parent.recentTasks.map(async ({ taskId }) => {
+          try {
+            return await loaders.task.load(taskId);
+          } catch (e) {
+            return e;
+          }
+        })
+      );
     },
   },
   Query: {
-    worker(
-      parent,
-      { provisionerId, workerType, workerGroup, workerId },
-      { loaders },
-    ) {
+    worker(_parent, { provisionerId, workerType, workerGroup, workerId }, { loaders }) {
       return loaders.worker.load({
         provisionerId,
         workerType,
@@ -30,41 +28,19 @@ export default {
         workerId,
       });
     },
-    workers(
-      parent,
-      {
-        provisionerId,
-        workerType,
-        isQuarantined,
-        workerState,
-        connection,
-        filter,
-      },
-      { loaders },
-    ) {
+    workers(_parent, { provisionerId, workerType, isQuarantined, workerState, connection }, { loaders }) {
       return loaders.workers.load({
         provisionerId,
         workerType,
         isQuarantined,
         workerState,
         connection,
-        filter,
       });
     },
   },
   Mutation: {
-    quarantineWorker(
-      parent,
-      { provisionerId, workerType, workerGroup, workerId, payload },
-      { clients },
-    ) {
-      return clients.queue.quarantineWorker(
-        provisionerId,
-        workerType,
-        workerGroup,
-        workerId,
-        payload,
-      );
+    quarantineWorker(_parent, { provisionerId, workerType, workerGroup, workerId, payload }, { clients }) {
+      return clients.queue.quarantineWorker(provisionerId, workerType, workerGroup, workerId, payload);
     },
   },
 };

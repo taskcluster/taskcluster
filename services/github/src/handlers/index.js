@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import stringify from 'fast-json-stable-stringify';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import taskcluster from '@taskcluster/client';
 import yaml from 'js-yaml';
-import assert from 'assert';
+import assert from 'node:assert';
 import { consume } from '@taskcluster/lib-pulse';
 import { deprecatedStatusHandler } from './deprecatedStatus.js';
 import { taskGroupCreationHandler } from './taskGroupCreation.js';
@@ -73,7 +73,7 @@ class Handlers {
   /**
    * Set up the handlers.
    */
-  async setup(options = {}) {
+  async setup(_options = {}) {
     assert(!this.jobPq, 'Cannot setup twice!');
     assert(!this.resultStatusPq, 'Cannot setup twice!');
     assert(!this.deprecatedResultStatusPq, 'Cannot setup twice!');
@@ -84,15 +84,9 @@ class Handlers {
     const GithubEvents = taskcluster.createClient(this.reference);
     const githubEvents = new GithubEvents({ rootUrl: this.rootUrl });
 
-    const jobBindings = [
-      githubEvents.pullRequest(),
-      githubEvents.push(),
-      githubEvents.release(),
-    ];
+    const jobBindings = [githubEvents.pullRequest(), githubEvents.push(), githubEvents.release()];
 
-    const rerunBindings = [
-      githubEvents.rerun(),
-    ];
+    const rerunBindings = [githubEvents.rerun()];
 
     const schedulerId = this.context.cfg.taskcluster.schedulerId;
     const queueEvents = new taskcluster.QueueEvents({ rootUrl: this.rootUrl });
@@ -142,19 +136,22 @@ class Handlers {
     const callHandler = (name, handler) => {
       const timedHandler = this.monitor.timedHandler(`${name}listener`, handler.bind(this));
 
-      return (message) => {
+      return message => {
         this._handlerStarted(name);
-        timedHandler.call(this, message).catch(async err => {
-          await this.monitor.reportError(err);
-          return err;
-        }).then((err = null) => {
-          this._handlerFinished(name, !!err);
-          if (this.handlerComplete && !err) {
-            this.handlerComplete();
-          } else if (this.handlerRejected && err) {
-            this.handlerRejected(err);
-          }
-        });
+        timedHandler
+          .call(this, message)
+          .catch(async err => {
+            await this.monitor.reportError(err);
+            return err;
+          })
+          .then((err = null) => {
+            this._handlerFinished(name, !!err);
+            if (this.handlerComplete && !err) {
+              this.handlerComplete();
+            } else if (this.handlerRejected && err) {
+              this.handlerRejected(err);
+            }
+          });
       };
     };
 
@@ -164,7 +161,7 @@ class Handlers {
         bindings: jobBindings,
         queueName: this.jobQueueName,
       },
-      callHandler('job', jobHandler),
+      callHandler('job', jobHandler)
     );
 
     this.deprecatedResultStatusPq = await consume(
@@ -173,7 +170,7 @@ class Handlers {
         bindings: deprecatedResultStatusBindings,
         queueName: this.deprecatedResultStatusQueueName,
       },
-      callHandler('status', deprecatedStatusHandler),
+      callHandler('status', deprecatedStatusHandler)
     );
 
     this.deprecatedInitialStatusPq = await consume(
@@ -182,7 +179,7 @@ class Handlers {
         bindings: deprecatedInitialStatusBindings,
         queueName: this.deprecatedInitialStatusQueueName,
       },
-      callHandler('task', taskGroupCreationHandler),
+      callHandler('task', taskGroupCreationHandler)
     );
 
     this.resultStatusPq = await consume(
@@ -191,7 +188,7 @@ class Handlers {
         bindings: taskStatusBindings,
         queueName: this.resultStatusQueueName,
       },
-      callHandler('status', statusHandler),
+      callHandler('status', statusHandler)
     );
 
     this.rerunPq = await consume(
@@ -200,7 +197,7 @@ class Handlers {
         bindings: rerunBindings,
         queueName: this.rerunQueueName,
       },
-      callHandler('rerun', rerunHandler),
+      callHandler('rerun', rerunHandler)
     );
 
     this.reportHandlersCount = setInterval(() => this._reportHandlersCount(), 60 * 1000);
@@ -300,9 +297,18 @@ class Handlers {
    *  pull_request.[labeled, edited, closed, review_requested, assigned] are different events
    */
   async cancelPreviousTaskGroups({ instGithub, debug, newBuild }) {
-    const { organization, repository, sha, pull_number: pullNumber,
-      task_group_id: newTaskGroupId, event_type: eventType, event_id: eventId } = newBuild;
-    debug(`canceling previous task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`);
+    const {
+      organization,
+      repository,
+      sha,
+      pull_number: pullNumber,
+      task_group_id: newTaskGroupId,
+      event_type: eventType,
+      event_id: eventId,
+    } = newBuild;
+    debug(
+      `canceling previous task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`
+    );
 
     // avoid performing cancellation for non-push and non-pull-request events
     if (!eventType || !['pull_request'].includes(eventType.split('.')[0])) {
@@ -333,13 +339,16 @@ class Handlers {
         organization,
         repository,
         null, // no cancelling by sha here
-        pullNumber,
+        pullNumber
       );
-      const taskGroupIds = builds?.filter(
-        build => build.task_group_id !== newTaskGroupId &&
-          build.event_id !== eventId &&
-          includedEventTypes.includes(build.event_type),
-      ).map(build => build.task_group_id);
+      const taskGroupIds = builds
+        ?.filter(
+          build =>
+            build.task_group_id !== newTaskGroupId &&
+            build.event_id !== eventId &&
+            includedEventTypes.includes(build.event_type)
+        )
+        .map(build => build.task_group_id);
 
       if (taskGroupIds.length > 0) {
         // we want to make sure that github client respects repository scopes when sealing and cancelling tasks
@@ -357,9 +366,11 @@ class Handlers {
           this.monitor.reportError(`Task group not found in queue: ${queueErr.message} while canceling`);
         }
 
-        await Promise.all(taskGroupIds.map(taskGroupId => this.context.db.fns.set_github_build_state(
-          taskGroupId, GITHUB_BUILD_STATES.CANCELLED,
-        )));
+        await Promise.all(
+          taskGroupIds.map(taskGroupId =>
+            this.context.db.fns.set_github_build_state(taskGroupId, GITHUB_BUILD_STATES.CANCELLED)
+          )
+        );
       }
     } catch (err) {
       debug(`Error while canceling previous task groups: ${err.message}\nscopes used: ${scopes.join(', ')}`);
@@ -387,10 +398,7 @@ class Handlers {
   }
 
   commentKey(idents) {
-    return crypto
-      .createHash('md5')
-      .update(stringify(idents))
-      .digest('hex');
+    return crypto.createHash('md5').update(stringify(idents)).digest('hex');
   }
 
   isDuplicateComment(...idents) {
@@ -408,7 +416,7 @@ class Handlers {
       debug(`exception comment on ${organization}/${repository}#${pullNumber} found to be duplicate. skipping`);
       return;
     }
-    let errorBody = error.body && error.body.error || error.message;
+    let errorBody = error.body?.error || error.message;
     // Let's prettify any objects
     if (typeof errorBody === 'object') {
       errorBody = stringify(errorBody, null, 4);
@@ -417,7 +425,13 @@ class Handlers {
     // Warn the user know that there was a problem handling their request
     // by posting a comment; this error is then considered handled and not
     // reported to the taskcluster team or retried
-    await this.createComment({ debug, instGithub, organization, repository, sha, pullNumber,
+    await this.createComment({
+      debug,
+      instGithub,
+      organization,
+      repository,
+      sha,
+      pullNumber,
       body: {
         summary: 'Uh oh! Looks like an error!',
         details: errorBody,
@@ -465,8 +479,10 @@ class Handlers {
   }
 
   async addCommentReaction({ instGithub, organization, repository, commentId, reaction }) {
-    assert(['+1', '-1', 'laugh', 'confused', 'heart', 'hooray', 'rocket', 'eyes'].includes(reaction),
-      `Invalid reaction: ${reaction}`);
+    assert(
+      ['+1', '-1', 'laugh', 'confused', 'heart', 'hooray', 'rocket', 'eyes'].includes(reaction),
+      `Invalid reaction: ${reaction}`
+    );
     try {
       await instGithub.reactions.createForIssueComment({
         owner: organization,

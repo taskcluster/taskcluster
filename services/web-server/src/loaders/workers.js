@@ -1,9 +1,8 @@
 import DataLoader from 'dataloader';
-import sift from '../utils/sift.js';
 import ConnectionLoader from '../ConnectionLoader.js';
 import WorkerCompact from '../entities/WorkerCompact.js';
 
-export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default ({ workerManager }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const worker = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ provisionerId, workerType, workerGroup, workerId }) => {
@@ -12,41 +11,25 @@ export default ({ workerManager }, isAuthed, rootUrl, monitor, strategies, req, 
         } catch (err) {
           return err;
         }
-      },
-      ),
-    ),
+      })
+    )
   );
-  const workers = new ConnectionLoader(
-    async ({
-      provisionerId,
-      workerType,
-      options,
-      filter,
-      isQuarantined,
-      workerState,
-    }) => {
-      let opts = { ...options };
-      if (typeof isQuarantined === 'boolean') {
-        opts.quarantined = isQuarantined;
-      }
-      if (typeof workerState === 'string') {
-        opts.workerState = workerState;
-      }
-      const raw = await workerManager.listWorkers(
-        provisionerId,
-        workerType,
-        opts,
-      );
-      const workers = sift(filter, raw.workers);
+  const workers = new ConnectionLoader(async ({ provisionerId, workerType, options, isQuarantined, workerState }) => {
+    const opts = { ...options };
+    if (typeof isQuarantined === 'boolean') {
+      opts.quarantined = isQuarantined;
+    }
+    if (typeof workerState === 'string') {
+      opts.workerState = workerState;
+    }
+    const raw = await workerManager.listWorkers(provisionerId, workerType, opts);
+    const workers = raw.workers;
 
-      return {
-        ...raw,
-        items: workers.map(
-          worker => new WorkerCompact(provisionerId, workerType, worker),
-        ),
-      };
-    },
-  );
+    return {
+      ...raw,
+      items: workers.map(worker => new WorkerCompact(provisionerId, workerType, worker)),
+    };
+  });
 
   return {
     worker,

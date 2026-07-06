@@ -1,7 +1,7 @@
 import taskcluster from '@taskcluster/client';
 import { FakeEC2, FakeAzure, FakeGoogle } from './fakes/index.js';
 import { Worker } from '../src/data.js';
-import { globalAgent } from 'http';
+import { globalAgent } from 'node:http';
 
 import testing from '@taskcluster/lib-testing';
 
@@ -29,25 +29,25 @@ helper.withDb = (mock, skipping) => {
   testing.withDb(mock, skipping, helper, 'worker_manager');
 };
 
-helper.withPulse = (mock, skipping) => {
+helper.withPulse = skipping => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-worker-manager' });
 };
 
-helper.withProviders = (mock, skipping) => {
+helper.withProviders = () => {
   const fakeEC2 = new FakeEC2();
   fakeEC2.forSuite();
 
   const fakeAzure = new FakeAzure();
   fakeAzure.forSuite();
 
-  const fakeGoogle = new FakeGoogle;
+  const fakeGoogle = new FakeGoogle();
   fakeGoogle.forSuite();
 };
 
-helper.withProvisioner = (mock, skipping) => {
+helper.withProvisioner = skipping => {
   let provisioner;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -70,17 +70,17 @@ helper.withProvisioner = (mock, skipping) => {
     };
   });
 
-  teardown(function() {
+  teardown(() => {
     if (provisioner) {
       throw new Error('Must call terminateProvisioner if you have started it');
     }
   });
 };
 
-helper.withWorkerScanner = (mock, skipping) => {
+helper.withWorkerScanner = skipping => {
   let scanner;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -100,7 +100,7 @@ helper.withWorkerScanner = (mock, skipping) => {
     };
   });
 
-  teardown(function() {
+  teardown(() => {
     if (scanner) {
       throw new Error('Must call terminateWorkerScanner if you have started it');
     }
@@ -114,8 +114,8 @@ helper.withWorkerScanner = (mock, skipping) => {
  *
  * The component is available at `helper.queue`.
  */
-helper.withFakeQueue = (mock, skipping) => {
-  suiteSetup(function() {
+helper.withFakeQueue = skipping => {
+  suiteSetup(() => {
     if (skipping()) {
       return;
     }
@@ -134,8 +134,8 @@ helper.withFakeQueue = (mock, skipping) => {
  *
  * We consider any emailing to be test-failing at the moment
  */
-helper.withFakeNotify = (mock, skipping) => {
-  suiteSetup(function() {
+helper.withFakeNotify = skipping => {
+  suiteSetup(() => {
     if (skipping()) {
       return;
     }
@@ -143,16 +143,16 @@ helper.withFakeNotify = (mock, skipping) => {
     helper.notify = stubbedNotify();
     helper.load.inject('notify', helper.notify);
 
-    setup(async function() {
+    setup(async () => {
       helper.notify.emails.splice(0);
     });
   });
 };
 
-helper.withServer = (mock, skipping) => {
+helper.withServer = skipping => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -161,9 +161,12 @@ helper.withServer = (mock, skipping) => {
 
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
 
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl }
+    );
 
     // Create client for working with API
     helper.WorkerManager = taskcluster.createClient(builder.reference());
@@ -183,7 +186,7 @@ helper.withServer = (mock, skipping) => {
     webServer = await load('server');
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (webServer) {
       await webServer.terminate();
       webServer = null;
@@ -205,7 +208,7 @@ const stubbedQueue = () => {
       accessToken: 'none',
     },
     fake: {
-      taskQueueCounts: async (taskQueueId) => {
+      taskQueueCounts: async taskQueueId => {
         const [provisionerId, workerType] = taskQueueId.split('/');
         return {
           pendingTasks: pendingCounts[taskQueueId] ?? 0,
@@ -218,11 +221,11 @@ const stubbedQueue = () => {
     },
   });
 
-  queue.setPending = function(taskQueueId, pending) {
+  queue.setPending = (taskQueueId, pending) => {
     pendingCounts[taskQueueId] = pending;
   };
 
-  queue.setClaimed = function(taskQueueId, claimed) {
+  queue.setClaimed = (taskQueueId, claimed) => {
     claimedCounts[taskQueueId] = claimed;
   };
 
@@ -256,23 +259,21 @@ const stubbedNotify = () => {
  * Get all workers
  */
 helper.getWorkers = async () =>
-  Promise.all((await helper.db.fns.get_worker_manager_workers2(null, null, null, null, null, null, null)).map(
-    async r => {
+  Promise.all(
+    (await helper.db.fns.get_worker_manager_workers2(null, null, null, null, null, null, null)).map(async r => {
       const w = Worker.fromDb(r);
       return await Worker.get(helper.db, {
         workerPoolId: w.workerPoolId,
         workerGroup: w.workerGroup,
         workerId: w.workerId,
       });
-    }));
+    })
+  );
 
-helper.resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
-    await testing.resetTables({ tableNames: [
-      'workers',
-      'worker_pools',
-      'worker_pool_errors',
-      'worker_pool_launch_configs',
-    ] });
+helper.resetTables = () => {
+  setup('reset tables', async () => {
+    await testing.resetTables({
+      tableNames: ['workers', 'worker_pools', 'worker_pool_errors', 'worker_pool_launch_configs'],
+    });
   });
 };

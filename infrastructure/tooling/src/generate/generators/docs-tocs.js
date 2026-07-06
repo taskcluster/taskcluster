@@ -1,6 +1,6 @@
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 import md from 'md-directory';
-import { join } from 'path';
+import { join } from 'node:path';
 import { REPO_ROOT, writeRepoJSON } from '../../utils/index.js';
 
 const mdParseDir = promisify(md.parseDir);
@@ -54,7 +54,7 @@ function sort(a, b) {
 
 function sortChildren(children) {
   // recursively sort child nodes
-  if (children && children.length) {
+  if (children?.length) {
     children.map(child => sortChildren(child.children));
   }
 
@@ -64,29 +64,31 @@ function sortChildren(children) {
 let prevNode = null;
 // Traverse the nodes in order, setting `up`, `next`, and `prev` links
 function addNav(node, parentNode) {
-  if (parentNode && parentNode.path) {
+  if (parentNode?.path) {
     node.up = {
       path: parentNode.path,
-      title: (parentNode.data && parentNode.data.title) || parentNode.name,
+      title: parentNode.data?.title || parentNode.name,
     };
   }
 
-  if (prevNode && prevNode.path) {
+  if (prevNode?.path) {
     node.prev = {
       path: prevNode.path,
-      title: (prevNode.data && prevNode.data.title) || prevNode.name,
+      title: prevNode.data?.title || prevNode.name,
     };
 
     prevNode.next = {
       path: node.path,
-      title: (node.data && node.data.title) || node.name,
+      title: node.data?.title || node.name,
     };
   }
 
   prevNode = node;
   parentNode = node;
 
-  node.children.forEach(child => addNav(child, parentNode));
+  node.children.forEach(child => {
+    addNav(child, parentNode);
+  });
 }
 
 function makeToc({ files, rootPath }) {
@@ -105,7 +107,7 @@ function makeToc({ files, rootPath }) {
       item.path
         .replace(rootPath, '')
         .split('/')
-        .forEach((name, idx) => {
+        .forEach((name, _idx) => {
           path.push(name);
 
           let child = ptr.children.find(child => child.name === name);
@@ -150,37 +152,41 @@ function makeToc({ files, rootPath }) {
   return nodes;
 }
 
-export const tasks = [{
-  title: 'Docs TOCs',
-  requires: ['target-gw-docs', 'target-worker-runner'],
-  provides: ['docs-toc'],
-  run: async (requirements, utils) => {
-    const filesWithExtensions = await mdParseDir(DOCS_DIR, { dirnames: true, filter: '**\/*.mdx' });
-    // strip .md and .mdx extensions from those filenames..
-    const files = Object.assign({},
-      ...Object.entries(filesWithExtensions)
-        .map(([filename, value]) => ({ [filename.replace(/\.mdx?/, '')]: value })));
-    const [gettingStarted, resources, people, changelog] = ['README', 'resources', 'people', 'changelog'].map(fileName =>
-      Object.assign(files[fileName], {
-        name: fileName,
-        path: fileName,
-        children: [],
-        content: undefined,
-        data: Object.assign(files[fileName].data || {}, {
-          order: files[fileName].data.order || 1000,
-        }),
-      }),
-    );
-    const docsToc = {
-      gettingStarted,
-      manual: makeToc({ rootPath: 'manual/', files }),
-      reference: makeToc({ rootPath: 'reference/', files }),
-      tutorial: makeToc({ rootPath: 'tutorial/', files }),
-      resources,
-      people,
-      changelog,
-    };
+export const tasks = [
+  {
+    title: 'Docs TOCs',
+    requires: ['target-gw-docs', 'target-worker-runner'],
+    provides: ['docs-toc'],
+    run: async (_requirements, _utils) => {
+      const filesWithExtensions = await mdParseDir(DOCS_DIR, { dirnames: true, filter: '**/*.mdx' });
+      // strip .md and .mdx extensions from those filenames..
+      const files = Object.assign(
+        {},
+        ...Object.entries(filesWithExtensions).map(([filename, value]) => ({ [filename.replace(/\.mdx?/, '')]: value }))
+      );
+      const [gettingStarted, resources, people, changelog] = ['README', 'resources', 'people', 'changelog'].map(
+        fileName =>
+          Object.assign(files[fileName], {
+            name: fileName,
+            path: fileName,
+            children: [],
+            content: undefined,
+            data: Object.assign(files[fileName].data || {}, {
+              order: files[fileName].data.order || 1000,
+            }),
+          })
+      );
+      const docsToc = {
+        gettingStarted,
+        manual: makeToc({ rootPath: 'manual/', files }),
+        reference: makeToc({ rootPath: 'reference/', files }),
+        tutorial: makeToc({ rootPath: 'tutorial/', files }),
+        resources,
+        people,
+        changelog,
+      };
 
-    writeRepoJSON('generated/docs-table-of-contents.json', docsToc);
+      writeRepoJSON('generated/docs-table-of-contents.json', docsToc);
+    },
   },
-}];
+];

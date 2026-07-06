@@ -1,23 +1,23 @@
 export default {
   Query: {
-    roles(parent, { filter }, { loaders }) {
-      return loaders.roles.load({ filter });
+    roles(_parent, { searchTerm }, { loaders }) {
+      return loaders.roles.load({ searchTerm });
     },
-    listRoleIds(parent, { connection, filter }, { loaders }) {
-      return loaders.roleIds.load({ filter, connection });
+    listRoleIds(_parent, { connection, searchTerm }, { loaders }) {
+      return loaders.roleIds.load({ searchTerm, connection });
     },
-    role(parent, { roleId }, { loaders }) {
+    role(_parent, { roleId }, { loaders }) {
       return loaders.role.load(roleId);
     },
   },
   Mutation: {
-    createRole(parent, { roleId, role }, { clients }) {
+    createRole(_parent, { roleId, role }, { clients }) {
       return clients.auth.createRole(roleId, role);
     },
-    updateRole(parent, { roleId, role }, { clients }) {
+    updateRole(_parent, { roleId, role }, { clients }) {
       return clients.auth.updateRole(roleId, role);
     },
-    async deleteRole(parent, { roleId }, { clients }) {
+    async deleteRole(_parent, { roleId }, { clients }) {
       await clients.auth.deleteRole(roleId);
 
       return roleId;

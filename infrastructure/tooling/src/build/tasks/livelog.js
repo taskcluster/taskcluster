@@ -1,6 +1,6 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import glob from 'glob';
-import path from 'path';
+import path from 'node:path';
 import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils/index.js';
 
 export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
@@ -27,10 +27,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Build livelog Docker Image',
-    requires: [
-      'release-version',
-      'docker-flow-version',
-    ],
+    requires: ['release-version', 'docker-flow-version'],
     provides: [
       'livelog-docker-image', // image tag
     ],
@@ -47,11 +44,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       const contextDir = path.join(baseDir, 'livelog-build');
       await execCommand({
-        command: [
-          'go', 'build',
-          '-o', path.join(contextDir, 'livelog'),
-          './tools/livelog',
-        ],
+        command: ['go', 'build', '-o', path.join(contextDir, 'livelog'), './tools/livelog'],
         dir: REPO_ROOT,
         logfile: path.join(logsDir, 'livelog-build.log'),
         utils,
@@ -60,32 +53,27 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
       utils.step({ title: 'Building Docker Image' });
 
-      fs.writeFileSync(
-        path.join(contextDir, 'version.json'),
-        requirements['docker-flow-version']);
+      fs.writeFileSync(path.join(contextDir, 'version.json'), requirements['docker-flow-version']);
 
       // this simple Dockerfile just packages the binary into a Docker image
       const dockerfile = path.join(contextDir, 'Dockerfile');
-      fs.writeFileSync(dockerfile, [
-        'FROM alpine:3 AS certs',
-        'RUN apk add --no-cache ca-certificates',
-        'RUN mkdir /empty',
-        'FROM scratch',
-        'EXPOSE 60023',
-        'EXPOSE 60022',
-        'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
-        'COPY --from=certs /empty /tmp',
-        'COPY version.json /app/version.json',
-        'COPY livelog /livelog',
-        'ENTRYPOINT ["/livelog"]',
-      ].join('\n'));
-      let command = [
-        'docker', 'build',
-        '--no-cache',
-        '--progress', 'plain',
-        '--tag', tag,
-        contextDir,
-      ];
+      fs.writeFileSync(
+        dockerfile,
+        [
+          'FROM alpine:3 AS certs',
+          'RUN apk add --no-cache ca-certificates',
+          'RUN mkdir /empty',
+          'FROM scratch',
+          'EXPOSE 60023',
+          'EXPOSE 60022',
+          'COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt',
+          'COPY --from=certs /empty /tmp',
+          'COPY version.json /app/version.json',
+          'COPY livelog /livelog',
+          'ENTRYPOINT ["/livelog"]',
+        ].join('\n')
+      );
+      const command = ['docker', 'build', '--no-cache', '--progress', 'plain', '--tag', tag, contextDir];
       await execCommand({
         command,
         dir: REPO_ROOT,
@@ -122,15 +110,9 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
 
   ensureTask(tasks, {
     title: 'Livelog Build Complete',
-    requires: [
-      'clean-artifacts-dir',
-      'livelog-artifacts',
-      'livelog-docker-image',
-    ],
-    provides: [
-      'target-livelog',
-    ],
-    run: async (requirements, utils) => {
+    requires: ['clean-artifacts-dir', 'livelog-artifacts', 'livelog-docker-image'],
+    provides: ['target-livelog'],
+    run: async (requirements, _utils) => {
       const artifactsDir = requirements['clean-artifacts-dir'];
       return {
         'target-livelog': [

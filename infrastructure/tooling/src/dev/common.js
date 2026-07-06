@@ -1,5 +1,4 @@
-export default ({ userConfig, prompts, configTmpl }) => {
-
+export default ({ userConfig, prompts }) => {
   prompts.push({
     type: 'input',
     when: () => !userConfig.rootUrl,
@@ -7,7 +6,7 @@ export default ({ userConfig, prompts, configTmpl }) => {
     message: 'What is the root url you will use for this deployment?',
     filter: rootUrl => {
       if (!rootUrl.includes('://')) {
-        rootUrl = 'https://' + rootUrl;
+        rootUrl = `https://${rootUrl}`;
       }
       return rootUrl;
     },
@@ -19,7 +18,7 @@ export default ({ userConfig, prompts, configTmpl }) => {
       let url;
       try {
         url = new URL(rootUrl);
-      } catch (err) {
+      } catch {
         return `${rootUrl} is not a valid URL`;
       }
       if (url.protocol !== 'https:') {
@@ -33,7 +32,7 @@ export default ({ userConfig, prompts, configTmpl }) => {
     type: 'input',
     when: () => !userConfig.applicationName,
     // this config was renamed, so help the user out with a default
-    default: userConfig.ui && userConfig.ui.application_name,
+    default: userConfig.ui?.application_name,
     name: 'applicationName',
     message: 'What human-readable name will your deployment have?',
   });
@@ -68,57 +67,62 @@ export default ({ userConfig, prompts, configTmpl }) => {
   });
 
   prompts.push({
-    when: () => !userConfig.ingressStaticIpName && !["nginx", "gateway"].includes(userConfig.ingressType),
+    when: () => !userConfig.ingressStaticIpName && !['nginx', 'gateway'].includes(userConfig.ingressType),
     type: 'input',
     name: 'ingressStaticIpName',
     message: 'Name of the google reserved static ip for this deployment. Or empty if ingress nginx is used.',
   });
 
   prompts.push({
-    when: () => !userConfig.ingressCertName && !["nginx", "gateway"].includes(userConfig.ingressType),
+    when: () => !userConfig.ingressCertName && !['nginx', 'gateway'].includes(userConfig.ingressType),
     type: 'input',
     name: 'ingressCertName',
     message: 'Name of the google cert for your cluster. Or empty if cert-manager is used.',
   });
 
   prompts.push({
-    when: () => !userConfig.gatewayClassName && userConfig.ingressType === "gateway",
+    when: () => !userConfig.gatewayClassName && userConfig.ingressType === 'gateway',
     type: 'input',
     name: 'gatewayClassName',
     default: 'gke-l7-regional-external-managed',
-    message: 'GatewayClass name for Gateway API (e.g. "gke-l7-regional-external-managed" for GKE, "nginx" for NGINX Gateway Fabric)',
+    message:
+      'GatewayClass name for Gateway API (e.g. "gke-l7-regional-external-managed" for GKE, "nginx" for NGINX Gateway Fabric)',
   });
 
   prompts.push({
-    when: () => !userConfig.gatewayStaticIpName && userConfig.ingressType === "gateway",
+    when: () => !userConfig.gatewayStaticIpName && userConfig.ingressType === 'gateway',
     type: 'input',
     name: 'gatewayStaticIpName',
-    message: 'Name of the reserved static IP address for the Gateway (e.g. "tc-dev-gateway-ip"). Leave blank to auto-assign.',
+    message:
+      'Name of the reserved static IP address for the Gateway (e.g. "tc-dev-gateway-ip"). Leave blank to auto-assign.',
   });
 
   prompts.push({
-    when: () => !userConfig.gcpManagedCertName && userConfig.ingressType === "gateway",
+    when: () => !userConfig.gcpManagedCertName && userConfig.ingressType === 'gateway',
     type: 'input',
     name: 'gcpManagedCertName',
-    message: 'Name of the GCP Certificate Manager certificate for TLS (e.g. "tc-dev-gw-cert"). Leave blank if not using GCP-managed certs.',
+    message:
+      'Name of the GCP Certificate Manager certificate for TLS (e.g. "tc-dev-gw-cert"). Leave blank if not using GCP-managed certs.',
   });
 
   prompts.push({
     when: () => !userConfig.ingressTlsSecretName,
     type: 'input',
     name: 'ingressTlsSecretName',
-    message: 'Name of the secret where cert-manager will store letsencrypt certificates, i.e. "my-tc-cert". Leave blank if cert-manager is not used.',
+    message:
+      'Name of the secret where cert-manager will store letsencrypt certificates, i.e. "my-tc-cert". Leave blank if cert-manager is not used.',
   });
 
   prompts.push({
     when: () => !userConfig.certManagerClusterIssuerName,
     type: 'input',
     name: 'certManagerClusterIssuerName',
-    message: 'Name of cert-manager\'s cluster issuer, if used, i.e. "letsencrypt-prod". Leave blank if cert-manager is not used.',
+    message:
+      'Name of cert-manager\'s cluster issuer, if used, i.e. "letsencrypt-prod". Leave blank if cert-manager is not used.',
   });
 
   prompts.push({
-    when: () => !userConfig.notify || !userConfig.notify.email_source_address,
+    when: () => !userConfig.notify?.email_source_address,
     type: 'input',
     name: 'notify.email_source_address',
     message: 'Email address for notifications to come from (must set up ses manually)',

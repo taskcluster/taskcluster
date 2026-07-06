@@ -15,10 +15,10 @@ import (
 	"maps"
 
 	"github.com/taskcluster/shell"
-	"github.com/taskcluster/taskcluster/v100/tools/d2g"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/gwconfig"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v100/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v101/tools/d2g"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/process"
 )
 
 const (
@@ -70,7 +70,7 @@ func (task *TaskRun) newCommandForInteractive(cmd []string, env []string, ctx co
 	var processCmd *process.Command
 	var err error
 
-	env = append(env, "TERM=hterm-256color")
+	env = append(env, "TERM=xterm-256color")
 
 	if ctx == nil {
 		processCmd, err = process.NewCommand(cmd, task.TaskDir(), env)

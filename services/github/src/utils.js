@@ -1,6 +1,6 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 import request from 'superagent';
-import util from 'util';
+import util from 'node:util';
 
 import { ISSUE_COMMENT_ACTIONS } from './constants.js';
 
@@ -31,13 +31,16 @@ export const throttleRequest = async ({ url, method, response = { status: 0 }, a
 
     if (e.status >= 500) {
       const newDelay = 2 ** attempt * delay;
-      return await setTimeoutPromise(newDelay, throttleRequest({
-        url,
-        method,
-        response: e,
-        attempt: attempt + 1,
-        delay,
-      }));
+      return await setTimeoutPromise(
+        newDelay,
+        throttleRequest({
+          url,
+          method,
+          response: e,
+          attempt: attempt + 1,
+          delay,
+        })
+      );
     }
 
     throw e;
@@ -48,7 +51,7 @@ export const throttleRequest = async ({ url, method, response = { status: 0 }, a
 // for overriding in testing..
 throttleRequest.request = request;
 
-export const ciSkipRegexp = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
+export const ciSkipRegexp = /\[(skip ci|ci skip)\]/i;
 
 /**
  * Check if push event should be skipped.
@@ -64,7 +67,7 @@ export const ciSkipRegexp = new RegExp('\\[(skip ci|ci skip)\\]', 'i');
  * @returns boolean
  */
 export const shouldSkipCommit = ({ commits, head_commit = {} }) => {
-  let last_commit = head_commit && head_commit.message ? head_commit : false;
+  let last_commit = head_commit?.message ? head_commit : false;
 
   if (!last_commit && Array.isArray(commits) && commits.length > 0) {
     last_commit = commits[commits.length - 1];
@@ -88,7 +91,7 @@ export const shouldSkipPullRequest = ({ pull_request }) => {
   return pull_request !== undefined && ciSkipRegexp.test(pull_request.title);
 };
 
-export const taskclusterCommandRegExp = new RegExp('^\\s*/taskcluster\\s+(.+)$', 'm');
+export const taskclusterCommandRegExp = /^\s*\/taskcluster\s+(.+)$/m;
 
 /**
  * Check if comment event should be skipped.
@@ -109,11 +112,11 @@ export const shouldSkipComment = ({ action, comment, issue }) => {
     return true;
   }
 
-  if (!issue || !issue.pull_request || issue.state !== 'open') {
+  if (!issue?.pull_request || issue.state !== 'open') {
     return true;
   }
 
-  if (!comment || !comment.body || !taskclusterCommandRegExp.test(comment.body)) {
+  if (!comment?.body || !taskclusterCommandRegExp.test(comment.body)) {
     return true;
   }
 
@@ -130,7 +133,7 @@ export const shouldSkipComment = ({ action, comment, issue }) => {
  * @returns string
  * @throws {Error} if no command is found
  */
-export const getTaskclusterCommand = (comment) => {
+export const getTaskclusterCommand = comment => {
   const match = taskclusterCommandRegExp.exec(comment.body);
   if (!match) {
     throw new Error('No taskcluster command found');
@@ -149,8 +152,7 @@ export const getTaskclusterCommand = (comment) => {
  * @param {string} src
  * @returns string
  */
-export const ansi2txt = (src) => {
-  // eslint-disable-next-line no-control-regex
+export const ansi2txt = src => {
   const pattern = [
     '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
     '(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))',
@@ -221,7 +223,7 @@ export const extractLog = async (stream, headLines = 20, tailLines = 200, maxPay
 
   const headLog = head.join('\n');
   const tailLog = tail.join('\n');
-  const fullLog = tailLog ? headLog + '\n' + tailLog : headLog;
+  const fullLog = tailLog ? `${headLog}\n${tailLog}` : headLog;
 
   // Small log: return full content if it fits
   if (totalLines <= headLines + tailLines && fullLog.length <= maxPayloadLength) {
@@ -258,7 +260,7 @@ export const extractLog = async (stream, headLines = 20, tailLines = 200, maxPay
   return `${headLog}\n\n...(${finalHiddenLines} lines hidden)...\n\n${finalTail}`;
 };
 
-export const markdownLog = (log) => ['\n---\n\n```bash\n', log, '\n```'].join('');
+export const markdownLog = log => ['\n---\n\n```bash\n', log, '\n```'].join('');
 export const markdownAnchor = (name, url) => `[${name}](${url})`;
 
 /**
@@ -270,10 +272,7 @@ export function generateXHubSignature(secret, payload, algorithm = 'sha1') {
   if (!['sha1', 'sha256'].includes(algorithm)) {
     throw new Error('Invalid algorithm');
   }
-  return [
-    algorithm,
-    crypto.createHmac(algorithm, secret).update(payload).digest('hex'),
-  ].join('=');
+  return [algorithm, crypto.createHmac(algorithm, secret).update(payload).digest('hex')].join('=');
 }
 
 /**

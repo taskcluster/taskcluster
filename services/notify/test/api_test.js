@@ -1,62 +1,64 @@
 import _ from 'lodash';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withFakeMatrix(mock, skipping);
-  helper.withFakeSlack(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withFakeMatrix(skipping);
+  helper.withFakeSlack(skipping);
   helper.withSES(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   // Dummy address for denylist tests
-  let dummyAddress1 = {
-    notificationType: "email",
-    notificationAddress: "name1@name.com",
+  const dummyAddress1 = {
+    notificationType: 'email',
+    notificationAddress: 'name1@name.com',
   };
-  let dummyAddress2 = {
-    notificationType: "matrix-room",
-    notificationAddress: "username",
+  const dummyAddress2 = {
+    notificationType: 'matrix-room',
+    notificationAddress: 'username',
   };
 
-  setup('reset notifier', async function() {
+  setup('reset notifier', async () => {
     const notifier = helper.load('notifier');
     notifier.hashCache = [];
   });
 
-  test('ping', async function() {
+  test('ping', async () => {
     await helper.apiClient.ping();
   });
 
-  test('pulse', async function() {
+  test('pulse', async () => {
     await helper.apiClient.pulse({ routingKey: 'notify-test', message: { test: 123 } });
-    helper.assertPulseMessage('notification', m => (
-      _.isEqual(m.payload.message, { test: 123 }) &&
-      _.isEqual(m.CCs, ['route.notify-test'])));
+    helper.assertPulseMessage(
+      'notification',
+      m => _.isEqual(m.payload.message, { test: 123 }) && _.isEqual(m.CCs, ['route.notify-test'])
+    );
   });
 
-  test('pulse() fails if pulse publish fails', async function() {
+  test('pulse() fails if pulse publish fails', async () => {
     helper.onPulsePublish(() => {
       throw new Error('uhoh');
     });
     const apiClient = helper.apiClient.use({ retries: 0 });
     await assert.rejects(
       () => apiClient.pulse({ routingKey: 'notify-test', message: { test: 456 } }),
-      err => err.statusCode === 500);
+      err => err.statusCode === 500
+    );
 
     const monitor = await helper.load('monitor');
     assert.equal(
-      monitor.manager.messages.filter(
-        ({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh',
-      ).length,
-      1);
+      monitor.manager.messages.filter(({ Type, Fields }) => Type === 'monitor.error' && Fields.message === 'uhoh')
+        .length,
+      1
+    );
     monitor.manager.reset();
   });
 
-  test('does not send notifications to denylisted pulse address', async function() {
+  test('does not send notifications to denylisted pulse address', async () => {
     // Add an address to the denylist
     await helper.apiClient.addDenylistAddress({
       notificationType: 'pulse',
@@ -73,7 +75,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertNoPulseMessage('notification');
   });
 
-  test('email', async function() {
+  test('email', async () => {
     await helper.apiClient.email({
       address: 'success@simulator.amazonses.com',
       subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKQ is Complete',
@@ -85,7 +87,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
-  test('does not send notifications to denylisted email address', async function() {
+  test('does not send notifications to denylisted email address', async () => {
     // Add an address to the denylist
     await helper.apiClient.addDenylistAddress({
       notificationType: 'email',
@@ -100,7 +102,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
         link: { text: 'Inspect Task', href: 'https://taskcluster.net/task-inspector/#Z-tDsP4jQ3OUTjN0Q6LNKQ' },
       });
     } catch (e) {
-      if (e.code !== "DenylistedAddress") {
+      if (e.code !== 'DenylistedAddress') {
         throw e;
       }
       return;
@@ -108,7 +110,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     throw new Error('expected an error');
   });
 
-  test('email without link', async function() {
+  test('email without link', async () => {
     await helper.apiClient.email({
       address: 'success@simulator.amazonses.com',
       subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKo is Complete',
@@ -119,7 +121,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
-  test('email with fullscreen template', async function() {
+  test('email with fullscreen template', async () => {
     await helper.apiClient.email({
       address: 'success@simulator.amazonses.com',
       subject: 'Task Z-tDsP4jQ3OUTjN0Q6LNKp is Complete',
@@ -131,7 +133,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     });
   });
 
-  test('matrix', async function() {
+  test('matrix', async () => {
     await helper.apiClient.matrix({ body: 'Does this work?', roomId: '!foobar:baz.com', msgtype: 'm.text' });
     assert.equal(helper.matrixClient.sendEvent.callCount, 1);
     assert.equal(helper.matrixClient.sendEvent.args[0][0], '!foobar:baz.com');
@@ -142,7 +144,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });
 
-  test('matrix (default msgtype)', async function() {
+  test('matrix (default msgtype)', async () => {
     await helper.apiClient.matrix({ body: 'Does this work?', roomId: '!foobar:baz.com' });
     assert.equal(helper.matrixClient.sendEvent.callCount, 1);
     assert.equal(helper.matrixClient.sendEvent.args[0][0], '!foobar:baz.com');
@@ -153,7 +155,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(monitor.manager.messages.find(m => m.Type === 'matrix-forbidden') === undefined);
   });
 
-  test('matrix (rejected)', async function() {
+  test('matrix (rejected)', async () => {
     try {
       await helper.apiClient.matrix({ body: 'Does this work?', roomId: '!rejected:baz.com' });
       throw new Error('should have failed');
@@ -166,7 +168,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     }
   });
 
-  test('matrix (denylisted)', async function() {
+  test('matrix (denylisted)', async () => {
     await helper.apiClient.addDenylistAddress({ notificationType: 'matrix-room', notificationAddress: '!foo:baz.com' });
     try {
       await helper.apiClient.matrix({ body: 'Does this work?', roomId: '!foo:baz.com' });
@@ -178,7 +180,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     }
   });
 
-  test('slack', async function() {
+  test('slack', async () => {
     await helper.apiClient.slack({ channelId: 'C123456', text: 'Does this work?' });
     assert.equal(helper.slackClient.chat.postMessage.callCount, 1);
     assert.deepStrictEqual(helper.slackClient.chat.postMessage.args[0][0], {
@@ -191,7 +193,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(monitor.manager.messages.find(m => m.Type === 'slack'));
   });
 
-  test('slack (denylisted)', async function() {
+  test('slack (denylisted)', async () => {
     await helper.apiClient.addDenylistAddress({ notificationType: 'slack-channel', notificationAddress: 'C123456' });
     try {
       await helper.apiClient.slack({ channelId: 'C123456', text: 'Does this work?' });
@@ -203,20 +205,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     }
   });
 
-  test('Denylist: addDenylistAddress()', async function() {
+  test('Denylist: addDenylistAddress()', async () => {
     // Try adding an address to the denylist
     await helper.apiClient.addDenylistAddress(dummyAddress1);
 
     // Check that the address was successfully added
-    await helper.db.fns.add_denylist_address(
+    await helper.db.fns.add_denylist_address(dummyAddress1.notificationType, dummyAddress1.notificationAddress);
+    const existsTable = await helper.db.fns.exists_denylist_address(
       dummyAddress1.notificationType,
-      dummyAddress1.notificationAddress,
+      dummyAddress1.notificationAddress
     );
-    let existsTable = await helper.db.fns.exists_denylist_address(
-      dummyAddress1.notificationType,
-      dummyAddress1.notificationAddress,
-    );
-    let exists = existsTable[0]["exists_denylist_address"];
+    const exists = existsTable[0].exists_denylist_address;
 
     assert(exists);
 
@@ -224,7 +223,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     await helper.apiClient.addDenylistAddress(dummyAddress1);
   });
 
-  test('Denylist: deleteDenylistAddress()', async function() {
+  test('Denylist: deleteDenylistAddress()', async () => {
     // Add some items
     await helper.apiClient.addDenylistAddress(dummyAddress1);
     await helper.apiClient.addDenylistAddress(dummyAddress2);
@@ -239,15 +238,15 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     assert(items.length, 1);
 
     // Only dummyAddress2 should be left in the table
-    let item = items[0];
-    assert.equal(item["notification_address"], dummyAddress2["notificationAddress"]);
-    assert.equal(item["notification_type"], dummyAddress2["notificationType"]);
+    const item = items[0];
+    assert.equal(item.notification_address, dummyAddress2.notificationAddress);
+    assert.equal(item.notification_type, dummyAddress2.notificationType);
 
     // Removing non-existant addresses should not throw an exception
     await helper.apiClient.deleteDenylistAddress(dummyAddress1);
   });
 
-  test('Denylist: listDenylist()', async function() {
+  test('Denylist: listDenylist()', async () => {
     // Call listDenylist() on an empty table
     let addressList = await helper.apiClient.listDenylist();
     assert(addressList.addresses, []);
@@ -258,7 +257,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
 
     // check the result of listDenylist()
     addressList = await helper.apiClient.listDenylist();
-    let expectedResult = [dummyAddress1, dummyAddress2].sort();
+    const expectedResult = [dummyAddress1, dummyAddress2].sort();
     assert.deepEqual(addressList.addresses.sort(), expectedResult);
   });
 });

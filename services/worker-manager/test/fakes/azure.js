@@ -1,5 +1,5 @@
 import { FakeCloud } from './fake.js';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 
 import azureApi from '../../src/providers/azure/azure-api.js';
 
@@ -12,28 +12,24 @@ import slugid from 'slugid';
  * that allow access to fakes for those interfaces.
  */
 export class FakeAzure extends FakeCloud {
-  constructor() {
-    super();
-  }
-
   _patch() {
-    this.sinon.stub(azureApi, 'AzureServiceClient').callsFake((creds) => {
+    this.sinon.stub(azureApi, 'AzureServiceClient').callsFake(creds => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.restClient;
     });
-    this.sinon.stub(azureApi, 'ComputeManagementClient').callsFake((creds, subId) => {
+    this.sinon.stub(azureApi, 'ComputeManagementClient').callsFake((creds, _subId) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.computeClient;
     });
-    this.sinon.stub(azureApi, 'NetworkManagementClient').callsFake((creds, subId) => {
+    this.sinon.stub(azureApi, 'NetworkManagementClient').callsFake((creds, _subId) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.networkClient;
     });
-    this.sinon.stub(azureApi, 'ResourceManagementClient').callsFake((creds, subId) => {
+    this.sinon.stub(azureApi, 'ResourceManagementClient').callsFake((creds, _subId) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.resourcesClient;
     });
-    this.sinon.stub(azureApi, 'DeploymentsClient').callsFake((creds, subId) => {
+    this.sinon.stub(azureApi, 'DeploymentsClient').callsFake((creds, _subId) => {
       assert.equal(creds?.getToken()?.token, 'fake-credentials');
       return this.deploymentsClient;
     });
@@ -59,20 +55,20 @@ export class FakeAzure extends FakeCloud {
     };
 
     this.computeClient = {
-      virtualMachines: this._managers['vm'],
-      disks: this._managers['disk'],
+      virtualMachines: this._managers.vm,
+      disks: this._managers.disk,
       pipeline: new FakePipeline(),
     };
     this.networkClient = {
-      networkInterfaces: this._managers['nic'],
-      publicIPAddresses: this._managers['ip'],
+      networkInterfaces: this._managers.nic,
+      publicIPAddresses: this._managers.ip,
       pipeline: new FakePipeline(),
     };
     this.resourcesClient = {
-      resourceGroups: this._managers['resourceGroup'],
+      resourceGroups: this._managers.resourceGroup,
       pipeline: new FakePipeline(),
     };
-    this.deploymentsClient = Object.assign(this._managers['deployment'], {
+    this.deploymentsClient = Object.assign(this._managers.deployment, {
       pipeline: new FakePipeline(),
     });
 
@@ -268,7 +264,7 @@ export class VMResourceManager extends ResourceManager {
   // Subclass Overrides
 
   _requestToResource(request) {
-    let dataDisks = [];
+    const dataDisks = [];
     for (let i = 0; i < request.parameters.storageProfile.dataDisks.length; i++) {
       dataDisks.push({ name: slugid.nice() });
     }
@@ -365,10 +361,7 @@ export class DeploymentManager extends ResourceManager {
     // Check if we should simulate a conflict
     if (this._conflictOnDelete.has(key)) {
       this._conflictOnDelete.delete(key); // Clear flag after first attempt
-      throw makeError(
-        `Unable to edit or replace deployment '${name}': previous deployment is still active`,
-        409,
-      );
+      throw makeError(`Unable to edit or replace deployment '${name}': previous deployment is still active`, 409);
     }
 
     this._deployments.delete(key);

@@ -128,11 +128,11 @@ type HookLastFireEdge implements Edge {
 }
 
 extend type Query {
-  hookGroups(filter: JSON): [HookGroup]
-  hooks(hookGroupId: ID!, filter: JSON): [Hook]
+  hookGroups(hookGroupId: ID): [HookGroup]
+  hooks(hookGroupId: ID!): [Hook]
   hook(hookGroupId: ID!, hookId: ID!): Hook
   hookStatus(hookGroupId: ID!, hookId: ID!): HookStatus
-  hookLastFires(hookGroupId: ID!, hookId: ID!, filter: JSON, connection: PageConnection): HookLastFireConnection
+  hookLastFires(hookGroupId: ID!, hookId: ID!, connection: PageConnection): HookLastFireConnection
 }
 
 extend type Mutation {

@@ -1,5 +1,5 @@
 import taskcluster from '@taskcluster/client';
-import assert from 'assert';
+import assert from 'node:assert';
 import debugFactory from 'debug';
 const debug = debugFactory('workerinfo');
 
@@ -27,8 +27,8 @@ class WorkerInfo {
    * for stale cache entries to accumulate.
    */
   async valueSeen(key, updateExpires) {
-    let now = new Date();
-    let nextUpdate = this.nextUpdateAt[key];
+    const now = new Date();
+    const nextUpdate = this.nextUpdateAt[key];
     if (!nextUpdate || nextUpdate < now) {
       this.nextUpdateAt[key] = taskcluster.fromNow(this.updateFrequency);
 
@@ -42,26 +42,30 @@ class WorkerInfo {
 
     // task queue seen
     if (taskQueueId) {
-      promises.push(this.valueSeen(taskQueueId, async () => {
-        await this.db.fns.task_queue_seen({
-          task_queue_id_in: taskQueueId,
-          expires_in: newExpiration,
-          description_in: null,
-          stability_in: null,
-        });
-      }));
+      promises.push(
+        this.valueSeen(taskQueueId, async () => {
+          await this.db.fns.task_queue_seen({
+            task_queue_id_in: taskQueueId,
+            expires_in: newExpiration,
+            description_in: null,
+            stability_in: null,
+          });
+        })
+      );
     }
 
     // worker seen
     if (taskQueueId && workerGroup && workerId) {
-      promises.push(this.valueSeen(`${taskQueueId}/${workerGroup}/${workerId}`, async () => {
-        await this.db.fns.queue_worker_seen_with_last_date_active({
-          task_queue_id_in: taskQueueId,
-          worker_group_in: workerGroup,
-          worker_id_in: workerId,
-          expires_in: newExpiration,
-        });
-      }));
+      promises.push(
+        this.valueSeen(`${taskQueueId}/${workerGroup}/${workerId}`, async () => {
+          await this.db.fns.queue_worker_seen_with_last_date_active({
+            task_queue_id_in: taskQueueId,
+            worker_group_in: workerGroup,
+            worker_id_in: workerId,
+            expires_in: newExpiration,
+          });
+        })
+      );
     }
 
     await Promise.all(promises);
@@ -83,7 +87,7 @@ class WorkerInfo {
     // note that the common case is one task, and a DB function to insert one
     // task is much simpler to write, so we just loop over this probably-one-element
     // array.
-    for (let task of tasks) {
+    for (const task of tasks) {
       await this.db.fns.queue_worker_task_seen({
         task_queue_id_in: taskQueueId,
         worker_group_in: workerGroup,

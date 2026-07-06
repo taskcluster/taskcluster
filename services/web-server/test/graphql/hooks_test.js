@@ -1,16 +1,16 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import gql from 'graphql-tag';
 import testing from '@taskcluster/lib-testing';
 import helper from '../helper.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withClients(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withClients(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
-  suite('Hooks GraphQL', function() {
-    test('hooks query works', async function() {
+  suite('Hooks GraphQL', () => {
+    test('hooks query works', async () => {
       const client = helper.getHttpClient();
       const hookGroupId = 'hook-group';
       const hookId = 'hook';
@@ -24,7 +24,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       };
 
       await client.mutate({
-        mutation: gql`${await helper.loadFixture('createHook.graphql') }`,
+        mutation: gql`${await helper.loadFixture('createHook.graphql')}`,
         variables: {
           hookGroupId,
           hookId,

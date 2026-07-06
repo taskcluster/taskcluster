@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import passport from 'passport';
 import { Strategy } from 'passport-github';
 import taskcluster from '@taskcluster/client';
@@ -64,7 +64,7 @@ export default class Github {
     return user;
   }
 
-  async addRoles(username, userId, user) {
+  async addRoles(_username, userId, user) {
     const [token] = await this.db.fns.load_github_access_token(String(userId));
 
     if (!token) {
@@ -106,19 +106,15 @@ export default class Github {
 
   useStrategy(app, cfg) {
     const { credentials } = cfg.taskcluster;
-    const strategyCfg = cfg.login.strategies['github'];
+    const strategyCfg = cfg.login.strategies.github;
     const loginMiddleware = login(cfg.app.publicUrl);
 
     if (!strategyCfg.clientId || !strategyCfg.clientSecret) {
-      throw new Error(
-        'Unable to use "github" login strategy without GitHub client ID or secret',
-      );
+      throw new Error('Unable to use "github" login strategy without GitHub client ID or secret');
     }
 
-    if (!credentials || !credentials.clientId || !credentials.accessToken) {
-      throw new Error(
-        'Unable to use "github" login strategy without taskcluster clientId and accessToken',
-      );
+    if (!credentials?.clientId || !credentials.accessToken) {
+      throw new Error('Unable to use "github" login strategy without taskcluster clientId and accessToken');
     }
 
     const callback = '/login/github/callback';
@@ -131,13 +127,13 @@ export default class Github {
           callbackURL: `${cfg.app.publicUrl}${callback}`,
           scope: 'repo',
         },
-        async (accessToken, refreshToken, profile, next) => {
+        async (accessToken, _refreshToken, profile, next) => {
           await this.db.fns.add_github_access_token(
             profile.id,
-            this.db.encrypt({ value: Buffer.from(accessToken, 'utf8') }),
+            this.db.encrypt({ value: Buffer.from(accessToken, 'utf8') })
           );
           const [userErr, user] = await tryCatch(
-            this.getUser({ username: profile.username, userId: Number(profile.id) }),
+            this.getUser({ username: profile.username, userId: Number(profile.id) })
           );
 
           if (userErr) {
@@ -162,15 +158,10 @@ export default class Github {
             identityProviderId: 'github',
             identity: user.identity,
           });
-        },
-      ),
+        }
+      )
     );
     app.get('/login/github', applySecurityHeaders, passport.authenticate('github'));
-    app.get(
-      callback,
-      applySecurityHeaders,
-      passport.authenticate('github'),
-      loginMiddleware,
-    );
+    app.get(callback, applySecurityHeaders, passport.authenticate('github'), loginMiddleware);
   }
 }

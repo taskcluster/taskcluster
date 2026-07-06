@@ -1,5 +1,5 @@
-import assert from 'assert';
-import crypto from 'crypto';
+import assert from 'node:assert';
+import crypto from 'node:crypto';
 import _ from 'lodash';
 import libUrls from 'taskcluster-lib-urls';
 import slugid from 'slugid';
@@ -10,19 +10,19 @@ import { Worker, WorkerPoolError } from '../data.js';
 /** @typedef {import('../data.js').WorkerPoolStats} WorkerPoolStats */
 
 /** @typedef {{
-*   monitor: object,
-*   notify: object,
-*   rootUrl: string,
-*   providerId: string,
-*   providerType: string,
-*   db: import('@taskcluster/lib-postgres').Database,
-*   estimator: import('../estimator.js').Estimator,
-*   Worker: import('../data.js').Worker,
-*   WorkerPoolError: import('../data.js').WorkerPoolError,
-*   validator: Function,
-*   publisher: import('@taskcluster/lib-pulse').PulsePublisher,
-*   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
-* }} ProviderConfigOptions */
+ *   monitor: object,
+ *   notify: object,
+ *   rootUrl: string,
+ *   providerId: string,
+ *   providerType: string,
+ *   db: import('@taskcluster/lib-postgres').Database,
+ *   estimator: import('../estimator.js').Estimator,
+ *   Worker: import('../data.js').Worker,
+ *   WorkerPoolError: import('../data.js').WorkerPoolError,
+ *   validator: Function,
+ *   publisher: import('@taskcluster/lib-pulse').PulsePublisher,
+ *   launchConfigSelector: import('../launch-config-selector.js').LaunchConfigSelector
+ * }} ProviderConfigOptions */
 
 /**
  * The parent class for all providers.
@@ -72,56 +72,46 @@ export class Provider {
     this.emailCache = [];
   }
 
-  async setup() {
-  }
+  async setup() {}
 
-  async initiate() {
-  }
+  async initiate() {}
 
-  async terminate() {
-  }
+  async terminate() {}
 
   validate(config) {
     assert(this.configSchema); // This must be set up by a provider impl
     return this.validator(config, libUrls.schema(this.rootUrl, 'worker-manager', `v1/${this.configSchema}.yml`));
   }
 
-  async prepare() {
-  }
+  async prepare() {}
 
   /**
    * @param {{ workerPool: WorkerPool, workerPoolStats: WorkerPoolStats }} opts
    */
-  async provision({ workerPool, workerPoolStats }) {
-  }
+  async provision() {}
 
   /**
    * @param {{ workerPool: WorkerPool }} opts
    */
-  async deprovision({ workerPool }) {
-  }
+  async deprovision() {}
 
   /**
    * @param {{ workerPool: WorkerPool, worker: Worker, workerIdentityProof: Record<string, any> }} opts
    */
-  async registerWorker({ worker, workerPool, workerIdentityProof }) {
+  async registerWorker() {
     throw new ApiError('not supported for this provider');
   }
 
-  async cleanup() {
-  }
+  async cleanup() {}
 
-  async scanPrepare() {
-  }
+  async scanPrepare() {}
 
   /**
    * @param {{ worker: Worker }} opts
    */
-  async checkWorker({ worker }) {
-  }
+  async checkWorker() {}
 
-  async scanCleanup() {
-  }
+  async scanCleanup() {}
 
   /**
    * Get active launch configs to spawn workers
@@ -156,21 +146,21 @@ export class Provider {
   /**
    * @param {{ workerPool: WorkerPool, workerId: string, workerGroup: string, input: object }} opts
    */
-  async createWorker({ workerPool, workerGroup, workerId, input }) {
+  async createWorker() {
     throw new ApiError('not supported for this provider');
   }
 
   /**
    * @param {{ workerPool: WorkerPool, worker: Worker, input: object }} opts
    */
-  async updateWorker({ workerPool, worker, input }) {
+  async updateWorker() {
     throw new ApiError('not supported for this provider');
   }
 
   /**
    * @param {{ worker: Worker, reason: string }} opts
    */
-  async removeWorker({ worker, reason }) {
+  async removeWorker() {
     throw new ApiError('not supported for this provider');
   }
 
@@ -231,7 +221,10 @@ export class Provider {
       runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
     };
     return this._onWorkerEvent({
-      worker, event: 'workerRemoved', extraLog, extraPublish: { reason },
+      worker,
+      event: 'workerRemoved',
+      extraLog,
+      extraPublish: { reason },
     });
   }
 
@@ -378,7 +371,7 @@ export class Provider {
     const queueInactivityTimeout = worker.providerData?.queueInactivityTimeout || 7200 * 1000;
 
     const lastActiveAfter = Date.now() - queueInactivityTimeout;
-    const isOlderThanTimeout = (date) => date?.getTime() < lastActiveAfter;
+    const isOlderThanTimeout = date => date?.getTime() < lastActiveAfter;
 
     // undefined means fields are missing (not fetched from db), null means legitimately empty
     if (worker.firstClaim === undefined || worker.lastDateActive === undefined) {
@@ -412,9 +405,9 @@ export class Provider {
    * this is also set in the lifecycle schema so update there if
    * changing.
    */
-  static interpretLifecycle({ lifecycle: {
-    registrationTimeout, reregistrationTimeout, queueInactivityTimeout,
-  } = {} }) {
+  static interpretLifecycle({
+    lifecycle: { registrationTimeout, reregistrationTimeout, queueInactivityTimeout } = {},
+  }) {
     reregistrationTimeout = reregistrationTimeout || 345600;
     queueInactivityTimeout = queueInactivityTimeout || 7200; // 2 hours by default
     let terminateAfter = null;
@@ -495,7 +488,7 @@ export class Provider {
       try {
         await error.create(this.db);
       } catch (err) {
-        if (!err || err.code !== 'EntityAlreadyExists') {
+        if (err?.code !== 'EntityAlreadyExists') {
           throw err;
         }
         const existing = await this.WorkerPoolError.get(this.db, { errorId, workerPoolId: workerPool.workerPoolId });
@@ -507,7 +500,7 @@ export class Provider {
     } catch (err) {
       this.monitor.reportError(err, { workerPool, kind, title });
     } finally {
-      // eslint-disable-next-line no-unsafe-finally
+      // biome-ignore lint/correctness/noUnsafeFinally: this method always returns the error record and never throws. The outer catch reports any failure
       return error;
     }
   }
@@ -529,10 +522,7 @@ export class Provider {
   }
 
   hashKey(idents) {
-    return crypto
-      .createHash('md5')
-      .update(JSON.stringify(idents))
-      .digest('hex');
+    return crypto.createHash('md5').update(JSON.stringify(idents)).digest('hex');
   }
 
   isDuplicate(...idents) {
@@ -583,8 +573,7 @@ export class Provider {
  * An error which, if thrown from API-related Provider methods, will be returned to
  * the user as a 400 Bad Request error containing `err.message`.
  */
-export class ApiError extends Error {
-}
+export class ApiError extends Error {}
 
 /**
  * Utility function for reportError

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { withApollo, graphql } from 'react-apollo';
 import PlusIcon from 'mdi-react/PlusIcon';
-import escapeStringRegexp from 'escape-string-regexp';
 import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
 import Spinner from '../../../components/Spinner';
@@ -49,7 +48,9 @@ export default class WorkerManagerWorkerPoolsView extends Component {
   }
 
   loadErrorStats = async () => {
-    if (this.state.errorStatsLoading) return;
+    if (this.state.errorStatsLoading) {
+      return;
+    }
 
     this.setState({ errorStatsLoading: true });
 
@@ -78,14 +79,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       workerPoolsConnection: {
         limit: VIEW_WORKER_POOLS_PAGE_SIZE,
       },
-      filter: workerPoolSearch
-        ? {
-            workerPoolId: {
-              $regex: escapeStringRegexp(workerPoolSearch),
-              $options: 'i',
-            },
-          }
-        : null,
+      searchTerm: workerPoolSearch || null,
     });
     this.setState({ workerPoolSearch });
   };
@@ -122,14 +116,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
           cursor,
           previousCursor,
         },
-        filter: this.state.workerPoolSearch
-          ? {
-              workerPoolId: {
-                $regex: escapeStringRegexp(this.state.workerPoolSearch),
-                $options: 'i',
-              },
-            }
-          : null,
+        searchTerm: this.state.workerPoolSearch || null,
       },
       updateQuery(previousResult, { fetchMoreResult }) {
         const { edges, pageInfo } =

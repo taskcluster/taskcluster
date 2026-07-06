@@ -1,17 +1,16 @@
-import _ from 'lodash';
 import taskcluster from '@taskcluster/client';
 import sinon from 'sinon';
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import { FakeAzure, FakeHttpHeaders } from './fakes/index.js';
 import { AzureProvider, isAllowedAiaLocation } from '../src/providers/azure/index.js';
 import { dnToString, getAuthorityAccessInfo, getCertFingerprint, cloneCaStore } from '../src/providers/azure/utils.js';
 import testing from '@taskcluster/lib-testing';
 import forge from 'node-forge';
-import fs from 'fs';
-import http from 'http';
+import fs from 'node:fs';
+import http from 'node:http';
 import got from 'got';
-import path from 'path';
+import path from 'node:path';
 import { WorkerPool, Worker, WorkerPoolStats } from '../src/data.js';
 import Debug from 'debug';
 import { loadCertificates } from '../src/providers/azure/azure-ca-certs/index.js';
@@ -19,29 +18,31 @@ import { loadCertificates } from '../src/providers/azure/azure-ca-certs/index.js
 const debug = Debug('provider_azure_test');
 const __dirname = new URL('.', import.meta.url).pathname;
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
-  helper.withFakeNotify(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withFakeQueue(skipping);
+  helper.withFakeNotify(skipping);
+  helper.resetTables();
 
   let provider;
-  let providerId = 'azure';
-  let workerPoolId = 'foo/bar';
+  const providerId = 'azure';
+  const workerPoolId = 'foo/bar';
 
   const fake = new FakeAzure();
   fake.forSuite();
 
-  let baseProviderData = {
+  const baseProviderData = {
     location: 'westus',
     resourceGroupName: 'rgrp',
     vm: {
       name: 'some vm',
     },
-    disks: [{
-      name: 'some disk',
-    }],
+    disks: [
+      {
+        name: 'some disk',
+      },
+    ],
     nic: {
       name: 'some nic',
     },
@@ -51,17 +52,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   };
 
   let monitor;
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     monitor = await helper.load('monitor');
   });
 
-  const assertProvisioningState = async (expectations) => {
+  const assertProvisioningState = async expectations => {
     // re-fetch the worker, since it should have been updated
     const workers = await helper.getWorkers();
     assert.equal(workers.length, 1);
     const worker = workers[0];
 
-    for (let resourceType of ['ip', 'vm', 'nic']) {
+    for (const resourceType of ['ip', 'vm', 'nic']) {
       const name = worker.providerData[resourceType].name;
       switch (expectations[resourceType]) {
         case 'none':
@@ -92,9 +93,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure RSA TLS Issuing CA 04';
   const intermediateCertIssuer = '/C=US,/O=DigiCert Inc,/OU=www.digicert.com,/CN=DigiCert Global Root G2';
   const intermediateCertPath = path.resolve(
-    __dirname, '../src/providers/azure/azure-ca-certs/microsoft_azure_rsa_tls_issuing_ca_04_xsign.pem');
-  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2004%20-%20xsign.crt';
-  const azureSignatures = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good.json'), 'utf-8'));
+    __dirname,
+    '../src/providers/azure/azure-ca-certs/microsoft_azure_rsa_tls_issuing_ca_04_xsign.pem'
+  );
+  const intermediateCertUrl =
+    'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2004%20-%20xsign.crt';
+  const azureSignatures = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good.json'), 'utf-8')
+  );
   const allCertificates = loadCertificates();
 
   const getIntermediateCert = () => {
@@ -103,14 +109,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   };
 
   const removeAllCertsFromStore = () => {
-    allCertificates.forEach((cert) => {
+    allCertificates.forEach(cert => {
       const intermediate = forge.pki.certificateFromPem(cert.certificate);
       provider.caStore.removeCertificate(intermediate);
     });
   };
 
   const restoreAllCerts = () => {
-    allCertificates.forEach((cert) => {
+    allCertificates.forEach(cert => {
       const intermediate = forge.pki.certificateFromPem(cert.certificate);
       provider.caStore.addCertificate(intermediate);
     });
@@ -126,35 +132,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     cert.setSubject([{ name: 'commonName', value: 'metadata.azure.com' }]);
     cert.setIssuer([{ name: 'commonName', value: 'Unknown-CA' }]);
 
-    const authorityInfoAccess = forge.asn1.create(
-      forge.asn1.Class.UNIVERSAL,
-      forge.asn1.Type.SEQUENCE,
-      true,
-      [forge.asn1.create(
-        forge.asn1.Class.UNIVERSAL,
-        forge.asn1.Type.SEQUENCE,
-        true,
-        [
-          forge.asn1.create(
-            forge.asn1.Class.UNIVERSAL,
-            forge.asn1.Type.OID,
-            false,
-            forge.asn1.oidToDer('1.3.6.1.5.5.7.48.2').getBytes(),
-          ),
-          forge.asn1.create(
-            forge.asn1.Class.CONTEXT_SPECIFIC,
-            6,
-            false,
-            aiaUrl,
-          ),
-        ],
-      )],
-    );
+    const authorityInfoAccess = forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [
+      forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [
+        forge.asn1.create(
+          forge.asn1.Class.UNIVERSAL,
+          forge.asn1.Type.OID,
+          false,
+          forge.asn1.oidToDer('1.3.6.1.5.5.7.48.2').getBytes()
+        ),
+        forge.asn1.create(forge.asn1.Class.CONTEXT_SPECIFIC, 6, false, aiaUrl),
+      ]),
+    ]);
 
-    cert.setExtensions([{
-      name: 'authorityInfoAccess',
-      value: forge.asn1.toDer(authorityInfoAccess).getBytes(),
-    }]);
+    cert.setExtensions([
+      {
+        name: 'authorityInfoAccess',
+        value: forge.asn1.toDer(authorityInfoAccess).getBytes(),
+      },
+    ]);
     cert.sign(keys.privateKey, forge.md.sha256.create());
 
     const payload = JSON.stringify({
@@ -175,55 +170,51 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     return Buffer.from(forge.asn1.toDer(message.toAsn1()).getBytes(), 'binary').toString('base64');
   };
 
-  suite('helpers', function() {
+  suite('helpers', () => {
     const testCert = forge.pki.certificateFromPem(fs.readFileSync(intermediateCertPath, 'utf-8'));
 
-    test('dnToString of subject', async function() {
+    test('dnToString of subject', async () => {
       const dn = dnToString(testCert.subject);
       assert.equal(dn, intermediateCertSubject);
     });
 
-    test('dnToString of issuer', async function() {
+    test('dnToString of issuer', async () => {
       const dn = dnToString(testCert.issuer);
       assert.equal(dn, intermediateCertIssuer);
     });
 
-    test('getCertFingerprint', async function() {
+    test('getCertFingerprint', async () => {
       const fingerprint = getCertFingerprint(testCert);
       // this matches the "thumbprint" (?) on https://www.microsoft.com/pki/mscorp/cps/default.htm
       assert.equal(fingerprint, intermediateCertFingerprint);
     });
 
-    test('getAuthorityAccessInfo', async function() {
+    test('getAuthorityAccessInfo', async () => {
       const info = getAuthorityAccessInfo(testCert);
-      assert.deepEqual(
-        info,
-        [
-          { method: "OSCP", location: "http://ocsp.digicert.com" },
-          { method: 'CA Issuer', location: 'http://cacerts.digicert.com/DigiCertGlobalRootG2.crt' },
-        ]);
+      assert.deepEqual(info, [
+        { method: 'OSCP', location: 'http://ocsp.digicert.com' },
+        { method: 'CA Issuer', location: 'http://cacerts.digicert.com/DigiCertGlobalRootG2.crt' },
+      ]);
     });
 
-    test('isAllowedAiaLocation allows trusted Azure CA hosts', async function() {
+    test('isAllowedAiaLocation allows trusted Azure CA hosts', async () => {
       assert.equal(
-        isAllowedAiaLocation('http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2008.crt'),
-        true,
+        isAllowedAiaLocation(
+          'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2008.crt'
+        ),
+        true
       );
       assert.equal(
-        isAllowedAiaLocation('http://WWW.MICROSOFT.COM/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2008.crt'),
-        true,
+        isAllowedAiaLocation(
+          'http://WWW.MICROSOFT.COM/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2008.crt'
+        ),
+        true
       );
-      assert.equal(
-        isAllowedAiaLocation('http://cacerts.digicert.com/DigiCertGlobalRootG2.crt'),
-        true,
-      );
-      assert.equal(
-        isAllowedAiaLocation('https://caissuers.microsoft.com/foo.crt'),
-        true,
-      );
+      assert.equal(isAllowedAiaLocation('http://cacerts.digicert.com/DigiCertGlobalRootG2.crt'), true);
+      assert.equal(isAllowedAiaLocation('https://caissuers.microsoft.com/foo.crt'), true);
     });
 
-    test('isAllowedAiaLocation rejects untrusted or malformed URLs', async function() {
+    test('isAllowedAiaLocation rejects untrusted or malformed URLs', async () => {
       assert.equal(isAllowedAiaLocation('http://169.254.169.254/metadata/attested/document'), false);
       assert.equal(isAllowedAiaLocation('http://[::1]/cert.crt'), false);
       assert.equal(isAllowedAiaLocation('http://localhost/cert.crt'), false);
@@ -235,14 +226,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(isAllowedAiaLocation('not a url'), false);
     });
 
-    test('cloneCaStore handles invalid inputs', async function() {
+    test('cloneCaStore handles invalid inputs', async () => {
       assert.throws(() => cloneCaStore(null), /Invalid input/);
       assert.throws(() => cloneCaStore(undefined), /Invalid input/);
       assert.throws(() => cloneCaStore({}), /Invalid input/);
       assert.throws(() => cloneCaStore({ certs: 'not an object' }), /Invalid input/);
     });
 
-    test('cloneCaStore creates independent store', async function() {
+    test('cloneCaStore creates independent store', async () => {
       const originalStore = forge.pki.createCaStore();
       originalStore.addCertificate(testCert);
 
@@ -260,7 +251,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  setup(async function() {
+  setup(async () => {
     provider = new AzureProvider({
       providerId,
       notify: await helper.load('notify'),
@@ -293,7 +284,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
   });
 
   const makeWorkerPool = async (overrides = {}, launchConfigOverrides = {}) => {
-    let workerPool = WorkerPool.fromApi({
+    const workerPool = WorkerPool.fromApi({
       workerPoolId,
       providerId,
       description: 'none',
@@ -344,8 +335,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }[resourceType];
   };
 
-  suite('setup', function() {
-    test('has all Azure root certificates', async function() {
+  suite('setup', () => {
+    test('has all Azure root certificates', async () => {
       // https://docs.microsoft.com/en-us/azure/security/fundamentals/tls-certificate-changes
       const azureRootCAs = new Map([
         ['df3c24f9bfd666761b268073fe06d1cc8d4f82a4', 'DigiCert Global Root G2'],
@@ -380,25 +371,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('provisioning', function() {
+  suite('provisioning', () => {
     const provisionWorkerPool = async (launchConfig, overrides) => {
       const workerPool = await makeWorkerPool({
         config: {
           minCapacity: 1,
           maxCapacity: 1,
           scalingRatio: 1,
-          launchConfigs: [{
-            workerManager: {
-              capacityPerInstance: 1,
+          launchConfigs: [
+            {
+              workerManager: {
+                capacityPerInstance: 1,
+              },
+              subnetId: 'some/subnet',
+              location: 'westus',
+              hardwareProfile: { vmSize: 'Basic_A2' },
+              storageProfile: {
+                osDisk: {},
+              },
+              ...launchConfig,
             },
-            subnetId: 'some/subnet',
-            location: 'westus',
-            hardwareProfile: { vmSize: 'Basic_A2' },
-            storageProfile: {
-              osDisk: {},
-            },
-            ...launchConfig,
-          }],
+          ],
           ...overrides,
         },
         owner: 'whatever@example.com',
@@ -430,7 +423,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return worker;
     };
 
-    test('provision with no launch configs', async function() {
+    test('provision with no launch configs', async () => {
       const workerPool = await makeWorkerPool({
         config: {
           minCapacity: 1,
@@ -447,7 +440,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(workers.length, 0);
     });
 
-    test('provision a simple worker', async function() {
+    test('provision a simple worker', async () => {
       const worker = await provisionWorkerPool({});
 
       assert.equal(worker.workerPoolId, workerPoolId);
@@ -466,13 +459,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(providerData.location, 'westus');
       assert.equal(providerData.resourceGroupName, 'rgrp');
       assert.equal(providerData.workerConfig, undefined);
-      assert.equal(providerData.tags['created-by'], 'taskcluster-wm-' + providerId);
+      assert.equal(providerData.tags['created-by'], `taskcluster-wm-${providerId}`);
       assert.equal(providerData.tags['managed-by'], 'taskcluster');
       assert.equal(providerData.tags['provider-id'], providerId);
       assert.equal(providerData.tags['worker-group'], 'westus');
       assert.equal(providerData.tags['worker-pool-id'], workerPoolId);
       assert.equal(providerData.tags['root-url'], helper.rootUrl);
-      assert.equal(providerData.tags['owner'], 'whatever@example.com');
+      assert.equal(providerData.tags.owner, 'whatever@example.com');
 
       const customData = JSON.parse(Buffer.from(providerData.vm.config.osProfile.customData, 'base64'));
       assert.equal(customData.workerPoolId, workerPoolId);
@@ -484,52 +477,57 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       helper.assertPulseMessage('worker-requested', m => m.payload.launchConfigId === worker.launchConfigId);
     });
 
-    test('provision with custom tags', async function() {
+    test('provision with custom tags', async () => {
       const worker = await provisionWorkerPool({
         tags: { mytag: 'myvalue' },
       });
-      assert.equal(worker.providerData.tags['mytag'], 'myvalue');
+      assert.equal(worker.providerData.tags.mytag, 'myvalue');
       helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
     });
 
-    test('provision with lifecycle', async function() {
-      const worker = await provisionWorkerPool({}, {
-        lifecycle: {
-          registrationTimeout: 6,
-          reregistrationTimeout: 6,
-        },
-      });
+    test('provision with lifecycle', async () => {
+      const worker = await provisionWorkerPool(
+        {},
+        {
+          lifecycle: {
+            registrationTimeout: 6,
+            reregistrationTimeout: 6,
+          },
+        }
+      );
       assert(worker.providerData.terminateAfter - Date.now() - 6000 < 5000);
       assert.equal(worker.providerData.reregistrationTimeout, 6000);
       helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
     });
 
-    test('provision with custom tags named after built-in tags', async function() {
+    test('provision with custom tags named after built-in tags', async () => {
       const worker = await provisionWorkerPool({
         tags: { 'created-by': 'me!' },
       });
-      assert.equal(worker.providerData.tags['created-by'], 'taskcluster-wm-' + providerId);
+      assert.equal(worker.providerData.tags['created-by'], `taskcluster-wm-${providerId}`);
       helper.assertPulseMessage('worker-requested', m => m.payload.workerId === worker.workerId);
     });
 
-    test('provision with workerConfig', async function() {
+    test('provision with workerConfig', async () => {
       const worker = await provisionWorkerPool({
         workerConfig: { runTasksFaster: true },
       });
       assert.equal(worker.providerData.workerConfig.runTasksFaster, true);
     });
 
-    test('provision with named disks ignores names', async function() {
+    test('provision with named disks ignores names', async () => {
       const worker = await provisionWorkerPool({
         storageProfile: {
           osDisk: {
             name: 'my_os_disk',
             testProperty: 1,
           },
-          dataDisks: [{
-            name: 'my_data_disk',
-            testProperty: 2,
-          }],
+          dataDisks: [
+            {
+              name: 'my_data_disk',
+              testProperty: 2,
+            },
+          ],
         },
       });
       const vmConfig = worker.providerData.vm.config;
@@ -539,7 +537,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(vmConfig.storageProfile.dataDisks[0].testProperty, 2);
     });
 
-    test('provision with several osDisks', async function() {
+    test('provision with several osDisks', async () => {
       const worker = await provisionWorkerPool({
         storageProfile: {
           osDisk: {
@@ -569,7 +567,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(vmConfig.storageProfile.dataDisks[3].testProperty, 5);
     });
 
-    test('provision with extra azure profiles', async function() {
+    test('provision with extra azure profiles', async () => {
       const worker = await provisionWorkerPool({
         billingProfile: {
           maxPrice: 10,
@@ -598,7 +596,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(vmConfig.networkProfile.networkInterfaces); // still set..
     });
 
-    test('provision with ARM template config creates deployment worker', async function() {
+    test('provision with ARM template config creates deployment worker', async () => {
       await provisionWorkerPool({
         armDeployment: {
           mode: 'Incremental',
@@ -624,7 +622,78 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(worker.providerData.armDeployment.mode, 'Incremental');
     });
 
-    test('ARM deployment is cleaned up after successful provisioning', async function() {
+    test('records metric when ARM deployment creation fails', async () => {
+      const recordedMetrics = [];
+      const originalMetric = provider.monitor._metric.azureArmDeploymentError;
+      const originalBeginCreateOrUpdate = fake.deploymentsClient.deployments.beginCreateOrUpdate;
+      provider.monitor._metric.azureArmDeploymentError = (value, labels) => {
+        recordedMetrics.push({ value, labels });
+      };
+      fake.deploymentsClient.deployments.beginCreateOrUpdate = async () => {
+        const err = new Error('Task timed out after 180000ms (queue has 4 running, 0 waiting)');
+        err.name = 'TimeoutError';
+        throw err;
+      };
+
+      try {
+        const workerPool = await makeWorkerPool({
+          config: {
+            minCapacity: 1,
+            maxCapacity: 1,
+            scalingRatio: 1,
+            launchConfigs: [
+              {
+                workerManager: {
+                  capacityPerInstance: 1,
+                },
+                armDeployment: {
+                  mode: 'Incremental',
+                  templateLink: {
+                    id: '/subscriptions/test/resourceGroups/test/providers/Microsoft.Resources/templateSpecs/test/versions/1.0.0',
+                  },
+                  parameters: {
+                    location: { value: 'east' },
+                    vmSize: { value: 'Standard_F8s_v2' },
+                    priority: { value: 'Spot' },
+                    imageId: {
+                      value:
+                        '/subscriptions/fake/resourceGroups/images/providers/Microsoft.Compute/galleries/g/images/i/versions/1.0.3',
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        });
+        const workerPoolStats = new WorkerPoolStats('wpid');
+
+        await provider.provision({ workerPool, workerPoolStats });
+
+        assert.deepEqual(recordedMetrics, [
+          {
+            value: 1,
+            labels: {
+              providerId,
+              workerPoolId,
+              workerGroup: 'east',
+              errorKind: 'creation-error',
+              errorCode: 'TimeoutError',
+              statusCode: 'unknown',
+              provisioningState: 'unknown',
+              provisioningOperation: 'Create',
+              targetResourceType: 'unknown',
+              vmSize: 'Standard_F8s_v2',
+              priority: 'Spot',
+            },
+          },
+        ]);
+      } finally {
+        provider.monitor._metric.azureArmDeploymentError = originalMetric;
+        fake.deploymentsClient.deployments.beginCreateOrUpdate = originalBeginCreateOrUpdate;
+      }
+    });
+
+    test('ARM deployment is cleaned up after successful provisioning', async () => {
       await provisionWorkerPool({
         armDeployment: {
           mode: 'Incremental',
@@ -641,13 +710,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
-      let worker = workers[0];
+      const worker = workers[0];
 
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
 
-      assert.ok(fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
-        'deployment should exist before checkWorker');
+      assert.ok(
+        fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should exist before checkWorker'
+      );
 
       // Scan prepare and check worker to trigger deployment completion check
       await provider.scanPrepare();
@@ -656,15 +727,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.reload(helper.db);
 
       // Verify deployment was cleaned up
-      assert.ok(!fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
-        'deployment should be deleted after successful provisioning');
-      assert.ok(worker.providerData.provisioningComplete,
-        'worker should be marked as provisioning complete');
-      assert.ok(worker.providerData.deployment.operation,
-        'deployment operation should have started at this point');
+      assert.ok(
+        !fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should be deleted after successful provisioning'
+      );
+      assert.ok(worker.providerData.provisioningComplete, 'worker should be marked as provisioning complete');
+      assert.ok(worker.providerData.deployment.operation, 'deployment operation should have started at this point');
     });
 
-    test('keeps ARM deployment when keepDeployment is true', async function() {
+    test('keeps ARM deployment when keepDeployment is true', async () => {
       await provisionWorkerPool({
         workerManager: {
           capacityPerInstance: 1,
@@ -685,7 +756,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
-      let worker = workers[0];
+      const worker = workers[0];
 
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
@@ -695,12 +766,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.reload(helper.db);
 
       assert.equal(worker.providerData.keepDeployment, true, 'keepDeployment flag should be stored on provider data');
-      assert.ok(fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
-        'deployment should remain when keepDeployment is true');
+      assert.ok(
+        fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should remain when keepDeployment is true'
+      );
       assert.equal(worker.providerData.deployment.id, `id/${deploymentName}`);
     });
 
-    test('handles 409 conflict when deleting active ARM deployment', async function() {
+    test('handles 409 conflict when deleting active ARM deployment', async () => {
       await provisionWorkerPool({
         armDeployment: {
           mode: 'Incremental',
@@ -717,13 +790,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
-      let worker = workers[0];
+      const worker = workers[0];
 
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
 
-      fake.deploymentsClient.deployments.setFakeShouldConflictOnDelete(
-        resourceGroupName, deploymentName, true);
+      fake.deploymentsClient.deployments.setFakeShouldConflictOnDelete(resourceGroupName, deploymentName, true);
 
       await provider.scanPrepare();
       provider.errors[workerPoolId] = [];
@@ -731,22 +803,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.reload(helper.db);
 
       // Deployment should still exist (delete failed with 409)
-      assert.ok(fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
-        'deployment should still exist after 409 conflict');
+      assert.ok(
+        fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should still exist after 409 conflict'
+      );
 
       // No error should be reported
-      assert.equal(provider.errors[workerPoolId].length, 0,
-        'no errors should be reported for 409 conflict');
+      assert.equal(provider.errors[workerPoolId].length, 0, 'no errors should be reported for 409 conflict');
 
       // Second checkWorker call - should succeed in deleting
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
 
-      assert.ok(!fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
-        'deployment should be deleted on retry');
+      assert.ok(
+        !fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'deployment should be deleted on retry'
+      );
     });
 
-    test('failed ARM deployment resources are cleaned up', async function() {
+    test('failed ARM deployment resources are cleaned up', async () => {
       await provisionWorkerPool({
         armDeployment: {
           mode: 'Incremental',
@@ -763,48 +838,49 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
-      let worker = workers[0];
+      const worker = workers[0];
 
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
       const vmName = worker.providerData.vm.name;
 
       // simulate partial deployment failure
-      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations(
+      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations(resourceGroupName, deploymentName, [
+        {
+          properties: {
+            provisioningState: 'Succeeded',
+            targetResource: {
+              resourceType: 'Microsoft.Network/publicIPAddresses',
+              id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/publicIPAddresses/fake-ip`,
+            },
+          },
+        },
+        {
+          properties: {
+            provisioningState: 'Succeeded',
+            targetResource: {
+              resourceType: 'Microsoft.Network/networkInterfaces',
+              id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/networkInterfaces/fake-nic`,
+            },
+          },
+        },
+        {
+          properties: {
+            provisioningState: 'Failed',
+            targetResource: {
+              resourceType: 'Microsoft.Compute/virtualMachines',
+              id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Compute/virtualMachines/${vmName}`,
+            },
+          },
+        },
+      ]);
+
+      fake.deploymentsClient.deployments.setFakeDeploymentState(
         resourceGroupName,
         deploymentName,
-        [
-          {
-            properties: {
-              provisioningState: 'Succeeded',
-              targetResource: {
-                resourceType: 'Microsoft.Network/publicIPAddresses',
-                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/publicIPAddresses/fake-ip`,
-              },
-            },
-          },
-          {
-            properties: {
-              provisioningState: 'Succeeded',
-              targetResource: {
-                resourceType: 'Microsoft.Network/networkInterfaces',
-                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/networkInterfaces/fake-nic`,
-              },
-            },
-          },
-          {
-            properties: {
-              provisioningState: 'Failed',
-              targetResource: {
-                resourceType: 'Microsoft.Compute/virtualMachines',
-                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Compute/virtualMachines/${vmName}`,
-              },
-            },
-          },
-        ],
+        'Failed',
+        'VM provisioning failed'
       );
-
-      fake.deploymentsClient.deployments.setFakeDeploymentState(resourceGroupName, deploymentName, 'Failed', 'VM provisioning failed');
 
       // Trigger deployment check - should extract resources and mark for removal
       await provider.scanPrepare();
@@ -862,11 +938,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.ok(!worker.providerData.failedDeploymentResources, 'failedDeploymentResources should be cleaned up');
 
       // Deployment should be deleted
-      assert.ok(!fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
-        'failed deployment should be deleted');
+      assert.ok(
+        !fake.deploymentsClient.deployments.deploymentExists(resourceGroupName, deploymentName),
+        'failed deployment should be deleted'
+      );
     });
 
-    test('failed ARM deployment stops re-removing workers once stopping', async function() {
+    test('failed ARM deployment stops re-removing workers once stopping', async () => {
       await provisionWorkerPool({
         armDeployment: {
           mode: 'Incremental',
@@ -881,37 +959,38 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
 
-      let [worker] = await helper.getWorkers();
+      const [worker] = await helper.getWorkers();
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
       const vmName = worker.providerData.vm.name;
 
-      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations(
+      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations(resourceGroupName, deploymentName, [
+        {
+          properties: {
+            provisioningState: 'Succeeded',
+            targetResource: {
+              resourceType: 'Microsoft.Network/publicIPAddresses',
+              id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/publicIPAddresses/fake-ip`,
+            },
+          },
+        },
+        {
+          properties: {
+            provisioningState: 'Failed',
+            targetResource: {
+              resourceType: 'Microsoft.Compute/virtualMachines',
+              id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Compute/virtualMachines/${vmName}`,
+            },
+          },
+        },
+      ]);
+
+      fake.deploymentsClient.deployments.setFakeDeploymentState(
         resourceGroupName,
         deploymentName,
-        [
-          {
-            properties: {
-              provisioningState: 'Succeeded',
-              targetResource: {
-                resourceType: 'Microsoft.Network/publicIPAddresses',
-                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Network/publicIPAddresses/fake-ip`,
-              },
-            },
-          },
-          {
-            properties: {
-              provisioningState: 'Failed',
-              targetResource: {
-                resourceType: 'Microsoft.Compute/virtualMachines',
-                id: `/subscriptions/test/resourceGroups/${resourceGroupName}/providers/Microsoft.Compute/virtualMachines/${vmName}`,
-              },
-            },
-          },
-        ],
+        'Failed',
+        'VM provisioning failed'
       );
-
-      fake.deploymentsClient.deployments.setFakeDeploymentState(resourceGroupName, deploymentName, 'Failed', 'VM provisioning failed');
 
       await provider.scanPrepare();
 
@@ -928,7 +1007,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         assert.equal(worker.state, 'stopping', 'worker should transition to stopping');
         assert.equal(removeSpy.callCount, 1, 'removeWorker called once after failure');
         assert.equal(removedEventSpy.callCount, 1, 'worker-removed event emitted once');
-        assert.equal(worker.providerData.provisioningComplete, true, 'worker should be marked provisioned after failure');
+        assert.equal(
+          worker.providerData.provisioningComplete,
+          true,
+          'worker should be marked provisioned after failure'
+        );
 
         await provider.checkWorker({ worker });
         await worker.reload(helper.db);
@@ -942,7 +1025,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     });
 
-    test('deployment operation expired does not remove RUNNING worker', async function() {
+    test('deployment operation expired does not remove RUNNING worker', async () => {
       await provisionWorkerPool({
         armDeployment: {
           mode: 'Incremental',
@@ -955,7 +1038,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
 
-      let [worker] = await helper.getWorkers();
+      const [worker] = await helper.getWorkers();
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
 
@@ -985,14 +1068,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
         assert.equal(removeSpy.callCount, 0, 'removeWorker should not be called for RUNNING worker');
         assert.equal(worker.state, 'running', 'worker should remain running');
-        assert.equal(worker.providerData.provisioningComplete, true,
-          'provisioningComplete should be set even without removal');
+        assert.equal(
+          worker.providerData.provisioningComplete,
+          true,
+          'provisioningComplete should be set even without removal'
+        );
       } finally {
         sandbox.restore();
       }
     });
 
-    test('deployment operation expired removes REQUESTED worker', async function() {
+    test('deployment operation expired removes REQUESTED worker', async () => {
       await provisionWorkerPool({
         armDeployment: {
           mode: 'Incremental',
@@ -1005,7 +1091,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
 
-      let [worker] = await helper.getWorkers();
+      const [worker] = await helper.getWorkers();
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
 
@@ -1031,7 +1117,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     });
 
-    test('failed ARM deployment does not remove RUNNING worker', async function() {
+    test('failed ARM deployment does not remove RUNNING worker', async () => {
       await provisionWorkerPool({
         armDeployment: {
           mode: 'Incremental',
@@ -1044,7 +1130,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       });
 
-      let [worker] = await helper.getWorkers();
+      const [worker] = await helper.getWorkers();
       const deploymentName = worker.providerData.deployment.name;
       const resourceGroupName = worker.providerData.resourceGroupName;
 
@@ -1055,10 +1141,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // Set deployment to Failed state
       fake.deploymentsClient.deployments.setFakeDeploymentState(
-        resourceGroupName, deploymentName, 'Failed', 'some extension failed');
+        resourceGroupName,
+        deploymentName,
+        'Failed',
+        'some extension failed'
+      );
 
-      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations(
-        resourceGroupName, deploymentName, []);
+      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations(resourceGroupName, deploymentName, []);
 
       await provider.scanPrepare();
 
@@ -1076,14 +1165,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
         assert.equal(removeSpy.callCount, 0, 'removeWorker should not be called for RUNNING worker');
         assert.equal(worker.state, 'running', 'worker should remain running');
-        assert.equal(worker.providerData.provisioningComplete, true,
-          'provisioningComplete should still be set');
+        assert.equal(worker.providerData.provisioningComplete, true, 'provisioningComplete should still be set');
       } finally {
         sandbox.restore();
       }
     });
 
-    test('checkWorker continues after completed ARM deployment', async function() {
+    test('checkWorker continues after completed ARM deployment', async () => {
       await provisionWorkerPool({
         armDeployment: {
           mode: 'Incremental',
@@ -1120,28 +1208,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         provisionSpy.restore();
       }
     });
-
   });
 
-  suite('ARM deployment resource group management', function() {
+  suite('ARM deployment resource group management', () => {
     const provisionWorkerPool = async (launchConfig, overrides) => {
       const workerPool = await makeWorkerPool({
         config: {
           minCapacity: 1,
           maxCapacity: 1,
           scalingRatio: 1,
-          launchConfigs: [{
-            workerManager: {
-              capacityPerInstance: 1,
+          launchConfigs: [
+            {
+              workerManager: {
+                capacityPerInstance: 1,
+              },
+              subnetId: 'some/subnet',
+              location: 'westus',
+              hardwareProfile: { vmSize: 'Basic_A2' },
+              storageProfile: {
+                osDisk: {},
+              },
+              ...launchConfig,
             },
-            subnetId: 'some/subnet',
-            location: 'westus',
-            hardwareProfile: { vmSize: 'Basic_A2' },
-            storageProfile: {
-              osDisk: {},
-            },
-            ...launchConfig,
-          }],
+          ],
           ...overrides,
         },
         owner: 'whatever@example.com',
@@ -1152,10 +1241,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provider.provision({ workerPool, workerPoolStats });
     };
 
-    test('creates resource group if it does not exist', async function() {
+    test('creates resource group if it does not exist', async () => {
       const customRgName = 'test-custom-rg';
-      assert.ok(!fake.resourcesClient.resourceGroups.hasFakeResourceGroup(customRgName),
-        'custom RG should not exist before provisioning');
+      assert.ok(
+        !fake.resourcesClient.resourceGroups.hasFakeResourceGroup(customRgName),
+        'custom RG should not exist before provisioning'
+      );
 
       await provisionWorkerPool({
         armDeploymentResourceGroup: customRgName,
@@ -1177,14 +1268,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const worker = workers[0];
 
       assert.equal(worker.providerData.resourceGroupName, customRgName);
-      assert.ok(fake.resourcesClient.resourceGroups.hasFakeResourceGroup(customRgName),
-        'custom RG should be created');
+      assert.ok(fake.resourcesClient.resourceGroups.hasFakeResourceGroup(customRgName), 'custom RG should be created');
 
       const rg = await fake.resourcesClient.resourceGroups.get(customRgName);
       assert.equal(rg.location, 'eastus', 'RG should be created with correct location');
     });
 
-    test('does not create resource group if using fallback from provider config', async function() {
+    test('does not create resource group if using fallback from provider config', async () => {
       const checkExistenceSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'checkExistence');
       const createOrUpdateSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'createOrUpdate');
 
@@ -1215,7 +1305,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       createOrUpdateSpy.restore();
     });
 
-    test('does not check resource group if it already exists', async function() {
+    test('does not check resource group if it already exists', async () => {
       const customRgName = 'test-existing-rg';
 
       // Pre-create the resource group
@@ -1249,7 +1339,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       createOrUpdateSpy.restore();
     });
 
-    test('evicts cache and retries after checkExistence failure', async function() {
+    test('evicts cache and retries after checkExistence failure', async () => {
       const customRgName = 'test-failing-rg';
       const launchConfig = {
         armDeploymentResourceGroup: customRgName,
@@ -1268,14 +1358,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           minCapacity: 1,
           maxCapacity: 1,
           scalingRatio: 1,
-          launchConfigs: [{
-            workerManager: { capacityPerInstance: 1 },
-            subnetId: 'some/subnet',
-            location: 'westus',
-            hardwareProfile: { vmSize: 'Basic_A2' },
-            storageProfile: { osDisk: {} },
-            ...launchConfig,
-          }],
+          launchConfigs: [
+            {
+              workerManager: { capacityPerInstance: 1 },
+              subnetId: 'some/subnet',
+              location: 'westus',
+              hardwareProfile: { vmSize: 'Basic_A2' },
+              storageProfile: { osDisk: {} },
+              ...launchConfig,
+            },
+          ],
         },
       });
 
@@ -1288,10 +1380,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // First attempt should fail
       await assert.rejects(
         () => provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats('wpid') }),
-        /Azure transient failure/,
+        /Azure transient failure/
       );
-      assert.ok(!provider.resourceGroupCache.has(customRgName),
-        'cache entry should be evicted after failure');
+      assert.ok(!provider.resourceGroupCache.has(customRgName), 'cache entry should be evicted after failure');
 
       // Second attempt should succeed (cache was cleared)
       await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats('wpid') });
@@ -1303,7 +1394,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       createSpy.restore();
     });
 
-    test('second provision reuses cached promise without new API calls', async function() {
+    test('second provision reuses cached promise without new API calls', async () => {
       const customRgName = 'test-cached-rg';
       const launchConfig = {
         armDeploymentResourceGroup: customRgName,
@@ -1321,24 +1412,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           minCapacity: 1,
           maxCapacity: 1,
           scalingRatio: 1,
-          launchConfigs: [{
-            workerManager: { capacityPerInstance: 1 },
-            subnetId: 'some/subnet',
-            location: 'westus',
-            hardwareProfile: { vmSize: 'Basic_A2' },
-            storageProfile: { osDisk: {} },
-            ...launchConfig,
-          }],
+          launchConfigs: [
+            {
+              workerManager: { capacityPerInstance: 1 },
+              subnetId: 'some/subnet',
+              location: 'westus',
+              hardwareProfile: { vmSize: 'Basic_A2' },
+              storageProfile: { osDisk: {} },
+              ...launchConfig,
+            },
+          ],
         },
       });
 
       await provider.provision({ workerPool, workerPoolStats: new WorkerPoolStats('wpid') });
 
       // Cache should now hold a resolved promise
-      assert.ok(provider.resourceGroupCache.has(customRgName),
-        'cache should have entry after successful provisioning');
-      assert.ok(provider.resourceGroupCache.get(customRgName) instanceof Promise,
-        'cache entry should be a promise');
+      assert.ok(provider.resourceGroupCache.has(customRgName), 'cache should have entry after successful provisioning');
+      assert.ok(provider.resourceGroupCache.get(customRgName) instanceof Promise, 'cache entry should be a promise');
 
       // Spy after the first call so we can verify the second makes no API calls
       const checkSpy = sinon.spy(fake.resourcesClient.resourceGroups, 'checkExistence');
@@ -1354,17 +1445,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('provisionResources', function() {
+  suite('provisionResources', () => {
     let worker, ipName, nicName, vmName;
     const sandbox = sinon.createSandbox({});
 
-    setup('create un-provisioned worker', async function () {
-      const workerPool = await makeWorkerPool({}, {
-        workerManager: {
-          publicIp: true,
-          capacityPerInstance: 1,
-        },
-      });
+    setup('create un-provisioned worker', async () => {
+      const workerPool = await makeWorkerPool(
+        {},
+        {
+          workerManager: {
+            publicIp: true,
+            capacityPerInstance: 1,
+          },
+        }
+      );
       const workerPoolStats = new WorkerPoolStats('wpid');
       await provider.provision({ workerPool, workerPoolStats });
       const workers = await helper.getWorkers();
@@ -1384,11 +1478,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       provider.errors[workerPoolId] = [];
     });
 
-    teardown(function() {
+    teardown(() => {
       sandbox.restore();
     });
 
-    test('successful provisioning process', async function() {
+    test('successful provisioning process', async () => {
       // Ip provisioning should have already started inside the provision() call
       await assertProvisioningState({ ip: 'inprogress' });
       const ipName = worker.providerData.ip.name;
@@ -1455,13 +1549,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           primary: true,
         },
       ]);
-      assert.equal(vmParams.tags['created-by'], 'taskcluster-wm-' + providerId);
+      assert.equal(vmParams.tags['created-by'], `taskcluster-wm-${providerId}`);
       assert.equal(vmParams.tags['managed-by'], 'taskcluster');
       assert.equal(vmParams.tags['provider-id'], providerId);
       assert.equal(vmParams.tags['worker-group'], 'westus');
       assert.equal(vmParams.tags['worker-pool-id'], workerPoolId);
       assert.equal(vmParams.tags['root-url'], helper.rootUrl);
-      assert.equal(vmParams.tags['owner'], 'whatever@example.com');
+      assert.equal(vmParams.tags.owner, 'whatever@example.com');
 
       debug('sixth call');
       await provider.provisionResources({ worker, monitor });
@@ -1477,7 +1571,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.removeWorker.called);
     });
 
-    test('provisioning process fails creating IP', async function() {
+    test('provisioning process fails creating IP', async () => {
       debug('first call');
       await provider.provisionResources({ worker, monitor });
       await assertProvisioningState({ ip: 'inprogress' });
@@ -1491,7 +1585,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.removeWorker.called);
     });
 
-    test('provisioning process fails creating IP with provisioningState=Failed', async function() {
+    test('provisioning process fails creating IP with provisioningState=Failed', async () => {
       debug('first call');
       await provider.provisionResources({ worker, monitor });
       await assertProvisioningState({ ip: 'inprogress' });
@@ -1508,7 +1602,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.removeWorker.called);
     });
 
-    test('provisioning process fails creating NIC', async function() {
+    test('provisioning process fails creating NIC', async () => {
       debug('first call');
       await provider.provisionResources({ worker, monitor });
       await assertProvisioningState({ ip: 'inprogress' });
@@ -1529,7 +1623,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.removeWorker.called);
     });
 
-    test('provisioning process fails creating VM', async function() {
+    test('provisioning process fails creating VM', async () => {
       debug('first call');
       await provider.provisionResources({ worker, monitor });
       await assertProvisioningState({ ip: 'inprogress' });
@@ -1558,11 +1652,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('provisionResources with or without public IP', function () {
+  suite('provisionResources with or without public IP', () => {
     let worker, nicName, vmName, ipName;
     const sandbox = sinon.createSandbox({});
 
-    const prepareProvision = async (cfg) => {
+    const prepareProvision = async cfg => {
       const workerPool = await makeWorkerPool({}, cfg);
       const workerPoolStats = new WorkerPoolStats('wpid');
       await provider.provision({ workerPool, workerPoolStats });
@@ -1583,11 +1677,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       provider.errors[workerPoolId] = [];
     };
 
-    teardown(function() {
+    teardown(() => {
       sandbox.restore();
     });
 
-    test('successful provisioning of VM without public ip', async function() {
+    test('successful provisioning of VM without public ip', async () => {
       await prepareProvision({
         workerConfig: {
           workerManager: {
@@ -1610,7 +1704,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.removeWorker.called);
     });
 
-    test('successful provision of VM with public ip', async function () {
+    test('successful provision of VM with public ip', async () => {
       await prepareProvision({
         workerConfig: {
           genericWorker: {
@@ -1640,7 +1734,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('removeWorker', function() {
+  suite('removeWorker', () => {
     let worker, ipName, nicName, vmName;
     const sandbox = sinon.createSandbox({});
 
@@ -1651,7 +1745,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     // scheduling internals.
     const flushInlineBeginDelete = () => new Promise(resolve => setImmediate(resolve));
 
-    setup('create un-provisioned worker', async function() {
+    setup('create un-provisioned worker', async () => {
       const workerPool = await makeWorkerPool();
       const workerPoolStats = new WorkerPoolStats('wpid');
 
@@ -1671,13 +1765,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       vmName = worker.providerData.vm.name;
     });
 
-    const assertRemovalState = async (expectations) => {
+    const assertRemovalState = async expectations => {
       // re-fetch the worker, since it should have been updated
       const workers = await helper.getWorkers();
       assert.equal(workers.length, 1);
       worker = workers[0];
 
-      let checkResourceExpectation = (expectation, resourceType, typeData, index) => {
+      const checkResourceExpectation = (expectation, resourceType, typeData, index) => {
         const client = clientForResourceType(resourceType);
         switch (expectation) {
           case 'none':
@@ -1702,7 +1796,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             }
         }
       };
-      for (let resourceType of ['ip', 'vm', 'nic', 'disks']) {
+      for (const resourceType of ['ip', 'vm', 'nic', 'disks']) {
         // multiple of a resource type
         if (Array.isArray(worker.providerData[resourceType])) {
           for (let i = 0; i < worker.providerData[resourceType].length; i++) {
@@ -1710,15 +1804,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
               expectations[resourceType][i],
               resourceType,
               worker.providerData[resourceType][i],
-              i,
+              i
             );
           }
         } else {
-          checkResourceExpectation(
-            expectations[resourceType],
-            resourceType,
-            worker.providerData[resourceType],
-          );
+          checkResourceExpectation(expectations[resourceType], resourceType, worker.providerData[resourceType]);
         }
       }
     };
@@ -1756,7 +1846,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     };
 
-    test('full removeWorker process', async function() {
+    test('full removeWorker process', async () => {
       await makeResource('ip', true);
       await makeResource('nic', true);
       await makeResource('disks', true, 0); // creates disks0
@@ -1773,17 +1863,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       // been cleared. flushInlineBeginDelete drains the fire-and-forget
       // queue before we check state.
       await flushInlineBeginDelete();
-      await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'deleting' });
+      await assertRemovalState({
+        ip: 'allocated',
+        nic: 'allocated',
+        disks: ['allocated', 'allocated'],
+        vm: 'deleting',
+      });
       helper.assertPulseMessage('worker-removed', m => m.payload.workerId === worker.workerId);
       helper.assertNoPulseMessage('worker-stopped');
 
       debug('first call');
       await provider.deprovisionResources({ worker, monitor });
-      await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'deleting' });
+      await assertRemovalState({
+        ip: 'allocated',
+        nic: 'allocated',
+        disks: ['allocated', 'allocated'],
+        vm: 'deleting',
+      });
 
       debug('second call');
       await provider.deprovisionResources({ worker, monitor });
-      await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated', 'allocated'], vm: 'deleting' });
+      await assertRemovalState({
+        ip: 'allocated',
+        nic: 'allocated',
+        disks: ['allocated', 'allocated'],
+        vm: 'deleting',
+      });
 
       debug('VM deleted');
       await fake.computeClient.virtualMachines.fakeFinishRequest('rgrp', vmName);
@@ -1835,7 +1940,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === worker.workerId);
     });
 
-    test('vm removal fails (keeps waiting)', async function() {
+    test('vm removal fails (keeps waiting)', async () => {
       await makeResource('ip', true);
       await makeResource('nic', true);
       await makeResource('disks', true, 0);
@@ -1860,7 +1965,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await assertRemovalState({ ip: 'allocated', nic: 'allocated', disks: ['allocated'], vm: 'deleting' });
     });
 
-    test('deletes VM by name if id is missing', async function() {
+    test('deletes VM by name if id is missing', async () => {
       await makeResource('ip', true);
       await makeResource('nic', true);
       await makeResource('disks', true, 0);
@@ -1877,7 +1982,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(await fake.computeClient.virtualMachines.getFakeRequestParameters('rgrp', vmName), {});
     });
 
-    test('deletes disk by name if no VM/IP/NIC and disk id is missing', async function() {
+    test('deletes disk by name if no VM/IP/NIC and disk id is missing', async () => {
       await makeResource('disks', false, 0);
       const diskName = worker.providerData.disks[0].name;
 
@@ -1894,7 +1999,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.deepEqual(await fake.computeClient.disks.getFakeRequestParameters('rgrp', diskName), {});
     });
 
-    test('beginDelete 404 race between pre-flight GET and DELETE is handled', async function() {
+    test('beginDelete 404 race between pre-flight GET and DELETE is handled', async () => {
       // Defense-in-depth for the narrow race where the pre-flight GET sees
       // the resource but it is deleted by another actor before our DELETE
       // lands. Azure's REST contract uses 204 (not 404) for an idempotent
@@ -1947,12 +2052,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(reloaded.providerData.ip.id, false);
       assert.equal(reloaded.providerData.disks[0].id, false);
       assert.equal(reloaded.providerData.disks[1].id, false);
-      assert.deepEqual(provider.errors[workerPoolId], [],
-        'no deletion-error should be recorded for out-of-band deletions');
+      assert.deepEqual(
+        provider.errors[workerPoolId],
+        [],
+        'no deletion-error should be recorded for out-of-band deletions'
+      );
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === reloaded.workerId);
     });
 
-    test('pre-flight GET 404 reaps ghost resources in a single cycle (issue #8526)', async function() {
+    test('pre-flight GET 404 reaps ghost resources in a single cycle (issue #8526)', async () => {
       // Seed the worker with ids so typeData.id is truthy for each resource -
       // this is the state produced by a normal provision/run. Then simulate
       // ARM cascade-delete (deleteOption: 'Delete' on the VM) having already
@@ -2002,23 +2110,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
 
       const [reloaded] = await helper.getWorkers();
-      assert.equal(reloaded.state, 'stopped',
-        'ghost worker should stop in a single deprovisionResources call');
+      assert.equal(reloaded.state, 'stopped', 'ghost worker should stop in a single deprovisionResources call');
       assert.equal(reloaded.providerData.vm.deleted, true);
       assert.equal(reloaded.providerData.nic.deleted, true);
       assert.equal(reloaded.providerData.ip.deleted, true);
       assert.equal(reloaded.providerData.disks[0].deleted, true);
       assert.equal(reloaded.providerData.disks[1].deleted, true);
       for (const stub of beginDeleteStubs) {
-        assert.equal(stub.callCount, 0,
-          'beginDelete must not fire when the pre-flight GET already returns 404');
+        assert.equal(stub.callCount, 0, 'beginDelete must not fire when the pre-flight GET already returns 404');
       }
       assert.deepEqual(provider.errors[workerPoolId], []);
       helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === reloaded.workerId);
     });
 
     for (const midDeleteState of ['Deleting', 'Deallocating', 'Deallocated']) {
-      test(`pre-flight GET finds ${midDeleteState}; beginDelete is not re-fired even when typeData.id is truthy`, async function() {
+      test(`pre-flight GET finds ${midDeleteState}; beginDelete is not re-fired even when typeData.id is truthy`, async () => {
         // When the VM is already in one of the mid-delete states, the old
         // code's `if (typeData.id || shouldDelete)` gate would re-fire
         // beginDelete against it. The fix gates solely on shouldDelete, so
@@ -2047,24 +2153,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           localSandbox.restore();
         }
 
-        assert.equal(beginDeleteStub.callCount, 0,
-          `beginDelete must not fire while the VM is in ${midDeleteState} state`);
+        assert.equal(
+          beginDeleteStub.callCount,
+          0,
+          `beginDelete must not fire while the VM is in ${midDeleteState} state`
+        );
 
         const [reloaded] = await helper.getWorkers();
-        assert.equal(reloaded.state, 'stopping',
-          'worker should remain in STOPPING while the VM is still mid-delete');
-        assert.equal(reloaded.providerData.vm.id, `id/${vmName}`,
-          'typeData.id should be preserved; we have not fired our own delete');
-        assert.notEqual(reloaded.providerData.vm.deleted, true,
-          'vm should not be marked deleted until a subsequent GET sees 404');
+        assert.equal(reloaded.state, 'stopping', 'worker should remain in STOPPING while the VM is still mid-delete');
+        assert.equal(
+          reloaded.providerData.vm.id,
+          `id/${vmName}`,
+          'typeData.id should be preserved; we have not fired our own delete'
+        );
+        assert.notEqual(
+          reloaded.providerData.vm.deleted,
+          true,
+          'vm should not be marked deleted until a subsequent GET sees 404'
+        );
       });
     }
 
     // Tests for the inline beginDelete behaviour added in removeWorker (#8574).
     // Each test uses a fresh sinon spy on the fake's beginDelete so we can
     // assert exactly when the inline call fires.
-    suite('inline beginDelete', function() {
-      test('RUNNING worker with vm.id set: fires inline beginDelete and clears vm.id', async function() {
+    suite('inline beginDelete', () => {
+      test('RUNNING worker with vm.id set: fires inline beginDelete and clears vm.id', async () => {
         await makeResource('vm', true);
         await worker.update(helper.db, w => {
           w.state = 'running';
@@ -2079,27 +2193,33 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         assert.deepEqual(beginDeleteSpy.firstCall.args, ['rgrp', vmName]);
         const [reloaded] = await helper.getWorkers();
         assert.equal(reloaded.state, 'stopping');
-        assert.equal(reloaded.providerData.vm.id, false,
-          'vm.id should be cleared when inline beginDelete is submitted');
+        assert.equal(
+          reloaded.providerData.vm.id,
+          false,
+          'vm.id should be cleared when inline beginDelete is submitted'
+        );
         assert.equal(fake.computeClient.virtualMachines.getFakeResource('rgrp', vmName).provisioningState, 'Deleting');
       });
 
-      test('REQUESTED worker without provisioningComplete: skips inline beginDelete', async function() {
+      test('REQUESTED worker without provisioningComplete: skips inline beginDelete', async () => {
         await makeResource('vm', true);
         // worker stays in REQUESTED, provisioningComplete is unset / falsy
         const beginDeleteSpy = sandbox.spy(fake.computeClient.virtualMachines, 'beginDelete');
         await provider.removeWorker({ worker, reason: 'test' });
         await flushInlineBeginDelete();
 
-        assert.equal(beginDeleteSpy.callCount, 0,
-          'inline beginDelete must not fire while ARM resource extraction may still be in flight');
+        assert.equal(
+          beginDeleteSpy.callCount,
+          0,
+          'inline beginDelete must not fire while ARM resource extraction may still be in flight'
+        );
         const [reloaded] = await helper.getWorkers();
         assert.equal(reloaded.state, 'stopping');
         assert.equal(reloaded.providerData.vm.id, `id/${vmName}`, 'vm.id should be untouched');
         assert.equal(fake.computeClient.virtualMachines.getFakeResource('rgrp', vmName).provisioningState, 'Succeeded');
       });
 
-      test('REQUESTED worker with provisioningComplete=true and vm.id set: fires inline beginDelete', async function() {
+      test('REQUESTED worker with provisioningComplete=true and vm.id set: fires inline beginDelete', async () => {
         await makeResource('vm', true);
         await worker.update(helper.db, w => {
           // worker is still REQUESTED but provisioningComplete has been
@@ -2117,7 +2237,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         assert.equal(reloaded.providerData.vm.id, false);
       });
 
-      test('RUNNING worker with vm.id falsy (already requested): skips inline beginDelete', async function() {
+      test('RUNNING worker with vm.id falsy (already requested): skips inline beginDelete', async () => {
         // simulate the resource record produced by deprovisionResource
         // submitting beginDelete: id has been cleared, deleted not yet set
         await makeResource('vm', false);
@@ -2130,11 +2250,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         await provider.removeWorker({ worker, reason: 'test' });
         await flushInlineBeginDelete();
 
-        assert.equal(beginDeleteSpy.callCount, 0,
-          'must not fire when vm.id is falsy: nothing to delete or delete already in flight');
+        assert.equal(
+          beginDeleteSpy.callCount,
+          0,
+          'must not fire when vm.id is falsy: nothing to delete or delete already in flight'
+        );
       });
 
-      test('RUNNING worker with vm.deleted=true: skips inline beginDelete', async function() {
+      test('RUNNING worker with vm.deleted=true: skips inline beginDelete', async () => {
         await makeResource('vm', true);
         await worker.update(helper.db, w => {
           w.state = 'running';
@@ -2146,11 +2269,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         await provider.removeWorker({ worker, reason: 'test' });
         await flushInlineBeginDelete();
 
-        assert.equal(beginDeleteSpy.callCount, 0,
-          'must not re-fire delete on a resource already marked deleted');
+        assert.equal(beginDeleteSpy.callCount, 0, 'must not re-fire delete on a resource already marked deleted');
       });
 
-      test('inline beginDelete failure does not break removeWorker', async function() {
+      test('inline beginDelete failure does not break removeWorker', async () => {
         await makeResource('vm', true);
         await worker.update(helper.db, w => {
           w.state = 'running';
@@ -2158,9 +2280,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         });
 
         const localSandbox = sinon.createSandbox({});
-        localSandbox.stub(fake.computeClient.virtualMachines, 'beginDelete').rejects(
-          Object.assign(new Error('boom'), { statusCode: 503 }),
-        );
+        localSandbox
+          .stub(fake.computeClient.virtualMachines, 'beginDelete')
+          .rejects(Object.assign(new Error('boom'), { statusCode: 503 }));
 
         try {
           await provider.removeWorker({ worker, reason: 'test' });
@@ -2179,7 +2301,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         assert.equal(reloaded.providerData.vm.id, false);
       });
 
-      test('idempotent: second removeWorker call does not re-fire inline beginDelete', async function() {
+      test('idempotent: second removeWorker call does not re-fire inline beginDelete', async () => {
         await makeResource('vm', true);
         await worker.update(helper.db, w => {
           w.state = 'running';
@@ -2195,14 +2317,439 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         const [afterFirst] = await helper.getWorkers();
         await provider.removeWorker({ worker: afterFirst, reason: 'test' });
         await flushInlineBeginDelete();
-        assert.equal(beginDeleteSpy.callCount, 1,
-          'second removeWorker should not fire another beginDelete');
+        assert.equal(beginDeleteSpy.callCount, 1, 'second removeWorker should not fire another beginDelete');
       });
     });
   });
 
-  suite('deprovision', function () {
-    test('de-provisioning loop', async function () {
+  suite('cascade deprovisioning', () => {
+    const workerGroup = 'westus';
+    const rg = 'rgrp';
+    const nicId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Network/networkInterfaces/cascade-nic`;
+    const ipId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Network/publicIPAddresses/cascade-ip`;
+    const diskId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Compute/disks/cascade-disk`;
+
+    const baseCascade = () => ({
+      all: true,
+      nic: true,
+      ip: true,
+      disks: true,
+      vmOwnedNicId: nicId,
+      vmOwnedDiskIds: [diskId],
+      vmOwnedPublicIpId: ipId,
+      detectedAt: new Date().toISOString(),
+      source: 'register',
+    });
+
+    // Builds a STOPPING ARM worker whose tracked nic/ip/disks match a cascading
+    // VM. Pass `cascade: false` for a worker with no cascade field (slow walk),
+    // or override providerData keys (e.g. nic/ip/disks/cascade) directly.
+    const makeStoppingWorker = async ({ cascade, ...pd } = {}) => {
+      const providerData = {
+        ...baseProviderData,
+        deploymentMethod: 'arm-template',
+        vm: { name: 'cascade-vm', id: 'id/cascade-vm' },
+        nic: { name: 'cascade-nic', id: nicId },
+        ip: { name: 'cascade-ip', id: ipId },
+        disks: [{ name: 'cascade-disk', id: diskId }],
+        ...pd,
+      };
+      if (cascade !== false) {
+        providerData.cascade = cascade || baseCascade();
+      }
+      const worker = Worker.fromApi({
+        workerPoolId,
+        workerGroup,
+        workerId: 'cascade-vm',
+        providerId,
+        created: taskcluster.fromNow('0 seconds'),
+        lastModified: taskcluster.fromNow('0 seconds'),
+        lastChecked: taskcluster.fromNow('0 seconds'),
+        capacity: 1,
+        expires: taskcluster.fromNow('1 hour'),
+        state: 'stopping',
+        providerData,
+      });
+      await worker.create(helper.db);
+      provider.errors = provider.errors || {};
+      provider.errors[workerPoolId] = [];
+      return worker;
+    };
+
+    const spyChildClients = sandbox => ({
+      'nic.get': sandbox.spy(fake.networkClient.networkInterfaces, 'get'),
+      'nic.beginDelete': sandbox.spy(fake.networkClient.networkInterfaces, 'beginDelete'),
+      'ip.get': sandbox.spy(fake.networkClient.publicIPAddresses, 'get'),
+      'ip.beginDelete': sandbox.spy(fake.networkClient.publicIPAddresses, 'beginDelete'),
+      'disks.get': sandbox.spy(fake.computeClient.disks, 'get'),
+      'disks.beginDelete': sandbox.spy(fake.computeClient.disks, 'beginDelete'),
+    });
+
+    test('cascade.all short-circuits: VM delete + STOPPED with zero NIC/IP/disk calls', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      monitor.manager.reset();
+      // No fake VM resource: deprovisionResource('vm') GETs a 404 and marks the
+      // VM deleted in a single pass, so the cascade fast path can engage.
+      const worker = await makeStoppingWorker();
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+
+      const [reloaded] = await helper.getWorkers();
+      assert.equal(reloaded.state, 'stopped');
+      assert.equal(reloaded.providerData.nic.deleted, true);
+      assert.equal(reloaded.providerData.nic.id, false);
+      assert.equal(reloaded.providerData.ip.deleted, true);
+      assert.equal(reloaded.providerData.disks[0].deleted, true);
+      for (const [name, spy] of Object.entries(spies)) {
+        assert.equal(spy.callCount, 0, `${name} must not be called on the cascade fast path`);
+      }
+      const teardownLogs = monitor.manager.messages.filter(m => m.Type === 'azure-teardown-mode');
+      assert(
+        teardownLogs.some(m => m.Fields.mode === 'fast' && m.Fields.workerId === 'cascade-vm'),
+        'a fast teardown log should be emitted'
+      );
+      assert.deepEqual(provider.errors[workerPoolId], []);
+      helper.assertPulseMessage('worker-stopped', m => m.payload.workerId === reloaded.workerId);
+    });
+
+    test('cascade absent - slow walk (regression guard)', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      monitor.manager.reset();
+      const worker = await makeStoppingWorker({ cascade: false });
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      const [reloaded] = await helper.getWorkers();
+      // With no fake resources the slow walk 404s through every child, reaching STOPPED,
+      // but it must have issued the per-resource pre-flight GETs (fast path skips them).
+      assert.equal(reloaded.state, 'stopped');
+      assert(spies['nic.get'].called, 'slow walk must issue the NIC pre-flight GET');
+      assert(spies['disks.get'].called, 'slow walk must issue the disk pre-flight GET');
+      const teardownLogs = monitor.manager.messages.filter(m => m.Type === 'azure-teardown-mode');
+      assert(teardownLogs.some(m => m.Fields.mode === 'slow'));
+    });
+
+    test('cascade.all but standalone disk not VM-owned - slow walk', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      // tracked disks include a standalone disk the VM does not cascade
+      const worker = await makeStoppingWorker({
+        disks: [
+          { name: 'cascade-disk', id: diskId },
+          { name: 'standalone-disk', id: '/subscriptions/sub/.../disks/standalone-disk' },
+        ],
+      });
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      assert(spies['nic.get'].called, 'identity mismatch must fall back to the slow walk');
+      assert(spies['disks.get'].called, 'the standalone disk must be deleted, not skipped');
+    });
+
+    test('cascade.all but tracked IP not VM-owned - slow walk', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      const worker = await makeStoppingWorker({
+        ip: { name: 'standalone-ip', id: '/subscriptions/sub/.../publicIPAddresses/standalone-ip' },
+      });
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      assert(spies['nic.get'].called, 'a standalone public IP must fall back to the slow walk');
+      assert(spies['ip.get'].called, 'the standalone IP must be deleted, not skipped');
+    });
+
+    test('cascade.all, VM has no public IP but a standalone IP is tracked - slow walk', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      const cascade = baseCascade();
+      cascade.ip = null;
+      cascade.vmOwnedPublicIpId = null;
+      // tracked ip slot still holds a (standalone) public IP
+      const worker = await makeStoppingWorker({ cascade });
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      assert(spies['ip.get'].called, 'a standalone IP with no VM-owned IP must be deleted, not skipped');
+    });
+
+    test('cascade.all matches case-divergent ARM ids - fast path', async () => {
+      const sandbox = sinon.createSandbox({});
+      const spies = spyChildClients(sandbox);
+      monitor.manager.reset();
+      // ARM resource ids are case-insensitive. The probe (VM model) and the
+      // tracked ids (deployment operations) can come back with different casing
+      // for the same resource; the identity match must not be defeated by that.
+      const cascade = baseCascade();
+      cascade.vmOwnedNicId = nicId.toUpperCase();
+      cascade.vmOwnedPublicIpId = ipId.toUpperCase();
+      cascade.vmOwnedDiskIds = [diskId.toUpperCase()];
+      const worker = await makeStoppingWorker({ cascade });
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      const [reloaded] = await helper.getWorkers();
+      assert.equal(reloaded.state, 'stopped');
+      for (const [name, spy] of Object.entries(spies)) {
+        assert.equal(spy.callCount, 0, `${name} must not be called when ids match case-insensitively`);
+      }
+      const teardownLogs = monitor.manager.messages.filter(m => m.Type === 'azure-teardown-mode');
+      assert(
+        teardownLogs.some(m => m.Fields.mode === 'fast'),
+        'fast teardown should still engage'
+      );
+    });
+
+    test('teardown mode is not recorded unless the worker reaches STOPPED', async () => {
+      const sandbox = sinon.createSandbox({});
+      monitor.manager.reset();
+      const worker = await makeStoppingWorker();
+      // Fail the worker-stopped transition so deprovision never commits STOPPED.
+      // The teardown log/metric must be emitted only after a completed teardown,
+      // so a re-scan can't double-count (or flip the recorded mode).
+      sandbox.stub(provider, 'onWorkerStopped').rejects(new Error('boom'));
+      try {
+        await provider.deprovisionResources({ worker, monitor });
+      } finally {
+        sandbox.restore();
+      }
+      const [reloaded] = await helper.getWorkers();
+      assert.notEqual(reloaded.state, 'stopped', 'worker should not have reached STOPPED');
+      const teardownLogs = monitor.manager.messages.filter(m => m.Type === 'azure-teardown-mode');
+      assert.equal(teardownLogs.length, 0, 'teardown mode must not be recorded for an incomplete teardown');
+    });
+
+    // ===== register-time cascade probe =====
+
+    const probeNicName = 'probe-nic';
+    const probeNicId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Network/networkInterfaces/${probeNicName}`;
+    const probeIpId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Network/publicIPAddresses/probe-ip`;
+    const probeOsDiskId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Compute/disks/probe-os`;
+    const probeDataDiskId = `/subscriptions/sub/resourceGroups/${rg}/providers/Microsoft.Compute/disks/probe-data`;
+
+    const cascadingVmModel = () => ({
+      networkProfile: { networkInterfaces: [{ id: probeNicId, deleteOption: 'Delete' }] },
+      storageProfile: {
+        osDisk: { managedDisk: { id: probeOsDiskId }, deleteOption: 'Delete' },
+        dataDisks: [{ managedDisk: { id: probeDataDiskId }, deleteOption: 'Delete' }],
+      },
+    });
+    const cascadingNicModel = () => ({
+      ipConfigurations: [{ publicIPAddress: { id: probeIpId, deleteOption: 'Delete' } }],
+    });
+
+    // Registers an ARM worker after seeding a fake VM (and optionally NIC),
+    // returning the reloaded worker so its providerData.cascade can be asserted.
+    const registerArmWorker = async ({ vmModel, nicModel, nicName = probeNicName } = {}) => {
+      const workerPool = await makeWorkerPool();
+      const { vmId, document } = azureSignatures[0];
+      const worker = Worker.fromApi({
+        workerPoolId,
+        workerGroup,
+        workerId: vmId,
+        providerId,
+        created: taskcluster.fromNow('0 seconds'),
+        lastModified: taskcluster.fromNow('0 seconds'),
+        lastChecked: taskcluster.fromNow('0 seconds'),
+        capacity: 1,
+        expires: taskcluster.fromNow('90 seconds'),
+        state: 'requested',
+        providerData: {
+          ...baseProviderData,
+          deploymentMethod: 'arm-template',
+          vm: { name: 'probe-vm', vmId },
+        },
+      });
+      await worker.create(helper.db);
+      if (vmModel) {
+        fake.computeClient.virtualMachines.makeFakeResource(rg, 'probe-vm', { vmId, ...vmModel });
+      }
+      if (nicModel) {
+        fake.networkClient.networkInterfaces.makeFakeResource(rg, nicName, nicModel);
+      }
+      await provider.registerWorker({ workerPool, worker, workerIdentityProof: { document } });
+      // The cascade probe runs in the background after registration returns;
+      // await its handle so the persisted providerData.cascade is observable.
+      await provider._backgroundCascadeProbe;
+      const [reloaded] = await helper.getWorkers();
+      return reloaded;
+    };
+
+    test('probe: all resources cascade - cascade.all true with VM-owned identities', async () => {
+      const reloaded = await registerArmWorker({ vmModel: cascadingVmModel(), nicModel: cascadingNicModel() });
+      const cascade = reloaded.providerData.cascade;
+      assert(cascade, 'cascade should be recorded');
+      assert.equal(cascade.all, true);
+      assert.equal(cascade.nic, true);
+      assert.equal(cascade.ip, true);
+      assert.equal(cascade.disks, true);
+      assert.equal(cascade.vmOwnedNicId, probeNicId);
+      assert.deepEqual(cascade.vmOwnedDiskIds.sort(), [probeOsDiskId, probeDataDiskId].sort());
+      assert.equal(cascade.vmOwnedPublicIpId, probeIpId);
+      assert.equal(cascade.source, 'register');
+      assert(cascade.detectedAt);
+    });
+
+    test('probe: osDisk Detach - cascade.all false', async () => {
+      const vmModel = cascadingVmModel();
+      vmModel.storageProfile.osDisk.deleteOption = 'Detach';
+      const reloaded = await registerArmWorker({ vmModel, nicModel: cascadingNicModel() });
+      assert.equal(reloaded.providerData.cascade.all, false);
+      assert.equal(reloaded.providerData.cascade.disks, false);
+    });
+
+    test('probe: NIC Detach - cascade.all false', async () => {
+      const vmModel = cascadingVmModel();
+      vmModel.networkProfile.networkInterfaces[0].deleteOption = 'Detach';
+      const reloaded = await registerArmWorker({ vmModel, nicModel: cascadingNicModel() });
+      assert.equal(reloaded.providerData.cascade.all, false);
+      assert.equal(reloaded.providerData.cascade.nic, false);
+    });
+
+    test('probe: no public IP - cascade.ip null, cascade.all true', async () => {
+      const reloaded = await registerArmWorker({
+        vmModel: cascadingVmModel(),
+        nicModel: { ipConfigurations: [{ privateIPAddress: '10.0.0.4' }] },
+      });
+      const cascade = reloaded.providerData.cascade;
+      assert.equal(cascade.ip, null);
+      assert.equal(cascade.vmOwnedPublicIpId, null);
+      assert.equal(cascade.all, true);
+    });
+
+    test('probe: multi-NIC - cascade.all false', async () => {
+      const vmModel = cascadingVmModel();
+      vmModel.networkProfile.networkInterfaces.push({ id: `${probeNicId}-2`, deleteOption: 'Delete' });
+      const reloaded = await registerArmWorker({ vmModel });
+      assert.equal(reloaded.providerData.cascade.all, false);
+    });
+
+    test('probe: multi-public-IP - cascade.all false', async () => {
+      const reloaded = await registerArmWorker({
+        vmModel: cascadingVmModel(),
+        nicModel: {
+          ipConfigurations: [
+            { publicIPAddress: { id: probeIpId, deleteOption: 'Delete' } },
+            { publicIPAddress: { id: `${probeIpId}-2`, deleteOption: 'Delete' } },
+          ],
+        },
+      });
+      assert.equal(reloaded.providerData.cascade.all, false);
+    });
+
+    test('probe: missing networkProfile - cascade.all false, no throw', async () => {
+      const reloaded = await registerArmWorker({
+        vmModel: { storageProfile: { osDisk: { managedDisk: { id: probeOsDiskId }, deleteOption: 'Delete' } } },
+      });
+      assert.equal(reloaded.providerData.cascade.all, false);
+      // registration still succeeded
+      assert.equal(reloaded.state, 'running');
+    });
+
+    test('probe: VM GET failure - cascade.all false, registration still succeeds', async () => {
+      const sandbox = sinon.createSandbox({});
+      sandbox.stub(fake.computeClient.virtualMachines, 'get').rejects(new Error('boom'));
+      let reloaded;
+      try {
+        reloaded = await registerArmWorker({ vmModel: cascadingVmModel(), nicModel: cascadingNicModel() });
+      } finally {
+        sandbox.restore();
+      }
+      assert.equal(reloaded.providerData.cascade.all, false);
+      assert.equal(reloaded.state, 'running');
+      helper.assertPulseMessage('worker-running', m => m.payload.workerId === reloaded.workerId);
+    });
+
+    test('registration does not block on a slow/hung cascade probe', async () => {
+      const sandbox = sinon.createSandbox({});
+      // The probe's VM GET hangs (e.g. a backed-up CloudAPI queue), so if the
+      // probe were on the registration path it would stall registerWorker.
+      let releaseHang;
+      sandbox.stub(fake.computeClient.virtualMachines, 'get').callsFake(
+        () =>
+          new Promise(resolve => {
+            releaseHang = () => resolve({});
+          })
+      );
+
+      const workerPool = await makeWorkerPool();
+      const { vmId, document } = azureSignatures[0];
+      const worker = Worker.fromApi({
+        workerPoolId,
+        workerGroup,
+        workerId: vmId,
+        providerId,
+        created: taskcluster.fromNow('0 seconds'),
+        lastModified: taskcluster.fromNow('0 seconds'),
+        lastChecked: taskcluster.fromNow('0 seconds'),
+        capacity: 1,
+        expires: taskcluster.fromNow('90 seconds'),
+        state: 'requested',
+        providerData: { ...baseProviderData, deploymentMethod: 'arm-template', vm: { name: 'probe-vm', vmId } },
+      });
+      await worker.create(helper.db);
+
+      try {
+        // registration returns promptly despite the hung probe GET
+        const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof: { document } });
+        assert(res.expires, 'registration should complete and return expires');
+
+        const [reloaded] = await helper.getWorkers();
+        assert.equal(reloaded.state, 'running', 'worker should be RUNNING even though the probe has not finished');
+        assert.equal(
+          reloaded.providerData.cascade,
+          undefined,
+          'cascade is not set until the background probe finishes'
+        );
+      } finally {
+        // let the hung GET resolve and drain the background probe so nothing lingers
+        releaseHang?.();
+        await provider._backgroundCascadeProbe;
+        sandbox.restore();
+      }
+    });
+
+    test('probe: timeout aborts the in-flight GET, fails open, registration succeeds', async () => {
+      const sandbox = sinon.createSandbox({});
+      provider.cascadeProbeTimeoutMs = 50;
+      let sawAbortSignal = false;
+      sandbox.stub(fake.computeClient.virtualMachines, 'get').callsFake(
+        (_resourceGroupName, _name, options) =>
+          new Promise((_resolve, reject) => {
+            sawAbortSignal = options?.abortSignal instanceof AbortSignal;
+            options?.abortSignal?.addEventListener('abort', () => reject(new Error('aborted')));
+          })
+      );
+      let reloaded;
+      try {
+        reloaded = await registerArmWorker({ vmModel: cascadingVmModel(), nicModel: cascadingNicModel() });
+      } finally {
+        sandbox.restore();
+        delete provider.cascadeProbeTimeoutMs;
+      }
+      assert(sawAbortSignal, 'the probe GET must receive an abortSignal');
+      assert.equal(reloaded.providerData.cascade.all, false);
+      assert.equal(reloaded.state, 'running');
+    });
+  });
+
+  suite('deprovision', () => {
+    test('de-provisioning loop', async () => {
       const workerPool = await makeWorkerPool({
         // simulate previous provisionig and deleting the workerpool
         providerId: 'null-provider',
@@ -2214,10 +2761,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('checkWorker', function() {
+  suite('checkWorker', () => {
     let worker;
     const sandbox = sinon.createSandbox({});
-    setup('set up for checkWorker', async function() {
+    setup('set up for checkWorker', async () => {
       await provider.scanPrepare();
 
       worker = Worker.fromApi({
@@ -2241,7 +2788,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       sandbox.stub(provider, 'deprovisionResources').returns('requested');
     });
 
-    teardown(function() {
+    teardown(() => {
       sandbox.restore();
     });
 
@@ -2251,12 +2798,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
       if (powerStates) {
         fake.computeClient.virtualMachines.setFakeInstanceView('rgrp', baseProviderData.vm.name, {
-          statuses: powerStates.map(code=>({ code })),
+          statuses: powerStates.map(code => ({ code })),
         });
       }
     };
 
-    test('calls provisionResources for still-running workers', async function() {
+    test('calls provisionResources for still-running workers', async () => {
       await setState({ state: 'running', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
@@ -2265,7 +2812,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.provisionResources.called);
     });
 
-    test('calls provisionResources for requested workers that have no instanceView', async function() {
+    test('calls provisionResources for requested workers that have no instanceView', async () => {
       await setState({ state: 'requested', powerStates: null });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
@@ -2274,7 +2821,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.provisionResources.called);
     });
 
-    test('calls removeWorker after repeated instanceView 404s, even if vm get succeeds', async function() {
+    test('calls removeWorker after repeated instanceView 404s, even if vm get succeeds', async () => {
       await setState({ state: 'running', powerStates: null });
       fake.computeClient.virtualMachines.makeFakeResource('rgrp', baseProviderData.vm.name, {
         provisioningState: 'Succeeded',
@@ -2291,7 +2838,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(provider.provisionResources.callCount, 2);
     });
 
-    test('calls provisionResources for requested workers that are fully started', async function() {
+    test('calls provisionResources for requested workers that are fully started', async () => {
       await setState({ state: 'requested', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
@@ -2300,7 +2847,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.provisionResources.called);
     });
 
-    test('calls removeWorker() for a running worker that is stopping', async function() {
+    test('calls removeWorker() for a running worker that is stopping', async () => {
       await setState({ state: 'running', powerStates: ['PowerState/stopping'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
@@ -2308,7 +2855,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('calls removeWorker() for a running worker that is stopped', async function() {
+    test('calls removeWorker() for a running worker that is stopped', async () => {
       await setState({ state: 'running', powerStates: ['PowerState/stopped'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
@@ -2316,7 +2863,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('calls removeWorker() for a running worker that is deallocating', async function() {
+    test('calls removeWorker() for a running worker that is deallocating', async () => {
       await setState({ state: 'running', powerStates: ['PowerState/deallocating'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
@@ -2324,7 +2871,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('calls removeWorker() for a running worker that is deallocated', async function() {
+    test('calls removeWorker() for a running worker that is deallocated', async () => {
       await setState({ state: 'running', powerStates: ['PowerState/deallocated'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
@@ -2332,7 +2879,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('calls removeWorker() for a requested worker that has failed OS Provisioning', async function() {
+    test('calls removeWorker() for a requested worker that has failed OS Provisioning', async () => {
       await setState({ state: 'requested', powerStates: ['ProvisioningState/failed/OSProvisioningTimedOut'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
@@ -2340,24 +2887,33 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('does not call removeWorker() for a requested worker with failed provisioning but PowerState/running', async function() {
-      await setState({ state: 'requested', powerStates: ['ProvisioningState/failed/OSProvisioningClientError', 'PowerState/running'] });
+    test('does not call removeWorker() for a requested worker with failed provisioning but PowerState/running', async () => {
+      await setState({
+        state: 'requested',
+        powerStates: ['ProvisioningState/failed/OSProvisioningClientError', 'PowerState/running'],
+      });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
       assert(!provider.removeWorker.called);
       assert(provider.provisionResources.called);
     });
 
-    test('calls removeWorker() for a requested worker with failed provisioning and no PowerState/running', async function() {
-      await setState({ state: 'requested', powerStates: ['ProvisioningState/failed/OSProvisioningClientError', 'PowerState/stopped'] });
+    test('calls removeWorker() for a requested worker with failed provisioning and no PowerState/running', async () => {
+      await setState({
+        state: 'requested',
+        powerStates: ['ProvisioningState/failed/OSProvisioningClientError', 'PowerState/stopped'],
+      });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
       assert(provider.removeWorker.called);
       assert(!provider.provisionResources.called);
     });
 
-    test('removes worker with failed provisioning + PowerState/running after terminateAfter expires', async function() {
-      await setState({ state: 'requested', powerStates: ['ProvisioningState/failed/OSProvisioningClientError', 'PowerState/running'] });
+    test('removes worker with failed provisioning + PowerState/running after terminateAfter expires', async () => {
+      await setState({
+        state: 'requested',
+        powerStates: ['ProvisioningState/failed/OSProvisioningClientError', 'PowerState/running'],
+      });
       await worker.update(helper.db, worker => {
         worker.providerData.terminateAfter = Date.now() - 1000;
       });
@@ -2366,7 +2922,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('calls provisionResources for a requested worker that is present but has failed OS Provisioning, if ignoring that', async function() {
+    test('calls provisionResources for a requested worker that is present but has failed OS Provisioning, if ignoring that', async () => {
       await worker.update(helper.db, worker => {
         worker.providerData.ignoreFailedProvisioningStates = ['OSProvisioningTimedOut', 'SomethingElse'];
       });
@@ -2377,7 +2933,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.provisionResources.called);
     });
 
-    test('calls removeWorker() for a requested worker that has failed with an internal error that is not ignored', async function() {
+    test('calls removeWorker() for a requested worker that has failed with an internal error that is not ignored', async () => {
       await worker.update(helper.db, worker => {
         worker.providerData.ignoreFailedProvisioningStates = ['OSProvisioningTimedOut', 'SomethingElse'];
       });
@@ -2388,7 +2944,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('calls deprovisionResources() for a stopping worker that is running', async function() {
+    test('calls deprovisionResources() for a stopping worker that is running', async () => {
       // this is the state of a worker after a `removeWorker` API call, for example
       await setState({ state: 'stopping', powerStates: ['PowerState/running'] });
       await provider.checkWorker({ worker });
@@ -2398,7 +2954,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.deprovisionResources.called);
     });
 
-    test('calls deprovisionResources() for a stopping worker that is stopped', async function() {
+    test('calls deprovisionResources() for a stopping worker that is stopped', async () => {
       await setState({ state: 'stopping', powerStates: ['PowerState/stopped'] });
       await provider.checkWorker({ worker });
       await worker.reload(helper.db);
@@ -2407,7 +2963,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.deprovisionResources.called);
     });
 
-    test('remove unregistered workers after terminateAfter', async function() {
+    test('remove unregistered workers after terminateAfter', async () => {
       await setState({ state: 'requested', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await worker.update(helper.db, worker => {
         worker.providerData.terminateAfter = Date.now() - 1000;
@@ -2417,7 +2973,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.provisionResources.called);
     });
 
-    test('do not remove unregistered workers before terminateAfter', async function() {
+    test('do not remove unregistered workers before terminateAfter', async () => {
       await setState({ state: 'requested', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await worker.update(helper.db, worker => {
         worker.providerData.terminateAfter = Date.now() + 1000;
@@ -2429,7 +2985,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.provisionResources.called);
     });
 
-    test('do not remove registered workers with stale terminateAfter', async function() {
+    test('do not remove registered workers with stale terminateAfter', async () => {
       await setState({ state: 'requested', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       // simulate situation where worker scanner was running slow and in-memory worker was already updated in db
       await worker.update(helper.db, worker => {
@@ -2451,7 +3007,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(provider.provisionResources.called);
     });
 
-    test('remove zombie worker with no queue activity', async function () {
+    test('remove zombie worker with no queue activity', async () => {
       await setState({ state: 'running', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await worker.update(helper.db, worker => {
         worker.providerData.queueInactivityTimeout = 1;
@@ -2461,7 +3017,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provider.checkWorker({ worker });
       assert(provider.removeWorker.called);
     });
-    test('remove zombie worker that was active long ago', async function () {
+    test('remove zombie worker that was active long ago', async () => {
       await setState({ state: 'running', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await worker.update(helper.db, worker => {
         worker.created = taskcluster.fromNow('-120 minutes');
@@ -2472,7 +3028,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await provider.checkWorker({ worker });
       assert(provider.removeWorker.called);
     });
-    test('doesn\'t remove zombie worker that was recently active', async function () {
+    test("doesn't remove zombie worker that was recently active", async () => {
       await setState({ state: 'running', powerStates: ['ProvisioningState/succeeded', 'PowerState/running'] });
       await worker.update(helper.db, worker => {
         worker.created = taskcluster.fromNow('-120 minutes');
@@ -2484,81 +3040,132 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert(!provider.removeWorker.called);
     });
 
-    test('reports worker-pool error when ARM deployment fails', async function() {
+    test('reports worker-pool error when ARM deployment fails', async () => {
       const reportErrorStub = sandbox.stub(provider, 'reportError').resolves();
+      const recordedMetrics = [];
+      const originalMetric = provider.monitor._metric.azureArmDeploymentError;
+      provider.monitor._metric.azureArmDeploymentError = (value, labels) => {
+        recordedMetrics.push({ value, labels });
+      };
       const existingWorkerPool = await WorkerPool.get(helper.db, workerPoolId);
       if (!existingWorkerPool) {
         await makeWorkerPool();
       }
 
-      const deploymentName = 'deploy-failure';
-      await worker.update(helper.db, worker => {
-        worker.providerData = {
-          ...worker.providerData,
-          deploymentMethod: 'arm-template',
-          deployment: {
-            name: deploymentName,
-            operation: 'op/deployment',
-            id: false,
-          },
-          provisioningComplete: false,
-        };
-      });
-
-      await fake.deploymentsClient.deployments.beginCreateOrUpdate('rgrp', deploymentName, {
-        parameters: {
-          vmName: { value: worker.providerData.vm.name },
-        },
-      });
-      fake.deploymentsClient.deployments.setFakeDeploymentState(
-        'rgrp',
-        deploymentName,
-        'Failed',
-        'Ephemeral OS disk is not supported for VM size Standard_D32ads_v6.',
-      );
-
-      const operation = {
-        id: '/fake-operation/1',
-        properties: {
-          provisioningState: 'Failed',
-          provisioningOperation: 'Create',
-          statusCode: 'Conflict',
-          statusMessage: {
-            status: 'Failed',
-            error: {
-              code: 'NotSupported',
-              message: 'Ephemeral OS disk is not supported for VM size Standard_D32ads_v6.',
+      try {
+        const deploymentName = 'deploy-failure';
+        await worker.update(helper.db, worker => {
+          worker.providerData = {
+            ...worker.providerData,
+            deploymentMethod: 'arm-template',
+            armDeployment: {
+              parameters: {
+                vmSize: { value: 'Standard_D32ads_v6' },
+                priority: { value: 'Spot' },
+                imageId: {
+                  value:
+                    '/subscriptions/fake-sub/resourceGroups/images/providers/Microsoft.Compute/galleries/images/versions/1.2.3',
+                },
+              },
             },
+            deployment: {
+              name: deploymentName,
+              operation: 'op/deployment',
+              id: false,
+            },
+            provisioningComplete: false,
+          };
+        });
+
+        await fake.deploymentsClient.deployments.beginCreateOrUpdate('rgrp', deploymentName, {
+          parameters: {
+            vmName: { value: worker.providerData.vm.name },
+          },
+        });
+        fake.deploymentsClient.deployments.setFakeDeploymentState(
+          'rgrp',
+          deploymentName,
+          'Failed',
+          'At least one resource deployment operation failed.'
+        );
+
+        const operation = {
+          id: '/fake-operation/1',
+          properties: {
+            provisioningState: 'Failed',
+            provisioningOperation: 'Create',
+            statusCode: 'Conflict',
+            statusMessage: {
+              status: 'Failed',
+              error: {
+                code: 'DeploymentFailed',
+                message: 'At least one resource deployment operation failed.',
+                details: [
+                  {
+                    code: 'NotSupported',
+                    message: 'Ephemeral OS disk is not supported for VM size Standard_D32ads_v6.',
+                  },
+                  {
+                    code: 'AnotherNestedError',
+                    message: 'Second nested detail should not create another metric sample.',
+                  },
+                ],
+              },
+            },
+            targetResource: {
+              id: `/subscriptions/fake-sub/resourceGroups/rgrp/providers/Microsoft.Compute/virtualMachines/${worker.providerData.vm.name}`,
+              resourceType: 'Microsoft.Compute/virtualMachines',
+              resourceName: worker.providerData.vm.name,
+            },
+            timestamp: '2025-11-12T18:25:38.128Z',
             trackingId: 'tracking-id',
           },
-          targetResource: {
-            id: `/subscriptions/fake-sub/resourceGroups/rgrp/providers/Microsoft.Compute/virtualMachines/${worker.providerData.vm.name}`,
-            resourceType: 'Microsoft.Compute/virtualMachines',
-            resourceName: worker.providerData.vm.name,
+        };
+        fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations('rgrp', deploymentName, [operation]);
+
+        await setState({ state: 'requested' });
+
+        await provider.checkWorker({ worker });
+
+        sandbox.assert.calledOnce(reportErrorStub);
+        const reportedError = reportErrorStub.firstCall.args[0];
+        assert.equal(reportedError.kind, 'arm-deployment-error');
+        assert.equal(reportedError.title, 'ARM Deployment Error');
+        assert(reportedError.description.includes('At least one resource deployment operation failed'));
+        assert.equal(reportedError.workerPool.workerPoolId, workerPoolId);
+        assert.equal(reportedError.extra.operations.length, 1);
+        assert.equal(reportedError.extra.operations[0].statusMessage.error.code, 'DeploymentFailed');
+        assert.equal(reportedError.extra.operations[0].statusMessage.error.details[0].code, 'NotSupported');
+        assert.equal(reportedError.extra.operations[0].statusMessage.error.details[1].code, 'AnotherNestedError');
+        assert.equal(
+          reportedError.extra.operations[0].targetResource.resourceType,
+          'Microsoft.Compute/virtualMachines'
+        );
+        assert.deepEqual(recordedMetrics, [
+          {
+            value: 1,
+            labels: {
+              providerId,
+              workerPoolId,
+              workerGroup: 'westus',
+              errorKind: 'arm-deployment-error',
+              errorCode: 'NotSupported',
+              statusCode: 'Conflict',
+              provisioningState: 'Failed',
+              provisioningOperation: 'Create',
+              targetResourceType: 'Microsoft.Compute/virtualMachines',
+              vmSize: 'Standard_D32ads_v6',
+              priority: 'Spot',
+            },
           },
-          timestamp: '2025-11-12T18:25:38.128Z',
-          trackingId: 'tracking-id',
-        },
-      };
-      fake.deploymentsClient.deploymentOperations.setFakeDeploymentOperations('rgrp', deploymentName, [operation]);
-
-      await setState({ state: 'requested' });
-
-      await provider.checkWorker({ worker });
-
-      sandbox.assert.calledOnce(reportErrorStub);
-      const reportedError = reportErrorStub.firstCall.args[0];
-      assert.equal(reportedError.kind, 'arm-deployment-error');
-      assert.equal(reportedError.title, 'ARM Deployment Error');
-      assert(reportedError.description.includes('Ephemeral OS disk is not supported'));
-      assert.equal(reportedError.workerPool.workerPoolId, workerPoolId);
-      assert.equal(reportedError.extra.operations.length, 1);
-      assert.equal(reportedError.extra.operations[0].statusMessage.error.code, 'NotSupported');
-      assert.equal(reportedError.extra.operations[0].targetResource.resourceType, 'Microsoft.Compute/virtualMachines');
+        ]);
+      } finally {
+        provider.monitor._metric.azureArmDeploymentError = originalMetric;
+      }
     });
   });
 
-  suite('registerWorker', function() {
+  suite('registerWorker', () => {
     const workerGroup = 'westus';
     const vmId = azureSignatures[0].vmId;
     const baseWorker = {
@@ -2581,7 +3188,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       },
     };
 
-    setup('create vm', function() {
+    setup('create vm', () => {
       fake.computeClient.virtualMachines.makeFakeResource('rgrp', 'some-vm', {
         vmId,
       });
@@ -2602,8 +3209,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         },
       },
     ]) {
-      suite(name, function () {
-        test('Test same certificate multiple times', async function () {
+      suite(name, () => {
+        test('Test same certificate multiple times', async () => {
           // https://github.com/taskcluster/taskcluster/issues/7685
           // verification can fail if same cert is present twice in CA Store but with different parents
           // if we check same cert few times, it would start failing
@@ -2622,7 +3229,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             await helper.db.fns.delete_worker(worker.workerPoolId, worker.workerGroup, worker.workerId);
           }
         });
-        test('document is not a valid PKCS#7 message', async function() {
+        test('document is not a valid PKCS#7 message', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2630,15 +3237,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await worker.create(helper.db);
           const document = 'this is not a valid PKCS#7 message';
           const workerIdentityProof = { document };
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           assert(monitor.manager.messages[0].Fields.error.includes('Too few bytes to read ASN.1 value.'));
           assert.equal(monitor.manager.messages[0].Fields.document, document);
           helper.assertNoPulseMessage('worker-running');
         });
 
-        test('document is empty', async function() {
+        test('document is empty', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2646,14 +3254,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await worker.create(helper.db);
           const document = '';
           const workerIdentityProof = { document };
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           assert(monitor.manager.messages[0].Fields.error.includes('Too few bytes to parse DER.'));
           helper.assertNoPulseMessage('worker-running');
         });
 
-        test('message does not match signature', async function() {
+        test('message does not match signature', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2662,14 +3271,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           // this file is a version of azure_signature_good.json where vmId has been edited in the message
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_message_bad')).toString();
           const workerIdentityProof = { document };
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           assert(monitor.manager.messages[0].Fields.message.includes('Error extracting PKCS#7 message'));
           helper.assertNoPulseMessage('worker-running');
         });
 
-        test('malformed signature', async function() {
+        test('malformed signature', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2678,14 +3288,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           // this file is a version of azure_signature_good.json where the message signature has been edited
           const document = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_bad')).toString();
           const workerIdentityProof = { document };
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           assert(monitor.manager.messages[0].Fields.message.includes('Error verifying PKCS#7 message signature'));
           helper.assertNoPulseMessage('worker-running');
         });
 
-        test('wrong signer subject', async function() {
+        test('wrong signer subject', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2693,21 +3304,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           await worker.create(helper.db);
           // A message signed by a cert with the wrong subject
           // "/CN=metadata.azure.org" (instead of .com)
-          const message = fs.readFileSync(
-            path.resolve(__dirname, 'fixtures/azure_wrong_subject.pkcs7')).toString();
+          const message = fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_wrong_subject.pkcs7')).toString();
           const content = message.split('\n').slice(1, -1).join();
           const workerIdentityProof = { document: content };
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           const log = monitor.manager.messages[0].Fields;
           assert.equal(log.message, 'Error extracting PKCS#7 message');
-          assert.equal(
-            log.error,
-            'Error: Unparsed DER bytes remain after ASN.1 parsing.');
+          assert.equal(log.error, 'Error: Unparsed DER bytes remain after ASN.1 parsing.');
         });
 
-        test('expired message', async function() {
+        test('expired message', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2717,15 +3326,18 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           // see services/worker-manager/README.md#Testing on how this file was obtained
           const workerIdentityProof = { document: azureSignatures[0].document };
           provider._now = () => new Date(new Date().getFullYear() + 1, 1, 1); // in the future for this fixture
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
-          assert(monitor.manager.messages.filter(
-            row => row.Type === 'registration-error-warning',
-          )[0].Fields.message.includes('Expired message'));
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
+          assert(
+            monitor.manager.messages
+              .filter(row => row.Type === 'registration-error-warning')[0]
+              .Fields.message.includes('Expired message')
+          );
         });
 
-        test('fail to download cert', async function() {
+        test('fail to download cert', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2740,37 +3352,34 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const intermediateCert = getIntermediateCert();
 
           // Disable downloads
-          provider.downloadBinaryResponse = (url) => {
-            return new Promise((resolve, reject) => {
+          provider.downloadBinaryResponse = _url => {
+            return new Promise((_resolve, reject) => {
               reject(Error('Mocked downloadBinaryResponse'));
             });
           };
 
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
-          assert.equal(
-            log0.error,
-            `Error: Mocked downloadBinaryResponse; location=${intermediateCertUrl}`);
+          assert.equal(log0.error, `Error: Mocked downloadBinaryResponse; location=${intermediateCertUrl}`);
           const expectedSubject = dnToString(intermediateCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: intermediateCertUrl },
-            { method: "OSCP", location: "http://oneocsp.microsoft.com/ocsp" },
+            { method: 'OSCP', location: 'http://oneocsp.microsoft.com/ocsp' },
           ]);
           const log1 = monitor.manager.messages[1].Fields;
           assert.equal(log1.message, 'Unable to download intermediate certificate');
-          assert.equal(
-            log1.error,
-            `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
+          assert.equal(log1.error, `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
 
           // Restore test fixture
           restoreAllCerts();
           provider.downloadBinaryResponse = oldDownloadBinaryResponse;
         });
 
-        test('certificate download timeout', async function() {
+        test('certificate download timeout', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2783,32 +3392,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const slowUrl = `http://127.0.0.1:${slowServer.address().port}`;
 
           const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
-          provider.downloadBinaryResponse = async () => got(slowUrl, {
-            responseType: 'buffer',
-            resolveBodyOnly: true,
-            timeout: { request: 1 },
-            retry: { limit: 0 },
-          });
+          provider.downloadBinaryResponse = async () =>
+            got(slowUrl, {
+              responseType: 'buffer',
+              resolveBodyOnly: true,
+              timeout: { request: 1 },
+              retry: { limit: 0 },
+            });
 
           removeAllCertsFromStore();
           const intermediateCert = getIntermediateCert();
 
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
           assert.equal(log0.error, `TimeoutError: Timeout awaiting 'request' for 1ms; location=${intermediateCertUrl}`);
           const expectedSubject = dnToString(intermediateCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: intermediateCertUrl },
-            { method: "OSCP", location: "http://oneocsp.microsoft.com/ocsp" },
+            { method: 'OSCP', location: 'http://oneocsp.microsoft.com/ocsp' },
           ]);
           const log1 = monitor.manager.messages[1].Fields;
           assert.equal(log1.message, 'Unable to download intermediate certificate');
-          assert.equal(
-            log1.error,
-            `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
+          assert.equal(log1.error, `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
 
           // Restore test fixture
           await new Promise(resolve => slowServer.close(resolve));
@@ -2817,7 +3426,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           helper.assertNoPulseMessage('worker-running');
         });
 
-        test('download is not binary cert', async function() {
+        test('download is not binary cert', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2832,34 +3441,30 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const intermediateCert = getIntermediateCert();
 
           // Download is not a binary certificate
-          provider.downloadBinaryResponse = async url =>
-            '<html><body><h1>Apache2 Default Page</h1></body></html>';
+          provider.downloadBinaryResponse = async () => '<html><body><h1>Apache2 Default Page</h1></body></html>';
 
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error reading intermediate certificate');
-          assert.equal(
-            log0.error,
-            `Error: Too few bytes to read ASN.1 value.; location=${intermediateCertUrl}`);
+          assert.equal(log0.error, `Error: Too few bytes to read ASN.1 value.; location=${intermediateCertUrl}`);
           const expectedSubject = dnToString(intermediateCert.subject);
           const expectedAIA = JSON.stringify([
             { method: 'CA Issuer', location: intermediateCertUrl },
-            { method: "OSCP", location: "http://oneocsp.microsoft.com/ocsp" },
+            { method: 'OSCP', location: 'http://oneocsp.microsoft.com/ocsp' },
           ]);
           const log1 = monitor.manager.messages[1].Fields;
           assert.equal(log1.message, 'Unable to download intermediate certificate');
-          assert.equal(
-            log1.error,
-            `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
+          assert.equal(log1.error, `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
 
           // Restore test fixture
           restoreAllCerts();
           provider.downloadBinaryResponse = oldDownloadBinaryResponse;
         });
 
-        test('logs rejected intermediate certificate URL', async function() {
+        test('logs rejected intermediate certificate URL', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2872,9 +3477,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
             document: createWorkerIdentityProofWithAiaUrl({ vmId, aiaUrl: rejectedUrl }),
           };
 
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
 
           const log0 = monitor.manager.messages[0];
           assert.equal(log0.Type, 'registration-rejected-intermediate-certificate-url');
@@ -2886,7 +3492,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           restoreAllCerts();
         });
 
-        test('bad cert', async function() {
+        test('bad cert', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2903,15 +3509,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const deletedRoot = provider.caStore.removeCertificate(rootCert);
           assert(deletedRoot);
 
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error verifying new intermediate certificate');
           assert.equal(
             log0.error,
             `Issuer "${dnToString(rootCert.subject)}"` +
-            ` for "${dnToString(intermediateCert.subject)}" is not a known Root CA`);
+              ` for "${dnToString(intermediateCert.subject)}" is not a known Root CA`
+          );
 
           // Restore test fixture
           provider.caStore.addCertificate(deletedRoot);
@@ -2919,7 +3527,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           helper.assertNoPulseMessage('worker-running');
         });
 
-        test('wrong worker state (duplicate call to registerWorker)', async function() {
+        test('wrong worker state (duplicate call to registerWorker)', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2927,13 +3535,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           });
           await worker.create(helper.db);
           const workerIdentityProof = { document: azureSignatures[0].document };
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           assert(monitor.manager.messages[0].Fields.error.includes('already running'));
         });
 
-        test('wrong vmID', async function() {
+        test('wrong vmID', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
@@ -2947,9 +3556,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           });
           await worker.create(helper.db);
           const workerIdentityProof = { document: azureSignatures[0].document };
-          await assert.rejects(() =>
-            provider.registerWorker({ workerPool, worker, workerIdentityProof }),
-          /Signature validation error/);
+          await assert.rejects(
+            () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
+            /Signature validation error/
+          );
           assert(monitor.manager.messages[0].Fields.message.includes('vmId mismatch'));
           assert.equal(monitor.manager.messages[0].Fields.vmId, vmId);
           assert.equal(monitor.manager.messages[0].Fields.expectedVmId, 'wrongeba3-807b-46dd-aef5-78aaf9193f71');
@@ -2957,14 +3567,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           helper.assertNoPulseMessage('worker-running');
         });
 
-        test('sweet success', async function() {
+        test('sweet success', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
             providerData: {
               ...defaultWorker.providerData,
               workerConfig: {
-                "someKey": "someValue",
+                someKey: 'someValue',
               },
             },
           });
@@ -2972,19 +3582,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const workerIdentityProof = { document: azureSignatures[0].document };
           const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
           // allow +- 10 seconds since time passes while the test executes
-          assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
-          assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now() + 10000 > 96 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now() - 10000 < 96 * 3600 * 1000, res.expires);
           assert.equal(res.workerConfig.someKey, 'someValue');
         });
 
-        test('sweet success (different reregister)', async function() {
+        test('sweet success (different reregister)', async () => {
           const workerPool = await makeWorkerPool();
-          let worker = Worker.fromApi({
+          const worker = Worker.fromApi({
             ...defaultWorker,
             providerData: {
               ...defaultWorker.providerData,
               workerConfig: {
-                "someKey": "someValue",
+                someKey: 'someValue',
               },
             },
           });
@@ -2996,21 +3606,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
           const workerIdentityProof = { document: azureSignatures[0].document };
           const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
           // allow +- 10 seconds since time passes while the test executes
-          assert(res.expires - new Date() + 10000 > 10 * 3600 * 1000, res.expires);
-          assert(res.expires - new Date() - 10000 < 10 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now() + 10000 > 10 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now() - 10000 < 10 * 3600 * 1000, res.expires);
           assert.equal(res.workerConfig.someKey, 'someValue');
           helper.assertPulseMessage('worker-running', m => m.payload.workerId === worker.workerId);
           helper.assertPulseMessage('worker-running', m => m.payload.launchConfigId === worker.launchConfigId);
         });
 
-        test('success after downloading missing intermediate', async function() {
+        test('success after downloading missing intermediate', async () => {
           const workerPool = await makeWorkerPool();
           const worker = Worker.fromApi({
             ...defaultWorker,
             providerData: {
               ...defaultWorker.providerData,
               workerConfig: {
-                "someKey": "someValue",
+                someKey: 'someValue',
               },
             },
           });
@@ -3021,15 +3631,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
           const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
           // allow +- 10 seconds since time passes while the test executes
-          assert(res.expires - new Date() + 10000 > 96 * 3600 * 1000, res.expires);
-          assert(res.expires - new Date() - 10000 < 96 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now() + 10000 > 96 * 3600 * 1000, res.expires);
+          assert(res.expires - Date.now() - 10000 < 96 * 3600 * 1000, res.expires);
           assert.equal(res.workerConfig.someKey, 'someValue');
 
-          let log0 = monitor.manager.messages[0];
+          const log0 = monitor.manager.messages[0];
           assert.equal(log0.Type, 'registration-new-intermediate-certificate');
-          assert.equal(
-            log0.Fields.fingerprint,
-            intermediateCertFingerprint);
+          assert.equal(log0.Fields.fingerprint, intermediateCertFingerprint);
           assert.equal(log0.Fields.issuer, intermediateCertIssuer);
           assert.equal(log0.Fields.subject, intermediateCertSubject);
           assert.equal(log0.Fields.url, intermediateCertUrl);
@@ -3039,9 +3647,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     }
   });
 
-  suite('FakeRestClient throttle / header support', function() {
+  suite('FakeRestClient throttle / header support', () => {
     let worker;
-    setup(async function() {
+    setup(async () => {
       await makeWorkerPool();
       worker = Worker.fromApi({
         workerPoolId,
@@ -3062,7 +3670,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.create(helper.db);
     });
 
-    test('setThrottle causes 429 error through CloudAPI.enqueue', async function() {
+    test('setThrottle causes 429 error through CloudAPI.enqueue', async () => {
       // Configure the fake to throw 429 on the next request.
       // Use a small retry-after (1s) so the dynamic backoff doesn't
       // cause the test to time out — this test verifies the error path,
@@ -3090,13 +3698,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // Verify that CloudAPI logged the pause from the 429
       const pauseMsg = monitor.manager.messages.find(
-        msg => msg.Type === 'cloud-api-paused' && msg.Fields.reason === 'rateLimit',
+        msg => msg.Type === 'cloud-api-paused' && msg.Fields.reason === 'rateLimit'
       );
       assert.ok(pauseMsg, 'expected a cloud-api-paused log for rateLimit');
       assert.equal(pauseMsg.Fields.queueName, 'opRead');
     });
 
-    test('setThrottle error carries statusCode and response headers', async function() {
+    test('setThrottle error carries statusCode and response headers', async () => {
       fake.restClient.setThrottle(1, {
         'retry-after': '45',
         'x-ms-ratelimit-remaining-subscription-reads': '10',
@@ -3118,7 +3726,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     });
 
-    test('successful response includes rate-limit headers when setResponseHeaders is used', async function() {
+    test('successful response includes rate-limit headers when setResponseHeaders is used', async () => {
       fake.restClient.setResponseHeaders({
         'x-ms-ratelimit-remaining-subscription-reads': '150',
         'x-ms-ratelimit-remaining-subscription-writes': '450',
@@ -3134,14 +3742,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(resp.headers.get('x-ms-ratelimit-remaining-subscription-deletes'), '300');
     });
 
-    test('successful 200 response includes rate-limit headers', async function() {
+    test('successful 200 response includes rate-limit headers', async () => {
       // Set up a pending operation so the fake returns 200
       await fake.computeClient.virtualMachines.beginCreateOrUpdate('rgrp', 'throttle-vm', {
         subnetId: 'some/subnet',
         location: 'westus',
         hardwareProfile: { vmSize: 'Basic_A2' },
         storageProfile: { osDisk: {}, dataDisks: [] },
-        osProfile: { adminUsername: 'user', adminPassword: 'pass', computerName: 'throttle-vm', customData: 'dGVzdA==' },
+        osProfile: {
+          adminUsername: 'user',
+          adminPassword: 'pass',
+          computerName: 'throttle-vm',
+          customData: 'dGVzdA==',
+        },
         networkProfile: { networkInterfaces: [{ id: 'nic-id', primary: true }] },
         tags: {},
       });
@@ -3157,13 +3770,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(resp.parsedBody.status, 'InProgress');
     });
 
-    test('response has null headers when setResponseHeaders is not used', async function() {
+    test('response has null headers when setResponseHeaders is not used', async () => {
       const resp = await fake.restClient.sendLongRunningRequest({ url: 'op/vm/rgrp/throttle-vm' });
       assert.equal(resp.status, 404);
       assert.strictEqual(resp.headers, null);
     });
 
-    test('throttle counter decrements and subsequent requests succeed', async function() {
+    test('throttle counter decrements and subsequent requests succeed', async () => {
       fake.restClient.setThrottle(2, { 'retry-after': '10' });
 
       // First two calls throw 429
@@ -3181,7 +3794,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(resp.status, 404); // no matching request, but no throw
     });
 
-    test('FakeHttpHeaders.get is case-insensitive', function() {
+    test('FakeHttpHeaders.get is case-insensitive', () => {
       const headers = new FakeHttpHeaders({
         'X-Ms-RateLimit-Remaining-Subscription-Reads': '42',
         'Retry-After': '30',
@@ -3194,8 +3807,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('_recordRateLimitHeaders', function() {
-    test('emits azureThrottled log on 429 with all headers', function() {
+  suite('_recordRateLimitHeaders', () => {
+    test('emits azureThrottled log on 429 with all headers', () => {
       const headers = new FakeHttpHeaders({
         'x-ms-ratelimit-remaining-subscription-reads': '100',
         'x-ms-ratelimit-remaining-subscription-writes': '200',
@@ -3210,9 +3823,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         operationType: 'read',
       });
 
-      const throttleMsg = monitor.manager.messages.find(
-        msg => msg.Type === 'azure-throttled',
-      );
+      const throttleMsg = monitor.manager.messages.find(msg => msg.Type === 'azure-throttled');
       assert.ok(throttleMsg, 'expected an azure-throttled log');
       assert.equal(throttleMsg.Fields.providerId, providerId);
       assert.equal(throttleMsg.Fields.operationType, 'read');
@@ -3223,7 +3834,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(throttleMsg.Fields.remainingResource, 'Microsoft.Compute/GetOperation3Min;99');
     });
 
-    test('does not emit azureThrottled log on non-429 response', function() {
+    test('does not emit azureThrottled log on non-429 response', () => {
       const headers = new FakeHttpHeaders({
         'x-ms-ratelimit-remaining-subscription-reads': '500',
       });
@@ -3234,13 +3845,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         operationType: 'read',
       });
 
-      const throttleMsg = monitor.manager.messages.find(
-        msg => msg.Type === 'azure-throttled',
-      );
+      const throttleMsg = monitor.manager.messages.find(msg => msg.Type === 'azure-throttled');
       assert.ok(!throttleMsg, 'should not emit azure-throttled for 200 response');
     });
 
-    test('handles partial headers gracefully', function() {
+    test('handles partial headers gracefully', () => {
       const headers = new FakeHttpHeaders({
         'x-ms-ratelimit-remaining-subscription-reads': '42',
       });
@@ -3251,9 +3860,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         operationType: 'write',
       });
 
-      const throttleMsg = monitor.manager.messages.find(
-        msg => msg.Type === 'azure-throttled',
-      );
+      const throttleMsg = monitor.manager.messages.find(msg => msg.Type === 'azure-throttled');
       assert.ok(throttleMsg, 'expected an azure-throttled log');
       assert.equal(throttleMsg.Fields.remainingReads, 42);
       assert.equal(throttleMsg.Fields.remainingWrites, null);
@@ -3262,7 +3869,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(throttleMsg.Fields.retryAfterSeconds, null);
     });
 
-    test('handles malformed header values', function() {
+    test('handles malformed header values', () => {
       const headers = new FakeHttpHeaders({
         'x-ms-ratelimit-remaining-subscription-reads': 'not-a-number',
         'x-ms-ratelimit-remaining-subscription-writes': '',
@@ -3277,9 +3884,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         operationType: 'read',
       });
 
-      const throttleMsg = monitor.manager.messages.find(
-        msg => msg.Type === 'azure-throttled',
-      );
+      const throttleMsg = monitor.manager.messages.find(msg => msg.Type === 'azure-throttled');
       assert.ok(throttleMsg, 'expected an azure-throttled log even with malformed headers');
       assert.equal(throttleMsg.Fields.remainingReads, null);
       assert.equal(throttleMsg.Fields.remainingWrites, null);
@@ -3288,7 +3893,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(throttleMsg.Fields.retryAfterSeconds, null);
     });
 
-    test('is a no-op when headers is null', function() {
+    test('is a no-op when headers is null', () => {
       // Should not throw
       provider._recordRateLimitHeaders({
         headers: null,
@@ -3296,26 +3901,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         operationType: 'read',
       });
 
-      const throttleMsg = monitor.manager.messages.find(
-        msg => msg.Type === 'azure-throttled',
-      );
+      const throttleMsg = monitor.manager.messages.find(msg => msg.Type === 'azure-throttled');
       assert.ok(!throttleMsg, 'should not emit log with null headers');
     });
 
-    test('is a no-op when headers lacks .get() method', function() {
+    test('is a no-op when headers lacks .get() method', () => {
       provider._recordRateLimitHeaders({
         headers: { 'retry-after': '30' },
         statusCode: 429,
         operationType: 'read',
       });
 
-      const throttleMsg = monitor.manager.messages.find(
-        msg => msg.Type === 'azure-throttled',
-      );
+      const throttleMsg = monitor.manager.messages.find(msg => msg.Type === 'azure-throttled');
       assert.ok(!throttleMsg, 'should not emit log without .get() method');
     });
 
-    test('calls gauge metrics for remaining-* headers', function() {
+    test('calls gauge metrics for remaining-* headers', () => {
       const recorded = [];
       const origMetric = provider.monitor._metric.azureRateLimitRemaining;
       provider.monitor._metric.azureRateLimitRemaining = (value, labels) => {
@@ -3342,7 +3943,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     });
 
-    test('calls counter metric on 429', function() {
+    test('calls counter metric on 429', () => {
       const recorded = [];
       const origMetric = provider.monitor._metric.azureThrottleCount;
       provider.monitor._metric.azureThrottleCount = (value, labels) => {
@@ -3368,9 +3969,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('handleOperation observability', function() {
+  suite('handleOperation observability', () => {
     let worker;
-    setup(async function() {
+    setup(async () => {
       await makeWorkerPool();
       worker = Worker.fromApi({
         workerPoolId,
@@ -3391,7 +3992,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       await worker.create(helper.db);
     });
 
-    test('records rate-limit headers from successful handleOperation response', async function() {
+    test('records rate-limit headers from successful handleOperation response', async () => {
       // Set up a pending operation so the fake returns 200 with parsedBody
       await fake.computeClient.virtualMachines.beginCreateOrUpdate('rgrp', 'obs-vm', {
         subnetId: 'some/subnet',
@@ -3433,16 +4034,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         assert.equal(writesGauge.value, 800);
 
         // Non-429 should not produce azureThrottled log
-        const throttleMsg = monitor.manager.messages.find(
-          msg => msg.Type === 'azure-throttled',
-        );
+        const throttleMsg = monitor.manager.messages.find(msg => msg.Type === 'azure-throttled');
         assert.ok(!throttleMsg, 'should not emit azure-throttled for 200 response');
       } finally {
         provider.monitor._metric.azureRateLimitRemaining = origMetric;
       }
     });
 
-    test('transient restClient 429 does not emit azureThrottled (handled by CloudAPI backoff only)', async function() {
+    test('transient restClient 429 does not emit azureThrottled (handled by CloudAPI backoff only)', async () => {
       // setThrottle(1): first call throws 429, CloudAPI retries, second call succeeds.
       // errorHandler no longer records headers (to avoid double-counting SDK clients),
       // so transient restClient 429s only show up in the generic cloudApiPaused log.
@@ -3461,18 +4060,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // CloudAPI still logs the queue pause
       const pauseMsg = monitor.manager.messages.find(
-        msg => msg.Type === 'cloud-api-paused' && msg.Fields.reason === 'rateLimit',
+        msg => msg.Type === 'cloud-api-paused' && msg.Fields.reason === 'rateLimit'
       );
       assert.ok(pauseMsg, 'expected cloudApiPaused log for the transient 429');
 
       // But no azureThrottled log — errorHandler no longer records
-      const throttleMsg = monitor.manager.messages.find(
-        msg => msg.Type === 'azure-throttled',
-      );
+      const throttleMsg = monitor.manager.messages.find(msg => msg.Type === 'azure-throttled');
       assert.ok(!throttleMsg, 'transient restClient 429 should not produce azureThrottled');
     });
 
-    test('persistent restClient 429 emits azureThrottled once from handleOperation catch', async function() {
+    test('persistent restClient 429 emits azureThrottled once from handleOperation catch', async () => {
       // setThrottle(6): exceeds CloudAPI's 5 retries (tries > 4), so the error
       // propagates to handleOperation's catch which records it exactly once.
       fake.restClient.setThrottle(6, {
@@ -3499,9 +4096,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
         assert.equal(result, true, 'handleOperation returns true on error (come back later)');
 
         // Exactly one azureThrottled log from handleOperation's catch
-        const throttleMsgs = monitor.manager.messages.filter(
-          msg => msg.Type === 'azure-throttled',
-        );
+        const throttleMsgs = monitor.manager.messages.filter(msg => msg.Type === 'azure-throttled');
         assert.equal(throttleMsgs.length, 1, 'expected exactly one azure-throttled log');
         assert.equal(throttleMsgs[0].Fields.providerId, providerId);
         assert.equal(throttleMsgs[0].Fields.operationType, 'read');
@@ -3518,12 +4113,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('errorHandler dynamic backoff', function() {
+  suite('errorHandler dynamic backoff', () => {
     // Test the error handler directly via provider.cloudApi.errorHandler
     // to verify Retry-After parsing and cap logic without waiting for
     // actual queue pauses.
 
-    const make429Error = (retryAfter) => {
+    const make429Error = retryAfter => {
       const err = new Error('Too Many Requests');
       err.statusCode = 429;
       const headers = {};
@@ -3534,7 +4129,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return err;
     };
 
-    test('uses Retry-After header value for backoff', function() {
+    test('uses Retry-After header value for backoff', () => {
       const result = provider.cloudApi.errorHandler({
         err: make429Error(60),
         tries: 0,
@@ -3545,7 +4140,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(result.level, 'notice');
     });
 
-    test('caps Retry-After at 120 seconds', function() {
+    test('caps Retry-After at 120 seconds', () => {
       const result = provider.cloudApi.errorHandler({
         err: make429Error(300),
         tries: 0,
@@ -3554,7 +4149,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(result.backoff, 120000);
     });
 
-    test('falls back to default backoff when Retry-After is absent', function() {
+    test('falls back to default backoff when Retry-After is absent', () => {
       const err = new Error('Too Many Requests');
       err.statusCode = 429;
       err.response = { headers: new FakeHttpHeaders({}) };
@@ -3563,7 +4158,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(result.backoff, 50);
     });
 
-    test('falls back to default backoff when Retry-After is non-numeric', function() {
+    test('falls back to default backoff when Retry-After is non-numeric', () => {
       const result = provider.cloudApi.errorHandler({
         err: make429Error('not-a-number'),
         tries: 0,
@@ -3571,7 +4166,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(result.backoff, 50);
     });
 
-    test('falls back to default backoff when Retry-After is zero', function() {
+    test('falls back to default backoff when Retry-After is zero', () => {
       const result = provider.cloudApi.errorHandler({
         err: make429Error(0),
         tries: 0,
@@ -3580,7 +4175,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(result.backoff, 50);
     });
 
-    test('falls back to default backoff when Retry-After is negative', function() {
+    test('falls back to default backoff when Retry-After is negative', () => {
       const result = provider.cloudApi.errorHandler({
         err: make429Error(-5),
         tries: 0,
@@ -3588,7 +4183,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(result.backoff, 50);
     });
 
-    test('integration: dynamic backoff observed in cloud-api-paused log', async function() {
+    test('integration: dynamic backoff observed in cloud-api-paused log', async () => {
       await makeWorkerPool();
       const worker = Worker.fromApi({
         workerPoolId,
@@ -3624,7 +4219,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       });
 
       const pauseMsg = monitor.manager.messages.find(
-        msg => msg.Type === 'cloud-api-paused' && msg.Fields.reason === 'rateLimit',
+        msg => msg.Type === 'cloud-api-paused' && msg.Fields.reason === 'rateLimit'
       );
       assert.ok(pauseMsg, 'expected a cloud-api-paused log');
       // Retry-After: 2 → min(2, 120) * 1000 = 2000ms
@@ -3632,29 +4227,29 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('Track 2 pipeline policy', function() {
+  suite('Track 2 pipeline policy', () => {
     let policy;
 
-    setup(function() {
+    setup(() => {
       // provider.setup() registers the policy on every Track 2 client's pipeline
       policy = fake.computeClient.pipeline.getPolicy('rateLimitObservabilityPolicy');
       assert.ok(policy, 'expected rateLimitObservabilityPolicy on computeClient pipeline');
     });
 
-    test('policy is registered with afterPhase: Retry', function() {
+    test('policy is registered with afterPhase: Retry', () => {
       const options = fake.computeClient.pipeline.getPolicyOptions('rateLimitObservabilityPolicy');
       assert.ok(options, 'expected addPolicy options');
       assert.equal(options.afterPhase, 'Retry');
     });
 
-    test('policy is registered on all Track 2 clients', function() {
+    test('policy is registered on all Track 2 clients', () => {
       for (const client of [fake.computeClient, fake.networkClient, fake.resourcesClient, fake.deploymentsClient]) {
         const p = client.pipeline.getPolicy('rateLimitObservabilityPolicy');
         assert.ok(p, 'expected policy on every Track 2 client');
       }
     });
 
-    test('records rate-limit gauge from 200 response', async function() {
+    test('records rate-limit gauge from 200 response', async () => {
       const gaugeRecords = [];
       const origMetric = provider.monitor._metric.azureRateLimitRemaining;
       provider.monitor._metric.azureRateLimitRemaining = (value, labels) => {
@@ -3687,7 +4282,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     });
 
-    test('emits azureThrottled log and counter on 429 response', async function() {
+    test('emits azureThrottled log and counter on 429 response', async () => {
       const counterRecords = [];
       const origCounter = provider.monitor._metric.azureThrottleCount;
       provider.monitor._metric.azureThrottleCount = (value, labels) => {
@@ -3719,13 +4314,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       }
     });
 
-    test('derives operationType from HTTP method', async function() {
+    test('derives operationType from HTTP method', async () => {
       const methods = {
-        'GET': 'read',
-        'PUT': 'write',
-        'POST': 'write',
-        'PATCH': 'write',
-        'DELETE': 'delete',
+        GET: 'read',
+        PUT: 'write',
+        POST: 'write',
+        PATCH: 'write',
+        DELETE: 'delete',
       };
 
       for (const [method, expectedOpType] of Object.entries(methods)) {
@@ -3739,12 +4334,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
         const throttleMsg = monitor.manager.messages.find(m => m.Type === 'azure-throttled');
         assert.ok(throttleMsg, `expected azure-throttled for ${method}`);
-        assert.equal(throttleMsg.Fields.operationType, expectedOpType,
-          `${method} should map to ${expectedOpType}`);
+        assert.equal(throttleMsg.Fields.operationType, expectedOpType, `${method} should map to ${expectedOpType}`);
       }
     });
 
-    test('passes response through unmodified', async function() {
+    test('passes response through unmodified', async () => {
       const mockResponse = {
         status: 200,
         headers: new FakeHttpHeaders({}),
@@ -3756,7 +4350,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('scanCleanup', function() {
+  suite('scanCleanup', () => {
     const sandbox = sinon.createSandbox({});
     let reportedErrors = [];
 
@@ -3764,11 +4358,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       reportedErrors = [];
     });
 
-    teardown(function () {
+    teardown(() => {
       sandbox.restore();
     });
 
-    test('iterates all seen workers', async function() {
+    test('iterates all seen workers', async () => {
       sandbox.stub(provider, 'reportError');
       const workerPool1 = await makeWorkerPool({ workerPoolId: 'foo/bar1' });
       const workerPool2 = await makeWorkerPool({ workerPoolId: 'foo/bar2' });
@@ -3785,8 +4379,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(0, reportedErrors.length);
     });
 
-    test('iterates and reports errors', async function() {
-      sandbox.replace(provider, 'reportError', (error) => {
+    test('iterates and reports errors', async () => {
+      sandbox.replace(provider, 'reportError', error => {
         reportedErrors.push(error);
       });
 

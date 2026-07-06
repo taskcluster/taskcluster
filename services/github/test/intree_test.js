@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import assert from 'assert';
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert';
 import _ from 'lodash';
 import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
@@ -10,7 +10,7 @@ import testing from '@taskcluster/lib-testing';
 const webhookDir = new URL('./data/webhooks/', import.meta.url).pathname;
 const loadWebhook = filename => JSON.parse(fs.readFileSync(path.join(webhookDir, filename), 'utf8'));
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   let intree;
 
   const webhookPullRequestJson = loadWebhook('webhook.pull_request.open.json');
@@ -20,14 +20,14 @@ suite(testing.suiteName(), function() {
   const webhookReleaseJson = loadWebhook('webhook.release.json');
   const webhookTagPushJson = loadWebhook('webhook.tag_push.json');
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     helper.load.save();
     await helper.load('cfg');
     helper.load.cfg('taskcluster.rootUrl', libUrls.testRootUrl());
     intree = await helper.load('intree');
   });
 
-  suiteTeardown(function() {
+  suiteTeardown(() => {
     helper.load.restore();
   });
 
@@ -36,7 +36,7 @@ suite(testing.suiteName(), function() {
    * after a pull request
    **/
   function buildMessage(params) {
-    let defaultMessage = {
+    const defaultMessage = {
       organization: 'testorg',
       repository: 'testrepo',
       details: {
@@ -71,8 +71,8 @@ suite(testing.suiteName(), function() {
    * expected:    {}, keys=>values expected to exist in the compiled config
    * shouldError: if you want intree to throw an exception, set this to true
    **/
-  let buildConfigTest = function(testName, configPath, params, expected, count = -1, shouldError = false) {
-    test(testName, async function() {
+  const buildConfigTest = (testName, configPath, params, expected, count = -1, shouldError = false) => {
+    test(testName, async () => {
       params.config = yaml.load(fs.readFileSync(configPath));
       params.schema = {
         0: libUrls.schema(libUrls.testRootUrl(), 'github', 'v1/taskcluster-github-config.yml'),
@@ -93,8 +93,8 @@ suite(testing.suiteName(), function() {
       if (count > 0) {
         assert.equal(config.tasks.length, count);
       }
-      for (let key of Object.keys(expected)) {
-        if ('key' === 'scopes') {
+      for (const key of Object.keys(expected)) {
+        if (key === 'scopes') {
           expected[key].sort();
         }
         assert.deepEqual(_.get(config, key), expected[key]);
@@ -102,22 +102,23 @@ suite(testing.suiteName(), function() {
     });
   };
 
-  let configPath = 'test/data/configs/';
+  const configPath = 'test/data/configs/';
 
   buildConfigTest(
     'Single Task Config, v0',
-    configPath + 'taskcluster.single.v0.yml',
+    `${configPath}taskcluster.single.v0.yml`,
     {
       payload: buildMessage(),
     },
     {
       tasks: [], // The github event doesn't match, so no tasks are created
       'metadata.owner': 'test@test.com',
-    });
+    }
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, v0',
-    configPath + 'taskcluster.single.v0.yml',
+    `${configPath}taskcluster.single.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push' } }),
     },
@@ -125,15 +126,16 @@ suite(testing.suiteName(), function() {
       'tasks[0].task.extra.github.events': ['push'],
       'metadata.owner': 'test@test.com',
       scopes: [
-        'assume:repo:github.com/testorg/testrepo:branch:default_branch',
-        'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
+        'queue:route:statuses',
+        'assume:repo:github.com/testorg/testrepo:branch:default_branch',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Push Event (Push Task + Pull Task + Release Task), v0',
-    configPath + 'taskcluster.push_pull_release.v0.yml',
+    `${configPath}taskcluster.push_pull_release.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push' } }),
     },
@@ -146,11 +148,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Pull Event (Push Task + Pull Task + Release Task), v0',
-    configPath + 'taskcluster.push_pull_release.v0.yml',
+    `${configPath}taskcluster.push_pull_release.v0.yml`,
     {
       payload: buildMessage(),
     },
@@ -163,11 +166,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (on branch), v0',
-    configPath + 'taskcluster.branchlimited.v0.yml',
+    `${configPath}taskcluster.branchlimited.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push', 'event.base.repo.branch': 'master' } }),
     },
@@ -180,63 +184,67 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (off branch), v0',
-    configPath + 'taskcluster.branchlimited.v0.yml',
+    `${configPath}taskcluster.branchlimited.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push', 'event.base.repo.branch': 'foobar' } }),
     },
     {
       tasks: [],
-    });
+    }
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Excluded (on branch), v0',
-    configPath + 'taskcluster.exclude.yml',
+    `${configPath}taskcluster.exclude.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push', 'event.base.repo.branch': 'foobar' } }),
     },
     {
       tasks: [],
-    });
+    }
+  );
 
   buildConfigTest(
     'Pull Request Event, Single Task Config, Branch Excluded (on branch), v0',
-    configPath + 'taskcluster.pull_with_exclude.yml',
+    `${configPath}taskcluster.pull_with_exclude.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'pull_request.opened', 'event.base.repo.branch': 'master' } }),
     },
-    {
-    },
-    1);
+    {},
+    1
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Exclude and Include errors, v0',
-    configPath + 'taskcluster.exclude-error.yml',
+    `${configPath}taskcluster.exclude-error.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'push', 'event.base.repo.branch': 'master' } }),
     },
-    {
-    },
+    {},
     0,
-    'should-error');
+    'should-error'
+  );
 
   buildConfigTest(
     'Star Pull Config, v0',
-    configPath + 'taskcluster.star.yml',
+    `${configPath}taskcluster.star.yml`,
     {
       payload: buildMessage(),
     },
     {
       'tasks[0].task.extra.github.events': ['pull_request.*'],
       'metadata.owner': 'test@test.com',
-    });
+    }
+  );
 
   buildConfigTest(
     'Release Event, Single Task Config, v0',
-    configPath + 'taskcluster.release_single.v0.yml',
+    `${configPath}taskcluster.release_single.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'release' } }),
     },
@@ -248,11 +256,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Release Event (Push Task + Pull Task + Release Task), v0',
-    configPath + 'taskcluster.push_pull_release.v0.yml',
+    `${configPath}taskcluster.push_pull_release.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'release' } }),
     },
@@ -264,30 +273,33 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'No extra or extra.github generates an empty config, v0',
-    configPath + 'taskcluster.non-github.v0.yml',
+    `${configPath}taskcluster.non-github.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'release' } }),
     },
     {},
-    0);
+    0
+  );
 
   buildConfigTest(
     'Unicode branch names are not allowed, v0',
-    configPath + 'taskcluster.single.v0.yml',
+    `${configPath}taskcluster.single.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.base.repo.branch': '🌱', 'event.type': 'push' } }),
     },
     {},
     0,
-    true);
+    true
+  );
 
   buildConfigTest(
     'Tag Event, Single Task Config, v0',
-    configPath + 'taskcluster.tag_single.v0.yml',
+    `${configPath}taskcluster.tag_single.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'tag', 'event.head.tag': 'v1.0.2' } }),
     },
@@ -299,11 +311,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Tag Event, Single Task Config, Branch Limited (off branch), v0',
-    configPath + 'taskcluster.tag.branchlimited.v0.yml',
+    `${configPath}taskcluster.tag.branchlimited.v0.yml`,
     {
       payload: buildMessage({ details: { 'event.type': 'tag', 'event.head.tag': 'v1.0.2' } }),
     },
@@ -315,11 +328,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, v1',
-    configPath + 'taskcluster.single.v1.yml',
+    `${configPath}taskcluster.single.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
@@ -337,11 +351,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Push Event with a task dependency not in the set of generated tasks (#4502)',
-    configPath + 'taskcluster.external-dep.v1.yml',
+    `${configPath}taskcluster.external-dep.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
@@ -350,11 +365,12 @@ suite(testing.suiteName(), function() {
         branch: 'master',
       }),
     },
-    { 'tasks[0].task.workerType': 'worker' });
+    { 'tasks[0].task.workerType': 'worker' }
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, v1',
-    configPath + 'taskcluster.single.v1.yml',
+    `${configPath}taskcluster.single.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
@@ -371,11 +387,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Push Event (Push Task + Pull Task + Release Task), v1',
-    configPath + 'taskcluster.push_pull_release.v1.yml',
+    `${configPath}taskcluster.push_pull_release.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
@@ -392,11 +409,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Pull Event (Push Task + Pull Task + Release Task), v1',
-    configPath + 'taskcluster.push_pull_release.v1.yml',
+    `${configPath}taskcluster.push_pull_release.v1.yml`,
     {
       payload: buildMessage({
         body: webhookPullRequestJson.body,
@@ -412,11 +430,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (on branch), v1',
-    configPath + 'taskcluster.branchlimited.v1.yml',
+    `${configPath}taskcluster.branchlimited.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push', 'event.base.repo.branch': 'master' },
@@ -433,11 +452,12 @@ suite(testing.suiteName(), function() {
         'queue:route:checks',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Push Event, Single Task Config, Branch Limited (off branch), v1',
-    configPath + 'taskcluster.branchlimited.v1.yml',
+    `${configPath}taskcluster.branchlimited.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push', 'event.base.repo.branch': 'foobar' },
@@ -448,11 +468,12 @@ suite(testing.suiteName(), function() {
     },
     {
       tasks: [],
-    });
+    }
+  );
 
   buildConfigTest(
     'Release Event, Single Task Config, v1',
-    configPath + 'taskcluster.release_single.v1.yml',
+    `${configPath}taskcluster.release_single.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'release' },
@@ -469,11 +490,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Release Event (Push Task + Pull Task + Release Task), v1',
-    configPath + 'taskcluster.push_pull_release.v1.yml',
+    `${configPath}taskcluster.push_pull_release.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'release' },
@@ -490,11 +512,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Unicode branch names are not allowed, v1',
-    configPath + 'taskcluster.single.v1.yml',
+    `${configPath}taskcluster.single.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.base.repo.branch': '🌱', 'event.type': 'push' },
@@ -505,11 +528,12 @@ suite(testing.suiteName(), function() {
     },
     {},
     0,
-    true);
+    true
+  );
 
   buildConfigTest(
     'Tag Event, Single Task Config, v1',
-    configPath + 'taskcluster.tag_single.v1.yml',
+    `${configPath}taskcluster.tag_single.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'tag', 'event.head.tag': 'v1.0.2' },
@@ -525,11 +549,12 @@ suite(testing.suiteName(), function() {
         'queue:route:statuses',
         'queue:scheduler-id:tc-gh-devel',
       ],
-    });
+    }
+  );
 
   buildConfigTest(
     'Tasks must end up topologically sorted, v1',
-    configPath + 'taskcluster.dependencies.v1.yml',
+    `${configPath}taskcluster.dependencies.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'tag', 'event.head.tag': 'v1.0.2' },
@@ -542,12 +567,12 @@ suite(testing.suiteName(), function() {
       'tasks[1].taskId': 'py39',
       'tasks[2].taskId': 'docker_build',
       'tasks[3].taskId': 'docker_push',
-    },
+    }
   );
 
   buildConfigTest(
     'Push Event with hooks, v1',
-    configPath + 'taskcluster.hooks.v1.yml',
+    `${configPath}taskcluster.hooks.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
@@ -563,12 +588,12 @@ suite(testing.suiteName(), function() {
       'hooks[0].context.level': 1,
       'hooks[1].name': 'project-test/another-hook',
     },
-    1,
+    1
   );
 
   buildConfigTest(
     'Hooks only (no tasks), v1',
-    configPath + 'taskcluster.hooks-only.v1.yml',
+    `${configPath}taskcluster.hooks-only.v1.yml`,
     {
       payload: buildMessage({
         details: { 'event.type': 'push' },
@@ -581,6 +606,6 @@ suite(testing.suiteName(), function() {
       tasks: [],
       'hooks[0].name': 'project-test/decision-hook',
     },
-    0,
+    0
   );
 });

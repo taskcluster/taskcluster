@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	tcclient "github.com/taskcluster/taskcluster/v100/clients/client-go"
-	"github.com/taskcluster/taskcluster/v100/clients/client-go/tcworkermanager"
+	tcclient "github.com/taskcluster/taskcluster/v101/clients/client-go"
+	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcworkermanager"
 )
 
 func gitRevision(dir string) string {

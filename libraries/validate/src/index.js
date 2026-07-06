@@ -1,11 +1,11 @@
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-validate');
 import _ from 'lodash';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import walk from 'walk';
 import yaml from 'js-yaml';
-import assert from 'assert';
+import assert from 'node:assert';
 import libUrls from 'taskcluster-lib-urls';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
@@ -16,8 +16,9 @@ const __dirname = new URL('.', import.meta.url).pathname;
 const REPO_ROOT = path.join(__dirname, '../../../');
 const ABSTRACT_SCHEMA_ROOT_URL = '';
 
-const jsonSchemaDraft06 = JSON.parse(fs.readFileSync(
-  path.join(REPO_ROOT, '/node_modules/ajv/lib/refs/json-schema-draft-06.json'), 'utf-8'));
+const jsonSchemaDraft06 = JSON.parse(
+  fs.readFileSync(path.join(REPO_ROOT, '/node_modules/ajv/lib/refs/json-schema-draft-06.json'), 'utf-8')
+);
 
 class SchemaSet {
   constructor(options) {
@@ -28,7 +29,7 @@ class SchemaSet {
     const defaultFolder = path.join(REPO_ROOT, 'services', options.serviceName, 'schemas');
     this.cfg = _.defaults(options, {
       folder: defaultFolder,
-      constants: path.join(options && options.folder || defaultFolder, 'constants.yml'),
+      constants: path.join(options?.folder || defaultFolder, 'constants.yml'),
     });
 
     if (_.isString(this.cfg.constants)) {
@@ -47,39 +48,43 @@ class SchemaSet {
     }
 
     let walkErr;
-    walk.walkSync(path.resolve(this.cfg.folder), { listeners: { file: (root, stats) => {
-      try {
-        let name = path.relative(this.cfg.folder, path.join(root, stats.name));
+    walk.walkSync(path.resolve(this.cfg.folder), {
+      listeners: {
+        file: (root, stats) => {
+          try {
+            const name = path.relative(this.cfg.folder, path.join(root, stats.name));
 
-        let json = null;
-        const data = fs.readFileSync(path.join(this.cfg.folder, name), 'utf-8');
-        if (/\.ya?ml$/.test(name) && name !== 'constants.yml') {
-          json = yaml.load(data);
-        } else if (/\.json$/.test(name)) {
-          json = JSON.parse(data);
-        } else {
-          debug('Ignoring file %s', name);
-          return;
-        }
+            let json = null;
+            const data = fs.readFileSync(path.join(this.cfg.folder, name), 'utf-8');
+            if (/\.ya?ml$/.test(name) && name !== 'constants.yml') {
+              json = yaml.load(data);
+            } else if (/\.json$/.test(name)) {
+              json = JSON.parse(data);
+            } else {
+              debug('Ignoring file %s', name);
+              return;
+            }
 
-        const jsonName = name.replace(/\.ya?ml$/, '.json');
-        const schema = renderConstants(json, this.cfg.constants);
+            const jsonName = name.replace(/\.ya?ml$/, '.json');
+            const schema = renderConstants(json, this.cfg.constants);
 
-        checkRefs(schema, this.cfg.serviceName);
+            checkRefs(schema, this.cfg.serviceName);
 
-        if (schema.id || schema.$id) {
-          debug('Schema incorrectly attempts to set own id: %s', name);
-          throw new Error('Schema ' + path.join(root, name) + ' attempts to set own id!');
-        }
+            if (schema.id || schema.$id) {
+              debug('Schema incorrectly attempts to set own id: %s', name);
+              throw new Error(`Schema ${path.join(root, name)} attempts to set own id!`);
+            }
 
-        this._schemas[jsonName] = schema;
-      } catch (err) {
-        // walk swallows errors, so we must raise them ourselves
-        if (!walkErr) {
-          walkErr = err;
-        }
-      }
-    } } });
+            this._schemas[jsonName] = schema;
+          } catch (err) {
+            // walk swallows errors, so we must raise them ourselves
+            if (!walkErr) {
+              walkErr = err;
+            }
+          }
+        },
+      },
+    });
     if (walkErr) {
       throw walkErr;
     }
@@ -90,9 +95,9 @@ class SchemaSet {
   _schemaWithIds(rootUrl) {
     return _.mapValues(this._schemas, (schema, jsonName) => {
       const newSchema = _.clone(schema);
-      newSchema.$id = libUrls.schema(rootUrl, this.cfg.serviceName, jsonName + '#');
+      newSchema.$id = libUrls.schema(rootUrl, this.cfg.serviceName, `${jsonName}#`);
       // rewrite a relative `/schemas/<service>/<path>..` URI to point to a full URL
-      const match = /^\/schemas\/([^\/]*)\/(.*)$/.exec(newSchema.$schema);
+      const match = /^\/schemas\/([^/]*)\/(.*)$/.exec(newSchema.$schema);
       if (match) {
         newSchema.$schema = libUrls.schema(rootUrl, match[1], match[2]);
       }
@@ -135,9 +140,9 @@ class SchemaSet {
       }
       ajv.validate(id, obj);
       if (ajv.errors) {
-        _.forEach(ajv.errors, function(error) {
-          if (error.params['additionalProperty']) {
-            error.message += ': ' + JSON.stringify(error.params['additionalProperty']);
+        _.forEach(ajv.errors, error => {
+          if (error.params.additionalProperty) {
+            error.message += `: ${JSON.stringify(error.params.additionalProperty)}`;
           }
         });
         return [

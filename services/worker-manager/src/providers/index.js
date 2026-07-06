@@ -18,7 +18,7 @@ const PROVIDER_TYPES = {
 let SETUP_RETRY_INTERVAL = 60 * 1000;
 
 // for tests..
-export const setSetupRetryInterval = i => SETUP_RETRY_INTERVAL = i;
+export const setSetupRetryInterval = i => (SETUP_RETRY_INTERVAL = i);
 
 /**
  * Load all of the providers in the configuration, including loading
@@ -45,7 +45,16 @@ export class Providers {
    * }} opts
    */
   async setup({
-    cfg, monitor, notify, db, estimator, Worker, WorkerPoolError, validator, publisher, launchConfigSelector,
+    cfg,
+    monitor,
+    notify,
+    db,
+    estimator,
+    Worker,
+    WorkerPoolError,
+    validator,
+    publisher,
+    launchConfigSelector,
   }) {
     this.monitor = monitor;
 
@@ -125,7 +134,8 @@ export class Providers {
     return Promise.all(
       Object.values(this._providers)
         .filter(p => !p.setupFailed)
-        .map(cb));
+        .map(cb)
+    );
   }
 
   /**
@@ -147,10 +157,10 @@ export class Providers {
    */
   get(providerId) {
     const p = this._providers[providerId];
-    if (p && p.setupFailed) {
+    if (p?.setupFailed) {
       // If setup failed, we do not return the provider, but just an empty object.  This
       // avoids mistakes where the caller does not check for failed setup.
-      // @ts-ignore
+      // @ts-expect-error
       return { setupFailed: true };
     }
     return p;

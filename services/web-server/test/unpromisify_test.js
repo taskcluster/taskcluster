@@ -1,13 +1,12 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import unpromisify from '../src/utils/unpromisify.js';
 import testing from '@taskcluster/lib-testing';
 
 suite(testing.suiteName(), () => {
-
   // sleep until the next event-loop round
   const sleep = () => new Promise(resolve => setTimeout(resolve, 1));
 
-  test('Successful callback', function(done) {
+  test('Successful callback', done => {
     const success = unpromisify(async (a, b) => {
       await sleep();
       return a + b;
@@ -23,11 +22,14 @@ suite(testing.suiteName(), () => {
     });
   });
 
-  test('Successful callback returning an array', function(done) {
-    const success = unpromisify(async (a, b) => {
-      await sleep();
-      return [a + b, a * b];
-    }, { returnsArray: true });
+  test('Successful callback returning an array', done => {
+    const success = unpromisify(
+      async (a, b) => {
+        await sleep();
+        return [a + b, a * b];
+      },
+      { returnsArray: true }
+    );
     assert.equal(success.length, 3); // a, b, done
 
     success(10, 20, (err, sum, product) => {
@@ -40,15 +42,15 @@ suite(testing.suiteName(), () => {
     });
   });
 
-  test('Unsuccessful callback', function(done) {
+  test('Unsuccessful callback', done => {
     const success = unpromisify(async () => {
       await sleep();
       throw new Error('uhoh');
     });
     assert.equal(success.length, 1); // done
 
-    success((err, sum) => {
-      if (!err || !err.toString().match(/uhoh/)) {
+    success((err, _sum) => {
+      if (!err?.toString().match(/uhoh/)) {
         return done(new Error('expected an error'));
       }
       done();

@@ -5,23 +5,14 @@ export default {
     DEPRECATED: 'deprecated',
   },
   WorkerType: {
-    workers(
-      { provisionerId, workerType },
-      { connection, filter },
-      { loaders },
-    ) {
+    workers({ provisionerId, workerType }, { connection }, { loaders }) {
       return loaders.workers.load({
         provisionerId,
         workerType,
         connection,
-        filter,
       });
     },
-    worker(
-      { provisionerId, workerType },
-      { workerGroup, workerId },
-      { loaders },
-    ) {
+    worker({ provisionerId, workerType }, { workerGroup, workerId }, { loaders }) {
       return loaders.worker.load({
         provisionerId,
         workerType,
@@ -29,19 +20,19 @@ export default {
         workerId,
       });
     },
-    pendingTasks({ provisionerId, workerType }, args, { loaders }) {
+    pendingTasks({ provisionerId, workerType }, _args, { loaders }) {
       return loaders.pendingTasks.load({ provisionerId, workerType });
     },
   },
   Query: {
-    workerType(parent, { provisionerId, workerType }, { loaders }) {
+    workerType(_parent, { provisionerId, workerType }, { loaders }) {
       return loaders.workerType.load({ provisionerId, workerType });
     },
-    pendingTasks(parent, { provisionerId, workerType }, { loaders }) {
+    pendingTasks(_parent, { provisionerId, workerType }, { loaders }) {
       return loaders.pendingTasks.load({ provisionerId, workerType });
     },
-    workerTypes(parent, { provisionerId, connection, filter }, { loaders }) {
-      return loaders.workerTypes.load({ provisionerId, connection, filter });
+    workerTypes(_parent, { provisionerId, connection }, { loaders }) {
+      return loaders.workerTypes.load({ provisionerId, connection });
     },
   },
 };

@@ -25,7 +25,7 @@ export class Middleware {
       });
     });
 
-    for (let mw of this.instances) {
+    for (const mw of this.instances) {
       await mw.setup();
     }
 
@@ -40,7 +40,7 @@ export class Middleware {
    * See the middleware base class for more details.
    */
   async startDownloadRequest(req, res, object, method, params) {
-    for (let mw of this.instances) {
+    for (const mw of this.instances) {
       if (!(await mw.startDownloadRequest(req, res, object, method, params))) {
         return false;
       }
@@ -53,7 +53,7 @@ export class Middleware {
    * Similar to startDownloadRequest, but for the simple-download API.
    */
   async downloadRequest(req, res, object) {
-    for (let mw of this.instances) {
+    for (const mw of this.instances) {
       if (!(await mw.downloadRequest(req, res, object))) {
         return false;
       }

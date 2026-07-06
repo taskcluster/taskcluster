@@ -24,24 +24,24 @@ export default {
     tasksException: 'tasksException',
   },
   Task: {
-    status(parent, args, { loaders }) {
+    status(parent, _args, { loaders }) {
       if (parent.status) {
         return parent.status;
       }
 
       return loaders.status.load(parent.taskId);
     },
-    taskActions(parent, { filter }, { loaders }) {
+    taskActions(parent, _args, { loaders }) {
       if (parent.taskActions) {
         return parent.taskActions;
       }
 
       return loaders.taskActions.load({
         taskGroupId: parent.taskGroupId,
-        filter,
+        contextScope: 'task',
       });
     },
-    async decisionTask(parent, args, { loaders }) {
+    async decisionTask(parent, _args, { loaders }) {
       if (parent.decisionTask) {
         return parent.decisionTask;
       }
@@ -57,16 +57,16 @@ export default {
         return e;
       }
     },
-    latestArtifacts(parent, { taskId, connection, filter }, { loaders }) {
+    latestArtifacts(parent, { taskId, connection }, { loaders }) {
       if (parent.latestArtifacts) {
         return parent.latestArtifacts;
       }
 
-      return loaders.latestArtifacts.load({ taskId, connection, filter });
+      return loaders.latestArtifacts.load({ taskId, connection });
     },
   },
   DependentTask: {
-    async status(parent, args, { loaders }) {
+    async status(parent, _args, { loaders }) {
       // parent.status might be null if dependentTasks already determined that
       // this task does not exist, in which case skip the status load
       if ('status' in parent) {
@@ -84,81 +84,85 @@ export default {
     },
   },
   Query: {
-    task(parent, { taskId }, { loaders }) {
+    task(_parent, { taskId }, { loaders }) {
       return loaders.task.load(taskId);
     },
-    tasks(parent, { taskIds }, { loaders }) {
-      return Promise.all(taskIds.map(async (taskId) => {
-        try {
-          return await loaders.task.load(taskId);
-        } catch (e) {
-          return e;
-        }
-      }));
+    tasks(_parent, { taskIds }, { loaders }) {
+      return Promise.all(
+        taskIds.map(async taskId => {
+          try {
+            return await loaders.task.load(taskId);
+          } catch (e) {
+            return e;
+          }
+        })
+      );
     },
-    async dependentTasks(parent, args, { loaders }) {
+    async dependentTasks(_parent, args, { loaders }) {
       const task = await loaders.task.load(args.taskId);
 
-      return Promise.all(task.dependencies.map(async (dependency) => {
-        // generate a DependentTask object from the task loader's result
-        try {
-          return await loaders.task.load(dependency);
-        } catch (e) {
-          // if the depended-on task does not exist (such as because it has expired),
-          // then return a valid DependentTask with only the taskId.
-          if (e.code === 'ResourceNotFound') {
-            return { taskId: dependency, status: null, metadata: null };
+      return Promise.all(
+        task.dependencies.map(async dependency => {
+          // generate a DependentTask object from the task loader's result
+          try {
+            return await loaders.task.load(dependency);
+          } catch (e) {
+            // if the depended-on task does not exist (such as because it has expired),
+            // then return a valid DependentTask with only the taskId.
+            if (e.code === 'ResourceNotFound') {
+              return { taskId: dependency, status: null, metadata: null };
+            }
+            return e;
           }
-          return e;
-        }
-      }));
+        })
+      );
     },
-    async dependents(parent, { taskId, connection, filter }, { loaders }) {
-      return loaders.dependents.load({ taskId, connection, filter });
+    async dependents(_parent, { taskId, connection }, { loaders }) {
+      return loaders.dependents.load({ taskId, connection });
     },
-    indexedTask(parent, { indexPath }, { loaders }) {
+    indexedTask(_parent, { indexPath }, { loaders }) {
       return loaders.indexedTask.load(indexPath);
     },
-    taskGroup(parent, { taskGroupId, connection, filter }, { loaders }) {
-      return loaders.taskGroup.load({ taskGroupId, connection, filter });
+    taskGroup(_parent, { taskGroupId, connection }, { loaders }) {
+      return loaders.taskGroup.load({ taskGroupId, connection });
     },
-    taskActions(parent, { taskGroupId, filter }, { loaders }) {
-      return loaders.taskActions.load({ taskGroupId, filter });
+    taskActions(_parent, { taskGroupId }, { loaders }) {
+      return loaders.taskActions.load({ taskGroupId, contextScope: 'group' });
     },
-    listPendingTasks(parent, { taskQueueId, connection }, { loaders }) {
+    listPendingTasks(_parent, { taskQueueId, connection }, { loaders }) {
       return loaders.listPendingTasks.load({ taskQueueId, connection });
     },
-    listClaimedTasks(parent, { taskQueueId, connection }, { loaders }) {
+    listClaimedTasks(_parent, { taskQueueId, connection }, { loaders }) {
       return loaders.listClaimedTasks.load({ taskQueueId, connection });
     },
   },
   Mutation: {
-    async createTask(parent, { taskId, task }, { clients }) {
+    async createTask(_parent, { taskId, task }, { clients }) {
       const { options: _, ...taskWithoutOptions } = task;
       const { status } = await clients.queue.createTask(taskId, taskWithoutOptions);
 
       return new TaskStatus(taskId, status);
     },
-    async scheduleTask(parent, { taskId }, { clients }) {
+    async scheduleTask(_parent, { taskId }, { clients }) {
       const { status } = await clients.queue.scheduleTask(taskId);
 
       return new TaskStatus(taskId, status);
     },
-    async cancelTask(parent, { taskId }, { clients }) {
+    async cancelTask(_parent, { taskId }, { clients }) {
       const { status } = await clients.queue.cancelTask(taskId);
 
       return new TaskStatus(taskId, status);
     },
-    async rerunTask(parent, { taskId }, { clients }) {
+    async rerunTask(_parent, { taskId }, { clients }) {
       const { status } = await clients.queue.rerunTask(taskId);
 
       return new TaskStatus(taskId, status);
     },
-    async sealTaskGroup(parent, { taskGroupId }, { clients }) {
+    async sealTaskGroup(_parent, { taskGroupId }, { clients }) {
       const taskGroup = await clients.queue.sealTaskGroup(taskGroupId);
       return taskGroup;
     },
-    async cancelTaskGroup(parent, { taskGroupId }, { clients }) {
+    async cancelTaskGroup(_parent, { taskGroupId }, { clients }) {
       const taskGroup = await clients.queue.cancelTaskGroup(taskGroupId);
       return taskGroup;
     },
@@ -166,11 +170,7 @@ export default {
   Subscription: {
     // by taskGroupId
     tasksSubscriptions: {
-      subscribe(
-        parent,
-        { taskGroupId, subscriptions },
-        { pulseEngine, clients },
-      ) {
+      subscribe(_parent, { taskGroupId, subscriptions }, { pulseEngine, clients }) {
         const routingKey = { taskGroupId };
 
         return pulseEngine.eventIterator(
@@ -183,7 +183,7 @@ export default {
               exchange: binding.exchange,
               pattern: binding.routingKeyPattern,
             };
-          }),
+          })
         );
       },
       resolve: ({ tasksSubscriptions }) => {
@@ -192,11 +192,7 @@ export default {
     },
     // by taskId
     taskSubscriptions: {
-      subscribe(
-        parent,
-        { taskId, subscriptions },
-        { pulseEngine, clients },
-      ) {
+      subscribe(_parent, { taskId, subscriptions }, { pulseEngine, clients }) {
         const routingKey = { taskId };
 
         return pulseEngine.eventIterator(
@@ -209,7 +205,7 @@ export default {
               exchange: binding.exchange,
               pattern: binding.routingKeyPattern,
             };
-          }),
+          })
         );
       },
       resolve: ({ taskSubscriptions }) => {

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
 import debugFactory from 'debug';
 const debug = debugFactory('hooks:taskcreator');
@@ -17,8 +17,7 @@ export class TaskCreator {
   constructor(options) {
     assert(options, 'options must be given');
     assert(options.rootUrl, 'Expected rootUrl');
-    assert(options.credentials instanceof Object,
-      'Expected credentials');
+    assert(options.credentials instanceof Object, 'Expected credentials');
 
     this.rootUrl = options.rootUrl;
     this.credentials = options.credentials;
@@ -28,7 +27,7 @@ export class TaskCreator {
 
   taskForHook(hook, context, options) {
     const now = options.created;
-    let task = jsone(hook.task, _.defaults({}, context, { now, taskId: options.taskId }));
+    const task = jsone(hook.task, _.defaults({}, context, { now, taskId: options.taskId }));
     if (!task) {
       return;
     }
@@ -54,29 +53,21 @@ export class TaskCreator {
   }
 
   async appendLastFire({ hookGroupId, hookId, taskId, taskCreateTime, firedBy, result, error }) {
-    await this.db.fns.create_last_fire(
-      hookGroupId,
-      hookId,
-      firedBy,
-      taskId,
-      taskCreateTime,
-      result,
-      error,
-    );
+    await this.db.fns.create_last_fire(hookGroupId, hookId, firedBy, taskId, taskCreateTime, result, error);
   }
 
   /**
-  * Fire the given hook, using the given payload (interpolating it into the task
-  * definition).  If options.taskId is set, it will be used as the taskId;
-  * otherwise a new taskId will be created.  If options.created is set, then
-  * it is used as the creation time for the task (to ensure idempotency).  If
-  * options.retry is false, then the call will not be automatically retried on
-  * 5xx errors.
-  *
-  * Returns a value matching `trigger-hook-response.yml`, or throws an
-  * exception if the task cannot be created.  Such an exception is also
-  * reported to the user via the LastFire table, so it is safe to ignore it.
-  */
+   * Fire the given hook, using the given payload (interpolating it into the task
+   * definition).  If options.taskId is set, it will be used as the taskId;
+   * otherwise a new taskId will be created.  If options.created is set, then
+   * it is used as the creation time for the task (to ensure idempotency).  If
+   * options.retry is false, then the call will not be automatically retried on
+   * 5xx errors.
+   *
+   * Returns a value matching `trigger-hook-response.yml`, or throws an
+   * exception if the task cannot be created.  Such an exception is also
+   * reported to the user via the LastFire table, so it is safe to ignore it.
+   */
   async fire(hook, context, options) {
     options = _.defaults({}, options, {
       taskId: taskcluster.slugid(),
@@ -102,7 +93,7 @@ export class TaskCreator {
 
       // create a queue instance with its authorized scopes limited to those
       // assigned to the hook.
-      const role = 'assume:hook-id:' + hook.hookGroupId + '/' + hook.hookId;
+      const role = `assume:hook-id:${hook.hookGroupId}/${hook.hookId}`;
       const queue = new taskcluster.Queue({
         rootUrl: this.rootUrl,
         credentials: this.credentials,
@@ -124,8 +115,7 @@ export class TaskCreator {
       }
       this.monitor.count(`fire.${context.firedBy}.created`);
 
-      debug('firing hook %s/%s to create taskId: %s',
-        hook.hookGroupId, hook.hookId, options.taskId);
+      debug('firing hook %s/%s to create taskId: %s', hook.hookGroupId, hook.hookId, options.taskId);
       if (this.fakeCreate) {
         // for testing, just record that we *would* hvae called this..
         this.lastCreateTask = { taskId: options.taskId, task };
@@ -141,13 +131,24 @@ export class TaskCreator {
         // of the LastFire table
         let lfError;
 
-        if (typeof err === 'object') {
-          lfError = JSON.stringify(err, null, 2);
+        if (err && typeof err === 'object') {
+          lfError = JSON.stringify(
+            {
+              name: err.name,
+              message: err.message,
+              code: err.code,
+              statusCode: err.statusCode ?? err.response?.statusCode,
+              url: err.options?.url?.href,
+              body: err.body,
+            },
+            null,
+            2
+          );
         } else {
-          lfError = err.toString();
+          lfError = String(err);
         }
-        if (lfError.length > 256 * 1024 / 2) {
-          lfError = lfError.substring(0, 256 * 1024 / 2);
+        if (lfError.length > (256 * 1024) / 2) {
+          lfError = lfError.substring(0, (256 * 1024) / 2);
         }
 
         lastFire.error = lfError;
@@ -162,7 +163,7 @@ export class TaskCreator {
       hookId: hook.hookId,
       firedBy: context.firedBy,
       taskId: options.taskId,
-      result: error ? 'failure' : (declined ? 'declined' : 'success'),
+      result: error ? 'failure' : declined ? 'declined' : 'success',
     });
 
     if (lastFire) {
@@ -187,7 +188,7 @@ export class MockTaskCreator extends TaskCreator {
 
   async fire(hook, context, options) {
     if (this.shouldFail) {
-      let err = new Error();
+      const err = new Error();
       Object.assign(err, this.shouldFail);
       throw err;
     }
@@ -196,7 +197,8 @@ export class MockTaskCreator extends TaskCreator {
       hookGroupId: hook.hookGroupId,
       hookId: hook.hookId,
       context,
-      options });
+      options,
+    });
     if (this.shouldNotProduceTask) {
       return;
     }
