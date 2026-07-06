@@ -16,6 +16,23 @@ export default ({ hooks }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cf
       })
     )
   );
+  const hookSearch = new DataLoader(queries =>
+    Promise.all(
+      queries.map(async ({ query, continuationToken, limit }) => {
+        const params = { q: query };
+        if (continuationToken) {
+          params.continuationToken = continuationToken;
+        }
+        if (limit !== undefined && limit !== null) {
+          params.limit = limit;
+        }
+        // Let errors (e.g. InsufficientScopes) propagate so GraphQL surfaces
+        // them as field errors rather than rendering them as a payload.
+        const response = await hooks.searchHooks(params);
+        return { hooks: response.hooks, continuationToken: response.continuationToken };
+      })
+    )
+  );
   const hooksForGroup = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ hookGroupId }) => {
@@ -78,5 +95,6 @@ export default ({ hooks }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cf
     hook,
     hookStatus,
     hookLastFires,
+    hookSearch,
   };
 };

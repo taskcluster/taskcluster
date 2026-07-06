@@ -7797,6 +7797,35 @@
   },
   {
     "content": {
+      "$id": "/schemas/hooks/v1/search-hooks-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "List of hooks matching a search query across all hook groups.\n",
+      "properties": {
+        "continuationToken": {
+          "description": "A continuation token is returned if there are more results than listed\nhere. You can optionally provide the token in the request payload to\nload the additional results.\n",
+          "title": "Continuation Token",
+          "type": "string"
+        },
+        "hooks": {
+          "items": {
+            "$ref": "hook-definition.json#"
+          },
+          "title": "Hooks",
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "hooks"
+      ],
+      "title": "Hook search results",
+      "type": "object"
+    },
+    "filename": "schemas/hooks/v1/search-hooks-response.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/hooks/v1/schedule.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "description": "A list of cron-style definitions to represent a set of moments in (UTC) time.\nIf several patterns are specified, a given moment in time represented by\nmore than one pattern is considered only to be counted once, in other words\nit is allowed for the cron patterns to overlap; duplicates are redundant.\n",
@@ -25790,6 +25819,24 @@
           "scopes": "hooks:list-hooks:",
           "stability": "stable",
           "title": "List hook groups",
+          "type": "function"
+        },
+        {
+          "args": [
+          ],
+          "category": "Hooks",
+          "description": "Search for hooks by a query string that matches hook group ID or hook ID\n(case-insensitive substring match).\n\nResults are restricted to the hook groups the caller is allowed to list:\na caller holding `hooks:list-hooks:*` (or a broader scope) sees hooks from\nall groups, while a caller holding only `hooks:list-hooks:<hookGroupId>`\nfor specific groups sees hooks from those groups only. A caller with no\n`hooks:list-hooks:` scope at all receives an `InsufficientScopes` error.\n\nBy default this endpoint will return up to 100 results. Pass `limit` to\nrequest a different page size (maximum 1000). If more results exist, the\nresponse includes a `continuationToken`; pass it as the `continuationToken`\nquery parameter on a subsequent request to retrieve the next page.",
+          "method": "get",
+          "name": "searchHooks",
+          "output": "v1/search-hooks-response.json#",
+          "query": [
+            "continuationToken",
+            "limit",
+            "q"
+          ],
+          "route": "/hooks/search",
+          "stability": "stable",
+          "title": "Search for hooks",
           "type": "function"
         },
         {

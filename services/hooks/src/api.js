@@ -2,6 +2,7 @@ import { CronExpressionParser as parser } from 'cron-parser';
 import taskcluster from '@taskcluster/client';
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
+import scopeUtils from 'taskcluster-lib-scopes';
 import nextDate from '../src/nextdate.js';
 import _ from 'lodash';
 import Ajv from 'ajv';
@@ -49,6 +50,84 @@ builder.declare(
     const hookGroups = await this.db.fns.get_hook_groups();
     const groups = hookGroups.map(row => row.hook_group_id);
     return res.reply({ groups });
+  }
+);
+
+/** Search hooks across all groups **/
+builder.declare(
+  {
+    method: 'get',
+    route: '/hooks/search',
+    name: 'searchHooks',
+    // Authorization is enforced in the handler: the caller must hold
+    // `hooks:list-hooks:<hookGroupId>` for at least one group, and results are
+    // restricted to the groups they are allowed to list.
+    scopes: null,
+    category: 'Hooks',
+    output: 'search-hooks-response.yml',
+    query: {
+      ...paginateResults.query,
+      q: /^.*$/,
+    },
+    title: 'Search for hooks',
+    stability: 'stable',
+    description: [
+      'Search for hooks by a query string that matches hook group ID or hook ID',
+      '(case-insensitive substring match).',
+      '',
+      'Results are restricted to the hook groups the caller is allowed to list:',
+      'a caller holding `hooks:list-hooks:*` (or a broader scope) sees hooks from',
+      'all groups, while a caller holding only `hooks:list-hooks:<hookGroupId>`',
+      'for specific groups sees hooks from those groups only. A caller with no',
+      '`hooks:list-hooks:` scope at all receives an `InsufficientScopes` error.',
+      '',
+      'By default this endpoint will return up to 100 results. Pass `limit` to',
+      'request a different page size (maximum 1000). If more results exist, the',
+      'response includes a `continuationToken`; pass it as the `continuationToken`',
+      'query parameter on a subsequent request to retrieve the next page.',
+    ].join('\n'),
+  },
+  async function (req, res) {
+    const { q } = req.query;
+
+    // Determine which hook groups the caller is allowed to list. A caller with
+    // `hooks:list-hooks:*` (or broader) can search everything, signalled to the
+    // DB function by a null group restriction. Otherwise we intersect the
+    // existing groups with the caller's scopes so prefix-wildcard scopes (e.g.
+    // `hooks:list-hooks:project-*`) are handled correctly.
+    const scopes = await req.scopes();
+    let allowedGroups = null;
+    if (!scopeUtils.satisfiesExpression(scopes, 'hooks:list-hooks:*')) {
+      // The caller lacks the wildcard, so they must hold at least one
+      // `hooks:list-hooks:<hookGroupId>` scope; otherwise they may not search.
+      const canListAnyGroup = scopes.some(
+        scope =>
+          scope === 'hooks:list-hooks:*' ||
+          (scope.endsWith('*') && 'hooks:list-hooks:'.startsWith(scope.slice(0, -1))) ||
+          scope.startsWith('hooks:list-hooks:')
+      );
+      if (!canListAnyGroup) {
+        return res.reportError(
+          'InsufficientScopes',
+          'This request requires the `hooks:list-hooks:<hookGroupId>` scope for at ' + 'least one hook group.',
+          {}
+        );
+      }
+
+      // Restrict the search to the existing groups the caller may list. This
+      // intersection also resolves prefix-wildcard scopes such as
+      // `hooks:list-hooks:project-*` against the real group names.
+      const groups = (await this.db.fns.get_hook_groups()).map(row => row.hook_group_id);
+      allowedGroups = groups.filter(group => scopeUtils.satisfiesExpression(scopes, `hooks:list-hooks:${group}`));
+    }
+
+    const { continuationToken, rows } = await paginateResults({
+      query: { ...req.query, limit: req.query.limit ?? '100' },
+      fetch: (size, offset) => this.db.fns.search_hooks(q || '', allowedGroups, size, offset),
+      maxLimit: 1000,
+    });
+    const hooks = rows.map(hookUtils.fromDb).map(hookUtils.definition);
+    return res.reply({ hooks, continuationToken });
   }
 );
 

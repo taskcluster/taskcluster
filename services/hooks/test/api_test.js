@@ -518,6 +518,173 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
+  suite('searchHooks', () => {
+    subSkip();
+
+    test('without scopes', async () => {
+      const client = new helper.Hooks({ rootUrl: helper.rootUrl });
+      await assert.rejects(
+        () => client.searchHooks({ q: 'test' }),
+        err => err.code === 'InsufficientScopes'
+      );
+    });
+
+    test('returns empty array when no hooks match', async () => {
+      await helper.hooks.createHook('grp1', 'hook1', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'zzznomatch' });
+      assume(r.hooks).eql([]);
+    });
+
+    test('matches by hookGroupId substring (case-insensitive)', async () => {
+      await helper.hooks.createHook('project-releng', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('taskcluster', 'hook2', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'PROJECT' });
+      assume(r.hooks.length).eql(1);
+      assume(r.hooks[0].hookGroupId).eql('project-releng');
+    });
+
+    test('matches by hookId substring (case-insensitive)', async () => {
+      await helper.hooks.createHook('group-a', 'translations-daily', hookWithTriggerSchema);
+      await helper.hooks.createHook('group-b', 'build-daily', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'Translations' });
+      assume(r.hooks.length).eql(1);
+      assume(r.hooks[0].hookId).eql('translations-daily');
+    });
+
+    test('returns hooks across multiple groups', async () => {
+      await helper.hooks.createHook('grp-a', 'foo', hookWithTriggerSchema);
+      await helper.hooks.createHook('grp-b', 'foo', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'foo' });
+      assume(r.hooks.length).eql(2);
+    });
+
+    test('returns all hooks when q is empty', async () => {
+      await helper.hooks.createHook('grp1', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('grp2', 'hook2', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: '' });
+      assume(r.hooks.length).eql(2);
+    });
+
+    test('returned hooks have full definition fields', async () => {
+      await helper.hooks.createHook('grp1', 'hook1', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'hook1' });
+      assume(r.hooks.length).eql(1);
+      const h = r.hooks[0];
+      assume(h).has.property('hookGroupId');
+      assume(h).has.property('hookId');
+      assume(h).has.property('metadata');
+      assume(h).has.property('task');
+      assume(h).has.property('bindings');
+      assume(h).has.property('schedule');
+      assume(h).has.property('triggerSchema');
+    });
+
+    test('returns continuationToken when results exceed page size', async () => {
+      await helper.hooks.createHook('grp1', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('grp1', 'hook2', hookWithTriggerSchema);
+      await helper.hooks.createHook('grp1', 'hook3', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'grp1', limit: 2 });
+      assume(r.hooks.length).eql(2);
+      assume(r).has.property('continuationToken');
+    });
+
+    test('continuationToken can be used to fetch subsequent page', async () => {
+      await helper.hooks.createHook('grp1', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('grp1', 'hook2', hookWithTriggerSchema);
+      await helper.hooks.createHook('grp1', 'hook3', hookWithTriggerSchema);
+      const r1 = await helper.hooks.searchHooks({ q: 'grp1', limit: 2 });
+      assume(r1.hooks.length).eql(2);
+      assume(r1).has.property('continuationToken');
+
+      const r2 = await helper.hooks.searchHooks({
+        q: 'grp1',
+        limit: 2,
+        continuationToken: r1.continuationToken,
+      });
+      assume(r2.hooks.length).eql(1);
+      assume(r2).not.has.property('continuationToken');
+
+      const allIds = [...r1.hooks, ...r2.hooks].map(h => h.hookId).sort();
+      assume(allIds).eql(['hook1', 'hook2', 'hook3']);
+    });
+
+    test('no continuationToken when results fit in one page', async () => {
+      await helper.hooks.createHook('grp1', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('grp1', 'hook2', hookWithTriggerSchema);
+      const r = await helper.hooks.searchHooks({ q: 'grp1', limit: 10 });
+      assume(r.hooks.length).eql(2);
+      assume(r).not.has.property('continuationToken');
+    });
+
+    test('limit query parameter is honoured', async () => {
+      for (let i = 1; i <= 5; i++) {
+        await helper.hooks.createHook('grp1', `hook${i}`, hookWithTriggerSchema);
+      }
+      const r = await helper.hooks.searchHooks({ q: 'grp1', limit: 3 });
+      assume(r.hooks.length).eql(3);
+    });
+
+    test('restricts results to the groups the caller may list', async () => {
+      await helper.hooks.createHook('project-releng', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('project-ci', 'hook2', hookWithTriggerSchema);
+      await helper.hooks.createHook('taskcluster', 'hook3', hookWithTriggerSchema);
+
+      // Caller may only list one of the three groups.
+      helper.scopes('hooks:list-hooks:project-releng');
+      const r = await helper.hooks.searchHooks({ q: '' });
+      assume(r.hooks.length).eql(1);
+      assume(r.hooks[0].hookGroupId).eql('project-releng');
+    });
+
+    test('honours prefix-wildcard list-hooks scopes', async () => {
+      await helper.hooks.createHook('project-releng', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('project-ci', 'hook2', hookWithTriggerSchema);
+      await helper.hooks.createHook('taskcluster', 'hook3', hookWithTriggerSchema);
+
+      helper.scopes('hooks:list-hooks:project-*');
+      const r = await helper.hooks.searchHooks({ q: '' });
+      assume(r.hooks.map(h => h.hookGroupId).sort()).eql(['project-ci', 'project-releng']);
+    });
+
+    test('returns all groups for a caller with the wildcard scope', async () => {
+      await helper.hooks.createHook('project-releng', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('taskcluster', 'hook2', hookWithTriggerSchema);
+
+      helper.scopes('hooks:list-hooks:*');
+      const r = await helper.hooks.searchHooks({ q: '' });
+      assume(r.hooks.length).eql(2);
+    });
+
+    test('rejects a caller holding no list-hooks scope', async () => {
+      await helper.hooks.createHook('grp1', 'hook1', hookWithTriggerSchema);
+
+      helper.scopes('hooks:get:grp1:hook1');
+      await assert.rejects(
+        () => helper.hooks.searchHooks({ q: '' }),
+        err => err.code === 'InsufficientScopes'
+      );
+    });
+
+    test('LIKE-wildcard search terms cannot bypass scope filtering', async () => {
+      // A per-group caller using a SQL LIKE wildcard (% or _) as the search
+      // term must still only receive hooks from groups they may list: the
+      // scope filter is AND-ed with the search term, independent of q.
+      await helper.hooks.createHook('project-releng', 'hook1', hookWithTriggerSchema);
+      await helper.hooks.createHook('project-ci', 'hook2', hookWithTriggerSchema);
+      await helper.hooks.createHook('taskcluster', 'hook3', hookWithTriggerSchema);
+
+      helper.scopes('hooks:list-hooks:project-releng');
+
+      const rPercent = await helper.hooks.searchHooks({ q: '%' });
+      assume(rPercent.hooks.length).eql(1);
+      assume(rPercent.hooks[0].hookGroupId).eql('project-releng');
+
+      const rUnderscore = await helper.hooks.searchHooks({ q: '_' });
+      assume(rUnderscore.hooks.length).eql(1);
+      assume(rUnderscore.hooks[0].hookGroupId).eql('project-releng');
+    });
+  });
+
   suite('listHooks', () => {
     subSkip();
 

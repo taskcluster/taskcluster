@@ -127,8 +127,14 @@ type HookLastFireEdge implements Edge {
   node: HookLastFire
 }
 
+type HookSearchResult {
+  hooks: [Hook]!
+  continuationToken: String
+}
+
 extend type Query {
   hookGroups(hookGroupId: ID): [HookGroup]
+  searchHooks(query: String!, continuationToken: String, limit: Int): HookSearchResult
   hooks(hookGroupId: ID!): [Hook]
   hook(hookGroupId: ID!, hookId: ID!): Hook
   hookStatus(hookGroupId: ID!, hookId: ID!): HookStatus

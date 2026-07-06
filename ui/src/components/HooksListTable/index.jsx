@@ -38,7 +38,8 @@ export default class HooksListTable extends Component {
       const filteredHooks = searchTerm
         ? hooks.filter(
             ({ hookId, hookGroupId }) =>
-              hookGroupId.includes(searchTerm) || hookId.includes(searchTerm)
+              hookGroupId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              hookId.toLowerCase().includes(searchTerm.toLowerCase())
           )
         : hooks;
       const sortByPath = sortBy ? sortBy.split('.') : [];

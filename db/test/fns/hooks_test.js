@@ -543,6 +543,113 @@ suite(testing.suiteName(), () => {
       assert.equal(rows[0].hook_group_id, 'baz');
       assert.equal(rows[1].hook_group_id, 'foo');
     });
+
+    helper.dbTest('search_hooks returns all hooks when search is empty', async db => {
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-one', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'bar', hook_id: 'hook-two', next_scheduled_date: fromNow('1 day') });
+
+      const rows = await db.fns.search_hooks('', null, 100, 0);
+      assert.equal(rows.length, 2);
+    });
+
+    helper.dbTest('search_hooks returns all hooks when search is null', async db => {
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-one', next_scheduled_date: fromNow('1 day') });
+      const rows = await db.fns.search_hooks(null, null, 100, 0);
+      assert.equal(rows.length, 1);
+    });
+
+    helper.dbTest('search_hooks matches case-insensitively on hook group id', async db => {
+      await create_hook(db, {
+        hook_group_id: 'project-releng',
+        hook_id: 'alpha',
+        next_scheduled_date: fromNow('1 day'),
+      });
+      await create_hook(db, { hook_group_id: 'project-ci', hook_id: 'beta', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'taskcluster', hook_id: 'gamma', next_scheduled_date: fromNow('1 day') });
+
+      const rows = await db.fns.search_hooks('PROJECT', null, 100, 0);
+      assert.equal(rows.length, 2);
+      assert.deepEqual(rows.map(r => r.hook_group_id).sort(), ['project-ci', 'project-releng']);
+    });
+
+    helper.dbTest('search_hooks matches on hook id', async db => {
+      await create_hook(db, {
+        hook_group_id: 'group-a',
+        hook_id: 'translations-nightly',
+        next_scheduled_date: fromNow('1 day'),
+      });
+      await create_hook(db, {
+        hook_group_id: 'group-b',
+        hook_id: 'build-daily',
+        next_scheduled_date: fromNow('1 day'),
+      });
+
+      const rows = await db.fns.search_hooks('Translations', null, 100, 0);
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].hook_group_id, 'group-a');
+      assert.equal(rows[0].hook_id, 'translations-nightly');
+    });
+
+    helper.dbTest('search_hooks paginates results', async db => {
+      for (let i = 0; i < 5; i++) {
+        await create_hook(db, { hook_group_id: 'group', hook_id: `hook-${i}`, next_scheduled_date: fromNow('1 day') });
+      }
+
+      const page1 = await db.fns.search_hooks('', null, 3, 0);
+      assert.equal(page1.length, 3);
+
+      const page2 = await db.fns.search_hooks('', null, 3, 3);
+      assert.equal(page2.length, 2);
+    });
+
+    helper.dbTest('search_hooks returns full hook rows (not just ids)', async db => {
+      await create_hook(db, {
+        hook_group_id: 'g',
+        hook_id: 'h',
+        metadata: { name: 'test', description: 'desc', owner: 'owner@x.com' },
+        next_scheduled_date: fromNow('1 day'),
+      });
+
+      const rows = await db.fns.search_hooks('h', null, 100, 0);
+      assert.equal(rows.length, 1);
+      assert(rows[0].metadata);
+      assert(rows[0].task !== undefined);
+      assert(rows[0].trigger_schema !== undefined);
+    });
+
+    helper.dbTest('search_hooks restricts to allowed groups when provided', async db => {
+      await create_hook(db, {
+        hook_group_id: 'project-releng',
+        hook_id: 'alpha',
+        next_scheduled_date: fromNow('1 day'),
+      });
+      await create_hook(db, { hook_group_id: 'project-ci', hook_id: 'beta', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'taskcluster', hook_id: 'gamma', next_scheduled_date: fromNow('1 day') });
+
+      const rows = await db.fns.search_hooks('', ['project-releng', 'taskcluster'], 100, 0);
+      assert.deepEqual(rows.map(r => r.hook_group_id).sort(), ['project-releng', 'taskcluster']);
+    });
+
+    helper.dbTest('search_hooks combines search term with allowed groups', async db => {
+      await create_hook(db, {
+        hook_group_id: 'project-releng',
+        hook_id: 'alpha',
+        next_scheduled_date: fromNow('1 day'),
+      });
+      await create_hook(db, { hook_group_id: 'project-ci', hook_id: 'beta', next_scheduled_date: fromNow('1 day') });
+      await create_hook(db, { hook_group_id: 'taskcluster', hook_id: 'gamma', next_scheduled_date: fromNow('1 day') });
+
+      const rows = await db.fns.search_hooks('project', ['project-ci'], 100, 0);
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].hook_group_id, 'project-ci');
+    });
+
+    helper.dbTest('search_hooks returns nothing for an empty allowed-groups list', async db => {
+      await create_hook(db, { hook_group_id: 'foo', hook_id: 'hook-one', next_scheduled_date: fromNow('1 day') });
+
+      const rows = await db.fns.search_hooks('', [], 100, 0);
+      assert.equal(rows.length, 0);
+    });
   });
 
   suite(`${testing.suiteName()} - hooks audit history`, () => {

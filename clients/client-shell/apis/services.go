@@ -695,6 +695,21 @@ var services = map[string]definitions.Service{
 				Input:       "",
 			},
 			definitions.Entry{
+				Name:        "searchHooks",
+				Title:       "Search for hooks",
+				Description: "Search for hooks by a query string that matches hook group ID or hook ID\n(case-insensitive substring match).\n\nResults are restricted to the hook groups the caller is allowed to list:\na caller holding `hooks:list-hooks:*` (or a broader scope) sees hooks from\nall groups, while a caller holding only `hooks:list-hooks:<hookGroupId>`\nfor specific groups sees hooks from those groups only. A caller with no\n`hooks:list-hooks:` scope at all receives an `InsufficientScopes` error.\n\nBy default this endpoint will return up to 100 results. Pass `limit` to\nrequest a different page size (maximum 1000). If more results exist, the\nresponse includes a `continuationToken`; pass it as the `continuationToken`\nquery parameter on a subsequent request to retrieve the next page.",
+				Stability:   "stable",
+				Method:      "get",
+				Route:       "/hooks/search",
+				Args:        []string{},
+				Query: []string{
+					"continuationToken",
+					"limit",
+					"q",
+				},
+				Input: "",
+			},
+			definitions.Entry{
 				Name:        "listHooks",
 				Title:       "List hooks in a given group",
 				Description: "This endpoint will return a list of all the hook definitions within a\ngiven hook group.",
