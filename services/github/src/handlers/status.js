@@ -242,7 +242,7 @@ export async function statusHandler(message) {
           notation: 'compact',
           style: 'unit',
           unit: 'byte',
-          unitDisplay: 'short'
+          unitDisplay: 'short',
         }).format(bytes);
       };
       artifactList.artifacts.forEach(element => {
