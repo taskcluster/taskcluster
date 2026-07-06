@@ -1,0 +1,20 @@
+query SearchHooks($query: String!, $continuationToken: String) {
+  searchHooks(query: $query, continuationToken: $continuationToken) {
+    hooks {
+      hookId
+      hookGroupId
+      lastFire {
+        taskId
+        taskCreateTime
+        result
+        taskState
+        error
+      }
+      bindings {
+        exchange
+      }
+      schedule
+    }
+    continuationToken
+  }
+}

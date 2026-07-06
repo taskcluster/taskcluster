@@ -149,6 +149,37 @@ func (hooks *Hooks) ListHookGroups_SignedURL(duration time.Duration) (*url.URL, 
 	return (&cd).SignedURL("/hooks", nil, duration)
 }
 
+// Search for hooks by a query string that matches hook group ID or hook ID
+// (case-insensitive substring match).
+//
+// Results are restricted to the hook groups the caller is allowed to list:
+// a caller holding `hooks:list-hooks:*` (or a broader scope) sees hooks from
+// all groups, while a caller holding only `hooks:list-hooks:<hookGroupId>`
+// for specific groups sees hooks from those groups only. A caller with no
+// `hooks:list-hooks:` scope at all receives an `InsufficientScopes` error.
+//
+// By default this endpoint will return up to 100 results. Pass `limit` to
+// request a different page size (maximum 1000). If more results exist, the
+// response includes a `continuationToken`; pass it as the `continuationToken`
+// query parameter on a subsequent request to retrieve the next page.
+//
+// See #searchHooks
+func (hooks *Hooks) SearchHooks(continuationToken, limit, q string) (*HookSearchResults, error) {
+	v := url.Values{}
+	if continuationToken != "" {
+		v.Add("continuationToken", continuationToken)
+	}
+	if limit != "" {
+		v.Add("limit", limit)
+	}
+	if q != "" {
+		v.Add("q", q)
+	}
+	cd := tcclient.Client(*hooks)
+	responseObject, _, err := (&cd).APICall(nil, "GET", "/hooks/search", new(HookSearchResults), v)
+	return responseObject.(*HookSearchResults), err
+}
+
 // This endpoint will return a list of all the hook definitions within a
 // given hook group.
 //
