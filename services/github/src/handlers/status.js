@@ -231,7 +231,7 @@ export async function statusHandler(message) {
       }
 
       // A helper function using native Intl to format bytes (base 1000)
-      const formatBytes = (bytes) => {
+      const formatBytes = bytes => {
         if (bytes === null || bytes === undefined || Number.isNaN(bytes)) {
           return '';
         }
@@ -257,10 +257,8 @@ export async function statusHandler(message) {
         if (element.size !== undefined) {
           displayName = `${element.name} (${formatBytes(element.size)})`;
         }
-        const ARTIFACT_LINK = markdownAnchor(
-          displayName,
-          artifactUrl,
-        );
+        const ARTIFACT_LINK = markdownAnchor(displayName, artifactUrl);
+
         output.addText(`\\- ${ARTIFACT_LINK}`);
       });
     } catch (e) {
