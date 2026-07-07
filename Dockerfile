@@ -14,6 +14,7 @@ COPY /.yarn /base/yarn/.yarn/
 RUN mkdir -p /base/yarn-ui
 COPY /ui/yarn.lock /.yarnrc.yml /ui/package.json /base/yarn-ui/
 COPY /.yarn /base/yarn-ui/.yarn/
+COPY /ui/.yarn/patches /base/yarn-ui/.yarn/patches/
 # prepare clients/client dependencies
 RUN mkdir -p /base/yarn-client
 COPY /clients/client/yarn.lock /.yarnrc.yml /clients/client/package.json /base/yarn-client/
