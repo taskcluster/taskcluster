@@ -6,40 +6,11 @@ import graphql from '@rollup/plugin-graphql';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import remarkGfm from 'remark-gfm';
 import rehypePrism from 'rehype-prism-plus';
+import { renderEnvJs } from './generate-env-js.js';
 
 const port = Number(process.env.PORT) || 5080;
 const proxyTarget = process.env.TASKCLUSTER_ROOT_URL || 'http://localhost:3050';
 const dir = import.meta.dirname;
-
-// Mirrors generate-env-js.js. During development we serve /static/env.js from
-// the current environment; in production the container writes that file at
-// startup (it is intentionally not part of the build).
-const ENV_VARS = [
-  { name: 'APPLICATION_NAME', defaultValue: 'Taskcluster', json: false },
-  { name: 'TASKCLUSTER_ROOT_URL', defaultValue: 'https://tc.example.com', json: false },
-  { name: 'GRAPHQL_ENDPOINT', defaultValue: '/graphql', json: false },
-  { name: 'GRAPHQL_SUBSCRIPTION_ENDPOINT', defaultValue: '/subscription', json: false },
-  { name: 'DOCS_ONLY', defaultValue: false, json: false },
-  { name: 'UI_LOGIN_STRATEGY_NAMES', defaultValue: '', json: false },
-  { name: 'GA_TRACKING_ID', defaultValue: '', json: false },
-  { name: 'SENTRY_DSN', defaultValue: '', json: false },
-  { name: 'BANNER_MESSAGE', defaultValue: '', json: false },
-  { name: 'SITE_SPECIFIC', defaultValue: {}, json: true },
-];
-
-const renderEnvJs = () => {
-  const env = {};
-
-  for (const { name, defaultValue, json } of ENV_VARS) {
-    env[name] = process.env[name]
-      ? json
-        ? JSON.parse(process.env[name])
-        : process.env[name]
-      : defaultValue;
-  }
-
-  return `window.env = ${JSON.stringify(env, null, 2)}`;
-};
 
 const envJs = () => ({
   name: 'env-js',
@@ -55,6 +26,15 @@ const envJs = () => ({
       res.setHeader('Content-Type', 'application/javascript');
       res.end(renderEnvJs());
     });
+  },
+  generateBundle() {
+    if (process.env.GENERATE_ENV_JS) {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'static/env.js',
+        source: renderEnvJs(),
+      });
+    }
   },
 });
 

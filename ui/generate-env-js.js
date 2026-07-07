@@ -15,10 +15,9 @@ const ENV_VARS = [
 ];
 
 /**
- * Generate `env.js` in the static directory based on the current
- * environment variables.
+ * Render the contents of `env.js` based on the current environment variables.
  */
-const generateEnvJs = filename => {
+const renderEnvJs = () => {
   const env = {};
   for (const {name, defaultValue, json} of ENV_VARS) {
     if (process.env[name]) {
@@ -27,19 +26,26 @@ const generateEnvJs = filename => {
       env[name] = defaultValue;
     }
   }
-  const envJs = `window.env = ${JSON.stringify(env, null, 2)}`;
 
+  return `window.env = ${JSON.stringify(env, null, 2)}`;
+};
+
+/**
+ * Generate `env.js` in the static directory based on the current
+ * environment variables.
+ */
+const generateEnvJs = filename => {
   const dir = dirname(filename);
   if (!fs.existsSync(dir)){
     fs.mkdirSync(dir);
   }
 
   if (!fs.existsSync(filename)){
-    fs.writeFileSync(filename, envJs, 'utf8');
+    fs.writeFileSync(filename, renderEnvJs(), 'utf8');
   }
 };
 
-module.exports = generateEnvJs
+module.exports = { renderEnvJs, generateEnvJs };
 
 if (require.main === module) {
   generateEnvJs(process.argv[2]);
