@@ -834,6 +834,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(build.state, 'pending');
     });
 
+    test('pull_request (not a collaborator, base policy public_restricted, fork declares its own v0 yml) uses the untrusted scope', async () => {
+      const baseYaml = { ...validYamlV1Json };
+      baseYaml.policy = { pullRequests: 'public_restricted' };
+
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: validYamlJson,
+      });
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development',
+        content: baseYaml,
+      });
+
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened' });
+
+      assert(handlers.createTasks.calledWith({ scopes: sinon.match.array, tasks: sinon.match.array }));
+      const args = handlers.createTasks.firstCall.args[0];
+      assert.ok(args.scopes.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request-untrusted'));
+      assert.ok(!args.scopes.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'));
+    });
+
     test('valid push (but not collaborator) creates a taskGroup', async () => {
       github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
