@@ -83,17 +83,33 @@ export const measureTime = (precision = 1e6) => {
   return () => Number(hrtime.bigint() - start) / precision;
 };
 
+export class TimeoutError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'TimeoutError';
+  }
+}
+
 /**
  * Run a promise with a timeout. If the promise does not settle
- * within `ms` milliseconds, the returned promise rejects with `message`.
+ * within `ms` milliseconds, the returned promise rejects with a
+ * `TimeoutError` carrying `message`.
  * The timer is always cleaned up to avoid leaks.
+ *
+ * @param {(abortSignal: AbortSignal) => Promise<*>} cb
+ * @param {number} ms
+ * @param {string} message
  */
-export const withTimeout = (promise, ms, message) => {
+export const withTimeout = (cb, ms, message) => {
   let timer;
+  const abortController = new AbortController();
   return Promise.race([
-    promise,
+    cb(abortController.signal),
     new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error(message)), ms);
+      timer = setTimeout(() => reject(new TimeoutError(message)), ms);
     }),
-  ]).finally(() => clearTimeout(timer));
+  ]).finally(() => {
+    abortController.abort();
+    clearTimeout(timer);
+  });
 };

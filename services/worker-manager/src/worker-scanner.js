@@ -2,7 +2,7 @@ import Iterate from '@taskcluster/lib-iterate';
 import taskcluster from '@taskcluster/client';
 import { paginatedIterator } from '@taskcluster/lib-postgres';
 import { Worker, WorkerPool } from './data.js';
-import { withTimeout } from './util.js';
+import { withTimeout, TimeoutError } from './util.js';
 
 /**
  * Make sure that we visit each worker relatively frequently to update its state
@@ -19,6 +19,7 @@ export class WorkerScanner {
     providersFilter = {},
     estimator,
     concurrency = 1,
+    checkWorkerTimeoutMs = 60_000,
   }) {
     this.WorkerPool = WorkerPool;
     this.providers = providers;
@@ -26,6 +27,7 @@ export class WorkerScanner {
     this.providersFilter = providersFilter;
     this.estimator = estimator;
     this.concurrency = Math.max(1, concurrency);
+    this.checkWorkerTimeoutMs = checkWorkerTimeoutMs;
     this.scanLoopAlive = false;
     this.iterate = new Iterate({
       maxFailures: 10,
@@ -128,12 +130,17 @@ export class WorkerScanner {
       }
       try {
         await withTimeout(
-          provider.checkWorker({ worker }),
-          60_000, // 1 minute
+          abortSignal => provider.checkWorker({ worker, abortSignal }),
+          this.checkWorkerTimeoutMs,
           `checkWorker timed out for ${worker.workerPoolId}/${worker.workerId}`
         );
       } catch (err) {
-        this.monitor.reportError(err);
+        if (err instanceof TimeoutError) {
+          // the provider API call hung past the budget, aborting re-checking next loop
+          this.monitor.warning(err.message);
+        } else {
+          this.monitor.reportError(err);
+        }
       }
     } else {
       this.monitor.info(

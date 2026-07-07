@@ -337,7 +337,7 @@ export class AwsProvider extends Provider {
     };
   }
 
-  async checkWorker({ worker }) {
+  async checkWorker({ worker, abortSignal }) {
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.seenByWorkerGroup[worker.workerPoolId] = this.seenByWorkerGroup[worker.workerPoolId] || {};
     const monitor = this.workerMonitor({ worker });
@@ -351,7 +351,8 @@ export class AwsProvider extends Provider {
             new DescribeInstanceStatusCommand({
               InstanceIds: [worker.workerId.toString()],
               IncludeAllInstances: true,
-            })
+            }),
+            { abortSignal }
           )
         )
       ).InstanceStatuses;

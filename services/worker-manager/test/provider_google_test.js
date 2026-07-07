@@ -604,6 +604,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(worker.state, Worker.states.RUNNING);
     });
 
+    test('passes the abort signal to the compute client', async () => {
+      await makeWorkerPool();
+      const worker = await suiteMakeWorker({ state: 'running' });
+      fake.compute.instances.setFakeInstanceStatus(project, 'us-east1-a', workerId, 'RUNNING');
+      const origGet = fake.compute.instances.get.bind(fake.compute.instances);
+      let getOptions;
+      fake.compute.instances.get = async (params, options) => {
+        getOptions = options;
+        return origGet(params);
+      };
+      const abortSignal = new AbortController().signal;
+      try {
+        await provider.scanPrepare();
+        await provider.checkWorker({ worker, abortSignal });
+        await provider.scanCleanup();
+      } finally {
+        fake.compute.instances.get = origGet;
+      }
+      assert.equal(getOptions?.signal, abortSignal, 'instances.get should receive the abort signal');
+    });
+
     test('for a terminated instance', async () => {
       await makeWorkerPool();
       let worker = await suiteMakeWorker({ state: 'running' });
