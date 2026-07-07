@@ -55,7 +55,7 @@ tasks.push({
     const docFile = path.join('ui', 'docs', 'manual', 'deploying', 'monitoring.mdx');
     await modifyRepoFile(docFile, content =>
       content.replace(
-        /(-- BEGIN MONITORING TABLE -->)(?:.|\n)*(<!-- END MONITORING TABLE --)/m,
+        /(\{\/\* BEGIN MONITORING TABLE \*\/\})(?:.|\n)*(\{\/\* END MONITORING TABLE \*\/\})/m,
         `$1\n${markdownTable(res)}\n$2`
       )
     );
@@ -80,7 +80,7 @@ tasks.push({
     const docFile = path.join('ui', 'docs', 'manual', 'deploying', 'monitoring.mdx');
     await modifyRepoFile(docFile, content =>
       content.replace(
-        /(<!-- BEGIN METRICS TABLE -->)(?:.|\n)*(<!-- END METRICS TABLE -->)/m,
+        /(\{\/\* BEGIN METRICS TABLE \*\/\})(?:.|\n)*(\{\/\* END METRICS TABLE \*\/\})/m,
         `$1\n${markdownTable(res)}\n$2`
       )
     );

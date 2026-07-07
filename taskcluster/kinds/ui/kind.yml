@@ -43,4 +43,4 @@ tasks:
       command: >-
         cd ui &&
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
-        bash smoke-ci.sh
+        corepack yarn smoke

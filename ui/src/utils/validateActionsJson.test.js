@@ -1,6 +1,8 @@
+import validateActionsJson from './validateActionsJson';
+
 describe('validation', () => {
   beforeAll(() => {
-    window.fetch = jest.fn().mockImplementation(() => {
+    window.fetch = vi.fn().mockImplementation(() => {
       return {
         json: () => Promise.resolve({}),
       };
@@ -8,8 +10,6 @@ describe('validation', () => {
   });
 
   it('should validate actions json', async () => {
-    const validateActionsJson = require('./validateActionsJson').default;
-
     const validateActionsJsonResponse = await validateActionsJson();
 
     expect(validateActionsJsonResponse).toBeDefined();

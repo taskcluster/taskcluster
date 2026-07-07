@@ -10,9 +10,9 @@ it('should render AuthConsent page', () => {
         transactionID="transactionID"
         registeredClientId="registeredClientId"
         clientId="clientId"
-        onExpirationChange={jest.fn()}
-        onInputChange={jest.fn()}
-        onScopesChange={jest.fn()}
+        onExpirationChange={vi.fn()}
+        onInputChange={vi.fn()}
+        onScopesChange={vi.fn()}
         formData={{
           expires: new Date('2022-02-02'),
           description: 'description',

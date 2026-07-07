@@ -5,7 +5,7 @@ import ReferenceLinks from '@taskcluster/ui/components/ReferenceLinks';
 # Github Service
 
 import Warning from '@taskcluster/ui/views/Documentation/components/Warning';
-import SiteSpecific from '@taskcluster/ui/components/SiteSpecific';
+import SiteSpecific, { SiteLink } from '@taskcluster/ui/components/SiteSpecific';
 
 This service monitors all of the repositories associated with an organization for changes and schedules Taskcluster tasks for any repository which contains a `.taskcluster.yml` configuration file.
 The goal of this project is to provide project owners a method for scheduling jobs in Taskcluster which is quick and straight forward.
@@ -20,8 +20,8 @@ The Taskcluster-GitHub service must be connected to a repository before it can b
 This connection is accomplished by installing a GitHub App on the repository.
 Installing the app both connects the service to notifications about events on the repository, and grants it permission to post status, comments, and so on to the repository.
 
-<SiteSpecific>
-To add the App for this deployment of Taskcluster to a GitHub repository or organization, add [this GitHub App](%github_app_url%).
+<SiteSpecific requires={['github_app_url']}>
+To add the App for this deployment of Taskcluster to a GitHub repository or organization, add <SiteLink name="github_app_url">this GitHub App</SiteLink>.
 </SiteSpecific>
 
 ## Adding status badges to your project's README:

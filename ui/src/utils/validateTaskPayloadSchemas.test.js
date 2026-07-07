@@ -1,6 +1,6 @@
 describe('validation', () => {
   beforeAll(() => {
-    window.fetch = jest.fn().mockImplementation(url => {
+    window.fetch = vi.fn().mockImplementation(url => {
       return {
         json: () =>
           Promise.resolve({
@@ -11,7 +11,7 @@ describe('validation', () => {
   });
 
   it('should validate payload json', async () => {
-    const validate = require('./validateTaskPayloadSchemas').default;
+    const { default: validate } = await import('./validateTaskPayloadSchemas');
 
     const errors = await validate('');
 
@@ -20,8 +20,8 @@ describe('validation', () => {
     expect(window.fetch).toHaveBeenCalled();
   });
 
-  it('should format messages', () => {
-    const { formatErrorDetails } = require('./validateTaskPayloadSchemas');
+  it('should format messages', async () => {
+    const { formatErrorDetails } = await import('./validateTaskPayloadSchemas');
 
     expect(
       formatErrorDetails({

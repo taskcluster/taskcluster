@@ -1,7 +1,7 @@
+import ajv from './ajv';
+
 describe('ajv', () => {
   it('should validate', () => {
-    const ajv = require('./ajv').default;
-
     const schema = {
       type: 'object',
       properties: {
@@ -19,7 +19,7 @@ describe('ajv', () => {
 
   describe('loadServiceSchema', () => {
     beforeAll(() => {
-      window.fetch = jest.fn().mockImplementation(url => {
+      window.fetch = vi.fn().mockImplementation(url => {
         return {
           json: () =>
             Promise.resolve({
@@ -30,8 +30,6 @@ describe('ajv', () => {
     });
 
     it('should add schema once', async () => {
-      const ajv = require('./ajv').default;
-
       await ajv.loadServiceSchema('svc', 'schema1');
       expect(ajv.getSchema('/schemas/svc/schema1')).toBeDefined();
       ajv.loadServiceSchema('svc', 'schema1');

@@ -2,13 +2,8 @@ import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import catchLinks from 'catch-links';
 import { MDXProvider } from '@mdx-js/react';
-import 'prismjs';
 import 'prismjs/themes/prism.css';
 import 'prism-themes/themes/prism-atom-dark.css';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-yaml';
-import 'prismjs/components/prism-markup';
 import Dashboard from '../../components/Dashboard';
 import NotFound from '../../components/NotFound';
 import DocSearch from '../../components/DocSearch';
@@ -21,6 +16,8 @@ import docsTableOfContents from '../../../../generated/docs-table-of-contents.js
 import docsSearchOptions from '../../../../generated/docs-search.json';
 import ErrorPanel from '../../components/ErrorPanel';
 import PageMeta from './PageMeta';
+
+const docPages = import.meta.glob('../../../docs/**/*.mdx');
 
 @withStyles(
   theme => ({
@@ -112,19 +109,18 @@ export default class Documentation extends Component {
   }
 
   async readDocFile(path) {
-    try {
-      return await import(
-        /* webpackMode: 'eager' */ `../../../docs/${path}.mdx`
-      );
-    } catch (err) {
-      if (err.code !== 'MODULE_NOT_FOUND') {
-        throw err;
-      }
+    const loader =
+      docPages[`../../../docs/${path}.mdx`] ||
+      docPages[`../../../docs/${path}/README.mdx`];
 
-      return import(
-        /* webpackMode: 'eager' */ `../../../docs/${path}/README.mdx`
-      );
+    if (!loader) {
+      const error = new Error(`Documentation page not found: ${path}`);
+
+      error.code = 'MODULE_NOT_FOUND';
+      throw error;
     }
+
+    return loader();
   }
 
   async load() {
