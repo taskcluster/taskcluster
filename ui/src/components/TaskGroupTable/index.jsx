@@ -268,7 +268,7 @@ export default class TaskGroupTable extends Component {
         return filteredTasks;
       }
 
-      return filteredTasks.sort((a, b) => {
+      return [...filteredTasks].sort((a, b) => {
         const firstElement =
           sortDirection === 'desc'
             ? valueFromNode(b.node, sortBy)

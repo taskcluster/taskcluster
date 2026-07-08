@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql } from '@apollo/client/react/hoc';
 import { withRouter } from 'react-router-dom';
 import dotProp from 'dot-prop-immutable';
 import Tab from '@material-ui/core/Tab/Tab';

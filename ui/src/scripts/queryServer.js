@@ -3,7 +3,7 @@
  * about unions and interfaces and write it to a file.
  *
  * Run against local web-server:
- * GRAPHQL_ENDPOINT=http://localhost:3050/graphql yarn run create:fragment-matcher
+ * GRAPHQL_ENDPOINT=http://localhost:3050/graphql yarn run create:possible-types
  *
  */
 const fs = require('fs');
@@ -51,22 +51,29 @@ const options = {
 };
 const executor = parsed.protocol === 'https:' ? https : http;
 const req = executor.request(options, res => {
-  res.on('data', result => {
-    const response = JSON.parse(Buffer.from(result).toString());
-    // here we're filtering out any type information unrelated
-    // to unions or interfaces
-    const filteredData = response.data.__schema.types.filter(
-      type => type.possibleTypes !== null
-    );
+  const chunks = [];
 
-    response.data.__schema.types = filteredData;
+  res.on('data', chunk => chunks.push(chunk));
+  res.on('end', () => {
+    const response = JSON.parse(Buffer.concat(chunks).toString());
+    // { [supertype]: [subtype, ...] }
+    const possibleTypes = {};
+
+    for (const type of response.data.__schema.types) {
+      if (type.possibleTypes !== null) {
+        possibleTypes[type.name] = type.possibleTypes.map(
+          subtype => subtype.name
+        );
+      }
+    }
+
     fs.writeFile(
-      './src/fragments/fragmentTypes.json',
-      `${JSON.stringify(response.data)}\n`,
+      './src/fragments/possibleTypes.json',
+      `${JSON.stringify(possibleTypes)}\n`,
       err => {
         if (err) {
           // biome-ignore lint/suspicious/noConsole: build time script output
-          console.error('Error writing fragmentTypes file', err);
+          console.error('Error writing possibleTypes file', err);
         } else {
           // biome-ignore lint/suspicious/noConsole: build time script output
           console.log('Fragment types successfully extracted!');
