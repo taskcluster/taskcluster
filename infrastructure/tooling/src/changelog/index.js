@@ -236,14 +236,19 @@ export class ChangeLog {
   }
 }
 
-const check_pr = async pr => {
+const check_pr = async prUrl => {
   const octokit = new Octokit();
-  const options = octokit.pulls.listFiles.endpoint.merge({
-    owner: 'taskcluster',
-    repo: 'taskcluster',
-    pull_number: pr,
-  });
-  const files = await octokit.paginate(options, response => response.data.map(({ filename }) => filename));
+  if (!prUrl) {
+    throw new Error(
+      'Cannot check the changelog: --pull-request-url is unset. This check should only run in github pull requests.'
+    );
+  }
+  console.log(`Checking changelog requirement for ${prUrl}`);
+  const files = await octokit.paginate(`GET ${prUrl}/files`, response => response.data.map(({ filename }) => filename));
+  if (!files.length) {
+    throw new Error(`no changed files found for ${prUrl}; the pull request lookup returned nothing`);
+  }
+  console.log(`changed files (${files.length}):\n${files.map(f => `  ${f}`).join('\n')}`);
 
   // files that do not require a changelog entry if they are the only thing changed.  This
   // is similar to the list in .gitattributes., along with yarn and package.json
@@ -273,7 +278,7 @@ const check_pr = async pr => {
   const hasImportantFiles = files.some(filename => boringFiles.every(r => !r.test(filename)));
 
   if (!hasImportantFiles) {
-    console.log(`${chalk.bold.green(`PR ${pr} OK:`)} does not contain any changes requiring a changelog`);
+    console.log(`${chalk.bold.green(`PR ${prUrl} OK:`)} does not contain any changes requiring a changelog`);
     return true;
   }
 
@@ -281,16 +286,16 @@ const check_pr = async pr => {
 
   if (changelogFiles.some(filename => !filename.endsWith('.md'))) {
     console.log(
-      `${chalk.bold.red('ERROR:')} Pull Request ${pr} has an invalid file in 'changelog/'. All files must be '.md'`
+      `${chalk.bold.red('ERROR:')} Pull Request ${prUrl} has an invalid file in 'changelog/'. All files must be '.md'`
     );
     return false;
   }
 
   if (hasImportantFiles && !changelogFiles.length) {
-    console.log(`${chalk.bold.red('ERROR:')} Pull Request ${pr} does not modify any files in 'changelog/'`);
+    console.log(`${chalk.bold.red('ERROR:')} Pull Request ${prUrl} does not modify any files in 'changelog/'`);
     return false;
   }
-  console.log(chalk.bold.green(`PR ${pr} OK`));
+  console.log(chalk.bold.green(`PR ${prUrl} OK`));
   return true;
 };
 
@@ -401,8 +406,8 @@ export const check = async options => {
   await cl.load();
   console.log(chalk.bold.green('Changelog OK'));
 
-  if (options.pr) {
-    if (!(await check_pr(options.pr))) {
+  if (options.pullRequestUrl) {
+    if (!(await check_pr(options.pullRequestUrl))) {
       process.exit(1);
     }
   }

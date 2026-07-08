@@ -52,7 +52,7 @@ def add_task_env(config, tasks):
         env["GIT_BRANCH"] = config.params["head_ref"]
 
         # Passing through some things the decision task wants to child tasks
-        env["TASKCLUSTER_PULL_REQUEST_NUMBER"] = os.environ.get("TASKCLUSTER_PULL_REQUEST_NUMBER", "")
+        env["TASKCLUSTER_PULL_REQUEST_URL"] = os.environ.get("TASKCLUSTER_PULL_REQUEST_URL", "")
 
         # Make dependency versions available for use
         env["NODE_VERSION"] = node_version

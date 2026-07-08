@@ -134,7 +134,7 @@ tasks:
                 REPOSITORIES: { $json: { taskcluster: Taskcluster } }
               - $if: "isPullRequest"
                 then:
-                  TASKCLUSTER_PULL_REQUEST_NUMBER: "${event.pull_request.number}"
+                  TASKCLUSTER_PULL_REQUEST_URL: "${event.pull_request.url}"
 
           cache:
             "${trustDomain}-level-${level}-checkouts-sparse-v2": /builds/worker/checkouts
