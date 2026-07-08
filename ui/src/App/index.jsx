@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { arrayOf } from 'prop-types';
-import storage from 'localforage';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloClient } from 'apollo-client';
 import { WebSocketLink } from 'apollo-link-ws';
@@ -14,7 +13,6 @@ import {
   IntrospectionFragmentMatcher,
   defaultDataIdFromObject,
 } from 'apollo-cache-inmemory';
-import { CachePersistor } from 'apollo-cache-persist';
 import ReactGA from 'react-ga';
 import { init as initSentry } from '@sentry/browser';
 import { MuiThemeProvider } from '@material-ui/core/styles';
@@ -67,11 +65,6 @@ export default class App extends Component {
         }
       }
     },
-  });
-
-  persistence = new CachePersistor({
-    cache: this.cache,
-    storage,
   });
 
   httpLink = createHttpLink({
