@@ -67,7 +67,7 @@ export const CUSTOM_KEYWORDS = [
   '_id',
 ];
 /**
- * Keywords used in schemas that will be ignored when 
+ * Keywords used in schemas that will be ignored when
  * creating lines for the rows in the left and right panels.
  * These are typically skipped over since they may already be
  * illustrated in other formats within the SchemaTable.
