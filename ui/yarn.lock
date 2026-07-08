@@ -1462,7 +1462,6 @@ __metadata:
     apollo-client-mock: "npm:^0.0.9"
     apollo-link: "npm:^1.2.11"
     apollo-link-context: "npm:^1.0.11"
-    apollo-link-error: "npm:^1.1.10"
     apollo-link-http: "npm:^1.5.14"
     apollo-link-ws: "npm:^1.0.17"
     apollo-utilities: "npm:^1.0.26"
@@ -2160,17 +2159,6 @@ __metadata:
     apollo-link: "npm:^1.2.14"
     tslib: "npm:^1.9.3"
   checksum: 10c0/b12e00be628a565ed6dfe9d69737b4627ab87a0d2476c242b1b5663a45ce41c3d50832707b90067509f44acd973b7ac02e96f669a337316adb8b6a0da8e99ddf
-  languageName: node
-  linkType: hard
-
-"apollo-link-error@npm:^1.1.10":
-  version: 1.1.13
-  resolution: "apollo-link-error@npm:1.1.13"
-  dependencies:
-    apollo-link: "npm:^1.2.14"
-    apollo-link-http-common: "npm:^0.2.16"
-    tslib: "npm:^1.9.3"
-  checksum: 10c0/bbc7db8e184636dadab3398a48b1ba47b7b331c4c7e0eb88eed3edbf0459ea2c4a0cfd0ee10e97c4c77d49f9e1de47795592f9d9d41a4c2e6ba9413cfa9caaee
   languageName: node
   linkType: hard
 
