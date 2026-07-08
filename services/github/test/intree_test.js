@@ -6,6 +6,7 @@ import helper from './helper.js';
 import libUrls from 'taskcluster-lib-urls';
 import yaml from 'js-yaml';
 import testing from '@taskcluster/lib-testing';
+import { GITHUB_TASKS_FOR } from '../src/constants.js';
 
 const webhookDir = new URL('./data/webhooks/', import.meta.url).pathname;
 const loadWebhook = filename => JSON.parse(fs.readFileSync(path.join(webhookDir, filename), 'utf8'));
@@ -57,7 +58,17 @@ suite(testing.suiteName(), () => {
         'event.head.user.email': 'test@test.com',
       },
     };
-    return _.merge(defaultMessage, params);
+    const message = _.merge(defaultMessage, params);
+    if (message.tasks_for === undefined) {
+      if (message.details['event.type'].startsWith('pull_request')) {
+        message.tasks_for = GITHUB_TASKS_FOR.PULL_REQUEST;
+      } else if (message.details['event.type'] === 'release') {
+        message.tasks_for = GITHUB_TASKS_FOR.RELEASE;
+      } else {
+        message.tasks_for = GITHUB_TASKS_FOR.PUSH;
+      }
+    }
+    return message;
   }
 
   /**

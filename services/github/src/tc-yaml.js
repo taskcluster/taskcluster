@@ -39,8 +39,10 @@ class VersionZero extends TcYaml {
     branchTest(payload.details['event.base.repo.branch']);
     branchTest(payload.details['event.head.repo.branch']);
 
-    if (payload.details['event.type'].startsWith('pull_request')) {
+    if (payload.tasks_for === GITHUB_TASKS_FOR.PULL_REQUEST) {
       config.scopes = [`assume:repo:github.com/${payload.organization}/${payload.repository}:pull-request`];
+    } else if (payload.tasks_for === GITHUB_TASKS_FOR.PULL_REQUEST_UNTRUSTED) {
+      config.scopes = [`assume:repo:github.com/${payload.organization}/${payload.repository}:pull-request-untrusted`];
     } else if (payload.details['event.type'] === 'push') {
       const prefix = `assume:repo:github.com/${payload.organization}/${payload.repository}:branch:`;
       config.scopes = [prefix + payload.details['event.base.repo.branch']];
