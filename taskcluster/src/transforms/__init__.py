@@ -70,6 +70,12 @@ def add_task_env(config, tasks):
         # We want to set this everywhere other than lib-testing
         if task["name"] != "testing":
             env["NO_TEST_SKIP"] = "true"
+
+        # Dependabot PRs can saturate contended worker pools (e.g. macOS) and delay
+        # human work, so lower the priority of every task they generate.
+        if config.params["head_ref"].startswith("dependabot/"):
+            task["priority"] = "low"
+
         yield task
 
 
