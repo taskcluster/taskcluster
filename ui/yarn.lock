@@ -1457,7 +1457,6 @@ __metadata:
     ajv: "npm:^8.18.0"
     ajv-formats: "npm:^2.1.1"
     apollo-cache-inmemory: "npm:^1.5.1"
-    apollo-cache-persist: "npm:^0.1.1"
     apollo-client: "npm:^2.5.1"
     apollo-client-mock: "npm:^0.0.9"
     apollo-link: "npm:^1.2.11"
@@ -2097,13 +2096,6 @@ __metadata:
   peerDependencies:
     graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
   checksum: 10c0/a7c49babd139edbdcf4087ec4096b87864f46f67dd45c84da22bcc239af770358ec1fd9285e364c74ad726c8b77580bc2d8ee1c513972029123f97ceb47f9562
-  languageName: node
-  linkType: hard
-
-"apollo-cache-persist@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "apollo-cache-persist@npm:0.1.1"
-  checksum: 10c0/816bde128e7cef4319340c4b733c262740223760be59e788ba4d130368cb8f89c28517d50c2f926849fdf3bc7a271d71a31b2801cd77a4f5137c979493bbf0c7
   languageName: node
   linkType: hard
 
