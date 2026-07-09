@@ -1,17 +1,18 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import submitTaskAction from './submitTaskAction';
 import { getClient } from '../../utils/client';
 
 // Mock getClient to return a mock Queue instance
-jest.mock('../../utils/client', () => ({
-  getClient: jest.fn(),
+vi.mock('../../utils/client', () => ({
+  getClient: vi.fn(),
 }));
-jest.mock('@taskcluster/client-web', () => ({
-  Queue: jest.fn(),
+vi.mock('@taskcluster/client-web', () => ({
+  Queue: vi.fn(),
 }));
 // Mock validateActionsJson to avoid fetch in test environment
-jest.mock('../../utils/validateActionsJson', () =>
-  jest.fn().mockResolvedValue(() => true)
-);
+vi.mock('../../utils/validateActionsJson', () => ({
+  default: vi.fn().mockResolvedValue(() => true),
+}));
 
 const taskDef = JSON.stringify({
   taskQueueId: 'test/test',
@@ -31,15 +32,15 @@ describe('submitTaskAction', () => {
   const user = {
     credentials: { clientId: 'test', accessToken: 'secret' },
   };
-  const mockCreateTask = jest.fn().mockResolvedValue({});
+  const mockCreateTask = vi.fn().mockResolvedValue({});
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     getClient.mockReturnValue({ createTask: mockCreateTask });
   });
 
   it('action.kind=task: calls Queue.createTask directly (not Apollo)', async () => {
-    const apolloClient = { mutate: jest.fn(), query: jest.fn() };
+    const apolloClient = { mutate: vi.fn(), query: vi.fn() };
     const task = {
       taskId: 'abc123',
       taskGroupId: 'abc123',
@@ -78,7 +79,7 @@ describe('submitTaskAction', () => {
   });
 
   it('action.kind=task: passes authorizedScopes from taskGroup.scopes', async () => {
-    const apolloClient = { mutate: jest.fn(), query: jest.fn() };
+    const apolloClient = { mutate: vi.fn(), query: vi.fn() };
     const scopes = ['queue:create-task:proj-test/test-worker'];
     const task = {
       taskId: 'abc123',
