@@ -8,7 +8,6 @@ const ENV_VARS = [
   {name: 'GRAPHQL_SUBSCRIPTION_ENDPOINT', defaultValue: '/subscription', json: false},
   {name: 'DOCS_ONLY', defaultValue: false, json: false},
   {name: 'UI_LOGIN_STRATEGY_NAMES', defaultValue: '', json: false},
-  {name: 'GA_TRACKING_ID', defaultValue: '', json: false},
   {name: 'SENTRY_DSN', defaultValue: '', json: false},
   {name: 'BANNER_MESSAGE', defaultValue: '', json: false},
   {name: 'SITE_SPECIFIC', defaultValue: {}, json: true},

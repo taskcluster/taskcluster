@@ -1,16 +1,9 @@
 import React, { Component } from 'react';
-import ReactGA from 'react-ga';
 import MuiButton from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
 import Tooltip from '@material-ui/core/Tooltip';
 import { object, node, bool, oneOf, string } from 'prop-types';
 import { withAuth } from '../../utils/Auth';
-import { gaEvent } from '../../utils/prop-types';
-
-const defaultTrack = {
-  action: 'Click',
-  category: 'Uncategorized',
-};
 
 @withAuth
 /**
@@ -19,7 +12,6 @@ const defaultTrack = {
 export default class Button extends Component {
   static defaultProps = {
     requiresAuth: false,
-    track: null,
     variant: 'text',
     tooltip: null,
     spanProps: null,
@@ -31,10 +23,6 @@ export default class Button extends Component {
     children: node.isRequired,
     /** If true, the button will be disabled if the user is not authenticated */
     requiresAuth: bool,
-    /** Google Analytics.
-     * If defined, the button will send an analytic event to Google
-     * */
-    track: gaEvent,
     /** The variant to use. */
     variant: oneOf(['text', 'outlined', 'contained', 'circular', 'extended']),
     /** Properties applied to the Tooltip component */
@@ -52,20 +40,6 @@ export default class Button extends Component {
     id: string,
   };
 
-  handleButtonClick = e => {
-    const { onClick, track } = this.props;
-
-    if (track && window.env.GA_TRACKING_ID) {
-      const trackingEvent = { ...defaultTrack, ...track };
-
-      ReactGA.event(trackingEvent);
-    }
-
-    if (onClick) {
-      onClick(e);
-    }
-  };
-
   render() {
     const {
       children,
@@ -74,7 +48,6 @@ export default class Button extends Component {
       user,
       variant,
       onClick,
-      track,
       onAuthorize,
       onUnauthorize,
       tooltipProps,
@@ -88,7 +61,7 @@ export default class Button extends Component {
       variant === 'circular' || variant === 'extended' ? Fab : MuiButton;
     const ButtonComponent = (
       <MuiComponent
-        onClick={this.handleButtonClick}
+        onClick={onClick}
         disabled={isDisabled}
         variant={variant}
         id={id}

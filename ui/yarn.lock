@@ -1512,7 +1512,6 @@ __metadata:
     react-diff-viewer-continued: "npm:^4.2.2"
     react-dom: "npm:^16.8.6"
     react-error-boundary: "npm:^3.1.4"
-    react-ga: "npm:^3.0.0"
     react-helmet: "npm:^6.0.0"
     react-lazylog: "npm:^4.5.1"
     react-router-dom: "npm:^5.3.4"
@@ -6505,16 +6504,6 @@ __metadata:
   version: 3.2.0
   resolution: "react-fast-compare@npm:3.2.0"
   checksum: 10c0/2a7d75ce9fb5da1e3c01f74a5cd592f3369a8cc8d44e93654bf147ab221f430238e8be70677e896f2bfcb96a1cb7a47a8d05d84633de764a9d57d27005a4bb9e
-  languageName: node
-  linkType: hard
-
-"react-ga@npm:^3.0.0":
-  version: 3.3.1
-  resolution: "react-ga@npm:3.3.1"
-  peerDependencies:
-    prop-types: ^15.6.0
-    react: ^15.6.2 || ^16.0 || ^17 || ^18
-  checksum: 10c0/a2a61c138887c651a59b49669141246e9a01803bd67c5d7581016949d2c8acdbef14db1a0039b855dcd3c979c711b4c45d910fcaa49e27165c13cdc685b4c2e0
   languageName: node
   linkType: hard
 
