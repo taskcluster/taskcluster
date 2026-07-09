@@ -3,6 +3,54 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v101.1.0
+
+### DEPLOYERS
+
+▶ [patch]
+Remove support for google analytics (`GA_TRACKING_ID` doesn't do anything
+anymore) in the UI as it's been unsupported and untested for years.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8664](https://github.com/taskcluster/taskcluster/issues/8664)
+When a worker-manager `checkWorker` call times out, the scanner now aborts the in-flight provider API call and logs a warning instead of reporting an error, since the worker is re-checked on the next loop. Other `checkWorker` failures are still reported as errors.
+
+▶ [patch]
+The Google provider in worker-manager now logs a single transient GCP compute 5xx at `notice` rather than `warning` level.
+
+### USERS
+
+▶ [patch] [bug 2053178](http://bugzil.la/2053178)
+Fix a way for PRs from forks to bypass the `public_restricted` policy by
+declaring `version: 0` in their own taskcluster.yml
+
+▶ [patch] [bug 2053380](http://bugzil.la/2053380)
+Fix login CSRF in the github login flow by validating the oauth state parameter
+
+▶ [patch] [#8171](https://github.com/taskcluster/taskcluster/issues/8171)
+Task creation in the UI now calls the Queue API directly instead of routing
+through GraphQL, fixing 413 errors when creating tasks with large payloads
+(up to the Queue API's 10MB limit).
+
+### DEVELOPERS
+
+▶ [minor]
+Switch the UI build system to vite. Switch tests to vitest
+
+### OTHER
+
+▶ Additional change not described here: [#4007](https://github.com/taskcluster/taskcluster/issues/4007).
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump body-parser from 1.20.3 to 2.3.0 (2cde87843e)
+
+</details>
+
 ## v101.0.0
 
 ### ADMINS
