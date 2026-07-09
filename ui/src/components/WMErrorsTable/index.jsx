@@ -70,7 +70,7 @@ export default class WorkerManagerErrorsTable extends Component {
     searchTerm: string,
     workerPoolId: string,
     errorsConnection: shape({
-      edges: arrayOf(shape({ node: WMError.isRequred }).isRequired).isRequired,
+      edges: arrayOf(shape({ node: WMError.isRequired }).isRequired).isRequired,
       pageInfo: pageInfo.isRequired,
     }).isRequired,
   };
