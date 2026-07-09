@@ -23,6 +23,7 @@ import FlashIcon from 'mdi-react/FlashIcon';
 import ConsoleLineIcon from 'mdi-react/ConsoleLineIcon';
 import RestartIcon from 'mdi-react/RestartIcon';
 import ChartIcon from 'mdi-react/ChartBarIcon';
+import SortIcon from 'mdi-react/SortIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import Markdown from '../../../components/Markdown';
@@ -34,6 +35,7 @@ import Search from '../../../components/Search';
 import SpeedDial from '../../../components/SpeedDial';
 import SpeedDialAction from '../../../components/SpeedDialAction';
 import DialogAction from '../../../components/DialogAction';
+import ChangeTaskPriorityDialog from '../../../components/ChangeTaskPriorityDialog';
 import TaskActionForm from '../../../components/TaskActionForm';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import splitTaskQueueId from '../../../utils/splitTaskQueueId';
@@ -53,7 +55,7 @@ import removeKeys from '../../../utils/removeKeys';
 import parameterizeTask from '../../../utils/parameterizeTask';
 import { nice } from '../../../utils/slugid';
 import Link from '../../../utils/Link';
-import { getClient } from '../../../utils/client';
+import { changeTaskPriority, getClient } from '../../../utils/client';
 import { AuthContext } from '../../../utils/Auth';
 import submitTaskAction from '../submitTaskAction';
 import taskQuery from './task.graphql';
@@ -180,6 +182,7 @@ export default class ViewTask extends Component {
     actionLoading: false,
     dialogActionProps: null,
     dialogError: null,
+    changePriorityDialogOpen: false,
     caches: null,
     selectedCaches: null,
     formInputs: null,
@@ -535,6 +538,20 @@ export default class ViewTask extends Component {
     )}`;
 
     window.open(profilerUrl, '_blank');
+  };
+
+  handleChangePriorityClick = () => {
+    this.setState({ changePriorityDialogOpen: true });
+  };
+
+  handleChangePriorityClose = () => {
+    this.setState({ changePriorityDialogOpen: false });
+  };
+
+  handleChangePriorityComplete = () => {
+    this.setState({ changePriorityDialogOpen: false });
+    // refresh the task so the new priority is reflected immediately
+    this.props.data.refetch();
   };
 
   handlePurgeWorkerCacheClick = () => {
@@ -948,6 +965,7 @@ export default class ViewTask extends Component {
                   user={this.context.user}
                   dependents={dependents}
                   onDependentsPageChange={this.handleDependentsPageChange}
+                  onChangePriority={this.handleChangePriorityClick}
                 />
               </Grid>
 
@@ -1034,6 +1052,16 @@ export default class ViewTask extends Component {
                 FabProps={{
                   disabled: actionLoading,
                 }}
+                icon={<SortIcon />}
+                tooltipTitle="Change Priority"
+                onClick={this.handleChangePriorityClick}
+              />
+              <SpeedDialAction
+                requiresAuth
+                tooltipOpen
+                FabProps={{
+                  disabled: actionLoading,
+                }}
                 icon={<PencilIcon />}
                 tooltipTitle="Edit"
                 onClick={this.handleEditTaskClick}
@@ -1091,6 +1119,23 @@ export default class ViewTask extends Component {
                 error={dialogError}
                 onError={this.handleTaskActionError}
                 onClose={this.handleActionDialogClose}
+              />
+            )}
+            {this.state.changePriorityDialogOpen && (
+              <ChangeTaskPriorityDialog
+                open={this.state.changePriorityDialogOpen}
+                currentPriority={task.priority
+                  ?.toLowerCase()
+                  .replace(/_/g, '-')}
+                onSubmit={priority =>
+                  changeTaskPriority({
+                    taskId: match.params.taskId,
+                    priority,
+                    user: this.context.user,
+                  })
+                }
+                onClose={this.handleChangePriorityClose}
+                onComplete={this.handleChangePriorityComplete}
               />
             )}
           </Fragment>
