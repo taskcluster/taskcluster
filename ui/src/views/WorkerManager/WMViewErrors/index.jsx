@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql } from '@apollo/client/react/hoc';
 import dotProp from 'dot-prop-immutable';
 import { Typography, Box, Button } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';

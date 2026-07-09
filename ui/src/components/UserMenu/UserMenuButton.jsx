@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import classNames from 'classnames';
 import { object } from 'prop-types';
-import { withApollo } from 'react-apollo';
+import { withApollo } from '@apollo/client/react/hoc';
 import Avatar from '@material-ui/core/Avatar';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';

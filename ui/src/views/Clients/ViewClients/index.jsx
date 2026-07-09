@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import { parse, stringify } from 'qs';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql } from '@apollo/client/react/hoc';
 import dotProp from 'dot-prop-immutable';
 import { TableRow, TableCell, Box, Typography } from '@material-ui/core';
 import LinkIcon from 'mdi-react/LinkIcon';

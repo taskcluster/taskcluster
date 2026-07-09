@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import SecretForm from '../../../components/SecretForm';

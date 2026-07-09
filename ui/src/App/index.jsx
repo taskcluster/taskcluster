@@ -1,18 +1,18 @@
 import React, { Component } from 'react';
 import { arrayOf } from 'prop-types';
-import { ApolloProvider } from 'react-apollo';
-import { ApolloClient } from 'apollo-client';
-import { WebSocketLink } from 'apollo-link-ws';
-import { getMainDefinition } from 'apollo-utilities';
-import { from, split } from 'apollo-link';
-import { createHttpLink } from 'apollo-link-http';
-import { setContext } from 'apollo-link-context';
-import { ErrorBoundary } from 'react-error-boundary';
 import {
+  ApolloClient,
+  ApolloProvider,
   InMemoryCache,
-  IntrospectionFragmentMatcher,
+  createHttpLink,
   defaultDataIdFromObject,
-} from 'apollo-cache-inmemory';
+  from,
+  split,
+} from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { setContext } from '@apollo/client/link/context';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { ErrorBoundary } from 'react-error-boundary';
 import ReactGA from 'react-ga';
 import { init as initSentry } from '@sentry/browser';
 import { MuiThemeProvider } from '@material-ui/core/styles';
@@ -24,7 +24,7 @@ import db from '../utils/db';
 import reportError from '../utils/reportError';
 import ErrorPanel from '../components/ErrorPanel';
 import theme from '../theme';
-import introspectionQueryResultData from '../fragments/fragmentTypes.json';
+import possibleTypes from '../fragments/possibleTypes.json';
 import { route } from '../utils/prop-types';
 import AuthController from '../auth/AuthController';
 import './index.css';
@@ -37,18 +37,8 @@ export default class App extends Component {
     routes: arrayOf(route).isRequired,
   };
 
-  /**
-   * This is deprecated in apollo client v3
-   * https://www.apollographql.com/docs/react/migrating/apollo-client-3-migration/#breaking-cache-changes
-   * After upgrade InMemoryCache would have { possibleTypes } option
-   * which will accept fragmentTypes.json contents directly
-   */
-  fragmentMatcher = new IntrospectionFragmentMatcher({
-    introspectionQueryResultData,
-  });
-
   cache = new InMemoryCache({
-    fragmentMatcher: this.fragmentMatcher,
+    possibleTypes,
     dataIdFromObject: object => {
       switch (object.__typename) {
         case 'TaskStatus': {
