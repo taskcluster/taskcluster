@@ -13,7 +13,6 @@ import { WebSocketLink } from '@apollo/client/link/ws';
 import { setContext } from '@apollo/client/link/context';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { ErrorBoundary } from 'react-error-boundary';
-import ReactGA from 'react-ga';
 import { init as initSentry } from '@sentry/browser';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -150,11 +149,6 @@ export default class App extends Component {
       },
       subscriptionError: null,
     };
-
-    if (window.env.GA_TRACKING_ID) {
-      // Unique Google Analytics tracking number
-      ReactGA.initialize(`UA-${window.env.GA_TRACKING_ID}`);
-    }
 
     if (window.env.SENTRY_DSN) {
       // Data Source Name (DSN), a configuration required by the Sentry SDK
