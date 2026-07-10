@@ -80,6 +80,12 @@ of the JSON-e rendering.
 Tasks will be generated with `tasks_for = "github-issue-comment"`, `event.taskcluster_comment = param`, `event.comment`
 and `event.pull_request` details.
 
+<Warning>
+Comments will trigger tasks with the trusted `:pull-request` role even if your
+pull request policy is `public_restricted`, allowing collaborators to review PR
+code before running tasks that might have access to sensitive data.
+</Warning>
+
 ## JSON-e Rendering
 
 The `tasks` property in the YAML file is rendered using [JSON-e](https://github.com/json-e/json-e). You can view it as a *template*. The following *context* variables are provided:
@@ -300,7 +306,7 @@ When a hook fails, e.g because it's missing scopes or there was an error renderi
 
 [Roles](/docs/manual/design/apis/hawk/roles) are, in a nutshell, sets of [scopes](/docs/reference/platform/auth/scopes). Taskcluster-Github uses a very specific role to create tasks for each project.  That role has the form
 * `assume:repo:github.com/<owner>/<repo>:branch:<branch>` for a push event
-* `assume:repo:github.com/<owner>/<repo>:pull-request` for a pull request
+* `assume:repo:github.com/<owner>/<repo>:pull-request` for a pull request or comment-triggered task
 * `assume:repo:github.com/<owner>/<repo>:rerun` for failed task re-run request
 * `assume:repo:github.com/<owner>/<repo>:release:<action>` for a release event
 * `assume:repo:github.com/<organization>/<repository>:tag:<tag>` for a tag event
