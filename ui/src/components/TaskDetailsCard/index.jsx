@@ -98,6 +98,7 @@ export default class TaskDetailsCard extends Component {
   static defaultProps = {
     dependentTasks: null,
     dependents: null,
+    onChangePriority: null,
   };
 
   static propTypes = {
@@ -111,6 +112,8 @@ export default class TaskDetailsCard extends Component {
     }),
     onDependentsPageChange: func.isRequired,
     user: object,
+    /** Called to open the change-priority dialog; makes the priority clickable. */
+    onChangePriority: func,
   };
 
   state = {
@@ -169,7 +172,14 @@ export default class TaskDetailsCard extends Component {
   }
 
   render() {
-    const { classes, task, dependents, onDependentsPageChange } = this.props;
+    const {
+      classes,
+      task,
+      dependents,
+      onDependentsPageChange,
+      user,
+      onChangePriority,
+    } = this.props;
     const { showPayload, dependentTasks, loading } = this.state;
     const isExternal = task.metadata.source.startsWith('https://');
     const payload = deepSortObject(task.payload);
@@ -284,7 +294,11 @@ export default class TaskDetailsCard extends Component {
                 primary="Expires"
                 secondary={<DateDistance from={task.expires} />}
               />
-              <ListItem>
+              <ListItem
+                button={Boolean(onChangePriority && user)}
+                onClick={
+                  onChangePriority && user ? onChangePriority : undefined
+                }>
                 <ListItemText
                   primary="Priority"
                   secondary={
