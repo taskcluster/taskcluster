@@ -774,7 +774,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
     await helper.queue.createTask(taskId, {
       taskQueueId,
-      priority: 'normal',
+      priority: 'lowest',
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('30 min'),
       payload: {},
@@ -814,7 +814,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
 
       await helper.queue.createTask(taskIds[i], {
         taskQueueId,
-        priority: 'normal',
+        priority: 'lowest',
         created: taskcluster.fromNowJSON(),
         deadline: taskcluster.fromNowJSON('30 min'),
         payload: {},

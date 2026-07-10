@@ -166,7 +166,6 @@ type (
 		//   * "low"
 		//   * "very-low"
 		//   * "lowest"
-		//   * "normal"
 		NewPriority string `json:"newPriority"`
 	}
 
@@ -1270,8 +1269,7 @@ type (
 
 		// Priority of task. This defaults to `lowest` and the scope
 		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
-		// to define a task with `<priority>`. The `normal` priority is treated as
-		// `lowest`.
+		// to define a task with `<priority>`.
 		//
 		// Possible values:
 		//   * "highest"
@@ -1281,7 +1279,6 @@ type (
 		//   * "low"
 		//   * "very-low"
 		//   * "lowest"
-		//   * "normal"
 		//
 		// Default:    "lowest"
 		Priority string `json:"priority,omitempty"`
@@ -1465,8 +1462,7 @@ type (
 
 		// Priority of task. This defaults to `lowest` and the scope
 		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
-		// to define a task with `<priority>`. The `normal` priority is treated as
-		// `lowest`.
+		// to define a task with `<priority>`.
 		//
 		// Possible values:
 		//   * "highest"
@@ -1476,7 +1472,6 @@ type (
 		//   * "low"
 		//   * "very-low"
 		//   * "lowest"
-		//   * "normal"
 		//
 		// Default:    "lowest"
 		Priority string `json:"priority"`
@@ -1715,7 +1710,6 @@ type (
 		//   * "low"
 		//   * "very-low"
 		//   * "lowest"
-		//   * "normal"
 		NewPriority string `json:"newPriority"`
 
 		// All tasks in a task group must have the same `schedulerId`. This is used for several purposes:
@@ -1931,8 +1925,7 @@ type (
 
 		// Priority of task. This defaults to `lowest` and the scope
 		// `queue:create-task:<priority>/<provisionerId>/<workerType>` is required
-		// to define a task with `<priority>`. The `normal` priority is treated as
-		// `lowest`.
+		// to define a task with `<priority>`.
 		//
 		// Possible values:
 		//   * "highest"
@@ -1942,7 +1935,6 @@ type (
 		//   * "low"
 		//   * "very-low"
 		//   * "lowest"
-		//   * "normal"
 		//
 		// Default:    "lowest"
 		Priority string `json:"priority,omitempty"`

@@ -684,8 +684,7 @@ builder.declare(
  * Generate the list of acceptable priorities for a task with this priority
  */
 const authorizeTaskCreation = async (req, taskId, taskDef) => {
-  const priority = taskDef.priority === 'normal' ? 'lowest' : taskDef.priority;
-  const priorities = PRIORITY_LEVELS.slice(0, PRIORITY_LEVELS.indexOf(priority) + 1);
+  const priorities = PRIORITY_LEVELS.slice(0, PRIORITY_LEVELS.indexOf(taskDef.priority) + 1);
   assert(priorities.length > 0, 'must have a non-empty list of priorities');
 
   await req.authorize({
@@ -772,11 +771,6 @@ const patchAndValidateTaskDef = (taskId, taskDef, maxTaskDeadlineDays) => {
   taskDef.created = new Date(taskDef.created).toJSON();
   taskDef.deadline = new Date(taskDef.deadline).toJSON();
   taskDef.expires = new Date(taskDef.expires).toJSON();
-
-  // Migrate normal -> lowest, as it is the new default
-  if (taskDef.priority === 'normal') {
-    taskDef.priority = 'lowest';
-  }
 
   return null;
 };

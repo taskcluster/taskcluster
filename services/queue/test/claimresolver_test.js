@@ -22,7 +22,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   const makeTask = retries => {
     return {
       taskQueueId,
-      priority: 'normal',
+      priority: 'lowest',
       retries,
       created: taskcluster.fromNowJSON(),
       deadline: taskcluster.fromNowJSON('30 min'),

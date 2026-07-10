@@ -767,7 +767,7 @@ func main() {
 			Source:      "https://hg.mozilla.org/try/file/xxxx",
 		},
 		Payload:       *payloadJSON,
-		Priority:      "normal",
+		Priority:      "lowest",
 		ProvisionerID: "some-provisioner-id",
 		Requires:      "all-completed",
 		Retries:       5,

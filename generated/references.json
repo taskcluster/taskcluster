@@ -1155,7 +1155,7 @@
         },
         "priority": {
           "default": "lowest",
-          "description": "Priority of task. This defaults to `lowest` and the scope\n`queue:create-task:<priority>/<provisionerId>/<workerType>` is required\nto define a task with `<priority>`. The `normal` priority is treated as\n`lowest`.\n",
+          "description": "Priority of task. This defaults to `lowest` and the scope\n`queue:create-task:<priority>/<provisionerId>/<workerType>` is required\nto define a task with `<priority>`.\n",
           "enum": [
             "highest",
             "very-high",
@@ -1163,8 +1163,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "title": "Task Priority",
           "type": "string"
@@ -3655,7 +3654,7 @@
         },
         "priority": {
           "default": "lowest",
-          "description": "Priority of task. This defaults to `lowest` and the scope\n`queue:create-task:<priority>/<provisionerId>/<workerType>` is required\nto define a task with `<priority>`. The `normal` priority is treated as\n`lowest`.\n",
+          "description": "Priority of task. This defaults to `lowest` and the scope\n`queue:create-task:<priority>/<provisionerId>/<workerType>` is required\nto define a task with `<priority>`.\n",
           "enum": [
             "highest",
             "very-high",
@@ -3663,8 +3662,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "title": "Task Priority",
           "type": "string"
@@ -4224,8 +4222,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "type": "string"
         },
@@ -4237,8 +4234,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "type": "string"
         },
@@ -4417,8 +4413,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "type": "string"
         },
@@ -4468,8 +4463,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "type": "string"
         },
@@ -6257,8 +6251,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "type": "string"
         }
