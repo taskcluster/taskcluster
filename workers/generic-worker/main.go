@@ -511,6 +511,7 @@ func RunWorker() (exitCode ExitCode) {
 		completionRebootRequired
 	)
 	processCompletion := func(result taskCompletionResult) completionAction {
+		taskManager.RemoveTask(result.taskID)
 		tasksResolved++
 		lastActive = time.Now()
 
@@ -722,7 +723,6 @@ mainLoop:
 							log.Printf("PANIC in task %s goroutine: %v", t.TaskID, r)
 							t.Error(fmt.Sprintf("Internal worker error (panic): %v", r))
 						}
-						taskManager.RemoveTask(t.TaskID)
 						portManager.ReleasePorts(t.TaskID)
 						workerShutdown := errors != nil && errors.WorkerShutdown()
 						taskCompleteChan <- taskCompletionResult{
