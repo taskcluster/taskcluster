@@ -5,20 +5,18 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import DialogAction from '../DialogAction';
+import references from '../../../../generated/references.json';
 
 /**
  * Priority levels accepted by `queue.changeTaskPriority` and
- * `queue.changeTaskGroupPriority`, ordered highest to lowest.
+ * `queue.changeTaskGroupPriority`, ordered highest to lowest. Read from the
+ * generated schema (rather than duplicated here) so this list can't drift
+ * from the queue service's canonical `task-priorities` constant.
  */
-export const TASK_PRIORITIES = [
-  'highest',
-  'very-high',
-  'high',
-  'medium',
-  'low',
-  'very-low',
-  'lowest',
-];
+export const TASK_PRIORITIES = references.find(
+  ({ content }) =>
+    content.$id === '/schemas/queue/v1/change-task-priority-request.json#'
+).content.properties.newPriority.enum;
 
 /**
  * A shared dialog for changing the priority of a task or a task group.

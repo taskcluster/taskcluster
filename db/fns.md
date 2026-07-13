@@ -5256,7 +5256,7 @@ end
   * `task_id_in text`
   * `run_id_in integer`
 * *Returns*: `void`
-* *Last defined on version*: 124
+* *Last defined on version*: 127
 
 Enqueue a pending task run into queue_pending_tasks atomically with its
 caller. Intended to be called from DB functions that transition a run to
@@ -5285,7 +5285,9 @@ begin
 
   -- This mapping is duplicated in `PRIORITY_TO_CONSTANT` in
   -- `services/queue/src/queueservice.js`. If you add or reorder
-  -- priority tiers, update both.
+  -- priority tiers, update both. `normal` is no longer an accepted
+  -- priority (see issue #8858), so this case is now exhaustive over
+  -- the full set of priorities the API allows.
   priority_int := case priority_in
     when 'highest'   then 7
     when 'very-high' then 6
@@ -5294,7 +5296,6 @@ begin
     when 'low'       then 3
     when 'very-low'  then 2
     when 'lowest'    then 1
-    else 0
   end;
 
   perform queue_pending_tasks_add(
