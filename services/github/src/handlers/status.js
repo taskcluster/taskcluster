@@ -230,7 +230,9 @@ export async function statusHandler(message) {
         output.addText(`### Artifacts`);
       }
 
-      // A helper function using native Intl to format bytes (base 1000)
+      const UNITS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+      // A helper function to format bytes (matching the UI logic exactly)
       const formatBytes = bytes => {
         if (bytes === null || bytes === undefined || Number.isNaN(bytes)) {
           return '';
@@ -238,12 +240,16 @@ export async function statusHandler(message) {
         if (bytes < 1) {
           return `${bytes} B`;
         }
-        return new Intl.NumberFormat('en-US', {
-          notation: 'compact',
-          style: 'unit',
-          unit: 'byte',
-          unitDisplay: 'short',
-        }).format(bytes);
+        const exponent = Math.min(
+          Math.floor(Math.log10(bytes) / 3),
+          UNITS.length - 1
+        );
+        const value = bytes / (1000 ** exponent);
+        const formatted =
+          exponent === 0 || value >= 100
+            ? value.toFixed(0)
+            : value.toFixed(1).replace(/\.0$/, '');
+        return `${formatted} ${UNITS[exponent]}`;
       };
       artifactList.artifacts.forEach(element => {
         let artifactUrl;
