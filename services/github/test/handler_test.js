@@ -52,8 +52,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   function buildArtifactLinks(limit, taskId) {
     const artifactLinks = [];
 
+    const UNITS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const formatBytes = bytes => {
+      if (bytes === null || bytes === undefined || Number.isNaN(bytes)) return '';
+      if (bytes < 1) return `${bytes} B`;
+      const exponent = Math.min(Math.floor(Math.log10(bytes) / 3), UNITS.length - 1);
+      const value = bytes / (1000 ** exponent);
+      const formatted = exponent === 0 || value >= 100 ? value.toFixed(0) : value.toFixed(1).replace(/\.0$/, '');
+      return `${formatted} ${UNITS[exponent]}`;
+    };
+
     for (let i = 0; i < limit; i++) {
-      artifactLinks.push(`\\- [artifact-${i}](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`);
+      const formattedSize = formatBytes(2 ** i);
+      artifactLinks.push(`\\- [artifact-${i} (${formattedSize})](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`);
     }
 
     return artifactLinks.join('\n');
@@ -180,10 +191,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       listTaskGroup: async () => ({ tasks: [] }),
       listArtifacts: async (_taskId, _runId, options) => {
         const artifacts = [];
-
         for (let i = 0; i < options.limit; i++) {
           artifacts.push({
             name: `artifact-${i}`,
+            size: 2 ** i,
           });
         }
         return Promise.resolve({ artifacts });
@@ -1713,7 +1724,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P32o2';
     setup(() => {
-      sinon.stub(global, 'fetch').resolves({ ok: false, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: false, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves('');
       sinon
         .stub(utils, 'throttleRequest')
@@ -1883,7 +1894,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves('');
       sinon
         .stub(utils, 'throttleRequest')
@@ -1915,7 +1926,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_HOOK_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves('');
       sinon.stub(handlers.queueClient, 'task').resolves({
         metadata: { name: 'Task with custom check run', description: 'Task Description' },
@@ -1944,7 +1955,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
       sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
       await simulateExchangeMessage({
@@ -1971,7 +1982,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
       sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
       await simulateExchangeMessage({
@@ -2004,7 +2015,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
       sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
       await simulateExchangeMessage({
@@ -2033,7 +2044,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves('');
       sinon
         .stub(utils, 'throttleRequest')
@@ -2061,7 +2072,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
       sinon
         .stub(utils, 'throttleRequest')
@@ -2088,7 +2099,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves('');
       sinon
         .stub(utils, 'throttleRequest')
@@ -2122,7 +2133,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves('');
       sinon
         .stub(utils, 'throttleRequest')
@@ -2162,7 +2173,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
       sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
       await simulateExchangeMessage({
@@ -2194,7 +2205,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     setup(() => {
-      sinon.stub(global, 'fetch').resolves({ ok: false, body: { cancel: async () => {} } });
+      sinon.stub(global, 'fetch').resolves({ ok: false, body: { cancel: async () => { } } });
       sinon.stub(utils, 'extractLog').resolves('');
       sinon
         .stub(utils, 'throttleRequest')
