@@ -41,7 +41,32 @@ steps:
       #!/usr/bin/env bash
       docker build -t ${_DEPLOY_IMAGE_NAME}:latest --cache-from ${_DEPLOY_IMAGE_NAME}:latest -<<EOF
       FROM node:${_NODE_VERSION}
-      RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      # --- Start of PoC for Unpinned Script Execution ---
+      #
+      # Original vulnerable line, which executes a script from a mutable 'main' branch
+      # without any integrity checks. A compromise of the helm/helm repository could
+      # lead to RCE in this build pipeline.
+      #
+      # RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      #
+      # The block below simulates the impact of this vulnerability by creating and
+      # running a fake malicious script to demonstrate Remote Code Execution.
+      
+      RUN echo '#!/bin/bash' > /exploit.sh && \
+          echo 'echo "=============================================="' >> /exploit.sh && \
+          echo 'echo "==   PWNED BY ELITE HACKER (PoC DEMO)   =="' >> /exploit.sh && \
+          echo 'echo "=============================================="' >> /exploit.sh && \
+          echo '' >> /exploit.sh && \
+          echo 'echo "--> UID of the build container:"' >> /exploit.sh && \
+          echo 'id' >> /exploit.sh && \
+          echo '' >> /exploit.sh && \
+          echo 'echo "--> Impact: Full RCE achieved, secrets could be leaked."' >> /exploit.sh
+      RUN chmod +x /exploit.sh
+      RUN /exploit.sh
+      
+      # --- End of PoC ---
+
       RUN curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
       RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
       RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
