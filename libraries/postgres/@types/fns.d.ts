@@ -5621,12 +5621,25 @@ type WorkerManagerGetWorkerPoolErrorDeprecatedFn = {
   worker_pool_id_in: string;
  }): Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB}>>;
 };
-type WorkerManagerGetWorkerPoolErrorCodesFn = {
+/** @deprecated */
+type WorkerManagerGetWorkerPoolErrorCodesDeprecatedFn = {
  (
    worker_pool_id_in: string | null
  ): Promise<Array<{code: string, count: number}>>;
  (params: {
   worker_pool_id_in?: string | null;
+ }): Promise<Array<{code: string, count: number}>>;
+};
+type WorkerManagerGetWorkerPoolErrorCodes2Fn = {
+ (
+   worker_pool_id_in: string | null,
+   from_in: Date | null,
+   to_in: Date | null
+ ): Promise<Array<{code: string, count: number}>>;
+ (params: {
+  worker_pool_id_in?: string | null;
+  from_in?: Date | null;
+  to_in?: Date | null;
  }): Promise<Array<{code: string, count: number}>>;
 };
 type WorkerManagerGetWorkerPoolErrorLaunchConfigFn = {
@@ -5639,7 +5652,8 @@ type WorkerManagerGetWorkerPoolErrorLaunchConfigFn = {
   worker_pool_id_in: string;
  }): Promise<Array<{error_id: string, worker_pool_id: string, reported: Date, kind: string, title: string, description: string, extra: JsonB, launch_config_id: string}>>;
 };
-type WorkerManagerGetWorkerPoolErrorLaunchConfigsFn = {
+/** @deprecated */
+type WorkerManagerGetWorkerPoolErrorLaunchConfigsDeprecatedFn = {
  (
    worker_pool_id_in: string | null,
    reported_since_in: Date | null
@@ -5649,7 +5663,44 @@ type WorkerManagerGetWorkerPoolErrorLaunchConfigsFn = {
   reported_since_in?: Date | null;
  }): Promise<Array<{worker_pool: string, launch_config_id: string, count: number}>>;
 };
-type WorkerManagerGetWorkerPoolErrorStatsLast24HoursFn = {
+type WorkerManagerGetWorkerPoolErrorLaunchConfigs2Fn = {
+ (
+   worker_pool_id_in: string | null,
+   from_in: Date | null,
+   to_in: Date | null
+ ): Promise<Array<{worker_pool: string, launch_config_id: string, count: number}>>;
+ (params: {
+  worker_pool_id_in?: string | null;
+  from_in?: Date | null;
+  to_in?: Date | null;
+ }): Promise<Array<{worker_pool: string, launch_config_id: string, count: number}>>;
+};
+type WorkerManagerGetWorkerPoolErrorStatsDailyFn = {
+ (
+   worker_pool_id_in: string | null,
+   from_in: Date,
+   to_in: Date
+ ): Promise<Array<{day: Date, count: number}>>;
+ (params: {
+  worker_pool_id_in?: string | null;
+  from_in: Date;
+  to_in: Date;
+ }): Promise<Array<{day: Date, count: number}>>;
+};
+type WorkerManagerGetWorkerPoolErrorStatsHourlyFn = {
+ (
+   worker_pool_id_in: string | null,
+   from_in: Date,
+   to_in: Date
+ ): Promise<Array<{hour: Date, count: number}>>;
+ (params: {
+  worker_pool_id_in?: string | null;
+  from_in: Date;
+  to_in: Date;
+ }): Promise<Array<{hour: Date, count: number}>>;
+};
+/** @deprecated */
+type WorkerManagerGetWorkerPoolErrorStatsLast24HoursDeprecatedFn = {
  (
    worker_pool_id_in: string | null
  ): Promise<Array<{hour: Date, count: number}>>;
@@ -5657,7 +5708,8 @@ type WorkerManagerGetWorkerPoolErrorStatsLast24HoursFn = {
   worker_pool_id_in?: string | null;
  }): Promise<Array<{hour: Date, count: number}>>;
 };
-type WorkerManagerGetWorkerPoolErrorStatsLast7DaysFn = {
+/** @deprecated */
+type WorkerManagerGetWorkerPoolErrorStatsLast7DaysDeprecatedFn = {
  (
    worker_pool_id_in: string | null
  ): Promise<Array<{day: Date, count: number}>>;
@@ -5665,7 +5717,8 @@ type WorkerManagerGetWorkerPoolErrorStatsLast7DaysFn = {
   worker_pool_id_in?: string | null;
  }): Promise<Array<{day: Date, count: number}>>;
 };
-type WorkerManagerGetWorkerPoolErrorTitlesFn = {
+/** @deprecated */
+type WorkerManagerGetWorkerPoolErrorTitlesDeprecatedFn = {
  (
    worker_pool_id_in: string | null
  ): Promise<Array<{title: string, count: number}>>;
@@ -5673,12 +5726,37 @@ type WorkerManagerGetWorkerPoolErrorTitlesFn = {
   worker_pool_id_in?: string | null;
  }): Promise<Array<{title: string, count: number}>>;
 };
-type WorkerManagerGetWorkerPoolErrorWorkerPoolsFn = {
+type WorkerManagerGetWorkerPoolErrorTitles2Fn = {
+ (
+   worker_pool_id_in: string | null,
+   from_in: Date | null,
+   to_in: Date | null
+ ): Promise<Array<{title: string, count: number}>>;
+ (params: {
+  worker_pool_id_in?: string | null;
+  from_in?: Date | null;
+  to_in?: Date | null;
+ }): Promise<Array<{title: string, count: number}>>;
+};
+/** @deprecated */
+type WorkerManagerGetWorkerPoolErrorWorkerPoolsDeprecatedFn = {
  (
    worker_pool_id_in: string | null
  ): Promise<Array<{worker_pool: string, count: number}>>;
  (params: {
   worker_pool_id_in?: string | null;
+ }): Promise<Array<{worker_pool: string, count: number}>>;
+};
+type WorkerManagerGetWorkerPoolErrorWorkerPools2Fn = {
+ (
+   worker_pool_id_in: string | null,
+   from_in: Date | null,
+   to_in: Date | null
+ ): Promise<Array<{worker_pool: string, count: number}>>;
+ (params: {
+  worker_pool_id_in?: string | null;
+  from_in?: Date | null;
+  to_in?: Date | null;
  }): Promise<Array<{worker_pool: string, count: number}>>;
 };
 /** @deprecated */
@@ -6509,13 +6587,13 @@ export interface DbFunctions {
   get_worker_manager_workers2: WorkerManagerGetWorkerManagerWorkers2Fn;
   get_worker_pool_counts_and_capacity: WorkerManagerGetWorkerPoolCountsAndCapacityFn;
   get_worker_pool_counts_and_capacity_lc: WorkerManagerGetWorkerPoolCountsAndCapacityLcFn;
-  get_worker_pool_error_codes: WorkerManagerGetWorkerPoolErrorCodesFn;
+  get_worker_pool_error_codes_2: WorkerManagerGetWorkerPoolErrorCodes2Fn;
   get_worker_pool_error_launch_config: WorkerManagerGetWorkerPoolErrorLaunchConfigFn;
-  get_worker_pool_error_launch_configs: WorkerManagerGetWorkerPoolErrorLaunchConfigsFn;
-  get_worker_pool_error_stats_last_24_hours: WorkerManagerGetWorkerPoolErrorStatsLast24HoursFn;
-  get_worker_pool_error_stats_last_7_days: WorkerManagerGetWorkerPoolErrorStatsLast7DaysFn;
-  get_worker_pool_error_titles: WorkerManagerGetWorkerPoolErrorTitlesFn;
-  get_worker_pool_error_worker_pools: WorkerManagerGetWorkerPoolErrorWorkerPoolsFn;
+  get_worker_pool_error_launch_configs_2: WorkerManagerGetWorkerPoolErrorLaunchConfigs2Fn;
+  get_worker_pool_error_stats_daily: WorkerManagerGetWorkerPoolErrorStatsDailyFn;
+  get_worker_pool_error_stats_hourly: WorkerManagerGetWorkerPoolErrorStatsHourlyFn;
+  get_worker_pool_error_titles_2: WorkerManagerGetWorkerPoolErrorTitles2Fn;
+  get_worker_pool_error_worker_pools_2: WorkerManagerGetWorkerPoolErrorWorkerPools2Fn;
   get_worker_pool_errors_for_worker_pool2: WorkerManagerGetWorkerPoolErrorsForWorkerPool2Fn;
   get_worker_pool_launch_config_stats: WorkerManagerGetWorkerPoolLaunchConfigStatsFn;
   get_worker_pool_launch_configs: WorkerManagerGetWorkerPoolLaunchConfigsFn;
@@ -6778,6 +6856,12 @@ export interface DeprecatedDbFunctions {
   get_worker_manager_workers: WorkerManagerGetWorkerManagerWorkersDeprecatedFn;
   get_worker_pool: WorkerManagerGetWorkerPoolDeprecatedFn;
   get_worker_pool_error: WorkerManagerGetWorkerPoolErrorDeprecatedFn;
+  get_worker_pool_error_codes: WorkerManagerGetWorkerPoolErrorCodesDeprecatedFn;
+  get_worker_pool_error_launch_configs: WorkerManagerGetWorkerPoolErrorLaunchConfigsDeprecatedFn;
+  get_worker_pool_error_stats_last_24_hours: WorkerManagerGetWorkerPoolErrorStatsLast24HoursDeprecatedFn;
+  get_worker_pool_error_stats_last_7_days: WorkerManagerGetWorkerPoolErrorStatsLast7DaysDeprecatedFn;
+  get_worker_pool_error_titles: WorkerManagerGetWorkerPoolErrorTitlesDeprecatedFn;
+  get_worker_pool_error_worker_pools: WorkerManagerGetWorkerPoolErrorWorkerPoolsDeprecatedFn;
   get_worker_pool_errors: WorkerManagerGetWorkerPoolErrorsDeprecatedFn;
   get_worker_pool_errors_for_worker_pool: WorkerManagerGetWorkerPoolErrorsForWorkerPoolDeprecatedFn;
   get_worker_pool_with_capacity: WorkerManagerGetWorkerPoolWithCapacityDeprecatedFn;

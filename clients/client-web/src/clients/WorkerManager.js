@@ -23,7 +23,7 @@ export default class WorkerManager extends Client {
     this.listWorkerPools.entry = {"args":[],"category":"Worker Pools","method":"get","name":"listWorkerPools","output":true,"query":["continuationToken","limit"],"route":"/worker-pools","scopes":"worker-manager:list-worker-pools","stability":"stable","type":"function"};
     this.listWorkerPoolsStats.entry = {"args":[],"category":"Worker Pools","method":"get","name":"listWorkerPoolsStats","output":true,"query":["continuationToken","limit"],"route":"/worker-pools/stats","scopes":"worker-manager:list-worker-pools","stability":"experimental","type":"function"};
     this.reportWorkerError.entry = {"args":["workerPoolId"],"category":"Worker Interface","input":true,"method":"post","name":"reportWorkerError","output":true,"query":[],"route":"/worker-pool-errors/<workerPoolId>","scopes":{"AllOf":["assume:worker-pool:<workerPoolId>","assume:worker-id:<workerGroup>/<workerId>"]},"stability":"stable","type":"function"};
-    this.workerPoolErrorStats.entry = {"args":[],"category":"Worker Pools","method":"get","name":"workerPoolErrorStats","output":true,"query":["workerPoolId"],"route":"/worker-pool-errors/stats","scopes":"worker-manager:list-worker-pool-errors:<workerPoolId>","stability":"experimental","type":"function"};
+    this.workerPoolErrorStats.entry = {"args":[],"category":"Worker Pools","method":"get","name":"workerPoolErrorStats","output":true,"query":["workerPoolId","from","to"],"route":"/worker-pool-errors/stats","scopes":"worker-manager:list-worker-pool-errors:<workerPoolId>","stability":"experimental","type":"function"};
     this.listWorkerPoolErrors.entry = {"args":["workerPoolId"],"category":"Worker Pools","method":"get","name":"listWorkerPoolErrors","output":true,"query":["continuationToken","limit","launchConfigId","errorId"],"route":"/worker-pool-errors/<workerPoolId>","scopes":"worker-manager:list-worker-pool-errors:<workerPoolId>","stability":"stable","type":"function"};
     this.listWorkersForWorkerGroup.entry = {"args":["workerPoolId","workerGroup"],"category":"Workers","method":"get","name":"listWorkersForWorkerGroup","output":true,"query":["continuationToken","limit"],"route":"/workers/<workerPoolId>/<workerGroup>","scopes":"worker-manager:list-workers:<workerPoolId>/<workerGroup>","stability":"stable","type":"function"};
     this.worker.entry = {"args":["workerPoolId","workerGroup","workerId"],"category":"Workers","method":"get","name":"worker","output":true,"query":[],"route":"/workers/<workerPoolId>/<workerGroup>/<workerId>","scopes":"worker-manager:get-worker:<workerPoolId>/<workerGroup>/<workerId>","stability":"stable","type":"function"};
@@ -137,9 +137,14 @@ export default class WorkerManager extends Client {
     return this.request(this.reportWorkerError.entry, args);
   }
   // Get the list of worker pool errors count.
-  // Contains total count of errors for the past 7 days and 24 hours
-  // Also includes total counts grouped by titles of error and error code.
-  // If `workerPoolId` is not specified, it will return the count of all errors
+  // Contains total count of errors broken down by day and hour.
+  // Also includes total counts grouped by title, error code, worker pool, and launch config.
+  // If `workerPoolId` is not specified, it will return the count of all errors.
+  // The optional `from` and `to` query parameters accept ISO 8601 datetime strings
+  // to filter statistics to an arbitrary time range. When omitted, defaults to the
+  // last 7 days (daily) and last 24 hours (hourly). When a custom range spans more
+  // than 31 days, the hourly breakdown is omitted to bound response size.
+  // The `total` field is always the sum over the daily series.
   workerPoolErrorStats(...args) {
     this.validate(this.workerPoolErrorStats.entry, args);
 

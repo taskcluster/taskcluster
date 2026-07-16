@@ -658,6 +658,8 @@ builder.declare(
     name: 'workerPoolErrorStats',
     query: {
       workerPoolId: /^([a-zA-Z0-9/-]+)?$/,
+      from: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?$/,
+      to: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?$/,
     },
     scopes: 'worker-manager:list-worker-pool-errors:<workerPoolId>',
     title: 'List Worker Pool Errors Count',
@@ -666,14 +668,21 @@ builder.declare(
     output: 'worker-pool-error-stats.yml',
     description: [
       'Get the list of worker pool errors count.',
-      'Contains total count of errors for the past 7 days and 24 hours',
-      'Also includes total counts grouped by titles of error and error code.',
+      'Contains total count of errors broken down by day and hour.',
+      'Also includes total counts grouped by title, error code, worker pool, and launch config.',
       '',
-      'If `workerPoolId` is not specified, it will return the count of all errors',
+      'If `workerPoolId` is not specified, it will return the count of all errors.',
+      '',
+      'The optional `from` and `to` query parameters accept ISO 8601 datetime strings',
+      'to filter statistics to an arbitrary time range. When omitted, defaults to the',
+      'last 7 days (daily) and last 24 hours (hourly). When a custom range spans more',
+      'than 31 days, the hourly breakdown is omitted to bound response size.',
+      '',
+      'The `total` field is always the sum over the daily series.',
     ].join('\n'),
   },
   async function (req, res) {
-    const { workerPoolId } = req.query;
+    const { workerPoolId, from: fromStr, to: toStr } = req.query;
 
     if (workerPoolId) {
       await req.authorize({ workerPoolId });
@@ -684,6 +693,28 @@ builder.declare(
     } else {
       await req.authorize({ workerPoolId: '*' });
     }
+
+    let from = null;
+    let to = null;
+
+    if (fromStr) {
+      from = new Date(fromStr);
+      if (isNaN(from.getTime())) {
+        return res.reportError('InputError', 'Invalid `from` datetime', {});
+      }
+    }
+    if (toStr) {
+      to = new Date(toStr);
+      if (isNaN(to.getTime())) {
+        return res.reportError('InputError', 'Invalid `to` datetime', {});
+      }
+    }
+    if (from && to && from >= to) {
+      return res.reportError('InputError', '`from` must be before `to`', {});
+    }
+
+    const rangeSpansDays = from && to ? (to - from) / (1000 * 60 * 60 * 24) : 7;
+    const skipHourly = rangeSpansDays > 31;
 
     const out = {
       workerPoolId: workerPoolId || '',
@@ -709,12 +740,12 @@ builder.declare(
     };
 
     const [daily, hourly, titles, codes, pools, launchConfigs] = await Promise.all([
-      this.db.fns.get_worker_pool_error_stats_last_7_days(workerPoolId || null),
-      this.db.fns.get_worker_pool_error_stats_last_24_hours(workerPoolId || null),
-      this.db.fns.get_worker_pool_error_titles(workerPoolId || null),
-      this.db.fns.get_worker_pool_error_codes(workerPoolId || null),
-      this.db.fns.get_worker_pool_error_worker_pools(workerPoolId || null),
-      workerPoolId ? this.db.fns.get_worker_pool_error_launch_configs(workerPoolId, null) : [],
+      this.db.fns.get_worker_pool_error_stats_daily(workerPoolId || null, from, to),
+      skipHourly ? Promise.resolve([]) : this.db.fns.get_worker_pool_error_stats_hourly(workerPoolId || null, from, to),
+      this.db.fns.get_worker_pool_error_titles_2(workerPoolId || null, from, to),
+      this.db.fns.get_worker_pool_error_codes_2(workerPoolId || null, from, to),
+      this.db.fns.get_worker_pool_error_worker_pools_2(workerPoolId || null, from, to),
+      workerPoolId ? this.db.fns.get_worker_pool_error_launch_configs_2(workerPoolId, from, to) : [],
     ]);
 
     for (const row of daily) {
