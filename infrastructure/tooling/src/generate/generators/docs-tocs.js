@@ -1,9 +1,15 @@
-import { promisify } from 'node:util';
-import md from 'md-directory';
+import { glob, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import matter from 'gray-matter';
 import { REPO_ROOT, writeRepoJSON } from '../../utils/index.js';
 
-const mdParseDir = promisify(md.parseDir);
+async function mdParseDir(dir, pattern) {
+  const paths = await Array.fromAsync(glob(pattern, { cwd: dir }));
+
+  return Object.fromEntries(
+    await Promise.all(paths.map(async path => [path, matter(await readFile(join(dir, path), 'utf8'))]))
+  );
+}
 
 /**
  * Generate a table-of-contents file containing a recursive data structure.  At
@@ -158,7 +164,7 @@ export const tasks = [
     requires: ['target-gw-docs', 'target-worker-runner'],
     provides: ['docs-toc'],
     run: async (_requirements, _utils) => {
-      const filesWithExtensions = await mdParseDir(DOCS_DIR, { dirnames: true, filter: '**/*.mdx' });
+      const filesWithExtensions = await mdParseDir(DOCS_DIR, '**/*.mdx');
       // strip .md and .mdx extensions from those filenames..
       const files = Object.assign(
         {},
