@@ -143,7 +143,6 @@
     "assume": "^2.1.0",
     "aws-sdk-client-mock": "^4.1.0",
     "builtin-modules": "^3.1.0",
-    "c8": "^8.0.1",
     "commander": "^9.4.1",
     "console-taskgraph": "^1.7.2",
     "cronstrue": "^2.61.0",
@@ -183,7 +182,6 @@
     "lint:py": "bash test/py-lint.sh",
     "format": "biome format --write",
     "test": "yarn workspaces foreach -A run test",
-    "fetch-coverage": "node test/fetch-coverage.js",
     "build": "node infrastructure/tooling/src/main.js build",
     "release": "node infrastructure/tooling/src/main.js release",
     "staging-release": "node infrastructure/tooling/src/main.js staging-release",
@@ -221,7 +219,6 @@
   "metatests": {
     "specialImports": [
       "@biomejs/biome",
-      "c8",
       "cross-env",
       "ejs",
       "@octokit/core",
