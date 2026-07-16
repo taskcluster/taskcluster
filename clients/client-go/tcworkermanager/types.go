@@ -366,12 +366,15 @@ type (
 		// Additional properties allowed
 		Code json.RawMessage `json:"code"`
 
-		// Breakdown by day
+		// Breakdown by day for the request range (defaults to the last
+		// 7 days when `from`/`to` are omitted)
 		//
 		// Additional properties allowed
 		Daily json.RawMessage `json:"daily"`
 
-		// Breakdown by hour
+		// Breakdown by hour for the request range (defaults to the last
+		// 24 hours when `from`/`to` are omitted). May be empty when the
+		// selected span exceeds 31 days.
 		//
 		// Additional properties allowed
 		Hourly json.RawMessage `json:"hourly"`
@@ -386,7 +389,8 @@ type (
 		// Additional properties allowed
 		Title json.RawMessage `json:"title"`
 
-		// Total number of errors
+		// Total number of errors in the request range (defaults to the
+		// last 7 days when `from`/`to` are omitted)
 		Total float64 `json:"total"`
 
 		// Breakdown by worker pool if workerPoolId is not specified.
@@ -987,9 +991,11 @@ type (
 		WorkerPoolErrors []WorkerPoolError `json:"workerPoolErrors"`
 	}
 
-	// Total number of errors for given worker pool or all worker pools
-	// broken down daily for the past 7 days, hourly for the past 24 hours.
-	// Also includes breakdown by title and error code.
+	// Total number of errors for a given worker pool or all worker pools,
+	// broken down by day and by hour for the request's optional `from`/`to`
+	// range (defaulting to the last 7 days for daily totals and the last
+	// 24 hours for hourly totals when omitted). Also includes breakdown by
+	// title and error code.
 	WorkerPoolErrorStats struct {
 		Totals Totals `json:"totals"`
 

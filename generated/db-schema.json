@@ -8051,6 +8051,84 @@
         }
       },
       "version": 127
+    },
+    {
+      "description": "Add parameterized time-range functions for worker pool error stats",
+      "methods": {
+        "get_worker_pool_error_codes": {
+          "deprecated": true
+        },
+        "get_worker_pool_error_codes_2": {
+          "args": "worker_pool_id_in text, from_in timestamptz, to_in timestamptz",
+          "body": "begin\n  RETURN query\n  SELECT COALESCE(worker_pool_errors.extra->>'code', 'other'), count(*)::int\n  FROM worker_pool_errors\n  WHERE\n    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n    and (reported >= from_in or from_in is null)\n    and (reported <= to_in or to_in is null)\n  GROUP BY worker_pool_errors.extra->>'code';\nend",
+          "deprecated": false,
+          "description": "Returns errors grouped by error code for given worker pool or all worker pools,\noptionally filtered to the specified time range.\n",
+          "mode": "read",
+          "returns": "table (code text, count integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pool_error_launch_configs": {
+          "deprecated": true
+        },
+        "get_worker_pool_error_launch_configs_2": {
+          "args": "worker_pool_id_in text, from_in timestamptz, to_in timestamptz",
+          "body": "begin\n  RETURN query\n  SELECT worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id, count(*)::int\n  FROM worker_pool_errors\n  WHERE\n    (worker_pool_errors.worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n    and (reported >= from_in or from_in is null)\n    and (reported <= to_in or to_in is null)\n  GROUP BY worker_pool_errors.worker_pool_id, worker_pool_errors.launch_config_id;\nend",
+          "deprecated": false,
+          "description": "Returns errors grouped by launch config for a given worker pool,\noptionally filtered to the specified time range.\n",
+          "mode": "read",
+          "returns": "table (worker_pool text, launch_config_id text, count integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pool_error_stats_daily": {
+          "args": "worker_pool_id_in text, from_in timestamptz, to_in timestamptz",
+          "body": "begin\n  RETURN query\n  WITH days AS (\n    SELECT generate_series(\n      date_trunc('day', coalesce(from_in, now() - interval '6 days')),\n      date_trunc('day', coalesce(to_in, now())),\n      interval '1 day'\n    ) as day\n  )\n  SELECT\n    days.day,\n    COALESCE(worker_pool_errors.count, 0)::int\n  FROM days\n  LEFT JOIN (\n    SELECT\n      date_trunc('day', reported) as day,\n      count(*) as count\n    FROM worker_pool_errors\n    WHERE\n      (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n      and reported >= coalesce(from_in, now() - interval '6 days')\n      and reported <= coalesce(to_in, now())\n    GROUP BY day\n  ) worker_pool_errors ON worker_pool_errors.day = days.day;\nend",
+          "deprecated": false,
+          "description": "Returns total number of errors for given worker pool or all worker pools\nbroken down by day within the specified time range.\nThere will be a breakdown for every day in the range even if there are no errors.\nWith NULL from_in/to_in, returns the last 7 days (identical to the deprecated\nget_worker_pool_error_stats_last_7_days).\n",
+          "mode": "read",
+          "returns": "table (day timestamptz, count integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pool_error_stats_hourly": {
+          "args": "worker_pool_id_in text, from_in timestamptz, to_in timestamptz",
+          "body": "begin\n  RETURN query\n  WITH hours AS (\n    SELECT generate_series(\n      date_trunc('hour', coalesce(from_in, now() - interval '23 hours')),\n      date_trunc('hour', coalesce(to_in, now())),\n      interval '1 hour'\n    ) as hour\n  )\n  SELECT\n    hours.hour,\n    COALESCE(worker_pool_errors.count, 0)::int\n  FROM hours\n  LEFT JOIN (\n    SELECT\n      date_trunc('hour', reported) as hour,\n      count(*) as count\n    FROM worker_pool_errors\n    WHERE\n      (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n      and reported >= coalesce(from_in, now() - interval '23 hours')\n      and reported <= coalesce(to_in, now())\n    GROUP BY hour\n  ) worker_pool_errors ON worker_pool_errors.hour = hours.hour;\nend",
+          "deprecated": false,
+          "description": "Returns total number of errors for given worker pool or all worker pools\nbroken down by hour within the specified time range.\nThere will be a breakdown for every hour in the range even if there are no errors.\nWith NULL from_in/to_in, returns the last 24 hours (identical to the deprecated\nget_worker_pool_error_stats_last_24_hours).\n",
+          "mode": "read",
+          "returns": "table (hour timestamptz, count integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pool_error_stats_last_24_hours": {
+          "deprecated": true
+        },
+        "get_worker_pool_error_stats_last_7_days": {
+          "deprecated": true
+        },
+        "get_worker_pool_error_titles": {
+          "deprecated": true
+        },
+        "get_worker_pool_error_titles_2": {
+          "args": "worker_pool_id_in text, from_in timestamptz, to_in timestamptz",
+          "body": "begin\n  RETURN query\n  SELECT worker_pool_errors.title, count(*)::int\n  FROM worker_pool_errors\n  WHERE\n    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n    and (reported >= from_in or from_in is null)\n    and (reported <= to_in or to_in is null)\n  GROUP BY worker_pool_errors.title;\nend",
+          "deprecated": false,
+          "description": "Returns errors grouped by title for given worker pool or all worker pools,\noptionally filtered to the specified time range.\n",
+          "mode": "read",
+          "returns": "table (title text, count integer)",
+          "serviceName": "worker_manager"
+        },
+        "get_worker_pool_error_worker_pools": {
+          "deprecated": true
+        },
+        "get_worker_pool_error_worker_pools_2": {
+          "args": "worker_pool_id_in text, from_in timestamptz, to_in timestamptz",
+          "body": "begin\n  RETURN query\n  SELECT worker_pool_errors.worker_pool_id, count(*)::int\n  FROM worker_pool_errors\n  WHERE\n    (worker_pool_id = worker_pool_id_in or worker_pool_id_in is null)\n    and (reported >= from_in or from_in is null)\n    and (reported <= to_in or to_in is null)\n  GROUP BY worker_pool_errors.worker_pool_id;\nend",
+          "deprecated": false,
+          "description": "Returns errors grouped by worker pool, optionally filtered to the specified time range.\n",
+          "mode": "read",
+          "returns": "table (worker_pool text, count integer)",
+          "serviceName": "worker_manager"
+        }
+      },
+      "version": 128
     }
   ]
 }
