@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
@@ -65,6 +66,48 @@ func ExampleConvertScopes_mixture() {
 	//	"generic-worker:os-group:x/y/z/kvm"
 	//	"generic-worker:os-group:x/y/z/libvirt"
 	//	"generic-worker:teapot"
+}
+
+func TestConvertScopesRequiresDisableSeccompScope(t *testing.T) {
+	const disableSeccompScope = "docker-worker:capability:disableSeccomp"
+
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	dwPayload.Capabilities.DisableSeccomp = true
+
+	tests := []struct {
+		name    string
+		scopes  []string
+		wantErr bool
+	}{
+		{
+			name:    "missing scope",
+			scopes:  []string{},
+			wantErr: true,
+		},
+		{
+			name:   "required scope present",
+			scopes: []string{disableSeccompScope},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := d2g.ConvertScopes(test.scopes, &dwPayload, "proj-taskcluster/ci", scopes.DummyExpander())
+			if test.wantErr {
+				if err == nil {
+					t.Fatal("ConvertScopes succeeded without the disableSeccomp scope")
+				}
+				if !strings.Contains(err.Error(), disableSeccompScope) {
+					t.Fatalf("ConvertScopes error does not identify the missing scope: %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("ConvertScopes failed with the disableSeccomp scope: %v", err)
+			}
+		})
+	}
 }
 
 type mockedDirEntry struct {

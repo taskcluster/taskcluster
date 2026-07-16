@@ -275,6 +275,12 @@ func validateDockerWorkerScopes(
 		)
 	}
 
+	if dwPayload.Capabilities.DisableSeccomp {
+		requiredScopes = append(requiredScopes,
+			[]string{"docker-worker:capability:disableSeccomp"},
+		)
+	}
+
 	if dwPayload.Capabilities.Devices.HostSharedMemory {
 		requiredScopes = append(requiredScopes,
 			[]string{"docker-worker:capability:device:hostSharedMemory"},
