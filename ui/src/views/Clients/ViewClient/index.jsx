@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import { parse } from 'qs';
 import { omit } from 'ramda';
 import { alpha, withStyles } from '@material-ui/core/styles';

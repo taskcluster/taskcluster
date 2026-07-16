@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import { format, parseISO, addYears, isAfter } from 'date-fns';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';

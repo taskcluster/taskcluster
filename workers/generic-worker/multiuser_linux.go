@@ -4,6 +4,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	gwruntime "github.com/taskcluster/taskcluster/v101/workers/generic-worker/runtime"
 )
@@ -33,6 +34,10 @@ func platformFeatures() []Feature {
 }
 
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
+}
+
+func waitForTaskUserSession(ctx *TaskContext) error {
+	return gwruntime.WaitForLoginCompletion(5*time.Minute, ctx.User.Name)
 }
 
 func platformTargets(arguments map[string]any) ExitCode {

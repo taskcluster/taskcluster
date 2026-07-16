@@ -13,7 +13,7 @@ This section describes the structure of URLs used to access a Taskcluster deploy
 
 A Taskcluster [`rootUrl`](/docs/manual/using/root-urls) is a partial web address containing at least the scheme, host, and optionally a port. It cannot specify a path.
 
-<SiteSpecific>
+<SiteSpecific requires={['root_url']}>
 The root URL for this deployment is `%root_url%`.
 </SiteSpecific>
 <SiteSpecific showIfNotSet={['root_url']}>

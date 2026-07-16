@@ -77,6 +77,17 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     );
   });
 
+  test('changeTaskPriority rejects "normal" as an invalid priority (issue 8858)', async () => {
+    const taskId = slugid.v4();
+    await helper.queue.createTask(taskId, makeTaskDef());
+
+    helper.scopes(`queue:change-task-priority:${taskId}`);
+    await assert.rejects(
+      () => helper.queue.changeTaskPriority(taskId, { newPriority: 'normal' }),
+      err => err.statusCode === 400
+    );
+  });
+
   test('changeTaskPriority enforces scopes', async () => {
     const taskId = slugid.v4();
     await helper.queue.createTask(taskId, makeTaskDef());

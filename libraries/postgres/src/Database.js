@@ -479,6 +479,10 @@ class Database {
 
   /** @private */
   async _checkVersion() {
+    if (process.env.TASKCLUSTER_SKIP_DB_VERSION_CHECK) {
+      console.warn('WARNING: skipping the Postgres version check because TASKCLUSTER_SKIP_DB_VERSION_CHECK is set');
+      return;
+    }
     await this._withClient('admin', async client => {
       const version = await client.query(`
         SELECT current_setting('server_version_num');

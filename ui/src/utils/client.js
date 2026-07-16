@@ -1,4 +1,4 @@
-import { WorkerManager } from '@taskcluster/client-web';
+import { Queue, WorkerManager } from '@taskcluster/client-web';
 
 export const getClient = ({ Class, user, ...options }) => {
   return new Class({
@@ -23,4 +23,20 @@ export const removeWorker = async ({
   });
 
   await wm.removeWorker(workerPoolId, workerGroup, workerId);
+};
+
+export const changeTaskPriority = async ({ taskId, priority, user }) => {
+  const queue = getClient({ Class: Queue, user });
+
+  await queue.changeTaskPriority(taskId, { newPriority: priority });
+};
+
+export const changeTaskGroupPriority = async ({
+  taskGroupId,
+  priority,
+  user,
+}) => {
+  const queue = getClient({ Class: Queue, user });
+
+  await queue.changeTaskGroupPriority(taskGroupId, { newPriority: priority });
 };

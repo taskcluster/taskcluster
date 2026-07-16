@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withApollo, graphql } from 'react-apollo';
+import { withApollo, graphql } from '@apollo/client/react/hoc';
 import { bool } from 'prop-types';
 import { Typography, Box } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';

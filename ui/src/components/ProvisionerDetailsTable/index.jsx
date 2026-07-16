@@ -72,7 +72,7 @@ export default class ProvisionerDetailsTable extends Component {
       return provisioners;
     }
 
-    return provisioners.sort((a, b) => {
+    return [...provisioners].sort((a, b) => {
       const firstElement =
         sortDirection === 'desc' ? b.node[sortBy] : a.node[sortBy];
       const secondElement =
@@ -252,12 +252,16 @@ export default class ProvisionerDetailsTable extends Component {
       { label: 'Stability', id: 'stability', type: 'string' },
     ];
 
-    this.sortProvisioners(provisioners, sortBy, sortDirection);
+    const sortedProvisioners = this.sortProvisioners(
+      provisioners,
+      sortBy,
+      sortDirection
+    );
 
     return (
       <Fragment>
         <DataTable
-          items={provisioners}
+          items={sortedProvisioners}
           sortByLabel={sortBy}
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}

@@ -14,6 +14,7 @@ COPY /.yarn /base/yarn/.yarn/
 RUN mkdir -p /base/yarn-ui
 COPY /ui/yarn.lock /.yarnrc.yml /ui/package.json /base/yarn-ui/
 COPY /.yarn /base/yarn-ui/.yarn/
+COPY /ui/.yarn/patches /base/yarn-ui/.yarn/patches/
 # prepare clients/client dependencies
 RUN mkdir -p /base/yarn-client
 COPY /clients/client/yarn.lock /.yarnrc.yml /clients/client/package.json /base/yarn-client/
@@ -42,7 +43,7 @@ ARG DOCKER_FLOW_VERSION
 RUN if [ -n "${DOCKER_FLOW_VERSION}" ]; then \
     echo "${DOCKER_FLOW_VERSION}" > version.json; \
 else \
-    echo \{\"version\": \"101.0.0\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json; \
+    echo \{\"version\": \"101.1.0\", \"commit\": \"local\", \"source\": \"https://github.com/taskcluster/taskcluster\", \"build\": \"NONE\"\} > version.json; \
 fi
 
 # Build the UI and discard everything else in that directory

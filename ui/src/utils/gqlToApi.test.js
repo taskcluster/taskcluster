@@ -10,7 +10,6 @@ describe('gqlTaskToApi', () => {
       LOW: 'low',
       VERY_LOW: 'very-low',
       LOWEST: 'lowest',
-      NORMAL: 'normal',
     };
 
     Object.entries(priorities).forEach(([gqlPriority, apiPriority]) => {

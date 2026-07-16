@@ -16,7 +16,7 @@ export const tasks = [
       const adminUser = ` * \`<prefix>\` -- admin user`;
       const serviceUsers = services.map(s => ` * \`<prefix>_${s}\` -- user for Taskcluster ${s} service`).join('\n');
       const newContent = content.replace(
-        /(<!-- USERLIST BEGIN -->)(?:.|\n)*(<!-- USERLIST END -->)/m,
+        /(\{\/\* USERLIST BEGIN \*\/\})(?:.|\n)*(\{\/\* USERLIST END \*\/\})/m,
         `$1\n${adminUser}\n${serviceUsers}\n$2`
       );
 

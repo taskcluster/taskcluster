@@ -34,14 +34,14 @@ async function notify() {
 }
 ```
 
-<SiteSpecific>
+<SiteSpecific requires={['notify_email_sender']}>
 This deployment sends notification emails from `%notify_email_sender%`.
 </SiteSpecific>
 
-<SiteSpecific>
+<SiteSpecific requires={['notify_slack_bot_name']}>
 This deployment uses a Slack bot with username `%notify_slack_bot_name%`.
 </SiteSpecific>
 
-<SiteSpecific>
+<SiteSpecific requires={['notify_matrix_bot_name']}>
 This deployment uses a Matrix bot with username `%notify_matrix_bot_name%`.
 </SiteSpecific>

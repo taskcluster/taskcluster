@@ -431,8 +431,11 @@ tasks.push({
           volumes: [
             './generated:/app/generated',
             '.all-contributorsrc:/app/.all-contributorsrc',
+            './version.json:/app/version.json',
             './ui/package.json:/app/ui/package.json',
-            './ui/webpack.config.js:/app/ui/webpack.config.js',
+            './ui/vite.config.mjs:/app/ui/vite.config.mjs',
+            './ui/index.html:/app/ui/index.html',
+            './ui/docs.html:/app/ui/docs.html',
             './ui/src:/app/ui/src',
             './ui/docs:/app/ui/docs',
             './CHANGELOG.md:/app/CHANGELOG.md',
@@ -617,6 +620,11 @@ http {
   charset utf-8;
   keepalive_timeout  65;
 
+  map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+  }
+
   server {
     listen 80;
     server_name _;
@@ -625,6 +633,10 @@ http {
       set $pass http://ui:${serviceHostPort('ui')};
       proxy_pass $pass;
       ${extraDirectives}
+      # vite HMR websocket
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
     }
     location /references {
       set $pass http://references:${serviceHostPort('references')};

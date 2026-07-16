@@ -52,7 +52,7 @@ def add_task_env(config, tasks):
         env["GIT_BRANCH"] = config.params["head_ref"]
 
         # Passing through some things the decision task wants to child tasks
-        env["TASKCLUSTER_PULL_REQUEST_NUMBER"] = os.environ.get("TASKCLUSTER_PULL_REQUEST_NUMBER", "")
+        env["TASKCLUSTER_PULL_REQUEST_URL"] = os.environ.get("TASKCLUSTER_PULL_REQUEST_URL", "")
 
         # Make dependency versions available for use
         env["NODE_VERSION"] = node_version
@@ -70,6 +70,12 @@ def add_task_env(config, tasks):
         # We want to set this everywhere other than lib-testing
         if task["name"] != "testing":
             env["NO_TEST_SKIP"] = "true"
+
+        # Dependabot PRs can saturate contended worker pools (e.g. macOS) and delay
+        # human work, so lower the priority of every task they generate.
+        if config.params["head_ref"].startswith("dependabot/"):
+            task["priority"] = "low"
+
         yield task
 
 

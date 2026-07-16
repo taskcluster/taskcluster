@@ -93,7 +93,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     const taskId = slugid.v4();
 
     debug('### Creating task');
-    await helper.queue.createTask(taskId, makeTask('normal', taskQueueId));
+    await helper.queue.createTask(taskId, makeTask('lowest', taskQueueId));
     helper.assertPulseMessage('task-defined');
     helper.assertPulseMessage('task-pending');
 
@@ -158,7 +158,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     const taskId = slugid.v4();
 
     debug('### Creating task');
-    await helper.queue.createTask(taskId, makeTask('normal', taskQueueId));
+    await helper.queue.createTask(taskId, makeTask('lowest', taskQueueId));
     helper.assertPulseMessage('task-defined');
     helper.assertPulseMessage('task-pending');
 
@@ -225,12 +225,12 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     helper.assertPulseMessage('task-completed');
   });
 
-  test('claimWork gets "high" before "normal" priority', async () => {
+  test('claimWork gets "high" before "lowest" priority', async () => {
     const taskIdA = slugid.v4();
     const taskIdB = slugid.v4();
 
     debug('### Creating task');
-    await helper.queue.createTask(taskIdB, makeTask('normal', taskQueueId));
+    await helper.queue.createTask(taskIdB, makeTask('lowest', taskQueueId));
     helper.assertPulseMessage('task-defined', m => m.payload.status.taskId === taskIdB);
     helper.assertPulseMessage('task-pending', m => m.payload.status.taskId === taskIdB);
     helper.clearPulseMessages();
@@ -278,7 +278,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   test('createTask twice, claimWork, reportCompleted', async () => {
     const taskQueueId = helper.makeTaskQueueId('no-provisioner-extended-extended');
     const taskId = slugid.v4();
-    const task = makeTask('normal', taskQueueId);
+    const task = makeTask('lowest', taskQueueId);
 
     debug('### Creating task');
     await helper.queue.createTask(taskId, task);

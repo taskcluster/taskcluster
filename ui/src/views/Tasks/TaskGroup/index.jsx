@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import React, { Component } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import dotProp from 'dot-prop-immutable';
 import { sum, isEmpty } from 'ramda';
 import { paramCase } from 'param-case';
@@ -50,6 +50,7 @@ import CopyToClipboardListItem from '../../../components/CopyToClipboardListItem
 import DateDistance from '../../../components/DateDistance';
 import sealTaskGroupQuery from './sealTaskGroup.graphql';
 import cancelTaskGroupQuery from './cancelTaskGroup.graphql';
+import { AuthContext } from '../../../utils/Auth';
 
 const initialTaskGroupActions = [
   {
@@ -155,6 +156,8 @@ const updateTaskGroupIdHistory = id => {
   },
 }))
 export default class TaskGroup extends Component {
+  static contextType = AuthContext;
+
   static calculateStatusCountStatic(taskGroup) {
     const statusCount = {
       completed: 0,
@@ -620,6 +623,7 @@ export default class TaskGroup extends Component {
         form,
         action,
         apolloClient,
+        user: this.context.user,
       });
 
       return taskId;

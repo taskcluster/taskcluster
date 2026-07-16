@@ -2,7 +2,7 @@
 title: Finding Tasks
 ---
 
-import SiteSpecific from '@taskcluster/ui/components/SiteSpecific';
+import SiteSpecific, { SiteLink } from '@taskcluster/ui/components/SiteSpecific';
 import TutorialNavigation from '@taskcluster/ui/views/Documentation/components/TutorialNavigation';
 
 # Finding Tasks
@@ -13,8 +13,8 @@ That's a good place to start looking for real tasks.
 The task index browser is available in the navigation sidebar of the Taskcluster web interface.
 The precise format of the index paths depends on the tasks being run on the Taskcluster deployment you are looking at.
 
-<SiteSpecific>
-For this deployment, you can browse the root of the index [here](%root_url%/tasks/index).
+<SiteSpecific requires={['root_url']}>
+For this deployment, you can browse the root of the index <SiteLink name="root_url" path="/tasks/index">here</SiteLink>.
 </SiteSpecific>
 <SiteSpecific showIfNotSet={['root_url']}>
 The [Firefox-CI deployment](https://firefox-ci-tc.services.mozilla.com) of Taskcluster has lots of tasks.

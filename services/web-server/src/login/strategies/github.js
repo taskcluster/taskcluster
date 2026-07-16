@@ -126,6 +126,7 @@ export default class Github {
           clientSecret: strategyCfg.clientSecret,
           callbackURL: `${cfg.app.publicUrl}${callback}`,
           scope: 'repo',
+          state: true,
         },
         async (accessToken, _refreshToken, profile, next) => {
           await this.db.fns.add_github_access_token(

@@ -18,7 +18,7 @@ export const tasks = [
       const goVersionBugfix = goVersion.replace(/^go[0-9]+\.[0-9]+\.([0-9]+)$/, '$1');
       utils.step({ title: 'Checking go version' });
 
-      const errmsg = `'yarn generate' requires ${goVersion}.  Consider using https://github.com/moovweb/gvm.`;
+      const errmsg = `'yarn generate' requires go${goVersionMajor}.${goVersionMinor}.x.  Consider using https://github.com/moovweb/gvm.`;
       let version;
       try {
         version = (await exec('go', ['version'])).stdout.split(/\s+/)[2];
@@ -27,8 +27,8 @@ export const tasks = [
           throw new Error(`Cannot find \`go\`.  ${errmsg}`);
         }
       }
-      const versionPrefix = version?.match(/^go[0-9]+\.[0-9]+\.[0-9]+/)?.[0];
-      if (versionPrefix !== goVersion) {
+      const versionPrefix = version?.match(/^go[0-9]+\.[0-9]+/)?.[0];
+      if (versionPrefix !== `go${goVersionMajor}.${goVersionMinor}`) {
         throw new Error(`Found ${version}.  ${errmsg}`);
       }
 

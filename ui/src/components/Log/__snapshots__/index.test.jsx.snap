@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`should render Log 1`] = `
 <DocumentFragment>
@@ -42,7 +42,7 @@ exports[`should render Log 1`] = `
       aria-readonly="true"
       class="ReactVirtualized__Grid ReactVirtualized__List react-lazylog _3NRgTLvWbyfWD-1xileYWR"
       role="grid"
-      style="box-sizing: border-box; direction: ltr; height: -45px; position: relative; width: 0px; will-change: transform; overflow-x: hidden; overflow-y: auto;"
+      style="box-sizing: border-box; direction: ltr; position: relative; width: 0px; will-change: transform; overflow-x: hidden; overflow-y: auto;"
       tabindex="0"
     />
   </div>
@@ -167,7 +167,7 @@ exports[`should render without following 1`] = `
       aria-readonly="true"
       class="ReactVirtualized__Grid ReactVirtualized__List react-lazylog _3NRgTLvWbyfWD-1xileYWR"
       role="grid"
-      style="box-sizing: border-box; direction: ltr; height: -45px; position: relative; width: 0px; will-change: transform; overflow-x: hidden; overflow-y: auto;"
+      style="box-sizing: border-box; direction: ltr; position: relative; width: 0px; will-change: transform; overflow-x: hidden; overflow-y: auto;"
       tabindex="0"
     />
   </div>

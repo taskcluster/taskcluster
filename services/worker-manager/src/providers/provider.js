@@ -107,7 +107,7 @@ export class Provider {
   async scanPrepare() {}
 
   /**
-   * @param {{ worker: Worker }} opts
+   * @param {{ worker: Worker; abortSignal?: AbortSignal }} opts
    */
   async checkWorker() {}
 

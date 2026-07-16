@@ -1986,8 +1986,8 @@ export class AzureProvider extends Provider {
     }
   }
 
-  /** @param {{ worker: Worker }} opts */
-  async checkWorker({ worker }) {
+  /** @param {{ worker: Worker, abortSignal?: AbortSignal }} opts */
+  async checkWorker({ worker, abortSignal }) {
     const monitor = this.workerMonitor({
       worker,
       extra: {
@@ -2027,7 +2027,7 @@ export class AzureProvider extends Provider {
       return;
     }
 
-    const { instanceState, instanceStateReason } = await this.queryInstance({ worker, monitor });
+    const { instanceState, instanceStateReason } = await this.queryInstance({ worker, monitor, abortSignal });
 
     switch (instanceState) {
       case InstanceStates.OK: {
@@ -2098,7 +2098,7 @@ export class AzureProvider extends Provider {
    * See https://docs.microsoft.com/en-us/azure/virtual-machines/states-lifecycle
    * for background on the VM lifecycle.
    */
-  async queryInstance({ worker, monitor }) {
+  async queryInstance({ worker, monitor, abortSignal }) {
     const states = Worker.states;
     const workerKey = `${worker.workerPoolId}/${worker.workerGroup}/${worker.workerId}`;
     try {
@@ -2106,7 +2106,8 @@ export class AzureProvider extends Provider {
       const instanceView = await this._enqueue('get', () =>
         this.computeClient.virtualMachines.instanceView(
           worker.providerData.resourceGroupName,
-          worker.providerData.vm.name
+          worker.providerData.vm.name,
+          { abortSignal }
         )
       );
       this.instanceView404Streaks.delete(workerKey);
