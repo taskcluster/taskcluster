@@ -19,10 +19,6 @@ task-defaults:
     docker-image: {in-tree: ci}
     taskcluster-proxy: true
     chain-of-trust: true
-    artifacts:
-      - name: public
-        path: /builds/worker/checkouts/taskcluster/artifacts
-        type: directory
     caches:
       - name: taskcluster
         mount-point: /builds/worker/checkouts
