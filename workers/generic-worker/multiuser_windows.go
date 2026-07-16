@@ -543,6 +543,10 @@ func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err e
 	return
 }
 
+func waitForTaskUserSession(ctx *TaskContext) error {
+	return gwruntime.WaitForLoginCompletion(5*time.Minute, ctx.User.Name)
+}
+
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 	// Wait for the User Profile Service to be running before any profile operations.
 	// On first boot after sysprep, ProfSvc may not be initialized yet.

@@ -99,7 +99,7 @@ tasks.push({
     ]) {
       await modifyRepoFile(file, async content =>
         content.replace(
-          /(<!-- HELP BEGIN -->)(?:.|\n)*(<!-- HELP END -->)/m,
+          /(\{\/\* HELP BEGIN \*\/\})(?:.|\n)*(\{\/\* HELP END \*\/\})/m,
           `$1\n${ticks}\n${gwHelp.trimRight()}\n${ticks}\n$2`
         )
       );
@@ -146,7 +146,7 @@ tasks.push({
       .join('\n');
 
     await modifyRepoFile(path.join(gwDocsDir, 'README.mdx'), content =>
-      content.replace(/(<!-- BEGIN PAYLOAD LINKS -->).*(<!-- END PAYLOAD LINKS -->)/ms, `$1\n${links}\n$2`)
+      content.replace(/(\{\/\* BEGIN PAYLOAD LINKS \*\/\}).*(\{\/\* END PAYLOAD LINKS \*\/\})/ms, `$1\n${links}\n$2`)
     );
   },
 });

@@ -402,7 +402,7 @@ export class GoogleProvider extends Provider {
    * Called for every worker on a schedule so that we can update the state of
    * the worker locally
    */
-  async checkWorker({ worker }) {
+  async checkWorker({ worker, abortSignal }) {
     const states = Worker.states;
     this.seen[worker.workerPoolId] = this.seen[worker.workerPoolId] || 0;
     this.seenByWorkerGroup[worker.workerPoolId] = this.seenByWorkerGroup[worker.workerPoolId] || {};
@@ -413,11 +413,14 @@ export class GoogleProvider extends Provider {
     let state;
     try {
       const { data } = await this._enqueue('get', () =>
-        this.compute.instances.get({
-          project: worker.providerData.project,
-          zone: worker.providerData.zone,
-          instance: worker.workerId,
-        })
+        this.compute.instances.get(
+          {
+            project: worker.providerData.project,
+            zone: worker.providerData.zone,
+            instance: worker.workerId,
+          },
+          { signal: abortSignal }
+        )
       );
       const { status } = data;
       monitor.debug(`instance status is ${status}`);

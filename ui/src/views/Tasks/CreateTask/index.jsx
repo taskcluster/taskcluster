@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { Redirect } from 'react-router-dom';
 import { parse, stringify } from 'qs';
-import { withApollo } from 'react-apollo';
 import storage from 'localforage';
 import merge from 'deepmerge';
 import { load, dump } from 'js-yaml';
@@ -28,6 +27,7 @@ import ContentSaveIcon from 'mdi-react/ContentSaveIcon';
 import RotateLeftIcon from 'mdi-react/RotateLeftIcon';
 import ClockOutlineIcon from 'mdi-react/ClockOutlineIcon';
 import { Box } from '@material-ui/core';
+import { Queue } from '@taskcluster/client-web';
 import CodeEditor from '../../../components/CodeEditor';
 import SpeedDial from '../../../components/SpeedDial';
 import SiteSpecific from '../../../components/SiteSpecific';
@@ -44,7 +44,8 @@ import {
   TASK_PAYLOAD_SCHEMAS,
 } from '../../../utils/constants';
 import urls from '../../../utils/urls';
-import createTaskQuery from '../createTask.graphql';
+import { AuthContext } from '../../../utils/Auth';
+import { getClient } from '../../../utils/client';
 import Button from '../../../components/Button';
 import db from '../../../utils/db';
 import validateTaskPayloadSchemas from '../../../utils/validateTaskPayloadSchemas';
@@ -73,7 +74,6 @@ const defaultTask = schema => {
   };
 };
 
-@withApollo
 @withStyles(theme => ({
   createIcon: {
     ...theme.mixins.successIcon,
@@ -91,6 +91,8 @@ const defaultTask = schema => {
   },
 }))
 export default class CreateTask extends Component {
+  static contextType = AuthContext;
+
   static defaultProps = {
     interactive: false,
   };
@@ -203,13 +205,9 @@ export default class CreateTask extends Component {
       this.setState({ loading: true });
 
       try {
-        await this.props.client.mutate({
-          mutation: createTaskQuery,
-          variables: {
-            taskId,
-            task: payload,
-          },
-        });
+        const queue = getClient({ Class: Queue, user: this.context.user });
+
+        await queue.createTask(taskId, payload);
 
         this.setState({ loading: false, createdTaskId: taskId });
         storage.setItem(TASKS_CREATE_STORAGE_KEY, payload);

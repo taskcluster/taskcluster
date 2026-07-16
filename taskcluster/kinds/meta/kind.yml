@@ -55,7 +55,7 @@ tasks:
     run:
       command: >-
         corepack yarn --immutable &> /dev/null &&
-        corepack yarn changelog:check --pr $TASKCLUSTER_PULL_REQUEST_NUMBER
+        corepack yarn changelog:check --pull-request-url $TASKCLUSTER_PULL_REQUEST_URL
   changelog-push:
     description: taskcluster changelog checks
     run-on-tasks-for: [github-push]

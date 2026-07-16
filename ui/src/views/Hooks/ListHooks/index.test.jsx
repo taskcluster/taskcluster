@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, waitFor, act } from '@testing-library/react';
-import { ApolloProvider } from 'react-apollo';
-import setupClient from 'apollo-client-mock';
+import { ApolloProvider } from '@apollo/client';
+import setupClient from '../../../utils/mockApolloClient';
 import { MemoryRouter } from 'react-router-dom';
 import ListHooks from './index';
 
@@ -22,7 +22,7 @@ it('should render ListHooks page', async () => {
             match={{ params: { hookGroupId: 'hg1' } }}
             location={{
               search: {
-                slice: jest.fn().mockReturnValue('search=test'),
+                slice: vi.fn().mockReturnValue('search=test'),
               },
             }}
           />

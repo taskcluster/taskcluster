@@ -197,7 +197,7 @@ program
 program
   .command('changelog:check')
   .description('Check the changelog')
-  .option('--pr <pr>', 'Check that this pull request contains a changelog')
+  .option('--pull-request-url <url>', 'Check that this pull request contains a changelog')
   .action(
     actFn(async ({ options }) => {
       const { check } = await import('./changelog/index.js');

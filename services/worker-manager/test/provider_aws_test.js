@@ -503,6 +503,31 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   });
 
   suite('AWS provider - checkWorker', () => {
+    test('passes the abort signal to the EC2 client', async () => {
+      fake.rgn('us-west-2').instanceStatuses['i-123'] = 'running';
+      const worker = await Worker.fromApi({
+        ...workerInDB,
+        workerId: 'i-123',
+        state: Worker.states.REQUESTED,
+      });
+      await worker.create(helper.db);
+
+      const client = provider.ec2s['us-west-2'];
+      const origSend = client.send.bind(client);
+      let sendOptions;
+      client.send = (command, options) => {
+        sendOptions = options;
+        return origSend(command, options);
+      };
+      const abortSignal = new AbortController().signal;
+      try {
+        await provider.checkWorker({ worker, abortSignal });
+      } finally {
+        client.send = origSend;
+      }
+      assert.equal(sendOptions?.abortSignal, abortSignal, 'ec2 send should receive the abort signal');
+    });
+
     test('stopped instances - should be marked as STOPPED in DB, should not add to seen', async () => {
       fake.rgn('us-west-2').instanceStatuses['i-123'] = 'stopped';
       const worker = await Worker.fromApi({

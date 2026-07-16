@@ -8,17 +8,15 @@ const ENV_VARS = [
   {name: 'GRAPHQL_SUBSCRIPTION_ENDPOINT', defaultValue: '/subscription', json: false},
   {name: 'DOCS_ONLY', defaultValue: false, json: false},
   {name: 'UI_LOGIN_STRATEGY_NAMES', defaultValue: '', json: false},
-  {name: 'GA_TRACKING_ID', defaultValue: '', json: false},
   {name: 'SENTRY_DSN', defaultValue: '', json: false},
   {name: 'BANNER_MESSAGE', defaultValue: '', json: false},
   {name: 'SITE_SPECIFIC', defaultValue: {}, json: true},
 ];
 
 /**
- * Generate `env.js` in the static directory based on the current
- * environment variables.
+ * Render the contents of `env.js` based on the current environment variables.
  */
-const generateEnvJs = filename => {
+const renderEnvJs = () => {
   const env = {};
   for (const {name, defaultValue, json} of ENV_VARS) {
     if (process.env[name]) {
@@ -27,19 +25,26 @@ const generateEnvJs = filename => {
       env[name] = defaultValue;
     }
   }
-  const envJs = `window.env = ${JSON.stringify(env, null, 2)}`;
 
+  return `window.env = ${JSON.stringify(env, null, 2)}`;
+};
+
+/**
+ * Generate `env.js` in the static directory based on the current
+ * environment variables.
+ */
+const generateEnvJs = filename => {
   const dir = dirname(filename);
   if (!fs.existsSync(dir)){
     fs.mkdirSync(dir);
   }
 
   if (!fs.existsSync(filename)){
-    fs.writeFileSync(filename, envJs, 'utf8');
+    fs.writeFileSync(filename, renderEnvJs(), 'utf8');
   }
 };
 
-module.exports = generateEnvJs
+module.exports = { renderEnvJs, generateEnvJs };
 
 if (require.main === module) {
   generateEnvJs(process.argv[2]);

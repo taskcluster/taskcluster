@@ -1,4 +1,4 @@
-const { sortArtifacts, getPriority } = require('./sort');
+import { sortArtifacts, getPriority } from './sort';
 
 it('should define priority based on name', () => {
   expect(getPriority({})).toBe(4);

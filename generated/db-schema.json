@@ -8036,6 +8036,21 @@
         }
       },
       "version": 126
+    },
+    {
+      "description": "Remove the `else 0` fallback for priority `normal` in `queue_pending_tasks_add_for_task`",
+      "methods": {
+        "queue_pending_tasks_add_for_task": {
+          "args": "task_queue_id_in text, priority_in task_priority, deadline_in timestamptz, task_id_in text, run_id_in integer",
+          "body": "declare\n  priority_int integer;\nbegin\n  -- Skip if the task's deadline has already passed; the deadline\n  -- resolver will resolve it as `deadline-exceeded`. Matches the\n  -- pre-fix JS behavior of `QueueService.putPendingMessage`.\n  if deadline_in < now() then\n    return;\n  end if;\n\n  -- This mapping is duplicated in `PRIORITY_TO_CONSTANT` in\n  -- `services/queue/src/queueservice.js`. If you add or reorder\n  -- priority tiers, update both. `normal` is no longer an accepted\n  -- priority (see issue #8858), so this case is now exhaustive over\n  -- the full set of priorities the API allows.\n  priority_int := case priority_in\n    when 'highest'   then 7\n    when 'very-high' then 6\n    when 'high'      then 5\n    when 'medium'    then 4\n    when 'low'       then 3\n    when 'very-low'  then 2\n    when 'lowest'    then 1\n  end;\n\n  perform queue_pending_tasks_add(\n    task_queue_id_in,\n    priority_int,\n    task_id_in,\n    run_id_in,\n    public.gen_random_uuid()::text,\n    deadline_in::timestamp\n  );\nend",
+          "deprecated": false,
+          "description": "Enqueue a pending task run into queue_pending_tasks atomically with its\ncaller. Intended to be called from DB functions that transition a run to\n`pending` (schedule_task, rerun_task, resolve_task, check_task_claim).\nSkips enqueue if the task's deadline has already passed (the deadline\nresolver will resolve it as `deadline-exceeded`). Otherwise delegates to\nqueue_pending_tasks_add (which does the INSERT ... ON CONFLICT DO UPDATE\nand NOTIFY task_pending).\n\nThe caller passes task_queue_id, priority, and deadline from its own\nFOR UPDATE-locked SELECT on the tasks row, avoiding a redundant lookup\nhere.",
+          "mode": "write",
+          "returns": "void",
+          "serviceName": "queue"
+        }
+      },
+      "version": 127
     }
   ]
 }

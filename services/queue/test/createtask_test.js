@@ -477,13 +477,21 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     );
   });
 
-  test('Can create "normal" priority task with ..:lowest:.. scope', async () => {
+  test('Can\'t create "normal" priority task -> 400 (normal is no longer a valid priority)', async () => {
     helper.scopes(
       'queue:create-task:lowest:no-provisioner-extended-extended/test-worker-extended-extended',
       'queue:create-task:project:none',
       'queue:scheduler-id:test-run'
     );
-    await helper.queue.createTask(slugid.v4(), makePriorityTask('normal'));
+    await helper.queue.createTask(slugid.v4(), makePriorityTask('normal')).then(
+      () => {
+        throw new Error('This operation should have failed!');
+      },
+      err => {
+        assume(err.statusCode).equals(400);
+        debug('Expected error: %j', err, err);
+      }
+    );
   });
 
   test('Can create "lowest" priority task with ..:lowest:.. scope', async () => {

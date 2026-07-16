@@ -15,7 +15,7 @@ Let's start by seeing Taskcluster in action.
 Taskcluster is an application that organizations deploy to serve their needs, so following this portion of the tutorial might require some assistance from the people responsible for your deployment.
 The first thing you will need to know is the URL of the deployment (called a "[root URL](/docs/manual/using/root-urls)").
 
-<SiteSpecific>
+<SiteSpecific requires={['root_url']}>
 The root URL for this deployment is `%root_url%`.
 </SiteSpecific>
 <SiteSpecific showIfNotSet={['root_url']}>
@@ -37,7 +37,7 @@ For example, you might see `queue:create-task:highest:proj-misc/tutorial`.
 This grants access to workerPool `proj-misc/tutorial`.
 If possible, choose a Linux generic-worker pool, since the example below uses the legacy docker-worker payload format that is supported on Linux generic-worker via the [d2g](https://github.com/taskcluster/taskcluster/tree/main/tools/d2g) translation layer.
 
-<SiteSpecific>
+<SiteSpecific requires={['tutorial_worker_pool_id']}>
 In this deployment, `%tutorial_worker_pool_id%` is a good choice.
 </SiteSpecific>
 

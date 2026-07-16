@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -72,6 +74,50 @@ func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 			panic(err)
 		}
 	}
+}
+
+// If there are system updates, this could take several minutes, let's be generous here
+const launchAgentReadyTimeout = 15 * time.Minute
+
+// waitForTaskUserSession blocks until the task user's launch agent is working
+func waitForTaskUserSession(ctx *TaskContext) error {
+	pd, err := process.TaskUserPlatformData(ctx.User, config.HeadlessTasks)
+	if err != nil {
+		return fmt.Errorf("could not build platform data for task user %v: %w", ctx.User.Name, err)
+	}
+	log.Printf("Waiting (up to %v) for launch agent of task user %v to become ready...", launchAgentReadyTimeout, ctx.User.Name)
+	deadline := time.Now().Add(launchAgentReadyTimeout)
+	for attempt := 1; ; attempt++ {
+		gotUser, probeErr := taskUserName(pd, ctx.TaskDir)
+		if probeErr == nil && gotUser == ctx.User.Name {
+			log.Printf("Launch agent of task user %v is ready", ctx.User.Name)
+			return nil
+		}
+		if time.Now().After(deadline) {
+			if probeErr != nil {
+				return fmt.Errorf("launch agent of task user %v did not become ready within %v: %w", ctx.User.Name, launchAgentReadyTimeout, probeErr)
+			}
+			return fmt.Errorf("launch agent reported user %q, want %q, within %v", gotUser, ctx.User.Name, launchAgentReadyTimeout)
+		}
+		log.Printf("Launch agent of task user %v not ready yet (attempt %d): user=%q err=%v", ctx.User.Name, attempt, gotUser, probeErr)
+		time.Sleep(2 * time.Second)
+	}
+}
+
+// taskUserName runs `id -un` as the task user via its launch agent and
+// returns the username.
+func taskUserName(pd *process.PlatformData, taskDir string) (string, error) {
+	cmd, err := process.NewCommand([]string{"/usr/bin/id", "-un"}, taskDir, []string{}, pd)
+	if err != nil {
+		return "", fmt.Errorf("could not create `id -un` command: %w", err)
+	}
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	result := cmd.Execute()
+	if !result.Succeeded() {
+		return "", fmt.Errorf("`id -un` could not be run as the task user: %v", result)
+	}
+	return strings.TrimSpace(out.String()), nil
 }
 
 func platformTargets(arguments map[string]any) ExitCode {

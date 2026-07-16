@@ -34,6 +34,11 @@ The easiest and best way to do this is to use docker, but if you prefer you can 
 *NOTE* the test suites repeatedly drop the `public` schema and re-create it, effectively deleting all data in the database.
 Do not run these tests against a database instance that contains any useful data!
 
+If you want to run against another major version locally, set
+`TASKCLUSTER_SKIP_DB_VERSION_CHECK=1` to skip the version check performed on
+startup. Just be aware that `yarn generate` might generate unrelated changes
+and that you might unknowingly be using features not available yet.
+
 `pg_dump` is being used to detect schema changes. If it is not present on your system,
 `yarn generate` might attempt to run this inside the `postgres` docker container, which is one of the `docker-compose.yml` services.
 

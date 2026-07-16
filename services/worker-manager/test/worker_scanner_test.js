@@ -427,6 +427,64 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     monitor.manager.reset();
   });
 
+  test('a checkWorker that times out is warned, not reported as an error', async () => {
+    await Worker.fromApi({
+      workerPoolId: 'cc/pool',
+      workerGroup: 'wg',
+      workerId: 'slow-worker',
+      providerId: 'testing1',
+      created: new Date(),
+      lastModified: new Date(),
+      lastChecked: new Date(),
+      expires: taskcluster.fromNow('8 days'),
+      capacity: 1,
+      state: Worker.states.REQUESTED,
+      providerData: {},
+    }).create(helper.db);
+
+    let seenSignal;
+    const fakeProvider = {
+      providerId: 'testing1',
+      providerType: 'testing',
+      setupFailed: false,
+      scanPrepare: async () => {},
+      scanCleanup: async () => {},
+      checkWorker: async ({ abortSignal }) => {
+        seenSignal = abortSignal;
+        return new Promise(resolve => setTimeout(resolve, 100));
+      },
+    };
+    const fakeProviders = {
+      forAll: async fn => {
+        await fn(fakeProvider);
+      },
+      get: id => (id === 'testing1' ? fakeProvider : undefined),
+    };
+
+    const scanner = new WorkerScanner({
+      ownName: 'test-timeout',
+      providers: fakeProviders,
+      monitor,
+      db: helper.db,
+      providersFilter: {},
+      concurrency: 1,
+      checkWorkerTimeoutMs: 10,
+    });
+
+    await scanner.scan();
+
+    const reported = monitor.manager.messages.find(({ Type }) => Type === 'monitor.error');
+    assert(!reported, `checkWorker timeout should not be reported as an error: ${JSON.stringify(reported)}`);
+    const warned = monitor.manager.messages.find(
+      msg =>
+        msg.Severity === LEVELS.warning &&
+        /checkWorker timed out for cc\/pool\/slow-worker/.test(msg.Fields?.message || '')
+    );
+    assert(warned, 'expected a warning for the timed-out checkWorker');
+    assert(seenSignal?.aborted, 'expected the checkWorker abort signal to be aborted on timeout');
+    monitor.manager.reset();
+  });
+
   test('a rejecting worker update is reported, not left as an unhandled rejection', async () => {
     // The failing worker has a near expiry so the expires-refresh worker.update()
     // runs (and throws) outside checkWorker's own catch. Under concurrency that

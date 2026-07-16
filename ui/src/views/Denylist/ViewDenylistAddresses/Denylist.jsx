@@ -1,6 +1,6 @@
 import React, { PureComponent, Fragment } from 'react';
 import { string } from 'prop-types';
-import { graphql } from 'react-apollo';
+import { graphql } from '@apollo/client/react/hoc';
 import dotProp from 'dot-prop-immutable';
 import Spinner from '../../../components/Spinner';
 import DenylistTable from '../../../components/DenylistTable';

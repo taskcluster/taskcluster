@@ -4404,4 +4404,38 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal('error2', reportedErrors[1].error);
     });
   });
+
+  suite('checkWorker abort signal', () => {
+    const sandbox = sinon.createSandbox({});
+    teardown(() => sandbox.restore());
+
+    test('checkWorker passes the abort signal to instanceView', async () => {
+      await provider.scanPrepare();
+
+      const worker = Worker.fromApi({
+        workerPoolId,
+        workerGroup: 'westus',
+        workerId: 'vm-1',
+        providerId,
+        created: taskcluster.fromNow('0 seconds'),
+        lastModified: taskcluster.fromNow('0 seconds'),
+        lastChecked: taskcluster.fromNow('0 seconds'),
+        expires: taskcluster.fromNow('90 seconds'),
+        capacity: 1,
+        state: 'running',
+        providerData: baseProviderData,
+      });
+      await worker.create(helper.db);
+      sandbox.stub(provider, 'provisionResources').returns('running');
+      fake.computeClient.virtualMachines.setFakeInstanceView('rgrp', baseProviderData.vm.name, {
+        statuses: [{ code: 'ProvisioningState/succeeded' }, { code: 'PowerState/running' }],
+      });
+
+      const spy = sandbox.spy(provider.computeClient.virtualMachines, 'instanceView');
+      const abortSignal = new AbortController().signal;
+      await provider.checkWorker({ worker, abortSignal });
+
+      assert.equal(spy.firstCall.args[2]?.abortSignal, abortSignal, 'instanceView should receive the abort signal');
+    });
+  });
 });

@@ -1,4 +1,9 @@
 import assert from 'node:assert';
+import http from 'node:http';
+import express from 'express';
+import session from 'express-session';
+import passport from 'passport';
+import request from 'superagent';
 import testing from '@taskcluster/lib-testing';
 import helper from './helper.js';
 import Github from '../src/login/strategies/github.js';
@@ -118,6 +123,52 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         user.roles.filter(role => role.startsWith('github-org-')),
         ['github-org-admin:taskcluster'].sort()
       );
+    });
+
+    suite('oauth state parameter', () => {
+      const serverCfg = {
+        ...cfg,
+        app: { publicUrl: 'https://tc.example.com' },
+        taskcluster: { credentials: { clientId: 'client-id', accessToken: 'access-token' } },
+      };
+
+      let server, port;
+
+      suiteSetup(async () => {
+        const app = express();
+        app.use(session({ secret: 'test-secret', resave: false, saveUninitialized: false }));
+        app.use(passport.initialize());
+        app.use(passport.session());
+
+        const strategy = new Github({
+          name: 'github',
+          cfg: serverCfg,
+          monitor: { debug: () => {} },
+          db: {},
+        });
+        strategy.useStrategy(app, serverCfg);
+
+        server = http.createServer(app);
+        await new Promise(resolve => server.listen(0, resolve));
+        port = server.address().port;
+      });
+
+      suiteTeardown(async () => {
+        if (server) {
+          await new Promise(resolve => server.close(resolve));
+        }
+      });
+
+      test('the authorization request includes a state parameter', async () => {
+        const res = await request
+          .get(`http://127.0.0.1:${port}/login/github`)
+          .redirects(0)
+          .ok(res => res.status === 302);
+
+        const location = new URL(res.header.location);
+        assert.equal(location.origin + location.pathname, 'https://github.com/login/oauth/authorize');
+        assert(location.searchParams.get('state'));
+      });
     });
   });
 });

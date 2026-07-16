@@ -64,9 +64,8 @@ func PostRebootSetup(taskUserCredentials *gwruntime.OSUser) *TaskContext {
 	// if the task directory is also the user profile home, this
 	// would mess up the windows logon process.
 	if !config.HeadlessTasks && !runningTests {
-		err := gwruntime.WaitForLoginCompletion(5*time.Minute, ctx.User.Name)
-		if err != nil {
-			panic(fmt.Errorf("timed out waiting for login for user %s: %v", ctx.User.Name, err))
+		if err := waitForTaskUserSession(ctx); err != nil {
+			panic(fmt.Errorf("task user session not ready for %s: %v", ctx.User.Name, err))
 		}
 	}
 	// Ensure the parent TasksDir exists and is traversable by all users.

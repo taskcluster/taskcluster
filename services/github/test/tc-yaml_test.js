@@ -27,6 +27,7 @@ suite(testing.suiteName(), () => {
         {
           organization: 'org',
           repository: 'repo',
+          tasks_for: 'github-pull-request',
           details: { 'event.type': 'pull_request.opened' },
         },
         now

@@ -1,5 +1,5 @@
 import React, { PureComponent, Fragment } from 'react';
-import { graphql, withApollo } from 'react-apollo';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import { string } from 'prop-types';
 import Typography from '@material-ui/core/Typography';
 import dotProp from 'dot-prop-immutable';
