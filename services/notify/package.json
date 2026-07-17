@@ -16,6 +16,6 @@
     "@aws-sdk/client-sns": "^3.1075.0",
     "@aws-sdk/client-sqs": "^3.1075.0",
     "@biomejs/biome": "^2.5.1",
-    "mocha": "^10.8.2"
+    "mocha": "^11.7.6"
   }
 }

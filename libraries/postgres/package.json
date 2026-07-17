@@ -19,6 +19,6 @@
   "types": "./@types/index.d.ts",
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
-    "mocha": "^10.8.2"
+    "mocha": "^11.7.6"
   }
 }
