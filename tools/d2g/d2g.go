@@ -266,55 +266,81 @@ func validateDockerWorkerScopes(
 	}
 
 	dummyExpander := scopes.DummyExpander()
-	var requiredScopes scopes.Required
+	var requiredScopes []scopes.Required
 
 	if dwPayload.Capabilities.Privileged {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:capability:privileged"},
-			[]string{fmt.Sprintf("docker-worker:capability:privileged:%s", taskQueueID)},
+			scopes.Required{
+				{"docker-worker:capability:privileged"},
+				{fmt.Sprintf("docker-worker:capability:privileged:%s", taskQueueID)},
+			},
+		)
+	}
+
+	if dwPayload.Capabilities.DisableSeccomp {
+		requiredScopes = append(requiredScopes,
+			scopes.Required{
+				{"docker-worker:capability:disableSeccomp"},
+			},
 		)
 	}
 
 	if dwPayload.Capabilities.Devices.HostSharedMemory {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:capability:device:hostSharedMemory"},
-			[]string{fmt.Sprintf("docker-worker:capability:device:hostSharedMemory:%s", taskQueueID)},
+			scopes.Required{
+				{"docker-worker:capability:device:hostSharedMemory"},
+				{fmt.Sprintf("docker-worker:capability:device:hostSharedMemory:%s", taskQueueID)},
+			},
 		)
 	}
 
 	if dwPayload.Capabilities.Devices.KVM {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:capability:device:kvm"},
-			[]string{fmt.Sprintf("docker-worker:capability:device:kvm:%s", taskQueueID)},
+			scopes.Required{
+				{"docker-worker:capability:device:kvm"},
+				{fmt.Sprintf("docker-worker:capability:device:kvm:%s", taskQueueID)},
+			},
 		)
 	}
 
 	if dwPayload.Capabilities.Devices.LoopbackAudio {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:capability:device:loopbackAudio"},
-			[]string{fmt.Sprintf("docker-worker:capability:device:loopbackAudio:%s", taskQueueID)},
+			scopes.Required{
+				{"docker-worker:capability:device:loopbackAudio"},
+				{fmt.Sprintf("docker-worker:capability:device:loopbackAudio:%s", taskQueueID)},
+			},
 		)
 	}
 
 	if dwPayload.Capabilities.Devices.LoopbackVideo {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:capability:device:loopbackVideo"},
-			[]string{fmt.Sprintf("docker-worker:capability:device:loopbackVideo:%s", taskQueueID)},
+			scopes.Required{
+				{"docker-worker:capability:device:loopbackVideo"},
+				{fmt.Sprintf("docker-worker:capability:device:loopbackVideo:%s", taskQueueID)},
+			},
 		)
 	}
 
 	if dwPayload.Features.AllowPtrace {
 		requiredScopes = append(requiredScopes,
-			[]string{"docker-worker:feature:allowPtrace"},
+			scopes.Required{
+				{"docker-worker:feature:allowPtrace"},
+			},
 		)
 	}
 
-	scopesSatisfied, err := expandedScopes.Satisfies(requiredScopes, dummyExpander)
-	if err != nil {
-		return nil, fmt.Errorf("error expanding scopes: %v", err)
+	var missingScopes []string
+	for _, required := range requiredScopes {
+		scopesSatisfied, err := expandedScopes.Satisfies(required, dummyExpander)
+		if err != nil {
+			return nil, fmt.Errorf("error expanding scopes: %v", err)
+		}
+		if !scopesSatisfied {
+			missingScopes = append(missingScopes, fmt.Sprintf("(%s)", required.String()))
+		}
 	}
-	if !scopesSatisfied {
-		return nil, fmt.Errorf("d2g task requires scopes:\n\n%v\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", requiredScopes, expandedScopes)
+	if len(missingScopes) > 0 {
+		return nil, fmt.Errorf("d2g task requires scopes:\n\n%s\n\nbut task only has scopes:\n\n%v\n\nYou probably should add some scopes to your task definition", strings.Join(missingScopes, "\nAND\n"), expandedScopes)
 	}
 
 	return expandedScopes, nil
