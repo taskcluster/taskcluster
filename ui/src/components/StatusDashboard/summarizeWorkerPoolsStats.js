@@ -1,28 +1,38 @@
 import format from './format';
 
-export default (wmStats, link = '/worker-manager/errors') => {
+export default (
+  wmStats,
+  link = '/worker-manager/errors',
+  customRange = false
+) => {
   const { data, loading, error } = wmStats;
   const stats = data?.WorkerManagerErrorsStats?.totals;
-  let last24hours = 0;
+  let hourlyTotal = 0;
 
   if (stats?.hourly) {
-    last24hours = Object.values(stats.hourly).reduce(
+    hourlyTotal = Object.values(stats.hourly).reduce(
       (acc, cur) => acc + cur,
       0
     );
   }
 
+  const dailyLabel = customRange ? 'Selected range (daily)' : 'Last 7 days';
+  const hourlyLabel = customRange ? 'Selected range (hourly)' : 'Last 24 hours';
+  const totalHint = customRange
+    ? 'Sum of errors over the selected daily range'
+    : 'Usually means last 7 days, as errors are being deleted after that';
+
   return [
     {
-      title: 'Total errors 7d',
-      hint: 'Usually means last 7 days, as errors are being deleted after that',
+      title: customRange ? 'Total errors (range)' : 'Total errors 7d',
+      hint: totalHint,
       value: loading ? '...' : format(stats?.total || 0),
       link,
       error: error?.message,
       loading,
     },
     {
-      title: 'Last 7 days',
+      title: dailyLabel,
       type: 'graph',
       value: loading ? [] : Object.values(stats?.daily || {}),
       link,
@@ -30,14 +40,14 @@ export default (wmStats, link = '/worker-manager/errors') => {
       loading,
     },
     {
-      title: 'Total errors 24h',
-      value: loading ? '...' : format(last24hours),
+      title: customRange ? 'Total errors (hourly range)' : 'Total errors 24h',
+      value: loading ? '...' : format(hourlyTotal),
       link,
       error: error?.message,
       loading,
     },
     {
-      title: 'Last 24 hours',
+      title: hourlyLabel,
       type: 'graph',
       value: loading ? [] : Object.values(stats?.hourly || {}),
       link,

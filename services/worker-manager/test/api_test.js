@@ -1685,6 +1685,192 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
   });
 
+  test('get worker pool error stats - explicit from/to range', async () => {
+    const workerPoolId = 'foobar/range1';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+
+    await helper.workerManager.reportWorkerError(workerPoolId, {
+      kind: 'range-error',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      title: 'Range Error',
+      description: 'An error in range',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: { code: 'range-code' },
+    });
+
+    const now = new Date();
+    const from = new Date(now.getTime() - 60 * 60 * 1000).toISOString(); // 1 hour ago
+    const to = new Date(now.getTime() + 60 * 60 * 1000).toISOString(); // 1 hour from now
+
+    const data = await helper.workerManager.workerPoolErrorStats({ workerPoolId, from, to });
+    assert.equal(data.workerPoolId, workerPoolId);
+    assert.equal(data.totals.total, 1);
+    assert.deepEqual(data.totals.title, { 'Range Error': 1 });
+    assert.deepEqual(data.totals.code, { 'range-code': 1 });
+    // hourly should have buckets (range < 31 days)
+    assert(Object.keys(data.totals.hourly).length > 0);
+  });
+
+  test('get worker pool error stats - range excludes errors outside window', async () => {
+    const workerPoolId = 'foobar/range2';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+
+    await helper.workerManager.reportWorkerError(workerPoolId, {
+      kind: 'recent-error',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      title: 'Recent Error',
+      description: 'A recent error',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {},
+    });
+
+    // Query a range in the past that excludes the just-inserted error
+    const pastFrom = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+    const pastTo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
+
+    const data = await helper.workerManager.workerPoolErrorStats({ workerPoolId, from: pastFrom, to: pastTo });
+    assert.equal(data.totals.total, 0);
+    assert.deepEqual(data.totals.title, {});
+  });
+
+  test('get worker pool error stats - invalid from/to returns error', async () => {
+    await assert.rejects(
+      () => helper.workerManager.workerPoolErrorStats({ from: 'not-a-date' }),
+      err => {
+        assert.equal(err.statusCode, 400);
+        return true;
+      }
+    );
+
+    await assert.rejects(
+      () => helper.workerManager.workerPoolErrorStats({ to: 'garbage' }),
+      err => {
+        assert.equal(err.statusCode, 400);
+        return true;
+      }
+    );
+  });
+
+  test('get worker pool error stats - from >= to returns error', async () => {
+    const now = new Date().toISOString();
+    const earlier = new Date(Date.now() - 60000).toISOString();
+    await assert.rejects(
+      () => helper.workerManager.workerPoolErrorStats({ from: now, to: earlier }),
+      err => {
+        assert.equal(err.statusCode, 400);
+        return true;
+      }
+    );
+  });
+
+  test('get worker pool error stats - equal from/to returns error', async () => {
+    const ts = new Date().toISOString();
+    await assert.rejects(
+      () => helper.workerManager.workerPoolErrorStats({ from: ts, to: ts }),
+      err => {
+        assert.equal(err.statusCode, 400);
+        return true;
+      }
+    );
+  });
+
+  test('get worker pool error stats - regex-passing invalid datetime returns error', async () => {
+    // Matches the query regex but is not a valid Date (hour 25)
+    await assert.rejects(
+      () => helper.workerManager.workerPoolErrorStats({ from: '2026-01-01T25:00Z' }),
+      err => {
+        assert.equal(err.statusCode, 400);
+        return true;
+      }
+    );
+  });
+
+  test('get worker pool error stats - exactly 31 days retains hourly series', async () => {
+    const workerPoolId = 'foobar/range31';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+
+    await helper.workerManager.reportWorkerError(workerPoolId, {
+      kind: 'boundary-error',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      title: 'Boundary Error',
+      description: 'An error for the 31-day boundary',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {},
+    });
+
+    const to = new Date();
+    const from = new Date(to.getTime() - 31 * 24 * 60 * 60 * 1000);
+    const data = await helper.workerManager.workerPoolErrorStats({
+      workerPoolId,
+      from: from.toISOString(),
+      to: to.toISOString(),
+    });
+    assert.equal(data.totals.total, 1);
+    assert(Object.keys(data.totals.hourly).length > 0, 'hourly series should be present at exactly 31 days');
+    assert(Object.keys(data.totals.daily).length > 0, 'daily series should be present');
+  });
+
+  test('get worker pool error stats - over 31 days omits hourly series', async () => {
+    const workerPoolId = 'foobar/range32';
+    const input = {
+      providerId: 'testing1',
+      description: 'bar',
+      config: {},
+      owner: 'example@example.com',
+      emailOnError: false,
+    };
+    await helper.workerManager.createWorkerPool(workerPoolId, input);
+
+    await helper.workerManager.reportWorkerError(workerPoolId, {
+      kind: 'wide-error',
+      workerGroup: 'wg',
+      workerId: 'wid',
+      title: 'Wide Error',
+      description: 'An error for a >31-day range',
+      notify: helper.notify,
+      WorkerPoolError: helper.WorkerPoolError,
+      extra: {},
+    });
+
+    const to = new Date();
+    const from = new Date(to.getTime() - 32 * 24 * 60 * 60 * 1000);
+    const data = await helper.workerManager.workerPoolErrorStats({
+      workerPoolId,
+      from: from.toISOString(),
+      to: to.toISOString(),
+    });
+    assert.equal(data.totals.total, 1);
+    assert.deepEqual(data.totals.hourly, {});
+    assert(Object.keys(data.totals.daily).length > 0, 'daily series should remain present');
+  });
+
   const googleInput = {
     providerId: 'google',
     description: 'bar',

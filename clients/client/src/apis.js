@@ -4465,12 +4465,14 @@ export default {
           "args": [
           ],
           "category": "Worker Pools",
-          "description": "Get the list of worker pool errors count.\nContains total count of errors for the past 7 days and 24 hours\nAlso includes total counts grouped by titles of error and error code.\n\nIf `workerPoolId` is not specified, it will return the count of all errors",
+          "description": "Get the list of worker pool errors count.\nContains total count of errors broken down by day and hour.\nAlso includes total counts grouped by title, error code, worker pool, and launch config.\n\nIf `workerPoolId` is not specified, it will return the count of all errors.\n\nThe optional `from` and `to` query parameters accept ISO 8601 datetime strings\nto filter statistics to an arbitrary time range. When omitted, defaults to the\nlast 7 days (daily) and last 24 hours (hourly). When a custom range spans more\nthan 31 days, the hourly breakdown is omitted to bound response size.\n\nThe `total` field is always the sum over the daily series.",
           "method": "get",
           "name": "workerPoolErrorStats",
           "output": "v1/worker-pool-error-stats.json#",
           "query": [
-            "workerPoolId"
+            "workerPoolId",
+            "from",
+            "to"
           ],
           "route": "/worker-pool-errors/stats",
           "scopes": "worker-manager:list-worker-pool-errors:<workerPoolId>",
