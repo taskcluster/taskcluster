@@ -4,8 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "coverage": "c8 yarn test",
-    "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "test": "NODE_OPTIONS=--network-family-autoselection=false mocha test/*_test.js",
     "lint": "biome check",
     "lint:fix": "biome check --write",
@@ -13,7 +11,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
-    "c8": "^8.0.1",
     "mocha": "^10.8.2"
   }
 }

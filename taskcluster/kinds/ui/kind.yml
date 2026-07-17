@@ -27,7 +27,7 @@ tasks:
         cd ui &&
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
         corepack yarn lint &&
-        corepack yarn test --coverage &&
+        corepack yarn test &&
         corepack yarn build
   smoke:
     description: UI Playwright smoke
