@@ -21,10 +21,9 @@ class FakeGithub {
     this._comments = {};
     this._commits = {};
 
-    const throwError = code => {
+    const throwError = status => {
       const err = new Error();
-      err.status = code;
-      err.code = code;
+      err.status = status;
       throw err;
     };
 

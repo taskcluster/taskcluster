@@ -163,7 +163,7 @@ async function findTCStatus(github, owner, repo, branch, configuration) {
     ).data;
   } catch (e) {
     // github sends 422 when branch doesn't exist
-    if (e.code === 404 || e.code === 422) {
+    if (e.status === 404 || e.status === 422) {
       return undefined;
     }
     throw e;
@@ -181,7 +181,7 @@ async function findTCChecks(github, owner, repo, branch, configuration) {
   try {
     checks = (await github.checks.listForRef({ owner, repo, ref: branch, request: { retries: 1 } })).data.check_runs;
   } catch (e) {
-    if (e.code === 404 || e.code === 422) {
+    if (e.status === 404 || e.status === 422) {
       return [];
     }
     throw e;
@@ -421,12 +421,12 @@ builder.declare(
         resolvedEmail = userDetails.email;
       }
     } catch (err) {
-      if (err.status !== 404 && err.code !== 404) {
+      if (err.status !== 404) {
         throw err;
       }
       debugMonitor.debug({
         message: `GitHub user ${headUser} not found when resolving email, falling back to noreply`,
-        status: err.status || err.code,
+        status: err.status,
         fallbackEmail: defaultEmail,
       });
     }
@@ -684,7 +684,7 @@ builder.declare(
         return res.sendFile('newrepo.svg', fileConfig);
       }
     } catch (e) {
-      if (e.code < 500) {
+      if (e.status < 500) {
         fileConfig.headers['X-Taskcluster-Status'] = 'error';
         return res.sendFile('error.svg', fileConfig);
       }
@@ -728,7 +728,7 @@ builder.declare(
       // no early return -> not installed
       return res.reply({ installed: false });
     } catch (e) {
-      if (e.code > 400 && e.code < 500) {
+      if (e.status > 400 && e.status < 500) {
         return res.reply({ installed: false });
       }
       res.reportError('InternalError', e.message, {});
@@ -780,7 +780,7 @@ builder.declare(
           return res.redirect(run.html_url);
         }
       } catch (e) {
-        if (e.code < 500) {
+        if (e.status < 500) {
           return res.reportError('ResourceNotFound', 'Status not found', {});
         }
         return res.reportError('InternalError', e.message, {});
@@ -834,7 +834,7 @@ builder.declare(
       } catch (e) {
         // 403 from Github indicates this integration doesn't have permission to post this status,
         // so return that on to the user
-        if (e.code === 403) {
+        if (e.status === 403) {
           return res.reportError(
             'ForbiddenByGithub',
             'Operation was forbidden by Github. The Github App may not be set up for this repo.',
@@ -887,7 +887,7 @@ builder.declare(
       } catch (e) {
         // 403 from Github indicates this integration doesn't have permission to post this comment,
         // so return that on to the user
-        if (e.code === 403) {
+        if (e.status === 403) {
           return res.reportError(
             'ForbiddenByGithub',
             'Operation was forbidden by Github. The Github App may not be set up for this repo.',
