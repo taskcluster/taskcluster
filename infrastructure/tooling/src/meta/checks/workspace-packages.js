@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import glob from 'glob';
+import { globSync } from 'glob';
 import { REPO_ROOT } from '../../utils/index.js';
 
 export const tasks = [
@@ -8,7 +8,7 @@ export const tasks = [
     requires: [],
     provides: [],
     run: async (_requirements, _utils) => {
-      const packageJsons = glob.sync('{services,libraries}/*/package.json', { cwd: REPO_ROOT });
+      const packageJsons = globSync('{services,libraries}/*/package.json', { cwd: REPO_ROOT });
 
       const forbidden = ['engines', 'engineStrict', 'engine-strict', 'dependencies', 'files'];
       for (const filename of packageJsons) {

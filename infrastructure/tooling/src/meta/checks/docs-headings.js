@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import glob from 'glob';
+import { globSync } from 'glob';
 import { REPO_ROOT } from '../../utils/index.js';
 
 export const tasks = [
@@ -8,7 +8,7 @@ export const tasks = [
     requires: [],
     provides: [],
     run: async (_requirements, _utils) => {
-      const markdowns = glob.sync('ui/docs/**/*.mdx', { cwd: REPO_ROOT });
+      const markdowns = globSync('ui/docs/**/*.mdx', { cwd: REPO_ROOT });
 
       let errors = '';
       let countErrors = 0;

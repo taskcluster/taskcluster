@@ -1,6 +1,6 @@
 import yaml from 'js-yaml';
 import semver from 'semver';
-import glob from 'glob';
+import { globSync } from 'glob';
 import chalk from 'chalk';
 import appRootDir from 'app-root-dir';
 
@@ -71,9 +71,9 @@ export class ChangeLog {
   }
 
   async loadSnippets() {
-    const snippetFiles = glob
-      .sync('changelog/*.md', { cwd: appRootDir.get() })
-      .filter(filename => filename !== 'changelog/README.md');
+    const snippetFiles = globSync('changelog/*.md', { cwd: appRootDir.get() }).filter(
+      filename => filename !== 'changelog/README.md'
+    );
 
     this.snippets = await Promise.all(
       snippetFiles.map(async filename => {
