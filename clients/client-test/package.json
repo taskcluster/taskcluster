@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "http-proxy": "^1.18.0",
-    "mocha": "^10.2.0",
+    "mocha": "^11.7.6",
     "nock": "^13.5.5",
     "taskcluster-lib-scopes": "^11.0.0",
     "taskcluster-lib-urls": "^13.0.0"
