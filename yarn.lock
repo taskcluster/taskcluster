@@ -4415,13 +4415,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"amqplib@npm:^0.10.8":
-  version: 0.10.8
-  resolution: "amqplib@npm:0.10.8"
-  dependencies:
-    buffer-more-ints: "npm:~1.0.0"
-    url-parse: "npm:~1.5.10"
-  checksum: 10c0/817f8efd55148ce5c40adeea5ee79024c5e9caf4016eb3aecad3e2d5e1b57380697e5a514f5ad241779953b7e288ea230d4841ece18c2d4fff78333470279c09
+"amqplib@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "amqplib@npm:2.0.1"
+  checksum: 10c0/4de6dd3ac92bf59c5d7f00c4948a44288fca1a0abeae8f038c037dfc94bc485fc8c16c6d43759b7e50319b43aa0aff18b8b7566b2b3fbf25b3bf7039b80b3537
   languageName: node
   linkType: hard
 
@@ -4917,13 +4914,6 @@ __metadata:
   version: 1.1.2
   resolution: "buffer-from@npm:1.1.2"
   checksum: 10c0/124fff9d66d691a86d3b062eff4663fe437a9d9ee4b47b1b9e97f5a5d14f6d5399345db80f796827be7c95e70a8e765dd404b7c3ff3b3324f98e9b0c8826cc34
-  languageName: node
-  linkType: hard
-
-"buffer-more-ints@npm:~1.0.0":
-  version: 1.0.0
-  resolution: "buffer-more-ints@npm:1.0.0"
-  checksum: 10c0/992b4e372e2550fd92296937ddfb8e67bb6af2664a63eb46492a1fbc05447755c5d8ba23a0311b2b1193ce23349eada76e8da4af49d75872fc40a5913557665b
   languageName: node
   linkType: hard
 
@@ -10242,13 +10232,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"querystringify@npm:^2.1.1":
-  version: 2.2.0
-  resolution: "querystringify@npm:2.2.0"
-  checksum: 10c0/3258bc3dbdf322ff2663619afe5947c7926a6ef5fb78ad7d384602974c467fadfc8272af44f5eb8cddd0d011aae8fabf3a929a8eee4b86edcc0a21e6bd10f9aa
-  languageName: node
-  linkType: hard
-
 "quick-lru@npm:^5.0.0, quick-lru@npm:^5.1.1":
   version: 5.1.1
   resolution: "quick-lru@npm:5.1.1"
@@ -10435,13 +10418,6 @@ __metadata:
     debug: "npm:^4.3.5"
     module-details-from-path: "npm:^1.0.3"
   checksum: 10c0/4b3d29adfff873585dceffa9ddb8f33bb6599001ddff758503e0e5ade2ae6d20d691314125bb13679fa75a19893338e11953d4702dd2fea181e95c0f8316b29b
-  languageName: node
-  linkType: hard
-
-"requires-port@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "requires-port@npm:1.0.0"
-  checksum: 10c0/b2bfdd09db16c082c4326e573a82c0771daaf7b53b9ce8ad60ea46aa6e30aaf475fe9b164800b89f93b748d2c234d8abff945d2551ba47bf5698e04cd7713267
   languageName: node
   linkType: hard
 
@@ -11414,7 +11390,7 @@ __metadata:
     acorn-walk: "npm:^8.3.5"
     ajv: "npm:^8.20.0"
     ajv-formats: "npm:^2.1.1"
-    amqplib: "npm:^0.10.8"
+    amqplib: "npm:^2.0.1"
     apollo-link-ws: "npm:^1.0.20"
     app-root-dir: "npm:^1.0.2"
     assume: "npm:^2.1.0"
@@ -11909,16 +11885,6 @@ __metadata:
   version: 1.0.0
   resolution: "unpipe@npm:1.0.0"
   checksum: 10c0/193400255bd48968e5c5383730344fbb4fa114cdedfab26e329e50dd2d81b134244bb8a72c6ac1b10ab0281a58b363d06405632c9d49ca9dfd5e90cbd7d0f32c
-  languageName: node
-  linkType: hard
-
-"url-parse@npm:~1.5.10":
-  version: 1.5.10
-  resolution: "url-parse@npm:1.5.10"
-  dependencies:
-    querystringify: "npm:^2.1.1"
-    requires-port: "npm:^1.0.0"
-  checksum: 10c0/bd5aa9389f896974beb851c112f63b466505a04b4807cea2e5a3b7092f6fbb75316f0491ea84e44f66fed55f1b440df5195d7e3a8203f64fcefa19d182f5be87
   languageName: node
   linkType: hard
 
