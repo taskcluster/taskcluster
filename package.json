@@ -55,7 +55,7 @@
     "@taskcluster/lib-validate": "link:libraries/validate",
     "ajv": "^8.20.0",
     "ajv-formats": "^2.1.1",
-    "amqplib": "^0.10.8",
+    "amqplib": "^2.0.1",
     "body-parser": "2.3.0",
     "bottleneck": "^2.15.3",
     "chalk": "^5.6.2",
