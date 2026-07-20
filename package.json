@@ -147,7 +147,6 @@
     "console-taskgraph": "^1.7.2",
     "cronstrue": "^2.61.0",
     "cross-env": "^10.1.0",
-    "dockerode": "^3.3.4",
     "error-stack-parser": "^2.0.2",
     "github-slugger": "^2.0.0",
     "glob": "^13.0.6",
