@@ -3,6 +3,67 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v102.0.0
+
+### GENERAL
+
+▶ [minor] [#8855](https://github.com/taskcluster/taskcluster/issues/8855)
+The task view now has a "Change Priority" action to change a task's priority directly from the UI.
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8859](https://github.com/taskcluster/taskcluster/issues/8859)
+generic-worker (multiuser engine, macOS) now determines that the task user is
+ready by running `id -un` through the task user's launch agent and checking it
+reports the expected user, instead of parsing `last -t console` output. Because
+the probe only succeeds once the user's Aqua session is up and its launch agent
+is serving, the worker no longer claims a task before it can actually run
+commands as the task user (which resolved as `exception`/`internal-error`, e.g.
+when a boot-time macOS installer held the login window). This also removes the
+fragile `last` output parsing (issue 5006).
+
+### USERS
+
+▶ [MAJOR] [#8858](https://github.com/taskcluster/taskcluster/issues/8858)
+The task priority `normal` is no longer accepted. `createTask`, `changeTaskPriority`, and `changeTaskGroupPriority` now reject it with a 400 `InputError`, rather than silently aliasing it to `lowest` (as `createTask` did) or, in the case of `changeTaskPriority` specifically, causing an internal error.
+
+`normal` was marked deprecated in the queue API in 2017, when it was superseded by the current `highest`-to-`lowest` scale, but that deprecation notice was inadvertently dropped from the schema again in 2018 -- so it has looked like a supported value ever since, even though it was already being aliased to `lowest` under the hood. If any task definitions (e.g. in `.taskcluster.yml` files) still specify `priority: normal`, update them to `lowest` (or another priority from the standard scale) before upgrading.
+
+▶ [patch] [bug 2055467](http://bugzil.la/2055467)
+D2G scope validation now handles the legacy `disableSeccomp` capability consistently with docker worker.
+
+▶ [patch]
+Fetching a github status badge for a repository/branch that doesn't exist will
+now return a proper newrepo badge instead of a 500.
+
+▶ [patch] [#8863](https://github.com/taskcluster/taskcluster/issues/8863)
+Fix for Generic Worker multiuser (non-headless) bug where occasionally tasks
+would resolve as `exception/claim-expired`. The cause was a race condition
+allowing a second task to be claimed just before rebooting. That task could
+never be resolved by the worker, so the Queue service would eventually resolve
+it as `exception/claim-expired`.
+
+▶ [patch] [#8878](https://github.com/taskcluster/taskcluster/issues/8878)
+Fixed queue worker metrics incorrectly dropping to zero when a worker pool had pending tasks but no claimed tasks.
+
+### DEVELOPERS
+
+▶ [patch]
+Setting the `TASKCLUSTER_SKIP_DB_VERSION_CHECK` variable to any value now skips
+the postgresql version check, allowing you to run a different major version
+locally.
+
+### Automated Package Updates
+
+<details>
+<summary>3 Dependabot updates</summary>
+
+* build(deps): bump amqplib from 0.10.8 to 2.0.1 (c38c2419d3)
+* build(deps): bump rimraf from 5.0.10 to 6.1.3 (b5329f9a90)
+* build(deps): bump github.com/sigstore/sigstore-go from 1.1.4 to 1.2.0 (e9eeb81024)
+
+</details>
+
 ## v101.1.0
 
 ### DEPLOYERS

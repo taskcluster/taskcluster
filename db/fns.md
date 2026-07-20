@@ -7124,10 +7124,6 @@ end
 
 </details>
 
-### deprecated methods
-
-* `get_authorization_code(code_in text)` (compatibility guaranteed until v102.0.0)
-
 ## worker_manager
 
 * [`collect_launch_configs_if_exist`](#collect_launch_configs_if_exist)
@@ -9043,7 +9039,3 @@ end
 ```
 
 </details>
-
-### deprecated methods
-
-* `get_non_stopped_workers_with_launch_config_scanner(worker_pool_id_in text, worker_group_in text, worker_id_in text, providers_filter_cond_in text, providers_filter_value_in text, page_size_in integer, page_offset_in integer)` (compatibility guaranteed until v102.0.0)

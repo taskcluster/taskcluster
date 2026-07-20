@@ -4,11 +4,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	tcclient "github.com/taskcluster/taskcluster/v101/clients/client-go"
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcsecrets"
-	"github.com/taskcluster/taskcluster/v101/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v101/tools/worker-runner/run"
-	"github.com/taskcluster/taskcluster/v101/tools/worker-runner/tc"
+	tcclient "github.com/taskcluster/taskcluster/v102/clients/client-go"
+	"github.com/taskcluster/taskcluster/v102/clients/client-go/tcsecrets"
+	"github.com/taskcluster/taskcluster/v102/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v102/tools/worker-runner/run"
+	"github.com/taskcluster/taskcluster/v102/tools/worker-runner/tc"
 )
 
 func setup(t *testing.T) (*cfg.RunnerConfig, *run.State) {

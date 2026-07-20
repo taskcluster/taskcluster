@@ -13,10 +13,10 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	tcurls "github.com/taskcluster/taskcluster-lib-urls"
-	tcclient "github.com/taskcluster/taskcluster/v101/clients/client-go"
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/process"
+	tcclient "github.com/taskcluster/taskcluster/v102/clients/client-go"
+	"github.com/taskcluster/taskcluster/v102/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v102/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v102/workers/generic-worker/process"
 )
 
 var (

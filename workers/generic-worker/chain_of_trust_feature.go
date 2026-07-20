@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 
 	"github.com/peterbourgon/mergemap"
-	"github.com/taskcluster/taskcluster/v101/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v101/internal/scopes"
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v102/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v102/internal/scopes"
+	"github.com/taskcluster/taskcluster/v102/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v102/workers/generic-worker/fileutil"
 	"golang.org/x/crypto/ed25519"
 )
 

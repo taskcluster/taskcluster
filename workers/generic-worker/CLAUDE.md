@@ -31,7 +31,7 @@ cd workers/generic-worker
 # Quick test (insecure engine, current platform)
 # Note: the module version in the ldflags path changes with each major release.
 # Check go.mod for the current version.
-go test -tags insecure -count 1 -ldflags "-X github.com/taskcluster/taskcluster/v101/workers/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
+go test -tags insecure -count 1 -ldflags "-X github.com/taskcluster/taskcluster/v102/workers/generic-worker.revision=$(git rev-parse HEAD)" -v ./...
 
 # Quick build (insecure engine, current platform)
 go build -tags insecure -ldflags "-X main.revision=$(git rev-parse HEAD)" .

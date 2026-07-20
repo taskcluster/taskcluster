@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/taskcluster/taskcluster/v101/tools/workerproto"
-	workerProtoTesting "github.com/taskcluster/taskcluster/v101/tools/workerproto/testing"
+	"github.com/taskcluster/taskcluster/v102/tools/workerproto"
+	workerProtoTesting "github.com/taskcluster/taskcluster/v102/tools/workerproto/testing"
 )
 
 func setupProtocols() (*workerproto.Protocol, *workerproto.Protocol) {

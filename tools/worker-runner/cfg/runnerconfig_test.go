@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v101/tools/worker-runner/perms"
+	"github.com/taskcluster/taskcluster/v102/tools/worker-runner/perms"
 )
 
 // copyTestConfigToTempFile copies the checked-in test-config.yml into a
