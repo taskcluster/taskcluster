@@ -15,6 +15,7 @@ import Button from '../Button';
 import DiffTextArea from '../DiffTextArea';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import DialogAction from '../DialogAction';
 import { role } from '../../utils/prop-types';
 import Link from '../../utils/Link';
@@ -281,6 +282,11 @@ export default class RoleForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <AuditHistorySpeedDialAction
+                entityName="role"
+                entityId={roleId}
+                disabled={loading}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen
