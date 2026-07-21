@@ -4797,7 +4797,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"body-parser@npm:2.3.0, body-parser@npm:^2.2.2":
+"body-parser@npm:^2.2.2":
   version: 2.3.0
   resolution: "body-parser@npm:2.3.0"
   dependencies:
@@ -11415,7 +11415,6 @@ __metadata:
     app-root-dir: "npm:^1.0.2"
     assume: "npm:^2.1.0"
     aws-sdk-client-mock: "npm:^4.1.0"
-    body-parser: "npm:2.3.0"
     bottleneck: "npm:^2.15.3"
     builtin-modules: "npm:^3.1.0"
     chalk: "npm:^5.6.2"
