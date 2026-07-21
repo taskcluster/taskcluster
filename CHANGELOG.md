@@ -3,6 +3,25 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v102.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#8890](https://github.com/taskcluster/taskcluster/issues/8890)
+Generic Worker FreeBSD build has been fixed.
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump brace-expansion from 1.1.13 to 1.1.16 (1134030fb9)
+* build(deps): bump brace-expansion from 2.1.0 to 2.1.2 in /clients/client (b15dd41687)
+* build(deps): bump brace-expansion from 1.1.13 to 1.1.16 in /ui (1d5a64cdc6)
+* build(deps): bump axios from 1.16.0 to 1.18.1 (9953989868)
+
+</details>
+
 ## v102.0.0
 
 ### GENERAL
