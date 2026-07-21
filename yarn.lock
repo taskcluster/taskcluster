@@ -11512,7 +11512,7 @@ __metadata:
     typescript: "npm:^5.9.2"
     uuid: "npm:^14.0.1"
     walk: "npm:^2.3.9"
-    ws: "npm:^7.5.11"
+    ws: "npm:^8.21.0"
     zen-observable: "npm:^0.10.0"
     zurvan: "npm:^0.8.0"
   languageName: unknown
@@ -12186,7 +12186,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^5.2.0 || ^6.0.0 || ^7.0.0, ws@npm:^7.5.11":
+"ws@npm:^5.2.0 || ^6.0.0 || ^7.0.0":
   version: 7.5.11
   resolution: "ws@npm:7.5.11"
   peerDependencies:
@@ -12213,6 +12213,21 @@ __metadata:
     utf-8-validate:
       optional: true
   checksum: 10c0/eac918213de265ef7cb3d4ca348b891a51a520d839aa51cdb8ca93d4fa7ff9f6ccb339ccee89e4075324097f0a55157c89fa3f7147bde9d8d7e90335dc087b53
+  languageName: node
+  linkType: hard
+
+"ws@npm:^8.21.0":
+  version: 8.21.0
+  resolution: "ws@npm:8.21.0"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 10c0/ef4a243476283fc49bc7550966c4af4aa0eef56273837211e700de3b664e08604a760cdddcb5ba43c049140e74ccfec5b0ee0bb439e08c2adf9138902fdde5f9
   languageName: node
   linkType: hard
 
