@@ -44,7 +44,7 @@ const cleanPayload = payload => {
 builder.declare(
   {
     method: 'put',
-    route: '/secret/:name(*)',
+    route: '/secret/{*name}',
     name: 'set',
     input: 'secret.yml',
     scopes: 'secrets:set:<name>',
@@ -92,7 +92,7 @@ builder.declare(
 builder.declare(
   {
     method: 'delete',
-    route: '/secret/:name(*)',
+    route: '/secret/{*name}',
     name: 'remove',
     scopes: 'secrets:set:<name>',
     title: 'Delete Secret',
@@ -124,7 +124,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/secret/:name(*)',
+    route: '/secret/{*name}',
     name: 'get',
     output: 'secret.yml',
     scopes: 'secrets:get:<name>',

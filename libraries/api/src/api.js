@@ -13,6 +13,7 @@ import { parseBody } from './middleware/parse.js';
 import { expressError } from './middleware/express-error.js';
 import { logRequest } from './middleware/logging.js';
 import { perRequestContext } from './middleware/per-request-context.js';
+import { flattenParams } from './middleware/flatten-params.js';
 
 /**
  * A service represents an instance of an API at a specific rootUrl, ready to
@@ -88,6 +89,7 @@ export default class API {
     this.entries.forEach(entry => {
       const middleware = [
         entry.route,
+        flattenParams({ entry }),
         perRequestContext({ entry, context }),
         logRequest({ builder: this.builder, entry }),
         buildReportErrorMethod(),

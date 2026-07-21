@@ -16,7 +16,17 @@ export const queryValidator = ({ entry }) => {
   return (req, res, next) => {
     /** @type {string[]} */
     const errors = [];
-    Object.entries(req.query || {}).forEach(([key, value]) => {
+    const sanitized = { ...(req.query || {}) };
+
+    // Replace the express read-only query with our own property so it can be
+    // mutated later
+    Object.defineProperty(req, 'query', {
+      value: sanitized,
+      writable: true,
+      configurable: true,
+      enumerable: true,
+    });
+    Object.entries(sanitized).forEach(([key, value]) => {
       const pattern = query[key];
       if (!pattern) {
         // Allow the bewit key, it's used in signed strings
@@ -31,13 +41,13 @@ export const queryValidator = ({ entry }) => {
       }
       if (pattern instanceof RegExp) {
         if (!pattern.test(value)) {
-          delete req.query[key];
+          delete sanitized[key];
           errors.push(`Query-string parameter: ${key}="${value}" does not match expression: ${pattern.toString()}`);
         }
       } else {
         const msg = pattern.call(req.tcContext, value);
         if (typeof msg === 'string') {
-          delete req.query[key];
+          delete sanitized[key];
           errors.push(`Query-string parameter: ${key}="${value}" is not valid, error: ${msg}`);
         }
       }

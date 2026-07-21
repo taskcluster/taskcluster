@@ -40,7 +40,7 @@ suite(testing.suiteName(), () => {
   builder.declare(
     {
       method: 'get',
-      route: '/single-param-with-slashes/:myparam(*)',
+      route: '/single-param-with-slashes/*myparam',
       name: 'testParamWithSlashes',
       scopes: null,
       title: 'Test End-Point',
@@ -50,6 +50,38 @@ suite(testing.suiteName(), () => {
     },
     (req, res) => {
       res.status(200).send(req.params.myparam);
+    }
+  );
+
+  builder.declare(
+    {
+      method: 'get',
+      route: '/single-empty-param-with-slashes/{*myparam}',
+      name: 'testEmptyParamWithSlashes',
+      scopes: null,
+      title: 'Test End-Point',
+      stability: APIBuilder.stability.stable,
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (req, res) => {
+      res.status(200).send(`[${req.params.myparam}]`);
+    }
+  );
+
+  builder.declare(
+    {
+      method: 'get',
+      route: '/empty-param-with-suffix/{*myparam}/end',
+      name: 'testEmptyParamWithSuffix',
+      scopes: null,
+      title: 'Test End-Point',
+      stability: APIBuilder.stability.stable,
+      category: 'API Library',
+      description: 'Place we can call to test something',
+    },
+    (req, res) => {
+      res.status(200).send(`[${req.params.myparam}]`);
     }
   );
 
@@ -96,7 +128,7 @@ suite(testing.suiteName(), () => {
   builder.declare(
     {
       method: 'get',
-      route: '/slash-param/:name(*)',
+      route: '/slash-param/*name',
       name: 'testSlashParam',
       scopes: null,
       title: 'Test End-Point',
@@ -216,6 +248,38 @@ suite(testing.suiteName(), () => {
     return request.get(url).then(res => {
       assert(res.ok, 'Request failed');
       assert.equal(res.text, 'Hello/world', 'Got wrong value');
+    });
+  });
+
+  test('possibly empty parameter allowing slashes, with value', () => {
+    const url = u('/single-empty-param-with-slashes/Hello/world');
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert.equal(res.text, '[Hello/world]', 'Got wrong value');
+    });
+  });
+
+  test('possibly empty parameter allowing slashes, no value', () => {
+    const url = u('/single-empty-param-with-slashes/');
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert.equal(res.text, '[]', 'Got wrong value');
+    });
+  });
+
+  test('possibly empty parameter followed by a static component', () => {
+    const url = u('/empty-param-with-suffix/pp/wt/end');
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert.equal(res.text, '[pp/wt]', 'Got wrong value');
+    });
+  });
+
+  test('possibly empty parameter followed by a static component, empty', () => {
+    const url = u('/empty-param-with-suffix//end');
+    return request.get(url).then(res => {
+      assert(res.ok, 'Request failed');
+      assert.equal(res.text, '[]', 'Got wrong value');
     });
   });
 

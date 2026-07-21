@@ -1,6 +1,7 @@
 export * from './auth.js';
 export * from './errors.js';
 export * from './express-error.js';
+export * from './flatten-params.js';
 export * from './handle.js';
 export * from './logging.js';
 export * from './parameters.js';
