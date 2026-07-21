@@ -1,28 +1,28 @@
-import React, { Component } from "react";
-import List from "@material-ui/core/List";
-import FeatureSearchIcon from "mdi-react/FeatureSearchIcon";
-import HexagonSlice4 from "mdi-react/HexagonSlice4Icon";
-import PlusCircleIcon from "mdi-react/PlusCircleIcon";
-import GroupIcon from "mdi-react/GroupIcon";
-import AccountMultipleIcon from "mdi-react/AccountMultipleIcon";
-import MixcloudIcon from "mdi-react/MixcloudIcon";
-import BackupRestoreIcon from "mdi-react/BackupRestoreIcon";
-import AccountKeyIcon from "mdi-react/AccountKeyIcon";
-import AccountStarIcon from "mdi-react/AccountStarIcon";
-import ScaleBalanceIcon from "mdi-react/ScaleBalanceIcon";
-import ArrowExpandVerticalIcon from "mdi-react/ArrowExpandVerticalIcon";
-import AccountSettingsIcon from "mdi-react/AccountSettingsIcon";
-import GithubBoxIcon from "mdi-react/GithubBoxIcon";
-import CancelIcon from "mdi-react/CancelIcon";
-import FileTreeIcon from "mdi-react/FileTreeIcon";
-import WebhookIcon from "mdi-react/WebhookIcon";
-import KeyIcon from "mdi-react/KeyIcon";
-import PulseIcon from "mdi-react/PulseIcon";
-import MessageAlertIcon from "mdi-react/MessageAlertIcon";
-import HistoryIcon from "mdi-react/HistoryIcon";
-import SidebarListGroup from "./SidebarListGroup";
-import SidebarListItem from "./SidebarListItem";
-import { withAuth } from "../../utils/Auth";
+import React, { Component } from 'react';
+import List from '@material-ui/core/List';
+import FeatureSearchIcon from 'mdi-react/FeatureSearchIcon';
+import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
+import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
+import GroupIcon from 'mdi-react/GroupIcon';
+import AccountMultipleIcon from 'mdi-react/AccountMultipleIcon';
+import MixcloudIcon from 'mdi-react/MixcloudIcon';
+import BackupRestoreIcon from 'mdi-react/BackupRestoreIcon';
+import AccountKeyIcon from 'mdi-react/AccountKeyIcon';
+import AccountStarIcon from 'mdi-react/AccountStarIcon';
+import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
+import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
+import AccountSettingsIcon from 'mdi-react/AccountSettingsIcon';
+import GithubBoxIcon from 'mdi-react/GithubBoxIcon';
+import CancelIcon from 'mdi-react/CancelIcon';
+import FileTreeIcon from 'mdi-react/FileTreeIcon';
+import WebhookIcon from 'mdi-react/WebhookIcon';
+import KeyIcon from 'mdi-react/KeyIcon';
+import PulseIcon from 'mdi-react/PulseIcon';
+import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
+import HistoryIcon from 'mdi-react/HistoryIcon';
+import SidebarListGroup from './SidebarListGroup';
+import SidebarListItem from './SidebarListItem';
+import { withAuth } from '../../utils/Auth';
 
 @withAuth
 export default class SidebarList extends Component {
@@ -49,16 +49,14 @@ export default class SidebarList extends Component {
           skipPrefetch
           to="/auth"
           title="Authorization"
-          icon={<AccountKeyIcon />}
-        >
+          icon={<AccountKeyIcon />}>
           <SidebarListItem to="/auth/clients" icon={<AccountMultipleIcon />}>
             Clients
           </SidebarListItem>
           {clientId && (
             <SidebarListItem
               to={`/audit/client/history/${encodeURIComponent(clientId)}`}
-              icon={<HistoryIcon />}
-            >
+              icon={<HistoryIcon />}>
               Client Audit History
             </SidebarListItem>
           )}
@@ -70,14 +68,12 @@ export default class SidebarList extends Component {
           </SidebarListItem>
           <SidebarListItem
             to="/auth/scopes/compare"
-            icon={<ScaleBalanceIcon />}
-          >
+            icon={<ScaleBalanceIcon />}>
             Compare Scopes
           </SidebarListItem>
           <SidebarListItem
             to="/auth/scopes/expansions"
-            icon={<ArrowExpandVerticalIcon />}
-          >
+            icon={<ArrowExpandVerticalIcon />}>
             Expand Scopes
           </SidebarListItem>
         </SidebarListGroup>
@@ -88,8 +84,7 @@ export default class SidebarList extends Component {
 
         <SidebarListItem
           to="/worker-manager/errors"
-          icon={<MessageAlertIcon />}
-        >
+          icon={<MessageAlertIcon />}>
           Provisioning Errors
         </SidebarListItem>
 

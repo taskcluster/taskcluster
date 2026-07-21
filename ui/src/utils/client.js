@@ -1,4 +1,4 @@
-import { Auth, Queue, WorkerManager } from "@taskcluster/client-web";
+import { Auth, Queue, WorkerManager } from '@taskcluster/client-web';
 
 export const getClient = ({ Class, user, ...options }) => {
   return new Class({
@@ -44,7 +44,7 @@ export const getAuditHistory = async (
   entityId,
   entityType,
   user,
-  { limit },
+  { limit }
 ) => {
   const auth = getClient({
     Class: Auth,
