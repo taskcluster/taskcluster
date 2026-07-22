@@ -16,6 +16,8 @@ task-defaults:
     max-run-time: 600
     taskcluster-proxy: true
     chain-of-trust: true
+  attributes:
+    code-review: true
   scopes:
     - secrets:get:project/taskcluster/testing/client-libraries
 

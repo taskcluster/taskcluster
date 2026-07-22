@@ -10,6 +10,8 @@ task-defaults:
   worker-type: ubuntu-24-04
   run:
     using: bare
+  attributes:
+    code-review: true
   worker:
     docker-image: {in-tree: browser-test}
     chain-of-trust: true

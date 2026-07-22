@@ -17,6 +17,8 @@ task-defaults:
     lint: lint-golang
   run:
     using: bare
+  attributes:
+    code-review: true
   worker:
     max-run-time: 1800
     mounts:

@@ -15,6 +15,8 @@ task-defaults:
   scopes:
     - secrets:get:project/taskcluster/testing/azure
     - secrets:get:project/taskcluster/testing/taskcluster-*
+  attributes:
+    code-review: true
   worker:
     docker-image: {in-tree: ci}
     taskcluster-proxy: true
