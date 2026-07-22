@@ -230,16 +230,44 @@ export async function statusHandler(message) {
         output.addText(`### Artifacts`);
       }
 
+      const UNITS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+      // A helper function to format bytes (matching the UI logic exactly)
+      const formatBytes = bytes => {
+        if (bytes === null || bytes === undefined || Number.isNaN(bytes)) {
+          return '';
+        }
+        if (bytes < 1) {
+          return `${bytes} B`;
+        }
+        const exponent = Math.min(
+          Math.floor(Math.log10(bytes) / 3),
+          UNITS.length - 1
+        );
+        const value = bytes / (1000 ** exponent);
+        const formatted =
+          exponent === 0 || value >= 100
+            ? value.toFixed(0)
+            : value.toFixed(1).replace(/\.0$/, '');
+        return `${formatted} ${UNITS[exponent]}`;
+      };
       artifactList.artifacts.forEach(element => {
         let artifactUrl;
-
         if (element.name === 'public/logs/live_backing.log' || element.name === 'public/logs/live.log') {
           artifactUrl = buildLogUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         } else {
           artifactUrl = buildUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         }
+        // Add the formatted size to the name if the size exists
+        let displayName = element.name;
+        if (element.size !== undefined) {
+          const formattedSize = formatBytes(element.size);
+          if (formattedSize) {
+            displayName = `${element.name} (${formattedSize})`;
+          }
+        }
+        const ARTIFACT_LINK = markdownAnchor(displayName, artifactUrl);
 
-        const ARTIFACT_LINK = markdownAnchor(element.name, artifactUrl);
         output.addText(`\\- ${ARTIFACT_LINK}`);
       });
     } catch (e) {
