@@ -37,6 +37,9 @@ class Notifier {
       views: { root: path.join(__dirname, 'templates') },
       juice: true,
       juiceResources: {
+        applyStyleTags: true,
+        removeStyleTags: true,
+        preserveImportant: true,
         webResources: {
           relativeTo: path.join(__dirname, 'templates'),
         },

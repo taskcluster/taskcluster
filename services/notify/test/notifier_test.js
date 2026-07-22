@@ -53,6 +53,28 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     );
   });
 
+  test('email inlines stylesheet rules as style attributes', async () => {
+    const notifier = await helper.load('notifier');
+
+    for (const template of ['simple', 'fullscreen']) {
+      const res = await notifier.email({
+        address: `test+${template}@taskcluster.net`,
+        subject: 'Test Subject',
+        content: 'Test Content',
+        link: { href: 'https://taskcluster.net', text: 'Click me' },
+        replyTo: 'test@taskcluster.net',
+        template,
+      });
+
+      const { html } = res.originalMessage;
+      assert.match(
+        html,
+        /<body style="[^"]*background-color: #f6f6f6/,
+        `${template}: stylesheet rules were not inlined into style attributes`
+      );
+    }
+  });
+
   test('pulse', async () => {
     const notifier = await helper.load('notifier');
 
