@@ -111,25 +111,25 @@ mod test {
         assert_eq!(&factory.buf, b"hello, world");
     }
 
-#[tokio::test]
-async fn get_writer_skipped_on_retriable_error_then_called_on_retry() {
-    let server = FakeDataServer::new(false, &[500, 200]);
-    let mut factory = SpyWriterFactory::default();
+    #[tokio::test]
+    async fn get_writer_only_called_after_retry_success() {
+        let server = FakeDataServer::new(false, &[500, 200]);
+        let mut factory = SpyWriterFactory::default();
 
-    match get_url(&server.data_url(), &mut factory).await {
-        RetriableResult::Retriable(_) => {}
-        _ => panic!("expected a retriable failure"),
-    }
-    assert!(factory.content_lengths.is_empty());
-    assert!(factory.buf.is_empty());
+        match get_url(&server.data_url(), &mut factory).await {
+            RetriableResult::Retriable(_) => {}
+            _ => panic!("expected a retriable failure"),
+        }
+        assert!(factory.content_lengths.is_empty());
+        assert!(factory.buf.is_empty());
 
-    match get_url(&server.data_url(), &mut factory).await {
-        RetriableResult::Ok(_) => {}
-        _ => panic!("expected a successful fetch"),
+        match get_url(&server.data_url(), &mut factory).await {
+            RetriableResult::Ok(_) => {}
+            _ => panic!("expected a successful fetch"),
+        }
+        assert_eq!(factory.content_lengths, vec![Some(12)]);
+        assert_eq!(&factory.buf, b"hello, world");
     }
-    assert_eq!(factory.content_lengths, vec![Some(12)]);
-    assert_eq!(&factory.buf, b"hello, world");
-}
 
     #[tokio::test]
     async fn get_writer_not_called_on_client_error() {

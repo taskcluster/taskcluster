@@ -12,8 +12,6 @@ pub trait AsyncWriterFactory {
     /// Get a fresh [AsyncWrite] object, positioned at the point where downloaded data should
     /// be written.
     ///
-    /// The `content_length` parameter will have the content length of the artifact, if it is known.
-    /// See [content_length](reqwest::Response::content_length) on the `reqwest` response object
     /// The `content_length` parameter holds the response's `Content-Length` if it's known (see
     /// [content_length](reqwest::Response::content_length)). It's only a hint intended for sizing
     /// the writer, and must not be relied upon. It might be `None` for chunked or decompressed
