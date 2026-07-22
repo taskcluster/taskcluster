@@ -1,7 +1,7 @@
 import { promisify } from 'node:util';
 import path from 'node:path';
 import fs from 'node:fs';
-import glob from 'glob';
+import { globSync } from 'glob';
 import yaml from 'js-yaml';
 import stringify from 'json-stable-stringify';
 import { execFile } from 'node:child_process';
@@ -23,8 +23,8 @@ export const REPO_ROOT = path.join(__dirname, '../../../../');
 export const listServices = ({ repoDir } = {}) => {
   // look for package.json's, so that we're not fooled by any
   // stray empty or gitignore'd directories
-  const packageJsons = glob.sync('services/*/package.json', { cwd: repoDir || REPO_ROOT });
-  return packageJsons.map(filename => filename.split('/')[1]);
+  const packageJsons = globSync('services/*/package.json', { cwd: repoDir || REPO_ROOT });
+  return packageJsons.map(filename => filename.split('/')[1]).sort();
 };
 
 /**

@@ -1,0 +1,22 @@
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - taskgraph.transforms.code_review:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+  - client
+  - db
+  - generic-worker
+  - go
+  - library
+  - lint
+  - meta
+  - service
+  - ui
+
+tasks:
+    complete:
+        description: PR Summary Task
+        run-on-tasks-for: [github-pull-request, github-pull-request-untrusted]
+        worker-type: succeed

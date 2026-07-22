@@ -10,6 +10,8 @@ task-defaults:
   worker-type: ubuntu-24-04
   run:
     using: bare
+  attributes:
+    code-review: true
   worker:
     docker-image: {in-tree: browser-test}
     chain-of-trust: true
@@ -27,7 +29,7 @@ tasks:
         cd ui &&
         {{ corepack yarn --immutable &> /dev/null || exit 99; }} &&
         corepack yarn lint &&
-        corepack yarn test --coverage &&
+        corepack yarn test &&
         corepack yarn build
   smoke:
     description: UI Playwright smoke

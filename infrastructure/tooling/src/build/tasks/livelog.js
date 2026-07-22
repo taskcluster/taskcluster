@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import glob from 'glob';
+import { globSync } from 'glob';
 import path from 'node:path';
 import { ensureTask, execCommand, dockerPush, REPO_ROOT } from '../../utils/index.js';
 
@@ -17,7 +17,7 @@ export default ({ tasks, cmdOptions, credentials, baseDir, logsDir }) => {
         utils,
       });
 
-      const artifacts = glob.sync('livelog-*', { cwd: artifactsDir });
+      const artifacts = globSync('livelog-*', { cwd: artifactsDir });
 
       return {
         'livelog-artifacts': artifacts,

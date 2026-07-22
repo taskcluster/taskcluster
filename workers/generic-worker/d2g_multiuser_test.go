@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v101/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v102/tools/d2g/dockerworker"
 )
 
 func TestD2GWithChainOfTrust(t *testing.T) {

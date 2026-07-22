@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v101/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v102/workers/generic-worker/fileutil"
 )
 
 // TaskManager manages concurrent task execution and tracks running tasks.

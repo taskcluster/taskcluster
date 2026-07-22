@@ -3,7 +3,7 @@ import debugFactory from 'debug';
 const debug = debugFactory('app:main');
 import assert from 'node:assert';
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@as-integrations/express4';
+import { expressMiddleware } from '@as-integrations/express5';
 import compression from 'compression';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import depthLimit from './validation/guardedDepthLimit.js';

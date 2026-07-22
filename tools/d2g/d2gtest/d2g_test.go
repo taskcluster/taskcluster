@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
@@ -15,10 +16,10 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"sigs.k8s.io/yaml"
 
-	"github.com/taskcluster/taskcluster/v101/internal/scopes"
-	d2g "github.com/taskcluster/taskcluster/v101/tools/d2g"
-	"github.com/taskcluster/taskcluster/v101/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v101/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v102/internal/scopes"
+	d2g "github.com/taskcluster/taskcluster/v102/tools/d2g"
+	"github.com/taskcluster/taskcluster/v102/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v102/tools/d2g/genericworker"
 )
 
 func ExampleConvertScopes_mixture() {
@@ -65,6 +66,88 @@ func ExampleConvertScopes_mixture() {
 	//	"generic-worker:os-group:x/y/z/kvm"
 	//	"generic-worker:os-group:x/y/z/libvirt"
 	//	"generic-worker:teapot"
+}
+
+func TestConvertScopesRequiresDisableSeccompScope(t *testing.T) {
+	const disableSeccompScope = "docker-worker:capability:disableSeccomp"
+
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	dwPayload.Capabilities.DisableSeccomp = true
+
+	tests := []struct {
+		name    string
+		scopes  []string
+		wantErr bool
+	}{
+		{
+			name:    "missing scope",
+			scopes:  []string{},
+			wantErr: true,
+		},
+		{
+			name:   "required scope present",
+			scopes: []string{disableSeccompScope},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := d2g.ConvertScopes(test.scopes, &dwPayload, "proj-taskcluster/ci", scopes.DummyExpander())
+			if test.wantErr {
+				if err == nil {
+					t.Fatal("ConvertScopes succeeded without the disableSeccomp scope")
+				}
+				if !strings.Contains(err.Error(), disableSeccompScope) {
+					t.Fatalf("ConvertScopes error does not identify the missing scope: %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("ConvertScopes failed with the disableSeccomp scope: %v", err)
+			}
+		})
+	}
+}
+
+func TestConvertScopesRequiresEveryCapabilityScope(t *testing.T) {
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	dwPayload.Capabilities.DisableSeccomp = true
+	dwPayload.Capabilities.Devices.LoopbackAudio = true
+
+	_, err := d2g.ConvertScopes(
+		[]string{"docker-worker:capability:device:loopbackAudio"},
+		&dwPayload,
+		"proj-taskcluster/ci",
+		scopes.DummyExpander(),
+	)
+	if err == nil {
+		t.Fatal("ConvertScopes succeeded without the disableSeccomp scope")
+	}
+}
+
+func TestConvertScopesReportsEveryMissingCapabilityScope(t *testing.T) {
+	const disableSeccompScope = "docker-worker:capability:disableSeccomp"
+	const loopbackAudioScope = "docker-worker:capability:device:loopbackAudio"
+
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	dwPayload.Capabilities.DisableSeccomp = true
+	dwPayload.Capabilities.Devices.LoopbackAudio = true
+
+	_, err := d2g.ConvertScopes(nil, &dwPayload, "proj-taskcluster/ci", scopes.DummyExpander())
+	if err == nil {
+		t.Fatal("ConvertScopes succeeded without the required capability scopes")
+	}
+	for _, missingScope := range []string{disableSeccompScope, loopbackAudioScope} {
+		if !strings.Contains(err.Error(), missingScope) {
+			t.Errorf("ConvertScopes error does not identify missing scope %q: %v", missingScope, err)
+		}
+	}
+	if !strings.Contains(err.Error(), "\nAND\n") {
+		t.Errorf("ConvertScopes error does not join capability requirements with AND: %v", err)
+	}
 }
 
 type mockedDirEntry struct {

@@ -281,7 +281,7 @@ export class APIBuilder {
       entries: this.entries
         .filter(entry => !entry.noPublish)
         .map(entry => {
-          const [route, params] = cleanRouteAndParams(entry.route);
+          const { route, params } = cleanRouteAndParams(entry.route);
 
           /** @type {Record<string, any>} */
           const retval = {

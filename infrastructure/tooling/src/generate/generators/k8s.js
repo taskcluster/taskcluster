@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import path from 'node:path';
-import glob from 'glob';
+import { globSync } from 'glob';
 import yaml from 'js-yaml';
 import jsone from 'json-e';
 import mkdirp from 'mkdirp';
@@ -339,7 +339,7 @@ tasks.push({
   requires: [],
   provides: ['k8s-templates'],
   run: async (_requirements, _utils) => {
-    const templateFiles = glob.sync('infrastructure/tooling/templates/k8s/*.yaml', { cwd: REPO_ROOT });
+    const templateFiles = globSync('infrastructure/tooling/templates/k8s/*.yaml', { cwd: REPO_ROOT });
     const templates = {};
     for (const f of templateFiles) {
       templates[path.basename(f, '.yaml')] = await readRepoYAML(f);

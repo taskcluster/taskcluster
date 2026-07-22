@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v101/internal/jsontest"
+	"github.com/taskcluster/taskcluster/v102/internal/jsontest"
 )
 
 func (c *Client) quickBackoff() {

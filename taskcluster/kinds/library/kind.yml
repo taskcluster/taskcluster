@@ -16,14 +16,12 @@ task-defaults:
   scopes:
     - secrets:get:project/taskcluster/testing/azure
     - secrets:get:project/taskcluster/testing/taskcluster-*
+  attributes:
+    code-review: true
   worker:
     docker-image: {in-tree: ci}
     taskcluster-proxy: true
     chain-of-trust: true
-    artifacts:
-      - name: public
-        path: /builds/worker/checkouts/taskcluster/artifacts
-        type: directory
     caches:
       - name: taskcluster
         mount-point: /builds/worker/checkouts
@@ -39,4 +37,4 @@ task-overrides:
       command: >-
         corepack yarn --immutable &> /dev/null &&
         service rabbitmq-server start &&
-        corepack yarn workspace @taskcluster/lib-pulse coverage:report
+        corepack yarn workspace @taskcluster/lib-pulse test

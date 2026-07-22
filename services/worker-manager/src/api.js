@@ -55,7 +55,7 @@ const declareWithTrailingColon = (options, handler) => {
   // declare with the colon included
   const colonOptions = {
     ...options,
-    route: options.route.replace('/workers/:workerPoolId/', '/workers/:workerPoolId:/'),
+    route: options.route.replace('/workers/:workerPoolId/', '/workers/:workerPoolId\\:/'),
     name: `${options.name}WithColon`,
     noPublish: true,
   };
@@ -126,7 +126,7 @@ builder.declare(
 builder.declare(
   {
     method: 'put',
-    route: '/worker-pool/:workerPoolId(*)',
+    route: '/worker-pool/{*workerPoolId}',
     name: 'createWorkerPool',
     title: 'Create Worker Pool',
     category: 'Worker Pools',
@@ -221,7 +221,7 @@ builder.declare(
 builder.declare(
   {
     method: 'post',
-    route: '/worker-pool/:workerPoolId(*)',
+    route: '/worker-pool/{*workerPoolId}',
     name: 'updateWorkerPool',
     title: 'Update Worker Pool',
     stability: APIBuilder.stability.experimental,
@@ -332,7 +332,7 @@ builder.declare(
 builder.declare(
   {
     method: 'delete',
-    route: '/worker-pool/:workerPoolId(*)',
+    route: '/worker-pool/{*workerPoolId}',
     name: 'deleteWorkerPool',
     title: 'Delete Worker Pool',
     stability: APIBuilder.stability.stable,
@@ -470,7 +470,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/worker-pool/:workerPoolId(*)/stats',
+    route: '/worker-pool/{*workerPoolId}/stats',
     name: 'workerPoolStats',
     scopes: 'worker-manager:get-worker-pool:<workerPoolId>',
     title: 'Get Worker Pool Statistics',
@@ -513,7 +513,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/worker-pool/:workerPoolId(*)',
+    route: '/worker-pool/{*workerPoolId}',
     name: 'workerPool',
     scopes: 'worker-manager:get-worker-pool:<workerPoolId>',
     title: 'Get Worker Pool',
@@ -590,7 +590,7 @@ builder.declare(
 builder.declare(
   {
     method: 'post',
-    route: '/worker-pool-errors/:workerPoolId(*)',
+    route: '/worker-pool-errors/{*workerPoolId}',
     name: 'reportWorkerError',
     title: 'Report an error from a worker',
     input: 'report-worker-error-request.yml',
@@ -734,7 +734,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/worker-pool-errors/:workerPoolId(*)',
+    route: '/worker-pool-errors/{*workerPoolId}',
     query: {
       ...paginateResults.query,
       ...launchConfigIdQuery,
@@ -1066,7 +1066,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/workers/:workerPoolId(*)',
+    route: '/workers/{*workerPoolId}',
     query: {
       ...paginateResults.query,
       ...launchConfigIdQuery,

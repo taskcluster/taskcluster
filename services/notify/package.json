@@ -1,14 +1,12 @@
 {
   "name": "@taskcluster/notify",
-  "version": "101.1.0",
+  "version": "102.0.1",
   "private": true,
   "description": "Collect all of the ways of notifying users into one place for other tc services.",
   "license": "MPL-2.0",
   "exports": "./src/main.js",
   "type": "module",
   "scripts": {
-    "coverage": "c8 yarn test",
-    "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "test": "mocha test/*_test.js",
     "lint": "biome check",
     "lint:fix": "biome check --write",
@@ -18,7 +16,6 @@
     "@aws-sdk/client-sns": "^3.1075.0",
     "@aws-sdk/client-sqs": "^3.1075.0",
     "@biomejs/biome": "^2.5.1",
-    "c8": "^8.0.1",
-    "mocha": "^10.8.2"
+    "mocha": "^11.7.6"
   }
 }

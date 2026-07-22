@@ -1,13 +1,11 @@
 {
   "name": "@taskcluster/lib-app",
   "private": true,
-  "version": "101.1.0",
+  "version": "102.0.1",
   "author": "Jonas Finnemann Jensen <jopsen@gmail.com>",
   "description": "@taskcluster/lib-app",
   "license": "MPL-2.0",
   "scripts": {
-    "coverage": "c8 yarn test",
-    "coverage:report": "c8 yarn test && c8 report --temp-directory ./coverage/tmp --reporter json --report-dir ../../artifacts",
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "format": "biome format --write",
@@ -17,7 +15,6 @@
   "type": "module",
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
-    "c8": "^8.0.1",
-    "mocha": "^10.8.2"
+    "mocha": "^11.7.6"
   }
 }

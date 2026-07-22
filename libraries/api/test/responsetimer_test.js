@@ -37,7 +37,7 @@ suite(testing.suiteName(), () => {
   builder.declare(
     {
       method: 'get',
-      route: '/slash-param/:name(*)',
+      route: '/slash-param/*name',
       name: 'testSlashParam',
       title: 'Test End-Point',
       category: 'API Library',
@@ -52,7 +52,7 @@ suite(testing.suiteName(), () => {
   builder.declare(
     {
       method: 'get',
-      route: '/another-param/:name(*)',
+      route: '/another-param/*name',
       name: 'testAnotherParam',
       title: 'Test End-Point',
       category: 'API Library',

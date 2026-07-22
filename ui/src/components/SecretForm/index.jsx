@@ -20,6 +20,7 @@ import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import DatePicker from '../DatePicker';
 import SpeedDialAction from '../SpeedDialAction';
+import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import { secret } from '../../utils/prop-types';
 
 @withStyles(theme => ({
@@ -262,6 +263,11 @@ export default class SecretForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <AuditHistorySpeedDialAction
+                entityName="secret"
+                entityId={secretName}
+                disabled={loading}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen

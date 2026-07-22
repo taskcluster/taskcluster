@@ -2538,6 +2538,29 @@ suite(testing.suiteName(), () => {
       await db.fns.queue_pending_tasks_add(taskQueueId, 0, 'pending-task-id', 0, 'hint', fromNow('1 hour'));
       await expectStats({ worker_count: 2, quarantined_count: 1, pending_count: 1, claimed_count: 1 });
     });
+
+    helper.dbTest('workers and pending tasks with no claimed tasks yields a single row', async db => {
+      const taskQueueId = 'p3/wt3';
+
+      await db.fns.queue_worker_seen_with_last_date_active({
+        task_queue_id_in: taskQueueId,
+        worker_group_in: 'wg1',
+        worker_id_in: 'worker1',
+        expires_in: fromNow('12 hours'),
+      });
+      await db.fns.queue_pending_tasks_add(taskQueueId, 0, 'pending-task-id', 0, 'hint', fromNow('1 hour'));
+
+      const result = await db.fns.queue_worker_stats();
+      assert.deepEqual(result, [
+        {
+          task_queue_id: taskQueueId,
+          worker_count: 1,
+          quarantined_count: 0,
+          claimed_count: 0,
+          pending_count: 1,
+        },
+      ]);
+    });
   });
 
   suite('priority change helpers', () => {
