@@ -144,6 +144,7 @@ export default class App extends Component {
       theme: theme.darkTheme,
       auth: {
         user: null,
+        authReady: false,
         authorize: this.authorize,
         unauthorize: this.unauthorize,
       },
@@ -169,6 +170,7 @@ export default class App extends Component {
       auth: {
         ...this.state.auth,
         user,
+        authReady: true,
       },
     });
   };
@@ -190,6 +192,7 @@ export default class App extends Component {
       auth: {
         ...this.state.auth,
         user,
+        authReady: true,
       },
     });
   }
