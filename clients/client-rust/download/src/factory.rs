@@ -14,7 +14,11 @@ pub trait AsyncWriterFactory {
     ///
     /// The `content_length` parameter will have the content length of the artifact, if it is known.
     /// See [content_length](reqwest::Response::content_length) on the `reqwest` response object
-    /// for more information on the matter.
+    /// The `content_length` parameter holds the response's `Content-Length` if it's known (see
+    /// [content_length](reqwest::Response::content_length)). It's only a hint intended for sizing
+    /// the writer, and must not be relied upon. It might be `None` for chunked or decompressed
+    /// responses, and for a compressed body it reflects the compressed size, so the number of bytes
+    /// actually written may differ.
     async fn get_writer<'a>(
         &'a mut self,
         content_length: Option<u64>,
