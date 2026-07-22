@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { withApollo } from '@apollo/client/react/hoc';
 import { Secrets } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -16,11 +15,9 @@ import { withAuth } from '../../../utils/Auth';
 import { getClient } from '../../../utils/client';
 import ErrorPanel from '../../../components/ErrorPanel';
 import DialogAction from '../../../components/DialogAction';
-import deleteSecretQuery from './deleteSecret.graphql';
 
 const FIRST_PAGE = '$$FIRST$$';
 
-@withApollo
 @withAuth
 @withStyles(theme => ({
   plusIconSpan: {
@@ -60,6 +57,8 @@ export default class ViewSecrets extends Component {
     this.fetchRequestId += 1;
   }
 
+  getSecretsClient = () => getClient({ Class: Secrets, user: this.props.user });
+
   fetchSecrets = async ({
     cursor,
     previousCursor,
@@ -75,8 +74,7 @@ export default class ViewSecrets extends Component {
     this.setState({ loading: true, error: null });
 
     try {
-      const client = getClient({ Class: Secrets, user: this.props.user });
-      const response = await client.list(options);
+      const response = await this.getSecretsClient().list(options);
 
       if (requestId !== this.fetchRequestId) {
         return;
@@ -128,12 +126,7 @@ export default class ViewSecrets extends Component {
   handleDeleteSecret = () => {
     this.setState({ dialogError: null });
 
-    const name = this.state.deleteSecretName;
-
-    return this.props.client.mutate({
-      mutation: deleteSecretQuery,
-      variables: { name },
-    });
+    return this.getSecretsClient().remove(this.state.deleteSecretName);
   };
 
   handleDialogActionError = error => {
