@@ -1455,7 +1455,7 @@ const sleep20Seconds = () => {
 builder.declare(
   {
     method: 'post',
-    route: '/claim-work/:taskQueueId(*)',
+    route: '/claim-work/{*taskQueueId}',
     name: 'claimWork',
     stability: APIBuilder.stability.stable,
     category: 'Worker Interface',
@@ -2195,7 +2195,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/pending/:taskQueueId(*)',
+    route: '/pending/{*taskQueueId}',
     name: 'pendingTasks',
     scopes: 'queue:pending-count:<taskQueueId>',
     stability: APIBuilder.stability.deprecated,
@@ -2232,7 +2232,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/task-queues/:taskQueueId(*)/counts',
+    route: '/task-queues/{*taskQueueId}/counts',
     name: 'taskQueueCounts',
     scopes: {
       AllOf: ['queue:pending-count:<taskQueueId>', 'queue:claimed-count:<taskQueueId>'],
@@ -2273,7 +2273,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/task-queues/:taskQueueId(*)/pending',
+    route: '/task-queues/{*taskQueueId}/pending',
     query: paginateResults.query,
     name: 'listPendingTasks',
     scopes: 'queue:pending-list:<taskQueueId>',
@@ -2321,7 +2321,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/task-queues/:taskQueueId(*)/claimed',
+    route: '/task-queues/{*taskQueueId}/claimed',
     query: paginateResults.query,
     name: 'listClaimedTasks',
     scopes: 'queue:claimed-list:<taskQueueId>',

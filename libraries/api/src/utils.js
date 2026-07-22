@@ -1,11 +1,15 @@
+import { parse } from 'path-to-regexp';
+
 /**
- * Return [route, params, optionalParams] from route.  `route` is the input
- * route rewritten to use `<..>` syntax for the parameters.  `params`
- * is the full list of parameters.  And `optionalParams` is the list of
- * parameters with a `?` suffix, making them optional.
+ * Parse a route into its reference form and its parameters.
+ *
+ * `route` is the input route rewritten to use `<..>` syntax for the parameters.
+ * `params` is the full list of parameters, `optionalParams` those that may be
+ * absent from the path, and `splatParams` those that match the rest of the
+ * path, including slashes.
  *
  * @param {string} route
- * @returns {[string, string[], string[]]}
+ * @returns {{ route: string, params: string[], optionalParams: string[], splatParams: string[] }}
  */
 export const cleanRouteAndParams = route => {
   // Find parameters for entry
@@ -13,16 +17,29 @@ export const cleanRouteAndParams = route => {
   const params = [];
   /** @type {string[]} */
   const optionalParams = [];
-  // Note: express uses the NPM module path-to-regexp for parsing routes
-  // when modifying this to support more complicated routes it can be
-  // beneficial lookup the source of this module:
-  // https://github.com/component/path-to-regexp/blob/0.1.x/index.js
-  route = route.replace(/\/:(\w+)(\(.*?\))?\??/g, (match, param) => {
-    params.push(param);
-    if (match.endsWith('?')) {
-      optionalParams.push(param);
-    }
-    return `/<${param}>`;
-  });
-  return [route, params, optionalParams];
+  /** @type {string[]} */
+  const splatParams = [];
+
+  // express parses routes with path-to-regexp. See
+  // https://github.com/pillarjs/path-to-regexp/tree/v8.4.2
+  const walk = (tokens, inGroup) =>
+    tokens
+      .map(token => {
+        if (token.type === 'text') {
+          return token.value;
+        }
+        if (token.type === 'group') {
+          return walk(token.tokens, true);
+        }
+        params.push(token.name);
+        if (token.type === 'wildcard') {
+          splatParams.push(token.name);
+        } else if (inGroup) {
+          optionalParams.push(token.name);
+        }
+        return `<${token.name}>`;
+      })
+      .join('');
+
+  return { route: walk(parse(route).tokens, false), params, optionalParams, splatParams };
 };

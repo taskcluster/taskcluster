@@ -39,7 +39,7 @@ export default builder;
 builder.declare(
   {
     method: 'post',
-    route: '/purge-cache/:workerPoolId(*)',
+    route: '/purge-cache/{*workerPoolId}',
     name: 'purgeCache',
     scopes: 'purge-cache:<workerPoolId>:<cacheName>',
     input: 'purge-cache-request.yml',
@@ -115,7 +115,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/purge-cache/:workerPoolId(*)',
+    route: '/purge-cache/{*workerPoolId}',
     query: {
       since: dt => (Date.parse(dt) ? null : 'Invalid Date'),
     },

@@ -241,7 +241,7 @@ builder.declare(
 builder.declare(
   {
     method: 'put',
-    route: '/start-download/:name(*)',
+    route: '/start-download/{*name}',
     name: 'startDownload',
     input: 'download-object-request.yml',
     output: 'download-object-response.yml',
@@ -301,7 +301,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/metadata/:name(*)',
+    route: '/metadata/{*name}',
     name: 'object',
     stability: APIBuilder.stability.stable,
     category: 'Objects',
@@ -335,7 +335,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/download/:name(*)',
+    route: '/download/{*name}',
     name: 'download',
     stability: APIBuilder.stability.stable,
     category: 'Download',

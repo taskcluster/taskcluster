@@ -120,7 +120,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/namespaces/:namespace?',
+    route: '/namespaces{/:namespace}',
     query: paginateResults.query,
     name: 'listNamespaces',
     scopes: 'index:list-namespaces:<namespace>',
@@ -161,7 +161,7 @@ builder.declare(
 builder.declare(
   {
     method: 'post',
-    route: '/namespaces/:namespace?',
+    route: '/namespaces{/:namespace}',
     name: 'listNamespacesPost',
     scopes: 'index:list-namespaces:<namespace>',
     stability: 'deprecated',
@@ -204,7 +204,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/tasks/:namespace?',
+    route: '/tasks{/:namespace}',
     query: paginateResults.query,
     name: 'listTasks',
     scopes: 'index:list-tasks:<namespace>',
@@ -246,7 +246,7 @@ builder.declare(
 builder.declare(
   {
     method: 'post',
-    route: '/tasks/:namespace?',
+    route: '/tasks{/:namespace}',
     name: 'listTasksPost',
     scopes: 'index:list-tasks:<namespace>',
     stability: 'deprecated',
@@ -344,7 +344,7 @@ builder.declare(
 builder.declare(
   {
     method: 'get',
-    route: '/task/:indexPath/artifacts/:name(*)',
+    route: '/task/:indexPath/artifacts/{*name}',
     name: 'findArtifactFromTask',
     stability: APIBuilder.stability.stable,
     category: 'Index Service',
