@@ -8152,6 +8152,7 @@
           "type": "object"
         },
         "triggerSchema": {
+          "description": "JSON Schema used to validate payloads supplied when firing the hook.\nAPI calls and webhooks are rejected when their payloads fail validation.\nPulse messages that match the hook's bindings are discarded without\ncreating a task when their payloads fail validation.\n",
           "type": "object"
         }
       },
@@ -8215,6 +8216,7 @@
             "additionalProperties": false,
             "type": "object"
           },
+          "description": "JSON Schema used to validate payloads supplied when firing the hook.\nAPI calls and webhooks are rejected when their payloads fail validation.\nPulse messages that match the hook's bindings are discarded without\ncreating a task when their payloads fail validation. When omitted, this\ndefaults to a schema that only accepts an empty payload, so a hook\nwithout an explicit triggerSchema will not fire on Pulse messages that\ncarry a payload.\n",
           "type": "object"
         }
       },
@@ -25563,6 +25565,24 @@
           "name": "hookFire",
           "title": "A hook was fired",
           "type": "hook-fire",
+          "version": 1
+        },
+        {
+          "description": "A pulse message matched a hook's bindings, but was discarded before\nfiring the hook. This log type is sampled to avoid being noisy.",
+          "fields": {
+            "discardedCount": "Number of pulse messages discarded by this listener for this reason since it was created",
+            "exchange": "The pulse exchange that delivered the message",
+            "hookGroupId": "The group ID of the hook that matched the pulse message",
+            "hookId": "The ID of the hook that matched the pulse message",
+            "message": "A short human-readable description of the discard",
+            "reason": "The reason the pulse message was discarded",
+            "routingKey": "The pulse routing key that delivered the message",
+            "validationError": "The triggerSchema validation error that caused the discard"
+          },
+          "level": "notice",
+          "name": "hookPulseMessageDiscarded",
+          "title": "A pulse message for a hook was discarded",
+          "type": "hook-pulse-message-discarded",
           "version": 1
         },
         {

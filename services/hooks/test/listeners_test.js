@@ -16,7 +16,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   const hookId = 'h';
 
   const makeHookEntities = async (...hooks) => {
-    for (const { hookId, bindings } of hooks) {
+    for (const { hookId, bindings, triggerSchema = {} } of hooks) {
       await helper.db.fns.create_hook(
         hookGroupId,
         hookId,
@@ -27,7 +27,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }) /* encrypted_trigger_token */,
         helper.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }) /* encrypted_next_task_id */,
         taskcluster.fromNow('1 day') /* next_scheduled_date */,
-        {} /* trigger_schema */
+        triggerSchema /* trigger_schema */
       );
     }
   };
@@ -327,6 +327,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   suite('firing hooks', () => {
     let hookListeners;
+    let monitor;
 
     suiteSetup(function () {
       if (skipping()) {
@@ -338,6 +339,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       // force-reload the listeners component for each test
       helper.load.remove('listeners');
       hookListeners = await helper.load('listeners');
+      monitor = await helper.load('monitor');
+      monitor.manager.reset();
+    });
+
+    teardown(async () => {
+      // stop this test's consumers so they don't stay registered on the shared
+      // fake pulse client and receive messages sent by later tests
+      for (const listener of Object.values(hookListeners.listeners ?? {})) {
+        await listener.stop();
+      }
     });
 
     test('triggers hook with a pulse message', async () => {
@@ -359,6 +370,111 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           options: {},
         },
       ]);
+    });
+
+    test('discards pulse message when hook has the default triggerSchema', async () => {
+      // Default is defined in ../schemas/v1/create-hook-request.yml#L36
+      await makeHookEntities({
+        hookId,
+        bindings: [{ exchange: 'e', routingKeyPattern: 'rkp' }],
+        triggerSchema: { type: 'object', additionalProperties: false },
+      });
+      await hookListeners.reconcileConsumers();
+
+      await helper.fakePulseMessage({
+        exchange: 'e',
+        routingKey: 'rkp',
+        routes: [],
+        payload: { action: 'opened' },
+      });
+
+      assume(helper.creator.fireCalls).deep.equals([]);
+      assert.equal(monitor.manager.messages.filter(({ Type }) => Type === 'hook-pulse-message-discarded').length, 1);
+    });
+
+    test('triggers hook with a pulse message matching triggerSchema', async () => {
+      await makeHookEntities({
+        hookId,
+        bindings: [{ exchange: 'e', routingKeyPattern: 'rkp' }],
+        triggerSchema: {
+          type: 'object',
+          properties: {
+            action: {
+              enum: ['opened'],
+            },
+          },
+          required: ['action'],
+          additionalProperties: true,
+        },
+      });
+      await hookListeners.reconcileConsumers();
+
+      await helper.fakePulseMessage({
+        exchange: 'e',
+        routingKey: 'rkp',
+        routes: [],
+        payload: { action: 'opened' },
+      });
+
+      assume(helper.creator.fireCalls).deep.equals([
+        {
+          hookGroupId,
+          hookId,
+          context: { firedBy: 'pulseMessage', payload: { action: 'opened' } },
+          options: {},
+        },
+      ]);
+      assert.equal(monitor.manager.messages.filter(({ Type }) => Type === 'hook-pulse-message-discarded').length, 0);
+    });
+
+    test('discards pulse messages failing triggerSchema', async () => {
+      await makeHookEntities({
+        hookId,
+        bindings: [{ exchange: 'e', routingKeyPattern: 'rkp' }],
+        triggerSchema: {
+          type: 'object',
+          properties: {
+            action: {
+              enum: ['opened'],
+            },
+          },
+          required: ['action'],
+          additionalProperties: true,
+        },
+      });
+      await hookListeners.reconcileConsumers();
+
+      for (let i = 0; i < 2; i++) {
+        await helper.fakePulseMessage({
+          exchange: 'e',
+          routingKey: 'rkp',
+          routes: [],
+          payload: { action: 'closed' },
+        });
+      }
+
+      assume(helper.creator.fireCalls).deep.equals([]);
+
+      assert.equal(
+        monitor.manager.messages.filter(
+          ({ Type, Fields }) => Type === 'monitor.count' && Fields.key === 'fire.pulseMessage.triggerSchemaInvalid'
+        ).length,
+        2
+      );
+
+      const discardLogs = monitor.manager.messages.filter(({ Type }) => Type === 'hook-pulse-message-discarded');
+      assert.equal(discardLogs.length, 1);
+      assert.deepEqual(discardLogs[0].Fields, {
+        v: 1,
+        hookGroupId,
+        hookId,
+        exchange: 'e',
+        routingKey: 'rkp',
+        reason: 'triggerSchema',
+        validationError: 'data/action must be equal to one of the allowed values',
+        discardedCount: 1,
+        message: 'Pulse message discarded because payload does not match hook triggerSchema',
+      });
     });
 
     test('does nothing if the hook is gone', async () => {
