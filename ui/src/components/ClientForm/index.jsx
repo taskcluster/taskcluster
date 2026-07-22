@@ -24,6 +24,7 @@ import DateDistance from '../DateDistance';
 import DiffTextArea from '../DiffTextArea';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import DialogAction from '../DialogAction';
 import DatePicker from '../DatePicker';
 import Button from '../Button';
@@ -376,6 +377,11 @@ export default class ClientForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <AuditHistorySpeedDialAction
+                entityName="client"
+                entityId={this.state.clientId}
+                disabled={loading}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen

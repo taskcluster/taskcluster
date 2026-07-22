@@ -37,6 +37,7 @@ import ErrorPanel from '../ErrorPanel';
 import Button from '../Button';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
 import HookLastFiredTable from '../HookLastFiredTable';
@@ -178,6 +179,7 @@ export default class HookForm extends Component {
     hook: object.isRequired,
     /** Part of the same Grahql hook response as above containing info
      about some last hook fired attempts */
+    loading: bool,
     hookLastFires: array,
     /** Set to `true` when creating a new hook. */
     isNewHook: bool,
@@ -209,6 +211,7 @@ export default class HookForm extends Component {
   static defaultProps = {
     isNewHook: false,
     hook: initialHook,
+    loading: false,
     hookLastFires: null,
     onTriggerHook: null,
     onCreateHook: null,
@@ -531,6 +534,7 @@ export default class HookForm extends Component {
     const {
       actionLoading,
       dialogOpen,
+      loading,
       deleteDialogOpen,
       dialogError,
       classes,
@@ -832,6 +836,11 @@ export default class HookForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <AuditHistorySpeedDialAction
+                entityName="hook"
+                entityId={`${hook.hookGroupId}/${hook.hookId}`}
+                disabled={loading}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen
