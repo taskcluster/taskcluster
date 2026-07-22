@@ -1,4 +1,4 @@
-audience: general
+audience: users
 level: major
 reference: issue 8869
 ---
