@@ -17,6 +17,11 @@ properties:
       a task definition that is submitted to the Queue service.
     type:                 object
   triggerSchema:
+    description: |
+      JSON Schema used to validate payloads supplied when firing the hook.
+      API calls and webhooks are rejected when their payloads fail validation.
+      Pulse messages that match the hook's bindings are discarded without
+      creating a task when their payloads fail validation.
     type:                 object
 additionalProperties:     false
 required:
