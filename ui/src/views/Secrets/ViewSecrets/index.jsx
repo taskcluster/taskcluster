@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
-import dotProp from 'dot-prop-immutable';
+import { withApollo } from '@apollo/client/react/hoc';
+import { Secrets } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -12,50 +12,100 @@ import SecretsTable from '../../../components/SecretsTable';
 import HelpView from '../../../components/HelpView';
 import Button from '../../../components/Button';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../../utils/constants';
+import { withAuth } from '../../../utils/Auth';
+import { getClient } from '../../../utils/client';
 import ErrorPanel from '../../../components/ErrorPanel';
 import DialogAction from '../../../components/DialogAction';
-import secretsQuery from './secrets.graphql';
 import deleteSecretQuery from './deleteSecret.graphql';
 
-@withApollo
-@graphql(secretsQuery, {
-  options: props => {
-    const { search } = qs.parse(props.location.search.slice(1));
+const FIRST_PAGE = '$$FIRST$$';
 
-    return {
-      fetchPolicy: 'network-only',
-      variables: {
-        secretsConnection: {
-          limit: VIEW_SECRETS_PAGE_SIZE,
-        },
-        searchTerm: search || null,
-      },
-    };
-  },
-})
+@withApollo
+@withAuth
 @withStyles(theme => ({
   plusIconSpan: {
     ...theme.mixins.fab,
   },
 }))
 export default class ViewSecrets extends Component {
+  fetchRequestId = 0;
+
   state = {
+    loading: true,
+    error: null,
+    secrets: null,
+    pageInfo: null,
     dialogOpen: false,
     deleteSecretName: null,
     dialogError: null,
   };
 
-  handleSecretSearchSubmit = async secretSearch => {
-    const {
-      data: { refetch },
-    } = this.props;
+  componentDidMount() {
+    if (this.props.authReady) {
+      this.fetchSecrets();
+    }
+  }
 
-    await refetch({
-      secretsConnection: {
-        limit: VIEW_SECRETS_PAGE_SIZE,
-      },
-      searchTerm: secretSearch || null,
-    });
+  componentDidUpdate(prevProps) {
+    const authBecameReady = !prevProps.authReady && this.props.authReady;
+    const userChanged =
+      this.props.authReady && prevProps.user !== this.props.user;
+
+    if (authBecameReady || userChanged) {
+      this.fetchSecrets();
+    }
+  }
+
+  componentWillUnmount() {
+    this.fetchRequestId += 1;
+  }
+
+  fetchSecrets = async ({
+    cursor,
+    previousCursor,
+    searchTerm = qs.parse(this.props.location.search.slice(1)).search,
+  } = {}) => {
+    const requestId = ++this.fetchRequestId;
+    const options = { limit: VIEW_SECRETS_PAGE_SIZE };
+
+    if (cursor && cursor !== FIRST_PAGE) {
+      options.continuationToken = cursor;
+    }
+
+    this.setState({ loading: true, error: null });
+
+    try {
+      const client = getClient({ Class: Secrets, user: this.props.user });
+      const response = await client.list(options);
+
+      if (requestId !== this.fetchRequestId) {
+        return;
+      }
+
+      const needle = searchTerm?.toLowerCase();
+
+      this.setState({
+        loading: false,
+        secrets: needle
+          ? response.secrets.filter(name => name.toLowerCase().includes(needle))
+          : response.secrets,
+        pageInfo: {
+          hasNextPage: Boolean(response.continuationToken),
+          hasPreviousPage: Boolean(cursor) && cursor !== FIRST_PAGE,
+          cursor: cursor || FIRST_PAGE,
+          previousCursor,
+          nextCursor: response.continuationToken,
+        },
+      });
+    } catch (error) {
+      if (requestId === this.fetchRequestId) {
+        this.setState({ loading: false, error });
+      }
+    }
+  };
+
+  handleSecretSearchSubmit = async secretSearch => {
+    await this.fetchSecrets({ searchTerm: secretSearch || null });
 
     const query = qs.parse(window.location.search.slice(1));
 
@@ -72,34 +122,7 @@ export default class ViewSecrets extends Component {
   };
 
   handlePageChange = ({ cursor, previousCursor }) => {
-    const {
-      data: { fetchMore },
-    } = this.props;
-    const query = qs.parse(this.props.location.search.slice(1));
-    const secretSearch = query.search;
-
-    return fetchMore({
-      query: secretsQuery,
-      variables: {
-        secretsConnection: {
-          limit: VIEW_SECRETS_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-        searchTerm: secretSearch || null,
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.secrets;
-
-        return dotProp.set(previousResult, 'secrets', secrets =>
-          dotProp.set(
-            dotProp.set(secrets, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
-        );
-      },
-    });
+    return this.fetchSecrets({ cursor, previousCursor });
   };
 
   handleDeleteSecret = () => {
@@ -120,7 +143,7 @@ export default class ViewSecrets extends Component {
   handleDialogActionComplete = () => {
     this.setState({ dialogOpen: false, deleteSecretName: null });
 
-    this.props.data.refetch();
+    this.fetchSecrets();
   };
 
   handleDialogActionClose = () => {
@@ -136,12 +159,16 @@ export default class ViewSecrets extends Component {
   };
 
   render() {
-    const { dialogOpen, deleteSecretName, dialogError } = this.state;
     const {
-      classes,
-      description,
-      data: { loading, error, secrets },
-    } = this.props;
+      dialogOpen,
+      deleteSecretName,
+      dialogError,
+      loading,
+      error,
+      secrets,
+      pageInfo,
+    } = this.state;
+    const { classes, description } = this.props;
     const query = qs.parse(this.props.location.search.slice(1));
     const secretSearch = query.search;
 
@@ -161,9 +188,10 @@ export default class ViewSecrets extends Component {
         <ErrorPanel fixed error={error} />
         {secrets && (
           <SecretsTable
+            secrets={secrets}
+            pageInfo={pageInfo}
             searchTerm={secretSearch}
             onPageChange={this.handlePageChange}
-            secretsConnection={secrets}
             onDialogActionOpen={this.handleDialogActionOpen}
           />
         )}

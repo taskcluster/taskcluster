@@ -333,11 +333,6 @@ export const secret = shape({
   secret: object,
   expires: date,
 });
-export const secrets = arrayOf(
-  shape({
-    name: string,
-  })
-);
 
 export const notificationType = oneOf(
   Object.values(DENYLIST_NOTIFICATION_TYPES)
