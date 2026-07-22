@@ -1490,7 +1490,7 @@ __metadata:
     markdown-it: "npm:^14.2.0"
     markdown-it-highlightjs: "npm:^3.0.0"
     markdown-it-link-attributes: "npm:^4.0.1"
-    mdi-react: "npm:^6.2.0"
+    mdi-react: "npm:^9.4.0"
     mitt: "npm:^3.0.1"
     param-case: "npm:^3.0.3"
     prism-themes: "npm:^1.0.1"
@@ -5061,12 +5061,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdi-react@npm:^6.2.0":
-  version: 6.7.0
-  resolution: "mdi-react@npm:6.7.0"
+"mdi-react@npm:^9.4.0":
+  version: 9.4.0
+  resolution: "mdi-react@npm:9.4.0"
   peerDependencies:
     react: ">=0.14.0"
-  checksum: 10c0/fad730cd8090b7f87eb0255cab7af4f2ff43de1cf9b9350570ed3e0c1f6caf5df00eb26f3ed20a9894ee8bd4f17b789d01f069643869b9afb3474959832440df
+  checksum: 10c0/1dbb684d831f1d9ff816c8760142e3149f6352a437ecc42cf70588e41164178b662acae9da086b6a85ab7c232012ac5e7ac288376197cc920a8cb4019e92f277
   languageName: node
   linkType: hard
 
