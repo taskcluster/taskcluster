@@ -49,7 +49,7 @@ MonitorManager.register({
   name: 'workerStopped',
   title: 'Worker Stopped',
   type: 'worker-stopped',
-  version: 2,
+  version: 3,
   level: 'notice',
   description: 'A worker has been marked as stopped',
   fields: {
@@ -57,7 +57,9 @@ MonitorManager.register({
     providerId: 'The provider that did the work for this worker pool.',
     workerId: 'The worker that was stopped',
     workerAge: 'Total time in seconds since worker was created',
-    runningDuration: 'Time in seconds since worker registered (null if never registered)',
+    runningDuration:
+      'Time in seconds from worker registration to removal request (null if never registered or no removal was observed)',
+    deprovisionDuration: 'Time in seconds from removal request to worker stopped (null if no removal was observed)',
   },
 });
 
@@ -77,7 +79,7 @@ MonitorManager.register({
     workerId: 'The worker that is being removed',
     reason: 'The reason this worker is being removed',
     workerAge: 'Total time in seconds since worker was created',
-    runningDuration: 'Time in seconds since worker registered (null if never registered)',
+    runningDuration: 'Time in seconds from worker registration to removal request (null if never registered)',
   },
 });
 
