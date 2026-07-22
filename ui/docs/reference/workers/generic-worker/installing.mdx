@@ -154,6 +154,7 @@ launches generic-worker (set to demand-start) when work is available.
     ```yaml
     provider:
         providerType: azure  # or: aws, google
+   waitForWindowsImageState: true
     worker:
         implementation: generic-worker
         service: "Generic Worker"
@@ -161,6 +162,10 @@ launches generic-worker (set to demand-start) when work is available.
         protocolPipe: \\.\pipe\generic-worker
     cacheOverRestarts: C:\generic-worker\start-worker-cache.json
     ```
+
+   `waitForWindowsImageState` prevents worker-runner from registering or
+   starting generic-worker until Windows reports that Sysprep and OOBE have
+   completed. This avoids claiming work before a first-launch OOBE reboot.
 
     For a __static worker__ (pre-provisioned machine registered with
     worker-manager):

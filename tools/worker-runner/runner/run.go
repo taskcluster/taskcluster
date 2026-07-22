@@ -31,6 +31,10 @@ func Run(configFile string) (state run.State, err error) {
 
 	logging.Configure(runnercfg)
 
+	if runnercfg.WaitForWindowsImageState {
+		waitForWindowsImageState()
+	}
+
 	runCached := false
 	if runnercfg.CacheOverRestarts != "" {
 		runCached, err = run.ReadCacheFile(&state, runnercfg.CacheOverRestarts)

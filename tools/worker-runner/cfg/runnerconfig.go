@@ -11,12 +11,13 @@ import (
 // RunnerConfig defines the configuration for taskcluster-worker-starter.  See the usage
 // string for field descriptions
 type RunnerConfig struct {
-	Provider             ProviderConfig             `yaml:"provider"`
-	WorkerImplementation WorkerImplementationConfig `yaml:"worker"`
-	WorkerConfig         *WorkerConfig              `yaml:"workerConfig"`
-	Logging              *LoggingConfig             `yaml:"logging"`
-	GetSecrets           bool                       `yaml:"getSecrets"`
-	CacheOverRestarts    string                     `yaml:"cacheOverRestarts"`
+	Provider                 ProviderConfig             `yaml:"provider"`
+	WorkerImplementation     WorkerImplementationConfig `yaml:"worker"`
+	WorkerConfig             *WorkerConfig              `yaml:"workerConfig"`
+	Logging                  *LoggingConfig             `yaml:"logging"`
+	GetSecrets               bool                       `yaml:"getSecrets"`
+	CacheOverRestarts        string                     `yaml:"cacheOverRestarts"`
+	WaitForWindowsImageState bool                       `yaml:"waitForWindowsImageState"`
 }
 
 // LoadRunnerConfig loads a worker-runner configuration file.

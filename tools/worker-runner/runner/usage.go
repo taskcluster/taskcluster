@@ -40,6 +40,13 @@ the following fields:
   implementations that restart the system as part of their normal operation
   and expect to start up with the same config after a restart.
 
+* |waitForWindowsImageState|: if true, then on Windows the runner waits until
+  the Sysprep image state in the Windows Setup registry is
+  |IMAGE_STATE_COMPLETE| before contacting worker-manager or starting the
+  worker.  Registry read errors are retried.  This is useful for cloud images
+  where OOBE may reboot the system during its first launch.  This setting has
+  no effect on other operating systems and defaults to false.
+
 **NOTE** for Windows users: the configuration file must be a UNIX-style text file.
 DOS-style newlines and encodings other than utf-8 are not supported.`, "|", "`")
 }
