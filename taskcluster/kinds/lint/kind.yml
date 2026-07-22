@@ -9,6 +9,8 @@ task-defaults:
   worker-type: ubuntu-24-04
   run:
     using: bare
+  attributes:
+    code-review: true
   worker:
     max-run-time: 600
     chain-of-trust: true
