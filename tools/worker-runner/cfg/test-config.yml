@@ -1,4 +1,5 @@
 provider:
     providerType: 'ec2'
+waitForWindowsImageState: true
 workerConfig:
     x: 10

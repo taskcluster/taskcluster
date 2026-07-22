@@ -40,6 +40,7 @@ func TestLoadConfig(t *testing.T) {
 	assert.Equal(t, "ec2", runnercfg.Provider.ProviderType, "should read providerType correctly")
 	assert.Equal(t, 10.0, runnercfg.WorkerConfig.MustGet("x"), "should read workerConfig correctly")
 	assert.Equal(t, true, runnercfg.GetSecrets, "getSecrets should default to true")
+	assert.True(t, runnercfg.WaitForWindowsImageState, "waitForWindowsImageState should be read correctly")
 }
 
 // TestLoadConfig_InsecurePerms verifies that LoadRunnerConfig tightens the
