@@ -73,6 +73,14 @@ type (
 		// Additional properties allowed
 		Task json.RawMessage `json:"task"`
 
+		// JSON Schema used to validate payloads supplied when firing the hook.
+		// API calls and webhooks are rejected when their payloads fail validation.
+		// Pulse messages that match the hook's bindings are discarded without
+		// creating a task when their payloads fail validation. When omitted, this
+		// defaults to a schema that only accepts an empty payload, so a hook
+		// without an explicit triggerSchema will not fire on Pulse messages that
+		// carry a payload.
+		//
 		// Default:    {
 		//               "additionalProperties": false,
 		//               "type": "object"
@@ -116,6 +124,11 @@ type (
 		// Additional properties allowed
 		Task json.RawMessage `json:"task"`
 
+		// JSON Schema used to validate payloads supplied when firing the hook.
+		// API calls and webhooks are rejected when their payloads fail validation.
+		// Pulse messages that match the hook's bindings are discarded without
+		// creating a task when their payloads fail validation.
+		//
 		// Additional properties allowed
 		TriggerSchema json.RawMessage `json:"triggerSchema"`
 	}

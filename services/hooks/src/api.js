@@ -7,6 +7,7 @@ import _ from 'lodash';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { hookUtils } from './utils.js';
+import { validateTriggerPayload } from './trigger-schema.js';
 
 export const AUDIT_ENTRY_TYPE = Object.freeze({
   HOOK: {
@@ -639,9 +640,6 @@ builder.declare(
  * Common implementation of triggerHook and triggerHookWithToken
  */
 const triggerHookCommon = async function ({ res, hook, payload, clientId, firedBy }) {
-  const ajv = new Ajv.default({ validateFormats: true, verbose: true, allErrors: true });
-  addFormats(ajv);
-
   const context = { firedBy, payload };
   if (clientId) {
     context.clientId = clientId;
@@ -649,13 +647,10 @@ const triggerHookCommon = async function ({ res, hook, payload, clientId, firedB
   let resp;
   let error;
 
-  //Using ajv lib to check if the context respect the triggerSchema
-  const validate = ajv.compile(hook.triggerSchema);
-
-  const valid = validate(payload);
-  if (!valid) {
+  const validationError = validateTriggerPayload(hook.triggerSchema, payload);
+  if (validationError) {
     return res.reportError('InputError', '{{message}}', {
-      message: ajv.errorsText(validate.errors, { separator: '; ' }),
+      message: validationError,
     });
   }
 

@@ -22,7 +22,9 @@ By default, the new task has a `taskGroupId` equal to its `taskId`, as is the co
 
 ### Trigger Schema
 
-When a hook is triggered by an API call or a webhook, the user-provided payload is validated against the hook's `triggerSchema`, and the call rejected if validation fails.
+When a hook is triggered by an API call, webhook, or Pulse message, the provided payload is validated against the hook's `triggerSchema`.
+API calls and webhooks are rejected if validation fails; matching Pulse messages are discarded without creating a task.
+A hook that does not define a `triggerSchema` uses the default schema, which only accepts an empty payload, so such a hook will not fire on Pulse messages that carry a payload.
 This provides a reliable way of limiting allowed inputs and ensuring that incorrect inputs do not cause unexpected behavior.
 
 ### Schedule
@@ -37,6 +39,7 @@ For example:
 
 Hooks have a `bindings` property that gives a list of exchanges and routing-key patterns.
 The hooks service binds queues accordingly, and triggers a hook for each message received, with the message body as its payload.
+The message payload must also match the hook's `triggerSchema`, or the message is discarded without creating a task.
 
 ### JSON-e
 

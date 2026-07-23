@@ -90,8 +90,13 @@ The context is similar to that for `triggerHook`:
 
 ### Pulse Messages
 
-When a pulse message arrives that matches the bindings for a hook, the hook's
-task payload is rendered with the following context:
+When a pulse message arrives that matches the bindings for a hook, the payload
+is validated against the hook's `triggerSchema`. If validation fails, the
+message is discarded without creating a task. A hook that does not define a
+`triggerSchema` uses the default schema, which only accepts an empty payload,
+so such a hook will not fire on Pulse messages that carry a payload. If
+validation succeeds, the hook's task payload is rendered with the following
+context:
 
 ```
 {
