@@ -13059,6 +13059,17 @@
                 }
               ]
             },
+            "github_credentials_apps": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
             "keep_alive_timeout_seconds": {
               "type": "number"
             },
