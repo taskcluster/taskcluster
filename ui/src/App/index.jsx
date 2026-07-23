@@ -19,6 +19,8 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Main from './Main';
 import { ToggleThemeContext } from '../utils/ToggleTheme';
 import { AuthContext } from '../utils/Auth';
+import { TaskclusterClientContext } from '../utils/TaskclusterClient';
+import { getClient } from '../utils/client';
 import db from '../utils/db';
 import reportError from '../utils/reportError';
 import ErrorPanel from '../components/ErrorPanel';
@@ -164,6 +166,12 @@ export default class App extends Component {
     this.state = state;
   }
 
+  createTaskclusterClient = options =>
+    getClient({
+      ...options,
+      credentialAgent: this.authController,
+    });
+
   handleUserChanged = user => {
     this.setState({
       auth: {
@@ -229,25 +237,28 @@ export default class App extends Component {
       <ErrorBoundary FallbackComponent={ErrorPanel} onError={reportError}>
         <ApolloProvider client={this.apolloClient}>
           <AuthContext.Provider value={auth}>
-            <ToggleThemeContext.Provider value={this.toggleTheme}>
-              <MuiThemeProvider theme={theme}>
-                <CssBaseline />
-                <ErrorBoundary
-                  FallbackComponent={ErrorPanel}
-                  onError={reportError}>
-                  <Main
-                    error={error}
-                    subscriptionError={subscriptionError}
-                    key={
-                      auth.user?.credentials
-                        ? auth.user.credentials.clientId
-                        : ''
-                    }
-                    routes={routes}
-                  />
-                </ErrorBoundary>
-              </MuiThemeProvider>
-            </ToggleThemeContext.Provider>
+            <TaskclusterClientContext.Provider
+              value={this.createTaskclusterClient}>
+              <ToggleThemeContext.Provider value={this.toggleTheme}>
+                <MuiThemeProvider theme={theme}>
+                  <CssBaseline />
+                  <ErrorBoundary
+                    FallbackComponent={ErrorPanel}
+                    onError={reportError}>
+                    <Main
+                      error={error}
+                      subscriptionError={subscriptionError}
+                      key={
+                        auth.user?.credentials
+                          ? auth.user.credentials.clientId
+                          : ''
+                      }
+                      routes={routes}
+                    />
+                  </ErrorBoundary>
+                </MuiThemeProvider>
+              </ToggleThemeContext.Provider>
+            </TaskclusterClientContext.Provider>
           </AuthContext.Provider>
         </ApolloProvider>
       </ErrorBoundary>

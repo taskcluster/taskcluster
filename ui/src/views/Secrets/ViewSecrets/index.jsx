@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { graphql, withApollo } from '@apollo/client/react/hoc';
+import { Secrets } from '@taskcluster/client-web';
 import dotProp from 'dot-prop-immutable';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -12,12 +13,14 @@ import SecretsTable from '../../../components/SecretsTable';
 import HelpView from '../../../components/HelpView';
 import Button from '../../../components/Button';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../../utils/constants';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 import ErrorPanel from '../../../components/ErrorPanel';
 import DialogAction from '../../../components/DialogAction';
 import secretsQuery from './secrets.graphql';
 import deleteSecretQuery from './deleteSecret.graphql';
 
 @withApollo
+@withTaskclusterClient
 @graphql(secretsQuery, {
   options: props => {
     const { search } = qs.parse(props.location.search.slice(1));
@@ -44,6 +47,14 @@ export default class ViewSecrets extends Component {
     deleteSecretName: null,
     dialogError: null,
   };
+
+  async componentDidMount() {
+    try {
+      const secrets = this.props.createTaskclusterClient({ Class: Secrets });
+      await secrets.list({ limit: 1 });
+    } catch (error) {
+    }
+  }
 
   handleSecretSearchSubmit = async secretSearch => {
     const {
