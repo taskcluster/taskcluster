@@ -131,6 +131,37 @@ func TestFileArtifactWithContentType(t *testing.T) {
 		})
 }
 
+func TestFileArtifactWithJSONLContentType(t *testing.T) {
+
+	setup(t)
+	validateArtifacts(t,
+
+		// what appears in task payload - note: no ContentType, so the worker
+		// must guess it from the .jsonl extension via customMimeMappings
+		[]Artifact{
+			{
+				Expires: inAnHour,
+				Path:    "SampleArtifactsExtra/sample.jsonl",
+				Type:    "file",
+				Name:    "public/logs/sample.jsonl",
+			},
+		},
+
+		// what we expect to discover on file system
+		[]artifacts.TaskArtifact{
+			&artifacts.S3Artifact{
+				BaseArtifact: &artifacts.BaseArtifact{
+					Name:    "public/logs/sample.jsonl",
+					Expires: inAnHour,
+				},
+				ContentType:     "application/jsonl",
+				ContentEncoding: "gzip",
+				ContentLength:   16,
+				Path:            filepath.Join(taskContext.TaskDir, "SampleArtifactsExtra", "sample.jsonl"),
+			},
+		})
+}
+
 func TestFileArtifactAsObjectWithContentType(t *testing.T) {
 
 	setup(t)
