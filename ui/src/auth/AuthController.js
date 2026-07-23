@@ -23,6 +23,8 @@ export default class AuthController {
 
     this.client = client;
     this.user = null;
+    this.initialized = false;
+    this.renewalPromise = null;
     this.renewalTimer = null;
 
     window.addEventListener('storage', ({ storageArea, key }) => {
@@ -36,20 +38,29 @@ export default class AuthController {
    * Get the current user, first renewing credentials if necessary.
    */
   async getUser() {
-    // if no user, try loading from localStorage
-    if (!this.user) {
+    if (!this.initialized) {
       this.loadUser();
     }
 
-    // if expired or no credentials, try to renew the credentials
     if (
       this.user &&
       (!this.user.credentials || new Date(this.user.expires) < new Date())
     ) {
-      await this.renew();
+      await this.renewOnce();
     }
 
     return this.user;
+  }
+
+  /**
+   * Get the current Taskcluster credentials.
+   *
+   * This implements the credentialAgent interface used by client-web.
+   */
+  async getCredentials() {
+    const user = await this.getUser();
+
+    return user?.credentials;
   }
 
   /**
@@ -87,7 +98,18 @@ export default class AuthController {
     const auth = localStorage.getItem(AUTH_STORE);
 
     this.user = auth ? UserSession.deserialize(auth) : null;
+    this.initialized = true;
     this.emit('user-changed', this.user);
+  }
+
+  async renewOnce() {
+    if (!this.renewalPromise) {
+      this.renewalPromise = this.renew().finally(() => {
+        this.renewalPromise = null;
+      });
+    }
+
+    await this.renewalPromise;
   }
 
   /**
@@ -99,18 +121,26 @@ export default class AuthController {
       return;
     }
 
+    const user = this.user;
+
     try {
       const { credentials, expires } = await this.fetchCredentials();
 
+      if (this.user !== user) {
+        return;
+      }
+
       this.setUser(
         UserSession.create({
-          ...this.user,
+          ...user,
           expires,
           credentials,
         })
       );
     } catch (e) {
-      this.setUser(null);
+      if (this.user === user) {
+        this.setUser(null);
+      }
 
       // biome-ignore lint/suspicious/noConsole: show auth renewal failure in the logs
       console.error('Could not renew login:', e);
