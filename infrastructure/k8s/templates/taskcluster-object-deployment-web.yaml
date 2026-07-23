@@ -16,6 +16,7 @@ spec:
   template:
     metadata:
       annotations:
+        <<: {{ mergeOverwrite (dict) (.Values.podAnnotations | default dict) (.Values.object.procs.web.podAnnotations | default dict) | toJson }}
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-object-secret.yaml") . | sha256sum }}'
       labels:
         app.kubernetes.io/name: taskcluster-object

@@ -17,6 +17,7 @@ spec:
       activeDeadlineSeconds: 86340
       template:
         metadata:
+          annotations: {{ mergeOverwrite (dict) (.Values.podAnnotations | default dict) (.Values.auth.procs.purgeAuditHistory.podAnnotations | default dict) | toJson }}
           labels: *ref_0
         spec:
           restartPolicy: OnFailure

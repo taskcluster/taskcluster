@@ -14,6 +14,7 @@ spec:
   template:
     metadata:
       annotations:
+        <<: {{ mergeOverwrite (dict) (.Values.podAnnotations | default dict) (.Values.hooks.procs.listeners.podAnnotations | default dict) | toJson }}
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-hooks-secret.yaml") . | sha256sum }}'
       labels: *ref_0
     spec:

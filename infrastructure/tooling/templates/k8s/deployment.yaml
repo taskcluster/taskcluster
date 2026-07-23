@@ -10,6 +10,7 @@ spec:
   template:
     metadata:
       annotations:
+        POD_ANNOTATIONS_MERGE_KEY: POD_ANNOTATIONS_BLOCK
         checksum/secret: '{{ include (print $.Template.BasePath "/${projectName}-secret.yaml") . | sha256sum }}'
       labels:
         $if: 'exposesMetrics'

@@ -272,10 +272,15 @@ const renderTemplates = async (name, vars, procs, templates) => {
       readinessPath,
       labels: labels(`taskcluster-${name}`, proc),
     };
+    // A literal << in deployment.yaml would be resolved by js-yaml before Helm renders the annotation map.
+    // Replace the merge-key sentinel after dumping instead.
+    const podAnnotationsConfig = `mergeOverwrite (dict) (.Values.podAnnotations | default dict) (.Values.${context.configName}.procs.${context.configProcName}.podAnnotations | default dict)`;
     const replacements = {
       REPLICA_CONFIG_STRING: `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`,
       IMAGE_PULL_SECRETS_STRING:
         '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
+      POD_ANNOTATIONS_MERGE_KEY: '<<',
+      POD_ANNOTATIONS_BLOCK: `{{ ${podAnnotationsConfig} | toJson }}`,
     };
 
     switch (conf.type) {
@@ -690,6 +695,11 @@ tasks.push({
           type: 'string',
           description: 'Secret name with docker credentials for private registry',
         },
+        podAnnotations: {
+          type: 'object',
+          description: 'Annotations applied to every Taskcluster workload pod.',
+          additionalProperties: { type: 'string' },
+        },
         prometheus: {
           type: 'object',
           description: [
@@ -776,6 +786,7 @@ tasks.push({
       trustProxy: true,
       nodeEnv: 'production',
       meta: {},
+      podAnnotations: {},
       prometheus: {
         enabled: true,
         server: { port: 9100 },
@@ -791,6 +802,7 @@ tasks.push({
       nodeEnv: 'production',
       useKubernetesDnsServiceDiscovery: true,
       skipResourceTypes: [],
+      podAnnotations: {},
       prometheus: {},
     };
 
@@ -935,6 +947,12 @@ tasks.push({
               memory: { type: 'string' },
               cpu: { type: 'string' },
               metrics: { type: 'boolean' },
+              podAnnotations: {
+                type: 'object',
+                description:
+                  'Annotations merged with global podAnnotations for this process; matching keys override global values.',
+                additionalProperties: { type: 'string' },
+              },
             },
             required: ['replicas', 'memory', 'cpu'],
             additionalProperties: false,
@@ -954,6 +972,12 @@ tasks.push({
             properties: {
               memory: { type: 'string' },
               cpu: { type: 'string' },
+              podAnnotations: {
+                type: 'object',
+                description:
+                  'Annotations merged with global podAnnotations for this process; matching keys override global values.',
+                additionalProperties: { type: 'string' },
+              },
             },
             required: ['memory', 'cpu'],
             additionalProperties: false,

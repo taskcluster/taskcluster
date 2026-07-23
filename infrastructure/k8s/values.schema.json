@@ -128,6 +128,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -144,6 +151,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -163,6 +177,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -312,6 +333,13 @@
                 "metrics": {
                   "type": "boolean"
                 },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                },
                 "replicas": {
                   "type": "integer"
                 }
@@ -460,6 +488,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -479,6 +514,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -502,6 +544,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -652,6 +701,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -671,6 +727,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -695,6 +758,13 @@
                 "metrics": {
                   "type": "boolean"
                 },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                },
                 "replicas": {
                   "type": "integer"
                 }
@@ -717,6 +787,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -842,6 +919,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -861,6 +945,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -884,6 +975,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -1075,6 +1173,13 @@
                 "metrics": {
                   "type": "boolean"
                 },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                },
                 "replicas": {
                   "type": "integer"
                 }
@@ -1097,6 +1202,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -1269,6 +1381,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -1288,6 +1407,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -1329,6 +1455,13 @@
         "write_db_url"
       ],
       "title": "Configuration options for object",
+      "type": "object"
+    },
+    "podAnnotations": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Annotations applied to every Taskcluster workload pod.",
       "type": "object"
     },
     "prometheus": {
@@ -1459,6 +1592,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -1478,6 +1618,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -1623,6 +1770,13 @@
                 "metrics": {
                   "type": "boolean"
                 },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                },
                 "replicas": {
                   "type": "integer"
                 }
@@ -1645,6 +1799,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -1669,6 +1830,13 @@
                 "metrics": {
                   "type": "boolean"
                 },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                },
                 "replicas": {
                   "type": "integer"
                 }
@@ -1688,6 +1856,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -1704,6 +1879,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -1720,6 +1902,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -1736,6 +1925,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -1752,6 +1948,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -1768,6 +1971,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -1787,6 +1997,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -1811,6 +2028,13 @@
                 "metrics": {
                   "type": "boolean"
                 },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                },
                 "replicas": {
                   "type": "integer"
                 }
@@ -1833,6 +2057,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -1986,6 +2217,13 @@
                 "metrics": {
                   "type": "boolean"
                 },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                },
                 "replicas": {
                   "type": "integer"
                 }
@@ -2098,6 +2336,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -2117,6 +2362,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -2256,6 +2508,13 @@
                 "metrics": {
                   "type": "boolean"
                 },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                },
                 "replicas": {
                   "type": "integer"
                 }
@@ -2387,6 +2646,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -2403,6 +2669,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -2419,6 +2692,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -2435,6 +2715,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -2454,6 +2741,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -2620,6 +2914,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -2636,6 +2937,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -2652,6 +2960,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -2668,6 +2983,13 @@
                 },
                 "memory": {
                   "type": "string"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 }
               },
               "required": [
@@ -2687,6 +3009,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
@@ -2711,6 +3040,13 @@
                 "metrics": {
                   "type": "boolean"
                 },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                },
                 "replicas": {
                   "type": "integer"
                 }
@@ -2734,6 +3070,13 @@
                 "metrics": {
                   "type": "boolean"
                 },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
+                },
                 "replicas": {
                   "type": "integer"
                 }
@@ -2756,6 +3099,13 @@
                 },
                 "metrics": {
                   "type": "boolean"
+                },
+                "podAnnotations": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                  "type": "object"
                 },
                 "replicas": {
                   "type": "integer"
