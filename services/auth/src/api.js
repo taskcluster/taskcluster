@@ -187,6 +187,9 @@ const builder = new APIBuilder({
     // An object containing {googleapis, auth, credentials} for interacting
     // with GCP.
     'gcp',
+
+    // An object containing octokit apps for each configured github app.
+    'github',
     'monitor',
   ],
 });
