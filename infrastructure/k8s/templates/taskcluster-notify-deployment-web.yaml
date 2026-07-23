@@ -16,6 +16,7 @@ spec:
   template:
     metadata:
       annotations:
+        <<: {{ mergeOverwrite (dict) (.Values.podAnnotations | default dict) (.Values.notify.procs.web.podAnnotations | default dict) | toJson }}
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-notify-secret.yaml") . | sha256sum }}'
       labels:
         app.kubernetes.io/name: taskcluster-notify

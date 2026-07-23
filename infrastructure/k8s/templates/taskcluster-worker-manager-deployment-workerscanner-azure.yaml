@@ -14,6 +14,7 @@ spec:
   template:
     metadata:
       annotations:
+        <<: {{ mergeOverwrite (dict) (.Values.podAnnotations | default dict) (.Values.worker_manager.procs.workerscanner_azure.podAnnotations | default dict) | toJson }}
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-worker-manager-secret.yaml") . | sha256sum }}'
       labels:
         app.kubernetes.io/name: taskcluster-worker-manager

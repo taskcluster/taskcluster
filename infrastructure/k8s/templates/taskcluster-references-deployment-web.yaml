@@ -16,6 +16,7 @@ spec:
   template:
     metadata:
       annotations:
+        <<: {{ mergeOverwrite (dict) (.Values.podAnnotations | default dict) (.Values.references.procs.web.podAnnotations | default dict) | toJson }}
         checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-references-secret.yaml") . | sha256sum }}'
       labels: *ref_0
     spec:
