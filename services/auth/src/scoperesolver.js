@@ -141,6 +141,19 @@ class ScopeResolver extends events.EventEmitter {
     return this._reloadDone;
   }
 
+  _clientFromRow(client, minLastUsed) {
+    return {
+      clientId: client.client_id,
+      accessToken: this.db.decrypt({ value: client.encrypted_access_token }).toString('utf8'),
+      expires: client.expires,
+      // lastUsedDate should be updated if it's out-dated by more than 6 hours
+      // (a cheap way to know if it's been used recently)
+      updateLastUsed: client.last_date_used < minLastUsed,
+      unexpandedScopes: client.scopes,
+      disabled: client.disabled,
+    };
+  }
+
   reloadClient(clientId) {
     return this._syncReload(async () => {
       const [client] = await this.db.fns.get_client(clientId);
@@ -148,16 +161,8 @@ class ScopeResolver extends events.EventEmitter {
       this._clients = this._clients.filter(c => c.clientId !== clientId);
       // If a client was loaded, add it back
       if (client) {
-        // For reasoning on structure, see reload()
         const minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
-        this._clients.push({
-          clientId: client.client_id,
-          accessToken: this.db.decrypt({ value: client.encrypted_access_token }),
-          expires: client.expires,
-          updateLastUsed: client.last_date_used < minLastUsed,
-          unexpandedScopes: client.scopes,
-          disabled: client.disabled,
-        });
+        this._clients.push(this._clientFromRow(client, minLastUsed));
       }
       this._rebuildResolver(this._roles, this._clients);
     });
@@ -193,17 +198,7 @@ class ScopeResolver extends events.EventEmitter {
 
             const minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
             for (const client of rows) {
-              clients.push({
-                clientId: client.client_id,
-                accessToken: this.db.decrypt({ value: client.encrypted_access_token }).toString('utf8'),
-                expires: client.expires,
-                // Note that lastUsedDate should be updated, if it's out-dated by
-                // more than 6 hours.
-                // (cheap way to know if it's been used recently)
-                updateLastUsed: client.last_date_used < minLastUsed,
-                unexpandedScopes: client.scopes,
-                disabled: client.disabled,
-              });
+              clients.push(this._clientFromRow(client, minLastUsed));
             }
           }
         })(),
