@@ -12,6 +12,11 @@ const port = Number(process.env.PORT) || 5080;
 const proxyTarget = process.env.TASKCLUSTER_ROOT_URL || 'http://localhost:3050';
 const dir = import.meta.dirname;
 
+// Pulse subscriptions are served from a dedicated websocket host in production
+const subscriptionTarget = (
+  process.env.SUBSCRIPTION_PROXY_TARGET || proxyTarget
+).replace(/^http(s)?:/, 'ws$1:');
+
 const envJs = () => ({
   name: 'env-js',
   transformIndexHtml: () => [
@@ -127,7 +132,7 @@ export default defineConfig(({ mode }) => ({
       '/references': proxy(proxyTarget),
       '/api/web-server': proxy(proxyTarget),
       '/subscription': {
-        target: proxyTarget.replace(/^http(s)?:/, 'ws$1:'),
+        target: subscriptionTarget,
         ws: true,
         changeOrigin: true,
       },

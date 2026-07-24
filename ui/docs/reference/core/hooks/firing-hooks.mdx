@@ -106,6 +106,12 @@ context:
 }
 ```
 
+To debug why a Pulse-triggered hook is not firing, open the hook in the UI and
+click **Debug bindings**. The drawer listens on the hook's saved bindings and
+shows, for each incoming Pulse message, whether its payload passes the hook's
+`triggerSchema` or is rejected (with the exact validation error). This requires
+the `web:read-pulse` scope.
+
 ## Task Times
 
 The timestamps in the task are best set using JSON-e's `$fromNow` operator.

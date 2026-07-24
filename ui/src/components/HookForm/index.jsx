@@ -42,6 +42,7 @@ import DialogAction from '../DialogAction';
 import DateDistance from '../DateDistance';
 import HookLastFiredTable from '../HookLastFiredTable';
 import PulseBindings from '../PulseBindings';
+import HookBindingDebugger from '../HookBindingDebugger';
 import removeKeys from '../../utils/removeKeys';
 
 const initialHook = {
@@ -241,6 +242,7 @@ export default class HookForm extends Component {
     validation: {},
     drawerOpen: false,
     drawerData: null,
+    debuggerOpen: false,
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -270,6 +272,18 @@ export default class HookForm extends Component {
         },
       },
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    // The debugger only renders while the saved hook has bindings; if a save
+    // removes them, close it so it does not re-open when bindings return.
+    if (
+      this.state.debuggerOpen &&
+      prevProps.hook?.bindings?.length &&
+      !this.props.hook?.bindings?.length
+    ) {
+      this.setState({ debuggerOpen: false });
+    }
   }
 
   getHookDefinition = () => {
@@ -486,6 +500,14 @@ export default class HookForm extends Component {
       drawerOpen: true,
       drawerData: hookLastFire,
     });
+  };
+
+  handleDebuggerOpen = () => {
+    this.setState({ debuggerOpen: true });
+  };
+
+  handleDebuggerClose = () => {
+    this.setState({ debuggerOpen: false });
   };
 
   handleRoutingKeyPatternChange = ({ target: { value } }) => {
@@ -720,16 +742,27 @@ export default class HookForm extends Component {
               disableTypography
               primary={<Typography variant="subtitle1">Bindings</Typography>}
               secondary={
-                <PulseBindings
-                  bindings={hook.bindings}
-                  onBindingAdd={this.handleAddBinding}
-                  onBindingRemove={this.handleDeleteBinding}
-                  onRoutingKeyPatternChange={this.handleRoutingKeyPatternChange}
-                  onPulseExchangeChange={this.handlePulseExchangeChange}
-                  pulseExchange={pulseExchange}
-                  pattern={routingKeyPattern}
-                  exchangesDictionary={exchangesDictionary}
-                />
+                <Fragment>
+                  <PulseBindings
+                    bindings={hook.bindings}
+                    onBindingAdd={this.handleAddBinding}
+                    onBindingRemove={this.handleDeleteBinding}
+                    onRoutingKeyPatternChange={
+                      this.handleRoutingKeyPatternChange
+                    }
+                    onPulseExchangeChange={this.handlePulseExchangeChange}
+                    pulseExchange={pulseExchange}
+                    pattern={routingKeyPattern}
+                    exchangesDictionary={exchangesDictionary}
+                  />
+                  {!isNewHook && this.props.hook.bindings?.length ? (
+                    <Button
+                      variant="outlined"
+                      onClick={this.handleDebuggerOpen}>
+                      Debug bindings
+                    </Button>
+                  ) : null}
+                </Fragment>
               }
             />
           </ListItem>
@@ -963,6 +996,14 @@ export default class HookForm extends Component {
             </List>
           </div>
         </Drawer>
+        {!isNewHook && this.props.hook.bindings?.length ? (
+          <HookBindingDebugger
+            open={this.state.debuggerOpen}
+            onClose={this.handleDebuggerClose}
+            bindings={this.props.hook.bindings}
+            triggerSchema={this.props.hook.triggerSchema}
+          />
+        ) : null}
       </Fragment>
     );
   }
