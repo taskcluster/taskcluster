@@ -1,9 +1,15 @@
 import { Auth, Queue, WorkerManager } from '@taskcluster/client-web';
 
-export const getClient = ({ Class, user, ...options }) => {
+export const getClient = ({ Class, credentialAgent, user, ...options }) => {
+  if (credentialAgent && user) {
+    throw new Error('Specify either credentialAgent or user, not both');
+  }
+
   return new Class({
     rootUrl: window.env.TASKCLUSTER_ROOT_URL,
-    credentials: user ? user.credentials : undefined,
+    ...(credentialAgent
+      ? { credentialAgent }
+      : { credentials: user?.credentials }),
     ...options,
   });
 };
