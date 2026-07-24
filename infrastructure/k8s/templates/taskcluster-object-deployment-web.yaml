@@ -15,9 +15,7 @@ spec:
     matchLabels: *ref_0
   template:
     metadata:
-      annotations:
-        <<: {{ mergeOverwrite (dict) (.Values.podAnnotations | default dict) (.Values.object.procs.web.podAnnotations | default dict) | toJson }}
-        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-object-secret.yaml") . | sha256sum }}'
+      annotations: {{ merge (dict "checksum/secret" (include (print $.Template.BasePath "/taskcluster-object-secret.yaml") . | sha256sum)) (.Values.object.procs.web.podAnnotations | default dict) (.Values.podAnnotations | default dict) | toJson }}
       labels:
         app.kubernetes.io/name: taskcluster-object
         app.kubernetes.io/instance: '{{ .Release.Name }}'

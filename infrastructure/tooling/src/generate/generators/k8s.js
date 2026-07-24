@@ -272,15 +272,14 @@ const renderTemplates = async (name, vars, procs, templates) => {
       readinessPath,
       labels: labels(`taskcluster-${name}`, proc),
     };
-    // A literal << in deployment.yaml would be resolved by js-yaml before Helm renders the annotation map.
-    // Replace the merge-key sentinel after dumping instead.
-    const podAnnotationsConfig = `mergeOverwrite (dict) (.Values.podAnnotations | default dict) (.Values.${context.configName}.procs.${context.configProcName}.podAnnotations | default dict)`;
+    // Helm's merge keeps values from earlier maps, so process annotations override global annotations.
+    const podAnnotationsConfig = `(.Values.${context.configName}.procs.${context.configProcName}.podAnnotations | default dict) (.Values.podAnnotations | default dict)`;
     const replacements = {
       REPLICA_CONFIG_STRING: `{{ int (.Values.${context.configName}.procs.${context.configProcName}.replicas) }}`,
       IMAGE_PULL_SECRETS_STRING:
         '{{ if .Values.imagePullSecret }}{{ toJson (list (dict "name" .Values.imagePullSecret)) }}{{ else }}[]{{ end }}',
-      POD_ANNOTATIONS_MERGE_KEY: '<<',
-      POD_ANNOTATIONS_BLOCK: `{{ ${podAnnotationsConfig} | toJson }}`,
+      POD_ANNOTATIONS_BLOCK: `{{ merge (dict) ${podAnnotationsConfig} | toJson }}`,
+      POD_ANNOTATIONS_WITH_CHECKSUM_BLOCK: `{{ merge (dict "checksum/secret" (include (print $.Template.BasePath "/${context.projectName}-secret.yaml") . | sha256sum)) ${podAnnotationsConfig} | toJson }}`,
     };
 
     switch (conf.type) {
