@@ -982,7 +982,7 @@ builder.declare(
 
       return res.reply({ tasks, scopes });
     } catch (e) {
-      return res.reportError('InvalidInput', e.message, {});
+      return res.reportError('InputError', e.message, {});
     }
   }
 );
