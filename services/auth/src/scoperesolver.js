@@ -10,7 +10,7 @@ import * as trie from './trie.js';
 import ScopeSetBuilder from './scopesetbuilder.js';
 import { consume } from '@taskcluster/lib-pulse';
 
-const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
+const ASSUME_PREFIX = /^(?:(?:|a|as|ass|assu|assum|assume)\*$|assume:)/;
 
 /** ZeroCache is an LRU cache instance that contains nothing for caching is disabled */
 const ZeroCache = {

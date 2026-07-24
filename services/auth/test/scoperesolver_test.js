@@ -226,6 +226,31 @@ suite(testing.suiteName(), () => {
       expected: ['assum*', 'A', 'B', 'C'],
     });
 
+    for (const scope of ['as*', 'ass*', 'assu*']) {
+      testResolver(`${scope} get all`, {
+        roles: [
+          { role_id: 'a', scopes: ['A'] },
+          { role_id: 'b', scopes: ['B'] },
+          { role_id: 'c', scopes: ['C'] },
+        ],
+        scopes: [scope],
+        expected: [scope, 'A', 'B', 'C'],
+      });
+    }
+
+    // See Bug 2057491
+    for (const scope of [':*', '::*', ':a*', ':as*', ':ass*', ':assu*', ':assum*', ':assume*']) {
+      testResolver(`${scope} expands nothing`, {
+        roles: [
+          { role_id: 'a', scopes: ['A'] },
+          { role_id: 'b', scopes: ['B'] },
+          { role_id: 'c', scopes: ['C'] },
+        ],
+        scopes: [scope],
+        expected: [scope],
+      });
+    }
+
     testResolver('assume:a works', {
       roles: [
         { role_id: 'a', scopes: ['A'] },
