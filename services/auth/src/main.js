@@ -247,7 +247,7 @@ const load = Loader(
               action: AUDIT_ENTRY_TYPE.CLIENT.EXPIRED,
             });
 
-            await db.fns.insert_auth_audit_history(name, 'client', clientId, AUDIT_ENTRY_TYPE.CLIENT.CREATED);
+            await db.fns.insert_auth_audit_history(name, 'client', clientId, AUDIT_ENTRY_TYPE.CLIENT.EXPIRED);
           }
         });
       },

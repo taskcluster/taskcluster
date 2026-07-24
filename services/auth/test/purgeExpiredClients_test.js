@@ -29,6 +29,11 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
     assume(client.clientId).to.equal(CLIENT_ID);
   };
 
+  const auditActions = async () => {
+    const rows = await helper.db.fns.get_combined_audit_history(null, CLIENT_ID, 'client', 100, 0);
+    return rows.map(({ action_type }) => action_type);
+  };
+
   const assertClientAbsent = async () => {
     try {
       await helper.apiClient.client(CLIENT_ID);
@@ -53,10 +58,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
 
   test('deletes expired clients with deleteOnExpiration', async () => {
     await testClient({ expires: '-1 hour', deleteOnExpiration: true });
+    const before = await auditActions();
+
     await helper.load('purge-expired-clients');
     await assertClientAbsent();
 
-    const results = await helper.db.fns.get_combined_audit_history(null, CLIENT_ID, 'client', 10, 0);
-    assume(results.map(({ action_type }) => action_type).includes('expired'));
+    const after = await auditActions();
+    // the purge must record exactly one new 'expired' audit entry
+    assume(after.filter(a => a === 'expired')).has.length(before.filter(a => a === 'expired').length + 1);
   });
 });
