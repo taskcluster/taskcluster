@@ -685,6 +685,23 @@ suite(testing.suiteName(), () => {
   );
 
   testWithTemp(
+    'invalid: signature too short for temp creds',
+    {
+      id: 'root',
+    },
+    (id, key, certificate) => {
+      certificate.signature = 'baguette';
+      return {
+        authorization: {
+          credentials: { id, key },
+          ext: { certificate },
+        },
+      };
+    },
+    failed('ext.certificate.signature is not valid')
+  );
+
+  testWithTemp(
     'invalid: temp scopes not satisfied by issuing client',
     {
       id: 'unpriv',

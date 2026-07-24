@@ -168,6 +168,7 @@ const limitClientWithExt = (credentialName, issuingClientId, accessToken, scopes
     // Validate signature
     if (
       typeof cert.signature !== 'string' ||
+      Buffer.byteLength(cert.signature) !== Buffer.byteLength(signature) ||
       !crypto.timingSafeEqual(Buffer.from(cert.signature), Buffer.from(signature))
     ) {
       if (cert.issuer) {
