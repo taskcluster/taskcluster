@@ -186,13 +186,9 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 				payloadArtifacts = append(payloadArtifacts, errArtifact)
 				break
 			}
+			absBasePath := fileutil.AbsFrom(taskDir, basePath)
 			walkFn := func(path string, d os.DirEntry, incomingErr error) error {
-				subPath, err := filepath.Rel(taskDir, path)
-				if err != nil {
-					// this indicates a bug in the code
-					panic(err)
-				}
-				relativePath, err := filepath.Rel(basePath, subPath)
+				relativePath, err := filepath.Rel(absBasePath, path)
 				if err != nil {
 					// this indicates a bug in the code
 					panic(err)
@@ -213,28 +209,27 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 				// cause the task to fail, and the cause to be preserved in the
 				// error artifact.
 				case incomingErr != nil:
-					fullPath := fileutil.AbsFrom(taskDir, subPath)
 					payloadArtifacts = append(
 						payloadArtifacts,
 						&artifacts.ErrorArtifact{
 							BaseArtifact: b,
-							Message:      fmt.Sprintf("Error processing file '%s' as artifact: %s", fullPath, incomingErr),
+							Message:      fmt.Sprintf("Error processing file '%s' as artifact: %s", path, incomingErr),
 							Reason:       "invalid-resource-on-worker",
-							Path:         subPath,
+							Path:         path,
 						},
 					)
 				case d.IsDir():
-					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir); errArtifact != nil {
+					if errArtifact := resolve(b, "directory", path, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir); errArtifact != nil {
 						payloadArtifacts = append(payloadArtifacts, errArtifact)
 					}
 				default:
-					payloadArtifacts = append(payloadArtifacts, resolve(b, "file", subPath, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir))
+					payloadArtifacts = append(payloadArtifacts, resolve(b, "file", path, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir))
 				}
 				return nil
 			}
 			// Any error returned here should already have been handled by
 			// walkFn, so should be safe to ignore.
-			_ = filepath.WalkDir(fileutil.AbsFrom(taskDir, basePath), walkFn)
+			_ = filepath.WalkDir(absBasePath, walkFn)
 		}
 		artifactsChan <- payloadArtifacts
 	}

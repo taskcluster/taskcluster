@@ -1234,3 +1234,49 @@ func TestFileArtifactUploadFromAbsolutePath(t *testing.T) {
 		t.Fatalf("Artifact content mismatch: expected %d bytes, got %d bytes", len(expectedData), len(actualData))
 	}
 }
+
+func TestDirectoryArtifactUploadFromAbsolutePath(t *testing.T) {
+	setup(t)
+	absDir := worldWritableTempDir(t, t.Name())
+	nestedFile := filepath.Join(absDir, "sub", "nested.jpg")
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFileTo("SampleArtifacts/b/c/d.jpg", nestedFile),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:    absDir,
+				Expires: inAnHour,
+				Type:    "directory",
+				Name:    "public/abs-dir",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+
+	taskID := submitAndAssert(t, td, payload, "completed", "completed")
+
+	expectedArtifacts := ExpectedArtifacts{
+		"public/abs-dir/sub/nested.jpg": {
+			ContentType:      "image/jpeg",
+			ContentLength:    17,
+			Expires:          inAnHour,
+			StorageType:      "s3",
+			SkipContentCheck: true,
+		},
+		"public/logs/live_backing.log": {
+			ContentType:      "text/plain; charset=utf-8",
+			ContentEncoding:  "gzip",
+			Expires:          td.Expires,
+			SkipContentCheck: true,
+		},
+		"public/logs/live.log": {
+			ContentType:      "text/plain; charset=utf-8",
+			ContentEncoding:  "gzip",
+			Expires:          td.Expires,
+			SkipContentCheck: true,
+		},
+	}
+	expectedArtifacts.Validate(t, taskID, 0)
+}
