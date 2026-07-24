@@ -17,13 +17,13 @@ export const modifyRoles = async (db, modifier) => {
       });
       await modifier({ roles });
       await db.fns.modify_roles(JSON.stringify(roles), etag);
+      return; // success!
     } catch (e) {
       // P0004 means there was a conflict, so try again
       if (e.code !== 'P0004') {
         throw e;
       }
     }
-    return; // success!
   }
 
   throw new Error('Could not modify roles; too many conflicts');
