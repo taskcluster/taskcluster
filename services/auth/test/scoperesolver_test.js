@@ -507,7 +507,10 @@ suite(testing.suiteName(), () => {
     // Test with a snapshot of real roles, captured with
     //   `curl https://auth.taskcluster.net/v1/roles > test/roles.json`
     const __dirname = dirname(fileURLToPath(import.meta.url));
-    const realRoles = JSON.parse(readFileSync(join(__dirname, 'roles.json'), 'utf8'));
+    const realRoles = JSON.parse(readFileSync(join(__dirname, 'roles.json'), 'utf8')).map(({ roleId, scopes }) => ({
+      role_id: roleId,
+      scopes,
+    }));
     const testRealRoles = (scopes, expected) => {
       testResolver(`real roles with scopes ${scopes.join(', ')}`, {
         roles: realRoles,
