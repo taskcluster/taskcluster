@@ -1439,17 +1439,7 @@ builder.declare(
   }
 );
 
-// Hack to get promises that resolve after 20s without creating a setTimeout
-// for each, instead we create a new promise every 2s and reuse that.
-const _lastTime = 0;
-let _sleeping = null;
-const sleep20Seconds = () => {
-  const time = Date.now();
-  if (!_sleeping || time - _lastTime > 2000) {
-    _sleeping = new Promise(accept => setTimeout(accept, 20 * 1000));
-  }
-  return _sleeping;
-};
+const CLAIM_WORK_TIMEOUT_MS = 20 * 1000;
 
 /** Claim any task */
 builder.declare(
@@ -1488,42 +1478,51 @@ builder.declare(
 
     const worker = await Worker.get(this.db, taskQueueId, workerGroup, workerId, new Date());
 
-    // Don't claim tasks when worker is quarantined (but do record the worker
-    // being seen, and be sure to wait the 20 seconds so as not to cause a
-    // tight loop of claimWork calls from the worker
-    if (worker && worker.quarantineUntil.getTime() > Date.now()) {
-      await Promise.all([this.workerInfo.seen(taskQueueId, workerGroup, workerId), sleep20Seconds()]);
+    let timer;
+    const timeout = new Promise(accept => {
+      timer = setTimeout(accept, CLAIM_WORK_TIMEOUT_MS);
+    });
+
+    try {
+      // Don't claim tasks when worker is quarantined (but do record the worker
+      // being seen, and be sure to wait the 20 seconds so as not to cause a
+      // tight loop of claimWork calls from the worker
+      if (worker && worker.quarantineUntil.getTime() > Date.now()) {
+        await Promise.all([this.workerInfo.seen(taskQueueId, workerGroup, workerId), timeout]);
+        return res.reply({
+          tasks: [],
+        });
+      }
+
+      // Allow request to abort their claim request, if the connection closes
+      const aborted = new Promise(accept => {
+        timeout.then(accept);
+        res.once('close', accept);
+      });
+
+      const [result] = await Promise.all([
+        this.workClaimer.claim(taskQueueId, workerGroup, workerId, count, aborted),
+        this.workerInfo.seen(taskQueueId, workerGroup, workerId),
+      ]);
+
+      result.forEach(({ runId, status: { taskId } }) => {
+        this.monitor.log.taskClaimed({
+          taskQueueId,
+          workerGroup,
+          workerId,
+          taskId,
+          runId,
+        });
+      });
+
+      await this.workerInfo.taskSeen(taskQueueId, workerGroup, workerId, result);
+
       return res.reply({
-        tasks: [],
+        tasks: result,
       });
+    } finally {
+      clearTimeout(timer);
     }
-
-    // Allow request to abort their claim request, if the connection closes
-    const aborted = new Promise(accept => {
-      sleep20Seconds().then(accept);
-      res.once('close', accept);
-    });
-
-    const [result] = await Promise.all([
-      this.workClaimer.claim(taskQueueId, workerGroup, workerId, count, aborted),
-      this.workerInfo.seen(taskQueueId, workerGroup, workerId),
-    ]);
-
-    result.forEach(({ runId, status: { taskId } }) => {
-      this.monitor.log.taskClaimed({
-        taskQueueId,
-        workerGroup,
-        workerId,
-        taskId,
-        runId,
-      });
-    });
-
-    await this.workerInfo.taskSeen(taskQueueId, workerGroup, workerId, result);
-
-    return res.reply({
-      tasks: result,
-    });
   }
 );
 
