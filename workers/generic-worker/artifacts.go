@@ -25,7 +25,8 @@ var (
 
 		// keys *must* be lower-case
 
-		".log": "text/plain",
+		".log":   "text/plain",
+		".jsonl": "application/jsonl",
 	}
 )
 
