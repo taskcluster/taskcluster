@@ -122,8 +122,12 @@ func (itj *InteractiveJob) handleWebsocketMessages() {
 					itj.errors <- err
 				}
 			case MsgResize:
+				if len(msg) < 5 {
+					log.Printf("Ignoring malformed resize message from interactive task (only got %d bytes)", len(msg))
+					continue
+				}
 				width := binary.LittleEndian.Uint16(msg[1:3])
-				height := binary.LittleEndian.Uint16(msg[3:])
+				height := binary.LittleEndian.Uint16(msg[3:5])
 				err = itj.resizePty(width, height)
 				if err != nil {
 					itj.errors <- err
