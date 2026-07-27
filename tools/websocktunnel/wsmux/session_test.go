@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"testing"
+	"time"
 
 	"net/http/httptest"
 
@@ -78,5 +79,61 @@ func TestEchoLarge(t *testing.T) {
 
 	if !bytes.Equal(buf, final.Bytes()) {
 		t.Fatal("message not consistent")
+	}
+}
+
+func TestMalformedAckAbortsSession(t *testing.T) {
+	server := httptest.NewServer(genWebSocketHandler(t, echoConn))
+	defer server.Close()
+	conn, _, err := (&websocket.Dialer{}).Dial(util.MakeWsURL(server.URL), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	const id = 1
+	write := func(fr frame) {
+		t.Helper()
+		if err := conn.WriteMessage(websocket.BinaryMessage, fr.serialize()); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	write(newSynFrame(id))
+	msgType, msg, err := conn.ReadMessage()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fr, derr := deserializeFrame(msg); msgType != websocket.BinaryMessage || derr != nil || fr.msg != msgACK {
+		t.Fatalf("expected ACK for the new stream, got type=%d msg=%v err=%v", msgType, msg, derr)
+	}
+
+	// Send 2 bytes instead of 4 in the ACK
+	write(frame{id: id, msg: msgACK, payload: []byte{0, 0}})
+
+	_ = conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+	_, _, err = conn.ReadMessage()
+	if !websocket.IsCloseError(err, websocket.ClosePolicyViolation) {
+		t.Fatalf("expected a ClosePolicyViolation error close after a malformed frame, got %v", err)
+	}
+}
+
+func TestNonBinaryMessageAbortsSession(t *testing.T) {
+	server := httptest.NewServer(genWebSocketHandler(t, acceptUntilClosed))
+	defer server.Close()
+	conn, _, err := (&websocket.Dialer{}).Dial(util.MakeWsURL(server.URL), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	if err := conn.WriteMessage(websocket.TextMessage, []byte("hello")); err != nil {
+		t.Fatal(err)
+	}
+
+	_ = conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+	_, _, err = conn.ReadMessage()
+	if !websocket.IsCloseError(err, websocket.ClosePolicyViolation) {
+		t.Fatalf("expected a ClosePolicyViolation error after a text message, got %v", err)
 	}
 }
