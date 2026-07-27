@@ -48,23 +48,8 @@ func platformFeatures() []Feature {
 }
 
 func deleteDir(path string) error {
-	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call...")
-	err := os.RemoveAll(path)
-	if err == nil {
-		return nil
-	}
-	log.Print("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
-	log.Printf("%v", err)
-	log.Print("Trying to remove directory '" + path + "' via del and rmdir commands...")
-	err = host.Run("cmd", "/c", "del", "/s", "/q", "/f", path)
-	if err != nil {
-		log.Printf("%#v", err)
-	}
-	err = host.Run("cmd", "/c", "rmdir", "/s", "/q", path)
-	if err != nil {
-		log.Printf("%#v", err)
-	}
-	return err
+	log.Print("Removing directory '" + path + "'...")
+	return os.RemoveAll(path)
 }
 
 func (task *TaskRun) generateCommand(index int) error {
@@ -267,20 +252,7 @@ func install(arguments map[string]any) (err error) {
 }
 
 func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.OSUser) error {
-	// On windows, grant:r or ownership aren't enough on their own. Ownership
-	// doesn't mean it's going to be readable, and ownership is necessary for
-	// programs like git that check that files haven't been tampered with (see #6561)
-
-	// http://ss64.com/nt/icacls.html
-	if err := host.Run("icacls", dir, "/grant:r", user.Name+":(OI)(CI)F"); err != nil {
-		return err
-	}
-
-	setOwnerArgs := []string{dir, "/setowner", user.Name}
-	if recurse {
-		setOwnerArgs = append(setOwnerArgs, "/T")
-	}
-	return host.Run("icacls", setOwnerArgs...)
+	return grantFullControl(dir, user.Name, recurse)
 }
 
 // The windows implementation of os.Rename(...) doesn't allow renaming files
