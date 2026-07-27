@@ -40,6 +40,9 @@ var (
 	// ErrMalformedPayload indicates a websocket frame payload was invalid.
 	ErrMalformedPayload = errors.New("malformed payload")
 
+	// ErrUnexpectedMessageType indicates a non-binary ws message was received.
+	ErrUnexpectedMessageType = errors.New("unexpected non-binary websocket message")
+
 	// ErrTooManySyns indicates too many un-accepted new incoming streams
 	ErrTooManySyns = errors.New("too many un-accepted new incoming streams")
 )
