@@ -26,6 +26,7 @@ const (
 type header []byte
 
 const HEADER_SIZE = 5
+const ACK_PAYLOAD_SIZE = 4
 
 // id returns the stream ID in a header.
 func (h header) id() uint32 {
@@ -83,10 +84,22 @@ func deserializeFrame(data []byte) (*frame, error) {
 		return nil, ErrMalformedHeader
 	}
 
+	payload := data[HEADER_SIZE:]
+	switch msg {
+	case msgSYN, msgFIN:
+		if len(payload) != 0 {
+			return nil, ErrMalformedPayload
+		}
+	case msgACK:
+		if len(payload) != ACK_PAYLOAD_SIZE {
+			return nil, ErrMalformedPayload
+		}
+	}
+
 	return &frame{
 		id:      hdr.id(),
 		msg:     msg,
-		payload: data[HEADER_SIZE:],
+		payload: payload,
 	}, nil
 }
 
@@ -128,7 +141,7 @@ func newSynFrame(id uint32) frame {
 // newSynFrame creates a new msgACK frame containing the given capacity.
 func newAckFrame(id uint32, cap uint32) frame {
 	frame := frame{id: id, msg: msgACK}
-	frame.payload = make([]byte, 4)
+	frame.payload = make([]byte, ACK_PAYLOAD_SIZE)
 	binary.LittleEndian.PutUint32(frame.payload, cap)
 	return frame
 }

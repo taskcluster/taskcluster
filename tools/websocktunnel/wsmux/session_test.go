@@ -80,3 +80,63 @@ func TestEchoLarge(t *testing.T) {
 		t.Fatal("message not consistent")
 	}
 }
+
+func TestMalformedAckDoesNotPanic(t *testing.T) {
+	server := httptest.NewServer(genWebSocketHandler(t, echoConn))
+	defer server.Close()
+	conn, _, err := (&websocket.Dialer{}).Dial(util.MakeWsURL(server.URL), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+
+	const id = 1
+	write := func(fr frame) {
+		t.Helper()
+		if err := conn.WriteMessage(websocket.BinaryMessage, fr.serialize()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	read := func() *frame {
+		t.Helper()
+		for {
+			mt, msg, err := conn.ReadMessage()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if mt != websocket.BinaryMessage {
+				continue
+			}
+			fr, err := deserializeFrame(msg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			return fr
+		}
+	}
+
+	write(newSynFrame(id))
+	if fr := read(); fr.msg != msgACK {
+		t.Fatalf("expected ACK for the new stream, got %v", fr)
+	}
+
+	// Send 2 bytes instead of 4 in the ACK
+	write(frame{id: id, msg: msgACK, payload: []byte{0, 0}})
+
+	write(newDataFrame(id, []byte("Hello")))
+	write(newFinFrame(id))
+
+	echoed := new(bytes.Buffer)
+	for {
+		fr := read()
+		if fr.msg == msgFIN {
+			break
+		}
+		if fr.msg == msgDAT {
+			echoed.Write(fr.payload)
+		}
+	}
+	if echoed.String() != "Hello" {
+		t.Fatalf("expected the session to echo \"Hello\", got %q", echoed.String())
+	}
+}

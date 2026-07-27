@@ -37,6 +37,9 @@ var (
 	// ErrMalformedHeader indicate a websocket frame header was invalid.
 	ErrMalformedHeader = errors.New("malformed header")
 
+	// ErrMalformedPayload indicates a websocket frame payload was invalid.
+	ErrMalformedPayload = errors.New("malformed payload")
+
 	// ErrTooManySyns indicates too many un-accepted new incoming streams
 	ErrTooManySyns = errors.New("too many un-accepted new incoming streams")
 )
