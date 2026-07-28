@@ -9,8 +9,7 @@ spec:
       matchLabels: {$eval: labels}
   template:
     metadata:
-      annotations:
-        checksum/secret: '{{ include (print $.Template.BasePath "/${projectName}-secret.yaml") . | sha256sum }}'
+      annotations: POD_ANNOTATIONS_WITH_CHECKSUM_BLOCK
       labels:
         $if: 'exposesMetrics'
         then:

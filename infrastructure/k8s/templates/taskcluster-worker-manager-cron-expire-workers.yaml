@@ -17,6 +17,7 @@ spec:
       activeDeadlineSeconds: 86340
       template:
         metadata:
+          annotations: {{ merge (dict) (.Values.worker_manager.procs.expire_workers.podAnnotations | default dict) (.Values.podAnnotations | default dict) | toJson }}
           labels: *ref_0
         spec:
           restartPolicy: OnFailure

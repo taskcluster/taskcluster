@@ -4,6 +4,7 @@ forceSSL: false
 nodeEnv: production
 useKubernetesDnsServiceDiscovery: true
 skipResourceTypes: []
+podAnnotations: {}
 prometheus: {}
 auth:
   procs:

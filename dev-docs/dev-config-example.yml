@@ -17,6 +17,7 @@ forceSSL: false
 trustProxy: true
 nodeEnv: production
 meta: {}
+podAnnotations: {}
 prometheus:
   enabled: true
   server:
