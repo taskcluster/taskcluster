@@ -1,11 +1,11 @@
 import { APIBuilder } from '@taskcluster/lib-api';
 import { getProfile } from './profiler/profile.js';
 import zlib from 'node:zlib';
-import { StreamingProfileBuilder, lineIterator } from './profiler/log-profile.js';
+import { StreamingProfileBuilder } from './profiler/log-profile.js';
+import { openTaskLog, readTaskLogLines } from './utils/taskLog.js';
 
 const MAX_TASKS = 20000;
 const MAX_PAGES = 200;
-const MAX_LOG_SIZE = 200 * 1024 * 1024; // 200MB
 
 const SLUGID_PATTERN = /^[A-Za-z0-9_-]{8}[Q-T][A-Za-z0-9_-][CGKOSWaeimquy26-][A-Za-z0-9_-]{10}[AQgw]$/;
 
@@ -123,21 +123,9 @@ builder.declare(
       throw err;
     }
 
-    let response;
-    for (const artifactName of ['public/logs/live.log', 'public/logs/live_backing.log']) {
-      try {
-        const artifactUrl = queue.buildUrl(queue.getLatestArtifact, taskId, artifactName);
-        const resp = await fetch(artifactUrl, { redirect: 'follow' });
-        if (resp.ok) {
-          response = resp;
-          break;
-        }
-      } catch {
-        // Try next artifact name
-      }
-    }
+    const log = await openTaskLog({ queue, taskId });
 
-    if (!response) {
+    if (!log) {
       return res.reportError(
         'ResourceNotFound',
         'Could not fetch task log. The task may not have logs or they may have expired.',
@@ -145,22 +133,17 @@ builder.declare(
       );
     }
 
-    // Check Content-Length if available
-    const contentLength = parseInt(response.headers.get('content-length') || '0', 10);
-    if (contentLength > MAX_LOG_SIZE) {
-      return res.reportError('InputTooLarge', 'Log exceeds 200MB size limit', {});
-    }
-
     // Stream and parse log line-by-line
     const profileBuilder = new StreamingProfileBuilder(task, taskId, this.rootUrl);
-    let bytesRead = 0;
-    for await (const line of lineIterator(response.body, n => {
-      bytesRead += n;
-    })) {
-      if (bytesRead > MAX_LOG_SIZE) {
-        return res.reportError('InputTooLarge', 'Log exceeds 200MB size limit', {});
+    try {
+      for await (const line of readTaskLogLines(log)) {
+        profileBuilder.addLine(line);
       }
-      profileBuilder.addLine(line);
+    } catch (err) {
+      if (err.code === 'LogTooLarge') {
+        return res.reportError('InputTooLarge', err.message, {});
+      }
+      throw err;
     }
 
     const profile = profileBuilder.finalize();

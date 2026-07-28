@@ -442,6 +442,28 @@ let contentType = await taskcluster.downloadArtifact({
 });
 ```
 
+#### Downloading Untrusted Artifacts
+
+A `reference` artifact is fetched from a URL supplied by the task that published it, so
+downloading one from a place with more network reach than the task itself -- a service in your
+deployment, for example -- is a server-side request forgery.
+
+`downloadManagedArtifact` takes the same options as `downloadArtifact`, but refuses a `reference`
+artifact before reading its URL, throwing an error with `code` of
+`'ArtifactStorageTypeRejected'`:
+
+```javascript
+let contentType = await taskcluster.downloadManagedArtifact({ taskId, name, queue, streamFactory });
+```
+
+Use it whenever the task publishing the artifact is not fully trusted.  `s3` and `object`
+artifacts are unaffected, as the queue derives their URLs itself, and `link` artifacts are
+resolved by the queue, so a link ending at a `reference` is refused as well.
+
+Both functions throw an error with `code` of `'ArtifactError'` for an `error` artifact, and
+report HTTP failures on `err.statusCode` regardless of whether the artifact record or its stored
+content was missing.
+
 ### Inspecting Credentials
 
 Your users may find the options for Taskcluster credentials overwhelming.  You

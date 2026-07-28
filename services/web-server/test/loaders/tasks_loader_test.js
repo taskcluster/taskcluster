@@ -41,5 +41,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(taskThatDoesNotExist.status, 'rejected');
       assert(taskThatDoesNotExist.reason instanceof Error);
     });
+
+    // An error artifact used to arrive as HTTP 424 from the download endpoint, the typed artifact
+    // endpoint replies 200 with storageType 'error' instead, which the client raises as
+    // `ArtifactError`. A `reference` artifact is refused rather than fetched, since its URL is
+    // chosen by the decision task. Neither is a failure — there are simply no actions to report.
+    test('taskActions reports no actions when actions.json is unusable', async () => {
+      const taskActionsFor = async artifact =>
+        await loader({ queue: { latestArtifact: async () => artifact }, index: {} }).taskActions.load({
+          taskGroupId: taskcluster.slugid(),
+          contextScope: 'task',
+        });
+
+      assert.equal(await taskActionsFor({ storageType: 'error', message: 'gone', reason: 'file-missing' }), null);
+      assert.equal(await taskActionsFor({ storageType: 'reference', url: 'http://169.254.169.254/metadata' }), null);
+    });
   });
 });

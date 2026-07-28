@@ -1,10 +1,88 @@
 import crypto from 'node:crypto';
 import request from 'superagent';
 import util from 'node:util';
+import { PassThrough } from 'node:stream';
+import { downloadManagedArtifact } from '@taskcluster/client';
 
 import { ISSUE_COMMENT_ACTIONS } from './constants.js';
 
 const setTimeoutPromise = util.promisify(setTimeout);
+
+/**
+ * Download a task artifact with a queue client limited to reading that one artifact.
+ *
+ * This uses downloadManagedArtifact, so a `reference` artifact is refused rather than fetched:
+ * its URL is supplied by the task, and this service can reach hosts no task can.
+ */
+const downloadArtifact = async ({ queueClient, taskId, runId, artifactName, streamFactory, retries }) => {
+  const limitedQueueClient = queueClient.use({
+    authorizedScopes: [`queue:get-artifact:${artifactName}`],
+  });
+
+  return await downloadManagedArtifact({
+    taskId,
+    runId,
+    name: artifactName,
+    queue: limitedQueueClient,
+    streamFactory,
+    retries,
+  });
+};
+
+export const downloadArtifactAsText = async ({ queueClient, taskId, runId, artifactName }) => {
+  let chunks;
+
+  await downloadArtifact({
+    queueClient,
+    taskId,
+    runId,
+    artifactName,
+    streamFactory: async () => {
+      chunks = [];
+      const stream = new PassThrough();
+      stream.on('data', chunk => chunks.push(chunk));
+      return stream;
+    },
+  });
+
+  return Buffer.concat(chunks).toString();
+};
+
+export const downloadArtifactAsStream = async ({ queueClient, taskId, runId, artifactName, consume }) => {
+  const stream = new PassThrough();
+  let consumerError = null;
+
+  stream.on('error', () => {});
+
+  // start consuming before downloading, as the download does not complete until the stream drains
+  const consumed = consume(stream).catch(err => {
+    consumerError = err;
+    stream.destroy();
+    throw err;
+  });
+  consumed.catch(() => {});
+
+  try {
+    await downloadArtifact({
+      queueClient,
+      taskId,
+      runId,
+      artifactName,
+      retries: 0,
+      streamFactory: async () => stream,
+    });
+  } catch (err) {
+    if (consumerError) {
+      throw consumerError;
+    }
+
+    stream.destroy();
+    await consumed.catch(() => {});
+    throw err;
+  }
+
+  return await consumed;
+};
 
 /**
  * Retry a request call with the given URL and method.
@@ -298,6 +376,8 @@ export const checkGithubSignature = (secret, payload, signature) => {
 
 export default {
   throttleRequest,
+  downloadArtifactAsText,
+  downloadArtifactAsStream,
   shouldSkipCommit,
   shouldSkipPullRequest,
   ansi2txt,

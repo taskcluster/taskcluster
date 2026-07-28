@@ -1,4 +1,5 @@
 import assert from 'node:assert';
+import http from 'node:http';
 import express from 'express';
 import request from 'superagent';
 import builder from '../../src/api.js';
@@ -243,22 +244,16 @@ suite('profiler/routes', () => {
     });
   });
 
-  // Helper: mock global.fetch for testing artifact downloads
-  function mockFetch(responses) {
-    const original = global.fetch;
-    global.fetch = async url => {
-      for (const [pattern, response] of Object.entries(responses)) {
-        if (url.includes(pattern)) {
-          if (typeof response === 'function') {
-            return response();
-          }
-          return response;
-        }
-      }
-      return { ok: false, status: 404 };
-    };
-    return () => {
-      global.fetch = original;
+  // serve artifact content over loopback, as the endpoint downloads it through the client
+  async function startArtifactServer(content) {
+    const artifactServer = http.createServer((_req, res) => {
+      res.writeHead(200, { 'content-type': 'text/plain' });
+      res.end(content);
+    });
+    await new Promise(resolve => artifactServer.listen(0, '127.0.0.1', resolve));
+    return {
+      artifactServer,
+      artifactUrl: `http://127.0.0.1:${artifactServer.address().port}/log`,
     };
   }
 
@@ -269,34 +264,24 @@ suite('profiler/routes', () => {
       '[taskcluster:info 2024-01-01T10:00:05.000Z] Task complete',
     ].join('\n');
 
-    let server, port, restoreFetch;
+    let server, port, artifactServer;
 
     suiteSetup(async () => {
-      restoreFetch = mockFetch({
-        'live.log': () => ({
-          ok: true,
-          headers: new Headers({ 'content-length': String(logContent.length) }),
-          body: new ReadableStream({
-            start(controller) {
-              controller.enqueue(new TextEncoder().encode(logContent));
-              controller.close();
-            },
-          }),
-        }),
-      });
+      let artifactUrl;
+      ({ artifactServer, artifactUrl } = await startArtifactServer(logContent));
 
       const app = await createTestApp(() => ({
         queue: {
           task: async () => completedTask.task,
           status: async () => ({ status: completedTask.status }),
-          buildUrl: (_method, taskId, name) => `https://queue.test/task/${taskId}/artifacts/${name}`,
+          latestArtifact: async () => ({ storageType: 's3', url: artifactUrl }),
         },
       }));
       ({ server, port } = await startServer(app));
     });
 
     suiteTeardown(done => {
-      restoreFetch();
+      artifactServer.close();
       server.close(done);
     });
 
@@ -328,43 +313,77 @@ suite('profiler/routes', () => {
     });
   });
 
-  suite('task log profile size limit', () => {
-    let server, port, restoreFetch;
+  suite('task log fallback', () => {
+    const logContent = '[taskcluster:info 2024-01-01T10:00:00.000Z] Starting task\n';
+    let server, port, artifactServer, requested;
 
     suiteSetup(async () => {
-      restoreFetch = mockFetch({
-        'live.log': () => ({
-          ok: true,
-          headers: new Headers({ 'content-length': String(300 * 1024 * 1024) }),
-          body: new ReadableStream({
-            start(controller) {
-              controller.close();
-            },
-          }),
-        }),
-      });
+      let artifactUrl;
+      ({ artifactServer, artifactUrl } = await startArtifactServer(logContent));
 
       const app = await createTestApp(() => ({
         queue: {
           task: async () => completedTask.task,
           status: async () => ({ status: completedTask.status }),
-          buildUrl: (_method, taskId, name) => `https://queue.test/task/${taskId}/artifacts/${name}`,
+          latestArtifact: async (_taskId, name) => {
+            requested.push(name);
+            if (name === 'public/logs/live.log') {
+              return { storageType: 'reference', url: 'http://169.254.169.254/metadata' };
+            }
+            return { storageType: 's3', url: artifactUrl };
+          },
         },
       }));
       ({ server, port } = await startServer(app));
     });
 
+    setup(() => {
+      requested = [];
+    });
+
     suiteTeardown(done => {
-      restoreFetch();
+      artifactServer.close();
       server.close(done);
     });
 
-    test('returns 413 for oversized logs', async () => {
+    test('does not fetch a reference live.log, and profiles live_backing.log instead', async () => {
+      const res = await request
+        .get(`http://localhost:${port}/api/web-server/v1/task/${VALID_SLUGID_2}/profile`)
+        .buffer(true)
+        .parse(request.parse['application/octet-stream'])
+        .ok(() => true);
+
+      assert.equal(res.status, 200);
+      assert.deepEqual(requested, ['public/logs/live.log', 'public/logs/live_backing.log']);
+
+      const profile = JSON.parse(res.body.toString());
+      assert.equal(profile.threads.length, 1);
+    });
+  });
+
+  suite('task log profile with no readable log', () => {
+    let server, port;
+
+    suiteSetup(async () => {
+      const app = await createTestApp(() => ({
+        queue: {
+          task: async () => completedTask.task,
+          status: async () => ({ status: completedTask.status }),
+          // every log artifact is a reference, so none may be fetched
+          latestArtifact: async () => ({ storageType: 'reference', url: 'http://169.254.169.254/metadata' }),
+        },
+      }));
+      ({ server, port } = await startServer(app));
+    });
+
+    suiteTeardown(done => server.close(done));
+
+    test('returns 404 when no log artifact may be fetched', async () => {
       const res = await request
         .get(`http://localhost:${port}/api/web-server/v1/task/${VALID_SLUGID_2}/profile`)
         .ok(() => true);
 
-      assert.equal(res.status, 413);
+      assert.equal(res.status, 404);
     });
   });
 });

@@ -1,9 +1,12 @@
 import assert from 'node:assert';
+import http from 'node:http';
 import { Readable } from 'node:stream';
 import testing from '@taskcluster/lib-testing';
 
 import {
   throttleRequest,
+  downloadArtifactAsText,
+  downloadArtifactAsStream,
   shouldSkipCommit,
   shouldSkipPullRequest,
   shouldSkipComment,
@@ -529,6 +532,112 @@ suite(testing.suiteName(), () => {
         ),
         false
       );
+    });
+  });
+
+  suite('artifact downloads', () => {
+    const body = 'first line\nsecond line\n';
+    let server, url;
+
+    suiteSetup(async () => {
+      server = http.createServer((_req, res) => {
+        res.writeHead(200, { 'content-type': 'text/plain' });
+        res.end(body);
+      });
+      await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+      url = `http://127.0.0.1:${server.address().port}/artifact`;
+    });
+
+    suiteTeardown(() => server.close());
+
+    // a queue client recording the options it is limited with, and resolving every artifact to the
+    // given result
+    const fakeQueueClient = artifact => {
+      const scopeLimits = [];
+      return {
+        scopeLimits,
+        use: options => {
+          scopeLimits.push(options);
+          return {
+            artifact: async () => artifact,
+            latestArtifact: async () => artifact,
+          };
+        },
+      };
+    };
+
+    const stored = () => ({ storageType: 's3', url });
+    const reference = () => ({ storageType: 'reference', url: 'http://169.254.169.254/metadata' });
+
+    const args = (queueClient, extra = {}) => ({
+      queueClient,
+      taskId: 'taskid',
+      runId: 0,
+      artifactName: 'public/github/customCheckRunText.md',
+      ...extra,
+    });
+
+    test('downloadArtifactAsText returns a stored artifact', async () => {
+      assert.equal(await downloadArtifactAsText(args(fakeQueueClient(stored()))), body);
+    });
+
+    test('downloadArtifactAsText limits the queue client to the one artifact', async () => {
+      const queueClient = fakeQueueClient(stored());
+      await downloadArtifactAsText(args(queueClient));
+
+      assert.deepEqual(queueClient.scopeLimits, [
+        { authorizedScopes: ['queue:get-artifact:public/github/customCheckRunText.md'] },
+      ]);
+    });
+
+    test('downloadArtifactAsText refuses a reference artifact', async () => {
+      await assert.rejects(
+        () => downloadArtifactAsText(args(fakeQueueClient(reference()))),
+        err => err.code === 'ArtifactStorageTypeRejected' && err.storageType === 'reference'
+      );
+    });
+
+    test('downloadArtifactAsStream hands a stored artifact to the consumer', async () => {
+      const excerpt = await downloadArtifactAsStream(
+        args(fakeQueueClient(stored()), { consume: stream => extractLog(stream, 1, 1) })
+      );
+
+      assert.match(excerpt, /first line/);
+    });
+
+    test('downloadArtifactAsStream refuses a reference artifact', async () => {
+      await assert.rejects(
+        () => downloadArtifactAsStream(args(fakeQueueClient(reference()), { consume: stream => extractLog(stream) })),
+        err => err.code === 'ArtifactStorageTypeRejected'
+      );
+    });
+
+    test('downloadArtifactAsStream reports the consumer failure, not the torn-down stream', async () => {
+      await assert.rejects(
+        () =>
+          downloadArtifactAsStream(
+            args(fakeQueueClient(stored()), {
+              consume: async () => {
+                throw new Error('parser exploded');
+              },
+            })
+          ),
+        err => err.message === 'parser exploded'
+      );
+    });
+
+    test('downloadArtifactAsStream does not hang when the consumer stops reading early', async () => {
+      const partial = await downloadArtifactAsStream(
+        args(fakeQueueClient(stored()), {
+          consume: async stream => {
+            for await (const chunk of stream) {
+              return chunk.length;
+            }
+          },
+        })
+      );
+
+      assert.equal(partial, body.length);
     });
   });
 });
