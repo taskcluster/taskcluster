@@ -309,7 +309,7 @@ func RenameCrossDevice(oldpath, newpath string) (err error) {
 	// RenameFolderCrossDevice, since they both call into each other
 	if err != nil {
 		var fi os.FileInfo
-		fi, err = os.Stat(oldpath)
+		fi, err = os.Lstat(oldpath)
 		if err != nil {
 			return
 		}
