@@ -26,6 +26,8 @@ const s3 = async ({ url, streamFactory, retryCfg }) => {
     let contentType = 'application/binary';
     try {
       const src = got.stream(url, { retry: { limit: 0 } });
+      // aborted request emits again after pipeline() already rejected, crashes if unhandled
+      src.on('error', () => {});
       src.on('response', res => {
         contentType = res.headers['content-type'] || contentType;
       });
@@ -58,6 +60,8 @@ const getUrl = async ({ object, name, resp, streamFactory, retryCfg }) => {
     try {
       responseUsed = true;
       const src = got.stream(resp.url, { retry: { limit: 0 } });
+      // aborted request emits again after pipeline() already rejected, crashes if unhandled
+      src.on('error', () => {});
       src.on('response', res => {
         contentType = res.headers['content-type'] || contentType;
       });
