@@ -145,9 +145,8 @@ const downloadArtifactImpl = async (
       : queue.artifact(taskId, runId, name));
 
     switch (artifact.storageType) {
-      case 'reference':
-      case 's3': {
-        if (managedOnly && artifact.storageType === 'reference') {
+      case 'reference': {
+        if (managedOnly) {
           const err = new Error(
             'Refusing to download a `reference` artifact: its URL is supplied by the task.  Use ' +
               '`downloadArtifact` if fetching a task-supplied URL is intended.'
@@ -156,7 +155,9 @@ const downloadArtifactImpl = async (
           err.storageType = 'reference';
           throw err;
         }
-
+        return await s3({ url: artifact.url, streamFactory, retryCfg });
+      }
+      case 's3': {
         return await s3({ url: artifact.url, streamFactory, retryCfg });
       }
 
