@@ -40,5 +40,13 @@
   {
     "filename": "microsoft_azure_rsa_tls_issuing_ca_08.pem",
     "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2008.crt"
-    }
+  },
+  {
+    "filename": "microsoft_tls_g2_rsa_ca_ocsp_02.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20TLS%20G2%20RSA%20CA%20OCSP%2002.crt"
+  },
+  {
+    "filename": "microsoft_tls_g2_rsa_ca_ocsp_04.pem",
+    "url": "https://www.microsoft.com/pkiops/certs/Microsoft%20TLS%20G2%20RSA%20CA%20OCSP%2004.crt"
+  }
 ]

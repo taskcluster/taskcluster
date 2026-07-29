@@ -86,18 +86,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   };
 
   // This is the intermediate certificate that azure_signature_good.json is signed
-  // with; to figure out which this is, print the certificate in
-  // `registerWorker`.  It will be one of the certs on on
-  // https://www.microsoft.com/pki/mscorp/cps/default.htm
-  const intermediateCertFingerprint = 'BE:68:D0:AD:AA:23:45:B4:8E:50:73:20:B6:95:D3:86:08:0E:5B:25';
-  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft Azure RSA TLS Issuing CA 04';
-  const intermediateCertIssuer = '/C=US,/O=DigiCert Inc,/OU=www.digicert.com,/CN=DigiCert Global Root G2';
+  // with; see services/worker-manager/README.md#Testing for how to work out which
+  // one a refreshed fixture uses.  It will be one of the certs on
+  // https://learn.microsoft.com/en-us/azure/security/fundamentals/azure-ca-details
+  const intermediateCertFingerprint = 'F8:A4:08:B8:FB:EE:A0:77:B7:57:38:65:86:41:BE:77:15:47:20:EB';
+  const intermediateCertSubject = '/C=US,/O=Microsoft Corporation,/CN=Microsoft TLS G2 RSA CA OCSP 02';
+  const intermediateCertIssuer = '/C=US,/O=Microsoft Corporation,/CN=Microsoft TLS RSA Root G2';
   const intermediateCertPath = path.resolve(
     __dirname,
-    '../src/providers/azure/azure-ca-certs/microsoft_azure_rsa_tls_issuing_ca_04_xsign.pem'
+    '../src/providers/azure/azure-ca-certs/microsoft_tls_g2_rsa_ca_ocsp_02.pem'
   );
-  const intermediateCertUrl =
-    'http://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2004%20-%20xsign.crt';
+  // The signing cert lists two CA Issuer locations, tried in order.
+  const intermediateCertUrl = 'http://www.microsoft.com/pkiops/certs/Microsoft%20TLS%20G2%20RSA%20CA%20OCSP%2002.crt';
+  const intermediateCertUrlFallback =
+    'http://caissuers.microsoft.com/pkiops/certs/Microsoft%20TLS%20G2%20RSA%20CA%20OCSP%2002.crt';
+  const expectedAuthorityAccessInfo = JSON.stringify([
+    { method: 'CA Issuer', location: intermediateCertUrl },
+    { method: 'CA Issuer', location: intermediateCertUrlFallback },
+    { method: 'OSCP', location: 'http://oneocsp.microsoft.com/ocsp' },
+  ]);
   const azureSignatures = JSON.parse(
     fs.readFileSync(path.resolve(__dirname, 'fixtures/azure_signature_good.json'), 'utf-8')
   );
@@ -108,18 +115,24 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     return forge.pki.certificateFromPem(pem);
   };
 
-  const removeAllCertsFromStore = () => {
-    allCertificates.forEach(cert => {
-      const intermediate = forge.pki.certificateFromPem(cert.certificate);
-      provider.caStore.removeCertificate(intermediate);
-    });
+  // Drop the bundled intermediates so that `registerWorker` is forced down the
+  // "download the intermediate from AIA" path.  The bundled *roots* are left in
+  // place: `Microsoft TLS RSA Root G2` is not part of Node's trust store, so
+  // removing it would break verification of the downloaded intermediate itself.
+  const removeIntermediatesFromStore = () => {
+    allCertificates
+      .filter(cert => !cert.root)
+      .forEach(cert => {
+        provider.caStore.removeCertificate(forge.pki.certificateFromPem(cert.certificate));
+      });
   };
 
-  const restoreAllCerts = () => {
-    allCertificates.forEach(cert => {
-      const intermediate = forge.pki.certificateFromPem(cert.certificate);
-      provider.caStore.addCertificate(intermediate);
-    });
+  const restoreIntermediatesInStore = () => {
+    allCertificates
+      .filter(cert => !cert.root)
+      .forEach(cert => {
+        provider.caStore.addCertificate(forge.pki.certificateFromPem(cert.certificate));
+      });
   };
 
   const createWorkerIdentityProofWithAiaUrl = ({ vmId, aiaUrl, expiresOn = '11/19/30 18:53:30 -0000' }) => {
@@ -192,8 +205,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('getAuthorityAccessInfo', async () => {
       const info = getAuthorityAccessInfo(testCert);
       assert.deepEqual(info, [
-        { method: 'OSCP', location: 'http://ocsp.digicert.com' },
-        { method: 'CA Issuer', location: 'http://cacerts.digicert.com/DigiCertGlobalRootG2.crt' },
+        {
+          method: 'CA Issuer',
+          location: 'http://www.microsoft.com/pkiops/certs/Microsoft%20TLS%20RSA%20Root%20G2%20-%20xsign.crt',
+        },
+        {
+          method: 'CA Issuer',
+          location: 'http://caissuers.microsoft.com/pkiops/certs/Microsoft%20TLS%20RSA%20Root%20G2%20-%20xsign.crt',
+        },
+        { method: 'OSCP', location: 'http://oneocsp.microsoft.com/ocsp' },
       ]);
     });
 
@@ -3348,7 +3368,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
 
           // to force download we should drop intermediate certs
-          removeAllCertsFromStore();
+          removeIntermediatesFromStore();
           const intermediateCert = getIntermediateCert();
 
           // Disable downloads
@@ -3362,20 +3382,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
             () => provider.registerWorker({ workerPool, worker, workerIdentityProof }),
             /Signature validation error/
           );
+          // both CA Issuer locations are attempted before giving up
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
           assert.equal(log0.error, `Error: Mocked downloadBinaryResponse; location=${intermediateCertUrl}`);
-          const expectedSubject = dnToString(intermediateCert.subject);
-          const expectedAIA = JSON.stringify([
-            { method: 'CA Issuer', location: intermediateCertUrl },
-            { method: 'OSCP', location: 'http://oneocsp.microsoft.com/ocsp' },
-          ]);
           const log1 = monitor.manager.messages[1].Fields;
-          assert.equal(log1.message, 'Unable to download intermediate certificate');
-          assert.equal(log1.error, `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
+          assert.equal(log1.message, 'Error downloading intermediate certificate');
+          assert.equal(log1.error, `Error: Mocked downloadBinaryResponse; location=${intermediateCertUrlFallback}`);
+          const expectedSubject = dnToString(intermediateCert.subject);
+          const log2 = monitor.manager.messages[2].Fields;
+          assert.equal(log2.message, 'Unable to download intermediate certificate');
+          assert.equal(
+            log2.error,
+            `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAuthorityAccessInfo}`
+          );
 
           // Restore test fixture
-          restoreAllCerts();
+          restoreIntermediatesInStore();
           provider.downloadBinaryResponse = oldDownloadBinaryResponse;
         });
 
@@ -3400,7 +3423,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
               retry: { limit: 0 },
             });
 
-          removeAllCertsFromStore();
+          removeIntermediatesFromStore();
           const intermediateCert = getIntermediateCert();
 
           await assert.rejects(
@@ -3410,18 +3433,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error downloading intermediate certificate');
           assert.equal(log0.error, `TimeoutError: Timeout awaiting 'request' for 1ms; location=${intermediateCertUrl}`);
-          const expectedSubject = dnToString(intermediateCert.subject);
-          const expectedAIA = JSON.stringify([
-            { method: 'CA Issuer', location: intermediateCertUrl },
-            { method: 'OSCP', location: 'http://oneocsp.microsoft.com/ocsp' },
-          ]);
           const log1 = monitor.manager.messages[1].Fields;
-          assert.equal(log1.message, 'Unable to download intermediate certificate');
-          assert.equal(log1.error, `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
+          assert.equal(log1.message, 'Error downloading intermediate certificate');
+          assert.equal(
+            log1.error,
+            `TimeoutError: Timeout awaiting 'request' for 1ms; location=${intermediateCertUrlFallback}`
+          );
+          const expectedSubject = dnToString(intermediateCert.subject);
+          const log2 = monitor.manager.messages[2].Fields;
+          assert.equal(log2.message, 'Unable to download intermediate certificate');
+          assert.equal(
+            log2.error,
+            `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAuthorityAccessInfo}`
+          );
 
           // Restore test fixture
           await new Promise(resolve => slowServer.close(resolve));
-          restoreAllCerts();
+          restoreIntermediatesInStore();
           provider.downloadBinaryResponse = oldDownloadBinaryResponse;
           helper.assertNoPulseMessage('worker-running');
         });
@@ -3437,7 +3465,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           const oldDownloadBinaryResponse = provider.downloadBinaryResponse;
 
           // to force download we should drop intermediate certs
-          removeAllCertsFromStore();
+          removeIntermediatesFromStore();
           const intermediateCert = getIntermediateCert();
 
           // Download is not a binary certificate
@@ -3450,17 +3478,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           const log0 = monitor.manager.messages[0].Fields;
           assert.equal(log0.message, 'Error reading intermediate certificate');
           assert.equal(log0.error, `Error: Too few bytes to read ASN.1 value.; location=${intermediateCertUrl}`);
-          const expectedSubject = dnToString(intermediateCert.subject);
-          const expectedAIA = JSON.stringify([
-            { method: 'CA Issuer', location: intermediateCertUrl },
-            { method: 'OSCP', location: 'http://oneocsp.microsoft.com/ocsp' },
-          ]);
           const log1 = monitor.manager.messages[1].Fields;
-          assert.equal(log1.message, 'Unable to download intermediate certificate');
-          assert.equal(log1.error, `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAIA}`);
+          assert.equal(log1.message, 'Error reading intermediate certificate');
+          assert.equal(
+            log1.error,
+            `Error: Too few bytes to read ASN.1 value.; location=${intermediateCertUrlFallback}`
+          );
+          const expectedSubject = dnToString(intermediateCert.subject);
+          const log2 = monitor.manager.messages[2].Fields;
+          assert.equal(log2.message, 'Unable to download intermediate certificate');
+          assert.equal(
+            log2.error,
+            `Certificate "${expectedSubject}"; AuthorityAccessInfo ${expectedAuthorityAccessInfo}`
+          );
 
           // Restore test fixture
-          restoreAllCerts();
+          restoreIntermediatesInStore();
           provider.downloadBinaryResponse = oldDownloadBinaryResponse;
         });
 
@@ -3471,7 +3504,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           });
           await worker.create(helper.db);
 
-          removeAllCertsFromStore();
+          removeIntermediatesFromStore();
           const rejectedUrl = 'http://evil.example/cert.crt';
           const workerIdentityProof = {
             document: createWorkerIdentityProofWithAiaUrl({ vmId, aiaUrl: rejectedUrl }),
@@ -3489,7 +3522,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           assert.equal(log0.Fields.providerId, providerId);
           assert.equal(log0.Fields.workerId, worker.workerId);
 
-          restoreAllCerts();
+          restoreIntermediatesInStore();
         });
 
         test('bad cert', async () => {
@@ -3501,10 +3534,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           const workerIdentityProof = { document: azureSignatures[0].document };
 
           // to force download we should drop intermediate certs
-          removeAllCertsFromStore();
+          removeIntermediatesFromStore();
           const intermediateCert = getIntermediateCert();
 
-          // Remove the Baltimore CyberTrust Root CA
+          // Remove the root that signed the intermediate, so that the freshly
+          // downloaded intermediate cannot be verified
           const rootCert = provider.caStore.getIssuer(intermediateCert);
           const deletedRoot = provider.caStore.removeCertificate(rootCert);
           assert(deletedRoot);
@@ -3523,7 +3557,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
           // Restore test fixture
           provider.caStore.addCertificate(deletedRoot);
-          restoreAllCerts();
+          restoreIntermediatesInStore();
           helper.assertNoPulseMessage('worker-running');
         });
 
@@ -3627,7 +3661,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           await worker.create(helper.db);
           const workerIdentityProof = { document: azureSignatures[0].document };
 
-          removeAllCertsFromStore();
+          removeIntermediatesFromStore();
 
           const res = await provider.registerWorker({ workerPool, worker, workerIdentityProof });
           // allow +- 10 seconds since time passes while the test executes

@@ -24,7 +24,7 @@ Azure uses several PKI hierarchies for IMDS attested-data signing certificates. 
 
 3. **Microsoft TLS RSA Root G2 Chain (new, post-2025):**
    * **Root CA**: Microsoft TLS RSA Root G2
-   * **Intermediate CAs**: `Microsoft TLS G2 RSA CA OCSP NN` (fetched dynamically via the AIA path; see "Dynamic Downloading" below)
+   * **Intermediate CAs**: `Microsoft TLS G2 RSA CA OCSP NN` (`02` and `04` are bundled; others are fetched dynamically via the AIA path, see "Dynamic Downloading" below)
 
 All three chains serve the same purpose. The cross-signed intermediate certificates (with "-xsign" suffix) create a trust path to widely trusted DigiCert roots, while the Microsoft-signed intermediates create a direct path to Microsoft's own roots.
 
@@ -72,3 +72,5 @@ The certificates in our bundle are those listed in the [Azure CA details](https:
 | [microsoft_azure_rsa_tls_issuing_ca_07.pem](https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2007.crt) | May 25 23:49:30 2028 GMT |
 | [microsoft_azure_rsa_tls_issuing_ca_08_xsign.pem](https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2008%20-%20xsign.crt) | Aug 25 23:59:59 2026 GMT |
 | [microsoft_azure_rsa_tls_issuing_ca_08.pem](https://www.microsoft.com/pkiops/certs/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2008.crt) | May 25 23:49:28 2028 GMT |
+| [microsoft_tls_g2_rsa_ca_ocsp_02.pem](https://www.microsoft.com/pkiops/certs/Microsoft%20TLS%20G2%20RSA%20CA%20OCSP%2002.crt) | Jun  3 20:03:00 2029 GMT |
+| [microsoft_tls_g2_rsa_ca_ocsp_04.pem](https://www.microsoft.com/pkiops/certs/Microsoft%20TLS%20G2%20RSA%20CA%20OCSP%2004.crt) | Jun  3 20:02:59 2029 GMT |
