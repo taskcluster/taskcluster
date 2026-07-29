@@ -105,7 +105,7 @@ builder.declare(
     category: 'Profiler',
     stability: 'experimental',
     description: [
-      "Generate a Firefox Profiler–compatible profile from a task's log output.",
+      "Generate a Firefox Profiler–compatible profile from a task's log output for resolved tasks.",
       'Parses `public/logs/live.log` (or `live_backing.log`) for timing data.',
     ].join('\n'),
   },
@@ -123,8 +123,16 @@ builder.declare(
       throw err;
     }
 
-    const log = await openTaskLog({ queue, taskId });
+    const taskNotResolved = ['running', 'pending', 'unscheduled'].includes(status.state);
+    if (taskNotResolved) {
+      return res.reportError(
+        'ResourceNotFound',
+        'Profiling is only supported on resolved tasks. Wait for the task to finish and retry',
+        {}
+      );
+    }
 
+    const log = await openTaskLog({ queue, taskId });
     if (!log) {
       return res.reportError(
         'ResourceNotFound',
@@ -148,13 +156,7 @@ builder.declare(
 
     const profile = profileBuilder.finalize();
 
-    const isResolved = !['running', 'pending', 'unscheduled'].includes(status.state);
-    if (isResolved) {
-      res.set('Cache-Control', 'public, max-age=86400');
-    } else {
-      res.set('Cache-Control', 'no-cache');
-    }
-
+    res.set('Cache-Control', 'public, max-age=86400');
     res.set('Content-Type', 'application/json');
     res.set('Content-Encoding', 'gzip');
     res.status(200);

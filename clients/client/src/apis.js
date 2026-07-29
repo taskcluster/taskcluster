@@ -4189,7 +4189,7 @@ export default {
             "taskId"
           ],
           "category": "Profiler",
-          "description": "Generate a Firefox Profiler–compatible profile from a task's log output.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
+          "description": "Generate a Firefox Profiler–compatible profile from a task's log output for resolved tasks.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
           "method": "get",
           "name": "taskProfile",
           "query": [

@@ -2241,7 +2241,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "taskProfile",
 				Title:       "Task Log Profile",
-				Description: "Generate a Firefox Profiler–compatible profile from a task's log output.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
+				Description: "Generate a Firefox Profiler–compatible profile from a task's log output for resolved tasks.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
 				Stability:   "experimental",
 				Method:      "get",
 				Route:       "/task/<taskId>/profile",

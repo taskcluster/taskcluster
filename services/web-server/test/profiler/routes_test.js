@@ -70,6 +70,30 @@ suite('profiler/routes', () => {
       ],
     },
   };
+  const runningTask = {
+    task: {
+      schedulerId: 'sched',
+      expires: '2025-01-01T00:00:00.000Z',
+      metadata: { name: 'Running', description: '', owner: '', source: '' },
+      retries: 1,
+      taskGroupId: VALID_SLUGID,
+      dependencies: [],
+    },
+    status: {
+      taskId: 'running-task',
+      state: 'running',
+      runs: [
+        {
+          runId: 0,
+          state: 'running',
+          started: '2024-01-01T10:00:00.000Z',
+          resolved: null,
+          reasonCreated: 'scheduled',
+          reasonResolved: null,
+        },
+      ],
+    },
+  };
 
   suite('task group profile endpoint', () => {
     let server, port;
@@ -116,32 +140,7 @@ suite('profiler/routes', () => {
       const app = await createTestApp(() => ({
         queue: {
           listTaskGroup: async () => ({
-            tasks: [
-              {
-                task: {
-                  schedulerId: 'sched',
-                  expires: '2025-01-01T00:00:00.000Z',
-                  metadata: { name: 'Running', description: '', owner: '', source: '' },
-                  retries: 1,
-                  taskGroupId: VALID_SLUGID,
-                  dependencies: [],
-                },
-                status: {
-                  taskId: 'running-task',
-                  state: 'running',
-                  runs: [
-                    {
-                      runId: 0,
-                      state: 'running',
-                      started: '2024-01-01T10:00:00.000Z',
-                      resolved: null,
-                      reasonCreated: 'scheduled',
-                      reasonResolved: null,
-                    },
-                  ],
-                },
-              },
-            ],
+            tasks: [runningTask],
           }),
         },
       }));
@@ -384,6 +383,32 @@ suite('profiler/routes', () => {
         .ok(() => true);
 
       assert.equal(res.status, 404);
+    });
+  });
+
+  suite('running task log profile with no readable log', () => {
+    let server, port;
+
+    suiteSetup(async () => {
+      const app = await createTestApp(() => ({
+        queue: {
+          task: async () => runningTask.task,
+          status: async () => ({ status: runningTask.status }),
+          latestArtifact: async () => ({ storageType: 's3', url: 'xx' }),
+        },
+      }));
+      ({ server, port } = await startServer(app));
+    });
+
+    suiteTeardown(done => server.close(done));
+
+    test('returns 404 when no log artifact may be fetched and task is running', async () => {
+      const res = await request
+        .get(`http://localhost:${port}/api/web-server/v1/task/${VALID_SLUGID_2}/profile`)
+        .ok(() => true);
+
+      assert.equal(res.status, 404);
+      assert.match(res.body.message, /Profiling is only supported on resolved tasks/);
     });
   });
 });

@@ -139,7 +139,7 @@ func (webServer *WebServer) TaskGroupProfile(taskGroupId string) error {
 
 // Stability: *** EXPERIMENTAL ***
 //
-// Generate a Firefox Profiler–compatible profile from a task's log output.
+// Generate a Firefox Profiler–compatible profile from a task's log output for resolved tasks.
 // Parses `public/logs/live.log` (or `live_backing.log`) for timing data.
 //
 // See #taskProfile
