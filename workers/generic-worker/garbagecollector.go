@@ -23,13 +23,13 @@ func (r Resources) Empty() bool {
 	return len(r) == 0
 }
 
+// EvictNext evicts the next resource in deletion order and drops it from
+// the list. It is dropped even if eviction failed, so that a caller which
+// carries on after an error doesn't retry the same failing entry forever.
 func (r *Resources) EvictNext() error {
 	err := (*r)[0].Evict(nil)
-	if err != nil {
-		return err
-	}
 	*r = (*r)[1:]
-	return nil
+	return err
 }
 
 // Implement sort.Interface to sort by deletion order.
@@ -103,9 +103,8 @@ func runGarbageCollection(r Resources, tasksRunning bool) error {
 			break
 		}
 
-		err = r.EvictNext()
-		if err != nil {
-			return err
+		if evictErr := r.EvictNext(); evictErr != nil {
+			log.Printf("WARNING: could not evict cache: %v", evictErr)
 		}
 
 		currentFreeSpace, err = freeDiskSpaceBytes(config.TasksDir)
