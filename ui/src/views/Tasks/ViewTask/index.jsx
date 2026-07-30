@@ -47,6 +47,7 @@ import {
   TASK_ADDED_FIELDS,
   TASK_POLL_INTERVAL,
   UI_SCHEDULER_ID,
+  TASK_STATE,
 } from '../../../utils/constants';
 import db from '../../../utils/db';
 import ErrorPanel from '../../../components/ErrorPanel';
@@ -1081,6 +1082,13 @@ export default class ViewTask extends Component {
               <SpeedDialAction
                 tooltipOpen
                 icon={<ChartIcon />}
+                FabProps={{
+                  disabled: [
+                    TASK_STATE.PENDING,
+                    TASK_STATE.RUNNING,
+                    TASK_STATE.UNSCHEDULED,
+                  ].includes(task.status.state),
+                }}
                 tooltipTitle="Profile Task Log"
                 onClick={this.handleOpenLogProfiler}
               />
