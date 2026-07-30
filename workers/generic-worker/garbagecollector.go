@@ -53,6 +53,8 @@ func (r Resources) Swap(i, j int) {
 // remove images that a D2G task has loaded but not yet started a
 // container for.
 //
+// It returns an error when a step it attempted failed.
+//
 // It should be independent of mounts feature, but let's go with it here
 // as currently that is the only feature that uses it.
 func runGarbageCollection(r Resources, tasksRunning bool) error {
@@ -110,10 +112,6 @@ func runGarbageCollection(r Resources, tasksRunning bool) error {
 		if err != nil {
 			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
 		}
-	}
-
-	if currentFreeSpace < requiredFreeSpace {
-		return fmt.Errorf("not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredFreeSpace, currentFreeSpace)
 	}
 
 	return nil
