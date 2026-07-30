@@ -3,6 +3,89 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v103.0.0
+
+### DEPLOYERS
+
+▶ [minor]
+The Helm chart now supports annotations on Taskcluster workload pods. Use the global `podAnnotations` map for every Deployment and CronJob pod. A service process's `podAnnotations` map is merged with the global map for that workload, with process values taking precedence for matching keys.
+
+▶ [patch]
+Fixed a potential panic in websocktunnel when a worker sent a malformed ACK
+
+▶ [patch]
+Websocktunnel will now close sessions when a client sends an invalid packet instead of silently ignoring it
+
+### ADMINS
+
+▶ [patch] [bug 2057491](http://bugzil.la/2057491)
+Fixed a bug in the auth service's scope resolver where the scopes `:*`, `::*`,
+`:a*`, `:as*`, `:ass*`, `:assu*`, `:assum*` and `:assume*` were expanded as if
+they were `*`
+
+### USERS
+
+▶ [MAJOR] [#8869](https://github.com/taskcluster/taskcluster/issues/8869)
+The client-rust `AsyncWriterFactory` now needs to be `Send` and the `get_writer` method now takes an optional `content_length` parameter that indicates what size the writer should expect. The `get_writer` method is also now only called when the initial request succeeded and the response stream is about to be pulled.
+
+▶ [patch] [#7590](https://github.com/taskcluster/taskcluster/issues/7590)
+Add UI to view audit history for client, roles, hooks, secrets
+
+▶ [patch]
+Fix a potential panic in the interactive feature when a window resize was sent with fewer bytes than expected
+
+▶ [patch] [bug 2056592](http://bugzil.la/2056592)
+Fixed a bug in the auth service where a concurrent modification conflict while
+creating, updating, or deleting a role was silently reported as success
+
+▶ [patch]
+Fixed a bug in the auth service where purging an expired client recorded the
+deletion in the audit history as `created` instead of `expired`
+
+▶ [patch] [bug 2056597](http://bugzil.la/2056597)
+Fixed a worker panic when declaring a directory artifact as an absolute path
+
+▶ [patch]
+The github YAML debug route now properly reports templating issues as a 400 instead of a 500
+
+### DEVELOPERS
+
+▶ [patch] [#8533](https://github.com/taskcluster/taskcluster/issues/8533)
+Refreshed the Azure IMDS attested-data test fixture (`services/worker-manager/test/fixtures/azure_signature_good.json`), whose leaf certificate expired on 2026-07-28.
+The new document is signed under the post-2025 `Microsoft TLS RSA Root G2` hierarchy, so the `Microsoft TLS G2 RSA CA OCSP 02` and `04` intermediates are now bundled in the worker-manager Azure CA store.
+
+▶ [patch] [#8912](https://github.com/taskcluster/taskcluster/issues/8912)
+UI adds withTaskclusterClient decorator to create rest client removing the need to using props
+for rest client creation
+
+### OTHER
+
+▶ Additional change not described here: [bug 2055774](http://bugzil.la/2055774).
+
+### Automated Package Updates
+
+<details>
+<summary>16 Dependabot updates</summary>
+
+* build(deps): bump tar from 7.5.20 to 7.5.22 (975ca856b6)
+* build(deps): bump postcss from 8.5.10 to 8.5.24 (36dafa3a05)
+* build(deps): bump tar from 7.5.20 to 7.5.22 in /clients/client-web (c1a7b69844)
+* build(deps): bump postcss from 8.5.16 to 8.5.24 in /ui (1476273815)
+* build(deps): bump postcss from 8.5.15 to 8.5.24 in /clients/client-web (084be1addd)
+* build(deps): bump quinn-proto in /clients/client-rust (e95af5bef0)
+* build(deps): bump google.golang.org/grpc from 1.81.1 to 1.82.1 (de19cf5ff2)
+* build(deps-dev): bump @vitest/browser in /clients/client-web (6c873b95e7)
+* build(deps): bump email-templates from 10.0.1 to 13.0.1 (18fe383e73)
+* build(deps): bump fast-uri from 3.1.2 to 3.1.4 (127462bca1)
+* build(deps): bump immutable from 4.3.8 to 4.3.9 (1017887890)
+* build(deps): bump linkify-it from 5.0.1 to 5.0.2 in /ui (ca2fccd387)
+* build(deps): bump fast-uri from 3.1.2 to 3.1.4 in /ui (3634079090)
+* build(deps): bump tar from 7.5.16 to 7.5.20 (9c1e1acc44)
+* build(deps): bump tar from 7.5.16 to 7.5.20 in /clients/client-web (aa46d234ab)
+* build(deps): bump protobufjs from 7.6.4 to 7.6.5 (809bd597ba)
+
+</details>
+
 ## v102.0.1
 
 ### WORKER-DEPLOYERS

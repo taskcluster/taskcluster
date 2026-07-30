@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v102/internal/scopes"
+	"github.com/taskcluster/taskcluster/v103/internal/scopes"
 )
 
 type RunTaskAsCurrentUserFeature struct {

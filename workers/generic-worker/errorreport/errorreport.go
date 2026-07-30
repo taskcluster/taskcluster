@@ -3,7 +3,7 @@ package errorreport
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v102/tools/workerproto"
+	"github.com/taskcluster/taskcluster/v103/tools/workerproto"
 )
 
 func Send(proto *workerproto.Protocol, message any, debugInfo map[string]string) {
