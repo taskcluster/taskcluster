@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/taskcluster/taskcluster/v103/workers/generic-worker/host"
 )
@@ -60,6 +61,10 @@ func runGarbageCollection(r Resources, tasksRunning bool) error {
 		return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
 	}
 	requiredFreeSpace := requiredSpaceBytes()
+
+	if currentFreeSpace < requiredFreeSpace {
+		log.Printf("Only %v bytes available in %v but %v required. Garbage collecting", currentFreeSpace, config.TasksDir, requiredFreeSpace)
+	}
 
 	if currentFreeSpace < requiredFreeSpace && config.D2GEnabled() && !tasksRunning {
 		err := host.Run("docker", "volume", "prune", "--all", "--force")
