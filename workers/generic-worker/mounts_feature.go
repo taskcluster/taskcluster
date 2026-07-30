@@ -180,7 +180,9 @@ func (cm FileCacheMap) SortedResources() Resources {
 }
 
 func (cm FileCacheMap) Remove(entry *Cache) {
-	delete(cm, entry.Key)
+	if cm[entry.Key] == entry {
+		delete(cm, entry.Key)
+	}
 }
 
 func (cm *FileCacheMap) LoadFromFile(stateFile string, cacheDir string) {
