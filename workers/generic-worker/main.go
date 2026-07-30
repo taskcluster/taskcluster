@@ -611,23 +611,35 @@ mainLoop:
 			}
 		}
 
+		canClaimTask := claimCount > 0
+
+		// Ensure there is enough disk space *before* claiming a task.
+		if canClaimTask {
+			// Pass tasksRunning so docker prune is skipped when tasks may
+			// have loaded images that are not yet running in a container.
+			tasksRunning := !taskManager.IsIdle()
+			err := garbageCollection(tasksRunning)
+			if err != nil {
+				if !tasksRunning {
+					// If we're not running any task and have no way to claim
+					// one, something is wrong, panic
+					panic(err)
+				}
+
+				log.Printf("Not claiming any task: %v", err)
+				canClaimTask = false
+			}
+		}
+
 		// Make sure at least 5 seconds pass between tcqueue.ClaimWork API
 		// calls. Only back off if we could actually claim a task during that
 		// cycle.
 		var claimBackoff <-chan time.Time
-		if claimCount > 0 || taskManager.IsIdle() {
+		if canClaimTask || taskManager.IsIdle() {
 			claimBackoff = time.NewTimer(time.Second * 5).C
 		}
 
-		if claimCount > 0 {
-			// Ensure there is enough disk space *before* claiming a task.
-			// Pass tasksRunning so docker prune is skipped when tasks may
-			// have loaded images that are not yet running in a container.
-			err := garbageCollection(!taskManager.IsIdle())
-			if err != nil {
-				panic(err)
-			}
-
+		if canClaimTask {
 			// Unified task execution: always use per-task context regardless of capacity
 			tasks := ClaimWork(claimCount)
 			for _, task := range tasks {
