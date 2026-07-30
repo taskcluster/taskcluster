@@ -589,14 +589,6 @@ mainLoop:
 			return WORKER_MANAGER_SHUTDOWN
 		}
 
-		// Ensure there is enough disk space *before* claiming a task.
-		// Pass tasksRunning so docker prune is skipped when tasks may
-		// have loaded images that are not yet running in a container.
-		err := garbageCollection(!taskManager.IsIdle())
-		if err != nil {
-			panic(err)
-		}
-
 		if graceful.TerminationRequested() {
 			log.Printf("Graceful termination requested, waiting for %d running tasks...", taskManager.TaskCount())
 			taskManager.WaitForAll()
@@ -628,6 +620,14 @@ mainLoop:
 		}
 
 		if claimCount > 0 {
+			// Ensure there is enough disk space *before* claiming a task.
+			// Pass tasksRunning so docker prune is skipped when tasks may
+			// have loaded images that are not yet running in a container.
+			err := garbageCollection(!taskManager.IsIdle())
+			if err != nil {
+				panic(err)
+			}
+
 			// Unified task execution: always use per-task context regardless of capacity
 			tasks := ClaimWork(claimCount)
 			for _, task := range tasks {
