@@ -619,8 +619,13 @@ mainLoop:
 			}
 		}
 
-		// make sure at least 5 seconds pass between tcqueue.ClaimWork API calls
-		wait5Seconds := time.NewTimer(time.Second * 5)
+		// Make sure at least 5 seconds pass between tcqueue.ClaimWork API
+		// calls. Only back off if we could actually claim a task during that
+		// cycle.
+		var claimBackoff <-chan time.Time
+		if claimCount > 0 || taskManager.IsIdle() {
+			claimBackoff = time.NewTimer(time.Second * 5).C
+		}
 
 		if claimCount > 0 {
 			// Unified task execution: always use per-task context regardless of capacity
@@ -786,8 +791,10 @@ mainLoop:
 		// between consecutive requests. Note we do this even if a task ran,
 		// since a task could complete in less than that amount of time.
 		// However, if a task completes, we should process it immediately.
+		// claimBackoff is nil when there is nothing to claim until a running
+		// task finishes, in which case this blocks until one does.
 		select {
-		case <-wait5Seconds.C:
+		case <-claimBackoff:
 		case result := <-taskCompleteChan:
 			// Process the completion in-place, then loop back to the
 			// top to drain any siblings and run the post-completion
