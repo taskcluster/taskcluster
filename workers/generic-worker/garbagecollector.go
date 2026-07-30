@@ -103,7 +103,10 @@ func runGarbageCollection(r Resources, tasksRunning bool) error {
 			break
 		}
 
-		if evictErr := r.EvictNext(); evictErr != nil {
+		cacheMutex.Lock()
+		evictErr := r.EvictNext()
+		cacheMutex.Unlock()
+		if evictErr != nil {
 			log.Printf("WARNING: could not evict cache: %v", evictErr)
 		}
 
