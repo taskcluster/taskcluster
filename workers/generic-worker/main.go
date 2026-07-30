@@ -561,10 +561,11 @@ func RunWorker() (exitCode ExitCode) {
 		return 0, false
 	}
 
+	processedCompletion := false
+
 mainLoop:
 	for {
 		// Process any completed tasks
-		processedCompletion := false
 		for {
 			select {
 			case result := <-taskCompleteChan:
@@ -578,6 +579,7 @@ mainLoop:
 		}
 	doneProcessingCompletions:
 		if processedCompletion {
+			processedCompletion = false
 			err := purgeOldTasks(taskManager.RunningTaskDirNames()...)
 			if err != nil {
 				log.Printf("ERROR: purging old tasks: %v", err)
@@ -816,6 +818,7 @@ mainLoop:
 			// and rely on the top-of-loop drain to pick it up — that
 			// pattern was sensitive to the chan buffer size and
 			// goroutine count invariants.
+			processedCompletion = true
 			if exit, done := processCompletionAction(processCompletion(result)); done {
 				return exit
 			}
