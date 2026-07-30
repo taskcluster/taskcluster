@@ -637,6 +637,8 @@ mainLoop:
 		var claimBackoff <-chan time.Time
 		if canClaimTask || taskManager.IsIdle() {
 			claimBackoff = time.NewTimer(time.Second * 5).C
+		} else {
+			log.Printf("Waiting for one of %v running tasks to complete before claiming again", taskManager.TaskCount())
 		}
 
 		if canClaimTask {
