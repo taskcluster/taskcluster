@@ -3,6 +3,29 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v103.0.1
+
+### WORKER-DEPLOYERS
+
+▶ [patch]
+Generic worker now continues trying to garbage collect caches even if one
+removal fails for any reason
+
+### USERS
+
+▶ [patch] [#8942](https://github.com/taskcluster/taskcluster/issues/8942)
+Fix workers panicking if a task that's not resolved yet would exhaust enough
+disk space for the worker to not meet their minimum disk space required to
+claim new tasks.
+
+▶ [patch]
+Generic worker will try evicting writable cache directories again when garbage
+collecting. This was regressed in v100.0.0
+
+▶ [patch]
+Workers will now reliably clean task directories / users again. The cleanup
+behavior was regressed in v100.0.0
+
 ## v103.0.0
 
 ### DEPLOYERS
