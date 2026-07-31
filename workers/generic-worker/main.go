@@ -561,10 +561,11 @@ func RunWorker() (exitCode ExitCode) {
 		return 0, false
 	}
 
+	processedCompletion := false
+
 mainLoop:
 	for {
 		// Process any completed tasks
-		processedCompletion := false
 		for {
 			select {
 			case result := <-taskCompleteChan:
@@ -578,6 +579,7 @@ mainLoop:
 		}
 	doneProcessingCompletions:
 		if processedCompletion {
+			processedCompletion = false
 			err := purgeOldTasks(taskManager.RunningTaskDirNames()...)
 			if err != nil {
 				log.Printf("ERROR: purging old tasks: %v", err)
@@ -587,14 +589,6 @@ mainLoop:
 		if checkWhetherToTerminate() {
 			taskManager.WaitForAll()
 			return WORKER_MANAGER_SHUTDOWN
-		}
-
-		// Ensure there is enough disk space *before* claiming a task.
-		// Pass tasksRunning so docker prune is skipped when tasks may
-		// have loaded images that are not yet running in a container.
-		err := garbageCollection(!taskManager.IsIdle())
-		if err != nil {
-			panic(err)
 		}
 
 		if graceful.TerminationRequested() {
@@ -619,10 +613,37 @@ mainLoop:
 			}
 		}
 
-		// make sure at least 5 seconds pass between tcqueue.ClaimWork API calls
-		wait5Seconds := time.NewTimer(time.Second * 5)
+		canClaimTask := claimCount > 0
 
-		if claimCount > 0 {
+		// Ensure there is enough disk space *before* claiming a task.
+		if canClaimTask {
+			// Pass tasksRunning so docker prune is skipped when tasks may
+			// have loaded images that are not yet running in a container.
+			tasksRunning := !taskManager.IsIdle()
+			err := garbageCollection(tasksRunning)
+			if err != nil {
+				if !tasksRunning {
+					// If we're not running any task and have no way to claim
+					// one, something is wrong, panic
+					panic(err)
+				}
+
+				log.Printf("Not claiming any task: %v", err)
+				canClaimTask = false
+			}
+		}
+
+		// Make sure at least 5 seconds pass between tcqueue.ClaimWork API
+		// calls. Only back off if we could actually claim a task during that
+		// cycle.
+		var claimBackoff <-chan time.Time
+		if canClaimTask || taskManager.IsIdle() {
+			claimBackoff = time.NewTimer(time.Second * 5).C
+		} else {
+			log.Printf("Waiting for one of %v running tasks to complete before claiming again", taskManager.TaskCount())
+		}
+
+		if canClaimTask {
 			// Unified task execution: always use per-task context regardless of capacity
 			tasks := ClaimWork(claimCount)
 			for _, task := range tasks {
@@ -786,8 +807,10 @@ mainLoop:
 		// between consecutive requests. Note we do this even if a task ran,
 		// since a task could complete in less than that amount of time.
 		// However, if a task completes, we should process it immediately.
+		// claimBackoff is nil when there is nothing to claim until a running
+		// task finishes, in which case this blocks until one does.
 		select {
-		case <-wait5Seconds.C:
+		case <-claimBackoff:
 		case result := <-taskCompleteChan:
 			// Process the completion in-place, then loop back to the
 			// top to drain any siblings and run the post-completion
@@ -795,6 +818,7 @@ mainLoop:
 			// and rely on the top-of-loop drain to pick it up — that
 			// pattern was sensitive to the chan buffer size and
 			// goroutine count invariants.
+			processedCompletion = true
 			if exit, done := processCompletionAction(processCompletion(result)); done {
 				return exit
 			}

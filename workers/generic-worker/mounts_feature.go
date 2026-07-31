@@ -180,7 +180,9 @@ func (cm FileCacheMap) SortedResources() Resources {
 }
 
 func (cm FileCacheMap) Remove(entry *Cache) {
-	delete(cm, entry.Key)
+	if cm[entry.Key] == entry {
+		delete(cm, entry.Key)
+	}
 }
 
 func (cm *FileCacheMap) LoadFromFile(stateFile string, cacheDir string) {
@@ -591,9 +593,8 @@ func garbageCollection(tasksRunning bool) error {
 	dirResources := directoryCaches.SortedResources()
 	for _, res := range dirResources {
 		cache := res.(*Cache)
-		evictErr := cache.Evict(nil)
-		if evictErr != nil {
-			return evictErr
+		if evictErr := cache.Evict(nil); evictErr != nil {
+			log.Printf("WARNING: could not evict cache %v: %v", cache.Key, evictErr)
 		}
 
 		currentFreeSpace, err = freeDiskSpaceBytes(config.TasksDir)
@@ -601,14 +602,12 @@ func garbageCollection(tasksRunning bool) error {
 			return fmt.Errorf("could not calculate free disk space in dir %v due to error %#v", config.TasksDir, err)
 		}
 		if currentFreeSpace >= requiredSpaceBytes() {
+			trimPoolExcess()
 			return nil
 		}
 	}
 
-	if currentFreeSpace < requiredSpaceBytes() {
-		return fmt.Errorf("not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredSpaceBytes(), currentFreeSpace)
-	}
-	return nil
+	return fmt.Errorf("not able to free up enough disk space - require %v bytes, but only have %v bytes - and nothing left to delete", requiredSpaceBytes(), currentFreeSpace)
 }
 
 // called when a task starts

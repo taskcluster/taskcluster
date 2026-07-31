@@ -3,7 +3,6 @@
 package main
 
 import (
-	"log"
 	"syscall"
 )
 
@@ -14,7 +13,5 @@ func freeDiskSpaceBytes(dir string) (uint64, error) {
 		return 0, err
 	}
 	// Available blocks * size per block = available space in bytes
-	b := uint64(stat.Bavail) * uint64(stat.Bsize)
-	log.Printf("Disk available: %v bytes", b)
-	return b, nil
+	return uint64(stat.Bavail) * uint64(stat.Bsize), nil
 }
