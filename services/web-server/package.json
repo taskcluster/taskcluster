@@ -14,7 +14,7 @@
     "test": "mocha test/*_test.js test/**/*_test.js"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
+    "@biomejs/biome": "^2.5.5",
     "cross-env": "^10.1.0",
     "mocha": "^11.7.6"
   }

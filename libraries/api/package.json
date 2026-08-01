@@ -20,7 +20,7 @@
   },
   "types": "./@types/index.d.ts",
   "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
+    "@biomejs/biome": "^2.5.5",
     "mocha": "^11.7.6"
   }
 }
