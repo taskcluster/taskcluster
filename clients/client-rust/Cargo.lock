@@ -130,6 +130,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
+name = "base64"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b25655df2c3cdd83c5e5b293b88acd880332b2ddadd7c30ac43144fdc0033da9"
+
+[[package]]
 name = "bitflags"
 version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -591,7 +597,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab302457b3e28e621daab18932d67a67328f29240bfaa5f604b7627ece1eacda"
 dependencies = [
  "anyhow",
- "base64",
+ "base64 0.22.1",
  "log",
  "once_cell",
  "ring",
@@ -728,7 +734,7 @@ version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1c293b6b3d21eca78250dc7dbebd6b9210ec5530e038cbfe0661b5c47ab06e8"
 dependencies = [
- "base64",
+ "base64 0.22.1",
  "bytes",
  "futures-channel",
  "futures-core",
@@ -1234,7 +1240,7 @@ version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "219c5811de6525e5416c7d5d53bb656d3afdbc6c5af816e0802bcfa42dbdc1c3"
 dependencies = [
- "base64",
+ "base64 0.22.1",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -1525,7 +1531,7 @@ version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3bdb10c7fc7b7037dc6403b58397721fc1f3d888f557bd3eddc2d1154701ded"
 dependencies = [
- "base64",
+ "base64 0.22.1",
  "lazy_static",
  "ring",
 ]
@@ -1626,7 +1632,7 @@ version = "103.0.1"
 dependencies = [
  "anyhow",
  "backon",
- "base64",
+ "base64 0.23.0",
  "chrono",
  "hawk",
  "hmac-sha256",
@@ -1684,7 +1690,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "base16ct",
- "base64",
+ "base64 0.23.0",
  "httptest",
  "reqwest",
  "ring",
@@ -1705,7 +1711,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.2",
+ "getrandom 0.4.3",
  "once_cell",
  "rustix",
  "windows-sys 0.61.1",
