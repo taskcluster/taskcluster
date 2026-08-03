@@ -556,21 +556,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@date-io/core@npm:1.x, @date-io/core@npm:^1.3.13":
+"@date-io/core@npm:1.x":
   version: 1.3.13
   resolution: "@date-io/core@npm:1.3.13"
   checksum: 10c0/7f099234a6fff74c5510197de577c2402ba399ce45341978e59252452192988aa41e0157d29a478b293513f68a18fc1674c408fa8b6f1c6a1f26b181581df3b2
   languageName: node
   linkType: hard
 
-"@date-io/date-fns@npm:1.3.13":
-  version: 1.3.13
-  resolution: "@date-io/date-fns@npm:1.3.13"
+"@date-io/core@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@date-io/core@npm:3.2.0"
+  checksum: 10c0/e320e5eb1dc5cdafbebdb5b3a4c80fcf18cef1ccf39bd57e63de7826c966b89814c984b59f7fb1fc3f7650859fb0ba890e39b0e77bfb671f4b01991432ccc06e
+  languageName: node
+  linkType: hard
+
+"@date-io/date-fns@npm:3.2.1":
+  version: 3.2.1
+  resolution: "@date-io/date-fns@npm:3.2.1"
   dependencies:
-    "@date-io/core": "npm:^1.3.13"
+    "@date-io/core": "npm:^3.2.0"
   peerDependencies:
-    date-fns: ^2.0.0
-  checksum: 10c0/5ab31d2e007389dd22f04a474b4a90c67d2a878c1981dca5926fde96733fc51b1379dd5d5b8ba39267ccbbd2625e76dc86a5838db091b55d99853af143e4b691
+    date-fns: ^3.2.0 || ^4.1.0
+  peerDependenciesMeta:
+    date-fns:
+      optional: true
+  checksum: 10c0/fe489ce51599264ec6d0e64d0a1675220cea4123568320fe58c2c6e8f2b6cea0124e4ee7fccfbc905173bd98b841948cde1030023517da8ed2d54a133513e19d
   languageName: node
   linkType: hard
 
@@ -1441,7 +1451,7 @@ __metadata:
     "@babel/plugin-proposal-class-properties": "npm:^7.10.4"
     "@babel/plugin-proposal-decorators": "npm:^7.24.7"
     "@biomejs/biome": "npm:^2.5.1"
-    "@date-io/date-fns": "npm:1.3.13"
+    "@date-io/date-fns": "npm:3.2.1"
     "@fontsource/roboto": "npm:^5.2.10"
     "@graphql-tools/mock": "npm:^9.0.0"
     "@graphql-tools/schema": "npm:^10.0.0"
