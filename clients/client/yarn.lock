@@ -452,8 +452,8 @@ __metadata:
   linkType: hard
 
 "got@npm:^15.0.3":
-  version: 15.0.7
-  resolution: "got@npm:15.0.7"
+  version: 15.1.0
+  resolution: "got@npm:15.1.0"
   dependencies:
     "@sindresorhus/is": "npm:^8.0.0"
     byte-counter: "npm:^0.1.0"
@@ -467,7 +467,7 @@ __metadata:
     responselike: "npm:^4.0.2"
     type-fest: "npm:^5.6.0"
     uint8array-extras: "npm:^1.5.0"
-  checksum: 10c0/d9fee7259a47dc2dbc4c57f9ce8013cfd8ad74bc2f6b4e07c2bf1c801ffeb4d71a9e352e6e0163cc223965d47115463b413dd6aec1f71d28ecfe69a75cf900cc
+  checksum: 10c0/3d506d6d0593ffa56eb0bb5826ca1dce237f6d440d61029d76e07de10dacffae15a49685a949e71e33922a8965a7edce80b1d8300f1b5598eb5a0ac63db6b760
   languageName: node
   linkType: hard
 
@@ -726,13 +726,13 @@ __metadata:
   linkType: hard
 
 "nock@npm:^14.0.13":
-  version: 14.0.15
-  resolution: "nock@npm:14.0.15"
+  version: 14.0.17
+  resolution: "nock@npm:14.0.17"
   dependencies:
     "@mswjs/interceptors": "npm:^0.41.0"
     json-stringify-safe: "npm:^5.0.1"
     propagate: "npm:^2.0.0"
-  checksum: 10c0/f3bac19b3173d37e2f730ffac1ec2bd5c0bff153cae2f81e68504310a7830d765749908e3fe40eeab70de4adcb82fcb514a4fcef1ffdc8e7710ab070e92d879d
+  checksum: 10c0/4ea2f6c3ffcf1d6d1d23d708588cfe0c1815f59f63a15e6a6b9d0f01174e0b0224da7e485d6c3149df68dee929ce360ed8299d651d88e19021aa2e541e59aaf7
   languageName: node
   linkType: hard
 
