@@ -1294,14 +1294,6 @@ builder.declare(
       return res.reportError('InputError', 'Could not generate credentials for this secret', {});
     }
 
-    if (worker.state !== Worker.states.RUNNING) {
-      return res.reportError('InputError', `Worker ${workerGroup}/${workerId} is not running`, {});
-    }
-
-    if (worker.expires < new Date()) {
-      return res.reportError('InputError', `Worker ${workerGroup}/${workerId} has expired`, {});
-    }
-
     // worker has not been registered yet
     if (!worker.secret) {
       return res.reportError('InputError', 'Could not generate credentials for this secret', {});
@@ -1309,6 +1301,14 @@ builder.declare(
 
     if (this.db.decrypt({ value: worker.secret }).toString('utf8') !== secret) {
       return res.reportError('InputError', 'Could not generate credentials for this secret', {});
+    }
+
+    if (worker.state !== Worker.states.RUNNING) {
+      return res.reportError('InputError', `Worker ${workerGroup}/${workerId} is not running`, {});
+    }
+
+    if (worker.expires < new Date()) {
+      return res.reportError('InputError', `Worker ${workerGroup}/${workerId} has expired`, {});
     }
 
     // defaults to 96 hours if reregistrationTimeout is not defined

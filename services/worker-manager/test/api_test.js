@@ -2134,7 +2134,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('throws when worker is not running', async () => {
       await createWorkerPool({});
       await createWorker({});
-      await helper.workerManager.registerWorker({
+      const firstResponse = await helper.workerManager.registerWorker({
         ...defaultRegisterWorker,
       });
 
@@ -2152,7 +2152,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           workerPoolId,
           workerGroup,
           workerId,
-          secret: `${slug.nice()}${slug.nice()}`,
+          secret: firstResponse.secret,
         });
       }, /Worker .+ is not running/);
     });
@@ -2160,7 +2160,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     test('throws when worker is expired', async () => {
       await createWorkerPool({});
       await createWorker({});
-      await helper.workerManager.registerWorker({
+      const firstResponse = await helper.workerManager.registerWorker({
         ...defaultRegisterWorker,
       });
 
@@ -2176,7 +2176,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           workerPoolId,
           workerGroup,
           workerId,
-          secret: `${slug.nice()}${slug.nice()}`,
+          secret: firstResponse.secret,
         });
       }, /Worker .+ has expired/);
     });
