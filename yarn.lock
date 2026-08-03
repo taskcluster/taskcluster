@@ -9163,10 +9163,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mock-fs@npm:^4.8.0":
-  version: 4.14.0
-  resolution: "mock-fs@npm:4.14.0"
-  checksum: 10c0/a23bc2ce74f2a01d02053fb20aecc2ea359e62580cd15b5e1029b55929802e2770bbd683ccdc5c1eabb5cecbf452196bb81a0ef61c4629dc819023e10d8303c6
+"mock-fs@npm:^5.5.0":
+  version: 5.5.0
+  resolution: "mock-fs@npm:5.5.0"
+  checksum: 10c0/56539c9ab1d29b72c4b3b54f003808c7c51e5c82454a80fc46fd811f40401652da32412bbf26daa4eabff0e44a08eeafbeb6c885c60c1111b5429a4279efbda4
   languageName: node
   linkType: hard
 
@@ -11669,7 +11669,7 @@ __metadata:
     memorystore: "npm:^1.6.8"
     mkdirp: "npm:^1.0.0"
     mocha: "npm:^11.7.6"
-    mock-fs: "npm:^4.8.0"
+    mock-fs: "npm:^5.5.0"
     mockdate: "npm:^3.0.2"
     moment: "npm:^2.30.1"
     netmask: "npm:^2.1.1"
