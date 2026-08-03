@@ -1303,6 +1303,14 @@ builder.declare(
       return res.reportError('InputError', 'Could not generate credentials for this secret', {});
     }
 
+    if (worker.state !== Worker.states.RUNNING) {
+      return res.reportError('InputError', `Worker ${workerGroup}/${workerId} is not running`, {});
+    }
+
+    if (worker.expires < new Date()) {
+      return res.reportError('InputError', `Worker ${workerGroup}/${workerId} has expired`, {});
+    }
+
     // defaults to 96 hours if reregistrationTimeout is not defined
     // make sure to turn milliseconds into seconds here since we store it in millieconds
     // after the first interpretation.

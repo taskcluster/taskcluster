@@ -2131,6 +2131,56 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       }, /Could not generate credentials for this secret/);
     });
 
+    test('throws when worker is not running', async () => {
+      await createWorkerPool({});
+      await createWorker({});
+      const firstResponse = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      });
+
+      await helper.withAdminDbClient(async client => {
+        await client.query(`update workers set state=$1 WHERE worker_pool_id=$2 AND worker_group=$3 AND worker_id=$4`, [
+          Worker.states.STOPPING,
+          workerPoolId,
+          workerGroup,
+          workerId,
+        ]);
+      });
+
+      await assert.rejects(async () => {
+        await helper.workerManager.reregisterWorker({
+          workerPoolId,
+          workerGroup,
+          workerId,
+          secret: firstResponse.secret,
+        });
+      }, /Worker .+ is not running/);
+    });
+
+    test('throws when worker is expired', async () => {
+      await createWorkerPool({});
+      await createWorker({});
+      const firstResponse = await helper.workerManager.registerWorker({
+        ...defaultRegisterWorker,
+      });
+
+      await helper.withAdminDbClient(async client => {
+        await client.query(
+          `update workers set expires=$1 WHERE worker_pool_id=$2 AND worker_group=$3 AND worker_id=$4`,
+          [taskcluster.fromNow('-1 hour'), workerPoolId, workerGroup, workerId]
+        );
+      });
+
+      await assert.rejects(async () => {
+        await helper.workerManager.reregisterWorker({
+          workerPoolId,
+          workerGroup,
+          workerId,
+          secret: firstResponse.secret,
+        });
+      }, /Worker .+ has expired/);
+    });
+
     test('throws when worker does not exist', async () => {
       await createWorkerPool({});
       await createWorker({
