@@ -432,7 +432,7 @@ suite(testing.suiteName(), () => {
 
       await assert.rejects(
         () => tryDownloadArtifact(),
-        err => err.message === 'oh noes' && err.reason === 'test case'
+        err => err.message === 'oh noes' && err.code === 'ArtifactError' && err.reason === 'test case'
       );
     });
   });

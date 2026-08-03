@@ -13,7 +13,7 @@ import {
 import QueueLock from '../queue-lock.js';
 import utils from '../utils.js';
 const { markdownLog, markdownAnchor } = utils;
-import { requestArtifact, buildArtifactUrl } from './requestArtifact.js';
+import { requestArtifact } from './requestArtifact.js';
 import {
   taskUI,
   makeDebug,
@@ -253,18 +253,21 @@ export async function statusHandler(message) {
     }
     if (!taskDefined && runId !== undefined) {
       try {
-        const url = buildArtifactUrl(this.queueClient, { taskId, runId, artifactName: LIVE_BACKING_LOG_ARTIFACT_NAME });
-        const response = await fetch(url, { redirect: 'follow' });
-        if (response.ok) {
-          const logText = await utils.extractLog(response.body, 20, 200, githubCheck.output.getRemainingMaxSize());
-          if (logText) {
-            output.addText(markdownLog(logText));
-          }
-        } else {
-          await response.body?.cancel();
+        const logText = await utils.downloadArtifactAsStream({
+          queueClient: this.queueClient,
+          taskId,
+          runId,
+          artifactName: LIVE_BACKING_LOG_ARTIFACT_NAME,
+          consume: stream => utils.extractLog(stream, 20, 200, githubCheck.output.getRemainingMaxSize()),
+        });
+        if (logText) {
+          output.addText(markdownLog(logText));
         }
       } catch (e) {
-        await this.monitor.reportError(e);
+        // a log that is absent, refused, or an error artifact simply has no excerpt to add
+        if (e.statusCode !== 404 && e.code !== 'ArtifactStorageTypeRejected' && e.code !== 'ArtifactError') {
+          await this.monitor.reportError(e);
+        }
       }
     }
 
