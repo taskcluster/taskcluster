@@ -58,7 +58,7 @@ import { secret } from '../../utils/prop-types';
 /** A form to view/edit/create a secret */
 export default class SecretForm extends Component {
   static propTypes = {
-    /** A GraphQL secret response. Not needed when creating a new secret.  */
+    /** A secret response. Not needed when creating a new secret.  */
     secret,
     /** Set to `true` when creating a new secret. */
     isNewSecret: bool,

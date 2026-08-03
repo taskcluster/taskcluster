@@ -1,30 +1,18 @@
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
+import { Secrets } from '@taskcluster/client-web';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import SecretForm from '../../../components/SecretForm';
 import HelpView from '../../../components/HelpView';
 import ErrorPanel from '../../../components/ErrorPanel';
 import Snackbar from '../../../components/Snackbar';
-import secretQuery from './secret.graphql';
-import createSecretQuery from './createSecret.graphql';
-import updateSecretQuery from './updateSecret.graphql';
-import deleteSecretQuery from './deleteSecret.graphql';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@withApollo
-@graphql(secretQuery, {
-  skip: ({ match: { params } }) => !params.secret,
-  options: ({ match: { params } }) => ({
-    fetchPolicy: 'network-only',
-    variables: {
-      name: decodeURIComponent(params.secret),
-    },
-  }),
-})
+@withTaskclusterClient
 export default class ViewSecret extends Component {
   state = {
     loading: false,
-    // Mutation errors
+    secret: null,
     error: null,
     dialogError: null,
     dialogOpen: false,
@@ -35,13 +23,40 @@ export default class ViewSecret extends Component {
     },
   };
 
+  get secretsClient() {
+    return this.props.createTaskclusterClient({ Class: Secrets });
+  }
+
+  componentDidMount() {
+    if (!this.props.isNewSecret) {
+      this.fetchSecret();
+    }
+  }
+
+  fetchSecret = async () => {
+    const name = decodeURIComponent(this.props.match.params.secret);
+
+    this.setState({ loading: true, error: null, secret: null });
+
+    try {
+      const secret = await this.secretsClient.get(name);
+
+      this.setState({
+        loading: false,
+        secret: {
+          name,
+          ...secret,
+        },
+      });
+    } catch (error) {
+      this.setState({ loading: false, error });
+    }
+  };
+
   handleDeleteSecret = name => {
     this.setState({ dialogError: null, loading: true });
 
-    return this.props.client.mutate({
-      mutation: deleteSecretQuery,
-      variables: { name },
-    });
+    return this.secretsClient.remove(name);
   };
 
   handleDialogActionError = error => {
@@ -58,17 +73,16 @@ export default class ViewSecret extends Component {
     this.setState({ error: null, loading: true });
 
     try {
-      await this.props.client.mutate({
-        mutation: isNewSecret ? createSecretQuery : updateSecretQuery,
-        variables: {
-          name,
-          secret,
-        },
-        refetchQueries: ['Secret'],
-        awaitRefetchQueries: true,
-      });
+      await this.secretsClient.set(name, secret);
 
-      this.setState({ error: null, loading: false });
+      this.setState({
+        error: null,
+        loading: false,
+        secret: {
+          name,
+          ...secret,
+        },
+      });
 
       if (isNewSecret) {
         this.props.history.push(`/secrets/${encodeURIComponent(name)}`);
@@ -107,8 +121,9 @@ export default class ViewSecret extends Component {
   };
 
   render() {
-    const { loading, error, snackbar, dialogError, dialogOpen } = this.state;
-    const { description, isNewSecret, data } = this.props;
+    const { loading, secret, error, snackbar, dialogError, dialogOpen } =
+      this.state;
+    const { description, isNewSecret } = this.props;
 
     return (
       <Dashboard
@@ -123,12 +138,11 @@ export default class ViewSecret extends Component {
           />
         ) : (
           <Fragment>
-            {data.loading && <Spinner loading />}
-            {data && <ErrorPanel fixed error={data.error} />}
-            {data?.secret && (
+            {loading && !secret && <Spinner loading />}
+            {secret && (
               <SecretForm
                 loading={loading}
-                secret={data.secret}
+                secret={secret}
                 onSaveSecret={this.handleSaveSecret}
                 onDeleteSecret={this.handleDeleteSecret}
                 dialogError={dialogError}
