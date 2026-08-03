@@ -385,6 +385,11 @@ func (queue *Queue) GetTaskGroup_SignedURL(taskGroupId string, duration time.Dur
 // Task group can be sealed once and is irreversible. Calling it multiple times
 // will return same result and will not update it again.
 //
+// Sealing makes `cancelTaskGroup` meaningful by stopping task creators
+// from adding more tasks to a group being cancelled. It is not a
+// security feature: the check is not atomic with task creation, so a
+// `createTask` racing this call may still succeed.
+//
 // Required scopes:
 //
 //	queue:seal-task-group:<schedulerId>/<taskGroupId>

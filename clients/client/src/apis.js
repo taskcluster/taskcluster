@@ -2408,7 +2408,7 @@ export default {
             "taskGroupId"
           ],
           "category": "Task Groups",
-          "description": "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.",
+          "description": "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.\n\nSealing makes `cancelTaskGroup` meaningful by stopping task creators\nfrom adding more tasks to a group being cancelled. It is not a\nsecurity feature: the check is not atomic with task creation, so a\n`createTask` racing this call may still succeed.",
           "method": "post",
           "name": "sealTaskGroup",
           "output": "v1/task-group-response.json#",

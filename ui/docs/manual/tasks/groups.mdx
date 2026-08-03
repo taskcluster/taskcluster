@@ -42,6 +42,10 @@ To seal a task group, you can use the `queue.sealTaskGroup` method.
 Once a task group is sealed, it will no longer accept new tasks and will throw
 an error if new task is being added to it.
 
+Sealing is not a security feature. The check happens in `createTask` outside the
+task-insert transaction, so a call racing `sealTaskGroup` can still slip a task
+in.
+
 
 ## Cancelling Task Groups
 

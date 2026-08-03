@@ -157,6 +157,10 @@ export default class Queue extends Client {
   // Seal task group to prevent creation of new tasks.
   // Task group can be sealed once and is irreversible. Calling it multiple times
   // will return same result and will not update it again.
+  // Sealing makes `cancelTaskGroup` meaningful by stopping task creators
+  // from adding more tasks to a group being cancelled. It is not a
+  // security feature: the check is not atomic with task creation, so a
+  // `createTask` racing this call may still succeed.
   sealTaskGroup(...args) {
     this.validate(this.sealTaskGroup.entry, args);
 
