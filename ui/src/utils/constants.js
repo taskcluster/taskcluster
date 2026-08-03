@@ -5,7 +5,7 @@ import BookOpenVariantIcon from 'mdi-react/BookOpenVariantIcon';
 import BookOpenOutlineIcon from 'mdi-react/BookOpenOutlineIcon';
 import OpenInNewIcon from 'mdi-react/OpenInNewIcon';
 import FileDocumentIcon from 'mdi-react/FileDocumentIcon';
-import FilePdfIcon from 'mdi-react/FilePdfIcon';
+import FilePdfIcon from 'mdi-react/FilePdfBoxIcon';
 import ArchiveIcon from 'mdi-react/ArchiveIcon';
 import FileWordIcon from 'mdi-react/FileWordIcon';
 import FileExcelIcon from 'mdi-react/FileExcelIcon';

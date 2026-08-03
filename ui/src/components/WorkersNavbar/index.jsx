@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { string, bool } from 'prop-types';
 import { Chip } from '@material-ui/core';
 import { withStyles } from '@material-ui/core/styles';
-import WorkerIcon from 'mdi-react/WorkerIcon';
+import WorkerIcon from 'mdi-react/AccountHardHatIcon';
 import ProgressClockIcon from 'mdi-react/ProgressClockIcon';
 import HourglassIcon from 'mdi-react/HourglassIcon';
 import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';

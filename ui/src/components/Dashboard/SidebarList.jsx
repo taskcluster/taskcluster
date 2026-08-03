@@ -5,14 +5,14 @@ import HexagonSlice4 from 'mdi-react/HexagonSlice4Icon';
 import PlusCircleIcon from 'mdi-react/PlusCircleIcon';
 import GroupIcon from 'mdi-react/GroupIcon';
 import AccountMultipleIcon from 'mdi-react/AccountMultipleIcon';
-import MixcloudIcon from 'mdi-react/MixcloudIcon';
+import WorkerIcon from 'mdi-react/AccountHardHatIcon';
 import BackupRestoreIcon from 'mdi-react/BackupRestoreIcon';
 import AccountKeyIcon from 'mdi-react/AccountKeyIcon';
 import AccountStarIcon from 'mdi-react/AccountStarIcon';
 import ScaleBalanceIcon from 'mdi-react/ScaleBalanceIcon';
 import ArrowExpandVerticalIcon from 'mdi-react/ArrowExpandVerticalIcon';
 import AccountSettingsIcon from 'mdi-react/AccountSettingsIcon';
-import GithubBoxIcon from 'mdi-react/GithubBoxIcon';
+import GithubIcon from 'mdi-react/GithubIcon';
 import CancelIcon from 'mdi-react/CancelIcon';
 import FileTreeIcon from 'mdi-react/FileTreeIcon';
 import WebhookIcon from 'mdi-react/WebhookIcon';
@@ -88,7 +88,7 @@ export default class SidebarList extends Component {
           Provisioning Errors
         </SidebarListItem>
 
-        <SidebarListItem to="/provisioners" icon={<MixcloudIcon />}>
+        <SidebarListItem to="/provisioners" icon={<WorkerIcon />}>
           Workers
         </SidebarListItem>
 
@@ -108,11 +108,11 @@ export default class SidebarList extends Component {
           Pulse Messages
         </SidebarListItem>
 
-        <SidebarListItem to="/quickstart" icon={<GithubBoxIcon />}>
+        <SidebarListItem to="/quickstart" icon={<GithubIcon />}>
           GitHub Quickstart
         </SidebarListItem>
 
-        <SidebarListItem to="/tcyaml-debug" icon={<GithubBoxIcon />}>
+        <SidebarListItem to="/tcyaml-debug" icon={<GithubIcon />}>
           Debug .tc.yml
         </SidebarListItem>
 

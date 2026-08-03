@@ -5,7 +5,7 @@ import IconButton from '@material-ui/core/IconButton';
 import MuiSnackbar from '@material-ui/core/Snackbar';
 import SnackbarContent from '@material-ui/core/SnackbarContent';
 import CheckCircleIcon from 'mdi-react/CheckCircleIcon';
-import WarningIcon from 'mdi-react/WarningIcon';
+import WarningIcon from 'mdi-react/AlertIcon';
 import AlertCircleIcon from 'mdi-react/AlertCircleIcon';
 import InformationIcon from 'mdi-react/InformationIcon';
 import CloseIcon from 'mdi-react/CloseIcon';
