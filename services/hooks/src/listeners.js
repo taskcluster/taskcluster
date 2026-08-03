@@ -3,6 +3,9 @@ import pulse from '@taskcluster/lib-pulse';
 import pSynchronize from 'p-synchronize';
 import _ from 'lodash';
 import { queueUtils, hookUtils } from './utils.js';
+import { validateTriggerPayload } from './trigger-schema.js';
+
+const DISCARD_LOG_INTERVAL = 100;
 
 /**
  * Create pulse client and consumers to trigger hooks with pulse messages
@@ -79,6 +82,7 @@ class HookListeners {
     this.monitor.debug(`${queueName}: creating listener (and queue if necessary)`);
 
     const client = this.client;
+    let triggerSchemaDiscards = 0;
     const listener = await pulse.consume(
       {
         client,
@@ -87,10 +91,31 @@ class HookListeners {
         // we manage bindings manually in syncBindings
         bindings: [],
       },
-      async ({ payload }) => {
+      async ({ exchange, routingKey, payload }) => {
         // Get a fresh copy of the hook and fire it, if it still exists
         const latestHook = hookUtils.fromDbRows(await this.db.fns.get_hook(hookGroupId, hookId));
         if (latestHook) {
+          const validationError = validateTriggerPayload(latestHook.triggerSchema, payload);
+          if (validationError) {
+            triggerSchemaDiscards += 1;
+            this.monitor.count('fire.pulseMessage.triggerSchemaInvalid');
+
+            if (triggerSchemaDiscards === 1 || triggerSchemaDiscards % DISCARD_LOG_INTERVAL === 0) {
+              this.monitor.log.hookPulseMessageDiscarded({
+                hookGroupId,
+                hookId,
+                exchange,
+                routingKey,
+                reason: 'triggerSchema',
+                validationError,
+                discardedCount: triggerSchemaDiscards,
+                message: 'Pulse message discarded because payload does not match hook triggerSchema',
+              });
+            }
+
+            return;
+          }
+
           try {
             await this.taskcreator.fire(latestHook, { firedBy: 'pulseMessage', payload });
           } catch {
