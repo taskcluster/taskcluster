@@ -23,6 +23,7 @@ import {
   taskGroupUI,
   buildUrl,
   buildLogUrl,
+  formatBytes,
 } from './utils.js';
 
 /**
@@ -232,14 +233,18 @@ export async function statusHandler(message) {
 
       artifactList.artifacts.forEach(element => {
         let artifactUrl;
-
         if (element.name === 'public/logs/live_backing.log' || element.name === 'public/logs/live.log') {
           artifactUrl = buildLogUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         } else {
           artifactUrl = buildUrl(this.context.cfg.taskcluster.rootUrl, taskId, runId, element.name);
         }
+        // Add the formatted size to the name if the size exists
+        let displayName = element.name;
+        if (element.size !== undefined) {
+          displayName = `${element.name} (${formatBytes(element.size)})`;
+        }
+        const ARTIFACT_LINK = markdownAnchor(displayName, artifactUrl);
 
-        const ARTIFACT_LINK = markdownAnchor(element.name, artifactUrl);
         output.addText(`\\- ${ARTIFACT_LINK}`);
       });
     } catch (e) {

@@ -11,6 +11,7 @@ import { CHECKLOGS_TEXT, CHECKRUN_TEXT, CHECK_TASK_GROUP_TEXT } from '../src/con
 import utils from '../src/utils.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import { formatBytes } from '../src/handlers/utils.js';
 
 const dataDir = new URL('./data', import.meta.url).pathname;
 const loadJson = filename => JSON.parse(fs.readFileSync(path.join(dataDir, filename), 'utf8'));
@@ -74,15 +75,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   let github = null;
   let handlers = null;
 
+  const deterministicArtifactSize = i => i ** 4;
+
   function buildArtifactLinks(limit, taskId) {
     const artifactLinks = [];
 
     for (let i = 0; i < limit; i++) {
-      artifactLinks.push(`\\- [artifact-${i}](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`);
+      const formattedSize = formatBytes(deterministicArtifactSize(i));
+      artifactLinks.push(
+        `\\- [artifact-${i} (${formattedSize})](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`
+      );
     }
 
     return artifactLinks.join('\n');
   }
+
   async function addBuild({ state, taskGroupId, pullNumber, eventType = 'push' }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
     await helper.db.fns.create_github_build_pr(
@@ -209,6 +216,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         for (let i = 0; i < options.limit; i++) {
           artifacts.push({
             name: `artifact-${i}`,
+            size: deterministicArtifactSize(i),
           });
         }
         return Promise.resolve({ artifacts });

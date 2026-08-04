@@ -256,15 +256,20 @@ export const buildLogUrl = (rootUrl, taskId, runId, artifactName) => {
   return `${rootUrl}/tasks/${taskId}/runs/${runId}/logs/${artifactName}`;
 };
 
-export default {
-  taskUI,
-  taskGroupUI,
-  taskLogUI,
-  makeDebug,
-  GithubCheckOutput,
-  GithubCheck,
-  isCollaborator,
-  getTimeDifference,
-  buildUrl,
-  buildLogUrl,
+// this is the same as ui/src/utils/formatBytes.js
+const UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+export const formatBytes = bytes => {
+  if (bytes === null || bytes === undefined || Number.isNaN(bytes)) {
+    return '';
+  }
+
+  if (bytes < 1) {
+    return `${bytes} B`;
+  }
+
+  const exponent = Math.min(Math.floor(Math.log10(bytes) / 3), UNITS.length - 1);
+  const value = bytes / 1000 ** exponent;
+  const formatted = exponent === 0 || value >= 100 ? value.toFixed(0) : value.toFixed(1).replace(/\.0$/, '');
+
+  return `${formatted} ${UNITS[exponent]}`;
 };
