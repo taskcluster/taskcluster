@@ -94,12 +94,20 @@ const initialActionInputs = {
   sealTaskGroup: '',
   cancelTaskGroup: '',
 };
-const updateTaskGroupIdHistory = id => {
+const updateTaskGroupIdHistory = (id, decisionTask, statusCount) => {
   if (!VALID_TASK.test(id)) {
     return;
   }
 
-  db.taskGroupIdsHistory.put({ taskGroupId: id });
+  db.taskGroupIdsHistory.put({
+    taskGroupId: id,
+    name: decisionTask?.metadata?.name,
+    source: decisionTask?.metadata?.source,
+    taskQueueId: decisionTask?.taskQueueId,
+    created: decisionTask?.created,
+    statusCount,
+    viewedAt: Date.now(),
+  });
 };
 
 @withApollo
@@ -218,27 +226,39 @@ export default class TaskGroup extends Component {
         : state.statusCount;
     const previousStatusCount = state.statusCount;
 
-    if (
+    // Not gated on `taskActions`: groups without a decision task must still be
+    // recorded.
+    const isNewGroupForCurrentData =
       isFromSameTaskGroupId &&
-      taskGroupId !== state.previousTaskGroupId &&
-      taskActions
-    ) {
-      updateTaskGroupIdHistory(taskGroupId);
-      taskActions.actions
-        .filter(action => isEmpty(action.context))
-        .forEach(action => {
-          const schema = action.schema || {};
+      taskGroup &&
+      taskGroupId !== state.previousTaskGroupId;
 
-          // if an action with this name has already been selected,
-          // don't consider this version
-          if (!groupActions.some(({ name }) => name === action.name)) {
-            groupActions.push(action);
-            actionInputs[action.name] = dump(jsonSchemaDefaults(schema) || {});
-            actionData[action.name] = {
-              action,
-            };
-          }
-        });
+    if (isNewGroupForCurrentData) {
+      updateTaskGroupIdHistory(
+        taskGroupId,
+        props.data.task,
+        TaskGroup.calculateStatusCountStatic(taskGroup)
+      );
+
+      if (taskActions && Array.isArray(taskActions.actions)) {
+        taskActions.actions
+          .filter(action => isEmpty(action.context))
+          .forEach(action => {
+            const schema = action.schema || {};
+
+            // if an action with this name has already been selected,
+            // don't consider this version
+            if (!groupActions.some(({ name }) => name === action.name)) {
+              groupActions.push(action);
+              actionInputs[action.name] = dump(
+                jsonSchemaDefaults(schema) || {}
+              );
+              actionData[action.name] = {
+                action,
+              };
+            }
+          });
+      }
 
       return {
         groupActions,
@@ -268,6 +288,7 @@ export default class TaskGroup extends Component {
     this.previousCursor = INITIAL_CURSOR;
     this.listener = null;
     this.tasks = new Set();
+    this.recordedStatusCount = null;
 
     // Batching for table updates
     this.pendingTableUpdate = null;
@@ -520,7 +541,9 @@ export default class TaskGroup extends Component {
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       this.tasks.clear();
       this.previousCursor = INITIAL_CURSOR;
-      updateTaskGroupIdHistory(taskGroupId);
+      this.recordedStatusCount = null;
+      // Don't write history here: getDerivedStateFromProps does it once Apollo
+      // has data, so the put isn't keyed with undefined metadata.
       this.subscribe({ taskGroupId, subscribeToMore });
     }
 
@@ -540,6 +563,28 @@ export default class TaskGroup extends Component {
     ) {
       this.handleCountUpdate(this.state.statusCount);
     }
+
+    this.recordStatusCount(taskGroupId);
+  }
+
+  // getDerivedStateFromProps records the group as soon as the first page
+  // arrives, but the query asks for only 20 tasks, so that count is partial.
+  // Re-record once the group is fully loaded, and on later live changes.
+  recordStatusCount(taskGroupId) {
+    const { taskGroupLoaded, statusCount } = this.state;
+
+    if (!taskGroupLoaded || !statusCount) {
+      return;
+    }
+
+    if (
+      JSON.stringify(statusCount) === JSON.stringify(this.recordedStatusCount)
+    ) {
+      return;
+    }
+
+    this.recordedStatusCount = statusCount;
+    updateTaskGroupIdHistory(taskGroupId, this.props.data.task, statusCount);
   }
 
   handleActionClick = name => () => {
