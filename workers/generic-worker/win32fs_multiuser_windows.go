@@ -24,7 +24,7 @@ func grantFullControl(path, username string, recurse bool) error {
 		return fmt.Errorf("could not look up SID for user %q: %w", username, err)
 	}
 
-	root, err := safefs.OpenReparseSafe(path, safefs.SecAccess)
+	root, err := safefs.OpenPath(path, safefs.SecAccess)
 	if err != nil {
 		return err
 	}
@@ -33,10 +33,6 @@ func grantFullControl(path, username string, recurse bool) error {
 	attrs, tag, err := safefs.AttrsAndTag(root)
 	if err != nil {
 		return fmt.Errorf("could not stat %q: %w", path, err)
-	}
-
-	if safefs.IsNameSurrogate(attrs, tag) {
-		return fmt.Errorf("refusing to operate on %q: it's a junction or a link", path)
 	}
 
 	if err := grantNode(path, root, sid); err != nil {

@@ -4,6 +4,7 @@ package safefs
 
 import (
 	"fmt"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -13,11 +14,14 @@ import (
 )
 
 const (
-	SecAccess uint32 = windows.FILE_READ_ATTRIBUTES | windows.READ_CONTROL | windows.WRITE_DAC | windows.WRITE_OWNER | windows.SYNCHRONIZE
-	DirAccess uint32 = SecAccess | windows.FILE_LIST_DIRECTORY
+	SecAccess      uint32 = windows.FILE_READ_ATTRIBUTES | windows.READ_CONTROL | windows.WRITE_DAC | windows.WRITE_OWNER | windows.SYNCHRONIZE
+	DirAccess      uint32 = SecAccess | windows.FILE_LIST_DIRECTORY
+	traverseAccess uint32 = windows.FILE_READ_ATTRIBUTES | windows.FILE_LIST_DIRECTORY | windows.SYNCHRONIZE
 )
 
-var EnsurePrivileges = sync.OnceValue(enablePrivileges)
+var ensurePrivileges = sync.OnceValue(enablePrivileges)
+
+func EnsurePrivileges() error { return ensurePrivileges() }
 
 // Enables the token privileges needed to give away ownership and to open
 // handles that bypass ACLs.
@@ -149,8 +153,10 @@ func OpenSelf(handle windows.Handle, access uint32) (windows.Handle, error) {
 	return newHandle, nil
 }
 
-func OpenReparseSafe(path string, access uint32) (windows.Handle, error) {
-	p, err := windows.UTF16PtrFromString(path)
+// Open the volume root by name. This is the only part of a path we can trust to
+// not be swapped by a task.
+func openVolumeRoot(root string, access uint32) (windows.Handle, error) {
+	p, err := windows.UTF16PtrFromString(root)
 	if err != nil {
 		return windows.InvalidHandle, err
 	}
@@ -166,8 +172,72 @@ func OpenReparseSafe(path string, access uint32) (windows.Handle, error) {
 	)
 
 	if err != nil {
-		return windows.InvalidHandle, fmt.Errorf("could not open %q: %w", path, err)
+		return windows.InvalidHandle, fmt.Errorf("could not open %q: %w", root, err)
 	}
 
+	return handle, nil
+}
+
+// Splits an absolute path into its volume root and the components below it.
+func splitAbsPath(path string) (string, []string, error) {
+	separator := func(r rune) bool { return r == '\\' || r == '/' }
+
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return "", nil, fmt.Errorf("could not resolve %q: %w", path, err)
+	}
+
+	volume := filepath.VolumeName(abs)
+	components := strings.FieldsFunc(abs[len(volume):], separator)
+	if volume == "" || len(components) == 0 {
+		return "", nil, fmt.Errorf("refusing to operate on %q: it isn't a path below a volume root", path)
+	}
+	return volume + `\`, components, nil
+}
+
+// OpenPath opens path one component at a time, each one relative to the
+// previously opened one, refusing to go on if any of them is a junction or a
+// link.
+func OpenPath(path string, leafAccess uint32) (windows.Handle, error) {
+	// Every open below asks for FILE_OPEN_FOR_BACKUP_INTENT, which is silently
+	// ignored unless the privileges backing it are enabled.
+	if err := EnsurePrivileges(); err != nil {
+		return windows.InvalidHandle, err
+	}
+
+	root, components, err := splitAbsPath(path)
+	if err != nil {
+		return windows.InvalidHandle, err
+	}
+
+	handle, err := openVolumeRoot(root, traverseAccess)
+	if err != nil {
+		return windows.InvalidHandle, err
+	}
+
+	current := root
+	for i, name := range components {
+		access := traverseAccess
+		if i == len(components)-1 {
+			access = leafAccess
+		}
+
+		child, err := OpenChild(handle, name, current, access)
+		_ = windows.CloseHandle(handle)
+		if err != nil {
+			return windows.InvalidHandle, err
+		}
+		handle, current = child, filepath.Join(current, name)
+
+		attrs, tag, err := AttrsAndTag(handle)
+		if err != nil {
+			_ = windows.CloseHandle(handle)
+			return windows.InvalidHandle, fmt.Errorf("could not stat %q: %w", current, err)
+		}
+		if IsNameSurrogate(attrs, tag) {
+			_ = windows.CloseHandle(handle)
+			return windows.InvalidHandle, fmt.Errorf("refusing to resolve %q: %q is a junction or a link", path, current)
+		}
+	}
 	return handle, nil
 }

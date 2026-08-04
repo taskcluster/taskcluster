@@ -96,6 +96,16 @@ func TestGrantFullControl(t *testing.T) {
 		untouched(t)
 	})
 
+	t.Run("refuses a junctioned prefix", func(t *testing.T) {
+		stage := filepath.Join(base, "stage")
+		mkjunction(t, stage, secret)
+
+		if err := grantFullControl(filepath.Join(stage, "leaf"), taskUser, true); err == nil {
+			t.Error("granted through a junctioned prefix")
+		}
+		untouched(t)
+	})
+
 	t.Run("refuses a junctioned root", func(t *testing.T) {
 		link := filepath.Join(base, "toplink")
 		mkjunction(t, link, secret)
