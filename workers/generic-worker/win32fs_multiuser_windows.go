@@ -35,7 +35,7 @@ func grantFullControl(path, username string, recurse bool) error {
 		return fmt.Errorf("could not stat %q: %w", path, err)
 	}
 
-	if err := grantNode(path, root, sid); err != nil {
+	if err := grantNode(path, root, sid, isDir(attrs)); err != nil {
 		return err
 	}
 	if !recurse || !shouldRecurse(attrs, tag) {
@@ -44,11 +44,15 @@ func grantFullControl(path, username string, recurse bool) error {
 	return grantChildren(root, path, sid)
 }
 
-func shouldRecurse(attrs, tag uint32) bool {
-	return attrs&windows.FILE_ATTRIBUTE_DIRECTORY != 0 && !safefs.IsNameSurrogate(attrs, tag)
+func isDir(attrs uint32) bool {
+	return attrs&windows.FILE_ATTRIBUTE_DIRECTORY != 0
 }
 
-func grantNode(name string, handle windows.Handle, sid *windows.SID) error {
+func shouldRecurse(attrs, tag uint32) bool {
+	return isDir(attrs) && !safefs.IsNameSurrogate(attrs, tag)
+}
+
+func grantNode(name string, handle windows.Handle, sid *windows.SID, container bool) error {
 	sd, err := windows.GetSecurityInfo(handle, windows.SE_FILE_OBJECT, windows.DACL_SECURITY_INFORMATION)
 	if err != nil {
 		return fmt.Errorf("could not read DACL of %q: %w", name, err)
@@ -62,10 +66,16 @@ func grantNode(name string, handle windows.Handle, sid *windows.SID) error {
 	// This is winnt.h's FILE_ALL_ACCESS, which is missing from x/sys/windows...
 	const fileAllAccess = windows.STANDARD_RIGHTS_REQUIRED | windows.SYNCHRONIZE | 0x1FF
 
+	// Inheritance flags only mean anything on something that can have children
+	inheritance := uint32(windows.NO_INHERITANCE)
+	if container {
+		inheritance = windows.SUB_CONTAINERS_AND_OBJECTS_INHERIT
+	}
+
 	access := []windows.EXPLICIT_ACCESS{{
 		AccessPermissions: fileAllAccess,
 		AccessMode:        windows.GRANT_ACCESS,
-		Inheritance:       windows.SUB_CONTAINERS_AND_OBJECTS_INHERIT,
+		Inheritance:       inheritance,
 		Trustee: windows.TRUSTEE{
 			TrusteeForm:  windows.TRUSTEE_IS_SID,
 			TrusteeType:  windows.TRUSTEE_IS_USER,
@@ -125,12 +135,12 @@ func grantChild(parent windows.Handle, name, parentPath string, sid *windows.SID
 	}
 	defer func() { _ = windows.CloseHandle(child) }()
 
-	if err := grantNode(childPath, child, sid); err != nil {
-		return err
-	}
 	attrs, tag, err := safefs.AttrsAndTag(child)
 	if err != nil {
 		return fmt.Errorf("could not stat %q: %w", childPath, err)
+	}
+	if err := grantNode(childPath, child, sid, isDir(attrs)); err != nil {
+		return err
 	}
 	if !shouldRecurse(attrs, tag) {
 		return nil
