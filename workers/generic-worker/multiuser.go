@@ -18,6 +18,7 @@ import (
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v107/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
 )
 
 const (
@@ -378,7 +379,7 @@ func CreateFileAsTaskUser(file string, ctx *TaskContext, pd *process.PlatformDat
 	if result.ExitError != nil {
 		return nil, fmt.Errorf("cannot create file %v as task user %v from directory %v: %v", file, ctx.User.Name, ctx.TaskDir, result)
 	}
-	return os.OpenFile(file, os.O_RDWR, 0600)
+	return safefs.OpenExistingRDWR(file)
 }
 
 func featureInitFailure(err error) (exitCode ExitCode) {

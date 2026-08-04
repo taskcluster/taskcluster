@@ -4,6 +4,7 @@ package safefs
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -240,4 +241,12 @@ func OpenPath(path string, leafAccess uint32) (windows.Handle, error) {
 		}
 	}
 	return handle, nil
+}
+
+func OpenExistingRDWR(file string) (*os.File, error) {
+	handle, err := OpenPath(file, windows.GENERIC_READ|windows.GENERIC_WRITE|windows.SYNCHRONIZE)
+	if err != nil {
+		return nil, err
+	}
+	return os.NewFile(uintptr(handle), file), nil
 }
