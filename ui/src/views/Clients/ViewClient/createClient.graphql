@@ -1,6 +1,0 @@
-mutation CreateClient($clientId: ID!, $client: ClientInput!) {
-  createClient(clientId: $clientId, client: $client) {
-    clientId
-    accessToken
-  }
-}
