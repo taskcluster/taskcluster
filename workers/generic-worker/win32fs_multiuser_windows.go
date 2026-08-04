@@ -41,7 +41,7 @@ func grantFullControl(path, username string, recurse bool) error {
 	if !recurse || !shouldRecurse(attrs, tag) {
 		return nil
 	}
-	return grantChildren(root, path, sid)
+	return grantChildren(root, path, sid, 0)
 }
 
 func isDir(attrs uint32) bool {
@@ -103,7 +103,13 @@ func grantNode(name string, handle windows.Handle, sid *windows.SID, container b
 	return nil
 }
 
-func grantChildren(handle windows.Handle, parentPath string, sid *windows.SID) error {
+const maxGrantDepth = 1024
+
+func grantChildren(handle windows.Handle, parentPath string, sid *windows.SID, depth int) error {
+	if depth > maxGrantDepth {
+		return fmt.Errorf("refusing to descend into %q: more than %v levels deep", parentPath, maxGrantDepth)
+	}
+
 	// handle was opened for its security descriptor, which doesn't imply the right
 	// to list the directory, so reopen it
 	parent, err := safefs.OpenSelf(handle, safefs.DirAccess)
@@ -120,14 +126,14 @@ func grantChildren(handle windows.Handle, parentPath string, sid *windows.SID) e
 
 	var errs []error
 	for _, name := range names {
-		if err := grantChild(parent, name, parentPath, sid); err != nil {
+		if err := grantChild(parent, name, parentPath, sid, depth); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	return errors.Join(errs...)
 }
 
-func grantChild(parent windows.Handle, name, parentPath string, sid *windows.SID) error {
+func grantChild(parent windows.Handle, name, parentPath string, sid *windows.SID, depth int) error {
 	childPath := filepath.Join(parentPath, name)
 	child, err := safefs.OpenChild(parent, name, parentPath, safefs.SecAccess)
 	if err != nil {
@@ -145,5 +151,5 @@ func grantChild(parent windows.Handle, name, parentPath string, sid *windows.SID
 	if !shouldRecurse(attrs, tag) {
 		return nil
 	}
-	return grantChildren(child, childPath, sid)
+	return grantChildren(child, childPath, sid, depth+1)
 }
