@@ -17,12 +17,7 @@ db.version(2)
     taskDefinitions: 'metadata.name, created',
   })
   .upgrade(trans =>
-    // Back-fill viewedAt on records written before v2, which lacked the index.
-    // Without this, legacy records are silently absent from the new
-    // `.orderBy('viewedAt')` index and never appear in the recent lists again.
-    // Sentinel 0 sorts last under the descending recency order, so legacy
-    // entries render but age out as the user browses — they are never dropped
-    // (review comment discussion_r3579292033).
+    // Back-fill viewedAt, or pre-v2 records stay absent from the new index.
     trans
       .table('taskIdsHistory')
       .toCollection()

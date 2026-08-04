@@ -226,12 +226,8 @@ export default class TaskGroup extends Component {
         : state.statusCount;
     const previousStatusCount = state.statusCount;
 
-    // Record the viewed group as soon as its data has loaded for the current
-    // taskGroupId. This is intentionally independent of `taskActions`: groups
-    // without a decision task (and thus no `taskActions`) must still be
-    // recorded (INV-5). Gating on `taskGroup` for the current id ensures we
-    // write rich metadata rather than a null/zero snapshot taken while the
-    // query is still loading.
+    // Not gated on `taskActions`: groups without a decision task must still be
+    // recorded.
     const isNewGroupForCurrentData =
       isFromSameTaskGroupId &&
       taskGroup &&
@@ -244,10 +240,6 @@ export default class TaskGroup extends Component {
         TaskGroup.calculateStatusCountStatic(taskGroup)
       );
 
-      // Only the action-collection loop depends on the optional `taskActions`
-      // field; the history write above no longer does. Groups without a
-      // decision task still advance previousTaskGroupId below so we record
-      // them once and don't re-write on every render.
       if (taskActions && Array.isArray(taskActions.actions)) {
         taskActions.actions
           .filter(action => isEmpty(action.context))
@@ -296,6 +288,7 @@ export default class TaskGroup extends Component {
     this.previousCursor = INITIAL_CURSOR;
     this.listener = null;
     this.tasks = new Set();
+    this.recordedStatusCount = null;
 
     // Batching for table updates
     this.pendingTableUpdate = null;
@@ -548,11 +541,9 @@ export default class TaskGroup extends Component {
     if (prevProps.match.params.taskGroupId !== taskGroupId) {
       this.tasks.clear();
       this.previousCursor = INITIAL_CURSOR;
-      // The history write for the newly-navigated group happens in
-      // getDerivedStateFromProps once Apollo loads its data, so that rich
-      // metadata (name/source/queue/statusCount) is recorded rather than
-      // clobbered with nulls. Do NOT write here: a put keyed by taskGroupId
-      // would overwrite previously-stored metadata with null/undefined.
+      this.recordedStatusCount = null;
+      // Don't write history here: getDerivedStateFromProps does it once Apollo
+      // has data, so the put isn't keyed with undefined metadata.
       this.subscribe({ taskGroupId, subscribeToMore });
     }
 
@@ -572,6 +563,28 @@ export default class TaskGroup extends Component {
     ) {
       this.handleCountUpdate(this.state.statusCount);
     }
+
+    this.recordStatusCount(taskGroupId);
+  }
+
+  // getDerivedStateFromProps records the group as soon as the first page
+  // arrives, but the query asks for only 20 tasks, so that count is partial.
+  // Re-record once the group is fully loaded, and on later live changes.
+  recordStatusCount(taskGroupId) {
+    const { taskGroupLoaded, statusCount } = this.state;
+
+    if (!taskGroupLoaded || !statusCount) {
+      return;
+    }
+
+    if (
+      JSON.stringify(statusCount) === JSON.stringify(this.recordedStatusCount)
+    ) {
+      return;
+    }
+
+    this.recordedStatusCount = statusCount;
+    updateTaskGroupIdHistory(taskGroupId, this.props.data.task, statusCount);
   }
 
   handleActionClick = name => () => {
