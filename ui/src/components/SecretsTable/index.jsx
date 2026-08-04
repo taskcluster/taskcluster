@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { arrayOf, bool, func, number, string } from 'prop-types';
+import { arrayOf, bool, func, string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -7,6 +7,7 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 import Button from '../Button';
 import PaginatedDataTable from '../PaginatedDataTable';
 import { VIEW_SECRETS_PAGE_SIZE } from '../../utils/constants';
+import { pagination } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 
@@ -35,13 +36,7 @@ export default class SecretsTable extends Component {
     /** A search term to refine the list of secrets. */
     searchTerm: string,
     loading: bool,
-    page: number.isRequired,
-    hasNextPage: bool,
-    hasPreviousPage: bool,
-    /** Called when the user asks for the next page. */
-    onNextPage: func.isRequired,
-    /** Called when the user asks for the previous page. */
-    onPreviousPage: func.isRequired,
+    ...pagination,
     onDialogActionOpen: func.isRequired,
   };
 

@@ -1,5 +1,0 @@
-mutation CreateRole($roleId: ID!, $role: RoleInput!) {
-  createRole(roleId: $roleId, role: $role) {
-    roleId
-  }
-}
