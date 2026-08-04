@@ -1,28 +1,17 @@
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
+import { Auth } from '@taskcluster/client-web';
 import Spinner from '../../../components/Spinner';
 import Snackbar from '../../../components/Snackbar';
 import Dashboard from '../../../components/Dashboard';
 import RoleForm from '../../../components/RoleForm';
 import ErrorPanel from '../../../components/ErrorPanel';
-import roleQuery from './role.graphql';
-import createRoleQuery from './createRole.graphql';
-import updateRoleQuery from './updateRole.graphql';
-import deleteRoleQuery from './deleteRole.graphql';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@withApollo
-@graphql(roleQuery, {
-  skip: ({ match: { params } }) => !params.roleId,
-  options: ({ match: { params } }) => ({
-    fetchPolicy: 'network-only',
-    variables: {
-      roleId: decodeURIComponent(params.roleId),
-    },
-  }),
-})
+@withTaskclusterClient
 export default class ViewRole extends Component {
   state = {
     loading: false,
+    role: null,
     error: null,
     dialogError: null,
     dialogOpen: false,
@@ -33,15 +22,34 @@ export default class ViewRole extends Component {
     },
   };
 
-  handleDeleteRole = async roleId => {
+  get authClient() {
+    return this.props.createTaskclusterClient({ Class: Auth });
+  }
+
+  componentDidMount() {
+    if (!this.props.isNewRole) {
+      this.fetchRole();
+    }
+  }
+
+  fetchRole = async () => {
+    const roleId = decodeURIComponent(this.props.match.params.roleId);
+
+    this.setState({ loading: true, error: null, role: null });
+
+    try {
+      const role = await this.authClient.role(roleId);
+
+      this.setState({ loading: false, role });
+    } catch (error) {
+      this.setState({ loading: false, error });
+    }
+  };
+
+  handleDeleteRole = roleId => {
     this.setState({ dialogError: null, loading: true });
 
-    await this.props.client.mutate({
-      mutation: deleteRoleQuery,
-      variables: { roleId },
-    });
-
-    this.props.history.push(`/auth/roles`);
+    return this.authClient.deleteRole(roleId);
   };
 
   handleDialogActionError = error => {
@@ -49,7 +57,7 @@ export default class ViewRole extends Component {
   };
 
   handleDialogActionComplete = () => {
-    this.setState({ dialogError: null, loading: false });
+    this.props.history.push('/auth/roles');
   };
 
   handleSaveRole = async (role, roleId) => {
@@ -58,13 +66,11 @@ export default class ViewRole extends Component {
     this.setState({ error: null, loading: true });
 
     try {
-      await this.props.client.mutate({
-        mutation: isNewRole ? createRoleQuery : updateRoleQuery,
-        variables: {
-          roleId,
-          role,
-        },
-      });
+      if (isNewRole) {
+        await this.authClient.createRole(roleId, role);
+      } else {
+        await this.authClient.updateRole(roleId, role);
+      }
 
       this.setState({ error: null, loading: false });
 
@@ -107,8 +113,9 @@ export default class ViewRole extends Component {
   };
 
   render() {
-    const { loading, error, snackbar, dialogError, dialogOpen } = this.state;
-    const { isNewRole, data } = this.props;
+    const { loading, role, error, snackbar, dialogError, dialogOpen } =
+      this.state;
+    const { isNewRole } = this.props;
 
     return (
       <Dashboard title={isNewRole ? 'Create Role' : 'Role'}>
@@ -121,13 +128,12 @@ export default class ViewRole extends Component {
           />
         ) : (
           <Fragment>
-            {data.loading && <Spinner loading />}
-            {data && <ErrorPanel fixed error={data.error} />}
-            {data?.role && (
+            {loading && !role && <Spinner loading />}
+            {role && (
               <RoleForm
                 dialogError={dialogError}
-                key={data.role.roleId}
-                role={data.role}
+                key={role.roleId}
+                role={role}
                 loading={loading}
                 onRoleDelete={this.handleDeleteRole}
                 onRoleSave={this.handleSaveRole}

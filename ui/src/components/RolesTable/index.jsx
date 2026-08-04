@@ -1,24 +1,16 @@
 import React, { Component } from 'react';
-import { string, shape, func, arrayOf } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
-import { camelCase } from 'camel-case';
+import { arrayOf, bool, func, string } from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import DeleteIcon from 'mdi-react/DeleteIcon';
-import { memoize } from '../../utils/memoize';
 import Button from '../Button';
-import sort from '../../utils/sort';
-import ConnectionDataTable from '../ConnectionDataTable';
+import PaginatedDataTable from '../PaginatedDataTable';
 import { VIEW_ROLES_PAGE_SIZE } from '../../utils/constants';
-import { pageInfo, role } from '../../utils/prop-types';
+import { pagination } from '../../utils/prop-types';
+import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 
-const sorted = pipe(
-  rSort((a, b) => sort(a.node.roleId, b.node.roleId)),
-  map(({ node: { roleId } }) => roleId)
-);
-const tableHeaders = ['Role ID'];
 const iconSize = 16;
 
 @withStyles(theme => ({
@@ -37,57 +29,24 @@ const iconSize = 16;
 }))
 export default class RolesTable extends Component {
   static propTypes = {
-    rolesConnection: shape({
-      edges: arrayOf(role),
-      pageInfo,
-    }).isRequired,
-    onPageChange: func.isRequired,
-    /** A search term to refine the list of roles */
+    roleIds: arrayOf(string).isRequired,
     searchTerm: string,
+    loading: bool,
+    ...pagination,
     onDialogActionOpen: func.isRequired,
   };
 
   static defaultProps = {
     searchTerm: null,
+    loading: false,
+    hasNextPage: false,
+    hasPreviousPage: false,
   };
 
   state = {
-    sortBy: tableHeaders[0],
-    sortDirection: 'asc',
+    sortBy: null,
+    sortDirection: null,
   };
-
-  createSortedRolesConnection = memoize(
-    (rolesConnection, sortBy, sortDirection) => {
-      const sortByProperty = sortBy ? camelCase(sortBy) : '';
-
-      if (!sortBy) {
-        return rolesConnection;
-      }
-
-      return {
-        ...rolesConnection,
-        edges: [...rolesConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
-
-          return sort(firstElement, secondElement);
-        }),
-      };
-    },
-    {
-      serializer: ([rolesConnection, sortBy, sortDirection]) => {
-        const ids = sorted(rolesConnection.edges);
-
-        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
-      },
-    }
-  );
 
   handleHeaderClick = sortBy => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
@@ -99,46 +58,56 @@ export default class RolesTable extends Component {
   render() {
     const {
       classes,
-      onPageChange,
-      rolesConnection,
+      roleIds,
       searchTerm,
+      loading,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      onNextPage,
+      onPreviousPage,
       onDialogActionOpen,
     } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const sortedRolesConnection = this.createSortedRolesConnection(
-      rolesConnection,
-      sortBy,
-      sortDirection
-    );
+    const sortedRoleIds = sortBy
+      ? [...roleIds].sort((a, b) =>
+          sortDirection === 'desc' ? sort(b, a) : sort(a, b)
+        )
+      : roleIds;
 
     return (
-      <ConnectionDataTable
+      <PaginatedDataTable
         searchTerm={searchTerm}
-        connection={sortedRolesConnection}
+        items={sortedRoleIds}
         pageSize={VIEW_ROLES_PAGE_SIZE}
-        onHeaderClick={this.handleHeaderClick}
-        onPageChange={onPageChange}
-        headers={tableHeaders}
+        page={page}
+        loading={loading}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
+        onNextPage={onNextPage}
+        onPreviousPage={onPreviousPage}
         sortByHeader={sortBy}
         sortDirection={sortDirection}
+        onHeaderClick={this.handleHeaderClick}
         allowFilter
-        filterFunc={({ node: role }, filterValue) =>
-          String(role.roleId).includes(filterValue)
+        filterFunc={(roleId, filterValue) =>
+          roleId.toLowerCase().includes(filterValue.toLowerCase())
         }
+        headers={['Role ID']}
         lazyRender
-        renderRow={({ node: role }, style, key) => (
-          <TableRow key={key || role.roleId} style={style} hover>
+        renderRow={(roleId, style, key) => (
+          <TableRow key={key || roleId} style={style} hover>
             <TableCell className={classes.roleContainer}>
               <Link
                 className={classes.roleIdLink}
-                to={`/auth/roles/${encodeURIComponent(role.roleId)}`}>
-                {role.roleId}
+                to={`/auth/roles/${encodeURIComponent(roleId)}`}>
+                {roleId}
               </Link>
               <Button
                 requiresAuth
                 tooltipProps={{ title: 'Delete Role' }}
                 size="small"
-                onClick={() => onDialogActionOpen(role.roleId)}>
+                onClick={() => onDialogActionOpen(roleId)}>
                 <DeleteIcon size={iconSize} />
               </Button>
             </TableCell>

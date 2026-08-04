@@ -1,6 +1,7 @@
 import {
   arrayOf,
   bool,
+  func,
   instanceOf,
   array,
   number,
@@ -33,6 +34,14 @@ export const pageInfo = shape({
   previousCursor: string,
   nextCursor: string,
 });
+
+export const pagination = {
+  page: number.isRequired,
+  hasNextPage: bool,
+  hasPreviousPage: bool,
+  onNextPage: func.isRequired,
+  onPreviousPage: func.isRequired,
+};
 
 export const docsPageTransition = shape({
   title: string,
