@@ -11,6 +11,7 @@ import { CHECKLOGS_TEXT, CHECKRUN_TEXT, CHECK_TASK_GROUP_TEXT } from '../src/con
 import utils from '../src/utils.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import { formatBytes } from '../src/handlers/utils.js';
 
 const dataDir = new URL('./data', import.meta.url).pathname;
 const loadJson = filename => JSON.parse(fs.readFileSync(path.join(dataDir, filename), 'utf8'));
@@ -74,26 +75,21 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   let github = null;
   let handlers = null;
 
+  const deterministicArtifactSize = i => i ** 4;
+
   function buildArtifactLinks(limit, taskId) {
     const artifactLinks = [];
 
-    const UNITS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-    const formatBytes = bytes => {
-      if (bytes === null || bytes === undefined || Number.isNaN(bytes)) return '';
-      if (bytes < 1) return `${bytes} B`;
-      const exponent = Math.min(Math.floor(Math.log10(bytes) / 3), UNITS.length - 1);
-      const value = bytes / (1000 ** exponent);
-      const formatted = exponent === 0 || value >= 100 ? value.toFixed(0) : value.toFixed(1).replace(/\.0$/, '');
-      return `${formatted} ${UNITS[exponent]}`;
-    };
-
     for (let i = 0; i < limit; i++) {
-      const formattedSize = formatBytes(2 ** i);
-      artifactLinks.push(`\\- [artifact-${i} (${formattedSize})](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`);
+      const formattedSize = formatBytes(deterministicArtifactSize(i));
+      artifactLinks.push(
+        `\\- [artifact-${i} (${formattedSize})](${libUrls.testRootUrl()}/tasks/${taskId}/runs/0/artifact-${i})`
+      );
     }
 
     return artifactLinks.join('\n');
   }
+
   async function addBuild({ state, taskGroupId, pullNumber, eventType = 'push' }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
     await helper.db.fns.create_github_build_pr(
@@ -216,10 +212,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       listTaskGroup: async () => ({ tasks: [] }),
       listArtifacts: async (_taskId, _runId, options) => {
         const artifacts = [];
+
         for (let i = 0; i < options.limit; i++) {
           artifacts.push({
             name: `artifact-${i}`,
-            size: 2 ** i,
+            size: deterministicArtifactSize(i),
           });
         }
         return Promise.resolve({ artifacts });
@@ -1774,11 +1771,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
     const TASKGROUPID = 'AXB-sjV-SoCyibyq3P32o2';
     setup(() => {
-      sinon.stub(global, 'fetch').resolves({ ok: false, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .returns({ status: 404, response: { error: { text: 'Resource not found' } } });
+      stubArtifacts();
     });
 
     teardown(async () => {
@@ -1944,14 +1937,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .onFirstCall()
-        .returns({ status: 200, text: CUSTOM_CHECKRUN_TEXT })
-        .onSecondCall()
-        .returns({ status: 404 });
+      stubArtifacts({ artifacts: { [CUSTOM_CHECKRUN_TEXT_ARTIFACT]: CUSTOM_CHECKRUN_TEXT } });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -1976,8 +1962,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_HOOK_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves('');
       sinon.stub(handlers.queueClient, 'task').resolves({
         metadata: { name: 'Task with custom check run', description: 'Task Description' },
         extra: { github: { customCheckRun: { textArtifactName: CUSTOM_CHECKRUN_TEXT_ARTIFACT } } },
@@ -2009,9 +1993,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
-      sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
+      stubArtifacts({ log: LIVE_LOG_TEXT });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2036,9 +2018,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
-      sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
+      stubArtifacts({ log: LIVE_LOG_TEXT });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2069,9 +2049,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
-      sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
+      stubArtifacts({ log: LIVE_LOG_TEXT });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2098,14 +2076,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .onFirstCall()
-        .returns({ status: 418, response: { error: { text: "I'm a tea pot" } } })
-        .onSecondCall()
-        .returns({ status: 404 });
+      stubArtifacts({
+        artifacts: {
+          [CUSTOM_CHECKRUN_TEXT_ARTIFACT]: Object.assign(new Error("I'm a tea pot"), { statusCode: 418 }),
+        },
+      });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2126,14 +2101,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
-      sinon
-        .stub(utils, 'throttleRequest')
-        .onFirstCall()
-        .returns({ status: 404 })
-        .onSecondCall()
-        .returns({ status: 200, text: CUSTOM_CHECKRUN_ANNOTATIONS });
+      stubArtifacts({
+        log: LIVE_LOG_TEXT,
+        artifacts: { [CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT]: CUSTOM_CHECKRUN_ANNOTATIONS },
+      });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2153,14 +2124,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .onFirstCall()
-        .returns({ status: 404 })
-        .onSecondCall()
-        .returns({ status: 200, text: '{{{invalid json!!' });
+      stubArtifacts({ artifacts: { [CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT]: '{{{invalid json!!' } });
 
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
@@ -2187,14 +2151,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_CHECKRUN_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .onFirstCall()
-        .returns({ status: 404 })
-        .onSecondCall()
-        .returns({ status: 418, response: { error: { text: "I'm a tea pot" } } });
+      stubArtifacts({
+        artifacts: {
+          [CUSTOM_CHECKRUN_ANNOTATIONS_ARTIFACT]: Object.assign(new Error("I'm a tea pot"), { statusCode: 418 }),
+        },
+      });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2227,9 +2188,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await addBuild({ state: 'pending', taskGroupId: TASKGROUPID });
       await addCheckRun({ taskGroupId: TASKGROUPID, taskId: CUSTOM_LIVELOG_NAME_TASKID });
       sinon.restore();
-      sinon.stub(global, 'fetch').resolves({ ok: true, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves(LIVE_LOG_TEXT);
-      sinon.stub(utils, 'throttleRequest').returns({ status: 404 });
+      stubArtifacts({ log: LIVE_LOG_TEXT });
       await simulateExchangeMessage({
         taskGroupId: TASKGROUPID,
         exchange: 'exchange/taskcluster-queue/v1/task-completed',
@@ -2259,11 +2218,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     setup(() => {
-      sinon.stub(global, 'fetch').resolves({ ok: false, body: { cancel: async () => { } } });
-      sinon.stub(utils, 'extractLog').resolves('');
-      sinon
-        .stub(utils, 'throttleRequest')
-        .returns({ status: 404, response: { error: { text: 'Resource not found' } } });
+      stubArtifacts();
     });
 
     teardown(async () => {
