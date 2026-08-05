@@ -205,6 +205,40 @@ func Rename(oldpath, newpath string) error {
 	return nil
 }
 
+// Removes path, which has to be an empty directory if it is one
+func Remove(path string) error {
+	parent, name, err := openParent(path)
+	if err != nil {
+		return err
+	}
+	defer unix.Close(parent)
+
+	flags := 0
+	if isDirAt(parent, name) {
+		flags = unix.AT_REMOVEDIR
+	}
+	if err := unix.Unlinkat(parent, name, flags); err != nil {
+		return fmt.Errorf("could not remove %q: %w", path, err)
+	}
+	return nil
+}
+
+func isDirAt(dirfd int, name string) bool {
+	var st unix.Stat_t
+	if err := unix.Fstatat(dirfd, name, &st, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		return false
+	}
+	return st.Mode&unix.S_IFMT == unix.S_IFDIR
+}
+
+func IsExistingDir(path string) bool {
+	fd, err := openPath(path, unix.O_RDONLY|unix.O_DIRECTORY)
+	if err != nil {
+		return false
+	}
+	unix.Close(fd)
+	return true
+}
 
 // Overridden by the tests so they don't need to build a tree this deep.
 var maxChownDepth = 1024

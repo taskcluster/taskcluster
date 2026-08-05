@@ -3,6 +3,7 @@
 package safefs
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -224,6 +225,10 @@ func openVolumeRoot(root string, access uint32) (windows.Handle, error) {
 
 // Splits an absolute path into its volume root and the components below it.
 func splitAbsPath(path string) (string, []string, error) {
+	if path == "" {
+		return "", nil, errors.New("refusing to operate on an empty path")
+	}
+
 	separator := func(r rune) bool { return r == '\\' || r == '/' }
 
 	abs, err := filepath.Abs(path)
@@ -306,13 +311,13 @@ func OpenExistingReadonly(file string) (*os.File, error) {
 }
 
 func Create(file string, perm os.FileMode) (*os.File, error) {
-	parent, err := OpenPath(filepath.Dir(file), traverseAccess|windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA)
+	parent, name, err := OpenParent(file, traverseAccess|windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA)
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = windows.CloseHandle(parent) }()
 
-	handle, err := childAt(parent, filepath.Base(file), filepath.Dir(file), windows.GENERIC_WRITE|windows.SYNCHRONIZE, windows.FILE_OVERWRITE_IF, windows.FILE_NON_DIRECTORY_FILE)
+	handle, err := childAt(parent, name, filepath.Dir(file), windows.GENERIC_WRITE|windows.SYNCHRONIZE, windows.FILE_OVERWRITE_IF, windows.FILE_NON_DIRECTORY_FILE)
 	if err != nil {
 		return nil, err
 	}
@@ -327,22 +332,60 @@ type fileRenameInformation struct {
 	FileName        [1]uint16
 }
 
+// OpenParent opens the directory holding path and returns it along with the
+// name of path within it.
+func OpenParent(path string, access uint32) (windows.Handle, string, error) {
+	root, components, err := splitAbsPath(path)
+	if err != nil {
+		return windows.InvalidHandle, "", err
+	}
+	if len(components) == 0 {
+		return windows.InvalidHandle, "", fmt.Errorf("refusing to operate on %q: it's a volume root", path)
+	}
+
+	name := components[len(components)-1]
+	parent := filepath.Join(append([]string{root}, components[:len(components)-1]...)...)
+	handle, err := OpenPath(parent, access)
+	if err != nil {
+		return windows.InvalidHandle, "", err
+	}
+	return handle, name, nil
+}
+
+// Removes path, which has to be an empty directory if it is one
+func Remove(path string) error {
+	parent, name, err := OpenParent(path, traverseAccess)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = windows.CloseHandle(parent) }()
+
+	return DeleteChild(parent, name, filepath.Dir(path))
+}
+
+// Whether path is an existing directory
+func IsExistingDir(path string) bool {
+	handle, err := OpenPath(path, windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
+	if err != nil {
+		return false
+	}
+	defer func() { _ = windows.CloseHandle(handle) }()
+
+	attrs, _, err := AttrsAndTag(handle)
+	return err == nil && attrs&windows.FILE_ATTRIBUTE_DIRECTORY != 0
+}
+
 // This moves oldpath to newpath without either of them being resolved by
 // name. A rename cannot cross volumes; that comes back as
 // windows.STATUS_NOT_SAME_DEVICE.
 func Rename(oldpath, newpath string) error {
-	parentPath, name := filepath.Dir(newpath), filepath.Base(newpath)
-	if err := checkName(name, parentPath); err != nil {
-		return err
-	}
-
 	source, err := OpenPath(oldpath, windows.DELETE|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = windows.CloseHandle(source) }()
 
-	parent, err := OpenPath(parentPath, traverseAccess|windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA)
+	parent, name, err := OpenParent(newpath, traverseAccess|windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA)
 	if err != nil {
 		return err
 	}

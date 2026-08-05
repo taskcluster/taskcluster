@@ -272,19 +272,19 @@ func RenameCrossDevice(oldpath, newpath string) error {
 const maxMoveDepth = 1024
 
 func renameFolderCrossDevice(oldpath, newpath string) error {
-	sourceParent, err := safefs.OpenPath(filepath.Dir(oldpath), windows.FILE_LIST_DIRECTORY|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
+	sourceParent, sourceName, err := safefs.OpenParent(oldpath, windows.FILE_LIST_DIRECTORY|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = windows.CloseHandle(sourceParent) }()
 
-	targetParent, err := safefs.OpenPath(filepath.Dir(newpath), windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
+	targetParent, targetName, err := safefs.OpenParent(newpath, windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = windows.CloseHandle(targetParent) }()
 
-	return moveEntry(sourceParent, filepath.Dir(oldpath), filepath.Base(oldpath), targetParent, filepath.Dir(newpath), filepath.Base(newpath), 0)
+	return moveEntry(sourceParent, filepath.Dir(oldpath), sourceName, targetParent, filepath.Dir(newpath), targetName, 0)
 }
 
 func moveEntry(sourceParent windows.Handle, sourcePath, name string, targetParent windows.Handle, targetPath, targetName string, depth int) error {

@@ -137,3 +137,55 @@ func TestRename(t *testing.T) {
 		}
 	})
 }
+
+func TestRemove(t *testing.T) {
+	t.Run("removes a file", func(t *testing.T) {
+		file := write(t, filepath.Join(t.TempDir(), "file.txt"), "")
+
+		if err := Remove(file); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := os.Lstat(file); !os.IsNotExist(err) {
+			t.Errorf("still there, %v", err)
+		}
+	})
+
+	t.Run("refuses a junctioned prefix", func(t *testing.T) {
+		base := t.TempDir()
+		secret, secretFile := mksecret(t, base)
+		stage := filepath.Join(base, "stage")
+		mkjunction(t, stage, secret)
+
+		if err := Remove(filepath.Join(stage, "leaf", "secret.txt")); err == nil {
+			t.Error("walked through a junction")
+		}
+		if _, err := os.Lstat(secretFile); err != nil {
+			t.Errorf("secret removed, %v", err)
+		}
+	})
+}
+
+func TestIsExistingDir(t *testing.T) {
+	base := t.TempDir()
+	dir := mkdir(t, filepath.Join(base, "dir"))
+	mkdir(t, filepath.Join(dir, "sub"))
+	file := write(t, filepath.Join(base, "file.txt"), "")
+	link := filepath.Join(base, "link")
+	mkjunction(t, link, dir)
+
+	for _, tc := range []struct {
+		path string
+		want bool
+	}{
+		{dir, true},
+		{file, false},
+		{link, false},
+		{filepath.Join(link, "sub"), false},
+		{filepath.Join(base, "missing"), false},
+		{"", false},
+	} {
+		if got := IsExistingDir(tc.path); got != tc.want {
+			t.Errorf("IsExistingDir(%q) = %v", tc.path, got)
+		}
+	}
+}

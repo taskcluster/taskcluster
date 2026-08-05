@@ -347,7 +347,7 @@ func StoredUserCredentials(path string) (*gwruntime.OSUser, error) {
 }
 
 func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) error {
-	if info, err := os.Stat(dir); err == nil && info.IsDir() {
+	if safefs.IsExistingDir(dir) {
 		file, err := CreateFileAsTaskUser(filepath.Join(dir, slugid.Nice()), ctx, pd)
 		if err != nil {
 			return err
@@ -356,7 +356,7 @@ func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) er
 		if err != nil {
 			return err
 		}
-		return os.Remove(file.Name())
+		return safefs.Remove(file.Name())
 	}
 
 	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, ctx.TaskDir, []string{}, pd)

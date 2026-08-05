@@ -416,3 +416,89 @@ func TestCreate(t *testing.T) {
 		}
 	})
 }
+
+func TestRemove(t *testing.T) {
+	t.Run("removes a file", func(t *testing.T) {
+		file := write(t, filepath.Join(t.TempDir(), "file.txt"), "")
+
+		if err := Remove(file); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := os.Lstat(file); !os.IsNotExist(err) {
+			t.Errorf("still there, %v", err)
+		}
+	})
+
+	t.Run("removes an empty directory", func(t *testing.T) {
+		dir := mkdir(t, filepath.Join(t.TempDir(), "dir"))
+
+		if err := Remove(dir); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := os.Lstat(dir); !os.IsNotExist(err) {
+			t.Errorf("still there, %v", err)
+		}
+	})
+
+	t.Run("refuses a non empty directory", func(t *testing.T) {
+		dir := mkdir(t, filepath.Join(t.TempDir(), "dir"))
+		write(t, filepath.Join(dir, "file.txt"), "")
+
+		if err := Remove(dir); err == nil {
+			t.Error("removed a non empty directory")
+		}
+	})
+
+	t.Run("takes the link not its target", func(t *testing.T) {
+		base := t.TempDir()
+		secret := write(t, filepath.Join(base, "secret.txt"), "secret")
+		link := symlink(t, secret, filepath.Join(base, "link"))
+
+		if err := Remove(link); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := os.Lstat(link); !os.IsNotExist(err) {
+			t.Errorf("link still there, %v", err)
+		}
+		if b, _ := os.ReadFile(secret); string(b) != "secret" {
+			t.Errorf("secret = %q", b)
+		}
+	})
+
+	t.Run("refuses a symlinked prefix", func(t *testing.T) {
+		base := untrustedTempDir(t)
+		secret := write(t, filepath.Join(mkdir(t, filepath.Join(base, "secret")), "leaf.txt"), "secret")
+		stage := symlink(t, filepath.Join(base, "secret"), filepath.Join(base, "stage"))
+
+		if err := Remove(filepath.Join(stage, "leaf.txt")); err == nil {
+			t.Error("walked through a symlink")
+		}
+		if _, err := os.Lstat(secret); err != nil {
+			t.Errorf("secret removed, %v", err)
+		}
+	})
+}
+
+func TestIsExistingDir(t *testing.T) {
+	base := untrustedTempDir(t)
+	dir := mkdir(t, filepath.Join(base, "dir"))
+	mkdir(t, filepath.Join(dir, "sub"))
+	file := write(t, filepath.Join(base, "file.txt"), "")
+	link := symlink(t, dir, filepath.Join(base, "link"))
+
+	for _, tc := range []struct {
+		path string
+		want bool
+	}{
+		{dir, true},
+		{file, false},
+		{link, false},
+		{filepath.Join(link, "sub"), false},
+		{filepath.Join(base, "missing"), false},
+		{"", false},
+	} {
+		if got := IsExistingDir(tc.path); got != tc.want {
+			t.Errorf("IsExistingDir(%q) = %v", tc.path, got)
+		}
+	}
+}
