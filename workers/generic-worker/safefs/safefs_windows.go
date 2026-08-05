@@ -84,11 +84,18 @@ func IsNameSurrogate(attrs, tag uint32) bool {
 	return attrs&windows.FILE_ATTRIBUTE_REPARSE_POINT != 0 && tag&ioReparseTagNameSurrogate != 0
 }
 
-// NtCreateFile with a RootDirectory is the closest thing win32 has to openat(2).
 // Name **MUST** be a single entry and never a path or the whole thing breaks.
-func OpenChild(parent windows.Handle, name, parentPath string, access uint32) (windows.Handle, error) {
-	if name == "" || name == "." || name == ".." || strings.Contains(name, `\`) {
-		return windows.InvalidHandle, fmt.Errorf("refusing to open unexpected entry name %q under %q. This is a worker bug", name, parentPath)
+func checkName(name, parentPath string) error {
+	if name == "" || name == "." || name == ".." || strings.ContainsAny(name, `\/`) {
+		return fmt.Errorf("refusing to use unexpected entry name %q under %q. This is a worker bug", name, parentPath)
+	}
+	return nil
+}
+
+// NtCreateFile with a RootDirectory is the closest thing win32 has to openat(2).
+func childAt(parent windows.Handle, name, parentPath string, access, disposition, options uint32) (windows.Handle, error) {
+	if err := checkName(name, parentPath); err != nil {
+		return windows.InvalidHandle, err
 	}
 
 	objectName, err := windows.NewNTUnicodeString(name)
@@ -112,14 +119,50 @@ func OpenChild(parent windows.Handle, name, parentPath string, access uint32) (w
 		nil,
 		0,
 		windows.FILE_SHARE_READ|windows.FILE_SHARE_WRITE|windows.FILE_SHARE_DELETE,
-		windows.FILE_OPEN,
-		windows.FILE_OPEN_REPARSE_POINT|windows.FILE_OPEN_FOR_BACKUP_INTENT|windows.FILE_SYNCHRONOUS_IO_NONALERT,
+		disposition,
+		windows.FILE_OPEN_REPARSE_POINT|windows.FILE_OPEN_FOR_BACKUP_INTENT|windows.FILE_SYNCHRONOUS_IO_NONALERT|options,
 		0,
 		0,
 	); err != nil {
 		return windows.InvalidHandle, fmt.Errorf("could not open %q under %q: %w", name, parentPath, err)
 	}
 	return handle, nil
+}
+
+func OpenChild(parent windows.Handle, name, parentPath string, access uint32) (windows.Handle, error) {
+	return childAt(parent, name, parentPath, access, windows.FILE_OPEN, 0)
+}
+
+// Create a new name under an already open directory handle, failing if anything
+// is already there.
+func CreateChild(parent windows.Handle, name, parentPath string, access uint32, directory bool) (windows.Handle, error) {
+	if directory {
+		return childAt(parent, name, parentPath, access, windows.FILE_CREATE, windows.FILE_DIRECTORY_FILE)
+	}
+	return childAt(parent, name, parentPath, access, windows.FILE_CREATE, windows.FILE_NON_DIRECTORY_FILE)
+}
+
+// Removes whatever an already open handle refers to, which has to be opened
+// with DELETE access and be an empty directory if it is one.
+func DeleteSelf(handle windows.Handle, path string) error {
+	disposition := uint32(windows.FILE_DISPOSITION_DELETE | windows.FILE_DISPOSITION_POSIX_SEMANTICS | windows.FILE_DISPOSITION_IGNORE_READONLY_ATTRIBUTE)
+	var iosb windows.IO_STATUS_BLOCK
+	if err := windows.NtSetInformationFile(handle, &iosb, (*byte)(unsafe.Pointer(&disposition)), uint32(unsafe.Sizeof(disposition)), windows.FileDispositionInformationEx); err != nil {
+		return fmt.Errorf("could not delete %q: %w", path, err)
+	}
+	return nil
+}
+
+// Removes name from an already open directory handle. If a directory, it has
+// to be empty first.
+func DeleteChild(parent windows.Handle, name, parentPath string) error {
+	child, err := OpenChild(parent, name, parentPath, windows.DELETE|windows.SYNCHRONIZE)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = windows.CloseHandle(child) }()
+
+	return DeleteSelf(child, filepath.Join(parentPath, name))
 }
 
 func OpenSelf(handle windows.Handle, access uint32) (windows.Handle, error) {
@@ -189,11 +232,10 @@ func splitAbsPath(path string) (string, []string, error) {
 	}
 
 	volume := filepath.VolumeName(abs)
-	components := strings.FieldsFunc(abs[len(volume):], separator)
-	if volume == "" || len(components) == 0 {
-		return "", nil, fmt.Errorf("refusing to operate on %q: it isn't a path below a volume root", path)
+	if volume == "" {
+		return "", nil, fmt.Errorf("refusing to operate on %q: it isn't a path under a volume", path)
 	}
-	return volume + `\`, components, nil
+	return volume + `\`, strings.FieldsFunc(abs[len(volume):], separator), nil
 }
 
 // OpenPath opens path one component at a time, each one relative to the
@@ -209,6 +251,10 @@ func OpenPath(path string, leafAccess uint32) (windows.Handle, error) {
 	root, components, err := splitAbsPath(path)
 	if err != nil {
 		return windows.InvalidHandle, err
+	}
+
+	if len(components) == 0 {
+		return openVolumeRoot(root, leafAccess)
 	}
 
 	handle, err := openVolumeRoot(root, traverseAccess)
@@ -249,4 +295,57 @@ func OpenExistingRDWR(file string) (*os.File, error) {
 		return nil, err
 	}
 	return os.NewFile(uintptr(handle), file), nil
+}
+
+// FILE_RENAME_INFORMATION, which x/sys/windows doesn't declare
+type fileRenameInformation struct {
+	ReplaceIfExists uint32
+	RootDirectory   windows.Handle
+	FileNameLength  uint32
+	FileName        [1]uint16
+}
+
+// This moves oldpath to newpath without either of them being resolved by
+// name. A rename cannot cross volumes; that comes back as
+// windows.STATUS_NOT_SAME_DEVICE.
+func Rename(oldpath, newpath string) error {
+	parentPath, name := filepath.Dir(newpath), filepath.Base(newpath)
+	if err := checkName(name, parentPath); err != nil {
+		return err
+	}
+
+	source, err := OpenPath(oldpath, windows.DELETE|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = windows.CloseHandle(source) }()
+
+	parent, err := OpenPath(parentPath, traverseAccess|windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = windows.CloseHandle(parent) }()
+
+	utf16Name, err := windows.UTF16FromString(name)
+	if err != nil {
+		return err
+	}
+	// UTF16FromString appends a terminator, which the length must not count
+	nameLen := len(utf16Name)*2 - 2
+
+	var info fileRenameInformation
+	size := int(unsafe.Offsetof(info.FileName)) + nameLen
+	buffer := make([]byte, size)
+	rename := (*fileRenameInformation)(unsafe.Pointer(&buffer[0]))
+	rename.ReplaceIfExists = windows.FILE_RENAME_REPLACE_IF_EXISTS
+	rename.RootDirectory = parent
+	rename.FileNameLength = uint32(nameLen)
+	// capped at the name itself, the buffer has no room for the terminator
+	copy(unsafe.Slice(&rename.FileName[0], nameLen/2), utf16Name)
+
+	var iosb windows.IO_STATUS_BLOCK
+	if err := windows.NtSetInformationFile(source, &iosb, &buffer[0], uint32(size), windows.FileRenameInformation); err != nil {
+		return fmt.Errorf("could not rename %q to %q: %w", oldpath, newpath, err)
+	}
+	return nil
 }

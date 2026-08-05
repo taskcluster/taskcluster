@@ -85,3 +85,36 @@ func TestOpenPath(t *testing.T) {
 		_ = windows.CloseHandle(h)
 	})
 }
+
+func TestRename(t *testing.T) {
+	t.Run("moves within a volume", func(t *testing.T) {
+		base := t.TempDir()
+		src := write(t, filepath.Join(base, "src"), "data")
+		dst := filepath.Join(base, "dst")
+
+		if err := Rename(src, dst); err != nil {
+			t.Fatal(err)
+		}
+		if b, err := os.ReadFile(dst); err != nil || string(b) != "data" {
+			t.Errorf("dst = %q, %v", b, err)
+		}
+		if _, err := os.Stat(src); !os.IsNotExist(err) {
+			t.Errorf("src still there, %v", err)
+		}
+	})
+
+	t.Run("refuses a junctioned destination prefix", func(t *testing.T) {
+		base := t.TempDir()
+		secret, _ := mksecret(t, base)
+		stage := filepath.Join(base, "stage")
+		mkjunction(t, stage, secret)
+		src := write(t, filepath.Join(base, "src"), "data")
+
+		if err := Rename(src, filepath.Join(stage, "leaf", "planted.txt")); err == nil {
+			t.Error("walked through a junction")
+		}
+		if _, err := os.Stat(filepath.Join(secret, "leaf", "planted.txt")); err == nil {
+			t.Error("planted inside the secret")
+		}
+	})
+}
