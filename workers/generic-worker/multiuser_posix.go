@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	osuser "os/user"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -168,33 +169,20 @@ func (task *TaskRun) EnvVars() []string {
 }
 
 func makeFileOrDirReadWritableForUser(recurse bool, fileOrDir string, user *gwruntime.OSUser) error {
-	// We'll use chown binary rather that os.Chown here since:
-	// 1) we have user/group names not ids, and can avoid extra code to look up
-	//    their values
-	// 2) Perhaps we would need a CGO_ENABLED build to call user.Lookup and
-	//    user.LookupGroup (see https://bugzil.la/1566159)
-	// 3) os.Chown doesn't have a recursive option; maybe a third party library
-	//    does, but that's more bloat to import/maintain, or we'd need to write
-	//    our own
-	// 4) we get logging of commands run for free
-	if recurse {
-		switch runtime.GOOS {
-		case "darwin":
-			return host.Run("/usr/sbin/chown", "-R", user.Name+":staff", fileOrDir)
-		case "linux":
-			return host.Run("/bin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
-		case "freebsd":
-			return host.Run("/usr/sbin/chown", "-R", user.Name+":"+user.Name, fileOrDir)
-		}
-		return fmt.Errorf("unknown platform: %v", runtime.GOOS)
+	usr, err := osuser.Lookup(user.Name)
+	if err != nil {
+		return fmt.Errorf("could not look up user %v: %w", user.Name, err)
 	}
-	switch runtime.GOOS {
-	case "darwin":
-		return host.Run("/usr/sbin/chown", user.Name+":staff", fileOrDir)
-	case "linux":
-		return host.Run("/bin/chown", user.Name+":"+user.Name, fileOrDir)
-	case "freebsd":
-		return host.Run("/usr/sbin/chown", user.Name+":"+user.Name, fileOrDir)
+
+	uid, err := strconv.Atoi(usr.Uid)
+	if err != nil {
+		return fmt.Errorf("could not parse uid %q of user %v: %w", usr.Uid, user.Name, err)
 	}
-	return fmt.Errorf("unknown platform: %v", runtime.GOOS)
+	gid, err := strconv.Atoi(usr.Gid)
+	if err != nil {
+		return fmt.Errorf("could not parse gid %q of user %v: %w", usr.Gid, user.Name, err)
+	}
+
+	log.Printf("Granting %v (%v:%v) ownership of %v", user.Name, uid, gid, fileOrDir)
+	return safefs.Chown(fileOrDir, uid, gid, recurse)
 }

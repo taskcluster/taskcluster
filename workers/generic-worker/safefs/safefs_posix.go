@@ -178,3 +178,79 @@ func Rename(oldpath, newpath string) error {
 	return nil
 }
 
+
+// Overridden by the tests so they don't need to build a tree this deep.
+var maxChownDepth = 1024
+const maxChownErrors = 100
+const fileFlags = unix.O_RDONLY | leafFlags
+
+func Chown(path string, uid, gid int, recurse bool) error {
+	parent, name, err := openParent(path)
+	if err != nil {
+		return err
+	}
+	defer unix.Close(parent)
+
+	if isSymlinkAt(parent, name) {
+		return fmt.Errorf("refusing to change the ownership of %q: it's a symlink", path)
+	}
+	if err := unix.Fchownat(parent, name, uid, gid, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		return fmt.Errorf("could not change the ownership of %q: %w", path, err)
+	}
+	if !recurse {
+		return nil
+	}
+
+	fd, err := unix.Openat(parent, name, dirFlags, 0)
+	if err != nil {
+		if errors.Is(err, unix.ENOTDIR) {
+			return nil
+		}
+		return fmt.Errorf("could not open %q: %w", path, err)
+	}
+	dir := os.NewFile(uintptr(fd), path)
+	defer dir.Close()
+
+	return chownChildren(dir, uid, gid, 0)
+}
+
+func chownChildren(dir *os.File, uid, gid, depth int) error {
+	if depth > maxChownDepth {
+		return fmt.Errorf("refusing to descend into %q: more than %v levels deep", dir.Name(), maxChownDepth)
+	}
+
+	dirfd := int(dir.Fd())
+	entries, err := dir.ReadDir(-1)
+	if err != nil {
+		return fmt.Errorf("could not read directory %q: %w", dir.Name(), err)
+	}
+
+	var errs []error
+	for _, entry := range entries {
+		if err := chownChild(dirfd, entry, dir.Name(), uid, gid, depth); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
+}
+
+func chownChild(dirfd int, entry os.DirEntry, parentPath string, uid, gid, depth int) error {
+	name := entry.Name()
+	path := filepath.Join(parentPath, name)
+	if err := unix.Fchownat(dirfd, name, uid, gid, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		return fmt.Errorf("could not change the ownership of %q: %w", path, err)
+	}
+
+	if !entry.IsDir() {
+		return nil
+	}
+
+	fd, err := unix.Openat(dirfd, name, dirFlags, 0)
+	if err != nil {
+		return fmt.Errorf("could not open %q: %w", path, err)
+	}
+	child := os.NewFile(uintptr(fd), path)
+	defer child.Close()
+
+	return chownChildren(child, uid, gid, depth+1)
+}

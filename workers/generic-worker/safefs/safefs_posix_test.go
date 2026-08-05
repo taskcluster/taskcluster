@@ -247,3 +247,80 @@ func TestRename(t *testing.T) {
 		}
 	})
 }
+
+func TestChown(t *testing.T) {
+	t.Run("walks the tree", func(t *testing.T) {
+		if os.Getuid() != 0 {
+			t.Skip("needs root to change ownership")
+		}
+		base := t.TempDir()
+		deep := write(t, filepath.Join(mkdir(t, filepath.Join(base, "dir", "sub")), "file.txt"), "")
+		outside := write(t, filepath.Join(t.TempDir(), "outside.txt"), "")
+		symlink(t, outside, filepath.Join(base, "dir", "link"))
+
+		if err := Chown(base, 1, 1, true); err != nil {
+			t.Fatal(err)
+		}
+
+		var st unix.Stat_t
+		if err := unix.Stat(deep, &st); err != nil || st.Uid != 1 || st.Gid != 1 {
+			t.Errorf("nested file is %v:%v, %v", st.Uid, st.Gid, err)
+		}
+		if err := unix.Stat(outside, &st); err != nil || st.Uid == 1 {
+			t.Errorf("followed the link, target is %v", st.Uid)
+		}
+	})
+
+	t.Run("does not descend into links", func(t *testing.T) {
+		if os.Getuid() == 0 {
+			t.Skip("as root the chown would succeed through the link")
+		}
+		base := t.TempDir()
+		symlink(t, "/etc", filepath.Join(base, "link"))
+
+		if err := Chown(base, os.Getuid(), os.Getgid(), true); err != nil {
+			t.Fatalf("followed the link, %v", err)
+		}
+	})
+
+	t.Run("refuses a symlinked target", func(t *testing.T) {
+		base := t.TempDir()
+		link := symlink(t, mkdir(t, filepath.Join(base, "target")), filepath.Join(base, "link"))
+
+		if err := Chown(link, os.Getuid(), os.Getgid(), true); err == nil {
+			t.Error("chowned a symlink")
+		}
+	})
+
+	t.Run("refuses a symlinked prefix", func(t *testing.T) {
+		base := untrustedTempDir(t)
+		mkdir(t, filepath.Join(base, "secret", "leaf"))
+		stage := symlink(t, filepath.Join(base, "secret"), filepath.Join(base, "stage"))
+
+		if err := Chown(filepath.Join(stage, "leaf"), os.Getuid(), os.Getgid(), true); err == nil {
+			t.Error("walked through a symlink")
+		}
+	})
+
+	t.Run("stops at max depth", func(t *testing.T) {
+		defer func(depth int) { maxChownDepth = depth }(maxChownDepth)
+		maxChownDepth = 4
+
+		base := t.TempDir()
+		deep := base
+		for range maxChownDepth + 2 {
+			deep = filepath.Join(deep, "d")
+		}
+		mkdir(t, deep)
+
+		if err := Chown(base, os.Getuid(), os.Getgid(), true); err == nil {
+			t.Error("descended past the depth bound")
+		}
+	})
+
+	t.Run("refuses an empty path", func(t *testing.T) {
+		if err := Chown("", os.Getuid(), os.Getgid(), false); err == nil {
+			t.Error("chowned an empty path")
+		}
+	})
+}
