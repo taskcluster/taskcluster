@@ -3,6 +3,7 @@
 package safefs
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -146,6 +147,23 @@ func TestPathWalk(t *testing.T) {
 			t.Fatal(err)
 		}
 		f.Close()
+	})
+
+	t.Run("does not open through a resolved symlink", func(t *testing.T) {
+		base := t.TempDir()
+		write(t, filepath.Join(base, "file.txt"), "ours")
+		sub := mkdir(t, filepath.Join(base, "sub"))
+		write(t, filepath.Join(sub, "file.txt"), "theirs")
+		link := symlink(t, mkdir(t, filepath.Join(sub, "deep")), filepath.Join(base, "link"))
+
+		f, err := OpenExistingReadonly(link + "/../file.txt")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		if b, err := io.ReadAll(f); err != nil || string(b) != "ours" {
+			t.Errorf("read %q, %v", b, err)
+		}
 	})
 
 	t.Run("refuses bad paths", func(t *testing.T) {
@@ -321,6 +339,80 @@ func TestChown(t *testing.T) {
 	t.Run("refuses an empty path", func(t *testing.T) {
 		if err := Chown("", os.Getuid(), os.Getgid(), false); err == nil {
 			t.Error("chowned an empty path")
+		}
+	})
+}
+
+func TestOpenExistingReadonly(t *testing.T) {
+	t.Run("reads a file", func(t *testing.T) {
+		file := write(t, filepath.Join(t.TempDir(), "file.txt"), "content")
+
+		f, err := OpenExistingReadonly(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		if b, err := io.ReadAll(f); err != nil || string(b) != "content" {
+			t.Errorf("read %q, %v", b, err)
+		}
+	})
+
+	t.Run("refuses a symlinked leaf", func(t *testing.T) {
+		base := t.TempDir()
+		secret := write(t, filepath.Join(base, "secret.txt"), "secret")
+		link := symlink(t, secret, filepath.Join(base, "link.txt"))
+
+		if f, err := OpenExistingReadonly(link); err == nil {
+			f.Close()
+			t.Error("opened a symlink")
+		}
+	})
+}
+
+func TestCreate(t *testing.T) {
+	t.Run("writes a file", func(t *testing.T) {
+		file := filepath.Join(t.TempDir(), "file.txt")
+
+		f, err := Create(file, 0o644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.Write([]byte("content")); err != nil {
+			t.Fatal(err)
+		}
+		if err := f.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if b, err := os.ReadFile(file); err != nil || string(b) != "content" {
+			t.Errorf("file = %q, %v", b, err)
+		}
+	})
+
+	t.Run("refuses a symlinked leaf", func(t *testing.T) {
+		base := t.TempDir()
+		secret := write(t, filepath.Join(base, "secret.txt"), "secret")
+		dst := symlink(t, secret, filepath.Join(base, "dst"))
+
+		if f, err := Create(dst, 0o644); err == nil {
+			f.Close()
+			t.Error("created through a symlink")
+		}
+		if b, _ := os.ReadFile(secret); string(b) != "secret" {
+			t.Errorf("secret = %q", b)
+		}
+	})
+
+	t.Run("refuses a symlinked prefix", func(t *testing.T) {
+		base := untrustedTempDir(t)
+		secret := mkdir(t, filepath.Join(base, "secret"))
+		stage := symlink(t, secret, filepath.Join(base, "stage"))
+
+		if f, err := Create(filepath.Join(stage, "planted.txt"), 0o644); err == nil {
+			f.Close()
+			t.Error("walked through a symlink")
+		}
+		if _, err := os.Lstat(filepath.Join(secret, "planted.txt")); err == nil {
+			t.Error("planted inside the secret")
 		}
 	})
 }

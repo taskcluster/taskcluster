@@ -1,6 +1,7 @@
 package safefs
 
 import (
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -83,6 +84,24 @@ func TestOpenPath(t *testing.T) {
 			t.Fatal(err)
 		}
 		_ = windows.CloseHandle(h)
+	})
+
+	t.Run("does not clean through a junction", func(t *testing.T) {
+		base := t.TempDir()
+		write(t, filepath.Join(base, "file.txt"), "ours")
+		sub := mkdir(t, filepath.Join(base, "sub"))
+		write(t, filepath.Join(sub, "file.txt"), "theirs")
+		link := filepath.Join(base, "link")
+		mkjunction(t, link, mkdir(t, filepath.Join(sub, "deep")))
+
+		f, err := OpenExistingReadonly(link + `\..\file.txt`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		if b, err := io.ReadAll(f); err != nil || string(b) != "ours" {
+			t.Errorf("read %q, %v", b, err)
+		}
 	})
 }
 

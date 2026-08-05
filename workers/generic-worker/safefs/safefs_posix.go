@@ -154,6 +154,33 @@ func OpenExistingRDWR(file string) (*os.File, error) {
 	return os.NewFile(uintptr(fd), file), nil
 }
 
+func OpenExistingReadonly(file string) (*os.File, error) {
+	fd, err := openPath(file, unix.O_RDONLY)
+	if err != nil {
+		return nil, err
+	}
+	return os.NewFile(uintptr(fd), file), nil
+}
+
+func Create(file string, perm os.FileMode) (*os.File, error) {
+	parent, name, err := openParent(file)
+	if err != nil {
+		return nil, err
+	}
+	defer unix.Close(parent)
+
+	fd, err := unix.Openat(parent, name, unix.O_WRONLY|unix.O_CREAT|unix.O_TRUNC|unix.O_NOFOLLOW|unix.O_CLOEXEC, uint32(perm))
+	if err != nil {
+		if isSymlinkAt(parent, name) {
+			return nil, fmt.Errorf("refusing to create %q: it's a symlink", file)
+		}
+		return nil, fmt.Errorf("could not create %q: %w", file, err)
+	}
+	return os.NewFile(uintptr(fd), file), nil
+}
+
+// Moves oldpath to newpath without either of them being resolved by
+// name. Both are renamed relative to a directory we opened ourselves and know
 // isn't a link
 func Rename(oldpath, newpath string) error {
 	sourceParent, sourceName, err := openParent(oldpath)
@@ -181,6 +208,7 @@ func Rename(oldpath, newpath string) error {
 
 // Overridden by the tests so they don't need to build a tree this deep.
 var maxChownDepth = 1024
+
 const maxChownErrors = 100
 const fileFlags = unix.O_RDONLY | leafFlags
 

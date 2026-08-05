@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -16,6 +15,7 @@ import (
 	"github.com/taskcluster/taskcluster/v107/internal/scopes"
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/artifacts"
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -146,11 +146,11 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	certifiedLogFile := fileutil.AbsFrom(taskDir, certifiedLogPath)
 	unsignedCert := fileutil.AbsFrom(taskDir, unsignedCertPath)
 	ed25519SignedCert := fileutil.AbsFrom(taskDir, ed25519SignedCertPath)
-	copyErr := copyFileContents(logFile, certifiedLogFile)
-	if copyErr != nil {
-		panic(copyErr)
+	if copyErr := safefs.CopyFile(logFile, certifiedLogFile, 0644); copyErr != nil {
+		err.add(executionError(internalError, errored, fmt.Errorf("could not create certified log: %w", copyErr)))
+		return
 	}
-	err.add(feature.task.uploadLog(certifiedLogName, fileutil.AbsFrom(taskDir, certifiedLogPath)))
+	err.add(feature.task.uploadLog(certifiedLogName, certifiedLogFile))
 	artifactHashes := map[string]ArtifactHash{}
 	feature.task.artifactsMux.RLock()
 	for _, artifact := range feature.task.Artifacts {
@@ -207,31 +207,32 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	}
 
 	// create unsigned chain-of-trust.json
-	e = os.WriteFile(unsignedCert, certBytes, 0644)
-	if e != nil {
-		panic(e)
+	if e := safefs.WriteFile(unsignedCert, certBytes, 0644); e != nil {
+		err.add(executionError(internalError, errored, fmt.Errorf("could not write unsigned chain of trust certificate: %w", e)))
+		return
 	}
-	err.add(feature.task.uploadLog(unsignedCertName, fileutil.AbsFrom(taskDir, unsignedCertPath)))
+	err.add(feature.task.uploadLog(unsignedCertName, unsignedCert))
 
 	// create detached ed25519 chain-of-trust.json.sig
 	sig := ed25519.Sign(feature.ed25519PrivKey, certBytes)
-	// 0644 (not 0600) so the artifact uploader, which copies via
-	// copy-to-temp-file as the task user, can read this file. The
-	// task dir is already 0700 owned by the task user, so the file
-	// is not exposed beyond that boundary. Same rationale as
-	// chain-of-trust-additional-data.json in d2g_feature.go.
-	e = os.WriteFile(ed25519SignedCert, sig, 0644)
-	if e != nil {
-		panic(e)
+	if e := safefs.WriteFile(ed25519SignedCert, sig, 0644); e != nil {
+		err.add(executionError(internalError, errored, fmt.Errorf("could not write ed25519 signature: %w", e)))
+		return
 	}
+	ed25519Content, cpErr := safeReservedCopy(ed25519SignedCert)
+	if cpErr != nil {
+		err.add(executionError(internalError, errored, fmt.Errorf("could not read ed25519 signature: %w", cpErr)))
+		return
+	}
+	defer os.Remove(ed25519Content)
 	err.add(feature.task.uploadArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.TaskClaimResponse.Task.Expires,
 			},
-			fileutil.AbsFrom(taskDir, ed25519SignedCertPath),
-			fileutil.AbsFrom(taskDir, ed25519SignedCertPath),
+			ed25519SignedCert,
+			ed25519Content,
 			"application/octet-stream",
 			"gzip",
 		),
@@ -267,7 +268,7 @@ func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (merge
 	defer os.Remove(tempPath)
 
 	var additionalDataBytes []byte
-	additionalDataBytes, err = os.ReadFile(tempPath)
+	additionalDataBytes, err = safefs.ReadFile(tempPath)
 	if err != nil {
 		return
 	}
@@ -291,27 +292,4 @@ func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (merge
 	mergedMap := mergemap.Merge(additionalData, initialCert)
 
 	return json.MarshalIndent(mergedMap, "", "  ")
-}
-
-func copyFileContents(src, dst string) (err error) {
-	in, err := os.Open(src)
-	if err != nil {
-		return
-	}
-	defer in.Close()
-	out, err := os.Create(dst)
-	if err != nil {
-		return
-	}
-	defer func() {
-		cerr := out.Close()
-		if err == nil {
-			err = cerr
-		}
-	}()
-	if _, err = io.Copy(out, in); err != nil {
-		return
-	}
-	err = out.Sync()
-	return
 }

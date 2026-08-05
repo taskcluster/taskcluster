@@ -297,6 +297,28 @@ func OpenExistingRDWR(file string) (*os.File, error) {
 	return os.NewFile(uintptr(handle), file), nil
 }
 
+func OpenExistingReadonly(file string) (*os.File, error) {
+	handle, err := OpenPath(file, windows.GENERIC_READ|windows.SYNCHRONIZE)
+	if err != nil {
+		return nil, err
+	}
+	return os.NewFile(uintptr(handle), file), nil
+}
+
+func Create(file string, perm os.FileMode) (*os.File, error) {
+	parent, err := OpenPath(filepath.Dir(file), traverseAccess|windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = windows.CloseHandle(parent) }()
+
+	handle, err := childAt(parent, filepath.Base(file), filepath.Dir(file), windows.GENERIC_WRITE|windows.SYNCHRONIZE, windows.FILE_OVERWRITE_IF, windows.FILE_NON_DIRECTORY_FILE)
+	if err != nil {
+		return nil, err
+	}
+	return os.NewFile(uintptr(handle), file), nil
+}
+
 // FILE_RENAME_INFORMATION, which x/sys/windows doesn't declare
 type fileRenameInformation struct {
 	ReplaceIfExists uint32
