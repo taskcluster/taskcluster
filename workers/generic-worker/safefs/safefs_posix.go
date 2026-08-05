@@ -3,6 +3,7 @@
 package safefs
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,7 +14,13 @@ import (
 
 const maxTrustedLinks = 8
 
+const dirFlags = unix.O_RDONLY | unix.O_DIRECTORY | unix.O_NOFOLLOW | unix.O_CLOEXEC
+
 func splitAbsPath(path string) ([]string, error) {
+	if path == "" {
+		return nil, errors.New("refusing to operate on an empty path")
+	}
+
 	separator := func(r rune) bool { return r == '/' }
 
 	abs, err := filepath.Abs(path)
@@ -21,11 +28,7 @@ func splitAbsPath(path string) ([]string, error) {
 		return nil, fmt.Errorf("could not resolve %q: %w", path, err)
 	}
 
-	components := strings.FieldsFunc(abs, separator)
-	if len(components) == 0 {
-		return nil, fmt.Errorf("refusing to operate on %q: it isn't a path below the root", path)
-	}
-	return components, nil
+	return strings.FieldsFunc(abs, separator), nil
 }
 
 func isSymlinkAt(dirfd int, name string) bool {
@@ -56,10 +59,10 @@ func readLinkAt(dirfd int, name string) (string, error) {
 	return string(buf[:n]), nil
 }
 
-// openPath opens path one component at a time, each one relative to the
-// previously opened one. Traversing symlinks a task could have planted is
-// refused
-func openPath(path string, leafFlags, depth int) (int, error) {
+// Opens every component of path as a directory, each one relative to the
+// previously opened one. A symlink is followed only where nobody but root
+// could have planted it, and refused everywhere else.
+func walkDirs(path string, depth int) (int, error) {
 	if depth > maxTrustedLinks {
 		return -1, fmt.Errorf("too many links resolving %q", path)
 	}
@@ -69,8 +72,6 @@ func openPath(path string, leafFlags, depth int) (int, error) {
 		return -1, err
 	}
 
-	const dirFlags = unix.O_RDONLY | unix.O_DIRECTORY | unix.O_NOFOLLOW | unix.O_CLOEXEC
-
 	fd, err := unix.Open("/", dirFlags, 0)
 	if err != nil {
 		return -1, fmt.Errorf("could not open %q: %w", "/", err)
@@ -78,13 +79,7 @@ func openPath(path string, leafFlags, depth int) (int, error) {
 
 	current := "/"
 	for i, name := range components {
-		leaf := i == len(components)-1
-		flags := dirFlags
-		if leaf {
-			flags = leafFlags | unix.O_NOFOLLOW | unix.O_CLOEXEC
-		}
-
-		child, err := unix.Openat(fd, name, flags, 0)
+		child, err := unix.Openat(fd, name, dirFlags, 0)
 		if err == nil {
 			unix.Close(fd)
 			fd, current = child, filepath.Join(current, name)
@@ -99,7 +94,7 @@ func openPath(path string, leafFlags, depth int) (int, error) {
 			return -1, fmt.Errorf("could not open %q: %w", filepath.Join(current, name), err)
 		}
 
-		if leaf || !onlyRootCanWrite(fd) {
+		if !onlyRootCanWrite(fd) {
 			unix.Close(fd)
 			return -1, fmt.Errorf("refusing to resolve %q: %q is a symlink", path, filepath.Join(current, name))
 		}
@@ -112,15 +107,74 @@ func openPath(path string, leafFlags, depth int) (int, error) {
 		if !filepath.IsAbs(target) {
 			target = filepath.Join(current, target)
 		}
-		return openPath(filepath.Join(append([]string{target}, components[i+1:]...)...), leafFlags, depth+1)
+		return walkDirs(filepath.Join(append([]string{target}, components[i+1:]...)...), depth+1)
+	}
+	return fd, nil
+}
+
+func openParent(path string) (int, string, error) {
+	components, err := splitAbsPath(path)
+	if err != nil {
+		return -1, "", err
+	}
+	if len(components) == 0 {
+		return -1, "", fmt.Errorf("refusing to operate on %q: it's the root itself", path)
+	}
+
+	name := components[len(components)-1]
+	fd, err := walkDirs("/"+filepath.Join(components[:len(components)-1]...), 0)
+	if err != nil {
+		return -1, "", err
+	}
+	return fd, name, nil
+}
+
+func openPath(path string, flags int) (int, error) {
+	parent, name, err := openParent(path)
+	if err != nil {
+		return -1, err
+	}
+	defer unix.Close(parent)
+
+	fd, err := unix.Openat(parent, name, flags|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
+	if err != nil {
+		if isSymlinkAt(parent, name) {
+			return -1, fmt.Errorf("refusing to resolve %q: it's a symlink", path)
+		}
+		return -1, fmt.Errorf("could not open %q: %w", path, err)
 	}
 	return fd, nil
 }
 
 func OpenExistingRDWR(file string) (*os.File, error) {
-	fd, err := openPath(file, unix.O_RDWR, 0)
+	fd, err := openPath(file, unix.O_RDWR)
 	if err != nil {
 		return nil, err
 	}
 	return os.NewFile(uintptr(fd), file), nil
 }
+
+// isn't a link
+func Rename(oldpath, newpath string) error {
+	sourceParent, sourceName, err := openParent(oldpath)
+	if err != nil {
+		return err
+	}
+	defer unix.Close(sourceParent)
+
+	if isSymlinkAt(sourceParent, sourceName) {
+		return fmt.Errorf("refusing to rename %q: it's a symlink", oldpath)
+	}
+
+	targetParent, targetName, err := openParent(newpath)
+	if err != nil {
+		return err
+	}
+	defer unix.Close(targetParent)
+
+	if err := unix.Renameat(sourceParent, sourceName, targetParent, targetName); err != nil {
+		return fmt.Errorf("could not rename %q to %q: %w", oldpath, newpath, err)
+	}
+	return nil
+}
+

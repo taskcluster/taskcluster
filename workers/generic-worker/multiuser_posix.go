@@ -19,6 +19,7 @@ import (
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/host"
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v107/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
 )
 
 func (task *TaskRun) formatCommand(index int) string {
@@ -114,7 +115,7 @@ func install(arguments map[string]any) (err error) {
 func RenameCrossDevice(oldpath, newpath string) error {
 	// TODO: here we should be able to rename when oldpath and newpath are on
 	// different partitions - for now this will cover 99% of cases.
-	return os.Rename(oldpath, newpath)
+	return safefs.Rename(oldpath, newpath)
 }
 
 // we put this in init() instead of startup() as we want tests to be able to change

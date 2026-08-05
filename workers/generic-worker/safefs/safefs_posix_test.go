@@ -160,3 +160,90 @@ func TestPathWalk(t *testing.T) {
 		}
 	})
 }
+
+func TestRename(t *testing.T) {
+	t.Run("moves", func(t *testing.T) {
+		base := t.TempDir()
+		src := write(t, filepath.Join(base, "src"), "data")
+		dst := filepath.Join(base, "dst")
+
+		if err := Rename(src, dst); err != nil {
+			t.Fatal(err)
+		}
+		if b, err := os.ReadFile(dst); err != nil || string(b) != "data" {
+			t.Errorf("dst = %q, %v", b, err)
+		}
+		if _, err := os.Lstat(src); !os.IsNotExist(err) {
+			t.Errorf("src still there, %v", err)
+		}
+	})
+
+	t.Run("refuses a symlinked source", func(t *testing.T) {
+		base := t.TempDir()
+		secret := write(t, filepath.Join(base, "secret.txt"), "secret")
+		src := symlink(t, secret, filepath.Join(base, "src"))
+
+		if err := Rename(src, filepath.Join(base, "dst")); err == nil {
+			t.Error("renamed a symlink")
+		}
+		if _, err := os.Lstat(secret); err != nil {
+			t.Errorf("secret moved, %v", err)
+		}
+	})
+
+	t.Run("replaces a symlinked destination", func(t *testing.T) {
+		base := t.TempDir()
+		secret := write(t, filepath.Join(base, "secret.txt"), "secret")
+		src := write(t, filepath.Join(base, "src"), "data")
+		dst := symlink(t, secret, filepath.Join(base, "dst"))
+
+		if err := Rename(src, dst); err != nil {
+			t.Fatal(err)
+		}
+		if b, _ := os.ReadFile(secret); string(b) != "secret" {
+			t.Errorf("secret = %q", b)
+		}
+		if b, err := os.ReadFile(dst); err != nil || string(b) != "data" {
+			t.Errorf("dst = %q, %v", b, err)
+		}
+	})
+
+	t.Run("refuses a symlinked source prefix", func(t *testing.T) {
+		base := untrustedTempDir(t)
+		secret := write(t, filepath.Join(mkdir(t, filepath.Join(base, "secret")), "loot"), "secret")
+		stage := symlink(t, filepath.Join(base, "secret"), filepath.Join(base, "stage"))
+
+		if err := Rename(filepath.Join(stage, "loot"), filepath.Join(base, "stolen")); err == nil {
+			t.Error("walked through a symlink")
+		}
+		if _, err := os.Lstat(secret); err != nil {
+			t.Errorf("secret moved, %v", err)
+		}
+	})
+
+	t.Run("refuses a symlinked destination prefix", func(t *testing.T) {
+		base := untrustedTempDir(t)
+		secret := mkdir(t, filepath.Join(base, "secret"))
+		stage := symlink(t, secret, filepath.Join(base, "stage"))
+		src := write(t, filepath.Join(base, "src"), "data")
+
+		if err := Rename(src, filepath.Join(stage, "planted.txt")); err == nil {
+			t.Error("walked through a symlink")
+		}
+		if _, err := os.Lstat(filepath.Join(secret, "planted.txt")); err == nil {
+			t.Error("planted inside the secret")
+		}
+	})
+
+	t.Run("refuses bad paths", func(t *testing.T) {
+		dst := filepath.Join(t.TempDir(), "moved")
+		for _, src := range []string{"", "/"} {
+			if err := Rename(src, dst); err == nil {
+				t.Errorf("renamed %q", src)
+			}
+		}
+		if _, err := os.Lstat(dst); !os.IsNotExist(err) {
+			t.Errorf("dst exists, %v", err)
+		}
+	})
+}
