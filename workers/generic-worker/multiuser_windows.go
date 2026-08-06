@@ -299,18 +299,18 @@ func moveEntry(sourceParent windows.Handle, sourcePath, name string, targetParen
 	source := os.NewFile(uintptr(handle), filepath.Join(sourcePath, name))
 	defer source.Close()
 
-	attrs, tag, err := safefs.AttrsAndTag(handle)
+	dir, surrogate, err := safefs.Kind(handle)
 	if err != nil {
 		return fmt.Errorf("could not stat %q under %q: %w", name, sourcePath, err)
 	}
-	if safefs.IsNameSurrogate(attrs, tag) {
+	if surrogate {
 		return fmt.Errorf("refusing to move %q under %q: it is a junction or a link", name, sourcePath)
 	}
 
-	if attrs&windows.FILE_ATTRIBUTE_DIRECTORY == 0 {
-		err = copyFile(source, targetParent, targetPath, targetName)
-	} else {
+	if dir {
 		err = moveDir(source, filepath.Join(sourcePath, name), targetParent, targetPath, targetName, depth)
+	} else {
+		err = copyFile(source, targetParent, targetPath, targetName)
 	}
 	if err != nil {
 		return err

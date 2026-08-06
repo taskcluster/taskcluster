@@ -69,20 +69,18 @@ type fileAttributeTagInfo struct {
 	ReparseTag     uint32
 }
 
-func AttrsAndTag(handle windows.Handle) (attrs, tag uint32, err error) {
+func Kind(handle windows.Handle) (dir, surrogate bool, err error) {
 	var info fileAttributeTagInfo
 	if err := windows.GetFileInformationByHandleEx(handle, windows.FileAttributeTagInfo, (*byte)(unsafe.Pointer(&info)), uint32(unsafe.Sizeof(info))); err != nil {
-		return 0, 0, err
+		return false, false, err
 	}
 
-	return info.FileAttributes, info.ReparseTag, nil
-}
-
-func IsNameSurrogate(attrs, tag uint32) bool {
 	// Name surrogates are reparse points that redirect the namespace, (i.e
 	// junctions and links)
 	const ioReparseTagNameSurrogate = 0x20000000
-	return attrs&windows.FILE_ATTRIBUTE_REPARSE_POINT != 0 && tag&ioReparseTagNameSurrogate != 0
+	dir = info.FileAttributes&windows.FILE_ATTRIBUTE_DIRECTORY != 0
+	surrogate = info.FileAttributes&windows.FILE_ATTRIBUTE_REPARSE_POINT != 0 && info.ReparseTag&ioReparseTagNameSurrogate != 0
+	return dir, surrogate, nil
 }
 
 // Name **MUST** be a single entry and never a path or the whole thing breaks.
@@ -281,12 +279,12 @@ func OpenPath(path string, leafAccess uint32) (windows.Handle, error) {
 		}
 		handle, current = child, filepath.Join(current, name)
 
-		attrs, tag, err := AttrsAndTag(handle)
+		_, surrogate, err := Kind(handle)
 		if err != nil {
 			_ = windows.CloseHandle(handle)
 			return windows.InvalidHandle, fmt.Errorf("could not stat %q: %w", current, err)
 		}
-		if IsNameSurrogate(attrs, tag) {
+		if surrogate {
 			_ = windows.CloseHandle(handle)
 			return windows.InvalidHandle, fmt.Errorf("refusing to resolve %q: %q is a junction or a link", path, current)
 		}
@@ -371,8 +369,8 @@ func IsExistingDir(path string) bool {
 	}
 	defer func() { _ = windows.CloseHandle(handle) }()
 
-	attrs, _, err := AttrsAndTag(handle)
-	return err == nil && attrs&windows.FILE_ATTRIBUTE_DIRECTORY != 0
+	dir, _, err := Kind(handle)
+	return err == nil && dir
 }
 
 // This moves oldpath to newpath without either of them being resolved by

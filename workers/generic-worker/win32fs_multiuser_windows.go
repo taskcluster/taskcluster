@@ -30,26 +30,18 @@ func grantFullControl(path, username string, recurse bool) error {
 	}
 	defer func() { _ = windows.CloseHandle(root) }()
 
-	attrs, tag, err := safefs.AttrsAndTag(root)
+	dir, surrogate, err := safefs.Kind(root)
 	if err != nil {
 		return fmt.Errorf("could not stat %q: %w", path, err)
 	}
 
-	if err := grantNode(path, root, sid, isDir(attrs)); err != nil {
+	if err := grantNode(path, root, sid, dir); err != nil {
 		return err
 	}
-	if !recurse || !shouldRecurse(attrs, tag) {
+	if !recurse || !dir || surrogate {
 		return nil
 	}
 	return grantChildren(root, path, sid, 0)
-}
-
-func isDir(attrs uint32) bool {
-	return attrs&windows.FILE_ATTRIBUTE_DIRECTORY != 0
-}
-
-func shouldRecurse(attrs, tag uint32) bool {
-	return isDir(attrs) && !safefs.IsNameSurrogate(attrs, tag)
 }
 
 func grantNode(name string, handle windows.Handle, sid *windows.SID, container bool) error {
@@ -141,14 +133,14 @@ func grantChild(parent windows.Handle, name, parentPath string, sid *windows.SID
 	}
 	defer func() { _ = windows.CloseHandle(child) }()
 
-	attrs, tag, err := safefs.AttrsAndTag(child)
+	dir, surrogate, err := safefs.Kind(child)
 	if err != nil {
 		return fmt.Errorf("could not stat %q: %w", childPath, err)
 	}
-	if err := grantNode(childPath, child, sid, isDir(attrs)); err != nil {
+	if err := grantNode(childPath, child, sid, dir); err != nil {
 		return err
 	}
-	if !shouldRecurse(attrs, tag) {
+	if !dir || surrogate {
 		return nil
 	}
 	return grantChildren(child, childPath, sid, depth+1)
