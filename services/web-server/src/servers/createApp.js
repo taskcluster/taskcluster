@@ -38,8 +38,14 @@ export default async ({ cfg, strategies, auth, monitor, db, api }) => {
   };
   const thirdPartyCorsOptions = {
     ...corsOptions,
+    // `redirectUri` is a list, so every entry must be considered: passing the
+    // list to `new URL` would silently resolve to just the first entry's origin.
     origin: cfg.login.registeredClients
-      ? [...new Set([].concat(...cfg.login.registeredClients.map(({ redirectUri }) => new URL(redirectUri).origin)))]
+      ? [
+          ...new Set(
+            cfg.login.registeredClients.flatMap(({ redirectUri }) => redirectUri.map(uri => new URL(uri).origin))
+          ),
+        ]
       : false,
   };
 
