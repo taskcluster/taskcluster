@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withApollo } from '@apollo/client/react/hoc';
+import { PurgeCache } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -8,9 +8,9 @@ import TextField from '../../../components/TextField';
 import Dashboard from '../../../components/Dashboard';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
-import purgeCacheQuery from './purgeCache.graphql';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@withApollo
+@withTaskclusterClient
 @withStyles(theme => ({
   contentSaveButtonSpan: {
     ...theme.mixins.fab,
@@ -34,14 +34,9 @@ export default class CreatePurgeCacheRequest extends Component {
     this.setState({ error: null, actionLoading: true });
 
     try {
-      await this.props.client.mutate({
-        mutation: purgeCacheQuery,
-        variables: {
-          provisionerId,
-          workerType,
-          payload: { cacheName },
-        },
-      });
+      await this.props
+        .createTaskclusterClient({ Class: PurgeCache })
+        .purgeCache(`${provisionerId}/${workerType}`, { cacheName });
 
       this.setState({ error: null, actionLoading: false });
 
