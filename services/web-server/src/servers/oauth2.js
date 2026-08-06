@@ -175,14 +175,18 @@ export default (cfg, db, strategies, auth, monitor) => {
    */
   server.exchange(
     oauth2orize.exchange.code(
-      unpromisify(async (_client, code, redirectURI) => {
+      unpromisify(async (_client, code, redirectURI, params) => {
+        if (typeof params.client_id !== 'string' || !params.client_id) {
+          throw new oauth2orize.TokenError('Missing required parameter: client_id', 'invalid_request');
+        }
+
         const [entry] = await db.fns.consume_authorization_code(code);
 
         if (!entry) {
           return false;
         }
 
-        if (redirectURI !== entry.redirect_uri) {
+        if (params.client_id !== entry.client_id || redirectURI !== entry.redirect_uri) {
           return false;
         }
 
