@@ -1,6 +1,7 @@
 ---
 title: Third Party
 ---
+import SchemaTable from '@taskcluster/ui/components/SchemaTable'
 
 For a third party to get Taskcluster credentials, it first needs to have a client registered
 in the deployment configuration of the web-server service. This is governed by the `REGISTERED_CLIENTS` configuration.
@@ -13,4 +14,9 @@ This is an array of clients where each client has the following properties:
 | `scope` | ✓ | An array of Taskcluser scopes the client is authorized to receive. This can end with `*`. |
 | `redirectUri` | ✓ | An array of URIs to which the server is allowed to redirect the user.  |
 | `whitelisted` | | A boolean where if `true`, the redirect flow won't require user interaction. Note that user interaction will always be requested when `responseType=token`. |
+| `requirePkce` | | For authorization-code clients, require an S256 PKCE challenge. Defaults to `false` so existing clients can be migrated individually. |
 | `maxExpires` | ✓ | The maximum expiration time for issued Taskcluster credentials in a format that `@taskcluster/client`'s [`fromNow`](../../../clients/client#relative-date-time-utilities) method understands. |
+
+The configuration is validated against the following schema when the service starts.
+
+<SchemaTable schema="/schemas/web-server/v1/registered-clients.json#" />
