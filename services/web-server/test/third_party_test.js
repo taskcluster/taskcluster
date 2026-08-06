@@ -24,6 +24,26 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     return new URLSearchParams(url.slice(qmark + 1));
   };
 
+  const issueAuthorizationCode = async (
+    agent,
+    { clientId = 'test-code-whitelisted', redirectUri = 'https://test.example.com/cb' } = {}
+  ) => {
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: 'tags:get:*',
+      state: 'abc123',
+    });
+
+    const res = await agent
+      .get(url(`/login/oauth/authorize?${params.toString()}`))
+      .redirects(0)
+      .ok(res => res.status === 302);
+
+    return getQuery(res.header.location);
+  };
+
   suite('unit', () => {
     test('authorization endpoint redirects to the third party page if user is not logged in', async () => {
       const registeredClientId = 'test-code';
@@ -409,6 +429,41 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       const query = getQuery(res.header.location);
 
       assert(query.get('code').length > 1);
+    });
+    test('invalid_request - client_id is required when exchanging an authorization code', async () => {
+      const agent = await helper.signedInAgent();
+      const redirectUri = 'https://test.example.com/cb';
+      const code = (await issueAuthorizationCode(agent)).get('code');
+
+      const [error, response] = await tryCatch(
+        agent
+          .post(url('/login/oauth/token'))
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .send('grant_type=authorization_code')
+          .send(`code=${code}`)
+          .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+      );
+
+      assert(!response);
+      assert.equal(error.response.body.error, 'invalid_request');
+    });
+    test('invalid_grant - client_id must match the authorization code', async () => {
+      const agent = await helper.signedInAgent();
+      const redirectUri = 'https://test.example.com/cb';
+      const code = (await issueAuthorizationCode(agent)).get('code');
+
+      const [error, response] = await tryCatch(
+        agent
+          .post(url('/login/oauth/token'))
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+          .send('grant_type=authorization_code')
+          .send(`code=${code}`)
+          .send(`redirect_uri=${encodeURIComponent(redirectUri)}`)
+          .send('client_id=test-code')
+      );
+
+      assert(!response);
+      assert.equal(error.response.body.error, 'invalid_grant');
     });
     test('invalid_grant - invalid code does not return an access token', async () => {
       const agent = await helper.signedInAgent();
