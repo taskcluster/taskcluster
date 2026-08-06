@@ -3,6 +3,83 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v104.0.0
+
+### GENERAL
+
+▶ [patch] [#8947](https://github.com/taskcluster/taskcluster/issues/8947)
+Worker-manager refuses to re-register worker if it is no longer in Running state or has expired.
+
+▶ [patch] [#8662](https://github.com/taskcluster/taskcluster/issues/8662)
+Github: display artifact size in check results
+
+### USERS
+
+▶ [MAJOR] [#8867](https://github.com/taskcluster/taskcluster/issues/8867)
+Pulse-triggered hooks now validate matching pulse message payloads against the hook's `triggerSchema` before creating a task.
+If a pulse message matches the hook's `bindings` but fails `triggerSchema` validation, the message is discarded and no task is created.
+This is a breaking change: previously `triggerSchema` was only enforced on the API and webhook paths, and pulse messages fired the hook regardless of their payload.
+Validation is unconditional, including for hooks that did not set a `triggerSchema`: the default schema only accepts an empty payload, so such a hook will no longer fire on pulse messages that carry a payload.
+Before upgrading, review all hooks with pulse `bindings` and make sure each `triggerSchema` accepts the pulse payloads that should still create tasks. Once deployed,  "Debug Bindings" feature will be available in the UI.
+
+▶ [minor] [bug 2056618](http://bugzil.la/2056618)
+Fixes a possible SSRF in the github and web-server services, which download task artifacts. Both
+now resolve artifacts through the queue's artifact API and refuse to fetch a `reference` artifact,
+whose URL is supplied by the task; `s3`, `link`, and `object` artifacts, whose URLs the queue
+derives itself, are unaffected. The JS client exposes this as `downloadManagedArtifact`.
+
+Two visible consequences:
+
+- An artifact named by `customCheckRun.textArtifactName` or `annotationsArtifactName` must be a stored artifact. A `reference` now produces an explanatory comment on the commit instead of being fetched.
+- The task log profiler cannot read a running task's `live.log`, which is a `reference` to the livelog server by design. It falls back to `live_backing.log`, so resolved tasks are unaffected.
+
+▶ [minor] [#8867](https://github.com/taskcluster/taskcluster/issues/8867)
+The hook page now has a **Debug bindings** button that opens a Pulse-binding debugger drawer.
+It watches the Pulse messages arriving on the hook's saved bindings and shows, per message, whether the payload passes the hook's `triggerSchema` or is .
+This makes it easy to see why a Pulse-triggered hook is silently not firing after `triggerSchema` validation was introduced, without reading server logs.
+
+▶ [patch] [#8711](https://github.com/taskcluster/taskcluster/issues/8711)
+The /tasks and /tasks/groups pages now show up to 20 recently viewed tasks/task groups
+with task name, queue, age and status information instead of 5 bare identifiers.
+
+### DEVELOPERS
+
+▶ [patch] [#8978](https://github.com/taskcluster/taskcluster/issues/8978)
+UI Roles page switches from GraphQL to direct service calls
+
+▶ [patch] [#8901](https://github.com/taskcluster/taskcluster/issues/8901)
+UI Secrets page switches from GraphQL to direct service calls
+
+### Automated Package Updates
+
+<details>
+<summary>22 Dependabot updates</summary>
+
+* build(deps): bump fast-uri from 3.1.4 to 3.1.5 (9ec1e2f0ee)
+* build(deps): bump undici from 6.27.0 to 6.28.0 (1993dfad4a)
+* build(deps): bump fast-uri from 3.1.4 to 3.1.5 in /ui (6dc4f9e3b1)
+* build(deps): bump undici from 6.27.0 to 6.28.0 in /clients/client-web (86b3c8569f)
+* build(deps): bump undici from 7.28.0 to 7.29.0 in /ui (2b83dffa9b)
+* build(deps): bump the ui-node-deps group across 1 directory with 13 updates (e8439a87e4)
+* build(deps): bump the client-web-node-deps group across 1 directory with 4 updates (5d6d4e7217)
+* build(deps): bump @material-ui/lab in /ui (a13e2be347)
+* build(deps-dev): bump mock-fs from 4.14.0 to 5.5.0 (b2a476a418)
+* build(deps): bump the client-node-deps group across 1 directory with 2 updates (bb3268eedb)
+* build(deps-dev): bump inquirer from 8.2.6 to 14.0.2 (fed048390d)
+* build(deps): bump the node-deps group with 16 updates (06d8ed7352)
+* build(deps): bump actions/setup-node from 6.4.0 to 7.0.0 (7944eb2b61)
+* build(deps): bump actions/setup-go from 6.5.0 to 7.0.0 (743768211b)
+* build(deps): bump the gh-actions-deps group with 4 updates (26bde2f60a)
+* build(deps): bump js-yaml from 4.3.0 to 4.3.1 (4356626955)
+* build(deps): bump base64 from 0.22.1 to 0.23.0 in /clients/client-rust (4ca6e5477f)
+* build(deps): bump the client-rust-deps group (95c00a1d65)
+* build(deps): bump the go-deps group with 4 updates (2fa0298778)
+* build(deps): bump brace-expansion from 1.1.16 to 1.1.18 (e5af7760f5)
+* build(deps): bump github.com/sigstore/sigstore-go from 1.2.0 to 1.2.1 (ae34f5f926)
+* build(deps): bump brace-expansion from 1.1.16 to 1.1.18 in /ui (524150396f)
+
+</details>
+
 ## v103.0.1
 
 ### WORKER-DEPLOYERS

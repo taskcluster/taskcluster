@@ -9,7 +9,7 @@ import (
 
 	"context"
 
-	gwruntime "github.com/taskcluster/taskcluster/v103/workers/generic-worker/runtime"
+	gwruntime "github.com/taskcluster/taskcluster/v104/workers/generic-worker/runtime"
 )
 
 type PlatformData struct {

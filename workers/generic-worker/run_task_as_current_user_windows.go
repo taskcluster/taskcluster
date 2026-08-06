@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/taskcluster/taskcluster/v103/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v103/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v104/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v104/workers/generic-worker/process"
 )
 
 func (r *RunTaskAsCurrentUserTask) resetPlatformData() {

@@ -1,6 +1,6 @@
 {
   "name": "@taskcluster/client-web",
-  "version": "103.0.1",
+  "version": "104.0.0",
   "type": "module",
   "main": "src/index.js",
   "exports": "./src/index.js",
