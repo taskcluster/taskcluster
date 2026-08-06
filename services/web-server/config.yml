@@ -139,6 +139,8 @@ test:
       scope: ["tags:get:*"]
       redirectUri:
         - 'https://test.example.com/cb'
+        # a second origin, so that CORS covers every redirectUri and not just the first
+        - 'https://second.example.com/cb'
       whitelisted: false
       maxExpires: '1 year'
     - clientId: test-code-whitelisted

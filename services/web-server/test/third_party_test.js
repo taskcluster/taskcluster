@@ -80,6 +80,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         /responseType must be equal to constant/
       );
     });
+    test('CORS allows every registered redirectUri origin, not just the first', async () => {
+      // `test-code` is registered with redirect URIs on two different origins
+      for (const origin of ['https://test.example.com', 'https://second.example.com']) {
+        const res = await request
+          .options(url('/login/oauth/token'))
+          .set('origin', origin)
+          .set('access-control-request-method', 'POST');
+
+        assert.equal(res.header['access-control-allow-origin'], origin, `expected ${origin} to be an allowed origin`);
+      }
+    });
     test('authorization endpoint redirects to the third party page if user is not logged in', async () => {
       const registeredClientId = 'test-code';
       const query = new URLSearchParams({
