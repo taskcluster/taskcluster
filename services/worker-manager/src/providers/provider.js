@@ -198,9 +198,17 @@ export class Provider {
     const created = worker.created?.getTime?.();
     const lifecycle = Provider.getWorkerManagerData(worker);
     const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    // Capture the set-once stoppedAt BEFORE building the log fields so that
+    // deprovisionDuration is non-null in the authoritative workerStopped log
+    // (stoppedAt is persisted here, not by the post-log _recordWorkerStopped).
+    const stoppedAtMs = await this._ensureStoppedAt(worker);
+    const removedAtMs = Provider.timestampToMs(Provider.getWorkerManagerData(worker)?.removedAt);
     const extraLog = {
       workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
-      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
+      runningDuration:
+        Number.isFinite(removedAtMs) && Number.isFinite(registeredAt) ? (removedAtMs - registeredAt) / 1000 : null,
+      deprovisionDuration:
+        Number.isFinite(stoppedAtMs) && Number.isFinite(removedAtMs) ? (stoppedAtMs - removedAtMs) / 1000 : null,
     };
     return this._onWorkerEvent({ worker, event: 'workerStopped', extraLog });
   }
@@ -213,12 +221,15 @@ export class Provider {
   async onWorkerRemoved({ worker, reason = 'unknown' }) {
     const now = Date.now();
     const created = worker.created?.getTime?.();
-    const lifecycle = Provider.getWorkerManagerData(worker);
-    const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
+    const registeredAt = Provider.timestampToMs(Provider.getWorkerManagerData(worker)?.registeredAt);
+    // Capture the set-once removedAt BEFORE building the log fields so that
+    // runningDuration is anchored at the persisted (race-safe) removal time.
+    const removedAtMs = await this._ensureRemovedAt(worker);
     const extraLog = {
       reason,
       workerAge: Number.isFinite(created) ? (now - created) / 1000 : null,
-      runningDuration: Number.isFinite(registeredAt) ? (now - registeredAt) / 1000 : null,
+      runningDuration:
+        Number.isFinite(removedAtMs) && Number.isFinite(registeredAt) ? (removedAtMs - registeredAt) / 1000 : null,
     };
     return this._onWorkerEvent({
       worker,
@@ -307,26 +318,31 @@ export class Provider {
   }
 
   /**
-   * Track worker lifetime
+   * Track worker lifetime. This runs for both terminal events (workerRemoved
+   * and workerStopped) via _recordWorkerMetrics; the `lifetimeRecorded` flag is
+   * its single-emission guard. The metric keeps its own semantics
+   * (registered -> first terminal event), independent of the log duration
+   * fields which are anchored at removedAt / stoppedAt.
+   *
+   * Note: this does NOT write `stoppedAt` — that is captured by
+   * `_ensureStoppedAt` on the stop path only. Writing it here would set it at
+   * remove time (the remove path also reaches this method) and later erase
+   * `deprovisionDuration` in `onWorkerStopped`.
    *
    * @param {import('../data.js').Worker} worker
    **/
   async _recordWorkerStopped(worker) {
     const lifecycle = Provider.getWorkerManagerData(worker);
-    if (lifecycle?.stoppedAt) {
+    if (lifecycle?.lifetimeRecorded) {
       return; // already recorded
     }
 
     const now = Date.now();
     const registeredAt = Provider.timestampToMs(lifecycle?.registeredAt);
-    const currentState = worker.state; // Capture state before it changes
 
     await worker.update(this.db, worker => {
       const lifecycleData = Provider.ensureWorkerManagerData(worker);
-      if (!lifecycleData.stoppedAt) {
-        lifecycleData.stoppedAt = new Date(now).toJSON();
-        lifecycleData.previousState = currentState;
-      }
+      lifecycleData.lifetimeRecorded = true;
     });
 
     if (Number.isFinite(registeredAt)) {
@@ -338,7 +354,7 @@ export class Provider {
           workerGroup: worker.workerGroup,
         });
       }
-    } else if (currentState === Worker.states.REQUESTED) {
+    } else if (worker.state === Worker.states.REQUESTED) {
       // Worker never made it to RUNNING state = registration failure
       this.monitor.metric.workerRegistrationFailure(1, {
         workerPoolId: worker.workerPoolId,
@@ -346,6 +362,64 @@ export class Provider {
         workerGroup: worker.workerGroup,
       });
     }
+  }
+
+  /**
+   * Persist `removedAt` (write-once) on the removal path and return its ms
+   * timestamp. The read-compare-write happens inside the `worker.update`
+   * callback (optimistic concurrency: etag-guarded UPDATE + retry on stale),
+   * and the value is re-read from the persisted state AFTER the update, so two
+   * concurrent terminal events cannot each emit a different "first" removal
+   * time — the loser reloads the winner's value and re-reads it. (INV-2/INV-5)
+   *
+   * @param {import('../data.js').Worker} worker
+   * @returns {Promise<number>}
+   */
+  async _ensureRemovedAt(worker) {
+    let removedAtMs = Provider.timestampToMs(Provider.getWorkerManagerData(worker)?.removedAt);
+    if (!Number.isFinite(removedAtMs)) {
+      const now = Date.now();
+      await worker.update(this.db, w => {
+        const d = Provider.ensureWorkerManagerData(w);
+        if (!d.removedAt) {
+          d.removedAt = new Date(now).toJSON();
+        }
+      });
+      // Re-read the persisted value: if a concurrent writer won, the update
+      // above was retried against the winner's data and returned it; this
+      // returns the winner's removedAt, not our local `now`. (INV-5)
+      removedAtMs = Provider.timestampToMs(Provider.getWorkerManagerData(worker)?.removedAt) ?? now;
+    }
+    return removedAtMs;
+  }
+
+  /**
+   * Persist `stoppedAt` (write-once) on the stop path and return its ms
+   * timestamp, capturing the worker's state into `previousState` on first
+   * write. Same concurrency-safe shape as `_ensureRemovedAt`: read-compare-write
+   * inside `worker.update` + re-read of the persisted value after. Called by
+   * `onWorkerStopped` BEFORE building its log fields so that
+   * `deprovisionDuration` is non-null in the authoritative workerStopped log.
+   *
+   * @param {import('../data.js').Worker} worker
+   * @returns {Promise<number>}
+   */
+  async _ensureStoppedAt(worker) {
+    let stoppedAtMs = Provider.timestampToMs(Provider.getWorkerManagerData(worker)?.stoppedAt);
+    if (!Number.isFinite(stoppedAtMs)) {
+      const now = Date.now();
+      const currentState = worker.state;
+      await worker.update(this.db, w => {
+        const d = Provider.ensureWorkerManagerData(w);
+        if (!d.stoppedAt) {
+          d.stoppedAt = new Date(now).toJSON();
+          d.previousState = currentState;
+        }
+      });
+      // Re-read the persisted value (see _ensureRemovedAt). (INV-5)
+      stoppedAtMs = Provider.timestampToMs(Provider.getWorkerManagerData(worker)?.stoppedAt) ?? now;
+    }
+    return stoppedAtMs;
   }
 
   /**
