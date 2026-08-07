@@ -436,32 +436,37 @@ export async function jobHandler(message) {
 
   // Create tasks (if present)
   if (graphConfig.tasks && graphConfig.tasks.length > 0) {
-    let routes;
-    let taskGroupId;
-
+    const taskGroupMap = new Map();
     try {
-      routes = graphConfig.tasks[0].task.routes;
-      taskGroupId = graphConfig.tasks[0].task.taskGroupId;
+      for (const { task } of graphConfig.tasks) {
+        if (!taskGroupMap.has(task.taskGroupId)) {
+          taskGroupMap.set(task.taskGroupId, task.routes);
+        }
+      }
     } catch (e) {
       return await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e });
     }
 
-    const build = await createGithubBuildRecord({
-      context,
-      organization,
-      repository,
-      sha,
-      taskGroupId,
-      groupState,
-      installationId: message.payload.installationId,
-      eventType: message.payload.details['event.type'],
-      eventId: message.payload.eventId,
-      pullNumber,
-      debug,
-    });
+    const builds = await Promise.all(
+      [...taskGroupMap.keys()].map(taskGroupId =>
+        createGithubBuildRecord({
+          context,
+          organization,
+          repository,
+          sha,
+          taskGroupId,
+          groupState,
+          installationId: message.payload.installationId,
+          eventType: message.payload.details['event.type'],
+          eventId: message.payload.eventId,
+          pullNumber,
+          debug,
+        }),
+      ),
+    );
 
     try {
-      debug(`Creating tasks for ${organization}/${repository}@${sha} (taskGroupId: ${taskGroupId})`);
+      debug(`Creating tasks for ${organization}/${repository}@${sha} (${taskGroupMap.size} task group(s))`);
       await this.createTasks({ scopes: graphConfig.scopes, tasks: graphConfig.tasks });
     } catch (e) {
       debug(`Creating tasks for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`);
@@ -470,28 +475,32 @@ export async function jobHandler(message) {
 
     // Only cancel previous tasks after we have successfully created new ones.
     // Cancel existing builds for non-default branches.
+    // All sibling builds from this event share the same event_id, so they are already
+    // excluded by the event_id filter inside cancelPreviousTaskGroups.
     if (graphConfig.autoCancelPreviousChecks !== false) {
       if (pullNumber || message.payload.body.ref !== defaultBranch) {
-        await this.cancelPreviousTaskGroups({ instGithub, debug, newBuild: build });
+        await this.cancelPreviousTaskGroups({ instGithub, debug, newBuild: builds[0] });
       }
     }
 
-    try {
-      debug(`Publishing status exchange for ${organization}/${repository}@${sha} (${groupState})`);
-      await context.publisher.taskGroupCreationRequested(
-        {
-          taskGroupId,
-          organization: organization.replace(/\./g, '%'),
-          repository: repository.replace(/\./g, '%'),
-        },
-        routes
-      );
-    } catch (e) {
-      debug(`Failed to publish to taskGroupCreationRequested exchange.
-      Parameters: ${taskGroupId}, ${organization}, ${repository}, ${routes}`);
-      debug(`Stack: ${e.stack}`);
-      return debug(`Failed to publish to taskGroupCreationRequested exchange
-      for ${organization}/${repository}@${sha} with the error: ${stringify(e, null, 2)}`);
+    for (const [taskGroupId, routes] of taskGroupMap.entries()) {
+      try {
+        debug(`Publishing status exchange for ${organization}/${repository}@${sha} (${groupState}, taskGroupId: ${taskGroupId})`);
+        await context.publisher.taskGroupCreationRequested(
+          {
+            taskGroupId,
+            organization: organization.replace(/\./g, '%'),
+            repository: repository.replace(/\./g, '%'),
+          },
+          routes
+        );
+      } catch (e) {
+        debug(`Failed to publish to taskGroupCreationRequested exchange.
+        Parameters: ${taskGroupId}, ${organization}, ${repository}, ${routes}`);
+        debug(`Stack: ${e.stack}`);
+        return debug(`Failed to publish to taskGroupCreationRequested exchange
+        for ${organization}/${repository}@${sha} with the error: ${stringify(e, null, 2)}`);
+      }
     }
   }
 
