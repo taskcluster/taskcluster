@@ -240,8 +240,8 @@ export async function statusHandler(message) {
         }
         // Add the formatted size to the name if the size exists
         let displayName = element.name;
-        if (element.size !== undefined) {
-          displayName = `${element.name} (${formatBytes(element.size)})`;
+        if (element.contentLength != null) {
+          displayName = `${element.name} (${formatBytes(element.contentLength)})`;
         }
         const ARTIFACT_LINK = markdownAnchor(displayName, artifactUrl);
 
