@@ -28,7 +28,7 @@ import { withAuth } from '../../utils/Auth';
 export default class SidebarList extends Component {
   render() {
     const { user } = this.props;
-    const clientId = user?.credentials.clientId;
+    const clientId = user?.credentials?.clientId;
 
     return (
       <List disablePadding>
