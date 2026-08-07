@@ -62,10 +62,10 @@ export default class TaskLog extends Component {
         );
 
       if (match) {
-        name = match[1];
+        name = decodeURIComponent(match[1]);
       }
     } else {
-      name = rawName;
+      name = decodeURIComponent(rawName);
     }
 
     return getArtifactUrl({ user, taskId, runId, name });
