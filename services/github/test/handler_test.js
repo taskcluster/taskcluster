@@ -216,7 +216,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         for (let i = 0; i < options.limit; i++) {
           artifacts.push({
             name: `artifact-${i}`,
-            size: deterministicArtifactSize(i),
+            contentLength: deterministicArtifactSize(i),
           });
         }
         return Promise.resolve({ artifacts });
