@@ -136,6 +136,11 @@ export default defineConfig(({ mode }) => ({
         ws: true,
         changeOrigin: true,
       },
+      '/events': {
+        target: subscriptionTarget,
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
   build: {

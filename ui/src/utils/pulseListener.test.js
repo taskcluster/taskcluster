@@ -1,35 +1,82 @@
 import subscribeToPulseMessages from './pulseListener';
 
-// A fake Apollo client that captures the subscription request and exposes the
-// observer callbacks so tests can drive `next` / `error`.
-const makeFakeClient = () => {
-  const unsubscribe = vi.fn();
-  const captured = {};
+// A minimal WebSocket stub that lets tests drive the protocol.
+class FakeWebSocket {
+  constructor(url) {
+    this.url = url;
+    this.sent = [];
+    this.readyState = FakeWebSocket.CONNECTING;
+    FakeWebSocket._lastInstance = this;
+  }
 
-  const client = {
-    subscribe: vi.fn(request => {
-      captured.request = request;
+  send(data) {
+    this.sent.push(JSON.parse(data));
+  }
 
-      return {
-        subscribe: ({ next, error }) => {
-          captured.next = next;
-          captured.error = error;
+  close() {
+    this.readyState = FakeWebSocket.CLOSED;
+    if (this.onclose) {
+      this.onclose({ wasClean: true, code: 1000 });
+    }
+  }
 
-          return { unsubscribe };
-        },
-      };
-    }),
-  };
+  simulateOpen() {
+    this.readyState = FakeWebSocket.OPEN;
+    if (this.onopen) {
+      this.onopen();
+    }
+  }
 
-  return { client, captured, unsubscribe };
-};
+  simulateMessage(frame) {
+    if (this.onmessage) {
+      this.onmessage({ data: JSON.stringify(frame) });
+    }
+  }
+
+  simulateError() {
+    if (this.onerror) {
+      this.onerror(new Event('error'));
+    }
+  }
+
+  simulateClose(code = 1006, wasClean = false) {
+    this.readyState = FakeWebSocket.CLOSED;
+    if (this.onclose) {
+      this.onclose({ code, wasClean });
+    }
+  }
+}
+
+FakeWebSocket.CONNECTING = 0;
+FakeWebSocket.OPEN = 1;
+FakeWebSocket.CLOSING = 2;
+FakeWebSocket.CLOSED = 3;
+
+beforeEach(() => {
+  window.env = { EVENT_WEBSOCKET_ENDPOINT: 'http://localhost/events' };
+  vi.stubGlobal('WebSocket', FakeWebSocket);
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('subscribeToPulseMessages', () => {
-  it('normalizes routingKeyPattern bindings to { exchange, pattern } and drops __typename', () => {
-    const { client, captured } = makeFakeClient();
+  it('sends connection_init on open', () => {
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError: vi.fn(),
+    });
 
+    const ws = FakeWebSocket._lastInstance;
+
+    ws.simulateOpen();
+
+    expect(ws.sent[0]).toEqual({ type: 'connection_init' });
+  });
+
+  it('normalizes routingKeyPattern bindings to { exchange, pattern }', () => {
     subscribeToPulseMessages(
-      client,
       [
         {
           exchange: 'exchange/foo/v1/thing',
@@ -40,80 +87,169 @@ describe('subscribeToPulseMessages', () => {
       { onMessage: vi.fn(), onError: vi.fn() }
     );
 
-    expect(captured.request.variables.subscriptions).toEqual([
+    const ws = FakeWebSocket._lastInstance;
+
+    ws.simulateOpen();
+    ws.simulateMessage({ type: 'connection_ack' });
+
+    const subscribeFrame = ws.sent.find(f => f.type === 'subscribe');
+
+    expect(subscribeFrame.bindings).toEqual([
       { exchange: 'exchange/foo/v1/thing', pattern: '#.bar.#' },
     ]);
+    // The server mints the subscriptionId; the client must not send one.
+    expect(subscribeFrame).not.toHaveProperty('subscriptionId');
   });
 
   it('accepts pattern-shaped bindings unchanged (PulseMessages view)', () => {
-    const { client, captured } = makeFakeClient();
-
     subscribeToPulseMessages(
-      client,
       [{ exchange: 'exchange/foo/v1/thing', pattern: '#' }],
       { onMessage: vi.fn(), onError: vi.fn() }
     );
 
-    expect(captured.request.variables.subscriptions).toEqual([
+    const ws = FakeWebSocket._lastInstance;
+
+    ws.simulateOpen();
+    ws.simulateMessage({ type: 'connection_ack' });
+
+    const subscribeFrame = ws.sent.find(f => f.type === 'subscribe');
+
+    expect(subscribeFrame.bindings).toEqual([
       { exchange: 'exchange/foo/v1/thing', pattern: '#' },
     ]);
   });
 
-  it('strips the envelope top-level __typename but preserves __typename inside the payload', () => {
-    const { client, captured } = makeFakeClient();
+  it('calls onMessage with the message from data frames', () => {
     const onMessage = vi.fn();
+    const msg = {
+      exchange: 'e',
+      routingKey: 'rk',
+      payload: { value: 1 },
+      redelivered: false,
+      cc: [],
+    };
 
-    subscribeToPulseMessages(
-      client,
-      [{ exchange: 'e', routingKeyPattern: '#' }],
-      { onMessage, onError: vi.fn() }
-    );
-
-    captured.next({
-      data: {
-        pulseMessages: {
-          __typename: 'PulseMessage',
-          exchange: 'e',
-          routingKey: 'rk',
-          payload: { __typename: 'not-graphql', value: 1 },
-        },
-      },
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage,
+      onError: vi.fn(),
     });
 
-    const delivered = onMessage.mock.calls[0][0];
+    const ws = FakeWebSocket._lastInstance;
 
-    expect(delivered.__typename).toBeUndefined();
-    expect(delivered.exchange).toBe('e');
-    // the payload is the raw message body and must NOT be recursively stripped
-    expect(delivered.payload).toEqual({ __typename: 'not-graphql', value: 1 });
+    ws.simulateOpen();
+    ws.simulateMessage({ type: 'connection_ack' });
+    ws.simulateMessage({ type: 'subscribe_ack', subscriptionId: 'srv-1' });
+    ws.simulateMessage({ type: 'data', subscriptionId: 'srv-1', message: msg });
+
+    expect(onMessage).toHaveBeenCalledWith(msg);
   });
 
-  it('forwards subscription errors to onError', () => {
-    const { client, captured } = makeFakeClient();
+  it('calls onError when an error frame is received', () => {
     const onError = vi.fn();
-    const err = new Error('boom');
 
-    subscribeToPulseMessages(client, [{ exchange: 'e', pattern: '#' }], {
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
       onMessage: vi.fn(),
       onError,
     });
 
-    captured.error(err);
+    const ws = FakeWebSocket._lastInstance;
 
-    expect(onError).toHaveBeenCalledWith(err);
+    ws.simulateOpen();
+    ws.simulateMessage({ type: 'connection_ack' });
+    ws.simulateMessage({
+      type: 'error',
+      code: 'SubscriptionError',
+      message: 'boom',
+    });
+
+    expect(onError).toHaveBeenCalledWith(new Error('boom'));
   });
 
-  it('returns a teardown fn that unsubscribes the observer', () => {
-    const { client, unsubscribe } = makeFakeClient();
+  it('calls onError on WebSocket error', () => {
+    const onError = vi.fn();
 
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError,
+    });
+
+    FakeWebSocket._lastInstance.simulateError();
+
+    expect(onError).toHaveBeenCalledWith(expect.any(Error));
+  });
+
+  it('calls onError on unexpected close', () => {
+    const onError = vi.fn();
+
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError,
+    });
+
+    FakeWebSocket._lastInstance.simulateClose(1006, false);
+
+    expect(onError).toHaveBeenCalledWith(expect.any(Error));
+  });
+
+  it('returns a teardown fn that sends unsubscribe and closes', () => {
     const teardown = subscribeToPulseMessages(
-      client,
       [{ exchange: 'e', pattern: '#' }],
       { onMessage: vi.fn(), onError: vi.fn() }
     );
 
-    expect(unsubscribe).not.toHaveBeenCalled();
+    const ws = FakeWebSocket._lastInstance;
+
+    ws.simulateOpen();
+    ws.simulateMessage({ type: 'connection_ack' });
+    ws.simulateMessage({ type: 'subscribe_ack', subscriptionId: 'srv-1' });
+
     teardown();
-    expect(unsubscribe).toHaveBeenCalledTimes(1);
+
+    const unsubFrame = ws.sent.find(f => f.type === 'unsubscribe');
+
+    expect(unsubFrame).toEqual({
+      type: 'unsubscribe',
+      subscriptionId: 'srv-1',
+    });
+    expect(ws.readyState).toBe(FakeWebSocket.CLOSED);
+  });
+
+  it('tears down without sending unsubscribe when no id was assigned yet', () => {
+    const teardown = subscribeToPulseMessages(
+      [{ exchange: 'e', pattern: '#' }],
+      { onMessage: vi.fn(), onError: vi.fn() }
+    );
+
+    const ws = FakeWebSocket._lastInstance;
+
+    ws.simulateOpen();
+    ws.simulateMessage({ type: 'connection_ack' });
+
+    // Teardown before subscribe_ack arrives: no id to unsubscribe, just close.
+    teardown();
+
+    expect(ws.sent.find(f => f.type === 'unsubscribe')).toBeUndefined();
+    expect(ws.readyState).toBe(FakeWebSocket.CLOSED);
+  });
+
+  it('does not call onError after teardown', () => {
+    const onError = vi.fn();
+    const teardown = subscribeToPulseMessages(
+      [{ exchange: 'e', pattern: '#' }],
+      { onMessage: vi.fn(), onError }
+    );
+
+    const ws = FakeWebSocket._lastInstance;
+
+    ws.simulateOpen();
+    ws.simulateMessage({ type: 'connection_ack' });
+
+    teardown();
+
+    // Simulate a late error/close after deliberate teardown — must be ignored.
+    ws.simulateError();
+    ws.simulateClose(1006, false);
+
+    expect(onError).not.toHaveBeenCalled();
   });
 });

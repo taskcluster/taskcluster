@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { arrayOf, bool, func, object } from 'prop-types';
 import classNames from 'classnames';
-import { withApollo } from '@apollo/client/react/hoc';
 import { equals } from 'ramda';
 import { alpha, withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -33,7 +32,6 @@ const MISSING_SCOPE_MESSAGE =
   'web:read-pulse scope. Permission to view or modify this hook does not ' +
   'grant it. Ask an administrator for web:read-pulse, then try again.';
 
-@withApollo
 @withStyles(theme => ({
   drawerPaper: {
     width: '40vw',
@@ -128,8 +126,6 @@ export default class HookBindingDebugger extends Component {
     bindings: arrayOf(object).isRequired,
     /** The hook's saved triggerSchema. */
     triggerSchema: object.isRequired,
-    /** Apollo client, injected by withApollo. */
-    client: object.isRequired,
   };
 
   // Teardown fn for the active subscription; cleared after it runs.
@@ -241,14 +237,10 @@ export default class HookBindingDebugger extends Component {
     this.teardown();
     this.setState({ listening: true, error: null });
 
-    this.unsubscribeFn = subscribeToPulseMessages(
-      this.props.client,
-      this.props.bindings,
-      {
-        onMessage: this.handleMessage,
-        onError: this.handleError,
-      }
-    );
+    this.unsubscribeFn = subscribeToPulseMessages(this.props.bindings, {
+      onMessage: this.handleMessage,
+      onError: this.handleError,
+    });
   };
 
   handleStopListening = () => {

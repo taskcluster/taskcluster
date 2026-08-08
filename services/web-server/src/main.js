@@ -25,7 +25,7 @@ import formatError from './servers/formatError.js';
 import clients from './clients.js';
 import createContext from './createContext.js';
 import createSchema from './createSchema.js';
-import createSubscriptionServer from './servers/createSubscriptionServer.js';
+import createEventsServer from './servers/createEventsServer.js';
 import resolvers from './resolvers/index.js';
 import typeDefs from './graphql/index.js';
 import PulseEngine from './PulseEngine/index.js';
@@ -173,8 +173,8 @@ const load = loader(
     },
 
     httpServer: {
-      requires: ['cfg', 'app', 'schema', 'context', 'monitor', 'authFactory'],
-      setup: async ({ cfg, app, schema, context, monitor, authFactory }) => {
+      requires: ['cfg', 'app', 'schema', 'context', 'monitor', 'authFactory', 'pulseEngine', 'clients'],
+      setup: async ({ cfg, app, schema, context, monitor, authFactory, pulseEngine, clients }) => {
         const httpServer = createServer(app);
         const server = new ApolloServer({
           schema,
@@ -199,13 +199,13 @@ const load = loader(
           })
         );
 
-        createSubscriptionServer({
+        createEventsServer({
           cfg,
-          server: httpServer, // this attaches itself directly to the server
-          schema,
-          context,
-          path: '/subscription',
+          server: httpServer,
+          pulseEngine,
+          clients,
           authFactory,
+          monitor: monitor.childMonitor('events'),
         });
 
         return httpServer;
