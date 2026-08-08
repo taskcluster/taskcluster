@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
-import dotProp from 'dot-prop-immutable';
+import { Queue } from '@taskcluster/client-web';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -8,11 +7,12 @@ import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';
 import WorkerTypesTable from '../../../components/WorkerTypesTable';
 import Dashboard from '../../../components/Dashboard';
-import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../../utils/constants';
 import ErrorPanel from '../../../components/ErrorPanel';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
-import workerTypesQuery from './workerTypes.graphql';
+import withPaginatedResource from '../../../hocs/withPaginatedResource';
+import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../../utils/constants';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
 @withStyles(theme => ({
   bar: {
@@ -30,56 +30,83 @@ import workerTypesQuery from './workerTypes.graphql';
     ...theme.mixins.link,
   },
 }))
-@graphql(workerTypesQuery, {
-  skip: props => !props.match.params.provisionerId,
-  options: ({
-    match: {
-      params: { provisionerId },
-    },
-  }) => ({
-    variables: {
-      provisionerId,
-      workerTypesConnection: {
-        limit: VIEW_WORKER_TYPES_PAGE_SIZE,
-      },
-    },
+@withTaskclusterClient
+@withPaginatedResource({
+  fetch:
+    props =>
+    ({ provisionerId, ...options }) =>
+      props
+        .createTaskclusterClient({ Class: Queue })
+        .listWorkerTypes(props.match.params.provisionerId, options),
+  // provisionerId is included so the query re-runs when the dropdown changes;
+  // it is stripped back out in `fetch` before hitting the client.
+  payload: props => ({
+    provisionerId: props.match.params.provisionerId,
+    limit: VIEW_WORKER_TYPES_PAGE_SIZE,
   }),
+  select: response => response.workerTypes,
 })
 export default class ViewWorkerTypes extends Component {
-  handlePageChange = ({ cursor, previousCursor }) => {
-    const {
-      match: {
-        params: { provisionerId },
-      },
-      data: { fetchMore },
-    } = this.props;
+  state = {
+    provisioners: [],
+    pendingTasks: {},
+  };
 
-    return fetchMore({
-      query: workerTypesQuery,
-      variables: {
-        provisionerId,
-        workerTypesConnection: {
-          limit: VIEW_WORKER_TYPES_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(previousResult, { fetchMoreResult: { workerTypes } }) {
-        const { edges, pageInfo } = workerTypes;
+  // Guards against out-of-order pendingTasks responses when the worker-type
+  // page changes while a batch of per-row lookups is still in flight.
+  pendingTasksRequestId = 0;
 
-        if (!edges.length) {
-          return previousResult;
+  async componentDidMount() {
+    await this.fetchProvisioners();
+    this.fetchPendingTasks();
+  }
+
+  componentDidUpdate(prevProps) {
+    // `items` only gets a new reference when the paginated resource resolves a
+    // new page (or provisioner); our own setState calls keep the same one.
+    if (prevProps.items !== this.props.items) {
+      this.fetchPendingTasks();
+    }
+  }
+
+  get queue() {
+    return this.props.createTaskclusterClient({ Class: Queue });
+  }
+
+  fetchProvisioners = async () => {
+    try {
+      const { provisioners } = await this.queue.listProvisioners();
+
+      this.setState({ provisioners });
+    } catch {
+      // The dropdown just stays empty; the table error panel covers real
+      // failures on this page.
+    }
+  };
+
+  fetchPendingTasks = async () => {
+    const workerTypes = this.props.items;
+    const requestId = ++this.pendingTasksRequestId;
+    const { queue } = this;
+    const entries = await Promise.all(
+      workerTypes.map(async ({ taskQueueId, provisionerId, workerType }) => {
+        const key = taskQueueId || `${provisionerId}/${workerType}`;
+
+        try {
+          const { pendingTasks } = await queue.taskQueueCounts(key);
+
+          return [key, pendingTasks];
+        } catch {
+          return [key, undefined];
         }
+      })
+    );
 
-        return dotProp.set(previousResult, `workerTypes`, workerTypes =>
-          dotProp.set(
-            dotProp.set(workerTypes, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
-        );
-      },
-    });
+    if (requestId !== this.pendingTasksRequestId) {
+      return;
+    }
+
+    this.setState({ pendingTasks: Object.fromEntries(entries) });
   };
 
   handleProvisionerChange = ({ target }) => {
@@ -92,14 +119,33 @@ export default class ViewWorkerTypes extends Component {
       match: {
         params: { provisionerId },
       },
-      data: { loading, error, provisioners, workerTypes },
+      items,
+      loading,
+      error,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      nextPage,
+      previousPage,
     } = this.props;
+    const { provisioners, pendingTasks } = this.state;
+    const workerTypes = items.map(workerType => ({
+      ...workerType,
+      pendingTasks:
+        pendingTasks[
+          workerType.taskQueueId ||
+            `${workerType.provisionerId}/${workerType.workerType}`
+        ],
+    }));
+    // Separates the first load, which has nothing to show yet, from paging,
+    // where the table stays up and the pagination row spins.
+    const initialLoad = loading && !items.length;
 
     return (
       <Dashboard title="Worker Types">
-        {!workerTypes && loading && <Spinner loading />}
+        {initialLoad && <Spinner loading />}
         <ErrorPanel fixed error={error} />
-        {provisioners && workerTypes && (
+        {!initialLoad && (
           <Fragment>
             <div className={classes.bar}>
               <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
@@ -122,18 +168,22 @@ export default class ViewWorkerTypes extends Component {
                 <MenuItem value="">
                   <em>None</em>
                 </MenuItem>
-                {provisioners.edges.map(({ node }) => (
-                  <MenuItem key={node.provisionerId} value={node.provisionerId}>
-                    {node.provisionerId}
+                {provisioners.map(({ provisionerId: id }) => (
+                  <MenuItem key={id} value={id}>
+                    {id}
                   </MenuItem>
                 ))}
               </TextField>
             </div>
             <br />
             <WorkerTypesTable
-              workerTypesConnection={workerTypes}
-              provisionerId={provisionerId}
-              onPageChange={this.handlePageChange}
+              workerTypes={workerTypes}
+              loading={loading}
+              page={page}
+              hasNextPage={hasNextPage}
+              hasPreviousPage={hasPreviousPage}
+              onNextPage={nextPage}
+              onPreviousPage={previousPage}
             />
           </Fragment>
         )}
