@@ -178,14 +178,6 @@ type Task {
   rawDefinition: JSON
 }
 
-type IndexedTask {
-  namespace: String!
-  taskId: ID!
-  rank: Int!
-  data: JSON!
-  expires: DateTime!
-}
-
 type TasksEdge implements Edge {
   cursor: String
   node: Task
@@ -254,10 +246,6 @@ extend type Query {
 
   # List tasks that depend on the given `taskId`.
   dependents(taskId: ID!, connection: PageConnection): TasksConnection
-
-  # Find a task by index path, returning the highest-ranked task with that path.
-  # Will be empty if no task exists for the given path.
-  indexedTask(indexPath: String!): IndexedTask
 
   # Query multiple tasks by task ID.
   tasks(taskIds: [ID]!): [Task]

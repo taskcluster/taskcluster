@@ -28,7 +28,12 @@ export default function usePaginatedResource(fetch, { payload, select }) {
     setPrevQueryKey(queryKey);
     pageContinuationTokens.current = [null];
     setPage(0);
-    setState(prev => ({ ...prev, continuationToken: null }));
+    setState(prev => ({
+      ...prev,
+      items: [],
+      continuationToken: null,
+      loading: true,
+    }));
   }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: queryKey stands in for payload (stable across identity-only changes); fetch and select are stable per caller; reloadCount is an intentional refetch trigger.

@@ -1,56 +1,38 @@
 import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom';
-import { graphql } from '@apollo/client/react/hoc';
+import { Index, Queue } from '@taskcluster/client-web';
 import Spinner from '../../../../components/Spinner';
 import Dashboard from '../../../../components/Dashboard';
 import ErrorPanel from '../../../../components/ErrorPanel';
-import artifactsQuery from './artifacts.graphql';
-import indexedTaskQuery from './indexedTask.graphql';
+import { withTaskclusterClient } from '../../../../utils/TaskclusterClient';
+import withResource from '../../../../hocs/withResource';
 
-@graphql(indexedTaskQuery, {
-  name: 'indexedTaskData',
-  options: props => ({
-    variables: {
-      indexPath: `${props.match.params.namespace}.${props.match.params.namespaceTaskId}`,
-    },
-  }),
-})
-@graphql(artifactsQuery, {
-  name: 'latestArtifactsData',
-  options: ({ indexedTaskData }) => ({
-    variables: {
-      skip: !indexedTaskData.indexedTask,
-      taskId: indexedTaskData.indexedTask?.taskId,
-      entryConnection: {
-        limit: 1, // we don't need much for redirect, but we need the task
-      },
-    },
-  }),
+@withTaskclusterClient
+@withResource({
+  name: 'taskGroup',
+  fetch: props => async () => {
+    const index = props.createTaskclusterClient({ Class: Index });
+    const queue = props.createTaskclusterClient({ Class: Queue });
+    const found = await index.findTask(
+      `${props.match.params.namespace}.${props.match.params.namespaceTaskId}`
+    );
+    const task = await queue.task(found.taskId);
+
+    return task.taskGroupId;
+  },
+  key: props =>
+    `${props.match.params.namespace}.${props.match.params.namespaceTaskId}`,
 })
 export default class IndexedTaskTaskGroupRedirect extends Component {
   render() {
-    const {
-      latestArtifactsData: {
-        task,
-        error: latestArtifactsError,
-        loading: latestArtifactsLoading,
-      },
-      indexedTaskData: {
-        indexedTask,
-        error: indexedTaskError,
-        loading: indexedTaskLoading,
-      },
-    } = this.props;
-    const loading = latestArtifactsLoading || indexedTaskLoading;
+    const { data: taskGroupId, loading, error } = this.props.taskGroup;
 
     return (
       <Dashboard title="Index Task Group Redirect">
         {loading && <Spinner loading />}
-        {!loading && (
-          <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />
-        )}
-        {indexedTask && task?.taskGroupId && (
-          <Redirect to={`/tasks/groups/${task.taskGroupId}`} />
+        {!loading && <ErrorPanel fixed error={error} />}
+        {!loading && taskGroupId && (
+          <Redirect to={`/tasks/groups/${taskGroupId}`} />
         )}
       </Dashboard>
     );

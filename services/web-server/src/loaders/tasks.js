@@ -39,23 +39,12 @@ const downloadArtifactToBuffer = async ({ queue, taskId, name }) => {
   return Buffer.concat(chunks);
 };
 
-export default ({ queue, index }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
+export default ({ queue }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
   const task = new DataLoader(taskIds =>
     Promise.all(
       taskIds.map(async taskId => {
         try {
           return new Task(taskId, null, await queue.task(taskId));
-        } catch (err) {
-          return err;
-        }
-      })
-    )
-  );
-  const indexedTask = new DataLoader(indexPaths =>
-    Promise.all(
-      indexPaths.map(async indexPath => {
-        try {
-          return await index.findTask(indexPath);
         } catch (err) {
           return err;
         }
@@ -114,7 +103,6 @@ export default ({ queue, index }, _isAuthed, _rootUrl, _monitor, _strategies, _r
   return {
     dependents,
     task,
-    indexedTask,
     taskGroup,
     taskActions,
   };
