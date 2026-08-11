@@ -44,8 +44,7 @@ import {
   TASK_PAYLOAD_SCHEMAS,
 } from '../../../utils/constants';
 import urls from '../../../utils/urls';
-import { AuthContext } from '../../../utils/Auth';
-import { getClient } from '../../../utils/client';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 import Button from '../../../components/Button';
 import db from '../../../utils/db';
 import validateTaskPayloadSchemas from '../../../utils/validateTaskPayloadSchemas';
@@ -90,9 +89,8 @@ const defaultTask = schema => {
     whiteSpace: 'pre',
   },
 }))
+@withTaskclusterClient
 export default class CreateTask extends Component {
-  static contextType = AuthContext;
-
   static defaultProps = {
     interactive: false,
   };
@@ -205,7 +203,7 @@ export default class CreateTask extends Component {
       this.setState({ loading: true });
 
       try {
-        const queue = getClient({ Class: Queue, user: this.context.user });
+        const queue = this.props.createTaskclusterClient({ Class: Queue });
 
         await queue.createTask(taskId, payload);
 
