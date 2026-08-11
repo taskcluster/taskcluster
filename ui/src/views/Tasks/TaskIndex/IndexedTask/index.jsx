@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
-import dotProp from 'dot-prop-immutable';
+import { Index, Queue } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Spinner from '../../../../components/Spinner';
@@ -11,34 +10,47 @@ import IndexedEntry from '../../../../components/IndexedEntry';
 import { ARTIFACTS_PAGE_SIZE } from '../../../../utils/constants';
 import ErrorPanel from '../../../../components/ErrorPanel';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import artifactsQuery from './artifacts.graphql';
-import indexedTaskQuery from './indexedTask.graphql';
 import Link from '../../../../utils/Link';
+import { withTaskclusterClient } from '../../../../utils/TaskclusterClient';
+import withPaginatedResource from '../../../../hocs/withPaginatedResource';
+import withResource from '../../../../hocs/withResource';
 
 @withStyles(theme => ({
   link: {
     ...theme.mixins.link,
   },
 }))
-@graphql(indexedTaskQuery, {
-  name: 'indexedTaskData',
-  options: props => ({
-    variables: {
-      indexPath: `${props.match.params.namespace}.${props.match.params.namespaceTaskId}`,
-    },
-  }),
+@withTaskclusterClient
+@withResource({
+  name: 'indexedTaskResource',
+  fetch: props => async () => {
+    const index = props.createTaskclusterClient({ Class: Index });
+    const queue = props.createTaskclusterClient({ Class: Queue });
+    const indexed = await index.findTask(
+      `${props.match.params.namespace}.${props.match.params.namespaceTaskId}`
+    );
+    const task = await queue.task(indexed.taskId);
+
+    return { indexed, task };
+  },
+  key: props =>
+    `${props.match.params.namespace}.${props.match.params.namespaceTaskId}`,
 })
-@graphql(artifactsQuery, {
-  name: 'latestArtifactsData',
-  options: ({ indexedTaskData }) => ({
-    variables: {
-      skip: !indexedTaskData.indexedTask,
-      taskId: indexedTaskData.indexedTask?.taskId,
-      entryConnection: {
-        limit: ARTIFACTS_PAGE_SIZE,
-      },
-    },
+@withPaginatedResource({
+  name: 'artifactsResource',
+  fetch:
+    props =>
+    ({ taskId, ...options }) =>
+      taskId
+        ? props
+            .createTaskclusterClient({ Class: Queue })
+            .listLatestArtifacts(taskId, options)
+        : Promise.resolve({ artifacts: [], continuationToken: null }),
+  payload: props => ({
+    taskId: props.indexedTaskResource.data?.indexed.taskId,
+    limit: ARTIFACTS_PAGE_SIZE,
   }),
+  select: response => response.artifacts,
 })
 export default class IndexedTask extends Component {
   state = {
@@ -46,56 +58,13 @@ export default class IndexedTask extends Component {
   };
 
   componentDidUpdate(prevProps) {
-    if (
-      'indexedTask' in this.props.indexedTaskData &&
-      !('indexedTask' in prevProps.indexedTaskData)
-    ) {
-      this.props.latestArtifactsData.refetch({
-        skip: false,
-        taskId: this.props.indexedTaskData.indexedTask.taskId,
-        entryConnection: {
-          limit: ARTIFACTS_PAGE_SIZE,
-        },
-      });
+    const prevPath = `${prevProps.match.params.namespace}.${prevProps.match.params.namespaceTaskId}`;
+    const nextPath = `${this.props.match.params.namespace}.${this.props.match.params.namespaceTaskId}`;
+
+    if (prevPath !== nextPath) {
+      this.setState({ indexPathInput: nextPath });
     }
   }
-
-  handleArtifactsPageChange = ({ cursor, previousCursor }) => {
-    const {
-      indexedTaskData: {
-        indexedTask: { taskId },
-      },
-      latestArtifactsData: { fetchMore },
-    } = this.props;
-
-    return fetchMore({
-      query: artifactsQuery,
-      variables: {
-        skip: false,
-        taskId,
-        entryConnection: {
-          limit: ARTIFACTS_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.latestArtifacts;
-
-        if (!edges.length) {
-          return previousResult;
-        }
-
-        return dotProp.set(previousResult, 'latestArtifacts', artifacts =>
-          dotProp.set(
-            dotProp.set(artifacts, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
-        );
-      },
-    });
-  };
 
   handleIndexPathInputChange = e =>
     this.setState({ indexPathInput: e.target.value });
@@ -105,22 +74,18 @@ export default class IndexedTask extends Component {
   };
 
   render() {
-    const {
-      classes,
-      latestArtifactsData: {
-        latestArtifacts,
-        task,
-        error: latestArtifactsError,
-        loading: latestArtifactsLoading,
-      },
-      indexedTaskData: {
-        indexedTask,
-        error: indexedTaskError,
-        loading: indexedTaskLoading,
-      },
-      description,
-    } = this.props;
-    const loading = latestArtifactsLoading || indexedTaskLoading;
+    const { classes, description, indexedTaskResource, artifactsResource } =
+      this.props;
+    const { indexPathInput } = this.state;
+    const { data, loading, error } = indexedTaskResource;
+    const indexedTask = data?.indexed ?? null;
+    const task = data?.task ?? null;
+    const taskId = indexedTask?.taskId;
+    const initialLoad =
+      loading ||
+      (Boolean(taskId) &&
+        artifactsResource.loading &&
+        !artifactsResource.items.length);
     const indexPaths = indexedTask?.namespace?.split('.') ?? [];
 
     return (
@@ -129,18 +94,18 @@ export default class IndexedTask extends Component {
         helpView={<HelpView description={description} />}
         search={
           <Search
-            disabled={loading}
-            value={this.state.indexPathInput}
+            disabled={initialLoad}
+            value={indexPathInput}
             onChange={this.handleIndexPathInputChange}
             onSubmit={this.handleIndexPathSearchSubmit}
             placeholder="Search path.to.index"
           />
         }>
-        {loading && <Spinner loading />}
-        {!loading && (
-          <ErrorPanel fixed error={indexedTaskError || latestArtifactsError} />
+        {initialLoad && <Spinner loading />}
+        {!initialLoad && (
+          <ErrorPanel fixed error={error || artifactsResource.error} />
         )}
-        {latestArtifacts && indexedTask && task && (
+        {!initialLoad && indexedTask && task && (
           <Fragment>
             <Breadcrumbs>
               <Link to="/tasks/index">
@@ -168,8 +133,13 @@ export default class IndexedTask extends Component {
               )}
             </Breadcrumbs>
             <IndexedEntry
-              onArtifactsPageChange={this.handleArtifactsPageChange}
-              latestArtifactsConnection={latestArtifacts}
+              latestArtifacts={artifactsResource.items}
+              artifactsLoading={artifactsResource.loading}
+              page={artifactsResource.page}
+              hasNextPage={artifactsResource.hasNextPage}
+              hasPreviousPage={artifactsResource.hasPreviousPage}
+              onNextPage={artifactsResource.nextPage}
+              onPreviousPage={artifactsResource.previousPage}
               indexedTask={indexedTask}
               created={task.created}
               taskGroupId={task.taskGroupId}
