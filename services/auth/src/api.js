@@ -12,6 +12,7 @@ import { gcpBuilder } from './gcp.js';
 import { azureBuilder } from './azure.js';
 import { sentryBuilder } from './sentry.js';
 import { websocktunnelBuilder } from './websocktunnel.js';
+import { githubBuilder } from './github.js';
 
 export const AUDIT_ENTRY_TYPE = Object.freeze({
   CLIENT: {
@@ -134,6 +135,9 @@ const builder = new APIBuilder({
   title: 'Auth Service',
   serviceName: 'auth',
   apiVersion: 'v1',
+  errorCodes: {
+    TooManyRequests: 429,
+  },
   description: [
     'Authentication related API end-points for Taskcluster and related',
     'services. These API end-points are of interest if you wish to:',
@@ -1186,6 +1190,7 @@ azureBuilder(builder);
 sentryBuilder(builder);
 websocktunnelBuilder(builder);
 gcpBuilder(builder);
+githubBuilder(builder);
 
 /** Get all client information */
 builder.declare(

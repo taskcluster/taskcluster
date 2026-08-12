@@ -383,6 +383,102 @@ helper.withGcp = (mock, skipping) => {
   });
 };
 
+helper.withGithub = skipping => {
+  const getAppDetails = (owner, id) => {
+    return {
+      data: {
+        id,
+        account: {
+          login: owner,
+        },
+      },
+    };
+  };
+
+  const githubError = (status, headers = {}, message = '') => {
+    const err = new Error(message);
+    err.status = status;
+    err.response = { headers };
+    return err;
+  };
+
+  const SECONDARY_LIMIT_MESSAGE =
+    'You have exceeded a secondary rate limit and have been temporarily blocked from content creation. ' +
+    'Please retry your request again later.';
+
+  const fakeOctokit = {
+    getOrgInstallation: ({ org }) => {
+      if (org === 'testorg') {
+        return getAppDetails('TestOrg', 12345);
+      } else if (org === 'testorgrenamed') {
+        return getAppDetails('amazingOrg', 12346);
+      } else if (org === 'notonrepo') {
+        return getAppDetails('notonrepo', 12422);
+      } else if (org === 'ratelimited') {
+        return getAppDetails('ratelimited', 12429);
+      } else if (org === 'primarylimited') {
+        return getAppDetails('primarylimited', 12403);
+      } else if (org === 'secondarylimited') {
+        return getAppDetails('secondarylimited', 13403);
+      } else if (org === 'secondarylimitednoheader') {
+        return getAppDetails('secondarylimitednoheader', 14403);
+      } else if (org === 'noowner') {
+        return { data: { id: 12600, account: null } };
+      } else if (org === 'lookuplimited') {
+        throw githubError(403, { 'x-ratelimit-remaining': '0' });
+      } else if (org === 'lookupsecondarylimited') {
+        throw githubError(403, { 'x-ratelimit-remaining': '42' }, SECONDARY_LIMIT_MESSAGE);
+      } else if (org === 'forbidden') {
+        throw githubError(403, { 'x-ratelimit-remaining': '42' });
+      }
+
+      throw githubError(404);
+    },
+
+    getUserInstallation: ({ username }) => {
+      if (username === 'testuser') {
+        return getAppDetails('TestUser', 67890);
+      }
+
+      throw githubError(404);
+    },
+
+    createInstallationAccessToken: ({ installation_id, permissions, repositories }) => {
+      if (installation_id === 12422) {
+        throw githubError(422);
+      } else if (installation_id === 12429) {
+        throw githubError(429);
+      } else if (installation_id === 12403) {
+        throw githubError(403, { 'x-ratelimit-remaining': '0' });
+      } else if (installation_id === 13403) {
+        throw githubError(403, { 'retry-after': '42' });
+      } else if (installation_id === 14403) {
+        throw githubError(403, { 'x-ratelimit-remaining': '42' }, SECONDARY_LIMIT_MESSAGE);
+      }
+
+      const expiresAt = new Date(Date.now() + 3600000).toISOString();
+      const perms = Object.entries(permissions)
+        .map(([name, level]) => `${name}:${level}`)
+        .join(':');
+
+      return {
+        data: {
+          token: `token-${installation_id}-${perms}-${repositories.join(',')}`,
+          expires_at: expiresAt,
+        },
+      };
+    },
+  };
+
+  suiteSetup('Github credentials', async () => {
+    if (skipping()) {
+      return;
+    }
+
+    load.inject('github', new Map([['testapp', { octokit: { apps: fakeOctokit } }]]));
+  });
+};
+
 helper.resetTables = () => {
   setup('reset tables', async () => {
     await libTesting.resetTables({ tableNames: ['roles', 'clients', 'audit_history'] });
