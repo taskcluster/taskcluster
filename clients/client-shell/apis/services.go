@@ -427,6 +427,20 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "githubRepoToken",
+				Title:       "Get a repository scoped github token",
+				Description: "Get a Github application installation token scoped to the given repositories\nand permissions, using the configured app `appName`.\n\nRequesting `<permission>: <level>` on `<owner>/<repo>` requires the scope\n`auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.\nLevels and permissions are matched exactly to github token permissions\nwhich can be found at\nhttps://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.\nWhile token access is widened (requesting a write token will give a read+write one)\nscopes are not. Holding `:contents:write` alone only allows requesting a `write` token.\nBoth owner and repo must be in lowercase in the scope.\n\nThe token expires after an hour but this behavior is github dependent.\nYou should read the `expires` property from the response if you intend\nto maintain active credentials in your task.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/github/<appName>/<owner>/repo-token",
+				Args: []string{
+					"appName",
+					"owner",
+				},
+				Query: []string{},
+				Input: "v1/github-repo-token-request.json#",
+			},
+			definitions.Entry{
 				Name:        "authenticateHawk",
 				Title:       "Authenticate Hawk Request",
 				Description: "Validate the request signature given on input and return list of scopes\nthat the authenticating client has.\n\nThis method is used by other services that wish rely on Taskcluster\ncredentials for authentication. This way we can use Hawk without having\nthe secret credentials leave this service.",

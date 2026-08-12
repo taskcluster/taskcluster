@@ -450,6 +450,31 @@ type (
 		Scopes []string `json:"scopes"`
 	}
 
+	// The list of permissions and repositories to scope a repository level github token to.
+	GithubRepositoryTokenRequest struct {
+
+		// Repository level github app permissions to request. Mapping a permission
+		// name to the desired level of access. Names and levels are a direct mapping
+		// from [github API permissions](https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app).
+		Permissions RepositoryPermissions `json:"permissions"`
+
+		// Names of the repositories (within `:owner`) the token gets access to.
+		//
+		// Array items:
+		// Syntax:     ^[A-Za-z0-9._-]+$
+		Repositories []string `json:"repositories"`
+	}
+
+	// A github app installation access token.
+	GithubTokenResponse struct {
+
+		// Time at which the token expires
+		Expires tcclient.Time `json:"expires"`
+
+		// The installation access token
+		Token string `json:"token"`
+	}
+
 	// Request to authenticate a hawk request.
 	HawkSignatureAuthenticationRequest struct {
 
@@ -562,6 +587,152 @@ type (
 		// Possible values:
 		//   * "no-auth"
 		Status string `json:"status"`
+	}
+
+	// Repository level github app permissions to request. Mapping a permission
+	// name to the desired level of access. Names and levels are a direct mapping
+	// from [github API permissions](https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app).
+	RepositoryPermissions struct {
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Actions string `json:"actions,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Administration string `json:"administration,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Artifact_Metadata string `json:"artifact_metadata,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Attestations string `json:"attestations,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Checks string `json:"checks,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Code_Quality string `json:"code_quality,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Codespaces string `json:"codespaces,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Contents string `json:"contents,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Dependabot_Secrets string `json:"dependabot_secrets,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Deployments string `json:"deployments,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Discussions string `json:"discussions,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Environments string `json:"environments,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Issues string `json:"issues,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Merge_Queues string `json:"merge_queues,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Metadata string `json:"metadata,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Packages string `json:"packages,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Pages string `json:"pages,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Pull_Requests string `json:"pull_requests,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Repository_Custom_Properties string `json:"repository_custom_properties,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Repository_Hooks string `json:"repository_hooks,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		//   * "admin"
+		Repository_Projects string `json:"repository_projects,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Secret_Scanning_Alerts string `json:"secret_scanning_alerts,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Secrets string `json:"secrets,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Security_Events string `json:"security_events,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Single_File string `json:"single_file,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Statuses string `json:"statuses,omitempty"`
+
+		// Possible values:
+		//   * "read"
+		//   * "write"
+		Vulnerability_Alerts string `json:"vulnerability_alerts,omitempty"`
+
+		// Possible values:
+		//   * "write"
+		Workflows string `json:"workflows,omitempty"`
 	}
 
 	// Sentry DSN for submitting errors.

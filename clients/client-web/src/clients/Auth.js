@@ -41,6 +41,7 @@ export default class Auth extends Client {
     this.sentryDSN.entry = {"args":["project"],"category":"Sentry Credentials","method":"get","name":"sentryDSN","output":true,"query":[],"route":"/sentry/<project>/dsn","scopes":"auth:sentry:<project>","stability":"stable","type":"function"};
     this.websocktunnelToken.entry = {"args":["wstAudience","wstClient"],"category":"Websocktunnel Credentials","method":"get","name":"websocktunnelToken","output":true,"query":[],"route":"/websocktunnel/<wstAudience>/<wstClient>","scopes":"auth:websocktunnel-token:<wstAudience>/<wstClient>","stability":"stable","type":"function"};
     this.gcpCredentials.entry = {"args":["projectId","serviceAccount"],"category":"GCP Credentials","method":"get","name":"gcpCredentials","output":true,"query":[],"route":"/gcp/credentials/<projectId>/<serviceAccount>","scopes":"auth:gcp:access-token:<projectId>/<serviceAccount>","stability":"stable","type":"function"};
+    this.githubRepoToken.entry = {"args":["appName","owner"],"category":"Github Credentials","input":true,"method":"post","name":"githubRepoToken","output":true,"query":[],"route":"/github/<appName>/<owner>/repo-token","scopes":{"AllOf":[{"each":"auth:github-repo-token:<appName>/<owner>/<repoPerm>","for":"repoPerm","in":"repoPerms"}]},"stability":"experimental","type":"function"};
     this.authenticateHawk.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"authenticateHawk","output":true,"query":[],"route":"/authenticate-hawk","stability":"stable","type":"function"};
     this.testAuthenticate.entry = {"args":[],"category":"Scopes and Auth","input":true,"method":"post","name":"testAuthenticate","output":true,"query":[],"route":"/test-authenticate","stability":"stable","type":"function"};
     this.testAuthenticateGet.entry = {"args":[],"category":"Scopes and Auth","method":"get","name":"testAuthenticateGet","output":true,"query":[],"route":"/test-authenticate-get/","stability":"stable","type":"function"};
@@ -343,6 +344,24 @@ export default class Auth extends Client {
     this.validate(this.gcpCredentials.entry, args);
 
     return this.request(this.gcpCredentials.entry, args);
+  }
+  // Get a Github application installation token scoped to the given repositories
+  // and permissions, using the configured app `appName`.
+  // Requesting `<permission>: <level>` on `<owner>/<repo>` requires the scope
+  // `auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.
+  // Levels and permissions are matched exactly to github token permissions
+  // which can be found at
+  // https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.
+  // While token access is widened (requesting a write token will give a read+write one)
+  // scopes are not. Holding `:contents:write` alone only allows requesting a `write` token.
+  // Both owner and repo must be in lowercase in the scope.
+  // The token expires after an hour but this behavior is github dependent.
+  // You should read the `expires` property from the response if you intend
+  // to maintain active credentials in your task.
+  githubRepoToken(...args) {
+    this.validate(this.githubRepoToken.entry, args);
+
+    return this.request(this.githubRepoToken.entry, args);
   }
   // Validate the request signature given on input and return list of scopes
   // that the authenticating client has.

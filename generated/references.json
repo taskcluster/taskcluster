@@ -17515,6 +17515,267 @@
   },
   {
     "content": {
+      "$id": "/schemas/auth/v1/github-token-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A github app installation access token.\n",
+      "properties": {
+        "expires": {
+          "description": "Time at which the token expires",
+          "format": "date-time",
+          "title": "Expiry time",
+          "type": "string"
+        },
+        "token": {
+          "description": "The installation access token",
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "token",
+        "expires"
+      ],
+      "title": "Github token response",
+      "type": "object"
+    },
+    "filename": "schemas/auth/v1/github-token-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/auth/v1/github-repo-token-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "The list of permissions and repositories to scope a repository level github token to.\n",
+      "properties": {
+        "permissions": {
+          "additionalProperties": false,
+          "description": "Repository level github app permissions to request. Mapping a permission\nname to the desired level of access. Names and levels are a direct mapping\nfrom [github API permissions](https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app).\n",
+          "minProperties": 1,
+          "properties": {
+            "actions": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "administration": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "artifact_metadata": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "attestations": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "checks": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "code_quality": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "codespaces": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "contents": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "dependabot_secrets": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "deployments": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "discussions": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "environments": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "issues": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "merge_queues": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "metadata": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "packages": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "pages": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "pull_requests": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "repository_custom_properties": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "repository_hooks": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "repository_projects": {
+              "enum": [
+                "read",
+                "write",
+                "admin"
+              ],
+              "type": "string"
+            },
+            "secret_scanning_alerts": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "secrets": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "security_events": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "single_file": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "statuses": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "vulnerability_alerts": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "workflows": {
+              "enum": [
+                "write"
+              ],
+              "type": "string"
+            }
+          },
+          "title": "Repository permissions",
+          "type": "object"
+        },
+        "repositories": {
+          "description": "Names of the repositories (within `:owner`) the token gets access to.\n",
+          "items": {
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": "string"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Repositories",
+          "type": "array"
+        }
+      },
+      "required": [
+        "permissions",
+        "repositories"
+      ],
+      "title": "Github repository token request",
+      "type": "object"
+    },
+    "filename": "schemas/auth/v1/github-repo-token-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/auth/v1/get-role-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -28430,6 +28691,33 @@
           "scopes": "auth:gcp:access-token:<projectId>/<serviceAccount>",
           "stability": "stable",
           "title": "Get Temporary GCP Credentials",
+          "type": "function"
+        },
+        {
+          "args": [
+            "appName",
+            "owner"
+          ],
+          "category": "Github Credentials",
+          "description": "Get a Github application installation token scoped to the given repositories\nand permissions, using the configured app `appName`.\n\nRequesting `<permission>: <level>` on `<owner>/<repo>` requires the scope\n`auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.\nLevels and permissions are matched exactly to github token permissions\nwhich can be found at\nhttps://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.\nWhile token access is widened (requesting a write token will give a read+write one)\nscopes are not. Holding `:contents:write` alone only allows requesting a `write` token.\nBoth owner and repo must be in lowercase in the scope.\n\nThe token expires after an hour but this behavior is github dependent.\nYou should read the `expires` property from the response if you intend\nto maintain active credentials in your task.",
+          "input": "v1/github-repo-token-request.json#",
+          "method": "post",
+          "name": "githubRepoToken",
+          "output": "v1/github-token-response.json#",
+          "query": [
+          ],
+          "route": "/github/<appName>/<owner>/repo-token",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "auth:github-repo-token:<appName>/<owner>/<repoPerm>",
+                "for": "repoPerm",
+                "in": "repoPerms"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get a repository scoped github token",
           "type": "function"
         },
         {

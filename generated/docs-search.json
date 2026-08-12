@@ -204,6 +204,13 @@
   },
   {
     "element": "h2",
+    "id": "github-credentials",
+    "path": "/manual/deploying/cloud-credentials",
+    "subtitle": "Github credentials",
+    "title": "Cloud Credentials"
+  },
+  {
+    "element": "h2",
     "id": "queue-s3-artifact-credentials",
     "path": "/manual/deploying/cloud-credentials",
     "subtitle": "Queue 's3' Artifact Credentials",
