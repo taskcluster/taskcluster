@@ -57,6 +57,14 @@ func sweepStaleDockerResources() {
 	}
 }
 
+func dockerDefaultBridgeHasIPv6() bool {
+	out, err := host.Output("docker", "network", "inspect", "bridge", "--format", "{{.EnableIPv6}}")
+	if err != nil {
+		return false
+	}
+	return strings.TrimSpace(out) == "true"
+}
+
 func (feature *TaskclusterProxyFeature) IsEnabled() bool {
 	return config.EnableTaskclusterProxy
 }
@@ -102,7 +110,11 @@ func (l *TaskclusterProxyTask) Start() *CommandExecutionError {
 		// Create a per-task Docker network for isolation. Each container
 		// will only be able to reach its own tc-proxy instance.
 		networkName := fmt.Sprintf("gw-task-%s-%d", l.task.TaskID[:12], l.task.RunID)
-		_, err := host.Output("docker", "network", "create", networkName)
+		createArgs := []string{"network", "create"}
+		if dockerDefaultBridgeHasIPv6() {
+			createArgs = append(createArgs, "--ipv6")
+		}
+		_, err := host.Output("docker", append(createArgs, networkName)...)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("could not create Docker network %s: %s", networkName, err))
 		}
