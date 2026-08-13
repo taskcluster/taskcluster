@@ -3,6 +3,42 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v105.0.0
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [#8990](https://github.com/taskcluster/taskcluster/issues/8990)
+Generic worker has ipv6 enabled again for d2g tasks if it's enabled on the
+default bridge. Due to how docker handles ipv6 on networks that are necessary
+for capacity > 1, this raises the minimum docker version supported by generic
+worker to 27.
+
+### USERS
+
+▶ [patch]
+Fix the UI crashing on a fresh OIDC signin
+
+### DEVELOPERS
+
+▶ [patch] [#8994](https://github.com/taskcluster/taskcluster/issues/8994)
+UI Cache Purges page switches from GraphQL to direct service calls
+
+▶ [patch] [#8927](https://github.com/taskcluster/taskcluster/issues/8927)
+UI Create Task page switches to use decorator for api call
+
+### Automated Package Updates
+
+<details>
+<summary>5 Dependabot updates</summary>
+
+* build(deps): bump nanoid from 3.3.16 to 3.3.18 (4efd5e34bf)
+* build(deps): bump js-yaml from 4.3.0 to 4.3.1 in /clients/client-test (e4b98746e2)
+* build(deps): bump js-yaml from 4.3.0 to 4.3.1 in /clients/client (0aaec70c44)
+* build(deps): bump js-yaml from 4.3.0 to 4.3.1 in /ui (91b5c729ce)
+* build(deps): bump github.com/go-git/go-git/v5 from 5.19.1 to 5.19.2 (316abe3dad)
+
+</details>
+
 ## v104.0.0
 
 ### GENERAL

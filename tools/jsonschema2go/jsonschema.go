@@ -100,7 +100,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v104/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v105/tools/jsonschema2go/text"
 	"sigs.k8s.io/yaml"
 )
 
@@ -456,7 +456,7 @@ func (jsonSubSchema *JsonSubSchema) typeDefinition(disableNested bool, enableDef
 			if *f == "date-time" {
 				typ = "tcclient.Time"
 				typeCategory = "struct"
-				extraPackages["tcclient \"github.com/taskcluster/taskcluster/v104/clients/client-go\""] = true
+				extraPackages["tcclient \"github.com/taskcluster/taskcluster/v105/clients/client-go\""] = true
 			}
 		}
 	}

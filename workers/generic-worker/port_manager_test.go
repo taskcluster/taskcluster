@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/taskcluster/taskcluster/v104/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v105/workers/generic-worker/gwconfig"
 )
 
 // testConfig builds a PublicConfig with all three port-using features

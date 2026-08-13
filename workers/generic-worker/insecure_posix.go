@@ -5,7 +5,7 @@ package main
 import (
 	"os"
 
-	"github.com/taskcluster/taskcluster/v104/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v105/workers/generic-worker/process"
 )
 
 func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) error {

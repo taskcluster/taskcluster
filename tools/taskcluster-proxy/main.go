@@ -9,9 +9,9 @@ import (
 	"strconv"
 
 	docopt "github.com/docopt/docopt-go"
-	tcclient "github.com/taskcluster/taskcluster/v104/clients/client-go"
-	"github.com/taskcluster/taskcluster/v104/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v104/internal"
+	tcclient "github.com/taskcluster/taskcluster/v105/clients/client-go"
+	"github.com/taskcluster/taskcluster/v105/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v105/internal"
 )
 
 var (
