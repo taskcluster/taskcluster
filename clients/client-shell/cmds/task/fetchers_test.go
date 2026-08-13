@@ -33,6 +33,7 @@ func (suite *FakeServerSuite) SetupSuite() {
 	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/rerun", reRunHandler)
 	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/claim", claimTaskHandler)
 	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/runs/"+fakeRunID+"/completed", manifestHandler)
+	handler.HandleFunc("/api/queue/v1/task/"+fakeTaskID+"/schedule", scheduleHandler)
 
 	suite.testServer = httptest.NewServer(handler)
 
