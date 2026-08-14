@@ -169,11 +169,11 @@ func trimPoolExcess() {
 }
 
 func (cm FileCacheMap) SortedResources() Resources {
-	r := make(Resources, len(cm))
-	i := 0
+	r := Resources{}
 	for _, cache := range cm {
-		r[i] = cache
-		i++
+		if !cache.InUse {
+			r = append(r, cache)
+		}
 	}
 	sort.Sort(r)
 	return r
@@ -208,6 +208,7 @@ func (cm *FileCacheMap) LoadFromFile(stateFile string, cacheDir string) {
 			delete(*cm, i)
 		} else {
 			(*cm)[i].Owner = *cm
+			(*cm)[i].InUse = false // all entries are available on startup
 		}
 	}
 }
@@ -228,6 +229,7 @@ type Cache struct {
 	// SHA256 of content, if a file (not used for directories)
 	SHA256 string `json:"sha256"`
 	// InUse indicates whether a task currently owns this pool entry.
+	// For file caches, true while any task is using the downloaded file.
 	// Persisted with json:"in_use" (rather than json:"-") because
 	// loadFromJSONFile uses DisallowUnknownFields — older state files
 	// written by prior workers contain "in_use" and would otherwise
@@ -240,6 +242,8 @@ type Cache struct {
 	// in use. ReleaseCache checks this flag and evicts the entry instead
 	// of returning it to the pool.
 	NeedsPurge bool `json:"-"`
+	// Number of tasks currently using this file cache (not used for directories)
+	UseCount int `json:"-"`
 }
 
 // Rating determines how valuable the cache is compared to others.
@@ -252,6 +256,9 @@ func (cache *Cache) Rating() float64 {
 }
 
 func (cache *Cache) Evict(taskMount *TaskMount) error {
+	if cache.UseCount > 0 {
+		return nil
+	}
 	if taskMount != nil {
 		taskMount.Infof("Removing cache %v from cache table", cache.Key)
 	}
@@ -376,6 +383,8 @@ type TaskMount struct {
 	// poolEntries tracks which pool entry each WritableDirectoryCache acquired
 	// during Mount, so Unmount can release it back.
 	poolEntries map[*WritableDirectoryCache]*Cache
+	// fileCacheRefs tracks file caches this task is using, so Stop can release them.
+	fileCacheRefs []*Cache
 }
 
 // Represents an individual Mount listed in task payload - there
@@ -568,6 +577,7 @@ func (taskMount *TaskMount) initIndexClient() {
 func garbageCollection(tasksRunning bool) error {
 	// Collect eviction candidates under the lock, then release it before
 	// running potentially slow docker commands (#7).
+	// SortedResources only returns available (not in-use) entries
 	cacheMutex.Lock()
 	fileResources := fileCaches.SortedResources()
 	cacheMutex.Unlock()
@@ -674,10 +684,40 @@ func (taskMount *TaskMount) Stop(err *ExecutionErrors) {
 	}
 	// Persist cache state to disk with mutex protection for concurrent tasks
 	cacheMutex.Lock()
+	taskMount.releaseFileCaches()
 	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&fileCaches, "file-caches.json")))
 	err.add(executionError(internalError, errored, fileutil.WriteToFileAsJSON(&directoryCaches, "directory-caches.json")))
 	err.add(executionError(internalError, errored, fileutil.SecureFiles("file-caches.json", "directory-caches.json")))
 	cacheMutex.Unlock()
+}
+
+// Caller must hold cacheMutex.
+func (taskMount *TaskMount) retainFileCache(entry *Cache) {
+	entry.UseCount++
+	entry.InUse = true
+	taskMount.fileCacheRefs = append(taskMount.fileCacheRefs, entry)
+}
+
+// Caller must hold cacheMutex.
+func (taskMount *TaskMount) releaseFileCache(entry *Cache) {
+	entry.UseCount--
+	if entry.UseCount == 0 {
+		entry.InUse = false
+		entry.LastUsed = time.Now()
+	}
+	for i, e := range taskMount.fileCacheRefs {
+		if e == entry {
+			taskMount.fileCacheRefs = append(taskMount.fileCacheRefs[:i], taskMount.fileCacheRefs[i+1:]...)
+			break
+		}
+	}
+}
+
+// Caller must hold cacheMutex.
+func (taskMount *TaskMount) releaseFileCaches() {
+	for _, entry := range slices.Clone(taskMount.fileCacheRefs) {
+		taskMount.releaseFileCache(entry)
+	}
 }
 
 func (taskMount *TaskMount) shouldPurgeCaches() bool {
@@ -983,6 +1023,7 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 			panic(fmt.Errorf("file in cache, but not on filesystem: %v", *cachedEntry))
 		}
 		cachedEntry.Hits++
+		taskMount.retainFileCache(cachedEntry)
 		cacheMutex.Unlock()
 
 		// validate SHA256 in case of either tampering or new content at url...
@@ -995,6 +1036,9 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 		sha256, err = fileutil.CalculateSHA256(file)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
+				cacheMutex.Lock()
+				taskMount.releaseFileCache(cachedEntry)
+				cacheMutex.Unlock()
 				taskMount.Infof("Cache entry for %v vanished mid-read (likely concurrent eviction); retrying download", cacheKey)
 				return ensureCached(fsContent, taskMount)
 			}
@@ -1010,6 +1054,7 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 		}
 		taskMount.Infof("Found existing download of %v (%v) with SHA256 %v but task definition explicitly requires %v so deleting it", cacheKey, file, sha256, requiredSHA256)
 		cacheMutex.Lock()
+		taskMount.releaseFileCache(cachedEntry)
 		if entry, ok := fileCaches[cacheKey]; ok {
 			err = entry.Evict(taskMount)
 			cacheMutex.Unlock()
@@ -1061,6 +1106,13 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 	dl := val.(downloadResult)
 	file = dl.file
 	sha256 = dl.sha256
+
+	cacheMutex.Lock()
+	if entry, ok := fileCaches[cacheKey]; ok {
+		taskMount.retainFileCache(entry)
+	}
+	cacheMutex.Unlock()
+
 	if requiredSHA256 == "" {
 		taskMount.Warnf("Download %v of %v has SHA256 %v but task payload does not declare a required value, so content authenticity cannot be verified", file, fsContent, sha256)
 		return
@@ -1069,6 +1121,7 @@ func ensureCached(fsContent FSContent, taskMount *TaskMount) (file string, sha25
 		err = fmt.Errorf("Download %v of %v has SHA256 %v but task definition explicitly requires %v; not retrying download as there were no connection failures and HTTP response status code was 200", file, fsContent, sha256, requiredSHA256)
 		cacheMutex.Lock()
 		if entry, ok := fileCaches[cacheKey]; ok {
+			taskMount.releaseFileCache(entry)
 			err2 := entry.Evict(taskMount)
 			cacheMutex.Unlock()
 			if err2 != nil {

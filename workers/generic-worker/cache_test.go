@@ -170,6 +170,117 @@ func TestSortedResourcesExcludesInUse(t *testing.T) {
 	}
 }
 
+func TestFileCacheSortedResourcesExcludesInUse(t *testing.T) {
+	cm := FileCacheMap{
+		"a": {Key: "a", Location: "/tmp/a1", InUse: true, LastUsed: time.Now()},
+		"b": {Key: "b", Location: "/tmp/b1", InUse: false, LastUsed: time.Now()},
+	}
+	resources := cm.SortedResources()
+	if len(resources) != 1 {
+		t.Errorf("Expected 1 available resource, got %d", len(resources))
+	}
+}
+
+func TestRetainReleaseFileCache(t *testing.T) {
+	entry := &Cache{Key: "f", Location: "/tmp/f"}
+	tm := &TaskMount{}
+	tm.retainFileCache(entry)
+	if !entry.InUse {
+		t.Error("Expected retained file cache to be marked InUse")
+	}
+	tm.releaseFileCache(entry)
+	if entry.InUse {
+		t.Error("Expected file cache to no longer be InUse after release")
+	}
+	if entry.LastUsed.IsZero() {
+		t.Error("Expected LastUsed to be set after release")
+	}
+}
+
+func TestRetainReleaseFileCacheShared(t *testing.T) {
+	entry := &Cache{Key: "shared", Location: "/tmp/shared"}
+	a := &TaskMount{}
+	b := &TaskMount{}
+	a.retainFileCache(entry)
+	b.retainFileCache(entry)
+	a.releaseFileCache(entry)
+	if !entry.InUse {
+		t.Error("Expected file cache to stay InUse while another task holds it")
+	}
+	b.releaseFileCache(entry)
+	if entry.InUse {
+		t.Error("Expected file cache to no longer be InUse after release")
+	}
+}
+
+func TestEvictSkipsInUseFileCache(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "cached")
+	if err := os.WriteFile(file, []byte("data"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	cm := FileCacheMap{}
+	entry := &Cache{Key: "f", Location: file, Owner: cm}
+	cm["f"] = entry
+	tm := &TaskMount{}
+	tm.retainFileCache(entry)
+
+	if err := entry.Evict(nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, exists := cm["f"]; !exists {
+		t.Error("Expected in-use file cache to remain in the map")
+	}
+}
+
+func TestFileCacheLoadFromFileResetsInUse(t *testing.T) {
+	dir := t.TempDir()
+	cacheFile := filepath.Join(dir, "cached")
+	if err := os.WriteFile(cacheFile, []byte("data"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	data := fmt.Sprintf(`{"test":{"key":"test","location":%q,"in_use":true,"created":"2026-01-01T00:00:00Z"}}`, cacheFile)
+	stateFile := filepath.Join(dir, "file-caches.json")
+	if err := os.WriteFile(stateFile, []byte(data), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	cm := &FileCacheMap{}
+	cm.LoadFromFile(stateFile, dir)
+
+	entry := (*cm)["test"]
+	if entry == nil {
+		t.Fatal("Expected file cache entry to be loaded")
+	}
+	if entry.InUse {
+		t.Error("Expected InUse to be reset to false on load")
+	}
+}
+
+func TestEnsureCachedRetainsFileCache(t *testing.T) {
+	origCaches := fileCaches
+	fileCaches = FileCacheMap{}
+	defer func() { fileCaches = origCaches }()
+
+	location := filepath.Join(t.TempDir(), "cached-file")
+	if err := os.WriteFile(location, []byte("hello"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	key := "Raw content: hello"
+	entry := &Cache{Key: key, Location: location, Owner: fileCaches}
+	fileCaches[key] = entry
+
+	tm := &TaskMount{task: &TaskRun{}}
+	if _, _, err := ensureCached(&RawContent{Raw: "hello"}, tm); err != nil {
+		t.Fatal(err)
+	}
+	if !entry.InUse {
+		t.Error("Expected ensureCached to mark the file cache InUse")
+	}
+}
+
 func TestRatingUsesLastUsed(t *testing.T) {
 	old := &Cache{LastUsed: time.Now().Add(-1 * time.Hour)}
 	fresh := &Cache{LastUsed: time.Now()}
