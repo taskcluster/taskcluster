@@ -241,6 +241,39 @@ helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping)
     monitor.manager.reset();
   });
 
+  test('The installation lookup is cached across requests', async () => {
+    const getToken = owner =>
+      helper.apiClient.githubRepoToken('testapp', owner, {
+        repositories: ['bar'],
+        permissions: { contents: 'read' },
+      });
+
+    await getToken('testorg');
+    await getToken('TestOrg');
+    assert.equal(helper.installationLookups, 1);
+
+    await getToken('testuser');
+    assert.equal(helper.installationLookups, 3); // the user lookup falls back from the org one
+  });
+
+  test('A cached installation that got removed is looked up again', async () => {
+    const getToken = () =>
+      helper.apiClient.githubRepoToken('testapp', 'testorg', {
+        repositories: ['bar'],
+        permissions: { contents: 'read' },
+      });
+
+    await getToken();
+    assert.equal(helper.installationLookups, 1);
+
+    helper.githubUninstalled.add(12345);
+    await assert.rejects(getToken, err => err.code === 'ResourceNotFound' && err.statusCode === 404);
+
+    helper.githubUninstalled.delete(12345);
+    await getToken();
+    assert.equal(helper.installationLookups, 2);
+  });
+
   test('An installation reporting no owner is rejected', async () => {
     await assert.rejects(
       () =>

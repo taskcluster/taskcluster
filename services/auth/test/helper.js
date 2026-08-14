@@ -12,6 +12,7 @@ import { APIBuilder } from '@taskcluster/lib-api';
 import SchemaSet from '@taskcluster/lib-validate';
 import makeSentryManager from './../src/sentrymanager.js';
 import { syncStaticClients } from '../src/static-clients.js';
+import { makeInstallationCache } from '../src/github.js';
 import { stickyLoader, Secrets, withMonitor } from '@taskcluster/lib-testing';
 import * as libTesting from '@taskcluster/lib-testing';
 import { URL } from 'node:url';
@@ -408,6 +409,7 @@ helper.withGithub = skipping => {
 
   const fakeOctokit = {
     getOrgInstallation: ({ org }) => {
+      helper.installationLookups += 1;
       if (org === 'testorg') {
         return getAppDetails('TestOrg', 12345);
       } else if (org === 'testorgrenamed') {
@@ -436,6 +438,7 @@ helper.withGithub = skipping => {
     },
 
     getUserInstallation: ({ username }) => {
+      helper.installationLookups += 1;
       if (username === 'testuser') {
         return getAppDetails('TestUser', 67890);
       }
@@ -444,7 +447,9 @@ helper.withGithub = skipping => {
     },
 
     createInstallationAccessToken: ({ installation_id, permissions, repositories }) => {
-      if (installation_id === 12422) {
+      if (helper.githubUninstalled.has(installation_id)) {
+        throw githubError(404);
+      } else if (installation_id === 12422) {
         throw githubError(422);
       } else if (installation_id === 12429) {
         throw githubError(429);
@@ -470,12 +475,20 @@ helper.withGithub = skipping => {
     },
   };
 
+  const app = { octokit: { apps: fakeOctokit }, installations: makeInstallationCache() };
+
   suiteSetup('Github credentials', async () => {
     if (skipping()) {
       return;
     }
 
-    load.inject('github', new Map([['testapp', { octokit: { apps: fakeOctokit } }]]));
+    load.inject('github', new Map([['testapp', app]]));
+  });
+
+  setup('reset test state', () => {
+    helper.installationLookups = 0;
+    helper.githubUninstalled = new Set();
+    app.installations.clear();
   });
 };
 

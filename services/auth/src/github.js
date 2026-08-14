@@ -2,6 +2,7 @@ import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import { throttling } from '@octokit/plugin-throttling';
 import { retry } from '@octokit/plugin-retry';
+import LRU from 'quick-lru';
 
 const PluggedOctokit = Octokit.plugin(retry, throttling);
 
@@ -9,6 +10,7 @@ const PluggedOctokit = Octokit.plugin(retry, throttling);
 const APP_NAME_RE = /^[a-zA-Z0-9_-]+$/;
 const PRIVATE_KEY_RE = /-----BEGIN RSA PRIVATE KEY-----(\n|\\n).*(\n|\\n)-----END RSA PRIVATE KEY-----(\n|\\n)?/s;
 const MAX_THROTTLE_RETRY_SECONDS = 10;
+const INSTALLATION_CACHE_MAX_AGE_MS = 60 * 60 * 1000;
 
 const buildOctokitApp = (appName, { appId, privateKey }, monitor) => {
   if (!APP_NAME_RE.test(appName)) {
@@ -68,11 +70,17 @@ const isRateLimitError = err => {
   return headers['retry-after'] !== undefined || headers['x-ratelimit-remaining'] === '0';
 };
 
+// lowercased owner: installation id
+export const makeInstallationCache = () => new LRU({ maxSize: 1000, maxAge: INSTALLATION_CACHE_MAX_AGE_MS });
+
 export const makeGithub = ({ cfg, monitor }) => {
   const apps = new Map();
 
   for (const [name, appCfg] of Object.entries(cfg.githubCredentials?.apps ?? {})) {
-    apps.set(name, { octokit: buildOctokitApp(name, appCfg, monitor) });
+    apps.set(name, {
+      octokit: buildOctokitApp(name, appCfg, monitor),
+      installations: makeInstallationCache(),
+    });
   }
 
   return apps;
@@ -141,29 +149,38 @@ export const githubBuilder = builder => {
         return res.reportError('ResourceNotFound', `Application with name \`${appName}\` is not configured`);
       }
 
-      let installationInfo;
-      try {
-        installationInfo = await getAppInstallationInfo(app.octokit, owner);
-      } catch (err) {
-        if (err.status === 404) {
-          return res.reportError(
-            'ResourceNotFound',
-            `Application with name \`${appName}\` is not installed on \`${owner}\``
-          );
-        } else if (isRateLimitError(err)) {
-          return res.reportError('TooManyRequests', `The application \`${appName}\` is currently hitting rate limits`);
+      let installationId = app.installations.get(owner);
+
+      if (installationId === undefined) {
+        let installationInfo;
+        try {
+          installationInfo = await getAppInstallationInfo(app.octokit, owner);
+        } catch (err) {
+          if (err.status === 404) {
+            return res.reportError(
+              'ResourceNotFound',
+              `Application with name \`${appName}\` is not installed on \`${owner}\``
+            );
+          } else if (isRateLimitError(err)) {
+            return res.reportError(
+              'TooManyRequests',
+              `The application \`${appName}\` is currently hitting rate limits`
+            );
+          }
+          throw err;
         }
-        throw err;
-      }
 
-      const actualAppOwner = installationInfo.data.account?.login;
-      const installationId = installationInfo.data.id;
+        const actualAppOwner = installationInfo.data.account?.login;
 
-      if (actualAppOwner?.toLowerCase() !== owner) {
-        return res.reportError(
-          'InputError',
-          `The application reported a different owner (\`${actualAppOwner}\`) than the requested one. Maybe the owner got renamed?`
-        );
+        if (actualAppOwner?.toLowerCase() !== owner) {
+          return res.reportError(
+            'InputError',
+            `The application reported a different owner (\`${actualAppOwner}\`) than the requested one. Maybe the owner got renamed?`
+          );
+        }
+
+        installationId = installationInfo.data.id;
+        app.installations.set(owner, installationId);
       }
 
       let tokenInfo;
@@ -177,6 +194,7 @@ export const githubBuilder = builder => {
         if (err.status === 422) {
           return res.reportError('InputError', 'Github rejected the request: {{message}}', { message: err.message });
         } else if (err.status === 404) {
+          app.installations.delete(owner);
           return res.reportError(
             'ResourceNotFound',
             `Application with name \`${appName}\` is not installed on \`${owner}\``
