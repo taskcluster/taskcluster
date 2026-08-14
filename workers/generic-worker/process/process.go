@@ -67,8 +67,6 @@ func (r *Result) SetExitCode() {
 }
 
 func (c *Command) Execute() *Result {
-	c.result = &Result{}
-
 	if c.ResourceMonitor != nil {
 		usageChan := make(chan *ResourceUsage, 1)
 		usageMeasurementsDone := make(chan struct{})
@@ -82,6 +80,7 @@ func (c *Command) Execute() *Result {
 	}
 
 	c.mutex.Lock()
+	c.result = &Result{}
 	started := time.Now()
 	err := c.Start()
 	c.mutex.Unlock()
@@ -90,7 +89,7 @@ func (c *Command) Execute() *Result {
 		return c.result
 	}
 
-	exitErr := make(chan error)
+	exitErr := make(chan error, 1)
 	// wait for command to complete in separate go routine, so we can handle task abortion in parallel to command termination
 	go func() {
 		waitErr := c.Wait()
@@ -112,8 +111,10 @@ func (c *Command) Execute() *Result {
 			c.result.SetExitCode()
 		}
 	case <-c.abort:
+		c.mutex.Lock()
 		c.result.SystemError = fmt.Errorf("process aborted")
 		c.result.Aborted = true
+		c.mutex.Unlock()
 	}
 
 	finished := time.Now()

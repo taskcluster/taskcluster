@@ -288,10 +288,13 @@ func (c *Command) Wait() error {
 		c.auxFiles = nil
 	}()
 	defer c.conn.Close()
-	if c.result.SystemError != nil {
-		return c.result.SystemError
+	c.mutex.RLock()
+	systemError, pid := c.result.SystemError, c.result.Pid
+	c.mutex.RUnlock()
+	if systemError != nil {
+		return systemError
 	}
-	if c.result.Pid == 0 {
+	if pid == 0 {
 		return errors.New("wait called but PID not set")
 	}
 	resultReceived := false
@@ -307,8 +310,13 @@ func (c *Command) Wait() error {
 			return fmt.Errorf("bad JSON: %w", err)
 		}
 		log.Printf("Daemon: result received: %#v", resp)
-		// update value, not pointer, since other code may be holding onto pointer value
-		*c.result = resp
+		c.mutex.Lock()
+		// Don't clobber the result if the task was already resolved through abortion
+		if !c.result.Aborted {
+			// update value, not pointer, since other code may be holding onto pointer value
+			*c.result = resp
+		}
+		c.mutex.Unlock()
 		resultReceived = true
 	}
 	if !resultReceived {
