@@ -90,7 +90,7 @@ func (c *Command) Execute() *Result {
 		return c.result
 	}
 
-	exitErr := make(chan error)
+	exitErr := make(chan error, 1)
 	// wait for command to complete in separate go routine, so we can handle task abortion in parallel to command termination
 	go func() {
 		waitErr := c.Wait()
