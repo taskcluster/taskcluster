@@ -164,11 +164,11 @@ func (c *Command) Start() error {
 		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(stdinWriter, c.Stdin)
 			stdinWriter.Close()
-			// not sure if this is needed, but let's make sure both ends of the
-			// pipe are not garbage collected until we've finished using them!
-			c.auxFiles = append(c.auxFiles, stdinReader)
 		})
 		fds = append(fds, int(stdinReader.Fd()))
+		// not sure if this is needed, but let's make sure both ends of the
+		// pipe are not garbage collected until we've finished using them!
+		c.auxFiles = append(c.auxFiles, stdinReader)
 	}
 
 	if c.Stdout != nil {
@@ -180,11 +180,11 @@ func (c *Command) Start() error {
 		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(c.Stdout, stdoutReader)
 			stdoutReader.Close()
-			// not sure if this is needed, but let's make sure both ends of the
-			// pipe are not garbage collected until we've finished using them!
-			c.auxFiles = append(c.auxFiles, stdoutWriter)
 		})
 		fds = append(fds, int(stdoutWriter.Fd()))
+		// not sure if this is needed, but let's make sure both ends of the
+		// pipe are not garbage collected until we've finished using them!
+		c.auxFiles = append(c.auxFiles, stdoutWriter)
 	}
 
 	if c.Stderr != nil {
@@ -196,11 +196,11 @@ func (c *Command) Start() error {
 		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(c.Stderr, stderrReader)
 			stderrReader.Close()
-			// not sure if this is needed, but let's make sure both ends of the
-			// pipe are not garbage collected until we've finished using them!
-			c.auxFiles = append(c.auxFiles, stderrWriter)
 		})
 		fds = append(fds, int(stderrWriter.Fd()))
+		// not sure if this is needed, but let's make sure both ends of the
+		// pipe are not garbage collected until we've finished using them!
+		c.auxFiles = append(c.auxFiles, stderrWriter)
 	}
 
 	log.Printf("FDs: %#v", fds)
