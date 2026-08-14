@@ -57,7 +57,7 @@ export default class SidebarList extends Component {
             <SidebarListItem
               to={`/audit/client/history/${encodeURIComponent(clientId)}`}
               icon={<HistoryIcon />}>
-              Client Audit History
+              My Client Audit History
             </SidebarListItem>
           )}
           <SidebarListItem to="/auth/roles" icon={<AccountStarIcon />}>
