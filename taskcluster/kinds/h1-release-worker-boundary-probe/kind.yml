@@ -7,7 +7,7 @@ transforms:
 
 tasks:
   identity:
-    description: Benign proof that a public pull request can execute on the trusted release worker pool
+    description: Benign identity and config-presence probe for the trusted release worker pool
     worker-type: release
     worker:
       max-run-time: 300
