@@ -319,8 +319,8 @@ func TestProtocolNull(t *testing.T) {
 func TestAbortAfterMaxRunTime(t *testing.T) {
 	setup(t)
 
-	// Include a writable directory cache, to test that caches can be unmounted
-	// when a task aborts prematurely.
+	// Include a writable directory cache, to test that caches are purged
+	// rather than preserved when a task aborts prematurely.
 	mounts := []MountEntry{
 		// requires scope "generic-worker:cache:banana-cache"
 		&WritableDirectoryCache{
@@ -357,6 +357,10 @@ func TestAbortAfterMaxRunTime(t *testing.T) {
 	}
 	if strings.Contains(logtext, "hello") {
 		t.Log("Task should have been aborted before 'hello' was logged, but log contains 'hello':")
+		t.Fatal(logtext)
+	}
+	if !strings.Contains(logtext, "Purging caches since the task was aborted") {
+		t.Log("Was expecting caches of an aborted task to be purged, but log doesn't mention it:")
 		t.Fatal(logtext)
 	}
 	duration := endTime.Sub(startTime).Seconds()

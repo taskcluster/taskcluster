@@ -687,6 +687,11 @@ func (taskMount *TaskMount) shouldPurgeCaches() bool {
 		return false
 	}
 
+	if taskMount.task.result.Aborted {
+		taskMount.Infof("Purging caches since the task was aborted and may have left them in an inconsistent state")
+		return true
+	}
+
 	if slices.Contains(taskMount.task.Payload.OnExitStatus.PurgeCaches, int64(taskMount.task.result.ExitCode)) {
 		taskMount.Infof("Purging caches since last command had exit code %v which is listed in task.Payload.OnExitStatus.PurgeCaches array", taskMount.task.result.ExitCode)
 		return true
