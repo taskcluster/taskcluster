@@ -10,6 +10,7 @@ require (
 	github.com/creack/pty v1.1.24
 	github.com/dchest/uniuri v1.2.0
 	github.com/deckarep/golang-set v1.8.0
+	github.com/distribution/reference v0.6.0
 	github.com/docopt/docopt-go v0.0.0-20180111231733-ee0de3bc6815
 	github.com/elastic/go-sysinfo v1.15.5
 	github.com/fatih/camelcase v1.0.0
@@ -173,7 +174,6 @@ require (
 	github.com/digitorus/pkcs7 v0.0.0-20250730155240-ffadbf3f398c // indirect
 	github.com/digitorus/timestamp v0.0.0-20250524132541-c45532741eea // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
-	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/cli v29.4.3+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.9.5 // indirect
 	github.com/docker/go-connections v0.7.0 // indirect
