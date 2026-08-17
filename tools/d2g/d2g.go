@@ -474,6 +474,7 @@ func runCommand(
 	args = append(args, nonEnvListArgs...)
 	// Use env file that's created by D2G task feature
 	args = append(args, "--env-file", "env.list")
+	args = append(args, "--")
 	args = append(args, dwImage.String())
 	args = append(args, dwPayload.Command...)
 
