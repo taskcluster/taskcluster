@@ -135,8 +135,9 @@ tasks:
             [ "$(uname -s)" != "Darwin" ] || base64 -D
             [ "$(uname -s)" != "Linux" ]  || base64 -d
           }}
-          # go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
-          if [ "$(uname -m)" == "x86_64" ]; then
+          # go test: -race is only supported on some platforms, see
+          # https://go.dev/doc/articles/race_detector#Requirements
+          if [ "$(uname -m)" == "x86_64" ] || [ "$(uname -s)-$(uname -m)" == "Darwin-arm64" ]; then
             RACE=-race
             CGO_ENABLED_TESTS=1
             # See https://github.com/golang/go/issues/27089#issuecomment-415329050
