@@ -144,6 +144,12 @@ export default class ClientForm extends Component {
     disabled: this.props.client.disabled,
   };
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.client?.disabled !== this.props.client?.disabled) {
+      this.setState({ disabled: this.props.client.disabled });
+    }
+  }
+
   handleDeleteClient = () => this.props.onDeleteClient(this.state.clientId);
 
   handleDeleteOnExpirationChange = () => {
