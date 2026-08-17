@@ -508,7 +508,7 @@ export const loadArtifactsRoutes = builder => {
 
       // if this is of a type that is already finished, that's not allowed
       if (!STORAGE_TYPE_NEEDS_FINISH[artifact.storageType]) {
-        return res.resportError('InputError', 'Only object artifacts can be finished', {});
+        return res.reportError('InputError', 'Only object artifacts can be finished', {});
       }
 
       // If already marked present, this is an idempotent call, in which case
