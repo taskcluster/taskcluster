@@ -139,7 +139,7 @@ class Notifier {
     return true;
   }
 
-  async slack({ channelId, text, blocks, attachments }) {
+  async slack({ channelId, text, blocks, attachments, unfurlLinks, unfurlMedia }) {
     if (!this._slack) {
       this.monitor.warning(`Slack message sent to ${channelId} but Slack is not configured.`);
       return false;
@@ -155,7 +155,7 @@ class Notifier {
       return false;
     }
 
-    await this._slack.sendMessage({ channelId, text, blocks, attachments });
+    await this._slack.sendMessage({ channelId, text, blocks, attachments, unfurlLinks, unfurlMedia });
     this.markSent('slack-channel', channelId, text, blocks, attachments);
     this.monitor.log.slack({ channelId });
     return true;

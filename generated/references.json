@@ -7201,6 +7201,16 @@
         "text": {
           "description": "The main message text. If no blocks are included, this is used as the\nmessage text, otherwise this is used as alternative text and the blocks\nare used.\n",
           "type": "string"
+        },
+        "unfurlLinks": {
+          "default": false,
+          "description": "Whether Slack should show previews for links in the message.\n",
+          "type": "boolean"
+        },
+        "unfurlMedia": {
+          "default": false,
+          "description": "Whether Slack should show previews for links to media in the message.\n",
+          "type": "boolean"
         }
       },
       "required": [

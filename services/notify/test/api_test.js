@@ -188,9 +188,29 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
       blocks: undefined,
       channel: 'C123456',
       text: 'Does this work?',
+      unfurl_links: false,
+      unfurl_media: false,
     });
     const monitor = await helper.load('monitor');
     assert(monitor.manager.messages.find(m => m.Type === 'slack'));
+  });
+
+  test('slack with unfurling enabled', async () => {
+    await helper.apiClient.slack({
+      channelId: 'C123456',
+      text: 'Does this unfurl?',
+      unfurlLinks: true,
+      unfurlMedia: true,
+    });
+    assert.equal(helper.slackClient.chat.postMessage.callCount, 1);
+    assert.deepStrictEqual(helper.slackClient.chat.postMessage.args[0][0], {
+      attachments: undefined,
+      blocks: undefined,
+      channel: 'C123456',
+      text: 'Does this unfurl?',
+      unfurl_links: true,
+      unfurl_media: true,
+    });
   });
 
   test('slack (denylisted)', async () => {

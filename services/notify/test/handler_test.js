@@ -256,7 +256,31 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
       text: `hey hey ${helper.rootUrl}/tasks/${baseStatus.taskId}`,
       blocks: [{}],
       attachments: [{}, {}],
+      unfurl_links: false,
+      unfurl_media: false,
     });
     assert(monitor.manager.messages.find(m => m.Type === 'slack'));
+  });
+
+  test('slack with unfurl', async () => {
+    const route = 'test-notify.slack-channel.C123456.on-transition';
+    const task = makeTask([route]);
+    task.extra = {
+      notify: { slackText: 'somelink', slackUnfurlLinks: true, slackUnfurlMedia: true },
+    };
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
+      payload: {
+        status: baseStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'doesnt-matter',
+      routes: [route],
+    });
+
+    assert.equal(helper.slackClient.chat.postMessage.callCount, 1);
+    const { unfurl_links, unfurl_media } = helper.slackClient.chat.postMessage.args[0][0];
+    assert.equal(unfurl_links, true);
+    assert.equal(unfurl_media, true);
   });
 });
