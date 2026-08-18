@@ -83,6 +83,13 @@ suite(testing.suiteName(), () => {
     );
   });
 
+  test('authorizedScopes, not an array', () => {
+    assert.throws(
+      () => client({ authorizedScopes: 'scopes:broken' }),
+      /options.authorizedScopes must be an array of scopes/
+    );
+  });
+
   test('authorizedScopes, insufficient', async () => {
     await expectError(
       client({

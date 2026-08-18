@@ -32,6 +32,10 @@ export default class Client {
       throw new Error('options.randomizationFactor must be between 0 and 1');
     }
 
+    if (this.options.authorizedScopes != null && !Array.isArray(this.options.authorizedScopes)) {
+      throw new Error('options.authorizedScopes must be an array of scopes');
+    }
+
     if (this.options.accessToken) {
       throw new Error('options.accessToken is no longer supported; use options.credentials');
     }
@@ -105,7 +109,7 @@ export default class Client {
 
     // If set of authorized scopes is provided, we'll restrict the request
     // to only use these scopes
-    if (Array.isArray(authorizedScopes)) {
+    if (authorizedScopes) {
       extra.authorizedScopes = authorizedScopes;
     }
 
