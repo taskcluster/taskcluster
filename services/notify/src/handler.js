@@ -199,6 +199,8 @@ class Handler {
               text,
               blocks,
               attachments,
+              unfurlLinks: _.get(task, 'extra.notify.slackUnfurlLinks') === true,
+              unfurlMedia: _.get(task, 'extra.notify.slackUnfurlMedia') === true,
             });
           }
           case 'pulse': {
