@@ -44,6 +44,7 @@ testSuite:
         - /dev/shm:/dev/shm
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -97,6 +98,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -151,6 +153,7 @@ testSuite:
         - --device=/dev/kvm
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -204,6 +207,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -258,6 +262,7 @@ testSuite:
         - --device=__TASKCLUSTER_VIDEO_DEVICE__
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -312,6 +317,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -366,6 +372,7 @@ testSuite:
         - --device=/dev/snd
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -420,6 +427,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -474,6 +482,7 @@ testSuite:
         - --device=/dev/nvidiactl
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -528,6 +537,7 @@ testSuite:
         - --device=/dev/nvidiactl
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:

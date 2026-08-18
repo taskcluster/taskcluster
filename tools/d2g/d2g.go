@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/distribution/reference"
 	"github.com/taskcluster/slugid-go/slugid"
 	"github.com/taskcluster/taskcluster/v105/internal/scopes"
 	"github.com/taskcluster/taskcluster/v105/tools/d2g/dockerworker"
@@ -473,6 +474,7 @@ func runCommand(
 	args = append(args, nonEnvListArgs...)
 	// Use env file that's created by D2G task feature
 	args = append(args, "--env-file", "env.list")
+	args = append(args, "--")
 	args = append(args, dwImage.String())
 	args = append(args, dwPayload.Command...)
 
@@ -644,6 +646,9 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 	}
 	switch val := parsed.(type) {
 	case string:
+		if _, err := reference.ParseNormalizedNamed(val); err != nil {
+			return nil, fmt.Errorf("invalid image name %q: %w", val, err)
+		}
 		din := DockerImageName(val)
 		return &din, nil
 	case map[string]any: // NamedDockerImage|IndexedDockerImage|DockerImageArtifact
@@ -651,7 +656,15 @@ func imageObject(payloadImage *json.RawMessage) (Image, error) {
 		case "docker-image": // NamedDockerImage
 			namedDockerImage := NamedDockerImage{}
 			err = json.Unmarshal(*payloadImage, &namedDockerImage)
-			return &namedDockerImage, err
+			if err != nil {
+				return nil, err
+			}
+
+			if _, err := reference.ParseNormalizedNamed(namedDockerImage.Name); err != nil {
+				return nil, fmt.Errorf("invalid image name %q: %w", namedDockerImage.Name, err)
+			}
+
+			return &namedDockerImage, nil
 		case "indexed-image": // IndexedDockerImage
 			indexDockerImage := IndexedDockerImage{}
 			err = json.Unmarshal(*payloadImage, &indexDockerImage)

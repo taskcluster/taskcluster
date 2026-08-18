@@ -439,3 +439,18 @@ func (tc *TaskDefinitionTestCase) Validate(t *testing.T) {
 	validateAgainstSchema(t, dwRaw, dockerworker.JSONSchema())
 	validateAgainstSchema(t, gwRaw, genericworker.JSONSchema())
 }
+
+func TestConvertPayloadRejectsInvalidImageName(t *testing.T) {
+	dwPayload := dockerworker.DockerWorkerPayload{}
+	defaults.SetDefaults(&dwPayload)
+	dwPayload.Image = json.RawMessage(`"--privileged"`)
+	dwPayload.Command = []string{"busybox", "id"}
+
+	_, _, err := d2g.ConvertPayload(&dwPayload, d2g.Config{}, FakeReadDir)
+	if err == nil {
+		t.Fatal("expected invalid image name to be rejected")
+	}
+	if !strings.Contains(err.Error(), `invalid image name`) {
+		t.Fatalf("expected error to be invalid image name, got: %v", err)
+	}
+}
