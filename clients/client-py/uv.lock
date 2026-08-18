@@ -1334,7 +1334,7 @@ wheels = [
 
 [[package]]
 name = "taskcluster"
-version = "105.0.0"
+version = "105.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },

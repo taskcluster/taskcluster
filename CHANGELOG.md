@@ -3,6 +3,53 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v105.1.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to Node.js v24.19.0.
+
+▶ [patch]
+Upgrades to go1.26.6.
+
+Release notes [here](https://go.dev/doc/devel/release#go1.26.6).
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [#9008](https://github.com/taskcluster/taskcluster/issues/9008)
+Generic worker now purges a task's writable directory caches when the worker
+kills the task's commands (cancellation, max runtime, OOM), instead of keeping
+a potentially corrupt cache
+
+### USERS
+
+▶ [minor] [bug 2064373](http://bugzil.la/2064373)
+Slack notifications no longer show link previews by default. You can re-enable
+that through the `unfurlLinks` / `unfurlMedia` fields on the `slack` API endpoint
+or with `task.extra.notify.slackUnfurlLinks` / `slackUnfurlMedia` for route
+based notifications.
+
+▶ [patch]
+Properly report errors from d2g when a docker image has an invalid name rather
+than letting docker fail on it and reporting those errors.
+
+▶ [patch]
+The JS clients now throw an error if `authorizedScopes` is passed as anything
+but an array (or `null`) instead of outright ignoring it in that case.
+
+▶ [patch]
+`finishArtifact` now reports a 400 instead of a 500 when called on a non object artifact
+
+### Automated Package Updates
+
+<details>
+<summary>1 Dependabot updates</summary>
+
+* build(deps): bump software.sslmate.com/src/go-pkcs12 from 0.7.1 to 0.7.2 (e824a8fb65)
+
+</details>
+
 ## v105.0.0
 
 ### WORKER-DEPLOYERS
