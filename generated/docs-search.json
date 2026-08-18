@@ -3073,6 +3073,27 @@
     "title": "Audit History"
   },
   {
+    "element": "h3",
+    "id": "example-cloning-a-private-repository",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Example: cloning a private repository",
+    "title": null
+  },
+  {
+    "element": "h3",
+    "id": "example-getting-a-token-from-python",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Example: getting a token from python",
+    "title": null
+  },
+  {
+    "element": "h2",
+    "id": "github-repository-tokens",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Github repository tokens",
+    "title": null
+  },
+  {
     "element": "h1",
     "id": "metrics",
     "path": "/reference/platform/auth/metrics",
