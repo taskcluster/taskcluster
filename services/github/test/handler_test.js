@@ -1429,11 +1429,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     suite('hooks', () => {
       let mockTriggerHook;
       let mockUse;
+      let mockExpandScopes;
+      let repoExpandedScopes;
 
       setup(() => {
         mockTriggerHook = sinon.stub().resolves({ taskId: taskcluster.slugid() });
         mockUse = sinon.stub().returns({ triggerHook: mockTriggerHook });
         handlers.context.hooksClient = { use: mockUse };
+
+        repoExpandedScopes = ['github:trigger-hook:*'];
+        mockExpandScopes = sinon.stub().callsFake(async ({ scopes }) => ({
+          scopes: [...scopes, ...repoExpandedScopes],
+        }));
+        handlers.context.authClient = { expandScopes: mockExpandScopes };
       });
 
       test('hooks-only config triggers hook and creates build record', async () => {
@@ -1460,7 +1468,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert.equal(payload.tasks_for, 'github-push');
 
         assert(mockUse.calledOnce);
-        assert.ok(mockUse.firstCall.args[0].authorizedScopes, 'use() should be called with authorizedScopes');
+        assert.deepEqual(mockUse.firstCall.args[0].authorizedScopes, ['hooks:trigger-hook:project-test/decision-hook']);
 
         const [build] = await helper.db.fns.get_github_build_pr(payload.taskId);
         assert.ok(build, 'build record should exist');
@@ -1566,6 +1574,25 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert.deepEqual(builds, [], 'build record should be deleted when hook trigger fails');
       });
 
+      test('a missing github:trigger-hook is reported on the commit', async () => {
+        repoExpandedScopes = ['github:trigger-hook:project-test/wrong-hook'];
+
+        github.inst(INST_ID).setTaskclusterYml({
+          owner: 'TaskclusterRobot',
+          repo: 'hooks-testing',
+          ref: COMMIT_SHA,
+          content: {
+            version: 1,
+            hooks: [{ name: 'project-test/decision-hook' }],
+          },
+        });
+
+        await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+        assert(mockTriggerHook.notCalled, 'the hook must not be triggered');
+        assert(github.inst(INST_ID).repos.createCommitComment.calledOnce);
+      });
+
       test('hook failure does not prevent tasks from running', async () => {
         mockTriggerHook.rejects(Object.assign(new Error('hook failed'), { body: { error: 'hook error' } }));
 
@@ -1588,22 +1615,57 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         assert(handlers.createTasks.calledOnce, 'tasks should still run despite hook failure');
       });
 
-      test('triggerHook reformats InsufficientScopes error with context', async () => {
-        const insufficientScopesErr = Object.assign(new Error('original scope error'), { code: 'InsufficientScopes' });
-        mockTriggerHook.rejects(insufficientScopesErr);
+      test('triggerHook does not foward the repository scopes to the hooks service', async () => {
+        await handlers.triggerHook({
+          scopes: ['assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'],
+          name: 'project-test/decision-hook',
+          payload: {},
+        });
+
+        assert(mockUse.calledOnce);
+        assert.deepEqual(mockUse.firstCall.args[0].authorizedScopes, ['hooks:trigger-hook:project-test/decision-hook']);
+      });
+
+      test('triggerHook requires the right github:trigger-hook', async () => {
+        repoExpandedScopes = ['github:trigger-hook:project-test/some-other-hook'];
 
         await assert.rejects(
-          () => handlers.triggerHook({ scopes: ['scope:a', 'scope:b'], name: 'group/name', payload: {} }),
+          () =>
+            handlers.triggerHook({
+              scopes: ['assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'],
+              name: 'project-test/decision-hook',
+              payload: {},
+            }),
           err => {
+            assert.equal(err.code, 'InsufficientScopes');
             assert(
-              err.message.includes('Taskcluster-GitHub attempted to trigger a hook'),
-              'message should include context'
+              err.message.includes('github:trigger-hook:project-test/decision-hook'),
+              'message should name the missing scope'
             );
-            assert(err.message.includes('scope:a'), 'message should include the scopes');
-            assert(err.message.includes('original scope error'), 'message should include the original error');
+            assert(
+              err.message.includes('assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'),
+              'message should include the scopes that were expanded'
+            );
             return true;
           }
         );
+
+        assert(mockUse.notCalled, 'the hook must not have been triggered');
+      });
+
+      test('hooks:trigger-hook is not enough to trigger hooks from the github service', async () => {
+        repoExpandedScopes = ['hooks:trigger-hook:project-test/decision-hook'];
+
+        await assert.rejects(
+          () =>
+            handlers.triggerHook({
+              scopes: ['assume:repo:github.com/TaskclusterRobot/hooks-testing:pull-request'],
+              name: 'project-test/decision-hook',
+              payload: {},
+            }),
+          /InsufficientScopes|github:trigger-hook/
+        );
+        assert(mockUse.notCalled, 'the hook must not have been triggered');
       });
 
       test('triggerHook throws on invalid name format without calling use()', async () => {

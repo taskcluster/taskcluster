@@ -5,6 +5,7 @@ import taskcluster from '@taskcluster/client';
 import yaml from 'js-yaml';
 import assert from 'node:assert';
 import { consume } from '@taskcluster/lib-pulse';
+import { satisfiesExpression } from 'taskcluster-lib-scopes';
 import { deprecatedStatusHandler } from './deprecatedStatus.js';
 import { taskGroupCreationHandler } from './taskGroupCreation.js';
 import { statusHandler } from './status.js';
@@ -262,31 +263,32 @@ class Handlers {
     const hookGroup = name.slice(0, slashIndex);
     const hookId = name.slice(slashIndex + 1);
 
-    const limitedHooksClient = this.context.hooksClient.use({
-      authorizedScopes: scopes,
-    });
+    const hookScope = `trigger-hook:${name}`;
+    const { scopes: expandedScopes } = await this.context.authClient.expandScopes({ scopes });
 
-    try {
-      const result = await limitedHooksClient.triggerHook(hookGroup, hookId, payload);
-      return result.taskId || null;
-    } catch (err) {
-      // translate InsufficientScopes errors nicely for our users, since they are common and
-      // since we can provide additional context not available from the hooks service.
-      if (err.code === 'InsufficientScopes') {
-        err.message = [
+    if (!satisfiesExpression(expandedScopes, `github:${hookScope}`)) {
+      const err = new Error(
+        [
           'Taskcluster-GitHub attempted to trigger a hook for this event with the following scopes:',
           '',
           '```',
           stringify(scopes, null, 2),
           '```',
           '',
-          'The expansion of these scopes is not sufficient to trigger the hook, leading to the following:',
-          '',
-          err.message,
-        ].join('\n');
-      }
+          `The expansion of these scopes is missing \`github:${hookScope}\`, which is required to`,
+          `trigger the hook \`${name}\`.`,
+        ].join('\n')
+      );
+      err.code = 'InsufficientScopes';
       throw err;
     }
+
+    const limitedHooksClient = this.context.hooksClient.use({
+      authorizedScopes: [`hooks:${hookScope}`],
+    });
+
+    const result = await limitedHooksClient.triggerHook(hookGroup, hookId, payload);
+    return result.taskId || null;
   }
 
   /**

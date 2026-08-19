@@ -145,6 +145,15 @@ const load = loader(
         }),
     },
 
+    authClient: {
+      requires: ['cfg'],
+      setup: ({ cfg }) =>
+        new taskcluster.Auth({
+          rootUrl: cfg.taskcluster.rootUrl,
+          credentials: cfg.taskcluster.credentials,
+        }),
+    },
+
     api: {
       requires: ['cfg', 'monitor', 'schemaset', 'github', 'publisher', 'db', 'ajv', 'queueClient', 'intree'],
       setup: ({ cfg, monitor, schemaset, github, publisher, db, ajv, queueClient, intree }) => {
@@ -211,6 +220,7 @@ const load = loader(
         'db',
         'queueClient',
         'hooksClient',
+        'authClient',
       ],
       setup: async ({
         cfg,
@@ -224,6 +234,7 @@ const load = loader(
         db,
         queueClient,
         hooksClient,
+        authClient,
       }) =>
         new Handlers({
           rootUrl: cfg.taskcluster.rootUrl,
@@ -236,7 +247,7 @@ const load = loader(
           deprecatedInitialStatusQueueName: cfg.app.deprecatedInitialStatusQueue,
           resultStatusQueueName: cfg.app.resultStatusQueue,
           rerunQueueName: cfg.app.rerunQueue,
-          context: { cfg, github, schemaset, db, publisher, hooksClient },
+          context: { cfg, github, schemaset, db, publisher, hooksClient, authClient },
           pulseClient,
           queueClient,
         }),
