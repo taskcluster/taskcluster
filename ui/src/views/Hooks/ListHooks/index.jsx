@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
+import { Hooks } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { parse, stringify } from 'qs';
@@ -11,19 +11,11 @@ import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
 import HooksListTable from '../../../components/HooksListTable';
-import hooksQuery from './hooks.graphql';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@withApollo
-@graphql(hooksQuery, {
-  options: ({ match: { params } }) => ({
-    fetchPolicy: 'network-only',
-    variables: {
-      hookGroupId: params.hookGroupId || null,
-    },
-  }),
-})
+@withTaskclusterClient
 @withStyles(theme => ({
   actionButton: {
     ...theme.mixins.fab,
@@ -44,6 +36,50 @@ import Link from '../../../utils/Link';
   },
 }))
 export default class ListHooks extends Component {
+  state = {
+    loading: true,
+    error: null,
+    hooks: null,
+  };
+
+  get hooksClient() {
+    return this.props.createTaskclusterClient({ Class: Hooks });
+  }
+
+  async componentDidMount() {
+    await this.fetchHooks();
+  }
+
+  fetchHooks = async () => {
+    const { hookGroupId } = this.props.match.params;
+
+    this.setState({ loading: true, error: null });
+
+    try {
+      const result = await this.hooksClient.listHooks(hookGroupId);
+      const hooks = await Promise.all(
+        result.hooks.map(async hook => {
+          try {
+            const { lastFires } = await this.hooksClient.listLastFires(
+              hook.hookGroupId,
+              hook.hookId,
+              { limit: 1 }
+            );
+
+            return { ...hook, lastFire: lastFires[0] };
+          } catch (_err) {
+            // no last fires recorded for this hook yet
+            return hook;
+          }
+        })
+      );
+
+      this.setState({ loading: false, hooks });
+    } catch (error) {
+      this.setState({ loading: false, error });
+    }
+  };
+
   handleCreateHook = () => {
     this.props.history.push('/hooks/create');
   };
@@ -60,14 +96,9 @@ export default class ListHooks extends Component {
   };
 
   render() {
-    const {
-      classes,
-      description,
-      data: { loading, error, hookGroups },
-      match,
-    } = this.props;
+    const { classes, description, match } = this.props;
+    const { loading, error, hooks } = this.state;
     const { search } = parse(window.location.search.slice(1));
-    const hooks = hookGroups?.flatMap(group => group?.hooks);
 
     return (
       <Dashboard
@@ -90,7 +121,7 @@ export default class ListHooks extends Component {
             </Typography>
           </Breadcrumbs>
         </div>
-        {!hookGroups && loading && <Spinner loading />}
+        {!hooks && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
         {!loading &&
           (hooks?.length ? (

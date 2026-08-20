@@ -31,7 +31,6 @@ union Node =
   WorkerManagerWorkerPoolSummary |
   WorkerManagerProvider |
   WorkerManagerError |
-  HookLastFire |
   WorkerPoolLaunchConfig |
   WorkerPoolLaunchConfigStats
 

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
+import { Hooks } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import PlusIcon from 'mdi-react/PlusIcon';
 import { parse, stringify } from 'qs';
@@ -11,14 +11,9 @@ import Search from '../../../components/Search';
 import Button from '../../../components/Button';
 import ErrorPanel from '../../../components/ErrorPanel';
 import HookGroupsTable from '../../../components/HookGroupsTable';
-import hookGroupsQuery from './hookGroups.graphql';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@withApollo
-@graphql(hookGroupsQuery, {
-  options: {
-    fetchPolicy: 'network-only',
-  },
-})
+@withTaskclusterClient
 @withStyles(theme => ({
   actionButton: {
     ...theme.mixins.fab,
@@ -39,6 +34,32 @@ import hookGroupsQuery from './hookGroups.graphql';
   },
 }))
 export default class ListHookGroups extends Component {
+  state = {
+    loading: true,
+    error: null,
+    hookGroups: null,
+  };
+
+  get hooksClient() {
+    return this.props.createTaskclusterClient({ Class: Hooks });
+  }
+
+  async componentDidMount() {
+    await this.fetchHookGroups();
+  }
+
+  fetchHookGroups = async () => {
+    this.setState({ loading: true, error: null });
+
+    try {
+      const result = await this.hooksClient.listHookGroups();
+
+      this.setState({ loading: false, hookGroups: result.groups });
+    } catch (error) {
+      this.setState({ loading: false, error });
+    }
+  };
+
   handleCreateHook = () => {
     this.props.history.push('/hooks/create');
   };
@@ -55,13 +76,9 @@ export default class ListHookGroups extends Component {
   };
 
   render() {
-    const {
-      classes,
-      description,
-      data: { loading, error, hookGroups },
-    } = this.props;
+    const { classes, description } = this.props;
+    const { loading, error, hookGroups } = this.state;
     const { search } = parse(window.location.search.slice(1));
-    const hookGroupIds = hookGroups?.map(group => group?.hookGroupId);
 
     return (
       <Dashboard
@@ -77,10 +94,10 @@ export default class ListHookGroups extends Component {
         {!hookGroups && loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
         {!loading &&
-          (hookGroupIds?.length ? (
+          (hookGroups?.length ? (
             <HookGroupsTable
               searchTerm={search}
-              hookGroups={hookGroupIds}
+              hookGroups={hookGroups}
               classes={classes}
             />
           ) : (
