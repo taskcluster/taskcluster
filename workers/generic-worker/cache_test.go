@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,6 +11,50 @@ import (
 
 	"github.com/taskcluster/taskcluster/v106/workers/generic-worker/gwconfig"
 )
+
+func shaOf(content string) string {
+	sum := sha256.Sum256([]byte(content))
+	return hex.EncodeToString(sum[:])
+}
+
+// fakeFSContent is an FSContent that writes fixed content on download, and
+// counts how many times it was downloaded.
+type fakeFSContent struct {
+	key         string
+	dir         string
+	content     string
+	requiredSHA string
+	downloads   int
+}
+
+func (f *fakeFSContent) RequiredScopes() []string {
+	return []string{}
+}
+
+func (f *fakeFSContent) Download(taskMount *TaskMount) (string, string, error) {
+	f.downloads++
+	file := filepath.Join(f.dir, fmt.Sprintf("download-%d", f.downloads))
+	if err := os.WriteFile(file, []byte(f.content), 0600); err != nil {
+		return "", "", err
+	}
+	return file, shaOf(f.content), nil
+}
+
+func (f *fakeFSContent) UniqueKey(taskMount *TaskMount) (string, error) {
+	return f.key, nil
+}
+
+func (f *fakeFSContent) RequiredSHA256() string {
+	return f.requiredSHA
+}
+
+func (f *fakeFSContent) String() string {
+	return "fake content " + f.key
+}
+
+func (f *fakeFSContent) TaskDependencies() []string {
+	return []string{}
+}
 
 func TestIssue5363(t *testing.T) {
 	cacheMap := &CacheMap{}
@@ -213,6 +259,133 @@ func TestRetainReleaseFileCacheShared(t *testing.T) {
 	}
 }
 
+func TestNewFileCacheEntryIsBornRetained(t *testing.T) {
+	cm := FileCacheMap{}
+	tm := &TaskMount{task: &TaskRun{}}
+
+	entry := tm.newFileCache(cm, "mykey", "/tmp/downloaded", "abc123")
+
+	if cm["mykey"] != entry {
+		t.Fatal("Expected new file cache to be registered in the map")
+	}
+	if entry.UseCount != 1 || !entry.InUse {
+		t.Errorf("Expected new file cache to be born retained, got UseCount=%d InUse=%v", entry.UseCount, entry.InUse)
+	}
+	if len(cm.SortedResources()) != 0 {
+		t.Error("Expected newly downloaded file cache to be ineligible for garbage collection")
+	}
+	tm.releaseFileCache(entry)
+	if entry.InUse {
+		t.Error("Expected the downloading task to own the reference, so releasing it frees the entry")
+	}
+}
+
+func TestReleaseFileCacheIgnoresEntryNotHeldByTask(t *testing.T) {
+	entry := &Cache{Key: "shared", Location: "/tmp/shared"}
+	holder := &TaskMount{}
+	other := &TaskMount{}
+	holder.retainFileCache(entry)
+	other.releaseFileCache(entry)
+
+	if entry.UseCount != 1 {
+		t.Errorf("Expected UseCount to remain 1 after release by a task that never retained the entry, got %d", entry.UseCount)
+	}
+	if !entry.InUse {
+		t.Error("Expected file cache to stay InUse while the holding task still holds it")
+	}
+}
+
+func TestPurgeOfInUseFileCacheIsDeferredUntilLastRelease(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "stale")
+	if err := os.WriteFile(file, []byte("stale"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	cm := FileCacheMap{}
+	entry := &Cache{Key: "f", Location: file, Owner: cm}
+	cm["f"] = entry
+	holder := &TaskMount{task: &TaskRun{}}
+	holder.retainFileCache(entry)
+
+	if err := entry.Purge(holder); err != nil {
+		t.Fatal(err)
+	}
+	if _, exists := cm["f"]; exists {
+		t.Error("Expected purged entry to leave the map immediately, so it is never served again")
+	}
+	if _, err := os.Stat(file); err != nil {
+		t.Fatalf("Expected deletion to be deferred while a task is still using the file: %v", err)
+	}
+
+	holder.releaseFileCache(entry)
+
+	if _, err := os.Stat(file); !os.IsNotExist(err) {
+		t.Errorf("Expected purged content to be deleted once the last task released it, stat gave: %v", err)
+	}
+}
+
+func TestReleaseFileCacheUnlinksTheContentItDeletes(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "stale")
+	if err := os.WriteFile(file, []byte("stale"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	cm := FileCacheMap{}
+	entry := &Cache{Key: "f", Location: file, Owner: cm}
+	cm["f"] = entry
+	holder := &TaskMount{task: &TaskRun{}}
+	holder.retainFileCache(entry)
+	// NeedsPurge on an entry that is still in its map is how purgeCaches
+	// marks directory caches. Deleting the content of such an entry without
+	// unlinking it would leave the map pointing at a file that is gone, and
+	// the next ensureCached panics on its missing-file sanity check.
+	entry.NeedsPurge = true
+
+	holder.releaseFileCache(entry)
+
+	if _, exists := cm["f"]; exists {
+		t.Error("Expected the entry to leave the map along with the content it points at")
+	}
+	if _, err := os.Stat(file); !os.IsNotExist(err) {
+		t.Errorf("Expected the content to be deleted once the last task released it, stat gave: %v", err)
+	}
+}
+
+func TestSharedFileCacheIsNotRetainedOnceReplaced(t *testing.T) {
+	cacheMutex.Lock()
+	origCaches := fileCaches
+	fileCaches = FileCacheMap{}
+	cacheMutex.Unlock()
+	defer func() {
+		cacheMutex.Lock()
+		fileCaches = origCaches
+		cacheMutex.Unlock()
+	}()
+
+	const key = "fake://shared"
+	// shared is what another task's in-flight download produced, but it has
+	// since been purged and replaced, so its content may already be deleted.
+	shared := &Cache{Key: key, Location: "/tmp/shared", Owner: fileCaches}
+	replacement := &Cache{Key: key, Location: "/tmp/replacement", Owner: fileCaches}
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
+	fileCaches[key] = replacement
+
+	tm := &TaskMount{task: &TaskRun{}}
+	if tm.retainSharedFileCache(key, shared) {
+		t.Error("Expected a task not to retain an entry that is no longer the live one for its key")
+	}
+	if shared.UseCount != 0 || shared.InUse {
+		t.Errorf("Expected the replaced entry to be untouched, got UseCount=%d InUse=%v", shared.UseCount, shared.InUse)
+	}
+	if !tm.retainSharedFileCache(key, replacement) {
+		t.Fatal("Expected a task to retain the entry that is still the live one")
+	}
+	if replacement.UseCount != 1 || !replacement.InUse {
+		t.Errorf("Expected the live entry to be retained, got UseCount=%d InUse=%v", replacement.UseCount, replacement.InUse)
+	}
+}
+
 func TestEvictSkipsInUseFileCache(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "cached")
@@ -259,9 +432,15 @@ func TestFileCacheLoadFromFileResetsInUse(t *testing.T) {
 }
 
 func TestEnsureCachedRetainsFileCache(t *testing.T) {
+	cacheMutex.Lock()
 	origCaches := fileCaches
 	fileCaches = FileCacheMap{}
-	defer func() { fileCaches = origCaches }()
+	cacheMutex.Unlock()
+	defer func() {
+		cacheMutex.Lock()
+		fileCaches = origCaches
+		cacheMutex.Unlock()
+	}()
 
 	location := filepath.Join(t.TempDir(), "cached-file")
 	if err := os.WriteFile(location, []byte("hello"), 0600); err != nil {
@@ -269,8 +448,10 @@ func TestEnsureCachedRetainsFileCache(t *testing.T) {
 	}
 
 	key := "Raw content: hello"
+	cacheMutex.Lock()
 	entry := &Cache{Key: key, Location: location, Owner: fileCaches}
 	fileCaches[key] = entry
+	cacheMutex.Unlock()
 
 	tm := &TaskMount{task: &TaskRun{}}
 	if _, _, err := ensureCached(&RawContent{Raw: "hello"}, tm); err != nil {
@@ -278,6 +459,58 @@ func TestEnsureCachedRetainsFileCache(t *testing.T) {
 	}
 	if !entry.InUse {
 		t.Error("Expected ensureCached to mark the file cache InUse")
+	}
+	cacheMutex.Lock()
+	tm.releaseFileCache(entry)
+	cacheMutex.Unlock()
+}
+
+func TestEnsureCachedReplacesStaleEntryHeldByAnotherTask(t *testing.T) {
+	cacheMutex.Lock()
+	origCaches := fileCaches
+	fileCaches = FileCacheMap{}
+	cacheMutex.Unlock()
+	defer func() {
+		cacheMutex.Lock()
+		fileCaches = origCaches
+		cacheMutex.Unlock()
+	}()
+
+	dir := t.TempDir()
+	staleFile := filepath.Join(dir, "stale")
+	if err := os.WriteFile(staleFile, []byte("stale"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	const key = "fake://content"
+	cacheMutex.Lock()
+	stale := &Cache{Key: key, Location: staleFile, Owner: fileCaches, SHA256: shaOf("stale")}
+	fileCaches[key] = stale
+	holder := &TaskMount{task: &TaskRun{}}
+	holder.retainFileCache(stale)
+	cacheMutex.Unlock()
+
+	content := &fakeFSContent{key: key, dir: dir, content: "fresh", requiredSHA: shaOf("fresh")}
+	tm := &TaskMount{task: &TaskRun{}}
+	file, sha, err := ensureCached(content, tm)
+	if err != nil {
+		t.Fatalf("Expected ensureCached to re-download after SHA256 mismatch, got error: %v", err)
+	}
+	if sha != shaOf("fresh") {
+		t.Errorf("Expected SHA256 of freshly downloaded content, got %v", sha)
+	}
+	if data, readErr := os.ReadFile(file); readErr != nil || string(data) != "fresh" {
+		t.Errorf("Expected ensureCached to return the fresh content, got %q (err %v)", data, readErr)
+	}
+	if _, statErr := os.Stat(staleFile); statErr != nil {
+		t.Errorf("Expected the stale file to survive while another task is still using it: %v", statErr)
+	}
+
+	cacheMutex.Lock()
+	holder.releaseFileCache(stale)
+	cacheMutex.Unlock()
+	if _, statErr := os.Stat(staleFile); !os.IsNotExist(statErr) {
+		t.Errorf("Expected the stale file to be deleted once the last task released it, stat gave: %v", statErr)
 	}
 }
 
