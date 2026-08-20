@@ -1608,7 +1608,7 @@ __metadata:
     is-absolute-url: "npm:^4.0.1"
     js-yaml: "npm:^4.3.1"
     jsdom: "npm:^29.0.0"
-    json-e: "npm:^4.8.2"
+    json-e: "npm:^4.8.4"
     json-schema-defaults: "npm:^0.4.0"
     jsonlint-mod: "npm:^1.7.6"
     localforage: "npm:^1.7.3"
@@ -4469,12 +4469,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json-e@npm:^4.8.2":
-  version: 4.8.2
-  resolution: "json-e@npm:4.8.2"
+"json-e@npm:^4.8.4":
+  version: 4.8.4
+  resolution: "json-e@npm:4.8.4"
   dependencies:
     json-stable-stringify-without-jsonify: "npm:^1.0.1"
-  checksum: 10c0/ecbd655cb800c4e5907548014807ee11a6074fc10b645fd477ce821110dd2d038339f7b192605b8855edf82fb66057c30b1859a87453b1a0112e39c3401fc2a1
+    lodash: "npm:^4.17.23"
+  checksum: 10c0/ee419afc1f8e9cb9a165121223c8c7d3345cd5fcb996e95e75ce72a28d0f9f4e91b4d2da014e7f2d89660eaf2b17d9c1211213f3cbc1343ecf0e1cc35564141b
   languageName: node
   linkType: hard
 
@@ -4811,7 +4812,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.4":
+"lodash@npm:^4.17.23, lodash@npm:^4.17.4":
   version: 4.18.1
   resolution: "lodash@npm:4.18.1"
   checksum: 10c0/757228fc68805c59789e82185135cf85f05d0b2d3d54631d680ca79ec21944ec8314d4533639a14b8bcfbd97a517e78960933041a5af17ecb693ec6eecb99a27
