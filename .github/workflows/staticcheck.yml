@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  STATICCHECK_VERSION: "2026.1"
+  STATICCHECK_VERSION: "2026.2"
 
 jobs:
   staticcheck-gw-multiuser:
