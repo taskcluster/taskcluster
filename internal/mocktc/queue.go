@@ -530,6 +530,17 @@ func (queue *Queue) Artifact(taskId, runId, name string) (*tcqueue.GetArtifactCo
 			return nil, err
 		}
 
+	case *tcqueue.RedirectArtifactRequest:
+		resp := tcqueue.GetArtifactContentResponse3{
+			StorageType: "reference",
+			URL:         a.URL,
+		}
+		var err error
+		jsonResp, err = json.Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+
 	case *tcqueue.LinkArtifactRequest:
 		return queue.Artifact(taskId, runId, a.Artifact)
 

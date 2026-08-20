@@ -3,10 +3,10 @@ package interactive
 
 import (
 	"context"
+	"crypto/subtle"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -45,17 +45,13 @@ func New(port uint16, interactiveCommands InteractiveCommands, ctx context.Conte
 	}
 
 	it.setRequestURL()
-	os.Setenv("INTERACTIVE_ACCESS_TOKEN", it.secret)
 
 	return
 }
 
 func (it *Interactive) Handler(w http.ResponseWriter, r *http.Request) {
-	accessToken := os.Getenv("INTERACTIVE_ACCESS_TOKEN")
 	secret := strings.TrimPrefix(r.URL.Path, "/shell/")
-	// Authenticate the request with accessToken, this is good enough because
-	// interactive shells are short-lived.
-	if secret != accessToken {
+	if subtle.ConstantTimeCompare([]byte(secret), []byte(it.secret)) != 1 {
 		http.Error(w, "Access denied", http.StatusUnauthorized)
 		return
 	}
