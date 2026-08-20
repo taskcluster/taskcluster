@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import TaskRunsCard from './index';
 
@@ -97,4 +97,64 @@ it('should render TaskRunsCard', () => {
   );
 
   expect(asFragment()).toMatchSnapshot();
+});
+
+it('should link an unsafe log artifact name to the artifact url', () => {
+  const originalEnv = window.env;
+  const name = '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/shell/x.log';
+
+  window.env = { TASKCLUSTER_ROOT_URL: 'https://taskcluster.net' };
+
+  render(
+    <MemoryRouter keyLength={0}>
+      <TaskRunsCard
+        taskQueueId="task/queueId"
+        task={{
+          taskId: 'taskId',
+          status: {
+            taskId: 'taskId',
+            state: 'COMPLETED',
+          },
+          taskQueueId: 'task/queueId',
+          payload: {},
+          metadata: {},
+        }}
+        selectedRunId={0}
+        runs={[
+          {
+            taskId: 'taskId',
+            runId: 0,
+            state: 'COMPLETED',
+            reasonCreated: 'SCHEDULED',
+            reasonResolved: 'COMPLETED',
+            scheduled: '2022-02-03T14:41:19.706Z',
+            started: '2022-02-03T14:43:54.086Z',
+            resolved: '2022-02-03T14:45:28.396Z',
+            workerGroup: 'us-east1',
+            workerId: '7421215367664916236',
+            artifacts: {
+              pageInfo: {
+                hasNextPage: false,
+                hasPreviousPage: false,
+                cursor: '$$FIRST$$',
+                previousCursor: null,
+                nextCursor: null,
+              },
+              edges: [
+                {
+                  node: { name, contentType: 'text/plain; charset=utf-8' },
+                },
+              ],
+            },
+          },
+        ]}
+      />
+    </MemoryRouter>
+  );
+
+  expect(screen.getByText(name).closest('a').getAttribute('href')).toEqual(
+    'https://taskcluster.net/api/queue/v1/task/taskId/runs/0/artifacts/%252e%252e%2F%252e%252e%2F%252e%252e%2F%252e%252e%2F%252e%252e%2Fshell%2Fx.log'
+  );
+
+  window.env = originalEnv;
 });
