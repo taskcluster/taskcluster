@@ -362,76 +362,72 @@ type (
 func GWTest(t *testing.T) *Test {
 	t.Helper()
 	testConfig := &gwconfig.Config{
-		PrivateConfig: gwconfig.PrivateConfig{
-			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
-		},
-		PublicConfig: gwconfig.PublicConfig{
-			PublicPlatformConfig:          *gwconfig.DefaultPublicPlatformConfig(),
-			AllowedHighMemoryDurationSecs: 5,
-			AvailabilityZone:              "outer-space",
-			// Need common caches directory across tests, since files
-			// directory-caches.json and file-caches.json are not per-test.
-			CachesDir:       cachesDir,
-			Capacity:        1,
-			CleanUpTaskDirs: false,
-			ClientID:        os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			DisableReboots:  true,
-			// Need common downloads directory across tests, since files
-			// directory-caches.json and file-caches.json are not per-test.
-			DownloadsDir:              filepath.Join(cwd, "downloads"),
-			EnableChainOfTrust:        true,
-			EnableLiveLog:             true,
-			EnableMetadata:            true,
-			EnableMounts:              true,
-			EnableOSGroups:            true,
-			EnableResourceMonitor:     true,
-			EnableTaskclusterProxy:    true,
-			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
-			IdleTimeoutSecs:           60,
-			InstanceID:                "test-instance-id",
-			InstanceType:              "p3.enormous",
-			InteractivePort:           53765,
-			LiveLogExecutable:         "livelog",
-			// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
-			// These ports are not exposed outside of the host. However, in CI they must differ from those of the
-			// generic-worker instance running the test suite.
-			LiveLogPortBase:         30583,
-			MaxMemoryUsagePercent:   90,
-			MaxTaskRunTime:          300,
-			MinAvailableMemoryBytes: 524288000, // 500 MiB
-			NumberOfTasksToRun:      1,
-			PrivateIP:               net.ParseIP("87.65.43.21"),
-			ProvisionerID:           "test-provisioner",
-			PublicIP:                net.ParseIP("12.34.56.78"),
-			Region:                  "test-worker-group",
-			// should be enough for tests, and travis-ci.org CI environments don't
-			// have a lot of free disk
-			RequiredDiskSpaceMegabytes:     16,
-			RootURL:                        "http://localhost:13243",
-			RunAfterUserCreation:           "",
-			SentryProject:                  "generic-worker-tests",
-			ShutdownMachineOnIdle:          false,
-			ShutdownMachineOnInternalError: false,
-			TaskclusterProxyExecutable:     "taskcluster-proxy",
-			TaskclusterProxyPort:           34569,
-			TasksDir:                       filepath.Join(testdataDir, t.Name(), "tasks"),
-			WorkerGroup:                    "test-worker-group",
-			WorkerID:                       "test-worker-id",
-			WorkerType:                     testWorkerType(),
-			WorkerTypeMetadata: map[string]any{
-				"generic-worker": map[string]string{
-					"go-arch":    runtime.GOARCH,
-					"go-os":      runtime.GOOS,
-					"go-version": runtime.Version(),
-					"version":    version,
-					"revision":   revision,
-					"engine":     engine,
-				},
-				"parent-task": map[string]string{
-					"taskId": os.Getenv("TASK_ID"),
-					"runId":  os.Getenv("RUN_ID"),
-				},
+		AccessToken:                   os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		Certificate:                   os.Getenv("TASKCLUSTER_CERTIFICATE"),
+		PublicPlatformConfig:          *gwconfig.DefaultPublicPlatformConfig(),
+		AllowedHighMemoryDurationSecs: 5,
+		AvailabilityZone:              "outer-space",
+		// Need common caches directory across tests, since files
+		// directory-caches.json and file-caches.json are not per-test.
+		CachesDir:       cachesDir,
+		Capacity:        1,
+		CleanUpTaskDirs: false,
+		ClientID:        os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		DisableReboots:  true,
+		// Need common downloads directory across tests, since files
+		// directory-caches.json and file-caches.json are not per-test.
+		DownloadsDir:              filepath.Join(cwd, "downloads"),
+		EnableChainOfTrust:        true,
+		EnableLiveLog:             true,
+		EnableMetadata:            true,
+		EnableMounts:              true,
+		EnableOSGroups:            true,
+		EnableResourceMonitor:     true,
+		EnableTaskclusterProxy:    true,
+		Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
+		IdleTimeoutSecs:           60,
+		InstanceID:                "test-instance-id",
+		InstanceType:              "p3.enormous",
+		InteractivePort:           53765,
+		LiveLogExecutable:         "livelog",
+		// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
+		// These ports are not exposed outside of the host. However, in CI they must differ from those of the
+		// generic-worker instance running the test suite.
+		LiveLogPortBase:         30583,
+		MaxMemoryUsagePercent:   90,
+		MaxTaskRunTime:          300,
+		MinAvailableMemoryBytes: 524288000, // 500 MiB
+		NumberOfTasksToRun:      1,
+		PrivateIP:               net.ParseIP("87.65.43.21"),
+		ProvisionerID:           "test-provisioner",
+		PublicIP:                net.ParseIP("12.34.56.78"),
+		Region:                  "test-worker-group",
+		// should be enough for tests, and travis-ci.org CI environments don't
+		// have a lot of free disk
+		RequiredDiskSpaceMegabytes:     16,
+		RootURL:                        "http://localhost:13243",
+		RunAfterUserCreation:           "",
+		SentryProject:                  "generic-worker-tests",
+		ShutdownMachineOnIdle:          false,
+		ShutdownMachineOnInternalError: false,
+		TaskclusterProxyExecutable:     "taskcluster-proxy",
+		TaskclusterProxyPort:           34569,
+		TasksDir:                       filepath.Join(testdataDir, t.Name(), "tasks"),
+		WorkerGroup:                    "test-worker-group",
+		WorkerID:                       "test-worker-id",
+		WorkerType:                     testWorkerType(),
+		WorkerTypeMetadata: map[string]any{
+			"generic-worker": map[string]string{
+				"go-arch":    runtime.GOARCH,
+				"go-os":      runtime.GOOS,
+				"go-version": runtime.Version(),
+				"version":    version,
+				"revision":   revision,
+				"engine":     engine,
+			},
+			"parent-task": map[string]string{
+				"taskId": os.Getenv("TASK_ID"),
+				"runId":  os.Getenv("RUN_ID"),
 			},
 		},
 	}

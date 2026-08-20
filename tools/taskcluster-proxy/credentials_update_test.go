@@ -98,15 +98,11 @@ func (routesTest *RoutesTest) request(method string, content []byte) (res *httpt
 func NewRoutesTest(t *testing.T) *RoutesTest {
 	t.Helper()
 	return &RoutesTest{
-		Routes: Routes{
-			Client: tcclient.Client{
-				Authenticate: true,
-				Credentials: &tcclient.Credentials{
-					ClientID:    "clientId",
-					AccessToken: "accessToken",
-					Certificate: `{"version":1,"scopes":["scope2"]}`,
-				},
-			},
+		Authenticate: true,
+		Credentials: &tcclient.Credentials{
+			ClientID:    "clientId",
+			AccessToken: "accessToken",
+			Certificate: `{"version":1,"scopes":["scope2"]}`,
 		},
 		t: t,
 	}
