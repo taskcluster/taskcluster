@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -61,7 +60,7 @@ func testInteractive(t *testing.T, port uint16, interactiveCommands InteractiveC
 	defer server.Close()
 
 	// Make a WebSocket connection to the server
-	url := "ws" + strings.TrimPrefix(server.URL, "http") + fmt.Sprintf("/shell/%v", os.Getenv("INTERACTIVE_ACCESS_TOKEN"))
+	url := "ws" + strings.TrimPrefix(server.URL, "http") + fmt.Sprintf("/shell/%v", interactive.secret)
 	conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		t.Fatal("dial error:", err)
@@ -116,5 +115,35 @@ func testInteractive(t *testing.T, port uint16, interactiveCommands InteractiveC
 	err = conn.Close()
 	if err != nil {
 		t.Fatalf("Error closing WebSocket connection: %v", err)
+	}
+}
+
+func TestInteractiveSecretIsPerSession(t *testing.T) {
+	ctx := t.Context()
+
+	interactiveCommands := InteractiveCommands{
+		IsReadyCmd:     nil,
+		InteractiveCmd: func() (InteractiveCmdType, error) { return exec.CommandContext(ctx, "bash"), nil },
+	}
+
+	first, err := New(53763, interactiveCommands, ctx)
+	if err != nil {
+		t.Fatalf("could not create first interactive session: %v", err)
+	}
+	second, err := New(53764, interactiveCommands, ctx)
+	if err != nil {
+		t.Fatalf("could not create second interactive session: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(first.Handler))
+	defer server.Close()
+
+	resp, err := http.Get(server.URL + "/shell/" + second.secret)
+	if err != nil {
+		t.Fatalf("Failed to connect: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("expected failure when authenticating to the first session with the second session's secret, got %v", resp.StatusCode)
 	}
 }
