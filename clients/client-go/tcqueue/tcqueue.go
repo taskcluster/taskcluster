@@ -1246,30 +1246,6 @@ func (queue *Queue) GetProvisioner_SignedURL(provisionerId string, duration time
 
 // Stability: *** DEPRECATED ***
 //
-// Declare a provisioner, supplying some details about it.
-//
-// `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
-// possessed. For example, a request to update the `my-provisioner`
-// provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
-// `queue:declare-provisioner:my-provisioner#description`.
-//
-// The term "provisioner" is taken broadly to mean anything with a provisionerId.
-// This does not necessarily mean there is an associated service performing any
-// provisioning activity.
-//
-// Required scopes:
-//
-//	For property in properties each queue:declare-provisioner:<provisionerId>#<property>
-//
-// See #declareProvisioner
-func (queue *Queue) DeclareProvisioner(provisionerId string, payload *ProvisionerRequest) (*ProvisionerResponse, error) {
-	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.PathEscape(provisionerId), new(ProvisionerResponse), nil)
-	return responseObject.(*ProvisionerResponse), err
-}
-
-// Stability: *** DEPRECATED ***
-//
 // Get an approximate number of pending tasks for the given `taskQueueId`.
 //
 // As task states may change rapidly, this number may not represent the exact
@@ -1491,26 +1467,6 @@ func (queue *Queue) GetWorkerType(provisionerId, workerType string) (*WorkerType
 func (queue *Queue) GetWorkerType_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
 	return (&cd).SignedURL("/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType), nil, duration)
-}
-
-// Stability: *** DEPRECATED ***
-//
-// Declare a workerType, supplying some details about it.
-//
-// `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
-// possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`
-// provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
-// `queue:declare-worker-type:my-provisioner/highmem#description`.
-//
-// Required scopes:
-//
-//	For property in properties each queue:declare-worker-type:<provisionerId>/<workerType>#<property>
-//
-// See #declareWorkerType
-func (queue *Queue) DeclareWorkerType(provisionerId, workerType string, payload *WorkerTypeRequest) (*WorkerTypeResponse, error) {
-	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType), new(WorkerTypeResponse), nil)
-	return responseObject.(*WorkerTypeResponse), err
 }
 
 // Get all active task queues.

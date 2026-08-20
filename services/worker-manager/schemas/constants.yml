@@ -141,9 +141,7 @@ action-description: |
   user operating the web interface, and issues the HTTP request.
 
   The level to which the action relates (provisioner, worker type, worker) is
-  called the action context. All actions, regardless of the action contexts,
-  are registered against the provisioner when calling
-  `queue.declareProvisioner`.
+  called the action context.
 
   The action context is used by the web client to determine where in the web
   interface to present the action to the user as follows:

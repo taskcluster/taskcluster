@@ -1875,19 +1875,6 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
-				Name:        "declareProvisioner",
-				Title:       "Update a provisioner",
-				Description: "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `my-provisioner`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:my-provisioner#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
-				Stability:   "deprecated",
-				Method:      "put",
-				Route:       "/provisioners/<provisionerId>",
-				Args: []string{
-					"provisionerId",
-				},
-				Query: []string{},
-				Input: "v1/update-provisioner-request.json#",
-			},
-			definitions.Entry{
 				Name:        "pendingTasks",
 				Title:       "Get Number of Pending Tasks",
 				Description: "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.\n\nThis method is **deprecated**, use queue.taskQueueCounts instead.",
@@ -1974,20 +1961,6 @@ var services = map[string]definitions.Service{
 				},
 				Query: []string{},
 				Input: "",
-			},
-			definitions.Entry{
-				Name:        "declareWorkerType",
-				Title:       "Update a worker-type",
-				Description: "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:my-provisioner/highmem#description`.",
-				Stability:   "deprecated",
-				Method:      "put",
-				Route:       "/provisioners/<provisionerId>/worker-types/<workerType>",
-				Args: []string{
-					"provisionerId",
-					"workerType",
-				},
-				Query: []string{},
-				Input: "v1/update-workertype-request.json#",
 			},
 			definitions.Entry{
 				Name:        "listTaskQueues",
