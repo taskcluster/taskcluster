@@ -6,7 +6,7 @@ import (
 
 	"slices"
 
-	"github.com/taskcluster/taskcluster/v105/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v106/tools/d2g/genericworker"
 )
 
 func (dia *DockerImageArtifact) FileMounts() ([]genericworker.FileMount, error) {

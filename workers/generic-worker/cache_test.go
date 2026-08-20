@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v105/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v106/workers/generic-worker/gwconfig"
 )
 
 func TestIssue5363(t *testing.T) {

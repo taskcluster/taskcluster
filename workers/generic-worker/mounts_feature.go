@@ -19,10 +19,10 @@ import (
 	"github.com/mholt/archives"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v105/clients/client-go"
-	"github.com/taskcluster/taskcluster/v105/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v105/internal/scopes"
-	"github.com/taskcluster/taskcluster/v105/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v106/clients/client-go"
+	"github.com/taskcluster/taskcluster/v106/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v106/internal/scopes"
+	"github.com/taskcluster/taskcluster/v106/workers/generic-worker/fileutil"
 	"golang.org/x/sync/singleflight"
 )
 

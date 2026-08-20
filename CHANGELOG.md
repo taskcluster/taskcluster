@@ -3,6 +3,27 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v106.0.0
+
+### USERS
+
+▶ [MAJOR] [bug 2064901](http://bugzil.la/2064901)
+Github hooks triggered from .taskcluster.yml now require the
+`github:trigger-hook:<name>` scope instead of `hooks:trigger-hook:<name>`.
+
+▶ [minor] [#8378](https://github.com/taskcluster/taskcluster/issues/8378)
+The auth service can now hand out repository scoped tokens through
+`/api/auth/v1/github/<app>/<owner>/repo-token`. See the route documentation for more
+information.
+
+▶ [patch] [bug 2062167](http://bugzil.la/2062167)
+Fixed a bug where multiple interactive sessions on a worker with capacity greater than 1 would override eachother's secrets.
+
+### DEVELOPERS
+
+▶ [patch]
+Upgrade json-e to 4.8.4.
+
 ## v105.1.0
 
 ### GENERAL

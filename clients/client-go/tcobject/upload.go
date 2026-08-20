@@ -11,7 +11,7 @@ import (
 
 	"github.com/cenkalti/backoff/v3"
 	"github.com/taskcluster/httpbackoff/v3"
-	tcclient "github.com/taskcluster/taskcluster/v105/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v106/clients/client-go"
 )
 
 const (

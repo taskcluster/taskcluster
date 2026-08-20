@@ -5,10 +5,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v105/tools/worker-runner/cfg"
-	"github.com/taskcluster/taskcluster/v105/tools/worker-runner/worker/dummy"
-	"github.com/taskcluster/taskcluster/v105/tools/worker-runner/worker/genericworker"
-	"github.com/taskcluster/taskcluster/v105/tools/worker-runner/worker/worker"
+	"github.com/taskcluster/taskcluster/v106/tools/worker-runner/cfg"
+	"github.com/taskcluster/taskcluster/v106/tools/worker-runner/worker/dummy"
+	"github.com/taskcluster/taskcluster/v106/tools/worker-runner/worker/genericworker"
+	"github.com/taskcluster/taskcluster/v106/tools/worker-runner/worker/worker"
 )
 
 type workerInfo struct {

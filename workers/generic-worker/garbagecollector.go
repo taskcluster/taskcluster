@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/taskcluster/taskcluster/v105/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v106/workers/generic-worker/host"
 )
 
 // A resource is something that can be deleted. Rating provides an indication

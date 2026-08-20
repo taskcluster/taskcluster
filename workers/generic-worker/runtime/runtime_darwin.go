@@ -5,8 +5,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/taskcluster/taskcluster/v105/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v105/workers/generic-worker/kc"
+	"github.com/taskcluster/taskcluster/v106/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v106/workers/generic-worker/kc"
 )
 
 func (user *OSUser) CreateNew(okIfExists bool) (err error) {

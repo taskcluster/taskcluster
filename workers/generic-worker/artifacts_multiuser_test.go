@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v105/clients/client-go"
-	"github.com/taskcluster/taskcluster/v105/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v106/clients/client-go"
+	"github.com/taskcluster/taskcluster/v106/workers/generic-worker/fileutil"
 )
 
 func TestPrivilegedFileUpload(t *testing.T) {

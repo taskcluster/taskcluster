@@ -18,8 +18,8 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/taskcluster/taskcluster/v105/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v105/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v106/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v106/workers/generic-worker/runtime"
 )
 
 func defaultTasksDir() string {

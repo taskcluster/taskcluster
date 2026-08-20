@@ -8,7 +8,7 @@ import (
 
 	"slices"
 
-	"github.com/taskcluster/taskcluster/v105/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v106/tools/d2g/genericworker"
 )
 
 func (idi *IndexedDockerImage) FileMounts() ([]genericworker.FileMount, error) {

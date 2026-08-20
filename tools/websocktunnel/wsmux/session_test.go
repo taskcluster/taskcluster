@@ -9,7 +9,7 @@ import (
 	"net/http/httptest"
 
 	"github.com/gorilla/websocket"
-	"github.com/taskcluster/taskcluster/v105/tools/websocktunnel/util"
+	"github.com/taskcluster/taskcluster/v106/tools/websocktunnel/util"
 )
 
 func TestEcho(t *testing.T) {
