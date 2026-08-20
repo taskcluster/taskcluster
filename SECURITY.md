@@ -6,7 +6,7 @@ This code and its associated production web page are included in Mozilla's web a
 
 ## Reporting a Potential Vulnerability
 
-Please submit all security-related bugs through [HackerOne](https://hackerone.com/mozilla). Never submit security-related bugs through a GitHub Issue or by email.
+Please submit all security-related bugs through [HackerOne](https://hackerone.com/mozilla). Do not submit security-related bugs through GitHub Issues, GitHub Security Advisories (GHSAs), pull requests, or email. HackerOne is where Mozilla evaluates duplicate status and coordinates disclosure and credit.
 
 ### What to include
 
@@ -14,7 +14,7 @@ To help us triage quickly, please provide:
 
 - A clear description of the issue
 - Steps to reproduce, or a proof of concept
-- Affected versions or environments
+- Affected versions, services, deployments, or environments
 - Potential impact, including what an attacker could achieve
 - Any suggested mitigations or fixes
 

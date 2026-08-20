@@ -36,6 +36,12 @@
 
 This repository is used to develop, build, and release the Taskcluster services.
 
+## Security
+
+External vulnerability reports for Taskcluster must go through [Mozilla's HackerOne program](https://hackerone.com/mozilla). Please do not open GitHub Security Advisories, GitHub Issues, pull requests, or email threads for potential vulnerabilities.
+
+If you already opened a GitHub Security Advisory, submit the issue through HackerOne and include the GHSA ID, proof of concept or reproduction steps, affected deployment details, and potential impact. See [SECURITY.md](SECURITY.md) for the full policy.
+
 ## Table of Contents
 
 <!-- TOC BEGIN -->
