@@ -653,6 +653,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     });
 
     const updateProps = {
+      expires: new Date('3000-01-01'),
       quarantineUntil: new Date('3000-01-01'),
     };
 
@@ -669,6 +670,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     } catch (error) {
       assert(error, 'expected an error');
     }
+  });
+
+  test('queue.declareWorker rejects an empty body', async () => {
+    await assert.rejects(
+      () => helper.queue.declareWorker('some-prov', 'some-wt', 'wg', 'wid', {}),
+      err => err.code === 'InputValidationError'
+    );
   });
 
   test('queue.claimWork adds a task to a worker', async () => {

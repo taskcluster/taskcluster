@@ -2220,7 +2220,7 @@ type (
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitzero"`
+		Expires tcclient.Time `json:"expires"`
 	}
 
 	// Response containing information about a worker.

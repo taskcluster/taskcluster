@@ -12,4 +12,4 @@ properties:
     type:         string
     format:       date-time
 additionalProperties: false
-required: []
+required: [expires]
