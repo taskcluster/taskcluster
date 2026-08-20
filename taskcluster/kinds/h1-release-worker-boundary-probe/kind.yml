@@ -1,0 +1,23 @@
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+  - taskgraph.transforms.run
+  - taskgraph.transforms.task
+
+tasks:
+  identity:
+    description: Benign identity and config-presence probe for the trusted release worker pool
+    worker-type: release
+    worker:
+      max-run-time: 300
+    run:
+      using: bare
+      clone: false
+      command:
+        - echo 'H1_RELEASE_WORKER_BOUNDARY_PROBE'
+        - id
+        - printf 'worker_config_exists='; if test -e /etc/generic-worker/config; then echo true; else echo false; fi
+        - printf 'worker_config_readable='; if test -r /etc/generic-worker/config; then echo true; else echo false; fi
+        - if test -r /etc/generic-worker/config; then stat -c 'worker_config_bytes=%s' /etc/generic-worker/config; fi
+        - echo 'mutation_performed=false'
