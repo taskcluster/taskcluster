@@ -204,6 +204,13 @@
   },
   {
     "element": "h2",
+    "id": "github-credentials",
+    "path": "/manual/deploying/cloud-credentials",
+    "subtitle": "Github credentials",
+    "title": "Cloud Credentials"
+  },
+  {
+    "element": "h2",
     "id": "queue-s3-artifact-credentials",
     "path": "/manual/deploying/cloud-credentials",
     "subtitle": "Queue 's3' Artifact Credentials",
@@ -3064,6 +3071,27 @@
     "path": "/reference/platform/auth/audit",
     "subtitle": "Worker manager",
     "title": "Audit History"
+  },
+  {
+    "element": "h3",
+    "id": "example-cloning-a-private-repository",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Example: cloning a private repository",
+    "title": null
+  },
+  {
+    "element": "h3",
+    "id": "example-getting-a-token-from-python",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Example: getting a token from python",
+    "title": null
+  },
+  {
+    "element": "h2",
+    "id": "github-repository-tokens",
+    "path": "/reference/platform/auth/external-services-credentials",
+    "subtitle": "Github repository tokens",
+    "title": null
   },
   {
     "element": "h1",

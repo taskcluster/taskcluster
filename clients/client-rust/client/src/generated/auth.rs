@@ -1061,6 +1061,39 @@ impl Auth {
         (path, query)
     }
 
+    /// Get a repository scoped github token
+    ///
+    /// Get a Github application installation token scoped to the given repositories
+    /// and permissions, using the configured app `appName`.
+    ///
+    /// Requesting `<permission>: <level>` on `<owner>/<repo>` requires the scope
+    /// `auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.
+    /// Levels and permissions are matched exactly to github token permissions
+    /// which can be found at
+    /// https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.
+    /// While token access is widened (requesting a write token will give a read+write one)
+    /// scopes are not. Holding `:contents:write` alone only allows requesting a `write` token.
+    /// Both owner and repo must be in lowercase in the scope.
+    ///
+    /// The token expires after an hour but this behavior is github dependent.
+    /// You should read the `expires` property from the response if you intend
+    /// to maintain active credentials in your task.
+    pub async fn githubRepoToken(&self, appName: &str, owner: &str, payload: &Value) -> Result<Value, Error> {
+        let method = "POST";
+        let (path, query) = Self::githubRepoToken_details(appName, owner);
+        let body = Some(payload);
+        let resp = self.client.request(method, &path, query, body).await?;
+        Ok(resp.json().await?)
+    }
+
+    /// Determine the HTTP request details for githubRepoToken
+    fn githubRepoToken_details<'a>(appName: &'a str, owner: &'a str) -> (String, Option<Vec<(&'static str, &'a str)>>) {
+        let path = format!("github/{}/{}/repo-token", urlencode(appName), urlencode(owner));
+        let query = None;
+
+        (path, query)
+    }
+
     /// Authenticate Hawk Request
     ///
     /// Validate the request signature given on input and return list of scopes

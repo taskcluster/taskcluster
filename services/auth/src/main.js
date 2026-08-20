@@ -14,6 +14,7 @@ import ScopeResolver from './scoperesolver.js';
 import createSignatureValidator from './signaturevalidator.js';
 import taskcluster, { fromNow } from '@taskcluster/client';
 import makeSentryManager from './sentrymanager.js';
+import { makeGithub } from './github.js';
 import * as libPulse from '@taskcluster/lib-pulse';
 import './monitor.js';
 import googleapis from '@googleapis/iamcredentials';
@@ -120,8 +121,19 @@ const load = Loader(
     },
 
     api: {
-      requires: ['cfg', 'db', 'schemaset', 'publisher', 'resolver', 'sentryManager', 'monitor', 'pulseClient', 'gcp'],
-      setup: async ({ cfg, db, schemaset, publisher, resolver, sentryManager, monitor, pulseClient, gcp }) => {
+      requires: [
+        'cfg',
+        'db',
+        'schemaset',
+        'publisher',
+        'resolver',
+        'sentryManager',
+        'monitor',
+        'pulseClient',
+        'gcp',
+        'github',
+      ],
+      setup: async ({ cfg, db, schemaset, publisher, resolver, sentryManager, monitor, pulseClient, gcp, github }) => {
         // set up the static clients
         await syncStaticClients(db, cfg.app.staticClients || []);
 
@@ -149,6 +161,7 @@ const load = Loader(
             sentryManager,
             websocktunnel: cfg.app.websocktunnel,
             gcp,
+            github,
             monitor: monitor.childMonitor('api-context'),
           },
           schemaset,
@@ -215,6 +228,11 @@ const load = Loader(
           allowedServiceAccounts,
         };
       },
+    },
+
+    github: {
+      requires: ['cfg', 'monitor'],
+      setup: ({ cfg, monitor }) => makeGithub({ cfg, monitor: monitor.childMonitor('github') }),
     },
 
     'expire-sentry': {

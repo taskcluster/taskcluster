@@ -67,6 +67,7 @@ auth:
   azure_accounts: {}
   aws_credentials_allowed_buckets: {}
   gcp_credentials_allowed_projects: {}
+  github_credentials_apps: {}
   audit_retention_days: ...
   procs:
     web:

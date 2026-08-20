@@ -509,6 +509,31 @@ class Auth(BaseClient):
 
         return self._makeApiCall(self.funcinfo["gcpCredentials"], *args, **kwargs)
 
+    def githubRepoToken(self, *args, **kwargs):
+        """
+        Get a repository scoped github token
+
+        Get a Github application installation token scoped to the given repositories
+        and permissions, using the configured app `appName`.
+
+        Requesting `<permission>: <level>` on `<owner>/<repo>` requires the scope
+        `auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.
+        Levels and permissions are matched exactly to github token permissions
+        which can be found at
+        https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.
+        While token access is widened (requesting a write token will give a read+write one)
+        scopes are not. Holding `:contents:write` alone only allows requesting a `write` token.
+        Both owner and repo must be in lowercase in the scope.
+
+        The token expires after an hour but this behavior is github dependent.
+        You should read the `expires` property from the response if you intend
+        to maintain active credentials in your task.
+
+        This method is ``experimental``
+        """
+
+        return self._makeApiCall(self.funcinfo["githubRepoToken"], *args, **kwargs)
+
     def authenticateHawk(self, *args, **kwargs):
         """
         Authenticate Hawk Request
@@ -735,6 +760,15 @@ class Auth(BaseClient):
             "query": ["continuationToken", "limit"],
             "route": "/audit/<entityType>/<entityId>",
             "stability": "stable",
+        },
+        "githubRepoToken": {
+            "args": ["appName", "owner"],
+            "input": "v1/github-repo-token-request.json#",
+            "method": "post",
+            "name": "githubRepoToken",
+            "output": "v1/github-token-response.json#",
+            "route": "/github/<appName>/<owner>/repo-token",
+            "stability": "experimental",
         },
         "heartbeat": {
             "args": [],

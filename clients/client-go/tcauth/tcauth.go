@@ -982,6 +982,35 @@ func (auth *Auth) GcpCredentials_SignedURL(projectId, serviceAccount string, dur
 	return (&cd).SignedURL("/gcp/credentials/"+url.PathEscape(projectId)+"/"+url.PathEscape(serviceAccount), nil, duration)
 }
 
+// Stability: *** EXPERIMENTAL ***
+//
+// Get a Github application installation token scoped to the given repositories
+// and permissions, using the configured app `appName`.
+//
+// Requesting `<permission>: <level>` on `<owner>/<repo>` requires the scope
+// `auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.
+// Levels and permissions are matched exactly to github token permissions
+// which can be found at
+// https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.
+// While token access is widened (requesting a write token will give a read+write one)
+// scopes are not. Holding `:contents:write` alone only allows requesting a `write` token.
+// Both owner and repo must be in lowercase in the scope.
+//
+// The token expires after an hour but this behavior is github dependent.
+// You should read the `expires` property from the response if you intend
+// to maintain active credentials in your task.
+//
+// Required scopes:
+//
+//	For repoPerm in repoPerms each auth:github-repo-token:<appName>/<owner>/<repoPerm>
+//
+// See #githubRepoToken
+func (auth *Auth) GithubRepoToken(appName, owner string, payload *GithubRepositoryTokenRequest) (*GithubTokenResponse, error) {
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/github/"+url.PathEscape(appName)+"/"+url.PathEscape(owner)+"/repo-token", new(GithubTokenResponse), nil)
+	return responseObject.(*GithubTokenResponse), err
+}
+
 // Validate the request signature given on input and return list of scopes
 // that the authenticating client has.
 //
