@@ -291,12 +291,23 @@ Note that hook `context` values are passed as-is and **do not support JSON-e tem
 
 ### Scopes for Hooks
 
-The repository role (e.g. `repo:github.com/<owner>/<repo>:branch:<branch>`) must include the scope `hooks:trigger-hook:<hookGroupId>/<hookId>` for each hook being triggered. For example:
+The repository role (e.g. `repo:github.com/<owner>/<repo>:branch:<branch>`) must include the scope `github:trigger-hook:<hookGroupId>/<hookId>` for each hook being triggered. For example:
 
 ```yaml
 # In the Roles tool, for role repo:github.com/myorg/myrepo:*
-hooks:trigger-hook:project-myproject/decision
+github:trigger-hook:project-myproject/decision
 ```
+
+Note that the `github:` prefix here is intentional. This scope authorizes *the
+taskcluster github service* to trigger the hook with the given name.
+
+<Warning>
+**Do not grant `hooks:trigger-hook:<hookGroupId>/<hookId>` to a repository role
+for this purpose.**. Every scope in a repository role is available to tasks
+that repository events create, including tasks created from any pull request.
+A task holding `hooks:trigger-hook:...` can call `hooks.triggerHook` directly
+with a payload of its own, forging the GitHub event.
+</Warning>
 
 ### Hook Failures
 
