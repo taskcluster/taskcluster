@@ -1444,8 +1444,7 @@ builder.declare(
     let workerResult = worker.serializable({ removeWorkerManagerData: true });
     workerResult = { ...workerResult, provisionerId, workerType };
 
-    const actions = [];
-    return res.reply(Object.assign({}, workerResult, { actions }));
+    return res.reply(workerResult);
   }
 );
 

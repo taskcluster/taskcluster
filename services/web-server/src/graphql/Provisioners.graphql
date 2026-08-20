@@ -4,35 +4,12 @@ enum ProvisionerStability {
   DEPRECATED
 }
 
-enum ProvisionerActionContext {
-  PROVISIONER
-  WORKER_TYPE
-  WORKER
-}
-
-enum ProvisionerActionMethod {
-  POST
-  PUT
-  DELETE
-  PATCH
-}
-
-type ProvisionerAction {
-  name: String!
-  title: String!
-  context: ProvisionerActionContext!
-  url: String!
-  method: ProvisionerActionMethod!
-  description: String!
-}
-
 type Provisioner {
   provisionerId: String!
   stability: ProvisionerStability!
   description: String!
   expires: DateTime!
   lastDateActive: DateTime!
-  actions: [ProvisionerAction]!
   # Note: This field will trigger an additional request.
   workerTypes(provisionerId: String = provisionerId, connection: PageConnection): WorkerTypesConnection
   # Note: This field will trigger an additional request.

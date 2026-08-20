@@ -263,7 +263,6 @@ export class Provisioner {
       // convert to dates
       expires: new Date(input.expires),
       lastDateActive: new Date(input.lastDateActive),
-      actions: input.actions || [],
     });
   }
 
@@ -343,7 +342,6 @@ export class Provisioner {
       lastDateActive: this.lastDateActive.toJSON(),
       description: this.description,
       stability: this.stability,
-      actions: _.cloneDeep(this.actions),
     };
   }
 

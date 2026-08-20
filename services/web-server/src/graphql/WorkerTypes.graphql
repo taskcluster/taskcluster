@@ -11,7 +11,6 @@ type WorkerType {
   description: String!
   expires: DateTime!
   lastDateActive: DateTime!
-  actions: [ProvisionerAction]!
   # Note: This field will trigger an additional request.
   workers(
     provisionerId: String = provisionerId,
