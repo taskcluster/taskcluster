@@ -1,4 +1,8 @@
 import assert from 'node:assert';
+import fs from 'node:fs';
+import http from 'node:http';
+import os from 'node:os';
+import path from 'node:path';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
@@ -72,6 +76,62 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
         /<body style="[^"]*background-color: #f6f6f6/,
         `${template}: stylesheet rules were not inlined into style attributes`
       );
+    }
+  });
+
+  test('email does not inline resources', async () => {
+    const notifier = await helper.load('notifier');
+
+    const templates = new URL('../src/templates', import.meta.url).pathname;
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'notify'));
+    const resource = 'SHOULDNNOTINLINE';
+
+    // an inlined <img> would be base64 encoded
+    const resourceB64 = Buffer.from(resource).toString('base64');
+    fs.writeFileSync(path.join(tmpDir, 'foo'), resource);
+
+    const requested = [];
+    const server = http.createServer((req, res) => {
+      requested.push(req.url);
+      res.end(resource);
+    });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+
+    try {
+      const local = path.relative(templates, path.join(tmpDir, 'foo'));
+      const remote = `http://127.0.0.1:${server.address().port}/foo`;
+      const elements = [
+        `<script src="${local}"></script>`,
+        `<link rel="stylesheet" href="${local}">`,
+        `<img src="${local}" data-inline>`,
+        `<script src="${remote}"></script>`,
+        `<img src="${remote}" data-inline>`,
+      ];
+
+      for (const [i, element] of elements.entries()) {
+        for (const template of ['simple', 'fullscreen']) {
+          const res = await notifier.email({
+            address: `test+inline${i}-${template}@taskcluster.net`,
+            subject: 'Test',
+            content: element,
+            link: { href: 'https://taskcluster.net', text: 'Click me' },
+            replyTo: 'test@taskcluster.net',
+            template,
+          });
+
+          const { html, text } = res.originalMessage;
+          for (const part of [html, text]) {
+            for (const needle of [resource, resourceB64]) {
+              assert.ok(!part.includes(needle), `${template}: ${element} pulled the resource into the message`);
+            }
+          }
+        }
+      }
+
+      assert.deepEqual(requested, [], 'a resource named in content was fetched');
+    } finally {
+      server.close();
+      fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 
