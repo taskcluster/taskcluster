@@ -6,10 +6,26 @@ import crypto from 'node:crypto';
 import sanitizeHtml from 'sanitize-html';
 import { marked } from 'marked';
 import Email from 'email-templates';
+import juice from 'juice';
 import nodemailer from 'nodemailer';
 import { SendEmailCommand } from '@aws-sdk/client-sesv2';
 
 const __dirname = new URL('.', import.meta.url).pathname;
+
+class CssOnlyJuicedEmail extends Email {
+  async checkAndRender(type, template, locals) {
+    const rendered = await super.checkAndRender(type, template, locals);
+    if (type !== 'html' || !rendered) {
+      return rendered;
+    }
+
+    return juice(rendered, {
+      applyStyleTags: true,
+      removeStyleTags: true,
+      preserveImportant: true,
+    });
+  }
+}
 
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
@@ -30,20 +46,12 @@ class Notifier {
     const transport = nodemailer.createTransport({
       SES: { sesClient: options.ses, SendEmailCommand },
     });
-    this.emailer = new Email({
+    this.emailer = new CssOnlyJuicedEmail({
       transport,
       send: true,
       preview: false,
       views: { root: path.join(__dirname, 'templates') },
-      juice: true,
-      juiceResources: {
-        applyStyleTags: true,
-        removeStyleTags: true,
-        preserveImportant: true,
-        webResources: {
-          relativeTo: path.join(__dirname, 'templates'),
-        },
-      },
+      juice: false,
     });
   }
 
