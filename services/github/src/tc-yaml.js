@@ -88,9 +88,11 @@ class VersionZero extends TcYaml {
   }
 
   substituteParameters(config, cfg, payload) {
+    // Ensure template parameters resolve only explicitly defined properties.
+    // block access to Object.prototype properties
     return jparam(
       config,
-      _.merge(payload.details, {
+      Object.assign(Object.create(null), payload.details, {
         $fromNow: text => tc.fromNowJSON(text),
         timestamp: Math.floor(new Date()),
         organization: payload.organization,
@@ -202,15 +204,14 @@ class VersionOne extends TcYaml {
   substituteParameters(config, cfg, payload) {
     branchTest(payload.branch);
 
-    const slugids = {};
+    // Use a null-prototype object to prevent labels such as `constructor` from
+    // resolving inherited properties.
+    const slugids = Object.create(null);
     const as_slugid = label => {
-      const rv = slugids[label];
-      if (rv) {
-        return rv;
-      } else {
+      if (!(label in slugids)) {
         slugids[label] = slugid.nice();
-        return slugids[label];
       }
+      return slugids[label];
     };
 
     try {
