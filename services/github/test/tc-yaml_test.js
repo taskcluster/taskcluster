@@ -104,6 +104,41 @@ suite(testing.suiteName(), () => {
         'queue:scheduler-id:test-sched',
       ]);
     });
+
+    suite('substituteParameters', () => {
+      const v0cfg = { ...cfg, intree: { provisionerId: 'prov', workerType: 'wt' } };
+      const substitute = config =>
+        tcyaml.substituteParameters(config, v0cfg, {
+          organization: 'org',
+          repository: 'repo',
+          details: { 'event.type': 'push' },
+        });
+
+      test('substitutes known parameters', () => {
+        assume(substitute({ p: '{{event.type}}', o: '{{organization}}' })).to.deeply.equal({
+          p: 'push',
+          o: 'org',
+        });
+      });
+
+      for (const name of ['valueOf', 'toString', 'constructor', 'hasOwnProperty', '__proto__']) {
+        test(`does not resolve inherited property {{${name}}}`, () => {
+          assume(substitute({ p: `{{${name}}}` })).to.deeply.equal({ p: `{{${name}}}` });
+        });
+      }
+
+      test('does not call an inherited property via the pipe form', () => {
+        assume(substitute({ p: '{{ "pwn" | isPrototypeOf }}' })).to.deeply.equal({
+          p: '{{ "pwn" | isPrototypeOf }}',
+        });
+      });
+
+      test('does not mutate payload.details', () => {
+        const payload = { organization: 'org', repository: 'repo', details: { 'event.type': 'push' } };
+        tcyaml.substituteParameters({ p: '{{event.type}}' }, v0cfg, payload);
+        assume(payload.details).to.deeply.equal({ 'event.type': 'push' });
+      });
+    });
   });
 
   suite('VersionOne', () => {
@@ -146,6 +181,58 @@ suite(testing.suiteName(), () => {
         },
       ]);
       assume(config.scopes.sort()).to.deeply.equal(['queue:route:statuses-queue', 'queue:scheduler-id:test-sched']);
+    });
+
+    test('compileTasks handles inherited names used as task IDs and dependencies', () => {
+      const config = {
+        tasks: [{ taskId: 'constructor', dependencies: ['toString'] }],
+      };
+
+      tcyaml.compileTasks(config, cfg, {}, now);
+
+      assume(config.tasks.map(task => task.taskId)).to.deeply.equal(['constructor']);
+    });
+
+    suite('substituteParameters', () => {
+      const v1cfg = { ...cfg, taskcluster: { ...cfg.taskcluster, rootUrl: 'https://tc.example.com' } };
+      const substitute = config =>
+        tcyaml.substituteParameters(config, v1cfg, {
+          tasks_for: 'github-push',
+          branch: 'main',
+          body: { ref: 'refs/heads/main' },
+        });
+      const isSlugid = value => typeof value === 'string' && /^[A-Za-z0-9_-]{22}$/.test(value);
+
+      test('as_slugid returns a stable slugid per label', () => {
+        const { a, b, c } = substitute({
+          a: { $eval: 'as_slugid("x")' },
+          b: { $eval: 'as_slugid("x")' },
+          c: { $eval: 'as_slugid("y")' },
+        });
+        assume(isSlugid(a)).to.equal(true);
+        assume(a).to.equal(b);
+        assume(c).to.not.equal(a);
+      });
+
+      test('as_slugid treats labels that coerce to the same string as equal', () => {
+        const { a, b } = substitute({
+          a: { $eval: 'as_slugid("1")' },
+          b: { $eval: 'as_slugid(1)' },
+        });
+        assume(isSlugid(a)).to.equal(true);
+        assume(a).to.equal(b);
+      });
+
+      for (const label of ['constructor', '__proto__', 'toString', 'valueOf', 'hasOwnProperty']) {
+        test(`as_slugid("${label}") returns a slugid, not a host object`, () => {
+          const { p } = substitute({ p: { $eval: `as_slugid("${label}")` } });
+          assume(isSlugid(p)).to.equal(true);
+        });
+      }
+
+      test('as_slugid result is not callable', () => {
+        assume(() => substitute({ p: { $eval: 'as_slugid("constructor")("pwn")' } })).to.throw();
+      });
     });
 
     suite('scopes', () => {

@@ -88,9 +88,11 @@ class VersionZero extends TcYaml {
   }
 
   substituteParameters(config, cfg, payload) {
+    // Ensure template parameters resolve only explicitly defined properties.
+    // block access to Object.prototype properties
     return jparam(
       config,
-      _.merge(payload.details, {
+      Object.assign(Object.create(null), payload.details, {
         $fromNow: text => tc.fromNowJSON(text),
         timestamp: Math.floor(new Date()),
         organization: payload.organization,
@@ -202,15 +204,14 @@ class VersionOne extends TcYaml {
   substituteParameters(config, cfg, payload) {
     branchTest(payload.branch);
 
-    const slugids = {};
+    // Use a null-prototype object to prevent labels such as `constructor` from
+    // resolving inherited properties.
+    const slugids = Object.create(null);
     const as_slugid = label => {
-      const rv = slugids[label];
-      if (rv) {
-        return rv;
-      } else {
+      if (!(label in slugids)) {
         slugids[label] = slugid.nice();
-        return slugids[label];
       }
+      return slugids[label];
     };
 
     try {
@@ -256,7 +257,7 @@ class VersionOne extends TcYaml {
         defaultTaskGroupId = slugid.nice();
       }
 
-      const taskMap = {};
+      const taskMap = Object.create(null);
       const tsort = new TopoSort();
 
       // process tasks and set up topological sorting
@@ -293,7 +294,7 @@ class VersionOne extends TcYaml {
       config.tasks = tsort
         .sort()
         .reverse()
-        .filter(id => taskMap[id])
+        .filter(id => Object.hasOwn(taskMap, id))
         .map(id => taskMap[id]);
     }
     return this.createScopes(cfg, config, payload);
