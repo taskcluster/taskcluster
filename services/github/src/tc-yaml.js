@@ -257,7 +257,7 @@ class VersionOne extends TcYaml {
         defaultTaskGroupId = slugid.nice();
       }
 
-      const taskMap = {};
+      const taskMap = Object.create(null);
       const tsort = new TopoSort();
 
       // process tasks and set up topological sorting
@@ -294,7 +294,7 @@ class VersionOne extends TcYaml {
       config.tasks = tsort
         .sort()
         .reverse()
-        .filter(id => taskMap[id])
+        .filter(id => Object.hasOwn(taskMap, id))
         .map(id => taskMap[id]);
     }
     return this.createScopes(cfg, config, payload);

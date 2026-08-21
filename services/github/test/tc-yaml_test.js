@@ -183,6 +183,16 @@ suite(testing.suiteName(), () => {
       assume(config.scopes.sort()).to.deeply.equal(['queue:route:statuses-queue', 'queue:scheduler-id:test-sched']);
     });
 
+    test('compileTasks handles inherited names used as task IDs and dependencies', () => {
+      const config = {
+        tasks: [{ taskId: 'constructor', dependencies: ['toString'] }],
+      };
+
+      tcyaml.compileTasks(config, cfg, {}, now);
+
+      assume(config.tasks.map(task => task.taskId)).to.deeply.equal(['constructor']);
+    });
+
     suite('substituteParameters', () => {
       const v1cfg = { ...cfg, taskcluster: { ...cfg.taskcluster, rootUrl: 'https://tc.example.com' } };
       const substitute = config =>
