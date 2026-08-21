@@ -116,6 +116,13 @@ spec:
     - matches:
         - path:
             type: PathPrefix
+            value: /events
+      backendRefs:
+        - name: taskcluster-web-server
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
             value: /graphql
       backendRefs:
         - name: taskcluster-web-server

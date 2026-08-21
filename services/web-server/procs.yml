@@ -4,7 +4,7 @@ web:
   metrics: true
   paths:
     - '/login/*'
-    - '/subscription'
+    - '/events'
     - '/graphql'
     - '/api/web-server/*'
 scanner:
