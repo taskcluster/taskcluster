@@ -43,12 +43,7 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 	args := []string{
 		"--port", strconv.Itoa(int(httpPort)),
 		"--root-url", rootURL,
-		"--client-id", creds.ClientID,
-		"--access-token", creds.AccessToken,
 		"--ip-address", ipAddress,
-	}
-	if creds.Certificate != "" {
-		args = append(args, "--certificate", creds.Certificate)
 	}
 	if allowedUser != "" {
 		args = append(args, "--allowed-user", allowedUser)
@@ -61,6 +56,11 @@ func New(taskclusterProxyExecutable string, ipAddress string, httpPort uint16, r
 		command:  exec.Command(taskclusterProxyExecutable, args...),
 		HTTPPort: httpPort,
 	}
+	l.command.Env = append(os.Environ(),
+		"TASKCLUSTER_CLIENT_ID="+creds.ClientID,
+		"TASKCLUSTER_ACCESS_TOKEN="+creds.AccessToken,
+		"TASKCLUSTER_CERTIFICATE="+creds.Certificate,
+	)
 	l.command.Stdout = os.Stdout
 	l.command.Stderr = os.Stderr
 	err := l.command.Start()
