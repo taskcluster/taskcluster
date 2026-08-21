@@ -1,19 +1,35 @@
 import React, { Component } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
-import provisionersQuery from './provisioners.graphql';
+import { Queue } from '@taskcluster/client-web';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import HelpView from '../../../components/HelpView';
 import ErrorPanel from '../../../components/ErrorPanel';
 import ProvisionerDetailsTable from '../../../components/ProvisionerDetailsTable';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@graphql(provisionersQuery)
+@withTaskclusterClient
 export default class ViewProvisioners extends Component {
+  state = {
+    provisioners: [],
+    loading: true,
+    error: null,
+  };
+
+  async componentDidMount() {
+    try {
+      const { provisioners } = await this.props
+        .createTaskclusterClient({ Class: Queue })
+        .listProvisioners();
+
+      this.setState({ provisioners, loading: false });
+    } catch (error) {
+      this.setState({ error, loading: false });
+    }
+  }
+
   render() {
-    const {
-      description,
-      data: { loading, error, provisioners },
-    } = this.props;
+    const { description } = this.props;
+    const { provisioners, loading, error } = this.state;
 
     return (
       <Dashboard
@@ -21,8 +37,8 @@ export default class ViewProvisioners extends Component {
         helpView={<HelpView description={description} />}>
         {loading && <Spinner loading />}
         <ErrorPanel fixed error={error} />
-        {provisioners && (
-          <ProvisionerDetailsTable provisioners={provisioners.edges} />
+        {provisioners.length > 0 && (
+          <ProvisionerDetailsTable provisioners={provisioners} />
         )}
       </Dashboard>
     );

@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
+import { Queue, WorkerManager } from '@taskcluster/client-web';
 import { format, parseISO, addYears, isAfter } from 'date-fns';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
@@ -22,23 +22,11 @@ import { withAuth } from '../../../utils/Auth';
 import { removeWorker } from '../../../utils/client';
 import { terminateDisabled } from '../../../utils/terminate';
 import ErrorPanel from '../../../components/ErrorPanel';
-import workerQuery from './worker.graphql';
-import quarantineWorkerQuery from './quarantineWorker.graphql';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 import { joinWorkerPoolId } from '../../../utils/workerPool';
 
-@withApollo
 @withAuth
-@graphql(workerQuery, {
-  skip: props => !props.match.params.provisionerId,
-  options: ({ match: { params } }) => ({
-    fetchPolicy: 'network-only',
-    errorPolicy: 'all',
-    variables: {
-      workerPoolId: joinWorkerPoolId(params.provisionerId, params.workerType),
-      ...params,
-    },
-  }),
-})
+@withTaskclusterClient
 @withStyles(theme => ({
   link: {
     ...theme.mixins.link,
@@ -49,6 +37,10 @@ export default class ViewWorker extends Component {
     super(props);
 
     this.state = {
+      loading: false,
+      error: null,
+      worker: null,
+      workerManagerWorker: null,
       dialogError: null,
       dialogOpen: false,
       terminateDialogError: null,
@@ -56,12 +48,123 @@ export default class ViewWorker extends Component {
       terminateDialogTitle: '',
       terminateDialogBody: '',
       terminateDialogConfirmText: '',
-      quarantineUntilInput: props.worker?.quarantineUntil
-        ? parseISO(props.worker.quarantineUntil)
-        : addYears(new Date(), 1000),
+      quarantineUntilInput: addYears(new Date(), 1000),
       quarantineInfo: '',
     };
   }
+
+  componentDidMount() {
+    if (this.props.match.params.provisionerId) {
+      this.fetchWorker();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    const { params } = this.props.match;
+    const { params: prevParams } = prevProps.match;
+
+    if (
+      params.provisionerId !== prevParams.provisionerId ||
+      params.workerType !== prevParams.workerType ||
+      params.workerGroup !== prevParams.workerGroup ||
+      params.workerId !== prevParams.workerId
+    ) {
+      this.fetchWorker();
+    }
+  }
+
+  get queue() {
+    return this.props.createTaskclusterClient({ Class: Queue });
+  }
+
+  get workerManager() {
+    return this.props.createTaskclusterClient({ Class: WorkerManager });
+  }
+
+  fetchWorker = async () => {
+    const { provisionerId, workerType, workerGroup, workerId } =
+      this.props.match.params;
+    const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
+
+    this.setState({ loading: true, error: null });
+
+    let worker = null;
+    let workerManagerWorker = null;
+    let workerError = null;
+    let workerManagerWorkerError = null;
+
+    try {
+      worker = await this.workerManager.getWorker(
+        provisionerId,
+        workerType,
+        workerGroup,
+        workerId
+      );
+    } catch (err) {
+      workerError = err;
+    }
+
+    try {
+      workerManagerWorker = await this.workerManager.worker(
+        workerPoolId,
+        workerGroup,
+        workerId
+      );
+    } catch (err) {
+      workerManagerWorkerError = err;
+    }
+
+    if (!worker && !workerManagerWorker) {
+      this.setState({
+        loading: false,
+        error: workerError ?? workerManagerWorkerError,
+        worker: null,
+        workerManagerWorker: null,
+      });
+
+      return;
+    }
+
+    this.setState({
+      loading: false,
+      error: null,
+      worker: worker ? await this.enrichRecentTasks(worker) : null,
+      workerManagerWorker,
+    });
+  };
+
+  // Replaces the GraphQL resolver that decorated each recent task with its run
+  // status and metadata. `recentTasks` only carries `{ taskId, runId }`, so we
+  // load the run (from the task status) and the task metadata per entry.
+  enrichRecentTasks = async worker => {
+    const recentTasks = worker.recentTasks ?? [];
+    const { queue } = this;
+    const [statuses, tasks] = await Promise.all([
+      Promise.all(
+        recentTasks.map(({ taskId }) =>
+          queue
+            .status(taskId)
+            .then(({ status }) => status)
+            .catch(() => null)
+        )
+      ),
+      Promise.all(
+        recentTasks.map(({ taskId }) => queue.task(taskId).catch(() => null))
+      ),
+    ]);
+
+    return {
+      ...worker,
+      recentTasks: recentTasks.map((recentTask, index) => ({
+        taskId: recentTask.taskId,
+        runId: recentTask.runId,
+        run: statuses[index]?.runs?.[recentTask.runId],
+      })),
+      latestTasks: tasks.map(task =>
+        task ? { metadata: task.metadata } : null
+      ),
+    };
+  };
 
   handleActionDialogOpen = selectedAction => {
     this.setState({
@@ -101,24 +204,22 @@ export default class ViewWorker extends Component {
 
     this.setState({ actionLoading: true, dialogError: null });
 
-    await this.props.client.mutate({
-      mutation: quarantineWorkerQuery,
-      variables: {
-        provisionerId,
-        workerType,
-        workerGroup,
-        workerId,
-        payload: {
-          quarantineUntil: new Date(
-            this.state.quarantineUntilInput
-          ).toISOString(),
-          quarantineInfo: this.state.quarantineInfo,
-        },
-      },
-      refetchQueries: ['ViewWorker'],
-    });
+    await this.queue.quarantineWorker(
+      provisionerId,
+      workerType,
+      workerGroup,
+      workerId,
+      {
+        quarantineUntil: new Date(
+          this.state.quarantineUntilInput
+        ).toISOString(),
+        quarantineInfo: this.state.quarantineInfo,
+      }
+    );
 
     this.setState({ actionLoading: false });
+
+    await this.fetchWorker();
   };
 
   handleWorkerContextActionSubmit = async () => {
@@ -147,24 +248,6 @@ export default class ViewWorker extends Component {
     this.setState({ actionLoading: false });
   };
 
-  getError(error) {
-    if (!error) {
-      return null;
-    }
-
-    if (typeof error === 'string') {
-      return error;
-    }
-
-    return error.graphQLErrors.find(error => {
-      return !(
-        error.statusCode === 404 &&
-        (error.path.includes('recentTasks') ||
-          error.path.includes('latestTasks'))
-      );
-    });
-  }
-
   handleTerminateDialogActionOpen = (workerId, workerGroup, workerPoolId) => {
     this.setState({
       terminateDialogOpen: true,
@@ -190,6 +273,7 @@ export default class ViewWorker extends Component {
       this.setState({
         terminateDialogOpen: false,
       });
+      await this.fetchWorker();
     } catch (terminateDialogError) {
       this.handleTerminateDialogActionError(terminateDialogError);
     }
@@ -244,9 +328,8 @@ export default class ViewWorker extends Component {
 
   renderMenu(includeQueueActions = true) {
     const {
-      data: { worker, WorkerManagerWorker },
-    } = this.props;
-    const {
+      worker,
+      workerManagerWorker,
       dialogOpen,
       selectedAction,
       actionLoading,
@@ -259,7 +342,7 @@ export default class ViewWorker extends Component {
       terminateDialogBody,
       terminateDialogConfirmText,
     } = this.state;
-    const terminateWorker = worker ?? WorkerManagerWorker;
+    const terminateWorker = worker ?? workerManagerWorker;
 
     return (
       <Fragment>
@@ -387,12 +470,10 @@ export default class ViewWorker extends Component {
   }
 
   renderQueueWorker() {
-    const {
-      data: { worker, WorkerManagerWorker },
-    } = this.props;
+    const { worker, workerManagerWorker } = this.state;
     // Merged view to include both queue and worker-manager data
     const mergedView = {
-      ...WorkerManagerWorker,
+      ...workerManagerWorker,
       ...worker,
     };
 
@@ -409,15 +490,13 @@ export default class ViewWorker extends Component {
   }
 
   renderWorkerManagerWorker() {
-    const {
-      data: { WorkerManagerWorker },
-    } = this.props;
+    const { workerManagerWorker } = this.state;
 
     return (
       <Fragment>
         {this.renderBreadcrumbs()}
         <br />
-        <WorkerDetailsCard worker={WorkerManagerWorker} />
+        <WorkerDetailsCard worker={workerManagerWorker} />
         <br />
         <WorkerTable worker={{ recentTasks: [] }} />
         {this.renderMenu(false)}
@@ -426,19 +505,14 @@ export default class ViewWorker extends Component {
   }
 
   render() {
-    const {
-      data: { loading, error, worker, WorkerManagerWorker },
-    } = this.props;
-    // we hide graphql errors if we have any worker data
-    const graphqlError =
-      !WorkerManagerWorker && !worker && this.getError(error);
+    const { loading, error, worker, workerManagerWorker } = this.state;
 
     return (
       <Dashboard title="Worker">
         {loading && <Spinner loading />}
-        <ErrorPanel fixed error={graphqlError} />
+        <ErrorPanel fixed error={error} />
         {worker && this.renderQueueWorker()}
-        {!worker && WorkerManagerWorker && this.renderWorkerManagerWorker()}
+        {!worker && workerManagerWorker && this.renderWorkerManagerWorker()}
       </Dashboard>
     );
   }
