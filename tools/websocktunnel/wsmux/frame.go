@@ -140,8 +140,8 @@ func newSynFrame(id uint32) frame {
 
 // newSynFrame creates a new msgACK frame containing the given capacity.
 func newAckFrame(id uint32, cap uint32) frame {
-	frame := frame{id: id, msg: msgACK}
-	frame.payload = make([]byte, ACK_PAYLOAD_SIZE)
+	frame := frame{id: id, msg: msgACK,
+		payload: make([]byte, ACK_PAYLOAD_SIZE)}
 	binary.LittleEndian.PutUint32(frame.payload, cap)
 	return frame
 }

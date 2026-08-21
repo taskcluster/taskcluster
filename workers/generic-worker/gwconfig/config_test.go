@@ -10,29 +10,25 @@ func TestValidatePortConfiguration(t *testing.T) {
 	// Base config that should always pass validation (other than ports)
 	baseConfig := func() *Config {
 		return &Config{
-			PublicConfig: PublicConfig{
-				Capacity:                  1,
-				EnableInteractive:         true,
-				EnableLiveLog:             true,
-				EnableTaskclusterProxy:    true,
-				LiveLogPortBase:           60000,
-				InteractivePort:           53000,
-				TaskclusterProxyPort:      8080,
-				CachesDir:                 "/tmp/caches",
-				ClientID:                  "test-client",
-				DownloadsDir:              "/tmp/downloads",
-				Ed25519SigningKeyLocation: "/tmp/key",
-				LiveLogExecutable:         "/usr/bin/livelog",
-				ProvisionerID:             "test-provisioner",
-				RootURL:                   "https://example.com",
-				TasksDir:                  "/tmp/tasks",
-				WorkerGroup:               "test-group",
-				WorkerID:                  "test-worker",
-				WorkerType:                "test-type",
-			},
-			PrivateConfig: PrivateConfig{
-				AccessToken: "test-token",
-			},
+			Capacity:                  1,
+			EnableInteractive:         true,
+			EnableLiveLog:             true,
+			EnableTaskclusterProxy:    true,
+			LiveLogPortBase:           60000,
+			InteractivePort:           53000,
+			TaskclusterProxyPort:      8080,
+			CachesDir:                 "/tmp/caches",
+			ClientID:                  "test-client",
+			DownloadsDir:              "/tmp/downloads",
+			Ed25519SigningKeyLocation: "/tmp/key",
+			LiveLogExecutable:         "/usr/bin/livelog",
+			ProvisionerID:             "test-provisioner",
+			RootURL:                   "https://example.com",
+			TasksDir:                  "/tmp/tasks",
+			WorkerGroup:               "test-group",
+			WorkerID:                  "test-worker",
+			WorkerType:                "test-type",
+			AccessToken:               "test-token",
 		}
 	}
 

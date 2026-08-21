@@ -38,10 +38,10 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 		pathRegExp = strings.ReplaceAll(regexp.QuoteMeta(filepath.Join(testdataDir, t.Name(), "tasks", slug, filepath.Join(taskPath...))), slug, "task_\\S+")
 	}
 	return []string{
-			`Granting task_\S+ full control of ` + filetype + ` '` + pathRegExp + `'`,
-		}, []string{
-			`Denying task_\S+ access to '.*'`,
-		}
+		`Granting task_\S+ full control of ` + filetype + ` '` + pathRegExp + `'`,
+	}, []string{
+		`Denying task_\S+ access to '.*'`,
+	}
 }
 
 func TestTaskUserCannotMountInPrivilegedLocation(t *testing.T) {
