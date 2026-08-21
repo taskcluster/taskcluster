@@ -80,6 +80,42 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         /responseType must be equal to constant/
       );
     });
+    test('registered OAuth clients reject a maxExpires that is not in the future', () => {
+      const client = {
+        clientId: 'test',
+        responseType: 'code',
+        scope: [],
+        redirectUri: ['https://test.example.com/cb'],
+      };
+
+      // fromNow parses both of these happily, but they would issue credentials
+      // that have already expired
+      for (const maxExpires of ['', '-1 year']) {
+        assert.throws(
+          () => validateRegisteredClients([{ ...client, maxExpires }]),
+          /maxExpires must be a positive duration/
+        );
+      }
+
+      assert.throws(
+        () => validateRegisteredClients([{ ...client, maxExpires: 'forever' }]),
+        /maxExpires is not a valid duration/
+      );
+    });
+    test('registered OAuth clients reject a duplicate clientId', () => {
+      const client = {
+        clientId: 'test',
+        responseType: 'code',
+        scope: [],
+        redirectUri: ['https://test.example.com/cb'],
+        maxExpires: '1 year',
+      };
+
+      assert.throws(
+        () => validateRegisteredClients([client, { ...client, redirectUri: ['https://other.example.com/cb'] }]),
+        /\/1\/clientId duplicates \/0\/clientId \(test\)/
+      );
+    });
     test('CORS allows every registered redirectUri origin, not just the first', async () => {
       // `test-code` is registered with redirect URIs on two different origins
       for (const origin of ['https://test.example.com', 'https://second.example.com']) {
