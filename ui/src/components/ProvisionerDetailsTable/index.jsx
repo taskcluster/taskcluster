@@ -15,21 +15,16 @@ import {
   ListItem,
   ListItemText,
 } from '@material-ui/core';
-import Button from '../Button';
 import TableCellItem from '../TableCellItem';
 import Link from '../../utils/Link';
-import { withAuth } from '../../utils/Auth';
 import DataTable from '../DataTable';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
 import sort from '../../utils/sort';
 import Markdown from '../Markdown';
-import DialogAction from '../DialogAction';
-import { ACTION_CONTEXT } from '../../utils/constants';
 import { provisioner } from '../../utils/prop-types';
 
 @withRouter
-@withAuth
 @withStyles(theme => ({
   infoButton: {
     marginLeft: -theme.spacing(2),
@@ -48,10 +43,6 @@ import { provisioner } from '../../utils/prop-types';
     paddingBottom: theme.spacing(2),
     width: 400,
   },
-  actionButton: {
-    marginRight: theme.spacing(0.5),
-    marginTop: theme.spacing(1),
-  },
 }))
 export default class ProvisionerDetailsTable extends Component {
   static propTypes = {
@@ -61,10 +52,6 @@ export default class ProvisionerDetailsTable extends Component {
   state = {
     drawerOpen: false,
     drawerProvisioner: null,
-    actionLoading: false,
-    dialogOpen: false,
-    dialogError: null,
-    selectedAction: null,
   };
 
   sortProvisioners = (provisioners, sortBy, sortDirection) => {
@@ -105,38 +92,6 @@ export default class ProvisionerDetailsTable extends Component {
     this.setState({
       drawerOpen: false,
     });
-  };
-
-  handleActionClick = selectedAction => {
-    this.setState({ dialogOpen: true, selectedAction });
-  };
-
-  handleActionError = dialogError => {
-    this.setState({ dialogError, actionLoading: false });
-  };
-
-  // TODO: Action not working.
-  handleActionSubmit = async () => {
-    const { selectedAction, drawerProvisioner: provisioner } = this.state;
-    const url = selectedAction.url.replace(
-      '<provisionerId>',
-      provisioner.provisionerId
-    );
-
-    this.setState({ actionLoading: true, dialogError: null });
-
-    await fetch(url, {
-      method: selectedAction.method,
-      Authorization: `Bearer ${btoa(
-        JSON.stringify(this.props.user.credentials)
-      )}`,
-    });
-
-    this.setState({ actionLoading: false, dialogError: null });
-  };
-
-  handleDialogClose = () => {
-    this.setState({ dialogOpen: false });
   };
 
   renderTableRow = ({ node: provisioner }) => {
@@ -196,52 +151,15 @@ export default class ProvisionerDetailsTable extends Component {
               }
             />
           </ListItem>
-          <ListItem>
-            <ListItemText
-              primary="Actions"
-              secondary={
-                drawerProvisioner?.actions.length ? this.renderActions() : 'n/a'
-              }
-            />
-          </ListItem>
         </List>
       </div>
     );
   };
 
-  renderActions = () => {
-    const { classes } = this.props;
-    const { actionLoading, drawerProvisioner: provisioner } = this.state;
-    const { actions } = provisioner.actions.filter(
-      ({ context }) => context === ACTION_CONTEXT.PROVISIONER
-    );
-
-    if (actions.length) {
-      return actions.map(action => (
-        <Button
-          classes={{ root: classes.actionButton }}
-          key={action.title}
-          tooltipProps={{
-            enterDelay: 50,
-            key: action.title,
-            id: `${action.title}-tooltip`,
-            title: action.description,
-          }}
-          requiresAuth
-          onClick={() => this.handleActionClick(action)}
-          disabled={actionLoading}
-          size="small"
-          variant="contained">
-          {action.title}
-        </Button>
-      ));
-    }
-  };
-
   render() {
     const { provisioners } = this.props;
     const query = parse(this.props.location.search.slice(1));
-    const { drawerOpen, dialogError, dialogOpen, selectedAction } = this.state;
+    const { drawerOpen } = this.state;
     const { sortBy, sortDirection } = query.sortBy
       ? query
       : { sortBy: null, sortDirection: null };
@@ -274,19 +192,6 @@ export default class ProvisionerDetailsTable extends Component {
           onClose={this.handleDrawerClose}>
           {this.renderDrawerContent()}
         </Drawer>
-        {dialogOpen && (
-          <DialogAction
-            error={dialogError}
-            open={dialogOpen}
-            title={`${selectedAction.title}?`}
-            body={selectedAction.description}
-            confirmText={selectedAction.title}
-            onSubmit={this.handleActionSubmit}
-            onError={this.handleActionError}
-            onComplete={this.handleDialogClose}
-            onClose={this.handleDialogClose}
-          />
-        )}
       </Fragment>
     );
   }

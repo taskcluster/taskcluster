@@ -35,15 +35,6 @@ query ViewWorkers($provisionerId: String!, $workerType: String!, $workerPoolId: 
     workerPoolId
   }
 
-  workerType(provisionerId: $provisionerId, workerType: $workerType) {
-    actions {
-      name
-      description
-      title
-      url
-    }
-  }
-
   provisioners {
     edges {
       node {

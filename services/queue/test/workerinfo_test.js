@@ -97,7 +97,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assert(result.provisioners[0].provisionerId === provisionerId, 'expected prov1-extended-extended-extended');
     assert(result.provisioners[0].description === '', 'expected empty description');
     assert(result.provisioners[0].stability === 'experimental', 'expected stability');
-    assert.equal(result.provisioners[0].actions.length, 0, 'expected no actions');
   });
 
   test('provisioner seen creates and updates a provisioner', async () => {
@@ -439,7 +438,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assert(result.provisionerId === provisionerId, `expected ${provisionerId}`);
     assert(result.description === '', `expected empty string`);
     assert(result.stability === 'experimental', `expected 'experimental'`);
-    assert.equal(result.actions.length, 0, 'expected no actions');
     assert(new Date(result.expires).getTime() === tQueue.expires.getTime(), `expected ${tQueue.expires}`);
   });
 

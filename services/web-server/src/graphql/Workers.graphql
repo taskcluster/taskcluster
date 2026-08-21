@@ -59,9 +59,6 @@ type Worker {
   # Date of the first time this worker claimed a task.
   firstClaim: DateTime!
 
-  # A list of actions exposed at the worker level.
-  actions: [ProvisionerAction]!
-
   # A list of most recent tasks claimed by the worker.
   latestTasks: [Task]!
 

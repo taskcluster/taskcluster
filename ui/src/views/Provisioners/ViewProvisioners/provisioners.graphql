@@ -7,13 +7,6 @@ query ViewProvisioners {
         description
         expires
         lastDateActive
-        actions {
-          name
-          title
-          description
-          context
-          url
-        }
       }
     }
   }

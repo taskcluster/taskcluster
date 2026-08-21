@@ -6,65 +6,6 @@
       "additionalProperties": false,
       "description": "Response containing information about a worker.\n",
       "properties": {
-        "actions": {
-          "items": {
-            "additionalProperties": false,
-            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
-            "properties": {
-              "context": {
-                "description": "Only actions with the context `worker` are included.\n",
-                "enum": [
-                  "worker"
-                ],
-                "title": "Context",
-                "type": "string"
-              },
-              "description": {
-                "description": "Description of the provisioner.\n",
-                "title": "Description",
-                "type": "string"
-              },
-              "method": {
-                "description": "Method to indicate the desired action to be performed for a given resource.\n",
-                "enum": [
-                  "POST",
-                  "PUT",
-                  "DELETE",
-                  "PATCH"
-                ],
-                "title": "Method",
-                "type": "string"
-              },
-              "name": {
-                "description": "Short names for things like logging/error messages.\n",
-                "title": "Name",
-                "type": "string"
-              },
-              "title": {
-                "description": "Appropriate title for any sort of Modal prompt.\n",
-                "title": "Title"
-              },
-              "url": {
-                "description": "When an action is triggered, a request is made using the `url` and `method`.\nDepending on the `context`, the following parameters will be substituted in the url:\n\n| `context`   | Path parameters                                          |\n|-------------|----------------------------------------------------------|\n| provisioner | <provisionerId>                                          |\n| worker-type | <provisionerId>, <workerType>                            |\n| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |\n\n_Note: The request needs to be signed with the user's Taskcluster credentials._\n",
-                "title": "URL",
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "title",
-              "context",
-              "url",
-              "method",
-              "description"
-            ],
-            "title": "Worker Action",
-            "type": "object"
-          },
-          "title": "Worker Actions",
-          "type": "array",
-          "uniqueItems": false
-        },
         "capacity": {
           "description": "Number of tasks this worker can handle at once. A worker capacity of 0 means\nthe worker is not managed by worker manager and is only known to the queue, the\ntrue capacity is not known.\n",
           "minimum": 0,
@@ -207,8 +148,7 @@
         "workerId",
         "recentTasks",
         "expires",
-        "firstClaim",
-        "actions"
+        "firstClaim"
       ],
       "title": "Worker Response",
       "type": "object"
@@ -3046,65 +2986,6 @@
       "additionalProperties": false,
       "description": "Response to a worker-type request from a provisioner.\n",
       "properties": {
-        "actions": {
-          "items": {
-            "additionalProperties": false,
-            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
-            "properties": {
-              "context": {
-                "description": "Only actions with the context `worker-type` are included.\n",
-                "enum": [
-                  "worker-type"
-                ],
-                "title": "Context",
-                "type": "string"
-              },
-              "description": {
-                "description": "Description of the provisioner.\n",
-                "title": "Description",
-                "type": "string"
-              },
-              "method": {
-                "description": "Method to indicate the desired action to be performed for a given resource.\n",
-                "enum": [
-                  "POST",
-                  "PUT",
-                  "DELETE",
-                  "PATCH"
-                ],
-                "title": "Method",
-                "type": "string"
-              },
-              "name": {
-                "description": "Short names for things like logging/error messages.\n",
-                "title": "Name",
-                "type": "string"
-              },
-              "title": {
-                "description": "Appropriate title for any sort of Modal prompt.\n",
-                "title": "Title"
-              },
-              "url": {
-                "description": "When an action is triggered, a request is made using the `url` and `method`.\nDepending on the `context`, the following parameters will be substituted in the url:\n\n| `context`   | Path parameters                                          |\n|-------------|----------------------------------------------------------|\n| provisioner | <provisionerId>                                          |\n| worker-type | <provisionerId>, <workerType>                            |\n| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |\n\n_Note: The request needs to be signed with the user's Taskcluster credentials._\n",
-                "title": "URL",
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "title",
-              "context",
-              "url",
-              "method",
-              "description"
-            ],
-            "title": "Worker-type Action",
-            "type": "object"
-          },
-          "title": "Worker-type Actions",
-          "type": "array",
-          "uniqueItems": false
-        },
         "description": {
           "description": "Description of the worker-type.\n",
           "title": "Description",
@@ -3149,8 +3030,7 @@
         "description",
         "stability",
         "expires",
-        "lastDateActive",
-        "actions"
+        "lastDateActive"
       ],
       "title": "Worker-type Response",
       "type": "object"
@@ -3164,65 +3044,6 @@
       "additionalProperties": false,
       "description": "Response containing information about a worker.\n",
       "properties": {
-        "actions": {
-          "items": {
-            "additionalProperties": false,
-            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
-            "properties": {
-              "context": {
-                "description": "Only actions with the context `worker` are included.\n",
-                "enum": [
-                  "worker"
-                ],
-                "title": "Context",
-                "type": "string"
-              },
-              "description": {
-                "description": "Description of the provisioner.\n",
-                "title": "Description",
-                "type": "string"
-              },
-              "method": {
-                "description": "Method to indicate the desired action to be performed for a given resource.\n",
-                "enum": [
-                  "POST",
-                  "PUT",
-                  "DELETE",
-                  "PATCH"
-                ],
-                "title": "Method",
-                "type": "string"
-              },
-              "name": {
-                "description": "Short names for things like logging/error messages.\n",
-                "title": "Name",
-                "type": "string"
-              },
-              "title": {
-                "description": "Appropriate title for any sort of Modal prompt.\n",
-                "title": "Title"
-              },
-              "url": {
-                "description": "When an action is triggered, a request is made using the `url` and `method`.\nDepending on the `context`, the following parameters will be substituted in the url:\n\n| `context`   | Path parameters                                          |\n|-------------|----------------------------------------------------------|\n| provisioner | <provisionerId>                                          |\n| worker-type | <provisionerId>, <workerType>                            |\n| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |\n\n_Note: The request needs to be signed with the user's Taskcluster credentials._\n",
-                "title": "URL",
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "title",
-              "context",
-              "url",
-              "method",
-              "description"
-            ],
-            "title": "Worker Action",
-            "type": "object"
-          },
-          "title": "Worker Actions",
-          "type": "array",
-          "uniqueItems": false
-        },
         "expires": {
           "description": "Date and time after which the worker will be automatically\ndeleted by the queue.\n",
           "format": "date-time",
@@ -3331,8 +3152,7 @@
         "workerId",
         "recentTasks",
         "expires",
-        "firstClaim",
-        "actions"
+        "firstClaim"
       ],
       "title": "Worker Response",
       "type": "object"
@@ -4857,9 +4677,6 @@
       "additionalProperties": false,
       "description": "Response containing information about a provisioner.\n",
       "properties": {
-        "actions": {
-          "$ref": "actions.json#"
-        },
         "description": {
           "description": "Description of the provisioner.\n",
           "title": "Description",
@@ -4894,7 +4711,6 @@
       "required": [
         "provisionerId",
         "description",
-        "actions",
         "stability",
         "expires",
         "lastDateActive"
@@ -5653,9 +5469,6 @@
           "items": {
             "additionalProperties": false,
             "properties": {
-              "actions": {
-                "$ref": "actions.json#"
-              },
               "description": {
                 "description": "Description of the provisioner.\n",
                 "title": "Description",
@@ -5692,8 +5505,7 @@
               "description",
               "stability",
               "expires",
-              "lastDateActive",
-              "actions"
+              "lastDateActive"
             ],
             "title": "Provisioner Information",
             "type": "object"
@@ -6477,73 +6289,6 @@
       "title": "Get Artifact Content Response"
     },
     "filename": "schemas/queue/v1/artifact-content-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/queue/v1/actions.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "description": "See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.\n",
-      "items": {
-        "additionalProperties": false,
-        "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
-        "properties": {
-          "context": {
-            "description": "Actions have a \"context\" that is one of provisioner, worker-type, or worker, indicating\nwhich it applies to. `context` is used by the front-end to know where to display the action.\n\n| `context`   | Page displayed        |\n|-------------|-----------------------|\n| provisioner | Provisioner Explorer  |\n| worker-type | Workers Explorer      |\n| worker      | Worker Explorer       |\n",
-            "enum": [
-              "provisioner",
-              "worker-type",
-              "worker"
-            ],
-            "title": "Context",
-            "type": "string"
-          },
-          "description": {
-            "description": "Description of the provisioner.\n",
-            "title": "Description",
-            "type": "string"
-          },
-          "method": {
-            "description": "Method to indicate the desired action to be performed for a given resource.\n",
-            "enum": [
-              "POST",
-              "PUT",
-              "DELETE",
-              "PATCH"
-            ],
-            "title": "Method",
-            "type": "string"
-          },
-          "name": {
-            "description": "Short names for things like logging/error messages.\n",
-            "title": "Name",
-            "type": "string"
-          },
-          "title": {
-            "description": "Appropriate title for any sort of Modal prompt.\n",
-            "title": "Title"
-          },
-          "url": {
-            "description": "When an action is triggered, a request is made using the `url` and `method`.\nDepending on the `context`, the following parameters will be substituted in the url:\n\n| `context`   | Path parameters                                          |\n|-------------|----------------------------------------------------------|\n| provisioner | <provisionerId>                                          |\n| worker-type | <provisionerId>, <workerType>                            |\n| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |\n\n_Note: The request needs to be signed with the user's Taskcluster credentials._\n",
-            "title": "URL",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "title",
-          "context",
-          "url",
-          "method",
-          "description"
-        ],
-        "title": "Action",
-        "type": "object"
-      },
-      "title": "Actions",
-      "type": "array",
-      "uniqueItems": true
-    },
-    "filename": "schemas/queue/v1/actions.json"
   },
   {
     "content": {

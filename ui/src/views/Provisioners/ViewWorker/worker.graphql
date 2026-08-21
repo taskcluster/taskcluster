@@ -37,13 +37,6 @@ query ViewWorker($provisionerId: String!, $workerType: String!, $workerGroup: St
         owner
       }
     }
-    actions {
-      name
-      title
-      context
-      url
-      description
-    }
   }
 
   WorkerManagerWorker(workerPoolId: $workerPoolId, workerGroup: $workerGroup, workerId: $workerId) {

@@ -2396,8 +2396,7 @@ builder.declare(
     const tqResult = tQueue.serialize();
     addSplitFields(tqResult);
 
-    const actions = [];
-    return res.reply(Object.assign({}, tqResult, { actions }));
+    return res.reply(tqResult);
   }
 );
 
@@ -2599,8 +2598,7 @@ builder.declare(
     const workerResult = worker.serialize();
     addSplitFields(workerResult);
 
-    const actions = [];
-    return res.reply(Object.assign({}, workerResult, { actions }));
+    return res.reply(workerResult);
   }
 );
 
@@ -2656,8 +2654,7 @@ builder.declare(
     const workerResult = worker.serialize();
     addSplitFields(workerResult);
 
-    const actions = [];
-    return res.reply(Object.assign({}, workerResult, { actions }));
+    return res.reply(workerResult);
   }
 );
 
@@ -2719,8 +2716,7 @@ builder.declare(
     const workerResult = worker.serialize();
     addSplitFields(workerResult);
 
-    const actions = [];
-    return res.reply(Object.assign({}, workerResult, { actions }));
+    return res.reply(workerResult);
   }
 );
 

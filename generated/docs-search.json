@@ -3333,41 +3333,6 @@
   },
   {
     "element": "h1",
-    "id": "actions",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": null,
-    "title": "Actions"
-  },
-  {
-    "element": "h3",
-    "id": "context",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Context",
-    "title": "Actions"
-  },
-  {
-    "element": "h2",
-    "id": "defining-actions",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Defining Actions",
-    "title": "Actions"
-  },
-  {
-    "element": "h2",
-    "id": "triggering-actions-in-a-user-interface",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Triggering Actions in a User Interface",
-    "title": "Actions"
-  },
-  {
-    "element": "h2",
-    "id": "triggering-actions-in-automation",
-    "path": "/reference/platform/queue/actions",
-    "subtitle": "Triggering Actions in Automation",
-    "title": "Actions"
-  },
-  {
-    "element": "h1",
     "id": "artifacts",
     "path": "/reference/platform/queue/artifacts",
     "subtitle": null,

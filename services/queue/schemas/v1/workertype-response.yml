@@ -36,53 +36,6 @@ properties:
       of when the worker-type was last seen active.
     type:         string
     format:       date-time
-  actions:
-    title:        "Worker-type Actions"
-    type:         array
-    uniqueItems: false
-    items:
-      type:       object
-      title:      "Worker-type Action"
-      description: {$const: action-description}
-      properties:
-        name:
-          title:  "Name"
-          description: |
-            Short names for things like logging/error messages.
-          type:   string
-        title:
-          title:  "Title"
-          description: |
-            Appropriate title for any sort of Modal prompt.
-        context:
-          title:  "Context"
-          description: |
-            Only actions with the context `worker-type` are included.
-          type:   string
-          enum:   ["worker-type"]
-        url:
-          title:  "URL"
-          description: {$const: action-url-description}
-          type:    string
-        method:
-          title:  "Method"
-          description: |
-            Method to indicate the desired action to be performed for a given resource.
-          type:   string
-          enum:   ["POST", "PUT", "DELETE", "PATCH"]
-        description:
-          title:   "Description"
-          description: |
-            Description of the provisioner.
-          type:    string
-      required:
-        - name
-        - title
-        - context
-        - url
-        - method
-        - description
-      additionalProperties: false
 additionalProperties: false
 required:
   - workerType
@@ -92,4 +45,3 @@ required:
   - stability
   - expires
   - lastDateActive
-  - actions

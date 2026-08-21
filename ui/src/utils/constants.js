@@ -142,11 +142,6 @@ export const TASK_ADDED_FIELDS = [
   'latestArtifacts',
   'taskActions',
 ];
-export const ACTION_CONTEXT = {
-  PROVISIONER: 'PROVISIONER',
-  WORKER_TYPE: 'WORKER_TYPE',
-  WORKER: 'WORKER',
-};
 export const DOCS_PATH_PREFIX = '/docs';
 export const DOCS_MENU_ITEMS = [
   {
