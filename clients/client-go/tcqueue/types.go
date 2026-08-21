@@ -24,9 +24,7 @@ type (
 	// user operating the web interface, and issues the HTTP request.
 	//
 	// The level to which the action relates (provisioner, worker type, worker) is
-	// called the action context. All actions, regardless of the action contexts,
-	// are registered against the provisioner when calling
-	// `queue.declareProvisioner`.
+	// called the action context.
 	//
 	// The action context is used by the web client to determine where in the web
 	// interface to present the action to the user as follows:
@@ -742,31 +740,6 @@ type (
 		//   * "stable"
 		//   * "deprecated"
 		Stability string `json:"stability"`
-	}
-
-	// Request to update a provisioner.
-	ProvisionerRequest struct {
-
-		// See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.
-		Actions []Action `json:"actions,omitempty"`
-
-		// Description of the provisioner.
-		Description string `json:"description,omitempty"`
-
-		// Date and time after which the provisioner will be automatically
-		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitzero"`
-
-		// This is the stability of the provisioner. Accepted values:
-		//   * `experimental`
-		//   * `stable`
-		//   * `deprecated`
-		//
-		// Possible values:
-		//   * "experimental"
-		//   * "stable"
-		//   * "deprecated"
-		Stability string `json:"stability,omitempty"`
 	}
 
 	// Response containing information about a provisioner.
@@ -2190,9 +2163,7 @@ type (
 	// user operating the web interface, and issues the HTTP request.
 	//
 	// The level to which the action relates (provisioner, worker type, worker) is
-	// called the action context. All actions, regardless of the action contexts,
-	// are registered against the provisioner when calling
-	// `queue.declareProvisioner`.
+	// called the action context.
 	//
 	// The action context is used by the web client to determine where in the web
 	// interface to present the action to the user as follows:
@@ -2249,7 +2220,7 @@ type (
 
 		// Date and time after which the worker will be automatically
 		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitzero"`
+		Expires tcclient.Time `json:"expires"`
 	}
 
 	// Response containing information about a worker.
@@ -2381,9 +2352,7 @@ type (
 	// user operating the web interface, and issues the HTTP request.
 	//
 	// The level to which the action relates (provisioner, worker type, worker) is
-	// called the action context. All actions, regardless of the action contexts,
-	// are registered against the provisioner when calling
-	// `queue.declareProvisioner`.
+	// called the action context.
 	//
 	// The action context is used by the web client to determine where in the web
 	// interface to present the action to the user as follows:
@@ -2433,28 +2402,6 @@ type (
 		//
 		// _Note: The request needs to be signed with the user's Taskcluster credentials._
 		URL string `json:"url"`
-	}
-
-	// Request to update a worker-type.
-	WorkerTypeRequest struct {
-
-		// Description of the provisioner.
-		Description string `json:"description,omitempty"`
-
-		// Date and time after which the worker-type will be automatically
-		// deleted by the queue.
-		Expires tcclient.Time `json:"expires,omitzero"`
-
-		// This is the stability of the provisioner. Accepted values:
-		//   * `experimental`
-		//   * `stable`
-		//   * `deprecated`
-		//
-		// Possible values:
-		//   * "experimental"
-		//   * "stable"
-		//   * "deprecated"
-		Stability string `json:"stability,omitempty"`
 	}
 
 	// Response to a worker-type request from a provisioner.

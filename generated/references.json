@@ -9,7 +9,7 @@
         "actions": {
           "items": {
             "additionalProperties": false,
-            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context. All actions, regardless of the action contexts,\nare registered against the provisioner when calling\n`queue.declareProvisioner`.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
+            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
             "properties": {
               "context": {
                 "description": "Only actions with the context `worker` are included.\n",
@@ -3049,7 +3049,7 @@
         "actions": {
           "items": {
             "additionalProperties": false,
-            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context. All actions, regardless of the action contexts,\nare registered against the provisioner when calling\n`queue.declareProvisioner`.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
+            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
             "properties": {
               "context": {
                 "description": "Only actions with the context `worker-type` are included.\n",
@@ -3167,7 +3167,7 @@
         "actions": {
           "items": {
             "additionalProperties": false,
-            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context. All actions, regardless of the action contexts,\nare registered against the provisioner when calling\n`queue.declareProvisioner`.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
+            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
             "properties": {
               "context": {
                 "description": "Only actions with the context `worker` are included.\n",
@@ -3341,42 +3341,6 @@
   },
   {
     "content": {
-      "$id": "/schemas/queue/v1/update-workertype-request.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Request to update a worker-type.\n",
-      "properties": {
-        "description": {
-          "description": "Description of the provisioner.\n",
-          "title": "Description",
-          "type": "string"
-        },
-        "expires": {
-          "description": "Date and time after which the worker-type will be automatically\ndeleted by the queue.\n",
-          "format": "date-time",
-          "title": "Worker-type Expiration",
-          "type": "string"
-        },
-        "stability": {
-          "description": "This is the stability of the provisioner. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
-          "enum": [
-            "experimental",
-            "stable",
-            "deprecated"
-          ],
-          "title": "Stability",
-          "type": "string"
-        }
-      },
-      "required": [
-      ],
-      "title": "Worker-type Request",
-      "type": "object"
-    },
-    "filename": "schemas/queue/v1/update-workertype-request.json"
-  },
-  {
-    "content": {
       "$id": "/schemas/queue/v1/update-worker-request.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -3390,50 +3354,12 @@
         }
       },
       "required": [
+        "expires"
       ],
       "title": "Worker Request",
       "type": "object"
     },
     "filename": "schemas/queue/v1/update-worker-request.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/queue/v1/update-provisioner-request.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Request to update a provisioner.\n",
-      "properties": {
-        "actions": {
-          "$ref": "actions.json#"
-        },
-        "description": {
-          "description": "Description of the provisioner.\n",
-          "title": "Description",
-          "type": "string"
-        },
-        "expires": {
-          "description": "Date and time after which the provisioner will be automatically\ndeleted by the queue.\n",
-          "format": "date-time",
-          "title": "Provisioner Expiration",
-          "type": "string"
-        },
-        "stability": {
-          "description": "This is the stability of the provisioner. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
-          "enum": [
-            "experimental",
-            "stable",
-            "deprecated"
-          ],
-          "title": "Stability",
-          "type": "string"
-        }
-      },
-      "required": [
-      ],
-      "title": "Provisioner Request",
-      "type": "object"
-    },
-    "filename": "schemas/queue/v1/update-provisioner-request.json"
   },
   {
     "content": {
@@ -6559,7 +6485,7 @@
       "description": "See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.\n",
       "items": {
         "additionalProperties": false,
-        "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context. All actions, regardless of the action contexts,\nare registered against the provisioner when calling\n`queue.declareProvisioner`.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
+        "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
         "properties": {
           "context": {
             "description": "Actions have a \"context\" that is one of provisioner, worker-type, or worker, indicating\nwhich it applies to. `context` is used by the front-end to know where to display the action.\n\n| `context`   | Page displayed        |\n|-------------|-----------------------|\n| provisioner | Provisioner Explorer  |\n| worker-type | Workers Explorer      |\n| worker      | Worker Explorer       |\n",
@@ -23658,32 +23584,6 @@
         },
         {
           "args": [
-            "provisionerId"
-          ],
-          "category": "Worker Metadata",
-          "description": "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `my-provisioner`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:my-provisioner#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
-          "input": "v1/update-provisioner-request.json#",
-          "method": "put",
-          "name": "declareProvisioner",
-          "output": "v1/provisioner-response.json#",
-          "query": [
-          ],
-          "route": "/provisioners/<provisionerId>",
-          "scopes": {
-            "AllOf": [
-              {
-                "each": "queue:declare-provisioner:<provisionerId>#<property>",
-                "for": "property",
-                "in": "properties"
-              }
-            ]
-          },
-          "stability": "deprecated",
-          "title": "Update a provisioner",
-          "type": "function"
-        },
-        {
-          "args": [
             "taskQueueId"
           ],
           "category": "Worker Metadata",
@@ -23794,33 +23694,6 @@
           "scopes": "queue:get-worker-type:<provisionerId>/<workerType>",
           "stability": "deprecated",
           "title": "Get a worker-type",
-          "type": "function"
-        },
-        {
-          "args": [
-            "provisionerId",
-            "workerType"
-          ],
-          "category": "Worker Metadata",
-          "description": "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:my-provisioner/highmem#description`.",
-          "input": "v1/update-workertype-request.json#",
-          "method": "put",
-          "name": "declareWorkerType",
-          "output": "v1/workertype-response.json#",
-          "query": [
-          ],
-          "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
-          "scopes": {
-            "AllOf": [
-              {
-                "each": "queue:declare-worker-type:<provisionerId>/<workerType>#<property>",
-                "for": "property",
-                "in": "properties"
-              }
-            ]
-          },
-          "stability": "deprecated",
-          "title": "Update a worker-type",
           "type": "function"
         },
         {

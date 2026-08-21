@@ -824,28 +824,6 @@ class Queue(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["getProvisioner"], *args, **kwargs)
 
-    async def declareProvisioner(self, *args, **kwargs):
-        """
-        Update a provisioner
-
-        Declare a provisioner, supplying some details about it.
-
-        `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
-        possessed. For example, a request to update the `my-provisioner`
-        provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
-        `queue:declare-provisioner:my-provisioner#description`.
-
-        The term "provisioner" is taken broadly to mean anything with a provisionerId.
-        This does not necessarily mean there is an associated service performing any
-        provisioning activity.
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(
-            self.funcinfo["declareProvisioner"], *args, **kwargs
-        )
-
     async def pendingTasks(self, *args, **kwargs):
         """
         Get Number of Pending Tasks
@@ -938,24 +916,6 @@ class Queue(AsyncBaseClient):
         """
 
         return await self._makeApiCall(self.funcinfo["getWorkerType"], *args, **kwargs)
-
-    async def declareWorkerType(self, *args, **kwargs):
-        """
-        Update a worker-type
-
-        Declare a workerType, supplying some details about it.
-
-        `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
-        possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`
-        provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
-        `queue:declare-worker-type:my-provisioner/highmem#description`.
-
-        This method is ``deprecated``
-        """
-
-        return await self._makeApiCall(
-            self.funcinfo["declareWorkerType"], *args, **kwargs
-        )
 
     async def listTaskQueues(self, *args, **kwargs):
         """
@@ -1143,15 +1103,6 @@ class Queue(AsyncBaseClient):
             "route": "/task/<taskId>",
             "stability": "stable",
         },
-        "declareProvisioner": {
-            "args": ["provisionerId"],
-            "input": "v1/update-provisioner-request.json#",
-            "method": "put",
-            "name": "declareProvisioner",
-            "output": "v1/provisioner-response.json#",
-            "route": "/provisioners/<provisionerId>",
-            "stability": "deprecated",
-        },
         "declareWorker": {
             "args": ["provisionerId", "workerType", "workerGroup", "workerId"],
             "input": "v1/update-worker-request.json#",
@@ -1160,15 +1111,6 @@ class Queue(AsyncBaseClient):
             "output": "v1/worker-response.json#",
             "route": "/provisioners/<provisionerId>/worker-types/<workerType>/<workerGroup>/<workerId>",
             "stability": "experimental",
-        },
-        "declareWorkerType": {
-            "args": ["provisionerId", "workerType"],
-            "input": "v1/update-workertype-request.json#",
-            "method": "put",
-            "name": "declareWorkerType",
-            "output": "v1/workertype-response.json#",
-            "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
-            "stability": "deprecated",
         },
         "finishArtifact": {
             "args": ["taskId", "runId", "name"],

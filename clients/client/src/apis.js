@@ -3011,32 +3011,6 @@ export default {
         },
         {
           "args": [
-            "provisionerId"
-          ],
-          "category": "Worker Metadata",
-          "description": "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `my-provisioner`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:my-provisioner#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
-          "input": "v1/update-provisioner-request.json#",
-          "method": "put",
-          "name": "declareProvisioner",
-          "output": "v1/provisioner-response.json#",
-          "query": [
-          ],
-          "route": "/provisioners/<provisionerId>",
-          "scopes": {
-            "AllOf": [
-              {
-                "each": "queue:declare-provisioner:<provisionerId>#<property>",
-                "for": "property",
-                "in": "properties"
-              }
-            ]
-          },
-          "stability": "deprecated",
-          "title": "Update a provisioner",
-          "type": "function"
-        },
-        {
-          "args": [
             "taskQueueId"
           ],
           "category": "Worker Metadata",
@@ -3147,33 +3121,6 @@ export default {
           "scopes": "queue:get-worker-type:<provisionerId>/<workerType>",
           "stability": "deprecated",
           "title": "Get a worker-type",
-          "type": "function"
-        },
-        {
-          "args": [
-            "provisionerId",
-            "workerType"
-          ],
-          "category": "Worker Metadata",
-          "description": "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:my-provisioner/highmem#description`.",
-          "input": "v1/update-workertype-request.json#",
-          "method": "put",
-          "name": "declareWorkerType",
-          "output": "v1/workertype-response.json#",
-          "query": [
-          ],
-          "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
-          "scopes": {
-            "AllOf": [
-              {
-                "each": "queue:declare-worker-type:<provisionerId>/<workerType>#<property>",
-                "for": "property",
-                "in": "properties"
-              }
-            ]
-          },
-          "stability": "deprecated",
-          "title": "Update a worker-type",
           "type": "function"
         },
         {

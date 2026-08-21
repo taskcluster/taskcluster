@@ -429,44 +429,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assert(new Date(result.expires).getTime() === tQueue.expires.getTime(), `expected ${tQueue.expires}`);
   });
 
-  test('queue.declareWorkerType updates a worker-type', async () => {
-    const tQueue = await makeTaskQueue({});
-
-    const updateProps = {
-      description: 'desc-tQueue',
-    };
-
-    const [provisionerId, workerType] = tQueue.taskQueueId.split('/');
-    await helper.queue.declareWorkerType(provisionerId, workerType, updateProps);
-
-    const result = await helper.queue.getWorkerType(provisionerId, workerType);
-
-    assert(result.provisionerId === provisionerId, `expected ${provisionerId}`);
-    assert(result.workerType === workerType, `expected ${workerType}`);
-    assert(result.description === updateProps.description, `expected ${updateProps.description}`);
-    assert(result.stability === tQueue.stability, `expected ${tQueue.stability}`);
-    assert(new Date(result.expires).getTime() === tQueue.expires.getTime(), `expected ${tQueue.expires}`);
-  });
-
-  test('queue.declareWorkerType creates a provisioner and worker-type', async () => {
-    const provisionerId = 'prov1-extended-extended-extended';
-    const workerType = 'wtype';
-    const updateProps = {
-      description: 'desc-wType',
-    };
-
-    await helper.queue.declareWorkerType(provisionerId, workerType, updateProps);
-
-    const provisioner = await helper.queue.getProvisioner(provisionerId);
-    assert(provisioner.provisionerId === provisionerId, `expected ${provisionerId}`);
-
-    const wType = await helper.queue.getWorkerType(provisionerId, workerType);
-    assert(wType.provisionerId === provisionerId, `expected ${provisionerId}`);
-    assert(wType.workerType === workerType, `expected ${workerType}`);
-    assert(wType.description === updateProps.description, `expected ${updateProps.description}`);
-    assert(wType.stability === 'experimental', 'expected experimental');
-  });
-
   test('queue.getProvisioner returns a provisioner', async () => {
     const tQueue = await makeTaskQueue({});
     const { provisionerId } = splitTaskQueueId(tQueue.taskQueueId);
@@ -498,63 +460,6 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     }
     assert(err, 'expected an error');
     assert(err.statusCode === 404, 'expected 404');
-  });
-
-  test('queue.declareProvisioner for a non-existing provisioner returns an error response', async () => {
-    const provisionerId = 'prov1-extended-extended-extended';
-    const updateProps = {
-      description: 'desc-provisioner',
-      actions: [
-        {
-          name: 'kill',
-          title: 'Kill Provisioner',
-          context: 'provisioner',
-          url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle/<provisionerId>',
-          method: 'DELETE',
-          description: 'Remove provisioner desc-provisioner',
-        },
-      ],
-    };
-
-    let err;
-    try {
-      await helper.queue.declareProvisioner(provisionerId, updateProps);
-    } catch (e) {
-      err = e;
-    }
-    assert(err, 'expected an error');
-    assert(err.statusCode === 404, 'expected 404');
-  });
-
-  test('queue.declareProvisioner returns existing provisioner without updating', async () => {
-    const provisionerId = 'prov1-extended-extended-extended';
-    const taskQueue = await makeTaskQueue({
-      taskQueueId: `${provisionerId}/not-important`,
-    });
-
-    const updateProps = {
-      description: 'desc-provisioner',
-      actions: [
-        {
-          name: 'kill',
-          title: 'Kill Provisioner',
-          context: 'provisioner',
-          url: 'https://hardware-provisioner.mozilla-releng.net/v1/power-cycle/<provisionerId>',
-          method: 'DELETE',
-          description: 'Remove provisioner desc-provisioner',
-        },
-      ],
-    };
-
-    await helper.queue.declareProvisioner(provisionerId, updateProps);
-
-    const result = await helper.queue.getProvisioner(provisionerId);
-
-    assert(result.provisionerId === provisionerId, `expected ${provisionerId}`);
-    assert(result.description === '', `expected ''`);
-    assert(result.stability === 'experimental', `expected 'experimental'`);
-    assert(result.actions.length === 0, `expected no actions`);
-    assert(new Date(result.expires).getTime() === taskQueue.expires.getTime(), `expected ${taskQueue.expires}`);
   });
 
   test('worker-type lastDateActive updates', async () => {
@@ -748,6 +653,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     });
 
     const updateProps = {
+      expires: new Date('3000-01-01'),
       quarantineUntil: new Date('3000-01-01'),
     };
 
@@ -764,6 +670,13 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     } catch (error) {
       assert(error, 'expected an error');
     }
+  });
+
+  test('queue.declareWorker rejects an empty body', async () => {
+    await assert.rejects(
+      () => helper.queue.declareWorker('some-prov', 'some-wt', 'wg', 'wid', {}),
+      err => err.code === 'InputValidationError'
+    );
   });
 
   test('queue.claimWork adds a task to a worker', async () => {

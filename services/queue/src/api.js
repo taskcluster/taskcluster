@@ -1,7 +1,6 @@
 import assert from 'node:assert';
 import _ from 'lodash';
 import { APIBuilder, paginateResults } from '@taskcluster/lib-api';
-import taskcluster from '@taskcluster/client';
 import taskCreds from './task-creds.js';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
 import { Task, Worker, TaskQueue, Provisioner, TaskGroup } from './data.js';
@@ -2138,63 +2137,6 @@ builder.declare(
   }
 );
 
-/** Update a provisioner */
-builder.declare(
-  {
-    method: 'put',
-    route: '/provisioners/:provisionerId',
-    name: 'declareProvisioner',
-    stability: APIBuilder.stability.deprecated,
-    category: 'Worker Metadata',
-    scopes: {
-      AllOf: [
-        {
-          for: 'property',
-          in: 'properties',
-          each: 'queue:declare-provisioner:<provisionerId>#<property>',
-        },
-      ],
-    },
-    output: 'provisioner-response.yml',
-    input: 'update-provisioner-request.yml',
-    title: 'Update a provisioner',
-    description: [
-      'Declare a provisioner, supplying some details about it.',
-      '',
-      '`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are',
-      'possessed. For example, a request to update the `my-provisioner`',
-      "provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope",
-      '`queue:declare-provisioner:my-provisioner#description`.',
-      '',
-      'The term "provisioner" is taken broadly to mean anything with a provisionerId.',
-      'This does not necessarily mean there is an associated service performing any',
-      'provisioning activity.',
-    ].join('\n'),
-  },
-  async function (req, res) {
-    const provisionerId = req.params.provisionerId;
-
-    await req.authorize({
-      provisionerId,
-      properties: Object.keys(req.body),
-    });
-
-    const provisioner = await Provisioner.get(this.db, provisionerId, new Date());
-
-    if (!provisioner) {
-      return res.reportError(
-        'ResourceNotFound',
-        'Provisioner `{{provisionerId}}` not found. Are you sure it was created?',
-        {
-          provisionerId,
-        }
-      );
-    }
-
-    return res.reply(provisioner.serialize());
-  }
-);
-
 /** Count pending tasks for workerType */
 builder.declare(
   {
@@ -2451,62 +2393,6 @@ builder.declare(
       );
     }
 
-    const tqResult = tQueue.serialize();
-    addSplitFields(tqResult);
-
-    const actions = [];
-    return res.reply(Object.assign({}, tqResult, { actions }));
-  }
-);
-
-/** Update a worker-type */
-builder.declare(
-  {
-    method: 'put',
-    route: '/provisioners/:provisionerId/worker-types/:workerType',
-    name: 'declareWorkerType',
-    stability: APIBuilder.stability.deprecated,
-    category: 'Worker Metadata',
-    scopes: {
-      AllOf: [
-        {
-          for: 'property',
-          in: 'properties',
-          each: 'queue:declare-worker-type:<provisionerId>/<workerType>#<property>',
-        },
-      ],
-    },
-    output: 'workertype-response.yml',
-    input: 'update-workertype-request.yml',
-    title: 'Update a worker-type',
-    description: [
-      'Declare a workerType, supplying some details about it.',
-      '',
-      '`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are',
-      'possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`',
-      "provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope",
-      '`queue:declare-worker-type:my-provisioner/highmem#description`.',
-    ].join('\n'),
-  },
-  async function (req, res) {
-    const { provisionerId, workerType } = req.params;
-    const { stability, description, expires } = req.body;
-    const taskQueueId = joinTaskQueueId(provisionerId, workerType);
-
-    await req.authorize({
-      provisionerId,
-      workerType,
-      properties: Object.keys(req.body),
-    });
-
-    await this.db.fns.task_queue_seen({
-      task_queue_id_in: taskQueueId,
-      stability_in: stability,
-      description_in: description,
-      expires_in: expires || taskcluster.fromNow('5 days'),
-    });
-
-    const tQueue = await TaskQueue.get(this.db, taskQueueId, new Date());
     const tqResult = tQueue.serialize();
     addSplitFields(tqResult);
 
