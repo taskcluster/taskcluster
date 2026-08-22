@@ -1,0 +1,66 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Registered Clients"
+description: |
+  Third-party OAuth2 clients registered with this deployment, as given in the
+  `login.registeredClients` configuration value.
+type: array
+items:
+  title: "Registered Client"
+  type: object
+  properties:
+    clientId:
+      description: |
+        Identifier this client uses in its authorization requests.
+      type: string
+    responseType:
+      description: |
+        OAuth2 flow this client uses: `token` for the implicit flow, `code` for
+        the authorization-code flow.
+      enum: [token, code]
+    scope:
+      description: |
+        Scopes this client is allowed to request.
+      type: array
+      items:
+        type: string
+    redirectUri:
+      description: |
+        URIs this client may be redirected back to after authorization.
+      type: array
+      items:
+        type: string
+    whitelisted:
+      description: |
+        If true, users are not prompted to grant this client access.
+      type: boolean
+    requirePkce:
+      description: |
+        If true, authorization requests from this client must use PKCE.  Only
+        meaningful for the authorization-code flow.
+      type: boolean
+    maxExpires:
+      description: |
+        Longest lifetime of credentials issued to this client, as a duration
+        such as `1 year`.
+      type: string
+  additionalProperties: false
+  required:
+    - clientId
+    - responseType
+    - scope
+    - redirectUri
+    - maxExpires
+  # PKCE only applies to the authorization-code flow.  Note that the docs schema
+  # viewer renders `if`/`then` only as bare chips, so the prose table in
+  # ui/docs/manual/deploying/third-party.mdx states this rule in words.
+  if:
+    type: object
+    additionalProperties: true
+    properties:
+      requirePkce: { const: true }
+    required: [requirePkce]
+  then:
+    type: object
+    additionalProperties: true
+    properties:
+      responseType: { const: code }
