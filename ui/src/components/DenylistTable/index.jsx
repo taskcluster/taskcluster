@@ -1,24 +1,22 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { string, shape, func, arrayOf } from 'prop-types';
-import { titleCase } from 'title-case';
+import { arrayOf, bool, string } from 'prop-types';
 import classNames from 'classnames';
-import { pipe, map, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { memoize } from '../../utils/memoize';
-import { notificationAddress, pageInfo } from '../../utils/prop-types';
+import { notificationAddress, pagination } from '../../utils/prop-types';
 import { VIEW_DENYLIST_PAGE_SIZE } from '../../utils/constants';
 import sort from '../../utils/sort';
-import ConnectionDataTable from '../ConnectionDataTable';
+import titleCase from '../../utils/titleCase';
+import PaginatedDataTable from '../PaginatedDataTable';
 
-const sorted = pipe(
-  rSort((a, b) => sort(a.node.notificationAddress, b.node.notificationAddress)),
-  map(({ node: { notificationAddress } }) => notificationAddress)
-);
 const tableHeaders = ['Address', 'Type'];
+const iconSize = 16;
+// property corresponding to the column name
+const propertyFromColName = colName =>
+  colName === 'Type' ? 'notificationType' : 'notificationAddress';
 
 @withStyles(theme => ({
   tableCell: {
@@ -36,70 +34,26 @@ const tableHeaders = ['Address', 'Type'];
   },
 }))
 export default class DenylistTable extends Component {
-  static defaultProps = {
-    searchTerm: null,
+  static propTypes = {
+    /** One page of denylisted notification addresses. */
+    addresses: arrayOf(notificationAddress).isRequired,
+    /** A search term used to refine the list of notifications. */
+    searchTerm: string,
+    loading: bool,
+    ...pagination,
   };
 
-  static propTypes = {
-    /** A GraphQL denylisted notifications response. */
-    notificationsConnection: shape({
-      edges: arrayOf(notificationAddress),
-      pageInfo,
-    }).isRequired,
-    onPageChange: func.isRequired,
-    /** A search term to refine the list of notifications */
-    searchTerm: string,
+  static defaultProps = {
+    searchTerm: null,
+    loading: false,
+    hasNextPage: false,
+    hasPreviousPage: false,
   };
 
   state = {
     sortBy: tableHeaders[0],
     sortDirection: 'asc',
   };
-
-  propertyFromColName = colName => {
-    // property correspiinding to the column name
-    switch (colName) {
-      case 'Address':
-        return 'notificationAddress';
-      case 'Type':
-        return 'notificationType';
-      default:
-        return 'notificationAddress';
-    }
-  };
-
-  createSortedNotifications = memoize(
-    (notificationsConnection, sortBy, sortDirection) => {
-      const sortByProperty = this.propertyFromColName(sortBy);
-
-      if (!sortBy) {
-        return notificationsConnection;
-      }
-
-      return {
-        ...notificationsConnection,
-        edges: [...notificationsConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
-
-          return sort(firstElement, secondElement);
-        }),
-      };
-    },
-    {
-      serializer: ([notificationsConnection, sortBy, sortDirection]) => {
-        const ids = sorted(notificationsConnection.edges);
-
-        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
-      },
-    }
-  );
 
   handleHeaderClick = sortBy => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
@@ -108,56 +62,65 @@ export default class DenylistTable extends Component {
     this.setState({ sortBy, sortDirection });
   };
 
-  prettify = str =>
-    titleCase(str)
-      .split(' ')
-      .map(word => {
-        const pretty = word === 'Irc' ? word.toUpperCase() : word;
-
-        return pretty;
-      })
-      .join(' ');
-
   render() {
-    const { classes, onPageChange, notificationsConnection } = this.props;
+    const {
+      classes,
+      addresses,
+      searchTerm,
+      loading,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      onNextPage,
+      onPreviousPage,
+    } = this.props;
     const { sortBy, sortDirection } = this.state;
-    const iconSize = 16;
-    const sortedNotificationsConnection = this.createSortedNotifications(
-      notificationsConnection,
-      sortBy,
-      sortDirection
-    );
+    const sortByProperty = propertyFromColName(sortBy);
+    const sortedAddresses = sortBy
+      ? [...addresses].sort((a, b) =>
+          sortDirection === 'desc'
+            ? sort(b[sortByProperty], a[sortByProperty])
+            : sort(a[sortByProperty], b[sortByProperty])
+        )
+      : addresses;
 
     return (
-      <ConnectionDataTable
-        connection={sortedNotificationsConnection}
+      <PaginatedDataTable
+        items={sortedAddresses}
         pageSize={VIEW_DENYLIST_PAGE_SIZE}
-        onHeaderClick={this.handleHeaderClick}
-        onPageChange={onPageChange}
+        page={page}
+        loading={loading}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
+        onNextPage={onNextPage}
+        onPreviousPage={onPreviousPage}
         headers={tableHeaders}
         sortByHeader={sortBy}
         sortDirection={sortDirection}
-        renderRow={({ node }) => (
-          <TableRow key={node.notificationAddress}>
+        onHeaderClick={this.handleHeaderClick}
+        searchTerm={searchTerm}
+        noItemsMessage="No denylisted addresses for this page."
+        renderRow={address => (
+          <TableRow key={address.notificationAddress}>
             <TableCell>
               <Link
                 className={classes.tableCell}
                 to={`/notify/denylist/${encodeURIComponent(
-                  node.notificationAddress
+                  address.notificationAddress
                 )}`}>
                 <div
                   className={classNames(
                     classes.listItemCell,
                     classes.listLinkCell
                   )}>
-                  {node.notificationAddress}
+                  {address.notificationAddress}
                   <LinkIcon size={iconSize} />
                 </div>
               </Link>
             </TableCell>
             <TableCell>
               <div className={classes.listItemCell}>
-                {this.prettify(node.notificationType)}
+                {titleCase(address.notificationType)}
               </div>
             </TableCell>
           </TableRow>
