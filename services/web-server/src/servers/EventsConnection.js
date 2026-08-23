@@ -1,5 +1,6 @@
-import scopeUtils from 'taskcluster-lib-scopes';
-import { decryptToken } from './decryptToken.js';
+import resolveBindings from './resolveBindings.js';
+
+const PING_INTERVAL_MS = 30000;
 
 // Custom WebSocket close codes, in the 4000-4999 (application-defined) range,
 // plus the standard 1011 (internal error) where that's the better fit.
@@ -23,7 +24,15 @@ const FRAME_TYPES = {
 };
 
 export default class EventsConnection {
-  constructor({ ws, pulseEngine, clients, authFactory, monitor, socketAliveTimeoutMilliSeconds, connectionInitTimeoutMilliSeconds }) {
+  constructor({
+    ws,
+    pulseEngine,
+    clients,
+    authFactory,
+    monitor,
+    socketAliveTimeoutMilliSeconds,
+    connectionInitTimeoutMilliSeconds,
+  }) {
     this.ws = ws;
     this.pulseEngine = pulseEngine;
     this.clients = clients;
@@ -32,6 +41,11 @@ export default class EventsConnection {
     // engine subscriptionIds owned by this connection
     this.subscriptions = new Set();
     this.connectionInitReceived = false;
+    // cleared by each pong from the client, set again by each checkLiveness tick
+    this.isAlive = true;
+    this.pingInterval = setInterval(() => {
+      this.checkLiveness();
+    }, PING_INTERVAL_MS);
 
     this.lifetimeTimeout = setTimeout(() => {
       this.close(CLOSE_CODES.LIFETIME_EXCEEDED, 'Connection lifetime exceeded');
@@ -41,9 +55,45 @@ export default class EventsConnection {
       this.close(CLOSE_CODES.PROTOCOL_ERROR, 'Protocol error: no connection_init frame received');
     }, connectionInitTimeoutMilliSeconds);
 
-    ws.on('message', data => this.onMessage(data));
-    ws.on('close', closeCode => this.onClose(closeCode));
-    ws.on('error', err => this.monitor.reportError(err));
+    ws.on('message', data => {
+      this.onMessage(data);
+    });
+
+    ws.on('close', closeCode => {
+      clearTimeout(this.lifetimeTimeout);
+      clearTimeout(this.connectionInitTimeout);
+      clearInterval(this.pingInterval);
+
+      const openSubscriptions = this.subscriptions.size;
+
+      for (const subscriptionId of this.subscriptions) {
+        this.pulseEngine.unsubscribe(subscriptionId);
+      }
+      this.subscriptions.clear();
+
+      this.monitor.log.websocketClosed({ closeCode, openSubscriptions });
+    });
+
+    ws.on('error', err => {
+      this.monitor.reportError(err);
+    });
+
+    ws.on('pong', () => {
+      this.isAlive = true;
+    });
+  }
+
+  // Called on each ping-interval tick: a client that has not answered the
+  // previous ping is terminated (which fires 'close' and tears everything
+  // down), otherwise it is pinged again.
+  checkLiveness() {
+    if (!this.isAlive) {
+      this.ws.terminate();
+      return;
+    }
+
+    this.isAlive = false;
+    this.ws.ping();
   }
 
   send(frame) {
@@ -109,7 +159,7 @@ export default class EventsConnection {
     }
   }
 
-  async handleConnectionInit(frame) {
+  async handleConnectionInit(_frame) {
     clearTimeout(this.connectionInitTimeout);
 
     try {
@@ -154,7 +204,7 @@ export default class EventsConnection {
     let bindings;
 
     try {
-      bindings = this.resolveBindings(frame);
+      bindings = resolveBindings(frame, this.clients);
     } catch (err) {
       // A malformed subscribe frame is a client error: reject it with an error
       // frame, but keep the connection.
@@ -175,42 +225,20 @@ export default class EventsConnection {
 
     subscriptionId = this.pulseEngine.subscribe(
       bindings,
-      message => this.deliver(subscriptionId, message),
-      err => this.subscriptionError(subscriptionId, err)
+      message => {
+        // the returned promise drives the engine's AMQP ack/nack
+        return this.send({ type: FRAME_TYPES.DATA, subscriptionId, message });
+      },
+      err => {
+        const error = err instanceof Error ? err : new Error(String(err));
+
+        this.monitor.reportError(error);
+        this.sendError({ subscriptionId, code: 'SubscriptionError', message: error.message });
+      }
     );
 
     this.subscriptions.add(subscriptionId);
     this.send({ type: FRAME_TYPES.SUBSCRIBE_ACK, subscriptionId }).catch(() => {});
-  }
-
-  // Resolve a subscribe frame into the `{ exchange, pattern }` bindings the
-  // pulse engine consumes. `kind` selects how the frame is interpreted:
-  //   - 'raw' (or absent): `frame.bindings` are already resolved exchanges and
-  //     patterns — used by the Pulse debugger, which binds arbitrary exchanges;
-  //   - 'tasks': a semantic request (event names + a routing-key filter) that
-  //     the server expands into bindings via the QueueEvents client.
-  resolveBindings(frame) {
-    const kind = frame.kind ?? 'raw';
-
-    switch (kind) {
-      case 'raw':
-        return frame.bindings;
-      case 'tasks': {
-        const { subscriptions, routingKey } = frame;
-
-        if (!Array.isArray(subscriptions) || subscriptions.length === 0) {
-          throw Object.assign(new Error('subscribe requires a non-empty array of subscriptions'), { code: 'ProtocolError' });
-        }
-
-        return subscriptions.map(eventName => {
-          const binding = this.clients.queueEvents[eventName](routingKey ?? {});
-
-          return { exchange: binding.exchange, pattern: binding.routingKeyPattern };
-        });
-      }
-      default:
-        throw Object.assign(new Error(`unknown subscribe kind: ${kind}`), { code: 'ProtocolError' });
-    }
   }
 
   handleUnsubscribe(frame) {
@@ -220,33 +248,5 @@ export default class EventsConnection {
       this.pulseEngine.unsubscribe(subscriptionId);
       this.subscriptions.delete(subscriptionId);
     }
-  }
-
-  deliver(subscriptionId, message) {
-    return this.send({ type: FRAME_TYPES.DATA, subscriptionId, message });
-  }
-
-  subscriptionError(subscriptionId, err) {
-    const error = err instanceof Error ? err : new Error(String(err));
-    this.monitor.reportError(error);
-    this.sendError({
-      subscriptionId,
-      code: 'SubscriptionError',
-      message: error.message,
-    });
-  }
-
-  onClose(closeCode) {
-    clearTimeout(this.lifetimeTimeout);
-    clearTimeout(this.connectionInitTimeout);
-
-    const openSubscriptions = this.subscriptions.size;
-
-    for (const subscriptionId of this.subscriptions) {
-      this.pulseEngine.unsubscribe(subscriptionId);
-    }
-    this.subscriptions.clear();
-
-    this.monitor.log.websocketClosed({ closeCode, openSubscriptions });
   }
 }
