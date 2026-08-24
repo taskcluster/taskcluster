@@ -1,7 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { withRouter } from 'react-router-dom';
-import { parse, stringify } from 'qs';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import IconButton from '@material-ui/core/IconButton';
@@ -11,31 +9,22 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import Drawer from '@material-ui/core/Drawer';
 import InformationVariantIcon from 'mdi-react/InformationVariantIcon';
-import { func, array, shape } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
+import { arrayOf, bool, object } from 'prop-types';
 import { camelCase } from 'camel-case';
 import LinkIcon from 'mdi-react/LinkIcon';
-import { memoize } from '../../utils/memoize';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
 import StatusLabel from '../StatusLabel';
 import DateDistance from '../DateDistance';
 import Markdown from '../Markdown';
 import TableCellItem from '../TableCellItem';
-import ConnectionDataTable from '../ConnectionDataTable';
+import PaginatedDataTable from '../PaginatedDataTable';
 import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../utils/constants';
+import { pagination } from '../../utils/prop-types';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
-import { pageInfo } from '../../utils/prop-types';
 
-const sorted = pipe(
-  rSort((a, b) => sort(a.node.workerType, b.node.workerType)),
-  map(
-    ({ node: { provisionerId, workerType } }) =>
-      `${provisionerId}.${workerType}`
-  )
-);
+const iconSize = 16;
 
-@withRouter
 @withStyles(theme => ({
   infoButton: {
     marginLeft: -theme.spacing(2),
@@ -57,134 +46,92 @@ const sorted = pipe(
  */
 export default class WorkerTypesTable extends Component {
   static propTypes = {
-    /** Callback function fired when a page is changed. */
-    onPageChange: func.isRequired,
-    /** Worker Types GraphQL PageConnection instance. */
-    workerTypesConnection: shape({
-      edges: array,
-      pageInfo,
-    }).isRequired,
+    /** One page of worker types from the queue REST API. */
+    workerTypes: arrayOf(object).isRequired,
+    loading: bool,
+    ...pagination,
+  };
+
+  static defaultProps = {
+    loading: false,
+    hasNextPage: false,
+    hasPreviousPage: false,
   };
 
   state = {
+    sortBy: null,
+    sortDirection: null,
     drawerOpen: false,
     drawerWorkerType: null,
   };
 
-  createSortedWorkerTypesConnection = memoize(
-    (workerTypesConnection, sortBy, sortDirection) => {
-      if (!sortBy) {
-        return workerTypesConnection;
-      }
+  handleHeaderClick = sortBy => {
+    const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
+    const sortDirection = this.state.sortBy === sortBy ? toggled : 'desc';
 
-      const sortByProperty = camelCase(sortBy);
-
-      return {
-        ...workerTypesConnection,
-        edges: [...workerTypesConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
-
-          return sort(firstElement, secondElement);
-        }),
-      };
-    },
-    {
-      serializer: ([workerTypesConnection, sortBy, sortDirection]) => {
-        const ids = sorted(workerTypesConnection.edges);
-
-        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
-      },
-    }
-  );
-
-  handleDrawerClose = () => {
-    this.setState({
-      drawerOpen: false,
-      drawerWorkerType: null,
-    });
+    this.setState({ sortBy, sortDirection });
   };
 
-  handleDrawerOpen = ({ currentTarget: { name } }) =>
-    memoize(
-      name =>
-        this.setState({
-          drawerOpen: true,
-          drawerWorkerType: this.workerTypes.edges.find(
-            ({ node }) => node.workerType === name
-          ).node,
-        }),
-      {
-        serializer: name => name,
-      }
-    )(name);
+  handleDrawerOpen = workerType => {
+    this.setState({ drawerOpen: true, drawerWorkerType: workerType });
+  };
 
-  handleHeaderClick = sortBy => {
-    const query = parse(this.props.location.search.slice(1));
-    const toggled = query.sortDirection === 'desc' ? 'asc' : 'desc';
-    const sortDirection = query.sortBy === sortBy ? toggled : 'desc';
-
-    query.sortBy = sortBy;
-    query.sortDirection = sortDirection;
-    this.props.history.replace({
-      search: stringify(query, { addQueryPrefix: true }),
-    });
+  handleDrawerClose = () => {
+    this.setState({ drawerOpen: false, drawerWorkerType: null });
   };
 
   render() {
-    const query = parse(this.props.location.search.slice(1));
-    const { onPageChange, classes, workerTypesConnection } = this.props;
-    const { drawerOpen, drawerWorkerType } = this.state;
-    const { sortBy, sortDirection } = query.sortBy
-      ? query
-      : { sortBy: null, sortDirection: null };
+    const {
+      classes,
+      workerTypes,
+      loading,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      onNextPage,
+      onPreviousPage,
+    } = this.props;
+    const { sortBy, sortDirection, drawerOpen, drawerWorkerType } = this.state;
+    const sortByProperty = sortBy ? camelCase(sortBy) : null;
+    const sortedWorkerTypes = sortByProperty
+      ? [...workerTypes].sort((a, b) => {
+          const firstElement =
+            sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
+          const secondElement =
+            sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
 
-    this.workerTypes = this.createSortedWorkerTypesConnection(
-      workerTypesConnection,
-      sortBy,
-      sortDirection
-    );
+          return sort(firstElement, secondElement);
+        })
+      : workerTypes;
     const headers = [
       'Worker Type',
       'Stability',
       'Last Date Active',
       'Pending Tasks',
     ];
-    const iconSize = 16;
-
-    if (this.workerTypes.edges.length) {
-      if ('runningCapacity' in this.workerTypes.edges[0].node) {
-        headers.push('Running Capacity');
-      }
-
-      if ('pendingCapacity' in this.workerTypes.edges[0].node) {
-        headers.push('Pending Capacity');
-      }
-    }
 
     return (
       <Fragment>
-        <ConnectionDataTable
-          connection={this.workerTypes}
+        <PaginatedDataTable
+          items={sortedWorkerTypes}
           pageSize={VIEW_WORKER_TYPES_PAGE_SIZE}
+          page={page}
+          loading={loading}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          onNextPage={onNextPage}
+          onPreviousPage={onPreviousPage}
           sortByHeader={sortBy}
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}
-          onPageChange={onPageChange}
           headers={headers}
-          renderRow={({ node: workerType }) => (
-            <TableRow key={workerType.workerType}>
+          renderRow={(workerType, style, key) => (
+            <TableRow key={key ?? workerType.workerType} style={style}>
               <TableCell>
                 <IconButton
                   className={classes.infoButton}
                   name={workerType.workerType}
-                  onClick={this.handleDrawerOpen}>
+                  onClick={() => this.handleDrawerOpen(workerType)}>
                   <InformationVariantIcon size={iconSize} />
                 </IconButton>
                 <Link
@@ -204,12 +151,6 @@ export default class WorkerTypesTable extends Component {
                 text={<DateDistance from={workerType.lastDateActive} />}
               />
               <TableCell>{workerType.pendingTasks}</TableCell>
-              {'runningCapacity' in workerType && (
-                <TableCell>{workerType.runningCapacity}</TableCell>
-              )}
-              {'pendingCapacity' in workerType && (
-                <TableCell>{workerType.pendingCapacity}</TableCell>
-              )}
             </TableRow>
           )}
         />
