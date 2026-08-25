@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v106/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v107/clients/client-go/tcqueue"
 )
 
 // Test APPDATA / LOCALAPPDATA folder are not shared between tasks

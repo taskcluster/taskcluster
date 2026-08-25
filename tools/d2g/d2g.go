@@ -14,9 +14,9 @@ import (
 
 	"github.com/distribution/reference"
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster/v106/internal/scopes"
-	"github.com/taskcluster/taskcluster/v106/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v106/tools/d2g/genericworker"
+	"github.com/taskcluster/taskcluster/v107/internal/scopes"
+	"github.com/taskcluster/taskcluster/v107/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v107/tools/d2g/genericworker"
 
 	"slices"
 

@@ -9,10 +9,10 @@ import (
 	"runtime"
 	"testing"
 
-	tcclient "github.com/taskcluster/taskcluster/v106/clients/client-go"
-	"github.com/taskcluster/taskcluster/v106/clients/client-go/tcauth"
-	"github.com/taskcluster/taskcluster/v106/internal/scopes"
-	"github.com/taskcluster/taskcluster/v106/internal/testrooturl"
+	tcclient "github.com/taskcluster/taskcluster/v107/clients/client-go"
+	"github.com/taskcluster/taskcluster/v107/clients/client-go/tcauth"
+	"github.com/taskcluster/taskcluster/v107/internal/scopes"
+	"github.com/taskcluster/taskcluster/v107/internal/testrooturl"
 )
 
 func getFreePort(t *testing.T) uint16 {

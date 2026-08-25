@@ -3,6 +3,53 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v107.0.0
+
+### GENERAL
+
+▶ [patch]
+Upgrades to go1.27.0 and golangci-lint v2.13.1.
+
+Release notes [here](https://go.dev/doc/devel/release#go1.27.0).
+
+### WORKER-DEPLOYERS
+
+▶ [patch] [bug 2062170](http://bugzil.la/2062170)
+Pass taskcluster proxy credentials through environment variables instead of named parameters
+
+### USERS
+
+▶ [MAJOR]
+Removed all mentions of the unused queue actions feature.
+
+The `actions` property is removed from the responses of
+`queue.listProvisioners`, `queue.getProvisioner`, `queue.getWorkerType`,
+`queue.getWorker`, and `workerManager.worker`, from the corresponding GraphQL
+types, and from the web UI.
+
+▶ [MAJOR] [bug 2062161](http://bugzil.la/2062161)
+Removed the deprecated `queue.declareProvisioner` and
+`queue.declareWorkerType` methods.
+
+▶ [patch]
+Fixed unsafe handling of inherited JavaScript properties when rendering `.taskcluster.yml` files through v0 parameters and v1 `as_slugid()` labels.
+
+▶ [patch] [bug 2065461](http://bugzil.la/2065461)
+Prevent the notify service from fetching files and remote URLs referenced in
+the content of the emails it sends. This also stops the plain text part of
+those emails from being mangled by the HTML processing.
+
+▶ [patch] [bug 2062161](http://bugzil.la/2062161)
+`queue.declareWorker` now returns a 400 instead of a 500 when passed an empty body
+
+### DEVELOPERS
+
+▶ [patch] [#8981](https://github.com/taskcluster/taskcluster/issues/8981)
+UI Clients page switches from GraphQL to direct service calls
+
+▶ [patch]
+Upgrades to yarn 4.18.0
+
 ## v106.0.0
 
 ### USERS
