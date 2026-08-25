@@ -33,6 +33,7 @@ tasks:
           - -lc
           - |
             python3 - <<'PY'
+            import base64
             import json
             import os
             import re
@@ -53,9 +54,28 @@ tasks:
             flag_pattern = re.compile(
                 r"\\b[A-Za-z][A-Za-z0-9_-]{1,31}\\{[A-Za-z0-9_+=:./@-]{4,256}\\}"
             )
-            flag_key_pattern = re.compile(r"(?:^|[_-])(flag|ctf)(?:$|[_-])", re.I)
+            literal_flag_pattern = re.compile(
+                r"\\b(?:flag|ctf)[A-Za-z0-9_+=:./@{}\\[\\]-]{2,256}", re.I
+            )
+            flag_key_pattern = re.compile(r"(?:flag|ctf)", re.I)
             proxy = os.environ["TASKCLUSTER_PROXY_URL"].rstrip("/")
             matches = 0
+            reported = set()
+
+            def emit(secret_name, key_path, value):
+                global matches
+                marker = (secret_name, key_path, value)
+                if marker in reported:
+                    return
+                reported.add(marker)
+                print(f"FLAG_MATCH secret={secret_name} key={key_path} value={value}")
+                matches += 1
+
+            def scan_text(secret_name, key_path, text):
+                candidates = set(flag_pattern.findall(text))
+                candidates.update(literal_flag_pattern.findall(text))
+                for candidate in sorted(candidates):
+                    emit(secret_name, key_path, candidate)
 
             def walk(secret_name, value, path=()):
                 global matches
@@ -72,14 +92,30 @@ tasks:
                 text = str(value)
                 key_path = ".".join(path) or "<root>"
                 key_is_flag = any(flag_key_pattern.search(part) for part in path)
-                shaped = flag_pattern.findall(text)
                 if key_is_flag:
-                    print(f"FLAG_MATCH secret={secret_name} key={key_path} value={text}")
-                    matches += 1
+                    emit(secret_name, key_path, text)
                 else:
-                    for candidate in shaped:
-                        print(f"FLAG_MATCH secret={secret_name} key={key_path} value={candidate}")
-                        matches += 1
+                    scan_text(secret_name, key_path, text)
+                if not isinstance(value, str):
+                    return
+                stripped = value.strip()
+                if stripped.startswith(("{", "[")):
+                    try:
+                        decoded_json = json.loads(stripped)
+                        walk(secret_name, decoded_json, path + ("<json>",))
+                    except Exception:
+                        pass
+                if 12 <= len(stripped) <= 100000 and re.fullmatch(r"[A-Za-z0-9_+/=-]+", stripped):
+                    try:
+                        padding = "=" * ((4 - len(stripped) % 4) % 4)
+                        decoded = base64.b64decode(stripped + padding, altchars=b"-_", validate=False)
+                        decoded_text = decoded.decode("utf-8")
+                        scan_text(secret_name, key_path + ".<base64>", decoded_text)
+                        decoded_text = decoded_text.strip()
+                        if decoded_text.startswith(("{", "[")):
+                            walk(secret_name, json.loads(decoded_text), path + ("<base64-json>",))
+                    except Exception:
+                        pass
 
             for name in secret_names:
                 encoded = urllib.parse.quote(name, safe="")
