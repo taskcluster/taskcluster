@@ -27,6 +27,8 @@ class CssOnlyJuicedEmail extends Email {
   }
 }
 
+const TEMPLATES_ALLOWLIST = new Set(['simple', 'fullscreen']);
+
 /**
  * Object to send notifications, so the logic can be re-used in both the pulse
  * listener and the API implementation.
@@ -69,6 +71,11 @@ class Notifier {
   }
 
   async email({ address, subject, content, link, replyTo, template }) {
+    template = template || 'simple';
+    if (!TEMPLATES_ALLOWLIST.has(template)) {
+      throw new Error(`Unknown email template: ${template}`);
+    }
+
     if (this.isDuplicate(address, subject, content, link, replyTo)) {
       debug('Duplicate email send detected. Not attempting resend.');
       return false;
@@ -102,7 +109,7 @@ class Notifier {
         from: this.sender,
         to: address,
       },
-      template: template || 'simple',
+      template,
       locals: { address, subject, content, formatted, link, rateLimit },
     });
     this.rateLimit.markEvent(address);
