@@ -6,7 +6,6 @@ import github from './github.js';
 import hooks from './hooks.js';
 import namespaces from './namespaces.js';
 import notify from './notify.js';
-import provisioners from './provisioners.js';
 import roles from './roles.js';
 import scopes from './scopes.js';
 import secrets from './secrets.js';
@@ -14,7 +13,6 @@ import taskStatuses from './taskStatuses.js';
 import tasks from './tasks.js';
 import workerManager from './workerManager.js';
 import workerTypes from './workerTypes.js';
-import workers from './workers.js';
 
 const loaders = [
   artifacts,
@@ -25,7 +23,6 @@ const loaders = [
   hooks,
   namespaces,
   notify,
-  provisioners,
   roles,
   scopes,
   secrets,
@@ -33,7 +30,6 @@ const loaders = [
   tasks,
   workerManager,
   workerTypes,
-  workers,
 ];
 
 export default (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId, traceId) =>

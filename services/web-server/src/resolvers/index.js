@@ -9,7 +9,6 @@ import Github from './Github.js';
 import Hooks from './Hooks.js';
 import Namespaces from './Namespaces.js';
 import Notify from './Notify.js';
-import Provisioners from './Provisioners.js';
 import PulseMessages from './PulseMessages.js';
 import Roles from './Roles.js';
 import Scopes from './Scopes.js';
@@ -18,8 +17,6 @@ import TaskRuns from './TaskRuns.js';
 import TaskStatuses from './TaskStatuses.js';
 import Tasks from './Tasks.js';
 import WorkerManager from './WorkerManager.js';
-import WorkerTypes from './WorkerTypes.js';
-import Workers from './Workers.js';
 
 const resolvers = deepmerge.all([
   Root,
@@ -31,7 +28,6 @@ const resolvers = deepmerge.all([
   Hooks,
   Namespaces,
   Notify,
-  Provisioners,
   PulseMessages,
   Roles,
   Scopes,
@@ -40,8 +36,6 @@ const resolvers = deepmerge.all([
   TaskStatuses,
   Tasks,
   WorkerManager,
-  WorkerTypes,
-  Workers,
 ]);
 
 export default resolvers;
