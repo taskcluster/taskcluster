@@ -244,75 +244,181 @@ func IsExistingDir(path string) bool {
 var maxChownDepth = 1024
 
 const maxChownErrors = 100
-const fileFlags = unix.O_RDONLY | leafFlags
+const fileFlags = unix.O_RDONLY | unix.O_NOFOLLOW | unix.O_NONBLOCK | unix.O_CLOEXEC
 
-func Chown(path string, uid, gid int, recurse bool) error {
+type chowner struct {
+	// Destination uid/gid
+	uid, gid int
+	// Previous owner uid
+	from    uint32
+	errs    []error
+	refused int
+}
+
+func (c *chowner) refuse(err error) {
+	c.refused++
+	if c.refused <= maxChownErrors {
+		c.errs = append(c.errs, err)
+	}
+}
+
+func (c *chowner) refusals(path string) error {
+	err := errors.Join(c.errs...)
+	if c.refused > maxChownErrors {
+		err = errors.Join(err, fmt.Errorf("%v further entries of %q were refused", c.refused-maxChownErrors, path))
+	}
+	return err
+}
+
+func Chown(path string, uid int, gid int, recurse bool) error {
 	parent, name, err := openParent(path)
 	if err != nil {
 		return err
 	}
 	defer unix.Close(parent)
 
-	if isSymlinkAt(parent, name) {
+	var st unix.Stat_t
+	if err := unix.Fstatat(parent, name, &st, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		return fmt.Errorf("could not stat %q: %w", path, err)
+	}
+
+	var flags int
+	kind := st.Mode & unix.S_IFMT
+	switch kind {
+	case unix.S_IFLNK:
 		return fmt.Errorf("refusing to change the ownership of %q: it's a symlink", path)
+	case unix.S_IFDIR:
+		flags = dirFlags
+	case unix.S_IFREG:
+		flags = fileFlags
+	default:
+		return fmt.Errorf("refusing to change the ownership of %q: it's neither a regular file nor a directory", path)
 	}
-	if err := unix.Fchownat(parent, name, uid, gid, unix.AT_SYMLINK_NOFOLLOW); err != nil {
-		return fmt.Errorf("could not change the ownership of %q: %w", path, err)
+
+	fd, err := unix.Openat(parent, name, flags, 0)
+	if err != nil {
+		return fmt.Errorf("could not open %q: %w", path, err)
 	}
-	if !recurse {
+	root := os.NewFile(uintptr(fd), path)
+	defer root.Close()
+
+	if err := unix.Fstat(fd, &st); err != nil {
+		return fmt.Errorf("could not stat %q: %w", path, err)
+	}
+	if st.Mode&unix.S_IFMT != kind {
+		return fmt.Errorf("refusing to change the ownership of %q: it changed kind while it was being opened", path)
+	}
+	isDir := kind == unix.S_IFDIR
+
+	if !isDir && st.Nlink > 1 {
+		return fmt.Errorf("refusing to change the ownership of %q. The root is a hard link", path)
+	}
+
+	c := &chowner{uid: uid, gid: gid, from: st.Uid}
+
+	if err := c.chownFd(fd, path); err != nil {
+		return err
+	}
+	if !recurse || !isDir {
 		return nil
 	}
 
-	fd, err := unix.Openat(parent, name, dirFlags, 0)
-	if err != nil {
-		if errors.Is(err, unix.ENOTDIR) {
-			return nil
-		}
-		return fmt.Errorf("could not open %q: %w", path, err)
-	}
-	dir := os.NewFile(uintptr(fd), path)
-	defer dir.Close()
-
-	return chownChildren(dir, uid, gid, 0)
+	c.chownChildren(root, 0)
+	return c.refusals(path)
 }
 
-func chownChildren(dir *os.File, uid, gid, depth int) error {
+func (c *chowner) chownChildren(dir *os.File, depth int) {
 	if depth > maxChownDepth {
-		return fmt.Errorf("refusing to descend into %q: more than %v levels deep", dir.Name(), maxChownDepth)
+		c.refuse(fmt.Errorf("refusing to descend into %q: more than %v levels deep", dir.Name(), maxChownDepth))
+		return
 	}
 
 	dirfd := int(dir.Fd())
 	entries, err := dir.ReadDir(-1)
 	if err != nil {
-		return fmt.Errorf("could not read directory %q: %w", dir.Name(), err)
+		c.refuse(fmt.Errorf("could not read directory %q: %w", dir.Name(), err))
+		return
 	}
 
-	var errs []error
 	for _, entry := range entries {
-		if err := chownChild(dirfd, entry, dir.Name(), uid, gid, depth); err != nil {
-			errs = append(errs, err)
-		}
+		c.chownChild(dirfd, entry, filepath.Join(dir.Name(), entry.Name()), depth)
 	}
-	return errors.Join(errs...)
 }
 
-func chownChild(dirfd int, entry os.DirEntry, parentPath string, uid, gid, depth int) error {
-	name := entry.Name()
-	path := filepath.Join(parentPath, name)
-	if err := unix.Fchownat(dirfd, name, uid, gid, unix.AT_SYMLINK_NOFOLLOW); err != nil {
-		return fmt.Errorf("could not change the ownership of %q: %w", path, err)
+func (c *chowner) chownChild(dirfd int, entry os.DirEntry, path string, depth int) {
+	switch {
+	case entry.IsDir():
+		c.chownDir(dirfd, entry.Name(), path, depth)
+	case entry.Type().IsRegular():
+		if err := c.chownFile(dirfd, entry.Name(), path); err != nil {
+			c.refuse(err)
+		}
+	case entry.Type()&os.ModeDevice != 0:
+		// We can't hand over device nodes properly so just refuse them
+		// enitrely. They should never end up in caches anyway
+		c.refuse(fmt.Errorf("refusing to hand over %q: it's a device node", path))
 	}
+}
 
-	if !entry.IsDir() {
-		return nil
-	}
-
+func (c *chowner) chownDir(dirfd int, name, path string, depth int) {
 	fd, err := unix.Openat(dirfd, name, dirFlags, 0)
 	if err != nil {
-		return fmt.Errorf("could not open %q: %w", path, err)
+		c.refuse(fmt.Errorf("could not open %q: %w", path, err))
+		return
 	}
+
 	child := os.NewFile(uintptr(fd), path)
 	defer child.Close()
 
-	return chownChildren(child, uid, gid, depth+1)
+	if err := c.chownFd(fd, path); err != nil {
+		c.refuse(err)
+		return
+	}
+
+	c.chownChildren(child, depth+1)
+}
+
+func (c *chowner) chownFile(dirfd int, name, path string) error {
+	fd, err := unix.Openat(dirfd, name, fileFlags, 0)
+	if err != nil {
+		return fmt.Errorf("could not open %q: %w", path, err)
+	}
+	defer unix.Close(fd)
+
+	var st unix.Stat_t
+	if err := unix.Fstat(fd, &st); err != nil {
+		return fmt.Errorf("could not stat %q: %w", path, err)
+	}
+	if st.Mode&unix.S_IFMT != unix.S_IFREG {
+		return fmt.Errorf("refusing to change the ownership of %q: it changed kind while it was being opened", path)
+	}
+
+	if !c.mayTake(uint64(st.Nlink), st.Uid) {
+		if c.from == 0 {
+			return fmt.Errorf("refusing to change the ownership of %q: it's a hardlink owned by root", path)
+		}
+		return fmt.Errorf("refusing to change the ownership of %q: it's a hardlink belonging to uid %v, not %v", path, st.Uid, c.from)
+	}
+
+	return c.chownFd(fd, path)
+}
+
+func (c *chowner) mayTake(nlink uint64, uid uint32) bool {
+	if nlink <= 1 {
+		// Not a hardlink
+		return true
+	}
+
+	if c.from != 0 && uid == c.from {
+		return true
+	}
+
+	return c.uid != 0 && int64(uid) == int64(c.uid)
+}
+
+func (c *chowner) chownFd(fd int, path string) error {
+	if err := unix.Fchown(fd, c.uid, c.gid); err != nil {
+		return fmt.Errorf("could not change the ownership of %q: %w", path, err)
+	}
+	return nil
 }
