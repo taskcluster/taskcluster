@@ -129,6 +129,17 @@ func openParent(path string) (int, string, error) {
 	return fd, name, nil
 }
 
+func refuseHardlink(fd int, path string) error {
+	var st unix.Stat_t
+	if err := unix.Fstat(fd, &st); err != nil {
+		return fmt.Errorf("could not stat %q: %w", path, err)
+	}
+	if st.Mode&unix.S_IFMT == unix.S_IFREG && st.Nlink != 1 {
+		return fmt.Errorf("refusing to operate on %q: it has %v links, so it is also reachable from elsewhere", path, st.Nlink)
+	}
+	return nil
+}
+
 func openPath(path string, flags int) (int, error) {
 	parent, name, err := openParent(path)
 	if err != nil {
@@ -142,6 +153,10 @@ func openPath(path string, flags int) (int, error) {
 			return -1, fmt.Errorf("refusing to resolve %q: it's a symlink", path)
 		}
 		return -1, fmt.Errorf("could not open %q: %w", path, err)
+	}
+	if err := refuseHardlink(fd, path); err != nil {
+		unix.Close(fd)
+		return -1, err
 	}
 	return fd, nil
 }
@@ -169,12 +184,23 @@ func Create(file string, perm os.FileMode) (*os.File, error) {
 	}
 	defer unix.Close(parent)
 
-	fd, err := unix.Openat(parent, name, unix.O_WRONLY|unix.O_CREAT|unix.O_TRUNC|unix.O_NOFOLLOW|unix.O_CLOEXEC, uint32(perm))
+	// This doesn't set O_TRUNC since it'd truncate a file linked to before we
+	// can check whather or not we should act on it. We truncate it manually
+	// after making sure it's a regular file.
+	fd, err := unix.Openat(parent, name, unix.O_WRONLY|unix.O_CREAT|unix.O_NOFOLLOW|unix.O_CLOEXEC, uint32(perm))
 	if err != nil {
 		if isSymlinkAt(parent, name) {
 			return nil, fmt.Errorf("refusing to create %q: it's a symlink", file)
 		}
 		return nil, fmt.Errorf("could not create %q: %w", file, err)
+	}
+	if err := refuseHardlink(fd, file); err != nil {
+		unix.Close(fd)
+		return nil, err
+	}
+	if err := unix.Ftruncate(fd, 0); err != nil {
+		unix.Close(fd)
+		return nil, fmt.Errorf("could not truncate %q: %w", file, err)
 	}
 	return os.NewFile(uintptr(fd), file), nil
 }

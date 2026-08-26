@@ -81,6 +81,17 @@ func TestOpenExistingRDWR(t *testing.T) {
 			t.Error("opened a missing file")
 		}
 	})
+
+	t.Run("refuses a hardlinked leaf", func(t *testing.T) {
+		base := t.TempDir()
+		secret := write(t, filepath.Join(base, "secret.txt"), "secret")
+		reserved := hardlink(t, secret, filepath.Join(base, "reserved"))
+
+		if f, err := OpenExistingRDWR(reserved); err == nil {
+			f.Close()
+			t.Error("opened a hardlink")
+		}
+	})
 }
 
 func mkdir(t *testing.T, path string) string {
@@ -634,6 +645,17 @@ func TestOpenExistingReadonly(t *testing.T) {
 			t.Error("opened a symlink")
 		}
 	})
+
+	t.Run("refuses a hardlinked leaf", func(t *testing.T) {
+		base := t.TempDir()
+		secret := write(t, filepath.Join(base, "secret.txt"), "secret")
+		reserved := hardlink(t, secret, filepath.Join(base, "reserved.log"))
+
+		if f, err := OpenExistingReadonly(reserved); err == nil {
+			f.Close()
+			t.Error("opened a hardlink")
+		}
+	})
 }
 
 func TestCreate(t *testing.T) {
@@ -680,6 +702,21 @@ func TestCreate(t *testing.T) {
 		}
 		if _, err := os.Lstat(filepath.Join(secret, "planted.txt")); err == nil {
 			t.Error("planted inside the secret")
+		}
+	})
+
+	t.Run("refuses a hardlinked leaf without truncating it", func(t *testing.T) {
+		base := t.TempDir()
+		victim := write(t, filepath.Join(base, "victim"), "important")
+		dst := hardlink(t, victim, filepath.Join(base, "dst"))
+
+		if f, err := Create(dst, 0o644); err == nil {
+			f.Close()
+			t.Error("created through a hardlink")
+		}
+		// O_TRUNC would have emptied it before we ever got to refuse
+		if b, _ := os.ReadFile(victim); string(b) != "important" {
+			t.Errorf("victim was clobbered: %q", b)
 		}
 	})
 }
