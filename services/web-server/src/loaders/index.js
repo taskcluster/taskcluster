@@ -5,7 +5,6 @@ import clients from './clients.js';
 import github from './github.js';
 import hooks from './hooks.js';
 import namespaces from './namespaces.js';
-import notify from './notify.js';
 import provisioners from './provisioners.js';
 import roles from './roles.js';
 import scopes from './scopes.js';
@@ -24,7 +23,6 @@ const loaders = [
   github,
   hooks,
   namespaces,
-  notify,
   provisioners,
   roles,
   scopes,
