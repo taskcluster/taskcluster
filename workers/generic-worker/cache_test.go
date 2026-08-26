@@ -157,6 +157,51 @@ func TestAcquireCachePoolExhausted(t *testing.T) {
 	}
 }
 
+func TestAcquireOrCreateCacheReusesAvailable(t *testing.T) {
+	existing := &Cache{Key: "mycache", Location: "/tmp/test-acquire-or-create", InUse: false, LastUsed: time.Now()}
+	directoryCaches = CacheMap{
+		"mycache": {existing},
+	}
+	entry, created := acquireOrCreateCache("mycache")
+	if created {
+		t.Error("Expected to reuse an existing pool entry")
+	}
+	if entry != existing {
+		t.Error("Expected the existing pool entry")
+	}
+	if !entry.InUse {
+		t.Error("Expected acquired entry to be marked InUse")
+	}
+}
+
+func TestAcquireOrCreateCacheCreatesWhenNoneAvailable(t *testing.T) {
+	origConfig := config
+	config = &gwconfig.Config{CachesDir: t.TempDir()}
+	defer func() { config = origConfig }()
+
+	directoryCaches = CacheMap{
+		"build": {
+			{Key: "build", Location: "/tmp/p1", InUse: true},
+		},
+	}
+	entry, created := acquireOrCreateCache("build")
+	if !created {
+		t.Error("Expected a new pool entry to be created")
+	}
+	if entry == nil {
+		t.Fatal("Expected a non-nil entry")
+	}
+	if !entry.InUse {
+		t.Error("Expected new entry to be marked InUse")
+	}
+	if entry.Key != "build" {
+		t.Errorf("Expected Key=build, got %s", entry.Key)
+	}
+	if len(directoryCaches["build"]) != 2 {
+		t.Errorf("Expected pool to have 2 entries, got %d", len(directoryCaches["build"]))
+	}
+}
+
 func TestReleaseCacheMarksAvailable(t *testing.T) {
 	entry := &Cache{Key: "mycache", InUse: true}
 	directoryCaches = CacheMap{
