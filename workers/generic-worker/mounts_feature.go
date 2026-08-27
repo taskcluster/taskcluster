@@ -414,8 +414,8 @@ func (cm *CacheMap) LoadFromFile(stateFile string, cacheDir string) {
 func (feature *MountsFeature) Initialise() error {
 	cacheMutex.Lock()
 	defer cacheMutex.Unlock()
-	fileCaches.LoadFromFile("file-caches.json", config.CachesDir)
-	directoryCaches.LoadFromFile("directory-caches.json", config.DownloadsDir)
+	fileCaches.LoadFromFile("file-caches.json", config.DownloadsDir)
+	directoryCaches.LoadFromFile("directory-caches.json", config.CachesDir)
 	sweepUnknownContent(config.CachesDir, directoryCaches)
 	return nil
 }
