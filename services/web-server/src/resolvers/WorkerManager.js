@@ -14,42 +14,14 @@ export default {
     WorkerManagerWorkerPoolSummaries(_parent, { connection, searchTerm }, { loaders }) {
       return loaders.WorkerManagerWorkerPoolSummaries.load({ connection, searchTerm });
     },
-    WorkerManagerErrors(_parent, { workerPoolId, launchConfigId, connection }, { loaders }) {
-      return loaders.WorkerManagerErrors.load({ workerPoolId, launchConfigId, connection });
-    },
     WorkerManagerErrorsStats(_parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerManagerErrorsStats.load({ workerPoolId });
     },
     WorkerPool(_parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerPool.load({ workerPoolId });
     },
-    WorkerPoolLaunchConfigs(_parent, { workerPoolId, includeArchived, connection }, { loaders }) {
-      return loaders.WorkerPoolLaunchConfigs.load({ workerPoolId, includeArchived, connection });
-    },
     WorkerManagerWorker(_parent, { workerPoolId, workerGroup, workerId }, { loaders }) {
       return loaders.WorkerManagerWorker.load({ workerPoolId, workerGroup, workerId });
-    },
-    WorkerManagerWorkers(_parent, { workerPoolId, launchConfigId, state, connection }, { loaders }) {
-      return loaders.WorkerManagerWorkers.load({ workerPoolId, launchConfigId, state, connection });
-    },
-    WorkerManagerProviders(_parent, { connection }, { loaders }) {
-      return loaders.WorkerManagerProviders.load({ connection });
-    },
-    WorkerPoolStats(_parent, { workerPoolId }, { loaders }) {
-      return loaders.WorkerPoolStats.load({ workerPoolId });
-    },
-  },
-  Mutation: {
-    createWorkerPool(_parent, { workerPoolId, payload }, { clients }) {
-      return clients.workerManager.createWorkerPool(workerPoolId, payload);
-    },
-    updateWorkerPool(_parent, { workerPoolId, payload }, { clients }) {
-      return clients.workerManager.updateWorkerPool(workerPoolId, payload);
-    },
-    async deleteWorkerPool(_parent, { workerPoolId }, { clients }) {
-      await clients.workerManager.deleteWorkerPool(workerPoolId);
-
-      return workerPoolId;
     },
   },
 };

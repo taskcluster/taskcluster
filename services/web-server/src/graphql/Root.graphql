@@ -34,13 +34,9 @@ union Node =
   RoleCompact |
   NotificationAddress |
   WorkerManagerWorkerPoolSummary |
-  WorkerManagerProvider |
-  WorkerManagerError |
   HookLastFire |
   PendingTask |
-  ClaimedTask |
-  WorkerPoolLaunchConfig |
-  WorkerPoolLaunchConfigStats
+  ClaimedTask
 
 interface Edge {
   cursor: String
