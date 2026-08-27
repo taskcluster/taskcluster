@@ -154,23 +154,15 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	artifactHashes := map[string]ArtifactHash{}
 	feature.task.artifactsMux.RLock()
 	for _, artifact := range feature.task.Artifacts {
-		// make sure SHA256 is calculated
-		switch a := artifact.(type) {
-		case *artifacts.S3Artifact:
-			hash, hashErr := fileutil.CalculateSHA256(a.Path)
-			if hashErr != nil {
-				panic(hashErr)
+		switch artifact.(type) {
+		case *artifacts.S3Artifact, *artifacts.ObjectArtifact:
+			base := artifact.Base()
+			if base.SHA256 == "" {
+				feature.task.Warnf("Leaving `%v` out of the CoT certificate as it was not uploaded", base.Name)
+				continue
 			}
-			artifactHashes[a.Name] = ArtifactHash{
-				SHA256: hash,
-			}
-		case *artifacts.ObjectArtifact:
-			hash, hashErr := fileutil.CalculateSHA256(a.Path)
-			if hashErr != nil {
-				panic(hashErr)
-			}
-			artifactHashes[a.Name] = ArtifactHash{
-				SHA256: hash,
+			artifactHashes[base.Name] = ArtifactHash{
+				SHA256: base.SHA256,
 			}
 		}
 	}

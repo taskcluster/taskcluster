@@ -2,6 +2,8 @@ package artifacts
 
 import (
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -35,9 +37,10 @@ type S3Artifact struct {
 
 // createTempFileForPUTBody gzip-compresses the file at Path and
 // writes it to a temporary file in the same directory. The file path of the
-// generated temporary file is returned.  It is the responsibility of the
-// caller to delete the temporary file.
-func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
+// generated temporary file is returned, along with the sha256 of the content
+// that went into it. It is the responsibility of the caller to delete the
+// temporary file.
+func (s3Artifact *S3Artifact) createTempFileForPUTBody() (string, string) {
 	baseName := filepath.Base(s3Artifact.Path)
 	tmpFile, err := os.CreateTemp("", baseName)
 	if err != nil {
@@ -45,9 +48,9 @@ func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
 	}
 	defer tmpFile.Close()
 	var target io.Writer = tmpFile
+	var gzipLogWriter *gzip.Writer
 	if s3Artifact.ContentEncoding == "gzip" {
-		gzipLogWriter := gzip.NewWriter(tmpFile)
-		defer gzipLogWriter.Close()
+		gzipLogWriter = gzip.NewWriter(tmpFile)
 		gzipLogWriter.Name = baseName
 		target = gzipLogWriter
 	}
@@ -56,8 +59,19 @@ func (s3Artifact *S3Artifact) createTempFileForPUTBody() string {
 		panic(err)
 	}
 	defer source.Close()
-	_, _ = io.Copy(target, source)
-	return tmpFile.Name()
+	hasher := sha256.New()
+	if _, err := io.Copy(io.MultiWriter(target, hasher), source); err != nil {
+		panic(err)
+	}
+	if gzipLogWriter != nil {
+		if err := gzipLogWriter.Close(); err != nil {
+			panic(err)
+		}
+	}
+	if err := tmpFile.Close(); err != nil {
+		panic(err)
+	}
+	return tmpFile.Name(), hex.EncodeToString(hasher.Sum(nil))
 }
 
 func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFactory tc.ServiceFactory, config *gwconfig.Config) (err error) {
@@ -77,13 +91,16 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 	}
 
 	var transferContentFile string
+	var contentSHA256 string
+	hashDuringPUT := false
 	if !tempFileCreated || s3Artifact.ContentEncoding == "gzip" {
 		log.Printf("Copying %v to temp file...", s3Artifact.ContentPath)
-		transferContentFile = s3Artifact.createTempFileForPUTBody()
+		transferContentFile, contentSHA256 = s3Artifact.createTempFileForPUTBody()
 		defer os.Remove(transferContentFile)
 	} else {
 		log.Printf("Not copying %v to temp file", s3Artifact.ContentPath)
 		transferContentFile = s3Artifact.ContentPath
+		hashDuringPUT = true
 	}
 
 	// perform http PUT to upload to S3...
@@ -110,8 +127,14 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 		}
 		transferContentLength := transferContentFileInfo.Size()
 
+		var body io.Reader = transferContent
+		hasher := sha256.New()
+		if hashDuringPUT {
+			body = io.TeeReader(transferContent, hasher)
+		}
+
 		var httpRequest *http.Request
-		httpRequest, permError = http.NewRequest("PUT", response.PutURL, transferContent)
+		httpRequest, permError = http.NewRequest("PUT", response.PutURL, body)
 		if permError != nil {
 			return
 		}
@@ -128,10 +151,17 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 		// which can/should be retried, so explicitly handle...
 		if putResp.StatusCode == http.StatusBadRequest {
 			tempError = fmt.Errorf("S3 returned status code 400 which could be an intermittent issue - see https://bugzilla.mozilla.org/show_bug.cgi?id=1394557")
+			return
+		}
+		if hashDuringPUT {
+			contentSHA256 = hex.EncodeToString(hasher.Sum(nil))
 		}
 		return
 	}
 	putResp, putAttempts, err := httpbackoff.Retry(httpCall)
+	if err == nil {
+		s3Artifact.SHA256 = contentSHA256
+	}
 	formattedUrl, formatURLErr := formatURL(response.PutURL)
 	if formatURLErr != nil {
 		log.Print("Could not parse PutUrl, something has gone very wrong...")

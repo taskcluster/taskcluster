@@ -53,14 +53,32 @@ func (a *ObjectArtifact) ProcessResponse(resp any, logger Logger, serviceFactory
 		Certificate: response.Credentials.Certificate,
 	}
 	objsvc := serviceFactory.Object(&creds, config.RootURL)
-	return objsvc.UploadFromFile(
+
+	content, err := os.Open(a.ContentPath)
+	if err != nil {
+		return err
+	}
+	defer content.Close()
+
+	info, err := content.Stat()
+	if err != nil {
+		return err
+	}
+
+	hashes, err := objsvc.UploadFromReadSeekerWithHashes(
 		response.ProjectID,
 		response.Name,
 		a.ContentType,
+		info.Size(),
 		time.Time(a.Expires),
 		response.UploadID,
-		a.ContentPath,
+		content,
 	)
+	if err != nil {
+		return err
+	}
+	a.SHA256 = hashes["sha256"]
+	return nil
 }
 
 func (a *ObjectArtifact) FinishArtifact(resp any, queue tc.Queue, taskID, runID, name string) error {

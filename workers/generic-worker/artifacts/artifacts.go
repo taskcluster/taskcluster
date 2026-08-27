@@ -61,6 +61,9 @@ type (
 		Name     string
 		Expires  tcclient.Time
 		Optional bool
+		// SHA256 of the artifact content, computed from the bytes that were
+		// actually uploaded. Empty until the upload has succeeded.
+		SHA256 string
 	}
 )
 
