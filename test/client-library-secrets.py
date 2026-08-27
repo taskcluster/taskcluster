@@ -16,6 +16,11 @@ except ImportError:
     PY27 = True
 import os
 import json
+import sys
+
+if os.environ.get('TASKCLUSTER_UNTRUSTED_PR') == 'true':
+    print('Skipping Taskcluster integration credentials for an untrusted pull request.', file=sys.stderr)
+    raise SystemExit(0)
 
 proxy_url = os.environ['TASKCLUSTER_PROXY_URL'].rstrip('/')
 

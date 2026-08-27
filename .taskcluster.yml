@@ -2,14 +2,19 @@
 version: 1
 reporting: checks-v1
 policy:
-  pullRequests: public
+  pullRequests: public_restricted
 autoCancelPreviousChecks: true
 tasks:
   - $let:
       trustDomain: taskcluster
       # We set some of these directly in tc because we don't have some mozilla-specific concepts
       ownerEmail: taskcluster-internal@mozilla.com
-      level: 1
+      # Keep writable caches from untrusted code out of the trusted level-1
+      # namespace. The Community-TC role enforces the corresponding scopes.
+      level:
+        $if: 'tasks_for == "github-pull-request-untrusted"'
+        then: 0
+        else: 1
 
       # Github events have this stuff in different places...
       baseRepoUrl:
@@ -87,7 +92,10 @@ tasks:
         taskGroupId: "${ownTaskId}" # same as taskId; this is how automation identifies a decision task
         created: { $fromNow: "" }
         deadline: { $fromNow: "1 day" }
-        expires: { $fromNow: "1 year 1 second" } # 1 second so artifacts expire first, despite rounding errors
+        expires:
+          $if: 'tasks_for == "github-pull-request-untrusted"'
+          then: { $fromNow: "28 days 1 second" }
+          else: { $fromNow: "1 year 1 second" } # 1 second so artifacts expire first, despite rounding errors
         metadata:
           owner: "${ownerEmail}"
           source: "${repoUrl}/raw/${head_sha}/.taskcluster.yml"
@@ -109,7 +117,8 @@ tasks:
           else:
             $if: "isPullRequest"
             then:
-              - "assume:repo:github.com/${event.pull_request.base.repo.full_name}:pull-request"
+              # `github-` is 7 characters, leaving the repository role suffix.
+              - "assume:repo:github.com/${event.pull_request.base.repo.full_name}:${tasks_for[7:]}"
             else:
               $if: 'tasks_for == "github-push" && event["ref"][:11] == "refs/tags/v"'
               then:
@@ -135,7 +144,6 @@ tasks:
               - $if: "isPullRequest"
                 then:
                   TASKCLUSTER_PULL_REQUEST_URL: "${event.pull_request.url}"
-
           cache:
             "${trustDomain}-level-${level}-checkouts-sparse-v2": /builds/worker/checkouts
 
@@ -180,7 +188,10 @@ tasks:
             "public":
               type: "directory"
               path: "/builds/worker/artifacts"
-              expires: { $fromNow: "1 year" }
+              expires:
+                $if: 'tasks_for == "github-pull-request-untrusted"'
+                then: { $fromNow: "28 days" }
+                else: { $fromNow: "1 year" }
             "public/docker-contexts":
               type: "directory"
               path: "/builds/worker/checkouts/src/docker-contexts"

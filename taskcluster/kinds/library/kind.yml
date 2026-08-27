@@ -18,6 +18,7 @@ task-defaults:
     - secrets:get:project/taskcluster/testing/taskcluster-*
   attributes:
     code-review: true
+    run-without-secrets: true
   worker:
     docker-image: {in-tree: ci}
     taskcluster-proxy: true
