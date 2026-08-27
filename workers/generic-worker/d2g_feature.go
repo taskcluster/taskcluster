@@ -18,6 +18,7 @@ import (
 	"github.com/taskcluster/taskcluster/v107/internal/scopes"
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/fileutil"
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
 )
 
 // Concurrency model (capacity > 1):
@@ -267,21 +268,14 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		// chain-of-trust feature folds it into the signed cert. The
 		// task dir is already 0700 owned by the task user, so this
 		// file is not exposed beyond that boundary.
-		err = os.WriteFile(chainOfTrustAdditionalDataPath, []byte(chainOfTrustAdditionalData), 0644)
+		err = safefs.WriteFile(chainOfTrustAdditionalDataPath, []byte(chainOfTrustAdditionalData), 0644)
 		if err != nil {
 			return executionError(internalError, errored, fmt.Errorf("[d2g] could not write chain of trust additional data file: %v", err))
 		}
 	}
 
-	envFile, err := os.Create(filepath.Join(taskDir, "env.list"))
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("[d2g] could not create env.list file: %v", err))
-	}
-	defer envFile.Close()
-
-	_, err = envFile.WriteString(dtf.task.D2GInfo.EnvVars)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("[d2g] could not write to env.list file: %v", err))
+	if err := safefs.WriteFile(filepath.Join(taskDir, "env.list"), []byte(dtf.task.D2GInfo.EnvVars), 0644); err != nil {
+		return executionError(internalError, errored, fmt.Errorf("[d2g] could not write env.list file: %v", err))
 	}
 
 	dtf.evaluateCommandPlaceholders(image.ID, taskDir)
