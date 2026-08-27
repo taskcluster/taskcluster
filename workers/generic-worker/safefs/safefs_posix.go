@@ -14,7 +14,8 @@ import (
 
 const maxTrustedLinks = 8
 
-const dirFlags = unix.O_RDONLY | unix.O_DIRECTORY | unix.O_NOFOLLOW | unix.O_CLOEXEC
+const dirFlags = unix.O_RDONLY | unix.O_DIRECTORY | leafFlags
+const leafFlags = unix.O_NOFOLLOW | unix.O_NONBLOCK | unix.O_CLOEXEC
 
 func splitAbsPath(path string) ([]string, error) {
 	if path == "" {
@@ -129,12 +130,15 @@ func openParent(path string) (int, string, error) {
 	return fd, name, nil
 }
 
-func refuseHardlink(fd int, path string) error {
+func refuseIfIrregular(fd int, path string) error {
 	var st unix.Stat_t
 	if err := unix.Fstat(fd, &st); err != nil {
 		return fmt.Errorf("could not stat %q: %w", path, err)
 	}
-	if st.Mode&unix.S_IFMT == unix.S_IFREG && st.Nlink != 1 {
+	if st.Mode&unix.S_IFMT != unix.S_IFREG {
+		return fmt.Errorf("refusing to operate on %q: it's not a regular file", path)
+	}
+	if st.Nlink != 1 {
 		return fmt.Errorf("refusing to operate on %q: it has %v links, so it is also reachable from elsewhere", path, st.Nlink)
 	}
 	return nil
@@ -147,14 +151,14 @@ func openPath(path string, flags int) (int, error) {
 	}
 	defer unix.Close(parent)
 
-	fd, err := unix.Openat(parent, name, flags|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
+	fd, err := unix.Openat(parent, name, flags|leafFlags, 0)
 	if err != nil {
 		if isSymlinkAt(parent, name) {
 			return -1, fmt.Errorf("refusing to resolve %q: it's a symlink", path)
 		}
 		return -1, fmt.Errorf("could not open %q: %w", path, err)
 	}
-	if err := refuseHardlink(fd, path); err != nil {
+	if err := refuseIfIrregular(fd, path); err != nil {
 		unix.Close(fd)
 		return -1, err
 	}
@@ -187,14 +191,14 @@ func Create(file string, perm os.FileMode) (*os.File, error) {
 	// This doesn't set O_TRUNC since it'd truncate a file linked to before we
 	// can check whather or not we should act on it. We truncate it manually
 	// after making sure it's a regular file.
-	fd, err := unix.Openat(parent, name, unix.O_WRONLY|unix.O_CREAT|unix.O_NOFOLLOW|unix.O_CLOEXEC, uint32(perm))
+	fd, err := unix.Openat(parent, name, unix.O_WRONLY|unix.O_CREAT|leafFlags, uint32(perm))
 	if err != nil {
 		if isSymlinkAt(parent, name) {
 			return nil, fmt.Errorf("refusing to create %q: it's a symlink", file)
 		}
 		return nil, fmt.Errorf("could not create %q: %w", file, err)
 	}
-	if err := refuseHardlink(fd, file); err != nil {
+	if err := refuseIfIrregular(fd, file); err != nil {
 		unix.Close(fd)
 		return nil, err
 	}
@@ -258,19 +262,20 @@ func isDirAt(dirfd int, name string) bool {
 }
 
 func IsExistingDir(path string) bool {
-	fd, err := openPath(path, unix.O_RDONLY|unix.O_DIRECTORY)
+	parent, name, err := openParent(path)
 	if err != nil {
 		return false
 	}
-	unix.Close(fd)
-	return true
+	defer unix.Close(parent)
+
+	return isDirAt(parent, name)
 }
 
 // Overridden by the tests so they don't need to build a tree this deep.
 var maxChownDepth = 1024
 
 const maxChownErrors = 100
-const fileFlags = unix.O_RDONLY | unix.O_NOFOLLOW | unix.O_NONBLOCK | unix.O_CLOEXEC
+const fileFlags = unix.O_RDONLY | leafFlags
 
 type chowner struct {
 	// Destination uid/gid

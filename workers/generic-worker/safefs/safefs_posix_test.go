@@ -40,6 +40,36 @@ func hardlink(t *testing.T, target, path string) string {
 	return path
 }
 
+func mkfifo(t *testing.T, path string) string {
+	t.Helper()
+	if err := unix.Mkfifo(path, 0o666); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
+func openWithinTimeout(t *testing.T, open func() (*os.File, error)) (*os.File, error) {
+	t.Helper()
+
+	type result struct {
+		f   *os.File
+		err error
+	}
+	done := make(chan result, 1)
+	go func() {
+		f, err := open()
+		done <- result{f, err}
+	}()
+
+	select {
+	case r := <-done:
+		return r.f, r.err
+	case <-time.After(10 * time.Second):
+		t.Fatal("blocked on a fifo")
+		return nil, nil
+	}
+}
+
 func TestOpenExistingRDWR(t *testing.T) {
 	t.Run("writes through the handle", func(t *testing.T) {
 		file := write(t, filepath.Join(t.TempDir(), "file.txt"), "")
@@ -92,6 +122,16 @@ func TestOpenExistingRDWR(t *testing.T) {
 			t.Error("opened a hardlink")
 		}
 	})
+
+	t.Run("refuses a fifo without blocking on it", func(t *testing.T) {
+		fifo := mkfifo(t, filepath.Join(t.TempDir(), "reserved"))
+
+		f, err := openWithinTimeout(t, func() (*os.File, error) { return OpenExistingRDWR(fifo) })
+		if err == nil {
+			f.Close()
+			t.Error("opened a fifo")
+		}
+	})
 }
 
 func mkdir(t *testing.T, path string) string {
@@ -125,6 +165,19 @@ func TestPathWalk(t *testing.T) {
 		}
 		if b, _ := os.ReadFile(secret); string(b) != "secret" {
 			t.Errorf("secret = %q", b)
+		}
+	})
+
+	t.Run("does not block on a fifo in the prefix", func(t *testing.T) {
+		base := t.TempDir()
+		fifo := mkfifo(t, filepath.Join(base, "fifo"))
+
+		f, err := openWithinTimeout(t, func() (*os.File, error) {
+			return OpenExistingReadonly(filepath.Join(fifo, "leaf.txt"))
+		})
+		if err == nil {
+			f.Close()
+			t.Error("walked through a fifo")
 		}
 	})
 
@@ -656,6 +709,31 @@ func TestOpenExistingReadonly(t *testing.T) {
 			t.Error("opened a hardlink")
 		}
 	})
+
+	t.Run("refuses a fifo without blocking on it", func(t *testing.T) {
+		fifo := mkfifo(t, filepath.Join(t.TempDir(), "reserved.log"))
+
+		f, err := openWithinTimeout(t, func() (*os.File, error) { return OpenExistingReadonly(fifo) })
+		if err == nil {
+			f.Close()
+			t.Error("opened a fifo")
+		}
+	})
+
+	t.Run("refuses a socket", func(t *testing.T) {
+		base := t.TempDir()
+		t.Chdir(base)
+		sock, err := net.Listen("unix", "reserved.log")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer sock.Close()
+
+		if f, err := OpenExistingReadonly(filepath.Join(base, "reserved.log")); err == nil {
+			f.Close()
+			t.Error("opened a socket")
+		}
+	})
 }
 
 func TestCreate(t *testing.T) {
@@ -789,6 +867,7 @@ func TestIsExistingDir(t *testing.T) {
 	mkdir(t, filepath.Join(dir, "sub"))
 	file := write(t, filepath.Join(base, "file.txt"), "")
 	link := symlink(t, dir, filepath.Join(base, "link"))
+	fifo := mkfifo(t, filepath.Join(base, "fifo"))
 
 	for _, tc := range []struct {
 		path string
@@ -796,6 +875,7 @@ func TestIsExistingDir(t *testing.T) {
 	}{
 		{dir, true},
 		{file, false},
+		{fifo, false},
 		{link, false},
 		{filepath.Join(link, "sub"), false},
 		{filepath.Join(base, "missing"), false},
