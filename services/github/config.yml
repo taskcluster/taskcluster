@@ -6,6 +6,7 @@ defaults:
     deprecatedInitialStatusQueue: 'stat-init'
     resultStatusQueue: 'ch-result'
     rerunQueue: 're-run'
+    taskclusterYmlQueue: 'tc-yml'
     checkTaskRoute: 'checks'
     statusTaskRoute: 'statuses'
     statusContext: !env APPLICATION_NAME
@@ -65,6 +66,7 @@ test:
     deprecatedResultStatusQueue: 'deprecated-statuses'
     deprecatedInitialStatusQueue: 'deprecated-tasks'
     resultStatusQueue: 'checks-statuses'
+    taskclusterYmlQueue: 'test-tc-yml'
     statusContext: 'Taskcluster-Test'
 
   github:

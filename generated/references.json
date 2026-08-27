@@ -9289,6 +9289,55 @@
   },
   {
     "content": {
+      "$id": "/schemas/github/v1/taskcluster-yml-update-message.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Message reporting that a push changed a repository's `.taskcluster.yml`.\n\nThe payload is deliberately narrow.  A consumer acts on a repository it\nalready knows about, so nothing that would let an author of the pushed commits\nsteer it travels with the message.  In particular the file's contents do not.\n",
+      "properties": {
+        "eventId": {
+          "description": "The GitHub webhook deliveryId of the push, for tracing this message back\nto the delivery that caused it.\n",
+          "pattern": "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
+          "type": "string"
+        },
+        "organization": {
+          "description": "The GitHub `organization` which had an event, as GitHub spells it.  The\nrouting key carries the same name with periods replaced by `%`.\n",
+          "maxLength": 100,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
+          "type": "string"
+        },
+        "ref": {
+          "description": "The full ref that was pushed to, so that a consumer can ignore a branch or\ntag it does not build.\n",
+          "pattern": "^refs/(heads|tags)/.*$",
+          "type": "string"
+        },
+        "repository": {
+          "description": "The GitHub `repository` whose `.taskcluster.yml` changed, as GitHub spells\nit.  The routing key carries the same name with periods replaced by `%`.\n",
+          "maxLength": 100,
+          "pattern": "^[A-Za-z0-9._-]+$",
+          "type": "string"
+        },
+        "version": {
+          "description": "Message version",
+          "enum": [
+            1
+          ]
+        }
+      },
+      "required": [
+        "version",
+        "organization",
+        "repository",
+        "ref",
+        "eventId"
+      ],
+      "title": "Taskcluster Yml Update Message",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/taskcluster-yml-update-message.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/github/v1/taskcluster-github-config.v1.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -26796,6 +26845,35 @@
           ],
           "schema": "v1/github-push-message.json#",
           "title": "GitHub push Event",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "When a GitHub push event changes a repository's `.taskcluster.yml` it will\nbe broadcast on this exchange with the designated `organization` and\n`repository` in the routing-key.\n\nThe payload names the repository and the ref that was pushed to, and\nnothing more.  The file itself does not travel with the message, so a\nconsumer reading it cannot be steered by the pushed commits.\n\nDetection is best effort.  A force push that drops a commit reports no\nchanged files to GitHub, so reverting the file that way sends no message.",
+          "exchange": "taskcluster-yml-update",
+          "name": "taskclusterYmlUpdate",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "organization",
+              "required": true,
+              "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            },
+            {
+              "multipleWords": false,
+              "name": "repository",
+              "required": true,
+              "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            }
+          ],
+          "schema": "v1/taskcluster-yml-update-message.json#",
+          "title": "Taskcluster Yml Update Event",
           "type": "topic-exchange"
         },
         {

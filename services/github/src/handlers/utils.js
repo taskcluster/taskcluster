@@ -1,6 +1,6 @@
 import path from 'node:path';
 import libUrls from 'taskcluster-lib-urls';
-import { CHECK_RUN_STATES } from '../constants.js';
+import { CHECK_RUN_STATES, TASKCLUSTER_YML_PATH } from '../constants.js';
 
 export const taskUI = (rootUrl, taskGroupId, taskId) =>
   libUrls.ui(
@@ -272,4 +272,43 @@ export const formatBytes = bytes => {
   const formatted = exponent === 0 || value >= 100 ? value.toFixed(0) : value.toFixed(1).replace(/\.0$/, '');
 
   return `${formatted} ${UNITS[exponent]}`;
+};
+
+/**
+ * Fetch `.taskcluster.yml` from a certain ref, without parsing it.
+ *
+ * @param instGithub - authenticated installation object
+ * @param owner - org or a user, a string
+ * @param repo - repository, a string
+ * @param ref - SHA or branch/tag name, a string
+ *
+ * @returns the file's contents if there's a YML,
+ * or null if there's no YML,
+ * or throws an error in other cases
+ */
+export const getRawYml = async ({ instGithub, owner, repo, ref }) => {
+  let response;
+  try {
+    response = await instGithub.repos.getContent({ owner, repo, path: TASKCLUSTER_YML_PATH, ref });
+  } catch (e) {
+    if (e.status === 404) {
+      return null;
+    }
+
+    if (e.message.endsWith('</body>\n</html>\n') && e.message.length > 10000) {
+      // We kept getting full html 500/400 pages from github in the logs.
+      // I consider this to be a hard-to-fix bug in octokat, so let's make
+      // the logs usable for now and try to fix this later. It's a relatively
+      // rare occurence.
+      e.message = e.message.slice(0, 100).concat('...');
+      e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
+    }
+
+    e.owner = owner;
+    e.repo = repo;
+    e.ref = ref;
+    throw e;
+  }
+
+  return Buffer.from(response.data.content, 'base64').toString();
 };
