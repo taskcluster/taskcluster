@@ -56,6 +56,9 @@ export default {
     hookGroups(_parent, { hookGroupId }, { loaders }) {
       return loaders.hookGroups.load({ hookGroupId });
     },
+    searchHooks(_parent, { query, continuationToken, limit }, { loaders }) {
+      return loaders.hookSearch.load({ query, continuationToken, limit });
+    },
     hooks(_parent, { hookGroupId }, { loaders }) {
       return loaders.hooks.load({ hookGroupId });
     },

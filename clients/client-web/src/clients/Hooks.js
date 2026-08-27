@@ -14,6 +14,7 @@ export default class Hooks extends Client {
     this.lbheartbeat.entry = {"args":[],"category":"Monitoring","method":"get","name":"lbheartbeat","query":[],"route":"/__lbheartbeat__","stability":"stable","type":"function"};
     this.version.entry = {"args":[],"category":"Monitoring","method":"get","name":"version","query":[],"route":"/__version__","stability":"stable","type":"function"};
     this.listHookGroups.entry = {"args":[],"category":"Hooks","method":"get","name":"listHookGroups","output":true,"query":[],"route":"/hooks","scopes":"hooks:list-hooks:","stability":"stable","type":"function"};
+    this.searchHooks.entry = {"args":[],"category":"Hooks","method":"get","name":"searchHooks","output":true,"query":["continuationToken","limit","q"],"route":"/hooks/search","stability":"stable","type":"function"};
     this.listHooks.entry = {"args":["hookGroupId"],"category":"Hooks","method":"get","name":"listHooks","output":true,"query":[],"route":"/hooks/<hookGroupId>","scopes":"hooks:list-hooks:<hookGroupId>","stability":"stable","type":"function"};
     this.hook.entry = {"args":["hookGroupId","hookId"],"category":"Hooks","method":"get","name":"hook","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>","scopes":"hooks:get:<hookGroupId>:<hookId>","stability":"stable","type":"function"};
     this.getHookStatus.entry = {"args":["hookGroupId","hookId"],"category":"Hook Status","method":"get","name":"getHookStatus","output":true,"query":[],"route":"/hooks/<hookGroupId>/<hookId>/status","scopes":"hooks:status:<hookGroupId>/<hookId>","stability":"deprecated","type":"function"};
@@ -53,6 +54,22 @@ export default class Hooks extends Client {
     this.validate(this.listHookGroups.entry, args);
 
     return this.request(this.listHookGroups.entry, args);
+  }
+  // Search for hooks by a query string that matches hook group ID or hook ID
+  // (case-insensitive substring match).
+  // Results are restricted to the hook groups the caller is allowed to list:
+  // a caller holding `hooks:list-hooks:*` (or a broader scope) sees hooks from
+  // all groups, while a caller holding only `hooks:list-hooks:<hookGroupId>`
+  // for specific groups sees hooks from those groups only. A caller with no
+  // `hooks:list-hooks:` scope at all receives an `InsufficientScopes` error.
+  // By default this endpoint will return up to 100 results. Pass `limit` to
+  // request a different page size (maximum 1000). If more results exist, the
+  // response includes a `continuationToken`; pass it as the `continuationToken`
+  // query parameter on a subsequent request to retrieve the next page.
+  searchHooks(...args) {
+    this.validate(this.searchHooks.entry, args);
+
+    return this.request(this.searchHooks.entry, args);
   }
   // This endpoint will return a list of all the hook definitions within a
   // given hook group.
