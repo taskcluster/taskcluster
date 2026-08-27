@@ -188,11 +188,12 @@ export const DOCS_MENU_ITEMS = [
   },
 ];
 
+// Values the notify service accepts in notification-address.yml
 export const DENYLIST_NOTIFICATION_TYPES = {
-  EMAIL: 'EMAIL',
-  PULSE: 'PULSE',
-  MATRIX_ROOM: 'MATRIX_ROOM',
-  SLACK_CHANNEL: 'SLACK_CHANNEL',
+  EMAIL: 'email',
+  PULSE: 'pulse',
+  MATRIX_ROOM: 'matrix-room',
+  SLACK_CHANNEL: 'slack-channel',
 };
 
 export const KNOWN_ACRONYMS = ['IRC', 'API'];

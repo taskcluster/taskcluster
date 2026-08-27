@@ -32,7 +32,6 @@ union Node =
   SecretListItem |
   Client |
   RoleCompact |
-  NotificationAddress |
   WorkerManagerWorkerPoolSummary |
   WorkerManagerProvider |
   WorkerManagerError |

@@ -8,7 +8,6 @@ import Clients from './Clients.js';
 import Github from './Github.js';
 import Hooks from './Hooks.js';
 import Namespaces from './Namespaces.js';
-import Notify from './Notify.js';
 import Provisioners from './Provisioners.js';
 import PulseMessages from './PulseMessages.js';
 import Roles from './Roles.js';
@@ -30,7 +29,6 @@ const resolvers = deepmerge.all([
   Github,
   Hooks,
   Namespaces,
-  Notify,
   Provisioners,
   PulseMessages,
   Roles,
