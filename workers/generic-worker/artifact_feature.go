@@ -111,24 +111,21 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 				return nil
 			}
 			e := task.uploadArtifact(taskArtifact)
+			errArtifact, isErrArtifact := taskArtifact.(*artifacts.ErrorArtifact)
+			// An artifact we never got readable content for is published as an
+			// error artifact. Optional means we're fine with the file not
+			// existing, not that we're fine with failing to upload content
+			if isErrArtifact && errArtifact.Optional {
+				return nil
+			}
+
 			if e != nil {
-				// we don't care about optional artifacts failing to upload
-				if taskArtifact.Base().Optional {
-					return nil
-				}
 				uploadErrChan <- e
 			}
-			// Note - the above error only covers not being able to upload an
-			// artifact, but doesn't cover case that an artifact could not be
-			// found, and so an error artifact was uploaded. So we do that
-			// here:
-			switch a := taskArtifact.(type) {
-			case *artifacts.ErrorArtifact:
-				// we don't care about optional artifacts failing to upload
-				if a.Optional {
-					return nil
-				}
-				fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
+
+			// Non optional error artifacts should fail the task
+			if isErrArtifact {
+				fail := Failure(fmt.Errorf("%v: %v", errArtifact.Reason, errArtifact.Message))
 				failChan <- fail
 				task.Errorf("TASK FAILURE during artifact upload: %v", fail)
 			}
