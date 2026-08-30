@@ -157,7 +157,7 @@ extend type Query {
     WorkerManagerWorkerPoolSummaries(connection: PageConnection, searchTerm: String): WorkerManagerWorkerPoolSummaryConnection!
 
     WorkerManagerErrors(workerPoolId: String, launchConfigId: String, connection: PageConnection): WorkerManagerErrorsConnection!
-    WorkerManagerErrorsStats(workerPoolId: String): WorkerManagerErrorsStats!
+    WorkerManagerErrorsStats(workerPoolId: String, from: String, to: String): WorkerManagerErrorsStats!
 
     WorkerPool(workerPoolId: String!): WorkerManagerWorkerPoolSummary
     WorkerPoolLaunchConfigs(workerPoolId: String!, includeArchived: Boolean, connection: PageConnection): WorkerPoolLaunchConfigConnection!

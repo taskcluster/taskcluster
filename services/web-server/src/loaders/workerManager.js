@@ -92,8 +92,12 @@ export default ({ workerManager }, _isAuthed, _rootUrl, _monitor, _strategies, _
 
   const WorkerManagerErrorsStats = new DataLoader(queries =>
     Promise.all(
-      queries.map(async ({ workerPoolId }) => {
-        return await workerManager.workerPoolErrorStats({ workerPoolId });
+      queries.map(async ({ workerPoolId, from, to }) => {
+        return await workerManager.workerPoolErrorStats({
+          workerPoolId,
+          ...(from ? { from } : {}),
+          ...(to ? { to } : {}),
+        });
       })
     )
   );

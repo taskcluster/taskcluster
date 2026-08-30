@@ -17,8 +17,8 @@ export default {
     WorkerManagerErrors(_parent, { workerPoolId, launchConfigId, connection }, { loaders }) {
       return loaders.WorkerManagerErrors.load({ workerPoolId, launchConfigId, connection });
     },
-    WorkerManagerErrorsStats(_parent, { workerPoolId }, { loaders }) {
-      return loaders.WorkerManagerErrorsStats.load({ workerPoolId });
+    WorkerManagerErrorsStats(_parent, { workerPoolId, from, to }, { loaders }) {
+      return loaders.WorkerManagerErrorsStats.load({ workerPoolId, from, to });
     },
     WorkerPool(_parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerPool.load({ workerPoolId });

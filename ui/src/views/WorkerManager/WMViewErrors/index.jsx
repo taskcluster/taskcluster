@@ -13,6 +13,7 @@ import WorkerManagerErrorsSummary from '../../../components/WMErrorsSummary';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import WorkersNavbar from '../../../components/WorkersNavbar';
+import DatePicker from '../../../components/DatePicker';
 
 const getLaunchConfigIdFromQuery = location => {
   const searchParams = new URLSearchParams(location.search ?? '');
@@ -28,16 +29,37 @@ const getLaunchConfigIdFromQuery = location => {
       errorsConnection: {
         limit: VIEW_WORKER_POOL_ERRORS_PAGE_SIZE,
       },
+      from: null,
+      to: null,
     },
   }),
 })
 export default class WMViewErrors extends Component {
   state = {
     search: '',
+    from: null,
+    to: null,
   };
 
   handleSearchSubmit = search => {
     this.setState({ search });
+  };
+
+  handleFromChange = date => {
+    const from = date ? date.toISOString() : null;
+    this.setState({ from });
+    this.props.data.refetch({ from, to: this.state.to });
+  };
+
+  handleToChange = date => {
+    const to = date ? date.toISOString() : null;
+    this.setState({ to });
+    this.props.data.refetch({ from: this.state.from, to });
+  };
+
+  handleClearRange = () => {
+    this.setState({ from: null, to: null });
+    this.props.data.refetch({ from: null, to: null });
   };
 
   handlePageChange = ({ cursor, previousCursor }) => {
@@ -94,7 +116,7 @@ export default class WMViewErrors extends Component {
   };
 
   render() {
-    const { search } = this.state;
+    const { search, from, to } = this.state;
     const {
       data: { loading, error, WorkerManagerErrors },
       match: {
@@ -108,6 +130,8 @@ export default class WMViewErrors extends Component {
     if (launchConfigId) {
       title += ` and LaunchConfigId "${decodeURIComponent(launchConfigId)}"`;
     }
+
+    const hasCustomRange = !!(from || to);
 
     return (
       <Dashboard
@@ -140,6 +164,37 @@ export default class WMViewErrors extends Component {
           </Breadcrumbs>
         </div>
 
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            marginBottom: 16,
+            flexWrap: 'wrap',
+          }}
+          style={{ marginBottom: 16 }}>
+          <DatePicker
+            label="From"
+            value={from ? new Date(from) : null}
+            onChange={this.handleFromChange}
+            clearable
+          />
+          <DatePicker
+            label="To"
+            value={to ? new Date(to) : null}
+            onChange={this.handleToChange}
+            clearable
+          />
+          {hasCustomRange && (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={this.handleClearRange}>
+              Clear range
+            </Button>
+          )}
+        </Box>
+
         {loading && <Spinner loading />}
 
         {!loading && (
@@ -148,6 +203,7 @@ export default class WMViewErrors extends Component {
             selectedLaunchConfigId={launchConfigId}
             onStatClick={this.handleStatClick}
             includeLaunchConfig
+            customRange={hasCustomRange}
           />
         )}
 
