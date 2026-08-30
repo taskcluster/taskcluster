@@ -21,8 +21,6 @@ input PageConnection {
 union Node =
   Artifact |
   Task |
-  Provisioner |
-  WorkerType |
   Worker |
   WorkerCompact |
   WMWorker |

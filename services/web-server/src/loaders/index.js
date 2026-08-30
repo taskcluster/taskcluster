@@ -4,7 +4,6 @@ import cachePurges from './cachePurges.js';
 import clients from './clients.js';
 import github from './github.js';
 import hooks from './hooks.js';
-import provisioners from './provisioners.js';
 import roles from './roles.js';
 import scopes from './scopes.js';
 import secrets from './secrets.js';
@@ -21,7 +20,6 @@ const loaders = [
   clients,
   github,
   hooks,
-  provisioners,
   roles,
   scopes,
   secrets,
