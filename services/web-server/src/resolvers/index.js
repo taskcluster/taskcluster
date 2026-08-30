@@ -15,7 +15,6 @@ import TaskRuns from './TaskRuns.js';
 import TaskStatuses from './TaskStatuses.js';
 import Tasks from './Tasks.js';
 import WorkerManager from './WorkerManager.js';
-import Workers from './Workers.js';
 
 const resolvers = deepmerge.all([
   Root,
@@ -33,7 +32,6 @@ const resolvers = deepmerge.all([
   TaskStatuses,
   Tasks,
   WorkerManager,
-  Workers,
 ]);
 
 export default resolvers;

@@ -11,7 +11,6 @@ import taskStatuses from './taskStatuses.js';
 import tasks from './tasks.js';
 import workerManager from './workerManager.js';
 import workerTypes from './workerTypes.js';
-import workers from './workers.js';
 
 const loaders = [
   artifacts,
@@ -27,7 +26,6 @@ const loaders = [
   tasks,
   workerManager,
   workerTypes,
-  workers,
 ];
 
 export default (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId, traceId) =>
