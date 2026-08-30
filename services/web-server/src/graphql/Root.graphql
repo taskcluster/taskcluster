@@ -36,8 +36,6 @@ union Node =
   WorkerManagerProvider |
   WorkerManagerError |
   HookLastFire |
-  PendingTask |
-  ClaimedTask |
   WorkerPoolLaunchConfig |
   WorkerPoolLaunchConfigStats
 

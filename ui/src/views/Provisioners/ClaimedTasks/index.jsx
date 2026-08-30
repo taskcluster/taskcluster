@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
-import dotProp from 'dot-prop-immutable';
+import { Queue, WorkerManager } from '@taskcluster/client-web';
 import { TableRow, TableCell, Box, Typography } from '@material-ui/core';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE } from '../../../utils/constants';
-import claimedTasks from './claimedTasks.graphql';
-import ConnectionDataTable from '../../../components/ConnectionDataTable';
+import PaginatedDataTable from '../../../components/PaginatedDataTable';
 import Link from '../../../utils/Link';
 import TableCellItem from '../../../components/TableCellItem';
 import DateDistance from '../../../components/DateDistance';
@@ -16,48 +14,48 @@ import ErrorPanel from '../../../components/ErrorPanel';
 import { joinWorkerPoolId } from '../../../utils/workerPool';
 import WorkersNavbar from '../../../components/WorkersNavbar';
 import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
+import withPaginatedResource from '../../../hocs/withPaginatedResource';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@graphql(claimedTasks, {
-  options: props => ({
-    errorPolicy: 'all',
-    variables: {
-      taskQueueId: joinWorkerPoolId(
-        props.match.params.provisionerId,
-        props.match.params.workerType
-      ),
-      connection: {
-        limit: VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE,
-      },
-    },
+@withTaskclusterClient
+@withPaginatedResource({
+  fetch:
+    props =>
+    ({ taskQueueId, ...options }) =>
+      props
+        .createTaskclusterClient({ Class: Queue })
+        .listClaimedTasks(taskQueueId, options),
+  // taskQueueId is included so the query re-runs when the route changes;
+  // it is stripped back out in `fetch` before hitting the client.
+  payload: props => ({
+    taskQueueId: joinWorkerPoolId(
+      props.match.params.provisionerId,
+      props.match.params.workerType
+    ),
+    limit: VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE,
   }),
+  select: response => response.tasks ?? [],
 })
 export default class WMViewClaimedTasks extends Component {
-  handlePageChange = ({ cursor, previousCursor }) => {
-    const {
-      data: { fetchMore },
-      match: { params },
-    } = this.props;
-
-    return fetchMore({
-      query: claimedTasks,
-      variables: {
-        taskQueueId: `${params.provisionerId}/${params.workerType}`,
-        connection: {
-          limit: VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(previousResult, { fetchMoreResult: { listClaimedTasks } }) {
-        // use dotProp.set to avoid lint warning about assigning to properties
-        return dotProp.set(
-          previousResult,
-          'listClaimedTasks',
-          listClaimedTasks
-        );
-      },
-    });
+  state = {
+    workerPool: null,
   };
+
+  componentDidMount() {
+    this.fetchWorkerPool();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { params } = this.props.match;
+    const { params: prevParams } = prevProps.match;
+
+    if (
+      params.provisionerId !== prevParams.provisionerId ||
+      params.workerType !== prevParams.workerType
+    ) {
+      this.fetchWorkerPool();
+    }
+  }
 
   get workersLink() {
     const { provisionerId, workerType } = this.props.match.params;
@@ -65,9 +63,31 @@ export default class WMViewClaimedTasks extends Component {
     return `/provisioners/${provisionerId}/worker-types/${workerType}`;
   }
 
-  renderRow({ node: { taskId, runId, claimed, task, workerGroup, workerId } }) {
+  // Claimed tasks may exist for pools not managed by worker-manager. A missing
+  // worker pool just trims the worker-manager-only nav items, so the lookup
+  // failure is swallowed rather than surfaced as an error.
+  fetchWorkerPool = async () => {
+    const { provisionerId, workerType } = this.props.match.params;
+    const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
+
+    try {
+      const workerPool = await this.props
+        .createTaskclusterClient({ Class: WorkerManager })
+        .workerPool(workerPoolId);
+
+      this.setState({ workerPool });
+    } catch {
+      this.setState({ workerPool: null });
+    }
+  };
+
+  renderRow = (
+    { taskId, runId, claimed, task, workerGroup, workerId },
+    style,
+    key
+  ) => {
     return (
-      <TableRow key={taskId}>
+      <TableRow key={key ?? taskId} style={style}>
         <TableCell>
           <Link to={`/tasks/${taskId}`}>
             <TableCellItem button>
@@ -94,21 +114,24 @@ export default class WMViewClaimedTasks extends Component {
         <TableCell>{task.metadata?.name}</TableCell>
       </TableRow>
     );
-  }
+  };
 
   render() {
     const {
-      data: { loading, error, listClaimedTasks, WorkerPool },
+      items,
+      loading,
+      error,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      nextPage,
+      previousPage,
     } = this.props;
     const { provisionerId, workerType } = this.props.match.params;
-    // Claimed tasks could exist for the pools that are not managed by w-m
-    // so one of the requests would fail with errors; only suppress the error
-    // panel when ALL errors are the expected "Worker pool does not exist" case
-    const wpMissing =
-      error?.graphQLErrors?.length > 0 &&
-      error.graphQLErrors.every(e =>
-        e.message?.includes('Worker pool does not exist')
-      );
+    const { workerPool } = this.state;
+    // Separates the first load, which has nothing to show yet, from paging,
+    // where the table stays up and the pagination row spins.
+    const initialLoad = loading && !items.length;
 
     return (
       <Dashboard
@@ -136,22 +159,28 @@ export default class WMViewClaimedTasks extends Component {
               <WorkersNavbar
                 provisionerId={provisionerId}
                 workerType={workerType}
-                hasWorkerPool={!!WorkerPool?.workerPoolId}
+                hasWorkerPool={!!workerPool?.workerPoolId}
               />
             </Breadcrumbs>
           </div>
         </Box>
-        {loading && <Spinner loading />}
 
-        {error && !wpMissing && <ErrorPanel fixed error={error} />}
+        {initialLoad && <Spinner loading />}
 
-        {!loading && listClaimedTasks && (
-          <ConnectionDataTable
+        <ErrorPanel fixed error={error} />
+
+        {!initialLoad && (
+          <PaginatedDataTable
             noItemsMessage="No claimed tasks"
-            connection={listClaimedTasks}
+            items={items}
             pageSize={VIEW_WORKER_POOL_PENDING_TASKS_PAGE_SIZE}
-            renderRow={row => this.renderRow(row)}
-            onPageChange={this.handlePageChange}
+            page={page}
+            loading={loading}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+            onNextPage={nextPage}
+            onPreviousPage={previousPage}
+            renderRow={this.renderRow}
             headers={[
               'Task ID',
               'Run ID',

@@ -128,12 +128,6 @@ export default {
     taskActions(_parent, { taskGroupId }, { loaders }) {
       return loaders.taskActions.load({ taskGroupId, contextScope: 'group' });
     },
-    listPendingTasks(_parent, { taskQueueId, connection }, { loaders }) {
-      return loaders.listPendingTasks.load({ taskQueueId, connection });
-    },
-    listClaimedTasks(_parent, { taskQueueId, connection }, { loaders }) {
-      return loaders.listClaimedTasks.load({ taskQueueId, connection });
-    },
   },
   Mutation: {
     async createTask(_parent, { taskId, task }, { clients }) {

@@ -111,42 +111,11 @@ export default ({ queue, index }, _isAuthed, _rootUrl, _monitor, _strategies, _r
       items: tasks.map(({ task, status }) => new Task(status.taskId, status, task)),
     };
   });
-  const listPendingTasks = new ConnectionLoader(async ({ taskQueueId, options }) => {
-    const raw = await queue.listPendingTasks(taskQueueId, options);
-
-    return {
-      ...raw,
-      items: raw.tasks.map(({ taskId, runId, task, inserted }) => ({
-        taskId,
-        runId,
-        inserted,
-        task: new Task(taskId, null, task),
-      })),
-    };
-  });
-  const listClaimedTasks = new ConnectionLoader(async ({ taskQueueId, options }) => {
-    const raw = await queue.listClaimedTasks(taskQueueId, options);
-
-    return {
-      ...raw,
-      items: raw.tasks.map(({ taskId, runId, task, claimed, workerGroup, workerId }) => ({
-        taskId,
-        runId,
-        claimed,
-        workerGroup,
-        workerId,
-        task: new Task(taskId, null, task),
-      })),
-    };
-  });
-
   return {
     dependents,
     task,
     indexedTask,
     taskGroup,
     taskActions,
-    listPendingTasks,
-    listClaimedTasks,
   };
 };
