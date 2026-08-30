@@ -6,11 +6,16 @@ const toSubscriptions = bindings =>
     pattern: pattern ?? routingKeyPattern,
   }));
 
-const getEventsWsUrl = () => {
-  // Resolves against the current origin when relative (dev: '/events', proxied
-  // by Vite) and is used as-is when absolute (deployed: 'https://host/events').
-  const endpoint = window.env?.EVENT_WEBSOCKET_ENDPOINT || '/events';
-  const url = new URL(endpoint, window.location.href);
+const getEventsWsUrl = endpointPath => {
+  // The env var is the base ('/events'); each subscription shape has its own
+  // endpoint under it ('raw' or 'named'). Resolves against the current origin
+  // when relative (dev: proxied by Vite) and is used as-is when absolute
+  // (deployed: 'https://host/events').
+  const base = window.env?.EVENT_WEBSOCKET_ENDPOINT || '/events';
+  const url = new URL(
+    `${base.replace(/\/$/, '')}/${endpointPath}`,
+    window.location.href
+  );
 
   // http(s) -> ws(s); a same-origin relative path inherits the page protocol.
   url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -19,13 +24,17 @@ const getEventsWsUrl = () => {
 };
 
 /**
- * Open the events WebSocket, and once the connection is acknowledged send the
- * given subscribe frame. Handles the connection_init/ack handshake, delivery,
- * errors, and teardown that every subscription shape shares. Returns a teardown
- * function that unsubscribes.
+ * Open the events WebSocket at the given endpoint ('raw' or 'named'), and once
+ * the connection is acknowledged send the given subscribe frame. Handles the
+ * connection_init/ack handshake, delivery, errors, and teardown that every
+ * subscription shape shares. Returns a teardown function that unsubscribes.
  */
-const openEventsSubscription = (subscribeFrame, { onMessage, onError }) => {
-  const ws = new WebSocket(getEventsWsUrl());
+const openEventsSubscription = (
+  endpointPath,
+  subscribeFrame,
+  { onMessage, onError }
+) => {
+  const ws = new WebSocket(getEventsWsUrl(endpointPath));
   // The events server mints the subscriptionId and returns it in subscribe_ack;
   // it stays null until then. This listener uses a single subscription per
   // socket, so incoming data frames need no per-id routing.
@@ -89,29 +98,36 @@ const openEventsSubscription = (subscribeFrame, { onMessage, onError }) => {
 
 /**
  * Subscribe to Pulse messages arriving on the given raw bindings (each an
- * `{ exchange, pattern }` or `{ exchange, routingKeyPattern }`) via the native
- * WebSocket events endpoint. Used by the Pulse debugger views, which bind
- * arbitrary exchanges directly. Returns a teardown function that unsubscribes.
+ * `{ exchange, pattern }` or `{ exchange, routingKeyPattern }`) via the
+ * /events/raw endpoint. Used by the Pulse debugger views, which bind arbitrary
+ * exchanges directly. Returns a teardown function that unsubscribes.
  */
 const subscribeToPulseMessages = (bindings, handlers) =>
   openEventsSubscription(
-    { type: 'subscribe', kind: 'raw', bindings: toSubscriptions(bindings) },
+    'raw',
+    { type: 'subscribe', bindings: toSubscriptions(bindings) },
     handlers
   );
 
 /**
- * Subscribe to Pulse events by intent rather than by raw binding: the server
- * expands the named events into the matching exchanges, filtered by the routing
- * key. Pass a non-empty `subscriptions` array of event names (e.g.
- * `['taskDefined', 'taskCompleted']`) and a `routingKey` object of fields to
- * match (e.g. `{ taskGroupId }`); omitted routing-key fields are wildcarded.
- * Returns a teardown function that unsubscribes.
+ * Subscribe to Pulse events by name rather than by raw binding, via the
+ * /events/named endpoint: the server expands the named events into the
+ * matching exchanges, filtered by the routing key. Pass a non-empty
+ * `subscriptions` array of event names (e.g. `['taskDefined',
+ * 'taskCompleted']`) and a `routingKey` object of fields to match (e.g.
+ * `{ taskGroupId }`); omitted routing-key fields are wildcarded. `service`
+ * selects whose events the names refer to and defaults to 'queue'. Returns a
+ * teardown function that unsubscribes.
  */
-const subscribeToTaskEvents = ({ subscriptions, routingKey }, handlers) =>
+const subscribeToNamedEvents = (
+  { service, subscriptions, routingKey },
+  handlers
+) =>
   openEventsSubscription(
-    { type: 'subscribe', kind: 'tasks', subscriptions, routingKey },
+    'named',
+    { type: 'subscribe', service, subscriptions, routingKey },
     handlers
   );
 
 export default subscribeToPulseMessages;
-export { subscribeToPulseMessages, subscribeToTaskEvents };
+export { subscribeToPulseMessages, subscribeToNamedEvents };

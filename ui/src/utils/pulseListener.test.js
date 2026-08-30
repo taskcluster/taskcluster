@@ -1,4 +1,6 @@
-import subscribeToPulseMessages from './pulseListener';
+import subscribeToPulseMessages, {
+  subscribeToNamedEvents,
+} from './pulseListener';
 
 // A minimal WebSocket stub that lets tests drive the protocol.
 class FakeWebSocket {
@@ -62,6 +64,15 @@ afterEach(() => {
 });
 
 describe('subscribeToPulseMessages', () => {
+  it('connects to the raw events endpoint', () => {
+    subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
+      onMessage: vi.fn(),
+      onError: vi.fn(),
+    });
+
+    expect(FakeWebSocket._lastInstance.url).toBe('ws://localhost/events/raw');
+  });
+
   it('sends connection_init on open', () => {
     subscribeToPulseMessages([{ exchange: 'e', pattern: '#' }], {
       onMessage: vi.fn(),
@@ -99,6 +110,8 @@ describe('subscribeToPulseMessages', () => {
     ]);
     // The server mints the subscriptionId; the client must not send one.
     expect(subscribeFrame).not.toHaveProperty('subscriptionId');
+    // The endpoint fixes how the frame is interpreted; there is no kind field.
+    expect(subscribeFrame).not.toHaveProperty('kind');
   });
 
   it('accepts pattern-shaped bindings unchanged (PulseMessages view)', () => {
@@ -251,5 +264,80 @@ describe('subscribeToPulseMessages', () => {
     ws.simulateClose(1006, false);
 
     expect(onError).not.toHaveBeenCalled();
+  });
+});
+
+describe('subscribeToNamedEvents', () => {
+  it('connects to the named events endpoint', () => {
+    subscribeToNamedEvents(
+      { subscriptions: ['taskDefined'], routingKey: { taskId: 't-1' } },
+      { onMessage: vi.fn(), onError: vi.fn() }
+    );
+
+    expect(FakeWebSocket._lastInstance.url).toBe('ws://localhost/events/named');
+  });
+
+  it('sends the event names and routing key after connection_ack', () => {
+    subscribeToNamedEvents(
+      {
+        subscriptions: ['taskDefined', 'taskCompleted'],
+        routingKey: { taskId: 't-1' },
+      },
+      { onMessage: vi.fn(), onError: vi.fn() }
+    );
+
+    const ws = FakeWebSocket._lastInstance;
+
+    ws.simulateOpen();
+    ws.simulateMessage({ type: 'connection_ack' });
+
+    const subscribeFrame = ws.sent.find(f => f.type === 'subscribe');
+
+    expect(subscribeFrame).toEqual({
+      type: 'subscribe',
+      subscriptions: ['taskDefined', 'taskCompleted'],
+      routingKey: { taskId: 't-1' },
+    });
+  });
+
+  it('passes an explicit service through to the subscribe frame', () => {
+    subscribeToNamedEvents(
+      { service: 'queue', subscriptions: ['taskDefined'], routingKey: {} },
+      { onMessage: vi.fn(), onError: vi.fn() }
+    );
+
+    const ws = FakeWebSocket._lastInstance;
+
+    ws.simulateOpen();
+    ws.simulateMessage({ type: 'connection_ack' });
+
+    const subscribeFrame = ws.sent.find(f => f.type === 'subscribe');
+
+    expect(subscribeFrame.service).toBe('queue');
+  });
+
+  it('delivers data frames to onMessage', () => {
+    const onMessage = vi.fn();
+    const msg = {
+      exchange: 'exchange/taskcluster-queue/v1/task-defined',
+      routingKey: 'rk',
+      payload: { status: { taskId: 't-1' } },
+      redelivered: false,
+      cc: [],
+    };
+
+    subscribeToNamedEvents(
+      { subscriptions: ['taskDefined'], routingKey: { taskId: 't-1' } },
+      { onMessage, onError: vi.fn() }
+    );
+
+    const ws = FakeWebSocket._lastInstance;
+
+    ws.simulateOpen();
+    ws.simulateMessage({ type: 'connection_ack' });
+    ws.simulateMessage({ type: 'subscribe_ack', subscriptionId: 'srv-1' });
+    ws.simulateMessage({ type: 'data', subscriptionId: 'srv-1', message: msg });
+
+    expect(onMessage).toHaveBeenCalledWith(msg);
   });
 });

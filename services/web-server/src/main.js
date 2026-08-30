@@ -203,7 +203,9 @@ const load = loader(
           cfg,
           server: httpServer,
           pulseEngine,
-          clients,
+          // resolving named subscriptions only needs exchange metadata, so
+          // anonymous (credential-less) clients suffice
+          clients: clients({ rootUrl: cfg.taskcluster.rootUrl }),
           authFactory,
           monitor: monitor.childMonitor('events'),
         });

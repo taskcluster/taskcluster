@@ -26,6 +26,7 @@ const FRAME_TYPES = {
 export default class EventsConnection {
   constructor({
     ws,
+    kind,
     pulseEngine,
     clients,
     authFactory,
@@ -34,6 +35,9 @@ export default class EventsConnection {
     connectionInitTimeoutMilliSeconds,
   }) {
     this.ws = ws;
+    // how subscribe frames are interpreted ('raw' or 'named'), fixed by the
+    // endpoint the client connected to
+    this.kind = kind;
     this.pulseEngine = pulseEngine;
     this.clients = clients;
     this.authFactory = authFactory;
@@ -204,7 +208,7 @@ export default class EventsConnection {
     let bindings;
 
     try {
-      bindings = resolveBindings(frame, this.clients);
+      bindings = resolveBindings(this.kind, frame, this.clients);
     } catch (err) {
       // A malformed subscribe frame is a client error: reject it with an error
       // frame, but keep the connection.
