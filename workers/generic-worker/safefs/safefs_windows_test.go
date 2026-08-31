@@ -301,3 +301,90 @@ func TestOpenExistingReadonly(t *testing.T) {
 		}
 	})
 }
+
+func TestCreateOrTruncateChild(t *testing.T) {
+	openDir := func(t *testing.T, dir string) windows.Handle {
+		t.Helper()
+		h, err := OpenPath(dir, traverseAccess|windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = windows.CloseHandle(h) })
+		return h
+	}
+
+	t.Run("creates a new file", func(t *testing.T) {
+		base := t.TempDir()
+		file := filepath.Join(base, "new.txt")
+
+		h, err := CreateOrTruncateChild(openDir(t, base), "new.txt", base, windows.GENERIC_WRITE|windows.SYNCHRONIZE)
+		if err != nil {
+			t.Fatal(err)
+		}
+		f := os.NewFile(uintptr(h), file)
+		if _, err := f.Write([]byte("content")); err != nil {
+			t.Fatal(err)
+		}
+		if err := f.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if b, err := os.ReadFile(file); err != nil || string(b) != "content" {
+			t.Errorf("file = %q, %v", b, err)
+		}
+	})
+
+	t.Run("refuses a directory", func(t *testing.T) {
+		base := t.TempDir()
+		mkdir(t, filepath.Join(base, "dir"))
+
+		if h, err := CreateOrTruncateChild(openDir(t, base), "dir", base, windows.GENERIC_WRITE|windows.SYNCHRONIZE); err == nil {
+			_ = windows.CloseHandle(h)
+			t.Error("opened a directory")
+		}
+	})
+
+	t.Run("refuses a junction", func(t *testing.T) {
+		base := t.TempDir()
+		secret, _ := mksecret(t, base)
+		mkjunction(t, filepath.Join(base, "link"), secret)
+
+		if h, err := CreateOrTruncateChild(openDir(t, base), "link", base, windows.GENERIC_WRITE|windows.SYNCHRONIZE); err == nil {
+			_ = windows.CloseHandle(h)
+			t.Error("opened a junction")
+		}
+	})
+
+	t.Run("empties an existing file", func(t *testing.T) {
+		base := t.TempDir()
+		file := write(t, filepath.Join(base, "f.txt"), "This was a very long file with so much info")
+
+		h, err := CreateOrTruncateChild(openDir(t, base), "f.txt", base, windows.GENERIC_WRITE|windows.SYNCHRONIZE)
+		if err != nil {
+			t.Fatal(err)
+		}
+		f := os.NewFile(uintptr(h), file)
+		if _, err := f.Write([]byte("new")); err != nil {
+			t.Fatal(err)
+		}
+		if err := f.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if b, err := os.ReadFile(file); err != nil || string(b) != "new" {
+			t.Errorf("file = %q, %v", b, err)
+		}
+	})
+
+	t.Run("refuses a hardlinked leaf without truncating it", func(t *testing.T) {
+		base := t.TempDir()
+		target := write(t, filepath.Join(base, "target"), "baguette")
+		hardlink(t, target, filepath.Join(base, "dst"))
+
+		if h, err := CreateOrTruncateChild(openDir(t, base), "dst", base, windows.GENERIC_WRITE|windows.SYNCHRONIZE); err == nil {
+			_ = windows.CloseHandle(h)
+			t.Error("created through a hardlink")
+		}
+		if b, _ := os.ReadFile(target); string(b) != "baguette" {
+			t.Errorf("target was eaten: %q", b)
+		}
+	})
+}

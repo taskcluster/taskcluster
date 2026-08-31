@@ -159,6 +159,29 @@ func OpenChild(parent windows.Handle, name, parentPath string, access uint32) (w
 	return childAt(parent, name, parentPath, access, windows.FILE_OPEN, 0)
 }
 
+func truncate(handle windows.Handle) error {
+	var info struct{ EndOfFile int64 }
+	return windows.SetFileInformationByHandle(handle, windows.FileEndOfFileInfo, (*byte)(unsafe.Pointer(&info)), uint32(unsafe.Sizeof(info)))
+}
+
+func CreateOrTruncateChild(parent windows.Handle, name, parentPath string, access uint32) (windows.Handle, error) {
+	handle, err := childAt(parent, name, parentPath, access|windows.FILE_READ_ATTRIBUTES, windows.FILE_OPEN_IF, windows.FILE_NON_DIRECTORY_FILE)
+	if err != nil {
+		return windows.InvalidHandle, err
+	}
+
+	path := filepath.Join(parentPath, name)
+	if err := refuseIfIrregular(handle, path); err != nil {
+		_ = windows.CloseHandle(handle)
+		return windows.InvalidHandle, err
+	}
+	if err := truncate(handle); err != nil {
+		_ = windows.CloseHandle(handle)
+		return windows.InvalidHandle, fmt.Errorf("could not truncate %q: %w", path, err)
+	}
+	return handle, nil
+}
+
 // Create a new name under an already open directory handle, failing if anything
 // is already there.
 func CreateChild(parent windows.Handle, name, parentPath string, access uint32, directory bool) (windows.Handle, error) {
@@ -350,21 +373,11 @@ func Create(file string, perm os.FileMode) (*os.File, error) {
 	}
 	defer func() { _ = windows.CloseHandle(parent) }()
 
-	handle, err := childAt(parent, name, filepath.Dir(file), windows.GENERIC_WRITE|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE, windows.FILE_OPEN_IF, windows.FILE_NON_DIRECTORY_FILE)
+	handle, err := CreateOrTruncateChild(parent, name, filepath.Dir(file), windows.GENERIC_WRITE|windows.SYNCHRONIZE)
 	if err != nil {
 		return nil, err
 	}
-	if err := refuseIfIrregular(handle, file); err != nil {
-		_ = windows.CloseHandle(handle)
-		return nil, err
-	}
-
-	f := os.NewFile(uintptr(handle), file)
-	if err := f.Truncate(0); err != nil {
-		f.Close()
-		return nil, fmt.Errorf("could not truncate %q: %w", file, err)
-	}
-	return f, nil
+	return os.NewFile(uintptr(handle), file), nil
 }
 
 // FILE_RENAME_INFORMATION, which x/sys/windows doesn't declare

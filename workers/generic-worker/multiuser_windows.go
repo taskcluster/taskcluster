@@ -319,7 +319,7 @@ func moveEntry(sourceParent windows.Handle, sourcePath, name string, targetParen
 }
 
 func copyFile(source *os.File, targetParent windows.Handle, targetPath, targetName string) error {
-	handle, err := safefs.CreateChild(targetParent, targetName, targetPath, windows.GENERIC_WRITE|windows.SYNCHRONIZE, false)
+	handle, err := safefs.CreateOrTruncateChild(targetParent, targetName, targetPath, windows.GENERIC_WRITE|windows.SYNCHRONIZE)
 	if err != nil {
 		return err
 	}
