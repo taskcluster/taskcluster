@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { isEmpty, map, pipe, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import { camelCase } from 'camel-case';
-import { shape, arrayOf, string, func } from 'prop-types';
+import { arrayOf, string, func, number, bool } from 'prop-types';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from 'mdi-react/CloseIcon';
 import TableRow from '@material-ui/core/TableRow';
@@ -16,12 +16,12 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import { memoize } from '../../utils/memoize';
 import JsonDisplay from '../JsonDisplay';
 import CopyToClipboardTableCell from '../CopyToClipboardTableCell';
-import ConnectionDataTable from '../ConnectionDataTable';
+import PaginatedDataTable from '../PaginatedDataTable';
 import { VIEW_WORKER_POOL_ERRORS_PAGE_SIZE } from '../../utils/constants';
 import TableCellItem from '../TableCellItem';
 import DateDistance from '../DateDistance';
 import sort from '../../utils/sort';
-import { pageInfo, WMError } from '../../utils/prop-types';
+import { WMError } from '../../utils/prop-types';
 import Link from '../../utils/Link';
 
 @withStyles(theme => ({
@@ -66,13 +66,15 @@ import Link from '../../utils/Link';
 }))
 export default class WorkerManagerErrorsTable extends Component {
   static propTypes = {
-    onPageChange: func.isRequired,
+    items: arrayOf(WMError).isRequired,
+    page: number.isRequired,
+    loading: bool,
+    hasNextPage: bool,
+    hasPreviousPage: bool,
+    onNextPage: func.isRequired,
+    onPreviousPage: func.isRequired,
     searchTerm: string,
     workerPoolId: string,
-    errorsConnection: shape({
-      edges: arrayOf(shape({ node: WMError.isRequired }).isRequired).isRequired,
-      pageInfo: pageInfo.isRequired,
-    }).isRequired,
   };
 
   static defaultProps = {
@@ -86,46 +88,34 @@ export default class WorkerManagerErrorsTable extends Component {
   };
 
   sortErrors = memoize(
-    (errorsConnection, sortBy, sortDirection, searchTerm) => {
+    (items, sortBy, sortDirection, searchTerm) => {
       const sortByProperty = sortBy ? camelCase(sortBy) : '';
-      // filter
-      const filtered = {
-        ...errorsConnection,
-        edges: searchTerm
-          ? errorsConnection.edges.filter(
-              ({ node: { title, description, errorId } }) =>
-                title.includes(searchTerm) ||
-                description.includes(searchTerm) ||
-                errorId.includes(searchTerm)
-            )
-          : errorsConnection.edges,
-      };
+      const filtered = searchTerm
+        ? items.filter(
+            ({ title, description, errorId }) =>
+              title.includes(searchTerm) ||
+              description.includes(searchTerm) ||
+              errorId.includes(searchTerm)
+          )
+        : items;
 
-      // sort
-      return {
-        ...filtered,
-        edges: isEmpty(filtered.edges)
-          ? filtered.edges
-          : [...filtered.edges].sort((a, b) => {
-              const firstElement =
-                sortDirection === 'desc'
-                  ? b.node[sortByProperty]
-                  : a.node[sortByProperty];
-              const secondElement =
-                sortDirection === 'desc'
-                  ? a.node[sortByProperty]
-                  : b.node[sortByProperty];
+      return isEmpty(filtered)
+        ? filtered
+        : [...filtered].sort((a, b) => {
+            const firstElement =
+              sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
+            const secondElement =
+              sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
 
-              return sort(firstElement, secondElement);
-            }),
-      };
+            return sort(firstElement, secondElement);
+          });
     },
     {
-      serializer: ([errorsConnection, sortBy, sortDirection, searchTerm]) => {
+      serializer: ([items, sortBy, sortDirection, searchTerm]) => {
         const ids = pipe(
-          rSort((a, b) => sort(a.node.errorId, b.node.errorId)),
-          map(({ node: { errorId } }) => errorId)
-        )(errorsConnection.edges);
+          rSort((a, b) => sort(a.errorId, b.errorId)),
+          map(({ errorId }) => errorId)
+        )(items);
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}-${searchTerm}`;
       },
@@ -146,10 +136,8 @@ export default class WorkerManagerErrorsTable extends Component {
   };
 
   handleDrawerOpen(name) {
-    const { errorsConnection } = this.props;
-    const drawerError = errorsConnection.edges.find(
-      ({ node }) => node.errorId === name
-    ).node;
+    const { items } = this.props;
+    const drawerError = items.find(({ errorId }) => errorId === name);
 
     this.setState({
       drawerError,
@@ -158,8 +146,7 @@ export default class WorkerManagerErrorsTable extends Component {
 
   renderTableRow = error => {
     const { classes, workerPoolId } = this.props;
-    const { errorId, title, description, reported, launchConfigId } =
-      error.node;
+    const { errorId, title, description, reported, launchConfigId } = error;
 
     return (
       <TableRow key={errorId}>
@@ -211,10 +198,20 @@ export default class WorkerManagerErrorsTable extends Component {
   };
 
   render() {
-    const { classes, errorsConnection, searchTerm, onPageChange } = this.props;
+    const {
+      classes,
+      items,
+      searchTerm,
+      page,
+      loading,
+      hasNextPage,
+      hasPreviousPage,
+      onNextPage,
+      onPreviousPage,
+    } = this.props;
     const { sortBy, sortDirection, drawerError } = this.state;
     const sortedErrors = this.sortErrors(
-      errorsConnection,
+      items,
       sortBy,
       sortDirection,
       searchTerm
@@ -222,15 +219,20 @@ export default class WorkerManagerErrorsTable extends Component {
 
     return (
       <Fragment>
-        <ConnectionDataTable
-          connection={sortedErrors}
+        <PaginatedDataTable
+          items={sortedErrors}
           pageSize={VIEW_WORKER_POOL_ERRORS_PAGE_SIZE}
           sortByHeader={sortBy}
           sortDirection={sortDirection}
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderTableRow}
           headers={['Title', 'Description', 'Launch Config', 'Reported']}
-          onPageChange={onPageChange}
+          page={page}
+          loading={loading}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          onNextPage={onNextPage}
+          onPreviousPage={onPreviousPage}
         />
         <Drawer
           anchor="right"

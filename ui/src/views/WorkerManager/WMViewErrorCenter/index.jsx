@@ -1,23 +1,47 @@
 import React, { Component } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
+import { WorkerManager } from '@taskcluster/client-web';
 import { TableRow, TableCell, Typography } from '@material-ui/core';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import LinkIcon from 'mdi-react/LinkIcon';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
-import errorsQuery from './wmPoolsErrors.graphql';
 import WorkerManagerErrorsSummary from '../../../components/WMErrorsSummary';
 import DataTable from '../../../components/DataTable';
 import Link from '../../../utils/Link';
 import TableCellItem from '../../../components/TableCellItem';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@graphql(errorsQuery)
+@withTaskclusterClient
 export default class WMViewErrorCenter extends Component {
   state = {
     sort: 'errorsCount',
     direction: 'desc',
+    loading: true,
+    error: null,
+    stats: null,
+  };
+
+  componentDidMount() {
+    this.loadErrorStats();
+  }
+
+  get workerManagerClient() {
+    return this.props.createTaskclusterClient({ Class: WorkerManager });
+  }
+
+  loadErrorStats = async () => {
+    this.setState({ loading: true });
+
+    try {
+      // No workerPoolId: one request covering every pool, keyed by pool id.
+      const stats = await this.workerManagerClient.workerPoolErrorStats();
+
+      this.setState({ stats, loading: false, error: null });
+    } catch (error) {
+      this.setState({ loading: false, error });
+    }
   };
 
   onHeaderClick(header) {
@@ -49,13 +73,11 @@ export default class WMViewErrorCenter extends Component {
   }
 
   render() {
-    const {
-      data: { loading, error, WorkerManagerErrorsStats },
-    } = this.props;
+    const { loading, error, stats } = this.state;
     const items =
       !loading && !error
         ? this.sortItems(
-            Object.entries(WorkerManagerErrorsStats?.totals?.workerPool).map(
+            Object.entries(stats?.totals?.workerPool ?? {}).map(
               ([key, value]) => ({ workerPool: key, errorsCount: value })
             )
           )
@@ -84,7 +106,9 @@ export default class WMViewErrorCenter extends Component {
 
         {!error && !loading && (
           <React.Fragment>
-            <WorkerManagerErrorsSummary data={this.props.data} />
+            <WorkerManagerErrorsSummary
+              data={{ loading, WorkerManagerErrorsStats: stats }}
+            />
 
             <Typography variant="h6" gutterBottom>
               Errors by Worker Pool (last 7 days)

@@ -1,18 +1,18 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
-import dotProp from 'dot-prop-immutable';
+import { WorkerManager } from '@taskcluster/client-web';
 import { Typography, Box, Button } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { VIEW_WORKER_POOL_ERRORS_PAGE_SIZE } from '../../../utils/constants';
 import WorkerManagerErrorsTable from '../../../components/WMErrorsTable';
-import errorsQuery from './errors.graphql';
 import Search from '../../../components/Search';
 import WorkerManagerErrorsSummary from '../../../components/WMErrorsSummary';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import WorkersNavbar from '../../../components/WorkersNavbar';
+import withPaginatedResource from '../../../hocs/withPaginatedResource';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
 const getLaunchConfigIdFromQuery = location => {
   const searchParams = new URLSearchParams(location.search ?? '');
@@ -20,56 +20,74 @@ const getLaunchConfigIdFromQuery = location => {
   return decodeURIComponent(searchParams.get('launchConfigId') ?? '');
 };
 
-@graphql(errorsQuery, {
-  options: props => ({
-    variables: {
-      workerPoolId: decodeURIComponent(props.match.params.workerPoolId),
-      launchConfigId: getLaunchConfigIdFromQuery(props.location),
-      errorsConnection: {
-        limit: VIEW_WORKER_POOL_ERRORS_PAGE_SIZE,
-      },
+@withTaskclusterClient
+@withPaginatedResource({
+  fetch:
+    props =>
+    ({ workerPoolId, ...options }) => {
+      const client = props.createTaskclusterClient({ Class: WorkerManager });
+
+      return client.listWorkerPoolErrors(workerPoolId, options);
     },
-  }),
+  // Everything the request depends on lives here -- the hook refetches from
+  // the first page whenever this payload changes, so a new pool or a new
+  // launch config filter reloads the table.
+  payload: props => {
+    const launchConfigId = getLaunchConfigIdFromQuery(props.location);
+
+    return {
+      workerPoolId: decodeURIComponent(props.match.params.workerPoolId),
+      limit: VIEW_WORKER_POOL_ERRORS_PAGE_SIZE,
+      ...(launchConfigId ? { launchConfigId } : null),
+    };
+  },
+  select: ({ workerPoolErrors }) => workerPoolErrors ?? [],
 })
 export default class WMViewErrors extends Component {
   state = {
     search: '',
+    stats: null,
+    statsLoading: true,
+    statsError: null,
+  };
+
+  componentDidMount() {
+    this.loadErrorStats();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (
+      prevProps.match.params.workerPoolId !==
+      this.props.match.params.workerPoolId
+    ) {
+      this.loadErrorStats();
+    }
+  }
+
+  get workerManagerClient() {
+    return this.props.createTaskclusterClient({ Class: WorkerManager });
+  }
+
+  loadErrorStats = async () => {
+    const workerPoolId = decodeURIComponent(
+      this.props.match.params.workerPoolId
+    );
+
+    this.setState({ statsLoading: true });
+
+    try {
+      const stats = await this.workerManagerClient.workerPoolErrorStats({
+        workerPoolId,
+      });
+
+      this.setState({ stats, statsLoading: false, statsError: null });
+    } catch (statsError) {
+      this.setState({ statsLoading: false, statsError });
+    }
   };
 
   handleSearchSubmit = search => {
     this.setState({ search });
-  };
-
-  handlePageChange = ({ cursor, previousCursor }) => {
-    const {
-      match: {
-        params: { workerPoolId },
-      },
-      data: { fetchMore },
-    } = this.props;
-
-    return fetchMore({
-      query: errorsQuery,
-      variables: {
-        workerPoolId: decodeURIComponent(workerPoolId),
-        errorsConnection: {
-          limit: VIEW_WORKER_POOL_ERRORS_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(
-        previousResult,
-        { fetchMoreResult: { WorkerManagerErrors } }
-      ) {
-        // use dotProp.set to avoid lint warning about assigning to properties
-        return dotProp.set(
-          previousResult,
-          'WorkerManagerErrors',
-          WorkerManagerErrors
-        );
-      },
-    });
   };
 
   handleStatClick = launchConfigId => {
@@ -94,15 +112,23 @@ export default class WMViewErrors extends Component {
   };
 
   render() {
-    const { search } = this.state;
+    const { search, stats, statsLoading, statsError } = this.state;
     const {
-      data: { loading, error, WorkerManagerErrors },
+      loading,
+      error,
+      items,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      nextPage,
+      previousPage,
       match: {
         params: { workerPoolId },
       },
       location,
     } = this.props;
     const launchConfigId = getLaunchConfigIdFromQuery(location);
+    const initialLoad = loading && !items.length;
     let title = `Errors for "${decodeURIComponent(workerPoolId)}"`;
 
     if (launchConfigId) {
@@ -120,7 +146,7 @@ export default class WMViewErrors extends Component {
             placeholder="Title, description, or error ID"
           />
         }>
-        <ErrorPanel fixed error={error} />
+        <ErrorPanel fixed error={error || statsError} />
 
         <div style={{ flexGrow: 1, marginRight: 8 }}>
           <Breadcrumbs>
@@ -140,18 +166,18 @@ export default class WMViewErrors extends Component {
           </Breadcrumbs>
         </div>
 
-        {loading && <Spinner loading />}
+        {initialLoad && <Spinner loading />}
 
-        {!loading && (
+        {!initialLoad && (
           <WorkerManagerErrorsSummary
-            data={this.props.data}
+            data={{ loading: statsLoading, WorkerManagerErrorsStats: stats }}
             selectedLaunchConfigId={launchConfigId}
             onStatClick={this.handleStatClick}
             includeLaunchConfig
           />
         )}
 
-        {!error && !loading && (
+        {!error && !initialLoad && (
           <Fragment>
             {launchConfigId && (
               <Box
@@ -178,8 +204,13 @@ export default class WMViewErrors extends Component {
             <WorkerManagerErrorsTable
               searchTerm={search}
               workerPoolId={workerPoolId}
-              onPageChange={this.handlePageChange}
-              errorsConnection={WorkerManagerErrors}
+              items={items}
+              page={page}
+              loading={loading}
+              hasNextPage={hasNextPage}
+              hasPreviousPage={hasPreviousPage}
+              onNextPage={nextPage}
+              onPreviousPage={previousPage}
             />
           </Fragment>
         )}
