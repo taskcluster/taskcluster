@@ -26,11 +26,7 @@ union Node =
   SecretListItem |
   Client |
   RoleCompact |
-  WorkerManagerWorkerPoolSummary |
-  WorkerManagerProvider |
-  WorkerManagerError |
-  WorkerPoolLaunchConfig |
-  WorkerPoolLaunchConfigStats
+  WorkerManagerWorkerPoolSummary
 
 interface Edge {
   cursor: String

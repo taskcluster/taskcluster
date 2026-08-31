@@ -1,7 +1,0 @@
-query workerPoolsErrors {
-  WorkerManagerErrorsStats {
-    totals {
-      workerPool
-    }
-  }
-}
