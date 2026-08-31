@@ -26,8 +26,6 @@ union Node =
   Worker |
   WorkerCompact |
   WMWorker |
-  Namespace |
-  IndexedTask |
   CachePurge |
   SecretListItem |
   Client |

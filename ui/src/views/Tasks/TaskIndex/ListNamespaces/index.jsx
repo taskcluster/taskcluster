@@ -1,8 +1,7 @@
-import { Redirect } from 'react-router-dom';
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
-import dotProp from 'dot-prop-immutable';
+import { Redirect } from 'react-router-dom';
 import { defaultTo } from 'ramda';
+import { Index } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Spinner from '../../../../components/Spinner';
@@ -15,131 +14,60 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorPanel from '../../../../components/ErrorPanel';
 import { VIEW_NAMESPACES_PAGE_SIZE } from '../../../../utils/constants';
 import Link from '../../../../utils/Link';
-import namespacesQuery from './namespaces.graphql';
-import taskNamespaceQuery from '../taskNamespace.graphql';
+import { withTaskclusterClient } from '../../../../utils/TaskclusterClient';
+import withPaginatedResource from '../../../../hocs/withPaginatedResource';
 
 const defaultEmpty = defaultTo('');
 
-@withApollo
 @withStyles(theme => ({
   link: {
     ...theme.mixins.link,
   },
 }))
-@graphql(namespacesQuery, {
-  name: 'namespacesData',
-  options: props => ({
-    variables: {
-      namespace: defaultEmpty(props.match.params.namespace),
-      namespaceConnection: {
-        limit: VIEW_NAMESPACES_PAGE_SIZE,
-      },
-    },
+@withTaskclusterClient
+@withPaginatedResource({
+  name: 'namespacesResource',
+  fetch:
+    props =>
+    ({ namespace, ...options }) =>
+      props
+        .createTaskclusterClient({ Class: Index })
+        .listNamespaces(namespace, options),
+  payload: props => ({
+    namespace: defaultEmpty(props.match.params.namespace),
+    limit: VIEW_NAMESPACES_PAGE_SIZE,
   }),
+  select: response => response.namespaces,
 })
-@graphql(taskNamespaceQuery, {
-  name: 'taskNamespaceData',
-  options: props => ({
-    variables: {
-      namespace: defaultEmpty(props.match.params.namespace),
-      taskConnection: {
-        limit: VIEW_NAMESPACES_PAGE_SIZE,
-      },
-    },
+@withPaginatedResource({
+  name: 'tasksResource',
+  fetch:
+    props =>
+    ({ namespace, ...options }) =>
+      props
+        .createTaskclusterClient({ Class: Index })
+        .listTasks(namespace, options),
+  payload: props => ({
+    namespace: defaultEmpty(props.match.params.namespace),
+    limit: VIEW_NAMESPACES_PAGE_SIZE,
   }),
+  select: response => response.tasks,
 })
 export default class ListNamespaces extends Component {
   state = {
-    indexPathInput: this.props.match.params.namespace
-      ? this.props.match.params.namespace
-      : '',
+    indexPathInput: defaultEmpty(this.props.match.params.namespace),
   };
 
   componentDidUpdate(prevProps) {
     if (
-      prevProps.match.params.namespace !== this.props.match.params.namespace
+      defaultEmpty(prevProps.match.params.namespace) !==
+      defaultEmpty(this.props.match.params.namespace)
     ) {
-      this.loadNamespace(this.props);
+      this.setState({
+        indexPathInput: defaultEmpty(this.props.match.params.namespace),
+      });
     }
   }
-
-  async loadNamespace() {
-    this.props.match.params.namespace
-      ? this.setState({ indexPathInput: this.props.match.params.namespace })
-      : this.setState({ indexPathInput: '' });
-  }
-
-  handleNamespacesPageChange = ({ cursor, previousCursor }) => {
-    const {
-      match: {
-        params: { namespace },
-      },
-      namespacesData: { fetchMore },
-    } = this.props;
-
-    return fetchMore({
-      query: namespacesQuery,
-      variables: {
-        namespace: defaultEmpty(namespace),
-        namespaceConnection: {
-          limit: VIEW_NAMESPACES_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.namespaces;
-
-        if (!edges.length) {
-          return previousResult;
-        }
-
-        return dotProp.set(previousResult, 'namespaces', namespaces =>
-          dotProp.set(
-            dotProp.set(namespaces, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
-        );
-      },
-    });
-  };
-
-  handleTaskNamespacePageChange = ({ cursor, previousCursor }) => {
-    const {
-      match: {
-        params: { namespace },
-      },
-      taskNamespaceData: { fetchMore },
-    } = this.props;
-
-    return fetchMore({
-      query: taskNamespaceQuery,
-      variables: {
-        namespace: defaultEmpty(namespace),
-        taskConnection: {
-          limit: VIEW_NAMESPACES_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.taskNamespace;
-
-        if (!edges.length) {
-          return previousResult;
-        }
-
-        return dotProp.set(previousResult, 'taskNamespace', namespaces =>
-          dotProp.set(
-            dotProp.set(namespaces, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
-        );
-      },
-    });
-  };
 
   handleIndexPathInputChange = e => {
     this.setState({ indexPathInput: e.target.value });
@@ -152,27 +80,23 @@ export default class ListNamespaces extends Component {
   render() {
     const {
       classes,
-      namespacesData: {
-        namespaces,
-        loading: namespacesLoading,
-        error: namespacesError,
-      },
-      taskNamespaceData: {
-        taskNamespace,
-        loading: taskNamespaceLoading,
-        error: taskNamespaceError,
-      },
       description,
       match: { params },
+      namespacesResource,
+      tasksResource,
     } = this.props;
     const { indexPathInput } = this.state;
-    const hasIndexedTasks =
-      taskNamespace?.edges && taskNamespace.edges.length > 0;
-    const hasNamespaces = namespaces?.edges && namespaces.edges.length > 0;
-    const loading = namespacesLoading || taskNamespaceLoading;
-    const indexPaths = indexPathInput.split('.');
-    const isSinglePath = indexPaths.length === 1;
+    const namespaces = namespacesResource.items;
+    const tasks = tasksResource.items;
+    const hasNamespaces = namespaces.length > 0;
+    const hasIndexedTasks = tasks.length > 0;
+    const loading = namespacesResource.loading || tasksResource.loading;
+    // Separates the first load, which has nothing to show yet, from paging,
+    // where each table stays up and its own pagination row spins.
+    const initialLoad = loading && !hasNamespaces && !hasIndexedTasks;
     const searchTerm = params.namespace;
+    const indexPaths = defaultEmpty(searchTerm).split('.');
+    const isSinglePath = indexPaths.length === 1;
 
     return (
       <Dashboard
@@ -187,17 +111,19 @@ export default class ListNamespaces extends Component {
             placeholder="Search path.to.index"
           />
         }>
-        {loading && <Spinner loading />}
-        <ErrorPanel fixed error={namespacesError || taskNamespaceError} />
+        {initialLoad && <Spinner loading />}
+        <ErrorPanel
+          fixed
+          error={namespacesResource.error || tasksResource.error}
+        />
         {!loading && !hasNamespaces && !hasIndexedTasks && !isSinglePath && (
           <Redirect
-            to={`/tasks/index/${indexPathInput
-              .split('.')
+            to={`/tasks/index/${indexPaths
               .slice(0, -1)
-              .join('.')}/${indexPathInput.split('.').slice(-1)[0]}`}
+              .join('.')}/${indexPaths.slice(-1)[0]}`}
           />
         )}
-        {!loading && params.namespace && (
+        {!initialLoad && params.namespace && (
           <Fragment>
             <Breadcrumbs>
               <Link to="/tasks/index">
@@ -232,21 +158,31 @@ export default class ListNamespaces extends Component {
               : 'No items for this page.'}
           </Typography>
         )}
-        {!loading && hasNamespaces && (
+        {hasNamespaces && (
           <Fragment>
             <Typography variant="subtitle1">Namespaces</Typography>
             <IndexNamespacesTable
-              onPageChange={this.handleNamespacesPageChange}
-              connection={namespaces}
+              namespaces={namespaces}
+              loading={namespacesResource.loading}
+              page={namespacesResource.page}
+              hasNextPage={namespacesResource.hasNextPage}
+              hasPreviousPage={namespacesResource.hasPreviousPage}
+              onNextPage={namespacesResource.nextPage}
+              onPreviousPage={namespacesResource.previousPage}
             />
           </Fragment>
         )}
-        {!loading && hasIndexedTasks && (
+        {hasIndexedTasks && (
           <Fragment>
             <Typography variant="subtitle1">Indexed Tasks</Typography>
             <IndexTaskNamespaceTable
-              onPageChange={this.handleTaskNamespacePageChange}
-              connection={taskNamespace}
+              tasks={tasks}
+              loading={tasksResource.loading}
+              page={tasksResource.page}
+              hasNextPage={tasksResource.hasNextPage}
+              hasPreviousPage={tasksResource.hasPreviousPage}
+              onNextPage={tasksResource.nextPage}
+              onPreviousPage={tasksResource.previousPage}
             />
           </Fragment>
         )}

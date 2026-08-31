@@ -119,9 +119,6 @@ export default {
     async dependents(_parent, { taskId, connection }, { loaders }) {
       return loaders.dependents.load({ taskId, connection });
     },
-    indexedTask(_parent, { indexPath }, { loaders }) {
-      return loaders.indexedTask.load(indexPath);
-    },
     taskGroup(_parent, { taskGroupId, connection }, { loaders }) {
       return loaders.taskGroup.load({ taskGroupId, connection });
     },
