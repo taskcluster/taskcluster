@@ -1114,11 +1114,7 @@ func (e *ExecutionErrors) add(err *CommandExecutionError) {
 	if err == nil {
 		return
 	}
-	if e == nil {
-		*e = ExecutionErrors{err}
-	} else {
-		*e = append(*e, err)
-	}
+	*e = append(*e, err)
 }
 
 func (e *ExecutionErrors) Error() string {
