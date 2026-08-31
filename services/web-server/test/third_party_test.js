@@ -80,6 +80,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         /responseType must be equal to constant/
       );
     });
+    test('registered OAuth clients reject a redirectUri that is not an http(s) URL', () => {
+      const client = {
+        clientId: 'test',
+        responseType: 'code',
+        scope: [],
+        maxExpires: '1 year',
+      };
+
+      // `javascript:` is a well-formed URI, so `format: uri` alone accepts it
+      for (const redirectUri of ['not a url', 'javascript:alert(1)', '//test.example.com/cb']) {
+        assert.throws(
+          () => validateRegisteredClients([{ ...client, redirectUri: [redirectUri] }]),
+          /\/0\/redirectUri\/0 must match pattern|must match format/
+        );
+      }
+    });
     test('registered OAuth clients reject a maxExpires that is not in the future', () => {
       const client = {
         clientId: 'test',

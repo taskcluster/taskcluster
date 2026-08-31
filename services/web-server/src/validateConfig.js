@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 import taskcluster from '@taskcluster/client';
 import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json' with { type: 'json' };
 
@@ -12,6 +13,8 @@ const registeredClientsSchema = yaml.load(
 );
 
 const ajv = new Ajv.default({ allErrors: true });
+// ajv 8 ships no formats of its own; `redirectUri` declares `format: uri`
+addFormats(ajv);
 // the schema declares the taskcluster metaschema, which is just a reference to draft-06
 ajv.addMetaSchema(jsonSchemaDraft06, '/schemas/common/metaschema.json#');
 const validateRegisteredClientsSchema = ajv.compile(registeredClientsSchema);

@@ -25,10 +25,13 @@ items:
         type: string
     redirectUri:
       description: |
-        URIs this client may be redirected back to after authorization.
+        URIs this client may be redirected back to after authorization.  Must
+        be absolute `http:` or `https:` URLs.
       type: array
       items:
         type: string
+        format: uri
+        pattern: "^https?://"
     whitelisted:
       description: |
         If true, users are not prompted to grant this client access.

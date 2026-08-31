@@ -2951,8 +2951,10 @@
             "type": "string"
           },
           "redirectUri": {
-            "description": "URIs this client may be redirected back to after authorization.\n",
+            "description": "URIs this client may be redirected back to after authorization.  Must\nbe absolute `http:` or `https:` URLs.\n",
             "items": {
+              "format": "uri",
+              "pattern": "^https?://",
               "type": "string"
             },
             "type": "array"
