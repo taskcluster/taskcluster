@@ -30,6 +30,13 @@ func restrictToAdmins(t *testing.T, path string) {
 	}
 }
 
+func setOwner(t *testing.T, path, user string) {
+	t.Helper()
+	if err := host.Run("icacls", path, "/setowner", user); err != nil {
+		t.Fatalf("could not set owner of %q to %q: %v", path, user, err)
+	}
+}
+
 func grantedTo(t *testing.T, path, user string) bool {
 	t.Helper()
 	// 0x1F01FF is FILE_ALL_ACCESS
@@ -114,6 +121,65 @@ func TestGrantFullControl(t *testing.T) {
 			t.Error("granted through a junctioned root")
 		}
 		untouched(t)
+	})
+
+	t.Run("refuses a hardlink belonging to someone else", func(t *testing.T) {
+		cache := filepath.Join(base, "foreigncache")
+		if err := os.MkdirAll(cache, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		setOwner(t, cache, taskUser)
+		if err := os.Link(secretFile, filepath.Join(cache, "gift.txt")); err != nil {
+			t.Fatal(err)
+		}
+
+		if err := grantFullControl(cache, taskUser, true); err == nil {
+			t.Error("granted a hardlink owned by someone else")
+		}
+		untouched(t)
+	})
+
+	t.Run("takes a hardlink belonging to the previous owner", func(t *testing.T) {
+		cache := filepath.Join(base, "ownlink")
+		if err := os.MkdirAll(cache, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		file := filepath.Join(cache, "foo.txt")
+		if err := os.WriteFile(file, []byte("bar"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Link(file, filepath.Join(cache, "link.txt")); err != nil {
+			t.Fatal(err)
+		}
+		setOwner(t, file, taskUser)
+		setOwner(t, cache, taskUser)
+
+		if err := grantFullControl(cache, taskUser, true); err != nil {
+			t.Fatal(err)
+		}
+		if !grantedTo(t, file, taskUser) {
+			t.Error("task user was not granted a hardlink it already owned")
+		}
+	})
+
+	t.Run("refuses any hardlink under a privileged root", func(t *testing.T) {
+		cache := filepath.Join(base, "privilegedroot")
+		if err := os.MkdirAll(cache, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		file := filepath.Join(cache, "foo.txt")
+		if err := os.WriteFile(file, []byte("bar"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Link(file, filepath.Join(cache, "link.txt")); err != nil {
+			t.Fatal(err)
+		}
+		// *S-1-5-18 is NT AUTHORITY\SYSTEM
+		setOwner(t, cache, "*S-1-5-18")
+
+		if err := grantFullControl(cache, taskUser, true); err == nil {
+			t.Error("granted a hardlink under a root owned by SYSTEM")
+		}
 	})
 }
 

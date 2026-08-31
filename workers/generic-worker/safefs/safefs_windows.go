@@ -92,14 +92,22 @@ func refuseIfIrregular(handle windows.Handle, path string) error {
 		return fmt.Errorf("refusing to operate on %q: it's not a regular file", path)
 	}
 
-	var info windows.ByHandleFileInformation
-	if err := windows.GetFileInformationByHandle(handle, &info); err != nil {
+	links, err := NumberOfLinks(handle)
+	if err != nil {
 		return fmt.Errorf("could not stat %q: %w", path, err)
 	}
-	if info.NumberOfLinks != 1 {
-		return fmt.Errorf("refusing to operate on %q: it's a harlink", path)
+	if links != 1 {
+		return fmt.Errorf("refusing to operate on %q: it's a hardlink", path)
 	}
 	return nil
+}
+
+func NumberOfLinks(handle windows.Handle) (uint32, error) {
+	var info windows.ByHandleFileInformation
+	if err := windows.GetFileInformationByHandle(handle, &info); err != nil {
+		return 0, err
+	}
+	return info.NumberOfLinks, nil
 }
 
 // Name **MUST** be a single entry and never a path or the whole thing breaks.
