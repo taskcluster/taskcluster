@@ -1,5 +1,0 @@
-query Hooks($hookGroupId: ID!) {
-  hooks(hookGroupId: $hookGroupId) {
-    hookId,
-  }
-}

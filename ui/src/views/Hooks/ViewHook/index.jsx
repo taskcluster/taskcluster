@@ -1,38 +1,24 @@
 import React, { Component, Fragment } from 'react';
-import { graphql, withApollo } from '@apollo/client/react/hoc';
+import { Hooks } from '@taskcluster/client-web';
 import { Typography } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
 import HookForm from '../../../components/HookForm';
 import ErrorPanel from '../../../components/ErrorPanel';
 import Snackbar from '../../../components/Snackbar';
-import hookQuery from './hook.graphql';
-import createHookQuery from './createHook.graphql';
-import deleteHookQuery from './deleteHook.graphql';
-import updateHookQuery from './updateHook.graphql';
-import triggerHookQuery from './triggerHook.graphql';
 import exchangesList from '../../../utils/exchangesList';
-import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
+import { VIEW_CLIENTS_PAGE_SIZE } from '../../../utils/constants';
 
-@withApollo
-@graphql(hookQuery, {
-  skip: ({ match: { params } }) => !params.hookId,
-  options: ({ match: { params } }) => ({
-    fetchPolicy: 'network-only',
-    variables: {
-      hookGroupId: params.hookGroupId,
-      hookId: decodeURIComponent(params.hookId),
-      hookConnection: {
-        limit: VIEW_CLIENTS_PAGE_SIZE,
-      },
-    },
-  }),
-})
+@withTaskclusterClient
 export default class ViewHook extends Component {
   state = {
+    loading: false,
     actionLoading: false,
+    hook: null,
+    hookLastFires: null,
     error: null,
     dialogError: null,
     deleteDialogOpen: false,
@@ -45,11 +31,58 @@ export default class ViewHook extends Component {
     exchangesDictionary: null,
   };
 
-  async componentDidMount() {
-    this.setState({
-      exchangesDictionary: await exchangesList(),
-    });
+  get hooksClient() {
+    return this.props.createTaskclusterClient({ Class: Hooks });
   }
+
+  async componentDidMount() {
+    try {
+      this.setState({ exchangesDictionary: await exchangesList() });
+    } catch (_err) {
+      this.setState({ exchangesDictionary: null });
+    }
+
+    if (!this.props.isNewHook) {
+      await this.fetchHook();
+    }
+  }
+
+  fetchHook = async () => {
+    const { hookGroupId, hookId } = this.props.match.params;
+    const decodedHookId = decodeURIComponent(hookId);
+
+    this.setState({ loading: true, error: null });
+
+    try {
+      const [hook, lastFiresResult] = await Promise.all([
+        this.hooksClient.hook(hookGroupId, decodedHookId),
+        // listLastFires returns 404 when the hook has never fired
+        this.hooksClient
+          .listLastFires(hookGroupId, decodedHookId, {
+            limit: VIEW_CLIENTS_PAGE_SIZE,
+          })
+          .catch(err => {
+            if (err.response?.status === 404) {
+              return { lastFires: [] };
+            }
+
+            throw err;
+          }),
+      ]);
+
+      const hookLastFires = (lastFiresResult.lastFires || []).sort(
+        (a, b) => new Date(b.taskCreateTime) - new Date(a.taskCreateTime)
+      );
+
+      this.setState({
+        loading: false,
+        hook,
+        hookLastFires,
+      });
+    } catch (error) {
+      this.setState({ loading: false, error });
+    }
+  };
 
   preRunningAction = () => {
     this.setState({ dialogError: null, actionLoading: true });
@@ -59,16 +92,7 @@ export default class ViewHook extends Component {
     this.preRunningAction();
 
     try {
-      await this.props.client.mutate({
-        mutation: createHookQuery,
-        variables: {
-          hookId,
-          hookGroupId,
-          payload,
-        },
-        refetchQueries: ['Hook'],
-        awaitRefetchQueries: true,
-      });
+      await this.hooksClient.createHook(hookGroupId, hookId, payload);
 
       this.props.history.push(
         `/hooks/${encodeURIComponent(hookGroupId)}/${hookId}`
@@ -83,48 +107,33 @@ export default class ViewHook extends Component {
   handleDeleteHook = async ({ hookId, hookGroupId }) => {
     this.preRunningAction();
 
-    return this.props.client.mutate({
-      mutation: deleteHookQuery,
-      variables: {
-        hookId,
-        hookGroupId,
-      },
-    });
+    return this.hooksClient.removeHook(hookGroupId, hookId);
   };
 
   handleTriggerHook = async ({ hookGroupId, hookId, payload }) => {
     this.preRunningAction();
 
-    await this.props.client.mutate({
-      mutation: triggerHookQuery,
-      variables: {
-        hookId,
-        hookGroupId,
-        payload,
-      },
-      refetchQueries: ['Hook'],
-      awaitRefetchQueries: true,
-    });
-    this.handleSnackbarOpen({ message: 'Hook Triggered', open: true });
+    try {
+      await this.hooksClient.triggerHook(hookGroupId, hookId, payload);
+
+      this.setState({ actionLoading: false });
+      this.handleSnackbarOpen({ message: 'Hook Triggered', open: true });
+      await this.fetchHook();
+    } catch (error) {
+      this.setState({ dialogError: error, actionLoading: false });
+      throw error;
+    }
   };
 
   handleUpdateHook = async ({ hookGroupId, hookId, payload }) => {
     this.preRunningAction();
 
     try {
-      await this.props.client.mutate({
-        mutation: updateHookQuery,
-        variables: {
-          hookId,
-          hookGroupId,
-          payload,
-        },
-        refetchQueries: ['Hook'],
-        awaitRefetchQueries: true,
-      });
+      await this.hooksClient.updateHook(hookGroupId, hookId, payload);
 
       this.setState({ error: null, actionLoading: false });
       this.handleSnackbarOpen({ message: 'Hook Updated', open: true });
+      await this.fetchHook();
     } catch (error) {
       this.setState({ error, actionLoading: false });
     }
@@ -171,9 +180,12 @@ export default class ViewHook extends Component {
   };
 
   render() {
-    const { isNewHook, data, match } = this.props;
+    const { isNewHook, match } = this.props;
     const {
-      error: err,
+      loading,
+      hook,
+      hookLastFires,
+      error,
       dialogError,
       actionLoading,
       deleteDialogOpen,
@@ -181,10 +193,6 @@ export default class ViewHook extends Component {
       snackbar,
       exchangesDictionary,
     } = this.state;
-    const error = data?.error || err;
-    const hookLastFires = data?.hookLastFires?.edges
-      ?.map(({ node }) => node)
-      .sort((a, b) => new Date(b.taskCreateTime) - new Date(a.taskCreateTime));
 
     return (
       <Dashboard title={isNewHook ? 'Create Hook' : 'Hook'}>
@@ -210,12 +218,12 @@ export default class ViewHook extends Component {
           />
         ) : (
           <Fragment>
-            {!data.hook && data.loading && <Spinner loading />}
-            {data.hook && (
+            {!hook && loading && <Spinner loading />}
+            {hook && (
               <HookForm
                 dialogError={dialogError}
                 actionLoading={actionLoading}
-                hook={data.hook}
+                hook={hook}
                 hookLastFires={hookLastFires}
                 dialogOpen={dialogOpen}
                 deleteDialogOpen={deleteDialogOpen}
