@@ -449,6 +449,24 @@ Any other options are passed directly to zurvan.
 Utilities
 ---------
 
+### getFreePort
+
+Allocate an unused TCP port on the unspecified address (the same bind
+`@taskcluster/lib-app` uses). Prefer this over hard-coded ports when test
+helpers start HTTP servers, so suites that each bind a server do not collide
+with `EADDRINUSE`.
+
+The port is released before the caller binds it, so another process could
+claim it in between. This small window is accepted because test helpers need
+the port (via `rootUrl`) before the server starts.
+
+```javascript
+const port = await testing.getFreePort();
+helper.rootUrl = `http://127.0.0.1:${port}`;
+load.cfg('server.port', port);
+load.cfg('taskcluster.rootUrl', helper.rootUrl);
+```
+
 ### Poll
 
 The `poll` function will repeatedly call a function that returns a promise
