@@ -25,6 +25,14 @@ func write(t *testing.T, path, content string) string {
 	return path
 }
 
+func hardlink(t *testing.T, target, path string) string {
+	t.Helper()
+	if err := os.Link(target, path); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
 func mkdir(t *testing.T, path string) string {
 	t.Helper()
 	if err := os.MkdirAll(path, 0o700); err != nil {
@@ -188,4 +196,108 @@ func TestIsExistingDir(t *testing.T) {
 			t.Errorf("IsExistingDir(%q) = %v", tc.path, got)
 		}
 	}
+}
+
+func TestCreate(t *testing.T) {
+	t.Run("creates a new file", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "new.txt")
+
+		f, err := Create(path, 0o644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.WriteString("baguette"); err != nil {
+			f.Close()
+			t.Fatal(err)
+		}
+		if err := f.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if b, err := os.ReadFile(path); err != nil || string(b) != "baguette" {
+			t.Errorf("content = %q, %v", b, err)
+		}
+	})
+
+	t.Run("truncates an existing file", func(t *testing.T) {
+		path := write(t, filepath.Join(t.TempDir(), "existing.txt"), "This is a very long file with lots of stuff in it")
+
+		f, err := Create(path, 0o644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.WriteString("short"); err != nil {
+			f.Close()
+			t.Fatal(err)
+		}
+		if err := f.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if b, err := os.ReadFile(path); err != nil || string(b) != "short" {
+			t.Errorf("content = %q, %v", b, err)
+		}
+	})
+
+	t.Run("refuses a junctioned prefix", func(t *testing.T) {
+		base := t.TempDir()
+		secret := mkdir(t, filepath.Join(base, "secret"))
+		stage := filepath.Join(base, "stage")
+		mkjunction(t, stage, secret)
+
+		if f, err := Create(filepath.Join(stage, "target.txt"), 0o644); err == nil {
+			f.Close()
+			t.Error("walked through a junction")
+		}
+		if _, err := os.Lstat(filepath.Join(secret, "target.txt")); err == nil {
+			t.Error("target written inside secret")
+		}
+	})
+
+	t.Run("refuses a hardlinked leaf without truncating it", func(t *testing.T) {
+		base := t.TempDir()
+		target := write(t, filepath.Join(base, "target"), "important")
+		dst := hardlink(t, target, filepath.Join(base, "dst"))
+
+		if f, err := Create(dst, 0o644); err == nil {
+			f.Close()
+			t.Error("created through a hardlink")
+		}
+		if b, _ := os.ReadFile(target); string(b) != "important" {
+			t.Errorf("target was clobbered: %q", b)
+		}
+	})
+}
+
+func TestOpenExistingRDWR(t *testing.T) {
+	t.Run("refuses a hardlinked leaf", func(t *testing.T) {
+		base := t.TempDir()
+		secret := write(t, filepath.Join(base, "secret.txt"), "secret")
+		reserved := hardlink(t, secret, filepath.Join(base, "reserved"))
+
+		if f, err := OpenExistingRDWR(reserved); err == nil {
+			f.Close()
+			t.Error("opened a hardlink")
+		}
+	})
+
+	t.Run("refuses a directory", func(t *testing.T) {
+		dir := mkdir(t, filepath.Join(t.TempDir(), "dir"))
+
+		if f, err := OpenExistingRDWR(dir); err == nil {
+			f.Close()
+			t.Error("opened a directory???")
+		}
+	})
+}
+
+func TestOpenExistingReadonly(t *testing.T) {
+	t.Run("refuses a hardlinked leaf", func(t *testing.T) {
+		base := t.TempDir()
+		secret := write(t, filepath.Join(base, "secret.txt"), "secret")
+		reserved := hardlink(t, secret, filepath.Join(base, "reserved"))
+
+		if f, err := OpenExistingReadonly(reserved); err == nil {
+			f.Close()
+			t.Error("opened a hardlink")
+		}
+	})
 }

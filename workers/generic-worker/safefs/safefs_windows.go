@@ -83,6 +83,25 @@ func Kind(handle windows.Handle) (dir, surrogate bool, err error) {
 	return dir, surrogate, nil
 }
 
+func refuseIfIrregular(handle windows.Handle, path string) error {
+	dir, surrogate, err := Kind(handle)
+	if err != nil {
+		return fmt.Errorf("could not stat %q: %w", path, err)
+	}
+	if dir || surrogate {
+		return fmt.Errorf("refusing to operate on %q: it's not a regular file", path)
+	}
+
+	var info windows.ByHandleFileInformation
+	if err := windows.GetFileInformationByHandle(handle, &info); err != nil {
+		return fmt.Errorf("could not stat %q: %w", path, err)
+	}
+	if info.NumberOfLinks != 1 {
+		return fmt.Errorf("refusing to operate on %q: it's a harlink", path)
+	}
+	return nil
+}
+
 // Name **MUST** be a single entry and never a path or the whole thing breaks.
 func checkName(name, parentPath string) error {
 	if name == "" || name == "." || name == ".." || strings.ContainsAny(name, `\/`) {
@@ -297,12 +316,20 @@ func OpenExistingRDWR(file string) (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := refuseIfIrregular(handle, file); err != nil {
+		_ = windows.CloseHandle(handle)
+		return nil, err
+	}
 	return os.NewFile(uintptr(handle), file), nil
 }
 
 func OpenExistingReadonly(file string) (*os.File, error) {
 	handle, err := OpenPath(file, windows.GENERIC_READ|windows.SYNCHRONIZE)
 	if err != nil {
+		return nil, err
+	}
+	if err := refuseIfIrregular(handle, file); err != nil {
+		_ = windows.CloseHandle(handle)
 		return nil, err
 	}
 	return os.NewFile(uintptr(handle), file), nil
@@ -315,11 +342,21 @@ func Create(file string, perm os.FileMode) (*os.File, error) {
 	}
 	defer func() { _ = windows.CloseHandle(parent) }()
 
-	handle, err := childAt(parent, name, filepath.Dir(file), windows.GENERIC_WRITE|windows.SYNCHRONIZE, windows.FILE_OVERWRITE_IF, windows.FILE_NON_DIRECTORY_FILE)
+	handle, err := childAt(parent, name, filepath.Dir(file), windows.GENERIC_WRITE|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE, windows.FILE_OPEN_IF, windows.FILE_NON_DIRECTORY_FILE)
 	if err != nil {
 		return nil, err
 	}
-	return os.NewFile(uintptr(handle), file), nil
+	if err := refuseIfIrregular(handle, file); err != nil {
+		_ = windows.CloseHandle(handle)
+		return nil, err
+	}
+
+	f := os.NewFile(uintptr(handle), file)
+	if err := f.Truncate(0); err != nil {
+		f.Close()
+		return nil, fmt.Errorf("could not truncate %q: %w", file, err)
+	}
+	return f, nil
 }
 
 // FILE_RENAME_INFORMATION, which x/sys/windows doesn't declare
