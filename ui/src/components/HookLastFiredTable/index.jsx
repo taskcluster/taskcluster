@@ -50,7 +50,7 @@ function HookLastFiredTable({ classes, ...props }) {
       renderRow={hookFire => (
         <TableRow key={hookFire.taskId}>
           <TableCell>
-            {(hookFire.result === 'SUCCESS' && (
+            {(hookFire.result.toUpperCase() === 'SUCCESS' && (
               <Link to={`/tasks/${hookFire.taskId}`}>
                 <TableCellItem button>
                   {hookFire.taskId}
@@ -62,7 +62,7 @@ function HookLastFiredTable({ classes, ...props }) {
           <TableCell>{titleCase(hookFire.firedBy)}</TableCell>
           <TableCell>
             <StatusLabel state={hookFire.result} />
-            {hookFire.result === 'ERROR' && (
+            {hookFire.result.toUpperCase() === 'ERROR' && (
               <IconButton
                 className={classes.informationIcon}
                 name={hookFire.taskId}
