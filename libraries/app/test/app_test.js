@@ -12,8 +12,11 @@ const REPO_ROOT = path.join(__dirname, '../../../');
 
 suite(testing.suiteName(), () => {
   // Test app creation
-  suite('app({port: 1459})', () => {
+  suite('app({port: 0})', () => {
     let server;
+    let port;
+
+    const url = path => `http://localhost:${port}${path}`;
 
     suiteSetup(async () => {
       mockFs({
@@ -38,40 +41,38 @@ suite(testing.suiteName(), () => {
         },
       };
 
-      // Create a simple app
+      // Create a simple app on an ephemeral port (kernel-assigned).
       server = await App({
-        port: 1459,
+        port: 0,
         env: 'development',
         forceSSL: false,
         forceHSTS: true,
         trustProxy: false,
         apis: [fakeApi],
       });
+      port = server.address().port;
     });
 
     test('get /test', async () => {
-      const res = await request.get('http://localhost:1459/api/test/v1/test');
+      const res = await request.get(url('/api/test/v1/test'));
       assert(res.ok, 'Got response');
       assert.equal(res.text, 'Okay this works', 'Got the right text');
     });
 
     test('hsts header', async () => {
-      const res = await request.get('http://localhost:1459/api/test/v1/test');
+      const res = await request.get(url('/api/test/v1/test'));
       assert.equal(res.headers['strict-transport-security'], 'max-age=7776000000; includeSubDomains');
     });
 
     test('trace ids', async () => {
-      const res = await request
-        .get('http://localhost:1459/api/test/v1/req-id')
-        .set('x-taskcluster-trace-id', 'foo/123')
-        .buffer();
+      const res = await request.get(url('/api/test/v1/req-id')).set('x-taskcluster-trace-id', 'foo/123').buffer();
       const body = JSON.parse(res.text);
       assert.equal(res.headers['x-for-trace-id'], 'foo/123');
       assert.equal(body.valueSet, 'foo/123');
     });
 
     test('trace ids (created when none passed in)', async () => {
-      const res = await request.get('http://localhost:1459/api/test/v1/req-id').buffer();
+      const res = await request.get(url('/api/test/v1/req-id')).buffer();
       const body = JSON.parse(res.text);
       assert(isUUID.v4(res.headers['x-for-trace-id']));
       assert(isUUID.v4(res.headers['x-for-request-id']));
@@ -79,21 +80,21 @@ suite(testing.suiteName(), () => {
     });
 
     test('/__version__', async () => {
-      const res = await request.get('http://localhost:1459/__version__');
+      const res = await request.get(url('/__version__'));
       assert(res.ok, 'Got response');
       assert.equal(res.body.version, 'v99.99.99', 'Got the right version');
       assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
     });
 
     test('/__heartbeat__', async () => {
-      const res = await request.get('http://localhost:1459/__heartbeat__');
+      const res = await request.get(url('/__heartbeat__'));
       assert(res.ok, 'Got response');
       assert.equal(res.status, 200);
       assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
     });
 
     test('/__lbheartbeat__', async () => {
-      const res = await request.get('http://localhost:1459/__lbheartbeat__');
+      const res = await request.get(url('/__lbheartbeat__'));
       assert(res.ok, 'Got response');
       assert.equal(res.status, 200);
       assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
@@ -101,7 +102,7 @@ suite(testing.suiteName(), () => {
 
     test('/not-found', async () => {
       try {
-        await request.get('http://localhost:1459/api/test/v1/notfound');
+        await request.get(url('/api/test/v1/notfound'));
       } catch (err) {
         assert.equal(err.status, 404, 'Status code is 404');
         assert.equal(err.response.body.error, 'Not found', 'Response message is correct');
@@ -121,14 +122,14 @@ suite(testing.suiteName(), () => {
     });
 
     test('graceful shutdown', async () => {
-      const conn = request.get('http://localhost:1459/__heartbeat__').set('Connection', 'keep-alive');
+      const conn = request.get(url('/__heartbeat__')).set('Connection', 'keep-alive');
 
       // test sigterm signal stops accepting new connections
       await server.terminate();
 
       assert(conn.abort, 'connection aborted');
       try {
-        await request.get('http://localhost:1459/__heartbeat__');
+        await request.get(url('/__heartbeat__'));
       } catch (err) {
         assert.equal(err.code, 'ECONNREFUSED');
       }

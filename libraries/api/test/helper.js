@@ -8,7 +8,11 @@ import { App } from '@taskcluster/lib-app';
 const __dirname = new URL('.', import.meta.url).pathname;
 let runningServer = null;
 
-export const rootUrl = 'http://localhost:23525';
+const helper = {
+  // Set by setupServer before the test HTTP server starts.
+  rootUrl: 'http://127.0.0.1:1',
+};
+export default helper;
 
 export let monitor = null;
 export let monitorManager = null;
@@ -29,14 +33,17 @@ teardown(() => {
 });
 
 /**
- * Set up a testing server on port 23525 serving the given API.
+ * Set up a testing server on an ephemeral port serving the given API.
  */
 export const setupServer = async ({ builder, context }) => {
+  const port = await testing.getFreePort();
+  helper.rootUrl = `http://127.0.0.1:${port}`;
+
   testing.fakeauth.start(
     {
       'client-with-aa-bb-dd': ['aa', 'bb', 'dd'],
     },
-    { rootUrl }
+    { rootUrl: helper.rootUrl }
   );
   assert(runningServer === null);
 
@@ -46,20 +53,21 @@ export const setupServer = async ({ builder, context }) => {
   });
 
   const api = await builder.build({
-    rootUrl,
+    rootUrl: helper.rootUrl,
     schemaset,
     monitor,
     context,
   });
 
   runningServer = await App({
-    port: 23525,
+    port,
     env: 'development',
     forceSSL: false,
     trustProxy: false,
     apis: [api],
   });
 };
+helper.setupServer = setupServer;
 
 export const teardownServer = async () => {
   if (runningServer) {
@@ -73,5 +81,4 @@ export const teardownServer = async () => {
   }
   testing.fakeauth.stop();
 };
-
-export default { rootUrl, setupServer, teardownServer };
+helper.teardownServer = teardownServer;
