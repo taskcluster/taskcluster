@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import dotProp from 'dot-prop-immutable';
-import { withApollo, graphql } from '@apollo/client/react/hoc';
+import { WorkerManager } from '@taskcluster/client-web';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { Typography, Box, Button, Drawer } from '@material-ui/core';
@@ -8,30 +7,26 @@ import LinkIcon from 'mdi-react/LinkIcon';
 import ArchiveIcon from 'mdi-react/ArchiveIcon';
 import CheckIcon from 'mdi-react/CheckIcon';
 import InformationIcon from 'mdi-react/InformationOutlineIcon';
-import { pipe, map, sort as rSort } from 'ramda';
 import { camelCase } from 'camel-case';
 import { withStyles } from '@material-ui/core/styles';
 import { memoize } from '../../../utils/memoize';
 import Spinner from '../../../components/Spinner';
 import Dashboard from '../../../components/Dashboard';
-import workerPoolQuery from './workerPool.graphql';
 import ErrorPanel from '../../../components/ErrorPanel';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
 import { splitWorkerPoolId } from '../../../utils/workerPool';
 import WorkersNavbar from '../../../components/WorkersNavbar';
-import ConnectionDataTable from '../../../components/ConnectionDataTable';
+import PaginatedDataTable from '../../../components/PaginatedDataTable';
 import TableCellItem from '../../../components/TableCellItem';
 import DateDistance from '../../../components/DateDistance';
 import { VIEW_WORKER_POOL_LAUNCH_CONFIG_PAGE_SIZE } from '../../../utils/constants';
 import sort from '../../../utils/sort';
 import LaunchConfigDetails from './LaunchConfigDetails';
 import CopyToClipboardTableCell from '../../../components/CopyToClipboardTableCell';
+import withPaginatedResource from '../../../hocs/withPaginatedResource';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-const sorted = pipe(
-  rSort((a, b) => sort(a.node.launchConfigId, b.node.launchConfigId)),
-  map(({ node: { launchConfigId } }) => launchConfigId)
-);
 const getFilterStateFromQuery = query => {
   const q = new URLSearchParams(query);
 
@@ -100,25 +95,79 @@ const styles = theme => ({
   },
 });
 
-@withApollo
-@graphql(workerPoolQuery, {
-  options: ({ match: { params }, location: { search } }) => ({
-    fetchPolicy: 'network-only',
-    variables: {
-      workerPoolId: decodeURIComponent(params?.workerPoolId),
-      includeArchived: getFilterStateFromQuery(search),
-      connection: {
-        limit: VIEW_WORKER_POOL_LAUNCH_CONFIG_PAGE_SIZE,
-      },
-    },
-  }),
-})
 @withStyles(styles)
+@withTaskclusterClient
+@withPaginatedResource({
+  fetch:
+    props =>
+    ({ workerPoolId, ...options }) => {
+      const client = props.createTaskclusterClient({ Class: WorkerManager });
+
+      return client.listWorkerPoolLaunchConfigs(workerPoolId, options);
+    },
+  // Everything the request depends on lives here -- the hook refetches from
+  // the first page whenever this payload changes, so a new pool or a change
+  // to the archived filter reloads the table.
+  payload: props => ({
+    workerPoolId: decodeURIComponent(props.match.params.workerPoolId),
+    limit: VIEW_WORKER_POOL_LAUNCH_CONFIG_PAGE_SIZE,
+    includeArchived: getFilterStateFromQuery(props.location.search),
+  }),
+  select: ({ workerPoolLaunchConfigs }) => workerPoolLaunchConfigs ?? [],
+})
 export default class WMLaunchConfigs extends Component {
   state = {
     selectedLaunchConfig: null,
     sortBy: 'launchConfigId',
     sortDirection: 'asc',
+    workerPool: null,
+    workerPoolStats: null,
+    errorsStats: null,
+    metaLoading: true,
+    metaError: null,
+  };
+
+  componentDidMount() {
+    this.loadMeta();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (
+      prevProps.match.params.workerPoolId !==
+      this.props.match.params.workerPoolId
+    ) {
+      this.loadMeta();
+    }
+  }
+
+  get workerManagerClient() {
+    return this.props.createTaskclusterClient({ Class: WorkerManager });
+  }
+
+  loadMeta = async () => {
+    const workerPoolId = decodeURIComponent(
+      this.props.match.params.workerPoolId
+    );
+
+    this.setState({ metaLoading: true });
+
+    try {
+      const [workerPool, workerPoolStats, errorStats] = await Promise.all([
+        this.workerManagerClient.workerPool(workerPoolId),
+        this.workerManagerClient.workerPoolStats(workerPoolId),
+        this.workerManagerClient.workerPoolErrorStats({ workerPoolId }),
+      ]);
+
+      this.setState({
+        workerPool,
+        workerPoolStats,
+        errorsStats: errorStats?.totals ?? {},
+        metaLoading: false,
+        metaError: null,
+      });
+    } catch (metaError) {
+      this.setState({ metaLoading: false, metaError });
+    }
   };
 
   /**
@@ -126,108 +175,98 @@ export default class WMLaunchConfigs extends Component {
    */
   enrichLaunchConfigs = memoize(
     (
-      launchConfigsConnection,
+      launchConfigs,
       errorsStats,
       workerPoolStats,
       workerPool,
       highlightedLaunchConfigId
     ) => {
-      if (!launchConfigsConnection?.edges) {
-        return launchConfigsConnection;
+      if (!launchConfigs) {
+        return [];
       }
 
       const filterIfSelected = highlightedLaunchConfigId
-        ? ({ node: launchConfig }) =>
+        ? launchConfig =>
             launchConfig.launchConfigId === highlightedLaunchConfigId
         : () => true;
       // to calculate dynamic weight we need to mimic
       // what LaunchConfigSelector.forWorkerPool is doing
       // it operates on total number of errors and existing capacity
-      const wpMaxCapacity = workerPool?.maxCapacity ?? 0;
+      const wpMaxCapacity = workerPool?.config?.maxCapacity ?? 0;
       const totalWorkerPoolErrors = Object.values(
         errorsStats?.launchConfig ?? {}
       ).reduce((acc, val) => acc + val, 0);
 
-      return {
-        pageInfo: {}, // include for connection table in case no records
-        ...launchConfigsConnection,
-        edges: launchConfigsConnection.edges
-          .filter(filterIfSelected)
-          .map(edge => {
-            const { node: launchConfig } = edge;
-            const configId = launchConfig.launchConfigId;
-            const stats = workerPoolStats?.launchConfigStats?.find(
-              stat => stat.launchConfigId === configId
-            ) || {
-              currentCapacity: 0,
-              requestedCapacity: 0,
-              runningCapacity: 0,
-              stoppingCapacity: 0,
-              stoppedCapacity: 0,
-              requestedCount: 0,
-              runningCount: 0,
-              stoppingCount: 0,
-              stoppedCount: 0,
-            };
-            const totalErrors = errorsStats?.launchConfig?.[configId] ?? 0;
-            const currentNonStoppedCapacity =
-              stats.requestedCapacity +
-              stats.runningCapacity +
-              stats.stoppingCapacity;
-            const initialWeight =
-              launchConfig.configuration?.initialWeight ?? 1.0;
-            const effectiveMaxCapacity =
-              launchConfig.configuration?.maxCapacity ?? wpMaxCapacity;
-            let dynamicWeight = initialWeight;
+      return launchConfigs.filter(filterIfSelected).map(launchConfig => {
+        const configId = launchConfig.launchConfigId;
+        const stats = workerPoolStats?.launchConfigStats?.find(
+          stat => stat.launchConfigId === configId
+        ) || {
+          currentCapacity: 0,
+          requestedCapacity: 0,
+          runningCapacity: 0,
+          stoppingCapacity: 0,
+          stoppedCapacity: 0,
+          requestedCount: 0,
+          runningCount: 0,
+          stoppingCount: 0,
+          stoppedCount: 0,
+        };
+        const totalErrors = errorsStats?.launchConfig?.[configId] ?? 0;
+        const currentNonStoppedCapacity =
+          stats.requestedCapacity +
+          stats.runningCapacity +
+          stats.stoppingCapacity;
+        const initialWeight = launchConfig.configuration?.initialWeight ?? 1.0;
+        const effectiveMaxCapacity =
+          launchConfig.configuration?.maxCapacity ?? wpMaxCapacity;
+        let dynamicWeight = initialWeight;
 
-            if (currentNonStoppedCapacity > 0 && effectiveMaxCapacity > 0) {
-              dynamicWeight -= currentNonStoppedCapacity / effectiveMaxCapacity;
-            }
+        if (currentNonStoppedCapacity > 0 && effectiveMaxCapacity > 0) {
+          dynamicWeight -= currentNonStoppedCapacity / effectiveMaxCapacity;
+        }
 
-            if (totalErrors > 0 && totalWorkerPoolErrors > 0) {
-              dynamicWeight -= totalErrors / totalWorkerPoolErrors;
-            }
+        if (totalErrors > 0 && totalWorkerPoolErrors > 0) {
+          dynamicWeight -= totalErrors / totalWorkerPoolErrors;
+        }
 
-            dynamicWeight = Math.max(0, dynamicWeight).toFixed(2);
+        dynamicWeight = Math.max(0, dynamicWeight).toFixed(2);
 
-            return {
-              ...edge,
-              node: {
-                ...launchConfig,
-                workerStats: stats,
-                dynamicWeight,
-                totalErrors,
-                location:
-                  launchConfig.configuration?.region ??
-                  launchConfig.configuration?.zone ??
-                  launchConfig.configuration?.location ??
-                  launchConfig.configuration?.armDeployment?.parameters
-                    ?.location?.value ??
-                  '',
-                initialWeight,
-                maxCapacity: launchConfig.configuration?.maxCapacity ?? -1,
-                currentCapacity: stats.currentCapacity || 0,
-                currentNonStoppedCapacity,
-
-                stats,
-              },
-            };
-          }),
-      };
+        return {
+          ...launchConfig,
+          workerStats: stats,
+          dynamicWeight,
+          totalErrors,
+          location:
+            launchConfig.configuration?.region ??
+            launchConfig.configuration?.zone ??
+            launchConfig.configuration?.location ??
+            launchConfig.configuration?.armDeployment?.parameters?.location
+              ?.value ??
+            '',
+          initialWeight,
+          maxCapacity: launchConfig.configuration?.maxCapacity ?? -1,
+          currentCapacity: stats.currentCapacity || 0,
+          currentNonStoppedCapacity,
+          stats,
+        };
+      });
     },
     {
       serializer: ([
-        launchConfigsConnection,
+        launchConfigs,
         errorsStats,
         workerPoolStats,
         workerPool,
         highlightedLaunchConfigId,
       ]) => {
-        if (!launchConfigsConnection?.edges) {
+        if (!launchConfigs) {
           return 'empty';
         }
 
-        const ids = sorted(launchConfigsConnection.edges);
+        const ids = launchConfigs
+          .map(launchConfig => launchConfig.launchConfigId)
+          .sort();
 
         return `${ids.join('-')}-${JSON.stringify(
           errorsStats
@@ -239,48 +278,47 @@ export default class WMLaunchConfigs extends Component {
   );
 
   /**
-   * Sorts the enriched connection based on sort criteria
+   * Sorts the enriched launch configs based on sort criteria
    */
-  sortConnection = memoize(
-    (enrichedConnection, sortBy, sortDirection) => {
-      if (!enrichedConnection?.edges || !sortBy) {
-        return enrichedConnection;
+  sortLaunchConfigs = memoize(
+    (launchConfigs, sortBy, sortDirection) => {
+      if (!launchConfigs || !sortBy) {
+        return launchConfigs;
       }
 
-      return {
-        ...enrichedConnection,
-        edges: [...enrichedConnection.edges].sort((a, b) => {
-          let firstValue;
-          let secondValue;
+      return [...launchConfigs].sort((a, b) => {
+        let firstValue;
+        let secondValue;
 
-          // Handle nested properties for workerStats
-          if (sortBy.includes('.')) {
-            const [parent, child] = sortBy.split('.');
+        // Handle nested properties for workerStats
+        if (sortBy.includes('.')) {
+          const [parent, child] = sortBy.split('.');
 
-            firstValue = a.node[parent]?.[child];
-            secondValue = b.node[parent]?.[child];
-          } else {
-            const sortByProperty = camelCase(sortBy);
+          firstValue = a[parent]?.[child];
+          secondValue = b[parent]?.[child];
+        } else {
+          const sortByProperty = camelCase(sortBy);
 
-            firstValue = a.node[sortByProperty];
-            secondValue = b.node[sortByProperty];
-          }
+          firstValue = a[sortByProperty];
+          secondValue = b[sortByProperty];
+        }
 
-          if (sortDirection === 'desc') {
-            return sort(secondValue, firstValue);
-          }
+        if (sortDirection === 'desc') {
+          return sort(secondValue, firstValue);
+        }
 
-          return sort(firstValue, secondValue);
-        }),
-      };
+        return sort(firstValue, secondValue);
+      });
     },
     {
-      serializer: ([enrichedConnection, sortBy, sortDirection]) => {
-        if (!enrichedConnection?.edges) {
+      serializer: ([launchConfigs, sortBy, sortDirection]) => {
+        if (!launchConfigs) {
           return `empty-${sortBy}-${sortDirection}`;
         }
 
-        const ids = sorted(enrichedConnection.edges);
+        const ids = launchConfigs
+          .map(launchConfig => launchConfig.launchConfigId)
+          .sort();
 
         return `${ids.join('-')}-${sortBy}-${sortDirection}`;
       },
@@ -292,34 +330,6 @@ export default class WMLaunchConfigs extends Component {
     const sortDirection = this.state.sortBy === header ? toggled : 'desc';
 
     this.setState({ sortBy: header, sortDirection });
-  };
-
-  handlePageChange = ({ cursor, previousCursor }) => {
-    const {
-      data: { fetchMore },
-      location: { search },
-      match: { params },
-    } = this.props;
-
-    return fetchMore({
-      query: workerPoolQuery,
-      variables: {
-        connection: {
-          limit: VIEW_WORKER_POOL_LAUNCH_CONFIG_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-        workerPoolId: decodeURIComponent(params.workerPoolId),
-        includeArchived: getFilterStateFromQuery(search),
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.WorkerPoolLaunchConfigs;
-
-        return dotProp.set(previousResult, 'WorkerPoolLaunchConfigs', wplc =>
-          dotProp.set(dotProp.set(wplc, 'edges', edges), 'pageInfo', pageInfo)
-        );
-      },
-    });
   };
 
   handleDrawerClose = () => {
@@ -334,8 +344,7 @@ export default class WMLaunchConfigs extends Component {
     });
   };
 
-  renderRow = (row, workerPoolId, includeArchived, workerPool) => {
-    const { node: launchConfig } = row;
+  renderRow = (launchConfig, workerPoolId, includeArchived, workerPool) => {
     const wpMaxCapacity = workerPool?.config?.maxCapacity ?? 'n/a';
     const launchConfigId =
       launchConfig?.launchConfigId || Math.random().toString(36).substring(2);
@@ -451,18 +460,35 @@ export default class WMLaunchConfigs extends Component {
   };
 
   render() {
-    const { data, match, location, classes } = this.props;
-    const { sortBy, sortDirection, selectedLaunchConfig } = this.state;
-    const loading = !data?.WorkerPoolLaunchConfigs || data.loading;
-    const error = data?.error;
+    const {
+      items,
+      loading,
+      error,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      nextPage,
+      previousPage,
+      match,
+      location,
+      classes,
+    } = this.props;
+    const {
+      sortBy,
+      sortDirection,
+      selectedLaunchConfig,
+      workerPool,
+      workerPoolStats,
+      errorsStats,
+      metaLoading,
+      metaError,
+    } = this.state;
     const workerPoolId = decodeURIComponent(match.params.workerPoolId ?? '');
-    const errorsStats = data?.WorkerManagerErrorsStats?.totals ?? {};
-    const workerPoolStats = data?.WorkerPoolStats;
-    const workerPool = data?.WorkerPool;
     const includeArchived = getFilterStateFromQuery(location.search);
     const highlightedLaunchConfigId = getLaunchConfigIdFromQuery(
       location.search
     );
+    const initialLoad = (loading || metaLoading) && !items.length;
     const headers = [
       { label: 'LaunchConfigId', id: 'launchConfigId' },
       { label: 'Weight / Initial', id: 'dynamicWeight' },
@@ -482,18 +508,15 @@ export default class WMLaunchConfigs extends Component {
       headers.push({ label: 'Status', id: 'isArchived' });
     }
 
-    const launchConfigsConnection = data?.WorkerPoolLaunchConfigs ?? {
-      edges: [],
-    };
-    const enrichedConnection = this.enrichLaunchConfigs(
-      launchConfigsConnection,
+    const enrichedLaunchConfigs = this.enrichLaunchConfigs(
+      items,
       errorsStats,
       workerPoolStats,
       workerPool,
       highlightedLaunchConfigId
     );
-    const sortedConnection = this.sortConnection(
-      enrichedConnection,
+    const sortedLaunchConfigs = this.sortLaunchConfigs(
+      enrichedLaunchConfigs,
       sortBy,
       sortDirection
     );
@@ -529,9 +552,9 @@ export default class WMLaunchConfigs extends Component {
           </div>
         </Box>
 
-        <ErrorPanel fixed error={error} />
-        {loading && <Spinner loading />}
-        {!loading && (
+        <ErrorPanel fixed error={error || metaError} />
+        {initialLoad && <Spinner loading />}
+        {!initialLoad && (
           <Fragment>
             <div>
               <Box
@@ -541,7 +564,7 @@ export default class WMLaunchConfigs extends Component {
                   justifyContent: 'space-between',
                 }}>
                 <Typography variant="h6" style={{ padding: 12 }}>
-                  Launch Configs ({sortedConnection?.edges?.length ?? 0})
+                  Launch Configs ({sortedLaunchConfigs?.length ?? 0})
                 </Typography>
                 {highlightedLaunchConfigId && (
                   <Button
@@ -579,9 +602,15 @@ export default class WMLaunchConfigs extends Component {
                   config.
                 </Typography>
               </Box>
-              <ConnectionDataTable
-                connection={sortedConnection}
+              <PaginatedDataTable
+                items={sortedLaunchConfigs}
                 pageSize={VIEW_WORKER_POOL_LAUNCH_CONFIG_PAGE_SIZE}
+                page={page}
+                loading={loading}
+                hasNextPage={hasNextPage}
+                hasPreviousPage={hasPreviousPage}
+                onNextPage={nextPage}
+                onPreviousPage={previousPage}
                 headers={headers.map(header => header.label)}
                 sortByHeader={sortBy}
                 sortDirection={sortDirection}
@@ -590,7 +619,6 @@ export default class WMLaunchConfigs extends Component {
                     headers[headers.findIndex(h => h.label === header)].id
                   )
                 }
-                onPageChange={this.handlePageChange}
                 renderRow={row =>
                   this.renderRow(row, workerPoolId, includeArchived, workerPool)
                 }
