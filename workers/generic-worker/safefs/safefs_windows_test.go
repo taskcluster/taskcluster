@@ -388,3 +388,69 @@ func TestCreateOrTruncateChild(t *testing.T) {
 		}
 	})
 }
+
+func TestLeafOpensPinsTheName(t *testing.T) {
+	t.Run("refuses a delete while the handle is held", func(t *testing.T) {
+		base := t.TempDir()
+		file := write(t, filepath.Join(base, "file.txt"), "ours")
+
+		f, err := OpenExistingReadonly(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		if err := os.Remove(file); err == nil {
+			t.Error("removed a file while held opn")
+		}
+		if _, err := os.Lstat(file); err != nil {
+			t.Errorf("file went away anyway, %v", err)
+		}
+	})
+
+	t.Run("refuses a rename while the handle is held", func(t *testing.T) {
+		base := t.TempDir()
+		file := write(t, filepath.Join(base, "file.txt"), "ours")
+
+		f, err := OpenExistingReadonly(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		if err := os.Rename(file, filepath.Join(base, "moved.txt")); err == nil {
+			t.Error("renamed a file while held open")
+		}
+	})
+
+	t.Run("let go of the pin once the handle is closed", func(t *testing.T) {
+		base := t.TempDir()
+		file := write(t, filepath.Join(base, "file.txt"), "ours")
+
+		f, err := OpenExistingReadonly(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := f.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Remove(file); err != nil {
+			t.Errorf("still pinned after close, %v", err)
+		}
+	})
+
+	t.Run("pins what Create returns too", func(t *testing.T) {
+		base := t.TempDir()
+		file := filepath.Join(base, "new.txt")
+
+		f, err := Create(file, 0o644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		if err := os.Remove(file); err == nil {
+			t.Error("removed a file while held open")
+		}
+	})
+}

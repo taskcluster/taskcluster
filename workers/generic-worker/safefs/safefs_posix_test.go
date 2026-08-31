@@ -937,3 +937,70 @@ func TestChownRefuse(t *testing.T) {
 		t.Errorf("dropped %v errors but reports %v", dropped, reported)
 	}
 }
+
+func TestRefuseIfIrregular(t *testing.T) {
+	openBoth := func(t *testing.T, dir, name string) (int, int) {
+		t.Helper()
+		dirfd, err := unix.Open(dir, dirFlags, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { unix.Close(dirfd) })
+		fd, err := unix.Openat(dirfd, name, unix.O_RDWR|leafFlags, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { unix.Close(fd) })
+		return dirfd, fd
+	}
+
+	t.Run("accepts a plain file", func(t *testing.T) {
+		base := t.TempDir()
+		path := write(t, filepath.Join(base, "file.txt"), "x")
+		dirfd, fd := openBoth(t, base, "file.txt")
+
+		if err := refuseIfIrregular(dirfd, "file.txt", fd, path); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("refuses a link dropped after the open", func(t *testing.T) {
+		base := t.TempDir()
+		write(t, filepath.Join(base, "target"), "important")
+		link := hardlink(t, filepath.Join(base, "target"), filepath.Join(base, "link"))
+		dirfd, fd := openBoth(t, base, "link")
+
+		if err := os.Remove(link); err != nil {
+			t.Fatal(err)
+		}
+		if err := refuseIfIrregular(dirfd, "link", fd, link); err == nil {
+			t.Error("accepted a link whose own name was dropped")
+		}
+	})
+
+	t.Run("refuses a link replaced after the open", func(t *testing.T) {
+		base := t.TempDir()
+		write(t, filepath.Join(base, "target"), "important")
+		link := hardlink(t, filepath.Join(base, "target"), filepath.Join(base, "link"))
+		dirfd, fd := openBoth(t, base, "link")
+
+		if err := os.Remove(link); err != nil {
+			t.Fatal(err)
+		}
+		write(t, link, "innocent")
+		if err := refuseIfIrregular(dirfd, "link", fd, link); err == nil {
+			t.Error("accepted a name pointing at a differentfile")
+		}
+	})
+
+	t.Run("refuses a hardlink", func(t *testing.T) {
+		base := t.TempDir()
+		target := write(t, filepath.Join(base, "target"), "important")
+		link := hardlink(t, target, filepath.Join(base, "link"))
+		dirfd, fd := openBoth(t, base, "link")
+
+		if err := refuseIfIrregular(dirfd, "link", fd, link); err == nil {
+			t.Error("accepted a hardlink")
+		}
+	})
+}

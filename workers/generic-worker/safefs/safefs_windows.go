@@ -118,8 +118,11 @@ func checkName(name, parentPath string) error {
 	return nil
 }
 
+const shareAll = windows.FILE_SHARE_READ | windows.FILE_SHARE_WRITE | windows.FILE_SHARE_DELETE
+const sharePinned = windows.FILE_SHARE_READ | windows.FILE_SHARE_WRITE
+
 // NtCreateFile with a RootDirectory is the closest thing win32 has to openat(2).
-func childAt(parent windows.Handle, name, parentPath string, access, disposition, options uint32) (windows.Handle, error) {
+func childAt(parent windows.Handle, name, parentPath string, access, shareFlags, disposition, options uint32) (windows.Handle, error) {
 	if err := checkName(name, parentPath); err != nil {
 		return windows.InvalidHandle, err
 	}
@@ -144,7 +147,7 @@ func childAt(parent windows.Handle, name, parentPath string, access, disposition
 		&iosb,
 		nil,
 		0,
-		windows.FILE_SHARE_READ|windows.FILE_SHARE_WRITE|windows.FILE_SHARE_DELETE,
+		shareFlags,
 		disposition,
 		windows.FILE_OPEN_REPARSE_POINT|windows.FILE_OPEN_FOR_BACKUP_INTENT|windows.FILE_SYNCHRONOUS_IO_NONALERT|options,
 		0,
@@ -156,7 +159,27 @@ func childAt(parent windows.Handle, name, parentPath string, access, disposition
 }
 
 func OpenChild(parent windows.Handle, name, parentPath string, access uint32) (windows.Handle, error) {
-	return childAt(parent, name, parentPath, access, windows.FILE_OPEN, 0)
+	return childAt(parent, name, parentPath, access, shareAll, windows.FILE_OPEN, 0)
+}
+
+// Opens an existing leaf pinning the name against deletion for as long as the
+// handle is held.
+func openLeaf(file string, access uint32) (windows.Handle, error) {
+	parent, name, err := OpenParent(file, traverseAccess)
+	if err != nil {
+		return windows.InvalidHandle, err
+	}
+	defer func() { _ = windows.CloseHandle(parent) }()
+
+	handle, err := childAt(parent, name, filepath.Dir(file), access|windows.FILE_READ_ATTRIBUTES, sharePinned, windows.FILE_OPEN, windows.FILE_NON_DIRECTORY_FILE)
+	if err != nil {
+		return windows.InvalidHandle, err
+	}
+	if err := refuseIfIrregular(handle, file); err != nil {
+		_ = windows.CloseHandle(handle)
+		return windows.InvalidHandle, err
+	}
+	return handle, nil
 }
 
 func truncate(handle windows.Handle) error {
@@ -165,7 +188,7 @@ func truncate(handle windows.Handle) error {
 }
 
 func CreateOrTruncateChild(parent windows.Handle, name, parentPath string, access uint32) (windows.Handle, error) {
-	handle, err := childAt(parent, name, parentPath, access|windows.FILE_READ_ATTRIBUTES, windows.FILE_OPEN_IF, windows.FILE_NON_DIRECTORY_FILE)
+	handle, err := childAt(parent, name, parentPath, access|windows.FILE_READ_ATTRIBUTES, sharePinned, windows.FILE_OPEN_IF, windows.FILE_NON_DIRECTORY_FILE)
 	if err != nil {
 		return windows.InvalidHandle, err
 	}
@@ -186,9 +209,9 @@ func CreateOrTruncateChild(parent windows.Handle, name, parentPath string, acces
 // is already there.
 func CreateChild(parent windows.Handle, name, parentPath string, access uint32, directory bool) (windows.Handle, error) {
 	if directory {
-		return childAt(parent, name, parentPath, access, windows.FILE_CREATE, windows.FILE_DIRECTORY_FILE)
+		return childAt(parent, name, parentPath, access, shareAll, windows.FILE_CREATE, windows.FILE_DIRECTORY_FILE)
 	}
-	return childAt(parent, name, parentPath, access, windows.FILE_CREATE, windows.FILE_NON_DIRECTORY_FILE)
+	return childAt(parent, name, parentPath, access, shareAll, windows.FILE_CREATE, windows.FILE_NON_DIRECTORY_FILE)
 }
 
 // Removes whatever an already open handle refers to, which has to be opened
@@ -343,24 +366,16 @@ func OpenPath(path string, leafAccess uint32) (windows.Handle, error) {
 }
 
 func OpenExistingRDWR(file string) (*os.File, error) {
-	handle, err := OpenPath(file, windows.GENERIC_READ|windows.GENERIC_WRITE|windows.SYNCHRONIZE)
+	handle, err := openLeaf(file, windows.GENERIC_READ|windows.GENERIC_WRITE|windows.SYNCHRONIZE)
 	if err != nil {
-		return nil, err
-	}
-	if err := refuseIfIrregular(handle, file); err != nil {
-		_ = windows.CloseHandle(handle)
 		return nil, err
 	}
 	return os.NewFile(uintptr(handle), file), nil
 }
 
 func OpenExistingReadonly(file string) (*os.File, error) {
-	handle, err := OpenPath(file, windows.GENERIC_READ|windows.SYNCHRONIZE)
+	handle, err := openLeaf(file, windows.GENERIC_READ|windows.SYNCHRONIZE)
 	if err != nil {
-		return nil, err
-	}
-	if err := refuseIfIrregular(handle, file); err != nil {
-		_ = windows.CloseHandle(handle)
 		return nil, err
 	}
 	return os.NewFile(uintptr(handle), file), nil

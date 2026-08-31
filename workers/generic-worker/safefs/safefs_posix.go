@@ -130,10 +130,26 @@ func openParent(path string) (int, string, error) {
 	return fd, name, nil
 }
 
-func refuseIfIrregular(fd int, path string) error {
+func statVerified(dirfd int, name string, fd int, path string) (unix.Stat_t, error) {
+	var byName unix.Stat_t
+
 	var st unix.Stat_t
 	if err := unix.Fstat(fd, &st); err != nil {
-		return fmt.Errorf("could not stat %q: %w", path, err)
+		return byName, fmt.Errorf("could not stat %q: %w", path, err)
+	}
+	if err := unix.Fstatat(dirfd, name, &byName, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		return byName, fmt.Errorf("refusing to operate on %q: it got removed after being opened: %w", path, err)
+	}
+	if byName.Dev != st.Dev || byName.Ino != st.Ino {
+		return byName, fmt.Errorf("refusing to operate on %q: it was replaced after being opened", path)
+	}
+	return byName, nil
+}
+
+func refuseIfIrregular(dirfd int, name string, fd int, path string) error {
+	st, err := statVerified(dirfd, name, fd, path)
+	if err != nil {
+		return err
 	}
 	if st.Mode&unix.S_IFMT != unix.S_IFREG {
 		return fmt.Errorf("refusing to operate on %q: it's not a regular file", path)
@@ -158,7 +174,7 @@ func openPath(path string, flags int) (int, error) {
 		}
 		return -1, fmt.Errorf("could not open %q: %w", path, err)
 	}
-	if err := refuseIfIrregular(fd, path); err != nil {
+	if err := refuseIfIrregular(parent, name, fd, path); err != nil {
 		unix.Close(fd)
 		return -1, err
 	}
@@ -198,7 +214,7 @@ func Create(file string, perm os.FileMode) (*os.File, error) {
 		}
 		return nil, fmt.Errorf("could not create %q: %w", file, err)
 	}
-	if err := refuseIfIrregular(fd, file); err != nil {
+	if err := refuseIfIrregular(parent, name, fd, file); err != nil {
 		unix.Close(fd)
 		return nil, err
 	}
@@ -333,8 +349,9 @@ func Chown(path string, uid int, gid int, recurse bool) error {
 	root := os.NewFile(uintptr(fd), path)
 	defer root.Close()
 
-	if err := unix.Fstat(fd, &st); err != nil {
-		return fmt.Errorf("could not stat %q: %w", path, err)
+	st, err = statVerified(parent, name, fd, path)
+	if err != nil {
+		return err
 	}
 	if st.Mode&unix.S_IFMT != kind {
 		return fmt.Errorf("refusing to change the ownership of %q: it changed kind while it was being opened", path)
@@ -416,9 +433,9 @@ func (c *chowner) chownFile(dirfd int, name, path string) error {
 	}
 	defer unix.Close(fd)
 
-	var st unix.Stat_t
-	if err := unix.Fstat(fd, &st); err != nil {
-		return fmt.Errorf("could not stat %q: %w", path, err)
+	st, err := statVerified(dirfd, name, fd, path)
+	if err != nil {
+		return err
 	}
 	if st.Mode&unix.S_IFMT != unix.S_IFREG {
 		return fmt.Errorf("refusing to change the ownership of %q: it changed kind while it was being opened", path)
