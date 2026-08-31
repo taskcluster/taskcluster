@@ -31,5 +31,5 @@ func GetPermissions(path string) (string, func() error, error) {
 }
 
 func resetPermissions(path string) error {
-	return host.Run("icacls", path, "/reset", "/t")
+	return host.Run("icacls", path, "/reset")
 }
