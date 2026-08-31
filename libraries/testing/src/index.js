@@ -8,6 +8,7 @@ export { default as poll } from './poll.js';
 export { default as suiteName } from './suite-name.js';
 export { default as withPulse } from './with-pulse.js';
 export { default as withMonitor } from './with-monitor.js';
+export { default as getFreePort } from './get-free-port.js';
 
 export * from './with-db.js';
 export * from './time.js';
@@ -25,6 +26,7 @@ import poll from './poll.js';
 import suiteName from './suite-name.js';
 import withPulse from './with-pulse.js';
 import withMonitor from './with-monitor.js';
+import getFreePort from './get-free-port.js';
 
 export default {
   schemas,
@@ -34,6 +36,7 @@ export default {
   suiteName,
   withPulse,
   withMonitor,
+  getFreePort,
 
   resetDb,
   resetTables,
