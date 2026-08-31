@@ -23,6 +23,22 @@ uses (and cannot use both). Some clients are whitelisted, meaning that user cons
 Note that the implicit flow is similar to the authorization code flow, with differences highlighted in
 [RFC 6749](https://tools.ietf.org/html/rfc6749#section-1.3.2).
 
+### Authorization codes and PKCE
+
+Authorization-code clients must include their registered `client_id` when
+exchanging a code at `<rootUrl>/login/oauth/token`. The server verifies that it
+matches the client to which the code was issued.
+
+Taskcluster supports [PKCE](https://www.rfc-editor.org/rfc/rfc7636) for
+authorization-code clients using the `S256` challenge method. Clients send
+`code_challenge` and `code_challenge_method=S256` in the authorization request,
+then send the corresponding `code_verifier` in the token request. The server
+does not support the `plain` challenge method.
+
+PKCE is optional unless the client's registration has `requirePkce: true`.
+Public clients should use PKCE, and deployments can enable that setting after
+each existing client has migrated.
+
 ## OAuth2 Resource Server
 
 The Taskcluster deployment acts as a "resource server" by serving Taskcluster credentials in exchange

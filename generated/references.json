@@ -2924,6 +2924,90 @@
   },
   {
     "content": {
+      "$id": "/schemas/web-server/v1/registered-clients.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "description": "Third-party OAuth2 clients registered with this deployment, as given in the\n`login.registeredClients` configuration value.\n",
+      "items": {
+        "additionalProperties": false,
+        "if": {
+          "additionalProperties": true,
+          "properties": {
+            "requirePkce": {
+              "const": true
+            }
+          },
+          "required": [
+            "requirePkce"
+          ],
+          "type": "object"
+        },
+        "properties": {
+          "clientId": {
+            "description": "Identifier this client uses in its authorization requests.\n",
+            "type": "string"
+          },
+          "maxExpires": {
+            "description": "Longest lifetime of credentials issued to this client, as a duration\nsuch as `1 year`.\n",
+            "type": "string"
+          },
+          "redirectUri": {
+            "description": "URIs this client may be redirected back to after authorization.  Must\nbe absolute `http:` or `https:` URLs.\n",
+            "items": {
+              "format": "uri",
+              "pattern": "^https?://",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "requirePkce": {
+            "description": "If true, authorization requests from this client must use PKCE.  Only\nmeaningful for the authorization-code flow.\n",
+            "type": "boolean"
+          },
+          "responseType": {
+            "description": "OAuth2 flow this client uses: `token` for the implicit flow, `code` for\nthe authorization-code flow.\n",
+            "enum": [
+              "token",
+              "code"
+            ]
+          },
+          "scope": {
+            "description": "Scopes this client is allowed to request.\n",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "whitelisted": {
+            "description": "If true, users are not prompted to grant this client access.\n",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "clientId",
+          "responseType",
+          "scope",
+          "redirectUri",
+          "maxExpires"
+        ],
+        "then": {
+          "additionalProperties": true,
+          "properties": {
+            "responseType": {
+              "const": "code"
+            }
+          },
+          "type": "object"
+        },
+        "title": "Registered Client",
+        "type": "object"
+      },
+      "title": "Registered Clients",
+      "type": "array"
+    },
+    "filename": "schemas/web-server/v1/registered-clients.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/secrets/v1/secret.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
