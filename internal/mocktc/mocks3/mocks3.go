@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"testing"
 
@@ -37,6 +38,10 @@ func New(t *testing.T) *S3 {
 
 func (s3 *S3) Upload(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	if strings.Contains(vars["name"], "fail-with-403") {
+		w.WriteHeader(403)
+		return
+	}
 	contentEncoding := r.Header.Get("Content-Encoding")
 	contentType := r.Header.Get("Content-Type")
 	content, err := io.ReadAll(r.Body)

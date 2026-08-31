@@ -762,6 +762,33 @@ func TestMissingOptionalFileArtifactDoesNotFailTest(t *testing.T) {
 	expectedArtifacts.Validate(t, taskID, 0)
 }
 
+func TestOptionalArtifactUploadFailureFailsTask(t *testing.T) {
+	if os.Getenv("GW_TESTS_USE_EXTERNAL_TASKCLUSTER") != "" {
+		t.Skip("This test requires mock services")
+	}
+
+	setup(t)
+
+	expires := tcclient.Time(time.Now().Add(time.Minute * 30))
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path:     "SampleArtifacts/_/X.txt",
+				Expires:  expires,
+				Type:     "file",
+				Name:     "public/fail-with-403/X.txt",
+				Optional: true,
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "exception", "resource-unavailable")
+}
+
 func TestMissingOptionalDirectoryArtifactDoesNotFailTest(t *testing.T) {
 
 	setup(t)
