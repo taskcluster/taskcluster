@@ -16,6 +16,7 @@ import (
 
 	"github.com/mholt/archives"
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
 )
 
 func WriteToFileAsJSON(obj any, filename string) error {
@@ -82,7 +83,7 @@ func Copy(dst, src string) (nBytes int64, err error) {
 		return
 	}
 	var destination *os.File
-	destination, err = os.Create(dst)
+	destination, err = safefs.Create(dst, 0666)
 	if err != nil {
 		return
 	}
