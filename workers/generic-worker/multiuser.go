@@ -367,6 +367,9 @@ func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) er
 	if result.ExitError != nil {
 		return fmt.Errorf("cannot create directory %v as task user %v from directory %v: %v", dir, ctx.User.Name, ctx.TaskDir, result)
 	}
+	if !safefs.IsExistingDir(dir) {
+		return fmt.Errorf("directory %v was reported as created by task user %v but is not a directory", dir, ctx.User.Name)
+	}
 	return nil
 }
 
