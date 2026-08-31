@@ -14,6 +14,8 @@ import withPaginatedResource from '../../../hocs/withPaginatedResource';
 import { VIEW_WORKER_TYPES_PAGE_SIZE } from '../../../utils/constants';
 import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
+const PENDING_TASKS_CONCURRENCY = 30;
+
 @withStyles(theme => ({
   bar: {
     display: 'flex',
@@ -69,6 +71,12 @@ export default class ViewWorkerTypes extends Component {
     }
   }
 
+  componentWillUnmount() {
+    // Prevent a completed request from calling setState after unmount, and stop
+    // additional batches from starting.
+    this.pendingTasksRequestId++;
+  }
+
   get queue() {
     return this.props.createTaskclusterClient({ Class: Queue });
   }
@@ -85,29 +93,54 @@ export default class ViewWorkerTypes extends Component {
   };
 
   fetchPendingTasks = async () => {
-    const workerTypes = this.props.items;
     const requestId = ++this.pendingTasksRequestId;
     const { queue } = this;
-    const entries = await Promise.all(
-      workerTypes.map(async ({ taskQueueId, provisionerId, workerType }) => {
-        const key = taskQueueId || `${provisionerId}/${workerType}`;
+    const keys = [
+      ...new Set(
+        this.props.items.map(
+          ({ taskQueueId, provisionerId, workerType }) =>
+            taskQueueId || `${provisionerId}/${workerType}`
+        )
+      ),
+    ];
+    const entries = [];
 
-        try {
-          const { pendingTasks } = await queue.taskQueueCounts(key);
+    this.setState({ pendingTasks: {} });
 
-          return [key, pendingTasks];
-        } catch {
-          // null (as opposed to a missing entry, which means "still
-          // loading") tells the table to render n/a for this row.
-          return [key, null];
-        }
-      })
-    );
+    for (
+      let start = 0;
+      start < keys.length;
+      start += PENDING_TASKS_CONCURRENCY
+    ) {
+      if (requestId !== this.pendingTasksRequestId) {
+        return;
+      }
+
+      const batch = keys.slice(start, start + PENDING_TASKS_CONCURRENCY);
+      const results = await Promise.all(
+        batch.map(async key => {
+          try {
+            const { pendingTasks } = await queue.taskQueueCounts(key);
+
+            return [key, pendingTasks];
+          } catch {
+            // null (as opposed to a missing entry, which means "still
+            // loading") tells the table to render n/a for this row.
+            return [key, null];
+          }
+        })
+      );
+
+      entries.push(...results);
+      // intermediate state
+      this.setState({ pendingTasks: Object.fromEntries(entries) });
+    }
 
     if (requestId !== this.pendingTasksRequestId) {
       return;
     }
 
+    // plus one final
     this.setState({ pendingTasks: Object.fromEntries(entries) });
   };
 
