@@ -1,10 +1,23 @@
 package artifacts
 
 import (
+	"os"
+
 	tcclient "github.com/taskcluster/taskcluster/v107/clients/client-go"
 	"github.com/taskcluster/taskcluster/v107/internal/mocktc/tc"
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
 )
+
+// Opens the content of an artifact for uploading. This is safe to use whether
+// we're uploading the task artifact directly or a copy made by the taks user
+// as it'll refuse following any link in the latter case
+func openContent(contentPath, path string) (*os.File, error) {
+	if contentPath == path {
+		return os.Open(contentPath)
+	}
+	return safefs.OpenExistingReadonly(contentPath)
+}
 
 type (
 	// TaskArtifact is the interface that all artifact types implement

@@ -54,7 +54,7 @@ func (s3Artifact *S3Artifact) createTempFileForPUTBody() (string, string) {
 		gzipLogWriter.Name = baseName
 		target = gzipLogWriter
 	}
-	source, err := os.Open(s3Artifact.ContentPath)
+	source, err := openContent(s3Artifact.ContentPath, s3Artifact.Path)
 	if err != nil {
 		panic(err)
 	}
@@ -115,7 +115,11 @@ func (s3Artifact *S3Artifact) ProcessResponse(resp any, logger Logger, serviceFa
 	}
 	httpCall := func() (putResp *http.Response, tempError error, permError error) {
 		var transferContent *os.File
-		transferContent, permError = os.Open(transferContentFile)
+		if transferContentFile == s3Artifact.ContentPath {
+			transferContent, permError = openContent(s3Artifact.ContentPath, s3Artifact.Path)
+		} else {
+			transferContent, permError = os.Open(transferContentFile)
+		}
 		if permError != nil {
 			return
 		}

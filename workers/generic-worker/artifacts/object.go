@@ -54,7 +54,7 @@ func (a *ObjectArtifact) ProcessResponse(resp any, logger Logger, serviceFactory
 	}
 	objsvc := serviceFactory.Object(&creds, config.RootURL)
 
-	content, err := os.Open(a.ContentPath)
+	content, err := openContent(a.ContentPath, a.Path)
 	if err != nil {
 		return err
 	}
