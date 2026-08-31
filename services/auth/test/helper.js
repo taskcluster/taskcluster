@@ -29,12 +29,14 @@ suiteSetup(async () => {
   load.inject('process', 'test');
 });
 
-export const rootUrl = `http://localhost:60552`;
 export const containerName = `auth-test-${v4()}`;
 export const rootAccessToken = '-test-access-token-that-is-at-least-22-chars-long-';
 
-const helper = { load, rootUrl, containerName, rootAccessToken };
+const helper = { load, containerName, rootAccessToken };
 export default helper;
+
+// Set by withServers before the test HTTP server starts.
+helper.rootUrl = 'http://127.0.0.1:1';
 
 withMonitor({ load });
 
@@ -216,7 +218,12 @@ helper.withServers = skipping => {
     debug('starting servers');
     await load('cfg');
 
-    load.cfg('taskcluster.rootUrl', rootUrl);
+    // Use an ephemeral port so parallel or overlapping test suites do not
+    // collide on a fixed port (see taskcluster/taskcluster#3665).
+    const port = await libTesting.getFreePort();
+    helper.rootUrl = `http://127.0.0.1:${port}`;
+    load.cfg('server.port', port);
+    load.cfg('taskcluster.rootUrl', helper.rootUrl);
 
     // First set up the auth service
     helper.AuthClient = taskcluster.createClient(builder.reference());
@@ -227,7 +234,7 @@ helper.withServers = skipping => {
           clientId: 'static/taskcluster/root',
           accessToken: rootAccessToken,
         },
-        rootUrl: rootUrl,
+        rootUrl: helper.rootUrl,
         retries: 0,
         authorizedScopes: scopes.length > 0 ? scopes : undefined,
       });
@@ -244,13 +251,13 @@ helper.withServers = skipping => {
         accessToken: rootAccessToken,
       },
       retries: 0,
-      rootUrl: rootUrl,
+      rootUrl: helper.rootUrl,
     });
 
     const testServiceName = 'authtest';
     const testServiceApi = await testServiceBuilder.build({
       monitor: await load('monitor'),
-      rootUrl: rootUrl,
+      rootUrl: helper.rootUrl,
       schemaset: new SchemaSet({
         serviceName: testServiceName,
       }),

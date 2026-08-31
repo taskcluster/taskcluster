@@ -60,9 +60,9 @@ suite(testing.suiteName(), function () {
       }),
     });
 
-    // Create application
+    // Create application on an ephemeral port (kernel-assigned).
     _apiServer = await App({
-      port: 23526,
+      port: 0,
       env: 'development',
       forceSSL: false,
       trustProxy: false,
@@ -105,7 +105,7 @@ suite(testing.suiteName(), function () {
         }
         return result;
       });
-      return `http://localhost:23526/api/test/v1${path}`;
+      return `http://localhost:${_apiServer.address().port}/api/test/v1${path}`;
     };
     const buildHawk = id => ({
       id,
@@ -113,9 +113,9 @@ suite(testing.suiteName(), function () {
       algorithm: 'sha256',
     });
     tests.forEach(({ label, id, desiredStatus = 200, params, tester, shouldCallAuth = true }) => {
-      const url = buildUrl(params);
       const auth = buildHawk(id);
       test(label, async () => {
+        const url = buildUrl(params);
         for (const key of Object.keys(sideEffects)) {
           delete sideEffects[key];
         }

@@ -12,7 +12,8 @@ const load = testing.stickyLoader(loadMain);
 const helper = { load };
 export default helper;
 
-helper.rootUrl = 'http://localhost:60401';
+// Set by withServer before the test HTTP server starts.
+helper.rootUrl = 'http://127.0.0.1:1';
 
 load.inject('profile', 'test');
 load.inject('process', 'test');
@@ -74,7 +75,13 @@ helper.withServer = skipping => {
 
     await helper.load('cfg');
 
+    // Use an ephemeral port so parallel or overlapping test suites do not
+    // collide on a fixed port (see taskcluster/taskcluster#3665).
+    const port = await testing.getFreePort();
+    helper.rootUrl = `http://127.0.0.1:${port}`;
+    helper.load.cfg('server.port', port);
     helper.load.cfg('taskcluster.rootUrl', helper.rootUrl);
+
     testing.fakeauth.start(
       {
         'test-client': ['*'],

@@ -13,7 +13,6 @@ const load = testing.stickyLoader(mainLoad);
 
 const helper = {
   load,
-  rootUrl: 'http://localhost:60415',
 };
 export default helper;
 
@@ -30,12 +29,16 @@ helper.secrets = new testing.Secrets({
   load: load,
 });
 
+// Set by withServer before the test HTTP server starts.
+helper.rootUrl = 'http://127.0.0.1:1';
+
 // Build an http request from a json file with fields describing
 // headers and a body
 helper.jsonHttpRequest = (jsonFile, options) => {
+  const url = new URL(helper.rootUrl);
   const defaultOptions = {
-    hostname: 'localhost',
-    port: 60415,
+    hostname: url.hostname,
+    port: Number(url.port),
     path: '/api/github/v1/github',
     method: 'POST',
   };
@@ -119,6 +122,11 @@ helper.withServer = skipping => {
     }
     await load('cfg');
 
+    // Use an ephemeral port so parallel or overlapping test suites do not
+    // collide on a fixed port (see taskcluster/taskcluster#3665).
+    const port = await testing.getFreePort();
+    helper.rootUrl = `http://127.0.0.1:${port}`;
+    load.cfg('server.port', port);
     load.cfg('taskcluster.rootUrl', helper.rootUrl);
     load.cfg('taskcluster.clientId', null);
     load.cfg('taskcluster.accessToken', null);
