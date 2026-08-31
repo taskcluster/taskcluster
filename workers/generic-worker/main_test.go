@@ -188,6 +188,22 @@ func TestExecutionErrorsText(t *testing.T) {
 	}
 }
 
+func TestExecutionErrorsAdd(t *testing.T) {
+	errors := &ExecutionErrors{}
+	errors.add(nil)
+	if errors.Occurred() {
+		t.Fatal("adding nil should be a no-op")
+	}
+	errors.add(&CommandExecutionError{Cause: fmt.Errorf("first")})
+	errors.add(&CommandExecutionError{Cause: fmt.Errorf("second")})
+	if got := len(*errors); got != 2 {
+		t.Fatalf("expected 2 errors, got %d", got)
+	}
+	if errors.Error() != "first" {
+		t.Fatalf("Error() should report first error, got %q", errors.Error())
+	}
+}
+
 // If a task tries to execute a file that isn't executable for the current
 // user, it should result in a task failure, rather than a task exception,
 // since the task is at fault, not the worker.
