@@ -150,7 +150,11 @@ export default class WorkerTypesTable extends Component {
                 textToCopy={workerType.lastDateActive}
                 text={<DateDistance from={workerType.lastDateActive} />}
               />
-              <TableCell>{workerType.pendingTasks}</TableCell>
+              <TableCell>
+                {workerType.pendingTasks === null
+                  ? 'n/a'
+                  : workerType.pendingTasks}
+              </TableCell>
             </TableRow>
           )}
         />

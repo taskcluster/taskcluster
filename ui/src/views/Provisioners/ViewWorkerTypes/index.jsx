@@ -97,7 +97,9 @@ export default class ViewWorkerTypes extends Component {
 
           return [key, pendingTasks];
         } catch {
-          return [key, undefined];
+          // null (as opposed to a missing entry, which means "still
+          // loading") tells the table to render n/a for this row.
+          return [key, null];
         }
       })
     );
