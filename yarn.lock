@@ -2653,6 +2653,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@octokit/openapi-types@npm:^28.0.0":
+  version: 28.0.0
+  resolution: "@octokit/openapi-types@npm:28.0.0"
+  checksum: 10c0/1cb8d105a4771df98ab3f34809b48ae6fafa516e66b9e6d9e0c5bc5f4fbb98dd209ad25c6e941745841b7bb20a35b799d155ec198028548fab1c4fd4e4f8cf9f
+  languageName: node
+  linkType: hard
+
 "@octokit/plugin-paginate-rest@npm:^11.4.2":
   version: 11.6.0
   resolution: "@octokit/plugin-paginate-rest@npm:11.6.0"
@@ -2684,16 +2691,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/plugin-retry@npm:^7.2.1":
-  version: 7.2.1
-  resolution: "@octokit/plugin-retry@npm:7.2.1"
+"@octokit/plugin-retry@npm:^8.1.1":
+  version: 8.1.1
+  resolution: "@octokit/plugin-retry@npm:8.1.1"
   dependencies:
-    "@octokit/request-error": "npm:^6.1.8"
-    "@octokit/types": "npm:^14.0.0"
+    "@octokit/request-error": "npm:^7.1.1"
+    "@octokit/types": "npm:^17.0.0"
     bottleneck: "npm:^2.15.3"
   peerDependencies:
-    "@octokit/core": ">=6"
-  checksum: 10c0/0cac8aa32bfe9612cbaba36f51382c69c882ef7927e1deb4b166fe664959887e952205adbf8b9ff461e0128ac3e1bd807ca58e38041a55ddb3214397584f0406
+    "@octokit/core": ">=7"
+  checksum: 10c0/cc62b4d17ae297f3fc03f10010f73703c73bf2503113b097e24475a75ea67f479bf2b520acbbf80065b3155a19f2e4ca7e03645aa885d2f69854947024863feb
   languageName: node
   linkType: hard
 
@@ -2726,6 +2733,15 @@ __metadata:
   dependencies:
     "@octokit/types": "npm:^14.0.0"
   checksum: 10c0/02aa5bfebb5b1b9e152558b4a6f4f7dcb149b41538778ffe0fce3395fd0da5c0862311a78e94723435667581b2a58a7cefa458cf7aa19ae2948ae419276f7ee1
+  languageName: node
+  linkType: hard
+
+"@octokit/request-error@npm:^7.1.1":
+  version: 7.1.1
+  resolution: "@octokit/request-error@npm:7.1.1"
+  dependencies:
+    "@octokit/types": "npm:^17.0.0"
+  checksum: 10c0/b851dfd17d95394258a279225ff7e23345d59aca78064fb7dfd4f2a129db328880b4b7fb44c9d873e89dc40a0498e6efa56c3063899efa18bc97fa2f8e0825c1
   languageName: node
   linkType: hard
 
@@ -2781,6 +2797,15 @@ __metadata:
   dependencies:
     "@octokit/openapi-types": "npm:^25.1.0"
   checksum: 10c0/4640a6c0a95386be4d015b96c3a906756ea657f7df3c6e706d19fea6bf3ac44fd2991c8c817afe1e670ff9042b85b0e06f7fd373f6bbd47da64208701bb46d5b
+  languageName: node
+  linkType: hard
+
+"@octokit/types@npm:^17.0.0":
+  version: 17.0.0
+  resolution: "@octokit/types@npm:17.0.0"
+  dependencies:
+    "@octokit/openapi-types": "npm:^28.0.0"
+  checksum: 10c0/fb190b7ef48dcc974c4178a92b62c76a5c820c120607e1812f2c76adeeab5af4c13b645e37a5f54d66b0222b2a58399cb91fa2fd1d375270f77c7987a9cfd231
   languageName: node
   linkType: hard
 
@@ -11602,7 +11627,7 @@ __metadata:
     "@graphql-tools/schema": "npm:^10.0.38"
     "@octokit/auth-app": "npm:^6.1.0"
     "@octokit/core": "npm:^6.1.3"
-    "@octokit/plugin-retry": "npm:^7.2.1"
+    "@octokit/plugin-retry": "npm:^8.1.1"
     "@octokit/plugin-throttling": "npm:^10.0.0"
     "@octokit/rest": "npm:^21.0.0"
     "@sentry/node": "npm:^10.68.0"
