@@ -14,7 +14,7 @@
   },
   "exports": "./src/index.js",
   "devDependencies": {
-    "@biomejs/biome": "^2.5.5",
-    "mocha": "^11.7.6"
+    "@biomejs/biome": "^2.5.10",
+    "mocha": "^11.8.0"
   }
 }
