@@ -43,6 +43,34 @@ MonitorManager.register({
 });
 
 MonitorManager.register({
+  name: 'websocketConnected',
+  title: 'WebSocket Connected',
+  type: 'websocket-connected',
+  version: 1,
+  level: 'debug',
+  description: `
+    A client has authenticated an /events WebSocket connection.`,
+  fields: {
+    clientId: 'The clientId of the connected client, or "anonymous"',
+  },
+});
+
+MonitorManager.register({
+  name: 'websocketClosed',
+  title: 'WebSocket Closed',
+  type: 'websocket-closed',
+  version: 1,
+  level: 'debug',
+  description: `
+    An /events WebSocket connection has closed; any subscriptions still open
+    on it have been unsubscribed.`,
+  fields: {
+    closeCode: 'The WebSocket close code',
+    openSubscriptions: 'The number of subscriptions that were still open at close time',
+  },
+});
+
+MonitorManager.register({
   name: 'requestReceived',
   title: 'Request Received',
   type: 'request-received',

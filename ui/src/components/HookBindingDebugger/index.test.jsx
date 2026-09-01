@@ -1,8 +1,6 @@
 import React from 'react';
 import { render, act, fireEvent, cleanup } from '@testing-library/react';
-import { ApolloProvider } from '@apollo/client';
 import { MuiThemeProvider } from '@material-ui/core/styles';
-import setupClient from '../../utils/mockApolloClient';
 import appTheme from '../../theme';
 import HookBindingDebugger from './index';
 
@@ -11,7 +9,7 @@ import HookBindingDebugger from './index';
 const { subscribeMock, teardownMock, hook } = vi.hoisted(() => {
   const teardownMock = vi.fn();
   const hook = { handlers: null };
-  const subscribeMock = vi.fn((_client, _bindings, handlers) => {
+  const subscribeMock = vi.fn((_bindings, handlers) => {
     hook.handlers = handlers;
 
     return teardownMock;
@@ -24,7 +22,6 @@ vi.mock('../../utils/pulseListener', () => ({
   default: subscribeMock,
 }));
 
-const createClient = setupClient({}, 'type Query { _: Boolean }');
 const bindings = [
   { exchange: 'exchange/foo/v1/thing', routingKeyPattern: '#.bar.#' },
 ];
@@ -33,15 +30,13 @@ const defaultSchema = { type: 'object', additionalProperties: false };
 
 const tree = props => (
   <MuiThemeProvider theme={appTheme.darkTheme}>
-    <ApolloProvider client={createClient()}>
-      <HookBindingDebugger
-        open
-        onClose={vi.fn()}
-        bindings={bindings}
-        triggerSchema={defaultSchema}
-        {...props}
-      />
-    </ApolloProvider>
+    <HookBindingDebugger
+      open
+      onClose={vi.fn()}
+      bindings={bindings}
+      triggerSchema={defaultSchema}
+      {...props}
+    />
   </MuiThemeProvider>
 );
 
