@@ -8,7 +8,7 @@ head_ref: contributor/untrusted-change
 head_repository: https://github.com/contributor/taskcluster
 head_rev: 2829821fed0eed5540866094fe41df79a580381b
 head_tag: ""
-level: "0"
+level: "1"
 moz_build_date: "20220502180319"
 optimize_target_tasks: true
 owner: contributor@users.noreply.github.com

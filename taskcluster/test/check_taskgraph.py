@@ -15,20 +15,13 @@ from src.scopes import is_secret_scope as production_is_secret_scope  # noqa: E4
 PARAMETERS_DIR = Path(__file__).with_name("params")
 TRUSTED_PARAMETERS = "main-repo-pull-request.yml"
 UNTRUSTED_PARAMETERS = "main-repo-pull-request-untrusted.yml"
+APPROVED_COMMENT_PARAMETERS = "main-repo-issue-comment.yml"
 
 DOCKER_IMAGE_INDEX_MARKER = ".docker-images."
 
 ALLOWED_WORKER_POOLS = {
     ("built-in", "succeed"),
     ("proj-taskcluster", "gw-ubuntu-24-04"),
-    ("proj-taskcluster", "gw-ubuntu-24-04-gui"),
-    ("proj-taskcluster", "gw-windows-2022"),
-}
-
-# The generic-worker test suite runs generic-worker instances as the current
-# user; nothing else may add non-cache scopes to the untrusted graph.
-ALLOWED_NON_CACHE_SCOPES = {
-    "generic-worker:run-task-as-current-user:proj-taskcluster/gw-ubuntu-24-04-gui",
 }
 
 
@@ -81,18 +74,16 @@ def check_untrusted_graph(tasks):
     errors = []
     labels = set(tasks)
 
-    expected_task = "go-generic-worker-insecure-untrusted"
-    if expected_task not in labels:
-        errors.append(f"credential-free generic-worker coverage is missing: {expected_task}")
+    generic_worker_tasks = sorted(
+        label for label, task in tasks.items() if task.get("kind") == "generic-worker"
+    )
+    if generic_worker_tasks:
+        errors.append(
+            "generic-worker CI tasks are present: " + ", ".join(generic_worker_tasks)
+        )
 
-    forbidden_tasks = {
-        "generic-worker-build/test-insecure-ubuntu-24.04-amd64",
-        "generic-worker-build/test-multiuser-macos-arm64",
-        "generic-worker-build/test-multiuser-ubuntu-24.04-amd64",
-        "generic-worker-build/test-multiuser-windows-server-2022-amd64",
-    }
-    if present := sorted(labels & forbidden_tasks):
-        errors.append(f"credential-dependent tasks are present: {', '.join(present)}")
+    if "pr-generic-worker-complete" in labels:
+        errors.append("generic-worker completion task is present")
 
     for label, task in tasks.items():
         definition = task["task"]
@@ -113,17 +104,15 @@ def check_untrusted_graph(tasks):
             for scope in cache_scopes
             if not scope.startswith(
                 (
-                    "docker-worker:cache:taskcluster-level-0-",
-                    "generic-worker:cache:taskcluster-level-0-",
+                    "docker-worker:cache:taskcluster-level-1-",
+                    "generic-worker:cache:taskcluster-level-1-",
                 )
             )
         ]
         if wrong_cache_scopes:
-            errors.append(f"{label} uses a non-level-0 cache: {wrong_cache_scopes}")
+            errors.append(f"{label} uses a non-level-1 cache: {wrong_cache_scopes}")
 
-        unexpected_scopes = sorted(
-            set(scopes) - set(cache_scopes) - ALLOWED_NON_CACHE_SCOPES
-        )
+        unexpected_scopes = sorted(set(scopes) - set(cache_scopes))
         if unexpected_scopes:
             errors.append(f"{label} requests unexpected scopes: {unexpected_scopes}")
 
@@ -163,6 +152,49 @@ def check_untrusted_graph(tasks):
         raise RuntimeError("Invalid untrusted task graph:\n- " + "\n- ".join(errors))
 
 
+def check_trusted_graph(tasks, graph_name):
+    errors = []
+    labels = set(tasks)
+    expected_tasks = {
+        "pr-generic-worker-complete",
+        "pr-complete",
+        "generic-worker-build/test-insecure-ubuntu-24.04-amd64",
+        "generic-worker-build/test-multiuser-macos-arm64",
+        "generic-worker-build/test-multiuser-ubuntu-24.04-amd64",
+        "generic-worker-build/test-multiuser-windows-server-2022-amd64",
+    }
+    if missing := sorted(expected_tasks - labels):
+        errors.append("missing generic-worker coverage: " + ", ".join(missing))
+    if not missing:
+        regular_dependencies = set(tasks["pr-complete"].get("soft_dependencies", []))
+        generic_worker_dependencies = set(
+            tasks["pr-generic-worker-complete"].get("soft_dependencies", [])
+        )
+        misplaced_regular = sorted(
+            dependency
+            for dependency in regular_dependencies
+            if tasks.get(dependency, {}).get("kind") == "generic-worker"
+        )
+        misplaced_generic_worker = sorted(
+            dependency
+            for dependency in generic_worker_dependencies
+            if dependency in tasks and tasks[dependency].get("kind") != "generic-worker"
+        )
+        if misplaced_regular or misplaced_generic_worker:
+            errors.append("PR completion dependencies are not split by task kind")
+
+    release_tasks = sorted(
+        label
+        for label, task in tasks.items()
+        if task["task"].get("workerType") == "release"
+    )
+    if release_tasks:
+        errors.append("pull-request graph schedules release tasks: " + ", ".join(release_tasks))
+
+    if errors:
+        raise RuntimeError(f"Invalid {graph_name} task graph:\n- " + "\n- ".join(errors))
+
+
 def check_no_test_skip(tasks, graph_name):
     """Every task with a payload environment must refuse to skip tests, except
     library-testing, whose secret-specific tests are allowed to skip."""
@@ -186,12 +218,19 @@ def main():
         raise RuntimeError("Task-reference secret scopes are not recognized")
 
     version = taskgraph_version()
-    for name in (TRUSTED_PARAMETERS, UNTRUSTED_PARAMETERS):
-        tasks = generate_target_graph(PARAMETERS_DIR / name, version)
-        print(f"Generated {name}: {len(tasks)} tasks")
-        check_no_test_skip(tasks, name)
-        print(f"{name} NO_TEST_SKIP settings are enforced")
-        if name == UNTRUSTED_PARAMETERS:
+    graphs = (
+        (TRUSTED_PARAMETERS, "trusted pull request", True),
+        (APPROVED_COMMENT_PARAMETERS, "approved comment", True),
+        (UNTRUSTED_PARAMETERS, "untrusted pull request", False),
+    )
+    for parameter_file, graph_name, trusted in graphs:
+        tasks = generate_target_graph(PARAMETERS_DIR / parameter_file, version)
+        print(f"Generated task graph with {len(tasks)} tasks")
+        check_no_test_skip(tasks, graph_name)
+        if trusted:
+            check_trusted_graph(tasks, graph_name)
+            print("Trusted task graph includes generic-worker CI")
+        else:
             check_untrusted_graph(tasks)
             print("Untrusted task graph security invariants passed")
 
