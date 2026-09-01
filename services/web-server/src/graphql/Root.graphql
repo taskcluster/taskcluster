@@ -21,8 +21,6 @@ input PageConnection {
 union Node =
   Artifact |
   Task |
-  Worker |
-  WorkerCompact |
   WMWorker |
   CachePurge |
   SecretListItem |
