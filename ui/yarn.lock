@@ -1600,7 +1600,7 @@ __metadata:
     deepmerge: "npm:^4.3.1"
     dexie: "npm:^3.2.6"
     dot-prop-immutable: "npm:^2.0.0"
-    dotenv-cli: "npm:^6.0.0"
+    dotenv-cli: "npm:^11.0.0"
     fast-memoize: "npm:^2.5.1"
     graphql: "npm:^16.9.0"
     highlight.js: "npm:^11.11.1"
@@ -2923,7 +2923,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-spawn@npm:^7.0.1, cross-spawn@npm:^7.0.3":
+"cross-spawn@npm:^7.0.1":
   version: 7.0.3
   resolution: "cross-spawn@npm:7.0.3"
   dependencies:
@@ -2931,6 +2931,17 @@ __metadata:
     shebang-command: "npm:^2.0.0"
     which: "npm:^2.0.1"
   checksum: 10c0/5738c312387081c98d69c98e105b6327b069197f864a60593245d64c8089c8a0a744e16349281210d56835bb9274130d825a78b2ad6853ca13cfbeffc0c31750
+  languageName: node
+  linkType: hard
+
+"cross-spawn@npm:^7.0.6":
+  version: 7.0.6
+  resolution: "cross-spawn@npm:7.0.6"
+  dependencies:
+    path-key: "npm:^3.1.0"
+    shebang-command: "npm:^2.0.0"
+    which: "npm:^2.0.1"
+  checksum: 10c0/053ea8b2135caff68a9e81470e845613e374e7309a47731e81639de3eaeb90c3d01af0e0b44d2ab9d50b43467223b88567dfeb3262db942dc063b9976718ffc1
   languageName: node
   linkType: hard
 
@@ -3195,31 +3206,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv-cli@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "dotenv-cli@npm:6.0.0"
+"dotenv-cli@npm:^11.0.0":
+  version: 11.0.0
+  resolution: "dotenv-cli@npm:11.0.0"
   dependencies:
-    cross-spawn: "npm:^7.0.3"
-    dotenv: "npm:^16.0.0"
-    dotenv-expand: "npm:^8.0.1"
-    minimist: "npm:^1.2.5"
+    cross-spawn: "npm:^7.0.6"
+    dotenv: "npm:^17.1.0"
+    dotenv-expand: "npm:^12.0.0"
+    minimist: "npm:^1.2.6"
   bin:
     dotenv: cli.js
-  checksum: 10c0/12cbd746b8ca6fd95d608fcdf6837de76ddcbc6d0717f7d5fa293d79f0c94bca2bbcd050a873b3ec1ecafa68fac9691ac1ea71e917765b8f9151012d7b011bf5
+  checksum: 10c0/c3e6e58a484b3204eeb167a8f78c9cb04c4bae951069e7860eccbbbf96964e3bd808b3632dfe841e5d882b2c5d77c447f20abd06edd4db623ce719d94a7fb44e
   languageName: node
   linkType: hard
 
-"dotenv-expand@npm:^8.0.1":
-  version: 8.0.3
-  resolution: "dotenv-expand@npm:8.0.3"
-  checksum: 10c0/bf928bdd75ec632918e41fc5822d507dcf4081ae1d07b47aaee086141f6bbdc202add9f214b4064e118db1ca343b59f3924b0721327954a7af46897069271672
+"dotenv-expand@npm:^12.0.0":
+  version: 12.0.3
+  resolution: "dotenv-expand@npm:12.0.3"
+  dependencies:
+    dotenv: "npm:^16.4.5"
+  checksum: 10c0/0824bdc74fc816a28b0744b7853a23e046602e9616c82121dfdae21ebc13c6e89afeb773e794e97c35d48be2be0a990fbca721ee3869a49c04210a58a3cf296f
   languageName: node
   linkType: hard
 
-"dotenv@npm:^16.0.0":
-  version: 16.0.1
-  resolution: "dotenv@npm:16.0.1"
-  checksum: 10c0/8afd5d776ea6968f5c28ca374ddb1fe6a7afabe062d32354478e6ea0fe8da341945a3da71defe513403623fa6871ac880d1d100bb08f80be1ae170e99e1b9293
+"dotenv@npm:^16.4.5":
+  version: 16.6.1
+  resolution: "dotenv@npm:16.6.1"
+  checksum: 10c0/15ce56608326ea0d1d9414a5c8ee6dcf0fffc79d2c16422b4ac2268e7e2d76ff5a572d37ffe747c377de12005f14b3cc22361e79fc7f1061cce81f77d2c973dc
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^17.1.0":
+  version: 17.4.2
+  resolution: "dotenv@npm:17.4.2"
+  checksum: 10c0/164f8e77a646c8446867d5b588d26ea6005c8ea7c5eb41cf926f6113d23f2191355f6e0cfd95ea9bab98394a5b0a3f1e51a8399711b666fe55cc7b0bd745f942
   languageName: node
   linkType: hard
 
@@ -5726,10 +5746,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimist@npm:^1.2.5":
-  version: 1.2.7
-  resolution: "minimist@npm:1.2.7"
-  checksum: 10c0/8808da67ca50ee19ab2d69051d77ee78572e67297fd8a1635ecc757a15106ccdfb5b8c4d11d84750120142f1684e5329a141295728c755e5d149eedd73cc6572
+"minimist@npm:^1.2.6":
+  version: 1.2.8
+  resolution: "minimist@npm:1.2.8"
+  checksum: 10c0/19d3fcdca050087b84c2029841a093691a91259a47def2f18222f41e7645a0b7c44ef4b40e88a1e58a40c84d2ef0ee6047c55594d298146d0eb3f6b737c20ce6
   languageName: node
   linkType: hard
 
