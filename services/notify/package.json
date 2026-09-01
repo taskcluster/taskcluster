@@ -13,9 +13,9 @@
     "format": "biome format --write"
   },
   "devDependencies": {
-    "@aws-sdk/client-sns": "^3.1095.0",
-    "@aws-sdk/client-sqs": "^3.1095.0",
-    "@biomejs/biome": "^2.5.5",
-    "mocha": "^11.7.6"
+    "@aws-sdk/client-sns": "^3.1117.0",
+    "@aws-sdk/client-sqs": "^3.1117.0",
+    "@biomejs/biome": "^2.5.10",
+    "mocha": "^11.8.0"
   }
 }
