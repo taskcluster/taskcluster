@@ -1,12 +1,15 @@
-import events from 'node:events';
+import { EventEmitter } from 'node:events';
 
 /**
  * This is a watch dog timer.  Think of it as a ticking timebomb which will
  * explode when it hasn't been stopped or touched in `maxTime` seconds.  The
  * "explosion" in this case is just an 'expired' event.
  */
-class WatchDog extends events.EventEmitter {
-  constructor(maxTime) {
+class WatchDog extends EventEmitter {
+  maxTime: number;
+  timer: ReturnType<typeof setTimeout> | null;
+
+  constructor(maxTime: number) {
     super();
     this.maxTime = maxTime;
     this.timer = null;

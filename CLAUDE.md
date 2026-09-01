@@ -63,6 +63,7 @@ yarn lint           # Lint JavaScript/TypeScript
 yarn lint:fix       # Auto-fix linting issues
 yarn lint:go        # Lint Go code
 yarn lint:py        # Lint Python code
+yarn types          # Type-check .ts files (tsc --noEmit; Node does not type-check at runtime)
 ```
 
 ### Building
@@ -258,11 +259,12 @@ yarn start
 1. Run tests locally
 2. Run `yarn generate` if you changed APIs, database, or Go code (requires Postgres running)
 3. Run `yarn lint:fix` to fix style issues
-4. For Go changes, also run `go tool goimports -w <dir>` and `golangci-lint` (see `.golangci.yml`)
-5. Add a changelog entry in `changelog/` (see `dev-docs/best-practices/changelog.md`)
-6. Commit changes (including generated files)
-7. CI will run full test suite and linting
-8. **Verify the change actually works.** Run the affected code path: open a UI page in a browser, hit a service endpoint, run a task. CI passing means code compiled and unit tests ran — not that the feature works. UI work has more specifics in `ui/CLAUDE.md`.
+4. Run `yarn types` if you changed TypeScript (CI runs this; Node type stripping does not)
+5. For Go changes, also run `go tool goimports -w <dir>` and `golangci-lint` (see `.golangci.yml`)
+6. Add a changelog entry in `changelog/` (see `dev-docs/best-practices/changelog.md`)
+7. Commit changes (including generated files)
+8. CI will run full test suite and linting
+9. **Verify the change actually works.** Run the affected code path: open a UI page in a browser, hit a service endpoint, run a task. CI passing means code compiled and unit tests ran — not that the feature works. UI work has more specifics in `ui/CLAUDE.md`.
 
 ## Tools and Workers
 

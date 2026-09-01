@@ -3,13 +3,13 @@
   "private": true,
   "version": "108.0.0",
   "description": "A library to share iteration logic",
-  "exports": "./src/index.js",
+  "exports": "./src/index.ts",
   "type": "module",
   "scripts": {
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "format": "biome format --write",
-    "test": "mocha"
+    "test": "mocha test/*_test.js"
   },
   "author": "John Ford <jhford@mozilla.com>",
   "license": "MPL-2.0",
