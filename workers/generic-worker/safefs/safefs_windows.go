@@ -492,7 +492,11 @@ func Rename(oldpath, newpath string) error {
 	nameLen := len(utf16Name)*2 - 2
 
 	var info fileRenameInformation
-	size := int(unsafe.Offsetof(info.FileName)) + nameLen
+
+	// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/52aa0b70-8094-4971-862d-79793f41e6a8
+	// Length of this field MUST be the number of bytes required to make the size of this structure at least 24.
+	size := max(int(unsafe.Offsetof(info.FileName))+nameLen, 24)
+
 	buffer := make([]byte, size)
 	rename := (*fileRenameInformation)(unsafe.Pointer(&buffer[0]))
 	rename.ReplaceIfExists = windows.FILE_RENAME_REPLACE_IF_EXISTS

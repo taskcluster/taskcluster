@@ -130,6 +130,19 @@ func TestRename(t *testing.T) {
 		}
 	})
 
+	t.Run("moves to a single character name", func(t *testing.T) {
+		base := t.TempDir()
+		src := write(t, filepath.Join(base, "src"), "data")
+		dst := filepath.Join(base, "1")
+
+		if err := Rename(src, dst); err != nil {
+			t.Fatal(err)
+		}
+		if b, err := os.ReadFile(dst); err != nil || string(b) != "data" {
+			t.Errorf("dst = %q, %v", b, err)
+		}
+	})
+
 	t.Run("refuses a junctioned destination prefix", func(t *testing.T) {
 		base := t.TempDir()
 		secret, _ := mksecret(t, base)
