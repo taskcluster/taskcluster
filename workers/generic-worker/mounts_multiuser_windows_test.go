@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/mcuadros/go-defaults"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/host"
 )
 
 func ownerOf(t *testing.T, path string) string {

@@ -18,8 +18,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/taskcluster/httpbackoff/v3"
-	"github.com/taskcluster/taskcluster/v107/clients/client-go/tcobject"
-	"github.com/taskcluster/taskcluster/v107/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcobject"
+	"github.com/taskcluster/taskcluster/v108/internal/mocktc"
 )
 
 func mockObjectServer(t *testing.T) (*httptest.Server, *mux.Router, *tcobject.Object, *mocktc.Object) {

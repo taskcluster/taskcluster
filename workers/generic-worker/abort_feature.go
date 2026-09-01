@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v107/internal/scopes"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v108/internal/scopes"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/graceful"
 )
 
 type (

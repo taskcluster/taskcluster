@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
 )
 
 func safeReservedCopy(path string) (string, error) {

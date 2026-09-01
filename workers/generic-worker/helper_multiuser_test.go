@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v107/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/gwconfig"
-	gwruntime "github.com/taskcluster/taskcluster/v107/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
+	gwruntime "github.com/taskcluster/taskcluster/v108/workers/generic-worker/runtime"
 )
 
 func expectChainOfTrustKeyNotSecureMessage(t *testing.T, td *tcqueue.TaskDefinitionRequest, payload GenericWorkerPayload) {

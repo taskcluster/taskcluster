@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/host"
 	"golang.org/x/sys/windows"
 )
 

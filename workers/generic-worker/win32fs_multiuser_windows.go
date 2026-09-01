@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
 	"golang.org/x/sys/windows"
 )
 

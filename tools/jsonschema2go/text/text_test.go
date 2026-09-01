@@ -3,7 +3,7 @@ package text_test
 import (
 	"fmt"
 
-	"github.com/taskcluster/taskcluster/v107/tools/jsonschema2go/text"
+	"github.com/taskcluster/taskcluster/v108/tools/jsonschema2go/text"
 )
 
 func ExampleIndent_basic() {

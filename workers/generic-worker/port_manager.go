@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/gwconfig"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
 )
 
 // Port allocation indices within a task's port block.
