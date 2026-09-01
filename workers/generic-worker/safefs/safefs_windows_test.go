@@ -265,6 +265,60 @@ func TestCreate(t *testing.T) {
 			t.Errorf("target was clobbered: %q", b)
 		}
 	})
+
+	t.Run("hands out a write only handle", func(t *testing.T) {
+		f, err := Create(filepath.Join(t.TempDir(), "new.txt"), 0o644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		if _, err := f.WriteString("baguette"); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.Seek(0, io.SeekStart); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := io.ReadAll(f); err == nil {
+			t.Error("read from a handle that should only be writable")
+		}
+	})
+}
+
+func TestCreateRW(t *testing.T) {
+	t.Run("hands out a readable handle", func(t *testing.T) {
+		f, err := CreateRW(filepath.Join(t.TempDir(), "new.txt"), 0o644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		if _, err := f.WriteString("baguette"); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := f.Seek(0, io.SeekStart); err != nil {
+			t.Fatal(err)
+		}
+		b, err := io.ReadAll(f)
+		if err != nil || string(b) != "baguette" {
+			t.Errorf("read back = %q, %v", b, err)
+		}
+	})
+
+	t.Run("truncates an existing file before it can be read", func(t *testing.T) {
+		path := write(t, filepath.Join(t.TempDir(), "existing.txt"), "secret")
+
+		f, err := CreateRW(path, 0o644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+
+		b, err := io.ReadAll(f)
+		if err != nil || len(b) != 0 {
+			t.Errorf("read back = %q, %v", b, err)
+		}
+	})
 }
 
 func TestOpenExistingRDWR(t *testing.T) {

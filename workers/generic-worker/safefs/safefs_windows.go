@@ -396,13 +396,21 @@ func OpenExistingReadonly(file string) (*os.File, error) {
 }
 
 func Create(file string, perm os.FileMode) (*os.File, error) {
+	return create(file, perm, windows.GENERIC_WRITE)
+}
+
+func CreateRW(file string, perm os.FileMode) (*os.File, error) {
+	return create(file, perm, windows.GENERIC_READ|windows.GENERIC_WRITE)
+}
+
+func create(file string, perm os.FileMode, access uint32) (*os.File, error) {
 	parent, name, err := OpenParent(file, traverseAccess|windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA)
 	if err != nil {
 		return nil, err
 	}
 	defer func() { _ = windows.CloseHandle(parent) }()
 
-	handle, err := CreateOrTruncateChild(parent, name, filepath.Dir(file), windows.GENERIC_WRITE|windows.SYNCHRONIZE)
+	handle, err := CreateOrTruncateChild(parent, name, filepath.Dir(file), access|windows.SYNCHRONIZE)
 	if err != nil {
 		return nil, err
 	}

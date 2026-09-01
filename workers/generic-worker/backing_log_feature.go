@@ -51,7 +51,7 @@ func (bltf *BackingLogTaskFeature) RequiredScopes() scopes.Required {
 
 func (bltf *BackingLogTaskFeature) Start() *CommandExecutionError {
 	absLogFile := fileutil.AbsFrom(bltf.task.TaskDir(), logPath)
-	logFileHandle, err := safefs.Create(absLogFile, 0644)
+	logFileHandle, err := safefs.CreateRW(absLogFile, 0644)
 	if err != nil {
 		return executionError(internalError, errored, err)
 	}

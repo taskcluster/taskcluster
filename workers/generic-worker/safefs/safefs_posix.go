@@ -198,6 +198,14 @@ func OpenExistingReadonly(file string) (*os.File, error) {
 }
 
 func Create(file string, perm os.FileMode) (*os.File, error) {
+	return create(file, perm, unix.O_WRONLY)
+}
+
+func CreateRW(file string, perm os.FileMode) (*os.File, error) {
+	return create(file, perm, unix.O_RDWR)
+}
+
+func create(file string, perm os.FileMode, accessFlags int) (*os.File, error) {
 	parent, name, err := openParent(file)
 	if err != nil {
 		return nil, err
@@ -207,7 +215,7 @@ func Create(file string, perm os.FileMode) (*os.File, error) {
 	// This doesn't set O_TRUNC since it'd truncate a file linked to before we
 	// can check whather or not we should act on it. We truncate it manually
 	// after making sure it's a regular file.
-	fd, err := unix.Openat(parent, name, unix.O_WRONLY|unix.O_CREAT|leafFlags, uint32(perm))
+	fd, err := unix.Openat(parent, name, accessFlags|unix.O_CREAT|leafFlags, uint32(perm))
 	if err != nil {
 		if isSymlinkAt(parent, name) {
 			return nil, fmt.Errorf("refusing to create %q: it's a symlink", file)
