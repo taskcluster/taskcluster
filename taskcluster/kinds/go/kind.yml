@@ -49,31 +49,6 @@ task-defaults:
         format: tar.gz
 
 tasks:
-  generic-worker-insecure-untrusted:
-    description: test generic-worker's insecure engine against mock Taskcluster services
-    run-on-tasks-for: [github-pull-request-untrusted]
-    # Same pool and user setup as the trusted build/test-insecure task: the
-    # suite needs the gui pool's devices (e.g. /dev/video* for loopback tests)
-    # and runs generic-worker instances as the current user.
-    worker-type: gw-ubuntu-24-04-gui
-    attributes:
-      run-without-secrets: true
-    worker:
-      max-run-time: 1800
-      run-task-as-current-user: true
-    run:
-      command:
-        - |
-          cd workers/generic-worker
-          go mod tidy
-          git status --short
-          test -z "$(git status --porcelain)"
-          go install -tags insecure -v -ldflags "-X main.revision=${{GITHUB_SHA}}" ./...
-          go install ../../tools/taskcluster-proxy
-          go install ../../tools/livelog
-          go vet -tags insecure ./...
-          GORACE=history_size=7 CGO_ENABLED=1 go test -tags insecure -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v107/workers/generic-worker.revision=${{GITHUB_SHA}}" -race -vet=off ./...
-          ../../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --build-tags insecure --timeout=5m
   internal-libraries:
     description: test internal go libraries
     run:

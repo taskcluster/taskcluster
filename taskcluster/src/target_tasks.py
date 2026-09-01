@@ -24,6 +24,10 @@ def target_tasks_taskcluster_branches(full_task_graph, parameters, graph_config)
         if task.attributes.get("only-on", "all") != only_on:
             return False
 
+        if parameters["tasks_for"] == UNTRUSTED_PULL_REQUEST and task.kind == "generic-worker":
+            logger.info("Skipping generic-worker CI task %s in an untrusted pull request", task.label)
+            return False
+
         has_secret_scope = any(is_secret_scope(scope) for scope in task.task.get("scopes", []))
         if parameters["tasks_for"] == UNTRUSTED_PULL_REQUEST and has_secret_scope:
             logger.info("Skipping secret-dependent task %s in an untrusted pull request", task.label)

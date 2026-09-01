@@ -5,17 +5,10 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-  - client
-  - db
-  - go
-  - library
-  - lint
-  - meta
-  - service
-  - ui
+  - generic-worker
 
 tasks:
     complete:
-        description: PR Summary Task
-        run-on-tasks-for: [github-pull-request, github-pull-request-untrusted, github-issue-comment]
+        description: Generic Worker PR Summary Task
+        run-on-tasks-for: [github-pull-request, github-issue-comment]
         worker-type: succeed

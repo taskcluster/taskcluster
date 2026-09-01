@@ -57,7 +57,7 @@ tasks:
       command: python3 taskcluster/test/check_taskgraph.py
   changelog-pr:
     description: taskcluster changelog checks
-    run-on-tasks-for: [github-pull-request, github-pull-request-untrusted]
+    run-on-tasks-for: [github-pull-request, github-pull-request-untrusted, github-issue-comment]
     run:
       command: >-
         corepack yarn --immutable &> /dev/null &&
