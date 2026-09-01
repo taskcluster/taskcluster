@@ -75,7 +75,7 @@ func grantFullControl(path, username string, recurse bool) error {
 		return fmt.Errorf("could not look up SID for user %q: %w", username, err)
 	}
 
-	root, err := safefs.OpenPath(path, safefs.SecAccess)
+	root, err := safefs.OpenPathPinned(path, safefs.SecAccess)
 	if err != nil {
 		return err
 	}
@@ -192,7 +192,7 @@ func (g *granter) grantChildren(handle windows.Handle, parentPath string, depth 
 
 func (g *granter) grantChild(parent windows.Handle, name, parentPath string, depth int) error {
 	childPath := filepath.Join(parentPath, name)
-	child, err := safefs.OpenChild(parent, name, parentPath, safefs.SecAccess)
+	child, err := safefs.OpenChildPinned(parent, name, parentPath, safefs.SecAccess)
 	if err != nil {
 		return err
 	}

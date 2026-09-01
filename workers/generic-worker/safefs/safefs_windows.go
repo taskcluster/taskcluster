@@ -162,6 +162,10 @@ func OpenChild(parent windows.Handle, name, parentPath string, access uint32) (w
 	return childAt(parent, name, parentPath, access, shareAll, windows.FILE_OPEN, 0)
 }
 
+func OpenChildPinned(parent windows.Handle, name, parentPath string, access uint32) (windows.Handle, error) {
+	return childAt(parent, name, parentPath, access|windows.FILE_READ_ATTRIBUTES|windows.FILE_READ_DATA, sharePinned, windows.FILE_OPEN, 0)
+}
+
 // Opens an existing leaf pinning the name against deletion for as long as the
 // handle is held.
 func openLeaf(file string, access uint32) (windows.Handle, error) {
@@ -318,6 +322,16 @@ func splitAbsPath(path string) (string, []string, error) {
 // previously opened one, refusing to go on if any of them is a junction or a
 // link.
 func OpenPath(path string, leafAccess uint32) (windows.Handle, error) {
+	return openPath(path, leafAccess, OpenChild)
+}
+
+func OpenPathPinned(path string, leafAccess uint32) (windows.Handle, error) {
+	return openPath(path, leafAccess, OpenChildPinned)
+}
+
+type leafOpener func(parent windows.Handle, name, parentPath string, access uint32) (windows.Handle, error)
+
+func openPath(path string, leafAccess uint32, leaf leafOpener) (windows.Handle, error) {
 	// Every open below asks for FILE_OPEN_FOR_BACKUP_INTENT, which is silently
 	// ignored unless the privileges backing it are enabled.
 	if err := EnsurePrivileges(); err != nil {
@@ -340,12 +354,12 @@ func OpenPath(path string, leafAccess uint32) (windows.Handle, error) {
 
 	current := root
 	for i, name := range components {
-		access := traverseAccess
+		open, access := leafOpener(OpenChild), traverseAccess
 		if i == len(components)-1 {
-			access = leafAccess
+			open, access = leaf, leafAccess
 		}
 
-		child, err := OpenChild(handle, name, current, access)
+		child, err := open(handle, name, current, access)
 		_ = windows.CloseHandle(handle)
 		if err != nil {
 			return windows.InvalidHandle, err

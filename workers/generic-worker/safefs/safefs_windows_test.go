@@ -454,3 +454,101 @@ func TestLeafOpensPinsTheName(t *testing.T) {
 		}
 	})
 }
+
+func TestOpenChildPinned(t *testing.T) {
+	openParentOf := func(t *testing.T, path string) windows.Handle {
+		t.Helper()
+		parent, _, err := OpenParent(path, traverseAccess)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = windows.CloseHandle(parent) })
+		return parent
+	}
+
+	t.Run("pins a file", func(t *testing.T) {
+		base := t.TempDir()
+		file := write(t, filepath.Join(base, "file.txt"), "ours")
+
+		h, err := OpenChildPinned(openParentOf(t, file), "file.txt", base, SecAccess)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = windows.CloseHandle(h) }()
+
+		if err := os.Remove(file); err == nil {
+			t.Error("removed a file while it was held open")
+		}
+		if err := os.Rename(file, filepath.Join(base, "moved.txt")); err == nil {
+			t.Error("renamed a file while it was held open")
+		}
+	})
+
+	t.Run("keeps the link count from dropping", func(t *testing.T) {
+		base := t.TempDir()
+		target := write(t, filepath.Join(base, "target"), "important")
+		link := hardlink(t, target, filepath.Join(base, "link"))
+
+		h, err := OpenChildPinned(openParentOf(t, link), "link", base, SecAccess)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = windows.CloseHandle(h) }()
+
+		if err := os.Remove(link); err == nil {
+			t.Error("dropped a link while it was held open??")
+		}
+		links, err := NumberOfLinks(h)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if links != 2 {
+			t.Errorf("link count %v != 2", links)
+		}
+	})
+
+	t.Run("pins a directory", func(t *testing.T) {
+		base := t.TempDir()
+		dir := mkdir(t, filepath.Join(base, "sub"))
+
+		h, err := OpenChildPinned(openParentOf(t, dir), "sub", base, SecAccess)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = windows.CloseHandle(h) }()
+
+		if err := os.Remove(dir); err == nil {
+			t.Error("removed a directory while it was held open")
+		}
+	})
+}
+
+func TestOpenPathPinned(t *testing.T) {
+	t.Run("pins a leaf file", func(t *testing.T) {
+		file := write(t, filepath.Join(mkdir(t, filepath.Join(t.TempDir(), "sub")), "file.txt"), "ours")
+
+		h, err := OpenPathPinned(file, SecAccess)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = windows.CloseHandle(h) }()
+
+		if err := os.Remove(file); err == nil {
+			t.Error("removed a file while it was held open")
+		}
+	})
+
+	t.Run("pins a leaf directory", func(t *testing.T) {
+		dir := mkdir(t, filepath.Join(t.TempDir(), "sub"))
+
+		h, err := OpenPathPinned(dir, SecAccess)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = windows.CloseHandle(h) }()
+
+		if err := os.Remove(dir); err == nil {
+			t.Error("removed a directory while it was held open")
+		}
+	})
+}

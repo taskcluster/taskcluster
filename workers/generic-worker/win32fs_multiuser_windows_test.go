@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/host"
+	"golang.org/x/sys/windows"
 )
 
 func mkjunction(t *testing.T, link, target string) {
@@ -159,6 +160,32 @@ func TestGrantFullControl(t *testing.T) {
 		}
 		if !grantedTo(t, file, taskUser) {
 			t.Error("task user was not granted a hardlink it already owned")
+		}
+	})
+
+	t.Run("refuses to grant on a file something else can delete", func(t *testing.T) {
+		cache := filepath.Join(base, "helddeletable")
+		if err := os.MkdirAll(cache, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		file := filepath.Join(cache, "held.txt")
+		if err := os.WriteFile(file, []byte("bar"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		setOwner(t, cache, taskUser)
+
+		p, err := windows.UTF16PtrFromString(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		h, err := windows.CreateFile(p, windows.DELETE|windows.SYNCHRONIZE, uint32(windows.FILE_SHARE_READ|windows.FILE_SHARE_WRITE|windows.FILE_SHARE_DELETE), nil, windows.OPEN_EXISTING, 0, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = windows.CloseHandle(h) }()
+
+		if err := grantFullControl(cache, taskUser, true); err == nil {
+			t.Error("granted a file someone was holding with delete")
 		}
 	})
 
