@@ -51,14 +51,19 @@ func (tm *TaskManager) AddTask(task *TaskRun) {
 	tm.updateWorkerStatusLocked()
 }
 
-// RemoveTask unregisters a task. Must be called when the task goroutine completes.
+// FinishTask decrements the wait group. Call once per AddTask from the task
+// goroutine so WaitForAll does not depend on the main loop.
+func (tm *TaskManager) FinishTask() {
+	tm.wg.Done()
+}
+
+// RemoveTask unregisters a task.
 // Updates the worker status file with remaining running task IDs.
 func (tm *TaskManager) RemoveTask(taskID string) {
 	tm.Lock()
 	defer tm.Unlock()
 	if _, exists := tm.runningTasks[taskID]; exists {
 		delete(tm.runningTasks, taskID)
-		tm.wg.Done()
 		tm.lastActive = time.Now()
 		tm.updateWorkerStatusLocked()
 	}

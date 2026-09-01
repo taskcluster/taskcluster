@@ -743,6 +743,7 @@ mainLoop:
 							t.Error(fmt.Sprintf("Internal worker error (panic): %v", r))
 						}
 						portManager.ReleasePorts(t.TaskID)
+						taskManager.FinishTask()
 						workerShutdown := errors != nil && errors.WorkerShutdown()
 						taskCompleteChan <- taskCompletionResult{
 							taskID:         t.TaskID,
