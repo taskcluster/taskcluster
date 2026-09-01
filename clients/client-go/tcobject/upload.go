@@ -48,16 +48,22 @@ func (object *Object) UploadFromFile(projectID string, name string, contentType 
 // name, projectID, contentType, contentLength, expiry, and uploadID, with the
 // object content read from readSeeker. The value of contentLength is not
 // validated prior to upload.
-func (object *Object) UploadFromReadSeeker(projectID string, name string, contentType string, contentLength int64, expires time.Time, uploadID string, readSeeker io.ReadSeeker) (err error) {
-	// wrap the readSeeker so that it will capture hashes
-	hashingReadSeeker := newHashingReadSeeker(readSeeker)
+func (object *Object) UploadFromReadSeeker(projectID string, name string, contentType string, contentLength int64, expires time.Time, uploadID string, readSeeker io.ReadSeeker) error {
+	_, err := object.UploadFromReadSeekerWithHashes(projectID, name, contentType, contentLength, expires, uploadID, readSeeker)
+	return err
+}
 
+// UploadFromReadSeekerWithHashes behaves like UploadFromReadSeeker but also
+// returns the hashes it sent to FinishUpload. They are computed from the bytes
+// that were read for the upload that succeeded
+func (object *Object) UploadFromReadSeekerWithHashes(projectID string, name string, contentType string, contentLength int64, expires time.Time, uploadID string, readSeeker io.ReadSeeker) (hashes map[string]string, err error) {
+	hashingReadSeeker := newHashingReadSeeker(readSeeker)
 	proposedUploadMethods := ProposedUploadMethods{}
 
 	if contentLength < DataInlineMaxSize {
 		content, err := io.ReadAll(hashingReadSeeker)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		b64 := base64.StdEncoding.EncodeToString(content)
 		proposedUploadMethods.DataInline = DataInlineUploadRequest{
@@ -82,7 +88,7 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 		},
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	defer func() {
@@ -90,7 +96,8 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 			return
 		}
 
-		hashes, err := hashingReadSeeker.hashes(contentLength)
+		var uploaded map[string]string
+		uploaded, err = hashingReadSeeker.hashes(contentLength)
 		if err != nil {
 			return
 		}
@@ -100,22 +107,23 @@ func (object *Object) UploadFromReadSeeker(projectID string, name string, conten
 			&FinishUploadRequest{
 				ProjectID: projectID,
 				UploadID:  uploadID,
-				Hashes:    marshalHashes(hashes),
+				Hashes:    marshalHashes(uploaded),
 			},
 		)
 		if err != nil {
 			return
 		}
+		hashes = uploaded
 	}()
 
 	switch {
 	case uploadResp.UploadMethod.DataInline:
 		// data is already uploaded -- nothing to do
-		return nil
+		return nil, nil
 	case uploadResp.UploadMethod.PutURL.URL != "":
-		return putURLUpload(object.HTTPBackoffClient, uploadResp.UploadMethod, hashingReadSeeker)
+		return nil, putURLUpload(object.HTTPBackoffClient, uploadResp.UploadMethod, hashingReadSeeker)
 	}
-	return errors.New("could not negotiate an upload method")
+	return nil, errors.New("could not negotiate an upload method")
 }
 
 func putURLUpload(httpBackoffClient *httpbackoff.Client, uploadMethod SelectedUploadMethodOrNone, readSeeker io.ReadSeeker) error {

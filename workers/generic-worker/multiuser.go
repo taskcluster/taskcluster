@@ -18,6 +18,7 @@ import (
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/gwconfig"
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v107/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
 )
 
 const (
@@ -346,7 +347,7 @@ func StoredUserCredentials(path string) (*gwruntime.OSUser, error) {
 }
 
 func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) error {
-	if info, err := os.Stat(dir); err == nil && info.IsDir() {
+	if safefs.IsExistingDir(dir) {
 		file, err := CreateFileAsTaskUser(filepath.Join(dir, slugid.Nice()), ctx, pd)
 		if err != nil {
 			return err
@@ -355,7 +356,7 @@ func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) er
 		if err != nil {
 			return err
 		}
-		return os.Remove(file.Name())
+		return safefs.Remove(file.Name())
 	}
 
 	cmd, err := process.NewCommand([]string{gwruntime.GenericWorkerBinary(), "create-dir", "--create-dir", dir}, ctx.TaskDir, []string{}, pd)
@@ -365,6 +366,9 @@ func MkdirAllTaskUser(dir string, ctx *TaskContext, pd *process.PlatformData) er
 	result := cmd.Execute()
 	if result.ExitError != nil {
 		return fmt.Errorf("cannot create directory %v as task user %v from directory %v: %v", dir, ctx.User.Name, ctx.TaskDir, result)
+	}
+	if !safefs.IsExistingDir(dir) {
+		return fmt.Errorf("directory %v was reported as created by task user %v but is not a directory", dir, ctx.User.Name)
 	}
 	return nil
 }
@@ -378,7 +382,7 @@ func CreateFileAsTaskUser(file string, ctx *TaskContext, pd *process.PlatformDat
 	if result.ExitError != nil {
 		return nil, fmt.Errorf("cannot create file %v as task user %v from directory %v: %v", file, ctx.User.Name, ctx.TaskDir, result)
 	}
-	return os.OpenFile(file, os.O_RDWR, 0600)
+	return safefs.OpenExistingRDWR(file)
 }
 
 func featureInitFailure(err error) (exitCode ExitCode) {

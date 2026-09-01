@@ -5,7 +5,9 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -21,6 +23,7 @@ import (
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/interactive"
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/process"
 	gwruntime "github.com/taskcluster/taskcluster/v107/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
 	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
@@ -48,23 +51,8 @@ func platformFeatures() []Feature {
 }
 
 func deleteDir(path string) error {
-	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call...")
-	err := os.RemoveAll(path)
-	if err == nil {
-		return nil
-	}
-	log.Print("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
-	log.Printf("%v", err)
-	log.Print("Trying to remove directory '" + path + "' via del and rmdir commands...")
-	err = host.Run("cmd", "/c", "del", "/s", "/q", "/f", path)
-	if err != nil {
-		log.Printf("%#v", err)
-	}
-	err = host.Run("cmd", "/c", "rmdir", "/s", "/q", path)
-	if err != nil {
-		log.Printf("%#v", err)
-	}
-	return err
+	log.Print("Removing directory '" + path + "'...")
+	return os.RemoveAll(path)
 }
 
 func (task *TaskRun) generateCommand(index int) error {
@@ -267,89 +255,105 @@ func install(arguments map[string]any) (err error) {
 }
 
 func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.OSUser) error {
-	// On windows, grant:r or ownership aren't enough on their own. Ownership
-	// doesn't mean it's going to be readable, and ownership is necessary for
-	// programs like git that check that files haven't been tampered with (see #6561)
+	return grantFullControl(dir, user.Name, recurse)
+}
 
-	// http://ss64.com/nt/icacls.html
-	if err := host.Run("icacls", dir, "/grant:r", user.Name+":(OI)(CI)F"); err != nil {
+// Renaming only works when files are on the same device. In the event that it
+// fails, this function reverts to a move that actually writes content which is
+// slower but works across devices.
+func RenameCrossDevice(oldpath, newpath string) error {
+	err := safefs.Rename(oldpath, newpath)
+	if !errors.Is(err, windows.STATUS_NOT_SAME_DEVICE) {
 		return err
 	}
-
-	setOwnerArgs := []string{dir, "/setowner", user.Name}
-	if recurse {
-		setOwnerArgs = append(setOwnerArgs, "/T")
-	}
-	return host.Run("icacls", setOwnerArgs...)
+	return renameFolderCrossDevice(oldpath, newpath)
 }
 
-// The windows implementation of os.Rename(...) doesn't allow renaming files
-// across drives (i.e. copy and delete semantics) - this alternative
-// implementation is identical to the os.Rename(...) implementation, but
-// additionally sets the flag windows.MOVEFILE_COPY_ALLOWED in order to cater
-// for oldpath and newpath being on different drives. See:
-// https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240(v=vs.85).aspx
-func RenameCrossDevice(oldpath, newpath string) (err error) {
-	var to, from *uint16
-	from, err = syscall.UTF16PtrFromString(oldpath)
-	if err != nil {
-		return
-	}
-	to, err = syscall.UTF16PtrFromString(newpath)
-	if err != nil {
-		return
-	}
-	// this will work for files and directories on same drive, and even for
-	// files on different drives, but not for directories on different drives
-	err = windows.MoveFileEx(from, to, windows.MOVEFILE_REPLACE_EXISTING|windows.MOVEFILE_COPY_ALLOWED)
+const maxMoveDepth = 1024
 
-	// if we fail, could be a folder that needs to be moved to a different
-	// drive - however, check it really is a folder, since otherwise we could
-	// end up infinitely recursing between RenameCrossDevice and
-	// RenameFolderCrossDevice, since they both call into each other
+func renameFolderCrossDevice(oldpath, newpath string) error {
+	sourceParent, sourceName, err := safefs.OpenParent(oldpath, windows.FILE_LIST_DIRECTORY|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
 	if err != nil {
-		var fi os.FileInfo
-		fi, err = os.Stat(oldpath)
-		if err != nil {
-			return
-		}
-		if fi.IsDir() {
-			err = RenameFolderCrossDevice(oldpath, newpath)
-		}
+		return err
 	}
-	return
+	defer func() { _ = windows.CloseHandle(sourceParent) }()
+
+	targetParent, targetName, err := safefs.OpenParent(newpath, windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = windows.CloseHandle(targetParent) }()
+
+	return moveEntry(sourceParent, filepath.Dir(oldpath), sourceName, targetParent, filepath.Dir(newpath), targetName, 0)
 }
 
-func RenameFolderCrossDevice(oldpath, newpath string) (err error) {
-	// recursively move files
-	moveFile := func(path string, d os.DirEntry, inErr error) (outErr error) {
-		if inErr != nil {
-			return inErr
-		}
-		var relPath string
-		relPath, outErr = filepath.Rel(oldpath, path)
-		if outErr != nil {
-			return
-		}
-		targetPath := filepath.Join(newpath, relPath)
-		if d.IsDir() {
-			var info os.FileInfo
-			info, outErr = d.Info()
-			if outErr != nil {
-				return
-			}
-			outErr = os.Mkdir(targetPath, info.Mode())
-		} else {
-			outErr = RenameCrossDevice(path, targetPath)
-		}
-		return
+func moveEntry(sourceParent windows.Handle, sourcePath, name string, targetParent windows.Handle, targetPath, targetName string, depth int) error {
+	if depth > maxMoveDepth {
+		return fmt.Errorf("refusing to move %q under %q: more than %v levels deep", name, sourcePath, maxMoveDepth)
 	}
-	err = filepath.WalkDir(oldpath, moveFile)
+
+	handle, err := safefs.OpenChild(sourceParent, name, sourcePath, windows.GENERIC_READ|windows.DELETE|windows.SYNCHRONIZE)
 	if err != nil {
-		return
+		return err
 	}
-	err = os.RemoveAll(oldpath)
-	return
+	source := os.NewFile(uintptr(handle), filepath.Join(sourcePath, name))
+	defer source.Close()
+
+	dir, surrogate, err := safefs.Kind(handle)
+	if err != nil {
+		return fmt.Errorf("could not stat %q under %q: %w", name, sourcePath, err)
+	}
+	if surrogate {
+		return fmt.Errorf("refusing to move %q under %q: it is a junction or a link", name, sourcePath)
+	}
+
+	if dir {
+		err = moveDir(source, filepath.Join(sourcePath, name), targetParent, targetPath, targetName, depth)
+	} else {
+		err = copyFile(source, targetParent, targetPath, targetName)
+	}
+	if err != nil {
+		return err
+	}
+	return safefs.DeleteSelf(handle, source.Name())
+}
+
+func copyFile(source *os.File, targetParent windows.Handle, targetPath, targetName string) error {
+	handle, err := safefs.CreateOrTruncateChild(targetParent, targetName, targetPath, windows.GENERIC_WRITE|windows.SYNCHRONIZE)
+	if err != nil {
+		return err
+	}
+	target := os.NewFile(uintptr(handle), filepath.Join(targetPath, targetName))
+	defer target.Close()
+
+	if _, err := io.Copy(target, source); err != nil {
+		return fmt.Errorf("could not copy %q to %q: %w", source.Name(), target.Name(), err)
+	}
+	if err := target.Close(); err != nil {
+		return fmt.Errorf("could not close %q: %w", target.Name(), err)
+	}
+	return nil
+}
+
+func moveDir(source *os.File, sourcePath string, targetParent windows.Handle, targetPath, targetName string, depth int) error {
+	target, err := safefs.CreateChild(targetParent, targetName, targetPath, windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA|windows.SYNCHRONIZE, true)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = windows.CloseHandle(target) }()
+
+	names, err := source.Readdirnames(-1)
+	if err != nil {
+		return fmt.Errorf("could not read directory %q: %w", sourcePath, err)
+	}
+
+	newTargetPath := filepath.Join(targetPath, targetName)
+	for _, name := range names {
+		if err := moveEntry(windows.Handle(source.Fd()), sourcePath, name, target, newTargetPath, name, depth+1); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func RedirectAppData(hUser syscall.Token, folder string) error {

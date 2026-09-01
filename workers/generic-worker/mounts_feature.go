@@ -1293,18 +1293,25 @@ func decompress(fsContent FSContent, format string, file string, taskMount *Task
 		if err != nil {
 			return fmt.Errorf("not able to create %v as task user: %v", file, err)
 		}
-		err = dst.Close()
+		defer dst.Close()
+		src, err := os.Open(cacheFile)
 		if err != nil {
-			return fmt.Errorf("not able to close %v: %v", file, err)
+			return fmt.Errorf("not able to open %v: %v", cacheFile, err)
 		}
+		defer src.Close()
 		taskMount.Infof("Copying %v to %v", cacheFile, file)
-		err = copyFileContents(cacheFile, file)
-		if err != nil {
+		if _, err := io.Copy(dst, src); err != nil {
 			// this could be a system error, but it can also be that e.g. the task
 			// specified an invalid path, so resolve as malformed payload rather
 			// than panic
 			taskMount.Errorf("not able to mount content from %v at path %v", fsContent.String(), file)
 			return err
+		}
+		if err := dst.Sync(); err != nil {
+			return fmt.Errorf("not able to flush %v: %w", file, err)
+		}
+		if err := dst.Close(); err != nil {
+			return fmt.Errorf("not able to close %v: %w", file, err)
 		}
 		return nil
 	}

@@ -274,6 +274,13 @@ object := tcobject.New()
 err := object.UploadFromReadSeeker(projectID, name, contentType, contentLength, expires, readSeeker)
 ```
 
+or, if you need the hashes of what was uploaded:
+
+```go
+object := tcobject.New()
+hashes, err := object.UploadFromReadSeekerWithHashes(projectID, name, contentType, contentLength, expires, readSeeker)
+```
+
 To use the convenience download methods:
 
 ```go

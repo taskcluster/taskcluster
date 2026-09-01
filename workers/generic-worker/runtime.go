@@ -3,27 +3,29 @@ package main
 import (
 	"io"
 	"os"
+
+	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
 )
 
-func copyFileContents(src, dst string) (err error) {
-	in, err := os.Open(src)
+func safeReservedCopy(path string) (string, error) {
+	src, err := safefs.OpenExistingReadonly(path)
 	if err != nil {
-		return
+		return "", err
 	}
-	defer in.Close()
-	out, err := os.Create(dst)
+	defer src.Close()
+
+	tmp, err := os.CreateTemp("", "reserved-artifact-")
 	if err != nil {
-		return
+		return "", err
 	}
-	defer func() {
-		cerr := out.Close()
-		if err == nil {
-			err = cerr
-		}
-	}()
-	if _, err = io.Copy(out, in); err != nil {
-		return
+	if _, err := io.Copy(tmp, src); err != nil {
+		tmp.Close()
+		os.Remove(tmp.Name())
+		return "", err
 	}
-	err = out.Sync()
-	return
+	if err := tmp.Close(); err != nil {
+		os.Remove(tmp.Name())
+		return "", err
+	}
+	return tmp.Name(), nil
 }

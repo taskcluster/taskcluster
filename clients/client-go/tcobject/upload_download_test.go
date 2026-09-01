@@ -1,7 +1,10 @@
 package tcobject_test
 
 import (
+	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -43,6 +46,18 @@ func mockObjectServer(t *testing.T) (*httptest.Server, *mux.Router, *tcobject.Ob
 		BackOffSettings: settings,
 	}
 	return srv, r, object, mockobj
+}
+
+func TestUploadReturnsHashes(t *testing.T) {
+	srv, _, object, _ := mockObjectServer(t)
+	defer srv.Close()
+
+	content := []byte("one baguette")
+	sum := sha256.Sum256(content)
+
+	hashes, err := object.UploadFromReadSeekerWithHashes("proj", "some/object", "text/plain", int64(len(content)), time.Now().Add(time.Hour), "upload-id", bytes.NewReader(content))
+	require.NoError(t, err)
+	assert.Equal(t, hex.EncodeToString(sum[:]), hashes["sha256"])
 }
 
 // TestGetURLDownloadFails400 tests that when a getUrl download's GET fails

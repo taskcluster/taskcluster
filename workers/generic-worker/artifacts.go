@@ -51,6 +51,7 @@ func createDataArtifact(
 		return &artifacts.ObjectArtifact{
 			BaseArtifact:  base,
 			Path:          path,
+			ContentPath:   contentPath,
 			ContentType:   contentType,
 			ContentLength: contentLength,
 		}
@@ -67,6 +68,11 @@ func createDataArtifact(
 }
 
 func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
+	contentPath, err := safeReservedCopy(path)
+	if err != nil {
+		return executionError(internalError, errored, fmt.Errorf("could not read reserved artifact %v: %w", path, err))
+	}
+	defer os.Remove(contentPath)
 	return task.uploadArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
@@ -75,7 +81,7 @@ func (task *TaskRun) uploadLog(name, path string) *CommandExecutionError {
 				Expires: task.Definition.Expires,
 			},
 			path,
-			path,
+			contentPath,
 			"text/plain; charset=utf-8",
 			"gzip",
 		),

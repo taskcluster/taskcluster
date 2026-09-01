@@ -12,9 +12,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/mholt/archives"
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/taskcluster/taskcluster/v107/workers/generic-worker/safefs"
 )
 
 func WriteToFileAsJSON(obj any, filename string) error {
@@ -58,17 +60,8 @@ func CalculateSHA256(file string) (hash string, err error) {
 }
 
 func Copy(dst, src string) (nBytes int64, err error) {
-	var sourceFileStat os.FileInfo
-	sourceFileStat, err = os.Stat(src)
-	if err != nil {
-		return
-	}
-	if !sourceFileStat.Mode().IsRegular() {
-		err = fmt.Errorf("cannot copy %s to %s: %s is not a regular file", src, dst, src)
-		return
-	}
 	var source *os.File
-	source, err = os.Open(src)
+	source, err = os.OpenFile(src, os.O_RDONLY|syscall.O_NONBLOCK, 0)
 	if err != nil {
 		return
 	}
@@ -79,8 +72,18 @@ func Copy(dst, src string) (nBytes int64, err error) {
 		}
 	}
 	defer closeFile(source)
+
+	var sourceFileStat os.FileInfo
+	sourceFileStat, err = source.Stat()
+	if err != nil {
+		return
+	}
+	if !sourceFileStat.Mode().IsRegular() {
+		err = fmt.Errorf("cannot copy %s to %s: %s is not a regular file", src, dst, src)
+		return
+	}
 	var destination *os.File
-	destination, err = os.Create(dst)
+	destination, err = safefs.Create(dst, 0666)
 	if err != nil {
 		return
 	}
