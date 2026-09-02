@@ -11,6 +11,7 @@ import { CHECKLOGS_TEXT, CHECKRUN_TEXT, CHECK_TASK_GROUP_TEXT } from '../src/con
 import utils from '../src/utils.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import { v1 as uuidv1 } from 'uuid';
 import { formatBytes } from '../src/handlers/utils.js';
 
 const dataDir = new URL('./data', import.meta.url).pathname;
@@ -62,6 +63,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   const COMMIT_SHA = '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf';
   const INST_ID = 5828;
+  const OLDER_DELIVERY_ID = 'ff1b1e30-a6c5-11f1-bfff-00deadbeef01';
+  const CURRENT_DELIVERY_ID = 'ffb3b4b0-a6c5-11f1-bfff-00deadbeef01';
+  const NEWER_DELIVERY_ID = '004c4b30-a6c6-11f1-bfff-00deadbeef01';
 
   // the name the task definitions below ask for, rather than the default text artifact name
   const CUSTOM_CHECKRUN_TEXT_ARTIFACT = 'public/text.md';
@@ -111,7 +115,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     taskGroupId,
     pullNumber,
     eventType = 'push',
-    eventId = taskGroupId,
+    eventId = uuidv1(),
     created = new Date(),
   }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
@@ -373,31 +377,32 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       );
     });
 
-    test('stops quietly if the task group is sealed while creating tasks', async () => {
+    test('skips only the sealed task group while creating tasks', async () => {
       await handlers.realCreateTasks({
         scopes: [],
         tasks: [
-          { taskId: 'aa', task: { payload: 'a' } },
+          { taskId: 'aa', task: { taskGroupId: 'group-a', payload: 'a' } },
           {
             taskId: 'fail',
             task: {
-              taskGroupId: 'group-id',
-              message: 'Task group `group-id` is sealed and does not accept new tasks.',
-              code: 'RequestConflict',
+              taskGroupId: 'group-a',
+              message: 'Task group `group-a` is sealed and does not accept new tasks.',
               statusCode: 409,
             },
           },
-          { taskId: 'cc', task: { payload: 'c' } },
+          { taskId: 'skip', task: { taskGroupId: 'group-a', payload: 'skip' } },
+          { taskId: 'bb', task: { taskGroupId: 'group-b', payload: 'b' } },
+          { taskId: 'skip-too', task: { taskGroupId: 'group-a', payload: 'skip-too' } },
         ],
       });
 
       assert.deepEqual(
         createdTasks.map(({ payload }) => payload),
-        ['a']
+        ['a', 'b']
       );
     });
 
-    test('propagates other RequestConflict errors', async () => {
+    test('propagates other 409 errors', async () => {
       await assert.rejects(
         handlers.realCreateTasks({
           scopes: [],
@@ -406,13 +411,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
               taskId: 'fail',
               task: {
                 message: 'Another conflict',
-                code: 'RequestConflict',
                 statusCode: 409,
               },
             },
           ],
         }),
-        err => err.code === 'RequestConflict' && err.message === 'Another conflict'
+        err => err.statusCode === 409 && err.message === 'Another conflict'
       );
     });
   });
@@ -570,15 +574,16 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     test('only cancels older task groups for the pull request', async () => {
-      const oldCreated = new Date('2026-08-27T17:28:44.000Z');
+      // These database timestamps are deliberately opposite to delivery order.
+      const oldCreated = new Date('2026-08-27T17:28:46.000Z');
       const currentCreated = new Date('2026-08-27T17:28:45.000Z');
-      const newerCreated = new Date('2026-08-27T17:28:46.000Z');
+      const newerCreated = new Date('2026-08-27T17:28:44.000Z');
       await addBuild({
         state: 'pending',
         taskGroupId: 'aa',
         pullNumber: 1,
         eventType: 'pull_request.opened',
-        eventId: 'old-event',
+        eventId: OLDER_DELIVERY_ID,
         created: oldCreated,
       });
       await addBuild({
@@ -586,7 +591,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         taskGroupId: 'bb',
         pullNumber: 1,
         eventType: 'pull_request.synchronize',
-        eventId: 'current-event',
+        eventId: CURRENT_DELIVERY_ID,
         created: currentCreated,
       });
       await addBuild({
@@ -594,7 +599,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         taskGroupId: 'cc',
         pullNumber: 1,
         eventType: 'pull_request.synchronize',
-        eventId: 'newer-event',
+        eventId: NEWER_DELIVERY_ID,
         created: newerCreated,
       });
       await addBuild({
@@ -602,7 +607,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         taskGroupId: 'dd',
         pullNumber: 1,
         eventType: 'pull_request.closed',
-        eventId: 'closed-event',
+        eventId: OLDER_DELIVERY_ID,
         created: oldCreated,
       });
       await handlers.realCancelPreviousTaskGroups({
@@ -615,7 +620,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           repository: 'hooks-testing',
           pull_number: 1,
           event_type: 'pull_request.synchronize',
-          event_id: 'current-event',
+          event_id: CURRENT_DELIVERY_ID,
           created: currentCreated,
         },
       });
@@ -626,52 +631,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(buildA.state, 'cancelled');
       const [buildC] = await helper.db.fns.get_github_build_pr('cc');
       assert.equal(buildC.state, 'pending');
-    });
-
-    test('uses event id to break timestamp ties for all sibling task groups', async () => {
-      const created = new Date('2026-08-27T17:28:45.000Z');
-      await addBuild({
-        state: 'pending',
-        taskGroupId: 'old-group-a',
-        pullNumber: 1,
-        eventType: 'pull_request.synchronize',
-        eventId: 'event-a',
-        created,
-      });
-      await addBuild({
-        state: 'pending',
-        taskGroupId: 'old-group-b',
-        pullNumber: 1,
-        eventType: 'pull_request.synchronize',
-        eventId: 'event-a',
-        created,
-      });
-      await addBuild({
-        state: 'pending',
-        taskGroupId: 'new-group',
-        pullNumber: 1,
-        eventType: 'pull_request.synchronize',
-        eventId: 'event-b',
-        created,
-      });
-
-      await handlers.realCancelPreviousTaskGroups({
-        instGithub: sinon.stub(),
-        debug: sinon.stub(),
-        newBuild: {
-          sha: COMMIT_SHA,
-          task_group_id: 'new-group',
-          organization: 'TaskclusterRobot',
-          repository: 'hooks-testing',
-          pull_number: 1,
-          event_type: 'pull_request.synchronize',
-          event_id: 'event-b',
-          created,
-        },
-      });
-
-      assert.deepEqual(sealedTaskGroups, ['old-group-a', 'old-group-b']);
-      assert.deepEqual(cancelledTaskGroups, ['old-group-a', 'old-group-b']);
     });
 
     test('does not cancel sibling task groups from the same event', async () => {
@@ -688,7 +647,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         oldCreated,
         9988,
         'pull_request.opened',
-        'old-event-id',
+        OLDER_DELIVERY_ID,
         1
       );
       // Two sibling builds from the current event — share the same event_id
@@ -702,7 +661,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         newCreated,
         9988,
         'pull_request.opened',
-        'new-event-id',
+        CURRENT_DELIVERY_ID,
         1
       );
       await helper.db.fns.create_github_build_pr(
@@ -715,7 +674,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         newCreated,
         9988,
         'pull_request.opened',
-        'new-event-id',
+        CURRENT_DELIVERY_ID,
         1
       );
 
@@ -729,8 +688,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           repository: 'hooks-testing',
           pull_number: 1,
           event_type: 'pull_request.opened',
-          event_id: 'new-event-id',
-          created: newCreated,
+          event_id: CURRENT_DELIVERY_ID,
         },
       });
 
@@ -1038,7 +996,6 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(buildB.organization, 'TaskclusterRobot');
       assert.equal(buildA.sha, COMMIT_SHA);
       assert.equal(buildB.sha, COMMIT_SHA);
-      assert.deepEqual(buildA.created, buildB.created, 'all groups from one event should share an ordering timestamp');
     });
 
     test('existing multi-group build records retain cancellation metadata', async () => {
@@ -1066,7 +1023,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert(handlers.cancelPreviousTaskGroups.calledTwice);
       const { newBuild } = handlers.cancelPreviousTaskGroups.secondCall.args[0];
       assert.equal(newBuild.pull_number, 1001);
-      assert(newBuild.created instanceof Date);
+      assert.equal(newBuild.event_id, '26370a80-ed65-11e6-8f4c-80082678482d');
     });
 
     test('multi-group yml publishes taskGroupCreationRequested once per unique group', async () => {

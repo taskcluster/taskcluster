@@ -13,6 +13,10 @@ import { jobHandler } from './job.js';
 import { rerunHandler } from './rerun.js';
 import { POLICIES } from './policies.js';
 import { GITHUB_BUILD_STATES } from '../constants.js';
+import { v1ToV6 } from 'uuid';
+
+// github uses UUID1 and to compare them as ordered strings we convert it to V6 which is sortable
+const isOlderDelivery = (candidateId, currentId) => v1ToV6(candidateId).localeCompare(v1ToV6(currentId)) < 0;
 
 /**
  * Create handlers
@@ -230,19 +234,25 @@ class Handlers {
     const limitedQueueClient = this.queueClient.use({
       authorizedScopes: scopes,
     });
+    const sealedTaskGroupIds = new Set();
+
     for (const t of tasks) {
+      const { taskGroupId } = t.task;
+
+      if (sealedTaskGroupIds.has(taskGroupId)) {
+        continue;
+      }
+
       try {
         await limitedQueueClient.createTask(t.taskId, t.task);
       } catch (err) {
         // as tasks are being created sequentially and it is likely something seals task group in between
-        // when this happens we don't want to fail the whole process, but just acknowledge and stop
-        if (
-          err.code === 'RequestConflict' &&
-          err.statusCode === 409 &&
-          err.message?.includes('is sealed and does not accept new tasks')
-        ) {
-          this.monitor.debug(`Task group ${t.task.taskGroupId} was sealed while tasks were being created; superseded`);
-          return;
+        // when this happens we don't want to fail the whole process, but just acknowledge and stop processing
+        // affected task group
+        if (err.statusCode === 409 && err.message?.includes('is sealed and does not accept new tasks')) {
+          sealedTaskGroupIds.add(taskGroupId);
+          this.monitor.debug(`Task group ${taskGroupId} was sealed while tasks were being created; superseded`);
+          continue;
         }
         // translate InsufficientScopes errors nicely for our users, since they are common and
         // since we can provide additional context not available from the queue.
@@ -317,7 +327,6 @@ class Handlers {
       task_group_id: newTaskGroupId,
       event_type: eventType,
       event_id: eventId,
-      created: newBuildCreated,
     } = newBuild;
     debug(
       `canceling previous task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`
@@ -334,8 +343,8 @@ class Handlers {
       return;
     }
 
-    if (!newBuildCreated || !eventId) {
-      debug(`Build ordering metadata is not defined. Skipping cancelPreviousTaskGroups`);
+    if (!eventId) {
+      debug(`GitHub delivery ID is not defined. Skipping cancelPreviousTaskGroups`);
       return;
     }
 
@@ -366,8 +375,7 @@ class Handlers {
             build.event_id !== eventId &&
             includedEventTypes.includes(build.event_type) &&
             // slower older handler must never supersede a newer delivery
-            (build.created < newBuildCreated ||
-              (build.created.getTime() === newBuildCreated.getTime() && build.event_id < eventId))
+            isOlderDelivery(build.event_id, eventId)
         )
         .map(build => build.task_group_id);
 
