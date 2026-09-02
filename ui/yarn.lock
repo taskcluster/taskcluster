@@ -1596,7 +1596,6 @@ __metadata:
     deepmerge: "npm:^4.3.1"
     dexie: "npm:^3.2.6"
     dot-prop-immutable: "npm:^2.0.0"
-    dotenv-cli: "npm:^6.0.0"
     fast-memoize: "npm:^2.5.1"
     graphql: "npm:^16.9.0"
     highlight.js: "npm:^11.12.0"
@@ -2919,7 +2918,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-spawn@npm:^7.0.1, cross-spawn@npm:^7.0.3":
+"cross-spawn@npm:^7.0.1":
   version: 7.0.3
   resolution: "cross-spawn@npm:7.0.3"
   dependencies:
@@ -3188,34 +3187,6 @@ __metadata:
   version: 2.1.1
   resolution: "dot-prop-immutable@npm:2.1.1"
   checksum: 10c0/d3826411b717be8b69f92c6a2996408c2669fee81f2e7c78ed961f4835cc977cceaf9083d822685cb1f8e8970f8265b85c6a216e1593e5afa3c4cd9c893d1489
-  languageName: node
-  linkType: hard
-
-"dotenv-cli@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "dotenv-cli@npm:6.0.0"
-  dependencies:
-    cross-spawn: "npm:^7.0.3"
-    dotenv: "npm:^16.0.0"
-    dotenv-expand: "npm:^8.0.1"
-    minimist: "npm:^1.2.5"
-  bin:
-    dotenv: cli.js
-  checksum: 10c0/12cbd746b8ca6fd95d608fcdf6837de76ddcbc6d0717f7d5fa293d79f0c94bca2bbcd050a873b3ec1ecafa68fac9691ac1ea71e917765b8f9151012d7b011bf5
-  languageName: node
-  linkType: hard
-
-"dotenv-expand@npm:^8.0.1":
-  version: 8.0.3
-  resolution: "dotenv-expand@npm:8.0.3"
-  checksum: 10c0/bf928bdd75ec632918e41fc5822d507dcf4081ae1d07b47aaee086141f6bbdc202add9f214b4064e118db1ca343b59f3924b0721327954a7af46897069271672
-  languageName: node
-  linkType: hard
-
-"dotenv@npm:^16.0.0":
-  version: 16.0.1
-  resolution: "dotenv@npm:16.0.1"
-  checksum: 10c0/8afd5d776ea6968f5c28ca374ddb1fe6a7afabe062d32354478e6ea0fe8da341945a3da71defe513403623fa6871ac880d1d100bb08f80be1ae170e99e1b9293
   languageName: node
   linkType: hard
 
@@ -5839,13 +5810,6 @@ __metadata:
   dependencies:
     brace-expansion: "npm:^2.0.1"
   checksum: 10c0/3defdfd230914f22a8da203747c42ee3c405c39d4d37ffda284dac5e45b7e1f6c49aa8be606509002898e73091ff2a3bbfc59c2c6c71d4660609f63aa92f98e3
-  languageName: node
-  linkType: hard
-
-"minimist@npm:^1.2.5":
-  version: 1.2.7
-  resolution: "minimist@npm:1.2.7"
-  checksum: 10c0/8808da67ca50ee19ab2d69051d77ee78572e67297fd8a1635ecc757a15106ccdfb5b8c4d11d84750120142f1684e5329a141295728c755e5d149eedd73cc6572
   languageName: node
   linkType: hard
 
