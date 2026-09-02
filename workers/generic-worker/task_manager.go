@@ -92,9 +92,24 @@ func (tm *TaskManager) IsIdle() bool {
 	return tm.TaskCount() == 0
 }
 
-// WaitForAll blocks until all running tasks have completed.
+// WaitForAll blocks until all running tasks have completed, then unregisters
+// any tasks still in the map. Shutdown skips the main-loop completion drain,
+// so without this the worker status file would keep listing finished tasks
+// (and generic-worker status would report them as still running).
 func (tm *TaskManager) WaitForAll() {
 	tm.wg.Wait()
+	tm.clearRunningTasks()
+}
+
+func (tm *TaskManager) clearRunningTasks() {
+	tm.Lock()
+	defer tm.Unlock()
+	if len(tm.runningTasks) == 0 {
+		return
+	}
+	tm.runningTasks = make(map[string]*TaskRun)
+	tm.lastActive = time.Now()
+	tm.updateWorkerStatusLocked()
 }
 
 // LastActive returns the time when a task was last added or removed.

@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 	"testing"
 	"time"
@@ -130,11 +133,22 @@ func TestTaskManagerLastActive(t *testing.T) {
 
 // TestTaskManagerWaitForAllWithoutRemoveTask verifies WaitForAll unblocks when
 // task goroutines call FinishTask even if the main loop has not yet processed
-// completions (the capacity>1 shutdown scenario).
+// completions (the capacity>1 shutdown scenario), and that leftover tasks are
+// unregistered so the worker status file does not keep listing them.
 func TestTaskManagerWaitForAllWithoutRemoveTask(t *testing.T) {
+	origPath := workerStatusPath
+	workerStatusPath = filepath.Join(t.TempDir(), "worker-status.json")
+	t.Cleanup(func() { workerStatusPath = origPath })
+
 	tm := NewTaskManager(2)
 	tm.AddTask(&TaskRun{TaskID: "task1"})
 	tm.AddTask(&TaskRun{TaskID: "task2"})
+
+	statusBytes, err := os.ReadFile(workerStatusPath)
+	require.NoError(t, err)
+	var status WorkerStatus
+	require.NoError(t, json.Unmarshal(statusBytes, &status))
+	require.ElementsMatch(t, []string{"task1", "task2"}, status.CurrentTaskIDs)
 
 	go func() {
 		time.Sleep(10 * time.Millisecond)
@@ -155,8 +169,9 @@ func TestTaskManagerWaitForAllWithoutRemoveTask(t *testing.T) {
 		t.Fatal("WaitForAll timed out")
 	}
 
-	// Main loop hasn't RemoveTask'd yet. Tasks still appear running.
-	require.Equal(t, uint(2), tm.TaskCount())
+	require.True(t, tm.IsIdle())
+	_, err = os.Stat(workerStatusPath)
+	require.True(t, os.IsNotExist(err), "status file should be removed when no tasks remain")
 }
 
 func TestTaskManagerConcurrentAccess(t *testing.T) {
