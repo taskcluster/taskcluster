@@ -1638,7 +1638,7 @@ __metadata:
     subscriptions-transport-ws: "npm:^0.11.0"
     taskcluster-lib-scopes: "npm:^11.0.0"
     taskcluster-lib-urls: "npm:^13.1.0"
-    title-case: "npm:^3.0.2"
+    title-case: "npm:^4.3.2"
     typescript: "npm:^5.8.3"
     utf-8-validate: "npm:^5.0.0"
     vite: "npm:^8.2.2"
@@ -7803,12 +7803,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"title-case@npm:^3.0.2":
-  version: 3.0.3
-  resolution: "title-case@npm:3.0.3"
-  dependencies:
-    tslib: "npm:^2.0.3"
-  checksum: 10c0/face56f686060f777b43a180d371407124d201eb4238c19d9e97030fd54859696ca4e2ca499cc232f8700f24f2414cc08aab9fdf6d39acff055dd825a4d86d6a
+"title-case@npm:^4.3.2":
+  version: 4.3.2
+  resolution: "title-case@npm:4.3.2"
+  checksum: 10c0/f040c5b0586e3a4ac5881e59ac060ebfa56dae611b0d513ad211fa7f92597d418395fa902fe9d7ee49f98e557e88421e274680b22a3b04dd1ce1c577225444d3
   languageName: node
   linkType: hard
 
