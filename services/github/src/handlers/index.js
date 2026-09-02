@@ -234,6 +234,16 @@ class Handlers {
       try {
         await limitedQueueClient.createTask(t.taskId, t.task);
       } catch (err) {
+        // as tasks are being created sequentially and it is likely something seals task group in between
+        // when this happens we don't want to fail the whole process, but just acknowledge and stop
+        if (
+          err.code === 'RequestConflict' &&
+          err.statusCode === 409 &&
+          err.message?.includes('is sealed and does not accept new tasks')
+        ) {
+          this.monitor.debug(`Task group ${t.task.taskGroupId} was sealed while tasks were being created; superseded`);
+          return;
+        }
         // translate InsufficientScopes errors nicely for our users, since they are common and
         // since we can provide additional context not available from the queue.
         if (err.code === 'InsufficientScopes') {
@@ -307,6 +317,7 @@ class Handlers {
       task_group_id: newTaskGroupId,
       event_type: eventType,
       event_id: eventId,
+      created: newBuildCreated,
     } = newBuild;
     debug(
       `canceling previous task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`
@@ -320,6 +331,11 @@ class Handlers {
 
     if (!pullNumber) {
       debug(`pullNumber is not defined. Skipping cancelPreviousTaskGroups`);
+      return;
+    }
+
+    if (!newBuildCreated || !eventId) {
+      debug(`Build ordering metadata is not defined. Skipping cancelPreviousTaskGroups`);
       return;
     }
 
@@ -348,7 +364,10 @@ class Handlers {
           build =>
             build.task_group_id !== newTaskGroupId &&
             build.event_id !== eventId &&
-            includedEventTypes.includes(build.event_type)
+            includedEventTypes.includes(build.event_type) &&
+            // slower older handler must never supersede a newer delivery
+            (build.created < newBuildCreated ||
+              (build.created.getTime() === newBuildCreated.getTime() && build.event_id < eventId))
         )
         .map(build => build.task_group_id);
 
