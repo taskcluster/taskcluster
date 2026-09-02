@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core';
-import { shape, func, arrayOf, string, bool } from 'prop-types';
-import { pipe, map, sort as rSort } from 'ramda';
+import { func, arrayOf, string, bool } from 'prop-types';
 import { camelCase } from 'camel-case';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
@@ -13,13 +12,12 @@ import DeleteIcon from 'mdi-react/DeleteIcon';
 import WorkerIcon from 'mdi-react/WorkerIcon';
 import MessageAlertIcon from 'mdi-react/MessageAlertIcon';
 import { withRouter } from 'react-router-dom';
-import { memoize } from '../../utils/memoize';
 import {
   WorkerManagerWorkerPoolSummary,
-  pageInfo,
+  pagination,
 } from '../../utils/prop-types';
 import Label from '../Label';
-import ConnectionDataTable from '../ConnectionDataTable';
+import PaginatedDataTable from '../PaginatedDataTable';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
 import Button from '../Button';
@@ -30,11 +28,6 @@ import {
   VIEW_WORKER_POOLS_PAGE_SIZE,
 } from '../../utils/constants';
 import { splitWorkerPoolId } from '../../utils/workerPool';
-
-const sorted = pipe(
-  rSort((a, b) => sort(a.node.workerPoolId, b.node.workerPoolId)),
-  map(({ node: { workerPoolId } }) => workerPoolId)
-);
 
 @withRouter
 @withStyles(theme => ({
@@ -63,17 +56,19 @@ const sorted = pipe(
 }))
 export default class WorkerManagerWorkerPoolsTable extends Component {
   static propTypes = {
-    workerPoolsConnection: shape({
-      edges: arrayOf(WorkerManagerWorkerPoolSummary),
-      pageInfo,
-    }).isRequired,
+    workerPools: arrayOf(WorkerManagerWorkerPoolSummary).isRequired,
     deleteRequest: func.isRequired,
     searchTerm: string,
+    loading: bool,
     errorStatsLoading: bool,
+    ...pagination,
   };
 
   static defaultProps = {
     searchTerm: null,
+    loading: false,
+    hasNextPage: false,
+    hasPreviousPage: false,
   };
 
   state = {
@@ -90,38 +85,22 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     },
   };
 
-  createSortedWorkerPoolsConnection = memoize(
-    (workerPoolsConnection, sortBy, sortDirection) => {
-      const sortByProperty = sortBy ? camelCase(sortBy) : '';
-
-      if (!sortBy) {
-        return workerPoolsConnection;
-      }
-
-      return {
-        ...workerPoolsConnection,
-        edges: [...workerPoolsConnection.edges].sort((a, b) => {
-          const firstElement =
-            sortDirection === 'desc'
-              ? b.node[sortByProperty]
-              : a.node[sortByProperty];
-          const secondElement =
-            sortDirection === 'desc'
-              ? a.node[sortByProperty]
-              : b.node[sortByProperty];
-
-          return sort(firstElement, secondElement);
-        }),
-      };
-    },
-    {
-      serializer: ([workerPoolsConnection, sortBy, sortDirection]) => {
-        const ids = sorted(workerPoolsConnection.edges);
-
-        return `${ids.join('-')}-${sortBy}-${sortDirection}`;
-      },
+  sortWorkerPools = (workerPools, sortBy, sortDirection) => {
+    if (!sortBy) {
+      return workerPools;
     }
-  );
+
+    const sortByProperty = camelCase(sortBy);
+
+    return [...workerPools].sort((a, b) => {
+      const firstElement =
+        sortDirection === 'desc' ? b[sortByProperty] : a[sortByProperty];
+      const secondElement =
+        sortDirection === 'desc' ? a[sortByProperty] : b[sortByProperty];
+
+      return sort(firstElement, secondElement);
+    });
+  };
 
   handleHeaderClick = header => {
     const toggled = this.state.sortDirection === 'desc' ? 'asc' : 'desc';
@@ -200,7 +179,7 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     return `/provisioners/${provisionerId}/worker-types/${workerType}/pending-tasks`;
   }
 
-  renderRow = ({ node: workerPool }) => {
+  renderRow = workerPool => {
     const {
       match: { path },
       classes,
@@ -251,7 +230,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
                 Pending Tasks:
               </Hidden>
-              {workerPool.pendingTasks}
+              {workerPool.pendingTasks === undefined
+                ? '...'
+                : (workerPool.pendingTasks ?? 'n/a')}
               <LinkIcon size={iconSize} />
             </TableCellItem>
           </Link>
@@ -313,14 +294,23 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
   };
 
   render() {
-    const { onPageChange, workerPoolsConnection, searchTerm } = this.props;
+    const {
+      workerPools,
+      searchTerm,
+      loading,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      onNextPage,
+      onPreviousPage,
+    } = this.props;
     const {
       sortBy,
       sortDirection,
       dialogState: { open, error, title, confirmText, body },
     } = this.state;
-    const sortedWorkerPoolsConnection = this.createSortedWorkerPoolsConnection(
-      workerPoolsConnection,
+    const sortedWorkerPools = this.sortWorkerPools(
+      workerPools,
       sortBy,
       sortDirection
     );
@@ -336,18 +326,23 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
 
     return (
       <Fragment>
-        <ConnectionDataTable
+        <PaginatedDataTable
           searchTerm={searchTerm}
-          connection={sortedWorkerPoolsConnection}
+          items={sortedWorkerPools}
           pageSize={VIEW_WORKER_POOLS_PAGE_SIZE}
           headers={headers}
           sortByHeader={sortBy}
           sortDirection={sortDirection}
-          onPageChange={onPageChange}
+          loading={loading}
+          page={page}
+          hasNextPage={hasNextPage}
+          hasPreviousPage={hasPreviousPage}
+          onNextPage={onNextPage}
+          onPreviousPage={onPreviousPage}
           onHeaderClick={this.handleHeaderClick}
           renderRow={this.renderRow}
           allowFilter
-          filterFunc={({ node: workerPool }, filterValue) =>
+          filterFunc={(workerPool, filterValue) =>
             String(workerPool.workerPoolId).includes(filterValue) ||
             String(workerPool.providerId).includes(filterValue) ||
             String(workerPool.owner).includes(filterValue)
