@@ -22,21 +22,21 @@ async function createGithubBuildRecord({
   eventType,
   eventId,
   pullNumber,
+  created,
   debug,
 }) {
   try {
     debug(
       `Trying to create a record for ${organization}/${repository}@${sha} (${groupState}) with taskGroupId=${taskGroupId}`
     );
-    const now = new Date();
     await context.db.fns.create_github_build_pr(
       organization,
       repository,
       sha,
       taskGroupId,
       groupState,
-      now,
-      now,
+      created,
+      created,
       installationId,
       eventType,
       eventId,
@@ -51,6 +51,7 @@ async function createGithubBuildRecord({
       event_type: eventType,
       event_id: eventId,
       pull_number: pullNumber,
+      created,
     };
   } catch (err) {
     if (err.code !== UNIQUE_VIOLATION) {
@@ -69,7 +70,7 @@ async function createGithubBuildRecord({
     assert.equal(build.sha, sha);
     assert.equal(build.event_type, eventType);
     assert.equal(build.event_id, eventId);
-    return build;
+    return { ...build, pull_number: build.pull_request_number };
   }
 }
 
@@ -79,6 +80,8 @@ async function createGithubBuildRecord({
  **/
 export async function jobHandler(message) {
   const { eventId, installationId } = message.payload;
+  // every task group from this delivery gets the same ordering key
+  const buildCreated = new Date();
   let debug = makeDebug(this.monitor, { eventId, installationId });
 
   const context = this.context;
@@ -385,6 +388,7 @@ export async function jobHandler(message) {
           eventType: message.payload.details['event.type'],
           eventId: message.payload.eventId,
           pullNumber,
+          created: buildCreated,
           debug,
         });
 
@@ -466,6 +470,7 @@ export async function jobHandler(message) {
           eventType: message.payload.details['event.type'],
           eventId: message.payload.eventId,
           pullNumber,
+          created: buildCreated,
           debug,
         })
       );
@@ -476,7 +481,15 @@ export async function jobHandler(message) {
       await this.createTasks({ scopes: graphConfig.scopes, tasks: graphConfig.tasks });
     } catch (e) {
       debug(`Creating tasks for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`);
-      return await this.createExceptionComment({ debug, instGithub, organization, repository, sha, error: e });
+      return await this.createExceptionComment({
+        debug,
+        instGithub,
+        organization,
+        repository,
+        sha,
+        error: e,
+        pullNumber,
+      });
     }
 
     // Only cancel previous tasks after we have successfully created new ones.
