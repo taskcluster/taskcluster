@@ -1,5 +1,5 @@
 meta:
-  - &uv_version 0.10.0
+  - &uv_version 0.12.8
 
 loader: taskgraph.loader.transform:loader
 

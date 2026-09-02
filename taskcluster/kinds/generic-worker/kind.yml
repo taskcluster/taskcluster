@@ -36,7 +36,7 @@ tasks:
           directory: '{go_version}'
           format: zip
         - content:
-            url: 'https://github.com/git-for-windows/git/releases/download/v2.39.1.windows.1/MinGit-2.39.1-64-bit.zip'
+            url: 'https://github.com/git-for-windows/git/releases/download/v2.55.0.windows.5/MinGit-2.55.0.5-64-bit.zip'
           directory: 'git'
           format: zip
     run:
@@ -248,7 +248,7 @@ tasks:
           directory: '{go_version}'
           format: zip
         - content:
-            url: 'https://github.com/git-for-windows/git/releases/download/v2.41.0.windows.1/MinGit-2.41.0-64-bit.zip'
+            url: 'https://github.com/git-for-windows/git/releases/download/v2.55.0.windows.5/MinGit-2.55.0.5-64-bit.zip'
           directory: git
           format: zip
         - content:
