@@ -221,6 +221,8 @@ properties:
       Moreover, in the case of time-critical spot terminations, tasks have
       more chance of successfully publishing volume artifacts than directory
       artifacts, due to the efficiency gain.
+    propertyNames:
+      pattern: '^[\x20-\x7e]+$'
     additionalProperties:
       $ref: '#/definitions/artifact'
   supersederUrl:
