@@ -3340,38 +3340,35 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@slack/logger@npm:^3.0.0":
+"@slack/logger@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@slack/logger@npm:5.0.0"
+  dependencies:
+    "@types/node": "npm:>=20"
+  checksum: 10c0/0a2b27633412a148644a6709f58dd846490227b122c2e9a9a040928a02be45fabcadfbb08f88b302d578d74af0bca6d18895b4268f2096ae947a8668877a1efb
+  languageName: node
+  linkType: hard
+
+"@slack/types@npm:^3.0.0":
   version: 3.0.0
-  resolution: "@slack/logger@npm:3.0.0"
-  dependencies:
-    "@types/node": "npm:>=12.0.0"
-  checksum: 10c0/af6394486be633ec86660b0cc980222f8371fc79f15a649aebc4df358fd6da35ef98c088c709626262c26d67d039e98a34fb52d3739f91817e3aae0099e491be
+  resolution: "@slack/types@npm:3.0.0"
+  checksum: 10c0/caf1efdd87835dd1c66b4713f90a88fc4501447773d04a97893b0e793aca345389467d6ae3403c58044d0c2045260119559a22301e72879256c355e81f7dce71
   languageName: node
   linkType: hard
 
-"@slack/types@npm:^2.11.0":
-  version: 2.14.0
-  resolution: "@slack/types@npm:2.14.0"
-  checksum: 10c0/2d45b36ee128e202b8b864fa35f5752c9f811a433d598461de83c47bf5fc5c1f45678825b4185007d8151ebb8b0ce00e6541780f4f3af5698855aebfc6550fb8
-  languageName: node
-  linkType: hard
-
-"@slack/web-api@npm:^6.11.0":
-  version: 6.13.0
-  resolution: "@slack/web-api@npm:6.13.0"
+"@slack/web-api@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "@slack/web-api@npm:8.0.0"
   dependencies:
-    "@slack/logger": "npm:^3.0.0"
-    "@slack/types": "npm:^2.11.0"
-    "@types/is-stream": "npm:^1.1.0"
-    "@types/node": "npm:>=12.0.0"
-    axios: "npm:^1.7.4"
-    eventemitter3: "npm:^3.1.0"
-    form-data: "npm:^2.5.0"
-    is-electron: "npm:2.2.2"
-    is-stream: "npm:^1.1.0"
-    p-queue: "npm:^6.6.1"
-    p-retry: "npm:^4.0.0"
-  checksum: 10c0/36494d8decd4272ef3291b24984b2676cd6e8c87bf30e45844536d825a343c6c67c0b6023b301c499bdcbe97849e8467a3dc2eb2741ff0a7000ba07ccf07cf4a
+    "@slack/logger": "npm:^5.0.0"
+    "@slack/types": "npm:^3.0.0"
+    "@types/node": "npm:>=20"
+    "@types/retry": "npm:0.12.0"
+    eventemitter3: "npm:^5.0.1"
+    p-queue: "npm:^6"
+    p-retry: "npm:^4"
+    retry: "npm:^0.13.1"
+  checksum: 10c0/02190f32ad86ea707689d8441489f35b38594f119a44ee009d346708b363be94299a3de6cdb505c5c4669912c66100e32330ffb039f100799eb16e2cf0c66909
   languageName: node
   linkType: hard
 
@@ -4532,15 +4529,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/is-stream@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@types/is-stream@npm:1.1.0"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/88e3ec1868b3568576f1a194beda9a5a2d5fff24824d6793e316d7efe64dc597eb48d2f0b110512752c1248ceae806305a9d52308cf053f2170d0fd74f7dee8a
-  languageName: node
-  linkType: hard
-
 "@types/jsonwebtoken@npm:^8.5.9":
   version: 8.5.9
   resolution: "@types/jsonwebtoken@npm:8.5.9"
@@ -4578,12 +4566,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=12.0.0, @types/node@npm:>=13.7.0":
+"@types/node@npm:*, @types/node@npm:>=13.7.0":
   version: 24.0.12
   resolution: "@types/node@npm:24.0.12"
   dependencies:
     undici-types: "npm:~7.8.0"
   checksum: 10c0/333777c3416b758bbdb72a09e9db5599ff7789dca519d3fcf8150a1c56c79d808e0009e92d52016e80033b3c52724def08aad2c5b396e28f00dbdfe40a1756a4
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:>=20":
+  version: 26.3.0
+  resolution: "@types/node@npm:26.3.0"
+  dependencies:
+    undici-types: "npm:~8.3.0"
+  checksum: 10c0/b1b71d722cea67807abde4993d71aa6e4e24ae3072635ff5fbca3e5fbe7f0d4adc20507ab3f1e14b13720d742fb5cae4b12c7326fbe706fcda24e2aab8306374
   languageName: node
   linkType: hard
 
@@ -6597,7 +6594,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventemitter3@npm:^5.0.4":
+"eventemitter3@npm:^5.0.1, eventemitter3@npm:^5.0.4":
   version: 5.0.4
   resolution: "eventemitter3@npm:5.0.4"
   checksum: 10c0/575b8cac8d709e1473da46f8f15ef311b57ff7609445a7c71af5cd42598583eee6f098fa7a593e30f27e94b8865642baa0689e8fa97c016f742abdb3b1bf6d9a
@@ -7845,13 +7842,6 @@ __metadata:
   bin:
     is-docker: cli.js
   checksum: 10c0/d2c4f8e6d3e34df75a5defd44991b6068afad4835bb783b902fa12d13ebdb8f41b2a199dcb0b5ed2cb78bfee9e4c0bbdb69c2d9646f4106464674d3e697a5856
-  languageName: node
-  linkType: hard
-
-"is-electron@npm:2.2.2":
-  version: 2.2.2
-  resolution: "is-electron@npm:2.2.2"
-  checksum: 10c0/327bb373f7be01b16cdff3998b5ddaa87d28f576092affaa7fe0659571b3306fdd458afbf0683a66841e7999af13f46ad0e1b51647b469526cd05a4dd736438a
   languageName: node
   linkType: hard
 
@@ -9725,7 +9715,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-queue@npm:^6.6.1":
+"p-queue@npm:^6":
   version: 6.6.2
   resolution: "p-queue@npm:6.6.2"
   dependencies:
@@ -9754,7 +9744,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-retry@npm:^4.0.0":
+"p-retry@npm:^4":
   version: 4.6.2
   resolution: "p-retry@npm:4.6.2"
   dependencies:
@@ -11597,7 +11587,7 @@ __metadata:
     "@octokit/plugin-throttling": "npm:^11.0.5"
     "@octokit/rest": "npm:^22.0.1"
     "@sentry/node": "npm:^10.71.0"
-    "@slack/web-api": "npm:^6.11.0"
+    "@slack/web-api": "npm:^8.0.0"
     "@taskcluster/client": "link:clients/client"
     "@taskcluster/db": "link:db"
     "@taskcluster/lib-api": "link:libraries/api"
@@ -12002,6 +11992,13 @@ __metadata:
   version: 7.8.0
   resolution: "undici-types@npm:7.8.0"
   checksum: 10c0/9d9d246d1dc32f318d46116efe3cfca5a72d4f16828febc1918d94e58f6ffcf39c158aa28bf5b4fc52f410446bc7858f35151367bd7a49f21746cab6497b709b
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~8.3.0":
+  version: 8.3.0
+  resolution: "undici-types@npm:8.3.0"
+  checksum: 10c0/c8aa7e2fbebfce519654dafadc0ece59be888d2ccaf180fb4495da875e7b536d2456345c384069c7e6f3e9c9ab7435f074957da306f142343eee86ff8048855a
   languageName: node
   linkType: hard
 
