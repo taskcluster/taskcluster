@@ -129,7 +129,7 @@ func ReleaseCache(entry *Cache) {
 
 // newPoolEntry creates a new in-use cache pool entry for the given cache name.
 // Caller must hold cacheMutex.
-func newPoolEntry(cacheName string) (*Cache, error) {
+func newPoolEntry(cacheName string) *Cache {
 	basename := slugid.Nice()
 	file := filepath.Join(config.CachesDir, basename)
 	return &Cache{
@@ -139,7 +139,23 @@ func newPoolEntry(cacheName string) (*Cache, error) {
 		Owner:    directoryCaches,
 		Key:      cacheName,
 		InUse:    true,
-	}, nil
+	}
+}
+
+// acquireOrCreateCache returns an in-use pool entry for name, creating one if
+// none is available.
+//
+// The entry is never nil. The bool is true if this call created the entry,
+// false if an existing pool entry was reused.
+func acquireOrCreateCache(name string) (*Cache, bool) {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
+	if entry := AcquireCache(name); entry != nil {
+		return entry, false
+	}
+	entry := newPoolEntry(name)
+	directoryCaches[name] = append(directoryCaches[name], entry)
+	return entry, true
 }
 
 // trimPoolExcess evicts available entries beyond config.Capacity per cache name.
@@ -880,23 +896,31 @@ func (f *FileMount) FSContent() (FSContent, error) {
 func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) (err error) {
 	target := fileutil.AbsFrom(taskMount.task.TaskDir(), w.Directory)
 
-	// Track cacheMutex through every site in this function so the
-	// recover handler below can tell whether we still hold the lock
-	// at panic time. Re-acquiring an already-held mutex from the same
-	// goroutine deadlocks; this is the safety net the reviewer
-	// flagged as fragile in the original recover-and-relock code.
-	mutexHeld := false
-	lock := func() {
-		cacheMutex.Lock()
-		mutexHeld = true
-	}
-	unlock := func() {
-		cacheMutex.Unlock()
-		mutexHeld = false
-	}
+	entry, created := acquireOrCreateCache(w.CacheName)
 
-	lock()
-	entry := AcquireCache(w.CacheName)
+	// released is set before any operation that can panic so recover
+	// cannot re-enter evictEntry / returnEntryToPool after a partial release.
+	released := false
+	evictEntry := func() error {
+		if released {
+			return nil
+		}
+		released = true
+		delete(taskMount.poolEntries, w)
+		cacheMutex.Lock()
+		defer cacheMutex.Unlock()
+		return entry.Evict(taskMount)
+	}
+	returnEntryToPool := func() {
+		if released {
+			return
+		}
+		released = true
+		delete(taskMount.poolEntries, w)
+		cacheMutex.Lock()
+		defer cacheMutex.Unlock()
+		ReleaseCache(entry)
+	}
 
 	// If Mount panics after the pool entry is registered (e.g. a SHA
 	// panic in a content extract), the entry would otherwise stay
@@ -904,89 +928,46 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) (err error) {
 	// one slot from this cache's pool until worker restart. Recover
 	// here only to release the entry; we re-panic so the worker's
 	// existing crash handling still triggers an internal-error.
-	released := false
+	//
+	// cacheMutex is not held here except inside evictEntry, so this
+	// handler can always lock.
 	defer func() {
 		if r := recover(); r != nil {
-			if entry != nil && !released {
-				// If we already hold the lock (panic happened
-				// inside one of the brief locked windows), skip
-				// the re-Lock. We still always Unlock at the end
-				// — that releases either the lock we just took
-				// or the one that was held when the panic fired.
-				// Asymmetric Lock/Unlock would leak the mutex
-				// and deadlock subsequent goroutines, which was
-				// the reviewer's concern with my prior fix.
-				if !mutexHeld {
-					cacheMutex.Lock()
-				}
-				_ = entry.Evict(taskMount)
-				cacheMutex.Unlock()
-				delete(taskMount.poolEntries, w)
-			}
+			_ = evictEntry()
 			panic(r)
 		}
 	}()
 
-	if entry != nil {
+	if !created {
 		cacheLocation := entry.Location
-		unlock()
-
 		parentDir := filepath.Dir(target)
 		taskMount.Infof("Moving existing writable directory cache %v from %v to %v", w.CacheName, cacheLocation, target)
 		if mkErr := MkdirAll(taskMount, parentDir); mkErr != nil {
-			// MkdirAll failed — release the acquired entry back to the pool
-			lock()
-			ReleaseCache(entry)
-			unlock()
-			released = true
+			returnEntryToPool()
 			return fmt.Errorf("not able to create directory %v: %v", parentDir, mkErr)
 		}
 		if mvErr := RenameCrossDevice(cacheLocation, target); mvErr != nil {
-			// Rename failed — evict the broken entry from the pool
-			lock()
-			evictErr := entry.Evict(taskMount)
-			unlock()
-			released = true
-			if evictErr != nil {
+			if evictErr := evictEntry(); evictErr != nil {
 				panic(evictErr)
 			}
 			return fmt.Errorf("not able to move directory %v to %v: %v", cacheLocation, target, mvErr)
 		}
 		taskMount.poolEntries[w] = entry
 	} else {
-		// No available pool entry — create a new one
-		var poolErr error
-		entry, poolErr = newPoolEntry(w.CacheName)
-		if poolErr != nil {
-			unlock()
-			return poolErr
-		}
 		taskMount.Infof("No existing writable directory cache '%v' - creating %v", w.CacheName, entry.Location)
-		directoryCaches[w.CacheName] = append(directoryCaches[w.CacheName], entry)
-		unlock()
-
 		if w.Content != nil {
 			c, fsErr := FSContentFrom(w.Content)
 			if fsErr != nil {
-				lock()
-				_ = entry.Evict(taskMount)
-				unlock()
-				released = true
+				_ = evictEntry()
 				return fmt.Errorf("not able to retrieve FSContent: %v", fsErr)
 			}
 			if extractErr := extract(c, w.Format, target, taskMount); extractErr != nil {
-				lock()
-				_ = entry.Evict(taskMount)
-				unlock()
-				released = true
+				_ = evictEntry()
 				return extractErr
 			}
 		} else {
 			if mkErr := MkdirAll(taskMount, target); mkErr != nil {
-				lock()
-				_ = entry.Evict(taskMount)
-				unlock()
-				released = true
+				_ = evictEntry()
 				return fmt.Errorf("not able to create directory %v: %v", target, mkErr)
 			}
 		}
@@ -999,11 +980,7 @@ func (w *WritableDirectoryCache) Mount(taskMount *TaskMount) (err error) {
 	// resources should be owned by the task user, even if commands
 	// execute as LocalSystem.
 	if chownErr := makeDirReadWritableForTaskUser(taskMount, target); chownErr != nil {
-		lock()
-		_ = entry.Evict(taskMount)
-		unlock()
-		delete(taskMount.poolEntries, w)
-		released = true
+		_ = evictEntry()
 		return chownErr
 	}
 	taskMount.Infof("Successfully mounted writable directory cache '%v'", target)
