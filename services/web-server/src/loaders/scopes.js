@@ -1,19 +1,6 @@
 import DataLoader from 'dataloader';
 
 export default ({ auth }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg, _requestId) => {
-  const currentScopes = new DataLoader(queries =>
-    Promise.all(
-      queries.map(async () => {
-        try {
-          const { scopes } = await auth.currentScopes();
-
-          return scopes;
-        } catch (err) {
-          return err;
-        }
-      })
-    )
-  );
   const expandScopes = new DataLoader(queries =>
     Promise.all(
       queries.map(async ({ scopes }) => {
@@ -29,7 +16,6 @@ export default ({ auth }, _isAuthed, _rootUrl, _monitor, _strategies, _req, _cfg
   );
 
   return {
-    currentScopes,
     expandScopes,
   };
 };

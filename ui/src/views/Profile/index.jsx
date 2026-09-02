@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from '@apollo/client/react/hoc';
+import { Auth } from '@taskcluster/client-web';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -10,28 +10,58 @@ import Dashboard from '../../components/Dashboard';
 import DateDistance from '../../components/DateDistance';
 import { withAuth } from '../../utils/Auth';
 import ErrorPanel from '../../components/ErrorPanel';
-import profileQuery from './profile.graphql';
+import { withTaskclusterClient } from '../../utils/TaskclusterClient';
 import username from '../../utils/username';
 
 @withAuth
-@graphql(profileQuery, {
-  skip: ({ user }) => !user,
-  options: () => ({
-    fetchPolicy: 'network-only',
-  }),
-})
+@withTaskclusterClient
 @withStyles({
   certificate: {
     wordBreak: 'break-word',
   },
 })
 export default class Profile extends Component {
+  state = {
+    currentScopes: null,
+    loading: false,
+    error: null,
+  };
+
+  get authClient() {
+    return this.props.createTaskclusterClient({ Class: Auth });
+  }
+
+  componentDidMount() {
+    this.loadCurrentScopes();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.user !== prevProps.user) {
+      this.loadCurrentScopes();
+    }
+  }
+
+  loadCurrentScopes = async () => {
+    if (!this.props.user) {
+      this.setState({ currentScopes: null, loading: false, error: null });
+
+      return;
+    }
+
+    this.setState({ loading: true, error: null });
+
+    try {
+      const { scopes } = await this.authClient.currentScopes();
+
+      this.setState({ currentScopes: scopes, loading: false, error: null });
+    } catch (error) {
+      this.setState({ currentScopes: null, loading: false, error });
+    }
+  };
+
   render() {
-    const {
-      user,
-      classes,
-      data: { currentScopes, loading, error } = {},
-    } = this.props;
+    const { user, classes } = this.props;
+    const { currentScopes, loading, error } = this.state;
 
     return (
       <Dashboard title="Profile">

@@ -5,7 +5,6 @@ import Artifacts from './Artifacts.js';
 import Auth from './Auth.js';
 import CachePurges from './CachePurges.js';
 import Clients from './Clients.js';
-import Github from './Github.js';
 import Hooks from './Hooks.js';
 import PulseMessages from './PulseMessages.js';
 import Roles from './Roles.js';
@@ -22,7 +21,6 @@ const resolvers = deepmerge.all([
   Auth,
   CachePurges,
   Clients,
-  Github,
   Hooks,
   PulseMessages,
   Roles,
