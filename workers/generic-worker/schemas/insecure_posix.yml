@@ -108,12 +108,14 @@ oneOf:
           name:
             title: Name of the artifact
             type: string
+            pattern: '^[\x20-\x7e]+$'
             description: |-
               Name of the artifact, as it will be published. If not set, `path` will be used.
               Conventionally (although not enforced) path elements are forward slash separated. Example:
               `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
               Artifact names not beginning `public/` are scope-protected (caller requires scopes to
-              download the artifact). See the Queue documentation for more information.
+              download the artifact). See the Queue documentation for more information. Must consist of
+              printable ASCII characters only.
 
               Since: generic-worker 8.1.0
           expires:

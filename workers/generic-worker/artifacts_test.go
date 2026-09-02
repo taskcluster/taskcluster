@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
+	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
@@ -787,6 +788,77 @@ func TestOptionalArtifactUploadFailureFailsTask(t *testing.T) {
 
 	td := testTask(t)
 	_ = submitAndAssert(t, td, payload, "exception", "resource-unavailable")
+}
+
+// TestInvalidArtifactNameFailsAsMalformedPayload verifies that an artifact
+// name which doesn't match the pattern the Queue enforces is now caught by
+// generic-worker's own payload schema validation, failing the task
+// immediately as malformed-payload rather than running to completion.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestInvalidArtifactNameFailsAsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "SampleArtifacts/_/X.txt",
+				Type: "file",
+				Name: "public/logs/a\nb.log",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+}
+
+// TestClassifyCreateArtifactError4xxIsMalformedPayload unit tests
+// classifyCreateArtifactError directly, to verify that a 4xx response from
+// the Queue's CreateArtifact endpoint is classified as malformed-payload
+// rather than causing an unrecovered panic.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestClassifyCreateArtifactError4xxIsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	scheduleTask(t, testTask(t), GenericWorkerPayload{})
+
+	// need to claim task directly to get task.StatusManager wired up
+	tasks := ClaimWork(1)
+	if len(tasks) != 1 {
+		t.Fatalf("Expected to claim 1 task, got %v", len(tasks))
+	}
+	task := tasks[0]
+
+	artifact := &artifacts.S3Artifact{
+		BaseArtifact: &artifacts.BaseArtifact{
+			Name: "public/build/firefox.exe",
+		},
+	}
+
+	cee := task.classifyCreateArtifactError(artifact, []byte("{}"), &tcclient.APICallException{
+		CallSummary: &tcclient.CallSummary{
+			HTTPResponseBody: "some 4xx error the schema didn't anticipate",
+		},
+		RootCause: httpbackoff.BadHttpResponseCode{
+			// an arbitrary, unassigned 4xx code (i.e. not 400/404/409/etc,
+			// which might coincidentally be handled by a more specific
+			// branch) to prove the generic "any 4xx" fallback is exercised
+			HttpResponseCode: 456,
+		},
+	})
+
+	if cee == nil {
+		t.Fatal("Expected classifyCreateArtifactError to return a malformed-payload error, but got nil")
+	}
+	if cee.Reason != malformedPayload {
+		t.Fatalf("Expected reason %q, got %q", malformedPayload, cee.Reason)
+	}
+	if cee.TaskStatus != errored {
+		t.Fatalf("Expected task status %q, got %q", errored, cee.TaskStatus)
+	}
 }
 
 func TestMissingOptionalDirectoryArtifactDoesNotFailTest(t *testing.T) {
