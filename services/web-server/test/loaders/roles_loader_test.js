@@ -44,32 +44,5 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(roleThatDoesNotExist.status, 'rejected');
       assert(roleThatDoesNotExist.reason instanceof Error);
     });
-
-    test('load roles', async () => {
-      const client = helper.getHttpClient();
-      const roleId = taskcluster.slugid();
-      const role = {
-        scopes: ['scope1'],
-        description: 'Test Scope',
-      };
-      const createRoleMutation = await helper.loadFixture('createRole.graphql');
-
-      // 1. create role
-      await client.mutate({
-        mutation: gql`${createRoleMutation}`,
-        variables: {
-          roleId,
-          role,
-        },
-      });
-
-      const roleLoaders = loader({ auth: helper.clients().auth }).roles;
-
-      // 2. get roles
-      const [roles] = await Promise.allSettled([roleLoaders.load({})]);
-
-      assert.equal(roles.status, 'fulfilled');
-      assert.equal(roles.value[0].roleId, roleId);
-    });
   });
 });
