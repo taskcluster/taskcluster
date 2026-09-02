@@ -368,9 +368,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-ec2@npm:^3.1117.0":
-  version: 3.1117.0
-  resolution: "@aws-sdk/client-ec2@npm:3.1117.0"
+"@aws-sdk/client-ec2@npm:^3.1118.0":
+  version: 3.1118.0
+  resolution: "@aws-sdk/client-ec2@npm:3.1118.0"
   dependencies:
     "@aws-sdk/core": "npm:^3.977.9"
     "@aws-sdk/credential-provider-node": "npm:^3.972.81"
@@ -381,13 +381,13 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.11.3"
     "@smithy/types": "npm:^4.17.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/fb479c526c2bcfb66a8a68c948ff54cfd4b167da32b60484d975f0c6d71a9d582f590a0aa5350582dd7ddbe47e01a2a7d3588079fe4543598d6f7badb252bc89
+  checksum: 10c0/5c22137bc6720d7ddacfec74f5ea3d2b34b8011e794240c3dccb4709a3e59e3ed79d1415ee8100bb9256c7e6b7c19e8a8885d48d81968aebf905b25e21c1d3a6
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-iam@npm:^3.1117.0":
-  version: 3.1117.0
-  resolution: "@aws-sdk/client-iam@npm:3.1117.0"
+"@aws-sdk/client-iam@npm:^3.1118.0":
+  version: 3.1118.0
+  resolution: "@aws-sdk/client-iam@npm:3.1118.0"
   dependencies:
     "@aws-sdk/core": "npm:^3.977.9"
     "@aws-sdk/credential-provider-node": "npm:^3.972.81"
@@ -397,7 +397,7 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.11.3"
     "@smithy/types": "npm:^4.17.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/7d30c070ab884b0e4106d2134a07fee364231f1ff6e62cb38ff37cd47bbd63b944737c571724845e5a075120cbf9ed8a648abef32d380dd58ce78070a56b3288
+  checksum: 10c0/a6c62ca8581cb57abac8463d14e10f2b48f3ece029491f557022490ce5bdde5572195f774187b8727f718ca0076cd42f57bc4500caa498136cfa8cf09ec2acd6
   languageName: node
   linkType: hard
 
@@ -467,9 +467,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-sesv2@npm:^3.1117.0":
-  version: 3.1117.0
-  resolution: "@aws-sdk/client-sesv2@npm:3.1117.0"
+"@aws-sdk/client-sesv2@npm:^3.1118.0":
+  version: 3.1118.0
+  resolution: "@aws-sdk/client-sesv2@npm:3.1118.0"
   dependencies:
     "@aws-sdk/core": "npm:^3.977.9"
     "@aws-sdk/credential-provider-node": "npm:^3.972.81"
@@ -480,13 +480,13 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.11.3"
     "@smithy/types": "npm:^4.17.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/b6c2e01926b2d78fed724e96caa61358745c5c2571c331e2ca230da8a6c6cb78b33c9551d6999762b7feff357927298692220b0f268b8b413273fe01cfcad804
+  checksum: 10c0/571ee0e96c352d715c25e722a50805912b879a9d2bb4874b880c00e086871adf15634111a2add6c829137a7975fee6b663f92ea95003ea3b4dd27bb343e84c5b
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-sns@npm:^3.1117.0":
-  version: 3.1117.0
-  resolution: "@aws-sdk/client-sns@npm:3.1117.0"
+"@aws-sdk/client-sns@npm:^3.1118.0":
+  version: 3.1118.0
+  resolution: "@aws-sdk/client-sns@npm:3.1118.0"
   dependencies:
     "@aws-sdk/core": "npm:^3.977.9"
     "@aws-sdk/credential-provider-node": "npm:^3.972.81"
@@ -496,13 +496,13 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.11.3"
     "@smithy/types": "npm:^4.17.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/1b2f8e6477860dc4a98d4c79aa42ec21448c19ab4b2a21c6497d86d4218bb77428148679a89606611725f4b8e2ee504ab07aaabbd3679ccd60ff97727d1f00e0
+  checksum: 10c0/889855038dfd1547732a759b6cc9d22712c29b21775cc1d2fe6ec848f138bd1ffb2f20a2797479b342b78b826b41d138412aab506bbbcbbfcae361831fe330ea
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-sqs@npm:^3.1117.0":
-  version: 3.1117.0
-  resolution: "@aws-sdk/client-sqs@npm:3.1117.0"
+"@aws-sdk/client-sqs@npm:^3.1118.0":
+  version: 3.1118.0
+  resolution: "@aws-sdk/client-sqs@npm:3.1118.0"
   dependencies:
     "@aws-sdk/core": "npm:^3.977.9"
     "@aws-sdk/credential-provider-node": "npm:^3.972.81"
@@ -513,7 +513,7 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.11.3"
     "@smithy/types": "npm:^4.17.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/18311d8596ada08944940f891781b93ba17fd7d188310e4981c9ce2c4a3bf924a628f66116542685029734ae9db2af74d38a6a6399f0ad0ba07baa7c6f5fcada
+  checksum: 10c0/d5870190de612410e309ef8b5e4ac19bedfbede48c2468575350a7fdfd6e5d67438d21f7a25f7acf30c997b5fc89e13d88117ea2b42a6854822a4097801d1aea
   languageName: node
   linkType: hard
 
@@ -660,9 +660,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-sts@npm:^3.1117.0":
-  version: 3.1117.0
-  resolution: "@aws-sdk/client-sts@npm:3.1117.0"
+"@aws-sdk/client-sts@npm:^3.1118.0":
+  version: 3.1118.0
+  resolution: "@aws-sdk/client-sts@npm:3.1118.0"
   dependencies:
     "@aws-sdk/core": "npm:^3.977.9"
     "@aws-sdk/credential-provider-node": "npm:^3.972.81"
@@ -673,7 +673,7 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.11.3"
     "@smithy/types": "npm:^4.17.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/bd6d3d4365b846829388bd54a0ee2538c7e3615e13e5e94045e894a0e3b0873aeedf9489984443ab0386b8040cc473a2f444babf2a517798ecc6b557005cefe7
+  checksum: 10c0/fb378e73c9af0c8cd2105d025ef9a247732d01c2bbe52cd7949f2794c5fc8f58d3b4fa74fda0b099566f73e883fe544185c2b997ab83f3dd2cbaa3460b9b1b42
   languageName: node
   linkType: hard
 
@@ -1148,9 +1148,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/s3-request-presigner@npm:^3.1117.0":
-  version: 3.1117.0
-  resolution: "@aws-sdk/s3-request-presigner@npm:3.1117.0"
+"@aws-sdk/s3-request-presigner@npm:^3.1118.0":
+  version: 3.1118.0
+  resolution: "@aws-sdk/s3-request-presigner@npm:3.1118.0"
   dependencies:
     "@aws-sdk/core": "npm:^3.977.9"
     "@aws-sdk/signature-v4-multi-region": "npm:^3.996.46"
@@ -1158,7 +1158,7 @@ __metadata:
     "@smithy/core": "npm:^3.33.3"
     "@smithy/types": "npm:^4.17.2"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/eb268790076a6200164b3e3f5352734a0405d8f14cf6a47c0d66d1aa9aa616463d6431c7d6a15241399231066b7b052c7dcf0285f14b172a3584068995a86fff
+  checksum: 10c0/0a8e76f94ddcb3fdc1ce1c4b79808be509f9ff4ecc7e09410c685a991d81aee77d442d94a7fbed4f65fc76074db75a09b6558cc42f24f73702065070d92689dc
   languageName: node
   linkType: hard
 
@@ -4378,8 +4378,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@taskcluster/notify@workspace:services/notify"
   dependencies:
-    "@aws-sdk/client-sns": "npm:^3.1117.0"
-    "@aws-sdk/client-sqs": "npm:^3.1117.0"
+    "@aws-sdk/client-sns": "npm:^3.1118.0"
+    "@aws-sdk/client-sqs": "npm:^3.1118.0"
     "@biomejs/biome": "npm:^2.5.10"
     mocha: "npm:^11.8.0"
   languageName: unknown
@@ -11546,10 +11546,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"taskcluster-lib-urls@npm:^13.0.2":
-  version: 13.0.2
-  resolution: "taskcluster-lib-urls@npm:13.0.2"
-  checksum: 10c0/682c9093e37b924fdb58f6ae1e2b2348ecf849456d8337f8f6b1c6b4576ed0b1bf0b538247c8c2280c2ae4d05197487f40f4b060b66fc5be36678f1df0aae50c
+"taskcluster-lib-urls@npm:^13.1.0":
+  version: 13.1.0
+  resolution: "taskcluster-lib-urls@npm:13.1.0"
+  checksum: 10c0/c77c4d28bfee0fa4799b238fd2cfe63fadac3a8431a304808646ca95ac96cf77832c6dc624cd9c0195957c157fd20c185c2dfc9b194365a95b6d3c9aaa832d88
   languageName: node
   linkType: hard
 
@@ -11560,15 +11560,15 @@ __metadata:
     "@apollo/client": "npm:^3.13.9"
     "@apollo/server": "npm:^5.5.1"
     "@as-integrations/express5": "npm:^1.1.2"
-    "@aws-sdk/client-ec2": "npm:^3.1117.0"
-    "@aws-sdk/client-iam": "npm:^3.1117.0"
+    "@aws-sdk/client-ec2": "npm:^3.1118.0"
+    "@aws-sdk/client-iam": "npm:^3.1118.0"
     "@aws-sdk/client-s3": "npm:3.645.0"
-    "@aws-sdk/client-sesv2": "npm:^3.1117.0"
-    "@aws-sdk/client-sns": "npm:^3.1117.0"
-    "@aws-sdk/client-sqs": "npm:^3.1117.0"
-    "@aws-sdk/client-sts": "npm:^3.1117.0"
+    "@aws-sdk/client-sesv2": "npm:^3.1118.0"
+    "@aws-sdk/client-sns": "npm:^3.1118.0"
+    "@aws-sdk/client-sqs": "npm:^3.1118.0"
+    "@aws-sdk/client-sts": "npm:^3.1118.0"
     "@aws-sdk/middleware-endpoint": "npm:^3.374.0"
-    "@aws-sdk/s3-request-presigner": "npm:^3.1117.0"
+    "@aws-sdk/s3-request-presigner": "npm:^3.1118.0"
     "@azure/arm-compute": "npm:^22.4.0"
     "@azure/arm-network": "npm:^34.0.0"
     "@azure/arm-resources": "npm:^7.0.0"
@@ -11704,7 +11704,7 @@ __metadata:
     subscriptions-transport-ws: "npm:^0.11.0"
     superagent: "npm:^6.0.0"
     taskcluster-lib-scopes: "npm:^11.0.0"
-    taskcluster-lib-urls: "npm:^13.0.2"
+    taskcluster-lib-urls: "npm:^13.1.0"
     topo-sort: "npm:^1.0.0"
     type-is: "npm:^1.6.15"
     typescript: "npm:^5.9.2"
