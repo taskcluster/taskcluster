@@ -82,7 +82,7 @@ type (
 		//
 		// Since: generic-worker 8.1.0
 		//
-		// Syntax:     ^[\x20-\x7e]+$
+		// Syntax:     ^[\x20-\x7e]*$
 		Name string `json:"name,omitempty"`
 
 		// If `true`, the artifact is optional. If the file or directory
@@ -1168,7 +1168,7 @@ func JSONSchema() string {
               },
               "name": {
                 "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information. Must consist of\nprintable ASCII characters only.\n\nSince: generic-worker 8.1.0",
-                "pattern": "^[\\x20-\\x7e]+$",
+                "pattern": "^[\\x20-\\x7e]*$",
                 "title": "Name of the artifact",
                 "type": "string"
               },
