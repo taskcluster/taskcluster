@@ -108,7 +108,7 @@ oneOf:
           name:
             title: Name of the artifact
             type: string
-            pattern: '^[\x20-\x7e]+$'
+            pattern: '^[\x20-\x7e]*$'
             description: |-
               Name of the artifact, as it will be published. If not set, `path` will be used.
               Conventionally (although not enforced) path elements are forward slash separated. Example:

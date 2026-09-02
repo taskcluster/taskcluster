@@ -162,7 +162,10 @@ func (task *TaskRun) classifyCreateArtifactError(artifact artifacts.TaskArtifact
 			// payload schema. For example, allowed characters in artifact name
 			// get tightened on Queue side but Generic Worker is not updated
 			// everywhere so Generic Worker payload schema might be looser.
-			if rootCause.HttpResponseCode/100 == 4 {
+			// 401/403 are excluded here: they signal a worker/credentials
+			// problem rather than something the task submitter can fix, so
+			// they fall through to the panic below instead.
+			if rootCause.HttpResponseCode/100 == 4 && rootCause.HttpResponseCode != 401 && rootCause.HttpResponseCode != 403 {
 				return MalformedPayloadError(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
 			}
 			// assume a genuine worker bug for anything else
