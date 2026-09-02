@@ -24,7 +24,7 @@
     "@aws-sdk/middleware-endpoint": "^3.374.0",
     "@aws-sdk/s3-request-presigner": "^3.1117.0",
     "@azure/arm-compute": "^22.4.0",
-    "@azure/arm-network": "^34.0.0",
+    "@azure/arm-network": "^38.0.0",
     "@azure/arm-resources": "^7.0.0",
     "@azure/arm-resourcesdeployments": "1.0.0-beta.1",
     "@azure/identity": "^4.13.2",
