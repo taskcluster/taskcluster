@@ -16,6 +16,8 @@ import {
   VIEW_WORKER_POOLS_PAGE_SIZE,
 } from '../../../utils/constants';
 
+const PENDING_TASKS_CONCURRENCY = 30;
+
 /**
  * `listWorkerPools` and `listWorkerPoolsStats` are two endpoints over the same
  * ordered set of pools, so a page of one lines up with a page of the other.
@@ -61,9 +63,12 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     errorStatsLoading: false,
     errorStats: null,
     errorStatsError: null,
-    pendingTasksLoading: false,
     pendingTasks: null,
   };
+
+  // Guards against out-of-order pendingTasks responses when the worker-pool
+  // page changes while a batch of per-row lookups is still in flight.
+  pendingTasksRequestId = 0;
 
   componentDidMount() {
     this.loadErrorStats();
@@ -76,6 +81,12 @@ export default class WorkerManagerWorkerPoolsView extends Component {
     ) {
       this.loadPendingTasks();
     }
+  }
+
+  componentWillUnmount() {
+    // Prevent a completed request from calling setState after unmount, and stop
+    // additional batches from starting.
+    this.pendingTasksRequestId++;
   }
 
   get searchTerm() {
@@ -111,37 +122,62 @@ export default class WorkerManagerWorkerPoolsView extends Component {
   };
 
   loadPendingTasks = async () => {
-    const { items } = this.props;
+    const requestId = ++this.pendingTasksRequestId;
+    const workerPoolIds = [
+      ...new Set(this.props.items.map(({ workerPoolId }) => workerPoolId)),
+    ];
 
-    if (!items.length) {
-      this.setState({ pendingTasks: null, pendingTasksLoading: false });
+    if (!workerPoolIds.length) {
+      this.setState({ pendingTasks: null });
 
       return;
     }
 
-    this.setState({ pendingTasksLoading: true });
+    this.setState({ pendingTasks: {} });
 
     // There is no batch endpoint for pending counts, so this is one request
     // per pool -- the same fan-out the web-server resolver did, moved into the
-    // browser. A pool the user cannot read counts for is left blank rather
-    // than failing the whole column.
+    // browser in bounded batches. A pool the user cannot read counts for is
+    // left blank rather than failing the whole column.
     const queue = this.props.createTaskclusterClient({ Class: Queue });
-    const counts = await Promise.all(
-      items.map(async ({ workerPoolId }) => {
-        try {
-          // a worker pool id is also a task queue id
-          const { pendingTasks } = await queue.pendingTasks(workerPoolId);
+    const counts = [];
 
-          return [workerPoolId, pendingTasks];
-        } catch {
-          return [workerPoolId, null];
-        }
-      })
-    );
+    for (
+      let start = 0;
+      start < workerPoolIds.length;
+      start += PENDING_TASKS_CONCURRENCY
+    ) {
+      if (requestId !== this.pendingTasksRequestId) {
+        return;
+      }
+
+      const batch = workerPoolIds.slice(
+        start,
+        start + PENDING_TASKS_CONCURRENCY
+      );
+      const results = await Promise.all(
+        batch.map(async workerPoolId => {
+          try {
+            // a worker pool id is also a task queue id
+            const { pendingTasks } = await queue.pendingTasks(workerPoolId);
+
+            return [workerPoolId, pendingTasks];
+          } catch {
+            return [workerPoolId, null];
+          }
+        })
+      );
+
+      if (requestId !== this.pendingTasksRequestId) {
+        return;
+      }
+
+      counts.push(...results);
+      this.setState({ pendingTasks: Object.fromEntries(counts) });
+    }
 
     this.setState({
       pendingTasks: Object.fromEntries(counts),
-      pendingTasksLoading: false,
     });
   };
 
@@ -190,7 +226,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       ...workerPool,
       errorsCount:
         errorStats?.totals?.workerPool?.[workerPool.workerPoolId] || 0,
-      pendingTasks: pendingTasks?.[workerPool.workerPoolId] ?? null,
+      pendingTasks: pendingTasks?.[workerPool.workerPoolId],
     }));
   }
 
@@ -206,8 +242,7 @@ export default class WorkerManagerWorkerPoolsView extends Component {
       nextPage,
       previousPage,
     } = this.props;
-    const { errorStatsError, errorStatsLoading, pendingTasksLoading } =
-      this.state;
+    const { errorStatsError, errorStatsLoading } = this.state;
     const { searchTerm } = this;
     const initialLoad = loading && !items.length;
     const workerPools = this.getWorkerPools();
@@ -238,7 +273,6 @@ export default class WorkerManagerWorkerPoolsView extends Component {
             searchTerm={searchTerm}
             deleteRequest={this.deleteRequest}
             errorStatsLoading={errorStatsLoading}
-            pendingTasksLoading={pendingTasksLoading}
             loading={loading}
             page={page}
             hasNextPage={hasNextPage}

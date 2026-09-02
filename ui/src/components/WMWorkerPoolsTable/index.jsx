@@ -61,7 +61,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
     searchTerm: string,
     loading: bool,
     errorStatsLoading: bool,
-    pendingTasksLoading: bool,
     ...pagination,
   };
 
@@ -185,7 +184,6 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
       match: { path },
       classes,
       errorStatsLoading,
-      pendingTasksLoading,
     } = this.props;
     const { actionLoading } = this.state;
     const iconSize = 16;
@@ -232,7 +230,9 @@ export default class WorkerManagerWorkerPoolsTable extends Component {
               <Hidden lgUp implementation="css" className={classes.hiddenLabel}>
                 Pending Tasks:
               </Hidden>
-              {pendingTasksLoading ? '...' : workerPool.pendingTasks}
+              {workerPool.pendingTasks === undefined
+                ? '...'
+                : (workerPool.pendingTasks ?? 'n/a')}
               <LinkIcon size={iconSize} />
             </TableCellItem>
           </Link>
