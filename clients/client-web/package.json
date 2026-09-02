@@ -28,7 +28,7 @@
     "crypto-js": "^4.2.0",
     "hawk": "^9.0.2",
     "query-string": "^9.5.0",
-    "taskcluster-lib-urls": "^13.0.2"
+    "taskcluster-lib-urls": "^13.1.0"
   },
   "publishConfig": {
     "access": "public"
