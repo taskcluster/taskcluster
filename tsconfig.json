@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "module": "NodeNext",
-    "baseUrl": "src",
     "strict": true,
     "allowJs": true,
     "checkJs": true,
@@ -11,12 +10,17 @@
     "target": "esnext",
     "lib": ["esnext", "dom"],
     "esModuleInterop": true,
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true
   },
   "include": [
     "./services/**/*.js",
     "./libraries/**/*.d.ts",
     "./libraries/**/*.js",
+    "./libraries/**/*.ts",
     "./db/**/*.js",
     "./clients/client/**/*.js"
   ],

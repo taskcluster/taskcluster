@@ -3,7 +3,7 @@
   "root": true,
   "files": {
     "includes": [
-      "{libraries,services,infrastructure,db,clients/client,clients/client-web,clients/client-test}/**/{src,test}/**/*.js",
+      "{libraries,services,infrastructure,db,clients/client,clients/client-web,clients/client-test}/**/{src,test}/**/*.{js,ts}",
       "test/**/*.js",
       "ui/src/**/*.{js,jsx}",
       "!**/clients/client-web/src/clients",
