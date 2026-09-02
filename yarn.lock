@@ -5485,10 +5485,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^5.6.2":
-  version: 5.6.2
-  resolution: "chalk@npm:5.6.2"
-  checksum: 10c0/99a4b0f0e7991796b1e7e3f52dceb9137cae2a9dfc8fc0784a550dc4c558e15ab32ed70b14b21b52beb2679b4892b41a0aa44249bcb996f01e125d58477c6976
+"chalk@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "chalk@npm:6.0.0"
+  checksum: 10c0/47fd9028aa66fa532295525fe3ac5aec5e467e0d86847d4b5f6e01f9c9bb70b6fd1edca79cddc78a0f31a357baa65cc752d30c6557d025904207d113c82d8962
   languageName: node
   linkType: hard
 
@@ -11624,7 +11624,7 @@ __metadata:
     body-parser: "npm:2.3.0"
     bottleneck: "npm:^2.15.3"
     builtin-modules: "npm:^3.1.0"
-    chalk: "npm:^5.6.2"
+    chalk: "npm:^6.0.0"
     commander: "npm:^9.4.1"
     compression: "npm:^1.8.1"
     console-taskgraph: "npm:^1.7.2"

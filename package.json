@@ -58,7 +58,7 @@
     "amqplib": "^2.0.1",
     "body-parser": "2.3.0",
     "bottleneck": "^2.15.3",
-    "chalk": "^5.6.2",
+    "chalk": "^6.0.0",
     "compression": "^1.8.1",
     "content-security-policy": "^0.3.0",
     "content-type": "^1.0.4",
