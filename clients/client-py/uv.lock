@@ -1395,11 +1395,11 @@ dev = [
 
 [[package]]
 name = "taskcluster-urls"
-version = "13.0.2"
+version = "13.1.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/19/a2/06c98e5fccfe5c6682439dd08f1cd24bed2367957b7959abed04ff6475e3/taskcluster_urls-13.0.2.tar.gz", hash = "sha256:e20581c67199360b89cf86015423f6dad2051464be0d4b2c3f7df32dc3a2fa6e", size = 10633, upload-time = "2026-01-29T17:03:10.067Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3a/e8/8d1d563406366b22861c596927e3740bc69c242629881ff99d27eff2f6b5/taskcluster_urls-13.1.0.tar.gz", hash = "sha256:ccd88e569c32b906faa93a7950756c9ddec96d83081f6f04f75319753f668f8d", size = 11069, upload-time = "2026-08-26T13:19:51.973Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5b/7c/3f10d4232be12e7df2b58a3c33c70825d2f31c814ba052bcf31cb2024f0e/taskcluster_urls-13.0.2-py3-none-any.whl", hash = "sha256:667218846d03dff7b307ad9f1e95eec19b09edb6c509cd844096ac3aac1744b2", size = 10259, upload-time = "2026-01-29T17:03:09.244Z" },
+    { url = "https://files.pythonhosted.org/packages/3a/d1/df3bac5dd5afe2ca618ac3a0339bb6875243f4c95213315048791bc7e906/taskcluster_urls-13.1.0-py3-none-any.whl", hash = "sha256:056c7a1607af4b011ace56c20e3af4f525c02d6323eab401fc186b625bbb7ba8", size = 10636, upload-time = "2026-08-26T13:19:51.056Z" },
 ]
 
 [[package]]
