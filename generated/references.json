@@ -19268,7 +19268,7 @@
           "fields": {
             "providerId": "The provider that did the work for this worker pool.",
             "reason": "The reason this worker is being removed",
-            "runningDuration": "Time in seconds since worker registered (null if never registered)",
+            "runningDuration": "Time in seconds from worker registration to removal request (null if never registered)",
             "workerAge": "Total time in seconds since worker was created",
             "workerId": "The worker that is being removed",
             "workerPoolId": "The worker pool ID"
@@ -19311,8 +19311,9 @@
         {
           "description": "A worker has been marked as stopped",
           "fields": {
+            "deprovisionDuration": "Time in seconds from removal request to worker stopped (null if no removal was observed)",
             "providerId": "The provider that did the work for this worker pool.",
-            "runningDuration": "Time in seconds since worker registered (null if never registered)",
+            "runningDuration": "Time in seconds from worker registration to removal request (null if never registered or no removal was observed)",
             "workerAge": "Total time in seconds since worker was created",
             "workerId": "The worker that was stopped",
             "workerPoolId": "The worker pool ID"
@@ -19321,7 +19322,7 @@
           "name": "workerStopped",
           "title": "Worker Stopped",
           "type": "worker-stopped",
-          "version": 2
+          "version": 3
         }
       ]
     },
