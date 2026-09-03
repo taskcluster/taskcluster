@@ -1,6 +1,6 @@
 // biome-ignore-all lint/suspicious/noTemplateCurlyInString: we embed JSON-e here, which looks a lot like a template
 import React, { Component } from 'react';
-import { withApollo } from '@apollo/client/react/hoc';
+import { Github } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -16,7 +16,7 @@ import Button from '../../components/Button';
 import { siteSpecificVariable } from '../../utils/siteSpecific';
 import ajv from '../../utils/ajv';
 import scrollToHash from '../../utils/scrollToHash';
-import githubQuery from './github.graphql';
+import { withTaskclusterClient } from '../../utils/TaskclusterClient';
 import JsonDisplay from '../../components/JsonDisplay';
 
 const prefetchSchema = async () => {
@@ -148,7 +148,7 @@ const getCustomContext = () => {
   });
 };
 
-@withApollo
+@withTaskclusterClient
 @withStyles(theme => ({
   separator: {
     padding: theme.spacing(2),
@@ -235,6 +235,10 @@ export default class TcYamlDebug extends Component {
       parserChecks: false,
       parserAutoCancel: false,
     };
+  }
+
+  get githubClient() {
+    return this.props.createTaskclusterClient({ Class: Github });
   }
 
   componentDidMount() {
@@ -444,24 +448,17 @@ export default class TcYamlDebug extends Component {
 
     try {
       const extraContext = load(this.state.extraContext);
-      const {
-        data: { renderTaskclusterYml: parsed },
-      } = await this.props.client.query({
-        query: githubQuery,
-        variables: {
-          payload: {
-            body: this.state.editorValue,
-            organization: 'taskcluster',
-            repository: 'taskcluster',
-            fakeEvent: {
-              type: tasksFor,
-              action,
-              overrides: {
-                branch: extraContext?.branch ?? 'main',
-                ...extraContext,
-                ...opts.overrides,
-              },
-            },
+      const parsed = await this.githubClient.renderTaskclusterYml({
+        body: this.state.editorValue,
+        organization: 'taskcluster',
+        repository: 'taskcluster',
+        fakeEvent: {
+          type: tasksFor,
+          action,
+          overrides: {
+            branch: extraContext?.branch ?? 'main',
+            ...extraContext,
+            ...opts.overrides,
           },
         },
       });
