@@ -23,7 +23,7 @@ import TextField from '../../components/TextField';
 import Dashboard from '../../components/Dashboard';
 import Button from '../../components/Button';
 import HelpView from '../../components/HelpView';
-import SiteSpecific from '../../components/SiteSpecific';
+import SiteSpecific, { SiteLink } from '../../components/SiteSpecific';
 import urls from '../../utils/urls';
 import ErrorPanel from '../../components/ErrorPanel';
 import { withTaskclusterClient } from '../../utils/TaskclusterClient';
@@ -392,10 +392,11 @@ export default class QuickStart extends Component {
                 </Typography>
               </li>
               <li>
-                <SiteSpecific>
-                  Make sure to install the [GitHub app](%github_app_url%) on
-                  your repo. If you do not have permission, you may need to ask
-                  the repository or organization owners to do so.
+                <SiteSpecific requires={['github_app_url']}>
+                  Make sure to install the{' '}
+                  <SiteLink name="github_app_url">GitHub app</SiteLink> on your
+                  repo. If you do not have permission, you may need to ask the
+                  repository or organization owners to do so.
                 </SiteSpecific>
               </li>
             </ul>
@@ -457,10 +458,11 @@ export default class QuickStart extends Component {
                 )
               }
             />
-            <SiteSpecific>
-              To use Taskcluster on this repository, add [this
-              app](%github_app_url%). If you do not have permission, you may
-              need to ask the repository or organization owners to do so.
+            <SiteSpecific requires={['github_app_url']}>
+              To use Taskcluster on this repository, add{' '}
+              <SiteLink name="github_app_url">this app</SiteLink>. If you do not
+              have permission, you may need to ask the repository or
+              organization owners to do so.
             </SiteSpecific>
           </Fragment>
         )}
