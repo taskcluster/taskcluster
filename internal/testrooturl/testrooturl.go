@@ -5,14 +5,14 @@ import (
 	"testing"
 )
 
-// Get gets the rootURL, or skips the test if a root URL is not available,
-// *unless* NO_TEST_SKIP is set, in which case this is considered a fatal
-// error.
+// Get gets the rootURL, or skips the test if a root URL is not available.
+// Missing configuration is fatal when NO_TEST_SKIP is set, except on
+// deliberately credential-free untrusted pull requests.
 func Get(t *testing.T) string {
 	t.Helper()
 	rootURL := os.Getenv("TASKCLUSTER_ROOT_URL")
 	if rootURL == "" {
-		if os.Getenv("NO_TEST_SKIP") == "" {
+		if os.Getenv("NO_TEST_SKIP") == "" || os.Getenv("TASKCLUSTER_UNTRUSTED_PR") == "true" {
 			t.Skip("Set TASKCLUSTER_ROOT_URL to run tests")
 		} else {
 			t.Fatal("TASKCLUSTER_ROOT_URL must be set when NO_TEST_SKIP is set")
@@ -29,7 +29,7 @@ func GetWithCreds(t *testing.T) (rootURL string, clientID string, accessToken st
 	accessToken = os.Getenv("TASKCLUSTER_ACCESS_TOKEN")
 	certificate = os.Getenv("TASKCLUSTER_CERTIFICATE")
 	if rootURL == "" || clientID == "" || accessToken == "" {
-		if os.Getenv("NO_TEST_SKIP") == "" {
+		if os.Getenv("NO_TEST_SKIP") == "" || os.Getenv("TASKCLUSTER_UNTRUSTED_PR") == "true" {
 			t.Skip("Set TASKCLUSTER_ROOT_URL, TASKCLUSTER_CLIENT_ID, and TASKCLUSTER_ACCESS_TOKEN to run tests")
 		} else {
 			t.Fatal("TASKCLUSTER_ROOT_URL, TASKCLUSTER_CLIENT_ID, and TASKCLUSTER_ACCESS_TOKEN must be set when NO_TEST_SKIP is set")

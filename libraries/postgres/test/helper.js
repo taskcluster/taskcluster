@@ -37,7 +37,7 @@ if (testDbUrl) {
 } else {
   helper.dbSuite = (...args) => {
     suite(...args.slice(0, -1), () => {
-      if (process.env.NO_TEST_SKIP) {
+      if (process.env.NO_TEST_SKIP && process.env.TASKCLUSTER_UNTRUSTED_PR !== 'true') {
         throw new Error(`TEST_DB_URL not set and NO_TEST_SKIP is set`);
       }
       test.skip('(TEST_DB_URL is not set)', () => {});

@@ -6,11 +6,12 @@ use std::time::Duration;
 use taskcluster::{err_status_code, Auth, ClientBuilder, Credentials};
 use tokio;
 
-/// Return the TASKCLUSTER_ROOT_URL, or None if the test should be skipped,
-/// or panic if the NO_TEST_SKIP is set and the env var is not.
+/// Return the TASKCLUSTER_ROOT_URL, or None if a credential-free untrusted test
+/// should be skipped, or panic if NO_TEST_SKIP is set and the env var is not.
 fn get_root_url() -> Option<String> {
     match env::var("TASKCLUSTER_ROOT_URL") {
         Ok(v) => Some(v),
+        Err(_) if env::var("TASKCLUSTER_UNTRUSTED_PR").as_deref() == Ok("true") => None,
         Err(_) => match env::var("NO_TEST_SKIP") {
             Ok(_) => panic!("NO_TEST_SKIP is set but TASKCLUSTER_ROOT_URL is not!"),
             Err(_) => None,
