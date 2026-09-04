@@ -9,18 +9,6 @@ import (
 )
 
 type (
-	Artifact struct {
-		Expires tcclient.Time `json:"expires,omitzero"`
-
-		Path string `json:"path"`
-
-		// Possible values:
-		//   * "file"
-		//   * "directory"
-		//   * "volume"
-		Type string `json:"type"`
-	}
-
 	// Set of capabilities that must be enabled or made available to the task container Example: ```{ "capabilities": { "privileged": true }```
 	Capabilities struct {
 
@@ -54,7 +42,7 @@ type (
 		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	DockerImageArtifact struct {
 		Path string `json:"path"`
 
@@ -65,8 +53,57 @@ type (
 		Type string `json:"type"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	DockerImageName string
+
+	DockerWorkerArtifact struct {
+		Expires tcclient.Time `json:"expires,omitzero"`
+
+		Path string `json:"path"`
+
+		// Possible values:
+		//   * "file"
+		//   * "directory"
+		//   * "volume"
+		Type string `json:"type"`
+	}
+
+	// Used to enable additional functionality.
+	DockerWorkerFeatureFlags struct {
+
+		// This allows you to use the Linux ptrace functionality inside the container; it is otherwise disallowed by Docker's security policy.
+		//
+		// Default:    false
+		AllowPtrace bool `json:"allowPtrace" default:"false"`
+
+		// Default:    true
+		Artifacts bool `json:"artifacts" default:"true"`
+
+		// Useful if live logging is not interesting but the overalllog is later on
+		//
+		// Default:    true
+		BulkLog bool `json:"bulkLog" default:"true"`
+
+		// Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.
+		//
+		// Default:    false
+		ChainOfTrust bool `json:"chainOfTrust" default:"false"`
+
+		// This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.
+		//
+		// Default:    false
+		Interactive bool `json:"interactive" default:"false"`
+
+		// Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3
+		//
+		// Default:    true
+		LocalLiveLog bool `json:"localLiveLog" default:"true"`
+
+		// The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task.
+		//
+		// Default:    false
+		TaskclusterProxy bool `json:"taskclusterProxy" default:"false"`
+	}
 
 	// `.payload` field of the queue.
 	DockerWorkerPayload struct {
@@ -83,7 +120,7 @@ type (
 		// Moreover, in the case of time-critical spot terminations, tasks have
 		// more chance of successfully publishing volume artifacts than directory
 		// artifacts, due to the efficiency gain.
-		Artifacts map[string]Artifact `json:"artifacts,omitempty"`
+		Artifacts map[string]DockerWorkerArtifact `json:"artifacts,omitempty"`
 
 		// Caches are mounted within the docker container at the mount point specified. Example: ```{ "CACHE NAME": "/mount/path/in/container" }```
 		//
@@ -111,9 +148,9 @@ type (
 		Env map[string]string `json:"env,omitempty"`
 
 		// Used to enable additional functionality.
-		Features FeatureFlags `json:"features,omitzero"`
+		Features DockerWorkerFeatureFlags `json:"features,omitzero"`
 
-		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+		// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 		//
 		// One of:
 		//   * DockerImageName
@@ -153,44 +190,7 @@ type (
 		Retry []int64 `json:"retry,omitempty"`
 	}
 
-	// Used to enable additional functionality.
-	FeatureFlags struct {
-
-		// This allows you to use the Linux ptrace functionality inside the container; it is otherwise disallowed by Docker's security policy.
-		//
-		// Default:    false
-		AllowPtrace bool `json:"allowPtrace" default:"false"`
-
-		// Default:    true
-		Artifacts bool `json:"artifacts" default:"true"`
-
-		// Useful if live logging is not interesting but the overalllog is later on
-		//
-		// Default:    true
-		BulkLog bool `json:"bulkLog" default:"true"`
-
-		// Artifacts named chain-of-trust.json and chain-of-trust.json.sig should be generated which will include information for downstream tasks to build a level of trust for the artifacts produced by the task and the environment it ran in.
-		//
-		// Default:    false
-		ChainOfTrust bool `json:"chainOfTrust" default:"false"`
-
-		// This allows you to interactively run commands inside the container and attaches you to the stdin/stdout/stderr over a websocket. Can be used for SSH-like access to docker containers.
-		//
-		// Default:    false
-		Interactive bool `json:"interactive" default:"false"`
-
-		// Logs are stored on the worker during the duration of tasks and available via http chunked streaming then uploaded to s3
-		//
-		// Default:    true
-		LocalLiveLog bool `json:"localLiveLog" default:"true"`
-
-		// The auth proxy allows making requests to taskcluster/queue and taskcluster/scheduler directly from your task with the same scopes as set in the task. This can be used to make api calls via the [client](https://github.com/taskcluster/taskcluster-client) CURL, etc... Without embedding credentials in the task.
-		//
-		// Default:    false
-		TaskclusterProxy bool `json:"taskclusterProxy" default:"false"`
-	}
-
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	IndexedDockerImage struct {
 		Namespace string `json:"namespace"`
 
@@ -201,7 +201,7 @@ type (
 		Type string `json:"type"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	NamedDockerImage struct {
 		Name string `json:"name"`
 
@@ -255,6 +255,7 @@ func JSONSchema() string {
         "type",
         "path"
       ],
+      "title": "Docker Worker Artifact",
       "type": "object"
     }
   },
@@ -391,11 +392,11 @@ func JSONSchema() string {
         }
       },
       "required": [],
-      "title": "Feature flags",
+      "title": "Docker Worker feature flags",
       "type": "object"
     },
     "image": {
-      "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+      "description": "Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
       "oneOf": [
         {
           "title": "Docker image name",
@@ -522,7 +523,7 @@ func JSONSchema() string {
     "image",
     "maxRunTime"
   ],
-  "title": "Docker worker payload",
+  "title": "Docker Worker payload",
   "type": "object"
 }`
 }

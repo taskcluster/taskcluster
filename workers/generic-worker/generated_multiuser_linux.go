@@ -177,7 +177,7 @@ type (
 		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	DockerImageArtifact struct {
 		Path string `json:"path"`
 
@@ -188,7 +188,7 @@ type (
 		Type string `json:"type"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	DockerImageName string
 
 	DockerWorkerArtifact struct {
@@ -246,7 +246,7 @@ type (
 		// Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
 		// Artifacts can be an individual `file`, a `directory` containing
 		// potentially multiple files with recursively included subdirectories,
-		// or a `volume` which will create a volume mount from the
+		// or a `volume` (d2g only) which will create a volume mount from the
 		// host to the running container. Unlike `directory` artifacts, the
 		// `volume` directory will already exist as the task starts. Since the
 		// artifacts will be created directly on the host, they do not need to
@@ -285,7 +285,7 @@ type (
 		// Used to enable additional functionality.
 		Features DockerWorkerFeatureFlags `json:"features,omitzero"`
 
-		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+		// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 		//
 		// One of:
 		//   * DockerImageName
@@ -646,7 +646,7 @@ type (
 		Namespace string `json:"namespace"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	IndexedDockerImage struct {
 		Namespace string `json:"namespace"`
 
@@ -679,7 +679,7 @@ type (
 		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	NamedDockerImage struct {
 		Name string `json:"name"`
 
@@ -1379,7 +1379,7 @@ func JSONSchema() string {
         "command",
         "maxRunTime"
       ],
-      "title": "Generic worker payload",
+      "title": "Generic Worker payload",
       "type": "object"
     },
     {
@@ -1390,7 +1390,7 @@ func JSONSchema() string {
           "additionalProperties": {
             "$ref": "#/definitions/artifact"
           },
-          "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `\nArtifacts can be an individual ` + "`" + `file` + "`" + `, a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories,\nor a ` + "`" + `volume` + "`" + ` which will create a volume mount from the\nhost to the running container. Unlike ` + "`" + `directory` + "`" + ` artifacts, the\n` + "`" + `volume` + "`" + ` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+          "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `\nArtifacts can be an individual ` + "`" + `file` + "`" + `, a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories,\nor a ` + "`" + `volume` + "`" + ` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike ` + "`" + `directory` + "`" + ` artifacts, the\n` + "`" + `volume` + "`" + ` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
           "title": "Artifacts",
           "type": "object"
         },
@@ -1521,7 +1521,7 @@ func JSONSchema() string {
           "type": "object"
         },
         "image": {
-          "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+          "description": "Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
           "oneOf": [
             {
               "title": "Docker image name",
@@ -1648,7 +1648,7 @@ func JSONSchema() string {
         "image",
         "maxRunTime"
       ],
-      "title": "Docker worker payload",
+      "title": "Docker Worker payload",
       "type": "object"
     }
   ],
