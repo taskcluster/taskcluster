@@ -378,7 +378,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     test('skips only the sealed task group while creating tasks', async () => {
-      await handlers.realCreateTasks({
+      const sealedTaskGroupIds = await handlers.realCreateTasks({
         scopes: [],
         tasks: [
           { taskId: 'aa', task: { taskGroupId: 'group-a', payload: 'a' } },
@@ -400,6 +400,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         createdTasks.map(({ payload }) => payload),
         ['a', 'b']
       );
+      assert.deepEqual(sealedTaskGroupIds, new Set(['group-a']));
     });
 
     test('propagates other 409 errors', async () => {
@@ -1046,6 +1047,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(publishedGroupIds.length, 2, 'should publish once per unique taskGroupId');
       assert(publishedGroupIds.includes(GROUP_A), 'should publish for group A');
       assert(publishedGroupIds.includes(GROUP_B), 'should publish for group B');
+    });
+
+    test('multi-group yml does not publish taskGroupCreationRequested for sealed groups', async () => {
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: multiGroupConfig(),
+      });
+      handlers.createTasks.resolves(new Set([GROUP_A]));
+
+      const publishedGroupIds = [];
+      helper.onPulsePublish((exchange, _routingKey, payload) => {
+        if (exchange.endsWith('task-group-creation-requested')) {
+          publishedGroupIds.push(JSON.parse(payload).taskGroupId);
+        }
+      });
+
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+      assert.deepEqual(publishedGroupIds, [GROUP_B]);
     });
 
     test("multi-group yml publishes the union of all tasks' routes per group", async () => {
