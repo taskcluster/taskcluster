@@ -35,7 +35,7 @@ func TestD2GWithValidDockerWorkerPayload(t *testing.T) {
 		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
-		Artifacts: map[string]dockerworker.Artifact{
+		Artifacts: map[string]dockerworker.DockerWorkerArtifact{
 			"testWithoutExpires": {
 				Path: "testWithoutExpiresPath",
 				Type: "file",
@@ -91,7 +91,7 @@ func TestD2GVolumeArtifacts(t *testing.T) {
 		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
-		Artifacts: map[string]dockerworker.Artifact{
+		Artifacts: map[string]dockerworker.DockerWorkerArtifact{
 			"SampleArtifacts/_": {
 				Path:    "/SampleArtifacts/_",
 				Type:    "volume",
@@ -163,7 +163,7 @@ func TestD2GArtifactDoesNotExist(t *testing.T) {
 		},
 		Image:      json.RawMessage(imageBytes),
 		MaxRunTime: 30,
-		Artifacts: map[string]dockerworker.Artifact{
+		Artifacts: map[string]dockerworker.DockerWorkerArtifact{
 			"SampleArtifacts/_/X.txt": {
 				Path:    "SampleArtifacts/_/X.txt",
 				Type:    "file",
@@ -260,7 +260,7 @@ func TestD2GIssue6789(t *testing.T) {
 			"URL=\"${TASKCLUSTER_PROXY_URL}/api/queue/v1/task/${TASK_ID}\"\ncurl -v \"${URL}\"\ncurl -sf \"${URL}\"",
 		},
 		Image: json.RawMessage(`"denolehov/curl"`),
-		Features: dockerworker.FeatureFlags{
+		Features: dockerworker.DockerWorkerFeatureFlags{
 			TaskclusterProxy: true,
 		},
 		MaxRunTime: 10,
@@ -313,7 +313,7 @@ func TestD2GWithValidScopes(t *testing.T) {
 				KVM:              true,
 			},
 		},
-		Features: dockerworker.FeatureFlags{
+		Features: dockerworker.DockerWorkerFeatureFlags{
 			AllowPtrace: true,
 		},
 	}
@@ -879,7 +879,7 @@ func TestD2GTaskclusterProxy(t *testing.T) {
 		},
 		Image:      json.RawMessage(`"denolehov/curl"`),
 		MaxRunTime: 60,
-		Features: dockerworker.FeatureFlags{
+		Features: dockerworker.DockerWorkerFeatureFlags{
 			TaskclusterProxy: true,
 		},
 	}
@@ -1179,7 +1179,7 @@ func D2GChainOfTrustHelper(t *testing.T, image d2g.Image, taskDependencies []str
 			"taskcluster-proxy",
 			"--version",
 		},
-		Features: dockerworker.FeatureFlags{
+		Features: dockerworker.DockerWorkerFeatureFlags{
 			ChainOfTrust: true,
 		},
 		Image:      json.RawMessage(imageBytes),
@@ -1210,5 +1210,62 @@ func D2GChainOfTrustHelper(t *testing.T, image d2g.Image, taskDependencies []str
 	}
 	if !reflect.DeepEqual(cotCert, expected) {
 		t.Fatalf("Expected vs actual mismatch. Expected: %#v, Actual: %#v, Raw: %s", expected, cotCert, certString)
+	}
+}
+
+// TestDockerWorkerSchemaMatchesD2G verifies that this engine's embedded
+// "Docker Worker payload" branch (in schemas/insecure_posix.yml or
+// schemas/multiuser_posix.yml, depending on build tag) stays content-identical
+// to the canonical source at tools/d2g/schemas/docker-worker/v1/payload.yml.
+// These are independently hand-maintained YAML files describing the same
+// payload shape, and nothing in the build automatically keeps them in sync.
+// If this test fails, update whichever side is wrong so they match again.
+func TestDockerWorkerSchemaMatchesD2G(t *testing.T) {
+	var local map[string]any
+	if err := json.Unmarshal([]byte(JSONSchema()), &local); err != nil {
+		t.Fatalf("Could not parse local JSONSchema(): %v", err)
+	}
+	var canonical map[string]any
+	if err := json.Unmarshal([]byte(dockerworker.JSONSchema()), &canonical); err != nil {
+		t.Fatalf("Could not parse dockerworker.JSONSchema(): %v", err)
+	}
+
+	oneOf, ok := local["oneOf"].([]any)
+	if !ok {
+		t.Fatal("Local schema has no top-level oneOf")
+	}
+	var dockerBranch map[string]any
+	for _, item := range oneOf {
+		if m, ok := item.(map[string]any); ok && m["title"] == "Docker Worker payload" {
+			dockerBranch = m
+			break
+		}
+	}
+	if dockerBranch == nil {
+		t.Fatal("Could not find a 'Docker Worker payload' branch in the local schema's oneOf")
+	}
+
+	// the embedded branch resolves "#/definitions/artifact" against the whole
+	// file's shared top-level `definitions` (which also holds unrelated
+	// definitions used only by the native Generic Worker payload branch,
+	// e.g. `mount`); extract just the `artifact` definition it actually uses,
+	// to compare against the canonical schema's own, self-contained copy.
+	definitions, _ := local["definitions"].(map[string]any)
+	artifactDef, _ := definitions["artifact"].(map[string]any)
+	dockerBranch["definitions"] = map[string]any{"artifact": artifactDef}
+
+	// the canonical schema is a standalone document, so it carries its own
+	// $id/$schema that the embedded branch (nested within a larger document)
+	// doesn't have.
+	delete(canonical, "$id")
+	delete(canonical, "$schema")
+
+	if !reflect.DeepEqual(dockerBranch, canonical) {
+		localJSON, _ := json.MarshalIndent(dockerBranch, "", "  ")
+		canonicalJSON, _ := json.MarshalIndent(canonical, "", "  ")
+		t.Errorf(
+			"The embedded Docker Worker payload schema has drifted from tools/d2g/schemas/docker-worker/v1/payload.yml.\nEmbedded:\n%s\nCanonical:\n%s",
+			localJSON, canonicalJSON,
+		)
 	}
 }

@@ -177,7 +177,7 @@ type (
 		LoopbackVideo bool `json:"loopbackVideo,omitempty"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	DockerImageArtifact struct {
 		Path string `json:"path"`
 
@@ -188,7 +188,7 @@ type (
 		Type string `json:"type"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	DockerImageName string
 
 	DockerWorkerArtifact struct {
@@ -246,7 +246,7 @@ type (
 		// Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
 		// Artifacts can be an individual `file`, a `directory` containing
 		// potentially multiple files with recursively included subdirectories,
-		// or a `volume` which will create a volume mount from the
+		// or a `volume` (d2g only) which will create a volume mount from the
 		// host to the running container. Unlike `directory` artifacts, the
 		// `volume` directory will already exist as the task starts. Since the
 		// artifacts will be created directly on the host, they do not need to
@@ -285,7 +285,7 @@ type (
 		// Used to enable additional functionality.
 		Features DockerWorkerFeatureFlags `json:"features,omitzero"`
 
-		// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+		// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 		//
 		// One of:
 		//   * DockerImageName
@@ -567,9 +567,10 @@ type (
 		// based on exit code of task commands.
 		OnExitStatus ExitCodeHandling `json:"onExitStatus,omitzero"`
 
-		// A list of OS Groups that the task user should be a member of. Not yet implemented on
-		// non-Windows platforms, therefore this optional property may only be an empty array if
-		// provided.
+		// A list of OS Groups that the task user should be a member of. On the
+		// insecure engine, the task runs as the current user (no separate task
+		// user is created), so only OS Groups that the current user (the user
+		// account running generic-worker) already belongs to may be specified.
 		//
 		// Since: generic-worker 6.0.0
 		//
@@ -605,7 +606,7 @@ type (
 		Namespace string `json:"namespace"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	IndexedDockerImage struct {
 		Namespace string `json:"namespace"`
 
@@ -638,7 +639,7 @@ type (
 		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
-	// Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+	// Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
 	NamedDockerImage struct {
 		Name string `json:"name"`
 
@@ -1296,7 +1297,7 @@ func JSONSchema() string {
           "type": "object"
         },
         "osGroups": {
-          "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+          "description": "A list of OS Groups that the task user should be a member of. On the\ninsecure engine, the task runs as the current user (no separate task\nuser is created), so only OS Groups that the current user (the user\naccount running generic-worker) already belongs to may be specified.\n\nSince: generic-worker 6.0.0",
           "items": {
             "type": "string"
           },
@@ -1335,7 +1336,7 @@ func JSONSchema() string {
           "additionalProperties": {
             "$ref": "#/definitions/artifact"
           },
-          "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `\nArtifacts can be an individual ` + "`" + `file` + "`" + `, a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories,\nor a ` + "`" + `volume` + "`" + ` which will create a volume mount from the\nhost to the running container. Unlike ` + "`" + `directory` + "`" + ` artifacts, the\n` + "`" + `volume` + "`" + ` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+          "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `\nArtifacts can be an individual ` + "`" + `file` + "`" + `, a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories,\nor a ` + "`" + `volume` + "`" + ` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike ` + "`" + `directory` + "`" + ` artifacts, the\n` + "`" + `volume` + "`" + ` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
           "title": "Artifacts",
           "type": "object"
         },
@@ -1466,7 +1467,7 @@ func JSONSchema() string {
           "type": "object"
         },
         "image": {
-          "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+          "description": "Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
           "oneOf": [
             {
               "title": "Docker image name",
@@ -1593,7 +1594,7 @@ func JSONSchema() string {
         "image",
         "maxRunTime"
       ],
-      "title": "Docker worker payload",
+      "title": "Docker Worker payload",
       "type": "object"
     }
   ],

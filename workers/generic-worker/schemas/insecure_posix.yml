@@ -320,9 +320,10 @@ oneOf:
       type: array
       title: OS Groups
       description: |-
-        A list of OS Groups that the task user should be a member of. Not yet implemented on
-        non-Windows platforms, therefore this optional property may only be an empty array if
-        provided.
+        A list of OS Groups that the task user should be a member of. On the
+        insecure engine, the task runs as the current user (no separate task
+        user is created), so only OS Groups that the current user (the user
+        account running generic-worker) already belongs to may be specified.
 
         Since: generic-worker 6.0.0
       uniqueItems: true
@@ -414,7 +415,7 @@ oneOf:
       enum:
       - localhost
       - docker-bridge
-- title: Docker worker payload
+- title: Docker Worker payload
   description: "`.payload` field of the queue."
   type: object
   properties:
@@ -427,7 +428,7 @@ oneOf:
     image:
       title: Docker image.
       description: >-
-        Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
+        Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace
       oneOf:
       - title: Docker image name
         type: string
@@ -587,7 +588,7 @@ oneOf:
         Artifact upload map example: ```{"public/build.tar.gz": {"path": "/home/worker/build.tar.gz", "expires": "2016-05-28T16:12:56.693817Z", "type": "file"}}```
         Artifacts can be an individual `file`, a `directory` containing
         potentially multiple files with recursively included subdirectories,
-        or a `volume` which will create a volume mount from the
+        or a `volume` (d2g only) which will create a volume mount from the
         host to the running container. Unlike `directory` artifacts, the
         `volume` directory will already exist as the task starts. Since the
         artifacts will be created directly on the host, they do not need to
