@@ -37,6 +37,7 @@ properties:
       and backing log artifact `apple/banana.log_backing.txt`.
       Defaults to `public/logs/live.log`.
     type: string
+    pattern: '^[\x20-\x7e]+$'
     default: public/logs/live.log
   image:
     title: Docker image.

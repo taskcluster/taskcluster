@@ -861,6 +861,39 @@ func TestClassifyCreateArtifactError4xxIsMalformedPayload(t *testing.T) {
 	}
 }
 
+// TestPathDerivedArtifactNameRejectedByQueue verifies the end-to-end case
+// classifyCreateArtifactError's 4xx handling exists for: when name is not
+// set and path contains characters outside the printable ASCII range, the
+// payload schema (which only restricts an explicit name, not path - path
+// and artifact name have different character restrictions) lets the task
+// run, but the Queue rejects the resulting derived name at upload time.
+// The task must resolve as malformed-payload, not complete successfully or
+// panic.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestPathDerivedArtifactNameRejectedByQueue(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFileTo("SampleArtifacts/_/X.txt", "unzulässiges-Zeichen.txt"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "unzulässiges-Zeichen.txt",
+				Type: "file",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "TASK EXCEPTION due to response code 400 from Queue") {
+		t.Fatalf("Was expecting log to show the Queue's 400 rejection of the path-derived artifact name, but it doesn't: \n%v", logtext)
+	}
+}
+
 // TestClassifyCreateArtifactError401And403Panic verifies that 401/403
 // responses are NOT classified as malformed-payload: they indicate a
 // worker/credentials problem rather than something wrong with the task
@@ -889,7 +922,7 @@ func TestClassifyCreateArtifactError401And403Panic(t *testing.T) {
 					t.Errorf("Expected classifyCreateArtifactError to panic for response code %v, but it didn't", code)
 				}
 			}()
-			task.classifyCreateArtifactError(artifact, []byte("{}"), &tcclient.APICallException{
+			_ = task.classifyCreateArtifactError(artifact, []byte("{}"), &tcclient.APICallException{
 				CallSummary: &tcclient.CallSummary{
 					HTTPResponseBody: "credentials/scopes problem",
 				},
@@ -950,6 +983,54 @@ func TestEmptyArtifactNameDerivesFromPath(t *testing.T) {
 	actualData := getArtifactContent(t, taskID, "SampleArtifacts/_/X.txt")
 	if string(expectedData) != string(actualData) {
 		t.Fatalf("Artifact content mismatch: expected %d bytes, got %d bytes", len(expectedData), len(actualData))
+	}
+}
+
+// TestInvalidLiveLogNameFailsAsMalformedPayload verifies that logs.live is
+// now subject to the same printable-ASCII pattern as artifact names, so a
+// bad-charactered value is caught by schema validation as malformed-payload
+// rather than reaching the Queue's CreateArtifact call at all.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestInvalidLiveLogNameFailsAsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	td := testTask(t)
+	td.Payload = json.RawMessage(`{
+		"command": [` + rawHelloGoodbye() + `],
+		"maxRunTime": 30,
+		"logs": {
+			"live": "public/logs/a\nb.log"
+		}
+	}`)
+
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
+
+	logtext := LogText(t)
+	if !strings.Contains(logtext, `Does not match pattern '^[\x20-\x7e]+$'`) {
+		t.Fatalf("Was expecting log to explain that logs.live violates the pattern, but it doesn't: \n%v", logtext)
+	}
+}
+
+// TestInvalidBackingLogNameFailsAsMalformedPayload is the equivalent of
+// TestInvalidLiveLogNameFailsAsMalformedPayload for logs.backing.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestInvalidBackingLogNameFailsAsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	td := testTask(t)
+	td.Payload = json.RawMessage(`{
+		"command": [` + rawHelloGoodbye() + `],
+		"maxRunTime": 30,
+		"logs": {
+			"backing": "public/logs/a\nb.log"
+		}
+	}`)
+
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
+
+	logtext := LogText(t)
+	if !strings.Contains(logtext, `Does not match pattern '^[\x20-\x7e]+$'`) {
+		t.Fatalf("Was expecting log to explain that logs.backing violates the pattern, but it doesn't: \n%v", logtext)
 	}
 }
 

@@ -298,6 +298,7 @@ type (
 		// Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.
 		//
 		// Default:    "public/logs/live.log"
+		// Syntax:     ^[\x20-\x7e]+$
 		Log string `json:"log" default:"public/logs/live.log"`
 
 		// Maximum time the task container can run in seconds.
@@ -669,6 +670,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live_backing.log"
+		// Syntax:     ^[\x20-\x7e]+$
 		Backing string `json:"backing" default:"public/logs/live_backing.log"`
 
 		// Specifies a custom name for the live log artifact.
@@ -677,6 +679,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live.log"
+		// Syntax:     ^[\x20-\x7e]+$
 		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
@@ -1291,12 +1294,14 @@ func JSONSchema() string {
             "backing": {
               "default": "public/logs/live_backing.log",
               "description": "Specifies a custom name for the backing log artifact.\nThis is only used if ` + "`" + `features.backingLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+              "pattern": "^[\\x20-\\x7e]+$",
               "title": "Backing log artifact name",
               "type": "string"
             },
             "live": {
               "default": "public/logs/live.log",
               "description": "Specifies a custom name for the live log artifact.\nThis is only used if ` + "`" + `features.liveLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+              "pattern": "^[\\x20-\\x7e]+$",
               "title": "Live log artifact name",
               "type": "string"
             }
@@ -1393,6 +1398,9 @@ func JSONSchema() string {
             "$ref": "#/definitions/artifact"
           },
           "description": "Artifact upload map example: ` + "`" + `` + "`" + `` + "`" + `{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}` + "`" + `` + "`" + `` + "`" + `\nArtifacts can be an individual ` + "`" + `file` + "`" + `, a ` + "`" + `directory` + "`" + ` containing\npotentially multiple files with recursively included subdirectories,\nor a ` + "`" + `volume` + "`" + ` which will create a volume mount from the\nhost to the running container. Unlike ` + "`" + `directory` + "`" + ` artifacts, the\n` + "`" + `volume` + "`" + ` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+          "propertyNames": {
+            "pattern": "^[\\x20-\\x7e]+$"
+          },
           "title": "Artifacts",
           "type": "object"
         },
@@ -1603,6 +1611,7 @@ func JSONSchema() string {
         "log": {
           "default": "public/logs/live.log",
           "description": "Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with ` + "`" + `_backing` + "`" + ` appended, prior to the file extension (if present). For example, ` + "`" + `apple/banana.log.txt` + "`" + ` results in livelog artifact ` + "`" + `apple/banana.log.txt` + "`" + ` and backing log artifact ` + "`" + `apple/banana.log_backing.txt` + "`" + `. Defaults to ` + "`" + `public/logs/live.log` + "`" + `.",
+          "pattern": "^[\\x20-\\x7e]+$",
           "title": "Livelog artifact name",
           "type": "string"
         },

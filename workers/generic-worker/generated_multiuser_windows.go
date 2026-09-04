@@ -503,6 +503,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live_backing.log"
+		// Syntax:     ^[\x20-\x7e]+$
 		Backing string `json:"backing" default:"public/logs/live_backing.log"`
 
 		// Specifies a custom name for the live log artifact.
@@ -511,6 +512,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live.log"
+		// Syntax:     ^[\x20-\x7e]+$
 		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
@@ -1060,12 +1062,14 @@ func JSONSchema() string {
         "backing": {
           "default": "public/logs/live_backing.log",
           "description": "Specifies a custom name for the backing log artifact.\nThis is only used if ` + "`" + `features.backingLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+          "pattern": "^[\\x20-\\x7e]+$",
           "title": "Backing log artifact name",
           "type": "string"
         },
         "live": {
           "default": "public/logs/live.log",
           "description": "Specifies a custom name for the live log artifact.\nThis is only used if ` + "`" + `features.liveLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+          "pattern": "^[\\x20-\\x7e]+$",
           "title": "Live log artifact name",
           "type": "string"
         }

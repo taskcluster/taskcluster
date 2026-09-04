@@ -125,6 +125,7 @@ type (
 		// Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.
 		//
 		// Default:    "public/logs/live.log"
+		// Syntax:     ^[\x20-\x7e]+$
 		Log string `json:"log" default:"public/logs/live.log"`
 
 		// Maximum time the task container can run in seconds.
@@ -478,6 +479,7 @@ func JSONSchema() string {
     "log": {
       "default": "public/logs/live.log",
       "description": "Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with ` + "`" + `_backing` + "`" + ` appended, prior to the file extension (if present). For example, ` + "`" + `apple/banana.log.txt` + "`" + ` results in livelog artifact ` + "`" + `apple/banana.log.txt` + "`" + ` and backing log artifact ` + "`" + `apple/banana.log_backing.txt` + "`" + `. Defaults to ` + "`" + `public/logs/live.log` + "`" + `.",
+      "pattern": "^[\\x20-\\x7e]+$",
       "title": "Livelog artifact name",
       "type": "string"
     },
