@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
+	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
 	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
@@ -787,6 +788,250 @@ func TestOptionalArtifactUploadFailureFailsTask(t *testing.T) {
 
 	td := testTask(t)
 	_ = submitAndAssert(t, td, payload, "exception", "resource-unavailable")
+}
+
+// TestInvalidArtifactNameFailsAsMalformedPayload verifies that an artifact
+// name which doesn't match the pattern the Queue enforces is now caught by
+// generic-worker's own payload schema validation, failing the task
+// immediately as malformed-payload rather than running to completion.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestInvalidArtifactNameFailsAsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "SampleArtifacts/_/X.txt",
+				Type: "file",
+				Name: "public/logs/a\nb.log",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+}
+
+// TestClassifyCreateArtifactError4xxIsMalformedPayload unit tests
+// classifyCreateArtifactError directly, to verify that a 4xx response from
+// the Queue's CreateArtifact endpoint is classified as malformed-payload
+// rather than causing an unrecovered panic.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestClassifyCreateArtifactError4xxIsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	scheduleTask(t, testTask(t), GenericWorkerPayload{})
+
+	// need to claim task directly to get task.StatusManager wired up
+	tasks := ClaimWork(1)
+	if len(tasks) != 1 {
+		t.Fatalf("Expected to claim 1 task, got %v", len(tasks))
+	}
+	task := tasks[0]
+
+	artifact := &artifacts.S3Artifact{
+		BaseArtifact: &artifacts.BaseArtifact{
+			Name: "public/build/firefox.exe",
+		},
+	}
+
+	cee := task.classifyCreateArtifactError(artifact, []byte("{}"), &tcclient.APICallException{
+		CallSummary: &tcclient.CallSummary{
+			HTTPResponseBody: "some 4xx error the schema didn't anticipate",
+		},
+		RootCause: httpbackoff.BadHttpResponseCode{
+			// an arbitrary, unassigned 4xx code (i.e. not 400/404/409/etc,
+			// which might coincidentally be handled by a more specific
+			// branch) to prove the generic "any 4xx" fallback is exercised
+			HttpResponseCode: 456,
+		},
+	})
+
+	if cee == nil {
+		t.Fatal("Expected classifyCreateArtifactError to return a malformed-payload error, but got nil")
+	}
+	if cee.Reason != malformedPayload {
+		t.Fatalf("Expected reason %q, got %q", malformedPayload, cee.Reason)
+	}
+	if cee.TaskStatus != errored {
+		t.Fatalf("Expected task status %q, got %q", errored, cee.TaskStatus)
+	}
+}
+
+// TestPathDerivedArtifactNameRejectedByQueue verifies the end-to-end case
+// classifyCreateArtifactError's 4xx handling exists for: when name is not
+// set and path contains characters outside the printable ASCII range, the
+// payload schema (which only restricts an explicit name, not path - path
+// and artifact name have different character restrictions) lets the task
+// run, but the Queue rejects the resulting derived name at upload time.
+// The task must resolve as malformed-payload, not complete successfully or
+// panic.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestPathDerivedArtifactNameRejectedByQueue(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFileTo("SampleArtifacts/_/X.txt", "unzulässiges-Zeichen.txt"),
+		MaxRunTime: 30,
+		Artifacts: []Artifact{
+			{
+				Path: "unzulässiges-Zeichen.txt",
+				Type: "file",
+			},
+		},
+	}
+	defaults.SetDefaults(&payload)
+
+	td := testTask(t)
+	_ = submitAndAssert(t, td, payload, "exception", "malformed-payload")
+
+	logtext := LogText(t)
+	if !strings.Contains(logtext, "TASK EXCEPTION due to response code 400 from Queue") {
+		t.Fatalf("Was expecting log to show the Queue's 400 rejection of the path-derived artifact name, but it doesn't: \n%v", logtext)
+	}
+}
+
+// TestClassifyCreateArtifactError401And403Panic verifies that 401/403
+// responses are NOT classified as malformed-payload: they indicate a
+// worker/credentials problem rather than something wrong with the task
+// payload, so they fall through to the panic instead.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestClassifyCreateArtifactError401And403Panic(t *testing.T) {
+	setup(t)
+
+	scheduleTask(t, testTask(t), GenericWorkerPayload{})
+	tasks := ClaimWork(1)
+	if len(tasks) != 1 {
+		t.Fatalf("Expected to claim 1 task, got %v", len(tasks))
+	}
+	task := tasks[0]
+
+	artifact := &artifacts.S3Artifact{
+		BaseArtifact: &artifacts.BaseArtifact{
+			Name: "public/build/firefox.exe",
+		},
+	}
+
+	for _, code := range []int{401, 403} {
+		func() {
+			defer func() {
+				if recover() == nil {
+					t.Errorf("Expected classifyCreateArtifactError to panic for response code %v, but it didn't", code)
+				}
+			}()
+			_ = task.classifyCreateArtifactError(artifact, []byte("{}"), &tcclient.APICallException{
+				CallSummary: &tcclient.CallSummary{
+					HTTPResponseBody: "credentials/scopes problem",
+				},
+				RootCause: httpbackoff.BadHttpResponseCode{
+					HttpResponseCode: code,
+				},
+			})
+		}()
+	}
+}
+
+// TestEmptyArtifactNameDerivesFromPath verifies that an explicit empty
+// string artifact name (as opposed to omitting the name field entirely) is
+// accepted by the payload schema and derives the published artifact name
+// from path, exactly as omitting the name field does. This is only
+// reachable via a hand-authored task payload, since Go's `omitempty` tag
+// means a Go-constructed Artifact{Name: ""} never serializes a "name" key
+// at all, so it's built here via a map rather than the Artifact struct.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestEmptyArtifactNameDerivesFromPath(t *testing.T) {
+	setup(t)
+
+	payload := GenericWorkerPayload{
+		Command:    copyTestdataFile("SampleArtifacts/_/X.txt"),
+		MaxRunTime: 30,
+	}
+	defaults.SetDefaults(&payload)
+
+	payloadJSON, err := json.Marshal(&payload)
+	if err != nil {
+		t.Fatalf("Could not marshal payload: %v", err)
+	}
+	var payloadMap map[string]any
+	if err := json.Unmarshal(payloadJSON, &payloadMap); err != nil {
+		t.Fatalf("Could not unmarshal payload into map: %v", err)
+	}
+	payloadMap["artifacts"] = []map[string]any{
+		{
+			"path": "SampleArtifacts/_/X.txt",
+			"type": "file",
+			"name": "",
+		},
+	}
+	finalPayloadJSON, err := json.Marshal(payloadMap)
+	if err != nil {
+		t.Fatalf("Could not marshal final payload: %v", err)
+	}
+
+	td := testTask(t)
+	td.Payload = json.RawMessage(finalPayloadJSON)
+
+	taskID := submitAndAssert(t, td, GenericWorkerPayload{}, "completed", "completed")
+
+	expectedData, err := os.ReadFile(filepath.Join(testdataDir, "SampleArtifacts", "_", "X.txt"))
+	if err != nil {
+		t.Fatalf("Error reading source file: %v", err)
+	}
+	actualData := getArtifactContent(t, taskID, "SampleArtifacts/_/X.txt")
+	if string(expectedData) != string(actualData) {
+		t.Fatalf("Artifact content mismatch: expected %d bytes, got %d bytes", len(expectedData), len(actualData))
+	}
+}
+
+// TestInvalidLiveLogNameFailsAsMalformedPayload verifies that logs.live is
+// now subject to the same printable-ASCII pattern as artifact names, so a
+// bad-charactered value is caught by schema validation as malformed-payload
+// rather than reaching the Queue's CreateArtifact call at all.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestInvalidLiveLogNameFailsAsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	td := testTask(t)
+	td.Payload = json.RawMessage(`{
+		"command": [` + rawHelloGoodbye() + `],
+		"maxRunTime": 30,
+		"logs": {
+			"live": "public/logs/a\nb.log"
+		}
+	}`)
+
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
+
+	logtext := LogText(t)
+	if !strings.Contains(logtext, `Does not match pattern '^[\x20-\x7e]+$'`) {
+		t.Fatalf("Was expecting log to explain that logs.live violates the pattern, but it doesn't: \n%v", logtext)
+	}
+}
+
+// TestInvalidBackingLogNameFailsAsMalformedPayload is the equivalent of
+// TestInvalidLiveLogNameFailsAsMalformedPayload for logs.backing.
+// See https://github.com/taskcluster/taskcluster/issues/9007
+func TestInvalidBackingLogNameFailsAsMalformedPayload(t *testing.T) {
+	setup(t)
+
+	td := testTask(t)
+	td.Payload = json.RawMessage(`{
+		"command": [` + rawHelloGoodbye() + `],
+		"maxRunTime": 30,
+		"logs": {
+			"backing": "public/logs/a\nb.log"
+		}
+	}`)
+
+	_ = submitAndAssert(t, td, GenericWorkerPayload{}, "exception", "malformed-payload")
+
+	logtext := LogText(t)
+	if !strings.Contains(logtext, `Does not match pattern '^[\x20-\x7e]+$'`) {
+		t.Fatalf("Was expecting log to explain that logs.backing violates the pattern, but it doesn't: \n%v", logtext)
+	}
 }
 
 func TestMissingOptionalDirectoryArtifactDoesNotFailTest(t *testing.T) {

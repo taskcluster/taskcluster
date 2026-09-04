@@ -157,7 +157,18 @@ func (task *TaskRun) classifyCreateArtifactError(artifact artifacts.TaskArtifact
 			if status == deadlineExceeded || status == cancelled {
 				return nil
 			}
-			// assume a problem with the request == worker bug
+			// 4xx status code implies Queue rejected this artifact. The
+			// Queue's requirements might be stricter than Generic Worker's
+			// payload schema. For example, allowed characters in artifact name
+			// get tightened on Queue side but Generic Worker is not updated
+			// everywhere so Generic Worker payload schema might be looser.
+			// 401/403 are excluded here: they signal a worker/credentials
+			// problem rather than something the task submitter can fix, so
+			// they fall through to the panic below instead.
+			if rootCause.HttpResponseCode/100 == 4 && rootCause.HttpResponseCode != 401 && rootCause.HttpResponseCode != 403 {
+				return MalformedPayloadError(fmt.Errorf("TASK EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
+			}
+			// assume a genuine worker bug for anything else
 			panic(fmt.Errorf("WORKER EXCEPTION due to response code %v from Queue when uploading artifact %#v with CreateArtifact payload %v - HTTP response body: %v", rootCause.HttpResponseCode, artifact, string(payload), t.CallSummary.HTTPResponseBody))
 		case *url.Error:
 			switch subCause := rootCause.Err.(type) {

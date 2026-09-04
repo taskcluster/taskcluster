@@ -108,12 +108,14 @@ oneOf:
           name:
             title: Name of the artifact
             type: string
+            pattern: '^[\x20-\x7e]*$'
             description: |-
               Name of the artifact, as it will be published. If not set, `path` will be used.
               Conventionally (although not enforced) path elements are forward slash separated. Example:
               `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
               Artifact names not beginning `public/` are scope-protected (caller requires scopes to
-              download the artifact). See the Queue documentation for more information.
+              download the artifact). See the Queue documentation for more information. Must consist of
+              printable ASCII characters only.
 
               Since: generic-worker 8.1.0
           expires:
@@ -391,6 +393,7 @@ oneOf:
 
             Since: generic-worker 48.2.0
           type: string
+          pattern: '^[\x20-\x7e]+$'
           default: public/logs/live.log
         backing:
           title: Backing log artifact name
@@ -400,6 +403,7 @@ oneOf:
 
             Since: generic-worker 48.2.0
           type: string
+          pattern: '^[\x20-\x7e]+$'
           default: public/logs/live_backing.log
     taskclusterProxyInterface:
       title: Network Interface for Taskcluster Proxy to listen on
@@ -423,6 +427,7 @@ oneOf:
       description: >-
         Specifies a custom name for the livelog artifact. Note that this is also used in determining the name of the backing log artifact name. Backing log artifact name matches livelog artifact name with `_backing` appended, prior to the file extension (if present). For example, `apple/banana.log.txt` results in livelog artifact `apple/banana.log.txt` and backing log artifact `apple/banana.log_backing.txt`. Defaults to `public/logs/live.log`.
       type: string
+      pattern: '^[\x20-\x7e]+$'
       default: public/logs/live.log
     image:
       title: Docker image.
@@ -596,6 +601,8 @@ oneOf:
         Moreover, in the case of time-critical spot terminations, tasks have
         more chance of successfully publishing volume artifacts than directory
         artifacts, due to the efficiency gain.
+      propertyNames:
+        pattern: '^[\x20-\x7e]+$'
       additionalProperties:
         $ref: "#/definitions/artifact"
     supersederUrl:

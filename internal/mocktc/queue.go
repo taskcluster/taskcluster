@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -105,9 +106,29 @@ func (queue *Queue) ensureArtifactMap(taskId, runId string) {
 	}
 }
 
+// artifactNamePattern mirrors the `name` URL parameter validation performed
+// by the real Queue API (services/queue/src/api.js). This matters even
+// though generic-worker's own payload schema also validates an explicit
+// `name`: when `name` is omitted, generic-worker derives it from `path`
+// (which the schema does not - and should not - restrict), so a path
+// containing e.g. non-ASCII characters can still reach CreateArtifact with
+// an invalid derived name.
+var artifactNamePattern = regexp.MustCompile(`^[\x20-\x7e]+$`)
+
 func (queue *Queue) CreateArtifact(taskId, runId, name string, payload *tcqueue.PostArtifactRequest) (*tcqueue.PostArtifactResponse, error) {
 	queue.mu.Lock()
 	defer queue.mu.Unlock()
+
+	if !artifactNamePattern.MatchString(name) {
+		return nil, &tcclient.APICallException{
+			CallSummary: &tcclient.CallSummary{
+				HTTPResponseBody: fmt.Sprintf("Invalid URL patterns:\nURL parameter 'name' given as '%v' must match regular expression: '/^[\\x20-\\x7e]+$/'", name),
+			},
+			RootCause: httpbackoff.BadHttpResponseCode{
+				HttpResponseCode: 400,
+			},
+		}
+	}
 
 	queue.ensureArtifactMap(taskId, runId)
 

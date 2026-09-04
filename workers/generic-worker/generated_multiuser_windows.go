@@ -77,9 +77,12 @@ type (
 		// Conventionally (although not enforced) path elements are forward slash separated. Example:
 		// `public/build/a/house`. Note, no scopes are required to read artifacts beginning `public/`.
 		// Artifact names not beginning `public/` are scope-protected (caller requires scopes to
-		// download the artifact). See the Queue documentation for more information.
+		// download the artifact). See the Queue documentation for more information. Must consist of
+		// printable ASCII characters only.
 		//
 		// Since: generic-worker 8.1.0
+		//
+		// Syntax:     ^[\x20-\x7e]*$
 		Name string `json:"name,omitempty"`
 
 		// If `true`, the artifact is optional. If the file or directory
@@ -500,6 +503,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live_backing.log"
+		// Syntax:     ^[\x20-\x7e]+$
 		Backing string `json:"backing" default:"public/logs/live_backing.log"`
 
 		// Specifies a custom name for the live log artifact.
@@ -508,6 +512,7 @@ type (
 		// Since: generic-worker 48.2.0
 		//
 		// Default:    "public/logs/live.log"
+		// Syntax:     ^[\x20-\x7e]+$
 		Live string `json:"live" default:"public/logs/live.log"`
 	}
 
@@ -937,7 +942,8 @@ func JSONSchema() string {
             "type": "string"
           },
           "name": {
-            "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information.\n\nSince: generic-worker 8.1.0",
+            "description": "Name of the artifact, as it will be published. If not set, ` + "`" + `path` + "`" + ` will be used.\nConventionally (although not enforced) path elements are forward slash separated. Example:\n` + "`" + `public/build/a/house` + "`" + `. Note, no scopes are required to read artifacts beginning ` + "`" + `public/` + "`" + `.\nArtifact names not beginning ` + "`" + `public/` + "`" + ` are scope-protected (caller requires scopes to\ndownload the artifact). See the Queue documentation for more information. Must consist of\nprintable ASCII characters only.\n\nSince: generic-worker 8.1.0",
+            "pattern": "^[\\x20-\\x7e]*$",
             "title": "Name of the artifact",
             "type": "string"
           },
@@ -1056,12 +1062,14 @@ func JSONSchema() string {
         "backing": {
           "default": "public/logs/live_backing.log",
           "description": "Specifies a custom name for the backing log artifact.\nThis is only used if ` + "`" + `features.backingLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+          "pattern": "^[\\x20-\\x7e]+$",
           "title": "Backing log artifact name",
           "type": "string"
         },
         "live": {
           "default": "public/logs/live.log",
           "description": "Specifies a custom name for the live log artifact.\nThis is only used if ` + "`" + `features.liveLog` + "`" + ` is ` + "`" + `true` + "`" + `.\n\nSince: generic-worker 48.2.0",
+          "pattern": "^[\\x20-\\x7e]+$",
           "title": "Live log artifact name",
           "type": "string"
         }
