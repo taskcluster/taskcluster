@@ -292,6 +292,8 @@ class Handlers {
         throw err;
       }
     }
+
+    return sealedTaskGroupIds;
   }
 
   // Trigger a hook

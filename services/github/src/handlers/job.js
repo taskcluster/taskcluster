@@ -479,9 +479,11 @@ export async function jobHandler(message) {
       );
     }
 
+    let sealedTaskGroupIds;
     try {
       debug(`Creating tasks for ${organization}/${repository}@${sha} (${taskGroupMap.size} task group(s))`);
-      await this.createTasks({ scopes: graphConfig.scopes, tasks: graphConfig.tasks });
+      sealedTaskGroupIds =
+        (await this.createTasks({ scopes: graphConfig.scopes, tasks: graphConfig.tasks })) ?? new Set();
     } catch (e) {
       debug(`Creating tasks for ${organization}/${repository}@${sha} failed! Leaving comment on Github.`);
       return await this.createExceptionComment({
@@ -506,6 +508,11 @@ export async function jobHandler(message) {
     }
 
     for (const [taskGroupId, routes] of taskGroupMap.entries()) {
+      if (sealedTaskGroupIds.has(taskGroupId)) {
+        debug(`Not publishing status exchange for sealed task group ${taskGroupId}`);
+        continue;
+      }
+
       try {
         debug(
           `Publishing status exchange for ${organization}/${repository}@${sha} (${groupState}, taskGroupId: ${taskGroupId})`
