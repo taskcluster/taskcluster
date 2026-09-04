@@ -21,7 +21,7 @@ and reports back results to the queue.
                                             [--worker-runner-protocol-pipe PIPE]
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE
-    generic-worker copy-to-temp-file        --copy-file COPY-FILE
+    generic-worker cat-file                 --cat-file CAT-FILE
     generic-worker create-file              --create-file CREATE-FILE
     generic-worker create-dir               --create-dir CREATE-DIR
     generic-worker unarchive                --archive-src ARCHIVE-SRC --archive-dst ARCHIVE-DST --archive-fmt ARCHIVE-FMT
@@ -44,9 +44,8 @@ and reports back results to the queue.
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.
-    copy-to-temp-file                       This will copy the specified file to a temporary
-                                            location and will return the temporary file path
-                                            to stdout. Intended for internal use.
+    cat-file                                This will write the contents of the specified
+                                            file to stdout. Intended for internal use.
     create-file                             This will create a file at the specified path.
                                             Intended for internal use.
     create-dir                              This will create a directory (including missing
@@ -75,7 +74,7 @@ and reports back results to the queue.
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.
-    --copy-file COPY-FILE                   The path to the file to copy.
+    --cat-file CAT-FILE                     The path to the file to write to stdout.
     --create-file CREATE-FILE               The path to the file to create.
     --create-dir CREATE-DIR                 The path to the directory to create.
     --archive-src ARCHIVE-SRC               The path to the archive file to unarchive.
@@ -398,7 +397,7 @@ and reports back results to the queue.
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.
     75     Not able to create an ed25519 key pair.
-    76     Not able to copy --copy-file to a temporary file.
+    76     Not able to write --cat-file to stdout.
     77     Not able to apply required file access permissions to the generic-worker config
            file so that task users can't read from or write to it.
     78     Not able to connect to --worker-runner-protocol-pipe.

@@ -17,7 +17,7 @@ const (
 	WORKER_SHUTDOWN             ExitCode = 72
 	INVALID_CONFIG              ExitCode = 73
 	CANT_CREATE_ED25519_KEYPAIR ExitCode = 75
-	CANT_COPY_TO_TEMP_FILE      ExitCode = 76
+	CANT_CAT_FILE               ExitCode = 76
 	CANT_CONNECT_PROTOCOL_PIPE  ExitCode = 78
 	CANT_CREATE_FILE            ExitCode = 79
 	CANT_CREATE_DIRECTORY       ExitCode = 80
@@ -39,7 +39,7 @@ and reports back results to the queue.
                                             [--worker-runner-protocol-pipe PIPE]` + installServiceSummary() + `
     generic-worker show-payload-schema
     generic-worker new-ed25519-keypair      --file ED25519-PRIVATE-KEY-FILE` + customTargetsSummary() + `
-    generic-worker copy-to-temp-file        --copy-file COPY-FILE
+    generic-worker cat-file                 --cat-file CAT-FILE
     generic-worker create-file              --create-file CREATE-FILE
     generic-worker create-dir               --create-dir CREATE-DIR
     generic-worker unarchive                --archive-src ARCHIVE-SRC --archive-dst ARCHIVE-DST --archive-fmt ARCHIVE-FMT
@@ -62,9 +62,8 @@ and reports back results to the queue.
                                             compliant private/public key pair. The public
                                             key will be written to stdout and the private
                                             key will be written to the specified file.` + customTargets() + `
-    copy-to-temp-file                       This will copy the specified file to a temporary
-                                            location and will return the temporary file path
-                                            to stdout. Intended for internal use.
+    cat-file                                This will write the contents of the specified
+                                            file to stdout. Intended for internal use.
     create-file                             This will create a file at the specified path.
                                             Intended for internal use.
     create-dir                              This will create a directory (including missing
@@ -93,7 +92,7 @@ and reports back results to the queue.
                                             to. The parent directory must already exist.
                                             If the file exists it will be overwritten,
                                             otherwise it will be created.` + sidSID() + `
-    --copy-file COPY-FILE                   The path to the file to copy.
+    --cat-file CAT-FILE                     The path to the file to write to stdout.
     --create-file CREATE-FILE               The path to the file to create.
     --create-dir CREATE-DIR                 The path to the directory to create.
     --archive-src ARCHIVE-SRC               The path to the archive file to unarchive.
@@ -369,7 +368,7 @@ and reports back results to the queue.
            spot termination notice, and therefore has shut down.
     73     The config provided to the worker is invalid.` + exitCode74() + `
     75     Not able to create an ed25519 key pair.
-    76     Not able to copy --copy-file to a temporary file.` + exitCode77() + `
+    76     Not able to write --cat-file to stdout.` + exitCode77() + `
     78     Not able to connect to --worker-runner-protocol-pipe.
     79     Not able to create file at --create-file path.
     80     Not able to create directory at --create-dir path.
