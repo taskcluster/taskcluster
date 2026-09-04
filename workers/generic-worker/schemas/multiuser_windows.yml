@@ -457,6 +457,7 @@ properties:
 
           Since: generic-worker 48.2.0
         type: string
+        pattern: '^[\x20-\x7e]+$'
         default: public/logs/live.log
       backing:
         title: Backing log artifact name
@@ -466,6 +467,7 @@ properties:
 
           Since: generic-worker 48.2.0
         type: string
+        pattern: '^[\x20-\x7e]+$'
         default: public/logs/live_backing.log
   taskclusterProxyInterface:
     title: Network Interface for Taskcluster Proxy to listen on
