@@ -6,10 +6,9 @@ import { App } from '@taskcluster/lib-app';
 import SchemaSet from '@taskcluster/lib-validate';
 import { monitorManager, monitor } from './monitor.js';
 
-const rootUrl = `http://localhost:60526`;
-
 suite(testing.suiteName(), () => {
   let proxier;
+  let rootUrl;
 
   // Construct API
   const builder = new APIBuilder({
@@ -108,6 +107,8 @@ suite(testing.suiteName(), () => {
 
   setup(async () => {
     assert(_apiServer === null, '_apiServer must be null');
+    const port = await testing.getFreePort();
+    rootUrl = `http://127.0.0.1:${port}`;
     testing.fakeauth.start(
       {
         'test-client': ['auth:credentials', 'test:internal-error'],
@@ -138,7 +139,7 @@ suite(testing.suiteName(), () => {
 
     // Create application
     _apiServer = await App({
-      port: 60526,
+      port,
       env: 'development',
       forceSSL: false,
       trustProxy: false,
@@ -195,7 +196,7 @@ suite(testing.suiteName(), () => {
         clientId: 'test-client',
         accessToken: 'test-token',
       },
-      rootUrl: 'http://localhost:60526',
+      rootUrl,
     });
     return server2.getOccasionalInternalError().then(() => {
       assert(getOccasionalInternalErrorCount === 4, 'expected 4 attempts');
@@ -209,7 +210,7 @@ suite(testing.suiteName(), () => {
         clientId: 'test-client',
         accessToken: 'test-token',
       },
-      rootUrl: 'http://localhost:60526',
+      rootUrl,
       retries: 0,
     });
     getInternalErrorCount = 0;
@@ -230,7 +231,7 @@ suite(testing.suiteName(), () => {
         clientId: 'test-client',
         accessToken: 'test-token',
       },
-      rootUrl: 'http://localhost:60526',
+      rootUrl,
       retries: 1,
     });
     getInternalErrorCount = 0;
