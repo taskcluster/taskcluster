@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -33,15 +31,12 @@ func TestTaskManagerCapacity(t *testing.T) {
 	require.Equal(t, uint(3), tm.TaskCount())
 
 	// Remove a task
-	tm.FinishTask()
 	tm.RemoveTask("task2")
 	require.Equal(t, uint(1), tm.AvailableCapacity())
 	require.Equal(t, uint(2), tm.TaskCount())
 
 	// Remove remaining tasks
-	tm.FinishTask()
 	tm.RemoveTask("task1")
-	tm.FinishTask()
 	tm.RemoveTask("task3")
 	require.Equal(t, uint(3), tm.AvailableCapacity())
 	require.True(t, tm.IsIdle())
@@ -71,49 +66,6 @@ func TestTaskManagerGetTask(t *testing.T) {
 	require.Nil(t, tm.GetTask("nonexistent"))
 }
 
-func TestTaskManagerWaitForAll(t *testing.T) {
-	tm := NewTaskManager(2)
-
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	task1 := &TaskRun{TaskID: "task1"}
-	task2 := &TaskRun{TaskID: "task2"}
-	tm.AddTask(task1)
-	tm.AddTask(task2)
-
-	// Simulate tasks completing
-	go func() {
-		time.Sleep(10 * time.Millisecond)
-		tm.FinishTask()
-		tm.RemoveTask("task1")
-		wg.Done()
-	}()
-	go func() {
-		time.Sleep(20 * time.Millisecond)
-		tm.FinishTask()
-		tm.RemoveTask("task2")
-		wg.Done()
-	}()
-
-	// WaitForAll should block until all tasks complete
-	done := make(chan struct{})
-	go func() {
-		tm.WaitForAll()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-		// Success
-	case <-time.After(1 * time.Second):
-		t.Fatal("WaitForAll timed out")
-	}
-
-	wg.Wait()
-	require.True(t, tm.IsIdle())
-}
-
 func TestTaskManagerLastActive(t *testing.T) {
 	tm := NewTaskManager(2)
 	initialTime := tm.LastActive()
@@ -125,17 +77,12 @@ func TestTaskManagerLastActive(t *testing.T) {
 	require.True(t, afterAdd.After(initialTime))
 
 	time.Sleep(5 * time.Millisecond)
-	tm.FinishTask()
 	tm.RemoveTask("task1")
 	afterRemove := tm.LastActive()
 	require.True(t, afterRemove.After(afterAdd))
 }
 
-// TestTaskManagerWaitForAllWithoutRemoveTask verifies WaitForAll unblocks when
-// task goroutines call FinishTask even if the main loop has not yet processed
-// completions (the capacity>1 shutdown scenario), and that leftover tasks are
-// unregistered so the worker status file does not keep listing them.
-func TestTaskManagerWaitForAllWithoutRemoveTask(t *testing.T) {
+func TestTaskManagerWaitForAll(t *testing.T) {
 	origPath := workerStatusPath
 	workerStatusPath = filepath.Join(t.TempDir(), "worker-status.json")
 	t.Cleanup(func() { workerStatusPath = origPath })
@@ -144,34 +91,46 @@ func TestTaskManagerWaitForAllWithoutRemoveTask(t *testing.T) {
 	tm.AddTask(&TaskRun{TaskID: "task1"})
 	tm.AddTask(&TaskRun{TaskID: "task2"})
 
-	statusBytes, err := os.ReadFile(workerStatusPath)
-	require.NoError(t, err)
-	var status WorkerStatus
-	require.NoError(t, json.Unmarshal(statusBytes, &status))
-	require.ElementsMatch(t, []string{"task1", "task2"}, status.CurrentTaskIDs)
+	completions := make(chan taskCompletionResult, 2)
+	completions <- taskCompletionResult{taskID: "task1"}
+	completions <- taskCompletionResult{taskID: "task2"}
 
-	go func() {
-		time.Sleep(10 * time.Millisecond)
-		tm.FinishTask()
-		time.Sleep(5 * time.Millisecond)
-		tm.FinishTask()
-	}()
-
-	done := make(chan struct{})
-	go func() {
-		tm.WaitForAll()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-	case <-time.After(1 * time.Second):
-		t.Fatal("WaitForAll timed out")
-	}
+	var applied []string
+	tm.WaitForAll(completions, func(result taskCompletionResult) {
+		tm.RemoveTask(result.taskID)
+		applied = append(applied, result.taskID)
+	})
 
 	require.True(t, tm.IsIdle())
-	_, err = os.Stat(workerStatusPath)
-	require.True(t, os.IsNotExist(err), "status file should be removed when no tasks remain")
+	require.ElementsMatch(t, []string{"task1", "task2"}, applied)
+	require.NoFileExists(t, workerStatusPath)
+}
+
+func TestTaskManagerWaitForAllIdle(t *testing.T) {
+	tm := NewTaskManager(1)
+	// Unbuffered: receiving would deadlock if we waited while already idle.
+	completions := make(chan taskCompletionResult)
+	tm.WaitForAll(completions, func(taskCompletionResult) {
+		t.Fatal("should not receive when idle")
+	})
+}
+
+func TestTaskManagerWaitForAllUnregisteredCompletions(t *testing.T) {
+	tm := NewTaskManager(1)
+	tm.AddTask(&TaskRun{TaskID: "task1"})
+
+	completions := make(chan taskCompletionResult, 2)
+	completions <- taskCompletionResult{taskID: "setup-failure"}
+	completions <- taskCompletionResult{taskID: "task1"}
+
+	var applied []string
+	tm.WaitForAll(completions, func(result taskCompletionResult) {
+		tm.RemoveTask(result.taskID)
+		applied = append(applied, result.taskID)
+	})
+
+	require.True(t, tm.IsIdle())
+	require.Equal(t, []string{"setup-failure", "task1"}, applied)
 }
 
 func TestTaskManagerConcurrentAccess(t *testing.T) {
@@ -186,7 +145,6 @@ func TestTaskManagerConcurrentAccess(t *testing.T) {
 			task := &TaskRun{TaskID: fmt.Sprintf("task-%d", id)}
 			tm.AddTask(task)
 			time.Sleep(time.Millisecond)
-			tm.FinishTask()
 			tm.RemoveTask(task.TaskID)
 		}(i)
 	}

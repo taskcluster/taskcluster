@@ -494,12 +494,9 @@ func RunWorker() (exitCode ExitCode) {
 		log.Printf("WARNING: failed to remove old task directories/users: %v", err)
 	}
 
-	// processCompletion records bookkeeping for a finished task and
-	// reports back what the main loop should do next. Extracted from
-	// inline drain logic so both the top-of-loop drain and the
-	// wait-window completion path can share a single implementation
-	// (avoiding the prior re-put-on-channel pattern, which relied on
-	// a brittle buffer-size / sender-count invariant).
+	// processCompletion applies a completion and reports what the main loop
+	// should do next. Bookkeeping is in recordCompletion so shutdown's
+	// WaitForAll uses the same path.
 	type completionAction int
 	const (
 		completionContinue completionAction = iota
@@ -508,15 +505,18 @@ func RunWorker() (exitCode ExitCode) {
 		completionTasksComplete
 		completionRebootRequired
 	)
-	processCompletion := func(result taskCompletionResult) completionAction {
+	recordCompletion := func(result taskCompletionResult) {
 		taskManager.RemoveTask(result.taskID)
 		tasksResolved++
 		lastActive = time.Now()
+	}
+	processCompletion := func(result taskCompletionResult) completionAction {
+		recordCompletion(result)
 
 		if result.workerShutdown {
 			log.Printf("Task %s requested worker shutdown, aborting other tasks...", result.taskID)
 			graceful.Terminate(false) // Abort other tasks immediately
-			taskManager.WaitForAll()
+			taskManager.WaitForAll(taskCompleteChan, recordCompletion)
 			return completionWorkerShutdown
 		}
 
@@ -529,7 +529,7 @@ func RunWorker() (exitCode ExitCode) {
 		log.Printf("Resolved %v tasks in total so far%v.", tasksResolved, remainingTaskCountText)
 		if remainingTasks == 0 {
 			log.Printf("Completed all task(s) (number of tasks to run = %v)", config.NumberOfTasksToRun)
-			taskManager.WaitForAll()
+			taskManager.WaitForAll(taskCompleteChan, recordCompletion)
 			if checkWhetherToTerminate() {
 				return completionWorkerManagerShutdown
 			}
@@ -585,13 +585,13 @@ mainLoop:
 		}
 
 		if checkWhetherToTerminate() {
-			taskManager.WaitForAll()
+			taskManager.WaitForAll(taskCompleteChan, recordCompletion)
 			return WORKER_MANAGER_SHUTDOWN
 		}
 
 		if graceful.TerminationRequested() {
 			log.Printf("Graceful termination requested, waiting for %d running tasks...", taskManager.TaskCount())
-			taskManager.WaitForAll()
+			taskManager.WaitForAll(taskCompleteChan, recordCompletion)
 			return WORKER_SHUTDOWN
 		}
 
@@ -743,7 +743,6 @@ mainLoop:
 							t.Error(fmt.Sprintf("Internal worker error (panic): %v", r))
 						}
 						portManager.ReleasePorts(t.TaskID)
-						taskManager.FinishTask()
 						workerShutdown := errors != nil && errors.WorkerShutdown()
 						taskCompleteChan <- taskCompletionResult{
 							taskID:         t.TaskID,
@@ -825,7 +824,7 @@ mainLoop:
 		case <-sigInterrupt:
 			log.Printf("Interrupt received, signaling %d running tasks...", taskManager.TaskCount())
 			graceful.Terminate(true)
-			taskManager.WaitForAll()
+			taskManager.WaitForAll(taskCompleteChan, recordCompletion)
 			return WORKER_STOPPED
 		}
 	}

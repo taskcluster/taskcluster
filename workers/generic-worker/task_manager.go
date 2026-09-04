@@ -15,7 +15,6 @@ type TaskManager struct {
 	sync.RWMutex
 	runningTasks map[string]*TaskRun
 	capacity     uint8
-	wg           sync.WaitGroup
 	lastActive   time.Time
 }
 
@@ -46,15 +45,8 @@ func (tm *TaskManager) AddTask(task *TaskRun) {
 	tm.Lock()
 	defer tm.Unlock()
 	tm.runningTasks[task.TaskID] = task
-	tm.wg.Add(1)
 	tm.lastActive = time.Now()
 	tm.updateWorkerStatusLocked()
-}
-
-// FinishTask decrements the wait group. Call once per AddTask from the task
-// goroutine so WaitForAll does not depend on the main loop.
-func (tm *TaskManager) FinishTask() {
-	tm.wg.Done()
 }
 
 // RemoveTask unregisters a task.
@@ -92,24 +84,12 @@ func (tm *TaskManager) IsIdle() bool {
 	return tm.TaskCount() == 0
 }
 
-// WaitForAll blocks until all running tasks have completed, then unregisters
-// any tasks still in the map. Shutdown skips the main-loop completion drain,
-// so without this the worker status file would keep listing finished tasks
-// (and generic-worker status would report them as still running).
-func (tm *TaskManager) WaitForAll() {
-	tm.wg.Wait()
-	tm.clearRunningTasks()
-}
-
-func (tm *TaskManager) clearRunningTasks() {
-	tm.Lock()
-	defer tm.Unlock()
-	if len(tm.runningTasks) == 0 {
-		return
+// WaitForAll applies each completion until no registered tasks remain.
+// apply must call RemoveTask, otherwise this never returns.
+func (tm *TaskManager) WaitForAll(completions <-chan taskCompletionResult, apply func(taskCompletionResult)) {
+	for !tm.IsIdle() {
+		apply(<-completions)
 	}
-	tm.runningTasks = make(map[string]*TaskRun)
-	tm.lastActive = time.Now()
-	tm.updateWorkerStatusLocked()
 }
 
 // LastActive returns the time when a task was last added or removed.
