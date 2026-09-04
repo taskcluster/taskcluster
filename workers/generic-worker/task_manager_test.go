@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"sync"
 	"testing"
 	"time"
@@ -65,47 +66,6 @@ func TestTaskManagerGetTask(t *testing.T) {
 	require.Nil(t, tm.GetTask("nonexistent"))
 }
 
-func TestTaskManagerWaitForAll(t *testing.T) {
-	tm := NewTaskManager(2)
-
-	var wg sync.WaitGroup
-	wg.Add(2)
-
-	task1 := &TaskRun{TaskID: "task1"}
-	task2 := &TaskRun{TaskID: "task2"}
-	tm.AddTask(task1)
-	tm.AddTask(task2)
-
-	// Simulate tasks completing
-	go func() {
-		time.Sleep(10 * time.Millisecond)
-		tm.RemoveTask("task1")
-		wg.Done()
-	}()
-	go func() {
-		time.Sleep(20 * time.Millisecond)
-		tm.RemoveTask("task2")
-		wg.Done()
-	}()
-
-	// WaitForAll should block until all tasks complete
-	done := make(chan struct{})
-	go func() {
-		tm.WaitForAll()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-		// Success
-	case <-time.After(1 * time.Second):
-		t.Fatal("WaitForAll timed out")
-	}
-
-	require.True(t, tm.IsIdle())
-	wg.Wait()
-}
-
 func TestTaskManagerLastActive(t *testing.T) {
 	tm := NewTaskManager(2)
 	initialTime := tm.LastActive()
@@ -120,6 +80,57 @@ func TestTaskManagerLastActive(t *testing.T) {
 	tm.RemoveTask("task1")
 	afterRemove := tm.LastActive()
 	require.True(t, afterRemove.After(afterAdd))
+}
+
+func TestTaskManagerWaitForAll(t *testing.T) {
+	origPath := workerStatusPath
+	workerStatusPath = filepath.Join(t.TempDir(), "worker-status.json")
+	t.Cleanup(func() { workerStatusPath = origPath })
+
+	tm := NewTaskManager(2)
+	tm.AddTask(&TaskRun{TaskID: "task1"})
+	tm.AddTask(&TaskRun{TaskID: "task2"})
+
+	completions := make(chan taskCompletionResult, 2)
+	completions <- taskCompletionResult{taskID: "task1"}
+	completions <- taskCompletionResult{taskID: "task2"}
+
+	var applied []string
+	tm.WaitForAll(completions, func(result taskCompletionResult) {
+		tm.RemoveTask(result.taskID)
+		applied = append(applied, result.taskID)
+	})
+
+	require.True(t, tm.IsIdle())
+	require.ElementsMatch(t, []string{"task1", "task2"}, applied)
+	require.NoFileExists(t, workerStatusPath)
+}
+
+func TestTaskManagerWaitForAllIdle(t *testing.T) {
+	tm := NewTaskManager(1)
+	// Unbuffered: receiving would deadlock if we waited while already idle.
+	completions := make(chan taskCompletionResult)
+	tm.WaitForAll(completions, func(taskCompletionResult) {
+		t.Fatal("should not receive when idle")
+	})
+}
+
+func TestTaskManagerWaitForAllUnregisteredCompletions(t *testing.T) {
+	tm := NewTaskManager(1)
+	tm.AddTask(&TaskRun{TaskID: "task1"})
+
+	completions := make(chan taskCompletionResult, 2)
+	completions <- taskCompletionResult{taskID: "setup-failure"}
+	completions <- taskCompletionResult{taskID: "task1"}
+
+	var applied []string
+	tm.WaitForAll(completions, func(result taskCompletionResult) {
+		tm.RemoveTask(result.taskID)
+		applied = append(applied, result.taskID)
+	})
+
+	require.True(t, tm.IsIdle())
+	require.Equal(t, []string{"setup-failure", "task1"}, applied)
 }
 
 func TestTaskManagerConcurrentAccess(t *testing.T) {
