@@ -13,6 +13,10 @@ import { jobHandler } from './job.js';
 import { rerunHandler } from './rerun.js';
 import { POLICIES } from './policies.js';
 import { GITHUB_BUILD_STATES } from '../constants.js';
+import { v1ToV6 } from 'uuid';
+
+// github uses UUID1 and to compare them as ordered strings we convert it to V6 which is sortable
+const isOlderDelivery = (candidateId, currentId) => v1ToV6(candidateId).localeCompare(v1ToV6(currentId)) < 0;
 
 /**
  * Create handlers
@@ -230,10 +234,26 @@ class Handlers {
     const limitedQueueClient = this.queueClient.use({
       authorizedScopes: scopes,
     });
+    const sealedTaskGroupIds = new Set();
+
     for (const t of tasks) {
+      const { taskGroupId } = t.task;
+
+      if (sealedTaskGroupIds.has(taskGroupId)) {
+        continue;
+      }
+
       try {
         await limitedQueueClient.createTask(t.taskId, t.task);
       } catch (err) {
+        // as tasks are being created sequentially and it is likely something seals task group in between
+        // when this happens we don't want to fail the whole process, but just acknowledge and stop processing
+        // affected task group
+        if (err.statusCode === 409 && err.message?.includes('is sealed and does not accept new tasks')) {
+          sealedTaskGroupIds.add(taskGroupId);
+          this.monitor.debug(`Task group ${taskGroupId} was sealed while tasks were being created; superseded`);
+          continue;
+        }
         // translate InsufficientScopes errors nicely for our users, since they are common and
         // since we can provide additional context not available from the queue.
         if (err.code === 'InsufficientScopes') {
@@ -252,6 +272,8 @@ class Handlers {
         throw err;
       }
     }
+
+    return sealedTaskGroupIds;
   }
 
   // Trigger a hook
@@ -323,6 +345,11 @@ class Handlers {
       return;
     }
 
+    if (!eventId) {
+      debug(`GitHub delivery ID is not defined. Skipping cancelPreviousTaskGroups`);
+      return;
+    }
+
     const scopes = [
       `assume:repo:github.com/${organization}/${repository}:*`,
       'queue:seal-task-group:taskcluster-github/*',
@@ -348,7 +375,9 @@ class Handlers {
           build =>
             build.task_group_id !== newTaskGroupId &&
             build.event_id !== eventId &&
-            includedEventTypes.includes(build.event_type)
+            includedEventTypes.includes(build.event_type) &&
+            // slower older handler must never supersede a newer delivery
+            isOlderDelivery(build.event_id, eventId)
         )
         .map(build => build.task_group_id);
 

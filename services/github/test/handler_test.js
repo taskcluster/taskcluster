@@ -11,6 +11,7 @@ import { CHECKLOGS_TEXT, CHECKRUN_TEXT, CHECK_TASK_GROUP_TEXT } from '../src/con
 import utils from '../src/utils.js';
 import fs from 'node:fs';
 import path from 'node:path';
+import { v1 as uuidv1 } from 'uuid';
 import { formatBytes } from '../src/handlers/utils.js';
 
 const dataDir = new URL('./data', import.meta.url).pathname;
@@ -62,6 +63,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
 
   const COMMIT_SHA = '03e9577bc1ec60f2ff0929d5f1554de36b8f48cf';
   const INST_ID = 5828;
+  const OLDER_DELIVERY_ID = 'ff1b1e30-a6c5-11f1-bfff-00deadbeef01';
+  const CURRENT_DELIVERY_ID = 'ffb3b4b0-a6c5-11f1-bfff-00deadbeef01';
+  const NEWER_DELIVERY_ID = '004c4b30-a6c6-11f1-bfff-00deadbeef01';
 
   // the name the task definitions below ask for, rather than the default text artifact name
   const CUSTOM_CHECKRUN_TEXT_ARTIFACT = 'public/text.md';
@@ -106,7 +110,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     return artifactLinks.join('\n');
   }
 
-  async function addBuild({ state, taskGroupId, pullNumber, eventType = 'push' }) {
+  async function addBuild({
+    state,
+    taskGroupId,
+    pullNumber,
+    eventType = 'push',
+    eventId = uuidv1(),
+    created = new Date(),
+  }) {
     debug(`adding Build row for ${taskGroupId} in state ${state}`);
     await helper.db.fns.create_github_build_pr(
       'TaskclusterRobot',
@@ -114,13 +125,23 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       COMMIT_SHA,
       taskGroupId,
       state,
-      new Date(),
-      new Date(),
+      created,
+      created,
       9988,
       eventType,
-      'aaa-bbb',
+      eventId,
       pullNumber
     );
+    return {
+      organization: 'TaskclusterRobot',
+      repository: 'hooks-testing',
+      sha: COMMIT_SHA,
+      task_group_id: taskGroupId,
+      event_type: eventType,
+      event_id: eventId,
+      pull_number: pullNumber,
+      created,
+    };
   }
 
   async function addCheckRun({ taskGroupId, taskId, checkSuiteId = '11111', checkRunId = '22222' }) {
@@ -355,6 +376,50 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         }
       );
     });
+
+    test('skips only the sealed task group while creating tasks', async () => {
+      const sealedTaskGroupIds = await handlers.realCreateTasks({
+        scopes: [],
+        tasks: [
+          { taskId: 'aa', task: { taskGroupId: 'group-a', payload: 'a' } },
+          {
+            taskId: 'fail',
+            task: {
+              taskGroupId: 'group-a',
+              message: 'Task group `group-a` is sealed and does not accept new tasks.',
+              statusCode: 409,
+            },
+          },
+          { taskId: 'skip', task: { taskGroupId: 'group-a', payload: 'skip' } },
+          { taskId: 'bb', task: { taskGroupId: 'group-b', payload: 'b' } },
+          { taskId: 'skip-too', task: { taskGroupId: 'group-a', payload: 'skip-too' } },
+        ],
+      });
+
+      assert.deepEqual(
+        createdTasks.map(({ payload }) => payload),
+        ['a', 'b']
+      );
+      assert.deepEqual(sealedTaskGroupIds, new Set(['group-a']));
+    });
+
+    test('propagates other 409 errors', async () => {
+      await assert.rejects(
+        handlers.realCreateTasks({
+          scopes: [],
+          tasks: [
+            {
+              taskId: 'fail',
+              task: {
+                message: 'Another conflict',
+                statusCode: 409,
+              },
+            },
+          ],
+        }),
+        err => err.statusCode === 409 && err.message === 'Another conflict'
+      );
+    });
   });
 
   suite('cancelPreviousTaskGroups', () => {
@@ -407,21 +472,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         },
       });
 
-      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1, eventType: 'pull_request.opened' });
-      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1, eventType: 'pull_request.synchronize' });
+      await addBuild({
+        state: 'pending',
+        taskGroupId: 'aa',
+        pullNumber: 1,
+        eventType: 'pull_request.opened',
+        created: new Date('2026-08-27T17:28:44.000Z'),
+      });
+      const newBuild = await addBuild({
+        state: 'pending',
+        taskGroupId: 'bb',
+        pullNumber: 1,
+        eventType: 'pull_request.synchronize',
+        created: new Date('2026-08-27T17:28:45.000Z'),
+      });
 
       const instGithub = github.inst(INST_ID);
 
       await handlers.realCancelPreviousTaskGroups({
         instGithub,
         debug: sinon.stub(),
-        newBuild: {
-          sha: COMMIT_SHA,
-          organization: 'TaskclusterRobot',
-          repository: 'hooks-testing',
-          pull_number: 1,
-          event_type: 'pull_request.synchronize',
-        },
+        newBuild,
       });
       assert(instGithub.issues.createComment.calledOnce);
       const args = instGithub.issues.createComment.args;
@@ -459,21 +530,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         },
       });
 
-      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1, eventType: 'pull_request.opened' });
-      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1, eventType: 'pull_request.synchronize' });
+      await addBuild({
+        state: 'pending',
+        taskGroupId: 'aa',
+        pullNumber: 1,
+        eventType: 'pull_request.opened',
+        created: new Date('2026-08-27T17:28:44.000Z'),
+      });
+      const newBuild = await addBuild({
+        state: 'pending',
+        taskGroupId: 'bb',
+        pullNumber: 1,
+        eventType: 'pull_request.synchronize',
+        created: new Date('2026-08-27T17:28:45.000Z'),
+      });
 
       const instGithub = github.inst(INST_ID);
 
       await handlers.realCancelPreviousTaskGroups({
         instGithub,
         debug: sinon.stub(),
-        newBuild: {
-          sha: COMMIT_SHA,
-          organization: 'TaskclusterRobot',
-          repository: 'hooks-testing',
-          pull_number: 1,
-          event_type: 'pull_request.synchronize',
-        },
+        newBuild,
       });
       assert(instGithub.issues.createComment.notCalled);
 
@@ -494,14 +571,46 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         helper.db.fns.get_github_build_pr('bb'),
       ]);
       assert.equal(buildA.state, 'cancelled');
-      assert.equal(buildB.state, 'cancelled');
+      assert.equal(buildB.state, 'pending');
     });
 
-    test('calls queue.sealTaskGroup/cancelTaskGroup for pulNumber excluding new task group id', async () => {
-      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 1, eventType: 'pull_request.opened' });
-      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 1, eventType: 'pull_request.synchronize' });
-      await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 1, eventType: 'pull_request.synchronize' });
-      await addBuild({ state: 'pending', taskGroupId: 'dd', pullNumber: 1, eventType: 'pull_request.closed' });
+    test('only cancels older task groups for the pull request', async () => {
+      // These database timestamps are deliberately opposite to delivery order.
+      const oldCreated = new Date('2026-08-27T17:28:46.000Z');
+      const currentCreated = new Date('2026-08-27T17:28:45.000Z');
+      const newerCreated = new Date('2026-08-27T17:28:44.000Z');
+      await addBuild({
+        state: 'pending',
+        taskGroupId: 'aa',
+        pullNumber: 1,
+        eventType: 'pull_request.opened',
+        eventId: OLDER_DELIVERY_ID,
+        created: oldCreated,
+      });
+      await addBuild({
+        state: 'pending',
+        taskGroupId: 'bb',
+        pullNumber: 1,
+        eventType: 'pull_request.synchronize',
+        eventId: CURRENT_DELIVERY_ID,
+        created: currentCreated,
+      });
+      await addBuild({
+        state: 'pending',
+        taskGroupId: 'cc',
+        pullNumber: 1,
+        eventType: 'pull_request.synchronize',
+        eventId: NEWER_DELIVERY_ID,
+        created: newerCreated,
+      });
+      await addBuild({
+        state: 'pending',
+        taskGroupId: 'dd',
+        pullNumber: 1,
+        eventType: 'pull_request.closed',
+        eventId: OLDER_DELIVERY_ID,
+        created: oldCreated,
+      });
       await handlers.realCancelPreviousTaskGroups({
         instGithub: sinon.stub(),
         debug: sinon.stub(),
@@ -512,18 +621,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           repository: 'hooks-testing',
           pull_number: 1,
           event_type: 'pull_request.synchronize',
+          event_id: CURRENT_DELIVERY_ID,
+          created: currentCreated,
         },
       });
 
-      assert.deepEqual(sealedTaskGroups, ['aa', 'cc']);
-      assert.deepEqual(cancelledTaskGroups, ['aa', 'cc']);
+      assert.deepEqual(sealedTaskGroups, ['aa']);
+      assert.deepEqual(cancelledTaskGroups, ['aa']);
       const [buildA] = await helper.db.fns.get_github_build_pr('aa');
       assert.equal(buildA.state, 'cancelled');
       const [buildC] = await helper.db.fns.get_github_build_pr('cc');
-      assert.equal(buildC.state, 'cancelled');
+      assert.equal(buildC.state, 'pending');
     });
 
     test('does not cancel sibling task groups from the same event', async () => {
+      const oldCreated = new Date('2026-08-27T17:28:44.000Z');
+      const newCreated = new Date('2026-08-27T17:28:45.000Z');
       // Old build from a previous event
       await helper.db.fns.create_github_build_pr(
         'TaskclusterRobot',
@@ -531,11 +644,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         COMMIT_SHA,
         'old-group',
         'pending',
-        new Date(),
-        new Date(),
+        oldCreated,
+        oldCreated,
         9988,
         'pull_request.opened',
-        'old-event-id',
+        OLDER_DELIVERY_ID,
         1
       );
       // Two sibling builds from the current event — share the same event_id
@@ -545,11 +658,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         COMMIT_SHA,
         'new-group-a',
         'pending',
-        new Date(),
-        new Date(),
+        newCreated,
+        newCreated,
         9988,
         'pull_request.opened',
-        'new-event-id',
+        CURRENT_DELIVERY_ID,
         1
       );
       await helper.db.fns.create_github_build_pr(
@@ -558,11 +671,11 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         COMMIT_SHA,
         'new-group-b',
         'pending',
-        new Date(),
-        new Date(),
+        newCreated,
+        newCreated,
         9988,
         'pull_request.opened',
-        'new-event-id',
+        CURRENT_DELIVERY_ID,
         1
       );
 
@@ -576,7 +689,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
           repository: 'hooks-testing',
           pull_number: 1,
           event_type: 'pull_request.opened',
-          event_id: 'new-event-id',
+          event_id: CURRENT_DELIVERY_ID,
         },
       });
 
@@ -613,8 +726,20 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
     });
 
     test('respects same event types for pull_request', async () => {
-      await addBuild({ state: 'pending', taskGroupId: 'aa', pullNumber: 3, eventType: 'pull_request.opened' });
-      await addBuild({ state: 'pending', taskGroupId: 'bb', pullNumber: 3, eventType: 'pull_request.synchronize' });
+      await addBuild({
+        state: 'pending',
+        taskGroupId: 'aa',
+        pullNumber: 3,
+        eventType: 'pull_request.opened',
+        created: new Date('2026-08-27T17:28:44.000Z'),
+      });
+      const newBuild = await addBuild({
+        state: 'pending',
+        taskGroupId: 'bb',
+        pullNumber: 3,
+        eventType: 'pull_request.synchronize',
+        created: new Date('2026-08-27T17:28:45.000Z'),
+      });
       await addBuild({ state: 'pending', taskGroupId: 'cc', pullNumber: 3, eventType: 'pull_request.closed' });
       await addBuild({ state: 'pending', taskGroupId: 'dd', pullNumber: 3, eventType: 'pull_request.assigned' });
       await addBuild({ state: 'pending', taskGroupId: 'ee', pullNumber: null, eventType: 'tag' });
@@ -623,14 +748,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       await handlers.realCancelPreviousTaskGroups({
         instGithub: sinon.stub(),
         debug: sinon.stub(),
-        newBuild: {
-          sha: COMMIT_SHA,
-          task_group_id: 'bb',
-          organization: 'TaskclusterRobot',
-          repository: 'hooks-testing',
-          event_type: 'pull_request.synchronize',
-          pull_number: 3,
-        },
+        newBuild,
       });
       assert.deepEqual(sealedTaskGroups, ['aa']);
       assert.deepEqual(cancelledTaskGroups, ['aa']);
@@ -881,6 +999,34 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(buildB.sha, COMMIT_SHA);
     });
 
+    test('existing multi-group build records retain cancellation metadata', async () => {
+      github.inst(INST_ID).setRepoCollaborator({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        username: 'goodBuddy',
+      });
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: multiGroupConfig(),
+      });
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development',
+        content: multiGroupConfig(),
+      });
+
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
+
+      assert(handlers.cancelPreviousTaskGroups.calledTwice);
+      const { newBuild } = handlers.cancelPreviousTaskGroups.secondCall.args[0];
+      assert.equal(newBuild.pull_number, 1001);
+      assert.equal(newBuild.event_id, '26370a80-ed65-11e6-8f4c-80082678482d');
+    });
+
     test('multi-group yml publishes taskGroupCreationRequested once per unique group', async () => {
       github.inst(INST_ID).setTaskclusterYml({
         owner: 'TaskclusterRobot',
@@ -901,6 +1047,27 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(publishedGroupIds.length, 2, 'should publish once per unique taskGroupId');
       assert(publishedGroupIds.includes(GROUP_A), 'should publish for group A');
       assert(publishedGroupIds.includes(GROUP_B), 'should publish for group B');
+    });
+
+    test('multi-group yml does not publish taskGroupCreationRequested for sealed groups', async () => {
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: multiGroupConfig(),
+      });
+      handlers.createTasks.resolves(new Set([GROUP_A]));
+
+      const publishedGroupIds = [];
+      helper.onPulsePublish((exchange, _routingKey, payload) => {
+        if (exchange.endsWith('task-group-creation-requested')) {
+          publishedGroupIds.push(JSON.parse(payload).taskGroupId);
+        }
+      });
+
+      await simulateJobMessage({ user: 'TaskclusterRobot' });
+
+      assert.deepEqual(publishedGroupIds, [GROUP_B]);
     });
 
     test("multi-group yml publishes the union of all tasks' routes per group", async () => {
@@ -1213,6 +1380,34 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(args[0][0].repo, 'hooks-testing');
       assert.equal(args[0][0].commit_sha, COMMIT_SHA);
       assert(args[0][0].body.indexOf('oh noes') !== -1);
+    });
+
+    test('error creating a pull request task is reported on the pull request', async () => {
+      github.inst(INST_ID).setRepoCollaborator({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        username: 'goodBuddy',
+      });
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: COMMIT_SHA,
+        content: validYamlJson,
+      });
+      github.inst(INST_ID).setTaskclusterYml({
+        owner: 'TaskclusterRobot',
+        repo: 'hooks-testing',
+        ref: 'development',
+        content: validYamlJson,
+      });
+      handlers.createTasks.rejects({ body: { error: 'oh noes' } });
+
+      await simulateJobMessage({ user: 'goodBuddy', eventType: 'pull_request.opened', pullNumber: 1001 });
+
+      const instGithub = github.inst(INST_ID);
+      assert(instGithub.issues.createComment.calledOnce);
+      assert(instGithub.repos.createCommitComment.notCalled);
+      assert.equal(instGithub.issues.createComment.firstCall.args[0].issue_number, 1001);
     });
 
     suite('Issue comment', () => {
