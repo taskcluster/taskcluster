@@ -1,5 +1,3 @@
-import resolveBindings from './resolveBindings.js';
-
 const PING_INTERVAL_MS = 30000;
 
 // Custom WebSocket close codes, in the 4000-4999 (application-defined) range,
@@ -23,28 +21,35 @@ const FRAME_TYPES = {
   ERROR: 'error',
 };
 
+// One client connection to an events endpoint: the connection_init handshake,
+// the keepalive and lifetime timers, subscribe/unsubscribe frames against the
+// pulse engine, and the teardown of everything it owns once the socket closes.
 export default class EventsConnection {
   constructor({
     ws,
-    kind,
+    resolveBindings,
     pulseEngine,
-    clients,
     authFactory,
     monitor,
     socketAliveTimeoutMilliSeconds,
     connectionInitTimeoutMilliSeconds,
   }) {
     this.ws = ws;
-    // how subscribe frames are interpreted ('raw' or 'named'), fixed by the
-    // endpoint the client connected to
-    this.kind = kind;
+    // turns a subscribe frame into pulse bindings; fixed by the endpoint the
+    // client connected to
+    this.resolveBindings = resolveBindings;
     this.pulseEngine = pulseEngine;
-    this.clients = clients;
     this.authFactory = authFactory;
     this.monitor = monitor;
     // engine subscriptionIds owned by this connection
     this.subscriptions = new Set();
     this.connectionInitReceived = false;
+
+    this.startTimers({ socketAliveTimeoutMilliSeconds, connectionInitTimeoutMilliSeconds });
+    this.attachListeners();
+  }
+
+  startTimers({ socketAliveTimeoutMilliSeconds, connectionInitTimeoutMilliSeconds }) {
     // cleared by each pong from the client, set again by each checkLiveness tick
     this.isAlive = true;
     this.pingInterval = setInterval(() => {
@@ -52,39 +57,49 @@ export default class EventsConnection {
     }, PING_INTERVAL_MS);
 
     this.lifetimeTimeout = setTimeout(() => {
-      this.close(CLOSE_CODES.LIFETIME_EXCEEDED, 'Connection lifetime exceeded');
+      this.ws.close(CLOSE_CODES.LIFETIME_EXCEEDED, 'Connection lifetime exceeded');
     }, socketAliveTimeoutMilliSeconds);
 
     this.connectionInitTimeout = setTimeout(() => {
-      this.close(CLOSE_CODES.PROTOCOL_ERROR, 'Protocol error: no connection_init frame received');
+      this.ws.close(CLOSE_CODES.PROTOCOL_ERROR, 'Protocol error: no connection_init frame received');
     }, connectionInitTimeoutMilliSeconds);
+  }
 
-    ws.on('message', data => {
-      this.onMessage(data);
-    });
-
-    ws.on('close', closeCode => {
-      clearTimeout(this.lifetimeTimeout);
-      clearTimeout(this.connectionInitTimeout);
-      clearInterval(this.pingInterval);
-
-      const openSubscriptions = this.subscriptions.size;
-
-      for (const subscriptionId of this.subscriptions) {
-        this.pulseEngine.unsubscribe(subscriptionId);
-      }
-      this.subscriptions.clear();
-
-      this.monitor.log.websocketClosed({ closeCode, openSubscriptions });
-    });
-
-    ws.on('error', err => {
-      this.monitor.reportError(err);
-    });
-
-    ws.on('pong', () => {
+  attachListeners() {
+    this.ws.on('pong', () => {
       this.isAlive = true;
     });
+
+    this.ws.on('message', data => {
+      this.onMessage(data).catch(err => {
+        this.monitor.reportError(err);
+      });
+    });
+
+    this.ws.on('close', closeCode => {
+      this.teardown(closeCode);
+    });
+
+    this.ws.on('error', err => {
+      this.monitor.reportError(err);
+    });
+  }
+
+  // Runs on the socket's 'close' event, however the close came about: stops
+  // the timers and releases the engine subscriptions still open.
+  teardown(closeCode) {
+    clearTimeout(this.lifetimeTimeout);
+    clearTimeout(this.connectionInitTimeout);
+    clearInterval(this.pingInterval);
+
+    const openSubscriptions = this.subscriptions.size;
+
+    for (const subscriptionId of this.subscriptions) {
+      this.pulseEngine.unsubscribe(subscriptionId);
+    }
+    this.subscriptions.clear();
+
+    this.monitor.log.websocketClosed({ closeCode, openSubscriptions });
   }
 
   // Called on each ping-interval tick: a client that has not answered the
@@ -121,32 +136,27 @@ export default class EventsConnection {
     return this.send({ type: FRAME_TYPES.ERROR, ...fields }).catch(() => {});
   }
 
-  close(code, reason) {
-    if (this.ws.readyState === this.ws.OPEN || this.ws.readyState === this.ws.CONNECTING) {
-      this.ws.close(code, reason);
-    }
-  }
-
   async onMessage(data) {
     let frame;
 
     try {
       frame = JSON.parse(data.toString());
     } catch {
-      this.close(CLOSE_CODES.PROTOCOL_ERROR, 'Protocol error: malformed JSON');
+      this.ws.close(CLOSE_CODES.PROTOCOL_ERROR, 'Protocol error: malformed JSON');
       return;
     }
 
     if (!frame || typeof frame.type !== 'string') {
-      this.close(CLOSE_CODES.PROTOCOL_ERROR, 'Protocol error: missing frame type');
+      this.ws.close(CLOSE_CODES.PROTOCOL_ERROR, 'Protocol error: missing frame type');
       return;
     }
 
     if (!this.connectionInitReceived) {
       if (frame.type !== FRAME_TYPES.CONNECTION_INIT) {
-        this.close(CLOSE_CODES.PROTOCOL_ERROR, 'Protocol error: first frame must be connection_init');
+        this.ws.close(CLOSE_CODES.PROTOCOL_ERROR, 'Protocol error: first frame must be connection_init');
         return;
       }
+
       await this.handleConnectionInit(frame);
       return;
     }
@@ -159,7 +169,7 @@ export default class EventsConnection {
         this.handleUnsubscribe(frame);
         break;
       default:
-        await this.sendError({ code: 'ProtocolError', message: `Unknown frame type: ${frame.type}` });
+        this.sendError({ code: 'ProtocolError', message: `Unknown frame type: ${frame.type}` });
     }
   }
 
@@ -188,7 +198,7 @@ export default class EventsConnection {
       //     message,
       //     details: { required: ['web:read-pulse'] },
       //   });
-      //   this.close(CLOSE_CODES.INSUFFICIENT_SCOPES, 'InsufficientScopes');
+      //   this.ws.close(CLOSE_CODES.INSUFFICIENT_SCOPES, 'InsufficientScopes');
       //   return;
       // }
 
@@ -200,7 +210,7 @@ export default class EventsConnection {
     } catch (err) {
       this.monitor.reportError(err);
       await this.sendError({ code: 'InternalError', message: 'Internal error during authentication', details: {} });
-      this.close(CLOSE_CODES.INTERNAL_ERROR, 'Internal error');
+      this.ws.close(CLOSE_CODES.INTERNAL_ERROR, 'Internal error');
     }
   }
 
@@ -208,7 +218,7 @@ export default class EventsConnection {
     let bindings;
 
     try {
-      bindings = resolveBindings(this.kind, frame, this.clients);
+      bindings = this.resolveBindings(frame);
     } catch (err) {
       // A malformed subscribe frame is a client error: reject it with an error
       // frame, but keep the connection.
@@ -223,11 +233,9 @@ export default class EventsConnection {
     }
 
     // pulseEngine mints the subscriptionId; the delivery callbacks close over
-    // it by reference, which is safe because pulseEngine.subscribe returns
-    // synchronously and messages are only delivered on a later tick.
-    let subscriptionId;
-
-    subscriptionId = this.pulseEngine.subscribe(
+    // it, which is safe because pulseEngine.subscribe returns synchronously and
+    // messages are only delivered on a later tick.
+    const subscriptionId = this.pulseEngine.subscribe(
       bindings,
       message => {
         // the returned promise drives the engine's AMQP ack/nack
@@ -245,9 +253,9 @@ export default class EventsConnection {
     this.send({ type: FRAME_TYPES.SUBSCRIBE_ACK, subscriptionId }).catch(() => {});
   }
 
-  handleUnsubscribe(frame) {
-    const { subscriptionId } = frame;
-
+  handleUnsubscribe({ subscriptionId }) {
+    // an id this connection does not own (or has already released) is ignored,
+    // so unsubscribing is idempotent
     if (this.subscriptions.has(subscriptionId)) {
       this.pulseEngine.unsubscribe(subscriptionId);
       this.subscriptions.delete(subscriptionId);

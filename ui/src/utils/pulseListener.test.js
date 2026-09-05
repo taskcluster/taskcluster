@@ -55,7 +55,9 @@ FakeWebSocket.CLOSING = 2;
 FakeWebSocket.CLOSED = 3;
 
 beforeEach(() => {
-  window.env = { EVENT_WEBSOCKET_ENDPOINT: 'http://localhost/events' };
+  window.env = {
+    GRAPHQL_SUBSCRIPTION_ENDPOINT: 'http://localhost/subscription',
+  };
   vi.stubGlobal('WebSocket', FakeWebSocket);
 });
 
@@ -70,7 +72,9 @@ describe('subscribeToPulseMessages', () => {
       onError: vi.fn(),
     });
 
-    expect(FakeWebSocket._lastInstance.url).toBe('ws://localhost/events/raw');
+    expect(FakeWebSocket._lastInstance.url).toBe(
+      'ws://localhost/subscription/raw'
+    );
   });
 
   it('sends connection_init on open', () => {
@@ -274,7 +278,9 @@ describe('subscribeToNamedEvents', () => {
       { onMessage: vi.fn(), onError: vi.fn() }
     );
 
-    expect(FakeWebSocket._lastInstance.url).toBe('ws://localhost/events/named');
+    expect(FakeWebSocket._lastInstance.url).toBe(
+      'ws://localhost/subscription/named'
+    );
   });
 
   it('sends the event names and routing key after connection_ack', () => {

@@ -7,11 +7,11 @@ const toSubscriptions = bindings =>
   }));
 
 const getEventsWsUrl = endpointPath => {
-  // The env var is the base ('/events'); each subscription shape has its own
-  // endpoint under it ('raw' or 'named'). Resolves against the current origin
-  // when relative (dev: proxied by Vite) and is used as-is when absolute
-  // (deployed: 'https://host/events').
-  const base = window.env?.EVENT_WEBSOCKET_ENDPOINT || '/events';
+  // The env var is the base ('/subscription'); each subscription shape has its
+  // own endpoint under it ('raw' or 'named'). Resolves against the current
+  // origin when relative (dev: proxied by Vite) and is used as-is when absolute
+  // (deployed: 'https://host/subscription').
+  const base = window.env?.GRAPHQL_SUBSCRIPTION_ENDPOINT || '/subscription';
   const url = new URL(
     `${base.replace(/\/$/, '')}/${endpointPath}`,
     window.location.href
@@ -99,7 +99,7 @@ const openEventsSubscription = (
 /**
  * Subscribe to Pulse messages arriving on the given raw bindings (each an
  * `{ exchange, pattern }` or `{ exchange, routingKeyPattern }`) via the
- * /events/raw endpoint. Used by the Pulse debugger views, which bind arbitrary
+ * /subscription/raw endpoint. Used by the Pulse debugger views, which bind arbitrary
  * exchanges directly. Returns a teardown function that unsubscribes.
  */
 const subscribeToPulseMessages = (bindings, handlers) =>
@@ -111,7 +111,7 @@ const subscribeToPulseMessages = (bindings, handlers) =>
 
 /**
  * Subscribe to Pulse events by name rather than by raw binding, via the
- * /events/named endpoint: the server expands the named events into the
+ * /subscription/named endpoint: the server expands the named events into the
  * matching exchanges, filtered by the routing key. Pass a non-empty
  * `subscriptions` array of event names (e.g. `['taskDefined',
  * 'taskCompleted']`) and a `routingKey` object of fields to match (e.g.

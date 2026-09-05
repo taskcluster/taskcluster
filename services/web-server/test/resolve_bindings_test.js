@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import resolveBindings from '../src/servers/resolveBindings.js';
+import { resolveNamedBindings, resolveRawBindings } from '../src/servers/resolveBindings.js';
 import clientFactory from '../src/clients.js';
 import testing from '@taskcluster/lib-testing';
 
@@ -15,70 +15,101 @@ suite(testing.suiteName(), () => {
     });
   };
 
-  test('raw returns the frame bindings as-is', () => {
-    const bindings = [{ exchange: 'exchange/foo/v1/bar', pattern: '#' }];
+  suite('raw', () => {
+    test('returns the frame bindings, keeping only exchange and pattern', () => {
+      const bindings = [{ exchange: 'exchange/foo/v1/bar', pattern: '#', routingKeyPattern: 'ignored' }];
 
-    assert.deepEqual(resolveBindings('raw', { bindings }, clients), bindings);
+      assert.deepEqual(resolveRawBindings({ bindings }), [{ exchange: 'exchange/foo/v1/bar', pattern: '#' }]);
+    });
+
+    test('rejects a missing or empty bindings array', () => {
+      for (const bindings of [undefined, [], 'exchange/foo/v1/bar']) {
+        assertProtocolError(() => {
+          resolveRawBindings({ bindings });
+        }, /non-empty array/);
+      }
+    });
+
+    test('rejects bindings without an exchange and pattern string', () => {
+      const bad = [null, 'exchange/foo/v1/bar', { exchange: 'exchange/foo/v1/bar' }, { exchange: 1, pattern: '#' }];
+
+      for (const binding of bad) {
+        assertProtocolError(() => {
+          resolveRawBindings({ bindings: [binding] });
+        }, /exchange.*pattern/);
+      }
+    });
   });
 
-  test('named expands event names via the queue events client', () => {
-    const resolved = resolveBindings(
-      'named',
-      {
+  suite('named', () => {
+    const resolve = frame => resolveNamedBindings(frame, clients);
+
+    test('expands event names via the queue events client', () => {
+      const resolved = resolve({
         subscriptions: ['taskDefined', 'taskCompleted'],
         routingKey: { taskId: 'abc123' },
-      },
-      clients
-    );
+      });
 
-    assert.equal(resolved.length, 2);
-    assert.match(resolved[0].exchange, /task-defined/);
-    assert.match(resolved[1].exchange, /task-completed/);
+      assert.equal(resolved.length, 2);
+      assert.match(resolved[0].exchange, /task-defined/);
+      assert.match(resolved[1].exchange, /task-completed/);
 
-    for (const binding of resolved) {
-      assert.match(binding.pattern, /abc123/);
-    }
-  });
+      for (const binding of resolved) {
+        assert.match(binding.pattern, /abc123/);
+      }
+    });
 
-  test('named defaults to the queue service and wildcards an omitted routing key', () => {
-    const resolved = resolveBindings('named', { subscriptions: ['taskDefined'] }, clients);
+    test('defaults to the queue service and wildcards an omitted routing key', () => {
+      for (const routingKey of [undefined, null]) {
+        const resolved = resolve({ subscriptions: ['taskDefined'], routingKey });
 
-    assert.match(resolved[0].exchange, /task-defined/);
-    assert.match(resolved[0].pattern, /[*#]/);
-  });
+        assert.match(resolved[0].exchange, /task-defined/);
+        assert.match(resolved[0].pattern, /[*#]/);
+      }
+    });
 
-  test('named rejects an unknown service', () => {
-    assertProtocolError(() => {
-      resolveBindings('named', { service: 'nosuch', subscriptions: ['taskDefined'] }, clients);
-    }, /unknown events service/);
-  });
-
-  test('named rejects a missing or empty subscriptions array', () => {
-    for (const subscriptions of [undefined, [], 'taskDefined']) {
+    test('rejects an unknown service', () => {
       assertProtocolError(() => {
-        resolveBindings('named', { subscriptions }, clients);
-      }, /non-empty array/);
-    }
-  });
+        resolve({ service: 'nosuch', subscriptions: ['taskDefined'] });
+      }, /unknown events service/);
+    });
 
-  test('named rejects unknown event names', () => {
-    assertProtocolError(() => {
-      resolveBindings('named', { subscriptions: ['noSuchEvent'] }, clients);
-    }, /unknown queue event/);
-  });
+    test('rejects a missing or empty subscriptions array', () => {
+      for (const subscriptions of [undefined, [], 'taskDefined']) {
+        assertProtocolError(() => {
+          resolve({ subscriptions });
+        }, /non-empty array/);
+      }
+    });
 
-  test('named rejects non-event properties reachable on the client', () => {
-    for (const subscriptions of [['constructor'], ['hasOwnProperty'], [null]]) {
+    test('rejects unknown event names', () => {
       assertProtocolError(() => {
-        resolveBindings('named', { subscriptions }, clients);
+        resolve({ subscriptions: ['noSuchEvent'] });
       }, /unknown queue event/);
-    }
-  });
+    });
 
-  test('an unknown endpoint kind is a server error, not a protocol error', () => {
-    assert.throws(
-      () => resolveBindings('nosuch', {}, clients),
-      err => err.code !== 'ProtocolError'
-    );
+    test('rejects non-event properties reachable on the client', () => {
+      for (const subscriptions of [['constructor'], ['hasOwnProperty'], ['use'], ['buildUrl'], [null]]) {
+        assertProtocolError(() => {
+          resolve({ subscriptions });
+        }, /unknown queue event/);
+      }
+    });
+
+    test('rejects a routing key that is not an object of fields', () => {
+      for (const routingKey of ['abc123', 42, ['abc123']]) {
+        assertProtocolError(() => {
+          resolve({ subscriptions: ['taskDefined'], routingKey });
+        }, /routingKey must be an object/);
+      }
+    });
+
+    test('rejects routing-key values the events client cannot encode', () => {
+      for (const routingKey of [{ taskId: 'a.b' }, { taskId: {} }]) {
+        assertProtocolError(() => {
+          resolve({ subscriptions: ['taskDefined'], routingKey });
+        }, /invalid routingKey for queue event taskDefined/);
+      }
+    });
   });
 });

@@ -49,7 +49,7 @@ MonitorManager.register({
   version: 1,
   level: 'debug',
   description: `
-    A client has authenticated an /events WebSocket connection.`,
+    A client has authenticated a /subscription WebSocket connection.`,
   fields: {
     clientId: 'The clientId of the connected client, or "anonymous"',
   },
@@ -62,7 +62,7 @@ MonitorManager.register({
   version: 1,
   level: 'debug',
   description: `
-    An /events WebSocket connection has closed; any subscriptions still open
+    A /subscription WebSocket connection has closed; any subscriptions still open
     on it have been unsubscribed.`,
   fields: {
     closeCode: 'The WebSocket close code',
