@@ -178,8 +178,8 @@ const load = loader(
     },
 
     httpServer: {
-      requires: ['cfg', 'app', 'schema', 'context', 'monitor', 'authFactory'],
-      setup: async ({ cfg, app, schema, context, monitor, authFactory }) => {
+      requires: ['cfg', 'app', 'schema', 'context', 'monitor', 'authFactory', 'pulseEngine', 'clients'],
+      setup: async ({ cfg, app, schema, context, monitor, authFactory, pulseEngine, clients }) => {
         const httpServer = createServer(app);
         const server = new ApolloServer({
           schema,
@@ -206,11 +206,13 @@ const load = loader(
 
         createSubscriptionServer({
           cfg,
-          server: httpServer, // this attaches itself directly to the server
-          schema,
-          context,
-          path: '/subscription',
+          server: httpServer,
+          pulseEngine,
+          // resolving named subscriptions only needs exchange metadata, so
+          // anonymous (credential-less) clients suffice
+          clients: clients({ rootUrl: cfg.taskcluster.rootUrl }),
           authFactory,
+          monitor: monitor.childMonitor('events'),
         });
 
         return httpServer;

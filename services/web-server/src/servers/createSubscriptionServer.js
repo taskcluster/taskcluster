@@ -1,89 +1,50 @@
-import { SubscriptionServer } from 'subscriptions-transport-ws';
-import { execute, subscribe } from 'graphql';
-import credentials from './credentials.js';
-import formatError from './formatError.js';
-import scopeUtils from 'taskcluster-lib-scopes';
-import { decryptToken } from './decryptToken.js';
-import { ErrorReply } from '@taskcluster/lib-api';
+import WebSocket from 'ws';
+import SubscriptionConnection from './SubscriptionConnection.js';
+import { resolveNamedBindings, resolveRawBindings } from './resolveBindings.js';
 
-export default ({ cfg, server, schema, context, path, authFactory }) => {
-  const timeoutMap = new WeakMap();
+const { Server: WebSocketServer } = WebSocket;
 
-  SubscriptionServer.create(
-    {
-      schema,
-      execute,
-      subscribe,
-      async onConnect(params, socket) {
-        const disconnectTimeout = setTimeout(() => {
-          if (socket && socket.readyState !== socket.CLOSING && socket.readyState !== socket.CLOSED) {
-            socket.close();
-          }
-        }, cfg.server.socketAliveTimeoutMilliSeconds);
-        timeoutMap.set(socket, disconnectTimeout);
+const CONNECTION_INIT_TIMEOUT_MS = 10000;
 
-        return new Promise((resolve, reject) => {
-          credentials()(socket.upgradeReq, {}, async () => {
-            try {
-              const credentials = params?.Authorization ? decryptToken(params.Authorization) : null;
+export default ({ cfg, server, pulseEngine, clients, authFactory, monitor }) => {
+  // One endpoint per subscription kind, differing only in how subscribe frames
+  // resolve to bindings: /subscription/raw takes pre-resolved exchange/pattern
+  // bindings (the Pulse debugger), /subscription/named takes event names the
+  // server resolves via the service events clients. Both speak the same frame
+  // protocol; separate endpoints let auth requirements differ per kind.
+  const endpoints = new Map([
+    ['/subscription/raw', resolveRawBindings],
+    ['/subscription/named', frame => resolveNamedBindings(frame, clients)],
+  ]);
 
-              const authClient = authFactory({ credentials });
+  const connectionOptions = {
+    pulseEngine,
+    authFactory,
+    monitor,
+    socketAliveTimeoutMilliSeconds: cfg.server.socketAliveTimeoutMilliSeconds,
+    connectionInitTimeoutMilliSeconds: CONNECTION_INIT_TIMEOUT_MS,
+  };
 
-              const scopes = await authClient.currentScopes();
-              const satisfyingScopes = scopeUtils.scopesSatisfying(scopes.scopes, { AllOf: ['web:read-pulse'] });
+  const wss = new WebSocketServer({ noServer: true });
 
-              if (!satisfyingScopes) {
-                const message = [
-                  `Error: InsufficientScopes`,
-                  '',
-                  `Client ID ${credentials?.clientId ?? 'anonymous'} does not have sufficient scopes and is missing the following scopes:`,
-                  '',
-                  '```',
-                  'web:read-pulse',
-                  '```',
-                ].join('\n');
+  // ws's `path` option supports a single path, so upgrades are routed by hand.
+  server.on('upgrade', (req, socket, head) => {
+    const { pathname } = new URL(req.url, 'http://localhost');
+    const resolveBindings = endpoints.get(pathname);
 
-                return reject(
-                  new ErrorReply({
-                    code: 'InsufficientScopes',
-                    message: message,
-                    details: {
-                      required: ['web:read-pulse'],
-                    },
-                  })
-                );
-              }
-
-              resolve();
-            } catch (err) {
-              reject(err);
-            }
-          });
-        });
-      },
-      onDisconnect(socket) {
-        const timeout = timeoutMap.get(socket);
-        clearTimeout(timeout);
-        timeoutMap.delete(socket);
-      },
-      async onOperation(_message, connection) {
-        // formatResponse should be replaced when
-        // SubscriptionServer accepts a formatError
-        // parameter for custom error formatting.
-        // See https://github.com/apollographql/subscriptions-transport-ws/issues/182
-        return {
-          ...connection,
-          formatResponse: value => ({
-            ...value,
-            errors: value.errors?.map(formatError),
-          }),
-          context: await context({ connection }),
-        };
-      },
-    },
-    {
-      server,
-      path,
+    if (!resolveBindings) {
+      socket.write('HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n');
+      socket.destroy();
+      return;
     }
-  );
+
+    wss.handleUpgrade(req, socket, head, ws => {
+      // Each connection owns its own lifecycle (keepalive, timeouts,
+      // subscription teardown); the instance stays reachable through the
+      // socket's listeners.
+      new SubscriptionConnection({ ws, resolveBindings, ...connectionOptions });
+    });
+  });
+
+  return wss;
 };
