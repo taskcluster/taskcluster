@@ -22,9 +22,10 @@ describe('summarizeHooks', () => {
   });
   it('should return counts', () => {
     const out = summarizeHooks({
-      data: {
-        hookGroups: [{ hooks: ['one'] }, { hooks: ['two', 'three'] }],
-      },
+      data: [
+        { hookGroupId: 'g1', hooks: [{ hookId: 'one' }] },
+        { hookGroupId: 'g2', hooks: [{ hookId: 'two' }, { hookId: 'three' }] },
+      ],
     });
 
     expect(out.length).toEqual(2);

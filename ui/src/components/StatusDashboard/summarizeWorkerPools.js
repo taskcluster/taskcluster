@@ -11,28 +11,29 @@ export default (workerPools, metrics) => {
   let stoppingCapacity = 0;
   const providers = new Set();
 
+  // `data` is a list of worker pools from `workerManager.listWorkerPools`,
+  // each merged with its `listWorkerPoolsStats` entry and a `pendingTasks`
+  // count. A pool with no stats entry yet contributes zero to every total.
   if (!workerPools.error && !workerPools.loading) {
-    (workerPools?.data?.WorkerManagerWorkerPoolSummaries?.edges || []).forEach(
-      ({ node }) => {
-        if (!node) {
-          return;
-        }
-
-        providers.add(node.providerId);
-        totalPools += 1;
-
-        if (node.currentCapacity > 0) {
-          poolsWithWorkers += 1;
-        }
-
-        pendingTasks += node.pendingTasks;
-        runningCount += node.runningCount;
-        requestedCapacity += node.requestedCapacity;
-        runningCapacity += node.runningCapacity;
-        stoppedCount += node.stoppedCount;
-        stoppingCapacity += node.stoppingCapacity;
+    (workerPools?.data || []).forEach(pool => {
+      if (!pool) {
+        return;
       }
-    );
+
+      providers.add(pool.providerId);
+      totalPools += 1;
+
+      if (pool.currentCapacity > 0) {
+        poolsWithWorkers += 1;
+      }
+
+      pendingTasks += pool.pendingTasks || 0;
+      runningCount += pool.runningCount || 0;
+      requestedCapacity += pool.requestedCapacity || 0;
+      runningCapacity += pool.runningCapacity || 0;
+      stoppedCount += pool.stoppedCount || 0;
+      stoppingCapacity += pool.stoppingCapacity || 0;
+    });
   }
 
   const link = '/worker-manager';
