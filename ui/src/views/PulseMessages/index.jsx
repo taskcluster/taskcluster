@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { withApollo } from '@apollo/client/react/hoc';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -36,7 +35,6 @@ const getBindingsFromProps = props => {
   return query.bindings ? Object.values(query.bindings) : [];
 };
 
-@withApollo
 @withStyles(theme => ({
   iconButton: {
     '& svg': {
@@ -153,18 +151,14 @@ export default class PulseMessages extends Component {
   handleStartListening = () => {
     this.setState({ listening: true, error: null });
 
-    this.unsubscribeFn = subscribeToPulseMessages(
-      this.props.client,
-      this.state.bindings,
-      {
-        onMessage: message => {
-          this.addMessage(message);
-        },
-        onError: error => {
-          this.setState({ error, listening: false });
-        },
-      }
-    );
+    this.unsubscribeFn = subscribeToPulseMessages(this.state.bindings, {
+      onMessage: message => {
+        this.addMessage(message);
+      },
+      onError: error => {
+        this.setState({ error, listening: false });
+      },
+    });
   };
 
   handleStopListening = () => {
