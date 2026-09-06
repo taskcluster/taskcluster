@@ -69,19 +69,19 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         await client.query({
           query: gql`
             query CircularFragment {
-              secrets {
+              cachePurges {
                 ...FragA
               }
             }
 
-            fragment FragA on SecretsConnection {
+            fragment FragA on CachePurgesConnection {
               pageInfo {
                 hasNextPage
               }
               ...FragB
             }
 
-            fragment FragB on SecretsConnection {
+            fragment FragB on CachePurgesConnection {
               pageInfo {
                 hasPreviousPage
               }

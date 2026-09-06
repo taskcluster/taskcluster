@@ -1,8 +1,9 @@
 import format from './format';
 
+// `data` is a `workerManager.workerPoolErrorStats` response.
 export default (wmStats, link = '/worker-manager/errors') => {
   const { data, loading, error } = wmStats;
-  const stats = data?.WorkerManagerErrorsStats?.totals;
+  const stats = data?.totals;
   let last24hours = 0;
 
   if (stats?.hourly) {

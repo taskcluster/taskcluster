@@ -1,37 +1,3 @@
-type HookMetadata {
-  name: String!
-  description: String!
-  owner: String!
-  emailOnError: Boolean
-}
-
-type Hook {
-  hookGroupId: ID!
-  hookId: ID!
-  bindings: [HookBinding]
-  metadata: HookMetadata!
-  schedule: [String]!
-  task: JSON!
-  expires: DateTime!
-  deadline: DateTime!
-  triggerSchema: JSON!
-}
-
-type HookGroup {
-  hookGroupId: ID!
-  # Note: This field will trigger an additional request.
-  hooks(hookGroupId: ID = hookGroupId): [Hook]
-}
-
-type HookBinding {
-  exchange: String!
-  routingKeyPattern: String!
-}
-
-extend type Query {
-  hookGroups(hookGroupId: ID): [HookGroup]
-}
-
 extend type Mutation {
   triggerHook(hookGroupId: ID!, hookId: ID!, payload: JSON!): TaskStatus
 }

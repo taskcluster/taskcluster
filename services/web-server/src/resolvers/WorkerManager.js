@@ -11,12 +11,6 @@ export default {
     },
   },
   Query: {
-    WorkerManagerWorkerPoolSummaries(_parent, { connection, searchTerm }, { loaders }) {
-      return loaders.WorkerManagerWorkerPoolSummaries.load({ connection, searchTerm });
-    },
-    WorkerManagerErrorsStats(_parent, { workerPoolId }, { loaders }) {
-      return loaders.WorkerManagerErrorsStats.load({ workerPoolId });
-    },
     WorkerPool(_parent, { workerPoolId }, { loaders }) {
       return loaders.WorkerPool.load({ workerPoolId });
     },
