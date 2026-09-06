@@ -98,7 +98,6 @@ export default async ({ cfg, strategies, auth, monitor, db, api }) => {
       cors(corsOptions),
       playground({
         endpoint: '/graphql',
-        subscriptionsEndpoint: '/subscription',
       })
     );
   }

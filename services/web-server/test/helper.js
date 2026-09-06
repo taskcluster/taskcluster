@@ -8,9 +8,6 @@ import libUrls from 'taskcluster-lib-urls';
 import request from 'superagent';
 import merge from 'deepmerge';
 import PulseEngine from '../src/PulseEngine/index.js';
-import { WebSocketLink } from 'apollo-link-ws';
-import WebSocket from 'ws';
-import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core/index.js';
 import got from 'got';
 import path from 'node:path';
@@ -325,43 +322,6 @@ helper.getHttpClient = (clientOptions = {}) => {
   });
 
   return new ApolloClient({ cache, link: httpLink });
-};
-
-helper.getWebsocketClient = subscriptionClient => {
-  const cache = new InMemoryCache();
-  const link = new WebSocketLink(subscriptionClient);
-
-  return new ApolloClient({ cache, link });
-};
-
-// If a subscription client is created for a test, it also needs to be closed.
-// Otherwise, the tests will just hang and timeout
-helper.createSubscriptionClient = async () => {
-  const credentials = {
-    clientId: 'testing',
-    accessToken: 'testing',
-  };
-
-  return new Promise((resolve, reject) => {
-    const subscriptionClient = new SubscriptionClient(
-      `ws://localhost:${helper.serverPort}/subscription`,
-      {
-        reconnect: true,
-        connectionParams: () => {
-          return {
-            Authorization: `Bearer ${btoa(JSON.stringify(credentials))}`,
-          };
-        },
-      },
-      WebSocket
-    );
-    subscriptionClient.onConnected(() => {
-      resolve(subscriptionClient);
-    });
-    subscriptionClient.onError(err => {
-      reject(err);
-    });
-  });
 };
 
 const stubbedAuth = () => {
