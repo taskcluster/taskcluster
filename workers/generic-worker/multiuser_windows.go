@@ -182,7 +182,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	contents += "exit /b %tcexitcode%\r\n"
 
 	// now generate the .bat script that runs all of this
-	err := os.WriteFile(
+	err := safefs.WriteFile(
 		wrapper,
 		[]byte(contents),
 		0755, // note this is mostly ignored on windows
@@ -197,7 +197,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		task.Payload.Command[index],
 	}, "\r\n"))
 
-	err = os.WriteFile(
+	err = safefs.WriteFile(
 		script,
 		fileContents,
 		0755, // note this is mostly ignored on windows
