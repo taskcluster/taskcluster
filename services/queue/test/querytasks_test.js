@@ -226,6 +226,72 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
     assume(r3.claimedTasks).equals(2);
   });
 
+  test('taskQueueCountsBatch', async () => {
+    const firstTaskQueueId = 'batch/first';
+    const secondTaskQueueId = 'batch/second';
+    const missingTaskQueueId = 'batch/missing';
+    const firstTaskId = slugid.v4();
+    const secondTaskId = slugid.v4();
+
+    await helper.queue.createTask(firstTaskId, { ...taskDef, taskQueueId: firstTaskQueueId });
+    await helper.queue.createTask(secondTaskId, { ...taskDef, taskQueueId: secondTaskQueueId });
+    await helper.queue.claimTask(secondTaskId, 0, {
+      workerGroup: 'batch-worker-group',
+      workerId: 'batch-worker',
+    });
+
+    const { taskQueueCounts } = await helper.queue.taskQueueCountsBatch({
+      taskQueueIds: [secondTaskQueueId, missingTaskQueueId, firstTaskQueueId],
+    });
+
+    assume(Object.fromEntries(taskQueueCounts.map(count => [count.taskQueueId, count]))).deep.equals({
+      [secondTaskQueueId]: {
+        provisionerId: 'batch',
+        workerType: 'second',
+        taskQueueId: secondTaskQueueId,
+        pendingTasks: 0,
+        claimedTasks: 1,
+      },
+      [missingTaskQueueId]: {
+        provisionerId: 'batch',
+        workerType: 'missing',
+        taskQueueId: missingTaskQueueId,
+        pendingTasks: 0,
+        claimedTasks: 0,
+      },
+      [firstTaskQueueId]: {
+        provisionerId: 'batch',
+        workerType: 'first',
+        taskQueueId: firstTaskQueueId,
+        pendingTasks: 1,
+        claimedTasks: 0,
+      },
+    });
+  });
+
+  test('taskQueueCountsBatch requires scopes for every task queue', async () => {
+    const firstTaskQueueId = 'batch/first';
+    const secondTaskQueueId = 'batch/second';
+
+    helper.scopes(
+      `queue:pending-count:${firstTaskQueueId}`,
+      `queue:claimed-count:${firstTaskQueueId}`,
+      `queue:pending-count:${secondTaskQueueId}`
+    );
+
+    await assert.rejects(
+      () => helper.queue.taskQueueCountsBatch({ taskQueueIds: [firstTaskQueueId, secondTaskQueueId] }),
+      err => err.code === 'InsufficientScopes'
+    );
+  });
+
+  test('taskQueueCountsBatch accepts an empty request without scopes', async () => {
+    helper.scopes('none');
+
+    const result = await helper.queue.taskQueueCountsBatch({ taskQueueIds: [] });
+    assume(result.taskQueueCounts).deep.equals([]);
+  });
+
   test('pagination works', async () => {
     const workerGroup = 'my-worker-group';
     const workerId = 'my-worker-id';

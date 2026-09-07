@@ -47,6 +47,7 @@ export default class Queue extends Client {
     this.listProvisioners.entry = {"args":[],"category":"Worker Metadata","method":"get","name":"listProvisioners","output":true,"query":["continuationToken","limit"],"route":"/provisioners","scopes":"queue:list-provisioners","stability":"deprecated","type":"function"};
     this.getProvisioner.entry = {"args":["provisionerId"],"category":"Worker Metadata","method":"get","name":"getProvisioner","output":true,"query":[],"route":"/provisioners/<provisionerId>","scopes":"queue:get-provisioner:<provisionerId>","stability":"deprecated","type":"function"};
     this.pendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"pendingTasks","output":true,"query":[],"route":"/pending/<taskQueueId>","scopes":"queue:pending-count:<taskQueueId>","stability":"deprecated","type":"function"};
+    this.taskQueueCountsBatch.entry = {"args":[],"category":"Worker Metadata","input":true,"method":"post","name":"taskQueueCountsBatch","output":true,"query":[],"route":"/task-queues/counts","scopes":{"AllOf":[{"each":"queue:pending-count:<taskQueueId>","for":"taskQueueId","in":"taskQueueIds"},{"each":"queue:claimed-count:<taskQueueId>","for":"taskQueueId","in":"taskQueueIds"}]},"stability":"experimental","type":"function"};
     this.taskQueueCounts.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"taskQueueCounts","output":true,"query":[],"route":"/task-queues/<taskQueueId>/counts","scopes":{"AllOf":["queue:pending-count:<taskQueueId>","queue:claimed-count:<taskQueueId>"]},"stability":"stable","type":"function"};
     this.listPendingTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"listPendingTasks","output":true,"query":["continuationToken","limit"],"route":"/task-queues/<taskQueueId>/pending","scopes":"queue:pending-list:<taskQueueId>","stability":"experimental","type":"function"};
     this.listClaimedTasks.entry = {"args":["taskQueueId"],"category":"Worker Metadata","method":"get","name":"listClaimedTasks","output":true,"query":["continuationToken","limit"],"route":"/task-queues/<taskQueueId>/claimed","scopes":"queue:claimed-list:<taskQueueId>","stability":"experimental","type":"function"};
@@ -564,6 +565,17 @@ export default class Queue extends Client {
     this.validate(this.pendingTasks.entry, args);
 
     return this.request(this.pendingTasks.entry, args);
+  }
+  // Get approximate pending and claimed task counts for the given task queues.
+  // The caller must have both `queue:pending-count:<taskQueueId>` and
+  // `queue:claimed-count:<taskQueueId>` scopes for every requested task queue.
+  // If any task queue is unauthorized, the entire request will fail.
+  // As task states may change rapidly, these counts may not represent the exact
+  // number of pending and claimed tasks, but are very good approximations.
+  taskQueueCountsBatch(...args) {
+    this.validate(this.taskQueueCountsBatch.entry, args);
+
+    return this.request(this.taskQueueCountsBatch.entry, args);
   }
   // Get an approximate number of pending and claimed tasks for the given `taskQueueId`.
   // As task states may change rapidly, this number may not represent the exact

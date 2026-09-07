@@ -1888,6 +1888,17 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
+				Name:        "taskQueueCountsBatch",
+				Title:       "Get Pending and Claimed Task Counts for Multiple Task Queues",
+				Description: "Get approximate pending and claimed task counts for the given task queues.\n\nThe caller must have both `queue:pending-count:<taskQueueId>` and\n`queue:claimed-count:<taskQueueId>` scopes for every requested task queue.\nIf any task queue is unauthorized, the entire request will fail.\n\nAs task states may change rapidly, these counts may not represent the exact\nnumber of pending and claimed tasks, but are very good approximations.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/task-queues/counts",
+				Args:        []string{},
+				Query:       []string{},
+				Input:       "v1/task-queue-counts-request.json#",
+			},
+			definitions.Entry{
 				Name:        "taskQueueCounts",
 				Title:       "Get Number of Pending and Claimed Tasks",
 				Description: "Get an approximate number of pending and claimed tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending and claimed tasks, but a very good approximation.",
