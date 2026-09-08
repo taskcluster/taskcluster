@@ -30,13 +30,14 @@ type (
 	DockerImageArtifact dockerworker.DockerImageArtifact
 	Image               interface {
 		FileMounts() ([]genericworker.FileMount, error)
-		String() string
 	}
 	ConversionInfo struct {
 		ContainerName string
 		CopyArtifacts []CopyArtifact
 		EnvVars       string
-		Image         Image
+		// RegistryImage is the name:tag to docker pull for
+		// DockerImageName / NamedDockerImage. Empty for artifact images.
+		RegistryImage string
 		// Populated by mounts feature when a docker image artifact is
 		// downloaded to the file cache. Used by d2g feature to avoid
 		// copying the image to the task directory.
@@ -227,13 +228,13 @@ func ConvertPayload(
 		// it's used to access the index service API
 		gwPayload.Features.TaskclusterProxy = true
 	}
-	containerName, err := setCommand(dwPayload, gwPayload, dwImage, gwWritableDirectoryCaches, nonEnvListArgs, config, directoryReader)
+	containerName, err := setCommand(dwPayload, gwPayload, gwWritableDirectoryCaches, nonEnvListArgs, config, directoryReader)
 	if err != nil {
 		return
 	}
 	conversionInfo.ContainerName = containerName
 	conversionInfo.CopyArtifacts = copyArtifacts(dwPayload, gwPayload.Artifacts)
-	conversionInfo.Image = dwImage
+	conversionInfo.RegistryImage = registryImageName(dwImage)
 
 	gwFileMounts, err := dwImage.FileMounts()
 	if err != nil {
@@ -405,7 +406,6 @@ func artifacts(dwPayload *dockerworker.DockerWorkerPayload) []genericworker.Arti
 
 func runCommand(
 	dwPayload *dockerworker.DockerWorkerPayload,
-	dwImage Image,
 	gwArtifacts []genericworker.Artifact,
 	wdcs []genericworker.WritableDirectoryCache,
 	nonEnvListArgs []string,
@@ -475,7 +475,10 @@ func runCommand(
 	// Use env file that's created by D2G task feature
 	args = append(args, "--env-file", "env.list")
 	args = append(args, "--")
-	args = append(args, dwImage.String())
+	// Pin by content digest at runtime (substituted from docker
+	// pull/load). Running a registry name:tag with --pull=never
+	// would follow a poisoned local tag.
+	args = append(args, "__D2G_IMAGE_ID__")
 	args = append(args, dwPayload.Command...)
 
 	return [][]string{args}, containerName, nil
@@ -536,13 +539,12 @@ func setArtifacts(dwPayload *dockerworker.DockerWorkerPayload, gwPayload *generi
 func setCommand(
 	dwPayload *dockerworker.DockerWorkerPayload,
 	gwPayload *genericworker.GenericWorkerPayload,
-	dwImage Image,
 	gwWritableDirectoryCaches []genericworker.WritableDirectoryCache,
 	nonEnvListArgs []string,
 	config Config,
 	directoryReader func(string) ([]os.DirEntry, error),
 ) (containerName string, err error) {
-	gwPayload.Command, containerName, err = runCommand(dwPayload, dwImage, gwPayload.Artifacts, gwWritableDirectoryCaches, nonEnvListArgs, config, directoryReader)
+	gwPayload.Command, containerName, err = runCommand(dwPayload, gwPayload.Artifacts, gwWritableDirectoryCaches, nonEnvListArgs, config, directoryReader)
 	if err != nil {
 		return "", fmt.Errorf("cannot create run command: %v", err)
 	}
@@ -636,6 +638,17 @@ func createVolumeMountArgs(
 		args = append(args, "--device=/dev/snd")
 	}
 	return args
+}
+
+func registryImageName(img Image) string {
+	switch v := img.(type) {
+	case *DockerImageName:
+		return string(*v)
+	case *NamedDockerImage:
+		return v.Name
+	default:
+		return ""
+	}
 }
 
 func imageObject(payloadImage *json.RawMessage) (Image, error) {
