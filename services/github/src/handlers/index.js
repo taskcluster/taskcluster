@@ -390,16 +390,12 @@ class Handlers {
         null, // no cancelling by sha here
         pullNumber
       );
-      const taskGroupIds = builds
-        ?.filter(
-          build =>
-            build.task_group_id !== newTaskGroupId &&
-            build.event_id !== eventId &&
-            includedEventTypes.includes(build.event_type) &&
-            // slower older handler must never supersede a newer delivery
-            isOlderDelivery(build.event_id, eventId)
-        )
-        .map(build => build.task_group_id);
+      const relevantBuilds = builds?.filter(build => includedEventTypes.includes(build.event_type));
+      const newerDeliveryExists = relevantBuilds.some(build => isOlderDelivery(eventId, build.event_id));
+      const buildsToCancel = newerDeliveryExists
+        ? relevantBuilds.filter(build => build.event_id === eventId)
+        : relevantBuilds.filter(build => isOlderDelivery(build.event_id, eventId));
+      const taskGroupIds = buildsToCancel.map(build => build.task_group_id);
 
       if (taskGroupIds.length > 0) {
         // we want to make sure that github client respects repository scopes when sealing and cancelling tasks

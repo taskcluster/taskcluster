@@ -579,7 +579,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
       assert.equal(buildB.state, 'pending');
     });
 
-    test('only cancels older task groups for the pull request', async () => {
+    test('a superseded delivery cancels itself', async () => {
       // These database timestamps are deliberately opposite to delivery order.
       const oldCreated = new Date('2026-08-27T17:28:46.000Z');
       const currentCreated = new Date('2026-08-27T17:28:45.000Z');
@@ -631,10 +631,12 @@ helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
         },
       });
 
-      assert.deepEqual(sealedTaskGroups, ['aa']);
-      assert.deepEqual(cancelledTaskGroups, ['aa']);
+      assert.deepEqual(sealedTaskGroups, ['bb']);
+      assert.deepEqual(cancelledTaskGroups, ['bb']);
       const [buildA] = await helper.db.fns.get_github_build_pr('aa');
-      assert.equal(buildA.state, 'cancelled');
+      assert.equal(buildA.state, 'pending');
+      const [buildB] = await helper.db.fns.get_github_build_pr('bb');
+      assert.equal(buildB.state, 'cancelled');
       const [buildC] = await helper.db.fns.get_github_build_pr('cc');
       assert.equal(buildC.state, 'pending');
     });
