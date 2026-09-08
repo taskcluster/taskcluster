@@ -18,7 +18,7 @@ import { GITHUB_BUILD_STATES } from '../constants.js';
 import { v1ToV6 } from 'uuid';
 
 // github uses UUID1 and to compare them as ordered strings we convert it to V6 which is sortable
-const isOlderDelivery = (candidateId, currentId) => v1ToV6(candidateId).localeCompare(v1ToV6(currentId)) < 0;
+const isOlderDelivery = (candidateId, currentId) => v1ToV6(candidateId) < v1ToV6(currentId);
 
 /**
  * Create handlers
