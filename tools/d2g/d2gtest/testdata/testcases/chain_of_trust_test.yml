@@ -48,7 +48,7 @@ testSuite:
         - --env-file
         - env.list
         - --
-        - my-little/pony:4.1
+        - __D2G_IMAGE_ID__
         - foo
         - bar
       features:
@@ -242,7 +242,7 @@ testSuite:
         - --env-file
         - env.list
         - --
-        - my-little/pony:4.1
+        - __D2G_IMAGE_ID__
         - foo
         - bar
       features:
