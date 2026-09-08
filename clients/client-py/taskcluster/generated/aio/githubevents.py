@@ -113,6 +113,52 @@ class GithubEvents(AsyncBaseClient):
         }
         return self._makeTopicExchange(ref, *args, **kwargs)
 
+    def taskclusterYmlUpdate(self, *args, **kwargs):
+        """
+        Taskcluster Yml Update Event
+
+        When a GitHub push event changes a repository's `.taskcluster.yml` it will
+        be broadcast on this exchange with the designated `organization` and
+        `repository` in the routing-key.
+
+        The payload names the repository and the ref that was pushed to, and
+        nothing more.  The file itself does not travel with the message, so a
+        consumer reading it cannot be steered by the pushed commits.
+
+        Detection is best effort.  A force push that drops a commit reports no
+        changed files to GitHub, so reverting the file that way sends no message.
+
+        This exchange takes the following keys:
+
+         * routingKeyKind: Identifier for the routing-key kind. This is always `"primary"` for the formalized routing key. (required)
+
+         * organization: The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
+
+         * repository: The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped. (required)
+        """
+
+        ref = {
+            "exchange": "taskcluster-yml-update",
+            "name": "taskclusterYmlUpdate",
+            "routingKey": [
+                {
+                    "constant": "primary",
+                    "multipleWords": False,
+                    "name": "routingKeyKind",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "organization",
+                },
+                {
+                    "multipleWords": False,
+                    "name": "repository",
+                },
+            ],
+            "schema": "v1/taskcluster-yml-update-message.json#",
+        }
+        return self._makeTopicExchange(ref, *args, **kwargs)
+
     def release(self, *args, **kwargs):
         """
         GitHub release Event

@@ -1097,6 +1097,35 @@ export default {
           "type": "topic-exchange"
         },
         {
+          "description": "When a GitHub push event changes a repository's `.taskcluster.yml` it will\nbe broadcast on this exchange with the designated `organization` and\n`repository` in the routing-key.\n\nThe payload names the repository and the ref that was pushed to, and\nnothing more.  The file itself does not travel with the message, so a\nconsumer reading it cannot be steered by the pushed commits.\n\nDetection is best effort.  A force push that drops a commit reports no\nchanged files to GitHub, so reverting the file that way sends no message.",
+          "exchange": "taskcluster-yml-update",
+          "name": "taskclusterYmlUpdate",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "organization",
+              "required": true,
+              "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            },
+            {
+              "multipleWords": false,
+              "name": "repository",
+              "required": true,
+              "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            }
+          ],
+          "schema": "v1/taskcluster-yml-update-message.json#",
+          "title": "Taskcluster Yml Update Event",
+          "type": "topic-exchange"
+        },
+        {
           "description": "When a GitHub release event is posted it will be broadcast on this\nexchange with the designated `organization` and `repository`\nin the routing-key along with event specific metadata in the payload.",
           "exchange": "release",
           "name": "release",

@@ -1,0 +1,45 @@
+$schema: "/schemas/common/metaschema.json#"
+title:        "Taskcluster Yml Update Message"
+description: |
+  Message reporting that a push changed a repository's `.taskcluster.yml`.
+
+  The payload is deliberately narrow.  A consumer acts on a repository it
+  already knows about, so nothing that would let an author of the pushed commits
+  steer it travels with the message.  In particular the file's contents do not.
+type:         object
+properties:
+  version:    {$const: message-version}
+  organization:
+    description: |
+      The GitHub `organization` which had an event, as GitHub spells it.  The
+      routing key carries the same name with periods replaced by `%`.
+    type:         string
+    minLength:    {$const: github-identifier-min-length}
+    maxLength:    {$const: github-identifier-max-length}
+    pattern:      {$const: github-webhook-identifier-pattern}
+  repository:
+    description: |
+      The GitHub `repository` whose `.taskcluster.yml` changed, as GitHub spells
+      it.  The routing key carries the same name with periods replaced by `%`.
+    type:         string
+    maxLength:    {$const: github-identifier-max-length}
+    pattern:      {$const: github-repo-name-pattern}
+  ref:
+    description: |
+      The full ref that was pushed to, so that a consumer can ignore a branch or
+      tag it does not build.
+    type:         string
+    pattern:      "^refs/(heads|tags)/.*$"
+  eventId:
+    description: |
+      The GitHub webhook deliveryId of the push, for tracing this message back
+      to the delivery that caused it.
+    type:         string
+    pattern:      {$const: github-guid-pattern}
+additionalProperties: false
+required:
+  - version
+  - organization
+  - repository
+  - ref
+  - eventId
