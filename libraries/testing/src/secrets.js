@@ -176,7 +176,7 @@ class Secrets {
         await that.setup();
         const missing = secretList.filter(name => !that.have(name));
         if (missing.length) {
-          if (process.env.NO_TEST_SKIP) {
+          if (process.env.NO_TEST_SKIP && process.env.TASKCLUSTER_UNTRUSTED_PR !== 'true') {
             throw new Error(`secrets missing and NO_TEST_SKIP is set: ${missing.join(' ')}`);
           }
           skipping = true;

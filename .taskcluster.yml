@@ -2,39 +2,45 @@
 version: 1
 reporting: checks-v1
 policy:
-  pullRequests: public
+  pullRequests: public_restricted
+  allowComments: collaborators
 autoCancelPreviousChecks: true
 tasks:
   - $let:
       trustDomain: taskcluster
       # We set some of these directly in tc because we don't have some mozilla-specific concepts
       ownerEmail: taskcluster-internal@mozilla.com
-      level: 1
+      # Match Firefox CI trust levels: external pull requests use level 1,
+      # while trusted code and collaborator-approved runs use level 3.
+      level:
+        $if: 'tasks_for == "github-pull-request-untrusted"'
+        then: 1
+        else: 3
 
       # Github events have this stuff in different places...
       baseRepoUrl:
         $switch:
-          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.repo.html_url}'
+          'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': '${event.pull_request.base.repo.html_url}'
           $default: '${event.repository.html_url}'
       repoUrl:
         $switch:
-          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.head.repo.html_url}'
+          'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': '${event.pull_request.head.repo.html_url}'
           'tasks_for in ["cron", "action", "pr-action"]': '${repository.url}'
           $default: '${event.repository.html_url}'
       project:
         $switch:
           'tasks_for in ["github-push", "github-release"]': '${event.repository.name}'
-          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.repo.name}'
+          'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': '${event.pull_request.base.repo.name}'
           'tasks_for in ["cron", "action", "pr-action"]': '${repository.project}'
       head_branch:
         $switch:
-          'tasks_for[:19] == "github-pull-request"': ${event.pull_request.head.ref}
+          'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': ${event.pull_request.head.ref}
           'tasks_for == "github-push"': ${event.ref}
           'tasks_for == "github-release"': '${event.release.target_commitish}'
           'tasks_for in ["cron", "action", "pr-action"]': '${push.branch}'
       base_ref:
         $switch:
-          'tasks_for[:19] == "github-pull-request"': ${event.pull_request.base.ref}
+          'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': ${event.pull_request.base.ref}
           # event.base_ref is barely documented[1]. Testing showed it's only
           # defined when creating a new branch. It's null when pushing to an
           # existing branch
@@ -47,7 +53,7 @@ tasks:
           'tasks_for == "pr-action"': '${push.base_branch}'
       head_ref:
         $switch:
-          'tasks_for[:19] == "github-pull-request"': ${event.pull_request.head.ref}
+          'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': ${event.pull_request.head.ref}
           'tasks_for == "github-push"': ${event.ref}
           'tasks_for in ["cron", "action", "pr-action"]': '${push.branch}'
           'tasks_for == "github-release"': ${event.release.tag_name}
@@ -55,12 +61,12 @@ tasks:
         $switch:
           'tasks_for == "github-push"': '${event.before}'
           'tasks_for == "github-release"': '${event.release.target_commitish}'
-          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.sha}'
+          'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': '${event.pull_request.base.sha}'
           'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
       head_sha:
         $switch:
           'tasks_for == "github-push"': '${event.after}'
-          'tasks_for[:19] == "github-pull-request"': '${event.pull_request.head.sha}'
+          'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"': '${event.pull_request.head.sha}'
           'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
           'tasks_for == "github-release"': '${event.release.tag_name}'
       head_tag:
@@ -73,11 +79,14 @@ tasks:
           'tasks_for[:19] == "github-pull-request"': ${event.action}
           $default: 'UNDEFINED'
       isPullRequest:
-        $eval: 'tasks_for[:19] == "github-pull-request"'
+        $eval: 'tasks_for[:19] == "github-pull-request" || tasks_for == "github-issue-comment"'
+      isIssueComment:
+        $eval: 'tasks_for == "github-issue-comment"'
 
     in:
       $if: >
         (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
+        || (isIssueComment && event.taskcluster_comment == "run")
         || (tasks_for == "github-push" && project == "taskcluster" && event["ref"] == "refs/heads/main")
         || (tasks_for == "github-push" && project == "taskcluster" && event["ref"][:11] == "refs/tags/v")
         || (tasks_for == "github-push" && project == "staging-releases" && event["ref"][:27] == "refs/heads/staging-release/")
@@ -87,7 +96,10 @@ tasks:
         taskGroupId: "${ownTaskId}" # same as taskId; this is how automation identifies a decision task
         created: { $fromNow: "" }
         deadline: { $fromNow: "1 day" }
-        expires: { $fromNow: "1 year 1 second" } # 1 second so artifacts expire first, despite rounding errors
+        expires:
+          $if: 'tasks_for == "github-pull-request-untrusted"'
+          then: { $fromNow: "28 days 1 second" }
+          else: { $fromNow: "1 year 1 second" } # 1 second so artifacts expire first, despite rounding errors
         metadata:
           owner: "${ownerEmail}"
           source: "${repoUrl}/raw/${head_sha}/.taskcluster.yml"
@@ -107,13 +119,17 @@ tasks:
             in:
               - "assume:repo:${repoUrl[8:]}:branch:${short_head_branch}"
           else:
-            $if: "isPullRequest"
+            $if: 'tasks_for == "github-pull-request-untrusted"'
             then:
-              - "assume:repo:github.com/${event.pull_request.base.repo.full_name}:pull-request"
+              - "assume:repo:github.com/${event.pull_request.base.repo.full_name}:pull-request-untrusted"
             else:
-              $if: 'tasks_for == "github-push" && event["ref"][:11] == "refs/tags/v"'
+              $if: "isPullRequest"
               then:
-                - "assume:repo:${repoUrl[8:]}:tag:${head_branch[10:]}"
+                - "assume:repo:github.com/${event.pull_request.base.repo.full_name}:pull-request"
+              else:
+                $if: 'tasks_for == "github-push" && event["ref"][:11] == "refs/tags/v"'
+                then:
+                  - "assume:repo:${repoUrl[8:]}:tag:${head_branch[10:]}"
 
         requires: all-completed
         priority: highest
@@ -135,7 +151,6 @@ tasks:
               - $if: "isPullRequest"
                 then:
                   TASKCLUSTER_PULL_REQUEST_URL: "${event.pull_request.url}"
-
           cache:
             "${trustDomain}-level-${level}-checkouts-sparse-v2": /builds/worker/checkouts
 
@@ -180,7 +195,10 @@ tasks:
             "public":
               type: "directory"
               path: "/builds/worker/artifacts"
-              expires: { $fromNow: "1 year" }
+              expires:
+                $if: 'tasks_for == "github-pull-request-untrusted"'
+                then: { $fromNow: "28 days" }
+                else: { $fromNow: "1 year" }
             "public/docker-contexts":
               type: "directory"
               path: "/builds/worker/checkouts/src/docker-contexts"
