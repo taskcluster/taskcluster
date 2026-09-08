@@ -46,7 +46,7 @@ testSuite:
         - --env-file
         - env.list
         - --
-        - ubuntu
+        - __D2G_IMAGE_ID__
         - echo "Hello world"
       features:
         backingLog: false

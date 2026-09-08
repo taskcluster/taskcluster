@@ -105,7 +105,7 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		key = dtf.task.D2GInfo.ImageArtifactSHA256
 	} else {
 		// DockerImageName or NamedDockerImage — pull from registry
-		key = dtf.task.D2GInfo.Image.String()
+		key = dtf.task.D2GInfo.RegistryImage
 	}
 
 	image := dtf.imageCache[key]
@@ -170,34 +170,29 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 			if !imageNameFound {
 				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not determine docker image name from docker load output:\n%v", string(out)))
 			}
+		} else {
+			imageName = key
 		}
-		imageID := imageName
-
-		// DockerImageArtifact or IndexedDockerImage, need to get
-		// sha256 of the image to differentiate between images
-		// with the same name/tag
-		if isImageArtifact {
-			cmd, err = process.NewCommandNoOutputStreams([]string{
-				"docker",
-				"images",
-				"--no-trunc",
-				"--quiet",
-				imageName,
-			}, taskDir, []string{}, dtf.task.pd)
-			if err != nil {
-				return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
-			}
-			out, err = cmd.Output()
-			if err != nil {
-				return nil, executionError(internalError, errored, formatCommandError("[d2g] could not get sha256 of docker image", err, out))
-			}
-
-			// Only use the first line of output for image ID
-			// as docker images can output multiple sha256's for the
-			// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
-			idLine, _, _ := strings.Cut(strings.TrimSpace(string(out)), "\n")
-			imageID = strings.TrimPrefix(idLine, "sha256:")
+		cmd, err = process.NewCommandNoOutputStreams([]string{
+			"docker",
+			"images",
+			"--no-trunc",
+			"--quiet",
+			imageName,
+		}, taskDir, []string{}, dtf.task.pd)
+		if err != nil {
+			return nil, executionError(internalError, errored, fmt.Errorf("[d2g] could not create process to get sha256 of docker image: %v", err))
 		}
+		out, err = cmd.Output()
+		if err != nil {
+			return nil, executionError(internalError, errored, formatCommandError("[d2g] could not get sha256 of docker image", err, out))
+		}
+
+		// Only use the first line of output for image ID
+		// as docker images can output multiple sha256's for the
+		// same image (see https://github.com/taskcluster/taskcluster/issues/7967)
+		idLine, _, _ := strings.Cut(strings.TrimSpace(string(out)), "\n")
+		imageID := strings.TrimPrefix(idLine, "sha256:")
 
 		return &Image{
 			ID:   imageID,
@@ -207,12 +202,12 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 
 	// Always want to re-pull the docker image
 	// if it's not an image artifact, as the
-	// tag could be outdated
+	// tag could be outdated or locally poisoned.
 	// (see https://github.com/taskcluster/taskcluster/issues/8004)
 	if isImageArtifact {
 		if image == nil {
 			var loadErr *CommandExecutionError
-			image, loadedImage, loadErr = dtf.loadImageLocked(key, loadImage)
+			image, loadedImage, loadErr = dtf.loadImageLocked(key, loadImage, true)
 			if loadErr != nil {
 				return loadErr
 			}
@@ -221,9 +216,11 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 		// Registry pulls also serialize through the same mutex so that
 		// concurrent tasks running with the same `image: foo:tag`
 		// don't issue parallel `docker pull`s and race on the cache
-		// JSON write below.
+		// JSON write below. allowCacheHit is false: a persisted
+		// name:tag cache entry must not skip docker pull (the tag
+		// could be outdated or locally poisoned).
 		var loadErr *CommandExecutionError
-		image, loadedImage, loadErr = dtf.loadImageLocked(key, loadImage)
+		image, loadedImage, loadErr = dtf.loadImageLocked(key, loadImage, false)
 		if loadErr != nil {
 			return loadErr
 		}
@@ -296,34 +293,44 @@ func (dtf *D2GTaskFeature) Start() *CommandExecutionError {
 	return nil
 }
 
-// loadImageLocked deduplicates concurrent docker image loads (both
-// artifact-based `docker load` and registry-based `docker pull`) per
-// image key. Tasks pulling the *same* key share one docker invocation;
-// tasks pulling *different* keys run in parallel.
-//
-// The first return is whether *this* call actually performed the load
-// (true) versus picked up a result populated by another task (false) —
-// kept for the existing "[d2g] Loaded ..." vs "[d2g] Using cached ..."
-// log distinction in Start.
 type imageLoadResult struct {
 	image  *Image
 	loaded bool
 }
 
-func (dtf *D2GTaskFeature) loadImageLocked(key string, loadImage func() (*Image, *CommandExecutionError)) (*Image, bool, *CommandExecutionError) {
+// loadImageLocked deduplicates concurrent docker image loads (both
+// artifact-based `docker load` and registry-based `docker pull`) per
+// image key. Tasks pulling the *same* key share one docker invocation;
+// tasks pulling *different* keys run in parallel.
+//
+// allowCacheHit is true only for artifact-SHA keys. Registry name:tag
+// keys always invoke loadImage (a persisted cache entry must not skip
+// docker pull as the tag could be outdated or locally poisoned).
+//
+// The first return is whether *this* call actually performed the load
+// (true) versus picked up a result populated by another task (false) —
+// kept for the existing "[d2g] Loaded ..." vs "[d2g] Using cached ..."
+// log distinction in Start.
+func (dtf *D2GTaskFeature) loadImageLocked(key string, loadImage func() (*Image, *CommandExecutionError), allowCacheHit bool) (*Image, bool, *CommandExecutionError) {
 	v, err, _ := d2gImageLoads.Do(key, func() (any, error) {
 		// Re-read the on-disk cache: another task may have completed
 		// the load while we were waiting on singleflight, OR an
 		// unrelated process (a previous worker run) may have left a
 		// fresh entry behind. Done inside Do so the doubled-check
 		// happens under the per-key serialization.
-		latestCache := ImageCache{}
-		d2gCacheMutex.Lock()
-		latestCache.loadFromFile("d2g-image-cache.json")
-		d2gCacheMutex.Unlock()
-		maps.Copy(dtf.imageCache, latestCache)
-		if image := latestCache[key]; image != nil {
-			return imageLoadResult{image: image, loaded: false}, nil
+		//
+		// Only artifact-SHA keys may return early. Registry name:tag
+		// keys are mutable (and the local tag store is shared with
+		// every d2g task user), so they always re-pull.
+		if allowCacheHit {
+			latestCache := ImageCache{}
+			d2gCacheMutex.Lock()
+			latestCache.loadFromFile("d2g-image-cache.json")
+			d2gCacheMutex.Unlock()
+			maps.Copy(dtf.imageCache, latestCache)
+			if image := latestCache[key]; image != nil {
+				return imageLoadResult{image: image, loaded: false}, nil
+			}
 		}
 
 		image, loadErr := loadImage()
