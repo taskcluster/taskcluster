@@ -24,6 +24,11 @@ jobs:
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}
+      - name: Trigger trusted CI
+        run: gh pr comment "$PR_URL" --body "/taskcluster run"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.DEPENDABOT_AUTOMERGE_TOKEN }}
       - name: Enable auto-merge for Dependabot PRs
         if: ${{ contains(fromJson('["version-update:semver-patch", "version-update:semver-minor"]'), steps.metadata.outputs.update-type) }}
         run: gh pr merge --auto --merge "$PR_URL"
