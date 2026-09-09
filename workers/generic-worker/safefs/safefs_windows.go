@@ -456,6 +456,36 @@ func Remove(path string) error {
 	return DeleteChild(parent, name, filepath.Dir(path))
 }
 
+// Returns whether or not a path exists. A path we refuse to follow is an
+// error, not an absence
+func Exists(path string) (bool, error) {
+	parent, name, err := OpenParent(path, traverseAccess)
+	if err != nil {
+		if absent(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	defer func() { _ = windows.CloseHandle(parent) }()
+
+	handle, err := OpenChild(parent, name, filepath.Dir(path), windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
+	if err != nil {
+		if absent(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	_ = windows.CloseHandle(handle)
+	return true, nil
+}
+
+func absent(err error) bool {
+	return errors.Is(err, windows.ERROR_FILE_NOT_FOUND) ||
+		errors.Is(err, windows.ERROR_PATH_NOT_FOUND) ||
+		errors.Is(err, windows.STATUS_OBJECT_NAME_NOT_FOUND) ||
+		errors.Is(err, windows.STATUS_OBJECT_PATH_NOT_FOUND)
+}
+
 // Whether path is an existing directory
 func IsExistingDir(path string) bool {
 	handle, err := OpenPath(path, windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)

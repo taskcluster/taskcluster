@@ -295,6 +295,28 @@ func isDirAt(dirfd int, name string) bool {
 	return st.Mode&unix.S_IFMT == unix.S_IFDIR
 }
 
+// Returns whether or not a path exists. A path we refuse to follow is an
+// error, not an absence
+func Exists(path string) (bool, error) {
+	parent, name, err := openParent(path)
+	if err != nil {
+		if errors.Is(err, unix.ENOENT) || errors.Is(err, unix.ENOTDIR) {
+			return false, nil
+		}
+		return false, err
+	}
+	defer unix.Close(parent)
+
+	var st unix.Stat_t
+	if err := unix.Fstatat(parent, name, &st, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		if errors.Is(err, unix.ENOENT) {
+			return false, nil
+		}
+		return false, fmt.Errorf("could not stat %q: %w", path, err)
+	}
+	return true, nil
+}
+
 func IsExistingDir(path string) bool {
 	parent, name, err := openParent(path)
 	if err != nil {
