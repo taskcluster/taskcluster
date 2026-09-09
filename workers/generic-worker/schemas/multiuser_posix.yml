@@ -786,9 +786,9 @@ definitions:
         description: |-
           The filesystem location to mount the directory volume.
           This can be a path relative to the task directory, or an
-          absolute path. The directory will be created as the task
-          user, so the target location must be writable by the task
-          user.
+          absolute path. The directory must not already exist. It
+          is created as the task user, so its parent must be
+          writable by the task user.
 
           Since: generic-worker 5.4.0
       cacheName:
