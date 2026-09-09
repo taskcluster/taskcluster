@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -104,12 +103,7 @@ func (l *RDPTask) createRDPArtifact() *CommandExecutionError {
 func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 	taskDir := l.task.TaskDir()
 	rdpInfoFile := fileutil.AbsFrom(taskDir, rdpInfoPath)
-	contentPath, err := safeReservedCopy(rdpInfoFile)
-	if err != nil {
-		return executionError(internalError, errored, fmt.Errorf("could not read reserved artifact %v: %w", rdpInfoFile, err))
-	}
-	defer os.Remove(contentPath)
-	return l.task.uploadArtifact(
+	return l.task.uploadReservedArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
 				Name: l.task.Payload.RdpInfo,
@@ -117,7 +111,7 @@ func (l *RDPTask) uploadRDPArtifact() *CommandExecutionError {
 				Expires: tcclient.Time(time.Now().Add(time.Hour * 24)),
 			},
 			rdpInfoFile,
-			contentPath,
+			reservedContentSource(rdpInfoFile),
 			"application/json",
 			"gzip",
 		),
