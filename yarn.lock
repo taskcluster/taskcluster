@@ -9534,10 +9534,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:^9.0.5":
-  version: 9.0.5
-  resolution: "nodemailer@npm:9.0.5"
-  checksum: 10c0/60f7a21497c98c0d275cd12c488af581ef6aee65db575026319ac249dcac210bdab20edf77fe3158176ed3910f70d8c46d89abcd74f57a7170302727e6d05ee3
+"nodemailer@npm:^9.1.1":
+  version: 9.1.1
+  resolution: "nodemailer@npm:9.1.1"
+  checksum: 10c0/b213a2a906697a735f6eb21103629b7a77aeac297b6d843efd4588157999bf6d19381853ac1224e472f5a34aec2e2412444151a2c6ec6e8c52150afa3055039c
   languageName: node
   linkType: hard
 
@@ -11782,7 +11782,7 @@ __metadata:
     nock: "npm:^14.0.17"
     node-fetch: "npm:^3.3.2"
     node-forge: "npm:^1.4.0"
-    nodemailer: "npm:^9.0.5"
+    nodemailer: "npm:^9.1.1"
     oauth2orize: "npm:^1.11.0"
     open-editor: "npm:^5.1.0"
     p-queue: "npm:^9.3.3"
