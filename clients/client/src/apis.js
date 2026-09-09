@@ -3057,6 +3057,36 @@ export default {
         },
         {
           "args": [
+          ],
+          "category": "Worker Metadata",
+          "description": "Get approximate pending and claimed task counts for the given task queues.\n\nThe caller must have both `queue:pending-count:<taskQueueId>` and\n`queue:claimed-count:<taskQueueId>` scopes for every requested task queue.\nIf any task queue is unauthorized, the entire request will fail.\n\nAs task states may change rapidly, these counts may not represent the exact\nnumber of pending and claimed tasks, but are very good approximations.",
+          "input": "v1/task-queue-counts-request.json#",
+          "method": "post",
+          "name": "taskQueueCountsBatch",
+          "output": "v1/task-queue-counts-list-response.json#",
+          "query": [
+          ],
+          "route": "/task-queues/counts",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "queue:pending-count:<taskQueueId>",
+                "for": "taskQueueId",
+                "in": "taskQueueIds"
+              },
+              {
+                "each": "queue:claimed-count:<taskQueueId>",
+                "for": "taskQueueId",
+                "in": "taskQueueIds"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get Pending and Claimed Task Counts for Multiple Task Queues",
+          "type": "function"
+        },
+        {
+          "args": [
             "taskQueueId"
           ],
           "category": "Worker Metadata",
