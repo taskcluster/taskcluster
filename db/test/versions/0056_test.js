@@ -1,11 +1,10 @@
-import _ from 'lodash';
-import { strict as assert } from 'assert';
+import { strict as assert } from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
   const expires = new Date();
@@ -14,11 +13,14 @@ suite(testing.suiteName(), function() {
     onlineMigration: false,
     onlineDowngrade: false,
     createData: async client => {
-      await client.query(`
+      await client.query(
+        `
         insert into objects (name, project_id, backend_id, data, expires)
-        values ('public/foo', 'p', 'b', '{}', $1)`, [expires]);
+        values ('public/foo', 'p', 'b', '{}', $1)`,
+        [expires]
+      );
     },
-    startCheck: async client => {
+    startCheck: async _client => {
       await helper.assertNoTableColumn('objects', 'upload_id');
       await helper.assertNoTableColumn('objects', 'upload_expires');
     },
@@ -31,7 +33,7 @@ suite(testing.suiteName(), function() {
       assert.deepEqual(rows[0].data, {});
       assert.equal(rows[0].expires.toJSON(), expires.toJSON());
     },
-    finishedCheck: async client => {
+    finishedCheck: async _client => {
       await helper.assertTableColumn('objects', 'upload_id');
       await helper.assertTableColumn('objects', 'upload_expires');
     },

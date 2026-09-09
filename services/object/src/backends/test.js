@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { Backend } from './base.js';
 import { reportError } from '@taskcluster/lib-api';
 
@@ -27,7 +27,7 @@ export class TestBackend extends Backend {
     let bytes;
     try {
       bytes = Buffer.from(objectData, 'base64');
-    } catch (err) {
+    } catch {
       return reportError('InputError', 'Invalid base64 objectData', {});
     }
 
@@ -50,7 +50,7 @@ export class TestBackend extends Backend {
         assert.equal(params, true);
         return {
           method,
-          url: 'data:;base64,' + this.data.get(object.name).toString('base64'),
+          url: `data:;base64,${this.data.get(object.name).toString('base64')}`,
         };
       }
 
@@ -62,14 +62,18 @@ export class TestBackend extends Backend {
 
   async expireObject(object) {
     switch (object.data.expirationReturns) {
-      case 'fail': throw new Error('uhoh');
-      case false: return false;
-      case true: return true;
-      default: return true;
+      case 'fail':
+        throw new Error('uhoh');
+      case false:
+        return false;
+      case true:
+        return true;
+      default:
+        return true;
     }
   }
 }
 
-export const toDataUrl = data => 'data:;base64,' + data.toString('base64');
+export const toDataUrl = data => `data:;base64,${data.toString('base64')}`;
 
 export default { TestBackend, toDataUrl };

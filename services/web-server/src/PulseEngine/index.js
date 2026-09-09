@@ -42,7 +42,9 @@ export default class PulseEngine {
 
   connected(connection) {
     // reset everything and reconcile
-    Array.from(this.subscriptions.values()).forEach(sub => sub.reset());
+    Array.from(this.subscriptions.values()).forEach(sub => {
+      sub.reset();
+    });
     this.reset();
     this.connection = connection;
     this.reconcileSubscriptions();
@@ -59,7 +61,7 @@ export default class PulseEngine {
         handleError,
         monitor: this.monitor,
         subscriptions,
-      }),
+      })
     );
     this.reconcileSubscriptions();
 
@@ -99,16 +101,14 @@ export default class PulseEngine {
       return;
     }
 
-    await Promise.all(
-      Array.from(this.subscriptions.values()).map(sub =>
-        sub.reconcile(client, connection),
-      ),
-    );
+    await Promise.all(Array.from(this.subscriptions.values()).map(sub => sub.reconcile(client, connection)));
 
     // clean up any garbage
     Array.from(this.subscriptions.values())
       .filter(sub => sub.garbage)
-      .forEach(sub => this.subscriptions.delete(sub.subscriptionId));
+      .forEach(sub => {
+        this.subscriptions.delete(sub.subscriptionId);
+      });
   }
 
   /**
@@ -116,10 +116,7 @@ export default class PulseEngine {
    * {payload, exchange, routingKey, redelivered, cc}
    */
   messageIterator(eventName, subscriptions) {
-    return new MessageIterator(
-      new PulseIterator(this, subscriptions),
-      eventName,
-    );
+    return new MessageIterator(new PulseIterator(this, subscriptions), eventName);
   }
 
   /**

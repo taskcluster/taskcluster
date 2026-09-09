@@ -41,7 +41,8 @@ export const configToSchema = type => {
         type: 'string',
       };
     }
-    default: throw new Error(`Unknown config type ${type}`);
+    default:
+      throw new Error(`Unknown config type ${type}`);
   }
 };
 
@@ -50,12 +51,19 @@ export const configToSchema = type => {
  */
 export const configToExample = type => {
   switch (type) {
-    case '!env': return '...';
-    case '!env:string': return '...';
-    case '!env:number': return '...';
-    case '!env:bool': return 'true/false';
-    case '!env:json': return {};
-    case '!env:list': return '';
-    default: throw new Error(`Unknown config type ${type}`);
+    case '!env':
+      return '...';
+    case '!env:string':
+      return '...';
+    case '!env:number':
+      return '...';
+    case '!env:bool':
+      return 'true/false';
+    case '!env:json':
+      return {};
+    case '!env:list':
+      return '';
+    default:
+      throw new Error(`Unknown config type ${type}`);
   }
 };

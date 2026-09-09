@@ -1,4 +1,4 @@
-import events from 'events';
+import events from 'node:events';
 
 /**
  * This is a watch dog timer.  Think of it as a ticking timebomb which will

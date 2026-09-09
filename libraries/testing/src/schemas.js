@@ -1,10 +1,10 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import debugFactory from 'debug';
 const debug = debugFactory('@taskcluster/lib-testing:schemas');
-import fs from 'fs';
+import fs from 'node:fs';
 import SchemaSet from '@taskcluster/lib-validate';
 import libUrls from 'taskcluster-lib-urls';
-import path from 'path';
+import path from 'node:path';
 
 /**
  * Test schemas with positive and negative test cases. This will call
@@ -24,46 +24,44 @@ import path from 'path';
  *   basePath:      path.join(__dirname, 'validate')  // basePath test cases
  * }
  */
-let schemas = function(options) {
+const schemas = options => {
   // Validate options
   assert(options.schemasetOptions, 'Options must be given for validator');
-  assert(options.cases instanceof Array, 'Array of cases must be given');
+  assert(Array.isArray(options.cases), 'Array of cases must be given');
   assert(options.serviceName);
 
   let validate;
-  setup(async function() {
+  setup(async () => {
     const schemaset = new SchemaSet(options.schemasetOptions);
     validate = await schemaset.validator(libUrls.testRootUrl());
   });
 
   // Create test cases
-  options.cases.forEach(function(testCase) {
-    test(testCase.path, function() {
+  options.cases.forEach(testCase => {
+    test(testCase.path, () => {
       // Load test data
       let filePath = testCase.path;
       // Prefix with basePath if a basePath is given
       if (options.basePath) {
         filePath = path.join(options.basePath, filePath);
       }
-      let data = fs.readFileSync(filePath, { encoding: 'utf-8' });
-      let json = JSON.parse(data);
+      const data = fs.readFileSync(filePath, { encoding: 'utf-8' });
+      const json = JSON.parse(data);
 
       // Find schema
-      let schema = libUrls.schema(libUrls.testRootUrl(), options.serviceName, testCase.schema);
+      const schema = libUrls.schema(libUrls.testRootUrl(), options.serviceName, testCase.schema);
 
       // Validate json
-      let error = validate(json, schema);
+      const error = validate(json, schema);
 
       // Test errors
       if (testCase.success) {
         if (error !== null) {
           debug('Errors: %j', error);
         }
-        assert(error === null,
-          `Schema doesn\'t match test for ${testCase.path}: ${error}`);
+        assert(error === null, `Schema doesn't match test for ${testCase.path}: ${error}`);
       } else {
-        assert(error !== null,
-          'Schema matches unexpectedly test for ' + testCase.path);
+        assert(error !== null, `Schema matches unexpectedly test for ${testCase.path}`);
       }
     });
   });

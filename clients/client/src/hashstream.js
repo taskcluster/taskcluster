@@ -1,9 +1,9 @@
-import { Transform } from 'stream';
-import { createHash } from 'crypto';
+import { Transform } from 'node:stream';
+import { createHash } from 'node:crypto';
 
 // The subset of hashes supported by HashStream which are "accepted" as per the
 // object service's schemas.
-export const ACCEPTABLE_HASHES = new Set(["sha256", "sha512"]);
+export const ACCEPTABLE_HASHES = new Set(['sha256', 'sha512']);
 
 /**
  * A stream that hashes the bytes passing through it
@@ -16,7 +16,7 @@ export class HashStream extends Transform {
     this.bytes = 0;
   }
 
-  _transform(chunk, enc, cb) {
+  _transform(chunk, _enc, cb) {
     this.sha256.update(chunk);
     this.sha512.update(chunk);
     this.bytes += chunk.length;

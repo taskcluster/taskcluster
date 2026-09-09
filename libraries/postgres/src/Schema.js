@@ -1,7 +1,7 @@
-import fs from 'fs';
-import { strict as assert } from 'assert';
+import fs from 'node:fs';
+import { strict as assert } from 'node:assert';
 import yaml from 'js-yaml';
-import path from 'path';
+import path from 'node:path';
 import Version from './Version.js';
 import Access from './Access.js';
 import Relations from './Relations.js';
@@ -33,7 +33,7 @@ export class Schema {
   static fromDbDirectory(directory) {
     const dentries = fs.readdirSync(path.join(directory, 'versions'));
     /** @type {Array<Version>} */
-    let versions = [];
+    const versions = [];
 
     dentries.forEach(dentry => {
       if (dentry.startsWith('.')) {
@@ -62,11 +62,11 @@ export class Schema {
 
     Schema._checkMethodUpdates(versions);
 
-    const access = Access.fromYamlFileContent(
-      yaml.load(fs.readFileSync(path.join(directory, 'access.yml'), 'utf8')));
+    const access = Access.fromYamlFileContent(yaml.load(fs.readFileSync(path.join(directory, 'access.yml'), 'utf8')));
     const tables = Relations.fromYamlFileContent(
       yaml.load(fs.readFileSync(path.join(directory, 'tables.yml'), 'utf8')),
-      'tables.yml');
+      'tables.yml'
+    );
 
     return new Schema(versions, access, tables);
   }
@@ -81,7 +81,7 @@ export class Schema {
     return new Schema(
       serializable.versions.map(s => Version.fromSerializable(s)),
       Access.fromSerializable(serializable.access),
-      Relations.fromSerializable(serializable.tables),
+      Relations.fromSerializable(serializable.tables)
     );
   }
 
@@ -101,8 +101,8 @@ export class Schema {
     // verify that no method declarations incorrectly try to change fixed attributes
     // of those methods
     const methods = new Map();
-    for (let version of versions) {
-      for (let [name, method] of Object.entries(version.methods)) {
+    for (const version of versions) {
+      for (const [name, method] of Object.entries(version.methods)) {
         if (methods.has(name)) {
           const existing = methods.get(name);
           method.checkUpdateFrom(name, existing, version);
@@ -138,21 +138,20 @@ export class Schema {
    * @param {{ atVersion?: number }} [options]
    */
   allMethods({ atVersion } = {}) {
-    const map = this.versions.reduce(
-      (acc, version) => {
-        if (atVersion !== undefined && version.version > atVersion) {
-          return acc;
-        }
-
-        Object.entries(version.methods).forEach(([name, method]) => {
-          if (method.deprecated) {
-            Object.assign(method, acc.get(name), { deprecated: true });
-          }
-          method.version = version.version;
-          acc.set(name, method);
-        });
+    const map = this.versions.reduce((acc, version) => {
+      if (atVersion !== undefined && version.version > atVersion) {
         return acc;
-      }, new Map());
+      }
+
+      Object.entries(version.methods).forEach(([name, method]) => {
+        if (method.deprecated) {
+          Object.assign(method, acc.get(name), { deprecated: true });
+        }
+        method.version = version.version;
+        acc.set(name, method);
+      });
+      return acc;
+    }, new Map());
 
     return [...map.values()];
   }

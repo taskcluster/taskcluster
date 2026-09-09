@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { listServices, writeRepoJSON } from '../../utils/index.js';
 import { scopeCompare, normalizeScopeSet } from 'taskcluster-lib-scopes';
 
@@ -8,11 +7,9 @@ export const tasks = [];
 
 tasks.push({
   title: 'Assemble static clients',
-  requires: [
-    ...SERVICES.map(name => `scopes-${name}`),
-  ],
+  requires: [...SERVICES.map(name => `scopes-${name}`)],
   provides: ['static-clients'],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const staticClients = [];
     SERVICES.forEach(name => {
       // auth defines scopes, so it doesn't need any of its own.
@@ -41,7 +38,7 @@ tasks.push({
   title: 'Configure static client scopes',
   requires: ['static-clients'],
   provides: [],
-  run: async (requirements, utils) => {
+  run: async (requirements, _utils) => {
     const staticClients = requirements['static-clients'];
     const staticScopes = staticClients.map(({ clientId, scopes }) => ({ clientId, scopes }));
 

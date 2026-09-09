@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 /**
  * We consider a "workerPoolId" to be a string of the shape "<provisionerId>/<workerType>".

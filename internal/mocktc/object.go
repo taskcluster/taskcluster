@@ -3,13 +3,14 @@ package mocktc
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"testing"
 	"time"
 
 	"maps"
 
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
-	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcobject"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcobject"
 )
 
 type (
@@ -131,7 +132,7 @@ func (object *Object) StartDownload(name string, payload *tcobject.DownloadObjec
 	return &dor, nil
 }
 
-func (object *Object) UploadFromFile(projectID string, name string, contentType string, expires time.Time, uploadID string, filepath string) error {
+func (object *Object) UploadFromReadSeekerWithHashes(projectID string, name string, contentType string, contentLength int64, expires time.Time, uploadID string, readSeeker io.ReadSeeker) (map[string]string, error) {
 	// this isn't an API method, so this is never actually called, but must be
 	// here to implement the tc.Object interface
 	panic("never actually called")

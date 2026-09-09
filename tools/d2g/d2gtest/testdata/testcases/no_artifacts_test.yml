@@ -45,6 +45,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:

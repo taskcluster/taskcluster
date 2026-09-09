@@ -1,9 +1,12 @@
-import path from 'path';
+import path from 'node:path';
 import libUrls from 'taskcluster-lib-urls';
-import { CHECK_RUN_STATES } from '../constants.js';
+import { CHECK_RUN_STATES, TASKCLUSTER_YML_PATH } from '../constants.js';
 
 export const taskUI = (rootUrl, taskGroupId, taskId) =>
-  libUrls.ui(rootUrl, rootUrl === 'https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`);
+  libUrls.ui(
+    rootUrl,
+    rootUrl === 'https://taskcluster.net' ? `/groups/${taskGroupId}/tasks/${taskId}/details` : `/tasks/${taskId}`
+  );
 export const taskGroupUI = (rootUrl, taskGroupId) =>
   libUrls.ui(rootUrl, `${rootUrl === 'https://taskcluster.net' ? '' : '/tasks'}/groups/${taskGroupId}`);
 export const taskLogUI = (rootUrl, runId, taskId, liveLogName = 'public/logs/live.log') =>
@@ -17,29 +20,25 @@ let debugCounter = 0;
 export const makeDebug = (monitor, attrs = {}) => {
   const debugId = `id-${debugCounter}`;
   debugCounter += 1;
-  const debug = message => monitor.log.handlerDebug({
-    eventId: null,
-    installationId: null,
-    taskGroupId: null,
-    taskId: null,
-    owner: null,
-    repo: null,
-    sha: null,
-    ...attrs,
-    message,
-    debugId,
-  });
+  const debug = message =>
+    monitor.log.handlerDebug({
+      eventId: null,
+      installationId: null,
+      taskGroupId: null,
+      taskId: null,
+      owner: null,
+      repo: null,
+      sha: null,
+      ...attrs,
+      message,
+      debugId,
+    });
   debug.refine = moreAttrs => makeDebug(monitor, { ...attrs, ...moreAttrs, debugId });
   return debug;
 };
 
 export class GithubCheckOutput {
-  constructor({
-    title = '',
-    summary = '',
-    text = '',
-    annotations = [],
-  }) {
+  constructor({ title = '', summary = '', text = '', annotations = [] }) {
     this.title = title;
     this.summary = summary;
     this.text = text;
@@ -86,6 +85,7 @@ export class GithubCheck {
     // task resolution and status
     status = null,
     conclusion = null,
+    started_at = null,
 
     // output shown in check run details page
     output_title = '',
@@ -104,6 +104,7 @@ export class GithubCheck {
 
     this.status = status;
     this.conclusion = conclusion;
+    this.started_at = started_at;
 
     this.output = new GithubCheckOutput({
       title: output_title,
@@ -119,8 +120,11 @@ export class GithubCheck {
    * automatically resolve check run as completed
    */
   getStatusPayload() {
-    const { status, conclusion } = this;
+    const { status, conclusion, started_at } = this;
     const resolution = { status };
+    if (started_at) {
+      resolution.started_at = started_at;
+    }
     if (status === CHECK_RUN_STATES.COMPLETED) {
       resolution.conclusion = conclusion;
       resolution.completed_at = new Date().toISOString();
@@ -175,28 +179,31 @@ export class GithubCheck {
 }
 
 export const isCollaborator = async (instGithub, organization, repository, login) => {
-  return Boolean(await instGithub.repos.checkCollaborator({
-    owner: organization,
-    repo: repository,
-    username: login,
-    // avoid "default" retry strategy on 404 errors
-    request: {
-      retries: 1,
-      retryAfter: 1,
-      doNotRetry: [400, 401, 403],
-    },
-  }).catch(e => {
-    if (e.status !== 404) {
-      throw e;
-    }
-    return false; // 404 -> false
-  }));
+  return Boolean(
+    await instGithub.repos
+      .checkCollaborator({
+        owner: organization,
+        repo: repository,
+        username: login,
+        // avoid "default" retry strategy on 404 errors
+        request: {
+          retries: 1,
+          retryAfter: 1,
+          doNotRetry: [400, 401, 403],
+        },
+      })
+      .catch(e => {
+        if (e.status !== 404) {
+          throw e;
+        }
+        return false; // 404 -> false
+      })
+  );
 };
 
 export const getTimeDifference = (timestamp1, timestamp2) => {
-
-  const isValidDate = (date) => {
-    return !isNaN(Date.parse(date));
+  const isValidDate = date => {
+    return !Number.isNaN(Date.parse(date));
   };
 
   if (timestamp1 === undefined || timestamp2 === undefined) {
@@ -218,13 +225,23 @@ export const getTimeDifference = (timestamp1, timestamp2) => {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  let parts = [];
+  const parts = [];
 
-  if (days > 0) {parts.push(`${days} day${days > 1 ? 's' : ''}`);}
-  if (hours % 24 > 0) {parts.push(`${hours % 24} hour${hours % 24 > 1 ? 's' : ''}`);}
-  if (minutes % 60 > 0) {parts.push(`${minutes % 60} minute${minutes % 60 > 1 ? 's' : ''}`);}
-  if (seconds % 60 > 0) {parts.push(`${seconds % 60} second${seconds % 60 > 1 ? 's' : ''}`);}
-  if (ms > 0) {parts.push(`${ms} millisecond${ms > 1 ? 's' : ''}`);}
+  if (days > 0) {
+    parts.push(`${days} day${days > 1 ? 's' : ''}`);
+  }
+  if (hours % 24 > 0) {
+    parts.push(`${hours % 24} hour${hours % 24 > 1 ? 's' : ''}`);
+  }
+  if (minutes % 60 > 0) {
+    parts.push(`${minutes % 60} minute${minutes % 60 > 1 ? 's' : ''}`);
+  }
+  if (seconds % 60 > 0) {
+    parts.push(`${seconds % 60} second${seconds % 60 > 1 ? 's' : ''}`);
+  }
+  if (ms > 0) {
+    parts.push(`${ms} millisecond${ms > 1 ? 's' : ''}`);
+  }
 
   const formattedDifference = parts.join(', ');
 
@@ -239,15 +256,59 @@ export const buildLogUrl = (rootUrl, taskId, runId, artifactName) => {
   return `${rootUrl}/tasks/${taskId}/runs/${runId}/logs/${artifactName}`;
 };
 
-export default {
-  taskUI,
-  taskGroupUI,
-  taskLogUI,
-  makeDebug,
-  GithubCheckOutput,
-  GithubCheck,
-  isCollaborator,
-  getTimeDifference,
-  buildUrl,
-  buildLogUrl,
+// this is the same as ui/src/utils/formatBytes.js
+const UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+export const formatBytes = bytes => {
+  if (bytes === null || bytes === undefined || Number.isNaN(bytes)) {
+    return '';
+  }
+
+  if (bytes < 1) {
+    return `${bytes} B`;
+  }
+
+  const exponent = Math.min(Math.floor(Math.log10(bytes) / 3), UNITS.length - 1);
+  const value = bytes / 1000 ** exponent;
+  const formatted = exponent === 0 || value >= 100 ? value.toFixed(0) : value.toFixed(1).replace(/\.0$/, '');
+
+  return `${formatted} ${UNITS[exponent]}`;
+};
+
+/**
+ * Fetch `.taskcluster.yml` from a certain ref, without parsing it.
+ *
+ * @param instGithub - authenticated installation object
+ * @param owner - org or a user, a string
+ * @param repo - repository, a string
+ * @param ref - SHA or branch/tag name, a string
+ *
+ * @returns the file's contents if there's a YML,
+ * or null if there's no YML,
+ * or throws an error in other cases
+ */
+export const getRawYml = async ({ instGithub, owner, repo, ref }) => {
+  let response;
+  try {
+    response = await instGithub.repos.getContent({ owner, repo, path: TASKCLUSTER_YML_PATH, ref });
+  } catch (e) {
+    if (e.status === 404) {
+      return null;
+    }
+
+    if (e.message.endsWith('</body>\n</html>\n') && e.message.length > 10000) {
+      // We kept getting full html 500/400 pages from github in the logs.
+      // I consider this to be a hard-to-fix bug in octokat, so let's make
+      // the logs usable for now and try to fix this later. It's a relatively
+      // rare occurence.
+      e.message = e.message.slice(0, 100).concat('...');
+      e.stack = e.stack.split('</body>\n</html>\n')[1] || e.stack;
+    }
+
+    e.owner = owner;
+    e.repo = repo;
+    e.ref = ref;
+    throw e;
+  }
+
+  return Buffer.from(response.data.content, 'base64').toString();
 };

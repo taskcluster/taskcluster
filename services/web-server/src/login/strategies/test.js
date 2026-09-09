@@ -29,7 +29,7 @@ export default class Test {
     return this.getUser({ userId });
   }
 
-  useStrategy(app, cfg) {
+  useStrategy(app, _cfg) {
     // unconditionally log in the user 'test'
     app.get('/login/test', (req, res, next) => {
       const user = {

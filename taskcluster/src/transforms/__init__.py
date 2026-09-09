@@ -1,8 +1,18 @@
 import os
 import json
-import toml
+import tomllib
 
 from taskgraph.transforms.base import TransformSequence
+
+from taskgraph.transforms.task import transforms as task_transforms
+
+from ..constants import (
+    PR_DOCKER_IMAGE_INDEX,
+    RUN_WITHOUT_SECRETS,
+    UNTRUSTED_PULL_REQUEST,
+    UNTRUSTED_TASK_EXPIRY,
+)
+from ..scopes import is_secret_scope
 
 transforms = TransformSequence()
 
@@ -10,7 +20,7 @@ transforms = TransformSequence()
 def _dependency_versions():
     pg_version = 15
     with open('clients/client-rust/rust-toolchain.toml', 'r') as f:
-        rust_version = toml.load(f)["toolchain"]["channel"].strip()
+        rust_version = tomllib.loads(f.read())["toolchain"]["channel"].strip()
     with open('package.json', 'r') as pkg:
         node_version = json.load(pkg)["engines"]["node"].strip()
     with open('.go-version', 'r') as goversion:
@@ -52,7 +62,7 @@ def add_task_env(config, tasks):
         env["GIT_BRANCH"] = config.params["head_ref"]
 
         # Passing through some things the decision task wants to child tasks
-        env["TASKCLUSTER_PULL_REQUEST_NUMBER"] = os.environ.get("TASKCLUSTER_PULL_REQUEST_NUMBER", "")
+        env["TASKCLUSTER_PULL_REQUEST_URL"] = os.environ.get("TASKCLUSTER_PULL_REQUEST_URL", "")
 
         # Make dependency versions available for use
         env["NODE_VERSION"] = node_version
@@ -67,10 +77,65 @@ def add_task_env(config, tasks):
         env["TASK_GROUP_ID"] = os.environ.get("TASK_ID", "")
         env["GITHUB_CLONE_URL"] = config.params["head_repository"]
 
-        # We want to set this everywhere other than lib-testing
-        if task["name"] != "testing":
-            env["NO_TEST_SKIP"] = "true"
+        # Dependabot PRs can saturate contended worker pools (e.g. macOS) and delay
+        # human work, so lower the priority of every task they generate.
+        if config.params["head_ref"].startswith("dependabot/"):
+            task["priority"] = "low"
+
         yield task
+
+
+def configure_task(config, tasks):
+    """Enforce test dependencies and isolate untrusted tasks."""
+    is_untrusted_pull_request = config.params["tasks_for"] == UNTRUSTED_PULL_REQUEST
+
+    for task in tasks:
+        worker = task.get("worker")
+
+        # Require every non-secret dependency to be present on both trusted and
+        # untrusted tasks. Secret-specific test helpers recognize the flag below.
+        # Workerless tasks, such as built-in/succeed, have no payload
+        # environment and must not acquire one implicitly.
+        if worker is not None and task.get("label") != "library-testing":
+            worker.setdefault("env", {})["NO_TEST_SKIP"] = "true"
+
+        if is_untrusted_pull_request:
+            task["expires-after"] = UNTRUSTED_TASK_EXPIRY
+
+            # The restricted Community-TC role is the security boundary. This
+            # only makes explicitly secret-optional tasks creatable by that role.
+            if task.get("attributes", {}).get(RUN_WITHOUT_SECRETS):
+                task["scopes"] = [
+                    scope for scope in task.get("scopes", [])
+                    if not is_secret_scope(scope)
+                ]
+                # Only secret-stripped tasks may treat NO_TEST_SKIP as
+                # advisory, and only for the tests that need the secrets.
+                if worker is not None:
+                    worker.setdefault("env", {})["TASKCLUSTER_UNTRUSTED_PR"] = "true"
+
+            # PR docker-image indexes are not level-qualified upstream, and a
+            # namespace shared by all untrusted pull requests would let one
+            # fork publish a poisoned image at a digest another fork then
+            # consumes. Rebuild images every run instead of publishing to or
+            # searching any index.
+            task["routes"] = [
+                route for route in task.get("routes", [])
+                if PR_DOCKER_IMAGE_INDEX not in route
+            ]
+            optimization = task.get("optimization")
+            if isinstance(optimization, dict) and "index-search" in optimization:
+                del task["optimization"]
+
+        yield task
+
+
+# Untrusted isolation must hold for every kind, so a kind.yml that forgets to
+# list this transform must not silently escape it. Prepend it to the shared
+# task transform sequence: after each kind's run transforms (which set label
+# and worker) and before the payload is built.
+if configure_task not in task_transforms._transforms:
+    task_transforms._transforms.insert(0, configure_task)
 
 
 @transforms.add

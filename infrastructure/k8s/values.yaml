@@ -1,9 +1,10 @@
-dockerImage: taskcluster/taskcluster:v99.0.0
+dockerImage: taskcluster/taskcluster:v108.1.0
 trustProxy: true
 forceSSL: false
 nodeEnv: production
 useKubernetesDnsServiceDiscovery: true
 skipResourceTypes: []
+podAnnotations: {}
 prometheus: {}
 auth:
   procs:

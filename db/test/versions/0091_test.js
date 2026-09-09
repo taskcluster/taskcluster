@@ -1,43 +1,71 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from '../helper.js';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 
-const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1]);
+const THIS_VERSION = parseInt(/.*\/0*(\d+)_test\.js/.exec(import.meta.url)[1], 10);
 const PREV_VERSION = THIS_VERSION - 1;
 
-suite(testing.suiteName(), function () {
+suite(testing.suiteName(), () => {
   helper.withDbForVersion();
 
   const insertOldRecords = async (db, dt1, dt2) => {
     const msg = obj => Buffer.from(JSON.stringify(obj)).toString('base64');
     await Promise.all([
-      db.deprecatedFns.azure_queue_put_extra('claim-queue', msg({
-        taskId: 'taskId',
-        runId: 0,
-        takenUntil: dt2.toJSON(),
-      }), dt1, dt2, '', 0),
-      db.deprecatedFns.azure_queue_put_extra('resolved-queue', msg({
-        taskId: 'taskId',
-        taskGroupId: 'taskGroupId',
-        schedulerId: 'schedulerId',
-        resolution: 'completed',
-      }), dt1, dt2, '', 0),
-      db.deprecatedFns.azure_queue_put_extra('deadline-queue', msg({
-        taskId: 'taskId',
-        taskGroupId: 'taskGroupId',
-        schedulerId: 'schedulerId',
-        deadline: dt2.toJSON(),
-      }), dt1, dt2, '', 0),
-      db.deprecatedFns.azure_queue_put_extra('some-cryptic-queue-name', msg({
-        taskId: 'taskId',
-        runId: 1,
-        hintId: 'hintId',
-      }), dt1, dt2, 'task/queue-1', 5),
+      db.deprecatedFns.azure_queue_put_extra(
+        'claim-queue',
+        msg({
+          taskId: 'taskId',
+          runId: 0,
+          takenUntil: dt2.toJSON(),
+        }),
+        dt1,
+        dt2,
+        '',
+        0
+      ),
+      db.deprecatedFns.azure_queue_put_extra(
+        'resolved-queue',
+        msg({
+          taskId: 'taskId',
+          taskGroupId: 'taskGroupId',
+          schedulerId: 'schedulerId',
+          resolution: 'completed',
+        }),
+        dt1,
+        dt2,
+        '',
+        0
+      ),
+      db.deprecatedFns.azure_queue_put_extra(
+        'deadline-queue',
+        msg({
+          taskId: 'taskId',
+          taskGroupId: 'taskGroupId',
+          schedulerId: 'schedulerId',
+          deadline: dt2.toJSON(),
+        }),
+        dt1,
+        dt2,
+        '',
+        0
+      ),
+      db.deprecatedFns.azure_queue_put_extra(
+        'some-cryptic-queue-name',
+        msg({
+          taskId: 'taskId',
+          runId: 1,
+          hintId: 'hintId',
+        }),
+        dt1,
+        dt2,
+        'task/queue-1',
+        5
+      ),
     ]);
   };
 
-  const assertRecordsExistInNewTables = async (db, dt1, dt2) => {
+  const assertRecordsExistInNewTables = async (db, _dt1, dt2) => {
     const visibleIn = taskcluster.fromNow('1 minute');
 
     const [pending, claimed, resolved, deadlines] = await Promise.all([
@@ -70,7 +98,7 @@ suite(testing.suiteName(), function () {
     assert.equal(deadlines[0].deadline.toJSON(), dt2.toJSON());
   };
 
-  test('new tables are created', async function () {
+  test('new tables are created', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
 
@@ -89,7 +117,7 @@ suite(testing.suiteName(), function () {
     await helper.assertTable('queue_task_deadlines');
     await helper.assertIndexOnColumn('queue_task_deadlines', 'queue_task_deadline_idx', 'task_id');
   });
-  test('UP: data is being migrated into new tables', async function () {
+  test('UP: data is being migrated into new tables', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(PREV_VERSION);
     const db = await helper.setupDb('queue');
@@ -103,7 +131,7 @@ suite(testing.suiteName(), function () {
     await assertRecordsExistInNewTables(db, dt1, dt2);
   });
 
-  test('existing functions should be patched to use new tables', async function () {
+  test('existing functions should be patched to use new tables', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     const db = await helper.setupDb('queue');
@@ -117,7 +145,7 @@ suite(testing.suiteName(), function () {
     await assertRecordsExistInNewTables(db, dt1, dt2);
   });
 
-  test('DOWN: data is being put back into azure messages table', async function () {
+  test('DOWN: data is being put back into azure messages table', async () => {
     await testing.resetDb({ testDbUrl: helper.dbUrl });
     await helper.upgradeTo(THIS_VERSION);
     const db = await helper.setupDb('queue');

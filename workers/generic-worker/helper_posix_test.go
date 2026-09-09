@@ -27,7 +27,17 @@ func makeDirWorldWritable(t *testing.T, dir string) {
 // works directly, and we chmod 0777 the result.
 func worldWritableTempDir(t *testing.T, pattern string) string {
 	t.Helper()
-	dir, err := os.MkdirTemp("", pattern)
+	// In Docker, /tmp may be on a different filesystem than the source mount,
+	// causing cross-device rename failures when persisting caches. Use a temp
+	// dir on the same filesystem as the worker directory instead.
+	tmpBase := ""
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		tmpBase = filepath.Join(cwd, ".tmp-test")
+		if err := os.MkdirAll(tmpBase, 0777); err != nil {
+			t.Fatalf("Failed to create temp base dir: %v", err)
+		}
+	}
+	dir, err := os.MkdirTemp(tmpBase, pattern)
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}

@@ -24,6 +24,7 @@ import DateDistance from '../DateDistance';
 import DiffTextArea from '../DiffTextArea';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import DialogAction from '../DialogAction';
 import DatePicker from '../DatePicker';
 import Button from '../Button';
@@ -143,6 +144,12 @@ export default class ClientForm extends Component {
     disabled: this.props.client.disabled,
   };
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.client?.disabled !== this.props.client?.disabled) {
+      this.setState({ disabled: this.props.client.disabled });
+    }
+  }
+
   handleDeleteClient = () => this.props.onDeleteClient(this.state.clientId);
 
   handleDeleteOnExpirationChange = () => {
@@ -172,13 +179,8 @@ export default class ClientForm extends Component {
   };
 
   handleSaveClient = () => {
-    const {
-      clientId,
-      scopeText,
-      description,
-      expires,
-      deleteOnExpiration,
-    } = this.state;
+    const { clientId, scopeText, description, expires, deleteOnExpiration } =
+      this.state;
     const scopes = splitLines(scopeText);
     const client = {
       expires,
@@ -362,7 +364,7 @@ export default class ClientForm extends Component {
             tooltipProps={{ title: 'Save' }}
             requiresAuth
             disabled={loading || !isClientDirty}
-            variant="round"
+            variant="circular"
             onClick={this.handleSaveClient}
             classes={{ root: classes.saveIcon }}>
             <ContentSaveIcon />
@@ -370,7 +372,7 @@ export default class ClientForm extends Component {
         ) : (
           <Fragment>
             <Button
-              variant="round"
+              variant="circular"
               onClick={this.handleSaveClient}
               spanProps={{
                 className: classNames(classes.fab, classes.saveClientSpan),
@@ -381,6 +383,11 @@ export default class ClientForm extends Component {
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <AuditHistorySpeedDialAction
+                entityName="client"
+                entityId={this.state.clientId}
+                disabled={loading}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen

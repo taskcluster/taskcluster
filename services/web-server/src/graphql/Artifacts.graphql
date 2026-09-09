@@ -18,6 +18,11 @@ type Artifact {
 
   # Mime-type for the artifact.
   contentType: String!
+
+  # Size of the artifact content in bytes, if reported by the worker.
+  # Null when the worker did not report a size. Float is used because
+  # artifact sizes can exceed the 32-bit GraphQL Int range.
+  contentLength: Float
 }
 
 enum ArtifactStorageType {
@@ -62,7 +67,7 @@ extend type Query {
   # It **may return less**, even if more artifacts are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
-  artifacts(taskId: ID!, runId: Int!, connection: PageConnection, filter: JSON): ArtifactsConnection
+  artifacts(taskId: ID!, runId: Int!, connection: PageConnection): ArtifactsConnection
 
   # Returns a list of the artifacts and associated metadata for latest run of a task.
   # As a task run may have many artifacts, this may return cursors to page through artifacts.
@@ -71,7 +76,7 @@ extend type Query {
   # It **may return less**, even if more artifacts are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
-  latestArtifacts(taskId: ID!, connection: PageConnection, filter: JSON): ArtifactsConnection
+  latestArtifacts(taskId: ID!, connection: PageConnection): ArtifactsConnection
 }
 
 extend type Subscription {

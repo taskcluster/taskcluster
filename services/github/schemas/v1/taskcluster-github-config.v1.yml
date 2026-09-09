@@ -43,6 +43,32 @@ properties:
       Automatically cancel running task group on a non-default branch.
       Useful for PRs that are updated frequently. Only the last build will be running.
     default: true
+  hooks:
+    type: array
+    description: |
+      Optional array of hooks to trigger. Each hook is triggered via the
+      hooks.triggerHook API with a payload containing event, now,
+      taskcluster_root_url, tasks_for, taskId (a pre-allocated task group ID),
+      and the user-defined context. Hook context values do not support JSON-e templating.
+    default: []
+    items:
+      type: object
+      properties:
+        name:
+          type: string
+          description: |
+            Hook identifier in the format "<hookGroupId>/<hookId>".
+            The hook must already exist in the Taskcluster instance.
+        context:
+          type: object
+          description: |
+            Optional arbitrary context object that will be passed to the hook
+            trigger payload under the "context" key. Must be JSON serializable.
+          additionalProperties: true
+          default: {}
+      required:
+        - name
+      additionalProperties: false
   tasks:
     title: Task definition template"
     description: |

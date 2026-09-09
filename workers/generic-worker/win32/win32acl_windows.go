@@ -4,6 +4,8 @@ import (
 	"os"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 var (
@@ -24,34 +26,31 @@ var (
 	procAddAccessAllowedAceEx = advapi32.NewProc("AddAccessAllowedAceEx")
 )
 
+// Win32 ACL constants not exposed by golang.org/x/sys/windows. Constants
+// that ARE provided there (DACL_SECURITY_INFORMATION, READ_CONTROL,
+// CONTAINER_INHERIT_ACE, INHERIT_ONLY_ACE, OBJECT_INHERIT_ACE,
+// NO_PROPAGATE_INHERIT_ACE) are referenced via windows.X at the call
+// sites below rather than redefined here.
 const (
-	DACL_SECURITY_INFORMATION    = 0x00000004
 	SECURITY_DESCRIPTOR_REVISION = 1
 	ACL_REVISION                 = 2
 
-	DESKTOP_CREATEMENU       = 0x4
-	DESKTOP_CREATEWINDOW     = 0x2
-	DESKTOP_ENUMERATE        = 0x40
-	DESKTOP_HOOKCONTROL      = 0x8
-	DESKTOP_JOURNALPLAYBACK  = 0x20
-	DESKTOP_JOURNALRECORD    = 0x10
-	DESKTOP_READOBJECTS      = 0x1
-	DESKTOP_SWITCHDESKTOP    = 0x100
-	DESKTOP_WRITEOBJECTS     = 0x80
-	STANDARD_RIGHTS_REQUIRED = 0x000F0000
-	READ_CONTROL             = 0x00020000
+	DESKTOP_CREATEMENU      = 0x4
+	DESKTOP_CREATEWINDOW    = 0x2
+	DESKTOP_ENUMERATE       = 0x40
+	DESKTOP_HOOKCONTROL     = 0x8
+	DESKTOP_JOURNALPLAYBACK = 0x20
+	DESKTOP_JOURNALRECORD   = 0x10
+	DESKTOP_READOBJECTS     = 0x1
+	DESKTOP_SWITCHDESKTOP   = 0x100
+	DESKTOP_WRITEOBJECTS    = 0x80
 
 	DESKTOP_ALL = DESKTOP_CREATEMENU | DESKTOP_CREATEWINDOW | DESKTOP_ENUMERATE | DESKTOP_HOOKCONTROL |
 		DESKTOP_JOURNALPLAYBACK | DESKTOP_JOURNALRECORD | DESKTOP_READOBJECTS | DESKTOP_SWITCHDESKTOP |
-		DESKTOP_WRITEOBJECTS | READ_CONTROL
+		DESKTOP_WRITEOBJECTS | windows.READ_CONTROL
 
 	WINSTA_ALL_ACCESS = 0x37F
-	WINSTA_ALL        = WINSTA_ALL_ACCESS | READ_CONTROL
-
-	CONTAINER_INHERIT_ACE    = 2
-	INHERIT_ONLY_ACE         = 8
-	OBJECT_INHERIT_ACE       = 1
-	NO_PROPAGATE_INHERIT_ACE = 4
+	WINSTA_ALL        = WINSTA_ALL_ACCESS | windows.READ_CONTROL
 )
 
 func SetAclTo(obj syscall.Handle, acl *Acl) error {
@@ -62,7 +61,7 @@ func SetAclTo(obj syscall.Handle, acl *Acl) error {
 	if err = SetSecurityDescriptorDacl(desc, true, acl, false); err != nil {
 		return err
 	}
-	return SetUserObjectSecurity(obj, DACL_SECURITY_INFORMATION, desc)
+	return SetUserObjectSecurity(obj, windows.DACL_SECURITY_INFORMATION, desc)
 }
 
 func CreateDesktopAllowAcl(sid *syscall.SID) (*Acl, error) {
@@ -89,11 +88,11 @@ func CreateWinstaAllowAcl(sid *syscall.SID) (*Acl, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = AddAccessAllowedAceEx(acl, ACL_REVISION, CONTAINER_INHERIT_ACE|INHERIT_ONLY_ACE|OBJECT_INHERIT_ACE,
+	if err = AddAccessAllowedAceEx(acl, ACL_REVISION, windows.CONTAINER_INHERIT_ACE|windows.INHERIT_ONLY_ACE|windows.OBJECT_INHERIT_ACE,
 		syscall.GENERIC_ALL, sid); err != nil {
 		return nil, err
 	}
-	if err = AddAccessAllowedAceEx(acl, ACL_REVISION, NO_PROPAGATE_INHERIT_ACE,
+	if err = AddAccessAllowedAceEx(acl, ACL_REVISION, windows.NO_PROPAGATE_INHERIT_ACE,
 		WINSTA_ALL, sid); err != nil {
 		return nil, err
 	}

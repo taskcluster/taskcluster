@@ -15,7 +15,7 @@ export default async ({ retries, delayFactor, randomizationFactor, maxDelay }, f
 
     let retriableError = null;
 
-    const rv = await func(err => retriableError = err, attempt);
+    const rv = await func(err => (retriableError = err), attempt);
     if (!retriableError) {
       // success!
       return rv;
@@ -27,9 +27,9 @@ export default async ({ retries, delayFactor, randomizationFactor, maxDelay }, f
 
     // Sleep for 2 * delayFactor on the first attempt, and 2x as long
     // each time thereafter
-    let delay = Math.pow(2, attempt) * delayFactor;
+    let delay = 2 ** attempt * delayFactor;
     // Apply randomization factor
-    let rf = randomizationFactor;
+    const rf = randomizationFactor;
     delay *= Math.random() * 2 * rf + 1 - rf;
     // Always limit with a maximum delay
     delay = Math.min(delay, maxDelay);

@@ -2,7 +2,9 @@ import { curry, pipe, map, dropRepeatsWith } from 'ramda';
 import { memoize } from './memoize';
 
 export const taskLastRun = task => {
-  const sorted = [...task?.status?.runs].sort((a, b) => b.runId - a.runId);
+  const sorted = (task?.status?.runs ?? []).toSorted(
+    (a, b) => b.runId - a.runId
+  );
 
   if (sorted.length === 0 || !sorted[0].started) {
     return null;
@@ -17,7 +19,7 @@ export const taskLastRun = task => {
 };
 
 export const taskRunDurationInMs = run => {
-  if (!run || !run.from) {
+  if (!run?.from) {
     return 0;
   }
 
@@ -28,32 +30,42 @@ export const taskRunDurationInMs = run => {
 };
 
 export const taskRunEarliestStart = task => {
-  const started = [...task?.status?.runs]
-    .map(run => run.started)
-    .filter(item => item)
-    .sort((a, b) => a.started - b.started);
+  const started = (task?.status?.runs ?? [])
+    .filter(run => run.started)
+    .map(run => new Date(run.started).getTime())
+    .sort((a, b) => a - b);
 
-  return started.length ? new Date(started[0]).getTime() : new Date().getTime();
+  return started.length ? started[0] : Date.now();
 };
 
 export const taskRunLatestResolve = task => {
-  const resolved = [...task?.status?.runs]
-    .map(run => run.resolved && new Date(run.resolved).getTime())
-    .filter(item => item)
+  const resolved = (task?.status?.runs ?? [])
+    .filter(run => run.resolved)
+    .map(run => new Date(run.resolved).getTime())
     .sort((a, b) => b - a);
 
-  return resolved.length ? resolved[0] : new Date().getTime();
+  return resolved.length ? resolved[0] : Date.now();
 };
 
 export const filterTasksByState = curry((filter, tasks) =>
   filter
-    ? tasks.filter(({ node: { status: { state } } }) => filter.includes(state))
+    ? tasks.filter(
+        ({
+          node: {
+            status: { state },
+          },
+        }) => filter.includes(state)
+      )
     : tasks
 );
 export const filterTasksByName = curry((searchTerm, tasks) =>
   searchTerm
-    ? tasks.filter(({ node: { metadata: { name } } }) =>
-        (name ? name.toLowerCase() : '').includes(searchTerm)
+    ? tasks.filter(
+        ({
+          node: {
+            metadata: { name },
+          },
+        }) => (name ? name.toLowerCase() : '').includes(searchTerm)
       )
     : tasks
 );
@@ -96,7 +108,7 @@ export const filterTasksWithDuration = memoize(
 
 // displaying thousands of tasks in graph degrades usability and performance
 export const sampleTasks = memoize(
-  (tasks, filter, searchTerm, maxTasks) => {
+  (tasks, _filter, _searchTerm, maxTasks) => {
     let sampled = tasks;
     let precision = 10;
     const compareDelta = (a, b) =>

@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { string } from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import MDX from '@mdx-js/runtime';
+import MDX from './MDX';
 import Entry from './Entry';
 import components from '../components';
 import HeaderWithAnchor from '../components/HeaderWithAnchor';
@@ -28,9 +28,9 @@ export default class ExchangesReference extends Component {
       throw new Error(`Reference document version ${version} not supported`);
     }
 
-    const topicExchangeEntries =
-      ref.entries &&
-      ref.entries.filter(({ type }) => type === 'topic-exchange');
+    const topicExchangeEntries = ref.entries?.filter(
+      ({ type }) => type === 'topic-exchange'
+    );
 
     return (
       <div>

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import { Provider } from '../src/providers/provider.js';
 import taskcluster from '@taskcluster/client';
@@ -6,24 +6,24 @@ import testing from '@taskcluster/lib-testing';
 import { WorkerPool, WorkerPoolError, Worker } from '../src/data.js';
 import { LEVELS } from '@taskcluster/lib-monitor';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withFakeNotify(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withFakeNotify(skipping);
+  helper.resetTables();
 
   let monitor;
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     monitor = await helper.load('monitor');
   });
 
   let oldnow;
-  setup(function() {
+  setup(() => {
     oldnow = Date.now;
     Date.now = () => 100;
   });
 
-  teardown(function() {
+  teardown(() => {
     Date.now = oldnow;
   });
 
@@ -55,66 +55,86 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       launchConfigSelector: await helper.load('launchConfigSelector'),
     });
 
-  suite('interpretLifecycle', function() {
-    test('no lifecycle', async function() {
+  suite('interpretLifecycle', () => {
+    test('no lifecycle', async () => {
       assert.equal(345600100, Provider.interpretLifecycle({}).terminateAfter);
     });
 
-    test('empty lifecycle', async function() {
+    test('empty lifecycle', async () => {
       assert.equal(345600100, Provider.interpretLifecycle({ lifecycle: {} }).terminateAfter);
     });
 
-    test('no queueInactivityTimeout', async function () {
+    test('no queueInactivityTimeout', async () => {
       assert.equal(7200000, Provider.interpretLifecycle({}).queueInactivityTimeout);
     });
 
-    test('only queueInactivityTimeout', async function () {
-      assert.equal(4000, Provider.interpretLifecycle({
-        lifecycle: { queueInactivityTimeout: 4 } }).queueInactivityTimeout);
+    test('only queueInactivityTimeout', async () => {
+      assert.equal(
+        4000,
+        Provider.interpretLifecycle({
+          lifecycle: { queueInactivityTimeout: 4 },
+        }).queueInactivityTimeout
+      );
     });
 
-    test('only registrationTimeout', async function() {
-      assert.deepEqual({
-        terminateAfter: 10100,
-        reregistrationTimeout: 345600000,
-        queueInactivityTimeout: 7200000,
-      }, Provider.interpretLifecycle({ lifecycle: { registrationTimeout: 10 } }));
+    test('only registrationTimeout', async () => {
+      assert.deepEqual(
+        {
+          terminateAfter: 10100,
+          reregistrationTimeout: 345600000,
+          queueInactivityTimeout: 7200000,
+        },
+        Provider.interpretLifecycle({ lifecycle: { registrationTimeout: 10 } })
+      );
     });
 
-    test('only reregistrationTimeout', async function() {
-      assert.deepEqual({
-        terminateAfter: 10100,
-        reregistrationTimeout: 10000,
-        queueInactivityTimeout: 7200000,
-      }, Provider.interpretLifecycle({ lifecycle: { reregistrationTimeout: 10 } }));
+    test('only reregistrationTimeout', async () => {
+      assert.deepEqual(
+        {
+          terminateAfter: 10100,
+          reregistrationTimeout: 10000,
+          queueInactivityTimeout: 7200000,
+        },
+        Provider.interpretLifecycle({ lifecycle: { reregistrationTimeout: 10 } })
+      );
     });
 
-    test('greater registrationTimeout', async function() {
-      assert.deepEqual({
-        terminateAfter: 10100,
-        reregistrationTimeout: 10000,
-        queueInactivityTimeout: 5000,
-      }, Provider.interpretLifecycle({ lifecycle: {
-        registrationTimeout: 100,
-        reregistrationTimeout: 10,
-        queueInactivityTimeout: 5,
-      } }));
+    test('greater registrationTimeout', async () => {
+      assert.deepEqual(
+        {
+          terminateAfter: 10100,
+          reregistrationTimeout: 10000,
+          queueInactivityTimeout: 5000,
+        },
+        Provider.interpretLifecycle({
+          lifecycle: {
+            registrationTimeout: 100,
+            reregistrationTimeout: 10,
+            queueInactivityTimeout: 5,
+          },
+        })
+      );
     });
 
-    test('greater reregistrationTimeout', async function() {
-      assert.deepEqual({
-        terminateAfter: 10100,
-        reregistrationTimeout: 100000,
-        queueInactivityTimeout: 7200000,
-      }, Provider.interpretLifecycle({ lifecycle: {
-        registrationTimeout: 10,
-        reregistrationTimeout: 100,
-      } }));
+    test('greater reregistrationTimeout', async () => {
+      assert.deepEqual(
+        {
+          terminateAfter: 10100,
+          reregistrationTimeout: 100000,
+          queueInactivityTimeout: 7200000,
+        },
+        Provider.interpretLifecycle({
+          lifecycle: {
+            registrationTimeout: 10,
+            reregistrationTimeout: 100,
+          },
+        })
+      );
     });
   });
 
-  suite('isZombie', function() {
-    test('default queue inactivity timeout', function() {
+  suite('isZombie', () => {
+    test('default queue inactivity timeout', () => {
       Date.now = oldnow;
       const worker = Worker.fromApi({});
       worker.created = taskcluster.fromNow('-4 hours');
@@ -124,7 +144,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(res.isZombie, true);
       assert.match(res.reason, /queueInactivityTimeout=7200s/);
     });
-    test('no firstClaim', function() {
+    test('no firstClaim', () => {
       Date.now = oldnow;
       const worker = Worker.fromApi({});
       worker.created = taskcluster.fromNow('-4 hours');
@@ -134,7 +154,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(res.isZombie, true);
       assert.match(res.reason, /worker never claimed work/);
     });
-    test('not active within queueInactivityTimeout', function() {
+    test('not active within queueInactivityTimeout', () => {
       Date.now = oldnow;
       const worker = Worker.fromApi({
         providerData: {
@@ -148,7 +168,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(res.isZombie, true);
       assert.match(res.reason, /worker inactive/);
     });
-    test('not a zombie', function() {
+    test('not a zombie', () => {
       Date.now = oldnow;
       const worker = Worker.fromApi({
         providerData: {
@@ -161,7 +181,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       const res = Provider.isZombie({ worker });
       assert.equal(res.isZombie, false);
     });
-    test('fields not fetched from database (defensive check)', function() {
+    test('fields not fetched from database (defensive check)', () => {
       Date.now = oldnow;
       const worker = Worker.fromApi({});
       worker.created = taskcluster.fromNow('-4 hours');
@@ -172,13 +192,13 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('reportError', function() {
+  suite('reportError', () => {
     let provider;
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       provider = await createProvider();
     });
 
-    test('report errors (no email)', async function() {
+    test('report errors (no email)', async () => {
       const workerPool = await createWP();
 
       await provider.reportError({
@@ -197,7 +217,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(helper.notify.emails.length, 0);
     });
 
-    test('report errors (w/ email)', async function() {
+    test('report errors (w/ email)', async () => {
       const workerPool = await createWP({ emailOnError: true });
 
       await provider.reportError({
@@ -217,7 +237,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(helper.notify.emails[0].address, 'whatever@example.com');
     });
 
-    test('report errors (no duplicate emails)', async function() {
+    test('report errors (no duplicate emails)', async () => {
       const workerPool = await createWP({ emailOnError: true });
       const errorDetails = {
         workerPool,
@@ -244,7 +264,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       assert.equal(helper.notify.emails.length, 1);
     });
 
-    test('report errors (w/ email and extraInfo)', async function() {
+    test('report errors (w/ email and extraInfo)', async () => {
       const workerPool = await createWP({ emailOnError: true });
 
       await provider.reportError({
@@ -290,45 +310,52 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     test('calc seen total', () => {
       assert.equal(0, Provider.calcSeenTotal());
-      assert.equal(1, Provider.calcSeenTotal({
-        'gecko-t/cpu': 1,
-      }));
-      assert.equal(55, Provider.calcSeenTotal({
-        'gecko-t/win95-sp2': 33,
-        'gecko-t/win98-x64': 20,
-        'gecko-t/win7-gpu': 1,
-        'gecko-t/win7-x64': 1,
-      }));
+      assert.equal(
+        1,
+        Provider.calcSeenTotal({
+          'gecko-t/cpu': 1,
+        })
+      );
+      assert.equal(
+        55,
+        Provider.calcSeenTotal({
+          'gecko-t/win95-sp2': 33,
+          'gecko-t/win98-x64': 20,
+          'gecko-t/win7-gpu': 1,
+          'gecko-t/win7-x64': 1,
+        })
+      );
     });
   });
 
-  suite('selectLaunchConfigsForSpawn', function () {
+  suite('selectLaunchConfigsForSpawn', () => {
     let provider;
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       provider = await createProvider();
     });
 
-    test('selects configs', async function () {
+    test('selects configs', async () => {
       const workerPool = await createWP();
 
       const configs = await provider.selectLaunchConfigsForSpawn({ workerPool, toSpawn: 1 });
       assert.deepEqual([], configs);
 
       const monitor = await helper.load('monitor');
-      const monitorErrors = monitor.manager.messages.filter(
-        ({ Type }) => Type === 'monitor.generic',
-      ) || [];
+      const monitorErrors = monitor.manager.messages.filter(({ Type }) => Type === 'monitor.generic') || [];
       assert.equal(monitorErrors.length, 1);
-      assert.equal(monitorErrors[0].Fields.message, `No launch configs found for worker pool ${workerPool.workerPoolId}`);
+      assert.equal(
+        monitorErrors[0].Fields.message,
+        `No launch configs found for worker pool ${workerPool.workerPoolId}`
+      );
       monitor.manager.reset();
     });
   });
 
-  suite('worker metrics', function() {
+  suite('worker metrics', () => {
     let provider;
 
-    suiteSetup(async function() {
+    suiteSetup(async () => {
       provider = await createProvider();
     });
 
@@ -350,12 +377,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       return worker;
     };
 
-    test('records registration duration on workerRunning', async function() {
+    test('records registration duration on workerRunning', async () => {
       const worker = await createWorker();
 
       let metricRecorded = false;
       const originalMetric = monitor.metric.workerRegistrationDuration;
-      monitor.metric.workerRegistrationDuration = () => { metricRecorded = true; };
+      monitor.metric.workerRegistrationDuration = () => {
+        metricRecorded = true;
+      };
 
       monitor.manager.reset();
       await provider.onWorkerRunning({ worker });
@@ -368,7 +397,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       monitor.metric.workerRegistrationDuration = originalMetric;
     });
 
-    test('includes workerAge and runningDuration on workerStopped', async function() {
+    test('includes workerAge and runningDuration on workerStopped', async () => {
       const worker = await createWorker({
         workerId: 'wi-stopped',
         state: Worker.states.RUNNING,
@@ -393,7 +422,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       monitor.metric.workerLifetime = originalMetric;
     });
 
-    test('includes workerAge and runningDuration on workerRemoved', async function() {
+    test('includes workerAge and runningDuration on workerRemoved', async () => {
       const worker = await createWorker({
         workerId: 'wi-removed',
         state: Worker.states.RUNNING,
@@ -419,7 +448,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       monitor.metric.workerLifetime = originalMetric;
     });
 
-    test('omits runningDuration when worker never registered', async function() {
+    test('omits runningDuration when worker never registered', async () => {
       const worker = await createWorker({
         workerId: 'wi-never-reg',
         state: Worker.states.REQUESTED,
@@ -439,7 +468,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       monitor.metric.workerRegistrationFailure = originalMetric;
     });
 
-    test('records lifetime on workerStopped', async function() {
+    test('records lifetime on workerStopped', async () => {
       const worker = await createWorker({
         workerId: 'wi2',
         state: Worker.states.RUNNING,
@@ -452,7 +481,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       let metricRecorded = false;
       const originalMetric = monitor.metric.workerLifetime;
-      monitor.metric.workerLifetime = () => { metricRecorded = true; };
+      monitor.metric.workerLifetime = () => {
+        metricRecorded = true;
+      };
 
       await provider.onWorkerStopped({ worker });
       assert.equal(metricRecorded, true);
@@ -460,12 +491,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       monitor.metric.workerLifetime = originalMetric;
     });
 
-    test('records registration failure when worker never registered', async function() {
+    test('records registration failure when worker never registered', async () => {
       const worker = await createWorker({ workerId: 'wi3' });
 
       let metricRecorded = false;
       const originalMetric = monitor.metric.workerRegistrationFailure;
-      monitor.metric.workerRegistrationFailure = () => { metricRecorded = true; };
+      monitor.metric.workerRegistrationFailure = () => {
+        metricRecorded = true;
+      };
 
       await provider.onWorkerStopped({ worker });
       assert.equal(metricRecorded, true);
@@ -473,7 +506,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       monitor.metric.workerRegistrationFailure = originalMetric;
     });
 
-    test('does not double-record lifetime', async function() {
+    test('does not double-record lifetime', async () => {
       const worker = await createWorker({
         workerId: 'wi4',
         state: Worker.states.RUNNING,
@@ -488,7 +521,9 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       let metricRecorded = false;
       const originalMetric = monitor.metric.workerLifetime;
-      monitor.metric.workerLifetime = () => { metricRecorded = true; };
+      monitor.metric.workerLifetime = () => {
+        metricRecorded = true;
+      };
 
       await provider.onWorkerStopped({ worker });
       assert.equal(metricRecorded, false);

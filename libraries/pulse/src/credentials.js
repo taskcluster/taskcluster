@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 /**
  * Build Pulse ConnectionString, from options on the form:
@@ -43,9 +43,9 @@ export const pulseCredentials = ({ username, password, hostname, vhost, amqps })
 };
 
 /**
-  * Simply returns the same connectionstring send as a parameter,wrapped with an async function
+ * Simply returns the same connectionstring send as a parameter,wrapped with an async function
  */
-export const connectionStringCredentials = (connectionString) => {
+export const connectionStringCredentials = connectionString => {
   return async () => {
     return { connectionString };
   };

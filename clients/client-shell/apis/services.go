@@ -3,7 +3,7 @@
 //go:generate go run ../codegen/cmd/gen-services
 package apis
 
-import "github.com/taskcluster/taskcluster/v99/clients/client-shell/apis/definitions"
+import "github.com/taskcluster/taskcluster/v108/clients/client-shell/apis/definitions"
 
 var services = map[string]definitions.Service{
 	"Auth": definitions.Service{
@@ -401,7 +401,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "websocktunnelToken",
 				Title:       "Get a client token for the Websocktunnel service",
-				Description: "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
+				Description: "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the caller's responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/websocktunnel/<wstAudience>/<wstClient>",
@@ -425,6 +425,20 @@ var services = map[string]definitions.Service{
 				},
 				Query: []string{},
 				Input: "",
+			},
+			definitions.Entry{
+				Name:        "githubRepoToken",
+				Title:       "Get a repository scoped github token",
+				Description: "Get a Github application installation token scoped to the given repositories\nand permissions, using the configured app `appName`.\n\nRequesting `<permission>: <level>` on `<owner>/<repo>` requires the scope\n`auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.\nLevels and permissions are matched exactly to github token permissions\nwhich can be found at\nhttps://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.\nWhile token access is widened (requesting a write token will give a read+write one)\nscopes are not. Holding `:contents:write` alone only allows requesting a `write` token.\nBoth owner and repo must be in lowercase in the scope.\n\nThe token expires after an hour but this behavior is github dependent.\nYou should read the `expires` property from the response if you intend\nto maintain active credentials in your task.",
+				Stability:   "experimental",
+				Method:      "post",
+				Route:       "/github/<appName>/<owner>/repo-token",
+				Args: []string{
+					"appName",
+					"owner",
+				},
+				Query: []string{},
+				Input: "v1/github-repo-token-request.json#",
 			},
 			definitions.Entry{
 				Name:        "authenticateHawk",
@@ -780,7 +794,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "triggerHook",
 				Title:       "Trigger a hook",
-				Description: "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
+				Description: "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hook's `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/hooks/<hookGroupId>/<hookId>/trigger",
@@ -822,7 +836,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "triggerHookWithToken",
 				Title:       "Trigger a hook with a token",
-				Description: "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
+				Description: "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hook's `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
 				Stability:   "stable",
 				Method:      "post",
 				Route:       "/hooks/<hookGroupId>/<hookId>/trigger/<token>",
@@ -1362,7 +1376,7 @@ var services = map[string]definitions.Service{
 		APIVersion:  "v1",
 		ServiceName: "queue",
 		Title:       "Queue Service",
-		Description: "The queue service is responsible for accepting tasks and tracking their state\nas they are executed by workers, in order to ensure they are eventually\nresolved.\n\n## Artifact Storage Types\n\n* **Object artifacts** contain arbitrary data, stored via the object service.\n* **Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n* **Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n* **Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n* **S3 artifacts** are used for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`. S3 artifacts will be deprecated soon,\nand users should prefer object artifacts instead.\n\n## Artifact immutability\n\nGenerally speaking you cannot overwrite an artifact when created.\nBut if you repeat the request with the same properties the request will\nsucceed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nThe queue defines the following *immutability special cases*:\n\n* A `reference` artifact can replace an existing `reference` artifact.\n* A `link` artifact can replace an existing `reference` artifact.\n* Any artifact's `expires` can be extended (made later, but not earlier).",
+		Description: "The queue service is responsible for accepting tasks and tracking their state\nas they are executed by workers, in order to ensure they are eventually\nresolved.\n\n## Artifact Storage Types\n\n* **Object artifacts** contain arbitrary data, stored via the object service.\n* **Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n* **Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n* **Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example generic-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n* **S3 artifacts** are used for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`. S3 artifacts will be deprecated soon,\nand users should prefer object artifacts instead.\n\n## Artifact immutability\n\nGenerally speaking you cannot overwrite an artifact when created.\nBut if you repeat the request with the same properties the request will\nsucceed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nThe queue defines the following *immutability special cases*:\n\n* A `reference` artifact can replace an existing `reference` artifact.\n* A `link` artifact can replace an existing `reference` artifact.\n* Any artifact's `expires` can be extended (made later, but not earlier).",
 		Entries: []definitions.Entry{
 			definitions.Entry{
 				Name:        "ping",
@@ -1496,7 +1510,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "sealTaskGroup",
 				Title:       "Seal Task Group",
-				Description: "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.",
+				Description: "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.\n\nSealing makes `cancelTaskGroup` meaningful by stopping task creators\nfrom adding more tasks to a group being cancelled. It is not a\nsecurity feature: the check is not atomic with task creation, so a\n`createTask` racing this call may still succeed.",
 				Stability:   "experimental",
 				Method:      "post",
 				Route:       "/task-group/<taskGroupId>/seal",
@@ -1861,19 +1875,6 @@ var services = map[string]definitions.Service{
 				Input: "",
 			},
 			definitions.Entry{
-				Name:        "declareProvisioner",
-				Title:       "Update a provisioner",
-				Description: "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `my-provisioner`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:my-provisioner#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
-				Stability:   "deprecated",
-				Method:      "put",
-				Route:       "/provisioners/<provisionerId>",
-				Args: []string{
-					"provisionerId",
-				},
-				Query: []string{},
-				Input: "v1/update-provisioner-request.json#",
-			},
-			definitions.Entry{
 				Name:        "pendingTasks",
 				Title:       "Get Number of Pending Tasks",
 				Description: "Get an approximate number of pending tasks for the given `taskQueueId`.\n\nAs task states may change rapidly, this number may not represent the exact\nnumber of pending tasks, but a very good approximation.\n\nThis method is **deprecated**, use queue.taskQueueCounts instead.",
@@ -1960,20 +1961,6 @@ var services = map[string]definitions.Service{
 				},
 				Query: []string{},
 				Input: "",
-			},
-			definitions.Entry{
-				Name:        "declareWorkerType",
-				Title:       "Update a worker-type",
-				Description: "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:my-provisioner/highmem#description`.",
-				Stability:   "deprecated",
-				Method:      "put",
-				Route:       "/provisioners/<provisionerId>/worker-types/<workerType>",
-				Args: []string{
-					"provisionerId",
-					"workerType",
-				},
-				Query: []string{},
-				Input: "v1/update-workertype-request.json#",
 			},
 			definitions.Entry{
 				Name:        "listTaskQueues",
@@ -2162,7 +2149,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "list",
 				Title:       "List Secrets",
-				Description: "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
+				Description: "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more secrets are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `list` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
 				Stability:   "stable",
 				Method:      "get",
 				Route:       "/secrets",
@@ -2241,7 +2228,7 @@ var services = map[string]definitions.Service{
 			definitions.Entry{
 				Name:        "taskProfile",
 				Title:       "Task Log Profile",
-				Description: "Generate a Firefox Profiler–compatible profile from a task's log output.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
+				Description: "Generate a Firefox Profiler–compatible profile from a task's log output for resolved tasks.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
 				Stability:   "experimental",
 				Method:      "get",
 				Route:       "/task/<taskId>/profile",

@@ -46,7 +46,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type Auth tcclient.Client
@@ -919,7 +919,7 @@ func (auth *Auth) SentryDSN_SignedURL(project string, duration time.Duration) (*
 // [websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.
 //
 // The resulting token will only be accepted by servers with a matching audience
-// value.  Reaching such a server is the callers responsibility.  In general,
+// value.  Reaching such a server is the caller's responsibility.  In general,
 // a server URL or set of URLs should be provided to the caller as configuration
 // along with the audience value.
 //
@@ -980,6 +980,35 @@ func (auth *Auth) GcpCredentials(projectId, serviceAccount string) (*GCPCredenti
 func (auth *Auth) GcpCredentials_SignedURL(projectId, serviceAccount string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*auth)
 	return (&cd).SignedURL("/gcp/credentials/"+url.PathEscape(projectId)+"/"+url.PathEscape(serviceAccount), nil, duration)
+}
+
+// Stability: *** EXPERIMENTAL ***
+//
+// Get a Github application installation token scoped to the given repositories
+// and permissions, using the configured app `appName`.
+//
+// Requesting `<permission>: <level>` on `<owner>/<repo>` requires the scope
+// `auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.
+// Levels and permissions are matched exactly to github token permissions
+// which can be found at
+// https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.
+// While token access is widened (requesting a write token will give a read+write one)
+// scopes are not. Holding `:contents:write` alone only allows requesting a `write` token.
+// Both owner and repo must be in lowercase in the scope.
+//
+// The token expires after an hour but this behavior is github dependent.
+// You should read the `expires` property from the response if you intend
+// to maintain active credentials in your task.
+//
+// Required scopes:
+//
+//	For repoPerm in repoPerms each auth:github-repo-token:<appName>/<owner>/<repoPerm>
+//
+// See #githubRepoToken
+func (auth *Auth) GithubRepoToken(appName, owner string, payload *GithubRepositoryTokenRequest) (*GithubTokenResponse, error) {
+	cd := tcclient.Client(*auth)
+	responseObject, _, err := (&cd).APICall(payload, "POST", "/github/"+url.PathEscape(appName)+"/"+url.PathEscape(owner)+"/repo-token", new(GithubTokenResponse), nil)
+	return responseObject.(*GithubTokenResponse), err
 }
 
 // Validate the request signature given on input and return list of scopes

@@ -33,6 +33,7 @@ _testmain.go
 
 *.exe
 *.test
+!Dockerfile.test
 *.prof
 
 # Coverage report
@@ -61,6 +62,7 @@ next-task-user.json
 /workers/generic-worker/generic-worker
 /workers/generic-worker/testdata/Test*
 /workers/generic-worker/downloads
+/workers/generic-worker/.tmp-test
 /tools/worker-runner/start-worker
 /tools/worker-runner/start-worker-*-*
 /tools/worker-runner/fake.exe

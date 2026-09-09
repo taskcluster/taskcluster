@@ -2,6 +2,7 @@ import taskcluster from '@taskcluster/client';
 import { scopeIntersection } from 'taskcluster-lib-scopes';
 import oauth2orize from 'oauth2orize';
 import _ from 'lodash';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import WebServerError from '../utils/WebServerError.js';
 import tryCatch from '../utils/tryCatch.js';
 import ensureLoggedIn from '../utils/ensureLoggedIn.js';
@@ -9,14 +10,47 @@ import expressWrapAsync from '../utils/expressWrapAsync.js';
 import unpromisify from '../utils/unpromisify.js';
 import hash from '../utils/hash.js';
 
+const PKCE_S256_CHALLENGE_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+const PKCE_VERIFIER_PATTERN = /^[A-Za-z0-9._~-]{43,128}$/;
+
+const parsePkceChallenge = ({ codeChallenge, codeChallengeMethod } = {}) => {
+  if (codeChallenge === undefined && codeChallengeMethod === undefined) {
+    return undefined;
+  }
+
+  if (
+    codeChallengeMethod !== 'S256' ||
+    typeof codeChallenge !== 'string' ||
+    !PKCE_S256_CHALLENGE_PATTERN.test(codeChallenge)
+  ) {
+    throw new oauth2orize.AuthorizationError(null, 'invalid_request');
+  }
+
+  return { codeChallenge, codeChallengeMethod };
+};
+
+const verifyPkce = (verifier, { codeChallenge, codeChallengeMethod }) => {
+  if (codeChallengeMethod !== 'S256' || typeof verifier !== 'string' || !PKCE_VERIFIER_PATTERN.test(verifier)) {
+    return false;
+  }
+
+  const actual = Buffer.from(createHash('sha256').update(verifier, 'ascii').digest('base64url'));
+  const expected = Buffer.from(codeChallenge);
+
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
+};
+
 export default (cfg, db, strategies, auth, monitor) => {
   // Create OAuth 2.0 server
   const server = oauth2orize.createServer();
 
-  server.serializeClient((client, done) => done(null, {
-    // Only serialize clientId and use findRegisteredClient afterward
-    clientId: client.clientId,
-  }));
+  server.serializeClient((client, done) =>
+    done(null, {
+      // Only serialize request-specific state and use findRegisteredClient afterward.
+      clientId: client.clientId,
+      oauth2Pkce: client.oauth2Pkce,
+    })
+  );
   server.deserializeClient((client, done) => done(null, client));
 
   function findRegisteredClient(clientId) {
@@ -31,55 +65,65 @@ export default (cfg, db, strategies, auth, monitor) => {
    * duration, etc. as parsed by the application.  The application issues a token,
    * which is bound to these values.
    */
-  server.grant(oauth2orize.grant.token(unpromisify(async (client, user, ares, areq) => {
-    const registeredClient = findRegisteredClient(client.clientId);
+  server.grant(
+    oauth2orize.grant.token(
+      unpromisify(async (client, user, ares, areq) => {
+        const registeredClient = findRegisteredClient(client.clientId);
 
-    if (!registeredClient) {
-      throw new oauth2orize.AuthorizationError(null, 'unauthorized_client');
-    }
+        if (!registeredClient) {
+          throw new oauth2orize.AuthorizationError(null, 'unauthorized_client');
+        }
 
-    if (!_.isEqual(registeredClient.scope.sort(), areq.scope.sort())) {
-      throw new oauth2orize.AuthorizationError(null, 'invalid_scope');
-    }
+        if (!_.isEqual(registeredClient.scope.sort(), areq.scope.sort())) {
+          throw new oauth2orize.AuthorizationError(null, 'invalid_scope');
+        }
 
-    if (!registeredClient.redirectUri.some(uri => uri === areq.redirectURI)) {
-      throw new oauth2orize.AuthorizationError(null, 'access_denied');
-    }
+        if (!registeredClient.redirectUri.some(uri => uri === areq.redirectURI)) {
+          throw new oauth2orize.AuthorizationError(null, 'access_denied');
+        }
 
-    if (registeredClient.responseType !== 'token') {
-      throw new oauth2orize.AuthorizationError(null, 'unsupported_response_type');
-    }
+        if (registeredClient.responseType !== 'token') {
+          throw new oauth2orize.AuthorizationError(null, 'unsupported_response_type');
+        }
 
-    // The access token we give to third parties
-    const accessToken = new Buffer.from(taskcluster.slugid()).toString('base64');
-    const currentUser = await strategies[user.identityProviderId].userFromIdentity(user.identity);
+        // Reject if the decision response contains scopes outside the registered client's scope
+        if (!_.isEqual(scopeIntersection(ares.scope, registeredClient.scope), ares.scope)) {
+          throw new oauth2orize.AuthorizationError(null, 'invalid_scope');
+        }
 
-    const userScopes = (await auth.expandScopes({ scopes: currentUser.scopes() })).scopes;
+        // The access token we give to third parties
+        const accessToken = new Buffer.from(taskcluster.slugid()).toString('base64');
+        const currentUser = await strategies[user.identityProviderId].userFromIdentity(user.identity);
 
-    await db.fns.create_access_token(
-      hash(accessToken), /* hashed_access_token */
-      db.encrypt({ value: Buffer.from(accessToken, 'utf8') }), /* encrypted_access_token */
-      // Oauth2 client
-      registeredClient.clientId, /* client_id */
-      areq.redirectURI, /* redirect_uri */
-      user.identity, /* identity */
-      user.identityProviderId, /* identity_provider_id */
-      taskcluster.fromNow('10 minutes'), /* expires */
-      {
-        clientId: ares.clientId,
-        description: ares.description || `Client generated by ${user.identity} for OAuth2 Client ${registeredClient.clientId}`,
-        scopes: scopeIntersection(ares.scope, userScopes),
-        expires: ares.expires ?
-          ares.expires > taskcluster.fromNow(registeredClient.maxExpires) ?
-            taskcluster.fromNow(registeredClient.maxExpires).toISOString() :
-            ares.expires.toISOString()
-          : taskcluster.fromNow(registeredClient.maxExpires).toISOString(),
-        deleteOnExpiration: true,
-      }, /* client_details */
-    );
+        const userScopes = (await auth.expandScopes({ scopes: currentUser.scopes() })).scopes;
 
-    return accessToken;
-  })));
+        await db.fns.create_access_token(
+          hash(accessToken) /* hashed_access_token */,
+          db.encrypt({ value: Buffer.from(accessToken, 'utf8') }) /* encrypted_access_token */,
+          // Oauth2 client
+          registeredClient.clientId /* client_id */,
+          areq.redirectURI /* redirect_uri */,
+          user.identity /* identity */,
+          user.identityProviderId /* identity_provider_id */,
+          taskcluster.fromNow('10 minutes') /* expires */,
+          {
+            clientId: ares.clientId,
+            description:
+              ares.description || `Client generated by ${user.identity} for OAuth2 Client ${registeredClient.clientId}`,
+            scopes: scopeIntersection(scopeIntersection(ares.scope, registeredClient.scope), userScopes),
+            expires: ares.expires
+              ? ares.expires > taskcluster.fromNow(registeredClient.maxExpires)
+                ? taskcluster.fromNow(registeredClient.maxExpires).toISOString()
+                : ares.expires.toISOString()
+              : taskcluster.fromNow(registeredClient.maxExpires).toISOString(),
+            deleteOnExpiration: true,
+          } /* client_details */
+        );
+
+        return accessToken;
+      })
+    )
+  );
 
   /**
    * Grant authorization codes
@@ -90,58 +134,81 @@ export default (cfg, db, strategies, auth, monitor) => {
    * duration, etc. as parsed by the application.  The application issues a code,
    * which is bound to these values, and will be exchanged for an access token.
    */
-  server.grant(oauth2orize.grant.code(unpromisify(async (client, redirectURI, user, ares, areq) => {
-    const code = taskcluster.slugid();
-    const registeredClient = findRegisteredClient(client.clientId);
+  server.grant(
+    oauth2orize.grant.code(
+      unpromisify(async (client, redirectURI, user, ares, areq) => {
+        const code = taskcluster.slugid();
+        const registeredClient = findRegisteredClient(client.clientId);
 
-    if (!registeredClient) {
-      throw new oauth2orize.AuthorizationError(null, 'unauthorized_client');
-    }
+        if (!registeredClient) {
+          throw new oauth2orize.AuthorizationError(null, 'unauthorized_client');
+        }
 
-    if (!_.isEqual(registeredClient.scope.sort(), areq.scope.sort())) {
-      throw new oauth2orize.AuthorizationError(null, 'invalid_scope');
-    }
+        if (!_.isEqual(registeredClient.scope.sort(), areq.scope.sort())) {
+          throw new oauth2orize.AuthorizationError(null, 'invalid_scope');
+        }
 
-    if (!registeredClient.redirectUri.some(uri => uri === redirectURI)) {
-      throw new oauth2orize.AuthorizationError(null, 'access_denied');
-    }
+        if (!registeredClient.redirectUri.some(uri => uri === redirectURI)) {
+          throw new oauth2orize.AuthorizationError(null, 'access_denied');
+        }
 
-    if (registeredClient.responseType !== 'code') {
-      throw new oauth2orize.AuthorizationError(null, 'unsupported_response_type');
-    }
+        if (registeredClient.responseType !== 'code') {
+          throw new oauth2orize.AuthorizationError(null, 'unsupported_response_type');
+        }
 
-    const currentUser = await strategies[user.identityProviderId].userFromIdentity(user.identity);
+        const oauth2Pkce = parsePkceChallenge(client.oauth2Pkce);
 
-    if (!currentUser) {
-      throw new oauth2orize.AuthorizationError(null, 'server_error');
-    }
+        if (registeredClient.requirePkce && !oauth2Pkce) {
+          throw new oauth2orize.AuthorizationError('PKCE is required for this client', 'invalid_request');
+        }
 
-    const userScopes = (await auth.expandScopes({ scopes: currentUser.scopes() })).scopes;
+        // Reject if the decision response contains scopes outside the registered client's scope
+        if (!_.isEqual(scopeIntersection(ares.scope, registeredClient.scope), ares.scope)) {
+          throw new oauth2orize.AuthorizationError(null, 'invalid_scope');
+        }
 
-    await db.fns.create_authorization_code(
-      code, /* code */
-      // OAuth2 client
-      registeredClient.clientId, /* client_id */
-      redirectURI, /* redirect_uri */
-      user.identity, /* identity */
-      user.identityProviderId, /* identity_provider_id */
-      // A maximum of 10 minutes is recommended in https://tools.ietf.org/html/rfc6749#section-4.1.2
-      taskcluster.fromNow('10 minutes'), /* expires */
-      {
-        clientId: ares.clientId,
-        description: `Client generated by ${user.identity} for OAuth2 Client ${registeredClient.clientId}`,
-        scopes: scopeIntersection(ares.scope, userScopes),
-        expires: ares.expires ?
-          ares.expires > taskcluster.fromNow(registeredClient.maxExpires) ?
-            taskcluster.fromNow(registeredClient.maxExpires).toISOString() :
-            ares.expires.toISOString()
-          : taskcluster.fromNow(registeredClient.maxExpires).toISOString(),
-        deleteOnExpiration: true,
-      }, /* client_details */
-    );
+        const currentUser = await strategies[user.identityProviderId].userFromIdentity(user.identity);
 
-    return code;
-  })));
+        if (!currentUser) {
+          throw new oauth2orize.AuthorizationError(null, 'server_error');
+        }
+
+        const userScopes = (await auth.expandScopes({ scopes: currentUser.scopes() })).scopes;
+
+        const clientDetails = {
+          clientId: ares.clientId,
+          description: `Client generated by ${user.identity} for OAuth2 Client ${registeredClient.clientId}`,
+          scopes: scopeIntersection(scopeIntersection(ares.scope, registeredClient.scope), userScopes),
+          expires: ares.expires
+            ? ares.expires > taskcluster.fromNow(registeredClient.maxExpires)
+              ? taskcluster.fromNow(registeredClient.maxExpires).toISOString()
+              : ares.expires.toISOString()
+            : taskcluster.fromNow(registeredClient.maxExpires).toISOString(),
+          deleteOnExpiration: true,
+        };
+
+        if (oauth2Pkce) {
+          // client_details is also the eventual Auth createClient payload. Keep
+          // protocol state under a reserved key and strip it during code exchange.
+          clientDetails._oauth2 = { pkce: oauth2Pkce };
+        }
+
+        await db.fns.create_authorization_code(
+          code /* code */,
+          // OAuth2 client
+          registeredClient.clientId /* client_id */,
+          redirectURI /* redirect_uri */,
+          user.identity /* identity */,
+          user.identityProviderId /* identity_provider_id */,
+          // A maximum of 10 minutes is recommended in https://tools.ietf.org/html/rfc6749#section-4.1.2
+          taskcluster.fromNow('10 minutes') /* expires */,
+          clientDetails /* client_details */
+        );
+
+        return code;
+      })
+    )
+  );
 
   /**
    * After a client has obtained an authorization grant from the user,
@@ -152,80 +219,121 @@ export default (cfg, db, strategies, auth, monitor) => {
    * are validated, the application issues a Taskcluster token on behalf of the user who
    * authorized the code.
    */
-  server.exchange(oauth2orize.exchange.code(unpromisify(async (client, code, redirectURI) => {
-    const [entry] = await db.fns.get_authorization_code(code);
+  server.exchange(
+    oauth2orize.exchange.code(
+      unpromisify(async (_client, code, redirectURI, params) => {
+        if (typeof params.client_id !== 'string' || !params.client_id) {
+          throw new oauth2orize.TokenError('Missing required parameter: client_id', 'invalid_request');
+        }
 
-    if (!entry) {
-      return false;
-    }
+        const [entry] = await db.fns.consume_authorization_code(code);
 
-    if (redirectURI !== entry.redirect_uri) {
-      return false;
-    }
+        if (!entry) {
+          return false;
+        }
 
-    // Although we eventually delete expired rows, that only happens once per day
-    // so we need to check that the accessToken is not expired.
-    if (new Date(entry.client_details.expires) < new Date()) {
-      return false;
-    }
+        if (params.client_id !== entry.client_id || redirectURI !== entry.redirect_uri) {
+          return false;
+        }
 
-    const accessToken = new Buffer.from(taskcluster.slugid()).toString('base64');
+        // Although we eventually delete expired rows, that only happens once per day
+        // so we need to check that the authorization code is not past its own lifetime
+        if (new Date(entry.expires) < new Date()) {
+          return false;
+        }
 
-    await db.fns.create_access_token(
-      hash(accessToken), /* hashed_access_token */
-      // The access token we give to third parties
-      db.encrypt({ value: Buffer.from(accessToken, 'utf8') }), /* encrypted_access_token */
-      // Oauth2 client
-      entry.client_id, /* client_id */
-      redirectURI, /* redirect_uri */
-      entry.identity, /* identity */
-      entry.identity_provider_id, /* identity_provider_id */
-      // This table is used alongside the authorization_codes table which has a 10 minute recommended expiration
-      taskcluster.fromNow('10 minutes'), /* expires */
-      entry.client_details, /* client_details */
-    );
+        // Never pass internal OAuth state to auth.createClient.
+        const { _oauth2, ...clientDetails } = entry.client_details;
 
-    return accessToken;
-  })));
+        if (_oauth2?.pkce) {
+          if (!verifyPkce(params.code_verifier, _oauth2.pkce)) {
+            return false;
+          }
+        } else if (params.code_verifier !== undefined) {
+          // Do not accept a verifier for a code that was issued without a
+          // challenge. This prevents PKCE downgrade confusion.
+          return false;
+        }
+
+        const accessToken = new Buffer.from(taskcluster.slugid()).toString('base64');
+
+        await db.fns.create_access_token(
+          hash(accessToken) /* hashed_access_token */,
+          // The access token we give to third parties
+          db.encrypt({ value: Buffer.from(accessToken, 'utf8') }) /* encrypted_access_token */,
+          // Oauth2 client
+          entry.client_id /* client_id */,
+          redirectURI /* redirect_uri */,
+          entry.identity /* identity */,
+          entry.identity_provider_id /* identity_provider_id */,
+          // This table is used alongside the authorization_codes table which has a 10 minute recommended expiration
+          taskcluster.fromNow('10 minutes') /* expires */,
+          clientDetails /* client_details */
+        );
+
+        return accessToken;
+      })
+    )
+  );
 
   const authorization = [
     ensureLoggedIn(),
     (req, res, done) => {
-      server.authorization(unpromisify(async (clientID, redirectURI, scope) => {
-        const client = findRegisteredClient(clientID);
+      server.authorization(
+        unpromisify(
+          async (clientID, redirectURI, _scope) => {
+            const client = findRegisteredClient(clientID);
 
-        if (!client) {
-          return [false];
-        }
+            if (!client) {
+              return [false];
+            }
 
-        if (!client.redirectUri.some(uri => uri === redirectURI)) {
-          return [false];
-        }
+            if (!client.redirectUri.some(uri => uri === redirectURI)) {
+              return [false];
+            }
 
-        return [client, redirectURI];
-      }, { returnsArray: true }),
-      unpromisify(async (client, user, scope) => {
-        // Skip consent form if the client is whitelisted
-        if (client.whitelisted && user && _.isEqual(client.scope.sort(), scope.sort())) {
-          const opts = {};
+            // Preserve the raw values until grant.code runs, when OAuth2orize
+            // has enough transaction state to return an OAuth redirect error.
+            const oauth2Pkce =
+              req.query.response_type === 'code'
+                ? {
+                    codeChallenge: req.query.code_challenge,
+                    codeChallengeMethod: req.query.code_challenge_method,
+                  }
+                : undefined;
 
-          if (req.query.expires) {
-            opts.expires = taskcluster.fromNow(req.query.expires);
-          }
+            return [{ ...client, oauth2Pkce }, redirectURI];
+          },
+          { returnsArray: true }
+        ),
+        unpromisify(
+          async (client, user, scope) => {
+            // Skip consent form if the client is whitelisted
+            if (client.whitelisted && user && _.isEqual(client.scope.sort(), scope.sort())) {
+              const opts = {};
 
-          // If you return `true` in the second argument (the `immediate` argument) it will skip the dialog,
-          // automatically authorizing the decision.
-          // It's called to decide whether to immediately approve the request and return a redirect
-          // to the `redirect_uri`.
-          return [true, {
-            scope,
-            clientId: `${user.identity}/${client.clientId}-${taskcluster.slugid().slice(0, 6)}`,
-            ...opts,
-          }];
-        }
+              if (req.query.expires) {
+                opts.expires = taskcluster.fromNow(req.query.expires);
+              }
 
-        return [false];
-      }, { returnsArray: true }),
+              // If you return `true` in the second argument (the `immediate` argument) it will skip the dialog,
+              // automatically authorizing the decision.
+              // It's called to decide whether to immediately approve the request and return a redirect
+              // to the `redirect_uri`.
+              return [
+                true,
+                {
+                  scope,
+                  clientId: `${user.identity}/${client.clientId}-${taskcluster.slugid().slice(0, 6)}`,
+                  ...opts,
+                },
+              ];
+            }
+
+            return [false];
+          },
+          { returnsArray: true }
+        )
       )(req, res, done);
     },
     (req, res) => {
@@ -239,7 +347,7 @@ export default (cfg, db, strategies, auth, monitor) => {
           } else {
             expires = req.query.expires;
           }
-        } catch (e) {
+        } catch {
           // req.query.expires was probably an invalid date.
           // We default to the max expiration time defined by the client.
         }
@@ -279,10 +387,7 @@ export default (cfg, db, strategies, auth, monitor) => {
    * `token` middleware handles client requests to exchange
    * an authorization code for a Taskcluster token.
    */
-  const token = [
-    server.token(),
-    server.errorHandler(),
-  ];
+  const token = [server.token(), server.errorHandler()];
 
   /**
    * Credential endpoint - Resource server
@@ -316,8 +421,10 @@ export default (cfg, db, strategies, auth, monitor) => {
     }
 
     // Although we eventually delete expired rows, that only happens once per day
-    // so we need to check that the accessToken is not expired.
-    if (new Date(entry.client_details.expires) < new Date()) {
+    // so we need to check that the access token is not past its own lifetime, as
+    // well as that the requested credentials have not already expired.
+    const now = new Date();
+    if (new Date(entry.expires) < now || new Date(entry.client_details.expires) < now) {
       throw inputError;
     }
 
@@ -332,12 +439,10 @@ export default (cfg, db, strategies, auth, monitor) => {
     // the access at any time and that the client scanner process will
     // automatically disable any clients that have too many scopes
     const [clientError, client] = await tryCatch(
-      auth
-        .use({ authorizedScopes: currentUser.scopes() })
-        .createClient(clientId, {
-          ...data,
-          expires: new Date(data.expires),
-        }),
+      auth.use({ authorizedScopes: currentUser.scopes() }).createClient(clientId, {
+        ...data,
+        expires: new Date(data.expires),
+      })
     );
 
     if (clientError) {

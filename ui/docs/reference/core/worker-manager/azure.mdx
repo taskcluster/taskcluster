@@ -7,9 +7,9 @@ import Warning from '@taskcluster/ui/views/Documentation/components/Warning';
 
 # Azure Provider Type
 
-Azure-based providers create workers dynamically in Azure, within a single Resource Group.
-Best practice is to use a dedicated resource group for each provider that is not shared with other uses.
-This makes it easier to identify which resources a provider is responsible for.
+Azure-based providers create workers dynamically in one or more Azure resource groups.
+By default every worker the provider creates lives in a single resource group (the one configured on the provider), but ARM-template launch configurations may opt each worker pool — or each launch configuration within a pool — into its own resource group via [`armDeploymentResourceGroup`](/docs/reference/core/worker-manager/azure#resource-group-strategy).
+Best practice is to use resource groups that are dedicated to the worker-manager provider and not shared with other uses, which makes it easier to identify which resources the provider is responsible for and to clean up after a pool.
 
 ## Provisioning Modes
 
@@ -21,6 +21,52 @@ An Azure launch configuration can use one of two deployment strategies:
 Use ARM templates when you want Azure Resource Manager to create multiple dependent resources in one operation (for example, when your template handles public IPs, diagnostics accounts, or managed identities). Use sequential provisioning when the existing launch configs already cover your needs or when you want worker-manager to manage each resource directly.
 
 For short-term debugging you can set `workerManager.keepDeployment: true` on an ARM launch config. This leaves the Azure deployment record in place so you can inspect its parameters and outputs later. Remember to turn it off afterward—Azure keeps only 800 deployment history entries per resource group, so leaving deployments behind can eventually block new launches.
+
+## Resource Group Strategy
+
+There are two patterns for choosing where worker resources live in Azure.
+
+### Single shared resource group (default)
+
+If a launch configuration does not specify `armDeploymentResourceGroup`, worker-manager deploys every worker for that launch config into the resource group named by the provider's `resourceGroupName`. This resource group is expected to exist already — typically created out-of-band by an operator as part of standing up the provider — so the role assigned to the worker-manager service principal needs only `Microsoft.Resources/subscriptions/resourceGroups/read` on it.
+
+This is the simplest pattern, and is sufficient when one resource group per provider is enough granularity for your auditing, quota, and cleanup needs.
+
+### Per-launch-configuration resource groups (`armDeploymentResourceGroup`)
+
+ARM-template launch configurations may set `armDeploymentResourceGroup` to deploy that launch configuration's workers into a dedicated resource group. If the named resource group does not yet exist, worker-manager creates it on demand (in the location specified by the ARM template); concurrent provisions targeting the same name are deduplicated so the resource group is created at most once. Multiple launch configs may share the same `armDeploymentResourceGroup` value if you want a finer split than "one resource group per provider" without going all the way to "one resource group per launch config".
+
+This pattern is useful when you want:
+
+* Easier auditing — all workers from a given pool, or launch config, show up under one resource group, so `az resource list -g <rg>` and the Azure portal both reflect the worker pool's footprint directly.
+* Easier cleanup — deleting the resource group tears down every worker resource it contains in a single Azure operation.
+* Quota and policy isolation — Azure quotas and policies can be applied at resource-group scope, allowing different worker pools to have different limits or governance.
+* Per-team RBAC — different teams can own different resource groups without sharing access to the whole subscription.
+
+To use this pattern, the worker-manager service principal's role must additionally include `Microsoft.Resources/subscriptions/resourceGroups/write`, since the role's assignable scope is the subscription.
+
+<Warning>
+In Azure, name-based restrictions on resource creation are expressed as [Azure Policy](https://learn.microsoft.com/en-us/azure/governance/policy/overview) assignments rather than as conditions on the role itself, so we recommend bounding the blast radius of this grant by attaching a policy assignment at subscription scope that denies any resource-group name not matching your worker-manager namespace (for example, `wm-*`). Policy evaluation runs after RBAC on every create, so a misconfigured launch config — or a leaked service-principal credential — cannot create resource groups outside the namespace you've allocated to worker-manager.
+</Warning>
+
+A minimal policy definition for this looks like:
+
+```json
+{
+  "mode": "All",
+  "policyRule": {
+    "if": {
+      "allOf": [
+        { "field": "type", "equals": "Microsoft.Resources/subscriptions/resourceGroups" },
+        { "field": "name", "notLike": "wm-*" }
+      ]
+    },
+    "then": { "effect": "deny" }
+  }
+}
+```
+
+`"mode": "All"` is required — Azure Policy does not evaluate resource groups in the default `indexed` mode, so without it the policy silently does not fire on resource-group creation.
 
 ## Removing Workers
 

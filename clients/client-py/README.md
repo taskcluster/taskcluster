@@ -30,10 +30,13 @@ Here is a simple set-up of an Index client:
 
 ```python
 import taskcluster
-index = taskcluster.Index({
-  'rootUrl': 'https://tc.example.com',
-  'credentials': {'clientId': 'id', 'accessToken': 'accessToken'},
-})
+
+index = taskcluster.Index(
+    {
+        "rootUrl": "https://tc.example.com",
+        "credentials": {"clientId": "id", "accessToken": "accessToken"},
+    }
+)
 ```
 
 The `rootUrl` option is required as it gives the Taskcluster deployment to
@@ -50,7 +53,7 @@ auth = taskcluster.Auth(taskcluster.optionsFromEnvironment())
 Note that this function does not respect `TASKCLUSTER_PROXY_URL`.  To use the Taskcluster Proxy from within a task:
 
 ```python
-auth = taskcluster.Auth({'rootUrl': os.environ['TASKCLUSTER_PROXY_URL']})
+auth = taskcluster.Auth({"rootUrl": os.environ["TASKCLUSTER_PROXY_URL"]})
 ```
 
 #### Authorized Scopes
@@ -63,7 +66,7 @@ in the `authorizedScopes` option.
 
 ```python
 opts = taskcluster.optionsFromEnvironment()
-opts['authorizedScopes'] = ['queue:create-task:highest:my-provisioner/my-worker-type']
+opts["authorizedScopes"] = ["queue:create-task:highest:my-provisioner/my-worker-type"]
 queue = taskcluster.Queue(opts)
 ```
 
@@ -95,8 +98,10 @@ request payload, and `query` is a dictionary of query arguments.
 For example, in order to call an API method with query-string arguments:
 
 ```python
-await queue.listTaskGroup('JzTGxwxhQ76_Tt1dxkaG5g',
-  query={'continuationToken': previousResponse.get('continuationToken')})
+await queue.listTaskGroup(
+    "JzTGxwxhQ76_Tt1dxkaG5g",
+    query={"continuationToken": previousResponse.get("continuationToken")},
+)
 ```
 
 
@@ -109,9 +114,9 @@ To do so, use `buildUrl` or, for an API method that requires authentication, `bu
 import taskcluster
 
 index = taskcluster.Index(taskcluster.optionsFromEnvironment())
-print(index.buildUrl('findTask', 'builds.v1.latest'))
+print(index.buildUrl("findTask", "builds.v1.latest"))
 secrets = taskcluster.Secrets(taskcluster.optionsFromEnvironment())
-print(secret.buildSignedUrl('get', 'my-secret'))
+print(secret.buildSignedUrl("get", "my-secret"))
 ```
 
 Note that signed URLs are time-limited; the expiration can be set with the `signedUrlExpiration` option to the client constructor, or with the `expiration` keyword arguement to `buildSignedUrl`, both given in seconds.
@@ -130,9 +135,9 @@ to the start or expiry time - this is handled by the auth service directly.
 import datetime
 
 start = datetime.datetime.now()
-expiry = start + datetime.timedelta(0,60)
-scopes = ['ScopeA', 'ScopeB']
-name = 'foo'
+expiry = start + datetime.timedelta(0, 60)
+scopes = ["ScopeA", "ScopeB"]
+name = "foo"
 
 credentials = taskcluster.createTemporaryCredentials(
     # issuing clientId
@@ -146,7 +151,7 @@ credentials = taskcluster.createTemporaryCredentials(
     # Scopes to grant the temporary credentials
     scopes,
     # credential name (optional)
-    name
+    name,
 )
 ```
 
@@ -163,9 +168,9 @@ this library comes with two utility functions for this purposes.
 
 ```python
 dateObject = taskcluster.fromNow("2 days 3 hours 1 minute")
-  # -> datetime.datetime(2017, 1, 21, 17, 8, 1, 607929)
+# -> datetime.datetime(2017, 1, 21, 17, 8, 1, 607929)
 dateString = taskcluster.fromNowJSON("2 days 3 hours 1 minute")
-  # -> '2017-01-21T17:09:23.240178Z'
+# -> '2017-01-21T17:09:23.240178Z'
 ```
 
 By default it will offset the date time into the future, if the offset strings
@@ -173,8 +178,8 @@ are prefixed minus (`-`) the date object will be offset into the past. This is
 useful in some corner cases.
 
 ```python
-dateObject = taskcluster.fromNow("- 1 year 2 months 3 weeks 5 seconds");
-  # -> datetime.datetime(2015, 10, 30, 18, 16, 50, 931161)
+dateObject = taskcluster.fromNow("- 1 year 2 months 3 weeks 5 seconds")
+# -> datetime.datetime(2015, 10, 30, 18, 16, 50, 931161)
 ```
 
 The offset string is ignorant of whitespace and case insensitive. It may also
@@ -199,10 +204,10 @@ deadline or doing something similar.  This argument can also be passed as the
 kwarg `dateObj`
 
 ```python
-dateObject1 = taskcluster.fromNow("2 days 3 hours");
-dateObject2 = taskcluster.fromNow("1 year", dateObject1);
-taskcluster.fromNow("1 year", dateObj=dateObject1);
-  # -> datetime.datetime(2018, 1, 21, 17, 59, 0, 328934)
+dateObject1 = taskcluster.fromNow("2 days 3 hours")
+dateObject2 = taskcluster.fromNow("1 year", dateObject1)
+taskcluster.fromNow("1 year", dateObj=dateObject1)
+# -> datetime.datetime(2018, 1, 21, 17, 59, 0, 328934)
 ```
 ### Generating SlugIDs
 
@@ -216,14 +221,14 @@ just this.
 
 ```python
 gen = taskcluster.stableSlugId()
-sometask = gen('sometask')
-assert gen('sometask') == sometask  # same input generates same output
-assert gen('sometask') != gen('othertask')
+sometask = gen("sometask")
+assert gen("sometask") == sometask  # same input generates same output
+assert gen("sometask") != gen("othertask")
 
 gen2 = taskcluster.stableSlugId()
-sometask2 = gen('sometask')
+sometask2 = gen("sometask")
 assert sometask2 != sometask  # but different slugId generators produce
-                              # different output
+# different output
 ```
 
 ### Scope Analysis
@@ -241,14 +246,11 @@ satisfied.
 Example:
 
 ```python
-requiredScopeSets = [
-    ["scopeA", "scopeB"],
-    ["scopeC:*"]
-]
-assert scopesMatch(['scopeA', 'scopeB'], requiredScopeSets)
-assert scopesMatch(['scopeC:xyz'], requiredScopeSets)
-assert not scopesMatch(['scopeA'], requiredScopeSets)
-assert not scopesMatch(['scopeC'], requiredScopeSets)
+requiredScopeSets = [["scopeA", "scopeB"], ["scopeC:*"]]
+assert scopesMatch(["scopeA", "scopeB"], requiredScopeSets)
+assert scopesMatch(["scopeC:xyz"], requiredScopeSets)
+assert not scopesMatch(["scopeA"], requiredScopeSets)
+assert not scopesMatch(["scopeC"], requiredScopeSets)
 ```
 
 ### Pagination
@@ -259,17 +261,21 @@ in your code:
 
 ```python
 import taskcluster
-queue = taskcluster.Queue({'rootUrl': 'https://tc.example.com'})
+
+queue = taskcluster.Queue({"rootUrl": "https://tc.example.com"})
 i = 0
 tasks = 0
-outcome = queue.listTaskGroup('JzTGxwxhQ76_Tt1dxkaG5g')
-while outcome.get('continuationToken'):
-    print('Response %d gave us %d more tasks' % (i, len(outcome['tasks'])))
-    if outcome.get('continuationToken'):
-        outcome = queue.listTaskGroup('JzTGxwxhQ76_Tt1dxkaG5g', query={'continuationToken': outcome.get('continuationToken')})
+outcome = queue.listTaskGroup("JzTGxwxhQ76_Tt1dxkaG5g")
+while outcome.get("continuationToken"):
+    print("Response %d gave us %d more tasks" % (i, len(outcome["tasks"])))
+    if outcome.get("continuationToken"):
+        outcome = queue.listTaskGroup(
+            "JzTGxwxhQ76_Tt1dxkaG5g",
+            query={"continuationToken": outcome.get("continuationToken")},
+        )
     i += 1
-    tasks += len(outcome.get('tasks', []))
-print('Task Group %s has %d tasks' % (outcome['taskGroupId'], tasks))
+    tasks += len(outcome.get("tasks", []))
+print("Task Group %s has %d tasks" % (outcome["taskGroupId"], tasks))
 ```
 
 There's also an experimental feature to support built in automatic pagination
@@ -282,19 +288,22 @@ built and then counted:
 
 ```python
 import taskcluster
-queue = taskcluster.Queue({'rootUrl': 'https://tc.example.com'})
+
+queue = taskcluster.Queue({"rootUrl": "https://tc.example.com"})
 
 responses = []
 
+
 def handle_page(y):
-    print("%d tasks fetched" % len(y.get('tasks', [])))
+    print("%d tasks fetched" % len(y.get("tasks", [])))
     responses.append(y)
 
-queue.listTaskGroup('JzTGxwxhQ76_Tt1dxkaG5g', paginationHandler=handle_page)
+
+queue.listTaskGroup("JzTGxwxhQ76_Tt1dxkaG5g", paginationHandler=handle_page)
 
 tasks = 0
 for response in responses:
-    tasks += len(response.get('tasks', []))
+    tasks += len(response.get("tasks", []))
 
 print("%d requests fetch %d tasks" % (len(responses), tasks))
 ```
@@ -309,10 +318,11 @@ dictionary argument or keyword arguments.  Only one form is allowed.
 
 ```python
 from taskcluster import client
-qEvt = client.QueueEvents({rootUrl: 'https://tc.example.com'})
+
+qEvt = client.QueueEvents({rootUrl: "https://tc.example.com"})
 # The following calls are equivalent
-print(qEvt.taskCompleted({'taskId': 'atask'}))
-print(qEvt.taskCompleted(taskId='atask'))
+print(qEvt.taskCompleted({"taskId": "atask"}))
+print(qEvt.taskCompleted(taskId="atask"))
 ```
 
 Note that the client library does *not* provide support for interfacing with a Pulse server.
@@ -417,7 +427,7 @@ tc = TaskclusterConfig('https://community-tc.services.mozilla.com')
 ```python
 from project import tc
 
-tc.auth(client_id='XXX', access_token='YYY')
+tc.auth(client_id="XXX", access_token="YYY")
 ```
 
 3. at that point, you can load any service using the authenticated wrapper from anywhere in your code:
@@ -425,12 +435,14 @@ tc.auth(client_id='XXX', access_token='YYY')
 ```python
 from project import tc
 
+
 def sync_usage():
-    queue = tc.get_service('queue')
+    queue = tc.get_service("queue")
     queue.ping()
 
+
 async def async_usage():
-    hooks = tc.get_service('hooks', use_async=True)  # Asynchronous service class
+    hooks = tc.get_service("hooks", use_async=True)  # Asynchronous service class
     await hooks.ping()
 ```
 
@@ -472,25 +484,22 @@ from taskcluster import Secrets
 from taskcluster.helper import load_secrets
 
 prod_config = load_secrets(
-  Secrets({...}),
-  'project/foo/prod-config',
-
-  # We only need the common & backend parts
-  prefixes=['common', 'backend'],
-
-  # We absolutely need a bugzilla token to run
-  required=['bugzilla_token'],
-
-  # Let's provide some default value for the environment
-  existing={
-    'environment': 'dev',
-  }
+    Secrets({...}),
+    "project/foo/prod-config",
+    # We only need the common & backend parts
+    prefixes=["common", "backend"],
+    # We absolutely need a bugzilla token to run
+    required=["bugzilla_token"],
+    # Let's provide some default value for the environment
+    existing={
+        "environment": "dev",
+    },
 )
-  # -> prod_config == {
-  #     "environment": "production"
-  #     "remote_log": "https://log.xx.com/payload",
-  #     "bugzilla_token": "XXXX",
-  #   }
+# -> prod_config == {
+#     "environment": "production"
+#     "remote_log": "https://log.xx.com/payload",
+#     "bugzilla_token": "XXXX",
+#   }
 ```
 
 In your task, you could do the following using `TaskclusterConfig` mentionned above (the class has a shortcut to use an authenticated `Secrets` service automatically):
@@ -499,22 +508,20 @@ In your task, you could do the following using `TaskclusterConfig` mentionned ab
 from project import tc
 
 prod_config = tc.load_secrets(
-  'project/foo/prod-config',
-
-  # We only need the common & bot parts
-  prefixes=['common', 'bot'],
-
-  # Let's provide some default value for the environment and backend_url
-  existing={
-    'environment': 'dev',
-    'backend_url': 'http://localhost:8000',
-  }
+    "project/foo/prod-config",
+    # We only need the common & bot parts
+    prefixes=["common", "bot"],
+    # Let's provide some default value for the environment and backend_url
+    existing={
+        "environment": "dev",
+        "backend_url": "http://localhost:8000",
+    },
 )
-  # -> prod_config == {
-  #     "environment": "production"
-  #     "remote_log": "https://log.xx.com/payload",
-  #     "backend_url": "https://backend.foo.mozilla.com",
-  #   }
+# -> prod_config == {
+#     "environment": "production"
+#     "remote_log": "https://log.xx.com/payload",
+#     "backend_url": "https://backend.foo.mozilla.com",
+#   }
 ```
 
 To provide local secrets value, you first need to load these values as a dictionary (usually by reading a local file in your format of choice : YAML, JSON, ...) and providing the dictionary to `load_secrets` by using the `local_secrets` parameter:
@@ -526,14 +533,15 @@ import yaml
 from taskcluster import Secrets
 from taskcluster.helper import load_secrets
 
-local_path = 'path/to/file.yml'
+local_path = "path/to/file.yml"
 
 prod_config = load_secrets(
-  Secrets({...}),
-  'project/foo/prod-config',
-
-  # We support an optional local file to provide some configuration without reaching Taskcluster
-  local_secrets=yaml.safe_load(open(local_path)) if os.path.exists(local_path) else None,
+    Secrets({...}),
+    "project/foo/prod-config",
+    # We support an optional local file to provide some configuration without reaching Taskcluster
+    local_secrets=yaml.safe_load(open(local_path))
+    if os.path.exists(local_path)
+    else None,
 )
 ```
 

@@ -63,9 +63,7 @@ same APIs. For example, [scriptworker](http://scriptworker.readthedocs.io/) was
 developed by Mozilla's release engineering to run release-related scripts in a limited,
 secure context.
 
-The Taskcluster-provided worker implementations, including their payload formats, are described in:
-* [generic-worker](/docs/reference/workers/generic-worker)
-* [docker-worker](/docs/reference/workers/docker-worker)
+The Taskcluster-provided worker implementation is described in [generic-worker](/docs/reference/workers/generic-worker). Generic-worker also accepts the legacy docker-worker payload format on Linux, translated transparently by [d2g](https://github.com/taskcluster/taskcluster/tree/main/tools/d2g). Tasks written against the docker-worker payload format continue to run unchanged.
 
 The protocol for interacting with the Queue service is described in
 [Queue-Worker

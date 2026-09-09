@@ -1,32 +1,35 @@
 import { Exchanges } from '@taskcluster/lib-pulse';
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import { PUBLISHERS } from './constants.js';
 
 /** Build common routing key construct for `exchanges.declare` */
-const commonRoutingKey = function(options) {
+const commonRoutingKey = options => {
   options = options || {};
-  let routingKey = [
+  const routingKey = [
     {
       name: 'routingKeyKind',
-      summary: 'Identifier for the routing-key kind. This is ' +
-                        'always `"primary"` for the formalized routing key.',
+      summary: 'Identifier for the routing-key kind. This is ' + 'always `"primary"` for the formalized routing key.',
       constant: 'primary',
       required: true,
-    }, {
+    },
+    {
       name: 'organization',
-      summary: 'The GitHub `organization` which had an event. ' +
-                        'All periods have been replaced by % - such that ' +
-                        'foo.bar becomes foo%bar - and all other special ' +
-                        'characters aside from - and _ have been stripped.',
+      summary:
+        'The GitHub `organization` which had an event. ' +
+        'All periods have been replaced by % - such that ' +
+        'foo.bar becomes foo%bar - and all other special ' +
+        'characters aside from - and _ have been stripped.',
       maxSize: 100,
       required: true,
-    }, {
+    },
+    {
       name: 'repository',
-      summary: 'The GitHub `repository` which had an event.' +
-                        'All periods have been replaced by % - such that ' +
-                        'foo.bar becomes foo%bar - and all other special ' +
-                        'characters aside from - and _ have been stripped.',
+      summary:
+        'The GitHub `repository` which had an event.' +
+        'All periods have been replaced by % - such that ' +
+        'foo.bar becomes foo%bar - and all other special ' +
+        'characters aside from - and _ have been stripped.',
       maxSize: 100,
       required: true,
     },
@@ -34,9 +37,10 @@ const commonRoutingKey = function(options) {
   if (options.hasActions) {
     routingKey.push({
       name: 'action',
-      summary: 'The GitHub `action` which triggered an event. ' +
-                        'See for possible values see the payload actions ' +
-                        'property.',
+      summary:
+        'The GitHub `action` which triggered an event. ' +
+        'See for possible values see the payload actions ' +
+        'property.',
       maxSize: 22,
       required: true,
     });
@@ -44,19 +48,19 @@ const commonRoutingKey = function(options) {
   return routingKey;
 };
 
-const commonMessageBuilder = function(msg) {
+const commonMessageBuilder = msg => {
   msg.version = 1;
   return msg;
 };
 
 /** Build list of routing keys to CC */
-const commonCCBuilder = (message, routes) => {
+const commonCCBuilder = (_message, routes) => {
   assert(Array.isArray(routes), 'Routes must be an array');
-  return routes.map(route => 'route.' + route);
+  return routes.map(route => `route.${route}`);
 };
 
 /** Declaration of exchanges offered by the github */
-let exchanges = new Exchanges({
+const exchanges = new Exchanges({
   serviceName: 'github',
   projectName: 'taskcluster-github',
   apiVersion: 'v1',
@@ -102,6 +106,35 @@ exchanges.declare({
   schema: 'github-push-message.yml',
   messageBuilder: commonMessageBuilder,
   routingKeyBuilder: msg => _.pick(msg, 'organization', 'repository'),
+  CCBuilder: () => [],
+});
+
+/** taskcluster.yml update exchange */
+exchanges.declare({
+  exchange: 'taskcluster-yml-update',
+  name: PUBLISHERS.TASKCLUSTER_YML_UPDATE,
+  title: 'Taskcluster Yml Update Event',
+  description: [
+    "When a GitHub push event changes a repository's `.taskcluster.yml` it will",
+    'be broadcast on this exchange with the designated `organization` and',
+    '`repository` in the routing-key.',
+    '',
+    'The payload names the repository and the ref that was pushed to, and',
+    'nothing more.  The file itself does not travel with the message, so a',
+    'consumer reading it cannot be steered by the pushed commits.',
+    '',
+    'Detection is best effort.  A force push that drops a commit reports no',
+    'changed files to GitHub, so reverting the file that way sends no message.',
+  ].join('\n'),
+  routingKey: commonRoutingKey(),
+  schema: 'taskcluster-yml-update-message.yml',
+  messageBuilder: commonMessageBuilder,
+  // Unlike the other exchanges here, this payload carries the names as GitHub
+  // spells them, so periods have to come out for the routing key.
+  routingKeyBuilder: msg => ({
+    organization: msg.organization.replace(/\./g, '%'),
+    repository: msg.repository.replace(/\./g, '%'),
+  }),
   CCBuilder: () => [],
 });
 

@@ -1,5 +1,0 @@
-mutation UpdateHook($hookGroupId: ID!, $hookId: ID!, $payload: HookInput!) {
-  updateHook(hookGroupId: $hookGroupId, hookId: $hookId, payload: $payload) {
-    hookId
-  }
-}

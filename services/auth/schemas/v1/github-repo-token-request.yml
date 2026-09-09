@@ -1,0 +1,58 @@
+$schema: "/schemas/common/metaschema.json#"
+title: "Github repository token request"
+description: |
+  The list of permissions and repositories to scope a repository level github token to.
+type: object
+properties:
+  permissions:
+    title: "Repository permissions"
+    description: |
+      Repository level github app permissions to request. Mapping a permission
+      name to the desired level of access. Names and levels are a direct mapping
+      from [github API permissions](https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app).
+    type: object
+    minProperties: 1
+    additionalProperties: false
+    properties:
+      actions: { type: string, enum: ["read", "write"] }
+      administration: { type: string, enum: ["read", "write"] }
+      artifact_metadata: { type: string, enum: ["read", "write"] }
+      attestations: { type: string, enum: ["read", "write"] }
+      checks: { type: string, enum: ["read", "write"] }
+      code_quality: { type: string, enum: ["read", "write"] }
+      codespaces: { type: string, enum: ["read", "write"] }
+      contents: { type: string, enum: ["read", "write"] }
+      dependabot_secrets: { type: string, enum: ["read", "write"] }
+      deployments: { type: string, enum: ["read", "write"] }
+      discussions: { type: string, enum: ["read", "write"] }
+      environments: { type: string, enum: ["read", "write"] }
+      issues: { type: string, enum: ["read", "write"] }
+      merge_queues: { type: string, enum: ["read", "write"] }
+      metadata: { type: string, enum: ["read", "write"] }
+      packages: { type: string, enum: ["read", "write"] }
+      pages: { type: string, enum: ["read", "write"] }
+      pull_requests: { type: string, enum: ["read", "write"] }
+      repository_custom_properties: { type: string, enum: ["read", "write"] }
+      repository_hooks: { type: string, enum: ["read", "write"] }
+      repository_projects: { type: string, enum: ["read", "write", "admin"] }
+      secret_scanning_alerts: { type: string, enum: ["read", "write"] }
+      secrets: { type: string, enum: ["read", "write"] }
+      security_events: { type: string, enum: ["read", "write"] }
+      single_file: { type: string, enum: ["read", "write"] }
+      statuses: { type: string, enum: ["read", "write"] }
+      vulnerability_alerts: { type: string, enum: ["read", "write"] }
+      workflows: { type: string, enum: ["write"] }
+  repositories:
+    title: "Repositories"
+    description: |
+      Names of the repositories (within `:owner`) the token gets access to.
+    type: array
+    minItems: 1
+    maxItems: 500
+    items:
+      type: string
+      pattern: "^[A-Za-z0-9._-]+$"
+additionalProperties: false
+required:
+  - permissions
+  - repositories

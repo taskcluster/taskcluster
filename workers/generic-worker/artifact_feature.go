@@ -8,12 +8,13 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v99/internal/scopes"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v108/internal/scopes"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/process"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -111,24 +112,21 @@ func (atf *ArtifactTaskFeature) Stop(err *ExecutionErrors) {
 				return nil
 			}
 			e := task.uploadArtifact(taskArtifact)
+			errArtifact, isErrArtifact := taskArtifact.(*artifacts.ErrorArtifact)
+			// An artifact we never got readable content for is published as an
+			// error artifact. Optional means we're fine with the file not
+			// existing, not that we're fine with failing to upload content
+			if isErrArtifact && errArtifact.Optional {
+				return nil
+			}
+
 			if e != nil {
-				// we don't care about optional artifacts failing to upload
-				if taskArtifact.Base().Optional {
-					return nil
-				}
 				uploadErrChan <- e
 			}
-			// Note - the above error only covers not being able to upload an
-			// artifact, but doesn't cover case that an artifact could not be
-			// found, and so an error artifact was uploaded. So we do that
-			// here:
-			switch a := taskArtifact.(type) {
-			case *artifacts.ErrorArtifact:
-				// we don't care about optional artifacts failing to upload
-				if a.Optional {
-					return nil
-				}
-				fail := Failure(fmt.Errorf("%v: %v", a.Reason, a.Message))
+
+			// Non optional error artifacts should fail the task
+			if isErrArtifact {
+				fail := Failure(fmt.Errorf("%v: %v", errArtifact.Reason, errArtifact.Message))
 				failChan <- fail
 				task.Errorf("TASK FAILURE during artifact upload: %v", fail)
 			}
@@ -177,21 +175,18 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 		if time.Time(base.Expires).IsZero() {
 			base.Expires = task.Definition.Expires
 		}
+		taskDir := task.TaskDir()
 		switch artifact.Type {
 		case "file":
-			payloadArtifacts = append(payloadArtifacts, resolve(base, "file", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd))
+			payloadArtifacts = append(payloadArtifacts, resolve(base, "file", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir))
 		case "directory":
-			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd); errArtifact != nil {
+			if errArtifact := resolve(base, "directory", basePath, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir); errArtifact != nil {
 				payloadArtifacts = append(payloadArtifacts, errArtifact)
 				break
 			}
+			absBasePath := fileutil.AbsFrom(taskDir, basePath)
 			walkFn := func(path string, d os.DirEntry, incomingErr error) error {
-				subPath, err := filepath.Rel(taskContext.TaskDir, path)
-				if err != nil {
-					// this indicates a bug in the code
-					panic(err)
-				}
-				relativePath, err := filepath.Rel(basePath, subPath)
+				relativePath, err := filepath.Rel(absBasePath, path)
 				if err != nil {
 					// this indicates a bug in the code
 					panic(err)
@@ -212,28 +207,27 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 				// cause the task to fail, and the cause to be preserved in the
 				// error artifact.
 				case incomingErr != nil:
-					fullPath := fileutil.AbsFrom(taskContext.TaskDir, subPath)
 					payloadArtifacts = append(
 						payloadArtifacts,
 						&artifacts.ErrorArtifact{
 							BaseArtifact: b,
-							Message:      fmt.Sprintf("Error processing file '%s' as artifact: %s", fullPath, incomingErr),
+							Message:      fmt.Sprintf("Error processing file '%s' as artifact: %s", path, incomingErr),
 							Reason:       "invalid-resource-on-worker",
-							Path:         subPath,
+							Path:         path,
 						},
 					)
 				case d.IsDir():
-					if errArtifact := resolve(b, "directory", subPath, artifact.ContentType, artifact.ContentEncoding, task.pd); errArtifact != nil {
+					if errArtifact := resolve(b, "directory", path, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir); errArtifact != nil {
 						payloadArtifacts = append(payloadArtifacts, errArtifact)
 					}
 				default:
-					payloadArtifacts = append(payloadArtifacts, resolve(b, "file", subPath, artifact.ContentType, artifact.ContentEncoding, task.pd))
+					payloadArtifacts = append(payloadArtifacts, resolve(b, "file", path, artifact.ContentType, artifact.ContentEncoding, task.pd, taskDir))
 				}
 				return nil
 			}
 			// Any error returned here should already have been handled by
 			// walkFn, so should be safe to ignore.
-			_ = filepath.WalkDir(fileutil.AbsFrom(taskContext.TaskDir, basePath), walkFn)
+			_ = filepath.WalkDir(absBasePath, walkFn)
 		}
 		artifactsChan <- payloadArtifacts
 	}
@@ -270,9 +264,9 @@ func (atf *ArtifactTaskFeature) FindArtifacts() {
 // ErrorArtifact, otherwise if it exists as a file, as
 // "invalid-resource-on-worker" ErrorArtifact
 // TODO: need to also handle "too-large-file-on-worker"
-func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, contentEncoding string, pd *process.PlatformData) artifacts.TaskArtifact {
-	fullPath := fileutil.AbsFrom(taskContext.TaskDir, path)
-	fileReader, err := os.Open(fullPath)
+func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, contentEncoding string, pd *process.PlatformData, taskDir string) artifacts.TaskArtifact {
+	fullPath := fileutil.AbsFrom(taskDir, path)
+	fileReader, err := os.OpenFile(fullPath, os.O_RDONLY|syscall.O_NONBLOCK, 0)
 	if err != nil {
 		// cannot read file/dir, create an error artifact
 		return &artifacts.ErrorArtifact{
@@ -312,8 +306,16 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 	if artifactType == "directory" {
 		return nil
 	}
+	if !fileinfo.Mode().IsRegular() {
+		return &artifacts.ErrorArtifact{
+			BaseArtifact: base,
+			Message:      fmt.Sprintf("File artifact '%s' exists but is not a regular file (%v)", fullPath, fileinfo.Mode().Type()),
+			Reason:       "invalid-resource-on-worker",
+			Path:         path,
+		}
+	}
 
-	tempPath, err := copyToTempFileAsTaskUser(fullPath, pd)
+	tempPath, err := copyToTempFileAsTaskUser(fullPath, pd, taskDir)
 	if err != nil {
 		return &artifacts.ErrorArtifact{
 			BaseArtifact: base,
@@ -345,27 +347,33 @@ func resolve(base *artifacts.BaseArtifact, artifactType, path, contentType, cont
 		SkipCompressionExtensions := map[string]bool{
 			".7z":    true,
 			".br":    true,
+			".aab":   true,
+			".apk":   true,
 			".bz2":   true,
 			".deb":   true,
 			".dmg":   true,
 			".flv":   true,
 			".gif":   true,
 			".gz":    true,
+			".jar":   true,
 			".jpeg":  true,
 			".jpg":   true,
 			".lz":    true,
 			".lz4":   true,
 			".mz":    true,
 			".npz":   true,
+			".pkg":   true,
 			".png":   true,
 			".swf":   true,
 			".sz":    true,
 			".tbz":   true,
 			".tgz":   true,
+			".wasm":  true,
 			".webp":  true,
 			".whl":   true, // Python wheel are already zip file
 			".woff":  true,
 			".woff2": true,
+			".xpi":   true,
 			".xz":    true,
 			".zip":   true,
 			".zst":   true,

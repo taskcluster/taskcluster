@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { string } from 'prop-types';
-import SchemaViewer from 'material-ui-json-schema-viewer';
+import SchemaViewer from '../JsonSchemaViewer';
 import jsonSchemaDraft06 from 'ajv/lib/refs/json-schema-draft-06.json';
 import jsonSchemaDraft07 from 'ajv/lib/refs/json-schema-draft-07.json';
 import Spinner from '../Spinner';
@@ -10,7 +10,11 @@ import references from '../../../../generated/references.json';
 
 // Local copies of the json-schemas schemas, since TC schemas $refer to these
 const EXTERNAL_SCHEMAS = [jsonSchemaDraft06, jsonSchemaDraft07].reduce(
-  (schemas, schema) => ({ ...schemas, [schema.$id]: schema }),
+  (schemas, schema) => {
+    schemas[schema.$id] = schema;
+
+    return schemas;
+  },
   {}
 );
 

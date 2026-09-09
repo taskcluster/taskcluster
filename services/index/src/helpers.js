@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import { paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
@@ -39,7 +39,7 @@ export const taskUtils = {
   // Create a serializable representation of this indexed task suitable for response
   // from an API method.
   serialize(task) {
-    let ns = task.namespace + '.' + task.name;
+    let ns = `${task.namespace}.${task.name}`;
     // Remove separate if there is no need
     if (task.namespace.length === 0 || task.name.length === 0) {
       ns = task.namespace + task.name;
@@ -71,13 +71,12 @@ export const taskUtils = {
     assert(input.data instanceof Object, 'data must be an object');
     assert(input.taskId, 'taskId must be given');
     assert(typeof input.rank === 'number', 'rank must be a number');
-    assert(db,
-      'db must be set');
+    assert(db, 'db must be set');
 
-    let [namespace, name] = splitNamespace(fullNamespace);
+    const [namespace, name] = splitNamespace(fullNamespace);
 
     // Find expiration time and parse as date object
-    let expires = new Date(input.expires);
+    const expires = new Date(input.expires);
 
     // Attempt to load indexed task
     let task = taskUtils.fromDbRows(await db.fns.get_indexed_task(namespace, name));
@@ -88,14 +87,7 @@ export const taskUtils = {
 
       // Create indexed task
       try {
-        await db.fns.create_indexed_task(
-          namespace,
-          name,
-          input.rank,
-          input.taskId,
-          input.data,
-          expires,
-        );
+        await db.fns.create_indexed_task(namespace, name, input.rank, input.taskId, input.data, expires);
         return {
           namespace,
           name,
@@ -122,7 +114,7 @@ export const taskUtils = {
         input.rank,
         input.taskId,
         input.data,
-        expires,
+        expires
       );
 
       await namespaceUtils.ensureNamespace(db, namespace, expires);
@@ -138,15 +130,9 @@ export const taskUtils = {
   // The response will be of the form { rows, continationToken }.
   // If there are no indexed tasks to show, the response will have the
   // `rows` field set to an empty array.
-  async getIndexedTasks(
-    db,
-    { namespace, name },
-    {
-      query,
-    } = {},
-  ) {
-    const fetchResults = async (continuation) => {
-      let q = query;
+  async getIndexedTasks(db, { namespace, name }, { query } = {}) {
+    const fetchResults = async continuation => {
+      const q = query;
 
       if (continuation) {
         q.continuationToken = continuation;
@@ -154,12 +140,13 @@ export const taskUtils = {
 
       const { continuationToken, rows } = await paginateResults({
         query: q,
-        fetch: (size, offset) => db.fns.get_indexed_tasks(
-          namespace || namespace === '' ? namespace : null,
-          name || name === '' ? name : null,
-          size,
-          offset,
-        ),
+        fetch: (size, offset) =>
+          db.fns.get_indexed_tasks(
+            namespace || namespace === '' ? namespace : null,
+            name || name === '' ? name : null,
+            size,
+            offset
+          ),
       });
 
       const entries = rows.map(taskUtils.fromDb);
@@ -173,11 +160,11 @@ export const taskUtils = {
 
   async findTasksAtIndexes(db, { indexes }, { query } = {}) {
     assert(_.isArray(indexes), 'indexes must be an Array');
-    for (let index of indexes) {
+    for (const index of indexes) {
       assert(_.isString(index), 'index must be a String');
     }
-    const fetchResults = async (continuation) => {
-      let q = query;
+    const fetchResults = async continuation => {
+      const q = query;
 
       if (continuation) {
         q.continuationToken = continuation;
@@ -185,11 +172,7 @@ export const taskUtils = {
 
       const { continuationToken, rows } = await paginateResults({
         query: q,
-        fetch: (size, offset) => db.fns.get_tasks_from_indexes_and_namespaces(
-          JSON.stringify(indexes),
-          size,
-          offset,
-        ),
+        fetch: (size, offset) => db.fns.get_tasks_from_indexes_and_namespaces(JSON.stringify(indexes), size, offset),
       });
 
       const tasks = rows.map(taskUtils.fromDb);
@@ -220,7 +203,7 @@ export const namespaceUtils = {
   // Create a serializable representation of this namespace suitable for response
   // from an API method.
   serialize(indexNamespace) {
-    let ns = indexNamespace.parent + '.' + indexNamespace.name;
+    let ns = `${indexNamespace.parent}.${indexNamespace.name}`;
     // Remove separate if there is no need
     if (indexNamespace.parent.length === 0 || indexNamespace.name.length === 0) {
       ns = indexNamespace.parent + indexNamespace.name;
@@ -238,15 +221,9 @@ export const namespaceUtils = {
   // If there are no namespaces to show, the response will have the
   // `rows` field set to an empty array.
   //
-  async getNamespaces(
-    db,
-    { parent, name },
-    {
-      query,
-    } = {},
-  ) {
-    const fetchResults = async (continuation) => {
-      let q = query;
+  async getNamespaces(db, { parent, name }, { query } = {}) {
+    const fetchResults = async continuation => {
+      const q = query;
 
       if (continuation) {
         q.continuationToken = continuation;
@@ -254,12 +231,13 @@ export const namespaceUtils = {
 
       const { continuationToken, rows } = await paginateResults({
         query: q,
-        fetch: (size, offset) => db.fns.get_index_namespaces(
-          parent || parent === '' ? parent : null,
-          name || name === '' ? name : null,
-          size,
-          offset,
-        ),
+        fetch: (size, offset) =>
+          db.fns.get_index_namespaces(
+            parent || parent === '' ? parent : null,
+            name || name === '' ? name : null,
+            size,
+            offset
+          ),
       });
 
       const entries = rows.map(namespaceUtils.fromDb);
@@ -278,20 +256,15 @@ export const namespaceUtils = {
     }
 
     // Round to date to avoid updating all the time
-    expires = new Date(
-      expires.getFullYear(),
-      expires.getMonth(),
-      expires.getDate() + 1,
-      0, 0, 0, 0,
-    );
+    expires = new Date(expires.getFullYear(), expires.getMonth(), expires.getDate() + 1, 0, 0, 0, 0);
 
     // Parse namespace
-    if (!(namespace instanceof Array)) {
+    if (!Array.isArray(namespace)) {
       namespace = namespace.split('.');
     }
     // Find parent and folder name
-    let name = namespace.pop() || '';
-    let parent = namespace.join('.');
+    const name = namespace.pop() || '';
+    const parent = namespace.join('.');
 
     // Load namespace, to check if it exists and if we should update expires
     const folder = taskUtils.fromDbRows(await db.fns.get_index_namespace(parent, name));
@@ -310,11 +283,7 @@ export const namespaceUtils = {
       return folder;
     } else {
       // Create parent namespaces
-      await namespaceUtils.ensureNamespace(
-        db,
-        namespace,
-        expires,
-      );
+      await namespaceUtils.ensureNamespace(db, namespace, expires);
       // Create namespace
       try {
         await db.fns.create_index_namespace(parent, name, expires);
@@ -362,13 +331,13 @@ export { satisfiesArtifactScope as _satisfiesArtifactScope };
 
 const ANONYMOUS_SCOPE_CACHE_TTL = 5 * 60 * 1000;
 
-const isPublicArtifact = (auth) => {
+const isPublicArtifact = auth => {
   let cachedScopes = null;
   let cachedAt = 0;
 
   const anonymousScopeCache = async () => {
     const now = Date.now();
-    if (cachedScopes && (now - cachedAt) < ANONYMOUS_SCOPE_CACHE_TTL) {
+    if (cachedScopes && now - cachedAt < ANONYMOUS_SCOPE_CACHE_TTL) {
       return cachedScopes;
     }
     const result = await auth.expandScopes({ scopes: ['assume:anonymous'] });
@@ -377,7 +346,7 @@ const isPublicArtifact = (auth) => {
     return cachedScopes;
   };
 
-  return (artifactName) => satisfiesArtifactScope(anonymousScopeCache, artifactName);
+  return artifactName => satisfiesArtifactScope(anonymousScopeCache, artifactName);
 };
 
 export default { taskUtils, namespaceUtils, splitNamespace, namespaceFormat, isPublicArtifact };

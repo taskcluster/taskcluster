@@ -3,15 +3,23 @@ import { satisfiesExpression } from 'taskcluster-lib-scopes';
 import cloneDeep from 'lodash.clonedeep';
 import jsone from 'json-e';
 import { load } from 'js-yaml';
+import { Queue } from '@taskcluster/client-web';
 import removeKeys from '../../utils/removeKeys';
 import { nice } from '../../utils/slugid';
 import expandScopesQuery from './expandScopes.graphql';
 import triggerHookQuery from './triggerHook.graphql';
-import createTaskQuery from './createTask.graphql';
 import validateActionsJson from '../../utils/validateActionsJson';
 import ajv from '../../utils/ajv';
+import { getClient } from '../../utils/client';
 
-export default async ({ task, form, action, apolloClient, taskActions }) => {
+export default async ({
+  task,
+  form,
+  action,
+  apolloClient,
+  user,
+  taskActions,
+}) => {
   const actions = removeKeys(cloneDeep(taskActions), ['__typename']);
   // We need to source scopes from somewhere. Typically these come from the
   // task we're given, which is either a regular decision task or an action
@@ -56,21 +64,15 @@ export default async ({ task, form, action, apolloClient, taskActions }) => {
     context.ownTaskId = ownTaskId;
 
     const newTask = jsone(action.task, context);
-
-    await apolloClient.mutate({
-      mutation: createTaskQuery,
-      variables: {
-        taskId: ownTaskId,
-        task: {
-          ...newTask,
-          // Call the queue with the decision task's scopes,
-          // as directed by the action spec
-          options: {
-            authorizedScopes: taskGroup.scopes || [],
-          },
-        },
-      },
+    const queue = getClient({
+      Class: Queue,
+      user,
+      // Call the queue with the decision task's scopes,
+      // as directed by the action spec
+      authorizedScopes: taskGroup.scopes || [],
     });
+
+    await queue.createTask(ownTaskId, newTask);
 
     return ownTaskId;
   }

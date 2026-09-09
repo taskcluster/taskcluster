@@ -1,4 +1,4 @@
-import path from 'path';
+import path from 'node:path';
 import builder from '../src/api.js';
 import taskcluster from '@taskcluster/client';
 import loadMain from '../src/main.js';
@@ -16,7 +16,7 @@ const load = testing.stickyLoader(loadMain);
 const helper = { load, rootUrl, suiteName };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -36,11 +36,11 @@ helper.withDb = (mock, skipping) => {
 /**
  * Set up an API server.
  */
-helper.withServer = (mock, skipping) => {
+helper.withServer = skipping => {
   let webServer;
-  let cachePurgeCache = {};
+  const cachePurgeCache = {};
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -72,11 +72,13 @@ helper.withServer = (mock, skipping) => {
     webServer = await load('server');
   });
 
-  setup(function() {
-    Object.keys(cachePurgeCache).forEach(k => delete cachePurgeCache[k]);
+  setup(() => {
+    Object.keys(cachePurgeCache).forEach(k => {
+      delete cachePurgeCache[k];
+    });
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }

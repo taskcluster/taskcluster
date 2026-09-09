@@ -42,9 +42,12 @@ testSuite:
         - --cap-add=SYS_PTRACE
         - --security-opt=seccomp=unconfined
         - --add-host=localhost.localdomain:127.0.0.1
-        - --add-host=taskcluster:host-gateway
+        - --network
+        - __TASKCLUSTER_DOCKER_NETWORK__
+        - --add-host=taskcluster:__TASKCLUSTER_PROXY_GATEWAY__
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -101,6 +104,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -153,6 +157,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:
@@ -205,6 +210,7 @@ testSuite:
         - --add-host=localhost.localdomain:127.0.0.1
         - --env-file
         - env.list
+        - --
         - ubuntu
         - echo "Hello world"
       features:

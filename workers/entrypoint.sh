@@ -26,8 +26,15 @@ run_standalone() {
     exit 2
   fi
 
+  # Copy the bind-mounted config into the container and chmod it to 0600
+  # before handing it to generic-worker. Without the copy, generic-worker's
+  # auto-tightening would chmod the host-side file via the bind mount.
+  worker_config=/run/config.json
+  cp /etc/generic-worker/config.json "${worker_config}"
+  chmod 0600 "${worker_config}"
+
   generic-worker --version
-  generic-worker run --config /etc/generic-worker/config.json
+  generic-worker run --config "${worker_config}"
 }
 
 run_static() {
@@ -68,7 +75,14 @@ run_static() {
   echo '{"expires": "2033-01-01 12:12:12", "providerInfo": { "staticSecret": "NMd5YFgrZZHmAejHUNhNWKcEtfRwtHeME6wdESMf798V"}}' | \
     taskcluster api workerManager createWorker docker-compose/generic-worker local vm-1
 
-  start-worker /etc/generic-worker/worker-runner.json
+  # Copy the bind-mounted config into the container and chmod it to 0600
+  # before handing it to worker-runner. Without the copy, worker-runner's
+  # auto-tightening would chmod the host-side file via the bind mount.
+  runner_config=/run/worker-runner.json
+  cp /etc/generic-worker/worker-runner.json "${runner_config}"
+  chmod 0600 "${runner_config}"
+
+  start-worker "${runner_config}"
 }
 
 case "${1}" in

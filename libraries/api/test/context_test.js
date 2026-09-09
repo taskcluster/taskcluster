@@ -1,23 +1,26 @@
 import SchemaSet from '@taskcluster/lib-validate';
 import { App } from '@taskcluster/lib-app';
 import { APIBuilder } from '../src/index.js';
-import assert from 'assert';
+import assert from 'node:assert';
 import request from 'superagent';
 import slugid from 'slugid';
 import sinon from 'sinon';
-import path from 'path';
+import path from 'node:path';
 import { monitor } from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
+suite(testing.suiteName(), () => {
   const rootUrl = 'http://localhost:4321';
 
   setup(async () => {
-    testing.fakeauth.start({
-      'client-with-aa-bb-dd': ['aa', 'bb', 'dd'],
-    }, { rootUrl });
+    testing.fakeauth.start(
+      {
+        'client-with-aa-bb-dd': ['aa', 'bb', 'dd'],
+      },
+      { rootUrl }
+    );
   });
   teardown(() => {
     testing.fakeauth.stop();
@@ -32,17 +35,20 @@ suite(testing.suiteName(), function() {
       serviceName: 'test',
       apiVersion: 'v1',
     });
-    builder.declare({
-      method: 'get',
-      route: '/context/',
-      name: 'getContext',
-      scopes: null,
-      title: 'Test End-Point',
-      category: 'API Library',
-      description: 'Place we can call to test something',
-    }, function(req, res) {
-      res.status(200).json({ myProp: this.myProp });
-    });
+    builder.declare(
+      {
+        method: 'get',
+        route: '/context/',
+        name: 'getContext',
+        scopes: null,
+        title: 'Test End-Point',
+        category: 'API Library',
+        description: 'Place we can call to test something',
+      },
+      function (_req, res) {
+        res.status(200).json({ myProp: this.myProp });
+      }
+    );
 
     const value = slugid.v4();
     const schemaset = new SchemaSet({
@@ -68,15 +74,16 @@ suite(testing.suiteName(), function() {
 
     await request
       .get('http://localhost:60872/api/test/v1/context')
-      .then(function(res) {
+      .then(res => {
         assert(res.body.myProp === value);
-      }).then(function() {
-        return server.terminate();
-      }, function(err) {
-        return server.terminate().then(function() {
-          throw err;
-        });
-      });
+      })
+      .then(
+        () => server.terminate(),
+        err =>
+          server.terminate().then(() => {
+            throw err;
+          })
+      );
   });
 
   test('Context properties can be required', async () => {
@@ -182,19 +189,22 @@ suite(testing.suiteName(), function() {
       folder: path.join(__dirname, 'schemas'),
     });
 
-    builder.declare({
-      method: 'get',
-      route: '/context/',
-      name: 'getContext',
-      scopes: null,
-      title: 'Test End-Point',
-      category: 'API Library',
-      description: 'Place we can call to test something',
-    }, function(req, res) {
-      res.status(200).json(this.foo());
-    });
+    builder.declare(
+      {
+        method: 'get',
+        route: '/context/',
+        name: 'getContext',
+        scopes: null,
+        title: 'Test End-Point',
+        category: 'API Library',
+        description: 'Place we can call to test something',
+      },
+      function (_req, res) {
+        res.status(200).json(this.foo());
+      }
+    );
 
-    let fooFake = undefined;
+    let fooFake;
     const api = await builder.build({
       rootUrl,
       monitor,
@@ -222,16 +232,17 @@ suite(testing.suiteName(), function() {
     await request
       .get('http://localhost:60872/api/test/v1/context')
       .set('x-taskcluster-trace-id', 'foo/bar')
-      .then(function(res) {
+      .then(res => {
         assert.equal(res.body.foo, 'foo/bar');
         assert(res.body.bar);
-      }).then(function() {
-        return server.terminate();
-      }, function(err) {
-        return server.terminate().then(function() {
-          throw err;
-        });
-      });
+      })
+      .then(
+        () => server.terminate(),
+        err =>
+          server.terminate().then(() => {
+            throw err;
+          })
+      );
 
     assert.equal(fooFake.callCount, 1);
   });

@@ -22,7 +22,7 @@ export const ERROR_CODES = {
  * @returns {import('../../@types/index.d.ts').APIRequestHandler<{}>}
  */
 export const buildReportErrorMethod = () => {
-  return (req, res, next) => {
+  return (_req, res, next) => {
     res.reportError = reportError;
     next();
   };

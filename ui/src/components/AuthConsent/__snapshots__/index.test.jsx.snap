@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`should render AuthConsent page 1`] = `
 <DocumentFragment>
@@ -31,7 +31,7 @@ exports[`should render AuthConsent page 1`] = `
           <img
             alt="Logo"
             height="40"
-            src="test-file-stub"
+            src="/src/images/brandLogo.png"
           />
         </div>
         <div

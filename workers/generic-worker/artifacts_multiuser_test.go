@@ -10,11 +10,14 @@ import (
 	"time"
 
 	"github.com/mcuadros/go-defaults"
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
 )
 
 func TestPrivilegedFileUpload(t *testing.T) {
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		t.Skip("Skipping in Docker: file permission isolation requires a non-root environment")
+	}
 	setup(t)
 
 	tempFile, err := os.CreateTemp(testdataDir, t.Name())

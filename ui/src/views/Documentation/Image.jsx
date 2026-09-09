@@ -21,11 +21,12 @@ export default class Image extends PureComponent {
 
     // Some local images have black text making them hard to see
     // when viewing the page with the dark theme
-    /* eslint-disable jsx-a11y/alt-text */
     return startsWithHttp ? (
+      // biome-ignore lint/a11y/useAltText: alt is provided by the caller through {...props}
       <img src={src} {...props} />
     ) : (
       <div className={classes.imageWrapper}>
+        {/* biome-ignore lint/a11y/useAltText: alt is provided by the caller through {...props} */}
         <img src={src} {...props} />
       </div>
     );

@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { arrayOf, func, shape, string } from 'prop-types';
+import { arrayOf, shape, string } from 'prop-types';
 import { pipe, map, sort as rSort } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import LinkIcon from 'mdi-react/LinkIcon';
@@ -11,11 +11,10 @@ import Typography from '@material-ui/core/Typography';
 import { memoize } from '../../utils/memoize';
 import sort from '../../utils/sort';
 import Link from '../../utils/Link';
-import { pageInfo, client } from '../../utils/prop-types';
 
 const sorted = pipe(
-  rSort((a, b) => sort(a.node.clientId, b.node.clientId)),
-  map(({ node: { clientId } }) => clientId)
+  rSort((a, b) => sort(a.clientId, b.clientId)),
+  map(({ clientId }) => clientId)
 );
 
 @withStyles(theme => ({
@@ -42,89 +41,81 @@ export default class ClientScopesTable extends Component {
   };
 
   static propTypes = {
-    /** Callback function fired when a page is changed. */
-    onPageChange: func.isRequired,
-    /** Clients GraphQL PageConnection instance. */
-    clientsConnection: shape({
-      edges: arrayOf(client),
-      pageInfo,
-    }).isRequired,
+    /** A list of clients, each including its expanded scopes. */
+    clients: arrayOf(
+      shape({
+        clientId: string,
+        expandedScopes: arrayOf(string),
+      })
+    ).isRequired,
     /** A string to filter the list of results. */
     searchTerm: string,
     /**
-     * If set, the component displays a list of role IDs
+     * If set, the component displays a list of client IDs
      * pertaining to that scope. Else, a list of scopes is shown.
      * */
     selectedScope: string,
   };
 
-  // If the prop `selectedScope` is set, clients will be a list of client IDs.
-  // Else, clients will be a list of scopes.
-  clients = null;
-
-  createSortedClientsConnection = memoize(
-    (clientsConnection, selectedScope, searchTerm) => {
-      const items = (clientsConnection.edges || [])
+  createSortedClients = memoize(
+    (clients, selectedScope, searchTerm) => {
+      const items = (clients || [])
         .filter(
-          node =>
-            node.node.expandedScopes.filter(
+          client =>
+            client.expandedScopes.filter(
               scope => scope.toLowerCase() === selectedScope.toLowerCase()
             ).length > 0
         )
-        .map(node => node.node.clientId);
+        .map(client => client.clientId);
 
       return searchTerm
         ? items.filter(item => item.includes(searchTerm))
         : items;
     },
     {
-      serializer: ([clientsConnection, selectedScope, searchTerm]) => {
-        const ids = sorted(clientsConnection.edges);
+      serializer: ([clients, selectedScope, searchTerm]) => {
+        const ids = sorted(clients);
 
         return `${ids.join('-')}-${selectedScope}-${searchTerm}`;
       },
     }
   );
 
-  renderItem = items => ({ index, style }) => {
-    const { selectedScope, classes } = this.props;
-    const item = items[index];
-    const iconSize = 16;
+  renderItem =
+    items =>
+    ({ index, style }) => {
+      const { selectedScope, classes } = this.props;
+      const item = items[index];
+      const iconSize = 16;
 
-    return (
-      <Fragment>
-        <Link
-          to={
-            selectedScope
-              ? `/auth/clients/${encodeURIComponent(item)}`
-              : `/auth/scopes/${encodeURIComponent(item)}`
-          }>
-          <ListItem className={classes.listItemButton} style={style} button>
-            {item}
-            <LinkIcon size={iconSize} />
-          </ListItem>
-        </Link>
-        <Divider
-          style={{
-            ...style,
-            height: 1,
-          }}
-        />
-      </Fragment>
-    );
-  };
+      return (
+        <Fragment>
+          <Link
+            to={
+              selectedScope
+                ? `/auth/clients/${encodeURIComponent(item)}`
+                : `/auth/scopes/${encodeURIComponent(item)}`
+            }>
+            <ListItem className={classes.listItemButton} style={style} button>
+              {item}
+              <LinkIcon size={iconSize} />
+            </ListItem>
+          </Link>
+          <Divider
+            style={{
+              ...style,
+              height: 1,
+            }}
+          />
+        </Fragment>
+      );
+    };
 
   render() {
-    const {
-      searchTerm,
-      clientsConnection,
-      selectedScope,
-      onPageChange,
-      classes,
-      ...props
-    } = this.props;
-    const filteredItems = this.createSortedClientsConnection(
-      clientsConnection,
+    const { searchTerm, clients, selectedScope, classes, ...props } =
+      this.props;
+    const filteredItems = this.createSortedClients(
+      clients,
       selectedScope,
       searchTerm
     );

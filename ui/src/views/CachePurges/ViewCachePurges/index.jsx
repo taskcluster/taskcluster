@@ -1,6 +1,5 @@
-import React, { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
+import React, { Component } from 'react';
+import { PurgeCache } from '@taskcluster/client-web';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import PlusIcon from 'mdi-react/PlusIcon';
@@ -12,59 +11,27 @@ import CachePurgesTable from '../../../components/CachePurgesTable';
 import HelpView from '../../../components/HelpView';
 import { VIEW_CACHE_PURGES_PAGE_SIZE } from '../../../utils/constants';
 import ErrorPanel from '../../../components/ErrorPanel';
-import cachePurgesQuery from './cachePurges.graphql';
 import Search from '../../../components/Search';
+import withPaginatedResource from '../../../hocs/withPaginatedResource';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
-@graphql(cachePurgesQuery, {
-  options: () => ({
-    fetchPolicy: 'network-only',
-    variables: {
-      cachePurgesConnection: {
-        limit: VIEW_CACHE_PURGES_PAGE_SIZE,
-      },
-    },
-  }),
-})
 @withStyles(theme => ({
   plusIconSpan: {
     ...theme.mixins.fab,
   },
 }))
+@withTaskclusterClient
+@withPaginatedResource({
+  fetch: props => options =>
+    props
+      .createTaskclusterClient({ Class: PurgeCache })
+      .allPurgeRequests(options),
+  payload: { limit: VIEW_CACHE_PURGES_PAGE_SIZE },
+  select: r => r.requests,
+})
 export default class ViewCachePurges extends Component {
   handleCreate = () => {
     this.props.history.push('/purge-caches/create');
-  };
-
-  handlePageChange = ({ cursor, previousCursor }) => {
-    const {
-      data: { fetchMore },
-    } = this.props;
-
-    return fetchMore({
-      query: cachePurgesQuery,
-      variables: {
-        cachePurgesConnection: {
-          limit: VIEW_CACHE_PURGES_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.cachePurges;
-
-        if (!edges.length) {
-          return previousResult;
-        }
-
-        return dotProp.set(previousResult, 'cachePurges', cachePurges =>
-          dotProp.set(
-            dotProp.set(cachePurges, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
-        );
-      },
-    });
   };
 
   handlePurgeCacheSubmit = cacheSearch => {
@@ -82,10 +49,18 @@ export default class ViewCachePurges extends Component {
     const {
       classes,
       description,
-      data: { loading, error, cachePurges },
+      items,
+      loading,
+      error,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      nextPage,
+      previousPage,
     } = this.props;
     const query = qs.parse(this.props.location.search.slice(1));
     const cacheSearch = query.search;
+    const initialLoad = loading && !items.length;
 
     return (
       <Dashboard
@@ -109,29 +84,32 @@ export default class ViewCachePurges extends Component {
             placeholder="Cache Name contains"
           />
         }>
-        <Fragment>
-          {!cachePurges && loading && <Spinner loading />}
-          <ErrorPanel fixed error={error} />
-          {cachePurges && (
-            <CachePurgesTable
-              searchTerm={cacheSearch}
-              cachePurgesConnection={cachePurges}
-              onPageChange={this.handlePageChange}
-            />
-          )}
-          <Button
-            spanProps={{ className: classes.plusIconSpan }}
-            tooltipProps={{
-              title: 'Create Purge Cache Request',
-              id: 'create-purge-cache-tooltip',
-              delay: 300,
-            }}
-            onClick={this.handleCreate}
-            variant="round"
-            color="secondary">
-            <PlusIcon />
-          </Button>
-        </Fragment>
+        {initialLoad && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        {!initialLoad && (
+          <CachePurgesTable
+            searchTerm={cacheSearch}
+            cachePurges={items}
+            loading={loading}
+            page={page}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+            onNextPage={nextPage}
+            onPreviousPage={previousPage}
+          />
+        )}
+        <Button
+          spanProps={{ className: classes.plusIconSpan }}
+          tooltipProps={{
+            title: 'Create Purge Cache Request',
+            id: 'create-purge-cache-tooltip',
+            delay: 300,
+          }}
+          onClick={this.handleCreate}
+          variant="circular"
+          color="secondary">
+          <PlusIcon />
+        </Button>
       </Dashboard>
     );
   }

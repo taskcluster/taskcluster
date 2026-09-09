@@ -1,7 +1,8 @@
-import { algo, enc } from 'crypto-js';
-import { v4 } from './utils';
-import Auth from './clients/Auth';
+import cryptoJs from 'crypto-js';
+import { v4 } from './utils.js';
+import Auth from './clients/Auth.js';
 
+const { algo, enc } = cryptoJs;
 const createHmac = (...args) => algo.HMAC.create(...args);
 const sha256 = algo.SHA256;
 const base64 = enc.Base64;
@@ -62,7 +63,7 @@ export const createTemporaryCredentials = opts => {
   if (options.credentials.certificate != null) {
     throw new Error(
       `Temporary credentials cannot be used to make new temporary credentials.
-      Ensure that options.credentials.certificate is null.`,
+      Ensure that options.credentials.certificate is null.`
     );
   }
 
@@ -172,7 +173,6 @@ export const credentialInformation = async (credentials, rootUrl) => {
     result.expiry = new Date(certificate.expiry);
 
     if (certificate.issuer) {
-      // eslint-disable-next-line prefer-destructuring
       issuer = certificate.issuer;
     }
   } else {

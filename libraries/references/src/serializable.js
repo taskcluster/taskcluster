@@ -13,39 +13,45 @@ export const makeSerializable = ({ references }) => {
     return `references/${serviceName}/${apiVersion || 'v1'}/${kind}.json`;
   };
 
-  const namedReferences = references.references.map(({ filename, content }) => ({
+  const namedReferences = references.references.map(({ content }) => ({
     content,
     filename: referenceFilename(content),
   }));
 
   let urlPattern;
   if (references.rootUrl) {
-    urlPattern = new RegExp(`^${regexEscape(references.rootUrl)}/schemas\/(.*)#`);
+    urlPattern = new RegExp(`^${regexEscape(references.rootUrl)}/schemas/(.*)#`);
   } else {
     urlPattern = /^\/schemas\/(.*)#/;
   }
   const schemaFilename = content => content.$id.replace(urlPattern, 'schemas/$1');
 
-  const namedSchemas = references.schemas.map(({ filename, content }) => ({
+  const namedSchemas = references.schemas.map(({ content }) => ({
     content,
     filename: schemaFilename(content),
   }));
 
   const manifest = {
     $schema: urls.schema('common', 'manifest-v3.json#'),
-    references: namedReferences.map(({ filename }) => {
-      if (references.rootUrl) {
-        return `${references.rootUrl}/${filename}`;
-      } else {
-        return `/${filename}`;
-      }
-    }).sort(),
+    references: namedReferences
+      .map(({ filename }) => {
+        if (references.rootUrl) {
+          return `${references.rootUrl}/${filename}`;
+        } else {
+          return `/${filename}`;
+        }
+      })
+      .sort(),
   };
 
-  return [{
-    filename: 'references/manifest.json',
-    content: manifest,
-  }].concat(namedSchemas).concat(namedReferences);
+  return [
+    {
+      filename: 'references/manifest.json',
+      content: manifest,
+    },
+  ]
+    .concat(namedSchemas)
+    .concat(namedReferences);
 };
 
 export const fromSerializable = ({ serializable }) => {

@@ -1,7 +1,7 @@
-import path from 'path';
-import fs from 'fs/promises';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 
-const directoryExists = async (directory) => {
+const directoryExists = async directory => {
   try {
     const stat = await fs.stat(directory);
     return stat.isDirectory();
@@ -21,7 +21,7 @@ const directoryExists = async (directory) => {
  */
 const loadReferences = async (serviceDirectory, references) => {
   const referencesDir = path.join(serviceDirectory, 'references');
-  if (!await directoryExists(referencesDir)) {
+  if (!(await directoryExists(referencesDir))) {
     return;
   }
   const files = await fs.readdir(referencesDir);
@@ -42,7 +42,7 @@ const loadReferences = async (serviceDirectory, references) => {
  */
 const loadSchemas = async (serviceDirectory, schemas) => {
   const schemasDir = path.join(serviceDirectory, 'schemas');
-  if (!await directoryExists(schemasDir)) {
+  if (!(await directoryExists(schemasDir))) {
     return;
   }
 
@@ -51,7 +51,7 @@ const loadSchemas = async (serviceDirectory, schemas) => {
     const filename = queue.shift();
     if ((await fs.lstat(filename)).isDirectory()) {
       const dentries = await fs.readdir(filename);
-      for (let dentry of dentries) {
+      for (const dentry of dentries) {
         queue.push(path.join(filename, dentry));
       }
     } else {

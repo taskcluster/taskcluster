@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import util from 'util';
-import assert from 'assert';
+import util from 'node:util';
+import assert from 'node:assert';
 import taskcluster from '@taskcluster/client';
-import events from 'events';
+import events from 'node:events';
 import LRU from 'quick-lru';
 import debugFactory from 'debug';
 const debug = debugFactory('auth:ScopeResolver');
@@ -10,12 +10,12 @@ import * as trie from './trie.js';
 import ScopeSetBuilder from './scopesetbuilder.js';
 import { consume } from '@taskcluster/lib-pulse';
 
-const ASSUME_PREFIX = /^(:?(:?|a|as|ass|assu|assum|assum|assume)\*$|assume:)/;
+const ASSUME_PREFIX = /^(?:(?:|a|as|ass|assu|assum|assume)\*$|assume:)/;
 
 /** ZeroCache is an LRU cache instance that contains nothing for caching is disabled */
 const ZeroCache = {
-  get: (k) => null,
-  set: (k, v) => null,
+  get: _k => null,
+  set: (_k, _v) => null,
 };
 
 class ScopeResolver extends events.EventEmitter {
@@ -31,8 +31,7 @@ class ScopeResolver extends events.EventEmitter {
     });
     this._maxLastUsedDelay = options.maxLastUsedDelay;
     assert(options.monitor, 'expected an instance of @taskcluster/lib-monitor');
-    assert(/^ *-/.test(options.maxLastUsedDelay),
-      'maxLastUsedDelay must be negative');
+    assert(/^ *-/.test(options.maxLastUsedDelay), 'maxLastUsedDelay must be negative');
 
     this._monitor = options.monitor;
     this.db = options.db;
@@ -117,26 +116,18 @@ class ScopeResolver extends events.EventEmitter {
     this._clientPq = await consume({
       client: pulseClient,
       ephemeral: true,
-      bindings: [
-        authEvents.clientCreated(),
-        authEvents.clientUpdated(),
-        authEvents.clientDeleted(),
-      ],
+      bindings: [authEvents.clientCreated(), authEvents.clientUpdated(), authEvents.clientDeleted()],
       onConnected: () => this.reload(),
       handleMessage: m => this.reloadClient(m.payload.clientId),
     });
     this._rolePq = await consume({
       client: pulseClient,
       ephemeral: true,
-      bindings: [
-        authEvents.roleCreated(),
-        authEvents.roleUpdated(),
-        authEvents.roleDeleted(),
-      ],
+      bindings: [authEvents.roleCreated(), authEvents.roleUpdated(), authEvents.roleDeleted()],
       // no need for both _clientPq and _rolePq to call this.reload()
       // for the same reconnection..
       onConnected: () => {},
-      handleMessage: m => this.reloadRoles(),
+      handleMessage: () => this.reloadRoles(),
     });
   }
 
@@ -146,7 +137,21 @@ class ScopeResolver extends events.EventEmitter {
    * functions are executed in serial.
    */
   _syncReload(reloader) {
-    return this._reloadDone = this._reloadDone.catch(() => {}).then(reloader);
+    this._reloadDone = this._reloadDone.catch(() => {}).then(reloader);
+    return this._reloadDone;
+  }
+
+  _clientFromRow(client, minLastUsed) {
+    return {
+      clientId: client.client_id,
+      accessToken: this.db.decrypt({ value: client.encrypted_access_token }).toString('utf8'),
+      expires: client.expires,
+      // lastUsedDate should be updated if it's out-dated by more than 6 hours
+      // (a cheap way to know if it's been used recently)
+      updateLastUsed: client.last_date_used < minLastUsed,
+      unexpandedScopes: client.scopes,
+      disabled: client.disabled,
+    };
   }
 
   reloadClient(clientId) {
@@ -156,16 +161,8 @@ class ScopeResolver extends events.EventEmitter {
       this._clients = this._clients.filter(c => c.clientId !== clientId);
       // If a client was loaded, add it back
       if (client) {
-        // For reasoning on structure, see reload()
-        let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
-        this._clients.push({
-          clientId: client.client_id,
-          accessToken: this.db.decrypt({ value: client.encrypted_access_token }),
-          expires: client.expires,
-          updateLastUsed: client.last_date_used < minLastUsed,
-          unexpandedScopes: client.scopes,
-          disabled: client.disabled,
-        });
+        const minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
+        this._clients.push(this._clientFromRow(client, minLastUsed));
       }
       this._rebuildResolver(this._roles, this._clients);
     });
@@ -173,7 +170,7 @@ class ScopeResolver extends events.EventEmitter {
 
   reloadRoles() {
     return this._syncReload(async () => {
-      let roles = await this.db.fns.get_roles();
+      const roles = await this.db.fns.get_roles();
       this._rebuildResolver(roles, this._clients);
     });
   }
@@ -183,7 +180,7 @@ class ScopeResolver extends events.EventEmitter {
       debug('Loading clients and roles');
 
       // Load clients and roles in parallel
-      let clients = [];
+      const clients = [];
       let roles = [];
       await Promise.all([
         (async () => {
@@ -199,19 +196,9 @@ class ScopeResolver extends events.EventEmitter {
               offset += 1000;
             }
 
-            let minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
+            const minLastUsed = taskcluster.fromNow(this._maxLastUsedDelay);
             for (const client of rows) {
-              clients.push({
-                clientId: client.client_id,
-                accessToken: this.db.decrypt({ value: client.encrypted_access_token }).toString('utf8'),
-                expires: client.expires,
-                // Note that lastUsedDate should be updated, if it's out-dated by
-                // more than 6 hours.
-                // (cheap way to know if it's been used recently)
-                updateLastUsed: client.last_date_used < minLastUsed,
-                unexpandedScopes: client.scopes,
-                disabled: client.disabled,
-              });
+              clients.push(this._clientFromRow(client, minLastUsed));
             }
           }
         })(),
@@ -237,7 +224,7 @@ class ScopeResolver extends events.EventEmitter {
 
     // Construct client cache
     this._clientCache = {};
-    for (let client of this._clients) {
+    for (const client of this._clients) {
       client.scopes = null;
       client.expandedScopes = null;
       this._clientCache[client.clientId] = client;
@@ -266,7 +253,7 @@ class ScopeResolver extends events.EventEmitter {
     // omit all input scopes that doesn't match ASSUME_PREFIX (ie. match 'assume:')
     const lru = this._disableCache ? ZeroCache : new LRU({ maxSize: 10000 });
 
-    return (inputs) => {
+    return inputs => {
       inputs = ScopeSetBuilder.normalizeScopeSet(inputs);
       // Reduce input to the set of scopes starting with 'assume:'
       const queue = inputs.filter(s => ASSUME_PREFIX.test(s));
@@ -305,13 +292,13 @@ class ScopeResolver extends events.EventEmitter {
   async loadClient(clientId) {
     let client = this._clientCache[clientId];
     if (!client) {
-      throw new Error('Client with clientId \'' + clientId + '\' not found');
+      throw new Error(`Client with clientId '${clientId}' not found`);
     }
     if (client.disabled) {
-      throw new Error('Client with clientId \'' + clientId + '\' is disabled');
+      throw new Error(`Client with clientId '${clientId}' is disabled`);
     }
     if (client.expires < new Date()) {
-      throw new Error('Client with clientId: \'' + clientId + '\' has expired');
+      throw new Error(`Client with clientId: '${clientId}' has expired`);
     }
 
     if (client.updateLastUsed) {
@@ -321,7 +308,7 @@ class ScopeResolver extends events.EventEmitter {
 
     // Lazily expand client scopes
     if (client.scopes === null) {
-      let scopes = this.resolve(client.unexpandedScopes);
+      const scopes = this.resolve(client.unexpandedScopes);
       client.scopes = scopes; // for createSignatureValidator compatibility
       client.expandedScopes = scopes;
     }

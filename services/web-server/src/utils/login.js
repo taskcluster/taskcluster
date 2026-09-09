@@ -1,8 +1,7 @@
-import assert from 'assert';
-import _ from 'lodash';
+import assert from 'node:assert';
 
 // A function that returns a middleware that renders callback.ejs
-export default (publicUrl) => async (request, response) => {
+export default publicUrl => async (request, response) => {
   assert(request.user, 'Must have a user');
   assert(request.user.profile);
   assert(request.user.identityProviderId);

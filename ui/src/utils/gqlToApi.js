@@ -7,7 +7,6 @@ import { TASK_ADDED_FIELDS } from './constants';
  * Given a task in the format embedded in graphql queries, convert it
  * into a "normal" task payload.
  */
-// eslint-disable-next-line import/prefer-default-export
 export function gqlTaskToApi(task) {
   let cloned = cloneDeep(task);
 

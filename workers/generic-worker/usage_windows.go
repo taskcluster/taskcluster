@@ -82,9 +82,13 @@ func enableTaskFeatures() string {
           enableRDP                         Enables the RDP feature to be used in the task
                                             payload. [default: true]
           enableRunAsAdministrator          Enables the RunAsAdministrator feature to be used in
-                                            the task payload. [default: true]
+                                            the task payload. Automatically disabled when
+                                            capacity > 1 to preserve task isolation.
+                                            [default: true]
           enableRunTaskAsCurrentUser        Enables the Run Task As Current User feature to be
-                                            used in the task payload. [default: true]`
+                                            used in the task payload. Automatically disabled
+                                            when capacity > 1 to preserve task isolation.
+                                            [default: true]`
 }
 
 func loopbackDeviceNumbers() string {

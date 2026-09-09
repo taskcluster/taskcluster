@@ -21,26 +21,12 @@ input PageConnection {
 union Node =
   Artifact |
   Task |
-  Provisioner |
-  WorkerType |
-  Worker |
-  WorkerCompact |
   WMWorker |
-  Namespace |
-  IndexedTask |
   CachePurge |
   SecretListItem |
   Client |
   RoleCompact |
-  NotificationAddress |
-  WorkerManagerWorkerPoolSummary |
-  WorkerManagerProvider |
-  WorkerManagerError |
-  HookLastFire |
-  PendingTask |
-  ClaimedTask |
-  WorkerPoolLaunchConfig |
-  WorkerPoolLaunchConfigStats
+  WorkerManagerWorkerPoolSummary
 
 interface Edge {
   cursor: String

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -24,13 +25,15 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
-	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v99/internal/mocktc"
-	"github.com/taskcluster/taskcluster/v99/internal/mocktc/tc"
-	"github.com/taskcluster/taskcluster/v99/tools/d2g/dockerworker"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/gwconfig"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcindex"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v108/internal/mocktc"
+	"github.com/taskcluster/taskcluster/v108/internal/mocktc/tc"
+	"github.com/taskcluster/taskcluster/v108/tools/d2g/dockerworker"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/graceful"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/gwconfig"
 )
 
 var (
@@ -39,6 +42,17 @@ var (
 	testdataDir    = filepath.Join(cwd, "testdata")
 	cachesDir      = filepath.Join(cwd, "caches")
 )
+
+// skipInDockerIfNoDocker skips the test when running inside the GW test
+// Docker container and Docker is not available (no Docker-in-Docker).
+func skipInDockerIfNoDocker(t *testing.T) {
+	t.Helper()
+	if os.Getenv("GW_IN_DOCKER") == "1" {
+		if err := exec.Command("docker", "info").Run(); err != nil {
+			t.Skip("Skipping in Docker: test requires Docker-in-Docker which is not available")
+		}
+	}
+}
 
 func setup(t *testing.T) {
 	t.Helper()
@@ -348,75 +362,72 @@ type (
 func GWTest(t *testing.T) *Test {
 	t.Helper()
 	testConfig := &gwconfig.Config{
-		PrivateConfig: gwconfig.PrivateConfig{
-			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
-		},
-		PublicConfig: gwconfig.PublicConfig{
-			PublicPlatformConfig:          *gwconfig.DefaultPublicPlatformConfig(),
-			AllowedHighMemoryDurationSecs: 5,
-			AvailabilityZone:              "outer-space",
-			// Need common caches directory across tests, since files
-			// directory-caches.json and file-caches.json are not per-test.
-			CachesDir:       cachesDir,
-			CleanUpTaskDirs: false,
-			ClientID:        os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			DisableReboots:  true,
-			// Need common downloads directory across tests, since files
-			// directory-caches.json and file-caches.json are not per-test.
-			DownloadsDir:              filepath.Join(cwd, "downloads"),
-			EnableChainOfTrust:        true,
-			EnableLiveLog:             true,
-			EnableMetadata:            true,
-			EnableMounts:              true,
-			EnableOSGroups:            true,
-			EnableResourceMonitor:     true,
-			EnableTaskclusterProxy:    true,
-			Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
-			IdleTimeoutSecs:           60,
-			InstanceID:                "test-instance-id",
-			InstanceType:              "p3.enormous",
-			InteractivePort:           53765,
-			LiveLogExecutable:         "livelog",
-			// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
-			// These ports are not exposed outside of the host. However, in CI they must differ from those of the
-			// generic-worker instance running the test suite.
-			LiveLogPortBase:         30583,
-			MaxMemoryUsagePercent:   90,
-			MaxTaskRunTime:          300,
-			MinAvailableMemoryBytes: 524288000, // 500 MiB
-			NumberOfTasksToRun:      1,
-			PrivateIP:               net.ParseIP("87.65.43.21"),
-			ProvisionerID:           "test-provisioner",
-			PublicIP:                net.ParseIP("12.34.56.78"),
-			Region:                  "test-worker-group",
-			// should be enough for tests, and travis-ci.org CI environments don't
-			// have a lot of free disk
-			RequiredDiskSpaceMegabytes:     16,
-			RootURL:                        "http://localhost:13243",
-			RunAfterUserCreation:           "",
-			SentryProject:                  "generic-worker-tests",
-			ShutdownMachineOnIdle:          false,
-			ShutdownMachineOnInternalError: false,
-			TaskclusterProxyExecutable:     "taskcluster-proxy",
-			TaskclusterProxyPort:           34569,
-			TasksDir:                       filepath.Join(testdataDir, t.Name(), "tasks"),
-			WorkerGroup:                    "test-worker-group",
-			WorkerID:                       "test-worker-id",
-			WorkerType:                     testWorkerType(),
-			WorkerTypeMetadata: map[string]any{
-				"generic-worker": map[string]string{
-					"go-arch":    runtime.GOARCH,
-					"go-os":      runtime.GOOS,
-					"go-version": runtime.Version(),
-					"version":    version,
-					"revision":   revision,
-					"engine":     engine,
-				},
-				"parent-task": map[string]string{
-					"taskId": os.Getenv("TASK_ID"),
-					"runId":  os.Getenv("RUN_ID"),
-				},
+		AccessToken:                   os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		Certificate:                   os.Getenv("TASKCLUSTER_CERTIFICATE"),
+		PublicPlatformConfig:          *gwconfig.DefaultPublicPlatformConfig(),
+		AllowedHighMemoryDurationSecs: 5,
+		AvailabilityZone:              "outer-space",
+		// Need common caches directory across tests, since files
+		// directory-caches.json and file-caches.json are not per-test.
+		CachesDir:       cachesDir,
+		Capacity:        1,
+		CleanUpTaskDirs: false,
+		ClientID:        os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		DisableReboots:  true,
+		// Need common downloads directory across tests, since files
+		// directory-caches.json and file-caches.json are not per-test.
+		DownloadsDir:              filepath.Join(cwd, "downloads"),
+		EnableChainOfTrust:        true,
+		EnableLiveLog:             true,
+		EnableMetadata:            true,
+		EnableMounts:              true,
+		EnableOSGroups:            true,
+		EnableResourceMonitor:     true,
+		EnableTaskclusterProxy:    true,
+		Ed25519SigningKeyLocation: filepath.Join(testdataDir, "ed25519_private_key"),
+		IdleTimeoutSecs:           60,
+		InstanceID:                "test-instance-id",
+		InstanceType:              "p3.enormous",
+		InteractivePort:           53765,
+		LiveLogExecutable:         "livelog",
+		// The base port on which the livelog process listens locally. (Livelog uses this and the next port.)
+		// These ports are not exposed outside of the host. However, in CI they must differ from those of the
+		// generic-worker instance running the test suite.
+		LiveLogPortBase:         30583,
+		MaxMemoryUsagePercent:   90,
+		MaxTaskRunTime:          300,
+		MinAvailableMemoryBytes: 524288000, // 500 MiB
+		NumberOfTasksToRun:      1,
+		PrivateIP:               net.ParseIP("87.65.43.21"),
+		ProvisionerID:           "test-provisioner",
+		PublicIP:                net.ParseIP("12.34.56.78"),
+		Region:                  "test-worker-group",
+		// should be enough for tests, and travis-ci.org CI environments don't
+		// have a lot of free disk
+		RequiredDiskSpaceMegabytes:     16,
+		RootURL:                        "http://localhost:13243",
+		RunAfterUserCreation:           "",
+		SentryProject:                  "generic-worker-tests",
+		ShutdownMachineOnIdle:          false,
+		ShutdownMachineOnInternalError: false,
+		TaskclusterProxyExecutable:     "taskcluster-proxy",
+		TaskclusterProxyPort:           34569,
+		TasksDir:                       filepath.Join(testdataDir, t.Name(), "tasks"),
+		WorkerGroup:                    "test-worker-group",
+		WorkerID:                       "test-worker-id",
+		WorkerType:                     testWorkerType(),
+		WorkerTypeMetadata: map[string]any{
+			"generic-worker": map[string]string{
+				"go-arch":    runtime.GOARCH,
+				"go-os":      runtime.GOOS,
+				"go-version": runtime.Version(),
+				"version":    version,
+				"revision":   revision,
+				"engine":     engine,
+			},
+			"parent-task": map[string]string{
+				"taskId": os.Getenv("TASK_ID"),
+				"runId":  os.Getenv("RUN_ID"),
 			},
 		},
 	}
@@ -519,6 +530,7 @@ func (gwtest *Test) Teardown() {
 	taskContext = nil
 	globalTestName = ""
 	config = nil
+	graceful.Reset()
 	// gwtest.srv nil if no services
 	if gwtest.srv != nil {
 		err = gwtest.srv.Shutdown(context.Background())
@@ -702,4 +714,60 @@ func getArtifactContent(t *testing.T, taskID string, artifact string) []byte {
 		t.Fatalf("Error trying to fetch artifact:\n%e", err)
 	}
 	return buf
+}
+
+// indexArtifact inserts the given taskID into the index at the given namespace
+// with the given rank.
+func indexArtifact(t *testing.T, namespace string, taskID string, rank float64) {
+	t.Helper()
+	index := serviceFactory.Index(config.Credentials(), config.RootURL)
+	_, err := index.InsertTask(namespace, &tcindex.InsertTaskRequest{
+		Data:    json.RawMessage([]byte("{}")),
+		Expires: inAnHour,
+		TaskID:  taskID,
+		Rank:    rank,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// mountIndexedArtifact submits a task that mounts an indexed artifact from the
+// given namespace and republishes it as "public/republished-artifact". Returns
+// the taskID of the mount task.
+func mountIndexedArtifact(t *testing.T, namespace string, destFile string) string {
+	t.Helper()
+	ic := &IndexedContent{
+		Artifact:  "public/indexed-artifact",
+		Namespace: namespace,
+	}
+	rawMessageContent, err := json.Marshal(ic)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fileMount := &FileMount{
+		File:    destFile,
+		Content: rawMessageContent,
+	}
+	rawMessageMount, err := json.Marshal(fileMount)
+	if err != nil {
+		t.Fatal(err)
+	}
+	payload := GenericWorkerPayload{
+		Mounts: []json.RawMessage{
+			rawMessageMount,
+		},
+		Artifacts: []Artifact{
+			{
+				Name: "public/republished-artifact",
+				Path: destFile,
+				Type: "file",
+			},
+		},
+		Command:    helloGoodbye(),
+		MaxRunTime: 30,
+	}
+	defaults.SetDefaults(&payload)
+	td := testTask(t)
+	return submitAndAssert(t, td, payload, "completed", "completed")
 }

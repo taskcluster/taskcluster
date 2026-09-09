@@ -6,21 +6,24 @@ import Paragraph from './Paragraph';
 import Table from './Table';
 import ListItem from './ListItem';
 import List from './List';
-import InlineCode from './InlineCode';
+import Code from './Code';
 import Pre from './Pre';
 
-// eslint-disable-next-line react/display-name
-const heading = variant => ({ children, id, ...props }) => (
-  <HeaderWithAnchor type={variant} id={id} {...props}>
-    {children}
-  </HeaderWithAnchor>
-);
+const heading =
+  variant =>
+  ({ children, id, ...props }) => (
+    <HeaderWithAnchor type={variant} id={id} {...props}>
+      {children}
+    </HeaderWithAnchor>
+  );
 const a = props => <Anchor {...props} />;
 const p = props => <Paragraph {...props} />;
 const table = props => <Table {...props} />;
 const blockquote = props => <Blockquote {...props} />;
 const li = props => <ListItem {...props} />;
-const inlineCode = props => <InlineCode {...props} />;
+// MDX 3 renders both inline and fenced code through `code` (the MDX 1
+// `inlineCode` component is no longer used).
+const code = props => <Code {...props} />;
 const pre = props => <Pre {...props} />;
 const ul = props => <List {...props} />;
 
@@ -37,7 +40,7 @@ export default {
   table,
   blockquote,
   li,
-  inlineCode,
+  code,
   pre,
   ul,
 };

@@ -1,5 +1,5 @@
-import assert from 'assert';
-import events from 'events';
+import assert from 'node:assert';
+import events from 'node:events';
 import debugFactory from 'debug';
 const debug = debugFactory('hooks:scheduler');
 import taskcluster from '@taskcluster/client';
@@ -25,11 +25,12 @@ class Scheduler extends events.EventEmitter {
   constructor(options) {
     super();
     assert(options, 'options must be given');
-    assert(options.taskcreator instanceof taskcreator.TaskCreator,
-      'An instance of taskcreator.TaskCreator is required');
+    assert(
+      options.taskcreator instanceof taskcreator.TaskCreator,
+      'An instance of taskcreator.TaskCreator is required'
+    );
     assert(options.monitor, 'a monitor is required');
-    assert(typeof options.pollingDelay === 'number',
-      'Expected pollingDelay to be a number');
+    assert(typeof options.pollingDelay === 'number', 'Expected pollingDelay to be a number');
     assert(options.db, 'db must be set');
     // Store options on this for use in event handlers
     this.taskcreator = options.taskcreator;
@@ -53,12 +54,14 @@ class Scheduler extends events.EventEmitter {
     this.stopping = false;
 
     // Create a promise that we're done looping
-    this.done = this.loopUntilStopped().catch((err) => {
-      debug('Error: %s, as JSON: %j', err, err, err.stack);
-      this.emit('error', err);
-    }).then(() => {
-      this.done = null;
-    });
+    this.done = this.loopUntilStopped()
+      .catch(err => {
+        debug('Error: %s, as JSON: %j', err, err, err.stack);
+        this.emit('error', err);
+      })
+      .then(() => {
+        this.done = null;
+      });
   }
 
   /** Terminate iteration, returns a promise that polling is stopped */
@@ -93,15 +96,19 @@ class Scheduler extends events.EventEmitter {
       const nextTaskId = this.db.decrypt({ value: hook.nextTaskId }).toString('utf8');
       debug('firing hook %s/%s with taskId %s', hook.hookGroupId, hook.hookId, nextTaskId);
       try {
-        await this.taskcreator.fire(hook, { firedBy: 'schedule' }, {
-          taskId: nextTaskId,
-          // use the next scheduled date as task.created, to ensure idempotency
-          created: hook.nextScheduledDate,
-          // don't retry, as a 5xx error will cause a retry on the next scheduler
-          // polling interval, and we do not want to get behind waiting for each
-          // createTask operation to time out
-          retry: false,
-        });
+        await this.taskcreator.fire(
+          hook,
+          { firedBy: 'schedule' },
+          {
+            taskId: nextTaskId,
+            // use the next scheduled date as task.created, to ensure idempotency
+            created: hook.nextScheduledDate,
+            // don't retry, as a 5xx error will cause a retry on the next scheduler
+            // polling interval, and we do not want to get behind waiting for each
+            // createTask operation to time out
+            retry: false,
+          }
+        );
       } catch (err) {
         debug('Failed to handle hook: %s/%s, with err: %s', hook.hookGroupId, hook.hookId, err);
 
@@ -116,7 +123,7 @@ class Scheduler extends events.EventEmitter {
       }
 
       try {
-        let oldTaskId = hook.nextTaskId;
+        const oldTaskId = hook.nextTaskId;
         // only modify if another scheduler isn't racing with us
         if (hook.nextTaskId === oldTaskId) {
           hook = hookUtils.fromDbRows(
@@ -128,10 +135,10 @@ class Scheduler extends events.EventEmitter {
               null,
               null,
               null,
-              this.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }), /* encrypted_next_task_id */
-              nextDate(hook.schedule), /* next_scheduled_date */
-              null,
-            ),
+              this.db.encrypt({ value: Buffer.from(taskcluster.slugid(), 'utf8') }) /* encrypted_next_task_id */,
+              nextDate(hook.schedule) /* next_scheduled_date */,
+              null
+            )
           );
         }
       } catch (err) {
@@ -157,7 +164,7 @@ class Scheduler extends events.EventEmitter {
         errJson = `(error formatting JSON: ${e})`;
       }
 
-      let email = this.createEmail(hook, err, errJson);
+      const email = this.createEmail(hook, err, errJson);
       await this.notify.email(email);
     } catch (err) {
       if (err.code === 'DenylistedAddress') {
@@ -190,7 +197,6 @@ class Scheduler extends events.EventEmitter {
   Taskcluster Automation
 
   P.S. If you believe you have received this email in error, please hit reply to let us know.`,
-
     };
   }
 }

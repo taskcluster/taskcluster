@@ -17,6 +17,8 @@ task-defaults:
     lint: lint-golang
   run:
     using: bare
+  attributes:
+    code-review: true
   worker:
     max-run-time: 1800
     mounts:
@@ -34,7 +36,7 @@ tasks:
           directory: '{go_version}'
           format: zip
         - content:
-            url: 'https://github.com/git-for-windows/git/releases/download/v2.39.1.windows.1/MinGit-2.39.1-64-bit.zip'
+            url: 'https://github.com/git-for-windows/git/releases/download/v2.55.0.windows.5/MinGit-2.55.0.5-64-bit.zip'
           directory: 'git'
           format: zip
     run:
@@ -133,8 +135,9 @@ tasks:
             [ "$(uname -s)" != "Darwin" ] || base64 -D
             [ "$(uname -s)" != "Linux" ]  || base64 -d
           }}
-          # go test: -race and -msan are only supported on linux/amd64, freebsd/amd64, darwin/amd64 and windows/amd64
-          if [ "$(uname -m)" == "x86_64" ]; then
+          # go test: -race is only supported on some platforms, see
+          # https://go.dev/doc/articles/race_detector#Requirements
+          if [ "$(uname -m)" == "x86_64" ] || [ "$(uname -s)-$(uname -m)" == "Darwin-arm64" ]; then
             RACE=-race
             CGO_ENABLED_TESTS=1
             # See https://github.com/golang/go/issues/27089#issuecomment-415329050
@@ -174,9 +177,9 @@ tasks:
           go vet -tags "${{ENGINE}}" ./...
           if [ "${{ENGINE}}" == "multiuser" ]; then
             cp "${{TASK_USER_CREDENTIALS}}" next-task-user.json
-            GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v99/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
+            GORACE=history_size=7 CGO_ENABLED=1 go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v108/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
           else
-            GORACE=history_size=7 CGO_ENABLED=${{CGO_ENABLED_TESTS}} go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v99/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
+            GORACE=history_size=7 CGO_ENABLED=${{CGO_ENABLED_TESTS}} go test -tags "${{ENGINE}}" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v108/workers/generic-worker.revision=${{GITHUB_SHA}}" ${{RACE}} ${{VET}} ./...
           fi
           ../../../golangci-lint/golangci-lint-$GOLANGCI_LINT_VERSION-*/golangci-lint run --build-tags "${{ENGINE}}" --timeout=5m
   build/test-insecure-ubuntu-24.04-amd64:
@@ -247,7 +250,7 @@ tasks:
           directory: '{go_version}'
           format: zip
         - content:
-            url: 'https://github.com/git-for-windows/git/releases/download/v2.41.0.windows.1/MinGit-2.41.0-64-bit.zip'
+            url: 'https://github.com/git-for-windows/git/releases/download/v2.55.0.windows.5/MinGit-2.55.0.5-64-bit.zip'
           directory: git
           format: zip
         - content:
@@ -319,5 +322,39 @@ tasks:
         - set CGO_ENABLED=%CGO_ENABLED_TESTS%
         - set GORACE=history_size=7
         - copy "%TASK_USER_CREDENTIALS%" "%CD%\next-task-user.json"
-        - go test -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v99/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
+        - go test -tags "%ENGINE%" -failfast -timeout 20m -ldflags "-X github.com/taskcluster/taskcluster/v108/workers/generic-worker.revision=%GITHUB_SHA%" %RACE% %VET% ./...
         - ..\..\..\golangci-lint\golangci-lint-%GOLANGCI_LINT_VERSION%-windows-amd64\golangci-lint.exe run --build-tags "%ENGINE%" --timeout=5m
+  build-all:
+    description: This builds all variants of generic-worker
+    worker-type: gw-ubuntu-24-04
+    worker:
+      max-run-time: 1200
+      mounts:
+        - content:
+            url: 'https://go.dev/dl/{go_version}.linux-amd64.tar.gz'
+          directory: '{go_version}'
+          format: tar.gz
+      artifacts:
+        - path: build
+          name: public/build
+          type: directory
+    run:
+      command:
+        - |
+          set -vx
+          export CGO_ENABLED=0
+          export GOROOT="$(pwd)/$GO_VERSION/go"
+          export PATH="${{GOROOT}}/bin:${{PATH}}"
+          git config --global --add safe.directory "$(pwd)/taskcluster"
+          if [ ! -d taskcluster/.git ]; then
+            git clone {head_repository} taskcluster
+          fi
+          mkdir build
+          cd taskcluster
+          git config advice.detachedHead false
+          git fetch {head_repository} "${{GITHUB_SHA}}"
+          git checkout -f "${{GITHUB_SHA}}"
+          git reset --hard "${{GITHUB_SHA}}"
+          git clean -fd
+          cd workers/generic-worker
+          ./build.sh -o ../../../build -a

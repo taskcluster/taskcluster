@@ -3,11 +3,11 @@ import { render, act } from '@testing-library/react';
 import Duration from './index';
 
 // Mock timers for testing setInterval behavior
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 describe('Duration component', () => {
   afterEach(() => {
-    jest.clearAllTimers();
+    vi.clearAllTimers();
   });
 
   it('should render duration with fixed offset (completed task)', () => {
@@ -25,7 +25,7 @@ describe('Duration component', () => {
     expect(container.textContent).toMatch(/01m \d+s/);
 
     act(() => {
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
     });
 
     expect(container.textContent).toMatch(/01m \d+s/);
@@ -60,7 +60,7 @@ describe('Duration component', () => {
     currentTime = startTime + 5000;
 
     act(() => {
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
     });
 
     expect(container.textContent).toBe('01m 05s ');
@@ -89,7 +89,7 @@ describe('Duration component', () => {
 
     expect(() => {
       act(() => {
-        jest.advanceTimersByTime(5000);
+        vi.advanceTimersByTime(5000);
       });
     }).not.toThrow();
 

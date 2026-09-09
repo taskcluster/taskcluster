@@ -1,8 +1,8 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import builder from '../src/api.js';
 import taskcluster from '@taskcluster/client';
 import loadMain from '../src/main.js';
-import { globalAgent } from 'http';
+import { globalAgent } from 'node:http';
 import { satisfiesExpression } from 'taskcluster-lib-scopes';
 
 import testing from '@taskcluster/lib-testing';
@@ -12,7 +12,7 @@ export const load = testing.stickyLoader(loadMain);
 const helper = { load };
 export default helper;
 
-suiteSetup(async function() {
+suiteSetup(async () => {
   load.inject('profile', 'test');
   load.inject('process', 'test');
 });
@@ -21,8 +21,7 @@ testing.withMonitor(helper);
 
 // set up the testing secrets
 export const secrets = new testing.Secrets({
-  secrets: {
-  },
+  secrets: {},
   load: load,
 });
 helper.secrets = secrets;
@@ -34,7 +33,7 @@ export const withDb = (mock, skipping) => {
 };
 helper.withDb = withDb;
 
-export const withPulse = (mock, skipping) => {
+export const withPulse = skipping => {
   testing.withPulse({ helper, skipping, namespace: 'taskcluster-index' });
 };
 helper.withPulse = withPulse;
@@ -46,8 +45,8 @@ helper.withPulse = withPulse;
  *
  * The component is available at `helper.queue`.
  */
-export const withFakeQueue = (mock, skipping) => {
-  suiteSetup(function() {
+export const withFakeQueue = skipping => {
+  suiteSetup(() => {
     if (skipping()) {
       return;
     }
@@ -60,22 +59,22 @@ helper.withFakeQueue = withFakeQueue;
 
 let anonymousScopes = [];
 
-helper.setAnonymousScopes = (scopes) => {
+helper.setAnonymousScopes = scopes => {
   anonymousScopes = scopes;
 };
 
-export const withFakeAnonymousScopeCache = (mock, skipping) => {
-  suiteSetup(function() {
+export const withFakeAnonymousScopeCache = skipping => {
+  suiteSetup(() => {
     if (skipping()) {
       return;
     }
 
-    load.inject('isPublicArtifact', (artifactName) => {
+    load.inject('isPublicArtifact', artifactName => {
       return satisfiesExpression(anonymousScopes, `queue:get-artifact:${artifactName}`);
     });
   });
 
-  setup(function() {
+  setup(() => {
     if (skipping()) {
       return;
     }
@@ -91,10 +90,10 @@ helper.withFakeAnonymousScopeCache = withFakeAnonymousScopeCache;
  * This also sets up helper.scopes to set the scopes for helper.queue, the
  * API client object, and stores a client class a helper.Index.
  */
-export const withServer = (mock, skipping) => {
+export const withServer = skipping => {
   let webServer;
 
-  suiteSetup(async function() {
+  suiteSetup(async () => {
     if (skipping()) {
       return;
     }
@@ -104,9 +103,12 @@ export const withServer = (mock, skipping) => {
     // a local rootUrl to test the API, including mocking auth on that
     // rootUrl.
     load.cfg('taskcluster.rootUrl', helper.rootUrl);
-    testing.fakeauth.start({
-      'test-client': ['*'],
-    }, { rootUrl: helper.rootUrl });
+    testing.fakeauth.start(
+      {
+        'test-client': ['*'],
+      },
+      { rootUrl: helper.rootUrl }
+    );
 
     helper.Index = taskcluster.createClient(builder.reference());
 
@@ -120,11 +122,11 @@ export const withServer = (mock, skipping) => {
       };
       // if called as scopes('none'), don't pass credentials at all
       if (scopes && scopes[0] !== 'none') {
-        options['credentials'] = {
+        options.credentials = {
           clientId: 'test-client',
           accessToken: 'none',
         };
-        options['authorizedScopes'] = scopes.length > 0 ? scopes : undefined;
+        options.authorizedScopes = scopes.length > 0 ? scopes : undefined;
       }
       helper.index = new helper.Index(options);
     };
@@ -132,7 +134,7 @@ export const withServer = (mock, skipping) => {
     webServer = await load('server');
   });
 
-  setup(async function() {
+  setup(async () => {
     if (skipping()) {
       return;
     }
@@ -140,7 +142,7 @@ export const withServer = (mock, skipping) => {
     helper.scopes();
   });
 
-  suiteTeardown(async function() {
+  suiteTeardown(async () => {
     if (skipping()) {
       return;
     }
@@ -167,7 +169,7 @@ const stubbedQueue = () => {
       accessToken: 'none',
     },
     fake: {
-      task: async (taskId) => {
+      task: async taskId => {
         const task = tasks[taskId];
         assert(task, `fake queue has no task ${taskId}`);
         return task;
@@ -181,23 +183,20 @@ const stubbedQueue = () => {
     },
   });
 
-  queue.addTask = function(taskId, task) {
+  queue.addTask = (taskId, task) => {
     tasks[taskId] = task;
   };
 
-  queue.setArtifact = function(taskId, name, response) {
+  queue.setArtifact = (taskId, name, response) => {
     artifacts[`${taskId}/${name}`] = response;
   };
 
   return queue;
 };
 
-export const resetTables = (mock, skipping) => {
-  setup('reset tables', async function() {
-    await testing.resetTables({ tableNames: [
-      'indexed_tasks',
-      'index_namespaces',
-    ] });
+export const resetTables = () => {
+  setup('reset tables', async () => {
+    await testing.resetTables({ tableNames: ['indexed_tasks', 'index_namespaces'] });
   });
 };
 helper.resetTables = resetTables;

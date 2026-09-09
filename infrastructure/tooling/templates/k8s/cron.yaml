@@ -16,6 +16,7 @@ spec:
       activeDeadlineSeconds: {$eval: 'deadlineSeconds - 60'}
       template:
         metadata:
+          annotations: POD_ANNOTATIONS_BLOCK
           labels: {$eval: labels}
         spec:
           # On failure, run the pod again; this lets us run the task even in

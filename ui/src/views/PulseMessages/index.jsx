@@ -1,5 +1,5 @@
-import React, { Component, Fragment } from 'react';
-import { withApollo } from 'react-apollo';
+import React, { Component } from 'react';
+import { withApollo } from '@apollo/client/react/hoc';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -26,7 +26,7 @@ import SpeedDial from '../../components/SpeedDial';
 import SpeedDialAction from '../../components/SpeedDialAction';
 import DataTable from '../../components/DataTable';
 import PulseBindings from '../../components/PulseBindings';
-import pulseMessagesQuery from './pulseMessages.graphql';
+import subscribeToPulseMessages from '../../utils/pulseListener';
 import removeKeys from '../../utils/removeKeys';
 import exchangesList from '../../utils/exchangesList';
 
@@ -90,7 +90,7 @@ export default class PulseMessages extends Component {
     };
   }
 
-  subscriptionObserver = null;
+  unsubscribeFn = null;
 
   constructor(props) {
     super(props);
@@ -153,23 +153,18 @@ export default class PulseMessages extends Component {
   handleStartListening = () => {
     this.setState({ listening: true, error: null });
 
-    this.subscriptionObserver = this.props.client
-      .subscribe({
-        query: pulseMessagesQuery,
-        variables: {
-          subscriptions: this.state.bindings,
+    this.unsubscribeFn = subscribeToPulseMessages(
+      this.props.client,
+      this.state.bindings,
+      {
+        onMessage: message => {
+          this.addMessage(message);
         },
-      })
-      .subscribe({
-        next: ({ data: { pulseMessages } }) => {
-          // ... call updateQuery to integrate the new comment
-          // into the existing list of comments
-          this.addMessage(pulseMessages);
-        },
-        error: error => {
+        onError: error => {
           this.setState({ error, listening: false });
         },
-      });
+      }
+    );
   };
 
   handleStopListening = () => {
@@ -209,8 +204,9 @@ export default class PulseMessages extends Component {
   }
 
   unsubscribe() {
-    if (this.subscriptionObserver) {
-      this.subscriptionObserver.unsubscribe();
+    if (this.unsubscribeFn) {
+      this.unsubscribeFn();
+      this.unsubscribeFn = null;
     }
   }
 
@@ -260,156 +256,144 @@ export default class PulseMessages extends Component {
             </Typography>
           </HelpView>
         }>
-        <Fragment>
-          <ErrorPanel error={error} />
-          <PulseBindings
-            bindings={bindings}
-            onBindingAdd={this.handleAddBinding}
-            onBindingRemove={this.handleDeleteBinding}
-            onRoutingKeyPatternChange={this.handleRoutingKeyPatternChange}
-            onPulseExchangeChange={this.handlePulseExchangeChange}
-            pulseExchange={pulseExchange}
-            pattern={pattern}
-            exchangesDictionary={exchangesDictionary}
+        <ErrorPanel error={error} />
+        <PulseBindings
+          bindings={bindings}
+          onBindingAdd={this.handleAddBinding}
+          onBindingRemove={this.handleDeleteBinding}
+          onRoutingKeyPatternChange={this.handleRoutingKeyPatternChange}
+          onPulseExchangeChange={this.handlePulseExchangeChange}
+          pulseExchange={pulseExchange}
+          pattern={pattern}
+          exchangesDictionary={exchangesDictionary}
+        />
+        <List>
+          <Toolbar>
+            <Typography variant="body2" id="tableTitle">
+              Messages
+            </Typography>
+          </Toolbar>
+          <DataTable
+            items={messages}
+            noItemsMessage="No messages received."
+            renderRow={message => (
+              <TableRow
+                key={`message-${message.routingKey}-${message.exchange}`}>
+                <TableCell>
+                  <IconButton
+                    className={classes.infoButton}
+                    onClick={() => this.handleMessageDrawerOpen(message)}>
+                    <InformationVariantIcon size={iconSize} />
+                  </IconButton>
+                  {message.exchange}
+                </TableCell>
+                <TableCell>{message.routingKey}</TableCell>
+              </TableRow>
+            )}
+            headers={headers}
           />
-          <List>
-            <Toolbar>
-              <Typography variant="body2" id="tableTitle">
-                Messages
-              </Typography>
-            </Toolbar>
-            <DataTable
-              items={messages}
-              noItemsMessage="No messages received."
-              renderRow={message => (
-                <TableRow
-                  key={`message-${message.routingKey}-${message.exchange}`}>
-                  <TableCell>
-                    <IconButton
-                      className={classes.infoButton}
-                      onClick={() => this.handleMessageDrawerOpen(message)}>
-                      <InformationVariantIcon size={iconSize} />
-                    </IconButton>
-                    {message.exchange}
-                  </TableCell>
-                  <TableCell>{message.routingKey}</TableCell>
-                </TableRow>
-              )}
-              headers={headers}
-            />
-          </List>
-          {listening ? (
-            <Button
-              variant="round"
-              spanProps={{ className: classes.startStopIconSpan }}
-              tooltipProps={{ title: 'Stop Listening' }}
-              onClick={this.handleStopListening}
-              className={classes.stopIcon}>
-              <StopIcon />
-            </Button>
-          ) : (
-            <Button
-              variant="round"
-              spanProps={{ className: classes.startStopIconSpan }}
-              tooltipProps={{ title: 'Start Listening' }}
-              onClick={this.handleStartListening}
-              className={classes.playIcon}
-              disabled={!bindings.length}>
-              <PlayIcon />
-            </Button>
-          )}
-          <SpeedDial>
-            <SpeedDialAction
-              tooltipOpen
-              icon={<DownloadIcon />}
-              tooltipTitle="Download Messages"
-              onClick={this.handleDownloadMessagesClick}
-              FabProps={{ disabled: !messages[0] }}
-            />
-          </SpeedDial>
-          <Drawer
-            anchor="right"
-            open={drawerOpen}
-            classes={{
-              paper: classes.drawerPaper,
-            }}
-            onClose={this.handleMessageDrawerClose}>
-            <Fragment>
-              <IconButton
-                onClick={this.handleMessageDrawerClose}
-                className={classes.drawerCloseIcon}>
-                <CloseIcon />
-              </IconButton>
-              <div className={classes.drawerContainer}>
-                <Typography variant="h5" className={classes.drawerHeadline}>
-                  Message
-                </Typography>
-                <List>
-                  <ListItem>
-                    <ListItemText
-                      primary="Exchange"
-                      secondary={
-                        <code>{drawerMessage && drawerMessage.exchange}</code>
-                      }
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Routing Key"
-                      secondary={
-                        <code>{drawerMessage && drawerMessage.routingKey}</code>
-                      }
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Redelivered"
-                      secondary={
-                        drawerMessage && drawerMessage.redelivered
-                          ? 'True'
-                          : 'False'
-                      }
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="CC Routes"
-                      secondary={
-                        drawerMessage && drawerMessage.cc.length ? (
-                          <List className={classes.ccContainer}>
-                            {drawerMessage.cc.map(route => (
-                              <ListItem key={route} className={classes.ccRoute}>
-                                <code>{route}</code>
-                              </ListItem>
-                            ))}
-                          </List>
-                        ) : (
-                          'n/a'
-                        )
-                      }
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary="Payload"
-                      secondaryTypographyProps={{
-                        component: 'div',
-                      }}
-                      secondary={
-                        drawerMessage && (
-                          <JsonDisplay
-                            syntax="json"
-                            objectContent={drawerMessage.payload}
-                          />
-                        )
-                      }
-                    />
-                  </ListItem>
-                </List>
-              </div>
-            </Fragment>
-          </Drawer>
-        </Fragment>
+        </List>
+        {listening ? (
+          <Button
+            variant="circular"
+            spanProps={{ className: classes.startStopIconSpan }}
+            tooltipProps={{ title: 'Stop Listening' }}
+            onClick={this.handleStopListening}
+            className={classes.stopIcon}>
+            <StopIcon />
+          </Button>
+        ) : (
+          <Button
+            variant="circular"
+            spanProps={{ className: classes.startStopIconSpan }}
+            tooltipProps={{ title: 'Start Listening' }}
+            onClick={this.handleStartListening}
+            className={classes.playIcon}
+            disabled={!bindings.length}>
+            <PlayIcon />
+          </Button>
+        )}
+        <SpeedDial>
+          <SpeedDialAction
+            tooltipOpen
+            icon={<DownloadIcon />}
+            tooltipTitle="Download Messages"
+            onClick={this.handleDownloadMessagesClick}
+            FabProps={{ disabled: !messages[0] }}
+          />
+        </SpeedDial>
+        <Drawer
+          anchor="right"
+          open={drawerOpen}
+          classes={{
+            paper: classes.drawerPaper,
+          }}
+          onClose={this.handleMessageDrawerClose}>
+          <IconButton
+            onClick={this.handleMessageDrawerClose}
+            className={classes.drawerCloseIcon}>
+            <CloseIcon />
+          </IconButton>
+          <div className={classes.drawerContainer}>
+            <Typography variant="h5" className={classes.drawerHeadline}>
+              Message
+            </Typography>
+            <List>
+              <ListItem>
+                <ListItemText
+                  primary="Exchange"
+                  secondary={<code>{drawerMessage?.exchange}</code>}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Routing Key"
+                  secondary={<code>{drawerMessage?.routingKey}</code>}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Redelivered"
+                  secondary={drawerMessage?.redelivered ? 'True' : 'False'}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="CC Routes"
+                  secondary={
+                    drawerMessage?.cc.length ? (
+                      <List className={classes.ccContainer}>
+                        {drawerMessage.cc.map(route => (
+                          <ListItem key={route} className={classes.ccRoute}>
+                            <code>{route}</code>
+                          </ListItem>
+                        ))}
+                      </List>
+                    ) : (
+                      'n/a'
+                    )
+                  }
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Payload"
+                  secondaryTypographyProps={{
+                    component: 'div',
+                  }}
+                  secondary={
+                    drawerMessage && (
+                      <JsonDisplay
+                        syntax="json"
+                        objectContent={drawerMessage.payload}
+                      />
+                    )
+                  }
+                />
+              </ListItem>
+            </List>
+          </div>
+        </Drawer>
       </Dashboard>
     );
   }

@@ -13,8 +13,7 @@ spec:
     matchLabels: *ref_0
   template:
     metadata:
-      annotations:
-        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-hooks-secret.yaml") . | sha256sum }}'
+      annotations: {{ merge (dict "checksum/secret" (include (print $.Template.BasePath "/taskcluster-hooks-secret.yaml") . | sha256sum)) (.Values.hooks.procs.listeners.podAnnotations | default dict) (.Values.podAnnotations | default dict) | toJson }}
       labels: *ref_0
     spec:
       serviceAccountName: taskcluster-hooks

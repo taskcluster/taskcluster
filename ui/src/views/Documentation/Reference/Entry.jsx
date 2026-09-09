@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import classNames from 'classnames';
 import { oneOf, object, string } from 'prop-types';
-import { toString, path } from 'ramda';
+import { path } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
@@ -368,7 +368,7 @@ export default class Entry extends Component {
           </Typography>
           <div className={classes.subScopeBox}>
             {scopes[operator].map((scope, index) => (
-              <Fragment key={toString(scope)}>
+              <Fragment key={JSON.stringify(scope)}>
                 {this.renderScopeExpression(scope)}
                 {index < scopes[operator].length - 1 && (
                   <StatusLabel

@@ -15,6 +15,7 @@ import Button from '../Button';
 import DiffTextArea from '../DiffTextArea';
 import SpeedDial from '../SpeedDial';
 import SpeedDialAction from '../SpeedDialAction';
+import AuditHistorySpeedDialAction from '../AuditHistorySpeedDialAction';
 import DialogAction from '../DialogAction';
 import { role } from '../../utils/prop-types';
 import Link from '../../utils/Link';
@@ -261,7 +262,7 @@ export default class RoleForm extends Component {
             tooltipProps={{ title: 'Save' }}
             requiresAuth
             disabled={loading || !isRoleDirty}
-            variant="round"
+            variant="circular"
             onClick={this.handleSaveRole}
             classes={{ root: classes.saveIcon }}>
             <ContentSaveIcon />
@@ -274,13 +275,18 @@ export default class RoleForm extends Component {
               }}
               onClick={this.handleSaveRole}
               className={classes.saveIcon}
-              variant="round"
+              variant="circular"
               tooltipProps={{ title: 'Save' }}
               disabled={loading || !isRoleDirty}
               classes={{ root: classes.saveIcon }}>
               <ContentSaveIcon />
             </Button>
             <SpeedDial>
+              <AuditHistorySpeedDialAction
+                entityName="role"
+                entityId={roleId}
+                disabled={loading}
+              />
               <SpeedDialAction
                 requiresAuth
                 tooltipOpen

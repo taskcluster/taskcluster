@@ -161,14 +161,8 @@ export default class TaskGroupProgress extends Component {
   };
 
   getTaskGroupState = () => {
-    const {
-      completed,
-      exception,
-      failed,
-      pending,
-      running,
-      unscheduled,
-    } = this.props.statusCount;
+    const { completed, exception, failed, pending, running, unscheduled } =
+      this.props.statusCount;
     const allTasks = sum([completed, exception, pending, running, unscheduled]);
     const unfinishedTasks = sum([pending, running, unscheduled]);
 

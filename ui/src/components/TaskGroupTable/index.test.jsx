@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import TaskGroupTable from './index';
 
-jest.mock('@material-ui/core/styles', () => ({
+vi.mock('@material-ui/core/styles', () => ({
   withStyles: () => Component => {
     function StyledComponent(props) {
       return <Component {...props} classes={{}} />;
@@ -17,8 +17,8 @@ jest.mock('@material-ui/core/styles', () => ({
 let capturedItemKey = null;
 let capturedItemData = null;
 
-jest.mock('react-window', () => ({
-  FixedSizeList: jest.fn(
+vi.mock('react-window', () => ({
+  FixedSizeList: vi.fn(
     ({ children: Children, itemData, itemKey, itemCount }) => {
       capturedItemKey = itemKey;
       capturedItemData = itemData;
@@ -40,7 +40,7 @@ jest.mock('react-window', () => ({
   ),
 }));
 
-jest.mock('react-virtualized', () => ({
+vi.mock('react-virtualized', () => ({
   WindowScroller: ({ children }) => children({}),
 }));
 

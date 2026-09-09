@@ -1,5 +1,0 @@
-mutation DeleteHook($hookGroupId: ID!, $hookId: ID!) {
-  deleteHook(hookGroupId: $hookGroupId, hookId: $hookId) {
-    hookId
-  }
-}

@@ -46,7 +46,6 @@ enum TaskPriority {
   LOW
   VERY_LOW
   LOWEST
-  NORMAL
 }
 
 # Dependency requirement semantics; the task's relation to its dependencies
@@ -161,7 +160,7 @@ type Task {
   status(taskId: ID = taskId): TaskStatus!
 
   # Actions exposed by the decision task defined in the public/actions.json artifact.
-  taskActions(taskGroupId: String = taskGroupId, filter: JSON): TaskActionsJson
+  taskActions(taskGroupId: String = taskGroupId): TaskActionsJson
 
   # Definition of the task group ID (decision task).
   decisionTask: Task
@@ -173,18 +172,10 @@ type Task {
   # It **may return less**, even if more artifacts are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
-  latestArtifacts(taskId: ID! = taskId, connection: PageConnection, filter: JSON): ArtifactsConnection
+  latestArtifacts(taskId: ID! = taskId, connection: PageConnection): ArtifactsConnection
 
   # the "raw" JSON task definition, without any interpretation
   rawDefinition: JSON
-}
-
-type IndexedTask {
-  namespace: String!
-  taskId: ID!
-  rank: Int!
-  data: JSON!
-  expires: DateTime!
 }
 
 type TasksEdge implements Edge {
@@ -195,40 +186,6 @@ type TasksEdge implements Edge {
 type TasksConnection implements Connection {
   pageInfo: PageInfo
   edges: [TasksEdge]
-}
-
-type PendingTask {
-  taskId: ID!
-  runId: Int!
-  task: Task!
-  inserted: DateTime!
-}
-
-type PendingTasksEdge implements Edge {
-  cursor: String
-  node: PendingTask
-}
-
-type PendingTasksConnection implements Connection {
-  pageInfo: PageInfo
-  edges: [PendingTasksEdge]
-}
-
-type ClaimedTask {
-  taskId: ID!
-  runId: Int!
-  workerGroup: String!
-  workerId: String!
-  task: Task!
-  claimed: DateTime!
-}
-type ClaimedTasksEdge implements Edge {
-  cursor: String
-  node: ClaimedTask
-}
-type ClaimedTasksConnection implements Connection {
-  pageInfo: PageInfo
-  edges: [ClaimedTasksEdge]
 }
 
 type TaskGroupInfo {
@@ -288,11 +245,7 @@ extend type Query {
   dependentTasks(taskId: ID!): [DependentTask]
 
   # List tasks that depend on the given `taskId`.
-  dependents(taskId: ID!, connection: PageConnection, filter: JSON): TasksConnection
-
-  # Find a task by index path, returning the highest-ranked task with that path.
-  # Will be empty if no task exists for the given path.
-  indexedTask(indexPath: String!): IndexedTask
+  dependents(taskId: ID!, connection: PageConnection): TasksConnection
 
   # Query multiple tasks by task ID.
   tasks(taskIds: [ID]!): [Task]
@@ -305,15 +258,10 @@ extend type Query {
   # It **may return less**, even if more tasks are available.
   # It may also return a page connection even though there are no more results.
   # Use the connection limit to specify smaller page sizes.
-  taskGroup(taskGroupId: ID!, connection: PageConnection, filter: JSON): TaskGroupConnection
+  taskGroup(taskGroupId: ID!, connection: PageConnection): TaskGroupConnection
 
   # Actions exposed by the decision task defined in the public/actions.json artifact.
-  taskActions(taskGroupId: ID!, filter: JSON): TaskActionsJson
-
-  # pending tasks paginated
-  listPendingTasks(taskQueueId: String!, connection: PageConnection): PendingTasksConnection
-  # claimed tasks paginated
-  listClaimedTasks(taskQueueId: String!, connection: PageConnection): ClaimedTasksConnection
+  taskActions(taskGroupId: ID!): TaskActionsJson
 }
 
 extend type Mutation {

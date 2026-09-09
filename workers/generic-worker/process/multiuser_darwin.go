@@ -164,11 +164,11 @@ func (c *Command) Start() error {
 		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(stdinWriter, c.Stdin)
 			stdinWriter.Close()
-			// not sure if this is needed, but let's make sure both ends of the
-			// pipe are not garbage collected until we've finished using them!
-			c.auxFiles = append(c.auxFiles, stdinReader)
 		})
 		fds = append(fds, int(stdinReader.Fd()))
+		// not sure if this is needed, but let's make sure both ends of the
+		// pipe are not garbage collected until we've finished using them!
+		c.auxFiles = append(c.auxFiles, stdinReader)
 	}
 
 	if c.Stdout != nil {
@@ -180,11 +180,11 @@ func (c *Command) Start() error {
 		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(c.Stdout, stdoutReader)
 			stdoutReader.Close()
-			// not sure if this is needed, but let's make sure both ends of the
-			// pipe are not garbage collected until we've finished using them!
-			c.auxFiles = append(c.auxFiles, stdoutWriter)
 		})
 		fds = append(fds, int(stdoutWriter.Fd()))
+		// not sure if this is needed, but let's make sure both ends of the
+		// pipe are not garbage collected until we've finished using them!
+		c.auxFiles = append(c.auxFiles, stdoutWriter)
 	}
 
 	if c.Stderr != nil {
@@ -196,11 +196,11 @@ func (c *Command) Start() error {
 		gofuncs = append(gofuncs, func() {
 			_, _ = io.Copy(c.Stderr, stderrReader)
 			stderrReader.Close()
-			// not sure if this is needed, but let's make sure both ends of the
-			// pipe are not garbage collected until we've finished using them!
-			c.auxFiles = append(c.auxFiles, stderrWriter)
 		})
 		fds = append(fds, int(stderrWriter.Fd()))
+		// not sure if this is needed, but let's make sure both ends of the
+		// pipe are not garbage collected until we've finished using them!
+		c.auxFiles = append(c.auxFiles, stderrWriter)
 	}
 
 	log.Printf("FDs: %#v", fds)
@@ -288,10 +288,13 @@ func (c *Command) Wait() error {
 		c.auxFiles = nil
 	}()
 	defer c.conn.Close()
-	if c.result.SystemError != nil {
-		return c.result.SystemError
+	c.mutex.RLock()
+	systemError, pid := c.result.SystemError, c.result.Pid
+	c.mutex.RUnlock()
+	if systemError != nil {
+		return systemError
 	}
-	if c.result.Pid == 0 {
+	if pid == 0 {
 		return errors.New("wait called but PID not set")
 	}
 	resultReceived := false
@@ -307,8 +310,13 @@ func (c *Command) Wait() error {
 			return fmt.Errorf("bad JSON: %w", err)
 		}
 		log.Printf("Daemon: result received: %#v", resp)
-		// update value, not pointer, since other code may be holding onto pointer value
-		*c.result = resp
+		c.mutex.Lock()
+		// Don't clobber the result if the task was already resolved through abortion
+		if !c.result.Aborted {
+			// update value, not pointer, since other code may be holding onto pointer value
+			*c.result = resp
+		}
+		c.mutex.Unlock()
 		resultReceived = true
 	}
 	if !resultReceived {

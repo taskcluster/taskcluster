@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { v4 } from 'uuid';
 
 /**
@@ -13,16 +12,18 @@ export const modifyRoles = async (db, modifier) => {
     try {
       const roles = await db.fns.get_roles();
       const etag = roles.length > 0 ? roles[0].etag : v4();
-      roles.forEach(r => { delete r.etag; });
+      roles.forEach(r => {
+        delete r.etag;
+      });
       await modifier({ roles });
       await db.fns.modify_roles(JSON.stringify(roles), etag);
+      return; // success!
     } catch (e) {
       // P0004 means there was a conflict, so try again
       if (e.code !== 'P0004') {
         throw e;
       }
     }
-    return; // success!
   }
 
   throw new Error('Could not modify roles; too many conflicts');

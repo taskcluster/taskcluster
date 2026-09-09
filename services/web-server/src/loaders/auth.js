@@ -3,13 +3,16 @@ import WebServerError from '../utils/WebServerError.js';
 import regenerateSession from '../utils/regenerateSession.js';
 import generateCredentials from '../utils/generateCredentials.js';
 
-export default (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, requestId) => {
+export default (_clients, _isAuthed, _rootUrl, monitor, strategies, req, cfg, _requestId) => {
   const getCredentials = new DataLoader(queries => {
     return Promise.all(
       queries.map(async () => {
         // Don't report much to the user, to avoid revealing sensitive information, although
         // it is likely in the service logs.
-        const unauthorizedError = new WebServerError('Unauthorized', 'Authentication is required to generate credentials');
+        const unauthorizedError = new WebServerError(
+          'Unauthorized',
+          'Authentication is required to generate credentials'
+        );
 
         // If req.user is falsy for one query, it will be falsy for the rest.
         // Instead of returning an error in the try catch block below for every query,
@@ -32,7 +35,7 @@ export default (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, reque
         } catch (err) {
           return err;
         }
-      }),
+      })
     );
   });
 
@@ -40,8 +43,8 @@ export default (clients, isAuthed, rootUrl, monitor, strategies, req, cfg, reque
     Promise.all(
       queries.map(() => {
         return Boolean(req.user);
-      }),
-    ),
+      })
+    )
   );
 
   return {

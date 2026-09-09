@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { arrayOf, string, shape } from 'prop-types';
+import { arrayOf, node, string, shape } from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import Divider from '@material-ui/core/Divider';
 import Typography from '@material-ui/core/Typography';
@@ -41,7 +41,7 @@ export default function TutorialNavigation({ children, links }) {
 }
 
 TutorialNavigation.propTypes = {
-  children: string,
+  children: node,
   links: arrayOf(
     shape({
       link: string,

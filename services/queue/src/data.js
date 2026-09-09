@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import _ from 'lodash';
 import { paginateResults } from '@taskcluster/lib-api';
 import { UNIQUE_VIOLATION } from '@taskcluster/lib-postgres';
@@ -71,11 +71,11 @@ export class Task {
   // Get multiple tasks from the DB, or empty list
   static async getMultiple(db, { taskIds }, { query } = {}) {
     assert(_.isArray(taskIds), 'taskIds must be an Array');
-    for (let taskId of taskIds) {
+    for (const taskId of taskIds) {
       assert(_.isString(taskId), 'taskId must be a String');
     }
-    const fetchResults = async (continuation) => {
-      let q = query;
+    const fetchResults = async continuation => {
+      const q = query;
 
       if (continuation) {
         q.continuationToken = continuation;
@@ -83,13 +83,9 @@ export class Task {
 
       const { continuationToken, rows } = await paginateResults({
         query: q,
-        fetch: (size, offset) => db.fns.get_multiple_tasks(
-          JSON.stringify(taskIds),
-          size,
-          offset,
-        ),
+        fetch: (size, offset) => db.fns.get_multiple_tasks(JSON.stringify(taskIds), size, offset),
       });
-      let tasks = rows.map(Task.fromDb);
+      const tasks = rows.map(Task.fromDb);
       return { tasks, continuationToken };
     };
 
@@ -97,15 +93,19 @@ export class Task {
     return fetchResults(query ? query.continuationToken : {});
   }
 
-  // Call db.create_task_projid with the content of this instance.  This
+  // Call db.create_task_atomic with the content of this instance, atomically
+  // inserting the task row and its queue_task_deadlines tracking row.  This
   // implements the usual idempotency checks and returns an error with code
   // UNIQUE_VIOLATION when those checks fail.
-  async create(db) {
+  //
+  // `deadlineDelaySeconds` controls the deadline resolver's visibility offset
+  // (typically QueueService.deadlineDelay / 1000).
+  async create(db, deadlineDelaySeconds) {
     // for array values, we need to stringify manually because node-pg
     // otherwise does not correctly serialize the array values
     const arr = v => JSON.stringify(v);
     try {
-      await db.fns.create_task_projid(
+      await db.fns.create_task_atomic(
         this.taskId,
         this.taskQueueId,
         this.schedulerId,
@@ -124,6 +124,7 @@ export class Task {
         this.metadata,
         arr(this.tags),
         this.extra,
+        deadlineDelaySeconds
       );
     } catch (err) {
       if (err.code !== UNIQUE_VIOLATION) {
@@ -174,7 +175,7 @@ export class Task {
     // in a JSON object in the DB, they are not automatically converted to Date objects
     // when returned from a DB query. So, we reformat those timestamps here
     // to ensure a uniform structure.
-    const ts = s => s ? new Date(s).toJSON() : s;
+    const ts = s => (s ? new Date(s).toJSON() : s);
 
     const { provisionerId, workerType } = splitTaskQueueId(this.taskQueueId);
     return {
@@ -242,9 +243,7 @@ export class Task {
 
   // Compare "important" fields to another task (used to check idempotency)
   equals(other) {
-    return _.isEqual(
-      _.omit(other, STATUS_FIELDS),
-      _.omit(this, STATUS_FIELDS));
+    return _.isEqual(_.omit(other, STATUS_FIELDS), _.omit(this, STATUS_FIELDS));
   }
 }
 
@@ -264,17 +263,16 @@ export class Provisioner {
       // convert to dates
       expires: new Date(input.expires),
       lastDateActive: new Date(input.lastDateActive),
-      actions: input.actions || [],
     });
   }
 
   // Get a provisioner from the DB, or undefined
   // This is emulated using the task_queues table as there is no
   // longer a queue_provisioners table.
-  static async get(db, provisionerId, expires) {
+  static async get(db, provisionerId, _expires) {
     const allTaskQueues = await TaskQueue.getAllTaskQueues(db, new Date());
     const taskQueuesForProvisioner = allTaskQueues.filter(
-      tq => (provisionerId === splitTaskQueueId(tq.taskQueueId).provisionerId),
+      tq => provisionerId === splitTaskQueueId(tq.taskQueueId).provisionerId
     );
     let provisioner;
     taskQueuesForProvisioner.forEach(tq => {
@@ -302,15 +300,7 @@ export class Provisioner {
   // `rows` field set to an empty array.
   // There is no longer a queue_provisioners table, so this function
   // is emulated by using the data from the task_queues table
-  static async getProvisioners(
-    db,
-    {
-      expires,
-    },
-    {
-      query,
-    } = {},
-  ) {
+  static async getProvisioners(db, _options, { query } = {}) {
     const allTaskQueues = await TaskQueue.getAllTaskQueues(db, new Date());
     let allProvisioners = new Map();
     allTaskQueues.forEach(tq => {
@@ -324,12 +314,15 @@ export class Provisioner {
           prov.lastDateActive = tq.lastDateActive;
         }
       } else {
-        allProvisioners.set(provisionerId, Provisioner.fromApi(provisionerId, {
-          expires: tq.expires,
-          lastDateActive: tq.lastDateActive,
-          description: '',
-          stability: 'experimental',
-        }));
+        allProvisioners.set(
+          provisionerId,
+          Provisioner.fromApi(provisionerId, {
+            expires: tq.expires,
+            lastDateActive: tq.lastDateActive,
+            description: '',
+            stability: 'experimental',
+          })
+        );
       }
     });
     allProvisioners = Array.from(allProvisioners.values());
@@ -349,7 +342,6 @@ export class Provisioner {
       lastDateActive: this.lastDateActive.toJSON(),
       description: this.description,
       stability: this.stability,
-      actions: _.cloneDeep(this.actions),
     };
   }
 
@@ -406,25 +398,11 @@ export class TaskQueue {
   // The response will be of the form { rows, continationToken }.
   // If there are no worker types to show, the response will have the
   // `rows` field set to an empty array.
-  static async getTaskQueues(
-    db,
-    {
-      taskQueueId,
-      expires,
-    },
-    {
-      query,
-    } = {},
-  ) {
-    const fetchResults = async (query) => {
+  static async getTaskQueues(db, { taskQueueId, expires }, { query } = {}) {
+    const fetchResults = async query => {
       const { continuationToken, rows } = await paginateResults({
         query,
-        fetch: (size, offset) => db.fns.get_task_queues(
-          taskQueueId || null,
-          expires || null,
-          size,
-          offset,
-        ),
+        fetch: (size, offset) => db.fns.get_task_queues(taskQueueId || null, expires || null, size, offset),
       });
       const entries = rows.map(TaskQueue.fromDb);
 
@@ -438,12 +416,7 @@ export class TaskQueue {
   // Get a list with all the task queues in the DB, possibly filtered
   // by `expires`, without pagination.
   static async getAllTaskQueues(db, expires) {
-    return (await db.fns.get_task_queues(
-      null,
-      expires || null,
-      null,
-      null,
-    )).map(TaskQueue.fromDb);
+    return (await db.fns.get_task_queues(null, expires || null, null, null)).map(TaskQueue.fromDb);
   }
 
   // return the serialization of this task queue
@@ -514,12 +487,7 @@ export class Worker {
   // Get a worker from the DB, or undefined
   static async get(db, taskQueueId, workerGroup, workerId, expires) {
     return Worker.fromDbRows(
-      await db.deprecatedFns.get_queue_worker_tqid_with_last_date_active(
-        taskQueueId,
-        workerGroup,
-        workerId,
-        expires,
-      ),
+      await db.deprecatedFns.get_queue_worker_tqid_with_last_date_active(taskQueueId, workerGroup, workerId, expires)
     );
   }
 
@@ -528,7 +496,7 @@ export class Worker {
   // If there are no workers to show, the response will have the
   // `rows` field set to an empty array.
   static async getWorkers(db, { taskQueueId, expires }, { query } = {}) {
-    const fetchResults = async (query) => {
+    const fetchResults = async query => {
       const { continuationToken, rows } = await paginateResults({
         query,
         fetch: (size, offset) =>
@@ -536,7 +504,7 @@ export class Worker {
             taskQueueId || null,
             expires || null,
             size,
-            offset,
+            offset
           ),
       });
 
@@ -590,9 +558,7 @@ export class TaskGroup {
   }
 
   static async get(db, taskGroupId) {
-    return TaskGroup.fromDbRows(
-      await db.fns.get_task_group2(taskGroupId),
-    );
+    return TaskGroup.fromDbRows(await db.fns.get_task_group2(taskGroupId));
   }
 
   serialize() {
@@ -600,9 +566,11 @@ export class TaskGroup {
       taskGroupId: this.taskGroupId,
       schedulerId: this.schedulerId,
       expires: this.expires.toJSON(),
-      ...(this.sealed ? {
-        sealed: this.sealed.toJSON(),
-      } : {}),
+      ...(this.sealed
+        ? {
+            sealed: this.sealed.toJSON(),
+          }
+        : {}),
     };
   }
 }

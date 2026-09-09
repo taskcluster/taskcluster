@@ -13,8 +13,7 @@ spec:
     matchLabels: *ref_0
   template:
     metadata:
-      annotations:
-        checksum/secret: '{{ include (print $.Template.BasePath "/taskcluster-built-in-workers-secret.yaml") . | sha256sum }}'
+      annotations: {{ merge (dict "checksum/secret" (include (print $.Template.BasePath "/taskcluster-built-in-workers-secret.yaml") . | sha256sum)) (.Values.built_in_workers.procs.server.podAnnotations | default dict) (.Values.podAnnotations | default dict) | toJson }}
       labels: *ref_0
     spec:
       serviceAccountName: taskcluster-built-in-workers

@@ -1,16 +1,16 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import testing from '@taskcluster/lib-testing';
 import session from 'express-session';
-import { promisify } from 'util';
+import { promisify } from 'node:util';
 import helper from './helper.js';
 import PostgresSessionStore from '../src/login/PostgresSessionStore.js';
 import hash from '../src/utils/hash.js';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withFakeAuth(mock, skipping);
-  helper.withServer(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withFakeAuth(skipping);
+  helper.withServer(skipping);
+  helper.resetTables();
 
   const getStore = (shouldPromisify = true, options) => {
     const SessionStore = PostgresSessionStore({
@@ -27,7 +27,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
     if (shouldPromisify) {
       Object.getOwnPropertyNames(SessionStore.prototype)
-        .filter(m => m !== 'constructor').forEach(method => {
+        .filter(m => m !== 'constructor')
+        .forEach(method => {
           store[method] = promisify(store[method]);
         });
     }
@@ -35,8 +36,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     return store;
   };
 
-  suite('destroy', function() {
-    test('it should destroy the specified session', async function () {
+  suite('destroy', () => {
+    test('it should destroy the specified session', async () => {
       const store = getStore();
 
       await store.set('foo', { cookie: {} });
@@ -49,17 +50,17 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
       val = await store.get('foo');
       assert.equal(val, undefined, 'entry actually deleted');
     });
-    test('it should destroy the specified session and call back', function (done) {
+    test('it should destroy the specified session and call back', done => {
       const store = getStore(false /* shouldPromisify */);
 
-      store.set('foo', { cookie: {} }, function() {
+      store.set('foo', { cookie: {} }, () => {
         store.destroy('foo', done);
       });
     });
   });
 
-  suite('get', function() {
-    test('it should get the specified session', async function () {
+  suite('get', () => {
+    test('it should get the specified session', async () => {
       const store = getStore();
 
       await store.set('foo', { cookie: {} });
@@ -68,7 +69,7 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.ok(val, 'entry exists');
     });
-    test('it shouldn\'t get the specified session when only the hash matches', async function () {
+    test("it shouldn't get the specified session when only the hash matches", async () => {
       const store = getStore();
 
       const currentSession = 'sessionid1';
@@ -82,7 +83,10 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       // updates the hash of that session
       await helper.withDbClient(async client => {
-        await client.query('update sessions set hashed_session_id = $1 where hashed_session_id = $2', [newHash, currentHash]);
+        await client.query('update sessions set hashed_session_id = $1 where hashed_session_id = $2', [
+          newHash,
+          currentHash,
+        ]);
       });
 
       // tries to get the new session
@@ -90,14 +94,14 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(val, undefined);
     });
-    test('it should get the specified session and call back', function (done) {
+    test('it should get the specified session and call back', done => {
       const store = getStore(false /* shouldPromisify */);
 
       store.set('foo', { cookie: {} }, () => {
         store.get('foo', done);
       });
     });
-    test('it should not error when session doesn\'t exist', async function () {
+    test("it should not error when session doesn't exist", async () => {
       const store = getStore();
       const val = await store.get('foo');
 
@@ -105,8 +109,8 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
     });
   });
 
-  suite('set', function() {
-    test('it should set the specified session', async function () {
+  suite('set', () => {
+    test('it should set the specified session', async () => {
       const store = getStore();
       const data = { cookie: { foo: 'bar' } };
 
@@ -116,15 +120,15 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.deepEqual(val, data);
     });
-    test('it should set the specified session and call back', function (done) {
+    test('it should set the specified session and call back', done => {
       const store = getStore(false /* shouldPromisify */);
 
       store.set('foo', { cookie: {} }, done);
     });
   });
 
-  suite('touch', function() {
-    test('it should touch the specified session', async function () {
+  suite('touch', () => {
+    test('it should touch the specified session', async () => {
       const store = getStore();
 
       await store.set('foo', { cookie: { maxAge: 50 } });
@@ -134,25 +138,22 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
       assert.equal(val.cookie.maxAge, 300, 'entry should be touched');
     });
-    test('it should touch the specified session and call back', function (done) {
+    test('it should touch the specified session and call back', done => {
       const store = getStore(false /* shouldPromisify */);
 
       store.set('foo', { cookie: { maxAge: 50 } }, () => {
         store.touch('foo', { cookie: { maxAge: 300 } }, done);
       });
     });
-    test('it should error when touching the session', async function () {
+    test('it should error when touching the session', async () => {
       const store = getStore();
 
-      await assert.rejects(
-        store.touch('foo', { cookie: { maxAge: 300 } }),
-        /P0002/,
-      );
+      await assert.rejects(store.touch('foo', { cookie: { maxAge: 300 } }), /P0002/);
     });
   });
 
-  suite('other', function() {
-    test('it should inherit from the session Store', function () {
+  suite('other', () => {
+    test('it should inherit from the session Store', () => {
       const store = getStore();
 
       assert(store instanceof session.Store);

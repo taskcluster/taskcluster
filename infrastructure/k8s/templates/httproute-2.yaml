@@ -1,0 +1,25 @@
+{{- if and (eq (.Values.ingressType | default "") "gateway") (not (has "httproute" .Values.skipResourceTypes)) -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: taskcluster-routes-2
+  labels:
+    app.kubernetes.io/name: taskcluster-routes-2
+    app.kubernetes.io/instance: '{{ .Release.Name }}'
+    app.kubernetes.io/component: taskcluster-routes-2-httproute
+    app.kubernetes.io/part-of: taskcluster
+spec:
+  parentRefs:
+    - name: taskcluster-gateway
+      sectionName: https
+  hostnames:
+    - '{{ substr 8 -1 (trimSuffix "/" .Values.rootUrl) }}'
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/worker-manager
+      backendRefs:
+        - name: taskcluster-worker-manager
+          port: 80
+{{- end }}

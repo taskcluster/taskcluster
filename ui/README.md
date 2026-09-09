@@ -113,19 +113,6 @@ _Note: Each strategy requires its own set of config in `web-server`. Be sure to 
 [web-server instructions](../services/web-server#login-strategies)
 for properly configuring the server._
 
-### Tracking Events
-
-Google Analytics can be leveraged to track page views and click events.
-Set up Analytics by including a the tracking ID (a string like UA-XXXXXXXX) environment variable.
-
-```bash
-GA_TRACKING_ID=XXXXXXXX
-```
-
-Once the tracking code is identified, the client will send a page event on each page view.
-Moreover, the `Button` component is able to send an event when clicked by setting
-the Button's `track` property.
-
 ### Reporting Errors
 
 The `SENTRY_DSN` environment variable can be used to set up Sentry to monitor and fix crashes.

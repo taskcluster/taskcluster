@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { graphql } from 'react-apollo';
+import { graphql } from '@apollo/client/react/hoc';
 import { withStyles } from '@material-ui/core/styles';
 import Spinner from '../../../components/Spinner';
 import JsonDisplay from '../../../components/JsonDisplay';
@@ -32,7 +32,7 @@ export default class TaskDefinition extends Component {
       match,
       data: { task, error, loading },
     } = this.props;
-    const { taskId } = match?.params;
+    const { taskId } = match.params;
     const { rawDefinition } = task || {};
 
     if (error) {

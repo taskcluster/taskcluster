@@ -27,10 +27,7 @@ export default task =>
       // Delete cache scopes
       scopes: task.scopes.filter(scope => !/^docker-worker:cache:/.test(scope)),
       payload: merge(omit(['artifacts', 'cache'], task.payload || {}), {
-        maxRunTime: Math.max(
-          task.payload && task.payload.maxRunTime,
-          3 * 60 * 60
-        ),
+        maxRunTime: Math.max(task.payload?.maxRunTime, 3 * 60 * 60),
         features: {
           interactive: true,
         },

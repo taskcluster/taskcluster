@@ -98,7 +98,9 @@ export default class WorkerTable extends Component {
   componentDidMount() {
     const query = parse(this.props.location.search.slice(1));
 
-    if (query.sortBy) return;
+    if (query.sortBy) {
+      return;
+    }
 
     this.props.history.replace({
       search: stringify(
@@ -145,7 +147,7 @@ export default class WorkerTable extends Component {
       <DataTable
         items={items}
         renderRow={task => (
-          <TableRow key={`recent-task-${task.taskId}`}>
+          <TableRow key={`recent-task-${task.taskId}-${task.runId}`}>
             <TableCell>
               {task.state ? <StatusLabel state={task.state} /> : <em>n/a</em>}
             </TableCell>

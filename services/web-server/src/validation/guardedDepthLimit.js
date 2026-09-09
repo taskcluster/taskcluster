@@ -17,7 +17,7 @@ function graphHasCycle(graph) {
   const visited = new Set();
   const stack = new Set();
 
-  const dfs = (node) => {
+  const dfs = node => {
     if (stack.has(node)) {
       return true; // Cycle detected
     }
@@ -51,10 +51,7 @@ function hasFragmentCycle(document) {
   const fragmentGraph = new Map();
   visit(document, {
     FragmentDefinition(node) {
-      fragmentGraph.set(
-        node.name.value,
-        collectReferencedFragments(node.selectionSet),
-      );
+      fragmentGraph.set(node.name.value, collectReferencedFragments(node.selectionSet));
     },
   });
 

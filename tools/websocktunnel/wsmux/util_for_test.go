@@ -47,6 +47,16 @@ func genWebSocketHandler(t *testing.T, handleConn func(*testing.T, *websocket.Co
 
 // functions for session test
 
+func acceptUntilClosed(t *testing.T, conn *websocket.Conn) {
+	t.Helper()
+	session := Server(conn, Config{Log: genLogger()})
+	for {
+		if _, err := session.Accept(); err != nil {
+			return
+		}
+	}
+}
+
 func echoConn(t *testing.T, conn *websocket.Conn) {
 	t.Helper()
 	session := Server(conn, Config{Log: genLogger()})

@@ -147,5 +147,15 @@ type (
 		// message text, otherwise this is used as alternative text and the blocks
 		// are used.
 		Text string `json:"text"`
+
+		// Whether Slack should show previews for links in the message.
+		//
+		// Default:    false
+		UnfurlLinks bool `json:"unfurlLinks,omitempty"`
+
+		// Whether Slack should show previews for links to media in the message.
+		//
+		// Default:    false
+		UnfurlMedia bool `json:"unfurlMedia,omitempty"`
 	}
 )

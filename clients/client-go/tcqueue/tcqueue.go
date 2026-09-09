@@ -28,7 +28,7 @@
 // * **Error artifacts**, only consists of meta-data which the queue will
 // store for you. These artifacts are only meant to indicate that you the
 // worker or the task failed to generate a specific artifact, that you
-// would otherwise have uploaded. For example docker-worker will upload an
+// would otherwise have uploaded. For example generic-worker will upload an
 // error artifact, if the file it was supposed to upload doesn't exists or
 // turns out to be a directory. Clients requesting an error artifact will
 // get a `424` (Failed Dependency) response. This is mainly designed to
@@ -85,7 +85,7 @@ import (
 	"net/url"
 	"time"
 
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
 )
 
 type Queue tcclient.Client
@@ -384,6 +384,11 @@ func (queue *Queue) GetTaskGroup_SignedURL(taskGroupId string, duration time.Dur
 //
 // Task group can be sealed once and is irreversible. Calling it multiple times
 // will return same result and will not update it again.
+//
+// Sealing makes `cancelTaskGroup` meaningful by stopping task creators
+// from adding more tasks to a group being cancelled. It is not a
+// security feature: the check is not atomic with task creation, so a
+// `createTask` racing this call may still succeed.
 //
 // Required scopes:
 //
@@ -1241,30 +1246,6 @@ func (queue *Queue) GetProvisioner_SignedURL(provisionerId string, duration time
 
 // Stability: *** DEPRECATED ***
 //
-// Declare a provisioner, supplying some details about it.
-//
-// `declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are
-// possessed. For example, a request to update the `my-provisioner`
-// provisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope
-// `queue:declare-provisioner:my-provisioner#description`.
-//
-// The term "provisioner" is taken broadly to mean anything with a provisionerId.
-// This does not necessarily mean there is an associated service performing any
-// provisioning activity.
-//
-// Required scopes:
-//
-//	For property in properties each queue:declare-provisioner:<provisionerId>#<property>
-//
-// See #declareProvisioner
-func (queue *Queue) DeclareProvisioner(provisionerId string, payload *ProvisionerRequest) (*ProvisionerResponse, error) {
-	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.PathEscape(provisionerId), new(ProvisionerResponse), nil)
-	return responseObject.(*ProvisionerResponse), err
-}
-
-// Stability: *** DEPRECATED ***
-//
 // Get an approximate number of pending tasks for the given `taskQueueId`.
 //
 // As task states may change rapidly, this number may not represent the exact
@@ -1486,26 +1467,6 @@ func (queue *Queue) GetWorkerType(provisionerId, workerType string) (*WorkerType
 func (queue *Queue) GetWorkerType_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
 	cd := tcclient.Client(*queue)
 	return (&cd).SignedURL("/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType), nil, duration)
-}
-
-// Stability: *** DEPRECATED ***
-//
-// Declare a workerType, supplying some details about it.
-//
-// `declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are
-// possessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`
-// provisioner with a body `{description: 'This worker type is great'}` would require you to have the scope
-// `queue:declare-worker-type:my-provisioner/highmem#description`.
-//
-// Required scopes:
-//
-//	For property in properties each queue:declare-worker-type:<provisionerId>/<workerType>#<property>
-//
-// See #declareWorkerType
-func (queue *Queue) DeclareWorkerType(provisionerId, workerType string, payload *WorkerTypeRequest) (*WorkerTypeResponse, error) {
-	cd := tcclient.Client(*queue)
-	responseObject, _, err := (&cd).APICall(payload, "PUT", "/provisioners/"+url.PathEscape(provisionerId)+"/worker-types/"+url.PathEscape(workerType), new(WorkerTypeResponse), nil)
-	return responseObject.(*WorkerTypeResponse), err
 }
 
 // Get all active task queues.

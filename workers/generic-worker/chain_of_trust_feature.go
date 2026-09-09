@@ -11,10 +11,11 @@ import (
 	"path/filepath"
 
 	"github.com/peterbourgon/mergemap"
-	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcqueue"
-	"github.com/taskcluster/taskcluster/v99/internal/scopes"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
+	"github.com/taskcluster/taskcluster/v108/internal/scopes"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -140,35 +141,28 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	if feature.disabled {
 		return
 	}
-	logFile := fileutil.AbsFrom(taskContext.TaskDir, logPath)
-	certifiedLogFile := fileutil.AbsFrom(taskContext.TaskDir, certifiedLogPath)
-	unsignedCert := fileutil.AbsFrom(taskContext.TaskDir, unsignedCertPath)
-	ed25519SignedCert := fileutil.AbsFrom(taskContext.TaskDir, ed25519SignedCertPath)
-	copyErr := copyFileContents(logFile, certifiedLogFile)
-	if copyErr != nil {
-		panic(copyErr)
+	taskDir := feature.task.TaskDir()
+	logFile := fileutil.AbsFrom(taskDir, logPath)
+	certifiedLogFile := fileutil.AbsFrom(taskDir, certifiedLogPath)
+	unsignedCert := fileutil.AbsFrom(taskDir, unsignedCertPath)
+	ed25519SignedCert := fileutil.AbsFrom(taskDir, ed25519SignedCertPath)
+	if copyErr := safefs.CopyFile(logFile, certifiedLogFile, 0644); copyErr != nil {
+		err.add(executionError(internalError, errored, fmt.Errorf("could not create certified log: %w", copyErr)))
+		return
 	}
-	err.add(feature.task.uploadLog(certifiedLogName, fileutil.AbsFrom(taskContext.TaskDir, certifiedLogPath)))
+	err.add(feature.task.uploadLog(certifiedLogName, certifiedLogFile))
 	artifactHashes := map[string]ArtifactHash{}
 	feature.task.artifactsMux.RLock()
 	for _, artifact := range feature.task.Artifacts {
-		// make sure SHA256 is calculated
-		switch a := artifact.(type) {
-		case *artifacts.S3Artifact:
-			hash, hashErr := fileutil.CalculateSHA256(a.Path)
-			if hashErr != nil {
-				panic(hashErr)
+		switch artifact.(type) {
+		case *artifacts.S3Artifact, *artifacts.ObjectArtifact:
+			base := artifact.Base()
+			if base.SHA256 == "" {
+				feature.task.Warnf("Leaving `%v` out of the CoT certificate as it was not uploaded", base.Name)
+				continue
 			}
-			artifactHashes[a.Name] = ArtifactHash{
-				SHA256: hash,
-			}
-		case *artifacts.ObjectArtifact:
-			hash, hashErr := fileutil.CalculateSHA256(a.Path)
-			if hashErr != nil {
-				panic(hashErr)
-			}
-			artifactHashes[a.Name] = ArtifactHash{
-				SHA256: hash,
+			artifactHashes[base.Name] = ArtifactHash{
+				SHA256: base.SHA256,
 			}
 		}
 	}
@@ -205,26 +199,32 @@ func (feature *ChainOfTrustTaskFeature) Stop(err *ExecutionErrors) {
 	}
 
 	// create unsigned chain-of-trust.json
-	e = os.WriteFile(unsignedCert, certBytes, 0644)
-	if e != nil {
-		panic(e)
+	if e := safefs.WriteFile(unsignedCert, certBytes, 0644); e != nil {
+		err.add(executionError(internalError, errored, fmt.Errorf("could not write unsigned chain of trust certificate: %w", e)))
+		return
 	}
-	err.add(feature.task.uploadLog(unsignedCertName, fileutil.AbsFrom(taskContext.TaskDir, unsignedCertPath)))
+	err.add(feature.task.uploadLog(unsignedCertName, unsignedCert))
 
 	// create detached ed25519 chain-of-trust.json.sig
 	sig := ed25519.Sign(feature.ed25519PrivKey, certBytes)
-	e = os.WriteFile(ed25519SignedCert, sig, 0644)
-	if e != nil {
-		panic(e)
+	if e := safefs.WriteFile(ed25519SignedCert, sig, 0644); e != nil {
+		err.add(executionError(internalError, errored, fmt.Errorf("could not write ed25519 signature: %w", e)))
+		return
 	}
+	ed25519Content, cpErr := safeReservedCopy(ed25519SignedCert)
+	if cpErr != nil {
+		err.add(executionError(internalError, errored, fmt.Errorf("could not read ed25519 signature: %w", cpErr)))
+		return
+	}
+	defer os.Remove(ed25519Content)
 	err.add(feature.task.uploadArtifact(
 		createDataArtifact(
 			&artifacts.BaseArtifact{
 				Name:    ed25519SignedCertName,
 				Expires: feature.task.TaskClaimResponse.Task.Expires,
 			},
-			fileutil.AbsFrom(taskContext.TaskDir, ed25519SignedCertPath),
-			fileutil.AbsFrom(taskContext.TaskDir, ed25519SignedCertPath),
+			ed25519SignedCert,
+			ed25519Content,
 			"application/octet-stream",
 			"gzip",
 		),
@@ -245,7 +245,7 @@ func (cot *ChainOfTrustTaskFeature) ensureTaskUserCantReadPrivateCotKey() error 
 }
 
 func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (mergedCert []byte, err error) {
-	additionalDataFile := filepath.Join(taskContext.TaskDir, additionalDataPath)
+	additionalDataFile := filepath.Join(cot.task.TaskDir(), additionalDataPath)
 
 	// Additional data is optional, if file hasn't been created by task, just return the original data
 	if _, err = os.Stat(additionalDataFile); errors.Is(err, os.ErrNotExist) {
@@ -253,14 +253,14 @@ func (cot *ChainOfTrustTaskFeature) MergeAdditionalData(certBytes []byte) (merge
 	}
 
 	// Ensure task user can read the data (e.g. in case somebody creates a symbolic link to a json file owned by root)
-	tempPath, err := copyToTempFileAsTaskUser(additionalDataFile, cot.task.pd)
+	tempPath, err := copyToTempFileAsTaskUser(additionalDataFile, cot.task.pd, cot.task.TaskDir())
 	if err != nil {
 		return
 	}
 	defer os.Remove(tempPath)
 
 	var additionalDataBytes []byte
-	additionalDataBytes, err = os.ReadFile(tempPath)
+	additionalDataBytes, err = safefs.ReadFile(tempPath)
 	if err != nil {
 		return
 	}

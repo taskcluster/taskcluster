@@ -1,32 +1,29 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import slugid from 'slugid';
-import _ from 'lodash';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 
-helper.secrets.mockSuite('audit', ['gcp'], function(mock, skipping) {
+helper.secrets.mockSuite('audit', ['gcp'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServers(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServers(skipping);
+  helper.resetTables();
 
   let clientId;
   clientId = slugid.v4();
-  suiteSetup(async function() {
+  suiteSetup(async function () {
     if (skipping()) {
       this.skip();
     }
   });
 
-  setup(async function() {
-    await testing.resetTables({ tableNames: [
-      'audit_history',
-    ] });
+  setup(async () => {
+    await testing.resetTables({ tableNames: ['audit_history'] });
   });
 
-  test('get audit history', async() => {
+  test('get audit history', async () => {
     const entityType = 'client';
 
     await helper.apiClient.createClient(clientId, {
@@ -63,8 +60,7 @@ helper.secrets.mockSuite('audit', ['gcp'], function(mock, skipping) {
     assert.equal(audit_history_long.auditHistory[0].actionType, 'created');
   });
 
-  test('list client audit history', async() => {
-
+  test('list client audit history', async () => {
     await helper.apiClient.createClient(clientId, {
       expires: taskcluster.fromNowJSON('1 day'),
       description: 'test client...',

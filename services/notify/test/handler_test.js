@@ -1,47 +1,46 @@
+// biome-ignore-all lint/suspicious/noTemplateCurlyInString: notify substitutes ${...} placeholders in message templates
 import _ from 'lodash';
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), ['aws'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withDenier(mock, skipping);
-  helper.withFakeQueue(mock, skipping);
-  helper.withFakeMatrix(mock, skipping);
-  helper.withFakeSlack(mock, skipping);
+  helper.withDenier(skipping);
+  helper.withFakeQueue(skipping);
+  helper.withFakeMatrix(skipping);
+  helper.withFakeSlack(skipping);
   helper.withSES(mock, skipping);
-  helper.withPulse(mock, skipping);
-  helper.withServer(mock, skipping);
+  helper.withPulse(skipping);
+  helper.withServer(skipping);
 
   const created = new Date();
   const deadline = new Date();
   deadline.setMinutes(deadline.getMinutes() + 25);
 
-  let makeTask = function(routes) {
-    return {
-      provisionerId: 'dummy-test-provisioner',
-      workerType: 'dummy-test-worker-type',
-      scopes: [],
-      routes: routes,
-      retries: 3,
-      created: created.toJSON(),
-      deadline: deadline.toJSON(),
-      payload: {
-        desiredResolution: 'success',
-      },
-      metadata: {
-        name: 'Print `"Hello World"` Once',
-        description: 'This task will prìnt `"Hello World"` **once**!',
-        owner: 'jojensen@mozilla.com', // Because this is stolen from tc-index tests!
-        source: 'https://github.com/taskcluster/taskcluster-notify',
-      },
-      tags: {
-        objective: 'Test task notifications',
-      },
-    };
-  };
+  const makeTask = routes => ({
+    provisionerId: 'dummy-test-provisioner',
+    workerType: 'dummy-test-worker-type',
+    scopes: [],
+    routes: routes,
+    retries: 3,
+    created: created.toJSON(),
+    deadline: deadline.toJSON(),
+    payload: {
+      desiredResolution: 'success',
+    },
+    metadata: {
+      name: 'Print `"Hello World"` Once',
+      description: 'This task will prìnt `"Hello World"` **once**!',
+      owner: 'jojensen@mozilla.com', // Because this is stolen from tc-index tests!
+      source: 'https://github.com/taskcluster/taskcluster-notify',
+    },
+    tags: {
+      objective: 'Test task notifications',
+    },
+  });
 
-  let baseStatus = {
+  const baseStatus = {
     taskId: 'DKPZPsvvQEiw67Pb3rkdNg',
     provisionerId: 'test-provisioner',
     workerType: 'gecko-t-win7-32-gpu',
@@ -67,8 +66,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     ],
   };
 
+  const definedStatus = {
+    ..._.cloneDeep(baseStatus),
+    state: 'unscheduled',
+    runs: [],
+  };
+
   let monitor;
-  suiteSetup('create handler', async function() {
+  suiteSetup('create handler', async () => {
     if (skipping()) {
       return;
     }
@@ -114,6 +119,20 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
     helper.assertPulseMessage('notification', m => m.CCs[0] === 'route.notify-test');
   });
 
+  test('pulse on-defined', async () => {
+    const route = 'test-notify.pulse.notify-test.on-defined';
+    helper.queue.addTask(definedStatus.taskId, makeTask([route]));
+    await helper.fakePulseMessage({
+      payload: {
+        status: definedStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-defined',
+      routingKey: 'doesnt-matter',
+      routes: [route],
+    });
+    helper.assertPulseMessage('notification', m => m.CCs[0] === 'route.notify-test');
+  });
+
   test('pulse denylisted', async () => {
     const route = 'test-notify.pulse.notify-test-denied.on-transition';
     helper.queue.addTask(baseStatus.taskId, makeTask([route]));
@@ -147,7 +166,14 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('matrix', async () => {
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
-    task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${rootUrl}/tasks/${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>', matrixMsgtype: 'm.text' } };
+    task.extra = {
+      notify: {
+        matrixFormat: 'matrix.foo',
+        matrixBody: '${rootUrl}/tasks/${taskId}',
+        matrixFormattedBody: '<h1>${taskId}</h1>',
+        matrixMsgtype: 'm.text',
+      },
+    };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {
@@ -170,7 +196,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('matrix (default notice)', async () => {
     const route = 'test-notify.matrix-room.!gBxblkbeeBSadzOniu:mozilla.org.on-transition';
     const task = makeTask([route]);
-    task.extra = { notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>' } };
+    task.extra = {
+      notify: { matrixFormat: 'matrix.foo', matrixBody: '${taskId}', matrixFormattedBody: '<h1>${taskId}</h1>' },
+    };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {
@@ -210,7 +238,9 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
   test('slack', async () => {
     const route = 'test-notify.slack-channel.C123456.on-transition';
     const task = makeTask([route]);
-    task.extra = { notify: { slackText: 'hey hey ${rootUrl}/tasks/${taskId}', slackBlocks: [{}], slackAttachments: [{}, {}] } };
+    task.extra = {
+      notify: { slackText: 'hey hey ${rootUrl}/tasks/${taskId}', slackBlocks: [{}], slackAttachments: [{}, {}] },
+    };
     helper.queue.addTask(baseStatus.taskId, task);
     await helper.fakePulseMessage({
       payload: {
@@ -226,7 +256,31 @@ helper.secrets.mockSuite(testing.suiteName(), ['aws'], function(mock, skipping) 
       text: `hey hey ${helper.rootUrl}/tasks/${baseStatus.taskId}`,
       blocks: [{}],
       attachments: [{}, {}],
+      unfurl_links: false,
+      unfurl_media: false,
     });
     assert(monitor.manager.messages.find(m => m.Type === 'slack'));
+  });
+
+  test('slack with unfurl', async () => {
+    const route = 'test-notify.slack-channel.C123456.on-transition';
+    const task = makeTask([route]);
+    task.extra = {
+      notify: { slackText: 'somelink', slackUnfurlLinks: true, slackUnfurlMedia: true },
+    };
+    helper.queue.addTask(baseStatus.taskId, task);
+    await helper.fakePulseMessage({
+      payload: {
+        status: baseStatus,
+      },
+      exchange: 'exchange/taskcluster-queue/v1/task-completed',
+      routingKey: 'doesnt-matter',
+      routes: [route],
+    });
+
+    assert.equal(helper.slackClient.chat.postMessage.callCount, 1);
+    const { unfurl_links, unfurl_media } = helper.slackClient.chat.postMessage.args[0][0];
+    assert.equal(unfurl_links, true);
+    assert.equal(unfurl_media, true);
   });
 });

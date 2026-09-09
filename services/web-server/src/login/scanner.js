@@ -16,7 +16,7 @@ export default async (auth, strategies) => {
       query.continuationToken = clientResponse.continuationToken;
 
       if (clientResponse.clients.length) {
-        clients.push(...(clientResponse.clients));
+        clients.push(...clientResponse.clients);
       }
 
       if (!query.continuationToken) {
@@ -72,9 +72,5 @@ export default async (auth, strategies) => {
     }
   }
 
-  await Promise.all(
-    Object
-      .values(strategies)
-      .map(scan),
-  );
+  await Promise.all(Object.values(strategies).map(scan));
 };

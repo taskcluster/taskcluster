@@ -115,6 +115,18 @@ defaults:
     # If omitted, it defaults to {}
     allowedProjects:          !env:json:secret:optional GCP_CREDENTIALS_ALLOWED_PROJECTS
 
+  # Configuration for the github apps for which the `githubCredentials`
+  # endpoint can grant tokens for
+  githubCredentials:
+    # This has the form: {
+    #   "app_name": {
+    #     "appId": "12345",
+    #     "privateKey": "-----BEGIN RSA PRIVATE KEY-----\n..\n-----END RSA PRIVATE KEY-----\n"
+    #   }, ..
+    # }
+    # If omitted, defaults to {}
+    apps: !env:json:secret:optional GITHUB_CREDENTIALS_APPS
+
   # new relic config (processed in services/prelude.js)
   newRelic: !env:json:secret:optional NEW_RELIC
 

@@ -1,28 +1,22 @@
 import React, { Component, Fragment } from 'react';
-import { graphql } from 'react-apollo';
-import dotProp from 'dot-prop-immutable';
+import { Queue, WorkerManager } from '@taskcluster/client-web';
 import { parse, stringify } from 'qs';
-import { path, filter } from 'ramda';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
-import HammerIcon from 'mdi-react/HammerIcon';
 import { Box } from '@material-ui/core';
 import Spinner from '../../../components/Spinner';
 import TextField from '../../../components/TextField';
-import SpeedDial from '../../../components/SpeedDial';
-import SpeedDialAction from '../../../components/SpeedDialAction';
-import DialogAction from '../../../components/DialogAction';
 import WorkersTable from '../../../components/WorkersTable';
 import Dashboard from '../../../components/Dashboard';
 import { VIEW_WORKERS_PAGE_SIZE } from '../../../utils/constants';
-import { withAuth } from '../../../utils/Auth';
 import { joinWorkerPoolId } from '../../../utils/workerPool';
 import ErrorPanel from '../../../components/ErrorPanel';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Link from '../../../utils/Link';
-import workersQuery from './workers.graphql';
 import WorkersNavbar from '../../../components/WorkersNavbar';
+import withPaginatedResource from '../../../hocs/withPaginatedResource';
+import { withTaskclusterClient } from '../../../utils/TaskclusterClient';
 
 const STATES = {
   running: 'running',
@@ -30,30 +24,6 @@ const STATES = {
   stopped: 'stopped',
 };
 
-@withAuth
-@graphql(workersQuery, {
-  skip: props => !props.match.params.provisionerId,
-  options: ({ location, match: { params } }) => ({
-    errorPolicy: 'all',
-    variables: {
-      workerPoolId: joinWorkerPoolId(params.provisionerId, params.workerType),
-      provisionerId: params.provisionerId,
-      workerType: params.workerType,
-      workersConnection: {
-        limit: VIEW_WORKERS_PAGE_SIZE,
-      },
-      quarantined:
-        parse(location.search.slice(1)).filterBy === 'quarantined'
-          ? true
-          : null,
-      workerState: Object.values(STATES).includes(
-        parse(location.search.slice(1)).filterBy
-      )
-        ? parse(location.search.slice(1)).filterBy
-        : null,
-    },
-  }),
-})
 @withStyles(theme => ({
   bar: {
     display: 'flex',
@@ -73,52 +43,127 @@ const STATES = {
     ...theme.mixins.link,
   },
 }))
+@withTaskclusterClient
+@withPaginatedResource({
+  fetch:
+    props =>
+    ({ provisionerId, workerType, ...options }) =>
+      props
+        .createTaskclusterClient({ Class: WorkerManager })
+        .listWorkers(
+          props.match.params.provisionerId,
+          props.match.params.workerType,
+          options
+        ),
+  // provisionerId/workerType are included so the query re-runs when the
+  // route changes, and filterBy so it re-runs (and resets to page 0) when
+  // the dropdown changes; they're stripped back out in `fetch` before
+  // hitting the client.
+  payload: props => {
+    const { filterBy } = parse(props.location.search.slice(1));
+
+    return {
+      provisionerId: props.match.params.provisionerId,
+      workerType: props.match.params.workerType,
+      limit: VIEW_WORKERS_PAGE_SIZE,
+      quarantined: filterBy === 'quarantined' ? true : undefined,
+      workerState: Object.values(STATES).includes(filterBy)
+        ? filterBy
+        : undefined,
+    };
+  },
+  select: response => response.workers ?? [],
+})
 export default class ViewWorkers extends Component {
   state = {
-    actionLoading: false,
-    dialogError: null,
-    dialogOpen: false,
-    selectedAction: null,
+    workerPool: null,
+    latestTaskRuns: {},
   };
 
-  handleActionClick = async selectedAction => {
-    this.setState({ dialogOpen: true, selectedAction });
+  // Guards against out-of-order latestTaskRuns responses when the page or
+  // filter changes while a batch of per-worker lookups is still in flight.
+  latestTaskRunsRequestId = 0;
+
+  componentDidMount() {
+    this.fetchWorkerPool();
+    this.fetchLatestTaskRuns();
+  }
+
+  componentDidUpdate(prevProps) {
+    const { params } = this.props.match;
+    const { params: prevParams } = prevProps.match;
+
+    if (
+      params.provisionerId !== prevParams.provisionerId ||
+      params.workerType !== prevParams.workerType
+    ) {
+      this.fetchWorkerPool();
+    }
+
+    // `items` only gets a new reference when the paginated resource resolves
+    // a new page (or query); our own setState calls keep the same one.
+    if (prevProps.items !== this.props.items) {
+      this.fetchLatestTaskRuns();
+    }
+  }
+
+  get queue() {
+    return this.props.createTaskclusterClient({ Class: Queue });
+  }
+
+  // Workers may exist for pools not managed by worker-manager. A missing
+  // worker pool just trims the worker-manager-only nav items, so the lookup
+  // failure is swallowed rather than surfaced as an error.
+  fetchWorkerPool = async () => {
+    const { provisionerId, workerType } = this.props.match.params;
+    const workerPoolId = joinWorkerPoolId(provisionerId, workerType);
+
+    try {
+      const workerPool = await this.props
+        .createTaskclusterClient({ Class: WorkerManager })
+        .workerPool(workerPoolId);
+
+      this.setState({ workerPool });
+    } catch {
+      this.setState({ workerPool: null });
+    }
   };
 
-  handleActionError = dialogError => {
-    this.setState({ dialogError, actionLoading: false });
-  };
+  // Replaces the GraphQL resolver that decorated each worker's latestTask
+  // with its run status. The REST worker's `latestTask` only carries
+  // `{ taskId, runId }`, so the run's state/started/resolved is fetched per
+  // worker here.
+  fetchLatestTaskRuns = async () => {
+    const workers = this.props.items;
+    const requestId = ++this.latestTaskRunsRequestId;
+    const { queue } = this;
+    const entries = await Promise.all(
+      workers
+        .filter(({ latestTask }) => latestTask)
+        .map(async ({ latestTask }) => {
+          const key = `${latestTask.taskId}.${latestTask.runId}`;
 
-  // TODO: Action not working
-  handleActionSubmit = async () => {
-    const { selectedAction } = this.state;
-    const {
-      match: { params },
-    } = this.props;
-    const url = selectedAction.url
-      .replace('<provisionerId>', params.provisionerId)
-      .replace('<workerType>', params.workerType);
+          try {
+            const { status } = await queue.status(latestTask.taskId);
 
-    this.setState({ actionLoading: true, dialogError: null });
+            return [key, status.runs?.[latestTask.runId]];
+          } catch {
+            return [key, undefined];
+          }
+        })
+    );
 
-    await fetch(url, {
-      method: selectedAction.method,
-      Authorization: `Bearer ${btoa(
-        JSON.stringify(this.props.user.credentials)
-      )}`,
-    });
+    if (requestId !== this.latestTaskRunsRequestId) {
+      return;
+    }
 
-    this.setState({ actionLoading: false });
-  };
-
-  handleDialogClose = () => {
-    this.setState({ dialogOpen: false, selectedAction: null });
+    this.setState({ latestTaskRuns: Object.fromEntries(entries) });
   };
 
   handleFilterChange = ({ target }) => {
     const {
       location,
-      data: { refetch },
+      history,
       match: {
         params: { provisionerId, workerType },
       },
@@ -131,190 +176,108 @@ export default class ViewWorkers extends Component {
       delete query.filterBy;
     }
 
-    this.props.history.replace(
+    history.replace(
       `/provisioners/${provisionerId}/worker-types/${workerType}${stringify(
         query,
         { addQueryPrefix: true }
       )}`
     );
-
-    refetch({
-      provisionerId,
-      workerType,
-      workersConnection: {
-        limit: VIEW_WORKERS_PAGE_SIZE,
-      },
-      quarantined: target.value === 'quarantined' ? true : null,
-      workerState: Object.values(STATES).includes(target.value)
-        ? target.value
-        : null,
-    });
-  };
-
-  handlePageChange = ({ cursor, previousCursor }) => {
-    const {
-      match: {
-        params: { provisionerId, workerType },
-      },
-      data: { fetchMore },
-    } = this.props;
-    const { filterBy } = parse(this.props.location.search.slice(1));
-
-    return fetchMore({
-      query: workersQuery,
-      variables: {
-        provisionerId,
-        workerType,
-        workersConnection: {
-          limit: VIEW_WORKERS_PAGE_SIZE,
-          cursor,
-          previousCursor,
-        },
-        quarantined: filterBy === 'quarantined' ? true : null,
-        workerState: Object.values(STATES).includes(filterBy) ? filterBy : null,
-      },
-      updateQuery(previousResult, { fetchMoreResult }) {
-        const { edges, pageInfo } = fetchMoreResult.workers;
-
-        if (!edges.length) {
-          return previousResult;
-        }
-
-        return dotProp.set(previousResult, 'workers', workers =>
-          dotProp.set(
-            dotProp.set(workers, 'edges', edges),
-            'pageInfo',
-            pageInfo
-          )
-        );
-      },
-    });
-  };
-
-  shouldIgnoreGraphqlError = error => {
-    const { data } = this.props;
-    const workers = path(['workers', 'edges'], data);
-
-    if (error && error.graphQLErrors && workers) {
-      error.graphQLErrors.map(error => {
-        const taskId = path(['requestInfo', 'params', 'taskId'], error);
-
-        // ignores the error if task ID is not one of Most Recent Tasks
-        return filter(worker => {
-          return (
-            path(['node', 'latestTask', 'run', 'taskId'], worker) === taskId &&
-            error.statusCode === 404
-          );
-        }, workers);
-      });
-    }
-
-    return true;
   };
 
   render() {
     const {
-      actionLoading,
-      selectedAction,
-      dialogOpen,
-      dialogError,
-    } = this.state;
-    const {
       location,
       classes,
       match: { params },
-      data: { loading, error, workers, workerType, WorkerPool },
+      items,
+      loading,
+      error,
+      page,
+      hasNextPage,
+      hasPreviousPage,
+      nextPage,
+      previousPage,
     } = this.props;
+    const { workerPool, latestTaskRuns } = this.state;
     const query = parse(location.search.slice(1));
-    const shouldIgnoreGraphqlError = this.shouldIgnoreGraphqlError(error);
+    const workers = items.map(worker => ({
+      ...worker,
+      latestTask: worker.latestTask
+        ? {
+            run: {
+              taskId: worker.latestTask.taskId,
+              runId: worker.latestTask.runId,
+              ...latestTaskRuns[
+                `${worker.latestTask.taskId}.${worker.latestTask.runId}`
+              ],
+            },
+          }
+        : null,
+    }));
+    // Separates the first load, which has nothing to show yet, from paging,
+    // where the table stays up and the pagination row spins.
+    const initialLoad = loading && !items.length;
 
     return (
       <Dashboard title="Workers">
-        <Fragment>
-          {(!workers || !workerType) && loading && <Spinner loading />}
-          {!shouldIgnoreGraphqlError && <ErrorPanel fixed error={error} />}
-
-          {shouldIgnoreGraphqlError && this.state.error && (
-            <ErrorPanel fixed error={this.state.error} />
-          )}
-          <Box className={classes.bar}>
-            <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
-              <Link to="/provisioners">
-                <Typography variant="body2" className={classes.link}>
-                  Workers
+        {initialLoad && <Spinner loading />}
+        <ErrorPanel fixed error={error} />
+        {!initialLoad && (
+          <Fragment>
+            <Box className={classes.bar}>
+              <Breadcrumbs classes={{ paper: classes.breadcrumbsPaper }}>
+                <Link to="/provisioners">
+                  <Typography variant="body2" className={classes.link}>
+                    Workers
+                  </Typography>
+                </Link>
+                <Link to={`/provisioners/${params.provisionerId}`}>
+                  <Typography variant="body2" className={classes.link}>
+                    {params.provisionerId}
+                  </Typography>
+                </Link>
+                <Typography variant="body2" color="textSecondary">
+                  {`${params.workerType}`}
                 </Typography>
-              </Link>
-              <Link to={`/provisioners/${params.provisionerId}`}>
-                <Typography variant="body2" className={classes.link}>
-                  {params.provisionerId}
-                </Typography>
-              </Link>
-              <Typography variant="body2" color="textSecondary">
-                {`${params.workerType}`}
-              </Typography>
-              <WorkersNavbar
-                provisionerId={params.provisionerId}
-                workerType={params.workerType}
-                hasWorkerPool={!!WorkerPool?.workerPoolId}
-              />
-            </Breadcrumbs>
-
-            <Box marginTop={-2}>
-              <TextField
-                disabled={loading}
-                className={classes.dropdown}
-                select
-                label="Filter By"
-                value={query.filterBy || ''}
-                onChange={this.handleFilterChange}>
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value="quarantined">Quarantined</MenuItem>
-                <MenuItem value="running">Running</MenuItem>
-                <MenuItem value="stopping">Stopping</MenuItem>
-                <MenuItem value="stopped">Stopped</MenuItem>
-              </TextField>
-            </Box>
-          </Box>
-          <br />
-          <WorkersTable
-            workersConnection={workers}
-            onPageChange={this.handlePageChange}
-            workerType={params.workerType}
-            provisionerId={params.provisionerId}
-          />
-          {workerType?.actions?.length ? (
-            <SpeedDial>
-              {workerType.actions.map(action => (
-                <SpeedDialAction
-                  requiresAuth
-                  tooltipOpen
-                  key={action.title}
-                  FabProps={{
-                    disabled: actionLoading,
-                  }}
-                  icon={<HammerIcon />}
-                  tooltipTitle={action.title}
-                  onClick={() => this.handleActionClick(action)}
+                <WorkersNavbar
+                  provisionerId={params.provisionerId}
+                  workerType={params.workerType}
+                  hasWorkerPool={!!workerPool?.workerPoolId}
                 />
-              ))}
-            </SpeedDial>
-          ) : null}
-          {dialogOpen && (
-            <DialogAction
-              error={dialogError}
-              open={dialogOpen}
-              title={`${selectedAction.title}?`}
-              body={selectedAction.description}
-              confirmText={selectedAction.title}
-              onSubmit={this.handleActionSubmit}
-              onError={this.handleActionError}
-              onComplete={this.handleDialogClose}
-              onClose={this.handleDialogClose}
+              </Breadcrumbs>
+
+              <Box marginTop={-2}>
+                <TextField
+                  disabled={loading}
+                  className={classes.dropdown}
+                  select
+                  label="Filter By"
+                  value={query.filterBy || ''}
+                  onChange={this.handleFilterChange}>
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="quarantined">Quarantined</MenuItem>
+                  <MenuItem value="running">Running</MenuItem>
+                  <MenuItem value="stopping">Stopping</MenuItem>
+                  <MenuItem value="stopped">Stopped</MenuItem>
+                </TextField>
+              </Box>
+            </Box>
+            <br />
+            <WorkersTable
+              workers={workers}
+              loading={loading}
+              page={page}
+              hasNextPage={hasNextPage}
+              hasPreviousPage={hasPreviousPage}
+              onNextPage={nextPage}
+              onPreviousPage={previousPage}
+              workerType={params.workerType}
+              provisionerId={params.provisionerId}
             />
-          )}
-        </Fragment>
+          </Fragment>
+        )}
       </Dashboard>
     );
   }

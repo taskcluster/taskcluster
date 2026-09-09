@@ -1,5 +1,5 @@
 import taskcluster from '@taskcluster/client';
-import assert from 'assert';
+import assert from 'node:assert';
 
 export default class User {
   constructor() {
@@ -18,9 +18,7 @@ export default class User {
   }
 
   get identityId() {
-    return this._identity.split('/')
-      .slice(1)
-      .join('|');
+    return this._identity.split('/').slice(1).join('|');
   }
 
   addRole(...roles) {
@@ -34,7 +32,7 @@ export default class User {
   }
 
   scopes() {
-    let scopes = this.roles.map(role => 'assume:' + role);
+    const scopes = this.roles.map(role => `assume:${role}`);
     // the `login-identity:*` role defines what each user gets access to.
     scopes.push(`assume:login-identity:${this.identity}`);
 

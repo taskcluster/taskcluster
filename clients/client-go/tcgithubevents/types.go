@@ -239,4 +239,45 @@ type (
 		//   * 1
 		Version float64 `json:"version"`
 	}
+
+	// Message reporting that a push changed a repository's `.taskcluster.yml`.
+	//
+	// The payload is deliberately narrow.  A consumer acts on a repository it
+	// already knows about, so nothing that would let an author of the pushed commits
+	// steer it travels with the message.  In particular the file's contents do not.
+	TaskclusterYmlUpdateMessage struct {
+
+		// The GitHub webhook deliveryId of the push, for tracing this message back
+		// to the delivery that caused it.
+		//
+		// Syntax:     ^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$
+		EventID string `json:"eventId"`
+
+		// The GitHub `organization` which had an event, as GitHub spells it.  The
+		// routing key carries the same name with periods replaced by `%`.
+		//
+		// Syntax:     ^([a-zA-Z0-9-_%\[\]]*)$
+		// Min length: 1
+		// Max length: 100
+		Organization string `json:"organization"`
+
+		// The full ref that was pushed to, so that a consumer can ignore a branch or
+		// tag it does not build.
+		//
+		// Syntax:     ^refs/(heads|tags)/.*$
+		Ref string `json:"ref"`
+
+		// The GitHub `repository` whose `.taskcluster.yml` changed, as GitHub spells
+		// it.  The routing key carries the same name with periods replaced by `%`.
+		//
+		// Syntax:     ^[A-Za-z0-9._-]+$
+		// Max length: 100
+		Repository string `json:"repository"`
+
+		// Message version
+		//
+		// Possible values:
+		//   * 1
+		Version float64 `json:"version"`
+	}
 )

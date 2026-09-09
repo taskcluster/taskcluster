@@ -16,8 +16,8 @@ import (
 
 	"github.com/taskcluster/httpbackoff/v3"
 	"github.com/taskcluster/slugid-go/slugid"
-	tcclient "github.com/taskcluster/taskcluster/v99/clients/client-go"
-	"github.com/taskcluster/taskcluster/v99/clients/client-go/tcqueue"
+	tcclient "github.com/taskcluster/taskcluster/v108/clients/client-go"
+	"github.com/taskcluster/taskcluster/v108/clients/client-go/tcqueue"
 )
 
 type Queue struct {
@@ -523,6 +523,17 @@ func (queue *Queue) Artifact(taskId, runId, name string) (*tcqueue.GetArtifactCo
 			StorageType: "error",
 			Message:     a.Message,
 			Reason:      a.Reason,
+		}
+		var err error
+		jsonResp, err = json.Marshal(resp)
+		if err != nil {
+			return nil, err
+		}
+
+	case *tcqueue.RedirectArtifactRequest:
+		resp := tcqueue.GetArtifactContentResponse3{
+			StorageType: "reference",
+			URL:         a.URL,
 		}
 		var err error
 		jsonResp, err = json.Marshal(resp)

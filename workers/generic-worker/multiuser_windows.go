@@ -5,7 +5,9 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -16,12 +18,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/host"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/interactive"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/process"
-	gwruntime "github.com/taskcluster/taskcluster/v99/workers/generic-worker/runtime"
-	"github.com/taskcluster/taskcluster/v99/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/host"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/interactive"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/process"
+	gwruntime "github.com/taskcluster/taskcluster/v108/workers/generic-worker/runtime"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/win32"
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
@@ -48,31 +51,17 @@ func platformFeatures() []Feature {
 }
 
 func deleteDir(path string) error {
-	log.Print("Trying to remove directory '" + path + "' via os.RemoveAll(path) call...")
-	err := os.RemoveAll(path)
-	if err == nil {
-		return nil
-	}
-	log.Print("WARNING: could not delete directory '" + path + "' with os.RemoveAll(path) method")
-	log.Printf("%v", err)
-	log.Print("Trying to remove directory '" + path + "' via del and rmdir commands...")
-	err = host.Run("cmd", "/c", "del", "/s", "/q", "/f", path)
-	if err != nil {
-		log.Printf("%#v", err)
-	}
-	err = host.Run("cmd", "/c", "rmdir", "/s", "/q", path)
-	if err != nil {
-		log.Printf("%#v", err)
-	}
-	return err
+	log.Print("Removing directory '" + path + "'...")
+	return os.RemoveAll(path)
 }
 
 func (task *TaskRun) generateCommand(index int) error {
+	taskDir := task.TaskDir()
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := fileutil.AbsFrom(taskContext.TaskDir, commandName+"_wrapper.bat")
+	wrapper := fileutil.AbsFrom(taskDir, commandName+"_wrapper.bat")
 	log.Printf("Creating wrapper script: %v", wrapper)
 	task.pd.HideCmdWindow = task.Payload.Features.HideCmdWindow
-	command, err := process.NewCommand([]string{wrapper}, taskContext.TaskDir, nil, task.pd)
+	command, err := process.NewCommand([]string{wrapper}, taskDir, nil, task.pd)
 	if err != nil {
 		return err
 	}
@@ -86,11 +75,12 @@ func (task *TaskRun) generateCommand(index int) error {
 func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	// In order that capturing of log files works, create a custom .bat file
 	// for the task which redirects output to a log file...
-	env := fileutil.AbsFrom(taskContext.TaskDir, "env.txt")
-	dir := fileutil.AbsFrom(taskContext.TaskDir, "dir.txt")
+	taskDir := task.TaskDir()
+	env := fileutil.AbsFrom(taskDir, "env.txt")
+	dir := fileutil.AbsFrom(taskDir, "dir.txt")
 	commandName := fmt.Sprintf("command_%06d", index)
-	wrapper := fileutil.AbsFrom(taskContext.TaskDir, commandName+"_wrapper.bat")
-	script := fileutil.AbsFrom(taskContext.TaskDir, commandName+".bat")
+	wrapper := fileutil.AbsFrom(taskDir, commandName+"_wrapper.bat")
+	script := fileutil.AbsFrom(taskDir, commandName+".bat")
 	contents := ":: This script runs command " + strconv.Itoa(index) + " defined in TaskId " + task.TaskID + "..." + "\r\n"
 	contents += "@echo off\r\n"
 
@@ -119,12 +109,11 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		}
 		contents += setEnvVarCommand("TASK_ID", task.TaskID)
 		contents += setEnvVarCommand("RUN_ID", strconv.Itoa(int(task.RunID)))
-		contents += setEnvVarCommand("TASK_WORKDIR", taskContext.TaskDir)
+		contents += setEnvVarCommand("TASK_WORKDIR", taskDir)
 		contents += setEnvVarCommand("TASK_GROUP_ID", task.TaskGroupID)
 		contents += setEnvVarCommand("TASKCLUSTER_ROOT_URL", config.RootURL)
-		if task.Payload.Features.RunTaskAsCurrentUser {
-			contents += setEnvVarCommand("TASK_USER_CREDENTIALS", ctuPath)
-		}
+		// Note: TASK_USER_CREDENTIALS is set via platformSpecificActions() in
+		// RunTaskAsCurrentUserTask.Start() and comes through task.Payload.Env
 		if config.WorkerLocation != "" {
 			// Note, in contrast to other shells, the cmd shell set command
 			// expects literal bytes between the `=` character and the line
@@ -137,11 +126,11 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			// ending, i.e. no string escaping required!
 			contents += setEnvVarCommand("TASKCLUSTER_INSTANCE_TYPE", config.InstanceType)
 		}
-		contents += "cd \"" + taskContext.TaskDir + "\"" + "\r\n"
+		contents += "cd \"" + taskDir + "\"" + "\r\n"
 
 		// Otherwise get the env from the previous command
 	} else {
-		envFile, err := os.Open(env)
+		envFile, err := safefs.OpenExistingReadonly(env)
 		if err != nil {
 			panic(fmt.Errorf("could not read from env file %v\n%v", env, err))
 		}
@@ -155,12 +144,11 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 			panic(err)
 		}
 
-		dirBytes, err := os.ReadFile(dir)
-		dirString := strings.SplitN(strings.ReplaceAll(string(dirBytes), "\r\n", "\n"), "\n", 2)[0]
-
+		dirBytes, err := safefs.ReadFile(dir)
 		if err != nil {
 			panic(fmt.Errorf("could not read directory location from file %v\n%v", dir, err))
 		}
+		dirString := strings.SplitN(strings.ReplaceAll(string(dirBytes), "\r\n", "\n"), "\n", 2)[0]
 
 		contents += "cd \"" + dirString + "\"\r\n"
 	}
@@ -193,7 +181,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 	contents += "exit /b %tcexitcode%\r\n"
 
 	// now generate the .bat script that runs all of this
-	err := os.WriteFile(
+	err := safefs.WriteFile(
 		wrapper,
 		[]byte(contents),
 		0755, // note this is mostly ignored on windows
@@ -208,7 +196,7 @@ func (task *TaskRun) prepareCommand(index int) *CommandExecutionError {
 		task.Payload.Command[index],
 	}, "\r\n"))
 
-	err = os.WriteFile(
+	err = safefs.WriteFile(
 		script,
 		fileContents,
 		0755, // note this is mostly ignored on windows
@@ -266,77 +254,105 @@ func install(arguments map[string]any) (err error) {
 }
 
 func makeFileOrDirReadWritableForUser(recurse bool, dir string, user *gwruntime.OSUser) error {
-	// see http://ss64.com/nt/icacls.html
-	return host.Run("icacls", dir, "/grant:r", user.Name+":(OI)(CI)F")
+	return grantFullControl(dir, user.Name, recurse)
 }
 
-// The windows implementation of os.Rename(...) doesn't allow renaming files
-// across drives (i.e. copy and delete semantics) - this alternative
-// implementation is identical to the os.Rename(...) implementation, but
-// additionally sets the flag windows.MOVEFILE_COPY_ALLOWED in order to cater
-// for oldpath and newpath being on different drives. See:
-// https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240(v=vs.85).aspx
-func RenameCrossDevice(oldpath, newpath string) (err error) {
-	var to, from *uint16
-	from, err = syscall.UTF16PtrFromString(oldpath)
-	if err != nil {
-		return
+// Renaming only works when files are on the same device. In the event that it
+// fails, this function reverts to a move that actually writes content which is
+// slower but works across devices.
+func RenameCrossDevice(oldpath, newpath string) error {
+	err := safefs.Rename(oldpath, newpath)
+	if !errors.Is(err, windows.STATUS_NOT_SAME_DEVICE) {
+		return err
 	}
-	to, err = syscall.UTF16PtrFromString(newpath)
-	if err != nil {
-		return
-	}
-	// this will work for files and directories on same drive, and even for
-	// files on different drives, but not for directories on different drives
-	err = windows.MoveFileEx(from, to, windows.MOVEFILE_REPLACE_EXISTING|windows.MOVEFILE_COPY_ALLOWED)
-
-	// if we fail, could be a folder that needs to be moved to a different
-	// drive - however, check it really is a folder, since otherwise we could
-	// end up infinitely recursing between RenameCrossDevice and
-	// RenameFolderCrossDevice, since they both call into each other
-	if err != nil {
-		var fi os.FileInfo
-		fi, err = os.Stat(oldpath)
-		if err != nil {
-			return
-		}
-		if fi.IsDir() {
-			err = RenameFolderCrossDevice(oldpath, newpath)
-		}
-	}
-	return
+	return renameFolderCrossDevice(oldpath, newpath)
 }
 
-func RenameFolderCrossDevice(oldpath, newpath string) (err error) {
-	// recursively move files
-	moveFile := func(path string, d os.DirEntry, inErr error) (outErr error) {
-		if inErr != nil {
-			return inErr
-		}
-		var relPath string
-		relPath, outErr = filepath.Rel(oldpath, path)
-		if outErr != nil {
-			return
-		}
-		targetPath := filepath.Join(newpath, relPath)
-		if d.IsDir() {
-			var info os.FileInfo
-			info, outErr = d.Info()
-			if outErr != nil {
-				return
-			}
-			outErr = os.Mkdir(targetPath, info.Mode())
-		} else {
-			outErr = RenameCrossDevice(path, targetPath)
-		}
-		return
-	}
-	err = filepath.WalkDir(oldpath, moveFile)
+const maxMoveDepth = 1024
+
+func renameFolderCrossDevice(oldpath, newpath string) error {
+	sourceParent, sourceName, err := safefs.OpenParent(oldpath, windows.FILE_LIST_DIRECTORY|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
 	if err != nil {
-		return
+		return err
 	}
-	err = os.RemoveAll(oldpath)
-	return
+	defer func() { _ = windows.CloseHandle(sourceParent) }()
+
+	targetParent, targetName, err := safefs.OpenParent(newpath, windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA|windows.FILE_READ_ATTRIBUTES|windows.SYNCHRONIZE)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = windows.CloseHandle(targetParent) }()
+
+	return moveEntry(sourceParent, filepath.Dir(oldpath), sourceName, targetParent, filepath.Dir(newpath), targetName, 0)
+}
+
+func moveEntry(sourceParent windows.Handle, sourcePath, name string, targetParent windows.Handle, targetPath, targetName string, depth int) error {
+	if depth > maxMoveDepth {
+		return fmt.Errorf("refusing to move %q under %q: more than %v levels deep", name, sourcePath, maxMoveDepth)
+	}
+
+	handle, err := safefs.OpenChild(sourceParent, name, sourcePath, windows.GENERIC_READ|windows.DELETE|windows.SYNCHRONIZE)
+	if err != nil {
+		return err
+	}
+	source := os.NewFile(uintptr(handle), filepath.Join(sourcePath, name))
+	defer source.Close()
+
+	dir, surrogate, err := safefs.Kind(handle)
+	if err != nil {
+		return fmt.Errorf("could not stat %q under %q: %w", name, sourcePath, err)
+	}
+	if surrogate {
+		return fmt.Errorf("refusing to move %q under %q: it is a junction or a link", name, sourcePath)
+	}
+
+	if dir {
+		err = moveDir(source, filepath.Join(sourcePath, name), targetParent, targetPath, targetName, depth)
+	} else {
+		err = copyFile(source, targetParent, targetPath, targetName)
+	}
+	if err != nil {
+		return err
+	}
+	return safefs.DeleteSelf(handle, source.Name())
+}
+
+func copyFile(source *os.File, targetParent windows.Handle, targetPath, targetName string) error {
+	handle, err := safefs.CreateOrTruncateChild(targetParent, targetName, targetPath, windows.GENERIC_WRITE|windows.SYNCHRONIZE)
+	if err != nil {
+		return err
+	}
+	target := os.NewFile(uintptr(handle), filepath.Join(targetPath, targetName))
+	defer target.Close()
+
+	if _, err := io.Copy(target, source); err != nil {
+		return fmt.Errorf("could not copy %q to %q: %w", source.Name(), target.Name(), err)
+	}
+	if err := target.Close(); err != nil {
+		return fmt.Errorf("could not close %q: %w", target.Name(), err)
+	}
+	return nil
+}
+
+func moveDir(source *os.File, sourcePath string, targetParent windows.Handle, targetPath, targetName string, depth int) error {
+	target, err := safefs.CreateChild(targetParent, targetName, targetPath, windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA|windows.SYNCHRONIZE, true)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = windows.CloseHandle(target) }()
+
+	names, err := source.Readdirnames(-1)
+	if err != nil {
+		return fmt.Errorf("could not read directory %q: %w", sourcePath, err)
+	}
+
+	newTargetPath := filepath.Join(targetPath, targetName)
+	for _, name := range names {
+		if err := moveEntry(windows.Handle(source.Fd()), sourcePath, name, target, newTargetPath, name, depth+1); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func RedirectAppData(hUser syscall.Token, folder string) error {
@@ -530,6 +546,10 @@ func GrantSIDFullControlOfInteractiveWindowsStationAndDesktop(sid string) (err e
 	return
 }
 
+func waitForTaskUserSession(ctx *TaskContext) error {
+	return gwruntime.WaitForLoginCompletion(5*time.Minute, ctx.User.Name)
+}
+
 func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 	// Wait for the User Profile Service to be running before any profile operations.
 	// On first boot after sysprep, ProfSvc may not be initialized yet.
@@ -561,31 +581,6 @@ func PreRebootSetup(nextTaskUser *gwruntime.OSUser) {
 	}
 }
 
-func changeOwnershipInDir(dir, newOwnerUsername string, cache *Cache) error {
-	if dir == "" || newOwnerUsername == "" || cache == nil {
-		return fmt.Errorf("directory path, new owner username, and cache must not be empty")
-	}
-
-	// Do nothing if the current owner is the same as the new owner
-	if cache.OwnerUsername == newOwnerUsername {
-		return nil
-	}
-
-	// Reset to inherited permissions only, recursively
-	out, err := host.Output("icacls", dir, "/reset", "/t", "/c", "/q")
-	if err != nil {
-		return fmt.Errorf("failed to reset permissions on dir %v: %v\n%v", dir, err, out)
-	}
-
-	// Grant full control to new owner, adding to inherited permissions
-	out, err = host.Output("icacls", dir, "/grant", newOwnerUsername+":(OI)(CI)F")
-	if err != nil {
-		return fmt.Errorf("failed to grant permissions to %v on dir %v: %v\n%v", newOwnerUsername, dir, err, out)
-	}
-
-	return nil
-}
-
 func convertNilToEmptyString(val any) string {
 	if val == nil {
 		return ""
@@ -598,7 +593,7 @@ func (task *TaskRun) generateInteractiveCommand(d2gConversionInfo interface{}, c
 	for k, v := range task.Payload.Env {
 		envVars = append(envVars, k+"="+win32.CMDExeEscape(v))
 	}
-	return interactive.StartConPty([]string{"c:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"}, taskContext.TaskDir, envVars, windows.Token(task.pd.CommandAccessToken))
+	return interactive.StartConPty([]string{"c:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"}, task.TaskDir(), envVars, windows.Token(task.pd.CommandAccessToken))
 }
 
 func (task *TaskRun) generateInteractiveIsReadyCommand(d2gConversionInfo interface{}, ctx context.Context) (*exec.Cmd, error) {

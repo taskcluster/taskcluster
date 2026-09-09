@@ -12,13 +12,11 @@ import Dashboard from '../../components/Dashboard';
 export default class Shell extends Component {
   render() {
     const search = new URLSearchParams(this.props.location.search);
-    const props = ['socketUrl', 'v', 'taskId'].reduce(
-      (props, key) => ({
-        ...props,
-        [key]: decodeURIComponent(search.get(key)),
-      }),
-      {}
-    );
+    const props = ['socketUrl', 'v', 'taskId'].reduce((props, key) => {
+      props[key] = decodeURIComponent(search.get(key));
+
+      return props;
+    }, {});
 
     return (
       <Dashboard

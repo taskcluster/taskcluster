@@ -76,7 +76,7 @@ func RunBatch(allowFail bool, commands ...[]string) (err error) {
 			}
 		}
 	}
-	return nil
+	return err
 }
 
 // RunIgnoreError calls CombinedOutput(comand, args...). If errString is found
@@ -89,7 +89,7 @@ func RunIgnoreError(errString string, command string, args ...string) (found boo
 			return true, nil
 		}
 	}
-	return false, nil
+	return false, err
 }
 
 // runCommand logs cmd.Args, calls cmd.CombinedOutput(), and if an error
@@ -105,5 +105,5 @@ func runCommand(cmd *exec.Cmd) (combinedOutput string, err error) {
 		log.Print("Error running command:")
 		log.Print(string(out))
 	}
-	return string(out), nil
+	return string(out), err
 }

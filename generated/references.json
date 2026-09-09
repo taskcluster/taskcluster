@@ -6,65 +6,6 @@
       "additionalProperties": false,
       "description": "Response containing information about a worker.\n",
       "properties": {
-        "actions": {
-          "items": {
-            "additionalProperties": false,
-            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context. All actions, regardless of the action contexts,\nare registered against the provisioner when calling\n`queue.declareProvisioner`.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
-            "properties": {
-              "context": {
-                "description": "Only actions with the context `worker` are included.\n",
-                "enum": [
-                  "worker"
-                ],
-                "title": "Context",
-                "type": "string"
-              },
-              "description": {
-                "description": "Description of the provisioner.\n",
-                "title": "Description",
-                "type": "string"
-              },
-              "method": {
-                "description": "Method to indicate the desired action to be performed for a given resource.\n",
-                "enum": [
-                  "POST",
-                  "PUT",
-                  "DELETE",
-                  "PATCH"
-                ],
-                "title": "Method",
-                "type": "string"
-              },
-              "name": {
-                "description": "Short names for things like logging/error messages.\n",
-                "title": "Name",
-                "type": "string"
-              },
-              "title": {
-                "description": "Appropriate title for any sort of Modal prompt.\n",
-                "title": "Title"
-              },
-              "url": {
-                "description": "When an action is triggered, a request is made using the `url` and `method`.\nDepending on the `context`, the following parameters will be substituted in the url:\n\n| `context`   | Path parameters                                          |\n|-------------|----------------------------------------------------------|\n| provisioner | <provisionerId>                                          |\n| worker-type | <provisionerId>, <workerType>                            |\n| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |\n\n_Note: The request needs to be signed with the user's Taskcluster credentials._\n",
-                "title": "URL",
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "title",
-              "context",
-              "url",
-              "method",
-              "description"
-            ],
-            "title": "Worker Action",
-            "type": "object"
-          },
-          "title": "Worker Actions",
-          "type": "array",
-          "uniqueItems": false
-        },
         "capacity": {
           "description": "Number of tasks this worker can handle at once. A worker capacity of 0 means\nthe worker is not managed by worker manager and is only known to the queue, the\ntrue capacity is not known.\n",
           "minimum": 0,
@@ -207,8 +148,7 @@
         "workerId",
         "recentTasks",
         "expires",
-        "firstClaim",
-        "actions"
+        "firstClaim"
       ],
       "title": "Worker Response",
       "type": "object"
@@ -1155,7 +1095,7 @@
         },
         "priority": {
           "default": "lowest",
-          "description": "Priority of task. This defaults to `lowest` and the scope\n`queue:create-task:<priority>/<provisionerId>/<workerType>` is required\nto define a task with `<priority>`. The `normal` priority is treated as\n`lowest`.\n",
+          "description": "Priority of task. This defaults to `lowest` and the scope\n`queue:create-task:<priority>/<provisionerId>/<workerType>` is required\nto define a task with `<priority>`.\n",
           "enum": [
             "highest",
             "very-high",
@@ -1163,8 +1103,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "title": "Task Priority",
           "type": "string"
@@ -2985,6 +2924,90 @@
   },
   {
     "content": {
+      "$id": "/schemas/web-server/v1/registered-clients.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "description": "Third-party OAuth2 clients registered with this deployment, as given in the\n`login.registeredClients` configuration value.\n",
+      "items": {
+        "additionalProperties": false,
+        "if": {
+          "additionalProperties": true,
+          "properties": {
+            "requirePkce": {
+              "const": true
+            }
+          },
+          "required": [
+            "requirePkce"
+          ],
+          "type": "object"
+        },
+        "properties": {
+          "clientId": {
+            "description": "Identifier this client uses in its authorization requests.\n",
+            "type": "string"
+          },
+          "maxExpires": {
+            "description": "Longest lifetime of credentials issued to this client, as a duration\nsuch as `1 year`.\n",
+            "type": "string"
+          },
+          "redirectUri": {
+            "description": "URIs this client may be redirected back to after authorization.  Must\nbe absolute `http:` or `https:` URLs.\n",
+            "items": {
+              "format": "uri",
+              "pattern": "^https?://",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "requirePkce": {
+            "description": "If true, authorization requests from this client must use PKCE.  Only\nmeaningful for the authorization-code flow.\n",
+            "type": "boolean"
+          },
+          "responseType": {
+            "description": "OAuth2 flow this client uses: `token` for the implicit flow, `code` for\nthe authorization-code flow.\n",
+            "enum": [
+              "token",
+              "code"
+            ]
+          },
+          "scope": {
+            "description": "Scopes this client is allowed to request.\n",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "whitelisted": {
+            "description": "If true, users are not prompted to grant this client access.\n",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "clientId",
+          "responseType",
+          "scope",
+          "redirectUri",
+          "maxExpires"
+        ],
+        "then": {
+          "additionalProperties": true,
+          "properties": {
+            "responseType": {
+              "const": "code"
+            }
+          },
+          "type": "object"
+        },
+        "title": "Registered Client",
+        "type": "object"
+      },
+      "title": "Registered Clients",
+      "type": "array"
+    },
+    "filename": "schemas/web-server/v1/registered-clients.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/secrets/v1/secret.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -3017,7 +3040,7 @@
       "description": "Message containing a list of secret names\n",
       "properties": {
         "continuationToken": {
-          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of provisioners.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called with `continuationToken` until you get a\nresult without a `continuationToken`.\n",
+          "description": "Opaque `continuationToken` to be given as query-string option to get the\nnext set of secrets.\nThis property is only present if another request is necessary to fetch all\nresults. In practice the next request with a `continuationToken` may not\nreturn additional results, but it can. Thus, you can only be sure to have\nall the results if you've called with `continuationToken` until you get a\nresult without a `continuationToken`.\n",
           "title": "Continuation Token",
           "type": "string"
         },
@@ -3047,65 +3070,6 @@
       "additionalProperties": false,
       "description": "Response to a worker-type request from a provisioner.\n",
       "properties": {
-        "actions": {
-          "items": {
-            "additionalProperties": false,
-            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context. All actions, regardless of the action contexts,\nare registered against the provisioner when calling\n`queue.declareProvisioner`.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
-            "properties": {
-              "context": {
-                "description": "Only actions with the context `worker-type` are included.\n",
-                "enum": [
-                  "worker-type"
-                ],
-                "title": "Context",
-                "type": "string"
-              },
-              "description": {
-                "description": "Description of the provisioner.\n",
-                "title": "Description",
-                "type": "string"
-              },
-              "method": {
-                "description": "Method to indicate the desired action to be performed for a given resource.\n",
-                "enum": [
-                  "POST",
-                  "PUT",
-                  "DELETE",
-                  "PATCH"
-                ],
-                "title": "Method",
-                "type": "string"
-              },
-              "name": {
-                "description": "Short names for things like logging/error messages.\n",
-                "title": "Name",
-                "type": "string"
-              },
-              "title": {
-                "description": "Appropriate title for any sort of Modal prompt.\n",
-                "title": "Title"
-              },
-              "url": {
-                "description": "When an action is triggered, a request is made using the `url` and `method`.\nDepending on the `context`, the following parameters will be substituted in the url:\n\n| `context`   | Path parameters                                          |\n|-------------|----------------------------------------------------------|\n| provisioner | <provisionerId>                                          |\n| worker-type | <provisionerId>, <workerType>                            |\n| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |\n\n_Note: The request needs to be signed with the user's Taskcluster credentials._\n",
-                "title": "URL",
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "title",
-              "context",
-              "url",
-              "method",
-              "description"
-            ],
-            "title": "Worker-type Action",
-            "type": "object"
-          },
-          "title": "Worker-type Actions",
-          "type": "array",
-          "uniqueItems": false
-        },
         "description": {
           "description": "Description of the worker-type.\n",
           "title": "Description",
@@ -3150,8 +3114,7 @@
         "description",
         "stability",
         "expires",
-        "lastDateActive",
-        "actions"
+        "lastDateActive"
       ],
       "title": "Worker-type Response",
       "type": "object"
@@ -3165,65 +3128,6 @@
       "additionalProperties": false,
       "description": "Response containing information about a worker.\n",
       "properties": {
-        "actions": {
-          "items": {
-            "additionalProperties": false,
-            "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context. All actions, regardless of the action contexts,\nare registered against the provisioner when calling\n`queue.declareProvisioner`.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
-            "properties": {
-              "context": {
-                "description": "Only actions with the context `worker` are included.\n",
-                "enum": [
-                  "worker"
-                ],
-                "title": "Context",
-                "type": "string"
-              },
-              "description": {
-                "description": "Description of the provisioner.\n",
-                "title": "Description",
-                "type": "string"
-              },
-              "method": {
-                "description": "Method to indicate the desired action to be performed for a given resource.\n",
-                "enum": [
-                  "POST",
-                  "PUT",
-                  "DELETE",
-                  "PATCH"
-                ],
-                "title": "Method",
-                "type": "string"
-              },
-              "name": {
-                "description": "Short names for things like logging/error messages.\n",
-                "title": "Name",
-                "type": "string"
-              },
-              "title": {
-                "description": "Appropriate title for any sort of Modal prompt.\n",
-                "title": "Title"
-              },
-              "url": {
-                "description": "When an action is triggered, a request is made using the `url` and `method`.\nDepending on the `context`, the following parameters will be substituted in the url:\n\n| `context`   | Path parameters                                          |\n|-------------|----------------------------------------------------------|\n| provisioner | <provisionerId>                                          |\n| worker-type | <provisionerId>, <workerType>                            |\n| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |\n\n_Note: The request needs to be signed with the user's Taskcluster credentials._\n",
-                "title": "URL",
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "title",
-              "context",
-              "url",
-              "method",
-              "description"
-            ],
-            "title": "Worker Action",
-            "type": "object"
-          },
-          "title": "Worker Actions",
-          "type": "array",
-          "uniqueItems": false
-        },
         "expires": {
           "description": "Date and time after which the worker will be automatically\ndeleted by the queue.\n",
           "format": "date-time",
@@ -3332,49 +3236,12 @@
         "workerId",
         "recentTasks",
         "expires",
-        "firstClaim",
-        "actions"
+        "firstClaim"
       ],
       "title": "Worker Response",
       "type": "object"
     },
     "filename": "schemas/queue/v1/worker-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/queue/v1/update-workertype-request.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Request to update a worker-type.\n",
-      "properties": {
-        "description": {
-          "description": "Description of the provisioner.\n",
-          "title": "Description",
-          "type": "string"
-        },
-        "expires": {
-          "description": "Date and time after which the worker-type will be automatically\ndeleted by the queue.\n",
-          "format": "date-time",
-          "title": "Worker-type Expiration",
-          "type": "string"
-        },
-        "stability": {
-          "description": "This is the stability of the provisioner. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
-          "enum": [
-            "experimental",
-            "stable",
-            "deprecated"
-          ],
-          "title": "Stability",
-          "type": "string"
-        }
-      },
-      "required": [
-      ],
-      "title": "Worker-type Request",
-      "type": "object"
-    },
-    "filename": "schemas/queue/v1/update-workertype-request.json"
   },
   {
     "content": {
@@ -3391,50 +3258,12 @@
         }
       },
       "required": [
+        "expires"
       ],
       "title": "Worker Request",
       "type": "object"
     },
     "filename": "schemas/queue/v1/update-worker-request.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/queue/v1/update-provisioner-request.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "additionalProperties": false,
-      "description": "Request to update a provisioner.\n",
-      "properties": {
-        "actions": {
-          "$ref": "actions.json#"
-        },
-        "description": {
-          "description": "Description of the provisioner.\n",
-          "title": "Description",
-          "type": "string"
-        },
-        "expires": {
-          "description": "Date and time after which the provisioner will be automatically\ndeleted by the queue.\n",
-          "format": "date-time",
-          "title": "Provisioner Expiration",
-          "type": "string"
-        },
-        "stability": {
-          "description": "This is the stability of the provisioner. Accepted values:\n  * `experimental`\n  * `stable`\n  * `deprecated`\n",
-          "enum": [
-            "experimental",
-            "stable",
-            "deprecated"
-          ],
-          "title": "Stability",
-          "type": "string"
-        }
-      },
-      "required": [
-      ],
-      "title": "Provisioner Request",
-      "type": "object"
-    },
-    "filename": "schemas/queue/v1/update-provisioner-request.json"
   },
   {
     "content": {
@@ -3655,7 +3484,7 @@
         },
         "priority": {
           "default": "lowest",
-          "description": "Priority of task. This defaults to `lowest` and the scope\n`queue:create-task:<priority>/<provisionerId>/<workerType>` is required\nto define a task with `<priority>`. The `normal` priority is treated as\n`lowest`.\n",
+          "description": "Priority of task. This defaults to `lowest` and the scope\n`queue:create-task:<priority>/<provisionerId>/<workerType>` is required\nto define a task with `<priority>`.\n",
           "enum": [
             "highest",
             "very-high",
@@ -3663,8 +3492,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "title": "Task Priority",
           "type": "string"
@@ -4224,8 +4052,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "type": "string"
         },
@@ -4237,8 +4064,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "type": "string"
         },
@@ -4417,8 +4243,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "type": "string"
         },
@@ -4468,8 +4293,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "type": "string"
         },
@@ -4937,9 +4761,6 @@
       "additionalProperties": false,
       "description": "Response containing information about a provisioner.\n",
       "properties": {
-        "actions": {
-          "$ref": "actions.json#"
-        },
         "description": {
           "description": "Description of the provisioner.\n",
           "title": "Description",
@@ -4974,7 +4795,6 @@
       "required": [
         "provisionerId",
         "description",
-        "actions",
         "stability",
         "expires",
         "lastDateActive"
@@ -5733,9 +5553,6 @@
           "items": {
             "additionalProperties": false,
             "properties": {
-              "actions": {
-                "$ref": "actions.json#"
-              },
               "description": {
                 "description": "Description of the provisioner.\n",
                 "title": "Description",
@@ -5772,8 +5589,7 @@
               "description",
               "stability",
               "expires",
-              "lastDateActive",
-              "actions"
+              "lastDateActive"
             ],
             "title": "Provisioner Information",
             "type": "object"
@@ -6257,8 +6073,7 @@
             "medium",
             "low",
             "very-low",
-            "lowest",
-            "normal"
+            "lowest"
           ],
           "type": "string"
         }
@@ -6558,73 +6373,6 @@
       "title": "Get Artifact Content Response"
     },
     "filename": "schemas/queue/v1/artifact-content-response.json"
-  },
-  {
-    "content": {
-      "$id": "/schemas/queue/v1/actions.json#",
-      "$schema": "/schemas/common/metaschema.json#",
-      "description": "See taskcluster [actions](/docs/reference/platform/taskcluster-queue/docs/actions) documentation.\n",
-      "items": {
-        "additionalProperties": false,
-        "description": "Actions provide a generic mechanism to expose additional features of a\nprovisioner, worker type, or worker to Taskcluster clients.\n\nAn action is comprised of metadata describing the feature it exposes,\ntogether with a webhook for triggering it.\n\nThe Taskcluster tools site, for example, retrieves actions when displaying\nprovisioners, worker types and workers. It presents the provisioner/worker\ntype/worker specific actions to the user. When the user triggers an action,\nthe web client takes the registered webhook, substitutes parameters into the\nURL (see `url`), signs the requests with the Taskcluster credentials of the\nuser operating the web interface, and issues the HTTP request.\n\nThe level to which the action relates (provisioner, worker type, worker) is\ncalled the action context. All actions, regardless of the action contexts,\nare registered against the provisioner when calling\n`queue.declareProvisioner`.\n\nThe action context is used by the web client to determine where in the web\ninterface to present the action to the user as follows:\n\n| `context`   | Tool where action is displayed |\n|-------------|--------------------------------|\n| provisioner | Provisioner Explorer           |\n| worker-type | Workers Explorer               |\n| worker      | Worker Explorer                |\n\nSee [actions docs](/docs/reference/platform/taskcluster-queue/docs/actions)\nfor more information.\n",
-        "properties": {
-          "context": {
-            "description": "Actions have a \"context\" that is one of provisioner, worker-type, or worker, indicating\nwhich it applies to. `context` is used by the front-end to know where to display the action.\n\n| `context`   | Page displayed        |\n|-------------|-----------------------|\n| provisioner | Provisioner Explorer  |\n| worker-type | Workers Explorer      |\n| worker      | Worker Explorer       |\n",
-            "enum": [
-              "provisioner",
-              "worker-type",
-              "worker"
-            ],
-            "title": "Context",
-            "type": "string"
-          },
-          "description": {
-            "description": "Description of the provisioner.\n",
-            "title": "Description",
-            "type": "string"
-          },
-          "method": {
-            "description": "Method to indicate the desired action to be performed for a given resource.\n",
-            "enum": [
-              "POST",
-              "PUT",
-              "DELETE",
-              "PATCH"
-            ],
-            "title": "Method",
-            "type": "string"
-          },
-          "name": {
-            "description": "Short names for things like logging/error messages.\n",
-            "title": "Name",
-            "type": "string"
-          },
-          "title": {
-            "description": "Appropriate title for any sort of Modal prompt.\n",
-            "title": "Title"
-          },
-          "url": {
-            "description": "When an action is triggered, a request is made using the `url` and `method`.\nDepending on the `context`, the following parameters will be substituted in the url:\n\n| `context`   | Path parameters                                          |\n|-------------|----------------------------------------------------------|\n| provisioner | <provisionerId>                                          |\n| worker-type | <provisionerId>, <workerType>                            |\n| worker      | <provisionerId>, <workerType>, <workerGroup>, <workerId> |\n\n_Note: The request needs to be signed with the user's Taskcluster credentials._\n",
-            "title": "URL",
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "title",
-          "context",
-          "url",
-          "method",
-          "description"
-        ],
-        "title": "Action",
-        "type": "object"
-      },
-      "title": "Actions",
-      "type": "array",
-      "uniqueItems": true
-    },
-    "filename": "schemas/queue/v1/actions.json"
   },
   {
     "content": {
@@ -7208,6 +6956,16 @@
         "text": {
           "description": "The main message text. If no blocks are included, this is used as the\nmessage text, otherwise this is used as alternative text and the blocks\nare used.\n",
           "type": "string"
+        },
+        "unfurlLinks": {
+          "default": false,
+          "description": "Whether Slack should show previews for links in the message.\n",
+          "type": "boolean"
+        },
+        "unfurlMedia": {
+          "default": false,
+          "description": "Whether Slack should show previews for links to media in the message.\n",
+          "type": "boolean"
         }
       },
       "required": [
@@ -8159,6 +7917,7 @@
           "type": "object"
         },
         "triggerSchema": {
+          "description": "JSON Schema used to validate payloads supplied when firing the hook.\nAPI calls and webhooks are rejected when their payloads fail validation.\nPulse messages that match the hook's bindings are discarded without\ncreating a task when their payloads fail validation.\n",
           "type": "object"
         }
       },
@@ -8222,6 +7981,7 @@
             "additionalProperties": false,
             "type": "object"
           },
+          "description": "JSON Schema used to validate payloads supplied when firing the hook.\nAPI calls and webhooks are rejected when their payloads fail validation.\nPulse messages that match the hook's bindings are discarded without\ncreating a task when their payloads fail validation. When omitted, this\ndefaults to a schema that only accepts an empty payload, so a hook\nwithout an explicit triggerSchema will not fire on Pulse messages that\ncarry a payload.\n",
           "type": "object"
         }
       },
@@ -9529,6 +9289,55 @@
   },
   {
     "content": {
+      "$id": "/schemas/github/v1/taskcluster-yml-update-message.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "Message reporting that a push changed a repository's `.taskcluster.yml`.\n\nThe payload is deliberately narrow.  A consumer acts on a repository it\nalready knows about, so nothing that would let an author of the pushed commits\nsteer it travels with the message.  In particular the file's contents do not.\n",
+      "properties": {
+        "eventId": {
+          "description": "The GitHub webhook deliveryId of the push, for tracing this message back\nto the delivery that caused it.\n",
+          "pattern": "^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$",
+          "type": "string"
+        },
+        "organization": {
+          "description": "The GitHub `organization` which had an event, as GitHub spells it.  The\nrouting key carries the same name with periods replaced by `%`.\n",
+          "maxLength": 100,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9-_%\\[\\]]*)$",
+          "type": "string"
+        },
+        "ref": {
+          "description": "The full ref that was pushed to, so that a consumer can ignore a branch or\ntag it does not build.\n",
+          "pattern": "^refs/(heads|tags)/.*$",
+          "type": "string"
+        },
+        "repository": {
+          "description": "The GitHub `repository` whose `.taskcluster.yml` changed, as GitHub spells\nit.  The routing key carries the same name with periods replaced by `%`.\n",
+          "maxLength": 100,
+          "pattern": "^[A-Za-z0-9._-]+$",
+          "type": "string"
+        },
+        "version": {
+          "description": "Message version",
+          "enum": [
+            1
+          ]
+        }
+      },
+      "required": [
+        "version",
+        "organization",
+        "repository",
+        "ref",
+        "eventId"
+      ],
+      "title": "Taskcluster Yml Update Message",
+      "type": "object"
+    },
+    "filename": "schemas/github/v1/taskcluster-yml-update-message.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/github/v1/taskcluster-github-config.v1.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -9538,6 +9347,32 @@
           "default": true,
           "description": "Automatically cancel running task group on a non-default branch.\nUseful for PRs that are updated frequently. Only the last build will be running.\n",
           "type": "boolean"
+        },
+        "hooks": {
+          "default": [
+          ],
+          "description": "Optional array of hooks to trigger. Each hook is triggered via the\nhooks.triggerHook API with a payload containing event, now,\ntaskcluster_root_url, tasks_for, taskId (a pre-allocated task group ID),\nand the user-defined context. Hook context values do not support JSON-e templating.\n",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "context": {
+                "additionalProperties": true,
+                "default": {
+                },
+                "description": "Optional arbitrary context object that will be passed to the hook\ntrigger payload under the \"context\" key. Must be JSON serializable.\n",
+                "type": "object"
+              },
+              "name": {
+                "description": "Hook identifier in the format \"<hookGroupId>/<hookId>\".\nThe hook must already exist in the Taskcluster instance.\n",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "type": "object"
+          },
+          "type": "array"
         },
         "policy": {
           "additionalProperties": false,
@@ -10731,7 +10566,7 @@
             "additionalProperties": false,
             "properties": {
               "contentEncoding": {
-                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* npz\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* aab\n* apk\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jar\n* jpeg\n* jpg\n* npz\n* pkg\n* png\n* swf\n* tbz\n* tgz\n* wasm\n* webp\n* whl\n* woff\n* woff2\n* xpi\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                 "enum": [
                   "identity",
                   "gzip"
@@ -11276,7 +11111,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "contentEncoding": {
-                    "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* npz\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                    "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* aab\n* apk\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jar\n* jpeg\n* jpg\n* npz\n* pkg\n* png\n* swf\n* tbz\n* tgz\n* wasm\n* webp\n* whl\n* woff\n* woff2\n* xpi\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                     "enum": [
                       "identity",
                       "gzip"
@@ -11512,7 +11347,7 @@
             "command",
             "maxRunTime"
           ],
-          "title": "Generic worker payload",
+          "title": "Generic Worker payload",
           "type": "object"
         },
         {
@@ -11523,7 +11358,7 @@
               "additionalProperties": {
                 "$ref": "#/definitions/artifact"
               },
-              "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+              "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
               "title": "Artifacts",
               "type": "object"
             },
@@ -11658,7 +11493,7 @@
               "type": "object"
             },
             "image": {
-              "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+              "description": "Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
               "oneOf": [
                 {
                   "title": "Docker image name",
@@ -11786,7 +11621,7 @@
             "image",
             "maxRunTime"
           ],
-          "title": "Docker worker payload",
+          "title": "Docker Worker payload",
           "type": "object"
         }
       ],
@@ -12097,7 +11932,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "contentEncoding": {
-                    "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jpeg\n* jpg\n* npz\n* png\n* swf\n* tbz\n* tgz\n* webp\n* whl\n* woff\n* woff2\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
+                    "description": "Content-Encoding for the artifact. If not provided, `gzip` will be used, except for the\nfollowing file extensions, where `identity` will be used, since they are already\ncompressed:\n\n* 7z\n* aab\n* apk\n* bz2\n* deb\n* dmg\n* flv\n* gif\n* gz\n* jar\n* jpeg\n* jpg\n* npz\n* pkg\n* png\n* swf\n* tbz\n* tgz\n* wasm\n* webp\n* whl\n* woff\n* woff2\n* xpi\n* xz\n* zip\n* zst\n\nNote, setting `contentEncoding` on a directory artifact will apply the same content\nencoding to all the files contained in the directory.\n\nSince: generic-worker 16.2.0",
                     "enum": [
                       "identity",
                       "gzip"
@@ -12295,7 +12130,7 @@
               "type": "object"
             },
             "osGroups": {
-              "description": "A list of OS Groups that the task user should be a member of. Not yet implemented on\nnon-Windows platforms, therefore this optional property may only be an empty array if\nprovided.\n\nSince: generic-worker 6.0.0",
+              "description": "A list of OS Groups that the task user should be a member of. On the\ninsecure engine, the task runs as the current user (no separate task\nuser is created), so only OS Groups that the current user (the user\naccount running generic-worker) already belongs to may be specified.\n\nSince: generic-worker 6.0.0",
               "items": {
                 "type": "string"
               },
@@ -12334,7 +12169,7 @@
               "additionalProperties": {
                 "$ref": "#/definitions/artifact"
               },
-              "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
+              "description": "Artifact upload map example: ```{\"public/build.tar.gz\": {\"path\": \"/home/worker/build.tar.gz\", \"expires\": \"2016-05-28T16:12:56.693817Z\", \"type\": \"file\"}}```\nArtifacts can be an individual `file`, a `directory` containing\npotentially multiple files with recursively included subdirectories,\nor a `volume` (d2g only) which will create a volume mount from the\nhost to the running container. Unlike `directory` artifacts, the\n`volume` directory will already exist as the task starts. Since the\nartifacts will be created directly on the host, they do not need to\nbe copied from the container to the host prior to being published,\nso perform more efficiently, and simplify the d2g-generated task payload.\nMoreover, in the case of time-critical spot terminations, tasks have\nmore chance of successfully publishing volume artifacts than directory\nartifacts, due to the efficiency gain.",
               "title": "Artifacts",
               "type": "object"
             },
@@ -12469,7 +12304,7 @@
               "type": "object"
             },
             "image": {
-              "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+              "description": "Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
               "oneOf": [
                 {
                   "title": "Docker image name",
@@ -12597,7 +12432,7 @@
             "image",
             "maxRunTime"
           ],
-          "title": "Docker worker payload",
+          "title": "Docker Worker payload",
           "type": "object"
         }
       ],
@@ -12637,6 +12472,7 @@
             "type",
             "path"
           ],
+          "title": "Docker Worker Artifact",
           "type": "object"
         }
       },
@@ -12777,11 +12613,11 @@
           },
           "required": [
           ],
-          "title": "Feature flags",
+          "title": "Docker Worker feature flags",
           "type": "object"
         },
         "image": {
-          "description": "Image to use for the task.  Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
+          "description": "Image to use for the task. Images can be specified as an image tag as used by a docker registry, or as an object declaring type and name/namespace",
           "oneOf": [
             {
               "title": "Docker image name",
@@ -12909,7 +12745,7 @@
         "image",
         "maxRunTime"
       ],
-      "title": "Docker worker payload",
+      "title": "Docker Worker payload",
       "type": "object"
     },
     "filename": "schemas/docker-worker/v1/payload.json"
@@ -13028,6 +12864,17 @@
                 }
               ]
             },
+            "github_credentials_apps": {
+              "oneOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "array"
+                }
+              ]
+            },
             "keep_alive_timeout_seconds": {
               "type": "number"
             },
@@ -13045,6 +12892,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -13061,6 +12915,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -13080,6 +12941,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13229,6 +13097,13 @@
                     "metrics": {
                       "type": "boolean"
                     },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -13287,6 +13162,18 @@
         "forceSSL": {
           "description": "If true, all connections must use ssl",
           "type": "boolean"
+        },
+        "gatewayClassName": {
+          "description": "GatewayClass name for the Gateway API gateway, e.g. \"gke-l7-regional-external-managed\". Required when using Gateway API (ingressType: \"gateway\").",
+          "type": "string"
+        },
+        "gatewayStaticIpName": {
+          "description": "Name of the reserved static IP address for the Gateway, e.g. \"tc-dev-gateway-ip\".",
+          "type": "string"
+        },
+        "gcpManagedCertName": {
+          "description": "Name of the GCP Certificate Manager certificate for the Gateway, e.g. \"tc-dev-gw-cert\".",
+          "type": "string"
         },
         "github": {
           "additionalProperties": false,
@@ -13365,6 +13252,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -13384,6 +13278,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13407,6 +13308,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13557,6 +13465,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -13576,6 +13491,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13600,6 +13522,13 @@
                     "metrics": {
                       "type": "boolean"
                     },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -13622,6 +13551,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13747,6 +13683,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -13766,6 +13709,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13789,6 +13739,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -13854,7 +13811,7 @@
           "type": "string"
         },
         "ingressType": {
-          "description": "Allows to use non-GLB ingress types, like \"nginx\"",
+          "description": "Allows to use non-GLB ingress types: \"nginx\" for ingress-nginx, or \"gateway\" for Gateway API",
           "type": "string"
         },
         "meta": {
@@ -13980,6 +13937,13 @@
                     "metrics": {
                       "type": "boolean"
                     },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -14002,6 +13966,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -14174,6 +14145,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -14193,6 +14171,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -14234,6 +14219,13 @@
             "write_db_url"
           ],
           "title": "Configuration options for object",
+          "type": "object"
+        },
+        "podAnnotations": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Annotations applied to every Taskcluster workload pod.",
           "type": "object"
         },
         "prometheus": {
@@ -14364,6 +14356,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -14383,6 +14382,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -14528,6 +14534,13 @@
                     "metrics": {
                       "type": "boolean"
                     },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -14550,6 +14563,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -14574,6 +14594,13 @@
                     "metrics": {
                       "type": "boolean"
                     },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -14593,6 +14620,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -14609,6 +14643,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -14625,6 +14666,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -14641,6 +14689,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -14657,6 +14712,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -14673,6 +14735,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -14692,6 +14761,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -14716,6 +14792,13 @@
                     "metrics": {
                       "type": "boolean"
                     },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -14738,6 +14821,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -14891,6 +14981,13 @@
                     "metrics": {
                       "type": "boolean"
                     },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -15003,6 +15100,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -15022,6 +15126,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -15072,6 +15183,9 @@
               "configmap",
               "secret",
               "ingress",
+              "gateway",
+              "httproute",
+              "healthcheckpolicy",
               "serviceaccount",
               "podmonitoring"
             ],
@@ -15157,6 +15271,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -15289,6 +15410,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -15305,6 +15433,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -15321,6 +15456,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -15337,6 +15479,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -15356,6 +15505,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -15522,6 +15678,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -15538,6 +15701,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -15554,6 +15724,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -15570,6 +15747,13 @@
                     },
                     "memory": {
                       "type": "string"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     }
                   },
                   "required": [
@@ -15589,6 +15773,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -15613,6 +15804,13 @@
                     "metrics": {
                       "type": "boolean"
                     },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -15636,6 +15834,13 @@
                     "metrics": {
                       "type": "boolean"
                     },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
+                    },
                     "replicas": {
                       "type": "integer"
                     }
@@ -15658,6 +15863,13 @@
                     },
                     "metrics": {
                       "type": "boolean"
+                    },
+                    "podAnnotations": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "description": "Annotations merged with global podAnnotations for this process; matching keys override global values.",
+                      "type": "object"
                     },
                     "replicas": {
                       "type": "integer"
@@ -15720,6 +15932,9 @@
             },
             "taskcluster_client_id": {
               "type": "string"
+            },
+            "worker_scanner_concurrency": {
+              "type": "number"
             },
             "worker_scanner_iterate_config": {
               "oneOf": [
@@ -17105,6 +17320,267 @@
   },
   {
     "content": {
+      "$id": "/schemas/auth/v1/github-token-response.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "A github app installation access token.\n",
+      "properties": {
+        "expires": {
+          "description": "Time at which the token expires",
+          "format": "date-time",
+          "title": "Expiry time",
+          "type": "string"
+        },
+        "token": {
+          "description": "The installation access token",
+          "title": "Token",
+          "type": "string"
+        }
+      },
+      "required": [
+        "token",
+        "expires"
+      ],
+      "title": "Github token response",
+      "type": "object"
+    },
+    "filename": "schemas/auth/v1/github-token-response.json"
+  },
+  {
+    "content": {
+      "$id": "/schemas/auth/v1/github-repo-token-request.json#",
+      "$schema": "/schemas/common/metaschema.json#",
+      "additionalProperties": false,
+      "description": "The list of permissions and repositories to scope a repository level github token to.\n",
+      "properties": {
+        "permissions": {
+          "additionalProperties": false,
+          "description": "Repository level github app permissions to request. Mapping a permission\nname to the desired level of access. Names and levels are a direct mapping\nfrom [github API permissions](https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app).\n",
+          "minProperties": 1,
+          "properties": {
+            "actions": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "administration": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "artifact_metadata": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "attestations": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "checks": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "code_quality": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "codespaces": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "contents": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "dependabot_secrets": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "deployments": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "discussions": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "environments": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "issues": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "merge_queues": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "metadata": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "packages": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "pages": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "pull_requests": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "repository_custom_properties": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "repository_hooks": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "repository_projects": {
+              "enum": [
+                "read",
+                "write",
+                "admin"
+              ],
+              "type": "string"
+            },
+            "secret_scanning_alerts": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "secrets": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "security_events": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "single_file": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "statuses": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "vulnerability_alerts": {
+              "enum": [
+                "read",
+                "write"
+              ],
+              "type": "string"
+            },
+            "workflows": {
+              "enum": [
+                "write"
+              ],
+              "type": "string"
+            }
+          },
+          "title": "Repository permissions",
+          "type": "object"
+        },
+        "repositories": {
+          "description": "Names of the repositories (within `:owner`) the token gets access to.\n",
+          "items": {
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "type": "string"
+          },
+          "maxItems": 500,
+          "minItems": 1,
+          "title": "Repositories",
+          "type": "array"
+        }
+      },
+      "required": [
+        "permissions",
+        "repositories"
+      ],
+      "title": "Github repository token request",
+      "type": "object"
+    },
+    "filename": "schemas/auth/v1/github-repo-token-request.json"
+  },
+  {
+    "content": {
       "$id": "/schemas/auth/v1/get-role-response.json#",
       "$schema": "/schemas/common/metaschema.json#",
       "additionalProperties": false,
@@ -17984,6 +18460,33 @@
           "type": "counter"
         },
         {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
+        },
+        {
           "description": "This number represents difference in pending tasks and idle capacity.\nAdjustment is needed to make sure workers that are still running and are currently\nnot doing any work, will soon pick up those tasks, so we don't need additional workers for those.\nAssumption is that those idling workers would pick up tasks soon.",
           "labels": {
             "providerId": "ID of the provider",
@@ -17995,6 +18498,71 @@
           ],
           "title": "Adjusted pending tasks",
           "type": "gauge"
+        },
+        {
+          "description": "Count of Azure ARM deployment creation failures and failed deployment operations by worker pool, location, and Azure error details",
+          "labels": {
+            "errorCode": "Azure error code",
+            "errorKind": "Worker-manager error kind",
+            "priority": "Azure VM priority",
+            "providerId": "ID of the provider",
+            "provisioningOperation": "Azure provisioning operation",
+            "provisioningState": "Azure provisioning state",
+            "statusCode": "Operation status code from the resource provider",
+            "targetResourceType": "Azure target resource type",
+            "vmSize": "Azure VM size",
+            "workerGroup": "Worker group (region/zone/location)",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_azure_arm_deployment_errors_total",
+          "registers": [
+            "provision",
+            "scan"
+          ],
+          "title": "Azure ARM deployment errors",
+          "type": "counter"
+        },
+        {
+          "description": "Most recently observed value of Azure x-ms-ratelimit-remaining-subscription-* headers",
+          "labels": {
+            "limitType": "Rate limit category: reads, writes, or deletes",
+            "providerId": "ID of the provider"
+          },
+          "name": "worker_manager_azure_ratelimit_remaining",
+          "registers": [
+            "provision",
+            "scan"
+          ],
+          "title": "Azure rate limit remaining quota",
+          "type": "gauge"
+        },
+        {
+          "description": "Count of Azure worker teardowns by mode: 'fast' (cascade short-circuit) vs 'slow' (per-resource walk), per worker pool",
+          "labels": {
+            "mode": "Teardown mode: 'fast' or 'slow'",
+            "providerId": "ID of the provider",
+            "workerPoolId": "The worker pool ID"
+          },
+          "name": "worker_manager_azure_teardown_total",
+          "registers": [
+            "scan"
+          ],
+          "title": "Azure worker teardowns",
+          "type": "counter"
+        },
+        {
+          "description": "Count of HTTP 429 responses from Azure ARM API",
+          "labels": {
+            "operationType": "HTTP operation category: read, write, or delete",
+            "providerId": "ID of the provider"
+          },
+          "name": "worker_manager_azure_throttle_total",
+          "registers": [
+            "provision",
+            "scan"
+          ],
+          "title": "Azure API throttle events",
+          "type": "counter"
         },
         {
           "description": "This number represents the number of claimed tasks.",
@@ -18373,6 +18941,38 @@
           "version": 1
         },
         {
+          "description": "Records how an Azure worker's resources were torn down: 'fast' when the VM's\nNIC/IP/disks cascade-delete with the VM (so the per-resource GET/delete walk\nis skipped), or 'slow' for the resource-by-resource walk. Lets us measure the\nAPI-call reduction and confirm the fast path engages on cascading ARM pools.",
+          "fields": {
+            "launchConfigId": "Launch Config ID",
+            "mode": "Teardown mode: 'fast' (cascade short-circuit) or 'slow' (full walk)",
+            "providerId": "Provider ID",
+            "workerId": "Worker ID",
+            "workerPoolId": "Worker Pool ID"
+          },
+          "level": "info",
+          "name": "azureTeardownMode",
+          "title": "Azure Worker Teardown Mode",
+          "type": "azure-teardown-mode",
+          "version": 1
+        },
+        {
+          "description": "Azure ARM API returned HTTP 429 (Too Many Requests).\nIncludes rate-limit headers from the throttled response for diagnosing\nwhich subscription limits are being hit.",
+          "fields": {
+            "operationType": "HTTP operation category: read, write, or delete",
+            "providerId": "Provider ID",
+            "remainingDeletes": "x-ms-ratelimit-remaining-subscription-deletes value, or null",
+            "remainingReads": "x-ms-ratelimit-remaining-subscription-reads value, or null",
+            "remainingResource": "x-ms-ratelimit-remaining-resource raw value, or null",
+            "remainingWrites": "x-ms-ratelimit-remaining-subscription-writes value, or null",
+            "retryAfterSeconds": "Retry-After header value in seconds, or null if absent"
+          },
+          "level": "warning",
+          "name": "azureThrottled",
+          "title": "Azure API Throttled (429)",
+          "type": "azure-throttled",
+          "version": 1
+        },
+        {
           "description": "The most basic timer.",
           "fields": {
             "duration": "The duration in ms of whatever was timed.",
@@ -18498,7 +19098,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -18613,6 +19213,20 @@
           "name": "registrationNewIntermediateCertificate",
           "title": "Registration of New Intermediate Certificate",
           "type": "registration-new-intermediate-certificate",
+          "version": 1
+        },
+        {
+          "description": "A worker registration attempted to download an intermediate certificate from\na URL that is outside the configured AIA allowlist.",
+          "fields": {
+            "providerId": "The provider that did the work for this worker pool.",
+            "url": "The rejected intermediate certificate URL",
+            "workerId": "The worker that failed",
+            "workerPoolId": "The worker pool ID"
+          },
+          "level": "warning",
+          "name": "registrationRejectedIntermediateCertificateUrl",
+          "title": "Registration Rejected Intermediate Certificate URL",
+          "type": "registration-rejected-intermediate-certificate-url",
           "version": 1
         },
         {
@@ -19921,6 +20535,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "web-server"
@@ -20085,7 +20726,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -20279,7 +20920,7 @@
             "taskId"
           ],
           "category": "Profiler",
-          "description": "Generate a Firefox Profiler–compatible profile from a task's log output.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
+          "description": "Generate a Firefox Profiler–compatible profile from a task's log output for resolved tasks.\nParses `public/logs/live.log` (or `live_backing.log`) for timing data.",
           "method": "get",
           "name": "taskProfile",
           "query": [
@@ -20351,6 +20992,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "secrets"
@@ -20491,7 +21159,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -20664,7 +21332,7 @@
           "args": [
           ],
           "category": "Secrets Service",
-          "description": "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more tasks are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `listTaskGroup` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
+          "description": "List the names of all secrets.\n\nBy default this end-point will try to return up to 1000 secret names in one\nrequest. But it **may return less**, even if more secrets are available.\nIt may also return a `continuationToken` even though there are no more\nresults. However, you can only be sure to have seen all results if you\nkeep calling `list` with the last `continuationToken` until you\nget a result without a `continuationToken`.\n\nIf you are not interested in listing all the members at once, you may\nuse the query-string option `limit` to return fewer.",
           "method": "get",
           "name": "list",
           "output": "v1/secret-list.json#",
@@ -20740,6 +21408,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         },
         {
           "description": "Total number of claimed tasks",
@@ -21013,7 +21708,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -22002,7 +22697,7 @@
     "content": {
       "$schema": "/schemas/common/api-reference-v0.json#",
       "apiVersion": "v1",
-      "description": "The queue service is responsible for accepting tasks and tracking their state\nas they are executed by workers, in order to ensure they are eventually\nresolved.\n\n## Artifact Storage Types\n\n* **Object artifacts** contain arbitrary data, stored via the object service.\n* **Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n* **Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n* **Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example docker-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n* **S3 artifacts** are used for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`. S3 artifacts will be deprecated soon,\nand users should prefer object artifacts instead.\n\n## Artifact immutability\n\nGenerally speaking you cannot overwrite an artifact when created.\nBut if you repeat the request with the same properties the request will\nsucceed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nThe queue defines the following *immutability special cases*:\n\n* A `reference` artifact can replace an existing `reference` artifact.\n* A `link` artifact can replace an existing `reference` artifact.\n* Any artifact's `expires` can be extended (made later, but not earlier).",
+      "description": "The queue service is responsible for accepting tasks and tracking their state\nas they are executed by workers, in order to ensure they are eventually\nresolved.\n\n## Artifact Storage Types\n\n* **Object artifacts** contain arbitrary data, stored via the object service.\n* **Redirect artifacts**, will redirect the caller to URL when fetched\nwith a a 303 (See Other) response.  Clients will not apply any kind of\nauthentication to that URL.\n* **Link artifacts**, will be treated as if the caller requested the linked\nartifact on the same task.  Links may be chained, but cycles are forbidden.\nThe caller must have scopes for the linked artifact, or a 403 response will\nbe returned.\n* **Error artifacts**, only consists of meta-data which the queue will\nstore for you. These artifacts are only meant to indicate that you the\nworker or the task failed to generate a specific artifact, that you\nwould otherwise have uploaded. For example generic-worker will upload an\nerror artifact, if the file it was supposed to upload doesn't exists or\nturns out to be a directory. Clients requesting an error artifact will\nget a `424` (Failed Dependency) response. This is mainly designed to\nensure that dependent tasks can distinguish between artifacts that were\nsuppose to be generated and artifacts for which the name is misspelled.\n* **S3 artifacts** are used for static files which will be\nstored on S3. When creating an S3 artifact the queue will return a\npre-signed URL to which you can do a `PUT` request to upload your\nartifact. Note that `PUT` request **must** specify the `content-length`\nheader and **must** give the `content-type` header the same value as in\nthe request to `createArtifact`. S3 artifacts will be deprecated soon,\nand users should prefer object artifacts instead.\n\n## Artifact immutability\n\nGenerally speaking you cannot overwrite an artifact when created.\nBut if you repeat the request with the same properties the request will\nsucceed as the operation is idempotent.\nThis is useful if you need to refresh a signed URL while uploading.\nDo not abuse this to overwrite artifacts created by another entity!\nSuch as worker-host overwriting artifact created by worker-code.\n\nThe queue defines the following *immutability special cases*:\n\n* A `reference` artifact can replace an existing `reference` artifact.\n* A `link` artifact can replace an existing `reference` artifact.\n* Any artifact's `expires` can be extended (made later, but not earlier).",
       "entries": [
         {
           "args": [
@@ -22192,7 +22887,7 @@
             "taskGroupId"
           ],
           "category": "Task Groups",
-          "description": "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.",
+          "description": "Seal task group to prevent creation of new tasks.\n\nTask group can be sealed once and is irreversible. Calling it multiple times\nwill return same result and will not update it again.\n\nSealing makes `cancelTaskGroup` meaningful by stopping task creators\nfrom adding more tasks to a group being cancelled. It is not a\nsecurity feature: the check is not atomic with task creation, so a\n`createTask` racing this call may still succeed.",
           "method": "post",
           "name": "sealTaskGroup",
           "output": "v1/task-group-response.json#",
@@ -22768,32 +23463,6 @@
         },
         {
           "args": [
-            "provisionerId"
-          ],
-          "category": "Worker Metadata",
-          "description": "Declare a provisioner, supplying some details about it.\n\n`declareProvisioner` allows updating one or more properties of a provisioner as long as the required scopes are\npossessed. For example, a request to update the `my-provisioner`\nprovisioner with a body `{description: 'This provisioner is great'}` would require you to have the scope\n`queue:declare-provisioner:my-provisioner#description`.\n\nThe term \"provisioner\" is taken broadly to mean anything with a provisionerId.\nThis does not necessarily mean there is an associated service performing any\nprovisioning activity.",
-          "input": "v1/update-provisioner-request.json#",
-          "method": "put",
-          "name": "declareProvisioner",
-          "output": "v1/provisioner-response.json#",
-          "query": [
-          ],
-          "route": "/provisioners/<provisionerId>",
-          "scopes": {
-            "AllOf": [
-              {
-                "each": "queue:declare-provisioner:<provisionerId>#<property>",
-                "for": "property",
-                "in": "properties"
-              }
-            ]
-          },
-          "stability": "deprecated",
-          "title": "Update a provisioner",
-          "type": "function"
-        },
-        {
-          "args": [
             "taskQueueId"
           ],
           "category": "Worker Metadata",
@@ -22904,33 +23573,6 @@
           "scopes": "queue:get-worker-type:<provisionerId>/<workerType>",
           "stability": "deprecated",
           "title": "Get a worker-type",
-          "type": "function"
-        },
-        {
-          "args": [
-            "provisionerId",
-            "workerType"
-          ],
-          "category": "Worker Metadata",
-          "description": "Declare a workerType, supplying some details about it.\n\n`declareWorkerType` allows updating one or more properties of a worker-type as long as the required scopes are\npossessed. For example, a request to update the `highmem` worker-type within the `my-provisioner`\nprovisioner with a body `{description: 'This worker type is great'}` would require you to have the scope\n`queue:declare-worker-type:my-provisioner/highmem#description`.",
-          "input": "v1/update-workertype-request.json#",
-          "method": "put",
-          "name": "declareWorkerType",
-          "output": "v1/workertype-response.json#",
-          "query": [
-          ],
-          "route": "/provisioners/<provisionerId>/worker-types/<workerType>",
-          "scopes": {
-            "AllOf": [
-              {
-                "each": "queue:declare-worker-type:<provisionerId>/<workerType>#<property>",
-                "for": "property",
-                "in": "properties"
-              }
-            ]
-          },
-          "stability": "deprecated",
-          "title": "Update a worker-type",
           "type": "function"
         },
         {
@@ -23125,6 +23767,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "purge-cache"
@@ -23265,7 +23934,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -23499,6 +24168,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "object"
@@ -23639,7 +24335,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -23906,6 +24602,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "notify"
@@ -24057,7 +24780,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -24525,6 +25248,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "index"
@@ -24665,7 +25415,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -25011,6 +25761,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "hooks"
@@ -25151,7 +25928,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -25172,6 +25949,24 @@
           "name": "hookFire",
           "title": "A hook was fired",
           "type": "hook-fire",
+          "version": 1
+        },
+        {
+          "description": "A pulse message matched a hook's bindings, but was discarded before\nfiring the hook. This log type is sampled to avoid being noisy.",
+          "fields": {
+            "discardedCount": "Number of pulse messages discarded by this listener for this reason since it was created",
+            "exchange": "The pulse exchange that delivered the message",
+            "hookGroupId": "The group ID of the hook that matched the pulse message",
+            "hookId": "The ID of the hook that matched the pulse message",
+            "message": "A short human-readable description of the discard",
+            "reason": "The reason the pulse message was discarded",
+            "routingKey": "The pulse routing key that delivered the message",
+            "validationError": "The triggerSchema validation error that caused the discard"
+          },
+          "level": "notice",
+          "name": "hookPulseMessageDiscarded",
+          "title": "A pulse message for a hook was discarded",
+          "type": "hook-pulse-message-discarded",
           "version": 1
         },
         {
@@ -25518,7 +26313,7 @@
             "hookId"
           ],
           "category": "Hooks",
-          "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
+          "description": "This endpoint will trigger the creation of a task from a hook definition.\n\nThe HTTP payload must match the hook's `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHook",
@@ -25574,7 +26369,7 @@
             "token"
           ],
           "category": "Hooks",
-          "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hooks `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
+          "description": "This endpoint triggers a defined hook with a valid token.\n\nThe HTTP payload must match the hook's `triggerSchema`.  If it does, it is\nprovided as the `payload` property of the JSON-e context used to render the\ntask template.\n\nOptionally, a `taskId` can be provided in the payload which the hook task\nwill use. It must be unique and follow the slugid format.",
           "input": "v1/trigger-hook.json#",
           "method": "post",
           "name": "triggerHookWithToken",
@@ -25668,6 +26463,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "github"
@@ -25840,7 +26662,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -26024,6 +26846,35 @@
           ],
           "schema": "v1/github-push-message.json#",
           "title": "GitHub push Event",
+          "type": "topic-exchange"
+        },
+        {
+          "description": "When a GitHub push event changes a repository's `.taskcluster.yml` it will\nbe broadcast on this exchange with the designated `organization` and\n`repository` in the routing-key.\n\nThe payload names the repository and the ref that was pushed to, and\nnothing more.  The file itself does not travel with the message, so a\nconsumer reading it cannot be steered by the pushed commits.\n\nDetection is best effort.  A force push that drops a commit reports no\nchanged files to GitHub, so reverting the file that way sends no message.",
+          "exchange": "taskcluster-yml-update",
+          "name": "taskclusterYmlUpdate",
+          "routingKey": [
+            {
+              "constant": "primary",
+              "multipleWords": false,
+              "name": "routingKeyKind",
+              "required": true,
+              "summary": "Identifier for the routing-key kind. This is always `\"primary\"` for the formalized routing key."
+            },
+            {
+              "multipleWords": false,
+              "name": "organization",
+              "required": true,
+              "summary": "The GitHub `organization` which had an event. All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            },
+            {
+              "multipleWords": false,
+              "name": "repository",
+              "required": true,
+              "summary": "The GitHub `repository` which had an event.All periods have been replaced by % - such that foo.bar becomes foo%bar - and all other special characters aside from - and _ have been stripped."
+            }
+          ],
+          "schema": "v1/taskcluster-yml-update-message.json#",
+          "title": "Taskcluster Yml Update Event",
           "type": "topic-exchange"
         },
         {
@@ -26380,6 +27231,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "built-in-workers"
@@ -26472,7 +27350,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -26611,6 +27489,33 @@
           ],
           "title": "Total number of HTTP requests",
           "type": "counter"
+        },
+        {
+          "buckets": [
+            1,
+            5,
+            10,
+            30,
+            60,
+            120,
+            300,
+            600,
+            1200,
+            1800,
+            3600,
+            6000
+          ],
+          "description": "Duration of a single background iteration loop",
+          "labels": {
+            "name": "Name of the iterate loop",
+            "status": "Result: success or exception"
+          },
+          "name": "iterate_duration_seconds",
+          "registers": [
+            "default"
+          ],
+          "title": "Background iteration duration",
+          "type": "histogram"
         }
       ],
       "serviceName": "auth"
@@ -26751,7 +27656,7 @@
           "fields": {
             "duration": "The duration in ms of the function.",
             "name": "The name of the handler.",
-            "status": "Whether or not the handler resolved succesfully."
+            "status": "Whether or not the handler resolved successfully."
           },
           "level": "info",
           "name": "handlerTimer",
@@ -27539,7 +28444,7 @@
             "wstClient"
           ],
           "category": "Websocktunnel Credentials",
-          "description": "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the callers responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
+          "description": "Get a temporary token suitable for use connecting to a\n[websocktunnel](https://github.com/taskcluster/taskcluster/tree/main/tools/websocktunnel) server.\n\nThe resulting token will only be accepted by servers with a matching audience\nvalue.  Reaching such a server is the caller's responsibility.  In general,\na server URL or set of URLs should be provided to the caller as configuration\nalong with the audience value.\n\nThe token is valid for a limited time (on the scale of hours). Callers should\nrefresh it before expiration.",
           "method": "get",
           "name": "websocktunnelToken",
           "output": "v1/websocktunnel-token-response.json#",
@@ -27567,6 +28472,33 @@
           "scopes": "auth:gcp:access-token:<projectId>/<serviceAccount>",
           "stability": "stable",
           "title": "Get Temporary GCP Credentials",
+          "type": "function"
+        },
+        {
+          "args": [
+            "appName",
+            "owner"
+          ],
+          "category": "Github Credentials",
+          "description": "Get a Github application installation token scoped to the given repositories\nand permissions, using the configured app `appName`.\n\nRequesting `<permission>: <level>` on `<owner>/<repo>` requires the scope\n`auth:github-repo-token:<appName>/<owner>/<repo>:<permission>:<level>`.\nLevels and permissions are matched exactly to github token permissions\nwhich can be found at\nhttps://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#create-an-installation-access-token-for-an-app.\nWhile token access is widened (requesting a write token will give a read+write one)\nscopes are not. Holding `:contents:write` alone only allows requesting a `write` token.\nBoth owner and repo must be in lowercase in the scope.\n\nThe token expires after an hour but this behavior is github dependent.\nYou should read the `expires` property from the response if you intend\nto maintain active credentials in your task.",
+          "input": "v1/github-repo-token-request.json#",
+          "method": "post",
+          "name": "githubRepoToken",
+          "output": "v1/github-token-response.json#",
+          "query": [
+          ],
+          "route": "/github/<appName>/<owner>/repo-token",
+          "scopes": {
+            "AllOf": [
+              {
+                "each": "auth:github-repo-token:<appName>/<owner>/<repoPerm>",
+                "for": "repoPerm",
+                "in": "repoPerms"
+              }
+            ]
+          },
+          "stability": "experimental",
+          "title": "Get a repository scoped github token",
           "type": "function"
         },
         {

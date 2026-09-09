@@ -1,7 +1,7 @@
-import assert from 'assert';
+import assert from 'node:assert';
 
 class TaskQueue {
-  constructor(cfg, queue, monitor, type) {
+  constructor(queue, monitor, type) {
     assert(queue, 'Instance of taskcluster queue is required');
     this.queue = queue;
     this.builtinType = type;
@@ -15,14 +15,14 @@ class TaskQueue {
   }
 
   async claimTask() {
-    let result = await this.queue.claimWork(`built-in/${this.builtinType}`, {
+    const result = await this.queue.claimWork(`built-in/${this.builtinType}`, {
       tasks: 1,
       workerGroup: 'built-in',
       workerId: this.builtinType,
     });
     if (result.tasks.length === 0) {
       this.monitor.debug('no tasks');
-      return ;
+      return;
     }
     const { credentials, task, status, runId } = result.tasks[0];
     this.monitor.debug(`claimed task: ${status.taskId}`);
@@ -38,7 +38,7 @@ class TaskQueue {
       }
     } else {
       this.monitor.debug(`task ${status.taskId} has non-empty payload`);
-      let payload = {
+      const payload = {
         reason: 'malformed-payload',
       };
       return await queue.reportException(status.taskId, runId, payload);

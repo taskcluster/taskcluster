@@ -45,9 +45,9 @@ it('should return earliest task run start time', () => {
   const task = {
     status: {
       runs: [
-        { runId: 0, started: new Date('2022-05-05T05:05:05.000') },
-        { runId: 1, started: new Date('2022-05-05T05:05:10.000') },
-        { runId: 2, started: new Date('2022-05-05T05:05:15.000') },
+        { runId: 0, started: new Date('2022-05-05T05:05:10.000') },
+        { runId: 1, started: new Date('2022-05-05T05:05:15.000') },
+        { runId: 2, started: new Date('2022-05-05T05:05:05.000') },
       ],
     },
   };
@@ -71,6 +71,28 @@ it('should return latest task run resolve time', () => {
   expect(taskRunLatestResolve(task)).toEqual(
     new Date('2022-05-05T05:05:35.000').getTime()
   );
+});
+
+it('handles missing data in taskLastRun', () => {
+  expect(taskLastRun(undefined)).toBeNull();
+  expect(taskLastRun({})).toBeNull();
+  expect(taskLastRun({ status: {} })).toBeNull();
+});
+
+it('handles missing data in taskRunEarliestStart', () => {
+  const before = Date.now();
+
+  expect(taskRunEarliestStart(undefined)).toBeGreaterThanOrEqual(before);
+  expect(taskRunEarliestStart({})).toBeGreaterThanOrEqual(before);
+  expect(taskRunEarliestStart({ status: {} })).toBeGreaterThanOrEqual(before);
+});
+
+it('handles missing data in taskRunLatestResolve', () => {
+  const before = Date.now();
+
+  expect(taskRunLatestResolve(undefined)).toBeGreaterThanOrEqual(before);
+  expect(taskRunLatestResolve({})).toBeGreaterThanOrEqual(before);
+  expect(taskRunLatestResolve({ status: {} })).toBeGreaterThanOrEqual(before);
 });
 
 it('should filter tasks by state', () => {

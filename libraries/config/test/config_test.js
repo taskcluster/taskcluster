@@ -1,18 +1,15 @@
 import config from '../src/index.js';
-import path from 'path';
+import path from 'node:path';
 import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
-suite(testing.suiteName(), function() {
-
+suite(testing.suiteName(), () => {
   test('load yaml', () => {
-    let cfg = config({
+    const cfg = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test.yml'), required: true }],
     });
 
     assume(cfg).deep.equals({
@@ -21,11 +18,9 @@ suite(testing.suiteName(), function() {
   });
 
   test('load profile', () => {
-    let cfg = config({
+    const cfg = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test-profile.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test-profile.yml'), required: true }],
       profile: 'danish',
     });
     assume(cfg).deep.equals({
@@ -34,11 +29,9 @@ suite(testing.suiteName(), function() {
   });
 
   test('load profile (default)', () => {
-    let cfg = config({
+    const cfg = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test-profile.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test-profile.yml'), required: true }],
     });
 
     assume(cfg).deep.equals({
@@ -47,11 +40,9 @@ suite(testing.suiteName(), function() {
   });
 
   test('load !env', () => {
-    let cfg = config({
+    const cfg = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test-env.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test-env.yml'), required: true }],
       env: {
         ENV_VARIABLE: 'env-var-value',
         ENV_NUMBER: '32.4',
@@ -81,15 +72,13 @@ suite(testing.suiteName(), function() {
     assume(() => {
       config({
         serviceName: 'test',
-        files: [
-          { path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false },
-        ],
+        files: [{ path: path.join(__dirname, 'file-that-doesnt-exist.yml'), required: false }],
       });
     }).throws(/Must load at least one configuration/);
   });
 
   test('load yaml (merge missing file)', () => {
-    let cfg = config({
+    const cfg = config({
       serviceName: 'test',
       files: [
         { path: path.join(__dirname, 'test.yml'), required: true },
@@ -103,7 +92,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('load !env and overwrite text', () => {
-    let cfg = config({
+    const cfg = config({
       serviceName: 'test',
       files: [
         { path: path.join(__dirname, 'test.yml'), required: true },
@@ -135,7 +124,7 @@ suite(testing.suiteName(), function() {
   });
 
   test('load !env and fallback text', () => {
-    let cfg = config({
+    const cfg = config({
       serviceName: 'test',
       files: [
         { path: path.join(__dirname, 'test.yml'), required: true },
@@ -168,9 +157,7 @@ suite(testing.suiteName(), function() {
   test('load !env listing', () => {
     const vars = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test-env.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test-env.yml'), required: true }],
       env: {}, // Notice they do not need to be in the env to do this
       getEnvVars: true,
     });
@@ -189,12 +176,27 @@ suite(testing.suiteName(), function() {
     ]);
   });
 
+  test('load !env listing dedupes repeated descriptors', () => {
+    const vars = config({
+      serviceName: 'test',
+      files: [{ path: path.join(__dirname, 'test-env-dupes.yml'), required: true }],
+      env: {},
+      getEnvVars: true,
+    });
+
+    assume(vars).deep.equals([
+      { type: '!env', var: 'DUP_VARIABLE', optional: false, secret: false },
+      { type: '!env:number', var: 'DUP_VARIABLE', optional: false, secret: false },
+      { type: '!env', var: 'DUP_VARIABLE', optional: true, secret: false },
+      { type: '!env', var: 'DUP_OPTIONAL', optional: true, secret: false },
+      { type: '!env', var: 'OTHER_VARIABLE', optional: false, secret: false },
+    ]);
+  });
+
   test('load !env listing with secrets', () => {
     const vars = config({
       serviceName: 'test',
-      files: [
-        { path: path.join(__dirname, 'test-env-secrets.yml'), required: true },
-      ],
+      files: [{ path: path.join(__dirname, 'test-env-secrets.yml'), required: true }],
       env: {}, // Notice they do not need to be in the env to do this
       getEnvVars: true,
     });

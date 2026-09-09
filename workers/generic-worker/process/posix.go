@@ -5,6 +5,7 @@ package process
 import (
 	"fmt"
 	"log"
+	"strings"
 	"syscall"
 )
 
@@ -52,8 +53,17 @@ func (r *Result) Crashed() bool {
 	return false
 }
 
+// SetEnv sets an environment variable for the process, replacing any
+// existing entry with the same name.
 func (c *Command) SetEnv(envVar, value string) {
-	c.Env = append(c.Env, envVar+"="+value)
+	prefix := envVar + "="
+	for i, e := range c.Env {
+		if strings.HasPrefix(e, prefix) {
+			c.Env[i] = prefix + value
+			return
+		}
+	}
+	c.Env = append(c.Env, prefix+value)
 }
 
 func (c *Command) Kill() (killOutput string, err error) {

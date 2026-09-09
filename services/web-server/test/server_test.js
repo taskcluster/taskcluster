@@ -1,31 +1,29 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import helper from './helper.js';
 import request from 'superagent';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
+helper.secrets.mockSuite(testing.suiteName(), [], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.resetTables(mock, skipping);
+  helper.resetTables();
 
   const makeSuite = (allowedCORSOrigins, requestOrigin, responseOrigin) => {
-    suite(`with ${JSON.stringify(allowedCORSOrigins)}, request origin = ${requestOrigin}`, function() {
-      suiteSetup(async function() {
+    suite(`with ${JSON.stringify(allowedCORSOrigins)}, request origin = ${requestOrigin}`, () => {
+      suiteSetup(async () => {
         await helper.load('cfg');
         helper.load.save();
         helper.load.cfg('server.allowedCORSOrigins', allowedCORSOrigins);
       });
 
-      suiteTeardown(function() {
+      suiteTeardown(() => {
         helper.load.restore();
       });
 
-      helper.withServer(mock, skipping);
+      helper.withServer(skipping);
 
-      test('request', async function() {
+      test('request', async () => {
         try {
-          await request
-            .post(`http://localhost:${helper.serverPort}/graphql`)
-            .set('origin', requestOrigin);
+          await request.post(`http://localhost:${helper.serverPort}/graphql`).set('origin', requestOrigin);
           assert.fail();
         } catch (e) {
           assert.equal(e.response.headers['access-control-allow-origin'], responseOrigin);
@@ -42,34 +40,35 @@ helper.secrets.mockSuite(testing.suiteName(), [], function(mock, skipping) {
 
   // check that deploy previews are supported..
   makeSuite(
-    ['https://tc.example.com', "/https://deploy-preview-\\d+--taskcluster-web\\.netlify\\.com/"],
+    ['https://tc.example.com', '/https://deploy-preview-\\d+--taskcluster-web\\.netlify\\.com/'],
     'https://deploy-preview-897--taskcluster-web.netlify.com/',
-    'https://deploy-preview-897--taskcluster-web.netlify.com/');
+    'https://deploy-preview-897--taskcluster-web.netlify.com/'
+  );
 
-  suite('auth endpoints', function () {
-    helper.withServer(mock, skipping);
+  suite('auth endpoints', () => {
+    helper.withServer(skipping);
 
-    test('login/logout', async function () {
+    test('login/logout', async () => {
       const logout = await request.post(`http://localhost:${helper.serverPort}/login/logout`);
       assert(logout.body);
     });
   });
 
-  suite('service endpoints', function() {
-    helper.withServer(mock, skipping);
+  suite('service endpoints', () => {
+    helper.withServer(skipping);
 
-    test('version', async function() {
+    test('version', async () => {
       const version = await request.get(`http://localhost:${helper.serverPort}/api/web-server/v1/__version__`);
       assert(typeof version.body.version !== 'undefined');
       assert(typeof version.body.commit !== 'undefined');
       assert(typeof version.body.source !== 'undefined');
       assert(typeof version.body.build !== 'undefined');
     });
-    test('heartbeat', async function() {
+    test('heartbeat', async () => {
       const heartbeat = await request.get(`http://localhost:${helper.serverPort}/api/web-server/v1/__heartbeat__`);
       assert(heartbeat.body);
     });
-    test('lbheartbeat', async function() {
+    test('lbheartbeat', async () => {
       const heartbeat = await request.get(`http://localhost:${helper.serverPort}/api/web-server/v1/__lbheartbeat__`);
       assert(heartbeat.body);
     });

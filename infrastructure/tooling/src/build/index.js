@@ -1,5 +1,5 @@
-import path from 'path';
-import os from 'os';
+import path from 'node:path';
+import os from 'node:os';
 import { rimraf } from 'rimraf';
 import mkdirp from 'mkdirp';
 import taskcluster from '@taskcluster/client';
@@ -11,8 +11,8 @@ class Base {
   constructor(cmdOptions) {
     this.cmdOptions = cmdOptions;
 
-    this.baseDir = cmdOptions['baseDir'] || '/tmp/taskcluster-builder-build';
-    this.logsDir = cmdOptions['logsDir'] || path.join(this.baseDir, 'logs');
+    this.baseDir = cmdOptions.baseDir || '/tmp/taskcluster-builder-build';
+    this.logsDir = cmdOptions.logsDir || path.join(this.baseDir, 'logs');
   }
 
   // credentials for the tasks
@@ -55,9 +55,7 @@ class Base {
         git: new Lock(8),
       },
       target,
-      renderer: process.stdout.isTTY ?
-        new ConsoleRenderer({ elideCompleted: true }) :
-        new LogRenderer(),
+      renderer: process.stdout.isTTY ? new ConsoleRenderer({ elideCompleted: true }) : new LogRenderer(),
     });
     if (this.cmdOptions.dryRun) {
       console.log('Dry run successful.');
@@ -70,7 +68,7 @@ class Base {
     }
 
     // print messges from any of the targets
-    for (let t of target) {
+    for (const t of target) {
       if (context[t]) {
         console.log(context[t]);
       }
@@ -96,12 +94,14 @@ class Build extends Base {
     // changes need to be checked in.
     if (!this.cmdOptions.ignoreUncommittedFiles) {
       if (await gitIsDirty({ dir: REPO_ROOT })) {
-        throw new Error([
-          'The current git working copy is not clean. Any non-checked-in files will',
-          'not be reflected in the built image, so this is treatd as an error by default.',
-          'Either check in the dirty files, or run with --ignore-uncommitted-files to',
-          'override this error.  Never check in files containing secrets!',
-        ].join(' '));
+        throw new Error(
+          [
+            'The current git working copy is not clean. Any non-checked-in files will',
+            'not be reflected in the built image, so this is treatd as an error by default.',
+            'Either check in the dirty files, or run with --ignore-uncommitted-files to',
+            'override this error.  Never check in files containing secrets!',
+          ].join(' ')
+        );
       }
     }
 
@@ -147,7 +147,7 @@ class Publish extends Base {
       // always build from scratch
       cache: false,
       // to be safe, set push=false for staging runs
-      push: cmdOptions.staging ? false : true,
+      push: !cmdOptions.staging,
       // always push to the "official" Taskcluster repo on publish
       dockerRepo: 'taskcluster/taskcluster',
       dockerRepoGenericWorker: 'taskcluster/generic-worker',
@@ -162,7 +162,7 @@ class Publish extends Base {
       const secrets = new taskcluster.Secrets({ rootUrl: process.env.TASKCLUSTER_PROXY_URL });
       const { secret } = await secrets.get(secretName);
 
-      for (let [name, value] of Object.entries(secret)) {
+      for (const [name, value] of Object.entries(secret)) {
         console.log(`..found value for ${name}`);
         process.env[name] = value;
       }
@@ -200,7 +200,9 @@ class Publish extends Base {
       // branch name, and use a fake revision
       const match = /staging-release\/v(\d+\.\d+\.\d+)$/.exec(this.cmdOptions.staging);
       if (!match) {
-        throw new Error(`Staging releases must have branches named 'staging-release/vX.Y.Z'; got ${this.cmdOptions.staging}`);
+        throw new Error(
+          `Staging releases must have branches named 'staging-release/vX.Y.Z'; got ${this.cmdOptions.staging}`
+        );
       }
       const version = match[1];
 
@@ -214,7 +216,9 @@ class Publish extends Base {
       });
 
       if (!gitDescription.match(/^v\d+\.\d+\.\d+$/)) {
-        throw new Error(`Can only publish releases from git revisions with tags of the form vX.Y.Z, not ${gitDescription}`);
+        throw new Error(
+          `Can only publish releases from git revisions with tags of the form vX.Y.Z, not ${gitDescription}`
+        );
       }
 
       return {
@@ -229,12 +233,12 @@ class Publish extends Base {
   }
 }
 
-export const build = async (options) => {
+export const build = async options => {
   const build = new Build(options);
   await build.run();
 };
 
-export const publish = async (options) => {
+export const publish = async options => {
   const publish = new Publish(options);
   await publish.run();
 };

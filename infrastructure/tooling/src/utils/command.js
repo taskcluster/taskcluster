@@ -1,9 +1,19 @@
-import fs from 'fs';
-import { promisify } from 'util';
-import child_process from 'child_process';
-import { Transform } from 'stream';
+import fs from 'node:fs';
+import { promisify } from 'node:util';
+import { spawn, execFile } from 'node:child_process';
+import { Transform } from 'node:stream';
 
-const execCommandNative = promisify(child_process.exec);
+const execFileAsync = promisify(execFile);
+
+export const shellQuote = value => {
+  value = String(value);
+  if (/^[A-Za-z0-9_./:=,@%+-]+$/.test(value)) {
+    return value;
+  }
+  return `'${value.replaceAll("'", "'\\''")}'`;
+};
+
+export const formatCommand = command => command.map(shellQuote).join(' ');
 
 /**
  * Run a command and display its output.
@@ -12,7 +22,7 @@ const execCommandNative = promisify(child_process.exec);
  * - command -- command to run (list of arguments)
  * - utils -- taskgraph utils (waitFor, etc.)
  * - logfile -- log file to which to record output of command
- * - keepAllOutput -- if true, keep and return the stdout
+ * - keepAllOutput -- if true, keep and return the command output
  * - env -- optional environment variables for the command
  */
 export const execCommand = async ({
@@ -25,7 +35,7 @@ export const execCommand = async ({
   env = process.env,
   ignoreReturn = false,
 }) => {
-  const cp = child_process.spawn(command[0], command.slice(1), {
+  const cp = spawn(command[0], command.slice(1), {
     cwd: dir,
     env,
     stdio: [stdin ? 'pipe' : 'ignore', 'pipe', 'pipe'],
@@ -59,11 +69,11 @@ export const execCommand = async ({
   }
 
   const stream = new Transform({
-    transform: (chunk, encoding, callback) => {
+    transform: (chunk, _encoding, callback) => {
       if (keepAllOutput) {
         output += chunk.toString();
       } else {
-        output = '...\n' + chunk.toString();
+        output = `...\n${chunk.toString()}`;
       }
       callback(null, chunk);
     },
@@ -101,20 +111,77 @@ export const execCommand = async ({
       if (code === 0 || ignoreReturn) {
         resolve(output);
       } else {
-        reject(new Error(`Nonzero exit status ${code}; ` +
-          (logfile ? `see ${logfile} for details` : `\n${output}`)));
+        reject(new Error(`Nonzero exit status ${code}; ${logfile ? `see ${logfile} for details` : `\n${output}`}`));
       }
     });
     cp.once('error', reject);
   });
 };
 
-export const checkExecutableExists = async (executable) => {
+/**
+ * Run a command from code that is not inside a taskgraph task, inheriting stdio.
+ */
+export const execCommandVisible = async ({ dir, command, env = process.env, ignoreReturn = false }) => {
+  const cp = spawn(command[0], command.slice(1), {
+    cwd: dir,
+    env,
+    stdio: 'inherit',
+  });
+
+  return new Promise((resolve, reject) => {
+    cp.once('close', code => {
+      if (code === 0 || ignoreReturn) {
+        resolve();
+      } else {
+        const err = new Error(`Nonzero exit status ${code}`);
+        err.exitCode = code;
+        reject(err);
+      }
+    });
+    cp.once('error', reject);
+  });
+};
+
+/**
+ * Run a command from code that is not inside a taskgraph task, returning stdout.
+ */
+export const execCommandOutput = async ({ dir, command, env = process.env, ignoreReturn = false }) => {
+  const cp = spawn(command[0], command.slice(1), {
+    cwd: dir,
+    env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  let stdout = '';
+  let stderr = '';
+
+  cp.stdout.on('data', chunk => {
+    stdout += chunk.toString();
+  });
+  cp.stderr.on('data', chunk => {
+    stderr += chunk.toString();
+  });
+
+  return new Promise((resolve, reject) => {
+    cp.once('close', code => {
+      if (code === 0 || ignoreReturn) {
+        resolve(stdout);
+      } else {
+        const err = new Error(`Nonzero exit status ${code};\n${stdout}${stderr}`);
+        err.exitCode = code;
+        reject(err);
+      }
+    });
+    cp.once('error', reject);
+  });
+};
+
+export const checkExecutableExists = async executable => {
   const command = process.platform === 'win32' ? 'where' : 'which';
   try {
-    await execCommandNative(`${command} ${executable}`);
+    await execFileAsync(command, [executable]);
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 };

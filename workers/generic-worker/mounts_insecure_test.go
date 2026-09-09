@@ -15,11 +15,6 @@ func grantingDenying(t *testing.T, filetype string, cacheFile bool, taskPath ...
 	return []string{}, []string{}
 }
 
-func updateOwnership(t *testing.T) []string {
-	t.Helper()
-	return []string{}
-}
-
 // Test for upstream issue https://github.com/mholt/archiver/issues/152
 func TestHardLinksInArchive(t *testing.T) {
 	setup(t)

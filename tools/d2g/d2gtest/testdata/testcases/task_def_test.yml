@@ -81,6 +81,7 @@ testSuite:
           - --device=/dev/kvm
           - --env-file
           - env.list
+          - --
           - ubuntu:latest
           - /bin/bash
           - -c
@@ -192,6 +193,7 @@ testSuite:
           - --device=/dev/kvm
           - --env-file
           - env.list
+          - --
           - ubuntu:latest
           - /bin/bash
           - -c
@@ -306,6 +308,7 @@ testSuite:
           - --device=/dev/kvm
           - --env-file
           - env.list
+          - --
           - ubuntu:latest
           - /bin/bash
           - -c

@@ -12,7 +12,7 @@ const timeExpression = new RegExp(
     '(\\s*(\\d+)\\s*s(ec(onds?)?)?)?',
     '\\s*$',
   ].join(''),
-  'i',
+  'i'
 );
 
 export const parseTime = (str = '') => {
@@ -59,7 +59,7 @@ export const fromNow = (offset, reference = new Date()) => {
       parsedOffset.days * 24 * 60 * 60 * 1000 +
       parsedOffset.hours * 60 * 60 * 1000 +
       parsedOffset.minutes * 60 * 1000 +
-      parsedOffset.seconds * 1000,
+      parsedOffset.seconds * 1000
   );
 };
 
@@ -76,10 +76,8 @@ export const fromNow = (offset, reference = new Date()) => {
  * short hand `1d2h3min`, it's fairly tolerant of different spelling forms and
  * whitespace. But only really meant to be used with constants.
  */
-export const fromNowJSON = (offset, reference) =>
-  fromNow(offset, reference).toJSON();
+export const fromNowJSON = (offset, reference) => fromNow(offset, reference).toJSON();
 
-/* eslint-disable no-bitwise, no-mixed-operators */
 export const uuid = () => {
   const randoms = crypto.getRandomValues(new Uint8Array(16));
 
@@ -101,7 +99,6 @@ const slug = (nice = false) => {
     .replace(/\//g, '_') // Replace / with _ (see RFC 4648, sec. 5)
     .substring(0, 22); // Drop '==' padding
 };
-/* eslint-enable no-bitwise, no-mixed-operators */
 
 /**
  * Returns a randomly generated uuid v4 compliant slug

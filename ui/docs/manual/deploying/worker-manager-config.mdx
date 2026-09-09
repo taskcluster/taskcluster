@@ -194,31 +194,33 @@ An Azure-based provider is configured in `providers` with the following structur
 }
 ```
 
-Create a new resource group, in which all resources will be created (note that the location of the resource group is not related to the location of the workers).
+Create a new resource group, which will be used as the default destination for the worker resources this provider creates (note that the location of the resource group is not related to the location of the workers).
+Launch configurations may also opt into per-pool resource groups via `armDeploymentResourceGroup`; see [Resource Group Strategy](/docs/reference/core/worker-manager/azure#resource-group-strategy) for the trade-offs and the recommended Azure Policy pairing.
 
 Create a new "App Registration" as well, but do not create secrets for it yet.
 It must first be granted appropriate permissions.
 See [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for information on creating Azure AD Applications, assigning roles, and getting credentials.
 
 Azure-based providers need permissions to manage virtual machines, network interfaces, disks, and public IP addresses.
-The following is an example custom Azure role definition that encompasses the scope of permissions an Azure-based provider needs.
-Add this under your subscription -> "IAM" -> "Create a Custom Role", and start from JSON using content like this:
+The example custom role below is the **base set of `Actions`** that the worker-manager itself exercises — i.e. the permissions required regardless of which launch configurations you define.
+A worker pool's launch configuration may reference additional resources via its ARM template (e.g. availability sets, scale sets, custom NSG rules, boot-diagnostics storage accounts, or any other Azure resource type), and the role will need the corresponding `Actions` added on top before that pool can provision.
+The full list of available actions per resource provider is at [Azure resource provider operations](https://learn.microsoft.com/en-us/azure/role-based-access-control/resource-provider-operations).
+
+Add the role under your subscription -> "IAM" -> "Create a Custom Role", and start from JSON using content like this:
 
 ```json
 {
   "Name": "Worker-Manager Azure Provider",
   "IsCustom": true,
-  "Description": "Based on Virtual Machine Contributor + image access, delete access",
+  "Description": "Minimum permissions for the Taskcluster worker-manager Azure provider.",
   "Actions": [
     "Microsoft.Authorization/*/read",
-    "Microsoft.Compute/availabilitySets/*",
-    "Microsoft.Compute/locations/*",
     "Microsoft.Compute/virtualMachines/*",
     "Microsoft.Compute/disks/*",
-    "Microsoft.Compute/virtualMachineScaleSets/*",
     "Microsoft.Compute/images/read",
-    "Microsoft.Insights/alertRules/*",
-    "Microsoft.Network/locations/*",
+    "Microsoft.Compute/locations/operations/read",
+    "Microsoft.Network/locations/operations/read",
+    "Microsoft.Network/locations/operationResults/read",
     "Microsoft.Network/networkInterfaces/*",
     "Microsoft.Network/networkSecurityGroups/join/action",
     "Microsoft.Network/networkSecurityGroups/read",
@@ -229,16 +231,21 @@ Add this under your subscription -> "IAM" -> "Create a Custom Role", and start f
     "Microsoft.Network/virtualNetworks/read",
     "Microsoft.Network/virtualNetworks/subnets/join/action",
     "Microsoft.Resources/deployments/*",
-    "Microsoft.Resources/subscriptions/resourceGroups/read",
-    "Microsoft.Storage/storageAccounts/listKeys/action",
-    "Microsoft.Storage/storageAccounts/read",
-    "Microsoft.Support/*"
+    "Microsoft.Resources/subscriptions/resourceGroups/read"
   ],
   "AssignableScopes": [
     "/subscriptions/your-subscription-id"
   ]
 }
 ```
+
+If your launch configurations enable boot diagnostics with a custom storage account, also add `Microsoft.Storage/storageAccounts/read` and `Microsoft.Storage/storageAccounts/listKeys/action`.
+
+If a launch configuration deploys from a [template spec](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/template-specs) (i.e. `armDeployment.templateLink.id`), also add `Microsoft.Resources/templateSpecs/read` and `Microsoft.Resources/templateSpecs/versions/read` so the service principal can read the spec at deploy time.
+
+<Warning>
+If any launch configuration uses `armDeploymentResourceGroup` to deploy into a per-pool resource group, the role must additionally include `Microsoft.Resources/subscriptions/resourceGroups/write` so the worker-manager service principal can create that resource group. See [Resource Group Strategy](/docs/reference/core/worker-manager/azure#resource-group-strategy) in the Azure provider reference for the trade-offs and the recommended Azure Policy pairing that bounds which resource-group names this grant can actually create.
+</Warning>
 
 Again under your subscription -> "IAM", choose "Add" -> "Add role assignment" and assign the new role to the Enterprise App created earlier.
 The app will be listed under "User, group, or service principal".
@@ -299,11 +306,6 @@ Example launch configuration that uses a template spec:
   }
 ]
 ```
-
-### Resource Groups
-
-Resources in Azure are created within the context of resource groups. The provider is configured with the `resourceGroupName` in which resources will be created.
-This allows for a convenient grouping of all provider-related resources. Unrelated resources can exist within the resource group, but this is not recommended.
 
 ### Resource Dependencies
 
