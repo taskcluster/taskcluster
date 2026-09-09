@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import helper from './helper.js';
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['gcp', 'azure'], (mock, skipping) => {
+helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   helper.withCfg(mock, skipping);
   helper.withDb(mock, skipping);
   helper.withGcp(mock, skipping);

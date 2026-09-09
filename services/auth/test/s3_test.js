@@ -6,11 +6,11 @@ import debugFactory from 'debug';
 const debug = debugFactory('s3_test');
 import testing from '@taskcluster/lib-testing';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
+helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   if (mock) {
     return; // This is actually testing sts tokens and we are not going to mock those
   }
-  // pulse/azure aren't under test, so we always mock them out
+  // pulse isn't under test, so we always mock it out
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(skipping);

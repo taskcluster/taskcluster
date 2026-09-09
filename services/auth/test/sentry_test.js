@@ -104,7 +104,7 @@ suite('SentryApiClient', () => {
   });
 });
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
+helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   if (!mock) {
     return; // We don't test this with real credentials for now!
   }

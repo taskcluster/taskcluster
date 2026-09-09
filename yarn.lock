@@ -6828,16 +6828,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-azure-storage@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "fast-azure-storage@npm:4.0.0"
-  dependencies:
-    debug: "npm:^4.1.1"
-    xml2js: "npm:^0.6.0"
-  checksum: 10c0/8caa09d1d06296c2f596ae930204a31cce208dcfd7c9a88cc2d9c1c511de52c03ee03d3af1a893b1fd9b108ed3128a55eba3e068d335f4dced48930dcab01912
-  languageName: node
-  linkType: hard
-
 "fast-deep-equal@npm:^3.1.3":
   version: 3.1.3
   resolution: "fast-deep-equal@npm:3.1.3"
@@ -11737,7 +11727,6 @@ __metadata:
     express: "npm:5.2.1"
     express-session: "npm:^1.19.0"
     express-sslify: "npm:1.2.0"
-    fast-azure-storage: "npm:^4.0.0"
     fast-json-stable-stringify: "npm:^2.0.0"
     generate-password: "npm:^1.5.0"
     github-slugger: "npm:^2.0.0"
@@ -12490,16 +12479,6 @@ __metadata:
     sax: "npm:>=0.6.0"
     xmlbuilder: "npm:~11.0.0"
   checksum: 10c0/c9cd07cd19c5e41c740913bbbf16999a37a204488e11f86eddc2999707d43967197e257014d7ed72c8fc4348c192fa47eb352d1d9d05637cefd0d2e24e9aa4c8
-  languageName: node
-  linkType: hard
-
-"xml2js@npm:^0.6.0":
-  version: 0.6.2
-  resolution: "xml2js@npm:0.6.2"
-  dependencies:
-    sax: "npm:>=0.6.0"
-    xmlbuilder: "npm:~11.0.0"
-  checksum: 10c0/e98a84e9c172c556ee2c5afa0fc7161b46919e8b53ab20de140eedea19903ed82f7cd5b1576fb345c84f0a18da1982ddf65908129b58fc3d7cbc658ae232108f
   languageName: node
   linkType: hard
 

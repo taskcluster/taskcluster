@@ -5,7 +5,7 @@ import assume from 'assume';
 import testing from '@taskcluster/lib-testing';
 import taskcluster from '@taskcluster/client';
 
-helper.secrets.mockSuite(testing.suiteName(), ['azure', 'gcp'], (mock, skipping) => {
+helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   helper.withDb(mock, skipping);
   helper.withCfg(mock, skipping);
   helper.withPulse(skipping);
