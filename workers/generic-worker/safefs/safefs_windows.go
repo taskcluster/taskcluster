@@ -478,6 +478,11 @@ func Rename(oldpath, newpath string) error {
 	}
 	defer func() { _ = windows.CloseHandle(source) }()
 
+	sourceIsDir, _, err := Kind(source)
+	if err != nil {
+		return fmt.Errorf("could not stat %q: %w", oldpath, err)
+	}
+
 	parent, name, err := OpenParent(newpath, traverseAccess|windows.FILE_WRITE_DATA|windows.FILE_APPEND_DATA)
 	if err != nil {
 		return err
@@ -499,7 +504,9 @@ func Rename(oldpath, newpath string) error {
 
 	buffer := make([]byte, size)
 	rename := (*fileRenameInformation)(unsafe.Pointer(&buffer[0]))
-	rename.ReplaceIfExists = windows.FILE_RENAME_REPLACE_IF_EXISTS
+	if !sourceIsDir {
+		rename.ReplaceIfExists = windows.FILE_RENAME_REPLACE_IF_EXISTS
+	}
 	rename.RootDirectory = parent
 	rename.FileNameLength = uint32(nameLen)
 	// capped at the name itself, the buffer has no room for the terminator

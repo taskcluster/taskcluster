@@ -329,6 +329,33 @@ func TestRename(t *testing.T) {
 		}
 	})
 
+	t.Run("refuses to give a directory an existing empty directory's name", func(t *testing.T) {
+		base := t.TempDir()
+		src := mkdir(t, filepath.Join(base, "src"))
+		write(t, filepath.Join(src, "payload"), "mine")
+		dst := mkdir(t, filepath.Join(base, "dst"))
+
+		if err := Rename(src, dst); err == nil {
+			t.Error("replaced a directory that was already there")
+		}
+		if _, err := os.Stat(filepath.Join(dst, "payload")); err == nil {
+			t.Error("source content landed in the destination")
+		}
+	})
+
+	t.Run("replaces a file with a file", func(t *testing.T) {
+		base := t.TempDir()
+		src := write(t, filepath.Join(base, "src"), "mine")
+		dst := write(t, filepath.Join(base, "dst"), "theirs")
+
+		if err := Rename(src, dst); err != nil {
+			t.Fatal(err)
+		}
+		if b, err := os.ReadFile(dst); err != nil || string(b) != "mine" {
+			t.Errorf("dst = %q, %v", b, err)
+		}
+	})
+
 	t.Run("refuses bad paths", func(t *testing.T) {
 		dst := filepath.Join(t.TempDir(), "moved")
 		for _, src := range []string{"", "/"} {

@@ -253,6 +253,16 @@ func Rename(oldpath, newpath string) error {
 	}
 	defer unix.Close(targetParent)
 
+	if isDirAt(sourceParent, sourceName) {
+		var st unix.Stat_t
+		switch err := unix.Fstatat(targetParent, targetName, &st, unix.AT_SYMLINK_NOFOLLOW); {
+		case err == nil:
+			return fmt.Errorf("refusing to rename %q to %q: something is already there", oldpath, newpath)
+		case !errors.Is(err, unix.ENOENT):
+			return fmt.Errorf("could not stat %q: %w", newpath, err)
+		}
+	}
+
 	if err := unix.Renameat(sourceParent, sourceName, targetParent, targetName); err != nil {
 		return fmt.Errorf("could not rename %q to %q: %w", oldpath, newpath, err)
 	}
