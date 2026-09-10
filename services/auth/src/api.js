@@ -9,7 +9,6 @@ import Hashids from 'hashids';
 import { modifyRoles } from '../src/data.js';
 import { awsBuilder } from './aws.js';
 import { gcpBuilder } from './gcp.js';
-import { azureBuilder } from './azure.js';
 import { sentryBuilder } from './sentry.js';
 import { websocktunnelBuilder } from './websocktunnel.js';
 import { githubBuilder } from './github.js';
@@ -152,13 +151,8 @@ const builder = new APIBuilder({
     clientId: /^[A-Za-z0-9!@/:.+|_-]+$/, // should match schemas/constants.yml, prefix below
     roleId: /^[\x20-\x7e]+$/,
 
-    // Patterns for Azure
-    account: /^[a-z0-9]{3,24}$/,
-    table: /^[A-Za-z][A-Za-z0-9]{2,62}$/,
-    container: /^(?!.*[-]{2})[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/,
-    level: /^(read-write|read-only)$/,
-
     // Patterns for AWS
+    level: /^(read-write|read-only)$/,
     bucket: /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/,
     // we could allow "." too, but S3 buckets with dot in the name
     // doesn't work well with HTTPS and virtual-style hosting.
@@ -1183,10 +1177,9 @@ builder.declare(
   async (req, res) => res.reply({ scopes: await req.scopes() })
 );
 
-// Load aws and azure API implementations, these loads API and declares methods
+// Load aws API implementations, these loads API and declares methods
 // on the API object exported from this file
 awsBuilder(builder);
-azureBuilder(builder);
 sentryBuilder(builder);
 websocktunnelBuilder(builder);
 gcpBuilder(builder);
