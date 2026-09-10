@@ -8,6 +8,14 @@ const isSafeLogViewerArtifactName = name =>
       segment !== '..'
   );
 
+export const decodeArtifactName = name => {
+  try {
+    return decodeURIComponent(name);
+  } catch {
+    return name;
+  }
+};
+
 export const buildLogViewerUrl = ({ taskId, runId, name, isLiveLog }) => {
   if (!isSafeLogViewerArtifactName(name)) {
     return null;

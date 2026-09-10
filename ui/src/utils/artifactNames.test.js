@@ -1,4 +1,18 @@
-import { buildLogViewerUrl } from './artifactNames';
+import { buildLogViewerUrl, decodeArtifactName } from './artifactNames';
+
+describe('decodeArtifactName', () => {
+  it('should decode an encoded artifact name', () => {
+    expect(decodeArtifactName('public/logs/file%26name.log')).toEqual(
+      'public/logs/file&name.log'
+    );
+  });
+
+  it('should preserve an artifact name with malformed percent encoding', () => {
+    expect(decodeArtifactName('public/logs/%foo.log')).toEqual(
+      'public/logs/%foo.log'
+    );
+  });
+});
 
 describe('buildLogViewerUrl', () => {
   it('should build an encoded log viewer url', () => {
