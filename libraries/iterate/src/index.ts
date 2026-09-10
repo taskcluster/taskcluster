@@ -1,74 +1,113 @@
-import WatchDog from './watchdog.js';
+import WatchDog from './watchdog.ts';
 import debugFactory from 'debug';
-const debug = debugFactory('iterate');
-import events from 'node:events';
+import { EventEmitter } from 'node:events';
 import { hrtime } from 'node:process';
+
+const debug = debugFactory('iterate');
+
+export type IterateHandler = (watchdog: WatchDog) => unknown;
+
+/** Subset of @taskcluster/lib-monitor used by Iterate. */
+export interface IterateMonitor {
+  log: {
+    periodic: (
+      fields: { name: string; duration: number; status: 'exception' | 'success' },
+      opts: { level: string }
+    ) => void;
+  };
+  metric: {
+    iterateDuration: (seconds: number, labels: { name: string; status: string }) => void;
+  };
+  reportError: (err: unknown, level?: string, extra?: Record<string, unknown>) => void;
+}
+
+export interface IterateOptions {
+  name: string;
+  handler: IterateHandler;
+  monitor: IterateMonitor;
+  maxIterationTime: number;
+  waitTime: number;
+  watchdogTime?: number;
+  maxFailures?: number;
+  maxIterations?: number;
+  minIterationTime?: number;
+}
 
 /**
  * The Iterate Class.  See README.md for explanation of constructor
  * arguments and events that are emitted
  */
-class Iterate extends events.EventEmitter {
-  constructor(opts) {
+class Iterate extends EventEmitter {
+  name: string;
+  maxIterations: number;
+  maxFailures: number;
+  maxIterationTime: number;
+  minIterationTime: number;
+  watchdogTime: number;
+  waitTime: number;
+  handler: IterateHandler;
+  monitor: IterateMonitor;
+  keepGoing: boolean;
+  onStopCall: (() => void) | null;
+  stoppedPromise: Promise<void> | null;
+  currentTimeout: ReturnType<typeof setTimeout> | null;
+
+  constructor(opts: IterateOptions) {
     super();
-    events.EventEmitter.call(this);
 
     // Set default values
-    opts = Object.assign(
-      {},
-      {
-        watchdogTime: 0,
-        maxFailures: 0,
-        maxIterations: 0,
-        minIterationTime: 0,
-      },
-      opts
-    );
+    const resolved = {
+      watchdogTime: 0,
+      maxFailures: 0,
+      maxIterations: 0,
+      minIterationTime: 0,
+      ...opts,
+    };
 
-    if (!opts.name) {
+    if (!resolved.name) {
       throw new Error('Must provide a name to iterate');
     }
-    this.name = opts.name;
+    this.name = resolved.name;
 
-    if (typeof opts.maxIterations !== 'number') {
+    if (typeof resolved.maxIterations !== 'number') {
       throw new Error('maxIterations must be number');
     }
-    this.maxIterations = opts.maxIterations;
+    this.maxIterations = resolved.maxIterations;
 
-    if (typeof opts.maxFailures !== 'number') {
+    if (typeof resolved.maxFailures !== 'number') {
       throw new Error('maxFailures must be number');
     }
-    this.maxFailures = opts.maxFailures;
+    this.maxFailures = resolved.maxFailures;
 
-    if (typeof opts.maxIterationTime !== 'number') {
+    if (typeof resolved.maxIterationTime !== 'number') {
       throw new Error('maxIterationTime must be number');
     }
-    this.maxIterationTime = opts.maxIterationTime;
+    this.maxIterationTime = resolved.maxIterationTime;
 
-    if (typeof opts.minIterationTime !== 'number') {
+    if (typeof resolved.minIterationTime !== 'number') {
       throw new Error('minIterationTime must be number');
     }
-    this.minIterationTime = opts.minIterationTime;
+    this.minIterationTime = resolved.minIterationTime;
 
-    if (typeof opts.watchdogTime !== 'number') {
+    if (typeof resolved.watchdogTime !== 'number') {
       throw new Error('watchdogTime must be number');
     }
-    this.watchdogTime = opts.watchdogTime;
+    this.watchdogTime = resolved.watchdogTime;
 
-    if (typeof opts.waitTime !== 'number') {
+    if (typeof resolved.waitTime !== 'number') {
       throw new Error('waitTime must be number');
     }
-    this.waitTime = opts.waitTime;
+    this.waitTime = resolved.waitTime;
 
-    if (typeof opts.handler !== 'function') {
+    if (typeof resolved.handler !== 'function') {
       throw new Error('handler must be a function');
     }
-    this.handler = opts.handler;
+    this.handler = resolved.handler;
 
-    if (!opts.monitor || typeof opts.monitor !== 'object') {
+    if (!resolved.monitor || typeof resolved.monitor !== 'object') {
       throw new Error('monitor is required and must be an object from @taskcluster/lib-monitor');
     }
-    this.monitor = opts.monitor;
+    this.monitor = resolved.monitor;
 
     // Decide whether iteration should continue
     this.keepGoing = false;
@@ -77,7 +116,7 @@ class Iterate extends events.EventEmitter {
     this.onStopCall = null;
 
     // Fires when stopped, only set when started
-    this.stopPromise = null;
+    this.stoppedPromise = null;
 
     // Store the iteration timeout so that a `.stop()` call during an iteration
     // inhibits a handler from running
@@ -88,11 +127,11 @@ class Iterate extends events.EventEmitter {
     debug('running handler');
     const start = new Date();
     const watchdog = new WatchDog(this.watchdogTime);
-    let maxIterationTimeTimer;
+    let maxIterationTimeTimer: ReturnType<typeof setTimeout> | undefined;
 
     // build a promise that will reject when either the watchdog
     // times out or the maxIterationTimeTimer expires
-    const timeoutRejector = new Promise((_resolve, reject) => {
+    const timeoutRejector = new Promise<never>((_resolve, reject) => {
       watchdog.on('expired', () => {
         debug('watchdog expired');
         reject(new Error('watchdog exceeded'));
@@ -112,7 +151,7 @@ class Iterate extends events.EventEmitter {
       watchdog.stop();
     }
 
-    const duration = Date.now() - start;
+    const duration = Date.now() - start.getTime();
     if (this.minIterationTime > 0 && duration < this.minIterationTime) {
       throw new Error('Handler duration was less than minIterationTime');
     }
@@ -121,13 +160,13 @@ class Iterate extends events.EventEmitter {
   // run a single iteration, throwing any errors
   async iterate() {
     let currentIteration = 0;
-    let failures = [];
+    let failures: unknown[] = [];
 
     this.emit('started');
 
     while (true) {
       currentIteration++;
-      let iterError;
+      let iterError: unknown;
 
       this.emit('iteration-start');
 
@@ -183,11 +222,11 @@ class Iterate extends events.EventEmitter {
 
       if (this.waitTime > 0) {
         debug('waiting for next iteration or stop');
-        const stopPromise = new Promise(resolve => {
+        const stopPromise = new Promise<void>(resolve => {
           this.onStopCall = resolve;
         });
-        let waitTimeTimeout;
-        const waitTimePromise = new Promise(resolve => {
+        let waitTimeTimeout: ReturnType<typeof setTimeout> | undefined;
+        const waitTimePromise = new Promise<void>(resolve => {
           waitTimeTimeout = setTimeout(resolve, this.waitTime);
         });
         await Promise.race([stopPromise, waitTimePromise]);
@@ -210,7 +249,7 @@ class Iterate extends events.EventEmitter {
     });
     this.keepGoing = true;
 
-    return new Promise(resolve => {
+    return new Promise<void>(resolve => {
       this.once('started', resolve);
       // start iteration; any failures here are a programming error in this
       // library and so should be considered fatal
