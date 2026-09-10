@@ -141,8 +141,8 @@ Features implement the `Feature` / `TaskFeature` interfaces:
 - Cache scopes are defined in the
   [community-tc-config](https://github.com/taskcluster/community-tc-config) repo
   at `config/projects/taskcluster.yml`.
-- Available test cache scopes: `apple-cache`, `banana-cache`, `devtools-app`,
-  `test-modifications`, `unknown-issuer-app-cache`.
+- Available test cache scopes: `tc-test-cache-1`, `tc-test-cache-2`, `tc-test-artifact-cache`,
+  `tc-test-url-cache`, `tc-test-modifications-cache`.
 - Adding new cache names requires a PR to the community-tc-config repo.
 
 ### Test helpers
