@@ -12,6 +12,7 @@ import taskQuery from './task.graphql';
 import Search from '../../../components/Search';
 import ErrorPanel from '../../../components/ErrorPanel';
 import { getArtifactUrl } from '../../../utils/getArtifactUrl';
+import { decodeArtifactName } from '../../../utils/artifactNames';
 import { withAuth } from '../../../utils/Auth';
 
 @withAuth
@@ -55,17 +56,17 @@ export default class TaskLog extends Component {
     // for compatibility, if `name` is an encoded URL-shaped thing, try to
     // extract the artifact name.
     if (rawName.startsWith('https%3A')) {
-      const maybeArtifactUrl = decodeURIComponent(rawName);
+      const maybeArtifactUrl = decodeArtifactName(rawName);
       const match =
         /.*\/api\/queue\/v1\/task\/[^/]{22}\/runs\/\d+\/artifacts\/([^?]+)/.exec(
           maybeArtifactUrl
         );
 
       if (match) {
-        name = decodeURIComponent(match[1]);
+        name = decodeArtifactName(match[1]);
       }
     } else {
-      name = decodeURIComponent(rawName);
+      name = decodeArtifactName(rawName);
     }
 
     return getArtifactUrl({ user, taskId, runId, name });
