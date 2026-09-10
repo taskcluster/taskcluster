@@ -61,7 +61,7 @@ helper.secrets = new Secrets({
 
 helper.loadJson = async filename => JSON.parse(await fs.readFile(path.join(__dirname, filename), 'utf8'));
 
-helper.withCfg = (_mock, skipping) => {
+helper.withCfg = skipping => {
   if (skipping()) {
     return;
   }

@@ -12,7 +12,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   }
   // pulse isn't under test, so we always mock it out
   helper.withDb(mock, skipping);
-  helper.withCfg(mock, skipping);
+  helper.withCfg(skipping);
   helper.withPulse(skipping);
   helper.withServers(skipping);
 

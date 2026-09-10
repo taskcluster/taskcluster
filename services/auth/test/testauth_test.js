@@ -15,7 +15,7 @@ const badcreds = {
 suite(testing.suiteName(), () => {
   helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     helper.withDb(mock, skipping);
-    helper.withCfg(mock, skipping);
+    helper.withCfg(skipping);
     helper.withPulse(skipping);
     helper.withServers(skipping);
     helper.resetTables();
@@ -103,7 +103,7 @@ suite(testing.suiteName(), () => {
 
   helper.secrets.mockSuite('testAuthGet', ['gcp'], (mock, skipping) => {
     helper.withDb(mock, skipping);
-    helper.withCfg(mock, skipping);
+    helper.withCfg(skipping);
     helper.withPulse(skipping);
     helper.withServers(skipping);
     helper.resetTables();

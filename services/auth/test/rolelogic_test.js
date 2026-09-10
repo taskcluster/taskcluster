@@ -6,7 +6,7 @@ import testing from '@taskcluster/lib-testing';
 
 helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
   helper.withDb(mock, skipping);
-  helper.withCfg(mock, skipping);
+  helper.withCfg(skipping);
   helper.withPulse(skipping);
   helper.withServers(skipping);
   helper.resetTables();

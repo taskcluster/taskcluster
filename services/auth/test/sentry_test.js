@@ -109,7 +109,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
     return; // We don't test this with real credentials for now!
   }
   suite('regular SentryManager with fake client', () => {
-    helper.withCfg(mock, skipping);
+    helper.withCfg(skipping);
     helper.withDb(mock, skipping);
     helper.withSentry(skipping);
     helper.withPulse(skipping);
@@ -142,7 +142,7 @@ helper.secrets.mockSuite(testing.suiteName(), ['gcp'], (mock, skipping) => {
       helper.load.cfg('app.sentry', {});
     });
     helper.withDb(mock, skipping);
-    helper.withCfg(mock, skipping);
+    helper.withCfg(skipping);
     helper.withSentry(skipping);
     helper.withPulse(skipping);
     helper.withServers(skipping);
