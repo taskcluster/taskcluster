@@ -450,7 +450,7 @@ Note that this will require `sudo` access on Linux.
 
 Most tests run without needing credentials, but some will skip or fail in that circumstance.
 To run all tests, you will need to provide Taskcluster credentials.
-To run the tests against the Community-TC deployment of Taskcluster, you will need the [project:taskcluster:generic-worker-tester role](https://community-tc.services.mozilla.com/auth/roles/project%3Ataskcluster%3Ageneric-worker-tester).
+To run the tests against the Firefox-CI deployment of Taskcluster, you will need the [project:taskcluster:generic-worker-tester role](https://firefox-ci-tc.services.mozilla.com/auth/roles/project%3Ataskcluster%3Ageneric-worker-tester).
 Consult a member of the Taskcluster team on the [#taskcluster channel](https://chat.mozilla.org/#/room/#taskcluster:mozilla.org) to get this set up.
 
 There are a few environment variables that you can set to influence the tests:
