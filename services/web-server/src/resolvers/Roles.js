@@ -1,8 +1,5 @@
 export default {
   Query: {
-    listRoleIds(_parent, { connection, searchTerm }, { loaders }) {
-      return loaders.roleIds.load({ searchTerm, connection });
-    },
     role(_parent, { roleId }, { loaders }) {
       return loaders.role.load(roleId);
     },

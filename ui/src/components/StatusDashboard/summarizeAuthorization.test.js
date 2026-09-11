@@ -30,29 +30,13 @@ describe('summarizeAuthorization', () => {
   it('should return counts', () => {
     const out = summarizeAuthorization(
       {
-        data: {
-          clients: {
-            edges: [
-              { node: { lastDateUsed: new Date('2000-01-01') } },
-              { node: { lastDateUsed: new Date() } },
-            ],
-          },
-        },
+        data: [
+          { clientId: 'old', lastDateUsed: new Date('2000-01-01') },
+          { clientId: 'recent', lastDateUsed: new Date() },
+        ],
       },
-      {
-        data: {
-          listRoleIds: {
-            edges: ['role1', 'role2'],
-          },
-        },
-      },
-      {
-        data: {
-          secrets: {
-            edges: ['s1', 's2'],
-          },
-        },
-      }
+      { data: ['role1', 'role2'] },
+      { data: ['s1', 's2'] }
     );
 
     expect(out.length).toEqual(4);

@@ -55,21 +55,25 @@ const MiniTable = ({
 
 export default class WorkerManagerErrorsSummary extends Component {
   static propTypes = {
-    data: object.isRequired,
+    // a `workerManager.workerPoolErrorStats` response
+    stats: object,
+    loading: bool,
     onStatClick: func,
     selectedLaunchConfigId: string,
     includeLaunchConfig: bool,
   };
 
+  static defaultProps = {
+    stats: null,
+    loading: false,
+  };
+
   render() {
-    const {
-      data: { loading, WorkerManagerErrorsStats },
-      includeLaunchConfig,
-    } = this.props;
+    const { stats, loading, includeLaunchConfig } = this.props;
     const errorWidgets =
-      !loading && WorkerManagerErrorsStats
+      !loading && stats
         ? {
-            Summary: summarizeWorkerPoolsStats(this.props),
+            Summary: summarizeWorkerPoolsStats({ data: stats, loading }),
           }
         : {};
 
@@ -81,20 +85,20 @@ export default class WorkerManagerErrorsSummary extends Component {
             <Grid container spacing={2} style={{ marginBottom: 20 }}>
               <Grid item xs={12} md={4}>
                 <MiniTable
-                  data={WorkerManagerErrorsStats?.totals?.title}
+                  data={stats?.totals?.title}
                   title="Errors by title"
                 />
               </Grid>
               <Grid item xs={12} md={4}>
                 <MiniTable
-                  data={WorkerManagerErrorsStats?.totals?.code}
+                  data={stats?.totals?.code}
                   title="Errors by error code"
                 />
               </Grid>
               {includeLaunchConfig && (
                 <Grid item xs={12} md={4}>
                   <MiniTable
-                    data={WorkerManagerErrorsStats?.totals?.launchConfig}
+                    data={stats?.totals?.launchConfig}
                     title="Errors by launch config"
                     selectedKey={this.props.selectedLaunchConfigId}
                     onStatClick={this.props.onStatClick}

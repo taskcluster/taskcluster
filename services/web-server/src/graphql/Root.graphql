@@ -22,11 +22,7 @@ union Node =
   Artifact |
   Task |
   WMWorker |
-  CachePurge |
-  SecretListItem |
-  Client |
-  RoleCompact |
-  WorkerManagerWorkerPoolSummary
+  CachePurge
 
 interface Edge {
   cursor: String

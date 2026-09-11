@@ -1,9 +1,0 @@
-query dashboardStatsRoles {
-  listRoleIds {
-    edges {
-      node {
-        roleId
-      }
-    }
-  }
-}

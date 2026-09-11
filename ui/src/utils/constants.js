@@ -36,6 +36,7 @@ export const VIEW_SECRETS_PAGE_SIZE = 1000;
 export const VIEW_DENYLIST_PAGE_SIZE = 20;
 export const VIEW_NAMESPACES_PAGE_SIZE = 20;
 export const VIEW_CACHE_PURGES_PAGE_SIZE = 1000;
+export const DASHBOARD_STATS_PAGE_SIZE = 1000;
 export const HOOKS_LAST_FIRE_TYPE = {
   NO_FIRE: 'NoFire',
   SUCCESSFUL_FIRE: 'HookSuccessfulFire',
