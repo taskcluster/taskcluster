@@ -334,13 +334,14 @@ class Handlers {
   }
 
   /**
-   * Cancel any running builds that are not the current build for a given pull request.
-   * This will not cancel builds for the same SHA because they can belong to different branches.
+   * Cancel older deliveries for a pull request, or the current delivery if a newer one exists.
+   * Return the task group IDs marked as cancelled so callers can skip publishing their initial status.
    * If this is a pull request event, we only want to cancel builds of the same type:
    *  [pull_request.opened, pull_request.synchronize] are treated as the same type
    *  pull_request.[labeled, edited, closed, review_requested, assigned] are different events
    */
-  async cancelPreviousTaskGroups({ instGithub, debug, newBuild }) {
+  async cancelSupersededTaskGroups({ instGithub, debug, newBuild }) {
+    const cancelledTaskGroupIds = new Set();
     const {
       organization,
       repository,
@@ -351,23 +352,23 @@ class Handlers {
       event_id: eventId,
     } = newBuild;
     debug(
-      `canceling previous task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`
+      `canceling superseded task groups for ${organization}/${repository} eventType=${eventType} newTaskGroupId=${newTaskGroupId} sha=${sha} PR=${pullNumber} if they exist`
     );
 
-    // avoid performing cancellation for non-push and non-pull-request events
+    // Only pull request events support automatic cancellation.
     if (!eventType || !['pull_request'].includes(eventType.split('.')[0])) {
-      debug(`event type ${eventType} is not supported. skipping cancelPreviousTaskGroups`);
-      return;
+      debug(`event type ${eventType} is not supported. skipping cancelSupersededTaskGroups`);
+      return cancelledTaskGroupIds;
     }
 
     if (!pullNumber) {
-      debug(`pullNumber is not defined. Skipping cancelPreviousTaskGroups`);
-      return;
+      debug(`pullNumber is not defined. Skipping cancelSupersededTaskGroups`);
+      return cancelledTaskGroupIds;
     }
 
     if (!eventId) {
-      debug(`GitHub delivery ID is not defined. Skipping cancelPreviousTaskGroups`);
-      return;
+      debug(`GitHub delivery ID is not defined. Skipping cancelSupersededTaskGroups`);
+      return cancelledTaskGroupIds;
     }
 
     const scopes = [
@@ -414,15 +415,16 @@ class Handlers {
         }
 
         await Promise.all(
-          taskGroupIds.map(taskGroupId =>
-            this.context.db.fns.set_github_build_state(taskGroupId, GITHUB_BUILD_STATES.CANCELLED)
-          )
+          taskGroupIds.map(async taskGroupId => {
+            await this.context.db.fns.set_github_build_state(taskGroupId, GITHUB_BUILD_STATES.CANCELLED);
+            cancelledTaskGroupIds.add(taskGroupId);
+          })
         );
       }
     } catch (err) {
-      debug(`Error while canceling previous task groups: ${err.message}\nscopes used: ${scopes.join(', ')}`);
+      debug(`Error while canceling superseded task groups: ${err.message}\nscopes used: ${scopes.join(', ')}`);
       err.message = [
-        'Taskcluster-GitHub attempted to cancel previously created task groups with following scopes:',
+        'Taskcluster-GitHub attempted to cancel superseded task groups with following scopes:',
         '',
         '```',
         scopes.join(', '),
@@ -442,6 +444,7 @@ class Handlers {
         error: err,
       });
     }
+    return cancelledTaskGroupIds;
   }
 
   commentKey(idents) {
