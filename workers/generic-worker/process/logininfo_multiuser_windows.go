@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/sys/windows"
 
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/win32"
+	"github.com/taskcluster/taskcluster/v109/workers/generic-worker/win32"
 )
 
 // LoginInfo represents a logged in user session

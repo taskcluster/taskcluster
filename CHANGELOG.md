@@ -3,6 +3,52 @@
 <!-- `yarn release` will insert the existing changelog snippets here: -->
 <!-- NEXT RELEASE HERE -->
 
+## v109.0.0
+
+### GENERAL
+
+▶ [MAJOR]
+The deprecated Auth service Azure Credentials API methods have been removed: `azureAccounts`,
+`azureTables`, `azureTableSAS`, `azureContainers`, and `azureContainerSAS`. No known Taskcluster
+component uses these methods.
+
+The `auth.azure_accounts` Helm property is no longer allowed, and the corresponding
+`AZURE_ACCOUNTS` environment variable is no longer used. Deployers must remove
+`auth.azure_accounts` from their Helm values before upgrading.
+
+### WORKER-DEPLOYERS
+
+▶ [MAJOR] [bug 2069456](http://bugzil.la/2069456)
+When uploading artifacts, Generic Worker multiuser engine will now create
+temporary files as the worker user (`root`/`LocalSystem`) and stream content
+into them as the task user.
+
+The internal `generic-worker copy-to-temp-file` command has been replaced with
+`generic-worker cat-file`
+
+### USERS
+
+▶ [MAJOR] [bug 2069332](http://bugzil.la/2069332)
+When uploading an optional artifact, if it's not readable (or encounters any
+unreadable file for directory artifacts), the task will now fail instead of
+silently omitting that file.
+
+▶ [minor] [#9065](https://github.com/taskcluster/taskcluster/issues/9065)
+The Queue service now exposes `taskQueueCountsBatch` to fetch pending and
+claimed task counts for multiple task queues in one request.
+
+### Automated Package Updates
+
+<details>
+<summary>4 Dependabot updates</summary>
+
+* build(deps): bump nodemailer from 9.0.5 to 9.1.1 (583fcbc493)
+* build(deps): bump js-yaml from 4.3.1 to 4.3.2 in /clients/client (b4391b0a6f)
+* build(deps): bump js-yaml from 4.3.1 to 4.3.2 in /clients/client-test (a19e347b02)
+* build(deps): bump google.golang.org/grpc from 1.83.1 to 1.83.2 (65c3bd38dc)
+
+</details>
+
 ## v108.1.0
 
 ### GENERAL

@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/taskcluster/taskcluster/v108/internal/scopes"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v109/internal/scopes"
+	"github.com/taskcluster/taskcluster/v109/workers/generic-worker/fileutil"
 )
 
 var (

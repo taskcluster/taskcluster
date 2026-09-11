@@ -6,9 +6,9 @@ import (
 	"io"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/artifacts"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/process"
+	"github.com/taskcluster/taskcluster/v109/workers/generic-worker/artifacts"
+	"github.com/taskcluster/taskcluster/v109/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v109/workers/generic-worker/process"
 )
 
 type taskUserFile string

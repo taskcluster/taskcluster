@@ -3,7 +3,7 @@ package group
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/taskcluster/taskcluster/v108/clients/client-shell/cmds/root"
+	"github.com/taskcluster/taskcluster/v109/clients/client-shell/cmds/root"
 )
 
 var (

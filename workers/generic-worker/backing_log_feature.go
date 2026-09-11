@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/taskcluster/taskcluster/v108/internal/scopes"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/fileutil"
-	"github.com/taskcluster/taskcluster/v108/workers/generic-worker/safefs"
+	"github.com/taskcluster/taskcluster/v109/internal/scopes"
+	"github.com/taskcluster/taskcluster/v109/workers/generic-worker/fileutil"
+	"github.com/taskcluster/taskcluster/v109/workers/generic-worker/safefs"
 )
 
 type (
